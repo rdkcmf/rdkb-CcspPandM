@@ -1,0 +1,28 @@
+- move arch/intel_usg/boards/rdkb_arm/cmpnt_build_custom_pre.mk to
+       cmpnt_build_custom_pre_arm.mk
+- move arch/pc/boards/rdkb/cmpnt_build_custom_pre.mk to
+       cmpnt_build_custom_pre_pc.mk
+- move arch/pc/source/ to
+       source-pc
+- move arch/intel_usg/boards/arm_shared/source/ to
+       source-arm
+- mkdir ./config
+- move arch/intel_usg/boards/arm_shared/config/CcspDmLib.cfg to
+       config/CcspDmLib_arm.cfg
+- move arch/intel_usg/boards/arm_shared/config/CcspPam.cfg to
+       config/CcspPam_arm.cfg
+- move arch/intel_usg/boards/rdkb_arm/config/TR181-USGv2.XML to
+       config/
+- move arch/pc/boards/rdkb/config/CcspDmLib.cfg to
+       config/CcspDmLib_pc.cfg 
+- move arch/pc/boards/rdkb/config/COSAXcalibur.XML to
+       config/
+- move arch/pc/config/CcspPam.cfg to
+       config/
+- mkdir scripts
+- move arch/intel_usg/boards/arm_shared/scripts/email_notification_monitor.sh to
+       scripts/
+- remove arch directory
+- move Makefile Makefile.orig
+- add ChangeLog file
+

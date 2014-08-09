@@ -1,0 +1,192 @@
+#######################################################################
+#   Copyright [2014] [Cisco Systems, Inc.]
+# 
+#   Licensed under the Apache License, Version 2.0 (the \"License\");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+# 
+#       http://www.apache.org/licenses/LICENSE-2.0
+# 
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an \"AS IS\" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#######################################################################
+
+#
+include $(CCSP_ROOT_DIR)/arch/ccsp_common.mk
+
+#
+#	Set up include directories
+#
+
+ifeq ($(PNM_BUILD_TR_181), 1)
+	INCPATH += $(ComponentSrcDir)/Custom
+	INCPATH += $(ComponentSrcDir)/TR-181/include
+	INCPATH += $(ComponentSrcDir)/TR-181/middle_layer_src
+	INCPATH += $(ComponentArchSrcDir)/TR-181/arch_include
+	INCPATH += $(ComponentBoardSrcDir)/TR-181/board_include
+	INCPATH += $(ComponentBoardSrcDir)/TR-181/board_ml
+	INCPATH += $(ComponentCustomSrcDir)/TR-181/custom_include
+	INCPATH += $(ComponentCustomSrcDir)/TR-181/custom_ml
+
+	# temporary fix -- 
+	INCPATH += $(ComponentBoardSrcDir)/TR-181/board_sbapi
+endif
+
+ifeq ($(PNM_BUILD_TR_135), 1)
+	INCPATH += $(ComponentSrcDir)/Custom
+	INCPATH += $(ComponentSrcDir)/TR-135/include
+	INCPATH += $(ComponentArchSrcDir)/TR-135/arch_include
+	INCPATH += $(ComponentBoardSrcDir)/TR-135/board_include
+endif
+
+CFLAGS += $(addprefix -I, $(INCPATH))
+
+#
+#	P&M Ssp
+#
+target1 := $(ComponentBuildDir)/CcspPandMSsp
+source_files1 := $(call add_files_from_src,PandMSsp,'*.c')
+obj_files1 := $(addprefix $(ComponentBuildDir)/, $(source_files1:%.c=%.o))
+-include $(obj_files1:.o=.d)
+
+$(target1): $(obj_files1)
+
+#
+#	multiple targets are chained together
+#
+PnmTargets := $(target1)
+
+#
+#	Xcablibur
+#
+ifeq ($(PNM_BUILD_Xcalibur), 1)
+
+	# Make sure to replace TAB with spaces!!! Otherwise, the section below is considered part of the recipe above!
+    target2 := $(ComponentBuildDir)/libdmlpam.so
+	PnmTargets += $(target2)
+
+	source_files2 := $(call add_files_from_src,Xcalibur,'*.c')
+	obj_files2 := $(addprefix $(ComponentBuildDir)/, $(source_files2:%.c=%.o))
+	-include $(obj_files2:.o=.d)
+
+$(target2): $(obj_files2)
+
+endif
+
+#
+#	TR-098
+#
+ifeq ($(PNM_BUILD_TR_098), 1)
+
+	# Make sure to replace TAB with spaces!!! Otherwise, the section below is considered part of the recipe above!
+    target3 := $(ComponentBuildDir)/libtr098.so
+	PnmTargets += $(target3)
+
+	source_files3 := $(call add_files_from_src,TR-098/integration_src,'*.c')
+	source_files3 += $(call add_files_from_src,TR-098/middle_layer_src,'*.c')
+	obj_files3 := $(addprefix $(ComponentBuildDir)/,$(source_files3:%.c=%.o))
+	-include $(obj_files3:.o=.d)
+
+$(target3): $(obj_files3)
+
+endif
+
+#
+#	TR-181
+#
+ifeq ($(PNM_BUILD_TR_181), 1)
+
+	# Make sure to replace TAB with spaces!!! Otherwise, the section below is considered part of the recipe above!
+    target4 := $(ComponentBuildDir)/libtr181.so
+	PnmTargets += $(target4)
+
+	source_files4 += $(call add_files_from_src,TR-181/integration_src.shared,'*.c')
+	source_files4 += $(call add_files_from_src,TR-181/middle_layer_src,'*.c')
+
+	source_files4 += $(call add_files_from_arch,TR-181/arch_sbapi,'*.c')
+	source_files4 += $(call add_files_from_arch,TR-181/arch_ml,'*.c')
+	source_files4 += $(call add_files_from_board,TR-181/board_sbapi,'*.c')
+	source_files4 += $(call add_files_from_board,TR-181/board_ml,'*.c')
+
+	source_files4 += $(call add_files_from_custom,TR-181/custom_ml,'*.c')
+	source_files4 += $(call add_files_from_custom,TR-181/custom_sbapi,'*.c')
+
+	obj_files4 := $(addprefix $(ComponentBuildDir)/, $(source_files4:%.c=%.o))
+	-include $(obj_files4:.o=.d)
+
+$(target4): $(obj_files4)
+
+endif
+
+#
+#	TR-135
+#
+ifeq ($(PNM_BUILD_TR_135), 1)
+
+	# Make sure to replace TAB with spaces!!! Otherwise, the section below is considered part of the recipe above!
+    target6 := $(ComponentBuildDir)/libtr135.so
+	PnmTargets += $(target6)
+
+	source_files6 += $(call add_files_from_src,TR-135/middle_layer_src,'*.c')
+
+	source_files6 += $(call add_files_from_arch,TR-135/arch_ml,'*.c')
+	source_files6 += $(call add_files_from_board,TR-135/board_ml,'*.c')
+
+	obj_files6 := $(addprefix $(ComponentBuildDir)/,$(source_files6:%.c=%.o))
+	-include $(obj_files6:.o=.d)
+
+$(target6): $(obj_files6)
+
+	# Make sure to replace TAB with spaces!!! Otherwise, the section below is considered part of the recipe above!
+    target7 := $(ComponentBuildDir)/libtr135sb.so
+	PnmTargets += $(target7)
+
+	#source_files7 := $(call add_files_from_src,TR-135/integration_src,'*.c')
+
+	source_files7 += $(call add_files_from_arch,TR-135/arch_sbapi,'*.c')
+	source_files7 += $(call add_files_from_board,TR-135/board_sbapi,'*.c')
+
+	obj_files7 := $(addprefix $(ComponentBuildDir)/, $(source_files7:%.c=%.o))
+	-include $(obj_files7:.o=.d)
+
+$(target7): $(obj_files7)
+
+endif
+
+#
+#	Build targets
+#
+all: $(PnmTargets)
+
+.PHONY: all clean
+
+clean:
+	rm -Rf $(ComponentBuildDir)
+
+install_targets := $(CCSP_OUT_DIR)/ccsp_msg.cfg
+# config directories from both arch, arch-board, arch-board-customer
+install_targets += $(wildcard $(ComponentArchCfgDir)/*)
+install_targets += $(wildcard $(ComponentBoardCfgDir)/*)
+install_targets += $(wildcard $(ComponentBoardCustomCfgDir)/*)
+# scripts directories from arch, arch-board, arch-board-customer
+install_targets += $(wildcard $(ComponentArchScriptsDir)/*)
+install_targets += $(wildcard $(ComponentBoardScriptsDir)/*)
+install_targets += $(wildcard $(ComponentBoardCustomScriptsDir)/*)
+
+install:
+	@echo "Installing P&M Installables"
+	@install -d -m 0755 $(CCSP_OUT_DIR)/pam
+	@install -m 0755 $(PnmTargets) $(CCSP_OUT_DIR)/pam
+	@install -m 0644 $(install_targets) $(CCSP_OUT_DIR)/pam
+
+LDFLAGS   += -lccsp_common
+
+#
+# include custom post makefile, if exists
+#
+ifneq ($(findstring $(CCSP_CMPNT_BUILD_CUSTOM_MK_POST), $(wildcard $(ComponentBoardDir)/*.mk)), )
+    include $(ComponentBoardDir)/$(CCSP_CMPNT_BUILD_CUSTOM_MK_POST)
+endif
