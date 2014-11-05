@@ -1856,7 +1856,27 @@ Link_GetParamStringValue
 
     if( AnscEqualString(ParamName, "Name", TRUE))
     {
-        /* collect value */
+        if ( _ansc_strlen(pEntry->StaticInfo.Name) == 0 )
+        {
+            ANSC_STATUS         returnStatus;
+            ULONG               ulNameBufSize;
+
+            ulNameBufSize = sizeof(pEntry->StaticInfo.Name);
+            returnStatus =
+                CosaUtilGetLowerLayerName
+                    (
+                        pEntry->Cfg.LinkType,
+                        pEntry->Cfg.LinkInstNum,
+                        pEntry->StaticInfo.Name,
+                        &ulNameBufSize
+                    );
+
+            if ( returnStatus != ANSC_STATUS_SUCCESS )
+            {
+                AnscTraceWarning(("%s -- failed to retrieve LowerLayer name parameter, error code %d\n", __FUNCTION__, returnStatus));
+            }
+        }
+
         AnscCopyString(pValue, pEntry->StaticInfo.Name);
         return 0;
     }
@@ -1872,9 +1892,15 @@ Link_GetParamStringValue
             }
             else
             {
-                char* linkTypePath = CosaUtilGetLinkTypePath(pEntry->Cfg.LinkType);
+                ULONG               ulBufLen    = sizeof(pEntry->Cfg.LowerLayers);
 
-                _ansc_sprintf(pEntry->Cfg.LowerLayers, "%s%d", linkTypePath, pEntry->Cfg.LinkInstNum);
+                CosaUtilConstructLowerLayers
+                    (
+                        pEntry->Cfg.LinkType,
+                        pEntry->Cfg.LinkInstNum,
+                        pEntry->Cfg.LowerLayers,
+                        &ulBufLen
+                    );
             }
 
             AnscCopyString(pValue, pEntry->Cfg.LowerLayers);
@@ -1888,7 +1914,25 @@ Link_GetParamStringValue
     }
 
     if( AnscEqualString(ParamName, "MACAddress", TRUE))
-    {
+    {       
+	PCOSA_DATAMODEL_ETHERNET pMyObject = (PCOSA_DATAMODEL_ETHERNET )g_pCosaBEManager->hEthernet;
+	CosaDmlEthLinkUpdateStaticMac(pMyObject->hSbContext, &pEntry->Cfg,pEntry);
+
+	/*
+	//dpotter
+	printf
+        (
+            "%02x:%02x:%02x:%02x:%02x:%02x",
+            pEntry->StaticInfo.MacAddress[0],
+            pEntry->StaticInfo.MacAddress[1],
+            pEntry->StaticInfo.MacAddress[2],
+            pEntry->StaticInfo.MacAddress[3],
+            pEntry->StaticInfo.MacAddress[4],
+            pEntry->StaticInfo.MacAddress[5]
+        );
+	fflush(stdout);
+	*/
+	
         _ansc_sprintf
         (
             pValue,

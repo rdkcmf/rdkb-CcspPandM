@@ -2966,7 +2966,7 @@ CosaDmlNatSetPortMapping
     Utopia_Free(&Ctx, 0);
     return ANSC_STATUS_FAILURE;
 }
-#ifdef CONFIG_CISCO_XHS 
+#ifdef CONFIG_CISCO_HOME_SECURITY 
 #define HNAP_DHCP_POOL_DM "Device.DHCPv4.Server.Pool.2."
 
 BOOL _Check_HS_PF_client(ULONG client)
@@ -3045,7 +3045,7 @@ BOOL CosaDmlNatChkPortMappingClient(ULONG client)
         !IPv4Addr_IsNetworkAddr(client, ipaddr, netmask) &&
         IPv4Addr_IsSameNetwork(client, ipaddr, netmask) )
         ret =  TRUE; 
-#ifdef CONFIG_CISCO_XHS 
+#ifdef CONFIG_CISCO_HOME_SECURITY 
     else if(_Check_HS_PF_client(client) == TRUE)
         ret = TRUE;
 #endif

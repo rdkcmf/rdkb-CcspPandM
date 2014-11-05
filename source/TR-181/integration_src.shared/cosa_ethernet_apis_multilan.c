@@ -296,47 +296,14 @@ CosaDmlEthLinkLoadPsm
             SlapCleanVariable(&SlapValue);
         }
 
-        if ( TRUE )     /* l2net */
+        if ( TRUE )     /* LowerLayerType */
         {
             SlapInitVariable(&SlapValue);
 
             _ansc_sprintf
                 (
                     pParamPath,
-                    DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
-                    pInstArray[ulIndex]
-                );
-
-            iReturnValue =
-                PSM_Get_Record_Value
-                    (
-                        g_MessageBusHandle,
-                        g_SubsystemPrefix,
-                        pParamPath,
-                        &RecordType,
-                        &SlapValue
-                    );
-
-            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
-            {
-                AnscTraceWarning(("%s -- failed to retrieve 'l2net' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
-            }
-            else
-            {
-                pEthLink->Cfg.LinkInstNum = SlapValue.Variant.varUint32;
-            }
-
-            SlapCleanVariable(&SlapValue);
-        }
-
-        if ( TRUE )     /* l2netType */
-        {
-            SlapInitVariable(&SlapValue);
-
-            _ansc_sprintf
-                (
-                    pParamPath,
-                    DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2netType,
+                    DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_LowerLayerType,
                     pInstArray[ulIndex]
                 );
 
@@ -352,7 +319,8 @@ CosaDmlEthLinkLoadPsm
 
             if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_string))
             {
-                AnscTraceWarning(("%s -- failed to retrieve 'l2netType' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
+                AnscTraceWarning(("%s -- failed to retrieve 'LowerLayerType' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
+                pEthLink->Cfg.LinkType = COSA_DML_LINK_TYPE_LAST;
             }
             else
             {
@@ -362,42 +330,171 @@ CosaDmlEthLinkLoadPsm
             SlapCleanVariable(&SlapValue);
         }
 
-        /* Fetch StaticInfo */
-
-        if ( pEthLink->Cfg.LinkInstNum )
+        if ( !pEthLink->Cfg.LinkType || (pEthLink->Cfg.LinkType != COSA_DML_LINK_TYPE_LAST) )
         {
-            /*
-             *  Fetch the "name" parameter from l2net PSM object
-             */
-            SlapInitVariable(&SlapValue);
+            if ( TRUE )     /* LowerLayerInstNum */
+            {
+                SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
-                (
-                    pParamPath,
-                    DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
-                    pEthLink->Cfg.LinkInstNum
-                );
-
-            iReturnValue =
-                PSM_Get_Record_Value
+                _ansc_sprintf
                     (
-                        g_MessageBusHandle,
-                        g_SubsystemPrefix,
                         pParamPath,
-                        &RecordType,
-                        &SlapValue
+                        DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_LowerLayerInstNum,
+                        pInstArray[ulIndex]
                     );
 
-            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_string))
-            {
-                AnscTraceWarning(("%s -- failed to retrieve 'l2net.name' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
-            }
-            else
-            {
-                _ansc_strcpy(pEthLink->StaticInfo.Name, SlapValue.Variant.varString);
+                iReturnValue =
+                    PSM_Get_Record_Value
+                        (
+                            g_MessageBusHandle,
+                            g_SubsystemPrefix,
+                            pParamPath,
+                            &RecordType,
+                            &SlapValue
+                        );
+
+                if ( iReturnValue != CCSP_SUCCESS )
+                {
+                    AnscTraceWarning(("%s -- failed to retrieve 'LowerLayerInstanceNumber' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
+                }
+                else if (RecordType == ccsp_unsignedInt)
+                {
+                    pEthLink->Cfg.LinkInstNum = SlapValue.Variant.varUint32;
+                }
+                else if (RecordType == ccsp_string)
+                {
+                    pEthLink->Cfg.LinkInstNum = _ansc_atoi(SlapValue.Variant.varString);
+                }
+
+                SlapCleanVariable(&SlapValue);
             }
 
-            SlapCleanVariable(&SlapValue);
+            if ( TRUE )     /* Fetch StaticInfo */
+            {
+                ANSC_STATUS         returnStatus;
+                ULONG               ulNameBufSize;
+
+                ulNameBufSize = sizeof(pEthLink->StaticInfo.Name);
+                returnStatus =
+                    CosaUtilGetLowerLayerName
+                        (
+                            pEthLink->Cfg.LinkType,
+                            pEthLink->Cfg.LinkInstNum,
+                            pEthLink->StaticInfo.Name,
+                            &ulNameBufSize
+                        );
+
+                if ( returnStatus != ANSC_STATUS_SUCCESS )
+                {
+                    AnscTraceWarning(("%s -- failed to retrieve LowerLayer name parameter, error code %d\n", __FUNCTION__, returnStatus));
+                }
+            }
+        }
+        else /* LowerLayerType not configured, go with l2net/l2netType */
+        {
+            if ( TRUE )     /* l2net */
+            {
+                SlapInitVariable(&SlapValue);
+
+                _ansc_sprintf
+                    (
+                        pParamPath,
+                        DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
+                        pInstArray[ulIndex]
+                    );
+
+                iReturnValue =
+                    PSM_Get_Record_Value
+                        (
+                            g_MessageBusHandle,
+                            g_SubsystemPrefix,
+                            pParamPath,
+                            &RecordType,
+                            &SlapValue
+                        );
+
+                if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+                {
+                    AnscTraceWarning(("%s -- failed to retrieve 'l2net' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
+                }
+                else
+                {
+                    pEthLink->Cfg.LinkInstNum = SlapValue.Variant.varUint32;
+                }
+
+                SlapCleanVariable(&SlapValue);
+            }
+
+            if ( TRUE )     /* l2netType */
+            {
+                SlapInitVariable(&SlapValue);
+
+                _ansc_sprintf
+                    (
+                        pParamPath,
+                        DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2netType,
+                        pInstArray[ulIndex]
+                    );
+
+                iReturnValue =
+                    PSM_Get_Record_Value
+                        (
+                            g_MessageBusHandle,
+                            g_SubsystemPrefix,
+                            pParamPath,
+                            &RecordType,
+                            &SlapValue
+                        );
+
+                if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_string))
+                {
+                    AnscTraceWarning(("%s -- failed to retrieve 'l2netType' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
+                }
+                else
+                {
+                    pEthLink->Cfg.LinkType = CosaUtilGetLinkTypeFromStr(SlapValue.Variant.varString);
+                }
+
+                SlapCleanVariable(&SlapValue);
+            }
+
+            /* Fetch StaticInfo */
+
+            if ( pEthLink->Cfg.LinkInstNum )
+            {
+                /*
+                 *  Fetch the "name" parameter from l2net PSM object
+                 */
+                SlapInitVariable(&SlapValue);
+
+                _ansc_sprintf
+                    (
+                        pParamPath,
+                        DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
+                        pEthLink->Cfg.LinkInstNum
+                    );
+
+                iReturnValue =
+                    PSM_Get_Record_Value
+                        (
+                            g_MessageBusHandle,
+                            g_SubsystemPrefix,
+                            pParamPath,
+                            &RecordType,
+                            &SlapValue
+                        );
+
+                if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_string))
+                {
+                    AnscTraceWarning(("%s -- failed to retrieve 'l2net.name' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
+                }
+                else
+                {
+                    _ansc_strcpy(pEthLink->StaticInfo.Name, SlapValue.Variant.varString);
+                }
+
+                SlapCleanVariable(&SlapValue);
+            }
         }
 
         if ( _ansc_strlen(pEthLink->StaticInfo.Name) > 0 )
@@ -891,6 +988,41 @@ CosaDmlEthLinkSetCfg
             CosaUtilGetIfStats(pEthLink->StaticInfo.Name, &pEthLink->LastStats);
         }
 
+        return  ANSC_STATUS_SUCCESS;
+    }
+}
+
+ANSC_STATUS
+CosaDmlEthLinkUpdateStaticMac
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_ETH_LINK_CFG      pCfg,
+	PCOSA_DML_ETH_LINK_FULL	     pEntry
+    )
+{
+    PDMSB_TR181_ETH_CONTEXT         pEthContext     = (PDMSB_TR181_ETH_CONTEXT)hContext;
+    PDMSB_TR181_ETH_LINK            pEthLink;
+
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    pEthLink = CosaDmlEthLinkFindByInstNum(pEthContext, pCfg->InstanceNumber);
+
+    if( (0x00 == pEthLink->StaticInfo.MacAddress[0]) && (0x00 == pEthLink->StaticInfo.MacAddress[1]) && (0x00 == pEthLink->StaticInfo.MacAddress[2]) && (0x00 == pEthLink->StaticInfo.MacAddress[3]) && (0x00 == pEthLink->StaticInfo.MacAddress[4]) && (0x00 == pEthLink->StaticInfo.MacAddress[5]))
+    {	
+	  UCHAR strMac[128] = {0};
+	  if ( -1 != _getMac(pEthLink->StaticInfo.Name, strMac) )
+	  {
+		  AnscCopyMemory(pEthLink->StaticInfo.MacAddress,strMac,6);
+		  AnscCopyMemory(pEntry->StaticInfo.MacAddress,strMac,6);
+	  }
+    }
+    
+    if ( !pEthLink )
+    {
+        return  ANSC_STATUS_CANT_FIND;
+    }
+    else
+    {
         return  ANSC_STATUS_SUCCESS;
     }
 }

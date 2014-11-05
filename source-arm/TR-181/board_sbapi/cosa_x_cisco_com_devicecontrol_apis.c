@@ -60,7 +60,6 @@
 
 #include "cosa_x_cisco_com_devicecontrol_apis.h"
 #include "cosa_x_cisco_com_devicecontrol_dml.h"
-#include "pacm_manager_utilities.h"
 #include <arpa/inet.h>
 
 extern void* g_pDslhDmlAgent;
@@ -139,15 +138,11 @@ int fwSync = 0;
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>
-#include "docsis_db.h"
 #include <ccsp_syslog.h>
 #include "syscfg/syscfg.h"
 
-/* BBU */
-#if defined (CONFIG_TI_BBU) || defined (CONFIG_TI_BBU_TI)
-  #include "bbu_api.h"
-  #include "bbu_interface.h"
-#endif
+#include "platform_hal.h"
+
 
 #define HTTPD_CONF      "/var/lighttpd.conf"
 #define HTTPD_DEF_CONF  "/etc/lighttpd.conf"
@@ -435,7 +430,6 @@ CosaDmlDcInit
         _CosaDmlDcStopZeroConfig();
     }
 
-    DocsisParamsDb_RetrieveAccess();
     syscfg_init();
     return ANSC_STATUS_SUCCESS;
 }
@@ -1024,20 +1018,6 @@ CosaDmlDcGetResetDefaultEnable
     return ANSC_STATUS_SUCCESS;
 }
 
-/* saRgDeviceConfigSnmpEnable */
-enum snmpenable_e {
-    RG_WAN = 0,
-    RG_DUALIP,
-    RG_LANIP
-};
-
-const char *snmpenable_str[] = {
-    [RG_WAN]    = "rgWan",
-    [RG_DUALIP] = "rgDualIp",
-    [RG_LANIP]  = "rgLanIp"
-};
-
-
 ANSC_STATUS
 CosaDmlDcGetSNMPEnable
     (
@@ -1045,21 +1025,15 @@ CosaDmlDcGetSNMPEnable
         char*                       pValue
     )
 {
-    int bAllowed = 0;
-
     if (pValue == NULL) {
         AnscTraceError(("[SNMPEnable]: pValue pointer is null.\n"));
         return ANSC_STATUS_FAILURE;
     }
 
-    SaRemoteAccessDb_RetrieveAccess();
-    SaRemoteAccessDb_GetSnmpToLanGwIpAllowed(&bAllowed);
-    if (bAllowed == 1)
-        _ansc_strcpy(pValue, snmpenable_str[RG_LANIP]);
-    else
-        memset(pValue, 0, sizeof(pValue));    /* other values are not yet supported */
-
-    return ANSC_STATUS_SUCCESS;
+    if ( platform_hal_GetSNMPEnable(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else    
+        return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -1074,16 +1048,11 @@ CosaDmlDcSetSNMPEnable
         return ANSC_STATUS_FAILURE;
     }
 
-    SaRemoteAccessDb_RetrieveAccess();
-
-    if (_ansc_strcmp(pValue, snmpenable_str[RG_LANIP]) == 0)
-        SaRemoteAccessDb_SetSnmpToLanGwIpAllowed(1);
-    else
-        SaRemoteAccessDb_SetSnmpToLanGwIpAllowed(0);
-
-    return ANSC_STATUS_SUCCESS;
-
-} /* saRgDeviceConfigSnmpEnable end */
+    if ( platform_hal_SetSNMPEnable(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else    
+        return ANSC_STATUS_SUCCESS;
+}
 
 ANSC_STATUS
 CosaDmlDcGetRebootDevice
@@ -1125,18 +1094,10 @@ CosaDmlDcGetDeviceConfigStatus
         char*                       pValue
     )
 {
-    DocsisDb_CmInitStage_e status;
-    DocsisDb_GetCmInitStage(&status);
-    if(status == CM_INIT_STAGE_CONFIG_FILE_HANDLED)
-    {
-	AnscCopyString(pValue, "In Progress");
-    }
-    else if(status > CM_INIT_STAGE_CONFIG_FILE_HANDLED)
-    {
-        AnscCopyString(pValue, "Complete");
-    }
-
-    return ANSC_STATUS_SUCCESS;
+    if(platform_hal_GetDeviceConfigStatus(pValue) != RETURN_OK)
+        return ANSC_STATUS_FAILURE;
+    else
+        return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -1800,18 +1761,10 @@ CosaDmlDcGetTelnetEnable
         BOOLEAN                     *pFlag
     )
 {
-    Uint32 access_type;
-
-    if (DocsisDb_GetCliAccessType(&access_type) == STATUS_NOK)
+    if (platform_hal_GetTelnetEnable(pFlag) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
-
-    /* Return TRUE if saCmMtaCliAccessType == enableTelnetPermanent(1) */
-    if (access_type == CLI_ACCESS_PROTOCOL_TELNET)
-        *pFlag = TRUE;
-    else                         /* TODO: enableTelnetSingleSession(2) */
-        *pFlag = FALSE;
-
-    return ANSC_STATUS_SUCCESS;
+    else
+        return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -1821,18 +1774,10 @@ CosaDmlDcGetSSHEnable
         BOOLEAN                     *pFlag
     )
 {
-    Uint32 access_type;
-
-    if (DocsisDb_GetCliAccessType(&access_type) == STATUS_NOK)
+    if (platform_hal_GetSSHEnable(pFlag) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
-
-    /* Return TRUE if saCmMtaCliAccessType == enableSshPermanent(3) */
-    if (access_type == CLI_ACCESS_PROTOCOL_SSH)
-        *pFlag = TRUE;
-    else                         /* TODO: enableSshSingleSession(4) */
-        *pFlag = FALSE;
-
-    return ANSC_STATUS_SUCCESS;
+    else
+        return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -1850,103 +1795,38 @@ ANSC_STATUS
 CosaDmlDcSetTelnetEnable
     (
         ANSC_HANDLE                 hContext,
-        BOOLEAN                     pFlag
+        BOOLEAN                     flag
     )
 {
-    BOOLEAN bTelnetEnable, bSSHEnable;
+    BOOLEAN bTelnetEnable;
 
     if (CosaDmlDcGetTelnetEnable(NULL, &bTelnetEnable) == ANSC_STATUS_FAILURE)
+        return ANSC_STATUS_FAILURE;
+
+    if (flag != bTelnetEnable) {
+        if (platform_hal_SetTelnetEnable(flag) == RETURN_ERR )
             return ANSC_STATUS_FAILURE;
-    if (CosaDmlDcGetSSHEnable(NULL, &bSSHEnable) == ANSC_STATUS_FAILURE)
-            return ANSC_STATUS_FAILURE;
-
-    if (pFlag == TRUE)
-    {
-        if (bTelnetEnable == FALSE)        /* Nothing to do if already enabled */
-        {
-            /* Set saCmMtaCliAccessType to enableTelnetPermanent(1) */
-            if (DocsisDb_SetCliAccessType(CLI_ACCESS_PROTOCOL_TELNET) == STATUS_NOK)
-                return ANSC_STATUS_FAILURE;
-        }
-
-        /* Only if WEBUI doesn't do this */
-        //if (bSSHEnable == TRUE)
-        //{
-        //    /* Disable SSH if enabled */
-        //    if (CosaDmlDcSetSSHEnable(NULL, FALSE) == ANSC_STATUS_FAILURE)
-        //        return ANSC_STATUS_FAILURE;
-        //}
     }
-    else    /* pFlag == FALSE */
-    {
-        if (bTelnetEnable == TRUE)        /* Nothing to do if already disabled */
-        {
-            /* Set saCmMtaCliAccessType to disable(0) */
-            if (DocsisDb_SetCliAccessType(CLI_ACCESS_DISABLED) == STATUS_NOK)
-                return ANSC_STATUS_FAILURE;
-        }
-
-        /* Only if WEBUI doesn't do this */
-        //if (bSSHEnable == TRUE)
-        //{
-        //    /* Disable SSH if enabled */
-        //    if (CosaDmlDcSetSSHEnable(NULL, FALSE) == ANSC_STATUS_FAILURE)
-        //        return ANSC_STATUS_FAILURE;
-        //}
-    }
-
     return ANSC_STATUS_SUCCESS;
+
 }
 
 ANSC_STATUS
 CosaDmlDcSetSSHEnable
     (
         ANSC_HANDLE                 hContext,
-        BOOLEAN                     pFlag
+        BOOLEAN                     flag
     )
 {
-    BOOLEAN bTelnetEnable, bSSHEnable;
+    BOOLEAN bSSHEnable;
 
-    if (CosaDmlDcGetTelnetEnable(NULL, &bTelnetEnable) == ANSC_STATUS_FAILURE)
-            return ANSC_STATUS_FAILURE;
     if (CosaDmlDcGetSSHEnable(NULL, &bSSHEnable) == ANSC_STATUS_FAILURE)
             return ANSC_STATUS_FAILURE;
 
-    if (pFlag == TRUE)
-    {
-        if (bSSHEnable == FALSE)        /* Nothing to do if already enabled */
-        {
-            /* Set saCmMtaCliAccessType to enableSshPermanent(3) */
-            if (DocsisDb_SetCliAccessType(CLI_ACCESS_PROTOCOL_SSH) == STATUS_NOK)
-                return ANSC_STATUS_FAILURE;
-        }
-
-        /* Only if WEBUI doesn't do this */
-        //if (bTelnetEnable == TRUE)
-        //{
-        //    /* Disable Telnet if enabled */
-        //    if (CosaDmlDcSetTelnetEnable(NULL, FALSE) == ANSC_STATUS_FAILURE)
-        //        return ANSC_STATUS_FAILURE;
-        //}
-    }
-    else    /* pFlag == FALSE */
-    {
-        if (bSSHEnable == TRUE)        /* Nothing to do if already disabled */
-        {
-            /* Set saCmMtaCliAccessType to disable(0) */
-            if (DocsisDb_SetCliAccessType(CLI_ACCESS_DISABLED) == STATUS_NOK)
-                return ANSC_STATUS_FAILURE;
-        }
-
-        /* Only if WEBUI doesn't do this */
-        //if (bTelnetEnable == TRUE)
-        //{
-        //    /* Disable Telnet if enabled */
-        //    if (CosaDmlDcSetTelnetEnable(NULL, FALSE) == ANSC_STATUS_FAILURE)
-        //        return ANSC_STATUS_FAILURE;
-        //}
-    }
-
+    if (flag != bSSHEnable) {
+        if (platform_hal_SetSSHEnable(flag) == RETURN_ERR )
+            return ANSC_STATUS_FAILURE;
+    }   
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1954,7 +1834,7 @@ ANSC_STATUS
 CosaDmlDcSetHNAPEnable
     (
         ANSC_HANDLE                 hContext,
-        BOOLEAN                     pFlag
+        BOOLEAN                     flag
     )
 {
     return ANSC_STATUS_SUCCESS;
@@ -2775,9 +2655,10 @@ CosaDmlDcGetWebUITimeout
     if (pValue == NULL)
         return ANSC_STATUS_FAILURE;
 
-    SaRemoteAccessDb_RetrieveAccess();
-    SaRemoteAccessDb_GetWANoActivityTimeout(pValue);
-    return ANSC_STATUS_SUCCESS;
+    if (platform_hal_GetWebUITimeout(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else
+        return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -2788,24 +2669,16 @@ CosaDmlDcGetPowerSavingModeStatus
     )
 {
 #if defined (CONFIG_TI_BBU) || defined (CONFIG_TI_BBU_TI)
-    int  powerState = 0;
-    Bool psmNvramFlag = FALSE;
 
-    if (pValue == NULL)
+#include "mta_hal.h"
+ 
+    if (mta_hal_BatteryGetPowerSavingModeStatus(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
+    else
+        return ANSC_STATUS_SUCCESS;
 
-    Bbu_GetUpsSecondsOnBattery(&powerState);
-    psmNvramFlag = PACM_MANAGER_GET_PARAM_VALUE(PACM_MANAGER_PSM_ENABLE);
-
-    AnscTrace("The UPS seconds on battery return:%d\n", powerState);
-    AnscTrace("The PACM manager psm enable value is:%d\n", psmNvramFlag);
-    if ( powerState &&  psmNvramFlag ) {
-        *pValue = 1; /* Enabled */
-    }
-    else{
-        *pValue = 2; /* Disabled */
-    }
 #endif
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2813,13 +2686,14 @@ ANSC_STATUS
 CosaDmlDcSetWebUITimeout
     (
         ANSC_HANDLE                 hContext,
-        ULONG                     value
+        ULONG                       value
     )
 {
     if ((value == 0) || (value >= 30 && value <= 86400)){
-        SaRemoteAccessDb_RetrieveAccess();
-        SaRemoteAccessDb_SetWANoActivityTimeout(value);
-        return ANSC_STATUS_SUCCESS;
+        if (platform_hal_SetWebUITimeout(value) != RETURN_OK )
+            return ANSC_STATUS_FAILURE;
+        else
+            return ANSC_STATUS_SUCCESS;    
     }else
         return ANSC_STATUS_FAILURE;
 }
@@ -2836,9 +2710,10 @@ CosaDmlDcGetWebAccessLevel
     if (pValue == NULL)
         return ANSC_STATUS_FAILURE;
 
-    SaRemoteAccessDb_RetrieveAccess();
-    SaRemoteAccessDb_GetWAUserIfLevel(userIndex, ifIndex, pValue);
-    return ANSC_STATUS_SUCCESS;
+    if (platform_hal_GetWebAccessLevel(userIndex, ifIndex, pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else
+        return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -2847,11 +2722,12 @@ CosaDmlDcSetWebAccessLevel
         ANSC_HANDLE                 hContext,
         int                         userIndex,
         int                         ifIndex,
-        ULONG                     value
+        ULONG                       value
     )
 {
-    SaRemoteAccessDb_RetrieveAccess();
-    SaRemoteAccessDb_SetWAUserIfLevel(userIndex, ifIndex, value);
-    return ANSC_STATUS_SUCCESS;
+    if (platform_hal_SetWebAccessLevel(userIndex, ifIndex, value) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else
+        return ANSC_STATUS_SUCCESS;
 }
 

@@ -85,7 +85,7 @@
 #include <ulog.h>
 #include <syscfg/syscfg.h>
 #include <utapi/utapi_tr_dhcp.h>
-#include "dhcp4cApi.h"
+#include "dhcpv4c_api.h"
 #include <syslog.h>
 #include "cosa_moca_apis.h"
 #include <ccsp_syslog.h>
@@ -1454,7 +1454,7 @@ CosaDmlDhcpcGetCfg
 	sprintf(pCfg->Alias,"eRouter");
 	pCfg->bEnabled = TRUE;
 	pCfg->InstanceNumber = 1;
-	if(dhcp4c_get_ert_ifname(ifname))
+	if(dhcpv4c_get_ert_ifname(ifname))
 		pCfg->Interface[0] = 0;
 	else
 		sprintf(pCfg->Interface,"%s", ifname);
@@ -1475,24 +1475,24 @@ CosaDmlDhcpcGetInfo
     ULONG                           index  = 0;
     ANSC_STATUS  rc;
 	int i;
-	ipv4AddrList_t ad;
+	dhcpv4c_ip_list_t ad;
     
     if ( (!pInfo) || (ulInstanceNumber != 1) ){
         return ANSC_STATUS_FAILURE;
     }
 
 	pInfo->Status = COSA_DML_DHCP_STATUS_Enabled;
-	dhcp4c_get_ert_fsm_state(&pInfo->DHCPStatus);
-	dhcp4c_get_ert_ip_addr(&pInfo->IPAddress.Value);
-	dhcp4c_get_ert_mask(&pInfo->SubnetMask.Value);
+	dhcpv4c_get_ert_fsm_state(&pInfo->DHCPStatus);
+	dhcpv4c_get_ert_ip_addr(&pInfo->IPAddress.Value);
+	dhcpv4c_get_ert_mask(&pInfo->SubnetMask.Value);
 	pInfo->NumIPRouters = 1;
-	dhcp4c_get_ert_gw(&pInfo->IPRouters[0].Value);
+	dhcpv4c_get_ert_gw(&pInfo->IPRouters[0].Value);
 	ad.number = 0;
-	dhcp4c_get_ert_dns_svrs(&ad);
+	dhcpv4c_get_ert_dns_svrs(&ad);
 	for(i=0; i<ad.number;i++)
-		pInfo->DNSServers[i].Value = ad.addrList[i];
-	dhcp4c_get_ert_remain_lease_time(&pInfo->LeaseTimeRemaining);
-	dhcp4c_get_ert_dhcp_svr(&pInfo->DHCPServer);
+		pInfo->DNSServers[i].Value = ad.addrs[i];
+	dhcpv4c_get_ert_remain_lease_time(&pInfo->LeaseTimeRemaining);
+	dhcpv4c_get_ert_dhcp_svr(&pInfo->DHCPServer);
    
     return ANSC_STATUS_SUCCESS;
 }

@@ -70,16 +70,16 @@
     #undef CONFIG_CISCO_HOTSPOT
 #endif
 
-#define  CONFIG_CISCO_FILE_TRANSFER                 1
+#define  CONFIG_CISCO_FILE_TRANSFER                 0
 #define  CONFIG_CISCO_TRUE_STATIC_IP                0
 
+#define  TR181_ParentalControlCreate()              CosaParentalControlCreate()
+#define  TR181_ParentalControlRemove(hContext)      CosaParentalControlRemove(hContext)
 /*
  *  no customer specific parental control code!
  *
-#define  TR181_ParentalControlCreate()              CosaParentalControlCreate()
-#define  TR181_ParentalControlRemove(hContext)      CosaParentalControlRemove(hContext)
- */
 #define  TR181_ParentalControlCreate()              NULL
 #define  TR181_ParentalControlRemove(hContext)
+ */
 
 #endif   /*_DML_TR181_CUSTOM_CFG_CUSTOM_H_*/

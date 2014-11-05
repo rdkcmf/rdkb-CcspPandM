@@ -191,6 +191,11 @@ GreIf_GetParamStringValue
         snprintf(pValue, *pUlSize, "%s", pGreIf->AssociatedBridges);
         return 0;
     }
+    if (AnscEqualString(ParamName, "AssociatedBridgesWiFiPort", TRUE))
+    {
+        snprintf(pValue, *pUlSize, "%s", pGreIf->AssociatedBridgesWiFiPort);
+        return 0;
+    }
     if (AnscEqualString(ParamName, "GRENetworkInterface", TRUE))
     {
         snprintf(pValue, *pUlSize, "%s", pGreIf->GRENetworkInterface);
@@ -359,6 +364,12 @@ GreIf_SetParamStringValue
         pGreIf->ChangeFlag |= GREIF_CF_ASSOBR;
         return TRUE;
     }
+    if (AnscEqualString(ParamName, "AssociatedBridgesWiFiPort", TRUE))
+    {
+        snprintf(pGreIf->AssociatedBridgesWiFiPort, sizeof(pGreIf->AssociatedBridgesWiFiPort), "%s", strValue);
+        pGreIf->ChangeFlag |= GREIF_CF_ASSOBRWFP;
+        return TRUE;
+    }
     if (AnscEqualString(ParamName, "GRENetworkInterface", TRUE))
     {
         snprintf(pGreIf->GRENetworkInterface, sizeof(pGreIf->GRENetworkInterface), "%s", strValue);
@@ -511,6 +522,11 @@ GreIf_Commit
         if (CosaDml_GreIfSetAssociatedBridges(ins, pGreIf->AssociatedBridges) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
+    if (pGreIf->ChangeFlag & GREIF_CF_ASSOBRWFP)
+    {
+        if (CosaDml_GreIfSetAssociatedBridgesWiFiPort(ins, pGreIf->AssociatedBridgesWiFiPort) != ANSC_STATUS_SUCCESS)
+            goto rollback;
+    }
     if (pGreIf->ChangeFlag & GREIF_CF_GREIF)
     {
         if (CosaDml_GreIfSetGREInterface(ins, pGreIf->GRENetworkInterface) != ANSC_STATUS_SUCCESS)
@@ -570,6 +586,8 @@ GreIf_Rollback
     if (CosaDml_GreIfGetDhcpRemoteId(ins, &pGreIf->DHCPRemoteID) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
     if (CosaDml_GreIfGetAssociatedBridges(ins, &pGreIf->AssociatedBridges, sizeof(pGreIf->AssociatedBridges)) != ANSC_STATUS_SUCCESS)
+        return ANSC_STATUS_FAILURE;
+    if (CosaDml_GreIfGetAssociatedBridgesWiFiPort(ins, &pGreIf->AssociatedBridgesWiFiPort, sizeof(pGreIf->AssociatedBridgesWiFiPort)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
     if (CosaDml_GreIfGetGREInterface(ins, &pGreIf->GRENetworkInterface, sizeof(pGreIf->GRENetworkInterface)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;

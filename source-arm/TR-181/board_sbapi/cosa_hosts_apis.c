@@ -59,6 +59,23 @@
 
 extern void* g_pDslhDmlAgent;
 
+#define NAME_DM_LEN  257
+
+typedef struct _Name_DM 
+{
+    char name[NAME_DM_LEN];
+    char dm[NAME_DM_LEN];
+}Name_DM_t;
+
+int g_IPIfNameDMListNum = 0;
+Name_DM_t *g_pIPIfNameDMList = NULL;
+
+int g_MoCAADListNum = 0;
+Name_DM_t *g_pMoCAADList = NULL;
+
+int g_DHCPv4ListNum = 0;
+Name_DM_t *g_pDHCPv4List = NULL;
+
 inline int _mac_string_to_array(char *pStr, unsigned char array[6])
 {
     int tmp[6],n,i;
@@ -252,10 +269,20 @@ CosaDmlHostsGetHosts
 #elif ( defined _COSA_INTEL_USG_ARM_ )
 #include <sys/socket.h>
 #include "lm_api.h"
+#include "ccsp_dm_api.h"
+
 /* BBU */
 #if defined (CONFIG_TI_BBU) || defined (CONFIG_TI_BBU_TI)
 #include "bbu_api.h"
 #include "bbu_interface.h"
+#endif
+
+#ifdef CONFIG_TI_PACM
+/* PACM */
+#include "pacm_config_utilities.h"
+#include "pacm_ctx.h"
+#include "pacm_manager_utilities.h"
+#include "pacm_msm_api.h"
 #endif
 
 LmObjectHosts lmHosts = {
@@ -488,38 +515,40 @@ Host_AddIPv4Address
         char * ipv4Address
     )
 {
-/* USGv2 only support one IPv4 address */
-    if(pHost->numIPv4Addr != 0){
-        if(AnscEqualString(pHost->ipv4AddrArray[0]->pStringParaValue[LM_HOST_IPv4Address_IPAddressId], ipv4Address, FALSE)){
-            return pHost->ipv4AddrArray[0];
+    /* check if the address has already exist. */
+    int i;
+    for(i=0; i<pHost->numIPv4Addr; i++){
+        /* If IP address already exists, return. */
+        if(AnscEqualString(pHost->ipv4AddrArray[i]->pStringParaValue[LM_HOST_IPv4Address_IPAddressId],ipv4Address, FALSE))
+            return pHost->ipv4AddrArray[i]; 
+    }
+
+    for(i=0; i<pHost->numIPv4Addr; i++){
+        /* If instance number is occuppied, assign a new instance number. It may not happen in DHCP mode. */
+        if(pHost->ipv4AddrArray[i]->instanceNum == instanceNum){
+            instanceNum = pHost->availableInstanceNumIPv4Address;
+            pHost->availableInstanceNumIPv4Address++;
         }
-        if (pHost->ipv4AddrArray[0]->pStringParaValue[LM_HOST_IPv4Address_IPAddressId])
-        {
-            LanManager_Free(pHost->ipv4AddrArray[0]->pStringParaValue[LM_HOST_IPv4Address_IPAddressId]);
-        }
-        
-        instanceNum = pHost->availableInstanceNumIPv4Address;
-        pHost->availableInstanceNumIPv4Address++;
-        AnscFreeMemory(pHost->ipv4AddrArray[0]);
-        AnscFreeMemory(pHost->ipv4AddrArray);
-        pHost->ipv4AddrArray = NULL;
-        pHost->numIPv4Addr = 0;
     }
 
     PLmObjectHostIPv4Address pIPv4Address = AnscAllocateMemory(sizeof(LmObjectHostIPv4Address));
-    if(pIPv4Address == NULL)
-        return NULL;
-    pHost->ipv4AddrArray = AnscAllocateMemory(sizeof(PLmObjectHostIPv4Address));
-    if(pHost->ipv4AddrArray == NULL){
-        AnscFreeMemory(pIPv4Address);
-        return NULL;
-    }
-
     pIPv4Address->instanceNum = instanceNum;
     pIPv4Address->pStringParaValue[LM_HOST_IPv4Address_IPAddressId] = _CloneString(ipv4Address);
+    if(pHost->availableInstanceNumIPv4Address <= pIPv4Address->instanceNum)
+        pHost->availableInstanceNumIPv4Address = pIPv4Address->instanceNum + 1;
 
-    pIPv4Address->id = 0;
-    pHost->ipv4AddrArray[0] = pIPv4Address;
+    if(pHost->numIPv4Addr >= pHost->sizeIPv4Addr){
+        pHost->sizeIPv4Addr += LM_HOST_ARRAY_STEP;
+        PLmObjectHostIPv4Address *newArray = AnscAllocateMemory(pHost->sizeIPv4Addr * sizeof(PLmObjectHostIPv4Address));
+        for(i=0; i<pHost->numIPv4Addr; i++){
+            newArray[i] = pHost->ipv4AddrArray[i];
+        }
+        PLmObjectHostIPv4Address *backupArray = pHost->ipv4AddrArray;
+        pHost->ipv4AddrArray = newArray;
+        if(backupArray) AnscFreeMemory(backupArray);
+    }
+    pIPv4Address->id = pHost->numIPv4Addr;
+    pHost->ipv4AddrArray[pIPv4Address->id] = pIPv4Address;
     pHost->numIPv4Addr++;
     return pIPv4Address;
 }
@@ -598,13 +627,13 @@ inline char* _get_addr_source(enum LM_ADDR_SOURCE source )
     }
 }
 
-inline void _get_host_ipaddress(LM_host_t *pDestHost, PLmObjectHost pHost)
+inline void _get_host_ipaddress(LM_host_t *pSrcHost, PLmObjectHost pHost)
 {
     int i;    
     LM_ip_addr_t *pIp;
     char str[100]; 
-    for(i = 0; i < pDestHost->ipv4AddrAmount ;i++){
-        pIp = &(pDestHost->ipv4AddrList[i]);
+    for(i = 0; i < pSrcHost->ipv4AddrAmount ;i++){
+        pIp = &(pSrcHost->ipv4AddrList[i]);
         inet_ntop(AF_INET, pIp->addr, str, sizeof(str));
         Host_AddIPv4Address(pHost, 1, str);
         if(i == 0){
@@ -623,24 +652,104 @@ inline void _get_host_ipaddress(LM_host_t *pDestHost, PLmObjectHost pHost)
                 pHost->bTrueStaticIPClient = TRUE;
             }
             STRSET_NULL_CHK(pHost->pStringParaValue[LM_HOST_AddressSource], _get_addr_source(pIp->addrSource));
+            if(pIp->addrSource == LM_ADDRESS_SOURCE_DHCP){
+                _get_dmbyname(g_DHCPv4ListNum, g_pDHCPv4List, &(pHost->pStringParaValue[LM_HOST_DHCPClientId]), pHost->pStringParaValue[LM_HOST_PhysAddressId]);
+            }else if(pHost->pStringParaValue[LM_HOST_DHCPClientId] != NULL){
+                LanManager_Free(pHost->pStringParaValue[LM_HOST_DHCPClientId]);
+                pHost->pStringParaValue[LM_HOST_DHCPClientId] = NULL;
+            }
+            pHost->LeaseTime = pIp->LeaseTime;
         }
     }
-    for(i = 0; i < pDestHost->ipv6AddrAmount ;i++){
-        pIp = &(pDestHost->ipv6AddrList[i]);
+    for(i = 0; i < pSrcHost->ipv6AddrAmount ;i++){
+        pIp = &(pSrcHost->ipv6AddrList[i]);
         inet_ntop(AF_INET6, pIp->addr, str, sizeof(str));
         Host_AddIPv6Address(pHost, 1, str);
+    }
+}
+void _init_DM_List(int *num, Name_DM_t **pList, char *path, char *name)
+{
+    int i;
+    char dm[200];
+    char (*dmnames)[CDM_PATH_SZ];
+    int nname = 0;
+    int dmlen;
+    
+    if(*pList != NULL){
+        AnscFreeMemory(*pList);
+        *pList = NULL;
+    }
+ 
+    if((CCSP_SUCCESS == Cdm_GetNames(path, 0, &dmnames, &nname)) && \
+            (nname > 0))
+    {
+        *pList = AnscAllocateMemory(sizeof(Name_DM_t) * nname);
+        if(NULL != *pList){
+            for(i = 0; i < nname; i++){
+                dmlen = strlen(dmnames[i]) -1;
+                snprintf((*pList)[i].dm ,NAME_DM_LEN -1, "%s%s", dmnames[i], name);
+                (*pList)[i].dm[NAME_DM_LEN-1] = '\0';
+                if(CCSP_SUCCESS == Cdm_GetParamString((*pList)[i].dm, (*pList)[i].name, NAME_DM_LEN)){
+                    (*pList)[i].dm[dmlen] = '\0';
+                }
+                else
+                    (*pList)[i].dm[0] = '\0';
+            }
+        }
+        Cdm_FreeNames(dmnames); 
+    }
+    *num = nname;
+}
+
+void _get_dmbyname(int num, Name_DM_t *list, char** dm, char* name)
+{
+    int i;
+
+    for(i = 0; i < num; i++){
+        printf("list name %s\n", list[i].name);
+        if(NULL != strcasestr(list[i].name, name)){
+            STRNCPY_NULL_CHK((*dm), list[i].dm);
+            break;
+        }
     }
 }
 
 inline void _get_host_info(LM_host_t *pDestHost, PLmObjectHost pHost)
 {
         pHost->bBoolParaValue[LM_HOST_ActiveId]= pDestHost->online;
+        
         STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_HostNameId], pDestHost->hostName);
-        STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Layer1InterfaceId], pDestHost->l1IfName);
-        STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Layer3InterfaceId], pDestHost->l3IfName);
+        strstr(pDestHost->l1IfName, "Ethernet.");
+        if(NULL != strstr(pDestHost->l1IfName, "Ethernet."))
+        {
+           int port;
+           sscanf(pDestHost->l1IfName,"Ethernet.%d", &port);
+           char tmpstr[100];
+           if(port != 0){
+                snprintf(tmpstr, sizeof(tmpstr), "Device.Ethernet.Interface.%d", port);
+                STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Layer1InterfaceId], tmpstr);
+                if(pHost->pStringParaValue[LM_HOST_AssociatedDeviceId] != NULL){
+                    AnscFreeMemory(pHost->pStringParaValue[LM_HOST_AssociatedDeviceId]);
+                    pHost->pStringParaValue[LM_HOST_AssociatedDeviceId] = NULL;
+                }
+           }
+        }else if(strstr(pDestHost->l1IfName, "MoCA") != NULL){
+            _get_dmbyname(g_MoCAADListNum, g_pMoCAADList, &(pHost->pStringParaValue[LM_HOST_AssociatedDeviceId]), pHost->pStringParaValue[LM_HOST_PhysAddressId]);
+            STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Layer1InterfaceId], pDestHost->l1IfName);
+        }else if(strstr(pDestHost->l1IfName, "WiFi") != NULL){
+            STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Layer1InterfaceId], pDestHost->l1IfName);
+            STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_AssociatedDeviceId], pDestHost->AssociatedDevice)
+        }else{
+            STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Layer1InterfaceId], pDestHost->l1IfName);
+            STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_AssociatedDeviceId], NULL);
+        }
+
+        _get_dmbyname(g_IPIfNameDMListNum, g_pIPIfNameDMList, &(pHost->pStringParaValue[LM_HOST_Layer3InterfaceId]), pDestHost->l3IfName);
         STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Comments], pDestHost->comments);
         pHost->iIntParaValue[LM_HOST_X_CISCO_COM_RSSIId] = pDestHost->RSSI;
+        pHost->activityChangeTime = pDestHost->activityChangeTime;
         _get_host_ipaddress(pDestHost, pHost);
+        
 }
 int _get_PSM()
 {
@@ -700,6 +809,8 @@ CosaDmlHostsInit
     return:     The pointer to the array of hosts, allocated by callee. If no entry is found, NULL is returned.
 
 **********************************************************************/
+/* This is a workaround, don't get host information when PandM bootup, dm api will crash because this time dm api has not been initialized yet */
+static int firstFlg = 0;
 ANSC_STATUS
 CosaDmlHostsGetHosts
     (
@@ -714,15 +825,20 @@ CosaDmlHostsGetHosts
     int i;
     int ret;
     BOOL                                      bridgeMode;
-    
+     
     Hosts_RmHosts();
-    
+    if(firstFlg == 0){
+        firstFlg = 1;
+        *pulCount = 0;
+        return ANSC_STATUS_SUCCESS;
+    }
+
     /* Lan Hosts should not show in bridge mode */  
     if(((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
         (TRUE == bridgeMode)) ||
         (_get_PSM()))
     {
-        Hosts_RmHosts();
+        //Hosts_RmHosts();
         *pulCount = 0;
         return ANSC_STATUS_SUCCESS;
     }
@@ -731,7 +847,10 @@ CosaDmlHostsGetHosts
 
     if(LM_RET_SUCCESS == lm_get_all_hosts(&hosts))
     {
-        *pulCount = hosts.count;     
+        *pulCount = hosts.count;
+        _init_DM_List(&g_IPIfNameDMListNum, &g_pIPIfNameDMList, "Device.IP.Interface.", "Name");
+        _init_DM_List(&g_MoCAADListNum, &g_pMoCAADList, "Device.MoCA.Interface.1.AssociatedDevice.", "MACAddress");
+        _init_DM_List(&g_DHCPv4ListNum, &g_pDHCPv4List, "Device.DHCPv4.Server.Pool.1.Client.", "Chaddr");
         for(i = 0; i < hosts.count; i++){
             plmHost = &(hosts.hosts[i]);
             /* filter unwelcome device */

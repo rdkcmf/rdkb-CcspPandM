@@ -121,6 +121,10 @@
 #define  DMSB_TR181_PSM_EthLink_PriorityTagging     "PriorityTagging"
 #define  DMSB_TR181_PSM_EthLink_l2net               "l2net"
 #define  DMSB_TR181_PSM_EthLink_l2netType           "l2netType"
+#define  DMSB_TR181_PSM_EthLink_l2net               "l2net"
+#define  DMSB_TR181_PSM_EthLink_l2netType           "l2netType"
+#define  DMSB_TR181_PSM_EthLink_LowerLayerType      "LowerLayerType"    /* Can be Layer 1 Interface */
+#define  DMSB_TR181_PSM_EthLink_LowerLayerInstNum   "LowerLayerInstanceNumber"
 /* Reference COSA_DML_LINK_TYPE_NAME_* for the names of l2net types */
 
 /**********************************************************************
@@ -144,9 +148,15 @@
 #define  DMSB_TR181_PSM_MultiLAN_HomeSecurity_l3net             "HomeSecurity_l3net"
 #define  DMSB_TR181_PSM_MultiLAN_PrimaryLan_l2net               "PrimaryLAN_l2net"
 #define  DMSB_TR181_PSM_MultiLAN_PrimaryLan_HsPorts             "PrimaryLAN_HsPorts"
+#define  DMSB_TR181_PSM_MultiLAN_PrimaryLANDHCPv4ServerPool     "PrimaryLAN_DHCPv4ServerPool"
+
 #define  DMSB_TR181_PSM_MultiLAN_HomeSecurity_l2net             "HomeSecurity_l2net"
 #define  DMSB_TR181_PSM_MultiLAN_HomeSecurity_HsPorts           "HomeSecurity_HsPorts"
 #define  DMSB_TR181_PSM_MultiLAN_HomeSecurity_DHCPv4ServerPool  "HomeSecurity_DHCPv4ServerPool"
+#define  DMSB_TR181_PSM_MultiLAN_HomeSecurity_WiFiRadio         "HomeSecurity_WiFiRadio"
+#define  DMSB_TR181_PSM_MultiLAN_HomeSecurity_WiFiSsid          "HomeSecurity_WiFiSsid"
+#define  DMSB_TR181_PSM_MultiLAN_HomeSecurity_WiFiAp            "HomeSecurity_WiFiAp"
+
 
 /********************************************************************
     Bridge and Bridge Port Definition

@@ -1242,11 +1242,49 @@ CosaDmlMocaIfGetAssocDevices
         AnscTraceWarning(("*pulCount: %lu\n", *pulCount));
 
         if(*pulCount) {
+			moca_associated_device_t **ppdevice_array;
+			int i;
             ulSize = (*pulCount) * sizeof(COSA_DML_MOCA_ASSOC_DEVICE);
                 
             *ppDeviceArray = (PCOSA_DML_MOCA_ASSOC_DEVICE)AnscAllocateMemory(ulSize);
+	
+			*ppdevice_array = (moca_associated_device_t *)AnscAllocateMemory((*pulCount) * sizeof(moca_associated_device_t));
+			
     
-            moca_GetAssociatedDevices(ppDeviceArray);
+            moca_GetAssociatedDevices(ulInterfaceIndex, ppdevice_array);
+
+			/* Translate the Data Structures */
+			if (NULL != ppdevice_array && NULL != ppDeviceArray)
+			{
+				for (i = 0; i < *pulCount; i++)
+				{
+					memcpy(ppDeviceArray[i]->MACAddress, 		  		  ppdevice_array[i]->MACAddress, 18);
+					ppDeviceArray[i]->NodeID 							= ppdevice_array[i]->NodeID;
+					ppDeviceArray[i]->PreferredNC 						= ppdevice_array[i]->PreferredNC;
+					memcpy(ppDeviceArray[i]->HighestVersion, 	  		  ppdevice_array[i]->HighestVersion, 64);
+					ppDeviceArray[i]->PHYTxRate 						= ppdevice_array[i]->PHYTxRate;
+					ppDeviceArray[i]->PHYRxRate 						= ppdevice_array[i]->PHYRxRate;
+					ppDeviceArray[i]->TxPowerControlReduction 			= ppdevice_array[i]->TxPowerControlReduction;
+					ppDeviceArray[i]->RxPowerLevel 						= ppdevice_array[i]->RxPowerLevel;
+					ppDeviceArray[i]->TxBcastRate 						= ppdevice_array[i]->TxBcastRate;
+					ppDeviceArray[i]->RxBcastPowerLevel					= ppdevice_array[i]->RxBcastPowerLevel;
+					ppDeviceArray[i]->TxPackets							= ppdevice_array[i]->TxPackets;
+					ppDeviceArray[i]->RxPackets							= ppdevice_array[i]->RxPackets;
+					ppDeviceArray[i]->RxErroredAndMissedPackets			= ppdevice_array[i]->RxErroredAndMissedPackets;
+					ppDeviceArray[i]->QAM256Capable						= ppdevice_array[i]->QAM256Capable;
+					ppDeviceArray[i]->PacketAggregationCapability 		= ppdevice_array[i]->PacketAggregationCapability;
+					ppDeviceArray[i]->RxSNR								= ppdevice_array[i]->RxSNR;
+					ppDeviceArray[i]->Active							= ppdevice_array[i]->Active;
+					ppDeviceArray[i]->X_CISCO_COM_RxBcastRate			= ppdevice_array[i]->RxBcastRate;
+					ppDeviceArray[i]->X_CISCO_COM_NumberOfClients		= ppdevice_array[i]->NumberOfClients;
+				}
+			}
+			else
+			{
+    			AnscTraceWarning(("CosaDmlMocaIfGetAssocDevices -- Memory Allocation Failure "
+									"ulInterfaceIndex:%lu, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
+				return ANSC_STATUS_FAILURE;
+			}
 
         } 
     }

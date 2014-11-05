@@ -241,6 +241,7 @@ CosaDmlNatGet
             The pointer to the info of DMZ.
 
 **********************************************************************/
+
 ANSC_STATUS
 CosaDmlNatSet
     (
@@ -248,6 +249,33 @@ CosaDmlNatSet
         PCOSA_DML_NAT               pDmlNat
     )
 {
+    if ( COSA_DML_NAT_CUSTOM_GET_ENABLEPORTMAPPING(pDmlNat) )
+    {
+        printf("X_Comcast_com_EnablePortMapping is enabled!\n");
+    }
+    else
+    {
+        printf("X_Comcast_com_EnablePortMapping is disabled!\n");
+    }
+
+    if ( COSA_DML_NAT_CUSTOM_GET_ENABLEHSPORTMAPPING(pDmlNat) )
+    {
+        printf("X_Comcast_com_EnableHSPortMapping is enabled!\n");
+    }
+    else
+    {
+        printf("X_Comcast_com_EnableHSPortMapping is disabled!\n");
+    }
+
+    if (COSA_DML_NAT_CUSTOM_GET_ENABLENATMAPPING(pDmlNat) )
+    {
+        printf("X_Comcast_com_EnableNATMapping is enabled!\n");
+    }
+    else
+    {
+        printf("X_Comcast_com_EnableNATMapping is disabled!\n");
+    }
+
     return ANSC_STATUS_SUCCESS;
 }
 

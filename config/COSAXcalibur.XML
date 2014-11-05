@@ -6700,10 +6700,10 @@
 
         <func_GetParamUlongValue>NAT_GetParamUlongValue</func_GetParamUlongValue>
 
-        <func_GetParamBoolValue>NAT_SetParamBoolValue</func_GetParamBoolValue>
-
         <func_GetParamStringValue>NAT_GetParamStringValue</func_GetParamStringValue>
         
+        <func_SetParamBoolValue>NAT_SetParamBoolValue</func_SetParamBoolValue>
+
         <func_SetParamUlongValue>NAT_SetParamUlongValue</func_SetParamUlongValue>
         
         <func_Validate>NAT_Validate</func_Validate>
@@ -6747,6 +6747,42 @@
           <type>unsignedInt</type>
 
           <syntax>uint32</syntax>
+          
+          <writable>true</writable>
+
+        </parameter>
+
+        <parameter>
+
+          <name>X_Comcast_com_EnablePortMapping</name>
+
+          <type>boolean</type>
+
+          <syntax>bool</syntax>
+          
+          <writable>true</writable>
+
+        </parameter>
+
+        <parameter>
+
+          <name>X_Comcast_com_EnableHSPortMapping</name>
+
+          <type>boolean</type>
+
+          <syntax>bool</syntax>
+          
+          <writable>true</writable>
+
+        </parameter>
+
+        <parameter>
+
+          <name>X_Comcast_com_EnableNATMapping</name>
+
+          <type>boolean</type>
+
+          <syntax>bool</syntax>
           
           <writable>true</writable>
 
@@ -7047,6 +7083,18 @@
 
           </parameter>
 		  
+          <parameter>
+
+            <name>X_Comcast_com_PublicIP</name>
+
+            <type>string</type>
+
+            <syntax>uint32/ip4_addr</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+
           <parameter>
 
             <name>Description</name>
@@ -12547,8 +12595,369 @@
       
     </object>
 
-
     <object>
+        <name>X_Comcast_com_ParentalControl</name>
+        <objectType>object</objectType>
+        <objects>
+            <object>
+                <name>ManagedSites</name>
+                <objectType>object</objectType>
+                <functions>
+                    <func_GetParamBoolValue>MngSites_GetParamBoolValue</func_GetParamBoolValue>
+                    <func_SetParamBoolValue>MngSites_SetParamBoolValue</func_SetParamBoolValue>
+                    <func_Validate>MngSites_Validate</func_Validate>
+                    <func_Commit>MngSites_Commit</func_Commit>
+                    <func_Rollback>MngSites_Rollback</func_Rollback>
+                </functions>
+                <parameters>
+                    <parameter>
+                        <name>Enable</name>
+                        <type>boolean</type>
+                        <syntax>bool</syntax>
+                        <writable>true</writable>
+                    </parameter>
+                </parameters>
+                <objects>
+                    <object>
+                        <name>BlockedSite</name>
+                        <objectType>writableTable</objectType>
+                        <maxInstance>128</maxInstance>
+                        <functions>
+                            <func_GetEntryCount>PcBlkURL_GetEntryCount</func_GetEntryCount>
+                            <func_GetEntry>PcBlkURL_GetEntry</func_GetEntry>
+                            <func_AddEntry>PcBlkURL_AddEntry</func_AddEntry>
+                            <func_DelEntry>PcBlkURL_DelEntry</func_DelEntry>
+                            <func_GetParamBoolValue>PcBlkURL_GetParamBoolValue</func_GetParamBoolValue>
+                            <func_GetParamStringValue>PcBlkURL_GetParamStringValue</func_GetParamStringValue>
+                            <func_GetParamUlongValue>PcBlkURL_GetParamUlongValue</func_GetParamUlongValue>
+                            <func_SetParamBoolValue>PcBlkURL_SetParamBoolValue</func_SetParamBoolValue>
+                            <func_SetParamStringValue>PcBlkURL_SetParamStringValue</func_SetParamStringValue>
+                            <func_SetParamUlongValue>PcBlkURL_SetParamUlongValue</func_SetParamUlongValue>
+                            <func_Validate>PcBlkURL_Validate</func_Validate>
+                            <func_Commit>PcBlkURL_Commit</func_Commit>
+                            <func_Rollback>PcBlkURL_Rollback</func_Rollback>
+                        </functions>
+                        <parameters>
+                            <parameter>
+                                <name>BlockMethod</name>
+                                <type>string: URL(1),Keyword(2)</type>
+                                <syntax>uint32/mapped</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>Site</name>
+                                <type>string(255)</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>AlwaysBlock</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>StartTime</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>EndTime</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>BlockDays</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                        </parameters>
+                    </object>
+
+                    <object>
+                        <name>TrustedUser</name>
+                        <objectType>writableTable</objectType>
+                        <maxInstance>128</maxInstance>
+                        <functions>
+                            <func_GetEntryCount>PcTrustedUser_GetEntryCount</func_GetEntryCount>
+                            <func_GetEntry>PcTrustedUser_GetEntry</func_GetEntry>
+                            <func_AddEntry>PcTrustedUser_AddEntry</func_AddEntry>
+                            <func_DelEntry>PcTrustedUser_DelEntry</func_DelEntry>
+                            <func_GetParamBoolValue>PcTrustedUser_GetParamBoolValue</func_GetParamBoolValue>
+                            <func_GetParamStringValue>PcTrustedUser_GetParamStringValue</func_GetParamStringValue>
+                            <func_GetParamUlongValue>PcTrustedUser_GetParamUlongValue</func_GetParamUlongValue>
+                            <func_SetParamBoolValue>PcTrustedUser_SetParamBoolValue</func_SetParamBoolValue>
+                            <func_SetParamStringValue>PcTrustedUser_SetParamStringValue</func_SetParamStringValue>
+                            <func_SetParamUlongValue>PcTrustedUser_SetParamUlongValue</func_SetParamUlongValue>
+                            <func_Validate>PcTrustedUser_Validate</func_Validate>
+                            <func_Commit>PcTrustedUser_Commit</func_Commit>
+                            <func_Rollback>PcTrustedUser_Rollback</func_Rollback>
+                        </functions>
+                        <parameters>
+                            <parameter>
+                                <name>HostDescription</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>IPAddressType</name>
+                                <type>string: IPv4(1),IPv6(2)</type>
+                                <syntax>uint32/mapped</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>IPAddress</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>Trusted</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                        </parameters>
+                    </object>
+
+                </objects>
+            </object>
+            <object>
+                <name>ManagedServices</name>
+                <objectType>object</objectType>
+                <functions>
+                    <func_GetParamBoolValue>MngServs_GetParamBoolValue</func_GetParamBoolValue>
+                    <func_SetParamBoolValue>MngServs_SetParamBoolValue</func_SetParamBoolValue>
+                    <func_Validate>MngServs_Validate</func_Validate>
+                    <func_Commit>MngServs_Commit</func_Commit>
+                    <func_Rollback>MngServs_Rollback</func_Rollback>
+                </functions>
+                <parameters>
+                    <parameter>
+                        <name>Enable</name>
+                        <type>boolean</type>
+                        <syntax>bool</syntax>
+                        <writable>true</writable>
+                    </parameter>
+                </parameters>
+                <objects>
+                    <object>
+                        <name>Service</name>
+                        <objectType>writableTable</objectType>
+                        <maxInstance>128</maxInstance>
+                        <functions>
+                            <func_GetEntryCount>MSServ_GetEntryCount</func_GetEntryCount>
+                            <func_GetEntry>MSServ_GetEntry</func_GetEntry>
+                            <func_AddEntry>MSServ_AddEntry</func_AddEntry>
+                            <func_DelEntry>MSServ_DelEntry</func_DelEntry>
+                            <func_GetParamBoolValue>MSServ_GetParamBoolValue</func_GetParamBoolValue>
+                            <func_GetParamStringValue>MSServ_GetParamStringValue</func_GetParamStringValue>
+                            <func_GetParamUlongValue>MSServ_GetParamUlongValue</func_GetParamUlongValue>
+                            <func_SetParamBoolValue>MSServ_SetParamBoolValue</func_SetParamBoolValue>
+                            <func_SetParamStringValue>MSServ_SetParamStringValue</func_SetParamStringValue>
+                            <func_SetParamUlongValue>MSServ_SetParamUlongValue</func_SetParamUlongValue>
+                            <func_Validate>MSServ_Validate</func_Validate>
+                            <func_Commit>MSServ_Commit</func_Commit>
+                            <func_Rollback>MSServ_Rollback</func_Rollback>
+                        </functions>
+                        <parameters>
+                            <parameter>
+                                <name>Description</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>Protocol</name>
+                                <type>string: TCP(1),UDP(2),BOTH(3)</type>
+                                <syntax>uint32/mapped</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>StartPort</name>
+                                <type>unsignedInt</type>
+                                <syntax>uint32</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>EndPort</name>
+                                <type>unsignedInt</type>
+                                <syntax>uint32</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>AlwaysBlock</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>StartTime</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>EndTime</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>BlockDays</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                        </parameters>
+                    </object>
+                    <object>
+                        <name>TrustedUser</name>
+                        <objectType>writableTable</objectType>
+                        <maxInstance>128</maxInstance>
+                        <functions>
+                            <func_GetEntryCount>MSTrustedUser_GetEntryCount</func_GetEntryCount>
+                            <func_GetEntry>MSTrustedUser_GetEntry</func_GetEntry>
+                            <func_AddEntry>MSTrustedUser_AddEntry</func_AddEntry>
+                            <func_DelEntry>MSTrustedUser_DelEntry</func_DelEntry>
+                            <func_GetParamBoolValue>MSTrustedUser_GetParamBoolValue</func_GetParamBoolValue>
+                            <func_GetParamStringValue>MSTrustedUser_GetParamStringValue</func_GetParamStringValue>
+                            <func_GetParamUlongValue>MSTrustedUser_GetParamUlongValue</func_GetParamUlongValue>
+                            <func_SetParamBoolValue>MSTrustedUser_SetParamBoolValue</func_SetParamBoolValue>
+                            <func_SetParamStringValue>MSTrustedUser_SetParamStringValue</func_SetParamStringValue>
+                            <func_SetParamUlongValue>MSTrustedUser_SetParamUlongValue</func_SetParamUlongValue>
+                            <func_Validate>MSTrustedUser_Validate</func_Validate>
+                            <func_Commit>MSTrustedUser_Commit</func_Commit>
+                            <func_Rollback>MSTrustedUser_Rollback</func_Rollback>
+                        </functions>
+                        <parameters>
+                            <parameter>
+                                <name>HostDescription</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>IPAddressType</name>
+                                <type>string: IPv4(1),IPv6(2)</type>
+                                <syntax>uint32/mapped</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>IPAddress</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>Trusted</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                        </parameters>
+                    </object>
+                </objects>
+            </object>
+            <object>
+                <name>ManagedDevices</name>
+                <objectType>object</objectType>
+                <functions>
+                    <func_GetParamBoolValue>MngDevs_GetParamBoolValue</func_GetParamBoolValue>
+                    <func_SetParamBoolValue>MngDevs_SetParamBoolValue</func_SetParamBoolValue>
+                    <func_Validate>MngDevs_Validate</func_Validate>
+                    <func_Commit>MngDevs_Commit</func_Commit>
+                    <func_Rollback>MngDevs_Rollback</func_Rollback>
+                </functions>
+                <parameters>
+                    <parameter>
+                        <name>Enable</name>
+                        <type>boolean</type>
+                        <syntax>bool</syntax>
+                        <writable>true</writable>
+                    </parameter>
+                    <parameter>
+                        <name>AllowAll</name>
+                        <type>boolean</type>
+                        <syntax>bool</syntax>
+                        <writable>true</writable>
+                    </parameter>
+                </parameters>
+                <objects>
+                    <object>
+                        <name>Device</name>
+                        <objectType>writableTable</objectType>
+                        <maxInstance>128</maxInstance>
+                        <functions>
+                            <func_GetEntryCount>MDDev_GetEntryCount</func_GetEntryCount>
+                            <func_GetEntry>MDDev_GetEntry</func_GetEntry>
+                            <func_AddEntry>MDDev_AddEntry</func_AddEntry>
+                            <func_DelEntry>MDDev_DelEntry</func_DelEntry>
+                            <func_GetParamBoolValue>MDDev_GetParamBoolValue</func_GetParamBoolValue>
+                            <func_GetParamStringValue>MDDev_GetParamStringValue</func_GetParamStringValue>
+                            <func_GetParamUlongValue>MDDev_GetParamUlongValue</func_GetParamUlongValue>
+                            <func_SetParamBoolValue>MDDev_SetParamBoolValue</func_SetParamBoolValue>
+                            <func_SetParamStringValue>MDDev_SetParamStringValue</func_SetParamStringValue>
+                            <func_SetParamUlongValue>MDDev_SetParamUlongValue</func_SetParamUlongValue>
+                            <func_Validate>MDDev_Validate</func_Validate>
+                            <func_Commit>MDDev_Commit</func_Commit>
+                            <func_Rollback>MDDev_Rollback</func_Rollback>
+                        </functions>
+                        <parameters>
+                            <parameter>
+                                <name>Type</name>
+                                <type>string: Block(1),Allow(2)</type>
+                                <syntax>uint32/mapped</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>Description</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>MACAddress</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>AlwaysBlock</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>StartTime</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>EndTime</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>BlockDays</name>
+                                <type>string</type>
+                                <syntax>string</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                        </parameters>
+                    </object>
+                </objects>
+            </object>
+        </objects>
+    </object>
+    
+     <object>
         <name>X_CISCO_COM_MultiLAN</name>        
         <objectType>object</objectType>
 
@@ -12598,6 +13007,31 @@
             <type>string</type>
             <syntax>string</syntax>
           </parameter>
+
+          <parameter>            
+            <name>PrimaryLANDHCPv4ServerPool</name>
+            <type>string</type>
+            <syntax>string</syntax>
+          </parameter>
+
+          <parameter>            
+            <name>HomeSecurityWiFiRadio</name>
+            <type>string</type>
+            <syntax>string</syntax>
+          </parameter>
+
+          <parameter>            
+            <name>HomeSecurityWiFiSsid</name>
+            <type>string</type>
+            <syntax>string</syntax>
+          </parameter>
+
+          <parameter>            
+            <name>HomeSecurityWiFiAp</name>
+            <type>string</type>
+            <syntax>string</syntax>
+          </parameter>
+
         </parameters>
     </object>      
   </objects>

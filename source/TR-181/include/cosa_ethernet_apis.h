@@ -129,6 +129,7 @@ typedef  struct
 _COSA_DML_ETH_PORT_DINFO
 {
     COSA_DML_IF_STATUS              Status;
+    ULONG                           CurrentBitRate;
     ULONG                           LastChange;
     ULONG                           AssocDevicesCount;
     UCHAR                           AssocDevices[(MAC_SZ*ETH_INTERFACE_MAX_ASSOC_DEVICES)];

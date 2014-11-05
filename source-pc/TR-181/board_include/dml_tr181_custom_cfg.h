@@ -65,6 +65,8 @@
 #ifndef  _DML_TR181_CUSTOM_CFG_H_
 #define  _DML_TR181_CUSTOM_CFG_H_
 
+#include "dml_tr181_custom_cfg_custom.h"            /* include customer specific configurations */
+
 #define  CONFIG_SYSTEM_MOCA                         1
 
 /*#define  CONFIG_CISCO_FILE_TRANSFER                 1*/
@@ -96,8 +98,5 @@
 #define  TR181_Mlan_Sysevent_Resync(IfIndex)
 
 #define  CFG_TR181_ETH_BORROW_MAC                   0
-
-#define  TR181_ParentalControlCreate()              NULL
-#define  TR181_ParentalControlRemove(hContext)
 
 #endif   /*_DML_TR181_CUSTOM_CFG_H_*/

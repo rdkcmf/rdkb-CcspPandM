@@ -70,7 +70,7 @@
                 STRUCTURE AND CONSTANT DEFINITIONS
 **********************************************************************/
 
-#define SYSCFG_XHS_ETH4_FLAG			"XHSEthernet4Flag"
+#define SYSCFG_HOMESECURITY_ETH4_FLAG			"HomeSecurityEthernet4Flag"
 
 typedef  enum
 _COSA_DML_BRG_STATUS
