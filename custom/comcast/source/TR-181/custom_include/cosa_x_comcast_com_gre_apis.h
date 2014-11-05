@@ -77,7 +77,8 @@ _COSA_DML_GRE_IF_CHANGE_FLAG
     GREIF_CF_DHCPCIRID      = 0x01<<15,
     GREIF_CF_DHCPRMID       = 0x01<<16,
     GREIF_CF_ASSOBR         = 0x01<<17,
-    GREIF_CF_GREIF          = 0x01<<18,
+    GREIF_CF_ASSOBRWFP      = 0x01<<18,
+    GREIF_CF_GREIF          = 0x01<<19,
 }
 COSA_DML_GRE_IF_CHANGE_FLAG;
 
@@ -110,6 +111,7 @@ _COSA_DML_GRE_IF
     BOOL                        DHCPRemoteID;
 
     char                        AssociatedBridges[256];
+    char                        AssociatedBridgesWiFiPort[256];
     char                        GRENetworkInterface[256];
 
     COSA_DML_GRE_IF_STATS       IfStats;
@@ -247,6 +249,12 @@ CosaDml_GreIfGetAssociatedBridges(ULONG ins, char *brs, ULONG size);
 
 ANSC_STATUS
 CosaDml_GreIfSetAssociatedBridges(ULONG ins, const char *brs);
+
+ANSC_STATUS
+CosaDml_GreIfGetAssociatedBridgesWiFiPort(ULONG ins, char *brswfp, ULONG size);
+
+ANSC_STATUS
+CosaDml_GreIfSetAssociatedBridgesWiFiPort(ULONG ins, const char *brswfp);
 
 ANSC_STATUS
 CosaDml_GreIfGetGREInterface(ULONG ins, char *greif, ULONG size);

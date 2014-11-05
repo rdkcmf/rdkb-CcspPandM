@@ -29,23 +29,13 @@ PNM_BUILD_Xcalibur=0
 
 include $(SDK_PATH)/.config
 
-#
-# Disable those features that are not ready
-#
-ifeq ($(CONFIG_CISCO_HOTSPOT), y)
-    $(warning "Hotspot is for M4, disable it in ARM build for M3!")
-	CONFIG_CISCO_HOTSPOT:=n
-endif
-
-ifneq ($(wildcard $(SDK_PATH)/ti/include), )
-INCPATH += $(SDK_PATH)/ti/netdk/src/ti_udhcp
-endif
-
 LDFLAGS += -L$(SDK_PATH)/ti/netdk/src/uipc
-LDFLAGS += -L$(SDK_PATH)/ti/netdk/src/ti_udhcp
 LDFLAGS += -L$(SDK_PATH)/ti/netdk/src/ti_dhcpv6
-LDFLAGS += $(ldflags-y) -luipc -lpthread -ldhcp4cApi -ldhcp6cApi -lswctl -llmapi
+LDFLAGS += $(ldflags-y) -luipc -lpthread -lapi_dhcpv4c -llmapi
 
+LDFLAGS += -lhal_ethsw
+LDFLAGS += -lhal_platform
+LDFLAGS += -lhal_mta
 LDFLAGS += -lcurl -lm
 LDFLAGS += -lticc -lti_sme -lsme
 
@@ -62,7 +52,7 @@ endif
 # MOCA
 ifeq ($(CONFIG_SYSTEM_MOCA), y)
     MOCA_LDFLAGS += -lmoca_mgnt
-    MOCA_LDFLAGS += -lmoca_api
+    #MOCA_LDFLAGS += -lmoca_api
     CFLAGS += -DCONFIG_SYSTEM_MOCA
     LDFLAGS += $(MOCA_LDFLAGS)
 endif

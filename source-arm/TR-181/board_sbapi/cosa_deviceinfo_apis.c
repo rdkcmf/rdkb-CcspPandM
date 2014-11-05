@@ -99,7 +99,9 @@
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>
-#include <sa_hwinfo_db.h>
+
+#include "platform_hal.h"
+        
 #define _ERROR_ "NOT SUPPORTED"
 
 extern void* g_pDslhDmlAgent;
@@ -129,20 +131,10 @@ CosaDmlDiInit
         PANSC_HANDLE                phContext
     )
 {
-    SaHardwareInfoDb_RetrieveAccess(); 	
-    SaPermanentDb_RetrieveAccess();
-    ProductionDb_RetrieveAccess();
-
-#if defined(COSA_DEVICEINFO_UseSnAsProvisioningCode)
-    /* init ProvisioningCode to SerialNumber. RTian 10/18/2013 */
-    {
-        char buf[32] = {0};
-        ProdDb_GetSerialNumber(buf);
-        CosaDmlDiSetProvisioningCode(NULL, buf);
-    }
-#endif
-
-    return ANSC_STATUS_SUCCESS;
+    if ( platform_hal_PandMDBInit() != RETURN_OK)
+        return ANSC_STATUS_FAILURE;
+    else
+        return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -214,13 +206,16 @@ CosaDmlDiGetModelName
     )
 {    
 #ifdef _COSA_INTEL_USG_ARM_
-     char *ptemp = NULL;
-     ptemp = utils_getHwModel();
-     AnscCopyString(pValue, ptemp);
-     *pulSize = AnscSizeOfString(pValue);
-     return ANSC_STATUS_SUCCESS;
+
+    if ( platform_hal_GetModelName(pValue) != RETURN_OK)
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue); 
+        return ANSC_STATUS_SUCCESS;
+    }
 
 #elif _COSA_DRG_TPG_
+
     UCHAR model[128];
     char temp[2];
 
@@ -295,7 +290,9 @@ CosaDmlDiGetSerialNumber
     plat_GetFlashValue("unitsn", unitsn);
     sprintf(pValue, "%c%c%c%c%c%c%c",unitsn[0],unitsn[1],unitsn[2],unitsn[3],unitsn[4],unitsn[5],unitsn[6]);
 #elif _COSA_INTEL_USG_ARM_
-    ProdDb_GetSerialNumber(pValue);
+
+    if (platform_hal_GetSerialNumber(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
 #endif
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
@@ -312,15 +309,12 @@ CosaDmlDiGetHardwareVersion
 
 #ifdef _COSA_INTEL_USG_ARM_    
 
-   unsigned short  revision = 0;
-   unsigned short  patch    = 0;
-
-   
-   ProdDb_GetPbHwRevision(&revision);
-   ProdDb_GetPbHwPatch(&patch);
-   sprintf(pValue, "%d.%d", revision, patch);
-   *pulSize = AnscSizeOfString(pValue);
-   return ANSC_STATUS_SUCCESS;
+    if (platform_hal_GetHardwareVersion(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue);
+        return ANSC_STATUS_SUCCESS;
+    }
 
 #elif _COSA_DRG_TPG_
 //Replace this with syscfg if we are pulling this from Cable modem later on 
@@ -341,9 +335,12 @@ CosaDmlDiGetSoftwareVersion
         ULONG*                      pulSize
     )
 {
-    utils_getSwVersion(pValue, *pulSize);  
-    *pulSize = AnscSizeOfString(pValue);
-    return ANSC_STATUS_SUCCESS;     
+    if (platform_hal_GetSoftwareVersion(pValue, *pulSize) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue);
+        return ANSC_STATUS_SUCCESS;
+    }     
 }
 
 ANSC_STATUS
@@ -466,8 +463,12 @@ CosaDmlDiGetBootloaderVersion
         PULONG                      pulSize
     )
 {
-    utils_getUbootVersion(pValue, *pulSize);
-    return ANSC_STATUS_SUCCESS;
+    if (platform_hal_GetBootloaderVersion(pValue, *pulSize) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue);
+        return ANSC_STATUS_SUCCESS;
+    }
 }
 
 ANSC_STATUS
@@ -478,45 +479,17 @@ CosaDmlDiGetFirmwareName
         PULONG                      pulSize
     )
 {
-    char swVersion[128] = {0};
-
     if (!pValue || !pulSize || *pulSize <= 64)
         return ANSC_STATUS_FAILURE;
 
     memset(pValue, 0, *pulSize);
 
-    if (NvramDb_GetSectorFileName(0, pValue) != 0)
-        CcspTraceWarning(("%s: NvramDb_GetSectorFileName error\n", __FUNCTION__));
-
-    if (strlen(pValue) == 0 || strcasecmp(pValue, "default.img") == 0)
-    {
-        CcspTraceWarning(("%s: wrong name: %s, build with SW version\n", __FUNCTION__, pValue));
-
-        if (utils_getSwVersion(pValue, *pulSize - strlen(".p7b") - 1) != 0) {
-            CcspTraceError((stderr, "%s: utils_getSwVersion error\n", __FUNCTION__));
-            return ANSC_STATUS_FAILURE;
-        }
-
-        AnscCatString(pValue, ".p7b");
-        NvramDb_SetSectorFileName(0, pValue);
+    if (platform_hal_GetFirmwareName(pValue, *pulSize) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue);
+        return ANSC_STATUS_SUCCESS;
     }
-    else
-    {
-        if (utils_getSwVersion(swVersion, 128 - 1) != 0) {
-            CcspTraceError((stderr, "%s: utils_getSwVersion error\n", __FUNCTION__));
-            return ANSC_STATUS_FAILURE;
-        }
-
-        AnscCatString(swVersion, ".p7b");
-
-        if ( strcasecmp(pValue, swVersion) != 0 )
-        {
-            AnscCopyString(pValue, swVersion);
-            NvramDb_SetSectorFileName(0, pValue);
-        }
-    }
-
-    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -558,9 +531,12 @@ CosaDmlDiGetBaseMacAddress
         PULONG                      pulSize
     )
 {
-    s_get_interface_mac("wan0", pValue, 18);
-    *pulSize = AnscSizeOfString(pValue);
-    return ANSC_STATUS_SUCCESS;
+    if ( platform_hal_GetBaseMacAddress(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue);
+        return ANSC_STATUS_SUCCESS;
+    }
 }
 
 ANSC_STATUS
@@ -571,15 +547,12 @@ CosaDmlDiGetHardware
         PULONG                      pulSize
     )
 {
-    #define MAXINTSTRSIZE 6 
-    int flash;
-    char strFlash[MAXINTSTRSIZE];
-    memset(strFlash, 0, MAXINTSTRSIZE);
-    SaHardwareInfoDb_GetMemoryFlash(&flash);
-    _ansc_itoa(flash,strFlash,10);
-    AnscCopyString(pValue, strFlash);
-    *pulSize = AnscSizeOfString(pValue); 
-    return ANSC_STATUS_SUCCESS;
+    if ( platform_hal_GetHardware(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue); 
+        return ANSC_STATUS_SUCCESS;
+    }
 }
 
 ANSC_STATUS
@@ -958,12 +931,13 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
         }
         return 0;
 #endif
-        // SaHardwareInfoDb_GetMemoryMain() gets Total Atom+Arm size in mega-bytes -> 512
-        if(STATUS_OK == SaHardwareInfoDb_GetMemoryMain(&tmp)){
-            return tmp*1024;  // in kilo-bytes
-        }else{
-            return 0; 
-        }
+
+    if ( platform_hal_GetTotalMemorySize(&tmp) != RETURN_OK )
+        return 0;
+    else
+        return tmp;
+        /* return  512*1024; */
+
 #else
         return si.totalram*si.mem_unit/(1024);
 #endif

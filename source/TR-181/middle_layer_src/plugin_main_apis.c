@@ -280,7 +280,7 @@ CosaBackEndManagerInitialize
 #endif
     */
     pMyObject->hParentalControl = (ANSC_HANDLE)TR181_ParentalControlCreate();
-    AnscTraceWarning(("  CosaParentalControlCreate done!\n"));
+    AnscTraceWarning(("  CosaParentalControlCreate done - hParentalControl = 0x%X!\n", pMyObject->hParentalControl));
     pMyObject->hRLog          = (ANSC_HANDLE)CosaRLogCreate();
     AnscTraceWarning(("  CosaRLogCreate done!\n"));
 

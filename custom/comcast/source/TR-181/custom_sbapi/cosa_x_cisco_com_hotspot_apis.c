@@ -21,7 +21,7 @@
 #include "plugin_main_apis.h"
 
 #include "cosa_x_cisco_com_hotspot_apis.h"
-#include "gw_control/src/hotspot/src/snooperd/dhcpsnooper.h"
+#include "dhcpsnooper.h"
 
 #define FIRST_SSID_INS  5
 

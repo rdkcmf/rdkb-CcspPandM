@@ -53,7 +53,7 @@
         01/14/2011    initial revision.
 
 **************************************************************************/
-
+#include <time.h>
 #include "ansc_platform.h"
 #include "cosa_hosts_dml.h"
 #include "plugin_main_apis.h"
@@ -637,6 +637,19 @@ Host_GetParamIntValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "LeaseTimeRemaining", TRUE))
+    {
+        time_t currentTime = time(NULL);
+        if(pHost->LeaseTime == 0xffffffff){
+            *pInt = -1;
+        }else if(currentTime <  pHost->LeaseTime){
+            *pInt = pHost->LeaseTime - currentTime;
+        }else{
+            *pInt = 0;
+        }
+        return TRUE;
+    }
+
     /* AnscTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -683,11 +696,14 @@ Host_GetParamUlongValue
     PLmObjectHost pHost = (PLmObjectHost) hInsContext;
     int i = 0;
     for(; i<LM_HOST_NumUlongPara; i++){
-        if( AnscEqualString(ParamName, COSA_HOSTS_Extension1_Name, TRUE))
+        if( AnscEqualString(ParamName, "X_COMCAST-COM_LastChange", TRUE))
         {
-            
-            *puLong = (ULONG) pHost->activityChangeTime;
-
+            time_t currentTime = time(NULL);
+            if(currentTime > pHost->activityChangeTime){
+                *puLong = currentTime - pHost->activityChangeTime;
+            }else{
+                *puLong = 0;
+            }
             return TRUE;
         }
         else if( AnscEqualString(ParamName, lmHosts.pHostUlongParaName[i], TRUE))

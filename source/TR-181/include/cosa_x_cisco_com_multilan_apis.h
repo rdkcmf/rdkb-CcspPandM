@@ -119,6 +119,14 @@ CosaDmlMlanGetPrimaryLanBridgeHsPorts
     );
 
 ANSC_STATUS
+CosaDmlMlanGetPrimaryLanDhcpv4ServerPool
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pValueSize
+    );
+
+ANSC_STATUS
 CosaDmlMlanGetHomeSecurityBridge
     (
         ANSC_HANDLE                 hContext,
@@ -136,6 +144,30 @@ CosaDmlMlanGetHomeSecurityBridgePorts
 
 ANSC_STATUS
 CosaDmlMlanGetHomeSecurityDhcpv4ServerPool
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pValueSize
+    );
+
+ANSC_STATUS
+CosaDmlMlanGetHomeSecurityWiFiRadio
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pValueSize
+    );
+
+ANSC_STATUS
+CosaDmlMlanGetHomeSecurityWiFiSsid
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pValueSize
+    );
+
+ANSC_STATUS
+CosaDmlMlanGetHomeSecurityWiFiAp
     (
         ANSC_HANDLE                 hContext,
         char*                       pValue,

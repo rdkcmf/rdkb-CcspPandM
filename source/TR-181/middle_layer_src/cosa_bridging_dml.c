@@ -2186,7 +2186,7 @@ Port_SetParamBoolValue
             if( GET_CURRENT_WRITE_ENTITY() == DSLH_MPA_ACCESS_CONTROL_WEBUI
                 || GET_CURRENT_WRITE_ENTITY() == DSLH_MPA_ACCESS_CONTROL_SNMP ) 
             {
-                syscfg_set(NULL, SYSCFG_XHS_ETH4_FLAG, bValue == TRUE ? "1" : "0");
+                syscfg_set(NULL, SYSCFG_HOMESECURITY_ETH4_FLAG, bValue == TRUE ? "1" : "0");
 	            syscfg_commit();
 			}
         }

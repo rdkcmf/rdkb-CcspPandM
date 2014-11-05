@@ -173,6 +173,10 @@ X_CISCO_COM_MultiLAN_GetParamStringValue
     {
         returnStatus = CosaDmlMlanGetPrimaryLanBridgeHsPorts((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
+    else if( AnscEqualString(ParamName, "PrimaryLANDHCPv4ServerPool", TRUE) )
+    {
+        returnStatus = CosaDmlMlanGetPrimaryLanDhcpv4ServerPool((ANSC_HANDLE)pMyObject, pValue, pUlSize);
+    }
     else if( AnscEqualString(ParamName, "HomeSecurityBridge", TRUE) )
     {
         returnStatus = CosaDmlMlanGetHomeSecurityBridge((ANSC_HANDLE)pMyObject, pValue, pUlSize);
@@ -184,6 +188,18 @@ X_CISCO_COM_MultiLAN_GetParamStringValue
     else if( AnscEqualString(ParamName, "HomeSecurityDHCPv4ServerPool", TRUE) )
     {
         returnStatus = CosaDmlMlanGetHomeSecurityDhcpv4ServerPool((ANSC_HANDLE)pMyObject, pValue, pUlSize);
+    }
+    else if( AnscEqualString(ParamName, "HomeSecurityWiFiRadio", TRUE) )
+    {
+        returnStatus = CosaDmlMlanGetHomeSecurityWiFiRadio((ANSC_HANDLE)pMyObject, pValue, pUlSize);
+    }
+    else if( AnscEqualString(ParamName, "HomeSecurityWiFiSsid", TRUE) )
+    {
+        returnStatus = CosaDmlMlanGetHomeSecurityWiFiSsid((ANSC_HANDLE)pMyObject, pValue, pUlSize);
+    }
+    else if( AnscEqualString(ParamName, "HomeSecurityWiFiAp", TRUE) )
+    {
+        returnStatus = CosaDmlMlanGetHomeSecurityWiFiAp((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
     else
     {

@@ -112,8 +112,9 @@ int _getMac(char* ifName, char* mac);
 **************************************************************************/
 
 #ifdef _COSA_INTEL_USG_ARM_
+
 #include "syscfg/syscfg.h"
-#include "libswctl.h"
+#include "ccsp_hal_ethsw.h" 
 
 int puma6_getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg);
 int puma6_setSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg); 
@@ -151,10 +152,10 @@ EthIntControlFuncs swFuncs = {
 };
 
 int g_PortIDs[]={
-    SWCTL_PORT1,
-    SWCTL_PORT2,
-    SWCTL_PORT3,
-    SWCTL_PORT4
+    CCSP_HAL_ETHSW_EthPort1,
+    CCSP_HAL_ETHSW_EthPort2,
+    CCSP_HAL_ETHSW_EthPort3,
+    CCSP_HAL_ETHSW_EthPort4
 };
 
 CosaEthInterfaceInfo g_EthEntries[] = 
@@ -964,50 +965,107 @@ int getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDinfo){
 #endif
 
 #ifdef _COSA_INTEL_USG_ARM_
-int puma6_getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg){
-    eSwCtl_port port = *((eSwCtl_port*)eth->hwid);
-    eSwCtl_return_code status;
-    eSwCtl_operSetting setting;
+int puma6_getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg)
+{
+    CCSP_HAL_ETHSW_PORT         port        = *((PCCSP_HAL_ETHSW_PORT)eth->hwid);
+    INT                         status;
+    CCSP_HAL_ETHSW_ADMIN_STATUS AdminStatus;
+    CCSP_HAL_ETHSW_LINK_RATE    LinkRate;
+    CCSP_HAL_ETHSW_DUPLEX_MODE  DuplexMode;
 
-    /* Port always enabled at USGv2 */
+    /* By default, port is enabled */
     pcfg->bEnabled = TRUE;
 
-    status = swctl_getEthernetOperSetting(port, &setting);
-    if(status == SWCTL_OK ){
-        switch (setting){
+    status = CcspHalEthSwGetPortAdminStatus(port, &AdminStatus);
+
+    if ( status == RETURN_OK )
+    {
+        switch ( AdminStatus )
+        {
+            case CCSP_HAL_ETHSW_AdminUp:
+            {
+                pcfg->bEnabled = TRUE;
+                break;
+            }
+            case CCSP_HAL_ETHSW_AdminDown:
+            {
+                pcfg->bEnabled = FALSE;
+                break;
+            }
             default:
-            case SWCTL_LINK_DOWN:  
-            case SWCTL_LINK_NO_CONNECT:
+            {
+                pcfg->bEnabled = TRUE;
+                break;
+            }
+        }        
+    }
+
+    status = CcspHalEthSwGetPortCfg(port, &LinkRate, &DuplexMode);
+
+    if ( status == RETURN_OK )
+    {
+        switch ( LinkRate )
+        {
+            case CCSP_HAL_ETHSW_LINK_10Mbps:
+            {
+                pcfg->MaxBitRate = 10;
+                break;
+            }
+            case CCSP_HAL_ETHSW_LINK_100Mbps:
+            {
+                pcfg->MaxBitRate = 100;
+                break;
+            }
+            case CCSP_HAL_ETHSW_LINK_1Gbps:
+            {
+                pcfg->MaxBitRate = 1000;
+                break;
+            }
+            case CCSP_HAL_ETHSW_LINK_10Gbps:
+            {
+                pcfg->MaxBitRate = 10000;
+                break;
+            }
+            case CCSP_HAL_ETHSW_LINK_Auto:
+            {
+                pcfg->MaxBitRate = -1;
+                break;
+            }
+            default:
+            {
                 pcfg->MaxBitRate = 0;
+                break;
+            }
+        }
+
+        switch ( DuplexMode )
+        {
+            case CCSP_HAL_ETHSW_DUPLEX_Auto:
+            {
                 pcfg->DuplexMode = COSA_DML_ETH_DUPLEX_Auto; 
                 break;
-            case SWCTL_LINK_HD_10:
-                pcfg->MaxBitRate = 10;
+            }
+            case CCSP_HAL_ETHSW_DUPLEX_Half:
+            {
                 pcfg->DuplexMode = COSA_DML_ETH_DUPLEX_Half; 
-                break; 
-            case SWCTL_LINK_FD_10:
-                pcfg->MaxBitRate = 10;
+                break;
+            }
+            case CCSP_HAL_ETHSW_DUPLEX_Full:
+            {
                 pcfg->DuplexMode = COSA_DML_ETH_DUPLEX_Full; 
-                break; 
-            case SWCTL_LINK_HD_100:
-                pcfg->MaxBitRate = 100;
-                pcfg->DuplexMode = COSA_DML_ETH_DUPLEX_Half; 
-                break; 
-            case SWCTL_LINK_FD_100:
-                pcfg->MaxBitRate = 100;
-                pcfg->DuplexMode = COSA_DML_ETH_DUPLEX_Full; 
-                break; 
-            case SWCTL_LINK_HD_1000:  
-                pcfg->MaxBitRate = 1000;
-                pcfg->DuplexMode = COSA_DML_ETH_DUPLEX_Half; 
-                break; 
-            case SWCTL_LINK_FD_1000: 
-                pcfg->MaxBitRate = 1000;
-                pcfg->DuplexMode = COSA_DML_ETH_DUPLEX_Full; 
-                break; 
+                break;
+            }
+            default:
+            {
+                pcfg->DuplexMode = COSA_DML_ETH_DUPLEX_Auto; 
+                break;
+            }
         }
-    }else
+    }
+    else
+    {
         return ANSC_STATUS_FAILURE;
+    }
 
     return ANSC_STATUS_SUCCESS; 
      
@@ -1016,23 +1074,81 @@ int puma6_setSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg) {
     return ANSC_STATUS_SUCCESS; 
 }
 int puma6_getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDinfo){
-    eSwCtl_port port = *((eSwCtl_port*)eth->hwid);
-    eSwCtl_return_code status;
-    eSwCtl_operSetting setting;
+    CCSP_HAL_ETHSW_PORT         port        = *((PCCSP_HAL_ETHSW_PORT)eth->hwid);
+    INT                         status;
+    CCSP_HAL_ETHSW_LINK_RATE    LinkRate;
+    CCSP_HAL_ETHSW_DUPLEX_MODE  DuplexMode;
+    CCSP_HAL_ETHSW_LINK_STATUS  LinkStatus;
 
-    status = swctl_getEthernetOperSetting(port, &setting);
-    if(status == SWCTL_OK ){
-        switch (setting){
-            case SWCTL_LINK_DOWN: 
-            case SWCTL_LINK_NO_CONNECT:
-                pDinfo->Status = COSA_DML_IF_STATUS_Down;
-                break;
-            default:
+    pDinfo->Status         = COSA_DML_IF_STATUS_Down;
+    pDinfo->CurrentBitRate = 0;
+
+    status = CcspHalEthSwGetPortStatus(port, &LinkRate, &DuplexMode, &LinkStatus);
+
+    if ( status == RETURN_OK )
+    {
+        switch ( LinkStatus )
+        {
+            case CCSP_HAL_ETHSW_LINK_Up:
+            {
                 pDinfo->Status = COSA_DML_IF_STATUS_Up;
                 break;
+            }
+            case CCSP_HAL_ETHSW_LINK_Down:
+            {
+                pDinfo->Status = COSA_DML_IF_STATUS_Down;
+                break;
+            }
+            case CCSP_HAL_ETHSW_LINK_Disconnected:
+            {
+                pDinfo->Status = COSA_DML_IF_STATUS_Down;
+                break;
+            }
+            default:
+            {
+                pDinfo->Status = COSA_DML_IF_STATUS_Down;
+                break;
+            }
         }
-    }else
+
+        switch ( LinkRate )
+        {
+            case CCSP_HAL_ETHSW_LINK_10Mbps:
+            {
+                pDinfo->CurrentBitRate = 10;
+                break;
+            }
+            case CCSP_HAL_ETHSW_LINK_100Mbps:
+            {
+                pDinfo->CurrentBitRate = 100;
+                break;
+            }
+            case CCSP_HAL_ETHSW_LINK_1Gbps:
+            {
+                pDinfo->CurrentBitRate = 1000;
+                break;
+            }
+            case CCSP_HAL_ETHSW_LINK_10Gbps:
+            {
+                pDinfo->CurrentBitRate = 10000;
+                break;
+            }
+            case CCSP_HAL_ETHSW_LINK_Auto:
+            {
+                pDinfo->CurrentBitRate = -1;
+                break;
+            }
+            default:
+            {
+                pDinfo->CurrentBitRate = 0;
+                break;
+            }
+        }
+    }
+    else
+    {
         return ANSC_STATUS_FAILURE; 
+    }
 
     return ANSC_STATUS_SUCCESS; 
 }

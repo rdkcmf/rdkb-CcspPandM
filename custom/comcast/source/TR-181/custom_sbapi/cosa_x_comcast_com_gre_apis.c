@@ -60,8 +60,8 @@
 #include "ansc_platform.h"
 #include "plugin_main_apis.h"
 
-#include "gw_control/src/hotspot/src/hotspotfd/hotspotfd.h"
-#include "gw_control/src/hotspot/src/snooperd/dhcpsnooper.h"
+#include "hotspotfd.h"
+#include "dhcpsnooper.h"
 
 #define GRETEST
 
@@ -86,9 +86,6 @@
 
 #define MAX_GRE_PSM_REC         127
 
-#define GRE_DM_IF               "Device.X_CISCO_COM_GRE.Interface.1."
-
-#define GRE_DEF_ASSOBR          "Device.Bridging.Bridge.3.,Device.Bridging.Bridge.5."
 #define GRE_DM_BR_TEMP          "Device.Bridging.Bridge.%d."
 
 #define GRE_OBJ_GREIF           "dmsb.hotspot.gre."
@@ -111,6 +108,7 @@
 #define GRE_PARAM_DHCPCIRSSID   GRE_OBJ_GREIF "%d.DHCP.CircuitIDSSID"
 #define GRE_PARAM_DHCPRMID      GRE_OBJ_GREIF "%d.DHCP.RemoteID"
 #define GRE_PARAM_ASSOBRS       GRE_OBJ_GREIF "%d.AssociatedBridges"
+#define GRE_PARAM_ASSOBRSWFP    GRE_OBJ_GREIF "%d.AssociatedBridgesWiFiPort"
 #define GRE_PARAM_GREIF         GRE_OBJ_GREIF "%d.GRENetworkInterface"
 
 static int sysevent_fd;
@@ -212,9 +210,30 @@ static char *GetAssoBridge(ULONG ins)
         return NULL;
 
     if (GrePsmGetStr(GRE_PARAM_ASSOBRS, ins, assoBrs, 1024) != 0)
-        snprintf(assoBrs, 1024, "%s", GRE_DEF_ASSOBR);
+    {
+        AnscTraceError(("Fail to get AssociatedBridges from Psm.\n"));
+        free( assoBrs );
+        assoBrs = NULL;
+    }
 
     return assoBrs;
+}
+
+static char *GetAssoBridgeWiFiPort(ULONG ins)
+{
+    char *assoBrsWfp = NULL;
+
+    if ((assoBrsWfp = malloc(1024)) == NULL)
+        return NULL;
+
+    if (GrePsmGetStr(GRE_PARAM_ASSOBRSWFP, ins, assoBrsWfp, 1024) != 0)
+    {
+        AnscTraceError(("Fail to get AssociatedBridgesWiFiPort from Psm.\n"));
+        free( assoBrsWfp );
+        assoBrsWfp = NULL;
+    }
+
+    return assoBrsWfp;
 }
 
 int hotspot_update_circuit_ids(int greinst, int queuestart) {
@@ -417,6 +436,8 @@ CosaDml_GreIfGetEntryByIndex(ULONG idx, COSA_DML_GRE_IF *greIf)
         return ANSC_STATUS_FAILURE;
     if (GrePsmGetStr(GRE_PARAM_ASSOBRS, ins, greIf->AssociatedBridges, sizeof(greIf->AssociatedBridges)) != 0)
         return ANSC_STATUS_FAILURE;
+    if (GrePsmGetStr(GRE_PARAM_ASSOBRSWFP, ins, greIf->AssociatedBridgesWiFiPort, sizeof(greIf->AssociatedBridgesWiFiPort)) != 0)
+        return ANSC_STATUS_FAILURE;
     if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greIf->GRENetworkInterface, sizeof(greIf->GRENetworkInterface)) != 0)
         return ANSC_STATUS_FAILURE;
 
@@ -448,11 +469,17 @@ ANSC_STATUS
 CosaDml_GreIfSetEnable(ULONG ins, BOOL enable)
 {
     char psmRec[MAX_GRE_PSM_REC + 1];
+    char greNetworkInterface[256];
+    char tmpPath[256];
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
-    if (g_SetParamValueBool(GRE_DM_IF "Enable", enable) != ANSC_STATUS_SUCCESS)
+    if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
+        return ANSC_STATUS_FAILURE;
+    snprintf(tmpPath, sizeof(tmpPath), "%sEnable", greNetworkInterface);
+
+    if (g_SetParamValueBool(tmpPath, enable) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
     /* save to PSM */
@@ -468,11 +495,17 @@ CosaDml_GreIfGetStatus(ULONG ins, COSA_DML_GRE_STATUS *st)
 {
     char status[64];
     ULONG size = sizeof(status);
+    char greNetworkInterface[256];
+    char tmpPath[256];
 
     if (ins != 1 || !st)
         return ANSC_STATUS_FAILURE;
 
-    if (g_GetParamValueString(g_pDslhDmlAgent, GRE_DM_IF "Status", status, &size) != 0)
+    if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
+        return ANSC_STATUS_FAILURE;
+    snprintf(tmpPath, sizeof(tmpPath), "%sStatus", greNetworkInterface);
+
+    if (g_GetParamValueString(g_pDslhDmlAgent, tmpPath, status, &size) != 0)
         return ANSC_STATUS_FAILURE;
 
     if (strcmp(status, "Up") == 0)
@@ -490,10 +523,17 @@ CosaDml_GreIfGetStatus(ULONG ins, COSA_DML_GRE_STATUS *st)
 ANSC_STATUS
 CosaDml_GreIfGetLastchange(ULONG ins, ULONG *time)
 {
+    char greNetworkInterface[256];
+    char tmpPath[256];
+
     if (ins != 1 || !time)
         return ANSC_STATUS_FAILURE;
 
-    *time = g_GetParamValueUlong(g_pDslhDmlAgent, GRE_DM_IF "LastChange");
+    if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
+        return ANSC_STATUS_FAILURE;
+    snprintf(tmpPath, sizeof(tmpPath), "%sLastChange", greNetworkInterface);
+
+    *time = g_GetParamValueUlong(g_pDslhDmlAgent, tmpPath);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -576,21 +616,19 @@ CosaDml_GreIfGetLocalInterfaces(ULONG ins, char *ifs, ULONG size)
     return ANSC_STATUS_SUCCESS;
 }
 
-#define LIF_PORT            "Port.2."
-
 ANSC_STATUS
 CosaDml_GreIfSetLocalInterfaces(ULONG ins, const char *ifs)
 {
     char psmRec[MAX_GRE_PSM_REC + 1], dm[1024];
-    char *cp, *if1, *if2, *br1, *br2;
-    char *ifsBuf, *brsBuf;
+    char *cp, *if1, *if2, *br1, *br2, *brwfp1, *brwfp2;
+    char *ifsBuf, *brsBuf, *brswfpBuf;
     int brIns, brInsStr[3];
 
     if (ins != 1 || !ifs)
         return ANSC_STATUS_FAILURE;
 
-    if1 = if2 = br1 = br2 = NULL;
-    ifsBuf = brsBuf = NULL;
+    if1 = if2 = br1 = br2 = brwfp1 = brwfp2 = NULL;
+    ifsBuf = brsBuf = brswfpBuf = NULL;
 
     /*
      * when we got more then one local interfaces, we have to "models":
@@ -610,6 +648,11 @@ CosaDml_GreIfSetLocalInterfaces(ULONG ins, const char *ifs)
         free(ifsBuf);
         return ANSC_STATUS_FAILURE;
     }
+    if ((brswfpBuf = GetAssoBridgeWiFiPort(ins)) == NULL) {
+        free(ifsBuf);
+        free(brsBuf);
+        return ANSC_STATUS_FAILURE;
+    }
 
     if1 = ifsBuf;
     if ((cp = strchr(ifsBuf, ',')) != NULL) {
@@ -627,8 +670,16 @@ CosaDml_GreIfSetLocalInterfaces(ULONG ins, const char *ifs)
             *cp++ = '\0';
     }
 
-    AnscTraceDebug(("if1 %s, br1 %s\n", if1 ? if1 : "n/a", br1 ? br1 : "n/a"));
-    AnscTraceDebug(("if2 %s, br2 %s\n", if2 ? if2 : "n/a", br2 ? br2 : "n/a"));
+    brwfp1 = brswfpBuf;
+    if ((cp = strchr(brswfpBuf, ',')) != NULL) {
+        *cp++ = '\0';
+        brwfp2 = cp;
+        if ((cp = strchr(cp, ',')) != NULL)
+            *cp++ = '\0';
+    }
+
+    AnscTraceDebug(("if1 %s, br1 %s brwfp1 %s\n", if1 ? if1 : "n/a", br1 ? br1 : "n/a", brwfp1 ? brwfp1 : "n/a"));
+    AnscTraceDebug(("if2 %s, br2 %s brwfp2 %s\n", if2 ? if2 : "n/a", br2 ? br2 : "n/a", brwfp2 ? brwfp2 : "n/a"));
 
     /* XXX: MultiLAN DM do not use "." for object path */
     if (if1 && strlen(if1) && if1[strlen(if1) - 1] == '.')
@@ -639,7 +690,7 @@ CosaDml_GreIfSetLocalInterfaces(ULONG ins, const char *ifs)
     if (br1 && strlen(br1)) {
         if (!if1 || !strlen(if1))
             if1 = "";
-        snprintf(dm, sizeof(dm), "%s%sLowerLayers", br1, LIF_PORT);
+        snprintf(dm, sizeof(dm), "%sLowerLayers", brwfp1);
         AnscTraceDebug(("set %s to %s\n", dm, if1));
         if (g_SetParamValueString(dm, if1) != ANSC_STATUS_SUCCESS)
             AnscTraceError(("Fail to set %s to %s\n", dm, if1));
@@ -654,7 +705,7 @@ CosaDml_GreIfSetLocalInterfaces(ULONG ins, const char *ifs)
     if (br2 && strlen(br2)) {
         if (!if2 || !strlen(if2))
             if2 = "";
-        snprintf(dm, sizeof(dm), "%s%sLowerLayers", br2, LIF_PORT);
+        snprintf(dm, sizeof(dm), "%sLowerLayers", brwfp2);
         AnscTraceDebug(("set %s to %s\n", dm, if2));
         if (g_SetParamValueString(dm, if2) != ANSC_STATUS_SUCCESS)
             AnscTraceError(("Fail to set %s to %s\n", dm, if2));
@@ -671,11 +722,13 @@ CosaDml_GreIfSetLocalInterfaces(ULONG ins, const char *ifs)
     if (GrePsmSet(psmRec, ifs) != 0) {
         free(ifsBuf);
         free(brsBuf);
+        free(brswfpBuf);
         return ANSC_STATUS_FAILURE;
     }
 
     free(ifsBuf);
     free(brsBuf);
+    free(brswfpBuf);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -732,10 +785,17 @@ CosaDml_GreIfSetEndpoints(ULONG ins, const char *eps)
 ANSC_STATUS
 CosaDml_GreIfGetConnEndpoint(ULONG ins, char *ep, ULONG size)
 {
+    char greNetworkInterface[256];
+    char tmpPath[256];
+
     if (ins != 1 || !ep)
         return ANSC_STATUS_FAILURE;
 
-    if (g_GetParamValueString(g_pDslhDmlAgent, GRE_DM_IF "RemoteEndpoint", ep, &size) != 0)
+    if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
+        return ANSC_STATUS_FAILURE;
+    snprintf(tmpPath, sizeof(tmpPath), "%sRemoteEndpoint", greNetworkInterface);
+
+    if (g_GetParamValueString(g_pDslhDmlAgent, tmpPath, ep, &size) != 0)
         return ANSC_STATUS_FAILURE;
 
     return ANSC_STATUS_SUCCESS;
@@ -758,6 +818,8 @@ CosaDml_GreIfSetKeyGenPolicy(ULONG ins, COSA_DML_KEY_ID_GEN_POLICY policy)
 {
     char psmRec[MAX_GRE_PSM_REC + 1], psmVal[64];
     char *mode;
+    char greNetworkInterface[256];
+    char tmpPath[256];
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
@@ -775,7 +837,12 @@ CosaDml_GreIfSetKeyGenPolicy(ULONG ins, COSA_DML_KEY_ID_GEN_POLICY policy)
     default:
         return ANSC_STATUS_FAILURE;
     }
-    if (g_SetParamValueString(GRE_DM_IF "KeyMode", mode) != ANSC_STATUS_SUCCESS)
+
+    if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
+        return ANSC_STATUS_FAILURE;
+    snprintf(tmpPath, sizeof(tmpPath), "%sKeyMode", greNetworkInterface);
+
+    if (g_SetParamValueString(tmpPath, mode) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
     /* save to PSM */
@@ -804,11 +871,17 @@ ANSC_STATUS
 CosaDml_GreIfSetKeyId(ULONG ins, const char *keyId)
 {
     char psmRec[MAX_GRE_PSM_REC + 1];
+    char greNetworkInterface[256];
+    char tmpPath[256];
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
-    if (g_SetParamValueString(GRE_DM_IF "Key", (char *)keyId) != 0)
+    if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
+        return ANSC_STATUS_FAILURE;
+    snprintf(tmpPath, sizeof(tmpPath), "%sKey", greNetworkInterface);
+
+    if (g_SetParamValueString(tmpPath, (char *)keyId) != 0)
         return ANSC_STATUS_FAILURE;
 
     /* save to PSM */
@@ -835,11 +908,17 @@ ANSC_STATUS
 CosaDml_GreIfSetUseSeqNum(ULONG ins, BOOL enable)
 {
     char psmRec[MAX_GRE_PSM_REC + 1];
+    char greNetworkInterface[256];
+    char tmpPath[256];
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
-    if (g_SetParamValueBool(GRE_DM_IF "SequenceNumberEnabled", enable) != ANSC_STATUS_SUCCESS)
+    if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
+        return ANSC_STATUS_FAILURE;
+    snprintf(tmpPath, sizeof(tmpPath), "%sSequenceNumberEnabled", greNetworkInterface);
+
+    if (g_SetParamValueBool(tmpPath, enable) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
     /* save to PSM */
@@ -866,11 +945,17 @@ ANSC_STATUS
 CosaDml_GreIfSetUseChecksum(ULONG ins, BOOL enable)
 {
     char psmRec[MAX_GRE_PSM_REC + 1];
+    char greNetworkInterface[256];
+    char tmpPath[256];
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
-    if (g_SetParamValueBool(GRE_DM_IF "ChecksumEnabled", enable) != ANSC_STATUS_SUCCESS)
+    if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
+        return ANSC_STATUS_FAILURE;
+    snprintf(tmpPath, sizeof(tmpPath), "%sChecksumEnabled", greNetworkInterface);
+
+    if (g_SetParamValueBool(tmpPath, enable) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
     /* save to PSM */
@@ -898,23 +983,31 @@ CosaDml_GreIfSetDSCPMarkPolicy(ULONG ins, INT dscp)
 {
     char psmRec[MAX_GRE_PSM_REC + 1];
     char psmVal[16];
+    char greNetworkInterface[256];
+    char tmpPath[256];
+    char tmp2Path[256];
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
+    if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
+        return ANSC_STATUS_FAILURE;
+    snprintf(tmpPath, sizeof(tmpPath), "%sTOSMode", greNetworkInterface);
+    snprintf(tmp2Path, sizeof(tmp2Path), "%sTOS", greNetworkInterface);
+
     if (dscp >= 0) {
-        if (g_SetParamValueString(GRE_DM_IF "TOSMode", "Static") != ANSC_STATUS_SUCCESS
-                || g_SetParamValueUlong(GRE_DM_IF "TOS", dscp << 2) != ANSC_STATUS_SUCCESS) {
+        if (g_SetParamValueString(tmpPath, "Static") != ANSC_STATUS_SUCCESS
+                || g_SetParamValueUlong(tmp2Path, dscp << 2) != ANSC_STATUS_SUCCESS) {
             AnscTraceError(("Fail to set Cisco GRE DM\n"));
             return ANSC_STATUS_FAILURE;
         }
     } else if (dscp == -1) {
-        if (g_SetParamValueString(GRE_DM_IF "TOSMode", "Inherited") != ANSC_STATUS_SUCCESS) {
+        if (g_SetParamValueString(tmpPath, "Inherited") != ANSC_STATUS_SUCCESS) {
             AnscTraceError(("Fail to set Cisco GRE DM\n"));
             return ANSC_STATUS_FAILURE;
         }
     } else if (dscp == -2) {
-        if (g_SetParamValueString(GRE_DM_IF "TOSMode", "AutoMapped") != ANSC_STATUS_SUCCESS) {
+        if (g_SetParamValueString(tmpPath, "AutoMapped") != ANSC_STATUS_SUCCESS) {
             AnscTraceError(("Fail to set Cisco GRE DM\n"));
             return ANSC_STATUS_FAILURE;
         }
@@ -1348,12 +1441,44 @@ CosaDml_GreIfSetAssociatedBridges(ULONG ins, const char *brs)
 }
 
 ANSC_STATUS
+CosaDml_GreIfGetAssociatedBridgesWiFiPort(ULONG ins, char *brswfp, ULONG size)
+{
+    if (ins != 1 || !brswfp)
+        return ANSC_STATUS_FAILURE;
+
+    if (GrePsmGetStr(GRE_PARAM_ASSOBRSWFP, ins, brswfp, size) != 0)
+        return ANSC_STATUS_FAILURE;
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDml_GreIfSetAssociatedBridgesWiFiPort(ULONG ins, const char *brswfp)
+{
+    char psmRec[MAX_GRE_PSM_REC + 1];
+
+    if (ins != 1 || !brswfp)
+        return ANSC_STATUS_FAILURE;
+
+    snprintf(psmRec, sizeof(psmRec), GRE_PARAM_ASSOBRSWFP, ins);
+    if (GrePsmSet(psmRec, brswfp) != 0)
+        return ANSC_STATUS_FAILURE;
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
 CosaDml_GreIfGetGREInterface(ULONG ins, char *greif, ULONG size)
 {
+    char greNetworkInterface[256];
+
     if (ins != 1 || !greif)
         return ANSC_STATUS_FAILURE;
 
-    snprintf(greif, size, "%s", GRE_DM_IF);
+    if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
+        return ANSC_STATUS_FAILURE;
+
+    snprintf(greif, size, "%s", greNetworkInterface);
     return ANSC_STATUS_SUCCESS;
 }
 

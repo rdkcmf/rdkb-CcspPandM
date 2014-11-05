@@ -292,7 +292,7 @@ typedef struct USG_IF_CFG
 
 USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
 {
-    {"erouter0",    COSA_DML_LINK_TYPE_Eth,     TRUE},
+    {"erouter0",    COSA_DML_LINK_TYPE_EthLink, TRUE},
     {"wan0",        COSA_DML_LINK_TYPE_DOCSIS,  TRUE},  /*DH  wan0 should never appear here -- CM extensions are for DOCSIS interfaces */
     {"lo",          COSA_DML_LINK_TYPE_EthLink, FALSE}, /*DH  change the value of gDmsbIpIfLoopbackInstNum too, if "lo" is moved to a different location */
     /*

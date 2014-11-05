@@ -62,6 +62,10 @@
 #define  DM_TR181_NAME_BRIDGE                       "Device.Bridging.Bridge."
 #define  DM_TR181_NAME_DHCPv4ServerPool             "Device.DHCPv4.Server.Pool."
 
+#define  DM_TR181_NAME_WiFi_Radio                   "Device.WiFi.Radio."
+#define  DM_TR181_NAME_WiFi_SSID                    "Device.WiFi.SSID."
+#define  DM_TR181_NAME_WiFi_AP                      "Device.WiFi.AccessPoint."
+
 /**************************************************************************
                         STRUCURE DEFINITIONS
 **************************************************************************/
@@ -76,9 +80,13 @@
     char*                           pHomeSecurityIpIf;                              \
     char*                           pPrimaryLanBridge;                              \
     char*                           pPrimaryLanBridgeHsPorts;                       \
+    char*                           pPrimaryLanDhcpv4ServerPool;                    \
     char*                           pHomeSecurityBridge;                            \
     char*                           pHomeSecurityBridgePorts;                       \
     char*                           pHomeSecurityDHCPv4ServerPool;                  \
+    char*                           pHomeSecurityWiFiRadio;                         \
+    char*                           pHomeSecurityWiFiSsid;                          \
+    char*                           pHomeSecurityWiFiAp;                            \
 
 typedef  struct
 _COSA_DATAMODEL_MULTILAN
@@ -93,9 +101,13 @@ COSA_DATAMODEL_MULTILAN,  *PCOSA_DATAMODEL_MULTILAN;
                 p->pHomeSecurityIpIf                = NULL;                         \
                 p->pPrimaryLanBridge                = NULL;                         \
                 p->pPrimaryLanBridgeHsPorts         = NULL;                         \
+                p->pPrimaryLanDhcpv4ServerPool      = NULL;                         \
                 p->pHomeSecurityBridge              = NULL;                         \
                 p->pHomeSecurityBridgePorts         = NULL;                         \
                 p->pHomeSecurityDHCPv4ServerPool    = NULL;                         \
+                p->pHomeSecurityWiFiRadio           = NULL;                         \
+                p->pHomeSecurityWiFiSsid            = NULL;                         \
+                p->pHomeSecurityWiFiAp              = NULL;                         \
             }
 
 #define  COSA_DATAMODEL_MULTILAN_Clean(p)                                                                   \
@@ -104,9 +116,13 @@ COSA_DATAMODEL_MULTILAN,  *PCOSA_DATAMODEL_MULTILAN;
                 if ( p->pHomeSecurityIpIf ) AnscFreeMemory(p->pHomeSecurityIpIf);                           \
                 if ( p->pPrimaryLanBridge ) AnscFreeMemory(p->pPrimaryLanBridge);                           \
                 if ( p->pPrimaryLanBridgeHsPorts ) AnscFreeMemory(p->pPrimaryLanBridgeHsPorts);             \
+                if ( p->pPrimaryLanDhcpv4ServerPool ) AnscFreeMemory(p->pPrimaryLanDhcpv4ServerPool);       \
                 if ( p->pHomeSecurityBridge ) AnscFreeMemory(p->pHomeSecurityBridge);                       \
                 if ( p->pHomeSecurityBridgePorts ) AnscFreeMemory(p->pHomeSecurityBridgePorts);             \
                 if ( p->pHomeSecurityDHCPv4ServerPool ) AnscFreeMemory(p->pHomeSecurityDHCPv4ServerPool);   \
+                if ( p->pHomeSecurityWiFiRadio ) AnscFreeMemory(p->pHomeSecurityWiFiRadio);                 \
+                if ( p->pHomeSecurityWiFiSsid ) AnscFreeMemory(p->pHomeSecurityWiFiSsid);                   \
+                if ( p->pHomeSecurityWiFiAp ) AnscFreeMemory(p->pHomeSecurityWiFiAp);                       \
                                                                                                             \
                 AnscFreeMemory(p);                                                                          \
             }

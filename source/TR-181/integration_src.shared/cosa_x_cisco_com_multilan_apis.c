@@ -447,6 +447,87 @@ CosaDmlMlanGetPrimaryLanBridgeHsPorts
 
 
 ANSC_STATUS
+CosaDmlMlanGetPrimaryLanDhcpv4ServerPool
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pValueSize
+    )
+{
+    PCOSA_DATAMODEL_MULTILAN        pContext        = (PCOSA_DATAMODEL_MULTILAN)hContext;
+    int                             iReturnValue    = CCSP_SUCCESS;
+    unsigned int                    RecordType      = 0;
+    SLAP_VARIABLE                   SlapValue       = {0};
+    unsigned int                    uValue          = 0;
+    ULONG                           ulStrSize       = 0;
+
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    if ( !pContext->pPrimaryLanDhcpv4ServerPool )
+    {
+        SlapInitVariable(&SlapValue);
+
+        iReturnValue =
+            PSM_Get_Record_Value
+                (
+                    g_MessageBusHandle,
+                    g_SubsystemPrefix,
+                    DMSB_TR181_PSM_MultiLAN_Root DMSB_TR181_PSM_MultiLAN_PrimaryLANDHCPv4ServerPool,
+                    &RecordType,
+                    &SlapValue
+                );
+
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        {
+            AnscTraceWarning
+                ((
+                    "%s -- failed to retrieve the parameter " DMSB_TR181_PSM_MultiLAN_Root DMSB_TR181_PSM_MultiLAN_PrimaryLANDHCPv4ServerPool
+                    ", error code %d, type %d\n",
+                    __FUNCTION__,
+                    iReturnValue,
+                    RecordType
+                ));
+        }
+        else
+        {
+            ulStrSize = _ansc_strlen(DM_TR181_NAME_DHCPv4ServerPool) + 10;
+            pContext->pPrimaryLanDhcpv4ServerPool = AnscAllocateMemory(ulStrSize);
+
+            if ( pContext->pPrimaryLanDhcpv4ServerPool )
+            {
+                _ansc_sprintf(pContext->pPrimaryLanDhcpv4ServerPool, "%s%d", DM_TR181_NAME_DHCPv4ServerPool, SlapValue.Variant.varUint32);
+            }
+        }
+
+        SlapCleanVariable(&SlapValue);
+    }
+
+    if ( pContext->pPrimaryLanDhcpv4ServerPool )
+    {
+        ulStrSize = _ansc_strlen(pContext->pPrimaryLanDhcpv4ServerPool);
+
+        if ( ( ulStrSize + 1) <= *pValueSize )
+        {
+            AnscCopyString(pValue, pContext->pPrimaryLanDhcpv4ServerPool);
+            *pValueSize = ulStrSize;
+
+            return  ANSC_STATUS_SUCCESS;
+        }
+        else
+        {
+            *pValueSize = ulStrSize;
+
+            return  ANSC_STATUS_MORE_DATA;
+        }
+    }
+    else
+    {
+        return  ANSC_STATUS_RESOURCES;
+    }
+}
+
+
+ANSC_STATUS
 CosaDmlMlanGetHomeSecurityBridge
     (
         ANSC_HANDLE                 hContext,
@@ -685,3 +766,247 @@ CosaDmlMlanGetHomeSecurityDhcpv4ServerPool
         return  ANSC_STATUS_RESOURCES;
     }
 }
+
+
+ANSC_STATUS
+CosaDmlMlanGetHomeSecurityWiFiRadio
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pValueSize
+    )
+{
+    PCOSA_DATAMODEL_MULTILAN        pContext        = (PCOSA_DATAMODEL_MULTILAN)hContext;
+    int                             iReturnValue    = CCSP_SUCCESS;
+    unsigned int                    RecordType      = 0;
+    SLAP_VARIABLE                   SlapValue       = {0};
+    unsigned int                    uValue          = 0;
+    ULONG                           ulStrSize       = 0;
+
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    if ( !pContext->pHomeSecurityWiFiRadio )
+    {
+        SlapInitVariable(&SlapValue);
+
+        iReturnValue =
+            PSM_Get_Record_Value
+                (
+                    g_MessageBusHandle,
+                    g_SubsystemPrefix,
+                    DMSB_TR181_PSM_MultiLAN_Root DMSB_TR181_PSM_MultiLAN_HomeSecurity_WiFiRadio,
+                    &RecordType,
+                    &SlapValue
+                );
+
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        {
+            AnscTraceWarning
+                ((
+                    "%s -- failed to retrieve the parameter " DMSB_TR181_PSM_MultiLAN_Root DMSB_TR181_PSM_MultiLAN_HomeSecurity_WiFiRadio
+                    ", error code %d, type %d\n",
+                    __FUNCTION__,
+                    iReturnValue,
+                    RecordType
+                ));
+        }
+        else
+        {
+            ulStrSize = _ansc_strlen(DM_TR181_NAME_WiFi_Radio) + 10;
+            pContext->pHomeSecurityWiFiRadio = AnscAllocateMemory(ulStrSize);
+
+            if ( pContext->pHomeSecurityWiFiRadio )
+            {
+                _ansc_sprintf(pContext->pHomeSecurityWiFiRadio, "%s%d", DM_TR181_NAME_WiFi_Radio, SlapValue.Variant.varUint32);
+            }
+        }
+
+        SlapCleanVariable(&SlapValue);
+    }
+
+    if ( pContext->pHomeSecurityWiFiRadio )
+    {
+        ulStrSize = _ansc_strlen(pContext->pHomeSecurityWiFiRadio);
+
+        if ( ( ulStrSize + 1) <= *pValueSize )
+        {
+            AnscCopyString(pValue, pContext->pHomeSecurityWiFiRadio);
+            *pValueSize = ulStrSize;
+
+            return  ANSC_STATUS_SUCCESS;
+        }
+        else
+        {
+            *pValueSize = ulStrSize;
+
+            return  ANSC_STATUS_MORE_DATA;
+        }
+    }
+    else
+    {
+        return  ANSC_STATUS_RESOURCES;
+    }
+}
+
+
+ANSC_STATUS
+CosaDmlMlanGetHomeSecurityWiFiSsid
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pValueSize
+    )
+{
+    PCOSA_DATAMODEL_MULTILAN        pContext        = (PCOSA_DATAMODEL_MULTILAN)hContext;
+    int                             iReturnValue    = CCSP_SUCCESS;
+    unsigned int                    RecordType      = 0;
+    SLAP_VARIABLE                   SlapValue       = {0};
+    unsigned int                    uValue          = 0;
+    ULONG                           ulStrSize       = 0;
+
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    if ( !pContext->pHomeSecurityWiFiSsid )
+    {
+        SlapInitVariable(&SlapValue);
+
+        iReturnValue =
+            PSM_Get_Record_Value
+                (
+                    g_MessageBusHandle,
+                    g_SubsystemPrefix,
+                    DMSB_TR181_PSM_MultiLAN_Root DMSB_TR181_PSM_MultiLAN_HomeSecurity_WiFiSsid,
+                    &RecordType,
+                    &SlapValue
+                );
+
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        {
+            AnscTraceWarning
+                ((
+                    "%s -- failed to retrieve the parameter " DMSB_TR181_PSM_MultiLAN_Root DMSB_TR181_PSM_MultiLAN_HomeSecurity_WiFiSsid
+                    ", error code %d, type %d\n",
+                    __FUNCTION__,
+                    iReturnValue,
+                    RecordType
+                ));
+        }
+        else
+        {
+            ulStrSize = _ansc_strlen(DM_TR181_NAME_WiFi_SSID) + 10;
+            pContext->pHomeSecurityWiFiSsid = AnscAllocateMemory(ulStrSize);
+
+            if ( pContext->pHomeSecurityWiFiSsid )
+            {
+                _ansc_sprintf(pContext->pHomeSecurityWiFiSsid, "%s%d", DM_TR181_NAME_WiFi_SSID, SlapValue.Variant.varUint32);
+            }
+        }
+
+        SlapCleanVariable(&SlapValue);
+    }
+
+    if ( pContext->pHomeSecurityWiFiSsid )
+    {
+        ulStrSize = _ansc_strlen(pContext->pHomeSecurityWiFiSsid);
+
+        if ( ( ulStrSize + 1) <= *pValueSize )
+        {
+            AnscCopyString(pValue, pContext->pHomeSecurityWiFiSsid);
+            *pValueSize = ulStrSize;
+
+            return  ANSC_STATUS_SUCCESS;
+        }
+        else
+        {
+            *pValueSize = ulStrSize;
+
+            return  ANSC_STATUS_MORE_DATA;
+        }
+    }
+    else
+    {
+        return  ANSC_STATUS_RESOURCES;
+    }
+}
+
+
+ANSC_STATUS
+CosaDmlMlanGetHomeSecurityWiFiAp
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pValueSize
+    )
+{
+    PCOSA_DATAMODEL_MULTILAN        pContext        = (PCOSA_DATAMODEL_MULTILAN)hContext;
+    int                             iReturnValue    = CCSP_SUCCESS;
+    unsigned int                    RecordType      = 0;
+    SLAP_VARIABLE                   SlapValue       = {0};
+    unsigned int                    uValue          = 0;
+    ULONG                           ulStrSize       = 0;
+
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    if ( !pContext->pHomeSecurityWiFiAp )
+    {
+        SlapInitVariable(&SlapValue);
+
+        iReturnValue =
+            PSM_Get_Record_Value
+                (
+                    g_MessageBusHandle,
+                    g_SubsystemPrefix,
+                    DMSB_TR181_PSM_MultiLAN_Root DMSB_TR181_PSM_MultiLAN_HomeSecurity_WiFiAp,
+                    &RecordType,
+                    &SlapValue
+                );
+
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        {
+            AnscTraceWarning
+                ((
+                    "%s -- failed to retrieve the parameter " DMSB_TR181_PSM_MultiLAN_Root DMSB_TR181_PSM_MultiLAN_HomeSecurity_WiFiAp
+                    ", error code %d, type %d\n",
+                    __FUNCTION__,
+                    iReturnValue,
+                    RecordType
+                ));
+        }
+        else
+        {
+            ulStrSize = _ansc_strlen(DM_TR181_NAME_WiFi_AP) + 10;
+            pContext->pHomeSecurityWiFiAp = AnscAllocateMemory(ulStrSize);
+
+            if ( pContext->pHomeSecurityWiFiAp )
+            {
+                _ansc_sprintf(pContext->pHomeSecurityWiFiAp, "%s%d", DM_TR181_NAME_WiFi_AP, SlapValue.Variant.varUint32);
+            }
+        }
+
+        SlapCleanVariable(&SlapValue);
+    }
+
+    if ( pContext->pHomeSecurityWiFiAp )
+    {
+        ulStrSize = _ansc_strlen(pContext->pHomeSecurityWiFiAp);
+
+        if ( ( ulStrSize + 1) <= *pValueSize )
+        {
+            AnscCopyString(pValue, pContext->pHomeSecurityWiFiAp);
+            *pValueSize = ulStrSize;
+
+            return  ANSC_STATUS_SUCCESS;
+        }
+        else
+        {
+            *pValueSize = ulStrSize;
+
+            return  ANSC_STATUS_MORE_DATA;
+        }
+    }
+    else
+    {
+        return  ANSC_STATUS_RESOURCES;
+    }
+}
+
