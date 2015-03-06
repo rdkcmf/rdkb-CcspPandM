@@ -1693,6 +1693,7 @@ CosaDmlDhcpv6Init
     ULONG         Index = 0;
     ULONG         Index2 = 0;
     DSLHDMAGNT_CALLBACK *  pEntry = NULL;
+    char         value[32] = {0};
 
 
 #if 0
@@ -1706,10 +1707,45 @@ CosaDmlDhcpv6Init
 
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
+
     GETI_FROM_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "serverenable", g_dhcpv6_server)
+
+    /*We need enable dhcpv6 for 1.5.1 and above by default*/
+    Utopia_RawGet(&utctx,NULL, "router_enabledhcpv6_DoOnce",value,sizeof(value));
+    if ( !g_dhcpv6_server && value[0]!= '1' )
+    {
+        g_dhcpv6_server = 1;
+        SETI_INTO_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "serverenable", g_dhcpv6_server)
+    }
+   
+    if ( value[0] != '1' )
+    {
+        Utopia_RawSet(&utctx,NULL,"router_enabledhcpv6_DoOnce","1");
+    }
+
     GETI_FROM_UTOPIA(DHCPV6S_NAME,    "", 0, "", 0, "servertype",   g_dhcpv6_server_type)
     GETI_FROM_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "poolnumber", uDhcpv6ServerPoolNum)
-    Utopia_Free(&utctx,0);
+
+    /*This logic code is used to change default behavior to stateful dhcpv6 server */
+    Utopia_RawGet(&utctx,NULL, "router_statefuldhcpv6_DoOnce",value,sizeof(value));
+    if ( value[0]!= '1'  && g_dhcpv6_server_type == 2 )
+    {
+        g_dhcpv6_server_type = 1;
+        Utopia_RawSet(&utctx,NULL,"router_other_flag","1");
+        Utopia_RawSet(&utctx,NULL,"router_managed_flag","1");
+        SETI_INTO_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "servertype", g_dhcpv6_server_type)
+
+        system("sysevent set zebra-restart");
+    }
+    
+    if ( value[0]!= '1' )
+    {
+        Utopia_RawSet(&utctx,NULL,"router_statefuldhcpv6_DoOnce","1");
+    }
+
+    Utopia_Free(&utctx,1);
+
+
 
     for ( Index = 0; Index < uDhcpv6ServerPoolNum; Index++ )
     {
@@ -3087,6 +3123,48 @@ void _cosa_dhcpsv6_refresh_config()
     pthread_mutex_unlock(&mutex);
 }
 
+/*
+    This function will translate DNS from flat string to dns strings by comma.
+
+    length: 32*N 
+    2018CAFE00000000020C29FFFE97FCCC2222CAFE00000000020C29FFFE97FCCC
+    will translate to
+    2018:CAFE:0000:0000:020C:29FF:FE97:FCCC,2222:CAFE:0000:0000:020C:29FF:FE97:FCCC
+
+    Fail when return 1
+    Succeed when return 0
+*/
+int CosaDmlDHCPv6sGetDNS(char* Dns, char* output, int outputLen)
+{
+    char oneDns[64]  = {0};
+    int  len         = _ansc_strlen(Dns);
+    int  count       = len/32;
+    int  i           = 0;
+    char *pStr       = NULL;
+
+    if ( outputLen < (count*(32+8)) )
+    {
+        count = outputLen/(32+8);
+        if (!count)
+            return 1;
+    }
+
+    output[0] = '\0';
+    while(i < count){
+        _ansc_strncpy(oneDns, &Dns[i*32], 32);                       
+        pStr = CosaDmlDhcpv6sGetAddressFromString(oneDns);
+        _ansc_strcat(output, pStr);
+        _ansc_strcat(output, ",");
+        i++;
+    }
+
+    fprintf(stderr, "%s -- !!!!!!! %d %d %s %s\n", __FUNCTION__, outputLen, count, Dns, output);
+
+    output[_ansc_strlen(output)-1] = '\0';
+
+    return 0;
+}
+
 void __cosa_dhcpsv6_refresh_config()
 {
 #ifdef _COSA_INTEL_USG_ARM_
@@ -3244,7 +3322,7 @@ void __cosa_dhcpsv6_refresh_config()
                         T1 = T2 = preferedTime = validTime = 0xFFFFFFFF;
                     }else{
                         T1           = (sDhcpv6ServerPool[Index].Cfg.LeaseTime)/2;
-                        T2           = (sDhcpv6ServerPool[Index].Cfg.LeaseTime)*80/100;
+                        T2           = (ULONG)((sDhcpv6ServerPool[Index].Cfg.LeaseTime)*80.0/100);
                         preferedTime = (sDhcpv6ServerPool[Index].Cfg.LeaseTime);
                         validTime    = (sDhcpv6ServerPool[Index].Cfg.LeaseTime);
                     }
@@ -3298,10 +3376,11 @@ OPTIONS:
                 /* We need to translate hex to normal string */
                 if ( g_recv_options[Index4].Tag == 23 )
                 { //dns
-                   pServerOption = CosaDmlDhcpv6sGetAddressFromString(g_recv_options[Index4].Value);
+                   char dnsStr[256] = {0};
+                   ret = CosaDmlDHCPv6sGetDNS(g_recv_options[Index4].Value, dnsStr, sizeof(dnsStr) );
 
-                   if ( pServerOption )
-                       fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
+                   if ( !ret )
+                       fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
                 }
                 else if ( g_recv_options[Index4].Tag == 24 )
                 { //domain
@@ -4598,6 +4677,14 @@ CosaDmlDhcpv6sSetOption
             {
                 if ( sDhcpv6ServerPoolOption[Index][Index2].InstanceNumber == pEntry->InstanceNumber )
                 {
+                    if ( pEntry->Tag == 23 &&
+                        ( _ansc_strcmp(sDhcpv6ServerPoolOption[Index][Index2].PassthroughClient, pEntry->PassthroughClient ) ||
+                        ( _ansc_strcmp(sDhcpv6ServerPoolOption[Index][Index2].Value, pEntry->Value) &&
+                                  !_ansc_strlen(pEntry->PassthroughClient) ) ) )
+                    {
+                        system("sysevent set zebra-restart");
+                    }
+
                     sDhcpv6ServerPoolOption[Index][Index2] = *pEntry;
 
                     setpooloption_into_utopia(DHCPV6S_NAME, "pool", Index, "option", Index2, &sDhcpv6ServerPoolOption[Index][Index2]);
@@ -4753,6 +4840,11 @@ void CosaDmlDhcpv6sRebootServer()
     int fd = 0;
     char cmd[64] = {0};
     char out[128] = {0};
+    BOOL isBridgeMode = FALSE;
+
+    if (!g_dhcpv6_server_prefix_ready || !g_lan_ready)
+        return;
+
 
     if (g_dhcpv6s_restart_count) {
         g_dhcpv6s_restart_count=0;
@@ -4761,19 +4853,14 @@ void CosaDmlDhcpv6sRebootServer()
         _cosa_dhcpsv6_refresh_config();
 
         _dibbler_server_operation("stop");
-
-        sprintf(cmd, "ps|grep %s|grep -v grep", SERVER_BIN);
-        _get_shell_output(cmd, out, sizeof(out));
-        if (strstr(out, SERVER_BIN))
-        {
-            DHCPVS_DEBUG_PRINT
-            sprintf(cmd, "kill `pidof %s`", SERVER_BIN);
-            system(cmd);
-        }
     }
 
     fd = open(DHCPV6S_SERVER_PID_FILE, O_RDONLY);
     if (fd < 0) {
+
+         is_usg_in_bridge_mode(&isBridgeMode);
+         if ( isBridgeMode )
+            return;
 
         //make sure it's not in a bad status
         sprintf(cmd, "ps|grep %s|grep -v grep", SERVER_BIN);
@@ -4800,6 +4887,11 @@ dhcpv6c_dbg_thrd(void * in)
     int i;
     char * p = NULL;
     char globalIP2[128] = {0};
+
+    //When PaM restart, this is to get previous addr.
+    commonSyseventGet("lan_ipaddr_v6", globalIP2, sizeof(globalIP2));
+    if ( globalIP2[0] )
+        CcspTraceWarning((stderr,"%s -- %d. It seems there is old value(%s)\n", globalIP2));
 
     fd_set rfds;
     struct timeval tm;
@@ -5002,7 +5094,7 @@ dhcpv6c_dbg_thrd(void * in)
 
                             /*This is for brlan0 interface */
                             commonSyseventSet("lan_ipaddr_v6", globalIP);
-                            _ansc_sprintf(cmd, "%d", pref_len);
+                            _ansc_sprintf(cmd, "%d", 64); //hardcode to 64
                             commonSyseventSet("lan_prefix_v6", cmd);
 
                             commonSyseventSet("lan-restart", "1");

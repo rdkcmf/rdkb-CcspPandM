@@ -56,6 +56,7 @@
 #include "cosa_users_apis.h"
 #include "cosa_users_internal.h"
 #include "plugin_main_apis.h"
+#include "dml_tr181_custom_cfg.h" 
 
 
 #if ( defined _COSA_SIM_ )

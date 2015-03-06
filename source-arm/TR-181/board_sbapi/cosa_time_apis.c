@@ -133,6 +133,7 @@ CosaDmlTimeGetLocalTime
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>
+#include "cosa_drg_common.h"
 #define UTOPIA_TR181_PARAM_SIZE1   256
 
 #define MAXBUF              512
@@ -162,7 +163,7 @@ CosaDmlTimeGetLocalTime
 BOOL isTimeSynced()
 {
      FILE *fp = NULL;
-     char buf[64] = {0};
+     char buf[128] = {0};
      BOOL isSync = FALSE;
 
      AnscTraceWarning(("%s: isTimeSynced.\n", __FUNCTION__));
@@ -192,10 +193,10 @@ BOOL isTimeSynced()
 	 }
 
 	 fread(buf, 1, sizeof(buf), fp);
-	 if (strstr(buf, "recvfrom")!= NULL || strstr(buf, "Ooops")!= NULL || strstr(buf, "Unknown host")!= NULL) 
-	      isSync = FALSE;
-	 else
+	 if (strstr(buf, "Synchronized")!= NULL) 
 	      isSync = TRUE;
+	 else
+	      isSync = FALSE;
 
 	 fclose(fp);
      }
@@ -203,22 +204,13 @@ BOOL isTimeSynced()
      return isSync;
 }
 
-ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
+ANSC_STATUS updateTimeZone(const char *timezone)
 {
-    FILE *fp;
-    char buf[MAXBUF]= {0};
-    const char *zone;
-    const char *timezone;
-    char *server;
-    char *back_server = NULL;
-    char tmp[MAXBUF] = {0};
-    int  i = 0;
-	
-    AnscTraceWarning(("%s: Start Function...\n", __FUNCTION__));
-    if (pTimeCfg->bEnabled)
-        snprintf(buf, sizeof(buf), "1");
-    else
-        snprintf(buf, sizeof(buf), "0");
+    if(timezone == NULL)
+        return ANSC_STATUS_FAILURE;
+
+    FILE *fp = NULL;
+    char zone[MAXBUF] = {0};
 
     if ((fp = fopen("/etc/TZ", "w")) == NULL)
     {
@@ -226,8 +218,7 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
         return ANSC_STATUS_FAILURE;
     }
 
-    snprintf(tmp, sizeof(tmp), "%s\n", pTimeCfg->LocalTimeZone);
-    zone = tmp;
+    snprintf(zone, sizeof(zone), "%s\n", timezone);
     if (fwrite(zone, strlen(zone), 1, fp) != 1)
     {
         AnscTraceWarning(("%s: fail to write\n", __FUNCTION__));
@@ -235,6 +226,31 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
         return ANSC_STATUS_FAILURE;
     }
     fclose(fp);
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
+{
+    FILE *fp;
+    char buf[MAXBUF]= {0};
+    char *server = NULL;
+    char *back_server = NULL;
+    int  i = 0;
+    char wan_interface[32] = {0};
+
+    AnscTraceWarning(("%s: Start Function...\n", __FUNCTION__));
+    if (pTimeCfg->bEnabled)
+        snprintf(buf, sizeof(buf), "1");
+    else
+        snprintf(buf, sizeof(buf), "0");
+
+    /*update time zone*/
+    if(ANSC_STATUS_SUCCESS != updateTimeZone(pTimeCfg->LocalTimeZone))
+    {
+        AnscTraceWarning(("%s: Fail to update time zone!\n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
     /**
      * to kill the old process whenever NTP is enabled or not, 
      * since NTPServer may changed.
@@ -244,13 +260,21 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
     system("rm -rf /tmp/ntpclient.log");
     AnscTraceWarning(("%s: stopping ntpclient \n", __FUNCTION__));
 
+    /*get current eRT interface*/
+    commonSyseventGet("current_wan_ifname", wan_interface, sizeof(wan_interface));
+    if('\0' == wan_interface[0])
+    {
+        /*default wan interface*/
+        commonSyseventGet("wan_ifname", wan_interface, sizeof(wan_interface));
+    }
+
     /* XXX: ntpclient only support one NTP Server */
     if (pTimeCfg->bEnabled)
     {
         if ( pTimeCfg->NTPServer1 && strlen(pTimeCfg->NTPServer1) > 0)
         {
             server = pTimeCfg->NTPServer1;
-	    //back_server = pTimeCfg->NTPServer2;
+            //back_server = pTimeCfg->NTPServer2;
         }
         else if (pTimeCfg->NTPServer2 && strlen(pTimeCfg->NTPServer2) > 0) {
             server = pTimeCfg->NTPServer2;
@@ -269,62 +293,62 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
 
         if (server)
         {
-	     /* XXX: sleep a while to prevent be killed by "killall" above.
-	      * if we can found PID for kill instead of using killall 
-	      * (e.g., ps | awk '/ntpclient/ {print $1}' | xargs kill )
-	      * then we needn't sleep here. */
-	     snprintf(buf, sizeof(buf), "sleep 1 && ntpclient -i 2 -s -h %s  2 >%s", server, NTPC_STATUS);
+            /* XXX: sleep a while to prevent be killed by "killall" above.
+             * if we can found PID for kill instead of using killall 
+             * (e.g., ps | awk '/ntpclient/ {print $1}' | xargs kill )
+             * then we needn't sleep here. */
+            snprintf(buf, sizeof(buf), "sleep 1 && ntpclient -i 2 -s -h %s -I %s 2>%s", server, wan_interface, NTPC_STATUS);
 
-	     AnscTraceWarning(("%s: starting ntpclient with host %s,command:%s\n", __FUNCTION__, server, buf));
-	     if (system(buf) != 0)
-	     {
-		  AnscTraceWarning(("%s: fail to execute ntpclient\n", __FUNCTION__));
-	     }
+            AnscTraceWarning(("%s: starting ntpclient with host %s,command:%s\n", __FUNCTION__, server, buf));
+            if (system(buf) != 0)
+            {
+                AnscTraceWarning(("%s: fail to execute ntpclient\n", __FUNCTION__));
+            }
 
-             for(i=1;i<=5;i++) {
-                 if (i == 1 && pTimeCfg->NTPServer1 && strlen(pTimeCfg->NTPServer1) > 0) { 
-	             back_server = pTimeCfg->NTPServer1;
-                 } else if(i == 2 && pTimeCfg->NTPServer2 && strlen(pTimeCfg->NTPServer2) > 0){
-	             back_server = pTimeCfg->NTPServer2;
-                 } else if(i == 3 && pTimeCfg->NTPServer3 && strlen(pTimeCfg->NTPServer3) > 0){
-	             back_server = pTimeCfg->NTPServer3;
-                 } else if(i == 4 && pTimeCfg->NTPServer4 && strlen(pTimeCfg->NTPServer4) > 0){
-	             back_server = pTimeCfg->NTPServer4;
-                 } else if(i == 5 && pTimeCfg->NTPServer5 && strlen(pTimeCfg->NTPServer5) > 0){
-	             back_server = pTimeCfg->NTPServer5;
-                 } 
-	     /* try the back up ntp server */
-	     if (back_server && strcmp(back_server,server)!=0)
-	     {
-                  AnscTraceWarning(("%s: trying backup server:%s\n", __FUNCTION__,back_server));
-		  sleep(2); /* Wait ntpclient finished */
-    		 
-		  if (!isTimeSynced())
-		  {
+            for(i=1;i<=5;i++) {
+                if (i == 1 && pTimeCfg->NTPServer1 && strlen(pTimeCfg->NTPServer1) > 0) { 
+                    back_server = pTimeCfg->NTPServer1;
+                } else if(i == 2 && pTimeCfg->NTPServer2 && strlen(pTimeCfg->NTPServer2) > 0){
+                    back_server = pTimeCfg->NTPServer2;
+                } else if(i == 3 && pTimeCfg->NTPServer3 && strlen(pTimeCfg->NTPServer3) > 0){
+                    back_server = pTimeCfg->NTPServer3;
+                } else if(i == 4 && pTimeCfg->NTPServer4 && strlen(pTimeCfg->NTPServer4) > 0){
+                    back_server = pTimeCfg->NTPServer4;
+                } else if(i == 5 && pTimeCfg->NTPServer5 && strlen(pTimeCfg->NTPServer5) > 0){
+                    back_server = pTimeCfg->NTPServer5;
+                } 
+                /* try the back up ntp server */
+                if (back_server && strcmp(back_server,server)!=0)
+                {
+                    AnscTraceWarning(("%s: trying backup server:%s\n", __FUNCTION__,back_server));
+                    sleep(2); /* Wait ntpclient finished */
+
+                    if (!isTimeSynced())
+                    {
                         AnscTraceWarning(("%s: backup server not synced.\n", __FUNCTION__));
-		       /**
-			* to kill the old process whenever NTP is enabled or not, 
-			* since NTPServer may changed.
-			*/
-		       system("killall ntpclient >/dev/null 2>&1");
-		       system("rm -rf /tmp/ntpstatus");
-		       system("rm -rf /tmp/ntpclient.log");
-		       AnscTraceWarning(("%s: stopping ntpclient 2\n", __FUNCTION__));
+                        /**
+                         * to kill the old process whenever NTP is enabled or not, 
+                         * since NTPServer may changed.
+                         */
+                        system("killall ntpclient >/dev/null 2>&1");
+                        system("rm -rf /tmp/ntpstatus");
+                        system("rm -rf /tmp/ntpclient.log");
+                        AnscTraceWarning(("%s: stopping ntpclient 2\n", __FUNCTION__));
 
-		       /* XXX: sleep a while to prevent be killed by "killall" above.
-			* if we can found PID for kill instead of using killall 
-			* (e.g., ps | awk '/ntpclient/ {print $1}' | xargs kill )
-			* then we needn't sleep here. */
-		       snprintf(buf, sizeof(buf), "sleep 1 && ntpclient -i 2 -s -h %s  2>%s", back_server, NTPC_STATUS);
+                        /* XXX: sleep a while to prevent be killed by "killall" above.
+                         * if we can found PID for kill instead of using killall 
+                         * (e.g., ps | awk '/ntpclient/ {print $1}' | xargs kill )
+                         * then we needn't sleep here. */
+                        snprintf(buf, sizeof(buf), "sleep 1 && ntpclient -i 2 -s -h %s -I %s 2>%s", back_server, wan_interface, NTPC_STATUS);
 
-		       AnscTraceWarning(("%s: starting ntpclient with host %s\n", __FUNCTION__, back_server));
-		       if (system(buf) != 0)
-		       {
-			    AnscTraceWarning(("%s: fail to execute ntpclient\n", __FUNCTION__));
-		       }
-		  }
-	     }
-             }
+                        AnscTraceWarning(("%s: starting ntpclient with host %s\n", __FUNCTION__, back_server));
+                        if (system(buf) != 0)
+                        {
+                            AnscTraceWarning(("%s: fail to execute ntpclient\n", __FUNCTION__));
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -337,69 +361,19 @@ CosaDmlTimeInit
         PANSC_HANDLE                phContext
     )
 {
-    UtopiaContext ctx;
     int rc = 0;
     int iEnbl = 0;
     char val[UTOPIA_TR181_PARAM_SIZE1];
-	
-    COSA_DML_TIME_CFG           TimeCfg = {0};
-    PCOSA_DML_TIME_CFG          pTimeCfg=&TimeCfg;
-    /* Initialize a Utopia Context */
-    if(!Utopia_Init(&ctx))
-        return ERR_UTCTX_INIT;
-    _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
 
-    /* Fill Local TZ from SysCfg */
-    if( (Utopia_Get_DeviceTime_LocalTZ(&ctx,val)) == UT_SUCCESS)
+    PCOSA_DML_TIME_CFG          pTimeCfg=(PCOSA_DML_TIME_CFG)phContext;
+
+    CosaDmlTimeGetCfg(NULL, pTimeCfg);
+
+    if(ANSC_STATUS_SUCCESS != updateTimeZone(pTimeCfg->LocalTimeZone))
     {
-        AnscCopyString(pTimeCfg->LocalTimeZone,val);
-        _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
-        rc = 0;
+        AnscTraceWarning(("%s: Fail to update time zone!\n", __FUNCTION__));
     }
 
-    /*Fill NTP Server 1 from SysCfg */
-    if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,1)) == UT_SUCCESS)
-    {
-        AnscCopyString(pTimeCfg->NTPServer1,val);
-        _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
-        rc = 0;
-    }
-
-    /* Fill NTP Server 2 from Syscfg */
-    if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,2)) == UT_SUCCESS)
-    {
-        AnscCopyString(pTimeCfg->NTPServer2,val);
-        _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
-        rc = 0;
-    }
-
-    /* Fill NTP Server 3 from Syscfg */
-    if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,3)) == UT_SUCCESS)
-    {
-        AnscCopyString(pTimeCfg->NTPServer3,val);
-        _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
-        rc = 0;
-    }
-
-    /* Fill DaylightSaving Enabled or not from syscfg */
-    pTimeCfg->bDaylightSaving = Utopia_Get_DeviceTime_DaylightEnable(&ctx);
-
-    /* Fill DaylightSaving Offset from syscfg */
-    rc = Utopia_Get_DeviceTime_DaylightOffset(&ctx, &(pTimeCfg->DaylightSavingOffset));
-    
-	/* Fill NTP Enabled or not from syscfg */
-    pTimeCfg->bEnabled = Utopia_Get_DeviceTime_Enable(&ctx);
-
-    /* Free Utopia Context */
-    Utopia_Free(&ctx,0);
-     
-    startNTP(pTimeCfg);
-/*	
-    if (rc != 0)
-        return ERR_SYSCFG_FAILED;    
-    else
-        return ANSC_STATUS_SUCCESS;
-*/
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -413,17 +387,24 @@ CosaDmlTimeSetCfg
     )
 {
     UtopiaContext ctx;
+    char buf[32] = {0};
     int rc = 0;
-	
-
+    int err = 0;
+    pthread_t ntp_thread;
 
     if (!pTimeCfg)
         return ANSC_STATUS_FAILURE;
 
-    startNTP(pTimeCfg);
+    err = pthread_create(&ntp_thread, NULL, startNTP, (void *)pTimeCfg);
 
+    if(0 != err)
+    {
+        CcspTraceError(("%s: create the ntp syn thread error!\n", __FUNCTION__));
+    }
+    else
+        pthread_detach(ntp_thread);
 
-	
+//    startNTP(pTimeCfg);
 
     if (pTimeCfg)
     {
@@ -432,6 +413,10 @@ CosaDmlTimeSetCfg
           return ERR_UTCTX_INIT;
        /* Set Local TZ to SysCfg */
        rc = Utopia_Set_DeviceTime_LocalTZ(&ctx,&(pTimeCfg->LocalTimeZone));
+
+       /*set city index */
+       sprintf(buf,"%d",pTimeCfg->cityIndex);
+       rc = Utopia_RawSet(&ctx, NULL, "ntp_cityindex", buf);
 
        /*Set NTP Server 1 to SysCfg */
        rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer1),1);
@@ -486,6 +471,9 @@ CosaDmlTimeGetCfg
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
+
+       rc = Utopia_RawGet(&ctx, NULL, "ntp_cityindex", val, sizeof(val)-1 );
+       pTimeCfg->cityIndex = atoi(val);
 
        /*Fill NTP Server 1 from SysCfg */
        if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,1)) == UT_SUCCESS)

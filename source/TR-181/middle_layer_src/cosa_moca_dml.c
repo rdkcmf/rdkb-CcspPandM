@@ -1386,7 +1386,7 @@ Interface1_SetParamBoolValue
 {
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
 
-    AnscTraceWarning(("ParamName: %s\n", ParamName));
+    AnscTraceWarning(("ParamName: %s bvalue\n", ParamName, bValue));
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
@@ -1544,7 +1544,7 @@ Interface1_SetParamUlongValue
 {    
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
     
-    AnscTraceWarning(("ParamName: %s\n", ParamName));
+    AnscTraceWarning(("ParamName: %s uValue: %d\n", ParamName, uValue));
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "PowerCntlPhyTarget", TRUE))
@@ -1615,7 +1615,7 @@ Interface1_SetParamStringValue
 {
     PCOSA_DML_MOCA_IF_FULL          pMoCAIfFull = &((PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext)->MoCAIfFull;
     
-    AnscTraceWarning(("ParamName: %s\n", ParamName));
+    AnscTraceWarning(("ParamName: %s pString: %s\n", ParamName, pString));
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))

@@ -3116,8 +3116,10 @@ int _cosa_get_dhcps_client(ULONG instancenum, ULONG minAddress, ULONG maxAddress
     FILE * fp = NULL, *fpTmp = NULL;
     PCOSA_DML_DHCPSV4_CLIENT  pEntry  = NULL;
     PCOSA_DML_DHCPSV4_CLIENT  pEntry2 = NULL;
+    PCOSA_DML_DHCPSV4_CLIENT  pNewEntry2 = NULL;
     PCOSA_DML_DHCPSV4_CLIENTCONTENT pContentEntry  = NULL;
     PCOSA_DML_DHCPSV4_CLIENTCONTENT pContentEntry2 = NULL;
+    PCOSA_DML_DHCPSV4_CLIENTCONTENT pNewContentEntry2 = NULL;
     PCOSA_DML_DHCPSV4_CLIENT_OPTION pContentOptionEntry  = NULL;
     PCOSA_DML_DHCPSV4_CLIENT_OPTION *ppOption = NULL;
     ULONG size = 0, var32=0, sizeClient=0, sizeClientContent=0;
@@ -3322,15 +3324,23 @@ int _cosa_get_dhcps_client(ULONG instancenum, ULONG minAddress, ULONG maxAddress
 		/* reallocate memory for another 100 clients */
 		if (size >= currClientPool){
 			currClientPool += 50; 
-			pEntry2 = (PCOSA_DML_DHCPSV4_CLIENT)AnscReAllocateMemory(pEntry2, sizeof(COSA_DML_DHCPSV4_CLIENT)*currClientPool);
-			if (!pEntry2){
+			pNewEntry2 = (PCOSA_DML_DHCPSV4_CLIENT)AnscAllocateMemory(sizeof(COSA_DML_DHCPSV4_CLIENT)*currClientPool);
+			if (!pNewEntry2){
 				goto ErrRet;
 			}
+            /*copy the old mem to the new allocated mem*/
+            AnscCopyMemory(pNewEntry2, pEntry2, sizeof(COSA_DML_DHCPSV4_CLIENT)*size);
+            AnscFreeMemory(pEntry2);
+            pEntry2 = pNewEntry2;
 
-			pContentEntry2 = (PCOSA_DML_DHCPSV4_CLIENTCONTENT)AnscReAllocateMemory(pContentEntry2, sizeof(COSA_DML_DHCPSV4_CLIENTCONTENT)*currClientPool);
-			if (!pContentEntry2){
+			pNewContentEntry2 = (PCOSA_DML_DHCPSV4_CLIENTCONTENT)AnscAllocateMemory(sizeof(COSA_DML_DHCPSV4_CLIENTCONTENT)*currClientPool);
+			if (!pNewContentEntry2){
 				goto ErrRet;
 			}
+            /*copy the old mem to the new allocated mem*/
+            AnscCopyMemory(pNewContentEntry2, pContentEntry2, sizeof(COSA_DML_DHCPSV4_CLIENTCONTENT)*sizeClientContent);
+            AnscFreeMemory(pContentEntry2);
+            pContentEntry2=pNewContentEntry2;
 		}
 	}
 	fclose(fp);
@@ -3557,6 +3567,48 @@ CosaDmlDhcpsARPing
     }
 }
 
+ANSC_STATUS
+CosaDmlDhcpsGetLeaseTimeDuration
+    (
+        PCOSA_DML_DHCPSV4_CLIENT_IPADDRESS pDhcpsClient
+    )
+{
+    struct tm *t;
+    time_t current_time;
+    time_t create_time;
+    time_t duration_time;
+    int d_day, d_hour, d_min, d_sec;
+    char time_buf[32] = {0};
+    int i;
+
+    /*get current time*/
+    current_time = time(NULL);
+
+    /*get lease create time*/
+    t = localtime(&current_time);
+    strncpy(time_buf, pDhcpsClient->X_CISCO_COM_LeaseTimeCreation, strlen(pDhcpsClient->X_CISCO_COM_LeaseTimeCreation));
+    for (i = 0; i < strlen(time_buf); i++)
+    {
+        if('T' == time_buf[i])
+            time_buf[i] = ' ';
+        if('Z' == time_buf[i])
+            time_buf[i] = '\0';
+    }
+    strptime(time_buf, "%Y-%m-%d %H:%M:%S", t);
+    create_time = mktime(t);
+    
+    /*calc lease time duration (s)*/
+    duration_time = current_time - create_time;
+    d_day = duration_time / (24 * 3600);
+    d_hour = duration_time % (24 * 3600) / 3600;
+    d_min = duration_time % (24 * 3600) % 3600 / 60;
+    d_sec = duration_time % (24 * 3600) % 3600 % 60;
+    snprintf(pDhcpsClient->X_CISCO_COM_LeaseTimeDuration, sizeof(pDhcpsClient->X_CISCO_COM_LeaseTimeDuration),
+                "D:%02d H:%02d M:%02d S:%02d", d_day, d_hour, d_min, d_sec);
+
+
+    return ANSC_STATUS_SUCCESS;
+}
 
 ANSC_STATUS
 CosaDmlDhcpsGetX_COM_CISCO_Saddr

@@ -3448,7 +3448,7 @@ CosaDmlSetIpaddr
     ULONG           j                   = 0;                                                       
     ULONG           n                   = 0;
     BOOL            bReturn             = TRUE;
-    PULONG          pIPAddr2            = pIPAddr;
+    ULONG           pIPAddr2[COSA_DML_DHCP_MAX_ENTRIES]  = {0};
 
     if ( !pIPAddr || !pString || !MaxNumber )
         return FALSE;
@@ -3461,10 +3461,12 @@ CosaDmlSetIpaddr
             pIPAddr2[n]  = _ansc_inet_addr(&pTmpString[j]);      
             if (pIPAddr2[n] == INADDR_NONE)                
             {                                              
+                pTmpString[i] = ',';                                                       
+
                 pIPAddr2[n] = 0;                  
                 n = MaxNumber;                                 
                 bReturn = FALSE;                               
-                break;                                         
+                goto EXIT;                                         
             }               
             
             pTmpString[i] = ',';                                                       
@@ -3480,24 +3482,29 @@ CosaDmlSetIpaddr
     }  
     
     /* The last one  */                                                       
-    if ( ( n < MaxNumber ) &&  (i-j) >= 7 )                                   
+    if ( ( n < MaxNumber ) && ( (i-j) >= 7 ) )
     {                                                       
         pIPAddr2[n]  = _ansc_inet_addr(&pTmpString[j]); 
         if (pIPAddr2[n] == INADDR_NONE)                
         {                                              
             pIPAddr2[n] = 0;                  
             bReturn = FALSE;                               
-        }
-        /* We should zero all the values upto Max Number */                                                  
-        for(++n; n < MaxNumber; n++){
-            pIPAddr2[n] = 0;
+            goto EXIT;
         }
     }                                                       
     else if ( (i-j) > 1 )                                   
     {                                    
+        /*This case means there a illegal length ip address.*/
         bReturn = FALSE;                                    
-    }            
+        goto EXIT;
+    }
 
+    /*The setting may be NULL. So this also may clear backend. */
+    for(n=0; n < MaxNumber; n++){
+        pIPAddr[n] = pIPAddr2[n];
+    }
+
+EXIT:
     return bReturn;
 }                                                 
     

@@ -64,17 +64,20 @@ UTOPIA_LDFLAGS = -L$(SDK_PATH)/ti/lib -lutapi -lutctx -lsyscfg -lsysevent -lulog
 LDFLAGS += $(UTOPIA_LDFLAGS)
 
 ifeq ($(CONFIG_VENDOR_CUSTOMER_COMCAST), y)
-	CFLAGS += -DCONFIG_VENDOR_CUSTOMER_COMCAST
+    CFLAGS += -DCONFIG_VENDOR_CUSTOMER_COMCAST
 endif
 
-ifeq ($(SDK_VERSION), 4.3.0.37)
+# SDK_VERSION comes from intel_usg
+ifeq ($(SDK_VERSION),)
+    SDK_VERSION = 4.2
+endif
 
-    # for symbols I2C_TunerHwGet/Send, HAL_FfsSaveCalibrationTableToNVRAM/HAL_FfsRestoreCalibrationTableFromNVRAM
-	LDFLAGS += -L$(SDK_PATH)/ti/lib -lall_docsis
+sdk_version := v$(SDK_VERSION)
 
-	INCPATH += $(SDK_PATH)/ti/docsis/src/common/docsis_mac/docsis_db/include  # x_cisco_com_devicecontrol
+ifneq (,$(findstring v4.2,$(sdk_version)))
+    # intel SDK v4.2
+    $(info *** Go with version 4.2 SDK branch ***)
 
-else
     # not sure of the way too many dependencies on docsis, so all libraies and path are included here RTian 06/06/2014
 
     TI_API_PREFIX    :=$(SDK_PATH)/ti
@@ -141,7 +144,35 @@ else
 	CM_LDFLAGS += -lti_sme
 	CM_LDFLAGS += -lsme
 
-	LDFLAGS += $(CM_LDFLAGS)
+    LDFLAGS += $(CM_LDFLAGS)
+
+else
+    # v4.3 and above
+    $(info *** Go with version 4.2 SDK branch ***)
+
+    # not sure of the way too many dependencies on docsis, so all libraies and path are included here RTian 06/06/2014
+
+    TI_API_PREFIX    :=$(SDK_PATH)/ti
+    DOCSIS_API_PREFIX := $(TI_API_PREFIX)/docsis
+
+    include $(SDK_PATH)/ti/lib/docsis_ext_interface.make
+
+    INCPATH += $(shell  find $(DOCSIS_API_PREFIX)/src  -name 'include' )
+
+    CM_LDFLAGS += -L$(TI_API_PREFIX)/lib
+# MOD for SDK 4.3. Intel libraries changed
+    CM_LDFLAGS += -lall_docsis
+    CM_LDFLAGS += -lgetnextfreq
+    CM_LDFLAGS += -lticc # -lqos_internal_db
+    CM_LDFLAGS += -lti_sme
+    CM_LDFLAGS += -lsme
+# MOD END
+
+    LDFLAGS += $(CM_LDFLAGS)
+
+    # MOD for SDK 4.3. Intel libraries changed
+    LDFLAGS += -lcrypto
+    # MOD END
 
 endif
 

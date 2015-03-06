@@ -218,13 +218,17 @@ CosaDmlEthLinkLoadPsm
                         &SlapValue
                     );
 
-            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_boolean))
+            if ( (iReturnValue != CCSP_SUCCESS) )
             {
                 AnscTraceWarning(("%s -- failed to retrieve 'Enable' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
             }
-            else
+            else if (RecordType == ccsp_boolean)
             {
                 pEthLink->Cfg.bEnabled = SlapValue.Variant.varBool;
+            }
+            else if (RecordType == ccsp_string)
+            {
+                pEthLink->Cfg.bEnabled = AnscEqualString(SlapValue.Variant.varString, "true", TRUE);
             }
 
             SlapCleanVariable(&SlapValue);
@@ -284,11 +288,11 @@ CosaDmlEthLinkLoadPsm
                         &SlapValue
                     );
 
-            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_boolean))
+            if ( (iReturnValue != CCSP_SUCCESS) )
             {
                 AnscTraceWarning(("%s -- failed to retrieve 'PriorityTagging' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
             }
-            else
+            else if (RecordType == ccsp_boolean)
             {
                 pEthLink->Cfg.bPriorityTagging = SlapValue.Variant.varBool;
             }
@@ -413,13 +417,17 @@ CosaDmlEthLinkLoadPsm
                             &SlapValue
                         );
 
-                if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+                if ( (iReturnValue != CCSP_SUCCESS) )
                 {
                     AnscTraceWarning(("%s -- failed to retrieve 'l2net' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
                 }
-                else
+                else if (RecordType == ccsp_unsignedInt)
                 {
                     pEthLink->Cfg.LinkInstNum = SlapValue.Variant.varUint32;
+                }
+                else if (RecordType == ccsp_string)
+                {
+                    pEthLink->Cfg.LinkInstNum = _ansc_atoi(SlapValue.Variant.varString);
                 }
 
                 SlapCleanVariable(&SlapValue);

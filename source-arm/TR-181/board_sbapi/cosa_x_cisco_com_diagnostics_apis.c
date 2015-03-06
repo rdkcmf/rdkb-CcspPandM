@@ -122,6 +122,7 @@ CosaDmlDiagnosticsGetEntry
 #include <string.h>
 #include <stdlib.h>
 #include "syscfg/syscfg.h"
+#include "sysevent/sysevent.h"
 #define printf(x, argv...)  
 #define COSA_DML_DIAGNOSTICS_WARNING       "jRecord/dslh_objro_management.c:265 com.cisco.spvtg.ccsp.pam End of the repopulation in 'Client'"
 #define COSA_DML_DIAGNOSTICS_ERROR         "com.cisco.spvtg.ccsp.pam CcspCcMbi_GetParameterValues -- Something has screwed up. Failure status returned"
@@ -130,7 +131,9 @@ CosaDmlDiagnosticsGetEntry
 #define MAX_ENTRY_NUM 500   
 #define LOG_FILE_NAME "/var/log/messages" 
 #define LOG_FILE_NAME1 "/var/log/messages.0" 
-#define LOG_TIME_SIZE 15 
+/* Time format Jan  1 00:00:00 1970, LOG_TIME_SIZE not include null*/
+#define LOG_TIME_SIZE 20 
+#define LOG_TIME_SIZE_WO_Y 15 
 #define LOG_INFO_SIZE 5
 #define LOG_LINE_MIN_SIZE LOG_TIME_SIZE + 1 + LOG_INFO_SIZE 
 #define MAX_MSG_LEN 256
@@ -181,14 +184,134 @@ static unsigned int _Level_str2num(char* str){
     return 0xFFFF;
 }
 
+inline int _month2i(char *m)
+{
+    if(0 == strncmp("Jan", m, 3))
+        return 1;
+    else if(0 == strncmp("Feb", m, 3))
+        return 2;
+    else if(0 == strncmp("Mar", m, 3))
+        return 3;
+    else if(0 == strncmp("Apr", m, 3))
+        return 4;
+    else if(0 == strncmp("May", m, 3))
+        return 5;
+    else if(0 == strncmp("Jun", m, 3))
+        return 6;
+    else if(0 == strncmp("Jul", m, 3))
+        return 7;
+    else if(0 == strncmp("Aug", m, 3))
+        return 8;
+    else if(0 == strncmp("Sep", m, 3))
+        return 9;
+    else if(0 == strncmp("Oct", m, 3))
+        return 10;
+    else if(0 == strncmp("Nov", m, 3))
+        return 11;
+    else if(0 == strncmp("Dec", m, 3))
+        return 12;
+    else
+        return 0;
+}
+
+inline int date2i(char *date)
+{
+    char mon[3];
+    int day,h,m,s;
+    int value = 0;
+
+    if( 5 == sscanf(date, "%3s %02d %02d:%02d:%02d", mon, &day, &h, &m, &s))
+    {
+        value = (_month2i(mon)*10000000) + (day *100000) + (h * 3600) + (m * 60) + s;
+    }
+    return value;
+}
+
+inline int _day_cmp(char * miss, char *base)
+{
+    int i_m = 0; 
+    int i_b = 0;
+    i_m = date2i(miss);
+    i_b = date2i(base);
+
+    if(i_m < 10000000 || i_b < 10000000)
+        return 0;
+
+    if(i_m / 100000 == 101){
+        if(i_b / 100000 >= 101 && i_b/100000 < 201 )
+            return 0;
+        else
+            return 1970;
+    }else if(i_m/100000 == 1231 ){
+        if(i_b / 100000 >= 101 && i_b/100000 < 201 )
+            return -1;
+        else if(i_b / 100000 == 1231)
+            return 0;
+        else
+            return 1969;
+    }else if(i_m <= i_b){
+        return 0;
+    }else
+       return -1; 
+}
+
+inline void _gen_year(char *miss,char **base)
+{
+    int time_status;
+    int y;
+    char *date = *base;
+    time_status = _day_cmp(miss, *base);
+    switch(time_status){
+        default:
+        case 0:
+            //printf("copy year, time: %s , %s \n", miss, date);
+            strncpy(miss + LOG_TIME_SIZE-5, date + LOG_TIME_SIZE-5, 5);
+            *base = miss;
+            break;
+        case -1:
+            //printf("subtract 1 year, time:  %s\n", miss);
+            y = atoi(date + LOG_TIME_SIZE - 5) -1;
+            sprintf(miss + LOG_TIME_SIZE - 5, " %4d", y);
+            *base = miss;
+            break;
+        /* 12/31/1961 or 1/1/1970, box might not get the time  */
+        case 1970:
+        case 1969:
+            //printf("this is init time:  %s\n", miss);
+            sprintf(miss + LOG_TIME_SIZE - 5, " %4d", time_status);
+            break;
+    }
+}
+
+inline void _gen_years(PCOSA_DML_DIAGNOSTICS_ENTRY p, char *date, int pos)
+{
+    int j = 0;
+    char *base = date;
+    for(j = pos; j >= 0 ; j--){
+        if(p[j].Time[LOG_TIME_SIZE-5] == '\0')
+        {
+            _gen_year(p[j].Time, &base);
+        }
+        else if(atoi(p[j].Time + LOG_TIME_SIZE-4) <= 1971)
+           continue;
+        else
+           break;
+    } 
+}
+
 static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_count, char *user){
     int i = 0, count=0, c;
     char *line = NULL;
     char *tmp = NULL;
+    int i_tmp = 0;
     size_t LineNum;
     char UserStr[64], LevelStr[64];
     PCOSA_DML_DIAGNOSTICS_ENTRY p;
     int len = 0;
+    int year = 0;
+    int year_miss = 0;
+	char *timestamp;
+	time_t now;
 
     while( (c = fgetc(fd)) != EOF){
         if( c == '\n')
@@ -196,7 +319,8 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
     }
     fseek(fd, 0, SEEK_SET);
     count += *entry_count;
-    p = (PCOSA_DML_DIAGNOSTICS_ENTRY)AnscReAllocateMemory((*info), count * sizeof(COSA_DML_DIAGNOSTICS_ENTRY));
+//    p = (PCOSA_DML_DIAGNOSTICS_ENTRY)AnscReallocMemory((*info), (*entry_count)*sizeof(COSA_DML_DIAGNOSTICS_ENTRY), (count + 1024) * sizeof(COSA_DML_DIAGNOSTICS_ENTRY));
+    p = (PCOSA_DML_DIAGNOSTICS_ENTRY)realloc((*info), (count + 4) * sizeof(COSA_DML_DIAGNOSTICS_ENTRY));
     if(p == NULL){
         *entry_count = 0;
         return 0;
@@ -205,10 +329,30 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
     while(0 < (len = getline( &line, &LineNum, fd))){
         if(len < LOG_LINE_MIN_SIZE )
             goto CONTINUE;
+        
+        p[i].Tag[0] = '\0';
 
         //Get time string
+        //In R1.3 ~ R1.5 Time format is like
+        // Jan  1 00:00:00
+        //in R1.6 year will append in time string,like 
+        // Jan  1 00:00:00 2014   
         memcpy(p[i].Time, line, LOG_TIME_SIZE);
         p[i].Time[LOG_TIME_SIZE] = '\0';
+        /* If time format < R1.6 */
+        year = atoi(p[i].Time + LOG_TIME_SIZE-5); 
+        if(0 == year){
+            printf("Cannot get year\n");
+            p[i].Time[LOG_TIME_SIZE - 5] = '\0';
+            year_miss = 1;
+        }else{
+            /* Generate years if didn't get years before */
+            if(year_miss == 1 && year >=1971){
+                _gen_years(p, p[i].Time, i-1);
+                year_miss = 0;
+            } 
+        }
+
         //Get Level
         if(NULL != (tmp = strstr(line, user))){
              if(1 != sscanf(tmp, "%*[^.].%63s", LevelStr)){
@@ -251,13 +395,19 @@ CONTINUE:
         AnscFreeMemory(p);
         p = NULL;
     }
+    if(year_miss == 1){
+       /* cannot find years from log, get local time */ 
+		time(&now);
+		timestamp = ctime(&now) + 4; /* skip day of week */
+        _gen_years(p, timestamp, i - 1);
+    }
     *info = p;
     *entry_count = i;
     return i;
 
 }
 
-static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user){
+static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user, size_t *bufsize){
     struct dirent *ptr;    
     DIR *dir;
     FILE* fd;
@@ -276,12 +426,24 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
         fd = fopen(fName, "r");
         if(fd == NULL)
             continue;
+        if(bufsize != NULL)
+        {
+            struct stat fileinfo;
+            if(stat(fName, &fileinfo) == 0){
+                *bufsize += fileinfo.st_size;    
+            }else{
+                fclose(fd);
+                continue;
+            }
+        }
         _getLogInfo(fd, &entry, &count, user);
+        fclose(fd);
     }
     closedir(dir);
     *ppEntry = entry;
     return count;
 }
+
 
 ANSC_STATUS
 CosaDmlDiagnosticsGetEntry
@@ -298,11 +460,14 @@ CosaDmlDiagnosticsGetEntry
 
     *pulCount = 0;
     *ppDiagnosticsEntry = NULL;
+    
+    LOGFILE[0] = '\0';
+    /* Get log file name from sysevent since 1.6.1 */
+    //syscfg_init();
+    //syscfg_get(NULL, "SYS_LOG_FILE", LOGFILE, sizeof(LOGFILE));
 
-    syscfg_init();
-    syscfg_get(NULL, "SYS_LOG_FILE", LOGFILE, sizeof(LOGFILE));
-
-    if(LOGFILE[0] == '\0')
+    if( (!commonSyseventGet("SYS_LOG_FILE_V2", LOGFILE, sizeof(LOGFILE))) \
+        && (LOGFILE[0] == '\0'))
         return ANSC_STATUS_FAILURE;
     
     snprintf(dir, sizeof(dir), SYS_LOG_TEMP_DIR);
@@ -327,7 +492,7 @@ CosaDmlDiagnosticsGetEntry
         system(temp);
     }
     
-    *pulCount = _get_log(ppDiagnosticsEntry, dir, SYS_SYSLOG_USER);   
+    *pulCount = _get_log(ppDiagnosticsEntry, dir, SYS_SYSLOG_USER, NULL);
     snprintf(temp, sizeof(temp), "rm -rf %s", dir);
     printf("%s\n",temp);
     system(temp);
@@ -339,7 +504,7 @@ CosaDmlDiagnosticsGetEventlog
     (
         ANSC_HANDLE                    hContext,
         PULONG                         pulCount,
-        PCOSA_DML_DIAGNOSTICS_EVENTLOG *ppDiagnosticsEntry        
+        PCOSA_DML_DIAGNOSTICS_ENTRY *ppDiagnosticsEntry        
     )    
 {
     char logfile[FILENAME_MAX]; 
@@ -349,10 +514,14 @@ CosaDmlDiagnosticsGetEventlog
 
     *pulCount = 0;
     *ppDiagnosticsEntry = NULL;
-    syscfg_init();
-    syscfg_get(NULL, "EVT_LOG_FILE", LOGFILE, sizeof(LOGFILE));
+    LOGFILE[0] = '\0'; 
+    /* Get log file name from sysevent since 1.6.1 */
+    //syscfg_init();
+    //syscfg_get(NULL, "EVT_LOG_FILE", LOGFILE, sizeof(LOGFILE));
+    
 
-    if(LOGFILE[0] == '\0')
+    if( (!commonSyseventGet("EVT_LOG_FILE_V2", LOGFILE, sizeof(LOGFILE))) \
+        && (LOGFILE[0] == '\0'))
         return ANSC_STATUS_FAILURE;
 
     snprintf(dir, sizeof(dir), EVT_LOG_TEMP_DIR);
@@ -377,7 +546,7 @@ CosaDmlDiagnosticsGetEventlog
         system(temp);
     }
     
-    *pulCount = _get_log(ppDiagnosticsEntry, dir, EVT_SYSLOG_USER);   
+    *pulCount = _get_log(ppDiagnosticsEntry, dir, EVT_SYSLOG_USER, NULL);
     snprintf(temp, sizeof(temp), "rm -rf %s", dir);
     printf("%s\n",temp);
     system(temp);
@@ -385,5 +554,189 @@ CosaDmlDiagnosticsGetEventlog
     return ANSC_STATUS_SUCCESS;
 }
 
+static PCOSA_DML_DIAGNOSTICS_ENTRY pEventLogBuf = NULL;
+static int EventLogNum = 0;
+static size_t EventLogBufsize = 0;
+static ULONG EventLogLastTick;
+static PCOSA_DML_DIAGNOSTICS_ENTRY pSystemLogBuf = NULL;
+static int SystemLogNum = 0;
+static size_t SystemLogBufsize = 0;
+static ULONG SystemLogLastTick;
+
+static char LOG_LEVEL_STR[][16]={"Unknown", "Emergency", "Alert", "Critical", "Error", "Warning", "Notice", "Informational", "Debug"};
+
+#define REFRESH_INTERVAL 30
+#define TIME_NO_NEGATIVE(x) ((long)(x) < 0 ? 0 : (x))
+
+static void __freeDiagEntry(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, int *num)
+{
+    int index;
+    if(*ppEntry != NULL)
+    {
+        for( index = 0; index < *num; index++ )
+       {
+            if ( (*ppEntry)[index].pMessage != NULL )
+            {
+                free((*ppEntry)[index].pMessage);
+            }
+        }
+        AnscFreeMemory(*ppEntry);
+        *ppEntry        = NULL;
+        *num= 0;
+    }
+}
+
+static int __is_updated(ULONG *last_tick)
+{
+    if ( !(*last_tick) ) 
+    {
+        *last_tick = AnscGetTickInSeconds();
+
+        return TRUE;
+    }
+    
+    if ( *last_tick >= TIME_NO_NEGATIVE(AnscGetTickInSeconds() - REFRESH_INTERVAL) )
+    {
+        return FALSE;
+    }
+    else 
+    {
+        *last_tick = AnscGetTickInSeconds();
+
+        return TRUE;
+    }
+}
+
+ANSC_STATUS
+CosaDmlDiagnosticsGetAllEventlog
+    (
+        char*                          pValue,
+        ULONG*                         pUlSize
+    )    
+{
+    char logfile[FILENAME_MAX]; 
+    char temp[512];
+    char dir[2*FILENAME_MAX];
+    char LOGFILE[64];
+    char logsize;
+    char *pLog;
+    size_t tmpsize = 0;
+    int i;
+    LOGFILE[0] = '\0'; 
+    
+    if(__is_updated(&EventLogLastTick)) 
+    {
+        __freeDiagEntry(&pEventLogBuf, &EventLogNum);
+        EventLogBufsize = 0; 
+        if( (!commonSyseventGet("EVT_LOG_FILE_V2", LOGFILE, sizeof(LOGFILE))) \
+            && (LOGFILE[0] == '\0'))
+            return ANSC_STATUS_FAILURE;
+
+        snprintf(dir, sizeof(dir), EVT_LOG_TEMP_DIR);
+        snprintf(temp, sizeof(temp), "mkdir -p %s", dir);
+        printf("%s/n",temp);
+        system(temp);
+        
+        snprintf(temp, sizeof(temp), "log_handle.sh uncompress_evtlog %s", dir);
+        printf("%s\n",temp);
+        system(temp);
+
+        snprintf(temp, sizeof(temp), "%s.0", LOGFILE);
+        if(!access(temp, 0)){
+            snprintf(temp, sizeof(temp), "cp %s.0 %s", LOGFILE, dir);
+            printf("%s\n",temp);
+            system(temp);
+        }
+      
+        if(!access(LOGFILE, 0)){
+            snprintf(temp, sizeof(temp), "cp %s %s", LOGFILE, dir);
+            printf("%s\n",temp);
+            system(temp);
+        }
+        
+        EventLogNum = _get_log(&pEventLogBuf, dir, EVT_SYSLOG_USER, &EventLogBufsize);   
+        snprintf(temp, sizeof(temp), "rm -rf %s", dir);
+        printf("%s\n",temp);
+        system(temp);
+    }
+
+    if(*pUlSize < EventLogBufsize)
+    {
+        *pUlSize = EventLogBufsize;
+        return ANSC_STATUS_FAILURE;
+    }else{
+        for(i=0 ; (i< EventLogNum) && (*pUlSize > tmpsize + 1); i++){
+           tmpsize += snprintf(pValue + tmpsize, *pUlSize - 1 - tmpsize , "\n%s\n%s\n%s\n%s", pEventLogBuf[i].Time, pEventLogBuf[i].Tag, LOG_LEVEL_STR[pEventLogBuf[i].Level], pEventLogBuf[i].pMessage );
+        }
+        pValue[tmpsize] = '\0';
+        return ANSC_STATUS_SUCCESS;
+    }
+}
+
+ANSC_STATUS
+CosaDmlDiagnosticsGetAllSyslog
+    (
+        char*                          pValue,
+        ULONG*                         pUlSize
+    )    
+{
+    char logfile[FILENAME_MAX]; 
+    char temp[512];
+    char dir[2*FILENAME_MAX];
+    char LOGFILE[64];
+    char logsize;
+    char *pLog;
+    size_t tmpsize = 0;
+    int i;
+    LOGFILE[0] = '\0'; 
+    
+    if(__is_updated(&SystemLogLastTick)) 
+    {
+        __freeDiagEntry(&pSystemLogBuf, &SystemLogNum);
+        SystemLogBufsize = 0; 
+        if( (!commonSyseventGet("SYS_LOG_FILE_V2", LOGFILE, sizeof(LOGFILE))) \
+            && (LOGFILE[0] == '\0'))
+            return ANSC_STATUS_FAILURE;
+    
+        snprintf(dir, sizeof(dir), SYS_LOG_TEMP_DIR);
+        snprintf(temp, sizeof(temp), "mkdir -p %s", dir);
+        printf("%s/n",temp);
+        system(temp);
+        
+        snprintf(temp, sizeof(temp), "log_handle.sh uncompress_syslog %s", dir);
+        printf("%s\n",temp);
+        system(temp);
+
+        snprintf(temp, sizeof(temp), "%s.0", LOGFILE);
+        if(!access(temp, 0)){
+            snprintf(temp, sizeof(temp), "cp %s.0 %s", LOGFILE, dir);
+            printf("%s\n",temp);
+            system(temp);
+        }
+      
+        if(!access(LOGFILE, 0)){
+            snprintf(temp, sizeof(temp), "cp %s %s", LOGFILE, dir);
+            printf("%s\n",temp);
+            system(temp);
+        }
+        
+        SystemLogNum = _get_log(&pSystemLogBuf, dir, SYS_SYSLOG_USER, &SystemLogBufsize);   
+        snprintf(temp, sizeof(temp), "rm -rf %s", dir);
+        printf("%s\n",temp);
+        system(temp);
+    }
+
+    if(*pUlSize < SystemLogBufsize)
+    {
+        *pUlSize = SystemLogBufsize;
+        return ANSC_STATUS_FAILURE;
+    }else{
+        for(i=0; (i< SystemLogNum) && (*pUlSize > tmpsize + 1); i++){
+           tmpsize += snprintf(pValue + tmpsize, *pUlSize - 1 - tmpsize , "\n%s\n%s\n%s\n%s", pSystemLogBuf[i].Time, pSystemLogBuf[i].Tag, LOG_LEVEL_STR[pSystemLogBuf[i].Level], pSystemLogBuf[i].pMessage );
+        }
+        pValue[tmpsize] = '\0';
+        return ANSC_STATUS_SUCCESS;
+    }
+}
 #endif
 

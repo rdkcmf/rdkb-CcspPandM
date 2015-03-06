@@ -69,7 +69,7 @@
     ULONG                           ulDiagEntryNumber;                                      \
     PCOSA_DML_DIAGNOSTICS_ENTRY     pDiagEntry;                                             \
     ULONG                           ulDiagEventlogNumber;                                   \
-    PCOSA_DML_DIAGNOSTICS_EVENTLOG  pDiagEventlog;                                          \
+    PCOSA_DML_DIAGNOSTICS_ENTRY     pDiagEventlog;                                          \
 
 
 typedef  struct

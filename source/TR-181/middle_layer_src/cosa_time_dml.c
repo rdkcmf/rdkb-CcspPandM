@@ -268,6 +268,13 @@ Time_GetParamUlongValue
         return TRUE;
     }
 
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "CityIndex", TRUE))
+    {
+        /* collect value */
+        *puLong = pMyObject->TimeCfg.cityIndex;
+        return TRUE;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -528,6 +535,15 @@ Time_SetParamUlongValue
     )
 {
     /* check the parameter name and set the corresponding value */
+    PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
+
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "CityIndex", TRUE))
+    {
+        /* save update to backup */
+        pMyObject->TimeCfg.cityIndex = uValue;
+        return TRUE;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;

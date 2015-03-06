@@ -95,6 +95,13 @@ _COSA_DML_NAT_DMZ
 }
 COSA_DML_NAT_DMZ, *PCOSA_DML_NAT_DMZ;
 
+typedef enum
+{
+    COSA_DML_NAT_PMAPPING_Origin_Static = 1,
+    COSA_DML_NAT_PMAPPING_Origin_Dynamic
+}
+COSA_DML_NAT_PMAPPING_Origin;
+
 typedef  struct
 _COSA_DML_NAT_PMAPPING
 {
@@ -115,6 +122,7 @@ _COSA_DML_NAT_PMAPPING
     ANSC_IPV4_ADDRESS               InternalClient;
     char                            Description[256];
     char                            X_CISCO_COM_InternalClientV6[64];
+    COSA_DML_NAT_PMAPPING_Origin    X_CISCO_COM_Origin;
 }
 COSA_DML_NAT_PMAPPING,  *PCOSA_DML_NAT_PMAPPING;
 
@@ -326,6 +334,9 @@ CosaDmlNatGetPortTriggerEnable(BOOL *pBool);
 
 ANSC_STATUS
 CosaDmlNatSetPortTriggerEnable(BOOL vBool);
+
+BOOL 
+CosaDmlNatChkPortMappingIPV6Address(char* address);
 
 BOOL 
 CosaDmlNatChkPortMappingClient(ULONG client);

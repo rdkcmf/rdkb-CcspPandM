@@ -2690,7 +2690,7 @@ CosaDmlDnsClientGetServers
             }else{
                 for(i = 0, j = 0; j < *pulCount; j++ ){
                     int af = CHECK_V4_V6(dns.dns_server[j]);
-                    fprintf(stderr, "af:%d,i:%d,j:%d, server:%s \n", af, i, j, dns.dns_server[j]);
+                    CcspTraceWarning(("CosaDmlDnsClientGetServers -- af:%d,i:%d,j:%d, server:%s \n", af, i, j, dns.dns_server[j]));
                     switch (af){
                     case DNS_FAMILY_IPV4:
                             /*inet_pton(AF_INET, dns.dns_server[i], &(pServer[i].DNSServer));*/

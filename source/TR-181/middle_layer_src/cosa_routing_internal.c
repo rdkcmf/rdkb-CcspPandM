@@ -177,6 +177,7 @@ CosaRoutingInitialize
     pStaticRoute = CosaDmlStaticRouteGetEntries( NULL, &RouteCount);
     if ( !pStaticRoute )
     {
+        AnscTraceError(("CosaRoutingInitialize -- failed to retrieve static routes!"));
         returnStatus = ANSC_STATUS_RESOURCES;
         goto  EXIT;
     }
@@ -1635,6 +1636,8 @@ char* CosaTimeGetRipdConfStaticPart (ANSC_HANDLE   hContext)
 
         pSListEntry = AnscSListGetEntryByIndex(pListHead, nIndex++);
     }
+
+    AnscTraceWarning(("CosTimeGetRipdConfStaticPart -- exits.\n"));
 
     return AnscCloneString(Buff);
 }

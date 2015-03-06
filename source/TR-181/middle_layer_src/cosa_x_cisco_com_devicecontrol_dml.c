@@ -155,6 +155,14 @@ X_CISCO_COM_DeviceControl_GetParamBoolValue
     ANSC_STATUS                     retStatus= ANSC_STATUS_SUCCESS;   
     /* check the parameter name and return the corresponding value */
     CcspTraceWarning(("-----DeviceControl_GetParamBoolValue,Trying to get parameter '%s'\n", ParamName));
+    
+    if( AnscEqualString(ParamName, "ErouterEnable", TRUE)) {
+        retStatus = CosaDmlDcGetErouterEnabled(NULL,pBool);
+        if (retStatus != ANSC_STATUS_SUCCESS) {
+            return FALSE;
+        }
+        return TRUE;
+    }
 
     if( AnscEqualString(ParamName, "MultiHomedBridgingStatus", TRUE))
     {
@@ -286,6 +294,13 @@ X_CISCO_COM_DeviceControl_GetParamBoolValue
     if (AnscEqualString(ParamName, "EnableCusadminRemoteMgmt", TRUE))
     {
         if (CosaDmlDcGetCusadminRemoteMgmtEnable(NULL, pBool) != ANSC_STATUS_SUCCESS)
+            return FALSE;
+        return TRUE;
+    }
+    
+    if (AnscEqualString(ParamName, "XHSEthernetPortEnable", TRUE))
+    {
+        if (CosaDmlDcGetHSEthernetPortEnable(NULL, pBool) != ANSC_STATUS_SUCCESS)
             return FALSE;
         return TRUE;
     }
@@ -696,6 +711,12 @@ X_CISCO_COM_DeviceControl_GetParamStringValue
     {
         return CosaDmlDcGetWanDomainName(NULL, pValue);
     }
+    
+    /*get wan static Domain name (readonly)*/    
+    if( AnscEqualString(ParamName, "WanStaticDomainName", TRUE))
+    {
+        return CosaDmlDcGetWanStaticDomainName(NULL, pValue);
+    }
 
     if( AnscEqualString(ParamName, "GuestPassword", TRUE))
     {
@@ -769,6 +790,15 @@ X_CISCO_COM_DeviceControl_SetParamBoolValue
     ANSC_STATUS                        retStatus = ANSC_STATUS_SUCCESS;
 
     /* check the parameter name and set the corresponding value */
+    
+    if (AnscEqualString(ParamName, "ErouterEnable", TRUE)) {
+        
+        retStatus = CosaDmlDcSetErouterEnabled(NULL, bValue);
+        if (retStatus != ANSC_STATUS_SUCCESS)
+            return FALSE;
+     
+        return TRUE;
+    }
 
     if (AnscEqualString(ParamName, "WanSecondIPRipAdvertised", TRUE))
     {
@@ -935,6 +965,15 @@ X_CISCO_COM_DeviceControl_SetParamBoolValue
         if (retStatus != ANSC_STATUS_SUCCESS)
             return FALSE;
 
+        return TRUE;
+    }
+    
+    if (AnscEqualString(ParamName, "XHSEthernetPortEnable", TRUE))
+    {
+//         if (CosaDmlDcSetHSEthernetPortEnable(NULL, bValue) != ANSC_STATUS_SUCCESS)
+//             return FALSE;
+        pMyObject->bXHSPortEnabled = bValue;
+        pMyObject->bXHSPortChanged = 1;
         return TRUE;
     }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1148,6 +1187,7 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
     if (AnscEqualString(ParamName, "DeviceMode", TRUE))
     {
         switch(uValue){
+            case(COSA_DML_DEVICE_MODE_Bridge):
             case(COSA_DML_DEVICE_MODE_Ipv4):
             case(COSA_DML_DEVICE_MODE_Ipv6):
             case(COSA_DML_DEVICE_MODE_Dualstack):
@@ -1413,6 +1453,15 @@ X_CISCO_COM_DeviceControl_Validate
         ULONG*                      puLength
     )
 {
+    PCOSA_DATAMODEL_DEVICECONTROL      pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+    if(pMyObject->WebServerChanged == TRUE)
+    {
+        if(pMyObject->HTTPSPort == pMyObject->HTTPPort || \
+                pMyObject->HTTPSPort == 0 || \
+                pMyObject->HTTPPort == 0)
+            return FALSE;
+            
+    }
     return TRUE;
 }
 
@@ -1477,6 +1526,13 @@ X_CISCO_COM_DeviceControl_Commit
     }
 
     CosaDevCtrlReg_SetUserChangedParamsControl((ANSC_HANDLE)pMyObject);
+    
+    if (pMyObject->bXHSPortChanged) {
+        pMyObject->bXHSPortChanged = FALSE;
+        if (CosaDmlDcSetHSEthernetPortEnable(NULL, pMyObject->bXHSPortEnabled) != ANSC_STATUS_SUCCESS)
+            return FALSE;
+    }
+        
 
     return 0;
 }
@@ -1753,6 +1809,13 @@ LanMngm_SetParamBoolValue
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_LAN_MANAGEMENT        pLanMngm    = (PCOSA_DML_LAN_MANAGEMENT)pLinkObj->hContext;
     BOOL                                      bridgeMode;
+    ULONG                                     deviceMode;
+    
+    if (CosaDmlDcGetDeviceMode(NULL, &deviceMode) != ANSC_STATUS_SUCCESS)
+            return FALSE;
+    
+    if (!(deviceMode-1)) 
+        return FALSE;
 
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
@@ -1815,7 +1878,13 @@ LanMngm_SetParamUlongValue
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_LAN_MANAGEMENT        pLanMngm    = (PCOSA_DML_LAN_MANAGEMENT)pLinkObj->hContext;
     BOOL                                      bridgeMode;
+    ULONG                                     deviceMode;
 
+    if (CosaDmlDcGetDeviceMode(NULL, &deviceMode) != ANSC_STATUS_SUCCESS)
+            return FALSE;
+    
+    if (!(deviceMode-1)) 
+        return FALSE;
 
     if (AnscEqualString(ParamName, "LanMode", TRUE))
     {

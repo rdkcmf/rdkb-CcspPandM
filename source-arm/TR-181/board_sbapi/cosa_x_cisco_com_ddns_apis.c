@@ -53,6 +53,8 @@
 #if defined _COSA_INTEL_USG_ARM_ || defined _COSA_DRG_TPG_
 #include "utctx/utctx_api.h"
 #include <utapi.h>
+#include "dml_tr181_custom_cfg.h" 
+
 COSA_DML_DDNS_SERVICE g_DdnsService[10] = 
 {
     {FALSE, 1, "DdnsService1", "dyndns", "admin1", "admin1", "cisco.com", "", COSA_DML_DDNS_STATE_Idle},
@@ -714,7 +716,7 @@ DdnsRestart(void)
     ULONG   i = 0;
     char    cmd[512]={0};
 
-    if (vsystem("killall ez-ipupdate") != 0)
+    if (vsystem("killall -9 ez-ipupdate") != 0)
     {
         fprintf(stderr, "%s: fail to killall ez-ipupdate\n", __FUNCTION__);
     }
@@ -727,7 +729,7 @@ DdnsRestart(void)
             {
                 if ( i == 2 )
                 {
-                    sprintf(cmd ,"wget \"http://nic.changeip.com/nic/update?u=%s&p=%s&hostname=%s\"",
+                    snprintf(cmd, sizeof(cmd), "wget -T 10 'http://nic.changeip.com/nic/update?u=%s&p=%s&hostname=%s'",
                     g_DdnsService[i].Username,
                     g_DdnsService[i].Password,
                     g_DdnsService[i].Domain);
@@ -739,7 +741,7 @@ DdnsRestart(void)
                 }
                 else
                 {
-                    sprintf(cmd, "/fss/gw/usr/bin/ez-ipupdate \
+                    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/bin/ez-ipupdate \
                     --interface=erouter0 \
                     --cache-file=/var/ez-ipupdate.cache.%s \
                     --daemon \

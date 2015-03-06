@@ -318,6 +318,31 @@ CosaUtilGetLowerLayers
             else if ( AnscEqualString(pTableStringToken->Name, "Device.DSL.Interface.", TRUE ) )
             {
             }
+            else if ( AnscEqualString(pTableStringToken->Name, "Device.WiFi.Radio.", TRUE ) )
+            {
+                ulNumOfEntries =       CosaGetParamValueUlong("Device.WiFi.RadioNumberOfEntries");
+
+                for (i = 0; i < ulNumOfEntries; i++)
+                {
+                    ulEntryInstanceNum = CosaGetInstanceNumberByIndex("Device.WiFi.Radio.", i);
+                    
+                    if (ulEntryInstanceNum)
+                    {
+                        _ansc_sprintf(ucEntryFullPath, "%s%d.", "Device.WiFi.Radio.", ulEntryInstanceNum);
+                        
+                        _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, "Name");
+                        
+                        ulEntryNameLen = sizeof(ucEntryNameValue);
+                        if (( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
+                            AnscEqualString(ucEntryNameValue, pKeyword, TRUE) )
+                        {
+                            pMatchedLowerLayer = AnscCloneString(ucEntryFullPath);
+                            
+                            break;
+                        }
+                    }
+                }
+            }
             else if ( AnscEqualString(pTableStringToken->Name, "Device.HomePlug.Interface.", TRUE ) )
             {
             }
@@ -407,6 +432,50 @@ CosaUtilGetLowerLayers
             }
             else if ( AnscEqualString(pTableStringToken->Name, "Device.Ethernet.VLANTermination.", TRUE ) )
             {
+            }
+            else if ( AnscEqualString(pTableStringToken->Name, "Device.WiFi.SSID.", TRUE ) )
+            {
+                parameterValStruct_t varStruct;
+                ulEntryNameLen   = sizeof(ucEntryNameValue);
+                ulNumOfEntries = 0;
+                AnscCopyString(ucEntryParamName,"Device.WiFi.SSIDNumberOfEntries");
+                varStruct.parameterName = ucEntryParamName;
+                varStruct.parameterValue = ucEntryNameValue;
+                if (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen))
+                {
+                    AnscTraceFlow(("<HL>%s not found %s\n",__FUNCTION__,varStruct.parameterName ));
+                    break;
+                }
+                AnscTraceFlow(("<HL>%s ucEntryNameValue=%s\n", __FUNCTION__,ucEntryNameValue));
+                _ansc_sscanf(ucEntryNameValue,"%d",&ulNumOfEntries);
+                AnscTraceFlow(("<HL>%s Wifi # of entries=%d\n", __FUNCTION__,ulNumOfEntries));
+                i = 0;
+                ulEntryInstanceNum =1;
+                while (i < ulNumOfEntries)
+                {
+                    _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
+                    _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
+                    _ansc_sprintf(ucEntryParamName,"Device.WiFi.SSID.%d.Name",ulEntryInstanceNum);                    
+                        
+                    if (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen))
+                    {
+                        AnscTraceFlow(("<HL>%s WiFi instance(%d) not found\n", __FUNCTION__,
+                            ulEntryInstanceNum));
+                        ulEntryInstanceNum++;
+                        continue;
+                    }  
+                    AnscTraceFlow(("<HL>%s WiFi instance(%d) has name =%s inputName=%s\n", 
+                        __FUNCTION__,ulEntryInstanceNum,ucEntryNameValue,pKeyword));
+                    if ( AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
+                    {
+                        _ansc_sprintf(ucEntryFullPath,"Device.WiFi.SSID.%d",ulEntryInstanceNum);
+                        pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
+
+                        break;
+                    }
+                    ulEntryInstanceNum++;
+                    i++;
+                }
             }
             else if ( AnscEqualString(pTableStringToken->Name, "Device.Bridging.Bridge.", TRUE ) )
             {
@@ -517,6 +586,10 @@ LINKTYPE_MAP_T g_linktype_map[COSA_DML_LINK_TYPE_TOTAL] = {
         "UPA", 
         COSA_DML_LINK_TYPE_Upa
     },
+    {   "Device.WiFi.SSID.", 
+        "WiFi", 
+        COSA_DML_LINK_TYPE_WiFiSsid
+    },
     {   "Device.Bridging.Bridge.", 
         "Bridge", 
         COSA_DML_LINK_TYPE_Bridge
@@ -535,10 +608,12 @@ LINKTYPE_MAP_T g_linktype_map[COSA_DML_LINK_TYPE_TOTAL] = {
 COSA_DML_LINK_TYPE CosaUtilGetLinkTypeFromStr(char* pLinkTypeStr)
 {
     int index=0;
+    if(NULL == pLinkTypeStr)
+        return COSA_DML_LINK_TYPE_LAST;
 
     for(index=0; index<COSA_DML_LINK_TYPE_TOTAL; index++)
     {
-        if(strstr(pLinkTypeStr, g_linktype_map[index].LinkTypeStr) != NULL)
+        if(NULL != g_linktype_map[index].LinkTypeStr && strstr(pLinkTypeStr, g_linktype_map[index].LinkTypeStr) != NULL)
         {
             return g_linktype_map[index].LinkType;
         }
@@ -549,12 +624,16 @@ COSA_DML_LINK_TYPE CosaUtilGetLinkTypeFromStr(char* pLinkTypeStr)
 
 char* CosaUtilGetStrFromLinkTypePath(char* pLinkTypePath){
     int index=0;
+
+    if(NULL == pLinkTypePath)
+        return NULL;
+
     AnscTraceFlow(("%s: %s\n", __FUNCTION__, pLinkTypePath));
     for(index=0; index<COSA_DML_LINK_TYPE_TOTAL; index++)
     {
         //if(!strncmp(g_linktype_map[index].LinkTypePath, pLinkTypePath, 
         //        sizeof(g_linktype_map[index].LinkTypePath)))
-        if(strstr(pLinkTypePath, g_linktype_map[index].LinkTypePath) != NULL)
+        if(NULL != g_linktype_map[index].LinkTypePath && strstr(pLinkTypePath, g_linktype_map[index].LinkTypePath) != NULL)
         {
             AnscTraceFlow(("%s: return index %d\n", __FUNCTION__, index));
             return g_linktype_map[index].LinkTypeStr;
@@ -932,6 +1011,81 @@ CosaUtilGetFullPathNameByKeyword
 }
 
 #if  defined(_ANSC_LINUX)
+
+ULONG
+CosaUtilChannelValidate
+    (
+        UINT                       uiRadio,
+        ULONG                      Channel
+    )
+{
+    unsigned long channelList_5G [] = {36, 40, 44, 48, 52, 56, 60, 64, 149, 153, 157, 161, 165};
+    int i;
+    switch(uiRadio)
+    {
+        case 1:
+             if((Channel < 1) || (Channel > 11))
+                return 0;
+             return 1;
+        case 2:
+             for(i=0; i<13; i++)
+             {
+                if(Channel == channelList_5G[i])
+                  return 1;
+             }
+             return 0;
+             break;
+        default:
+             break;
+     }
+     return 0;
+}
+
+ULONG
+CosaUtilChannelValidate2
+    (
+        UINT                       uiRadio,
+        ULONG                      Channel,
+        char                       *channelList
+    )
+{
+    // This should be updated to use the possible channels list  Device.WiFi.Radio.1.PossibleChannels instead of a static list.
+    unsigned long channelList_5G [] = {36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 149, 153, 157, 161, 165};
+    int i;
+
+    // Channel maybe 0 if radio is disabled or auto channel was set
+    if (Channel == 0) {
+        return 1;
+    }
+
+    // If channelList is provided use it.
+    if (channelList != NULL) {
+        char chan[4];
+        sprintf(chan,"%d",Channel);
+        if (strstr(channelList,chan) != NULL) {
+            return 1;
+        } 
+    }
+
+    switch(uiRadio)
+    {
+        case 1:
+             if((Channel < 0) || (Channel > 11))
+                return 0;
+             return 1;
+        case 2:
+             for(i=0; i<24; i++)
+             {
+                if(Channel == channelList_5G[i])
+                  return 1;
+             }
+             return 0;
+             break;
+        default:
+             break;
+     }
+     return 0;
+}
 
 ULONG CosaUtilIoctlXXX(char * if_name, char * method, void * input)
 {
@@ -1658,7 +1812,35 @@ void chomp(char *line)
     return;
 }
 
+int get_if_hwaddr(const char *ifname, char *mac, size_t size)
+{
+    int sockfd;
+    struct ifreq ifr;
+    unsigned char *ptr;
 
+    if (!ifname || !mac || size < sizeof("00:00:00:00:00:00"))
+        return -1;
+
+    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+        perror("socket");
+        return -1;
+    }
+
+    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", ifname);
+
+    if (ioctl(sockfd, SIOCGIFHWADDR, &ifr) == -1) {
+        perror("ioctl");
+        close(sockfd);
+        return -1;
+    }
+
+    ptr = (unsigned char *)ifr.ifr_hwaddr.sa_data;
+    snprintf(mac, size, "%02x:%02x:%02x:%02x:%02x:%02x",
+            ptr[0], ptr[1], ptr[2], ptr[3], ptr[4], ptr[5]);
+
+    close(sockfd);
+    return 0;
+}
 
 #ifdef IPV4ADDR_TEST
 

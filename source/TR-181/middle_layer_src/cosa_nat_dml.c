@@ -805,8 +805,10 @@ X_CISCO_COM_DMZ_SetParamBoolValue
     {
         /* save update to backup */
         pDmz->bEnabled     = bValue;
-        if (bValue == FALSE)
+        if (bValue == FALSE) {
             AnscCopyString(pDmz->InternalIP, "0.0.0.0");  /* keep sync between webui and snmp */
+            AnscCopyString(pDmz->IPv6Host, "0:0:0:0:0:0:0:0");
+        }
     #if CFG_USE_CCSP_SYSLOG
         /* Bad practice to use platform dependent and will be rectified -- CCSP_TRACE should be used */
         syslog_systemlog("DMZ", LOG_NOTICE, "%s", (bValue==TRUE)?"Enabled":"Disabled");
@@ -1427,6 +1429,9 @@ PortMapping_AddEntry
     pNatPMapping->InstanceNumber     = pNat->MaxInstanceNumber;
     pPMappingCxtLink->InstanceNumber = pNatPMapping->InstanceNumber ;
     *pInsNumber                      = pNatPMapping->InstanceNumber ;
+    
+    /*set the origin of this rule to "Static" when add the new entry*/
+    pNatPMapping->X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Static;
 
     CosaSListPushEntryByInsNum(&pNat->NatPMappingList, (PCOSA_CONTEXT_LINK_OBJECT)pPMappingCxtLink);
 
@@ -1723,6 +1728,14 @@ PortMapping_GetParamUlongValue
     if ( PortMapping_GetParamUlongValue_Custom(hInsContext, ParamName, puLong) )
     {
         return  TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "X_CISCO_COM_Origin", TRUE))
+    {
+        /* collect value */
+        *puLong = pNatPMapping->X_CISCO_COM_Origin;
+
+        return TRUE;
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */

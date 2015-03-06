@@ -57,6 +57,10 @@
 #include "utctx/utctx_api.h"
 #include "cosa_drg_common.h"
 
+#ifndef NELEMS
+#define NELEMS(a)   (sizeof(a) / sizeof((a)[0]))
+#endif
+
 static BRIDGING_INFO g_Bridgings;
 
 static BRIDGE_CONTROL g_lanSwCtl = {
@@ -555,6 +559,15 @@ static ANSC_STATUS _Psm_SetBVlan(ULONG l2InstNum, ULONG bvlanInstNum, PBRIDGE_VL
 
 **********************************************************************/
 
+#include <sys/time.h>
+static void print_time(const char *msg)
+{
+    struct timeval tv;
+
+    gettimeofday(&tv, NULL);
+    fprintf(stderr, "[DM-Bridge] %20s: %6d.%06d\n", msg ? msg : "", tv.tv_sec, tv.tv_usec);
+}
+
 ANSC_STATUS
 CosaDmlBrgInit
     (
@@ -562,84 +575,7 @@ CosaDmlBrgInit
         PANSC_HANDLE                phContext
 )
 {
-#ifdef _COSA_DRG_TPG_
-    COSA_DML_MOCA_IF_FULL mocaEnt;
-    int i;
-
-    //Set up ulog
-    ulog_init();
-
-    //Initialize the switch if not already. Shared with ethernet module.
-    if (gLanSwDev == -1) {
-        gLanSwDev = swcfg_lib_init(0);
-    }
-    if (gWanSwDev == -1) {
-        gWanSwDev = swcfg_lib_init(1);
-    }
-
-    //Set up bridging
-    AnscSListPushEntryAtBack(&g_Bridgings.bridgeList, (PSINGLE_LINK_ENTRY) &g_lanSwitchBridge);
-
-    ulogf(ULOG_CONFIG, UL_STATUS, "COSA Bridge Count:%d\n", AnscSListQueryDepth(&g_Bridgings.bridgeList));
-
-    //Set up lan bridge
-    for (i = 0; i < sizeof(g_fixedLanPorts)/sizeof(*g_fixedLanPorts); ++i) {
-        AnscSListPushEntryAtBack(&g_lanSwitchBridge.portList, (PSINGLE_LINK_ENTRY) (g_fixedLanPorts+i));
-    } 
-
-    ulogf(ULOG_CONFIG, UL_STATUS, "COSA Bridge Port Count:%d\n", AnscSListQueryDepth(&g_lanSwitchBridge.portList));
-
-    g_lanSwitchBridge.control = &g_lanSwCtl;
-    g_lanSwitchBridge.standard = COSA_DML_BRG_STD_8021Q_2005;
-    g_lanSwitchBridge.hwid = "bridge_tpg";
-
-    //Set up ports
-    AnscCopyString(g_fixedLanPorts[0].linkName, SWITCH_PORT_0_NAME);
-    AnscCopyString(g_fixedLanPorts[0].name, "br0");
-
-    AnscCopyString(g_fixedLanPorts[1].linkName, SWITCH_PORT_1_NAME);
-    AnscCopyString(g_fixedLanPorts[1].name, "br1");
-
-    AnscCopyString(g_fixedLanPorts[2].linkName, SWITCH_PORT_2_NAME);
-    AnscCopyString(g_fixedLanPorts[2].name, "br2");
-
-    AnscCopyString(g_fixedLanPorts[3].linkName, SWITCH_PORT_3_NAME);
-    AnscCopyString(g_fixedLanPorts[3].name, "br3");
-
-    mocaEnt.StaticInfo.Name[0] = '\0';
-    CosaDmlMocaIfGetEntry(hDml,0,&mocaEnt);  //Assume only 1 moca entry. Retrieve its name.
-    AnscCopyString(g_fixedLanPorts[4].linkName, mocaEnt.StaticInfo.Name);
-    AnscCopyString(g_fixedLanPorts[4].name, "br4");
-
-    g_fixedLanPorts[5].linkName[0] = '\0';
-    AnscCopyString(g_fixedLanPorts[5].name, "lan0");
-
-    PBRIDGE_PORT curport;
-    for (i = 0; i < 6; ++i) {
-        curport = g_fixedLanPorts+i;
-        curport->hwid = g_swid+i;
-        curport->control = &g_lanSwPCtl;
-        curport->linkType = COSA_DML_BRG_LINK_TYPE_Eth;
-        curport->standard = COSA_DML_BRG_STD_8021Q_2005;
-        curport->bMgt = FALSE;
-        loadID(curport->name, &curport->instanceNumber, curport->alias);
-    }
-
-    //Patch up port specific values
-    g_fixedLanPorts[4].linkType = COSA_DML_BRG_LINK_TYPE_Moca;
-
-    g_fixedLanPorts[5].bMgt = TRUE;
-    g_fixedLanPorts[5].linkType = 0;
-
-
-    //get remote ports 
-    pollRemotePorts();
-
-    gInit = 1;
-
-    return ANSC_STATUS_SUCCESS;
-#endif
-
+    print_time("CosaDmlBrgInit -- in");
 #ifdef _COSA_INTEL_USG_ARM_
     int retPsmGet1 = CCSP_SUCCESS;
     int retPsmGet2 = CCSP_SUCCESS;
@@ -786,6 +722,7 @@ CosaDmlBrgInit
         fprintf(stdout, "\n");
     }
     gInit = 1;
+    print_time("CosaDmlBrgInit -- OUT");
     return ANSC_STATUS_SUCCESS;
 #endif
 }
@@ -2594,8 +2531,8 @@ static ANSC_STATUS _COSA_AddToken(char *token, char *pStr)
             result = strtok(NULL,DMSB_DELIM);
         }
         AnscTraceFlow(("<HL> %s Str=%s not found:%s\n",__FUNCTION__,buf,token));
+        strcat(pStr,DMSB_DELIM);
     }
-    strcat(pStr,DMSB_DELIM);
     strcat(pStr,token);
     AnscTraceFlow(("<HL> %s new Str=%s after add:%s\n",__FUNCTION__,pStr,token));
     return ANSC_STATUS_SUCCESS;
@@ -2758,6 +2695,17 @@ static ANSC_STATUS  _COSA_RemoveBPortMember(char *path, char *name)
     return ANSC_STATUS_SUCCESS;
 }
 
+static int PsmGroupGet_s(const char *names[], int nname, 
+        parameterValStruct_t ***records, int *nrec)
+{
+    return PsmGroupGet(bus_handle, g_Subsystem, names, nname, records, nrec);
+}
+
+static void PsmFreeRecords_s(parameterValStruct_t **records, int nrec)
+{
+    PsmFreeRecords(bus_handle, records, nrec);
+}
+
 static ANSC_STATUS _Psm_Cleanup(int instanceNumber)
 {
     int i = 0;
@@ -2857,117 +2805,91 @@ static ANSC_STATUS _Psm_DelBr(PBRIDGE pBridge)
     return ANSC_STATUS_SUCCESS;
 }
 
-static ANSC_STATUS _Psm_GetBr(ULONG instancenum, PBRIDGE pBridge)
+static ANSC_STATUS _Psm_GetBr(ULONG insNum, PBRIDGE pBridge)
 {
-    int retPsmGet = CCSP_SUCCESS;
-    char *param_value= NULL;
-    char param_name[256]= {0};
-    int data = 0;
-    AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
+    static const char *brTemps[] = {
+        DMSB_L2_INST_PREFIX ".AllowDelete",
+        DMSB_L2_INST_PREFIX ".Name",
+        DMSB_L2_INST_PREFIX ".Vid",
+        DMSB_L2_INST_PREFIX ".PriorityTag",
+        DMSB_L2_INST_PREFIX ".Enable",
+        DMSB_L2_INST_PREFIX ".Alias",
+        DMSB_L2_INST_PREFIX ".Standard",
+        DMSB_L2_INST_PREFIX ".InstanceNum",
+        DMSB_L2_INST_PREFIX ".Type",
+    };
+    char nameArr[NELEMS(brTemps)][256];
+    const char *names[NELEMS(brTemps)];
+    parameterValStruct_t **records;
+    int recordCnt, i, brId;
 
-    _PSM_GET_BR(_PSM_BRIDGE_TML_ALLOWDELETE);
-    if (_ansc_strstr(param_value,"TRUE"))
+    for (i = 0; i < NELEMS(names); i++)
     {
-        pBridge->bAllowDelete = TRUE;
+        snprintf(nameArr[i], sizeof(nameArr[i]), brTemps[i], insNum);
+        names[i] = &nameArr[i];
     }
-    else
+
+    if (PsmGroupGet_s(names, NELEMS(names), &records, &recordCnt) != CCSP_SUCCESS)
+        return ANSC_STATUS_FAILURE;
+
+    for (i = 0; i < recordCnt; i++)
     {
-        pBridge->bAllowDelete = FALSE;
-    } 
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BR(_PSM_BRIDGE_TML_ALIAS);
-    AnscCopyString(pBridge->alias, param_value); 
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BR(_PSM_BRIDGE_TML_NAME);
-    AnscCopyString(pBridge->name, param_value); 
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BR(_PSM_BRIDGE_TML_ENABLE);
-    if (_ansc_strstr(param_value,"TRUE"))
-    {
-        pBridge->bEnabled = TRUE;
+        //fprintf(stderr, "%s: [%d] %s %s\n", __FUNCTION__, i, records[i]->parameterName, records[i]->parameterValue);
+        /* if PsmGroupGet_s() make sure @records returned are consistent 
+         * with @names in sequence we can use index directly */
+        if (strstr(records[i]->parameterName, ".AllowDelete"))
+            pBridge->bAllowDelete = (strcasecmp(records[i]->parameterValue, "TRUE") == 0);
+        else if (strstr(records[i]->parameterName, ".Alias"))
+            snprintf(pBridge->alias, sizeof(pBridge->alias), "%s", records[i]->parameterValue);
+        else if (strstr(records[i]->parameterName, ".Name"))
+            snprintf(pBridge->name, sizeof(pBridge->name), "%s", records[i]->parameterValue);
+        else if (strstr(records[i]->parameterName, ".Enable"))
+            pBridge->bEnabled = (strcasecmp(records[i]->parameterValue, "TRUE") == 0);
+        else if (strstr(records[i]->parameterName, ".Standard"))
+        {
+            if (strcmp(records[i]->parameterValue, "BRG_STD_8021Q_2005") == 0)
+                pBridge->standard = COSA_DML_BRG_STD_8021Q_2005;
+            else
+                pBridge->standard = COSA_DML_BRG_STD_8021D_2004;
+        }
+        else if (strstr(records[i]->parameterName, ".Vid"))
+            pBridge->vlanid = atoi(records[i]->parameterValue);
+        else if (strstr(records[i]->parameterName, ".PriorityTag"))
+            pBridge->bPriTag = (strcasecmp(records[i]->parameterValue, "TRUE") == 0);
+        else if (strstr(records[i]->parameterName, ".InstanceNum"))
+            pBridge->instanceNumber = atol(records[i]->parameterValue);
+        else if (strstr(records[i]->parameterName, ".Type"))
+            snprintf(pBridge->type, sizeof(pBridge->type), "%s", records[i]->parameterValue);
     }
-    else
-    {
-        pBridge->bEnabled = FALSE;
-    } 
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
 
-    _PSM_GET_BR(_PSM_BRIDGE_TML_STANDARD);
-
-    if (_ansc_strstr(param_value,"BRG_STD_8021Q_2005"))
-    {
-        pBridge->standard = COSA_DML_BRG_STD_8021Q_2005;
-    }
-    else if (_ansc_strstr(param_value,"BRG_STD_8021D_2004"))
-    {
-        pBridge->standard = COSA_DML_BRG_STD_8021D_2004;
-    }
-    else 
-    {
-        pBridge->standard = 0;   
-    }
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BR(_PSM_BRIDGE_TML_VLANID);
-    pBridge->vlanid = _ansc_atoi(param_value);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
- 
-    _PSM_GET_BR(_PSM_BRIDGE_TML_PRITAG);
-    if (_ansc_strstr(param_value,"TRUE"))
-    {
-        pBridge->bPriTag = TRUE;
-    }
-    else
-    {
-        pBridge->bPriTag = FALSE;
-    }
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BR(_PSM_BRIDGE_TML_INSTNUM);
-    pBridge->instanceNumber = _ansc_atol(param_value);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BR(_PSM_BRIDGE_TML_TYPE);
-    AnscCopyString(pBridge->type, param_value);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    //read for debugging only
-    _PSM_GET_BR(_PSM_BRIDGE_TML_SW_MEMBERS);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BR(_PSM_BRIDGE_TML_ETH_MEMBERS);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BR(_PSM_BRIDGE_TML_MOCA_MEMBERS);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    //$HL 07/15/2013
-    _PSM_GET_BR(_PSM_BRIDGE_TML_GRE_MEMBERS);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BR(_PSM_BRIDGE_TML_WIFI_MEMBERS);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BR(_PSM_BRIDGE_TML_LINK_MEMBERS);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    pBridge->l2InstanceNumber = instancenum;
-    if (_ansc_sscanf(pBridge->name, g_brInfo.bridgeNamePrefix, &data)==2)
-    {
-        g_brInfo.nxtBrId = data >= g_brInfo.nxtBrId ? data + 1: g_brInfo.nxtBrId; 
-        AnscTraceFlow(("<$HL> %s bridge name inx =%d nxtBrId=%d\n", __FUNCTION__,data, g_brInfo.nxtBrId));
-    } 
+    pBridge->l2InstanceNumber = insNum;
     pBridge->numOfPorts = 0;
     pBridge->hwid = pBridge->name;
     pBridge->control = &g_SWBrCtl;
-    return ANSC_STATUS_SUCCESS;
+    if (sscanf(pBridge->name, g_brInfo.bridgeNamePrefix, &brId) == 1)
+    {
+        if (brId >= g_brInfo.nxtBrId)
+            g_brInfo.nxtBrId = brId + 1;
+    }
+    //fprintf(stderr, "g_brInfo.nxtBrId = %d\n", g_brInfo.nxtBrId);
 
-_Psm_GetBr_Err:
-    AnscTraceFlow(("%s: cannot find %s \n",__FUNCTION__,param_name));
-    return ANSC_STATUS_FAILURE;
+    PsmFreeRecords_s(records, recordCnt);
+
+    /*
+    fprintf(stderr, "====  pBridge ====\n");
+    fprintf(stderr, "alias: %s\n", pBridge->alias);
+    fprintf(stderr, "instanceNumber: %lu\n", pBridge->instanceNumber);
+    fprintf(stderr, "vlanid: %d\n", pBridge->vlanid);
+    fprintf(stderr, "type: %s\n", pBridge->type);
+    fprintf(stderr, "l2InstanceNumber: %lu\n", pBridge->l2InstanceNumber);
+    fprintf(stderr, "bPriTag: %d\n", pBridge->bPriTag);
+    fprintf(stderr, "bUpstream: %d\n", pBridge->bUpstream);
+    fprintf(stderr, "bAllowDelete: %d\n", pBridge->bAllowDelete);
+    fprintf(stderr, "bEnabled: %d\n", pBridge->bEnabled);
+    fprintf(stderr, "name: %s\n", pBridge->name);
+    fprintf(stderr, "standard: %d\n", pBridge->standard);
+    */
+    return ANSC_STATUS_SUCCESS;
 }
 
 static ANSC_STATUS _Psm_SetBr(ULONG instancenum,PBRIDGE pBridge)
@@ -2975,6 +2897,8 @@ static ANSC_STATUS _Psm_SetBr(ULONG instancenum,PBRIDGE pBridge)
     int retPsmGet = CCSP_SUCCESS;
     char param_value[256]={0};
     char param_name[256]= {0};
+
+    fprintf(stderr, "!!!!!!!!!! _Psm_SetBr !!!!!!!!!!!!!!!!!\n");
 
     AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
 
@@ -3062,145 +2986,107 @@ _Psm_SetBr_Err:
 
 static ANSC_STATUS _Psm_GetBPort(ULONG l2InstNum, ULONG bportInstNum, PBRIDGE_PORT pBPort)
 {
-    int retPsmGet = CCSP_SUCCESS;
-    char *param_value= NULL;
-    char *deviceStr = NULL;
-    char param_name[256]= {0}, linkNameStr[256]={0};
-      
-    AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
+    static const char *bportTemps[] = {
+        DMSB_L2_BPORT_INST_PREFIX ".AllowDelete",
+        DMSB_L2_BPORT_INST_PREFIX ".Alias",
+        DMSB_L2_BPORT_INST_PREFIX ".Name",
+        DMSB_L2_BPORT_INST_PREFIX ".LinkName",
+        DMSB_L2_BPORT_INST_PREFIX ".LinkType",
+        DMSB_L2_BPORT_INST_PREFIX ".Management",
+        DMSB_L2_BPORT_INST_PREFIX ".Mode",
+        DMSB_L2_BPORT_INST_PREFIX ".InstanceNum",
+        DMSB_L2_BPORT_INST_PREFIX ".Upstream",
+        DMSB_L2_BPORT_INST_PREFIX ".Enable",
+        DMSB_L2_BPORT_INST_PREFIX ".Pvid",
+        DMSB_L2_BPORT_INST_PREFIX ".PriorityTag",
+    };
+    char nameArr[NELEMS(bportTemps)][256];
+    const char *names[NELEMS(bportTemps)];
+    parameterValStruct_t **records;
+    int recordCnt, i;
 
-    _PSM_GET_BPORT(_PSM_BPORT_TML_ALLOWDELETE);
-    if (_ansc_strstr(param_value,"TRUE"))
+    for (i = 0; i < NELEMS(names); i++)
     {
-        pBPort->bAllowDelete = TRUE;
+        snprintf(nameArr[i], sizeof(nameArr[i]), bportTemps[i], l2InstNum, bportInstNum);
+        names[i] = &nameArr[i];
     }
-    else
+
+    if (PsmGroupGet_s(names, NELEMS(names), &records, &recordCnt) != CCSP_SUCCESS)
+        return ANSC_STATUS_FAILURE;
+
+    for (i = 0; i < recordCnt; i++)
     {
-        pBPort->bAllowDelete = FALSE;
-    } 
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BPORT(_PSM_BPORT_TML_ALIAS);
-    AnscCopyString(pBPort->alias, param_value);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BPORT(_PSM_BPORT_TML_NAME);
-    AnscCopyString(pBPort->name, param_value);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BPORT(_PSM_BPORT_TML_LINKNAME);
-    AnscCopyString(pBPort->linkName, param_value);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BPORT(_PSM_BPORT_TML_LINKTYPE);
-    if (_ansc_strstr(param_value,"Ethernet"))
-    {
-        pBPort->linkType = COSA_DML_BRG_LINK_TYPE_Eth;
+        //fprintf(stderr, "%s: [%d] %s %s\n", __FUNCTION__, i, records[i]->parameterName, records[i]->parameterValue);
+        /* if PsmGroupGet_s() make sure @records returned are consistent 
+         * with @names in sequence we can use index directly */
+        if (strstr(records[i]->parameterName, ".AllowDelete"))
+            pBPort->bAllowDelete = (strcasecmp(records[i]->parameterValue, "TRUE") == 0);
+        else if (strstr(records[i]->parameterName, ".Alias"))
+            snprintf(pBPort->alias, sizeof(pBPort->alias), "%s", records[i]->parameterValue);
+        else if (strstr(records[i]->parameterName, ".Name"))
+            snprintf(pBPort->name, sizeof(pBPort->name), "%s", records[i]->parameterValue);
+        else if (strstr(records[i]->parameterName, ".LinkName"))
+            snprintf(pBPort->linkName, sizeof(pBPort->linkName), "%s", records[i]->parameterValue);
+        else if (strstr(records[i]->parameterName, ".LinkType"))
+        {
+            if (strcmp(records[i]->parameterValue, "Ethernet") == 0)
+                pBPort->linkType = COSA_DML_BRG_LINK_TYPE_Eth;
+            else if (strcmp(records[i]->parameterValue, "Moca") == 0)
+                pBPort->linkType = COSA_DML_BRG_LINK_TYPE_Moca;
+            else if (strcmp(records[i]->parameterValue, "Gre") == 0)
+                pBPort->linkType = COSA_DML_BRG_LINK_TYPE_Gre;
+            else if (strcmp(records[i]->parameterValue, "WiFi") == 0)
+                pBPort->linkType = COSA_DML_BRG_LINK_TYPE_WiFiSsid;
+            else if (strcmp(records[i]->parameterValue, "Bridge") == 0)
+                pBPort->linkType = COSA_DML_BRG_LINK_TYPE_Bridge;
+            else
+                pBPort->linkType = COSA_DML_BRG_LINK_TYPE_NONE;
+        }
+        else if (strstr(records[i]->parameterName, ".Management"))
+            pBPort->bMgt = (strcasecmp(records[i]->parameterValue, "TRUE") == 0);
+        else if (strstr(records[i]->parameterName, ".Mode"))
+        {
+            if (strcmp(records[i]->parameterValue, "PassThrough") == 0)
+                pBPort->mode = COSA_DML_BPORT_PASSTHRU;
+            else
+                pBPort->mode = COSA_DML_BPORT_TAGGING;
+        }
+        else if (strstr(records[i]->parameterName, ".InstanceNum"))
+            pBPort->instanceNumber = atol(records[i]->parameterValue);
+        else if (strstr(records[i]->parameterName, ".Upstream"))
+            pBPort->bUpstream = (strcasecmp(records[i]->parameterValue, "TRUE") == 0);
+        else if (strstr(records[i]->parameterName, ".Enable"))
+            pBPort->bEnabled = (strcasecmp(records[i]->parameterValue, "TRUE") == 0);
+        else if (strstr(records[i]->parameterName, ".Pvid"))
+            pBPort->pvid = atoi(records[i]->parameterValue);
+        else if (strstr(records[i]->parameterName, ".PriorityTag"))
+            pBPort->bPriTag = (strcasecmp(records[i]->parameterValue, "TRUE") == 0);
     }
-    else if (_ansc_strstr(param_value,"Moca"))
-    {
-        pBPort->linkType = COSA_DML_BRG_LINK_TYPE_Moca;
-    }   
-    //$HL 7/15/2013
-    else if (_ansc_strstr(param_value,"Gre"))
-    {
-        pBPort->linkType = COSA_DML_BRG_LINK_TYPE_Gre;
-    }   
-    else if (_ansc_strstr(param_value,"WiFi"))     
-    {
-        pBPort->linkType = COSA_DML_BRG_LINK_TYPE_WiFiSsid;
-    }
-    else if (_ansc_strstr(param_value,"Bridge"))     
-    {
-        pBPort->linkType = COSA_DML_BRG_LINK_TYPE_Bridge;
-    }
-    else 
-    {
-        pBPort->linkType = COSA_DML_BRG_LINK_TYPE_NONE;
-    }
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BPORT(_PSM_BPORT_TML_MGT);
-    if (_ansc_strstr(param_value,"TRUE"))
-    {
-        pBPort->bMgt = TRUE;
-    }
-    else
-    {
-        pBPort->bMgt = FALSE;
-    } 
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BPORT(_PSM_BPORT_TML_MODE);
-    if (_ansc_strstr(param_value,"PassThrough"))
-    {
-        pBPort->mode = COSA_DML_BPORT_PASSTHRU;
-    }
-    else
-    {
-        pBPort->mode = COSA_DML_BPORT_TAGGING;
-    }
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BPORT(_PSM_BPORT_TML_INSTNUM);
-    pBPort->instanceNumber = _ansc_atol(param_value);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BPORT(_PSM_BPORT_TML_UPSTREAM);
-    if (_ansc_strstr(param_value,"TRUE"))
-    {
-        pBPort->bUpstream = TRUE;
-
-    }
-    else
-    {
-        pBPort->bUpstream = FALSE;
-    } 
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BPORT(_PSM_BPORT_TML_ENABLE);
-    if (_ansc_strstr(param_value,"TRUE"))
-    {
-        pBPort->bEnabled = TRUE;
-    }
-    else
-    {
-        pBPort->bEnabled = FALSE;
-    } 
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    //deviceStr = pBPort->linkName;
-
-    _PSM_GET_BPORT(_PSM_BPORT_TML_PVID);
-    pBPort->pvid = _ansc_atoi(param_value);
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
-    _PSM_GET_BPORT(_PSM_BPORT_TML_PRITAG);
-    if (_ansc_strstr(param_value,"TRUE"))
-    {
-        pBPort->bPriTag = TRUE;
-    }
-    else
-    {
-        pBPort->bPriTag = FALSE;
-    } 
-    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
-
 
     if (pBPort->bMgt)
-    {
         pBPort->control = &g_SWBrPCtl;
-    }
     else
-    {
         pBPort->control = &g_lanEthBrPCtl;
-    }
     pBPort->hwid = pBPort->linkName;
-    return ANSC_STATUS_SUCCESS;    
 
-_Psm_GetBPort_Err:
-    AnscTraceFlow(("%s: cannot find %s\n",__FUNCTION__,param_name));
-    return ANSC_STATUS_FAILURE;        
+    PsmFreeRecords_s(records, recordCnt);
+    /*
+    fprintf(stderr, "==== pBPort ====\n");
+    fprintf(stderr, "alias %s\n", pBPort->alias);
+    fprintf(stderr, "instanceNumber %lu\n", pBPort->instanceNumber);
+    fprintf(stderr, "name %s\n", pBPort->name);
+    fprintf(stderr, "standard %d\n", pBPort->standard);
+    fprintf(stderr, "linkName %s\n", pBPort->linkName);
+    fprintf(stderr, "linkType %d\n", pBPort->linkType);
+    fprintf(stderr, "bMgt %d\n", pBPort->bMgt);
+    fprintf(stderr, "bEnabled %d\n", pBPort->bEnabled);
+    fprintf(stderr, "bPriTag %d\n", pBPort->bPriTag);
+    fprintf(stderr, "bUpstream %d\n", pBPort->bUpstream);
+    fprintf(stderr, "bAllowDelete %d\n", pBPort->bAllowDelete);
+    fprintf(stderr, "mode %d\n", pBPort->mode);
+    fprintf(stderr, "pvid %d\n", pBPort->pvid);
+    */
+    return ANSC_STATUS_SUCCESS;
 }
 
 static ANSC_STATUS _Psm_SetBPort(ULONG l2InstNum, ULONG bportInstNum, PBRIDGE_PORT pBPort)

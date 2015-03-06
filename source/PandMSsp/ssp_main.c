@@ -169,19 +169,28 @@ static void _print_stack_backtrace(void)
         char** funcNames = NULL;
         int i, count = 0;
 
+        int fd;
+        const char* path = CCSP_PNM_BACKTRACE_FILE;
+
+        /*
+         *  print backtrace to the backtrace file
+         */
         count = backtrace( tracePtrs, 100 );
-        backtrace_symbols_fd( tracePtrs, count, 2 );
 
-        funcNames = backtrace_symbols( tracePtrs, count );
-
-        if ( funcNames ) {
-            // Print the stack trace
-            for( i = 0; i < count; i++ )
-                printf("%s\n", funcNames[i] );
-
-            // Free the string pointers
-            free( funcNames );
+        fd = open(path, O_RDWR | O_CREAT);
+        if (fd < 0)
+        {
+            fprintf(stderr, "failed to open backtrace file: %s", path);
         }
+        else
+        {
+            backtrace_symbols_fd( tracePtrs, count, fd);
+            close(fd);
+        }
+        /*
+         *  print backtrace to stdout
+         */
+        backtrace_symbols_fd(tracePtrs, count, 1);
 #endif
 #endif
 }
@@ -359,18 +368,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    /*DH  test*/
-    if ( FALSE )
-    {
-        char                       test[32] = {0};
-        ANSC_CRYPTO_HASH           hash     = {0};
-        ANSC_CRYPTO_KEY            key      = {0};
-
-        printf("DH  test starts *********************************************************\n");
-        AnscCryptoHmacSha256Digest(test, 16, &hash, &key);
-        printf("DH  test ends *********************************************************\n");
-    }
-
 #if  defined(_ANSC_WINDOWSNT)
 
     AnscStartupSocketWrapper(NULL);
@@ -389,18 +386,18 @@ int main(int argc, char* argv[])
     if ( bRunAsDaemon )
         daemonize();
 
-#ifndef _COSA_INTEL_USG_ATOM_
     /*This is used for ccsp recovery manager */
     fd = fopen("/var/tmp/CcspPandMSsp.pid", "w+");
     if ( !fd )
     {
         CcspTraceWarning(("Create /var/tmp/CcspPandMSsp.pid error. \n"));
-        return 1;
     }
-    sprintf(cmd, "%d", getpid());
-    fputs(cmd, fd);
-    fclose(fd);
-#endif
+    else
+    {
+        sprintf(cmd, "%d", getpid());
+        fputs(cmd, fd);
+        fclose(fd);
+    }
 
     if (is_core_dump_opened())
     {
@@ -410,18 +407,18 @@ int main(int argc, char* argv[])
     else
     {
         CcspTraceWarning(("Core dump is NOT opened, backtrace if possible\n"));
-    signal(SIGTERM, sig_handler);
-    signal(SIGINT, sig_handler);
-    signal(SIGUSR1, sig_handler);
-    signal(SIGUSR2, sig_handler);
+        signal(SIGTERM, sig_handler);
+        signal(SIGINT, sig_handler);
+        signal(SIGUSR1, sig_handler);
+        signal(SIGUSR2, sig_handler);
 
-    signal(SIGSEGV, sig_handler);
-    signal(SIGBUS, sig_handler);
-    signal(SIGKILL, sig_handler);
-    signal(SIGFPE, sig_handler);
-    signal(SIGILL, sig_handler);
-    signal(SIGQUIT, sig_handler);
-    signal(SIGHUP, sig_handler);
+        signal(SIGSEGV, sig_handler);
+        signal(SIGBUS, sig_handler);
+        signal(SIGKILL, sig_handler);
+        signal(SIGFPE, sig_handler);
+        signal(SIGILL, sig_handler);
+        signal(SIGQUIT, sig_handler);
+        signal(SIGHUP, sig_handler);
     }
 
     cmd_dispatch('e');
