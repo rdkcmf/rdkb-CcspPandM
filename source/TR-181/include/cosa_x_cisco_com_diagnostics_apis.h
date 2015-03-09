@@ -87,7 +87,7 @@ _COSA_DML_DIAGNOSTICS_ENTRY
 }
 COSA_DML_DIAGNOSTICS_ENTRY,  *PCOSA_DML_DIAGNOSTICS_ENTRY;
 
-#if 0
+
 typedef  struct
 _COSA_DML_DIAGNOSTICS_EVENTLOG
 { 
@@ -98,7 +98,7 @@ _COSA_DML_DIAGNOSTICS_EVENTLOG
                                                                                             So it will be freed by offical system free() by caller. */
 }
 COSA_DML_DIAGNOSTICS_EVENTLOG,  *PCOSA_DML_DIAGNOSTICS_EVENTLOG;
-#endif
+
 
 /*************************************
     The actual function declaration 
