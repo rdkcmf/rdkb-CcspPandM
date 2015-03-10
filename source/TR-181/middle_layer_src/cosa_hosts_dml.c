@@ -590,7 +590,6 @@ Host_GetParamIntValue
         int*                        pInt
     )
 {
-    // printf("Host_GetParamIntValue %p, %s\n", hInsContext, ParamName);
     PLmObjectHost pHost = (PLmObjectHost) hInsContext;
 #if 0
     int i = 0;
@@ -696,7 +695,7 @@ Host_GetParamUlongValue
     PLmObjectHost pHost = (PLmObjectHost) hInsContext;
     int i = 0;
     for(; i<LM_HOST_NumUlongPara; i++){
-        if( AnscEqualString(ParamName, "X_COMCAST-COM_LastChange", TRUE))
+        if( AnscEqualString(ParamName, COSA_HOSTS_Extension1_Name, TRUE))
         {
             time_t currentTime = time(NULL);
             if(currentTime > pHost->activityChangeTime){

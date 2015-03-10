@@ -413,7 +413,7 @@ CosaIFStackCreateAll
     UCHAR                           ucTable7[]            = "Device.DSL.BondingGroup.";
     UCHAR                           ucTable8[]            = "Device.ATM.Link.";
     UCHAR                           ucTable9[]            = "Device.PTM.Link.";
-    UCHAR                           ucTable10[]           = "Device.Bridging.Bridge.{i}.Port.";
+    UCHAR                           ucTable10[256]        = "Device.Bridging.Bridge.{i}.Port.";  //Fix the ABW error in the code below
     PUCHAR                          pAllTable[]           = {ucTable1, ucTable2, 
                                                              ucTable3, ucTable4,
                                                              ucTable5, ucTable6,

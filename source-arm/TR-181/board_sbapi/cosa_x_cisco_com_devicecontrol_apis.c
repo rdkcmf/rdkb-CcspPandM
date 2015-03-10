@@ -60,7 +60,10 @@
 
 #include "cosa_x_cisco_com_devicecontrol_apis.h"
 #include "cosa_x_cisco_com_devicecontrol_dml.h"
+#include "dml_tr181_custom_cfg.h" 
+#include "ccsp_dm_api.h"
 #include <arpa/inet.h>
+#include "platform_hal.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -148,6 +151,8 @@ int fwSync = 0;
 #define HTTPD_DEF_CONF  "/etc/lighttpd.conf"
 #define HTTPD_PID       "/var/run/lighttpd.pid"
 
+static void configBridgeMode(int bEnable);
+
 static int initWifiComp() {
     int size =0 ,ret;
     snprintf(dst_pathname_cr, sizeof(dst_pathname_cr), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
@@ -202,11 +207,16 @@ static int UtGetUlong(const char *path, ULONG *pVal)
 {
     UtopiaContext ctx;
     char buf[64] = {0};
+    int ret;
 
     if (!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
     
-    Utopia_RawGet(&ctx, NULL, (char *)path, buf, sizeof(buf));
+    if((ret = Utopia_RawGet(&ctx, NULL, (char *)path, buf, sizeof(buf))) == 0){
+        Utopia_Free(&ctx, 1);
+        return ANSC_STATUS_FAILURE;
+    }
+
     *pVal = atoi(buf);
 
     Utopia_Free(&ctx, 1);
@@ -238,10 +248,17 @@ typedef struct WebServConf {
 static int
 LoadWebServConf(WebServConf_t *conf)
 {
+    ULONG val;
+    
     if (UtGetUlong("mgmt_wan_httpport", &conf->httpport) != ANSC_STATUS_SUCCESS)
         return -1;
     if (UtGetUlong("mgmt_wan_httpsport", &conf->httpsport) != ANSC_STATUS_SUCCESS)
         return -1;
+
+#if defined(CONFIG_CCSP_WAN_MGMT_PORT)
+    if (UtGetUlong("mgmt_wan_httpport_ert", &val) == ANSC_STATUS_SUCCESS)
+        conf->httpport = val;
+#endif
 
     return 0;
 }
@@ -249,7 +266,13 @@ LoadWebServConf(WebServConf_t *conf)
 static int
 SaveWebServConf(const WebServConf_t *conf)
 {
-    if (UtSetUlong("mgmt_wan_httpport", conf->httpport) != ANSC_STATUS_SUCCESS)
+#if defined(CONFIG_CCSP_WAN_MGMT_PORT)
+    const char *sysCfghttpPort = "mgmt_wan_httpport_ert";
+#else
+    const char *sysCfghttpPort = "mgmt_wan_httpport";
+#endif
+
+    if (UtSetUlong(sysCfghttpPort, conf->httpport) != ANSC_STATUS_SUCCESS)
         return -1;
     if (UtSetUlong("mgmt_wan_httpsport", conf->httpsport) != ANSC_STATUS_SUCCESS)
         return -1;
@@ -430,6 +453,7 @@ CosaDmlDcInit
         _CosaDmlDcStopZeroConfig();
     }
 
+    platform_hal_DocsisParamsDBInit();
     syscfg_init();
     return ANSC_STATUS_SUCCESS;
 }
@@ -683,6 +707,8 @@ CosaDmlDcGetWanNameServer
 #include <string.h>
 #include <ctype.h>
 
+static char   g_HostName[1024] = {0};
+
 ANSC_STATUS
 CosaDmlDcGetWanHostName
     (
@@ -719,7 +745,9 @@ CosaDmlDcGetWanHostName
     if(buf[strlen(buf)-1] == '\n')
         buf[strlen(buf)-1] = '\0';
 
-    strncpy(pHostName, buf, sizeof(buf));
+    strcpy(pHostName, buf);
+
+    strcpy(g_HostName, buf);
 
     fclose(hostName);
 
@@ -773,6 +801,31 @@ CosaDmlDcGetWanDomainName
     }
 
     fclose(resolvConf);
+    return ANSC_STATUS_SUCCESS;
+}
+
+/*This interface is just used for getting wan static domain name which is set by CosaDmlDcSetDomainName().
+ *CosaDmlDcGetDomainName() gets the current validated domain name*/
+ANSC_STATUS
+CosaDmlDcGetWanStaticDomainName
+    (
+        ANSC_HANDLE                 hContext,
+        char                        *pStaticDomainName
+    )
+{
+    UtopiaContext ctx;
+    PCOSA_DATAMODEL_DEVICECONTROL pDc;
+
+    if (!Utopia_Init(&ctx))
+    {
+        CcspTraceWarning(("X_CISCO_COM_DeviceControl: Error in initializing context!!! \n" ));
+        return ANSC_STATUS_FAILURE;
+    }
+    
+    Utopia_Get(&ctx, UtopiaValue_WAN_ProtoAuthDomain, pStaticDomainName, sizeof(pDc->StaticDomainName));
+    
+    Utopia_Free(&ctx, 0);
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -977,6 +1030,16 @@ CosaDmlDcSetHostName
         return ANSC_STATUS_FAILURE;
     }
 
+    if ( !g_HostName[0] )
+    {
+        CosaDmlDcGetWanHostName(hContext, g_HostName);
+    }
+
+    if (g_HostName[0] && strcmp(g_HostName, pValue))
+    {
+        commonSyseventSet("wan-restart", "");
+    }
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1018,6 +1081,20 @@ CosaDmlDcGetResetDefaultEnable
     return ANSC_STATUS_SUCCESS;
 }
 
+/* saRgDeviceConfigSnmpEnable */
+enum snmpenable_e {
+    RG_WAN = 0,
+    RG_DUALIP,
+    RG_LANIP
+};
+
+const char *snmpenable_str[] = {
+    [RG_WAN]    = "rgWan",
+    [RG_DUALIP] = "rgDualIp",
+    [RG_LANIP]  = "rgLanIp"
+};
+
+
 ANSC_STATUS
 CosaDmlDcGetSNMPEnable
     (
@@ -1025,6 +1102,8 @@ CosaDmlDcGetSNMPEnable
         char*                       pValue
     )
 {
+    int bAllowed = 0;
+
     if (pValue == NULL) {
         AnscTraceError(("[SNMPEnable]: pValue pointer is null.\n"));
         return ANSC_STATUS_FAILURE;
@@ -1130,6 +1209,7 @@ CosaDmlDcSetRebootDevice
 {
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
     int router, wifi, voip, dect, moca, all, delay;
+    int delay_time = 0;
 
     router = wifi = voip = dect = moca = all = delay = 0;
     if (strstr(pValue, "Router") != NULL) {
@@ -1153,6 +1233,9 @@ CosaDmlDcSetRebootDevice
     if (strstr(pValue, "delay") != NULL) {
         delay = 1;
     }
+    if (strstr(pValue, "delay=") != NULL) {
+        delay_time = atoi(strstr(pValue, "delay=") + strlen("delay="));
+    }
 
     if (router && wifi && voip && dect && moca) {
         all = 1;
@@ -1160,8 +1243,18 @@ CosaDmlDcSetRebootDevice
 
     if (all) {
         if(delay) {
-            fprintf(stderr, "Device is going to reboot in 5 seconds\n");
-            system("(sleep 5 && reboot) &");
+            if(delay_time)
+            {
+                fprintf(stderr, "Device is going to reboot in %d seconds\n", delay_time);
+                char cmd[100] = {0};
+                sprintf(cmd, "(sleep %d && reboot) &", delay_time);
+                system(cmd);
+            }
+            else
+            {
+                fprintf(stderr, "Device is going to reboot in 5 seconds\n");
+                system("(sleep 5 && reboot) &");
+            }            
         }
         else {
             fprintf(stderr, "Device is going to reboot now\n");
@@ -1663,11 +1756,12 @@ ANSC_STATUS CosaDmlDcSetDeviceMode
         return(ANSC_STATUS_SUCCESS);
     value--;
     snprintf(buf,sizeof(buf),"%d",value);
-    syscfg_set(NULL, "last_erouter_mode", buf);
-    syscfg_commit();
+//     syscfg_set(NULL, "last_erouter_mode", buf);
+//     syscfg_commit();
+    commonSyseventSet("erouter_mode", buf);
     /*Need to reboot device according to SNMP definition*/
-    printf("<<< Reboot device because of the change of rgDevieMode >>>\n");
-    CosaDmlDcSetRebootDevice(NULL,"Router,Wifi,VoIP,Dect,MoCA,Device,delay");
+//     printf("<<< Reboot device because of the change of rgDevieMode >>>\n");
+//     CosaDmlDcSetRebootDevice(NULL,"Router,Wifi,VoIP,Dect,MoCA,Device,delay");
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -1699,6 +1793,15 @@ CosaDmlDcSetIGMPProxyEnable
         BOOLEAN                     pFlag
     )
 {
+    UtopiaContext utctx = {0};
+     
+    if (Utopia_Init(&utctx))
+    {
+        Utopia_RawSet(&utctx, NULL, "igmpproxy_enabled", pFlag?"1":"0");
+        
+        Utopia_Free(&utctx, 1);
+    }
+
     if (pFlag)
     {
         if ( detect_process("igmpproxy") == 0 )
@@ -2003,6 +2106,103 @@ CosaDmlDcSetCusadminRemoteMgmtEnable
 
     Utopia_Free(&ctx, 1);
 
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDcGetHSEthernetPortEnable
+    (
+        ANSC_HANDLE                hContext,
+        BOOLEAN                    *pFlagcpv
+    )
+{
+    char cmdBuf[100];
+    char *XHSNetPort, *XHSL2;
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+   
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), "dmsb.MultiLAN.HomeSecurity_HsPorts", NULL, &XHSNetPort))
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+    
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), "dmsb.MultiLAN.HomeSecurity_l2net", NULL, &XHSL2))
+    {
+        bus_info->freefunc(XHSNetPort);
+        return ANSC_STATUS_FAILURE;
+    }
+    
+    snprintf(cmdBuf, sizeof(cmdBuf), "Device.Bridging.Bridge.%s.Port.%s.Enable", XHSL2, XHSNetPort);
+    bus_info->freefunc(XHSNetPort);
+    bus_info->freefunc(XHSL2);
+    
+    Cdm_GetParamBool(cmdBuf, pFlagcpv);
+    
+    return ANSC_STATUS_SUCCESS;
+    
+}
+
+ANSC_STATUS
+CosaDmlDcSetHSEthernetPortEnable
+    (
+        ANSC_HANDLE                hContext,
+        BOOLEAN                    pFlag
+    )
+{
+    char* primNetXHSPort, *XHSNetPort, *primL2, *XHSL2;
+    char* disableL2, *disablePort, *enableL2, *enablePort;
+    char cmdBuf[100];
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+    //PSM get of primary XHS port and XHS XHS port
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), "dmsb.MultiLAN.PrimaryLAN_HsPorts", NULL, &primNetXHSPort))
+        return ANSC_STATUS_FAILURE;
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), "dmsb.MultiLAN.HomeSecurity_HsPorts", NULL, &XHSNetPort))
+    {
+        bus_info->freefunc(primNetXHSPort);
+        return ANSC_STATUS_FAILURE;
+    }
+    
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), "dmsb.MultiLAN.PrimaryLAN_l2net", NULL, &primL2))
+    {
+        bus_info->freefunc(XHSNetPort);
+        bus_info->freefunc(primNetXHSPort);
+        return ANSC_STATUS_FAILURE;
+    }
+    
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), "dmsb.MultiLAN.HomeSecurity_l2net", NULL, &XHSL2))
+    {
+        bus_info->freefunc(XHSNetPort);
+        bus_info->freefunc(primNetXHSPort);
+        bus_info->freefunc(primL2);
+        return ANSC_STATUS_FAILURE;
+    }
+    
+    //Disable appropriate port
+    
+    if (pFlag) {
+        enableL2 = XHSL2;
+        enablePort = XHSNetPort;
+        disableL2 = primL2;
+        disablePort = primNetXHSPort;
+    } else {
+        enableL2 = primL2;
+        enablePort = primNetXHSPort;
+        disableL2 = XHSL2;
+        disablePort = XHSNetPort;
+    }
+    
+    snprintf(cmdBuf, sizeof(cmdBuf), "Device.Bridging.Bridge.%s.Port.%s.Enable", disableL2, disablePort);
+    printf("running disable on this DM: %s", cmdBuf); fflush(stdout);
+    Cdm_SetParamBool(cmdBuf, 0,1);
+    
+    snprintf(cmdBuf, sizeof(cmdBuf), "Device.Bridging.Bridge.%s.Port.%s.Enable", enableL2, enablePort);
+    printf("running enable on this DM: %s", cmdBuf); fflush(stdout);
+    Cdm_SetParamBool(cmdBuf, 1,1);
+    
+    bus_info->freefunc(XHSL2);
+    bus_info->freefunc(primNetXHSPort);
+    bus_info->freefunc(XHSNetPort);
+    bus_info->freefunc(primL2);
+    
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2587,38 +2787,20 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         
         //Bridge mode has changed, so we need to report the change and toggle wifi accordingly
         //TODO: move this to a thread
+        int bEnable;
         
         if(bridge_info.mode == BRIDGE_MODE_OFF)
         {
             syslog_systemlog("Local Network", LOG_NOTICE, "Status change: IP %s mask %s", lan.ipaddr, lan.netmask);
-            enableStr = "true";
+            bEnable = 0;
         }
         else
         {
             syslog_systemlog("Local Network", LOG_NOTICE, "Status change: Bridge mode");
-            enableStr = "false";
+            bEnable = 1;
         }
         
-        char primaryl2inst[5];
-        char primarybrp[5];
-        char brpdm[50];
-        commonSyseventGet("primary_lan_l2net", primaryl2inst, sizeof(primaryl2inst));
-        commonSyseventGet("primary_lan_brport", primarybrp, sizeof(primaryl2inst));
-        
-        snprintf(brpdm, sizeof(brpdm), "Device.Bridging.Bridge.%s.Port.%s.Enable", primaryl2inst, primarybrp);
-//         varstruct.parameterName = brpdm;
-//         varstruct.parameterValue = enableStr;
-//         varstruct.type = ccsp_boolean;
-        g_SetParamValueBool(brpdm, (bridge_info.mode != BRIDGE_MODE_OFF));
-
-        vsystem("/bin/sh /etc/webgui.sh");
-
-        if (ppComponents == NULL && initWifiComp()) {
-            syslog_systemlog("Local Network", LOG_NOTICE, "Bridge mode transition: Failed to acquire wifi component.");
-            return ANSC_STATUS_SUCCESS;
-        }
-            
-        AnscCreateTask(bridge_mode_wifi_notifier_thread, USER_DEFAULT_TASK_STACK_SIZE, USER_DEFAULT_TASK_PRIORITY, (void*)enableStr, "BridgeModeWifiNotifierThread");
+        configBridgeMode(bEnable);
         
         ret = ANSC_STATUS_SUCCESS;
     }
@@ -2731,3 +2913,53 @@ CosaDmlDcSetWebAccessLevel
         return ANSC_STATUS_SUCCESS;
 }
 
+static void configBridgeMode(int bEnable) {
+    char primaryl2inst[5];
+        char primarybrp[5];
+        char brpdm[50];
+        commonSyseventGet("primary_lan_l2net", primaryl2inst, sizeof(primaryl2inst));
+        commonSyseventGet("primary_lan_brport", primarybrp, sizeof(primaryl2inst));
+        
+        snprintf(brpdm, sizeof(brpdm), "Device.Bridging.Bridge.%s.Port.%s.Enable", primaryl2inst, primarybrp);
+//         varstruct.parameterName = brpdm;
+//         varstruct.parameterValue = enableStr;
+//         varstruct.type = ccsp_boolean;
+        g_SetParamValueBool(brpdm, bEnable);
+
+        vsystem("/bin/sh /etc/webgui.sh");
+
+        if (ppComponents == NULL && initWifiComp()) {
+            syslog_systemlog("Local Network", LOG_NOTICE, "Bridge mode transition: Failed to acquire wifi component.");
+            return ANSC_STATUS_SUCCESS;
+        }
+            
+        AnscCreateTask(bridge_mode_wifi_notifier_thread, USER_DEFAULT_TASK_STACK_SIZE, USER_DEFAULT_TASK_PRIORITY, (void*)(bEnable ? "false" : "true"), "BridgeModeWifiNotifierThread");
+}
+
+ANSC_STATUS
+CosaDmlDcGetErouterEnabled
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     *pFlag
+    )
+{
+    char buf[10];
+    buf[0]='\0';
+    if(!syscfg_get(NULL, "last_erouter_mode", buf, sizeof(buf))) {
+        *pFlag = (atoi(buf) ? TRUE : FALSE);
+        return ANSC_STATUS_SUCCESS;
+    } else {
+        return ANSC_STATUS_FAILURE;
+    }
+}
+
+ANSC_STATUS
+CosaDmlDcSetErouterEnabled
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     bFlag
+    )
+{
+    configBridgeMode(!(bFlag));
+    return ANSC_STATUS_SUCCESS;
+}

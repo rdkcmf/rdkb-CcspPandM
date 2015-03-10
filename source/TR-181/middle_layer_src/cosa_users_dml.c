@@ -408,6 +408,11 @@ User_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
+        /*
+         * Always read password from backend
+         */
+        CosaDmlUserGetCfg(NULL, pUser);
+
         /* collect value */
         *pBool  =  pUser->bEnabled;
         
@@ -577,6 +582,11 @@ User_GetParamStringValue
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Username", TRUE))
     {
+        /*
+         * Always read password from backend
+         */
+        CosaDmlUserGetCfg(NULL, pUser);
+
         /* collect value */
         if ( AnscSizeOfString(pUser->Username) < *pUlSize)
         {

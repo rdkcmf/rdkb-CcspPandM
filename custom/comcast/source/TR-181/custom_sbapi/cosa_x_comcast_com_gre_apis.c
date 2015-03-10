@@ -272,11 +272,24 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
         
         size = sizeof(outdata);
         
+        if (syscfg_get(NULL, "wan_physical_ifname", paramname, sizeof(paramname)) != 0) {
+            AnscTraceWarning(("fail to get wan_physical_ifname\n"));
+            snprintf(paramname, sizeof(paramname), "erouter0");
+        }
+        if (get_if_hwaddr(paramname, circuitid, sizeof(circuitid)) != 0) {
+            AnscTraceWarning(("fail to get HW Addr for %s\n", paramname));
+            snprintf(circuitid, sizeof(circuitid), "00:00:00:00:00:00");
+        }
+
+        circuitSave = strlen(circuitid);
+        circuitSave += snprintf(circuitid + circuitSave, sizeof(circuitid) - circuitSave, ";");
+#if 0
         snprintf(paramname, sizeof(paramname), "%s.%s", curInt, "BSSID");
         retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
         if ( retval != ANSC_STATUS_SUCCESS)
             return -1;
         circuitSave = snprintf(circuitid, sizeof(circuitid), "%s;", varStruct.parameterValue);
+#endif
         
         size = sizeof(outdata);
         snprintf(paramname, sizeof(paramname),"%s.%s", curInt, "SSID");

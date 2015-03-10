@@ -529,7 +529,14 @@ Eventlog_Synchronize
 {
     PCOSA_DATAMODEL_DIAGNOSTICS     pMyObject           = (PCOSA_DATAMODEL_DIAGNOSTICS)g_pCosaBEManager->hDiag;
     ULONG                           index               = 0;
-    
+    static int first = 1;
+
+    if (first) 
+    {
+        first =0;
+        return 0;
+    }
+   
     if ( pMyObject->pDiagEventlog )
     {
         for( index = 0; index < pMyObject->ulDiagEventlogNumber; index++ )
@@ -682,7 +689,7 @@ Eventlog_GetParamUlongValue
         ULONG*                      puLong
     )
 {
-    PCOSA_DML_DIAGNOSTICS_EVENTLOG  pDiagGroupEventlog = (PCOSA_DML_DIAGNOSTICS_EVENTLOG)hInsContext;
+    PCOSA_DML_DIAGNOSTICS_ENTRY  pDiagGroupEventlog = (PCOSA_DML_DIAGNOSTICS_ENTRY)hInsContext;
     
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Level", TRUE))
@@ -744,7 +751,7 @@ Eventlog_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
-    PCOSA_DML_DIAGNOSTICS_EVENTLOG  pDiagEventlog = (PCOSA_DML_DIAGNOSTICS_EVENTLOG)hInsContext;
+    PCOSA_DML_DIAGNOSTICS_ENTRY pDiagEventlog = (PCOSA_DML_DIAGNOSTICS_ENTRY)hInsContext;
     
     /* check the parameter name and return the corresponding value */    
     if( AnscEqualString(ParamName, "Time", TRUE))
@@ -780,3 +787,43 @@ Eventlog_GetParamStringValue
     return -1;
 }
 
+ULONG
+X_CISCO_COM_Diagnostics_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+    ULONG logSize = *pUlSize;
+    if( AnscEqualString(ParamName, "DumpAllSyslog", TRUE))
+    {
+        if(ANSC_STATUS_FAILURE == CosaDmlDiagnosticsGetAllSyslog(pValue, &logSize) != ANSC_STATUS_SUCCESS)
+        {
+            if(logSize > *pUlSize){
+                *pUlSize = logSize;
+                return 1;
+            }
+            else
+                return -1;
+        }
+        return 0;
+    }
+ 
+    if( AnscEqualString(ParamName, "DumpAllEventlog", TRUE))
+    {
+        if(ANSC_STATUS_FAILURE == CosaDmlDiagnosticsGetAllEventlog(pValue, &logSize) != ANSC_STATUS_SUCCESS)
+        {
+            if(logSize > *pUlSize){
+                *pUlSize = logSize;
+                return 1;
+            }
+            else
+                return -1;
+        }
+        return 0;
+    }
+   /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return -1;
+}

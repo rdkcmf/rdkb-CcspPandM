@@ -327,6 +327,7 @@ _COSA_DML_IP_V6ADDR
     int                             iana_vldtm;    
     COSA_DML_IP6_ORIGIN_TYPE        Origin;
     char                            Prefix[128];
+    INT                             X_Comcast_com_LeaseTime;
     char                            PreferredLifetime[64];
     char                            ValidLifetime[64];
     BOOLEAN                         bAnycast;

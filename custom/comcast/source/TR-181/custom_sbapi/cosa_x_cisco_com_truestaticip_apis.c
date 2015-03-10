@@ -582,6 +582,7 @@ Start:
                 g_SetParamValueString("Device.Routing.RIP.InterfaceSetting.1.X_CISCO_COM_SendVersion", "RIP2");
                 g_SetParamValueBool  ("Device.Routing.RIP.InterfaceSetting.1.SendRA", TRUE);
                 g_SetParamValueBool  ("Device.Routing.RIP.InterfaceSetting.1.Enable", TRUE);
+                g_SetParamValueBool  ("Device.Routing.RIP.Enable", TRUE);
 
                 free_parameterValStruct(g_MessageBusHandle, 1, pVal);
                 AnscFreeMemory(pStringToken);
@@ -2221,7 +2222,7 @@ CosaDmlTSIPRuleGetNumberOfEntries
     )
 {
     UtopiaContext ctx;
-    char countStr[16];
+    char countStr[16] = {0};
 
     if (!Utopia_Init(&ctx)) {
         CcspTraceWarning(("%s: Utopia_Init error\n", __FUNCTION__));

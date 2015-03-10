@@ -66,6 +66,8 @@
 #include "cosa_nat_apis.h"
 #include "cosa_nat_internal.h"
 #include "plugin_main_apis.h"
+#include "dml_tr181_custom_cfg.h"
+
 PFN_COSA_DML_NAT_GEN   g_nat_pportmapping_callback = NULL;
 
 extern void* g_pDslhDmlAgent;
@@ -2000,7 +2002,8 @@ inline int _CHECK_PORTMAPPING_RULE_TYPE_UTOPAI_SINGLE(portFwdSingle_t *pEntry)
 
 BOOL CosaDmlNatChkPortMappingMaxRuleNum(PCOSA_DML_NAT_PMAPPING pEntry)
 {
-#ifdef CONFIG_CISCO_CCSP_PRODUCT_ARES
+/* Don't limit portmapping rule number now.*/
+#if 0 
     UtopiaContext          Ctx;
     portFwdSingle_t        *singleInfo = NULL;
     portFwdRange_t         *rangeInfo = NULL;
@@ -2244,6 +2247,7 @@ CosaDmlNatGetPortMapping
         pNatPMapping->InternalClient.Value = inet_addr(rangeInfo.dest_ip);
         pNatPMapping->InstanceNumber = rangeInfo.rule_id;
         AnscCopyString(pNatPMapping->Description, rangeInfo.name);
+        pNatPMapping->X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Static;
         Utopia_Free(&Ctx, 0);
         return ANSC_STATUS_SUCCESS;
     }
@@ -2265,6 +2269,7 @@ CosaDmlNatGetPortMapping
         pNatPMapping->InternalClient.Value = inet_addr(singleInfo.dest_ip);
         pNatPMapping->InstanceNumber = singleInfo.rule_id;
         AnscCopyString(pNatPMapping->Description, singleInfo.name);
+        pNatPMapping->X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Static;
         Utopia_Free(&Ctx, 0);
         return ANSC_STATUS_SUCCESS;
     }
@@ -2330,6 +2335,7 @@ CosaDmlNatGetPortMapping
                     }
                 }
                 AnscCopyString(pNatPMapping->Description, dynInfo.name);
+                pNatPMapping->X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Dynamic;
                 Utopia_Free(&Ctx, 0);
                 return ANSC_STATUS_SUCCESS;
             }
@@ -2483,6 +2489,7 @@ CosaDmlNatGetPortMappings
             pNatPMapping[ulIndex].Status = (singleInfo[i].enabled ? COSA_DML_NAT_STATUS_Enabled : COSA_DML_NAT_STATUS_Disabled);
             pNatPMapping[ulIndex].InternalClient.Value = inet_addr(singleInfo[i].dest_ip);
             pNatPMapping[ulIndex].InstanceNumber = singleInfo[i].rule_id;
+            pNatPMapping[ulIndex].X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Static;
             AnscCopyString(pNatPMapping[ulIndex].Description, singleInfo[i].name);
             AnscCopyString(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6, singleInfo[i].dest_ipv6);
         }
@@ -2505,6 +2512,7 @@ CosaDmlNatGetPortMappings
             pNatPMapping[ulIndex].Status = (rangeInfo[i].enabled ? COSA_DML_NAT_STATUS_Enabled : COSA_DML_NAT_STATUS_Disabled);
             pNatPMapping[ulIndex].InternalClient.Value = inet_addr(rangeInfo[i].dest_ip);
             pNatPMapping[ulIndex].InstanceNumber = rangeInfo[i].rule_id;
+            pNatPMapping[ulIndex].X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Static;
             AnscCopyString(pNatPMapping[ulIndex].Description, rangeInfo[i].name);
             AnscCopyString(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6, rangeInfo[i].dest_ipv6);
         }
@@ -2538,6 +2546,7 @@ CosaDmlNatGetPortMappings
             pNatPMapping[ulIndex].RemoteHost.Value =  inet_addr(dynInfo.external_host);
             pNatPMapping[ulIndex].PublicIP.Value = 0; 
             pNatPMapping[ulIndex].Status = (dynInfo.enabled ? COSA_DML_NAT_STATUS_Enabled : COSA_DML_NAT_STATUS_Disabled);
+            pNatPMapping[ulIndex].X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Dynamic;
 
             if ( TRUE )
             {
@@ -3017,6 +3026,102 @@ BOOL CosaDmlNatChkEnableFlg(PCOSA_DML_NAT_PMAPPING pPortMapping)
         return FALSE;
     }
     return TRUE; 
+}
+/*eg. 2042:cafe:0:5::/64 */
+BOOL _get_prefix(char* in_prefix, ipv6Prefix_t * out)
+{
+	char *ptr, c = '/';
+	int length = 0;
+	ptr = strchr(in_prefix, c); /* should only contain one '/'*/
+	if (ptr == 0)
+	{
+		return FALSE;
+	} else {
+		length = ptr - in_prefix;
+		memcpy(out->prefix, in_prefix, length); /* copy 2042:cafe:0:5:: */
+		out->prefix[length] = '\0';
+		out->size = atoi(ptr +1); /* assigned 64 */
+		return TRUE;
+	}
+}
+BOOL _compare_last_byte(char *a, char *b, int nbits) {
+	if (nbits == 0)
+		return TRUE;
+	if ((*a >> (8 - nbits)) != (*b >> (8 - nbits))) {
+		return FALSE;
+	} else {
+		return TRUE;
+	}
+}
+
+
+BOOL CosaDmlNatChkPortMappingIPV6Address(char* address)
+{
+	char ipv6_prefix[IPADDR_SZ] = {0};
+	char ipv6_address[IPADDR_SZ] = {0};
+    char wan_ip6[IPADDR_SZ] = {0};
+    UtopiaContext Ctx;
+	ipv6Info_t ipv6_info;
+	ipv6Prefix_t prx_t;
+	int nbytes = 0, nbits = 0;
+	BOOL ret;
+    int i;
+    ipv6_addr_info_t * p_v6addr = NULL;
+    int  v6addr_num = 0;
+	
+    if(*address == 'x'){
+		return TRUE; /*ipv6 not set, default is 'x'*/
+	}
+
+    if(inet_pton(AF_INET6, address, ipv6_address)!=1){
+		CcspTraceWarning(("%s Error ipv6 address context\n", __FUNCTION__));
+        return FALSE;
+	}	
+
+    /* cannot set wan IPv6 address */
+    CosaUtilGetIpv6AddrInfo("erouter0", &p_v6addr, &v6addr_num);
+    for(i = 0; i < v6addr_num; i++ )
+    {
+        if(p_v6addr[i].scope == IPV6_ADDR_SCOPE_GLOBAL)
+        {
+           inet_pton(AF_INET6, p_v6addr[i].v6addr, wan_ip6);
+           if(0 == memcmp(wan_ip6, ipv6_address, sizeof(wan_ip6)))
+            {
+                CcspTraceWarning(("%s Error ipv6 address same as wan ipv6 address\n", __FUNCTION__));
+                free(p_v6addr);
+                return FALSE;
+            } 
+        } 
+    } 
+    if(p_v6addr)
+        free(p_v6addr);
+
+	bzero(&prx_t, sizeof(prx_t));
+	bzero(&ipv6_info, sizeof(ipv6_info));
+    if (!Utopia_Init(&Ctx))
+    {
+        CcspTraceWarning(("%s Error initializing context\n", __FUNCTION__));
+        return FALSE;
+    }
+	Utopia_GetIPv6Settings(&Ctx, &ipv6_info);
+	Utopia_Free(&Ctx, 0);
+	/*ipv6_prefix should look like this 2042:cafe:0:5::/64 */
+	ret = _get_prefix(ipv6_info.ipv6_prefix, &prx_t);
+	if(!ret){
+		return TRUE; /*invalid prefix or prefix not set, do not check */
+	}
+	if(inet_pton(AF_INET6, prx_t.prefix, ipv6_prefix)!=1){
+		/*change prefix to binaries */
+		CcspTraceWarning(("%s Error ipv6 prefix context\n", __FUNCTION__));
+	}
+	nbytes = prx_t.size/8;
+    nbits = prx_t.size%8;
+	if((memcmp(ipv6_prefix, ipv6_address, prx_t.size/8) == 0) && 
+		_compare_last_byte(ipv6_prefix+nbytes, ipv6_address+nbytes, nbits)) 
+	{
+		return TRUE;
+	}
+	return FALSE;	
 }
 
 BOOL CosaDmlNatChkPortMappingClient(ULONG client)

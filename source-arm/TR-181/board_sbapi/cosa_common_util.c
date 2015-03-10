@@ -114,7 +114,7 @@ EvtDispterFindListByEventName
         return NULL;
     
     pCbListEntry->Next = NULL;
-    strncpy(pCbListEntry->EventName, eventName, strlen(eventName));
+    strncpy(pCbListEntry->EventName, eventName, sizeof(pCbListEntry->EventName)-1);
     
     /*Create event callback list for this new event*/
     pMethodNode = (PEVT_DISPTER_METHOD_NODE)malloc(sizeof(EVT_DISPTER_METHOD_NODE));
@@ -147,11 +147,11 @@ EvtDispterRgstCbFuncToList
 
     if ( (NULL == eventName) || (NULL == func))
     {
-        printf("event/function name should not be null!\n");
+        CcspTraceWarning(("event/function name should not be null!\n"));
         return ANSC_STATUS_FAILURE;
     }
 
-    pCbFunc = (PEVT_DISPTER_CALLBACK_FUNC)malloc(sizeof(PEVT_DISPTER_CALLBACK_FUNC));
+    pCbFunc = (PEVT_DISPTER_CALLBACK_FUNC)malloc(sizeof(EVT_DISPTER_CALLBACK_FUNC));
     if(NULL != pCbFunc) {
         pCbFunc->MethodName = NULL; /*currently, methodname not used*/
         pCbFunc->Func = func;
@@ -159,7 +159,7 @@ EvtDispterRgstCbFuncToList
     }
 
     /*create the new callback function node*/
-    pNewMethodNode = (PEVT_DISPTER_METHOD_NODE)malloc(sizeof(PEVT_DISPTER_METHOD_NODE));
+    pNewMethodNode = (PEVT_DISPTER_METHOD_NODE)malloc(sizeof(EVT_DISPTER_METHOD_NODE));
     if(NULL == pNewMethodNode) {
         returnStatus = ANSC_STATUS_FAILURE;
         return returnStatus;
@@ -428,10 +428,10 @@ EvtDispterEventListen(void)
                     ret = EVENT_WAN_STOPPED;
             }
         } else {
-            printf("Received msg that is not a SE_MSG_NOTIFICATION (%d)\n", msg_type);
+            CcspTraceWarning(("Received msg that is not a SE_MSG_NOTIFICATION (%d)\n", msg_type));
         }
     } else {
-        printf("Received no event retval=%d\n", retval);
+        CcspTraceError(("%s: Received no event retval=%d\n", __FUNCTION__, retval));
     }
     return ret;
 }
@@ -492,7 +492,7 @@ EvtDispterEventHandler(void *arg)
 
     while(EVENT_ERROR == EvtDispterEventInits())
     {
-        printf("sysevent init failed!\n");
+        CcspTraceError(("%s: sysevent init failed!\n", __FUNCTION__));
         sleep(1);
     }
 
@@ -515,7 +515,7 @@ EvtDispterEventHandler(void *arg)
             case EVENT_WAN_STOPPED:
                 break;
             default :
-                printf("something is wrong!\n");
+                CcspTraceWarning(("The received event status is not expected!\n"));
                 break;
         }
 
@@ -542,7 +542,7 @@ EvtDispterHandleEventAsync(void)
     err = pthread_create(&event_handle_thread, NULL, EvtDispterEventHandler, NULL);
     if(0 != err)
     {
-        printf("create the event handle thread error!\n");
+        CcspTraceError(("%s: create the event handle thread error!\n", __FUNCTION__));
     }
 }
 

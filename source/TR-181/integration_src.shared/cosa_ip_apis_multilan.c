@@ -212,7 +212,7 @@ CosaDmlIpIfMlanLoadPsm
                         &SlapValue
                     );
 
-            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_boolean))
+            if ( (iReturnValue != CCSP_SUCCESS) )
             {
                 AnscTraceWarning
                     ((
@@ -223,9 +223,13 @@ CosaDmlIpIfMlanLoadPsm
                         RecordType
                     ));
             }
-            else
+            else if (RecordType == ccsp_boolean)
             {
                 pIpIf->Cfg.bEnabled = SlapValue.Variant.varBool;
+            }
+            else if (RecordType == ccsp_string)
+            {
+                pIpIf->Cfg.bEnabled = AnscEqualString(SlapValue.Variant.varString, "true", TRUE);
             }
 
             SlapCleanVariable(&SlapValue);
@@ -292,7 +296,7 @@ CosaDmlIpIfMlanLoadPsm
                         &SlapValue
                     );
 
-            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+            if ( (iReturnValue != CCSP_SUCCESS) )
             {
                 AnscTraceWarning
                     ((
@@ -303,9 +307,13 @@ CosaDmlIpIfMlanLoadPsm
                         RecordType
                     ));
             }
-            else
+            else if (RecordType == ccsp_unsignedInt)
             {
                 pIpIf->Cfg.MaxMTUSize = SlapValue.Variant.varUint32;
+            }
+            else if (RecordType == ccsp_string)
+            {
+                pIpIf->Cfg.MaxMTUSize = _ansc_atoi(SlapValue.Variant.varString);
             }
 
             SlapCleanVariable(&SlapValue);
@@ -332,7 +340,7 @@ CosaDmlIpIfMlanLoadPsm
                         &SlapValue
                     );
 
-            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_boolean))
+            if ( (iReturnValue != CCSP_SUCCESS) )
             {
                 AnscTraceWarning
                     ((
@@ -343,9 +351,13 @@ CosaDmlIpIfMlanLoadPsm
                         RecordType
                     ));
             }
-            else
+            else if (RecordType == ccsp_boolean)
             {
                 pIpIf->Cfg.AutoIPEnable = SlapValue.Variant.varBool;
+            }
+            else if (RecordType == ccsp_string)
+            {
+                pIpIf->Cfg.AutoIPEnable = AnscEqualString(SlapValue.Variant.varString, "true", TRUE);
             }
 
             SlapCleanVariable(&SlapValue);
@@ -372,7 +384,7 @@ CosaDmlIpIfMlanLoadPsm
                         &SlapValue
                     );
 
-            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+            if ( (iReturnValue != CCSP_SUCCESS) )
             {
                 AnscTraceWarning
                     ((
@@ -383,9 +395,13 @@ CosaDmlIpIfMlanLoadPsm
                         RecordType
                     ));
             }
-            else
+            else if (RecordType == ccsp_unsignedInt)
             {
                 pIpIf->Cfg.ArpCacheTimeout = SlapValue.Variant.varUint32;
+            }
+            else if (RecordType == ccsp_string)
+            {
+                pIpIf->Cfg.ArpCacheTimeout = _ansc_atoi(SlapValue.Variant.varString);
             }
 
             SlapCleanVariable(&SlapValue);
@@ -412,7 +428,7 @@ CosaDmlIpIfMlanLoadPsm
                         &SlapValue
                     );
 
-            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_boolean))
+            if ( (iReturnValue != CCSP_SUCCESS) )
             {
                 AnscTraceWarning
                     ((
@@ -423,9 +439,13 @@ CosaDmlIpIfMlanLoadPsm
                         RecordType
                     ));
             }
-            else
+            else if (RecordType == ccsp_boolean)
             {
                 pIpIf->Cfg.UpnpIgdEnabled = SlapValue.Variant.varBool;
+            }
+            else if (RecordType == ccsp_string)
+            {
+                pIpIf->Cfg.UpnpIgdEnabled = AnscEqualString(SlapValue.Variant.varString, "true", TRUE);
             }
 
             SlapCleanVariable(&SlapValue);
@@ -452,7 +472,7 @@ CosaDmlIpIfMlanLoadPsm
                         &SlapValue
                     );
 
-            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+            if ( (iReturnValue != CCSP_SUCCESS) )
             {
                 AnscTraceWarning
                     ((
@@ -463,9 +483,13 @@ CosaDmlIpIfMlanLoadPsm
                         RecordType
                     ));
             }
-            else
+            else if (RecordType == ccsp_unsignedInt)
             {
                 pIpIf->Cfg.LinkInstNum = SlapValue.Variant.varUint32;
+            }
+            else if (RecordType == ccsp_string)
+            {
+                pIpIf->Cfg.LinkInstNum = _ansc_atoi(SlapValue.Variant.varString);
             }
 
             SlapCleanVariable(&SlapValue);
@@ -498,7 +522,7 @@ CosaDmlIpIfMlanLoadPsm
                         &SlapValue
                     );
 
-            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+            if ( (iReturnValue != CCSP_SUCCESS) )
             {
                 AnscTraceWarning
                     ((
@@ -509,9 +533,13 @@ CosaDmlIpIfMlanLoadPsm
                         RecordType
                     ));
             }
-            else
+            else if (RecordType == ccsp_unsignedInt)
             {
                 ulL2netInst = SlapValue.Variant.varUint32;
+            }
+            else if (RecordType == ccsp_string)
+            {
+                ulL2netInst = _ansc_atoi(SlapValue.Variant.varString);
             }
 
             SlapCleanVariable(&SlapValue);

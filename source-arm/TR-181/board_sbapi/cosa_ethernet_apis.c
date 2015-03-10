@@ -160,13 +160,13 @@ int g_PortIDs[]={
 
 CosaEthInterfaceInfo g_EthEntries[] = 
     {
-        {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
-        {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
-        {g_EthIntSInfo + 2, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 2, {0}},
-        {g_EthIntSInfo + 3, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 3, {0}},
+        {g_EthIntSInfo + 0, "LAN Ethernet Port 1", 1, 0, &swFuncs, g_PortIDs + 0, {0}},
+        {g_EthIntSInfo + 1, "LAN Ethernet Port 2", 2, 0, &swFuncs, g_PortIDs + 1, {0}},
+        {g_EthIntSInfo + 2, "LAN Ethernet Port 3", 3, 0, &swFuncs, g_PortIDs + 2, {0}},
+        {g_EthIntSInfo + 3, "LAN Ethernet Port 4", 4, 0, &swFuncs, g_PortIDs + 3, {0}},
 
-        {g_EthIntSInfo + 4, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
-        {g_EthIntSInfo + 5, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
+        {g_EthIntSInfo + 4, "WAN Routing Port", 5, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 5, "WAN Bridging Port", 6, 0, &ifFuncs, NULL,          {0}}
     };
 
 #endif
@@ -975,6 +975,8 @@ int puma6_getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg)
 
     /* By default, port is enabled */
     pcfg->bEnabled = TRUE;
+    pcfg->InstanceNumber = eth->instanceNumber;
+    strcpy(pcfg->Alias, eth->Alias);
 
     status = CcspHalEthSwGetPortAdminStatus(port, &AdminStatus);
 
@@ -1168,6 +1170,9 @@ static int getIfCfg(PCosaEthInterfaceInfo pEthIf, PCOSA_DML_ETH_PORT_CFG pCfg)
         pCfg->bEnabled = FALSE;
     }
 
+    pCfg->InstanceNumber = pEthIf->instanceNumber;
+    strcpy(pCfg->Alias, pEthIf->Alias);
+	
     pCfg->DuplexMode = COSA_DML_ETH_DUPLEX_Auto;
     pCfg->MaxBitRate = 1000;
 

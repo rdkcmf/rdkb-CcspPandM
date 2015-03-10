@@ -64,6 +64,7 @@
 #include <utapi/utapi.h>
 #include <utapi/utapi_util.h>
 #include "cosa_drg_common.h"
+#include "ccsp_custom.h"
 
 COSA_DML_RA_CFG                     g_RaCfg = {0};
 
@@ -109,10 +110,17 @@ CosaDmlRaSetCfg
         Utopia_RawSet(&ctx, NULL, "mgmt_wan_srcend_ip", sVal);
 
     /* HTTP access */
+#if defined(CONFIG_CCSP_WAN_MGMT_ACCESS)
+    const char *sysCfghttpAccess = "mgmt_wan_httpaccess_ert";
+#else
+    const char *sysCfghttpAccess = "mgmt_wan_httpaccess";
+#endif
+
     if (pCfg->HttpEnable)
-        Utopia_RawSet(&ctx, NULL, "mgmt_wan_httpaccess", "1");
+        Utopia_RawSet(&ctx, NULL, sysCfghttpAccess, "1");
     else
-        Utopia_RawSet(&ctx, NULL, "mgmt_wan_httpaccess", "0");
+        Utopia_RawSet(&ctx, NULL, sysCfghttpAccess, "0");
+
     /*
     snprintf(sVal, sizeof(sVal), "%lu", pCfg->HttpPort);
     Utopia_RawSet(&ctx, NULL, "mgmt_wan_httpport", sVal); 
@@ -245,6 +253,11 @@ CosaDmlRaGetCfg
         goto errout;
     }
     pCfg->HttpEnable = (iVal == 1 ? TRUE : FALSE);
+
+#if defined(CONFIG_CCSP_WAN_MGMT_ACCESS)
+    if (Ut_GetInt(&ctx, "mgmt_wan_httpaccess_ert", &iVal))
+        pCfg->HttpEnable = (iVal == 1 ? TRUE : FALSE);
+#endif
 
     if (!Ut_GetInt(&ctx, "mgmt_wan_httpport", &iVal))
     {

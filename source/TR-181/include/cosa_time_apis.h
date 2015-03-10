@@ -82,6 +82,7 @@ _COSA_DML_TIME_CFG
     char                            LocalTimeZone[256]; /* Local time zone definition, encoded in IEEE 1003.1 */
     BOOLEAN                         bDaylightSaving;
     LONG                            DaylightSavingOffset;
+    ULONG                           cityIndex;
 }
 COSA_DML_TIME_CFG,  *PCOSA_DML_TIME_CFG;
 

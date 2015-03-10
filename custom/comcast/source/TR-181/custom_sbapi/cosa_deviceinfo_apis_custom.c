@@ -65,7 +65,6 @@
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>
-#include <sa_hwinfo_db.h>
 #define _ERROR_ "NOT SUPPORTED"
 
 extern void* g_pDslhDmlAgent;

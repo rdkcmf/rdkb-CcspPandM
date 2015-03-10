@@ -67,7 +67,7 @@
 typedef  enum
 _COSA_DML_DEVICE_MODE
 {
-    COSA_DML_DEVICE_MODE_DeviceMode = 1,
+    COSA_DML_DEVICE_MODE_Bridge = 1,
     COSA_DML_DEVICE_MODE_Ipv4,
     COSA_DML_DEVICE_MODE_Ipv6,
     COSA_DML_DEVICE_MODE_Dualstack
@@ -122,6 +122,7 @@ COSA_DML_MultiHomedMode, *PCOSA_DML_MultiHomedMode;
     ANSC_IPV4_ADDRESS                       NameServer2;                    \
     UCHAR                                   HostName[256];                  \
     UCHAR                                   DomainName[256];                \
+    UCHAR                                   StaticDomainName[256];                \
     BOOL                                    ReleaseWan;                     \
     BOOL                                    RenewWan;                       \
     /* Lan-Management */                                                    \
@@ -159,6 +160,8 @@ COSA_DML_MultiHomedMode, *PCOSA_DML_MultiHomedMode;
     char                                   ParentalControlDefaultPwd[33];               \
     char                                   ParentalControlQuestion[33];               \
     char                                   ParentalControlAnswer[33];               \
+    BOOL                                   bXHSPortEnabled;              \
+    BOOL                                   bXHSPortChanged;    \
 
 
 typedef  struct

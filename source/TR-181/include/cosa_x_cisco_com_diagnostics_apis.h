@@ -87,6 +87,7 @@ _COSA_DML_DIAGNOSTICS_ENTRY
 }
 COSA_DML_DIAGNOSTICS_ENTRY,  *PCOSA_DML_DIAGNOSTICS_ENTRY;
 
+#if 0
 typedef  struct
 _COSA_DML_DIAGNOSTICS_EVENTLOG
 { 
@@ -97,6 +98,7 @@ _COSA_DML_DIAGNOSTICS_EVENTLOG
                                                                                             So it will be freed by offical system free() by caller. */
 }
 COSA_DML_DIAGNOSTICS_EVENTLOG,  *PCOSA_DML_DIAGNOSTICS_EVENTLOG;
+#endif
 
 /*************************************
     The actual function declaration 
@@ -121,7 +123,20 @@ CosaDmlDiagnosticsGetEventlog
     (
         ANSC_HANDLE                    hContext,
         PULONG                         pulCount,
-        PCOSA_DML_DIAGNOSTICS_EVENTLOG *ppDiagnosticsEntry        
+        PCOSA_DML_DIAGNOSTICS_ENTRY *ppDiagnosticsEntry        
     );
 
+ANSC_STATUS
+CosaDmlDiagnosticsGetAllEventlog
+    (
+        char*                          pValue,
+        ULONG*                         pUlSize
+    );    
+
+ANSC_STATUS
+CosaDmlDiagnosticsGetAllSyslog
+    (
+        char*                          pValue,
+        ULONG*                         pUlSize
+    );    
 #endif

@@ -66,9 +66,20 @@
 #define  _DML_TR181_CUSTOM_CFG_CUSTOM_H_
 
 #define  CONFIG_CISCO_FILE_TRANSFER                 1
-#define  CONFIG_CISCO_TRUE_STATIC_IP                1
+
+/*
+ *  Configuration for True Static IP is moved to board specific
+ *  build configuration file included by dml_tr181_custom_cfg.h
+ *
+ *  Force CONFIG_CISCO_TRUE_STATIC_IP for now
+ */
+#ifndef  CONFIG_CISCO_TRUE_STATIC_IP
+    #define  CONFIG_CISCO_TRUE_STATIC_IP                1
+#endif
 
 #define  TR181_ParentalControlCreate()              CosaParentalControlCreate()
 #define  TR181_ParentalControlRemove(hContext)      CosaParentalControlRemove(hContext)
+
+#define  CONFIG_CCSP_WAN_MGMT_PORT
 
 #endif   /*_DML_TR181_CUSTOM_CFG_CUSTOM_H_*/

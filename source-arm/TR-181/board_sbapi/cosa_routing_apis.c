@@ -56,6 +56,7 @@
 #include "cosa_routing_dml.h"
 #include "cosa_routing_apis.h"
 #include "cosa_routing_internal.h"
+#include "dml_tr181_custom_cfg.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -602,17 +603,6 @@ static int CosaRipdOperation(char * arg)
     }
     else if (!strncmp(arg, "start", 5))
     {
-        /* We must be sure Dibbler-server is not up currently.
-                    If it is up, we need not start it. */
-        sprintf(cmd, COSA_DML_CMD_PS, basename(COSA_ZEBRA_BIN));
-        _get_shell_output3(cmd, out, sizeof(out));
-        if ( !strstr(out, basename(COSA_ZEBRA_BIN)))
-        {
-            sprintf(cmd, "%s -d -f %s -u root -g root", COSA_ZEBRA_BIN, COSA_ZEBRA_CUR_CONF );
-            AnscTraceWarning(("CosaRipdOperation -- run cmd:%s\n", cmd));
-            system(cmd);
-        }
-
         if ( CosaDmlRIPCurrentConfig.Enable && (CosaDmlRIPCurrentConfig.If1ReceiveEnable || CosaDmlRIPCurrentConfig.If1SendEnable ) )
         {
             sprintf(cmd, "%s -d -f %s -u root -g root -i %s &", COSA_RIPD_BIN, COSA_RIPD_CUR_CONF, RIPD_PID_FILE);
@@ -782,6 +772,8 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
     char *pstaticRoute        = NULL;
     char cmd[256]             = {0};
     BOOL bTrueStaticIP        = TRUE;
+
+    AnscTraceWarning(("CosaDmlGenerateRipdConfigFile -- starts.\n"));
 
     bTrueStaticIP  = g_GetParamValueBool(g_pDslhDmlAgent, "Device.X_CISCO_COM_TrueStaticIP.Enable");
     
@@ -978,41 +970,10 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
 
     }
 
-    return;
-}
-
-void CosaDmlGenerateZebraConfigFile()
-{
-    PCOSA_DML_RIPD_CONF pConf = &CosaDmlRIPCurrentConfig;
-    FILE * fp                 = fopen(COSA_ZEBRA_CUR_CONF, "r");
-    char cmd[256]             = {0};
-
-    if ( fp == NULL )
-    {
-        fp                 = fopen(COSA_ZEBRA_TMP_CONF, "w+");
-
-        if (fp)
-        {
-            /*we need this to get IANA IAPD info from dibbler*/
-            fprintf(fp, "!\n");
-            fprintf(fp, "hostname Router\n");
-            fprintf(fp, "!password cisco\n");
-
-            fclose(fp);
-
-            sprintf(cmd, "cp  "COSA_ZEBRA_TMP_CONF"  "COSA_ZEBRA_CUR_CONF );
-            AnscTraceWarning(("Run command:%s\n", cmd));
-            system(cmd);
-        }
-    }
-    else
-    {
-        fclose(fp);
-    }
+    AnscTraceWarning(("CosaDmlGenerateRipdConfigFile -- exits.\n"));
 
     return;
 }
-
 
 /**********************************************************************
 
@@ -1102,6 +1063,8 @@ CosaDmlRipSetCfg
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
 
+    AnscTraceWarning(("CosaDmlRipSetCfg -- starts.\n"));
+
     CosaDmlRIPCurrentConfig.Enable        = pCfg->Enable;
     CosaDmlRIPCurrentConfig.UpdateTime    = pCfg->X_CISCO_COM_UpdateInterval;
     CosaDmlRIPCurrentConfig.DefaultMetric = pCfg->X_CISCO_COM_DefaultMetric;
@@ -1113,9 +1076,10 @@ CosaDmlRipSetCfg
 #endif
 
     CosaDmlSaveRipdConfiguration();
-    CosaDmlGenerateZebraConfigFile();
     CosaDmlGenerateRipdConfigFile(NULL);
     CosaRipdOperation("restart");
+
+    AnscTraceWarning(("CosaDmlRipSetCfg -- exits.\n"));
     return returnStatus;
 }
 
@@ -1355,6 +1319,8 @@ CosaDmlRipIfSetCfg
 {
     PCOSA_DML_RIPD_CONF pConf       = &CosaDmlRIPCurrentConfig;
 
+    AnscTraceWarning(("CosaDmlRipIfSetCfg -- starts.\n"));
+
     if ( pEntry->InstanceNumber == 1 )
     {
         pConf->If1Enable           = pEntry->Enable;        
@@ -1401,9 +1367,10 @@ CosaDmlRipIfSetCfg
 #endif
 
     CosaDmlSaveRipdConfiguration();
-    CosaDmlGenerateZebraConfigFile();
     CosaDmlGenerateRipdConfigFile(NULL);
     CosaRipdOperation("restart");
+
+    AnscTraceWarning(("CosaDmlRipIfSetCfg -- exits.\n"));
 
     return ANSC_STATUS_CANT_FIND;   
 }    
@@ -1502,11 +1469,13 @@ CosaDmlRoutingInit
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
 
+    AnscTraceWarning(("CosaDmlRipInit -- starts.\n"));
+
     CosaDmlGetRipdConfiguration();
-    CosaDmlGenerateZebraConfigFile();
     CosaDmlGenerateRipdConfigFile(hDml);
-    CosaRipdOperation("restart");
+    //CosaRipdOperation("restart");
     
+    AnscTraceWarning(("CosaDmlRipInit -- exits.\n"));
     return returnStatus;
 }
 
@@ -3123,9 +3092,11 @@ ANSC_STATUS CosaDmlRipCallBack
         ANSC_HANDLE                 hContext
     )
 {
+    AnscTraceWarning(("CosaDmlRipCallback -- starts.\n"));
     CosaDmlGenerateRipdConfigFile(g_RoutingEntryInMiddleLayer);
-    CosaRipdOperation("restart");
+    //CosaRipdOperation("restart");
 
+    AnscTraceWarning(("CosaDmlRipCallback -- exits.\n"));
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -3141,7 +3112,6 @@ CosaDmlRoutingInit
 
     CosaDmlRouteInfoInit();
     CosaDmlGetRipdConfiguration();
-    CosaDmlGenerateZebraConfigFile();
 
     g_RoutingEntryInMiddleLayer = hDml;
     pEntry = (PDSLHDMAGNT_CALLBACK)AnscAllocateMemory(sizeof(*pEntry));
