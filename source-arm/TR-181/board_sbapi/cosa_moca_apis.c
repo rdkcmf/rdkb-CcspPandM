@@ -380,8 +380,6 @@ CosaDmlMocaIfGetEntry
         CosaDmlMocaIfGetDinfo(hContext, ulInterfaceIndex, &pEntry->DynamicInfo);
         moca_IfGetStaticInfo(ulInterfaceIndex, &mocaSInfo);
         //moca_IfGetStaticInfo(ulInterfaceIndex, &pEntry->StaticInfo);
-		//$HL 4/29/2013
-		AnscCopyString(pEntry->StaticInfo.Name, "sw_5"); 
 
 		/* Translate the Data Structures */
 		memcpy(pEntry->StaticInfo.Name, 				  mocaSInfo.Name, 64);
@@ -396,6 +394,9 @@ CosaDmlMocaIfGetEntry
 		pEntry->StaticInfo.QAM256Capable 				= mocaSInfo.QAM256Capable;
 		pEntry->StaticInfo.PacketAggregationCapability 	= mocaSInfo.PacketAggregationCapability;
 		pEntry->StaticInfo.X_CISCO_COM_CycleMaster 		= pEntry->DynamicInfo.NetworkCoordinator;
+
+        /* Multi-LAN distates the Name to be speicific switch port name */
+        AnscCopyString(pEntry->StaticInfo.Name, "sw_5");
     }
     else
     {
@@ -1236,57 +1237,82 @@ CosaDmlMocaIfGetAssocDevices
 
     if ( ulInterfaceIndex == 0 )
     {
-
         moca_GetNumAssociatedDevices(ulInterfaceIndex, pulCount);
 
         AnscTraceWarning(("*pulCount: %lu\n", *pulCount));
 
-        if(*pulCount) {
-			moca_associated_device_t **ppdevice_array;
-			int i;
-            ulSize = (*pulCount) * sizeof(COSA_DML_MOCA_ASSOC_DEVICE);
+        if ( *pulCount )
+        {
+			moca_associated_device_t*       pdevice_array  = NULL;
+			int                             i;
+
+            ulSize = sizeof(COSA_DML_MOCA_ASSOC_DEVICE) * (*pulCount);
                 
             *ppDeviceArray = (PCOSA_DML_MOCA_ASSOC_DEVICE)AnscAllocateMemory(ulSize);
-	
-			*ppdevice_array = (moca_associated_device_t *)AnscAllocateMemory((*pulCount) * sizeof(moca_associated_device_t));
-			
-    
-            moca_GetAssociatedDevices(ulInterfaceIndex, ppdevice_array);
 
-			/* Translate the Data Structures */
-			if (NULL != ppdevice_array && NULL != ppDeviceArray)
-			{
-				for (i = 0; i < *pulCount; i++)
-				{
-					memcpy(ppDeviceArray[i]->MACAddress, 		  		  ppdevice_array[i]->MACAddress, 18);
-					ppDeviceArray[i]->NodeID 							= ppdevice_array[i]->NodeID;
-					ppDeviceArray[i]->PreferredNC 						= ppdevice_array[i]->PreferredNC;
-					memcpy(ppDeviceArray[i]->HighestVersion, 	  		  ppdevice_array[i]->HighestVersion, 64);
-					ppDeviceArray[i]->PHYTxRate 						= ppdevice_array[i]->PHYTxRate;
-					ppDeviceArray[i]->PHYRxRate 						= ppdevice_array[i]->PHYRxRate;
-					ppDeviceArray[i]->TxPowerControlReduction 			= ppdevice_array[i]->TxPowerControlReduction;
-					ppDeviceArray[i]->RxPowerLevel 						= ppdevice_array[i]->RxPowerLevel;
-					ppDeviceArray[i]->TxBcastRate 						= ppdevice_array[i]->TxBcastRate;
-					ppDeviceArray[i]->RxBcastPowerLevel					= ppdevice_array[i]->RxBcastPowerLevel;
-					ppDeviceArray[i]->TxPackets							= ppdevice_array[i]->TxPackets;
-					ppDeviceArray[i]->RxPackets							= ppdevice_array[i]->RxPackets;
-					ppDeviceArray[i]->RxErroredAndMissedPackets			= ppdevice_array[i]->RxErroredAndMissedPackets;
-					ppDeviceArray[i]->QAM256Capable						= ppdevice_array[i]->QAM256Capable;
-					ppDeviceArray[i]->PacketAggregationCapability 		= ppdevice_array[i]->PacketAggregationCapability;
-					ppDeviceArray[i]->RxSNR								= ppdevice_array[i]->RxSNR;
-					ppDeviceArray[i]->Active							= ppdevice_array[i]->Active;
-					ppDeviceArray[i]->X_CISCO_COM_RxBcastRate			= ppdevice_array[i]->RxBcastRate;
-					ppDeviceArray[i]->X_CISCO_COM_NumberOfClients		= ppdevice_array[i]->NumberOfClients;
-				}
-			}
+		    pdevice_array = (moca_associated_device_t *)
+                AnscAllocateMemory
+                    (
+                        sizeof(moca_associated_device_t) * (*pulCount + COSA_DML_MOCA_AssocDeviceSafeguard)
+                    );
+			    
+            if ( *ppDeviceArray && pdevice_array )
+            {
+                INT                 iReturnStatus   = STATUS_SUCCESS;
+                PCOSA_DML_MOCA_ASSOC_DEVICE pDeviceArray = *ppDeviceArray;
+
+                iReturnStatus = moca_GetAssociatedDevices(ulInterfaceIndex, &pdevice_array);
+
+                if ( iReturnStatus == STATUS_SUCCESS )
+                {
+        			/* Translate the Data Structures */
+    				for (i = 0; i < *pulCount; i++)
+    				{
+    					memcpy(pDeviceArray->MACAddress, 		  		  pdevice_array[i].MACAddress, 18);
+    					pDeviceArray->NodeID 							= pdevice_array[i].NodeID;
+    					pDeviceArray->PreferredNC 						= pdevice_array[i].PreferredNC;
+    					memcpy(pDeviceArray->HighestVersion, 	  		  pdevice_array[i].HighestVersion, 64);
+    					pDeviceArray->PHYTxRate 						= pdevice_array[i].PHYTxRate;
+    					pDeviceArray->PHYRxRate 						= pdevice_array[i].PHYRxRate;
+    					pDeviceArray->TxPowerControlReduction 			= pdevice_array[i].TxPowerControlReduction;
+    					pDeviceArray->RxPowerLevel 						= pdevice_array[i].RxPowerLevel;
+    					pDeviceArray->TxBcastRate 						= pdevice_array[i].TxBcastRate;
+    					pDeviceArray->RxBcastPowerLevel					= pdevice_array[i].RxBcastPowerLevel;
+    					pDeviceArray->TxPackets							= pdevice_array[i].TxPackets;
+    					pDeviceArray->RxPackets							= pdevice_array[i].RxPackets;
+    					pDeviceArray->RxErroredAndMissedPackets			= pdevice_array[i].RxErroredAndMissedPackets;
+    					pDeviceArray->QAM256Capable						= pdevice_array[i].QAM256Capable;
+    					pDeviceArray->PacketAggregationCapability 		= pdevice_array[i].PacketAggregationCapability;
+    					pDeviceArray->RxSNR								= pdevice_array[i].RxSNR;
+    					pDeviceArray->Active							= pdevice_array[i].Active;
+    					pDeviceArray->X_CISCO_COM_RxBcastRate			= pdevice_array[i].RxBcastRate;
+    					pDeviceArray->X_CISCO_COM_NumberOfClients		= pdevice_array[i].NumberOfClients;
+                        ++pDeviceArray;  
+    				}
+                }
+
+                AnscFreeMemory(pdevice_array);
+
+                return  ANSC_STATUS_SUCCESS;
+            }
 			else
 			{
     			AnscTraceWarning(("CosaDmlMocaIfGetAssocDevices -- Memory Allocation Failure "
 									"ulInterfaceIndex:%lu, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
-				return ANSC_STATUS_FAILURE;
-			}
 
-        } 
+                if ( pdevice_array )
+                {
+                    AnscFreeMemory(pdevice_array);
+                }
+                if ( *ppDeviceArray )
+                {
+                    AnscFreeMemory(*ppDeviceArray);
+                    *ppDeviceArray = NULL;
+                }
+
+                return  ANSC_STATUS_RESOURCES;
+            }
+        }
     }
 
     AnscTraceWarning(("CosaDmlMocaIfGetAssocDevices -- ulInterfaceIndex:%lu, pulCount:%lu\n", ulInterfaceIndex, *pulCount));
@@ -1395,7 +1421,9 @@ CosaDmlMocaIfGetStats
     )
 {
     if ( !pStats )
+    {
         return ANSC_STATUS_FAILURE;
+    }
 
     _ansc_memset(pStats, 0, sizeof(COSA_DML_MOCA_STATS));
     
@@ -1408,7 +1436,9 @@ CosaDmlMocaIfGetStats
         pStats->BytesSent = 22;
     }
     else
+    {
         return ANSC_STATUS_FAILURE;
+    }
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -1455,7 +1485,9 @@ CosaDmlMocaIfGetAssocDevices
             return ANSC_STATUS_FAILURE;
     }
     if(*pulCount == 0)
+    {
             return ANSC_STATUS_FAILURE;
+    }
 
         cnt = *pulCount ;
         *ppDeviceArray = AnscAllocateMemory( cnt * sizeof(COSA_DML_MOCA_ASSOC_DEVICE)); 

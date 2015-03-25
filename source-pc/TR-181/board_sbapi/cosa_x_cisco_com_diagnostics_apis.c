@@ -113,7 +113,7 @@ CosaDmlDiagnosticsGetEntry
     return ANSC_STATUS_SUCCESS;
 }
 
-
+#if 0
 ANSC_STATUS
 CosaDmlDiagnosticsGetEventlog
     (
@@ -126,3 +126,4 @@ CosaDmlDiagnosticsGetEventlog
 
     return  ANSC_STATUS_SUCCESS;
 }
+#endif

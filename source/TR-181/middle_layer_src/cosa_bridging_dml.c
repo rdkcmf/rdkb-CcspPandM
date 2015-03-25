@@ -2501,7 +2501,8 @@ Port_SetParamStringValue
 
         AnscCopyString(pPort->Info.Name,pPort->Cfg.LinkName);
 
-        pPort->Cfg.mode = COSA_DML_BPORT_TAGGING;
+        /* Do not spontaneously change the port mode -- from 1.6.2 commit c9992ba4 */
+        //pPort->Cfg.mode = COSA_DML_BPORT_TAGGING;
         AnscTraceFlow(("<HL>%s search linkname and linktype pString=%s ucEntryParamName=%s \nucEntryNameValue=%s linktype=%d linkname=%s\n",
             __FUNCTION__, pString, ucEntryParamName,ucEntryNameValue,pPort->Cfg.LinkType,pPort->Cfg.LinkName));
 

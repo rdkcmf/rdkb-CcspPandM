@@ -1055,9 +1055,17 @@ Service_GetParamUlongValue
         {
             *puLong = 2;
         }
-        else
+        else if ( AnscEqualString(pDdnsService->ServiceName, "changeip", FALSE) )
         {
             *puLong = 3;
+        }
+        else if ( AnscEqualString(pDdnsService->ServiceName, "afraid", FALSE) )
+        {
+            *puLong = 4;
+        }
+        else
+        {
+            *puLong = 5;
         }
 
         return TRUE;
@@ -1328,7 +1336,35 @@ Service_SetParamUlongValue
     )
 {
     /* check the parameter name and set the corresponding value */
+    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
 
+    if( AnscEqualString(ParamName, "ServiceName", TRUE))
+    {
+        /* collect value */
+        if ( uValue == 1 )
+        {
+            AnscCopyString(pDdnsService->ServiceName, "dyndns");
+        }
+        else if ( uValue == 2 )
+        {
+            AnscCopyString(pDdnsService->ServiceName, "tzo");
+        }
+        else if ( uValue == 3 )
+        {
+            AnscCopyString(pDdnsService->ServiceName, "changeip");
+        }
+        else if ( uValue == 4 )
+        {
+            AnscCopyString(pDdnsService->ServiceName, "afraid");
+        }
+        else
+        {
+            AnscCopyString(pDdnsService->ServiceName, "None");
+        }
+
+        return TRUE;
+    }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }

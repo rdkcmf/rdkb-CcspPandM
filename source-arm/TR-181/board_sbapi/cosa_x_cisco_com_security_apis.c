@@ -2503,8 +2503,7 @@ CosaDmlFirewallGetConfig2
     UtopiaContext ctx;
     firewall_t    fw;
 
-    char firewallLevel[MAX_LEN] = {'\0'};
-    char firewallLevelV6[MAX_LEN] = {'\0'};
+    char value[MAX_LEN] = {'\0'};
 
     if ( !pCfg )
         return ANSC_STATUS_FAILURE;
@@ -2537,28 +2536,30 @@ CosaDmlFirewallGetConfig2
     pCfg->WanPingEnable = (fw.wan_ping_enable == true) ? TRUE : FALSE;
     pCfg->WanPingEnableV6 = (fw.wan_ping_enable_v6 == true) ? TRUE : FALSE;
 
-    Utopia_Get(&ctx, UtopiaValue_Firewall_Level, firewallLevel, sizeof(firewallLevel));
+    value[0] = '\0';
+    Utopia_Get(&ctx, UtopiaValue_Firewall_Level, value, sizeof(value));
 
-    if(!_ansc_strcmp(firewallLevel, "High"))
+    if(!_ansc_strcmp(value, "High"))
         pCfg->FirewallLevel = COSA_DML_FIREWALL_LEVEL_High;
-    else if(!_ansc_strcmp(firewallLevel, "Low")) 
+    else if(!_ansc_strcmp(value, "Low")) 
         pCfg->FirewallLevel = COSA_DML_FIREWALL_LEVEL_Low;
-    else if(!_ansc_strcmp(firewallLevel,"Medium"))
+    else if(!_ansc_strcmp(value,"Medium"))
         pCfg->FirewallLevel = COSA_DML_FIREWALL_LEVEL_Medium;
-    else if(!_ansc_strcmp(firewallLevel, "Custom"))
+    else if(!_ansc_strcmp(value, "Custom"))
         pCfg->FirewallLevel = COSA_DML_FIREWALL_LEVEL_Custom;
     else 
         pCfg->FirewallLevel = COSA_DML_FIREWALL_LEVEL_None;
 
-    Utopia_Get(&ctx, UtopiaValue_Firewall_LevelV6, firewallLevelV6, sizeof(firewallLevelV6));
+    value[0] = '\0';
+    Utopia_Get(&ctx, UtopiaValue_Firewall_LevelV6, value, sizeof(value));
 
-    if(!_ansc_strcmp(firewallLevelV6, "High"))
+    if(!_ansc_strcmp(value, "High"))
         pCfg->FirewallLevelV6 = COSA_DML_FIREWALL_LEVEL_High;
-    else if(!_ansc_strcmp(firewallLevelV6, "Low")) 
+    else if(!_ansc_strcmp(value, "Low")) 
         pCfg->FirewallLevelV6 = COSA_DML_FIREWALL_LEVEL_Low;
-    else if(!_ansc_strcmp(firewallLevelV6,"Medium"))
+    else if(!_ansc_strcmp(value,"Medium"))
         pCfg->FirewallLevelV6 = COSA_DML_FIREWALL_LEVEL_Medium;
-    else if(!_ansc_strcmp(firewallLevelV6, "Custom"))
+    else if(!_ansc_strcmp(value, "Custom"))
         pCfg->FirewallLevelV6 = COSA_DML_FIREWALL_LEVEL_Custom;
     else 
         pCfg->FirewallLevelV6 = COSA_DML_FIREWALL_LEVEL_None;
@@ -5096,9 +5097,10 @@ const char format[4][20] = { "Count=\"", "Time=\"", "Action=\"", "Desp=\""};
 
 int _memcpy_2_chr(char *d, char *s, size_t count, char c){
     char *end = strchr(s, c);
-    if(end == NULL || end -s == 0 || end -s > count)
+    if(end == NULL || end -s == 0 || end -s >= count)
         return 0;
     memcpy(d, s, end - s);
+    d[end-s] = '\0';
     return (end-s);
 }
 
@@ -5118,14 +5120,14 @@ int anlz_line(char *line, PCOSA_DML_IA_LOG_ENTRY entry){
     int i;
     char *pos = line;
     char tmp[20];
-    
+
+    memset(entry, 0, sizeof(COSA_DML_IA_LOG_ENTRY)); 
     if( 0 >= _get_value(&pos, 0, tmp, sizeof(tmp)) || \
         0 >= _get_value(&pos, 1, entry->OccuranceTime, sizeof(entry->OccuranceTime)) || \
         0 >= _get_value(&pos, 2, entry->Action, sizeof(entry->Action))  || \
         0 >= _get_value(&pos, 3, entry->Description, sizeof(entry->Description))){
         return -1;
     }
-    entry->Count = atoi(tmp);
     return 0;
 }
 
@@ -5145,7 +5147,9 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
     fseek(fp, 0, SEEK_SET);
 
     if(line_num > 0 ){
-        *entry = (PCOSA_DML_IA_LOG_ENTRY)AnscReAllocateMemory(*entry, sizeof(COSA_DML_IA_LOG_ENTRY) * (*count + line_num));
+//        *entry = (PCOSA_DML_IA_LOG_ENTRY)AnscReallocMemory(*entry, sizeof(COSA_DML_IA_LOG_ENTRY) * (*count), sizeof(COSA_DML_IA_LOG_ENTRY) * (*count + line_num));
+        *entry = (PCOSA_DML_IA_LOG_ENTRY)realloc(*entry, sizeof(COSA_DML_IA_LOG_ENTRY) * (*count + line_num + 4));
+
         if(*entry == NULL){
             *count = 0;
             fclose(fp);
@@ -5154,7 +5158,7 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
     }else{
         return;
     }
-
+    
     while(-1 != getline(&line, &len, fp)){
         if(0 == anlz_line(line, *entry + *count))
             (*count)++;        
@@ -5187,7 +5191,40 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
         if(ptr->d_name[0] == '.')
             continue;
         sprintf(fName, "%s/%s", FIREWALL_LOG_DIR,ptr->d_name);
+
+        /* Check log time format */
+		/* Old timestemp not include year, 
+ 		 * add year to support it */
+#define FWLOG_SUPPORT_OLD_TIME_FORMAT
+#ifdef FWLOG_SUPPORT_OLD_TIME_FORMAT
+#define FW_LOG_TIME_OLD_FORMAT_LEN 15
+        ULONG tmp = *count;
+        char year[6];
+        struct tm *ptime;
+        time_t t;
+
+        t=time(NULL);
+        ptime=localtime(&t);
+        year[0] = '\0';
+#endif
         get_log_entry(fName, &entry, count);
+
+#ifdef FWLOG_SUPPORT_OLD_TIME_FORMAT
+        for(;tmp < *count; tmp++)
+        {
+            if(strlen(entry[tmp].OccuranceTime) == FW_LOG_TIME_OLD_FORMAT_LEN){
+                if(year[0] == '\0'){
+                    /* this is a temp log file, Get current year */
+                    if(strstr(year, "9999") != NULL)
+                    {
+                        sprintf(year, " %04d", ptime->tm_year + 1900); 
+                    }else
+                        sprintf(year, " %c%c%c%c", ptr->d_name[0], ptr->d_name[1], ptr->d_name[2], ptr->d_name[3]);
+                }
+                strncat(entry[tmp].OccuranceTime, year, 5);
+            }   
+        }
+#endif
     }
     closedir(dir);
     return entry;
@@ -5229,16 +5266,31 @@ CosaDmlIaGetLogEntries
 {
     char fw_log_path[50];
     char temp[512];
+    static int first_flg = 1;
 
     PCOSA_DML_IA_LOG_ENTRY pConf = NULL;
     *pulCount = 0;
 
-    syscfg_init();
-    syscfg_get(NULL, "FW_LOG_FILE_PATH", fw_log_path, sizeof(fw_log_path));
-    if(fw_log_path[0] == '\0'){
-        //printf("@@@ not get Firewall log path\n");
+    /* Don't get the log when initializing */
+    if(first_flg == 1){
+        first_flg = 0;
         return NULL;
+    } 
+
+    fw_log_path[0] = '\0';
+#define FWLOG_SUPPORT_OLD_LOCATION
+#ifdef FWLOG_SUPPORT_OLD_LOCATION
+    if((!commonSyseventGet("FW_LOG_FILE_PATH_V2", fw_log_path, sizeof(fw_log_path))) &&\
+        (fw_log_path[0] == '\0')){
+#endif
+        syscfg_init();
+        syscfg_get(NULL, "FW_LOG_FILE_PATH", fw_log_path, sizeof(fw_log_path));
+        if(fw_log_path[0] == '\0'){
+            return NULL;
+        }
+#ifdef FWLOG_SUPPORT_OLD_LOCATION
     }
+#endif
         
     /* Generate current log message */
     system(GEN_CURRENT_LOG_CMD);
@@ -5251,16 +5303,144 @@ CosaDmlIaGetLogEntries
     //printf("%s\n", temp);
     system(temp);
 
-    sprintf(temp, "cp %s/???????? %s", fw_log_path, FIREWALL_LOG_DIR);
-    //printf("%s\n", temp);
+    sprintf(temp, "cp %s/???????? %s 2> /dev/null", fw_log_path, FIREWALL_LOG_DIR);
+//printf("%s\n", temp);
     system(temp);
 
+printf("%d\n",__LINE__);
     /* get all log information */
     pConf = _get_log(pulCount);
 
+//printf("%d pulCount %d \n",__LINE__, *pulCount);
     sprintf(temp, "rm -r %s", FIREWALL_LOG_DIR);
     system(temp);
     return pConf;
+}
+static PCOSA_DML_IA_LOG_ENTRY pFWLogBuf = NULL;
+static int FWLogNum = 0;
+static ULONG FWLogLastTick;
+
+#define REFRESH_INTERVAL 30
+#define TIME_NO_NEGATIVE(x) ((long)(x) < 0 ? 0 : (x))
+
+static int __is_updated(ULONG *last_tick)
+{
+    if ( !(*last_tick) ) 
+    {
+        *last_tick = AnscGetTickInSeconds();
+
+        return TRUE;
+    }
+    
+    if ( *last_tick >= TIME_NO_NEGATIVE(AnscGetTickInSeconds() - REFRESH_INTERVAL) )
+    {
+        return FALSE;
+    }
+    else 
+    {
+        *last_tick = AnscGetTickInSeconds();
+
+        return TRUE;
+    }
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        PCOSA_DML_IA_LOG_ENTRY
+        CosaDmlIaGetAllLogEntries
+            (
+                ANSC_HANDLE                 hContext,
+                PULONG                      pulCount
+            );
+
+    Description:
+
+        Backend implementation to update the IP range entry.
+
+    Arguments:    ANSC_HANDLE                 hContext
+                  Reserved.
+
+                  PULONG                      pulCount
+                  Log entry count
+
+
+    Return:       Log entries.
+
+**********************************************************************/
+ANSC_STATUS
+CosaDmlIaGetALLLogEntries
+    (
+        char*                          pValue,
+        ULONG*                         pUlSize
+    )
+{
+    char fw_log_path[50];
+    char temp[512];
+    static int first_flg = 1;
+    int i;
+    size_t tmpsize=0;
+    /* Don't get the log when initializing */
+    if(__is_updated(&FWLogLastTick)){
+        fw_log_path[0] = '\0';
+#define FWLOG_SUPPORT_OLD_LOCATION
+#ifdef FWLOG_SUPPORT_OLD_LOCATION
+        if((!commonSyseventGet("FW_LOG_FILE_PATH_V2", fw_log_path, sizeof(fw_log_path))) &&\
+            (fw_log_path[0] == '\0')){
+#endif
+            syscfg_init();
+            syscfg_get(NULL, "FW_LOG_FILE_PATH", fw_log_path, sizeof(fw_log_path));
+            if(fw_log_path[0] == '\0'){
+                return NULL;
+            }
+#ifdef FWLOG_SUPPORT_OLD_LOCATION
+        }
+#endif
+        if(pFWLogBuf != NULL){
+            AnscFreeMemory(pFWLogBuf);
+            FWLogNum = 0;
+            pFWLogBuf = NULL;
+        }
+
+        /* Generate current log message */
+        system(GEN_CURRENT_LOG_CMD);
+
+        sprintf(temp, "mkdir -p %s", FIREWALL_LOG_DIR);
+        //printf("%s\n", temp);
+        system(temp);
+
+        sprintf(temp, "log_handle.sh uncompress_fwlog %s", FIREWALL_LOG_DIR);
+        //printf("%s\n", temp);
+        system(temp);
+
+        sprintf(temp, "cp %s/???????? %s 2> /dev/null", fw_log_path, FIREWALL_LOG_DIR);
+    //printf("%s\n", temp);
+        system(temp);
+
+        /* get all log information */
+        pFWLogBuf = _get_log(&FWLogNum);
+    //printf("%d pulCount %d \n",__LINE__, *pulCount);
+        sprintf(temp, "rm -r %s", FIREWALL_LOG_DIR);
+        system(temp);
+    }
+    if(FWLogNum == 0){
+        pValue[0] = '\0';
+        return ANSC_STATUS_SUCCESS;
+    } 
+    if(*pUlSize < (FWLogNum * (20 + sizeof(COSA_DML_IA_LOG_ENTRY))))
+    {
+        *pUlSize = (FWLogNum + 20) *(20 + sizeof(COSA_DML_IA_LOG_ENTRY));
+        return ANSC_STATUS_FAILURE;
+    }else{
+        for(i=0; (i < FWLogNum) && (*pUlSize > tmpsize + 1); i++){
+           tmpsize += snprintf(pValue + tmpsize, *pUlSize - 1 - tmpsize , "\n%d\n%s\n%s\n%s\n%s\n%s\n%s", pFWLogBuf[i].Count, NULL, NULL, NULL, pFWLogBuf[i].Action, pFWLogBuf[i].OccuranceTime,pFWLogBuf[i].Description);
+        }
+        pValue[tmpsize] = '\0';
+        return ANSC_STATUS_SUCCESS;
+    }
 }
 
 void CosaDmlIaRemove()

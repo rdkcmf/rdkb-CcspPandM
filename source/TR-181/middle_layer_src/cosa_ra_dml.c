@@ -951,8 +951,13 @@ InterfaceSetting1_GetParamBoolValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RA_IF_FULL2           pRAInterface = (PCOSA_DML_RA_IF_FULL2)pCosaContext->hContext;
+    static ULONG                    time         = 0;;
 
-    CosaDmlRaIfGetCfg (pRAInterface, (PCOSA_DML_RA_IF_CFG)&pRAInterface->Cfg);
+    if ( !time || ( AnscGetTickInSeconds() - time ) > 2 )
+    {
+        CosaDmlRaIfGetCfg (pRAInterface, (PCOSA_DML_RA_IF_CFG)&pRAInterface->Cfg);
+        time = AnscGetTickInSeconds();
+    }
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE) )

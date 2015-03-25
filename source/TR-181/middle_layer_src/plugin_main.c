@@ -100,7 +100,7 @@ COSA_Init
     COSAGetParamValueStringProc     pGetStringProc              = (COSAGetParamValueStringProc       )NULL;
     COSAGetParamValueUlongProc      pGetParamValueUlongProc     = (COSAGetParamValueUlongProc        )NULL;
     COSAGetParamValueIntProc        pGetParamValueIntProc       = (COSAGetParamValueIntProc          )NULL;
-    COSAGetParamValueBoolProc       pGetParamValueBoolProc      = (COSAGetParamValueBoolProc        )NULL;
+    COSAGetParamValueBoolProc       pGetParamValueBoolProc      = (COSAGetParamValueBoolProc         )NULL;
     COSASetParamValueStringProc     pSetStringProc              = (COSASetParamValueStringProc       )NULL;
     COSASetParamValueUlongProc      pSetParamValueUlongProc     = (COSASetParamValueUlongProc        )NULL;
     COSASetParamValueIntProc        pSetParamValueIntProc       = (COSASetParamValueIntProc          )NULL;

@@ -5728,8 +5728,19 @@ Pool_GetParamStringValue
 
     if( AnscEqualString(ParamName, "IPRouters", TRUE))
     {
+        PULONG pTmpAddr;
+        if(pPool->Cfg.InstanceNumber == 1)
+        {
+            memset(&tmpCfg, 0, sizeof(tmpCfg));
+            tmpCfg.InstanceNumber = pPool->Cfg.InstanceNumber;
+            CosaDmlDhcpsGetPoolCfg(NULL,&tmpCfg);
+            pTmpAddr = &tmpCfg.IPRouters[0].Value;
+        }
+        else
+            pTmpAddr = &pPool->Cfg.IPRouters[0].Value;
+
         /* collect value */
-        if ( CosaDmlGetIpaddrString(pValue, pUlSize, (PULONG)&pPool->Cfg.IPRouters[0].Value, COSA_DML_DHCP_MAX_ENTRIES ) )
+        if ( CosaDmlGetIpaddrString(pValue, pUlSize, pTmpAddr, COSA_DML_DHCP_MAX_ENTRIES ) )
         {
             return 0;
         }
@@ -6047,7 +6058,8 @@ Pool_SetParamUlongValue
         mask = _ansc_inet_addr(strval);
 
         if( pPool->Cfg.InstanceNumber == 1 && 
-            is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)))
+            is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)) || 
+            uValue < pPool->Cfg.MinAddress.Value)
             return(FALSE);
         pPool->Cfg.MaxAddress.Value  = uValue;
         
@@ -9662,6 +9674,22 @@ IPv4Address2_GetParamStringValue
         else
         {
             *pUlSize = AnscSizeOfString(pIPAddress->X_CISCO_COM_LeaseTimeCreation)+1;
+            return 1;
+        }
+    }
+    
+    if( AnscEqualString(ParamName, "X_CISCO_COM_LeaseTimeDuration", TRUE) )
+    {
+        CosaDmlDhcpsGetLeaseTimeDuration(pIPAddress);
+        /* collect value */
+        if ( AnscSizeOfString(pIPAddress->X_CISCO_COM_LeaseTimeDuration) < *pUlSize)
+        {
+            AnscCopyString(pValue, pIPAddress->X_CISCO_COM_LeaseTimeDuration);
+            return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(pIPAddress->X_CISCO_COM_LeaseTimeDuration)+1;
             return 1;
         }
     }

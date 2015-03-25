@@ -706,7 +706,6 @@ void _get_dmbyname(int num, Name_DM_t *list, char** dm, char* name)
     int i;
 
     for(i = 0; i < num; i++){
-        printf("list name %s\n", list[i].name);
         if(NULL != strcasestr(list[i].name, name)){
             STRNCPY_NULL_CHK((*dm), list[i].dm);
             break;

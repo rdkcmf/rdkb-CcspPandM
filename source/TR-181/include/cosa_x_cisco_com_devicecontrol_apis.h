@@ -140,6 +140,7 @@ COSA_DML_LAN_MANAGEMENT, *PCOSA_DML_LAN_MANAGEMENT;
 
 
 #define FACTORY_RESET_KEY "factory_reset"
+#define FACTORY_RESET_WIFI_VALUE "w"
 #define FACTORY_RESET_ROUTER_VALUE "y"
 
 /**********************************************************************
@@ -276,6 +277,13 @@ CosaDmlDcGetWanDomainName
     (
         ANSC_HANDLE                 hContext,
         char                        *pDomainName
+    );
+
+ANSC_STATUS
+CosaDmlDcGetWanStaticDomainName
+    (
+        ANSC_HANDLE                 hContext,
+        char                        *pStaticDomainName
     );
 
 ANSC_STATUS
@@ -568,6 +576,20 @@ CosaDmlDcSetCusadminRemoteMgmtEnable
         ANSC_HANDLE                 hContext,
         BOOLEAN                     pFlag
     );
+    
+ANSC_STATUS
+CosaDmlDcGetHSEthernetPortEnable
+    (
+        ANSC_HANDLE                hContext,
+        BOOLEAN                    *pFlag
+    );
+    
+ANSC_STATUS
+CosaDmlDcSetHSEthernetPortEnable
+    (
+        ANSC_HANDLE                hContext,
+        BOOLEAN                    pFlag
+    );
 
 ANSC_STATUS
 CosaDmlDcGetGuestPassword
@@ -644,5 +666,19 @@ CosaDmlLanMngm_SetConf
 void _CosaDmlDcStartZeroConfig();
 
 void _CosaDmlDcStopZeroConfig();
+
+ANSC_STATUS
+CosaDmlDcGetErouterEnabled
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     *pFlag
+    );
+
+ANSC_STATUS
+CosaDmlDcSetErouterEnabled
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     bFlag
+    );
 
 #endif

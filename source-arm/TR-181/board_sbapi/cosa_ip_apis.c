@@ -113,12 +113,12 @@ IPIF_getEntry_for_Ipv6Pre
 BOOL CosaIpifGetSetSupported(char * pParamName)
 {
 #ifdef _COSA_INTEL_USG_ARM_
-    char * not_supported_param_list[]= {"addentry", "delentry", "Enable", "AutoIPEnable", \
+    char * not_supported_param_list[]= {"addentry", "delentry", /*"Enable",*/ "AutoIPEnable", \
         "Loopback", "ipv4addr_addentry", "ipv4addr_delentry", "Router", \
         "Anycast", "Status", "StaticType", "IPAddressStatus", "Prefix", "PrefixStatus", "PreferredLifetime", \
         "ValidLifetime", "ParentPrefix", "PreferredLifetime", ""};
 #else
-    char * not_supported_param_list[]= {"addentry", "delentry", "Enable", "AutoIPEnable", "LowerLayers", "Loopback", "ipv4addr_addentry", "ipv4addr_delentry", "Router", ""};
+    char * not_supported_param_list[]= {"addentry", "delentry", /*"Enable",*/ "AutoIPEnable", "LowerLayers", "Loopback", "ipv4addr_addentry", "ipv4addr_delentry", "Router", ""};
 #endif
     char ** p;
 
@@ -1899,6 +1899,32 @@ CosaDmlIpIfSetCfg
             AnscCopyString(p_be_buf_cfg->Alias, pCfg->Alias);
         }
     #ifdef _COSA_INTEL_USG_ARM_
+        if (pCfg->MaxMTUSize != p_be_buf_cfg->MaxMTUSize)
+        {
+            /*
+             *  TBC -- Why do we have to use interface name to tell the role of an interface?
+             */
+            if (strstr(pCfg->LinkName, "erouter0"))
+            {
+                if(0 == pCfg->MaxMTUSize)
+                    pCfg->MaxMTUSize = 1500;
+                CosaUtilIoctlXXX(pCfg->LinkName, "setmtu", &pCfg->MaxMTUSize);
+                /*Utopia has wan_mtu support, should turn to Utopia api*/
+                UtopiaContext utctx;
+
+                Utopia_Init(&utctx);
+                _ansc_sprintf(buf, "%d", pCfg->MaxMTUSize);
+                Utopia_Set(&utctx, UtopiaValue_WAN_MTU, buf);
+                Utopia_Free(&utctx, 1);
+            }
+            else
+            {
+                /*no Utopia support, do it myself */
+                CosaUtilIoctlXXX(pCfg->LinkName, "setmtu", &pCfg->MaxMTUSize);
+            }
+            
+            p_be_buf_cfg->MaxMTUSize = pCfg->MaxMTUSize;
+        }
     #else
         if (pCfg->MaxMTUSize != p_be_buf_cfg->MaxMTUSize)
         {

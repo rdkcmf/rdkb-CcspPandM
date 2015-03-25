@@ -83,7 +83,8 @@ COSA_DML_IF_STATUS, *PCOSA_DML_IF_STATUS;
                 STRUCTURE AND CONSTANT DEFINITIONS
 **********************************************************************/
 
-#define MOCA_INTEFACE_NUMBER        1
+#define MOCA_INTEFACE_NUMBER                        1
+#define COSA_DML_MOCA_AssocDeviceSafeguard          8
 
 typedef 
 enum _MOCA_PROVISIONING_SERVERADDRESS_TYPE

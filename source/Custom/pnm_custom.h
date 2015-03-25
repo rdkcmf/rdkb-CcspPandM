@@ -60,4 +60,7 @@
 
 #define  CCSP_PNM_START_CFG_FILE                    "CcspPam.cfg"
 
+/* TBD  Move to platform specific header file */
+#define  CCSP_PNM_BACKTRACE_FILE                    "/nvram/pamssp_backtrace"
+
 #endif   /*_PNM_CUSTOM_H_*/

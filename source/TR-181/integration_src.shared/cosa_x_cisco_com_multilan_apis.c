@@ -155,7 +155,7 @@ CosaDmlMlanGetPrimaryLanIpIf
                     &SlapValue
                 );
 
-        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        if ( (iReturnValue != CCSP_SUCCESS) )
         {
             AnscTraceWarning
                 ((
@@ -166,7 +166,7 @@ CosaDmlMlanGetPrimaryLanIpIf
                     RecordType
                 ));
         }
-        else
+        else if (RecordType == ccsp_unsignedInt)
         {
             ulStrSize                 = _ansc_strlen(DM_TR181_NAME_IP_IF) + 10;
             pContext->pPrimaryLanIpIf = AnscAllocateMemory(ulStrSize);
@@ -174,6 +174,16 @@ CosaDmlMlanGetPrimaryLanIpIf
             if ( pContext->pPrimaryLanIpIf )
             {
                 _ansc_sprintf(pContext->pPrimaryLanIpIf, "%s%d", DM_TR181_NAME_IP_IF, SlapValue.Variant.varUint32);
+            }
+        }
+        else if (RecordType == ccsp_string)
+        {
+            ulStrSize                 = _ansc_strlen(DM_TR181_NAME_IP_IF) + 10;
+            pContext->pPrimaryLanIpIf = AnscAllocateMemory(ulStrSize);
+
+            if ( pContext->pPrimaryLanIpIf )
+            {
+                _ansc_sprintf(pContext->pPrimaryLanIpIf, "%s%s", DM_TR181_NAME_IP_IF, SlapValue.Variant.varString);
             }
         }
 
@@ -236,7 +246,7 @@ CosaDmlMlanGetHomeSecurityIpIf
                     &SlapValue
                 );
 
-        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        if ( (iReturnValue != CCSP_SUCCESS) )
         {
             AnscTraceWarning
                 ((
@@ -247,7 +257,7 @@ CosaDmlMlanGetHomeSecurityIpIf
                     RecordType
                 ));
         }
-        else
+        else if (RecordType == ccsp_unsignedInt)
         {
             ulStrSize = _ansc_strlen(DM_TR181_NAME_IP_IF) + 10;
             pContext->pHomeSecurityIpIf = AnscAllocateMemory(ulStrSize);
@@ -255,6 +265,16 @@ CosaDmlMlanGetHomeSecurityIpIf
             if ( pContext->pHomeSecurityIpIf )
             {
                 _ansc_sprintf(pContext->pHomeSecurityIpIf, "%s%d", DM_TR181_NAME_IP_IF, SlapValue.Variant.varUint32);
+            }
+        }
+        else if (RecordType == ccsp_string)
+        {
+            ulStrSize = _ansc_strlen(DM_TR181_NAME_IP_IF) + 10;
+            pContext->pHomeSecurityIpIf = AnscAllocateMemory(ulStrSize);
+
+            if ( pContext->pHomeSecurityIpIf )
+            {
+                _ansc_sprintf(pContext->pHomeSecurityIpIf, "%s%s", DM_TR181_NAME_IP_IF, SlapValue.Variant.varString);
             }
         }
 
@@ -316,7 +336,7 @@ CosaDmlMlanGetPrimaryLanBridge
                     &SlapValue
                 );
 
-        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        if ( (iReturnValue != CCSP_SUCCESS) )
         {
             AnscTraceWarning
                 ((
@@ -327,7 +347,7 @@ CosaDmlMlanGetPrimaryLanBridge
                     RecordType
                 ));
         }
-        else
+        else if (RecordType == ccsp_unsignedInt)
         {
             ulStrSize = _ansc_strlen(DM_TR181_NAME_BRIDGE) + 10;
             pContext->pPrimaryLanBridge = AnscAllocateMemory(ulStrSize);
@@ -335,6 +355,16 @@ CosaDmlMlanGetPrimaryLanBridge
             if ( pContext->pPrimaryLanBridge )
             {
                 _ansc_sprintf(pContext->pPrimaryLanBridge, "%s%d", DM_TR181_NAME_BRIDGE, SlapValue.Variant.varUint32);
+            }
+        }
+        else if (RecordType == ccsp_string)
+        {
+            ulStrSize = _ansc_strlen(DM_TR181_NAME_BRIDGE) + 10;
+            pContext->pPrimaryLanBridge = AnscAllocateMemory(ulStrSize);
+
+            if ( pContext->pPrimaryLanBridge )
+            {
+                _ansc_sprintf(pContext->pPrimaryLanBridge, "%s%s", DM_TR181_NAME_BRIDGE, SlapValue.Variant.varString);
             }
         }
 
@@ -558,7 +588,7 @@ CosaDmlMlanGetHomeSecurityBridge
                     &SlapValue
                 );
 
-        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        if ( (iReturnValue != CCSP_SUCCESS) )
         {
             AnscTraceWarning
                 ((
@@ -569,7 +599,7 @@ CosaDmlMlanGetHomeSecurityBridge
                     RecordType
                 ));
         }
-        else
+        else if (RecordType == ccsp_unsignedInt)
         {
             ulStrSize = _ansc_strlen(DM_TR181_NAME_BRIDGE) + 10;
             pContext->pHomeSecurityBridge = AnscAllocateMemory(ulStrSize);
@@ -577,6 +607,16 @@ CosaDmlMlanGetHomeSecurityBridge
             if ( pContext->pHomeSecurityBridge )
             {
                 _ansc_sprintf(pContext->pHomeSecurityBridge, "%s%d", DM_TR181_NAME_BRIDGE, SlapValue.Variant.varUint32);
+            }
+        }
+        else if (RecordType == ccsp_string)
+        {
+            ulStrSize = _ansc_strlen(DM_TR181_NAME_BRIDGE) + 10;
+            pContext->pHomeSecurityBridge = AnscAllocateMemory(ulStrSize);
+
+            if ( pContext->pHomeSecurityBridge )
+            {
+                _ansc_sprintf(pContext->pHomeSecurityBridge, "%s%s", DM_TR181_NAME_BRIDGE, SlapValue.Variant.varString);
             }
         }
 
@@ -718,7 +758,7 @@ CosaDmlMlanGetHomeSecurityDhcpv4ServerPool
                     &SlapValue
                 );
 
-        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        if ( (iReturnValue != CCSP_SUCCESS) )
         {
             AnscTraceWarning
                 ((
@@ -729,7 +769,7 @@ CosaDmlMlanGetHomeSecurityDhcpv4ServerPool
                     RecordType
                 ));
         }
-        else
+        else if (RecordType == ccsp_unsignedInt)
         {
             ulStrSize = _ansc_strlen(DM_TR181_NAME_DHCPv4ServerPool) + 10;
             pContext->pHomeSecurityDHCPv4ServerPool = AnscAllocateMemory(ulStrSize);
@@ -737,6 +777,16 @@ CosaDmlMlanGetHomeSecurityDhcpv4ServerPool
             if ( pContext->pHomeSecurityDHCPv4ServerPool )
             {
                 _ansc_sprintf(pContext->pHomeSecurityDHCPv4ServerPool, "%s%d", DM_TR181_NAME_DHCPv4ServerPool, SlapValue.Variant.varUint32);
+            }
+        }
+        else if (RecordType == ccsp_string)
+        {
+            ulStrSize = _ansc_strlen(DM_TR181_NAME_DHCPv4ServerPool) + 10;
+            pContext->pHomeSecurityDHCPv4ServerPool = AnscAllocateMemory(ulStrSize);
+
+            if ( pContext->pHomeSecurityDHCPv4ServerPool )
+            {
+                _ansc_sprintf(pContext->pHomeSecurityDHCPv4ServerPool, "%s%s", DM_TR181_NAME_DHCPv4ServerPool, SlapValue.Variant.varString);
             }
         }
 

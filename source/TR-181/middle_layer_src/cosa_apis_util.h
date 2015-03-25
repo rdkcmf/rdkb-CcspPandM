@@ -145,6 +145,21 @@ CosaUtilGetFullPathNameByKeyword
         PUCHAR                      pKeyword
     );
 
+ULONG
+CosaUtilChannelValidate
+    (
+        UINT                        uiRadio, 
+        ULONG                       Channel
+    );
+
+ULONG
+CosaUtilChannelValidate2
+    (
+        UINT                       uiRadio,
+        ULONG                      Channel,
+        char                       *channelList
+    );
+
 int CosaUtilGetIfStats(char * ifname, PCOSA_DML_IF_STATS  pStats);
 
 ULONG CosaUtilIoctlXXX(char * if_name, char * method, void * input);
@@ -254,5 +269,7 @@ int IPv4Addr_IsClassD(uint32_t addr);
 int vsystem(const char *fmt, ...);
 
 void chomp(char *line);
+
+int get_if_hwaddr(const char *ifname, char *mac, size_t size);
 
 #endif

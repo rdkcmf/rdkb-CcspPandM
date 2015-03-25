@@ -187,6 +187,13 @@ CosaDeviceControlInitialize
     else
         pMyObject->hIrepFolderLm = pPoamIrepFoLm;
 
+    /*workaroud for upgrade from 1.3 to 1.6 which may cause core dumped
+     * delete the two parameter in PSM when initialize*/
+    {
+        PSM_Del_Record(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent), CCSP_USER_CHANGED_MONITOR_PARAM);
+        PSM_Del_Record(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent), CCSP_USER_COMPONENTS_PARAM);
+    }
+
     CosaDevCtrlReg_GetUserChangedParamsControl(hThisObject);
 
     pSlapVariable = (PSLAP_VARIABLE)pPoamIrepFoLm->GetRecord(
@@ -260,6 +267,9 @@ CosaDeviceControlInitialize
     CosaDmlDcGetWanAddressMode((ANSC_HANDLE)pMyObject, &pMyObject->WanAddrMode);
     CosaDmlDcGetMsoRemoteMgmtEnable((ANSC_HANDLE)pMyObject, &pMyObject->EnableMsoRemoteMgmt);
     CosaDmlDcGetCusadminRemoteMgmtEnable((ANSC_HANDLE)pMyObject, &pMyObject->EnableCusadminRemoteMgmt);
+
+    CosaDmlDcGetHTTPPort ((ANSC_HANDLE)pMyObject, &pMyObject->HTTPPort );
+    CosaDmlDcGetHTTPSPort((ANSC_HANDLE)pMyObject, &pMyObject->HTTPSPort);
 
     //CosaDmlDcGetGuestPassword(NULL, pMyObject->GuestPassword);
     //pMyObject->NoOfGuests = CosaDmlDcGetNoOfGuests();
@@ -352,6 +362,10 @@ CosaDevCtrlReg_SetUserChangedParamsControl(
         ANSC_HANDLE                 hThisObject
     )
 {
+    /* workaroud for upgrade from 1.3 to 1.6 which may cause core dumped.
+     * will not set these two params to PSM
+     */
+#if 0
     PCOSA_DATAMODEL_DEVICECONTROL   pMyObject               = (PCOSA_DATAMODEL_DEVICECONTROL   )hThisObject;
     PSLAP_VARIABLE pSlapVariable = (PSLAP_VARIABLE)NULL;
 
@@ -381,6 +395,8 @@ CosaDevCtrlReg_SetUserChangedParamsControl(
     {
         return ANSC_STATUS_RESOURCES;
     }
+#endif
+    return ANSC_STATUS_SUCCESS;
 }
 
 /**

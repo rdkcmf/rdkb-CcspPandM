@@ -336,6 +336,7 @@ _COSA_DML_DHCPSV4_CLIENT_IPADDRESS
     ULONG                           IPAddress;
     UCHAR                           LeaseTimeRemaining[32];
     UCHAR                           X_CISCO_COM_LeaseTimeCreation[32];
+    UCHAR                           X_CISCO_COM_LeaseTimeDuration[32];
 };
 typedef  struct _COSA_DML_DHCPSV4_CLIENT_IPADDRESS COSA_DML_DHCPSV4_CLIENT_IPADDRESS,  *PCOSA_DML_DHCPSV4_CLIENT_IPADDRESS;
 
@@ -859,6 +860,12 @@ CosaDmlDhcpsPing
         PCOSA_DML_DHCPSV4_CLIENT_IPADDRESS    pDhcpsClient
     );
 
+
+ANSC_STATUS
+CosaDmlDhcpsGetLeaseTimeDuration
+    (
+        PCOSA_DML_DHCPSV4_CLIENT_IPADDRESS    pDhcpsClient
+    );
 
 #endif
 

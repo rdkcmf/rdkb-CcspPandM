@@ -149,9 +149,7 @@ CosaTimeInitialize
     _ansc_memset(&pMyObject->TimeStatus, 0, sizeof(COSA_DML_TIME_STATUS));
     _ansc_memset(&pMyObject->CurrLocalTime, 0, sizeof(ANSC_UNIVERSAL_TIME));
 
-    CosaDmlTimeInit(NULL, NULL);
-
-    CosaDmlTimeGetCfg(NULL, &pMyObject->TimeCfg);
+    CosaDmlTimeInit(NULL, &pMyObject->TimeCfg);
 
     return returnStatus;
 }

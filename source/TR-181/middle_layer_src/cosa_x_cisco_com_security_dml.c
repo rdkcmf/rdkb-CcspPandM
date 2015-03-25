@@ -2071,6 +2071,20 @@ InternetAccess_GetParamStringValue
     )
 {
     /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "DumpAllFWlog", TRUE))
+    {
+        ULONG logSize = *pUlSize;
+        if(ANSC_STATUS_FAILURE == CosaDmlIaGetALLLogEntries(pValue, &logSize) != ANSC_STATUS_SUCCESS)
+        {
+            if(logSize > *pUlSize){
+                *pUlSize = logSize;
+                return 1;
+            }
+            else
+                return -1;
+        }
+        return 0;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
