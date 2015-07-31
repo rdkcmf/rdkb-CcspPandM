@@ -94,374 +94,10 @@ static struct ipv6rd_conf *g_ipv6rd_conf;
 
 #if (defined(_COSA_DRG_CNS_) || defined(_COSA_DRG_TPG_))
 /* 
- * define USE_NETLINK_IOCTL to use netlink and ioctl APIs
  * define USE_SYSTEM to use system() function
  */
 #define USE_SYSTEM
 #endif
-
-#ifdef USE_NETLINK_IOCTL
-#include <errno.h>
-//#include <linux/if_tunnel.h>
-#include "linux/if_tunnel.h"
-#include <linux/netlink.h>
-
-#include "utils.h"
-#include "libnetlink.h"
-
-/**************************************************************************
- * tunnel/address/routing related ioctl and netlink wrappers
-**************************************************************************/
-
-#ifndef IP_DF
-#define IP_DF       0x4000  /* Don't Fragment */
-#endif
-
-int resolve_hosts = 0;
-static struct rtnl_handle rth = { .fd = -1 };
-
-static int AddressModify(int cmd, int flags, const char *dev, const char *addr)
-{
-    struct {
-        struct nlmsghdr     n;
-        struct ifaddrmsg    ifa;
-        char                buf[256];
-    } req;
-    inet_prefix             lcl;
-    char addrbuf[256]; // the value may changed by get_prefix()
-
-    bzero(&req, sizeof(req));
-    req.n.nlmsg_len     = NLMSG_LENGTH(sizeof(struct ifaddrmsg));
-    req.n.nlmsg_flags   = NLM_F_REQUEST | flags;
-    req.n.nlmsg_type    = cmd;
-
-    snprintf(addrbuf, sizeof(addrbuf), "%s", addr);
-    get_prefix(&lcl, addrbuf, AF_UNSPEC);
-    req.ifa.ifa_family  = lcl.family;
-    addattr_l(&req.n, sizeof(req), IFA_LOCAL, &lcl.data, lcl.bytelen);
-
-    addattr_l(&req.n, sizeof(req), IFA_ADDRESS, &lcl.data, lcl.bytelen);
-    req.ifa.ifa_prefixlen = lcl.bitlen;
-    
-    ll_init_map(&rth);
-
-    if ((req.ifa.ifa_index = ll_name_to_index(dev)) == 0) {
-        syslog(LOG_ERR, "%s: cannot find device %s", __FUNCTION__, dev);
-        return -1;
-    }
-
-    if (rtnl_talk(&rth, &req.n, 0, 0, NULL, NULL, NULL) < 0) {
-        syslog(LOG_ERR, "%s: rtnl_talk error", __FUNCTION__);
-        return -1;
-    }
-
-    return 0;
-}
-
-static int RouteModify(int cmd, unsigned flags, 
-        const char *dest,
-        const char *via, /* optional */
-        const char *dev
-        )
-{
-    struct {
-        struct nlmsghdr     n;
-        struct rtmsg        r;
-        char                buf[1024];
-    } req;
-    int idx;
-    inet_prefix dst, addr;
-    char tmp[512];
-
-    memset(&req, 0, sizeof(req));
-
-    req.n.nlmsg_len     = NLMSG_LENGTH(sizeof(struct rtmsg));
-    req.n.nlmsg_flags   = NLM_F_REQUEST | flags;
-    req.n.nlmsg_type    = cmd;
-    req.r.rtm_family    = AF_UNSPEC;
-    req.r.rtm_table     = RT_TABLE_MAIN;
-    req.r.rtm_scope     = RT_SCOPE_NOWHERE;
-
-    if (cmd != RTM_DELROUTE) {
-        req.r.rtm_protocol  = RTPROT_BOOT;
-        req.r.rtm_scope     = RT_SCOPE_UNIVERSE;
-        req.r.rtm_type      = RTN_UNICAST;
-    }
-
-    if (dest) {
-        snprintf(tmp, sizeof(tmp), "%s", dest);
-        get_prefix(&dst, tmp, req.r.rtm_family);
-        if (req.r.rtm_family == AF_UNSPEC)
-            req.r.rtm_family = dst.family;
-        req.r.rtm_dst_len = dst.bitlen;
-        if (dst.bytelen)
-            addattr_l(&req.n, sizeof(req), RTA_DST, &dst.data, dst.bytelen);
-    }
-
-    if (via) {
-        snprintf(tmp, sizeof(tmp), "%s", via);
-        get_addr(&addr, tmp, req.r.rtm_family);
-        if (req.r.rtm_family == AF_UNSPEC)
-            req.r.rtm_family = addr.family;
-        addattr_l(&req.n, sizeof(req), RTA_GATEWAY, &addr.data, addr.bytelen);
-    }
-
-    if (dev) {
-        ll_init_map(&rth);
-
-        if ((idx = ll_name_to_index(dev)) == 0) {
-            syslog(LOG_ERR, "%s: cannot find device %s", __FUNCTION__, dev);
-            return -1;
-        }
-        addattr32(&req.n, sizeof(req), RTA_OIF, idx);
-    }
-
-    if (cmd == RTM_DELROUTE)
-        req.r.rtm_scope = RT_SCOPE_NOWHERE;
-    else if (!via)
-        req.r.rtm_scope = RT_SCOPE_LINK;
-
-    if (req.r.rtm_family == AF_UNSPEC)
-        req.r.rtm_family = AF_INET;
-
-    if (rtnl_talk(&rth, &req.n, 0, 0, NULL, NULL, NULL) < 0) {
-        syslog(LOG_ERR, "%s: rtnl_talk error", __FUNCTION__);
-        return -1;
-    }
-
-    return 0;
-}
-
-int Tunnel_Add(const char *tunnel, const char *localaddr, int ttl)
-{
-    int sockfd;
-    struct ifreq ifr;
-    struct ip_tunnel_parm tun_param;
-    struct iphdr *iph;
-
-    bzero(&tun_param, sizeof(tun_param));
-    strncpy(tun_param.name, tunnel, sizeof(tun_param.name) - 1);
-
-    iph = &tun_param.iph;
-    iph->version = 4;
-    iph->ihl = 5;
-    iph->frag_off = htons(IP_DF);
-    iph->protocol = IPPROTO_IPV6;
-    iph->saddr = get_addr32(localaddr);
-    if (ttl > 0 && ttl < 256)
-        iph->ttl = ttl;
-    else
-        iph->ttl = 64; /* just for safe */
-
-    bzero(&ifr, sizeof(ifr));
-    strncpy(ifr.ifr_name, "sit0", sizeof(ifr.ifr_name) - 1);
-    ifr.ifr_ifru.ifru_data = &tun_param;
-
-    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-        syslog(LOG_ERR, "%s: fail to create socket", __FUNCTION__);
-        return -1;
-    }
-
-    if (ioctl(sockfd, SIOCADDTUNNEL, &ifr) != 0) {
-        syslog(LOG_ERR, "%s: add tunnel %s failed: %s", __FUNCTION__, 
-                ifr.ifr_name, strerror(errno));
-        close(sockfd);
-        return -1;
-    }
-
-    close(sockfd);
-    return 0;
-}
-
-int Tunnel_Delete(const char *tunnel)
-{
-    struct ip_tunnel_parm tun_param;
-    struct iphdr *iph;
-    struct ifreq ifr;
-    int sockfd;
-
-    bzero(&tun_param, sizeof(tun_param));
-    strncpy(tun_param.name, tunnel, sizeof(tun_param.name) - 1);
-
-    iph = &tun_param.iph;
-    iph->version = 4;
-    iph->ihl = 5;
-    iph->frag_off = htons(IP_DF);
-
-    bzero(&ifr, sizeof(ifr));
-    strncpy(ifr.ifr_name, tunnel, sizeof(ifr.ifr_name) - 1);
-    ifr.ifr_ifru.ifru_data = &tun_param;
-
-    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-        syslog(LOG_ERR, "%s: fail to create socket", __FUNCTION__);
-        return -1;
-    }
-
-    if (ioctl(sockfd, SIOCDELTUNNEL, &ifr) != 0) {
-        syslog(LOG_ERR, "%s: del tunnel %s failed: %s", __FUNCTION__, 
-                ifr.ifr_name, strerror(errno));
-        close(sockfd);
-        return -1;
-    }
-
-    close(sockfd);
-    return 0;
-}
-
-int Tunnel_Set6rdPrefix(const char *tunnel, const char *prefix)
-{
-    struct ip_tunnel_6rd ip6rd;
-    inet_prefix inet_prefix;
-    struct ifreq ifr;
-    int sockfd;
-    char prebuf[256];
-
-    snprintf(prebuf, sizeof(prebuf), "%s", prefix);
-    if (get_prefix(&inet_prefix, prebuf, AF_INET6) != 0) {
-        syslog(LOG_ERR, "%s: invalid prefix: %s", __FUNCTION__, prefix);
-        return -1;
-    }
-
-    bzero(&ip6rd, sizeof(ip6rd));
-    memcpy(&ip6rd.prefix, inet_prefix.data, 16);
-    ip6rd.prefixlen = inet_prefix.bitlen;
-
-    bzero(&ifr, sizeof(&ifr));
-    strncpy(ifr.ifr_name, tunnel, sizeof(ifr.ifr_name) - 1);
-    ifr.ifr_ifru.ifru_data = &ip6rd;
-
-    if ((sockfd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {
-        syslog(LOG_ERR, "%s: fail to create socket", __FUNCTION__);
-        return -1;
-    }
-
-    if (ioctl(sockfd, SIOCADD6RD, &ifr) != 0) {
-        syslog(LOG_ERR, "%s: add 6rd-prefix on %s failed: %s", __FUNCTION__, 
-                ifr.ifr_name, strerror(errno));
-        close(sockfd);
-        return -1;
-    }
-
-    close(sockfd);
-    return 0;
-}
-
-/* return 1 if exist and 0 if not */
-int Tunnel_IsExist(const char *tunnel)
-{
-    FILE *fp;
-    char buf[MAX_LINE];
-    char *ptr;
-    char name[IFNAMSIZ];
-
-    if (!tunnel)
-        return 0;
-
-    if ((fp = fopen("/proc/net/dev", "r")) == NULL) {
-        syslog(LOG_ERR, "%s: fail to open file /proc/net/dev", __FUNCTION__);
-        return 0;
-    }
-
-    /* skip header lines */
-    if (fgets(buf, sizeof(buf), fp) == NULL 
-            || fgets(buf, sizeof(buf), fp) == NULL) {
-        syslog(LOG_ERR, "%s: /proc/net/dev read error", __FUNCTION__);
-        fclose(fp);
-        return 0;
-    }
-
-    bzero(buf, sizeof(buf));
-    while (fgets(buf, sizeof(buf) - 1, fp) != NULL) {
-        if ((ptr = strchr(buf, ":")) == NULL
-                || (*ptr++ = '\0', sscanf(buf, "%s", name) != 1)) {
-            syslog(LOG_ERR, "%s: wrong format of /proc/net/dev", __FUNCTION__);
-            fclose(fp);
-            return 0;
-        }
-
-        if (strcmp(name, tunnel) == 0) {
-            fclose(fp);
-            return 1;
-        }
-    }
-
-    fclose(fp);
-    return 0;
-}
-
-int Netlink_Initialize(void)
-{
-    if (rtnl_open(&rth, 0) < 0) {
-        syslog(LOG_ERR, "%s: rtnl_open error", __FUNCTION__);
-        return -1;
-    }
-
-    return 0;
-}
-
-int Netlink_Finalize(void)
-{
-    rtnl_close(&rth);
-    return 0;
-}
-
-int Netlink_SetLink(const char *dev, int onoff)
-{
-    struct ifreq ifr;
-    int sockfd;
-
-    bzero(&ifr, sizeof(ifr));
-    strncpy(ifr.ifr_name, dev, sizeof(ifr.ifr_name) - 1);
-
-    if ((sockfd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {
-        syslog(LOG_ERR, "%s: fail to create socket", __FUNCTION__);
-        return -1;
-    }
-
-    if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) != 0) {
-        syslog(LOG_ERR, "%s: fail to get old flags", __FUNCTION__);
-        close(sockfd);
-        return -1;
-    }
-
-    if (onoff)
-        ifr.ifr_flags |= IFF_UP;
-    else
-        ifr.ifr_flags &= ~IFF_UP;
-
-    if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) != 0) {
-        syslog(LOG_ERR, "%s: fail to set flags", __FUNCTION__);
-        close(sockfd);
-        return -1;
-    }
-
-    close(sockfd);
-    return 0;
-}
-
-int Netlink_AddAddress(const char *dev, const char *addr)
-{
-    return AddressModify(RTM_NEWADDR, NLM_F_CREATE | NLM_F_EXCL, dev, addr);
-}
-
-int Netlink_DelAddress(const char *dev, const char *addr)
-{
-    return AddressModify(RTM_DELADDR, 0, dev, addr);
-}
-
-int Netlink_AddRoute(const char *dest, const char *via, const char *dev)
-{
-    //return RouteModify(RTM_NEWROUTE, NLM_F_CREATE | NLM_F_EXCL, dest, via, dev);
-    /* over write if exist */
-    return RouteModify(RTM_NEWROUTE, NLM_F_CREATE | NLM_F_REPLACE, dest, via, dev);
-}
-
-int Netlink_DelRoute()
-{
-    return RouteModify(RTM_DELROUTE, 0, dest, via, dev);
-}
-
-#endif 
 
 /**************************************************************************
  * 6rd DML functions
@@ -915,18 +551,7 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
     }
 
     /* create 6rd tunnel and set 6rd-prefix */
-#if defined(USE_NETLINK_IOCTL)
-    if (Tunnel_Add(ifconf->Alias, addrsource, 0) != 0) {
-        syslog(LOG_ERR, "%s: Fail to add tunnel: %s", __FUNCTION__, ifconf->Alias);
-        return -1;
-    }
-
-    if (Tunnel_Set6rdPrefix(ifconf->Alias, ifconf->SPIPv6Prefix) != 0) {
-        syslog(LOG_ERR, "%s: Fail to set prefix for %s", __FUNCTION__, ifconf->Alias);
-        Tunnel_Delete(ifconf->Alias);
-        return -1;
-    }
-#elif defined(USE_SYSTEM)
+#if defined(USE_SYSTEM)
     if (extract_first_addr(ifconf->BorderRelayIPv4Addr, buf, sizeof(buf)) == 0) {
         snprintf(cmd, sizeof(cmd), "ip tunnel add %s mode sit local %s remote %s", 
                 ifconf->Alias, addrsource, buf);
@@ -951,9 +576,6 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
 	snprintf(buf, sizeof(buf), "%s", ifconf->SPIPv6Prefix);
 	if ((ptr = strchr(buf, '/')) == NULL) {
 		syslog(LOG_ERR, "%s: invalid SPIPv6Prefix", __FUNCTION__);
-#if defined(USE_NETLINK_IOCTL)
-		Tunnel_Delete(ifconf->Alias);
-#endif
 		return -1;
 	}
 	*ptr++ = '\0';
@@ -961,17 +583,11 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
 
 	if (inet_pton(AF_INET6, buf, &v6rdpref) <= 0) {
 		syslog(LOG_ERR, "%s: invalid SPIPv6Prefix", __FUNCTION__);
-#if defined(USE_NETLINK_IOCTL)
-		Tunnel_Delete(ifconf->Alias);
-#endif
 		return -1;
 	}
 
 	if (inet_pton(AF_INET, addrsource, &v4addr) <= 0) {
 		syslog(LOG_ERR, "%s: invalid source IPv4 address", __FUNCTION__);
-#if defined(USE_NETLINK_IOCTL)
-		Tunnel_Delete(ifconf->Alias);
-#endif
 		return -1;
 	}
 	v4masklen = ifconf->IPv4MaskLength;
@@ -983,9 +599,6 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
 			v4masklen,
 			&v6rdaddr) != 0) {
 		syslog(LOG_ERR, "%s: Fail to generate 6rd address", __FUNCTION__);
-#if defined(USE_NETLINK_IOCTL)
-		Tunnel_Delete(ifconf->Alias);
-#endif
 		return -1;
 	}
 
@@ -994,27 +607,12 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
 
 	if (inet_ntop(AF_INET6, &v6rdaddr, buf, sizeof(buf)) == NULL) {
 		syslog(LOG_ERR, "%s: Fail to generate 6rd address", __FUNCTION__);
-#if defined(USE_NETLINK_IOCTL)
-		Tunnel_Delete(ifconf->Alias);
-#endif
 		return -1;
 	}
 	snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "/%d", v6rdmasklen);
 
     /* add 6rd interface's address and set tunnel interface up */
-#if defined(USE_NETLINK_IOCTL)
-    if (Netlink_AddAddress(ifconf->Alias, buf) != 0) {
-        syslog(LOG_ERR, "%s: Fail to generate 6rd address", __FUNCTION__);
-        Tunnel_Delete(ifconf->Alias);
-        return -1;
-    }
-
-    if (Netlink_SetLink(ifconf->Alias, 1) != 0) {
-        syslog(LOG_ERR, "%s: Fail to set %s up", __FUNCTION__, ifconf->Alias);
-        Tunnel_Delete(ifconf->Alias);
-        return -1;
-    }
-#elif defined(USE_SYSTEM)
+#if defined(USE_SYSTEM)
     snprintf(cmd, sizeof(cmd), "ip addr add %s dev %s", buf, ifconf->Alias);
     if (system(cmd) != 0) {
         syslog(LOG_ERR, "%s: Fail to generate 6rd address", __FUNCTION__);
@@ -1030,13 +628,7 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
 
     /* add default route if need */
     if (extract_first_addr(ifconf->BorderRelayIPv4Addr, buf, sizeof(buf)) == 0) {
-#if defined(USE_NETLINK_IOCTL)
-        if (Netlink_AddRoute("::/0", buf, ifconf->Alias) != 0) {
-            syslog(LOG_ERR, "%s: Fail to set default route", __FUNCTION__, ifconf->Alias);
-            Tunnel_Delete(ifconf->Alias);
-            return -1;
-        }
-#elif defined(USE_SYSTEM)
+#if defined(USE_SYSTEM)
         //snprintf(cmd, sizeof(cmd), "ip route add ::/0 via ::%s dev %s", buf, ifconf->Alias);
         snprintf(cmd, sizeof(cmd), "ip route add ::/0 dev %s", ifconf->Alias);
         if (system(cmd) != 0) {
@@ -1048,9 +640,7 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
 
     /* if all traffic to some border relay delete direct route */
     if (ifconf->AllTrafficToBorderRelay) {
-#if defined(USE_NETLINK_IOCTL)
-        Netlink_DelRoute(ifconf->SPIPv6Prefix, NULL, ifconf->Alias);
-#elif defined(USE_SYSTEM)
+#if defined(USE_SYSTEM)
         snprintf(cmd, sizeof(cmd), "ip route del %s dev %s", ifconf->SPIPv6Prefix, ifconf->Alias);
         system(cmd);
 #endif
@@ -1074,22 +664,14 @@ IPv6rd_TunnelDel(const COSA_DML_IPV6RD_IF *ifconf)
         // XXX: don't delete it has any problem ?
     }
 
-#if defined(USE_NETLINK_IOCTL)
-    if (Netlink_SetLink(ifconf->Alias, 0) != 0)
-        syslog(LOG_ERR, "%s: Netlink_SetLink OFF error", __FUNCTION__);
-#elif defined(USE_SYSTEM)
+#if defined(USE_SYSTEM)
     snprintf(cmd, sizeof(cmd), "ip link set %s down", ifconf->Alias);
     if (system(cmd) != 0)
         syslog(LOG_ERR, "%s: fail to set link down", __FUNCTION__);
 #endif
 
     /* delete tunnel interface and it's direct routing */
-#if defined(USE_NETLINK_IOCTL)
-    if (Tunnel_Delete(ifconf->Alias) != 0) {
-        syslog(LOG_ERR, "%s: Tunnel_Delete error", __FUNCTION__);
-        return -1;
-    }
-#elif defined(USE_SYSTEM)
+#if defined(USE_SYSTEM)
     snprintf(cmd, sizeof(cmd), "ip tunnel del %s", ifconf->Alias);
     if (system(cmd) != 0) {
         syslog(LOG_ERR, "%s: fail to delete tunnel", __FUNCTION__);
@@ -1124,16 +706,6 @@ CosaDml_IPv6rdInit(
         syslog(LOG_ERR, "%s: load config error", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
     }
-
-#if defined(USE_NETLINK_IOCTL)
-    /* init netlink for setting route and address later */
-    if (Netlink_Initialize() != 0) {
-        syslog(LOG_ERR, "%s: init netlink error", __FUNCTION__);
-        unload_ipv6rd_conf(g_ipv6rd_conf);
-        g_ipv6rd_conf = NULL;
-        return ANSC_STATUS_FAILURE;
-    }
-#endif
 
     /* do setting */
     if (g_ipv6rd_conf->enable) {
@@ -1178,11 +750,6 @@ CosaDml_IPv6rdFinalize(
             }
         }
     }
-
-#if defined(USE_NETLINK_IOCTL)
-    if (Netlink_Finalize() != 0)
-        syslog(LOG_ERR, "%s: finalize netlink error", __FUNCTION__);
-#endif
 
     if (unload_ipv6rd_conf(g_ipv6rd_conf) != 0)
         syslog(LOG_ERR, "%s: unload config error", __FUNCTION__);
@@ -1320,10 +887,7 @@ CosaDml_IPv6rdGetEntry(
     pEntry->IPv4MaskLength = ifconf->IPv4MaskLength;
     snprintf(pEntry->AddressSource, sizeof(pEntry->AddressSource), "%s", ifconf->AddressSource); 
 
-#if defined(USE_NETLINK_IOCTL)
-    /* readonly (runtime) parameters */
-    if (Tunnel_IsExist(ifconf->Alias))
-#elif defined(USE_SYSTEM)
+#if defined(USE_SYSTEM)
     /* it should be exist and UP */
     err = snprintf(cmd, sizeof(cmd), "cat /proc/net/dev | grep %s > /dev/null", ifconf->Alias);
     err |= snprintf(cmd, sizeof(cmd), "ip link show %s | grep UP > /dev/null", ifconf->Alias);
