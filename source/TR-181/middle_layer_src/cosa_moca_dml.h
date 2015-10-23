@@ -245,6 +245,161 @@ Interface1_Rollback
 
  APIs for Object:
 
+    MoCA.Interface.{i}.X_CISCO_COM_PeerTable.{i}.
+
+    *  X_CISCO_COM_PeerTable_GetEntryCount
+    *  X_CISCO_COM_PeerTable_GetEntry
+    *  X_CISCO_COM_PeerTable_IsUpdated
+    *  X_CISCO_COM_PeerTable_Synchronize
+    *  X_CISCO_COM_PeerTable_GetParamBoolValue
+    *  X_CISCO_COM_PeerTable_GetParamIntValue
+    *  X_CISCO_COM_PeerTable_GetParamUlongValue
+    *  X_CISCO_COM_PeerTable_GetParamStringValue
+
+***********************************************************************/
+ULONG
+X_CISCO_COM_PeerTable_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ANSC_HANDLE
+X_CISCO_COM_PeerTable_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    );
+
+BOOL
+X_CISCO_COM_PeerTable_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
+X_CISCO_COM_PeerTable_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+BOOL
+X_CISCO_COM_PeerTable_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+X_CISCO_COM_PeerTable_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    );
+
+BOOL
+X_CISCO_COM_PeerTable_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    );
+
+ULONG
+X_CISCO_COM_PeerTable_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    MoCA.Interface.{i}.X_CISCO_COM_Mesh.MeshTxNodeTable.{i}.
+
+    *  MeshTxNodeTable_GetEntryCount
+    *  MeshTxNodeTable_GetEntry
+    *  MeshTxNodeTable_IsUpdated
+    *  MeshTxNodeTable_Synchronize
+    *  MeshTxNodeTable_GetParamUlongValue
+
+***********************************************************************/
+ULONG
+MeshTxNodeTable_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ANSC_HANDLE
+MeshTxNodeTable_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    );
+
+BOOL
+MeshTxNodeTable_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
+MeshTxNodeTable_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+BOOL
+MeshTxNodeTable_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    MoCA.Interface.{i}.X_CISCO_COM_Mesh.MeshTxNodeTable.{i}.MeshRxNodeTable.{i}.
+
+    *  MeshRxNodeTable_GetEntryCount
+    *  MeshRxNodeTable_GetEntry
+    *  MeshRxNodeTable_GetParamUlongValue
+
+***********************************************************************/
+ULONG
+MeshRxNodeTable_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ANSC_HANDLE
+MeshRxNodeTable_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    );
+
+BOOL
+MeshRxNodeTable_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
     MoCA.Interface.{i}.Stats.
 
     *  Stats2_GetParamBoolValue
@@ -279,6 +434,128 @@ Stats2_GetParamUlongValue
 
 ULONG
 Stats2_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    MoCA.Interface.{i}.Stats.X_CISCO_COM_ExtCounterTable.{i}.
+
+    *  X_CISCO_COM_ExtCounterTable_GetEntryCount
+    *  X_CISCO_COM_ExtCounterTable_GetEntry
+    *  X_CISCO_COM_ExtCounterTable_GetParamBoolValue
+    *  X_CISCO_COM_ExtCounterTable_GetParamIntValue
+    *  X_CISCO_COM_ExtCounterTable_GetParamUlongValue
+    *  X_CISCO_COM_ExtCounterTable_GetParamStringValue
+
+***********************************************************************/
+ULONG
+X_CISCO_COM_ExtCounterTable_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ANSC_HANDLE
+X_CISCO_COM_ExtCounterTable_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    );
+
+BOOL
+X_CISCO_COM_ExtCounterTable_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+X_CISCO_COM_ExtCounterTable_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    );
+
+BOOL
+X_CISCO_COM_ExtCounterTable_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    );
+
+ULONG
+X_CISCO_COM_ExtCounterTable_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    MoCA.Interface.{i}.Stats.X_CISCO_COM_ExtAggrCounterTable.{i}.
+
+    *  X_CISCO_COM_ExtAggrCounterTable_GetEntryCount
+    *  X_CISCO_COM_ExtAggrCounterTable_GetEntry
+    *  X_CISCO_COM_ExtAggrCounterTable_GetParamBoolValue
+    *  X_CISCO_COM_ExtAggrCounterTable_GetParamIntValue
+    *  X_CISCO_COM_ExtAggrCounterTable_GetParamUlongValue
+    *  X_CISCO_COM_ExtAggrCounterTable_GetParamStringValue
+
+***********************************************************************/
+ULONG
+X_CISCO_COM_ExtAggrCounterTable_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ANSC_HANDLE
+X_CISCO_COM_ExtAggrCounterTable_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    );
+
+BOOL
+X_CISCO_COM_ExtAggrCounterTable_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+X_CISCO_COM_ExtAggrCounterTable_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    );
+
+BOOL
+X_CISCO_COM_ExtAggrCounterTable_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    );
+
+ULONG
+X_CISCO_COM_ExtAggrCounterTable_GetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -341,8 +618,6 @@ QoS_GetParamStringValue
     *  FlowStats_GetEntry
     *  FlowStats_IsUpdated
     *  FlowStats_Synchronize
-    *  FlowStats_GetParamBoolValue
-    *  FlowStats_GetParamIntValue
     *  FlowStats_GetParamUlongValue
     *  FlowStats_GetParamStringValue
 
@@ -371,22 +646,6 @@ ULONG
 FlowStats_Synchronize
     (
         ANSC_HANDLE                 hInsContext
-    );
-
-BOOL
-FlowStats_GetParamBoolValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        BOOL*                       pBool
-    );
-
-BOOL
-FlowStats_GetParamIntValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        int*                        pInt
     );
 
 BOOL

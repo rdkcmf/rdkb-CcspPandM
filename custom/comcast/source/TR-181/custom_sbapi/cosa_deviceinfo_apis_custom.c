@@ -118,6 +118,8 @@ Local_CosaDmlGetParamValueByPathName
         PULONG pulSize
     )
 {
+
+printf(" *************** Local_CosaDmlGetParamValueByPathName ***** \n");
     ANSC_STATUS retval = ANSC_STATUS_FAILURE;
     parameterValStruct_t varStruct;
     char outdata[80];
@@ -149,6 +151,7 @@ CosaDmlDiGetCMMacAddress
         PULONG                      pulSize
     )
 {
+
     return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.MACAddress", pValue, pulSize);
 }
 
@@ -301,12 +304,31 @@ CosaDmlDiSetXfinityWiFiEnable
         AnscTraceWarning(("%s: set WiFi ApplySetting OK\n", __FUNCTION__));
     }
 #endif
-    if (g_SetParamValueBool("Device.X_COMCAST_COM_GRE.Interface.1.Enable", value) != ANSC_STATUS_SUCCESS) {
-        AnscTraceError(("%s: set WiFi ApplySetting error\n", __FUNCTION__));
+	//zqiu>>
+    //if (g_SetParamValueBool("Device.X_COMCAST_COM_GRE.Interface.1.Enable", value) != ANSC_STATUS_SUCCESS) {
+    //    AnscTraceError(("%s: set WiFi ApplySetting error\n", __FUNCTION__));
+    //} else {
+    //    AnscTraceWarning(("%s: set WiFi ApplySetting OK\n", __FUNCTION__));
+    //}
+	
+	if (g_SetParamValueBool("Device.X_COMCAST-COM_GRE.Tunnel.1.Enable", value) != ANSC_STATUS_SUCCESS) {
+		fprintf(stderr, "%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable error\n", __FUNCTION__);
+        AnscTraceError(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable error\n", __FUNCTION__));
+		return ANSC_STATUS_FAILURE;
     } else {
-        AnscTraceWarning(("%s: set WiFi ApplySetting OK\n", __FUNCTION__));
+        AnscTraceWarning(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable OK\n", __FUNCTION__));
     }
-
+	if (g_SetParamValueBool("Device.X_COMCAST-COM_GRE.Tunnel.1.Interface.1.Enable", value) != ANSC_STATUS_SUCCESS) {
+        AnscTraceError(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Interface.1.Enable error\n", __FUNCTION__));
+    } else {
+        AnscTraceWarning(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Interface.1.Enable OK\n", __FUNCTION__));
+    }
+	if (g_SetParamValueBool("Device.X_COMCAST-COM_GRE.Tunnel.1.Interface.2.Enable", value) != ANSC_STATUS_SUCCESS) {
+        AnscTraceError(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Interface.2.Enable error\n", __FUNCTION__));
+    } else {
+        AnscTraceWarning(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Interface.2.Enable OK\n", __FUNCTION__));
+    }
+	//zqiu<<
     if (value)
         PsmSet(HOTSPOT_PSM_EANBLE, "1");
     else

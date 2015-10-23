@@ -469,6 +469,9 @@ CosaDmlDcGetUserChangedFlags
         char*                       pValue
     );
 
+ANSC_STATUS 
+CosaDmlDcSetReInitCmMac ();
+
 ANSC_STATUS
 CosaDmlDcGetDeviceConfigStatus
     (

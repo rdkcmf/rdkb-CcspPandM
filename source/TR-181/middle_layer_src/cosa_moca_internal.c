@@ -76,6 +76,8 @@
 **************************************************************************/
 
 #include "cosa_moca_internal.h"
+#include <sysevent/sysevent.h>
+
 
 extern void * g_pDslhDmlAgent;
 
@@ -130,6 +132,58 @@ CosaMoCACreate
     pMyObject->Initialize   ((ANSC_HANDLE)pMyObject);
 
     return  (ANSC_HANDLE)pMyObject;
+}
+
+static int sysevent_fd;
+static token_t sysevent_token;
+static pthread_t sysevent_tid;
+static void *Moca_sysevent_handler (void *data)
+{
+	async_id_t moca_update;
+	sysevent_setnotification(sysevent_fd, sysevent_token, "moca_updated", &moca_update);
+	PCOSA_DATAMODEL_MOCA            pMyObject     = (PCOSA_DATAMODEL_MOCA)g_pCosaBEManager->hMoCA;
+
+	pthread_detach(pthread_self());
+
+	for (;;)
+    {
+        char name[25]={0};
+		char val[42]={0};
+		char buf[10]={0};
+        int namelen = sizeof(name);
+        int vallen  = sizeof(val);
+        int err;
+        async_id_t getnotification_asyncid;
+        err = sysevent_getnotification(sysevent_fd, sysevent_token, name, &namelen,  val, &vallen, &getnotification_asyncid);
+
+        if (err)
+        {
+           printf("%s-**********ERR: %d\n", __func__, err);
+        }
+		else 
+		{
+			if (strcmp(name, "moca_updated")==0)
+		    {
+			  int isUpdated = atoi(val);
+			  if(isUpdated) {
+				CosaDmlMocaIfGetCfg(NULL, 0, &pMyObject->MoCAIfFullTable[0].MoCAIfFull.Cfg);
+			  } 		   
+			}
+	   }
+
+	}
+	return 0;
+}
+
+void CosaMoCAUpdate()
+{
+	sysevent_fd = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "moca-update", &sysevent_token);
+
+	if (sysevent_fd >= 0)
+	{
+		pthread_create(&sysevent_tid, NULL, Moca_sysevent_handler, NULL);
+	}
+	return;
 }
 
 /**********************************************************************
@@ -329,12 +383,13 @@ CosaMoCAInitialize
         
         AnscSListInitializeHeader( &pMyObject->MoCAIfFullTable[ulIndex].pMoCAExtCounterTable );
         AnscSListInitializeHeader( &pMyObject->MoCAIfFullTable[ulIndex].pMoCAExtAggrCounterTable );
+        AnscSListInitializeHeader( &pMyObject->MoCAIfFullTable[ulIndex].MoCAMeshTxNodeTable );
 
         CosaDmlMocaIfGetQos(NULL, ulIndex, &pMyObject->MoCAIfFullTable[ulIndex].MoCAIfQos);
         
         pMyObject->MoCAIfFullTable[ulIndex].MoCAIfFull.Cfg.InstanceNumber = ulNextInsNum++;    
     }
-
+    CosaMoCAUpdate();
     return returnStatus;
 }
 

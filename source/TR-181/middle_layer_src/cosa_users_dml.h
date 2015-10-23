@@ -72,6 +72,8 @@
 #ifndef  _COSA_USERS_DML_H
 #define  _COSA_USERS_DML_H
 
+#include "mso_mgmt_hal.h"
+
 /***********************************************************************
 
  APIs for Object:

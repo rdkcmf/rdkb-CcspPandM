@@ -449,6 +449,7 @@ Interface_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
+         CosaDmlEthPortGetCfg(NULL, &pEthernetPortFull->Cfg);
         *pBool = pEthernetPortFull->Cfg.bEnabled;
         return TRUE;
     }
@@ -584,6 +585,17 @@ Interface_GetParamUlongValue
         *puLong = pEthernetPortFull->Cfg.DuplexMode;
         return TRUE;
     }
+
+    if( AnscEqualString(ParamName, "CurrentBitRate", TRUE))
+    {
+        /* collect value */
+
+        CosaDmlEthPortGetDinfo(NULL, pEthernetPortFull->Cfg.InstanceNumber, &pEthernetPortFull->DynamicInfo);
+        
+        *puLong = pEthernetPortFull->DynamicInfo.CurrentBitRate;
+        return TRUE;
+    }
+
 
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */

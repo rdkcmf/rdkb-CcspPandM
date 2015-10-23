@@ -1074,11 +1074,11 @@ Service_GetParamUlongValue
         {
             *puLong = 2;
         }
-        else if ( AnscEqualString(pDdnsService->ServiceName, "changeip", FALSE) )
+		else if ( AnscEqualString(pDdnsService->ServiceName, "changeip", FALSE) )
         {
             *puLong = 3;
         }
-        else if ( AnscEqualString(pDdnsService->ServiceName, "afraid", FALSE) )
+		else if ( AnscEqualString(pDdnsService->ServiceName, "afraid", FALSE) )
         {
             *puLong = 4;
         }
@@ -1357,29 +1357,29 @@ Service_SetParamUlongValue
     /* check the parameter name and set the corresponding value */
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
-
-    if( AnscEqualString(ParamName, "ServiceName", TRUE))
+	
+	if( AnscEqualString(ParamName, "ServiceName", TRUE))
     {
         /* collect value */
         if ( uValue == 1 )
         {
-            AnscCopyString(pDdnsService->ServiceName, "dyndns");
+			AnscCopyString(pDdnsService->ServiceName, "dyndns");
         }
         else if ( uValue == 2 )
         {
-            AnscCopyString(pDdnsService->ServiceName, "tzo");
+			AnscCopyString(pDdnsService->ServiceName, "tzo");
         }
-        else if ( uValue == 3 )
+		else if ( uValue == 3 )
         {
-            AnscCopyString(pDdnsService->ServiceName, "changeip");
+			AnscCopyString(pDdnsService->ServiceName, "changeip");
         }
-        else if ( uValue == 4 )
+		else if ( uValue == 4 )
         {
-            AnscCopyString(pDdnsService->ServiceName, "afraid");
+			AnscCopyString(pDdnsService->ServiceName, "afraid");
         }
         else
         {
-            AnscCopyString(pDdnsService->ServiceName, "None");
+			//AnscCopyString(pDdnsService->ServiceName, "None");
         }
 
         return TRUE;

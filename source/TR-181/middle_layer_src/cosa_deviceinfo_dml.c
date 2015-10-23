@@ -109,6 +109,7 @@
  }
  
 ***********************************************************************/
+
 /***********************************************************************
 
  APIs for Object:
@@ -276,8 +277,31 @@ DeviceInfo_GetParamUlongValue
         *puLong = CosaDmlDiGetUpTime(NULL);
         return TRUE;
     }
+	/* Required for xPC sync */
+	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureDocsicPollTime", TRUE))
+    {
+        /* collect value */
+	   FILE *fp;
+	   char buff[30];
+	   int retValue;
+	   memset(buff,0,sizeof(buff));
+   	   fp = fopen("/nvram/docsispolltime.txt", "r");
+	   if(!fp)
+	   {
+		 CcspTraceError(("%s falied to open /nvram/docsispolltime.txt file \n",__FUNCTION__));
+		 return FALSE;
+	   }
+           retValue = fscanf(fp, "%s", buff);      
 
+           if( (retValue != -1) && (buff != NULL ) )
+	   {
+          	 *puLong = atoi(buff);
+           }
 
+	   fclose(fp);	
+           return TRUE;
+    }
+	
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -452,6 +476,18 @@ DeviceInfo_GetParamStringValue
         return 0;
     }
 
+    if( AnscEqualString(ParamName, "Hardware_MemUsed", TRUE))
+    {
+        CosaDmlDiGetHardware_MemUsed(NULL, pValue,pulSize);
+        return 0;
+    }
+
+    if( AnscEqualString(ParamName, "Hardware_MemFree", TRUE))
+    {
+        CosaDmlDiGetHardware_MemFree(NULL, pValue,pulSize);
+        return 0;
+    }
+
     if( AnscEqualString(ParamName, "X_CISCO_COM_AdvancedServices", TRUE))
     {
 
@@ -465,6 +501,34 @@ DeviceInfo_GetParamStringValue
     	CosaDmlDiGetProcessorSpeed(NULL, pValue,pulSize);
         return 0;
     }
+	
+	/* Changes for EMS begins here */
+	
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))
+    {
+		AnscCopyString(pValue,  pMyObject->EMS_MobileNo);
+        return 0;
+    }
+	
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_ServerURL", TRUE))
+    {
+       //pMyObject->EMS_ServerURL;
+		char buf[60];
+        syscfg_get( NULL, "ems_server_url", buf, sizeof(buf));
+    	if( buf != NULL )
+    		{
+    		    AnscCopyString(pValue,  buf);
+    		    
+    		}
+		else
+			{
+			
+			}
+		return 0;
+    }
+
+	/* Changes for EMS end here */
+	
 
     ReturnValue =
         DeviceInfo_GetParamStringValue_Custom
@@ -628,7 +692,23 @@ DeviceInfo_SetParamUlongValue
     )
 {
     /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureDocsicPollTime", TRUE))
+    {
+        /* collect value */
+           FILE *fp;
+           char buff[30];
+	   snprintf(buff,sizeof(buff),"%d",uValue);
 
+           fp = fopen("/nvram/docsispolltime.txt", "w+");
+           if(!fp)
+           {
+                 CcspTraceError(("%s falied to open /nvram/docsispolltime.txt file \n",__FUNCTION__));
+                 return FALSE;
+           }
+	   fprintf(fp, "%s\n", buff);
+ 	   fclose(fp);
+	   return TRUE;
+    } 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -680,8 +760,83 @@ DeviceInfo_SetParamStringValue
         AnscCopyString(pMyObject->ProvisioningCode, pString);
         return TRUE;
     }
+#ifdef CONFIG_INTERNET2.0
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL", TRUE))
+    {
+	if (syscfg_set(NULL, "redirection_url", pString) != 0) {
+             AnscTraceWarning(("syscfg_set failed\n"));
+          } else {
+	       if (syscfg_commit() != 0) {
+                    AnscTraceWarning(("syscfg_commit failed\n"));
+                    }
+		char url[150];	
+		snprintf(url,sizeof(url),"/etc/whitelist.sh %s",pString);
+		system(url);
+		AnscCopyString(pMyObject->WebURL, pString);
+		CcspTraceWarning(("CaptivePortal:Cloud URL is changed, new URL is %s ...\n",pMyObject->WebURL));
+             }
 
+	return TRUE;
 
+    }
+#endif
+   if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_UI_ACCESS", TRUE))
+   {
+
+         if (AnscEqualString(pString, "ui_access", TRUE))
+         {
+		    CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_ACCESS\n"));
+             
+         }
+         else if(AnscEqualString(pString, "ui_success", TRUE))
+         {
+            CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_SUCCESS\n"));
+         }
+         else if(AnscEqualString(pString, "ui_failed", TRUE))
+         {
+            CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_FAILED\n"));
+         }
+		 else if (AnscEqualString(pString, "reboot_device", TRUE))
+         {
+		    CcspTraceInfo(("RDKB_REBOOT : RebootDevice triggered from GUI\n"));
+		 }
+            
+         else
+         {
+	        CcspTraceInfo(("Local UI Access : Unsupported value\n"));
+         }
+         return TRUE;
+   }
+
+   /* Changes for EMS */
+   if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_ServerURL", TRUE))
+    {
+	if (syscfg_set(NULL, "ems_server_url", pString) != 0) {
+             AnscTraceWarning(("syscfg_set failed\n"));
+          } else {
+	       if (syscfg_commit() != 0) {
+                    AnscTraceWarning(("syscfg_commit failed\n"));
+                    }
+		char ems_url[150];	
+		snprintf(ems_url,sizeof(ems_url),"/etc/whitelist.sh %s",pString);
+		system(ems_url);
+		AnscCopyString(pMyObject->EMS_ServerURL, pString);
+             }
+
+	return TRUE;
+
+    }
+
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))
+    {
+        /* save update to backup */
+        AnscCopyString(pMyObject->EMS_MobileNo, pString);
+        return TRUE;
+		
+    }
+	
+/* Changes end here */
+	
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -1838,6 +1993,13 @@ MemoryStatus_GetParamUlongValue
     }
 
 
+    if( AnscEqualString(ParamName, "Used", TRUE))
+    {
+        /* collect value */
+        *puLong = COSADmlGetMemoryStatus(ParamName);
+        return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -1894,6 +2056,478 @@ MemoryStatus_GetParamStringValue
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
+
+
+
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM.
+
+    *  X_RDKCENTRAL-COM_GetParamBoolValue
+    *  X_RDKCENTRAL-COM_GetParamIntValue
+    *  X_RDKCENTRAL-COM_GetParamUlongValue
+    *  X_RDKCENTRAL-COM_GetParamStringValue
+
+***********************************************************************/
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        X_RDKCENTRAL-COM_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+X_RDKCENTRAL_COM_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        X_RDKCENTRAL-COM_GetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int*                        pInt
+            );
+
+    description:
+
+        This function is called to retrieve integer parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int*                        pInt
+                The buffer of returned integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+X_RDKCENTRAL_COM_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        X_RDKCENTRAL-COM_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+X_RDKCENTRAL_COM_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        X_RDKCENTRAL-COM_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     0 if succeeded;
+                1 if short of buffer size; (*pUlSize = required size)
+                -1 if not supported.
+
+**********************************************************************/
+ULONG
+X_RDKCENTRAL_COM_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    return -1;
+}
+
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM.Ops.{i}.
+
+    *  Ops_GetEntryCount
+    *  Ops_GetEntry
+    *  Ops_IsUpdated
+    *  Ops_Synchronize
+    *  Ops_GetParamBoolValue
+    *  Ops_GetParamIntValue
+    *  Ops_GetParamUlongValue
+    *  Ops_GetParamStringValue
+
+***********************************************************************/
+
+
+
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Ops_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Ops_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "UploadLogsNow", TRUE))
+    {
+        /* collect value */
+         *pBool = FALSE;
+         
+        return TRUE;
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Ops_GetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int*                        pInt
+            );
+
+    description:
+
+        This function is called to retrieve integer parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int*                        pInt
+                The buffer of returned integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Ops_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Ops_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Ops_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+	
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        Ops_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     0 if succeeded;
+                1 if short of buffer size; (*pUlSize = required size)
+                -1 if not supported.
+
+**********************************************************************/
+ULONG
+Ops_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+
+    if( AnscEqualString(ParamName, "LogsUploadStatus", TRUE))
+    {
+        /* collect value */
+	COSADmlUploadLogsStatus(NULL, pValue,pUlSize);
+        return 0;
+    }
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return -1;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Ops_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Ops_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    BOOL                            bReturnValue;
+
+    if( AnscEqualString(ParamName, "UploadLogsNow", TRUE))
+    {
+
+	bReturnValue =
+        	COSADmlUploadLogsNow
+            	(
+                	(ANSC_HANDLE)NULL, 
+			bValue
+            	);
+
+
+    		if ( ! bReturnValue )
+    		{
+        		return TRUE;
+    		}
+    		else
+    		{
+        		/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+        		return FALSE;
+    		}
+    }
+    return FALSE;
+}
+
 
 /***********************************************************************
 
@@ -2732,8 +3366,637 @@ NetworkProperties_GetParamStringValue
 
         return 0;
     }
-
-
+	
     return -1;
 }
 
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Webpa_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Webpa_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+   char pchar[128];
+   if (AnscEqualString(ParamName, "Enable", TRUE))
+    {
+		if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pchar))
+		{
+			return FALSE;
+		}
+		if(!strcmp(pchar,"true"))
+		{
+			*pBool = TRUE;
+		}
+		else
+		{
+			*pBool = FALSE;
+		}
+      return TRUE;
+    }
+	// CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+	printf("Unsupported parameter '%s'\n", ParamName);
+    return FALSE;
+	
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Webpa_GetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int*                        pInt
+            );
+
+    description:
+
+        This function is called to retrieve integer parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int*                        pInt
+                The buffer of returned integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Webpa_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    )
+{
+	char pchar[256]; 	
+    /* check the parameter name and return the corresponding value */
+	if( AnscEqualString(ParamName, "ServerPort", TRUE))
+    {
+        if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pchar))
+		{
+			return FALSE;
+		}
+		*pInt = _ansc_atoi(pchar);
+		return TRUE;
+    }
+	if (AnscEqualString(ParamName, "RetryIntervalInSec", TRUE))
+    {
+        if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pchar))
+		{
+			return FALSE;
+		}
+		*pInt = _ansc_atoi(pchar);
+		return TRUE;
+    }
+	if (AnscEqualString(ParamName, "MaxPingWaitTimeInSec", TRUE))
+    {
+		if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pchar))
+		{
+			return FALSE;
+		}
+		*pInt = _ansc_atoi(pchar);
+		return TRUE;
+    }
+	
+    /*CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+	
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Webpa_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Webpa_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    /* Required for xPC sync */
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_CMC", TRUE))
+    {
+        /* collect value */
+		char buf[8];
+
+		syscfg_get( NULL, "X_COMCAST-COM_CMC", buf, sizeof(buf));
+    	if( buf != NULL )
+    		{
+    		    *puLong = atoi(buf);
+				return TRUE;
+    		}
+		*puLong = 0;
+        return FALSE;
+    }
+		
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Webpa_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue
+                The string value buffer;
+
+                
+
+    return:     TRUE if succeeded;
+                FALSE if not supported.
+
+**********************************************************************/
+ULONG
+Webpa_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+
+	/* Required for xPC sync */
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_CID", TRUE))
+    	{
+        	/* collect value */
+		char buf[64];
+		syscfg_get( NULL, "X_COMCAST-COM_CID", buf, sizeof(buf));
+
+    		if( buf != NULL )
+    		{
+			AnscCopyString(pValue, buf);
+			return 0;
+		}
+		return -1;
+    	}
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_SyncProtocolVersion", TRUE))
+    {
+        /* collect value */
+		char buf[5];
+
+		syscfg_get( NULL, "X_COMCAST-COM_SyncProtocolVersion", buf, sizeof(buf));
+    	if( buf != NULL )
+    		{
+    		    AnscCopyString(pValue,  buf);
+				return 0;
+    		}
+		return -1;
+    }
+	
+	if (AnscEqualString(ParamName, "ServerURL", TRUE))
+	{	
+		if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pValue))
+		{
+			printf("pValue get FAIL\n");
+			return 1;
+		}
+		return 0;
+	}
+	
+    if (AnscEqualString(ParamName, "DeviceNetworkInterface", TRUE))
+    {
+        if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pValue))
+		{
+			return 1;
+		}
+		return 0;
+    }
+	
+	/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return -1;
+  
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Webpa_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Webpa_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+	char pchar[128];
+	char cValue[128];
+    if (AnscEqualString(ParamName, "Enable", TRUE))
+    {
+		if(bValue)
+		{
+			AnscCopyString(cValue,"true");
+		}
+		else
+		{
+			AnscCopyString(cValue,"false");
+		}
+	   if ( CosaDmlDiGetWebPACfg(ParamName, pchar) == ANSC_STATUS_SUCCESS )
+		{
+			int ret = strncmp(pchar,cValue,4);
+			printf("ret : %d\n",ret);
+				if(ret < 0)
+				{
+					if(ANSC_STATUS_SUCCESS != CosaDmlDiSetWebPACfg(ParamName,cValue))
+					{
+						return FALSE;
+					}
+					printf("***checking pwd\n");
+					system("pwd");					
+					char path[200];
+					snprintf(path, 200, "/fss/gw/usr/ccsp/webpa/");
+					chdir(path);
+					system("pwd");
+					printf("***Starting webpa\n");
+					AnscCopyString(pchar,"./webpa -subsys eRT. &");
+					system(pchar);
+					system("pwd");
+					AnscCopyString(pchar,"-");
+					printf("***%s\n",pchar);
+					chdir(pchar);
+					system("pwd");
+					return TRUE;							
+				}
+				else if(ret > 0)
+				{
+					if(ANSC_STATUS_SUCCESS != CosaDmlDiSetWebPACfg(ParamName,cValue))
+					{
+						return FALSE;
+					}
+					//memset(pchar,0,128);
+					system("pwd");
+					system("ls -l");
+					AnscCopyString(pchar,"killall webpa");
+					system(pchar);
+					printf("***%s\n",pchar);
+					system("pwd");
+					return TRUE;
+				}
+				else			
+				{
+					printf("Already set, do nothing\n");
+					return TRUE;
+				}
+		}
+		return FALSE;
+	}
+	/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+	
+    
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Webpa_SetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int                         iValue
+            );
+
+    description:
+
+        This function is called to set integer parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int                         iValue
+                The updated integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Webpa_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         iValue
+    )
+{
+	/* check the parameter name and set the corresponding value */
+	if( AnscEqualString(ParamName, "ServerPort", TRUE))
+    {
+		char pchar[256];
+
+		sprintf(pchar,"%d",iValue);
+
+		if(ANSC_STATUS_SUCCESS != CosaDmlDiSetWebPACfg(ParamName,pchar))
+		{
+			return FALSE;
+		}
+		return TRUE;
+	}
+    if( AnscEqualString(ParamName, "RetryIntervalInSec", TRUE))
+    {
+        char pchar[256];
+
+		sprintf(pchar,"%d",iValue);
+
+		if(ANSC_STATUS_SUCCESS != CosaDmlDiSetWebPACfg(ParamName,pchar))
+		{
+			return FALSE;
+		}
+		return TRUE;
+    }
+	if( AnscEqualString(ParamName, "MaxPingWaitTimeInSec", TRUE))
+    {
+        char pchar[256];
+
+		sprintf(pchar,"%d",iValue);	
+
+		if(ANSC_STATUS_SUCCESS != CosaDmlDiSetWebPACfg(ParamName,pchar))
+		{
+			return FALSE;
+		}
+		return TRUE;
+    }
+	
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+	
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Webpa_SetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG                       uValue
+            );
+
+    description:
+
+        This function is called to set ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG                       uValue
+                The updated ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Webpa_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    )
+{
+	
+   /* check the parameter name and set the corresponding value */
+		/* Required for xPC sync */
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_CMC", TRUE))
+    {
+        /* collect value */
+		char buf[8];
+
+		snprintf(buf,sizeof(buf),"%d",uValue);
+		if (syscfg_set(NULL, "X_COMCAST-COM_CMC", buf) != 0) 
+		{
+			AnscTraceWarning(("syscfg_set failed\n"));
+		}
+		else 
+		{
+			if (syscfg_commit() != 0) 
+			{
+				AnscTraceWarning(("syscfg_commit failed\n"));
+			}
+
+			return TRUE;
+		}
+    }
+	
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Webpa_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Webpa_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+
+	/* Required for xPC sync */
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_CID", TRUE))
+    	{
+		if (syscfg_set(NULL, "X_COMCAST-COM_CID", pString) != 0) 
+		{
+			AnscTraceWarning(("syscfg_set failed\n"));
+		}
+		else 
+		{
+			if (syscfg_commit() != 0) 
+			{
+				AnscTraceWarning(("syscfg_commit failed\n"));
+			}
+
+			return TRUE;
+		}
+    	}
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_SyncProtocolVersion", TRUE))
+    {
+
+	if (syscfg_set(NULL, "X_COMCAST-COM_SyncProtocolVersion", pString) != 0) {
+             AnscTraceWarning(("syscfg_set failed\n"));
+          } else 
+		  {
+	       if (syscfg_commit() != 0)
+				{
+                    AnscTraceWarning(("syscfg_commit failed\n"));
+                }
+	       }
+
+	return TRUE;
+
+    }
+    if (AnscEqualString(ParamName, "ServerURL", TRUE))
+    {	
+		if(ANSC_STATUS_SUCCESS != CosaDmlDiSetWebPACfg(ParamName,pString))
+		{
+			return FALSE;
+		}
+		return TRUE;		
+    }
+    
+    if (AnscEqualString(ParamName, "DeviceNetworkInterface", TRUE))
+    {
+        if(ANSC_STATUS_SUCCESS != CosaDmlDiSetWebPACfg(ParamName,pString))
+		{
+			return FALSE;
+		}
+        return TRUE;			
+    }
+	/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+	return FALSE;
+}

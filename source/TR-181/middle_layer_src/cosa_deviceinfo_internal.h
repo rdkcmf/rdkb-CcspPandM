@@ -84,7 +84,18 @@
 typedef  struct
 _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
 {
-    COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
+    COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT 
+    
+#ifdef CONFIG_INTERNET2.0
+    BOOL		bWiFiConfigued;	
+    BOOL		bCloudCapable;	
+    BOOL		bCloudEnable;				    
+    CHAR		WebURL[64];
+#endif
+/*Added for EMS*/
+	CHAR 		EMS_ServerURL[64];
+	CHAR 		EMS_MobileNo[64];
+/*change ends here*/
 }
 COSA_DATAMODEL_DEVICEINFO, *PCOSA_DATAMODEL_DEVICEINFO;
 

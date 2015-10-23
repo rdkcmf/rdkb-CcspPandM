@@ -52,7 +52,7 @@ _COSA_DML_HOTSPOT_ASSODEV
 
     char                        MACAddress[18];
     char                        Hostname[257];
-    ULONG                       RSSILevel;
+    int                         RSSILevel;
     char                        IPv4Address[17];
     char                        DHCPv4Status[64];
     char                        IPv6Address[64];

@@ -70,7 +70,7 @@ extern void* g_pDslhDmlAgent;
 struct hs_client {
     char                mac[18];
     char                hostname[18];
-    unsigned int        rssi;
+    int                 rssi;
     char                v4addr[16];
     char                dh4_status[64];
     char                v6addr[64];
@@ -176,6 +176,34 @@ static void dump_snoop_stat(const snooper_statistics_s *stat)
     return;
 }
 
+static ULONG HsSsidUpdateTime = 0;
+#define TIME_NO_NEGATIVE(x) ((long)(x) < 0 ? 0 : (x))
+#define COSA_DML_HS_SSID_ACCESS_INTERVAL     8
+
+BOOL
+Hs_Ssid_IsUpdated()
+{
+
+	if ( HsSsidUpdateTime == 0 ) 
+    {
+        HsSsidUpdateTime = AnscGetTickInSeconds();
+
+        return TRUE;
+    }
+    
+    if ( HsSsidUpdateTime >= TIME_NO_NEGATIVE(AnscGetTickInSeconds() - COSA_DML_HS_SSID_ACCESS_INTERVAL ) )
+    {
+        return FALSE;
+    }
+    else 
+    {
+        HsSsidUpdateTime = AnscGetTickInSeconds();
+
+        return TRUE;
+    }
+    return TRUE;
+}
+
 static int load_hs_ssid(void)
 {
     struct hs_ssid *hsssid;
@@ -190,6 +218,10 @@ static int load_hs_ssid(void)
     char param[128];
     parameterValStruct_t valStru;
     int valSize;
+
+	if(!Hs_Ssid_IsUpdated()) {
+		return 0;
+	}
 
     if (!g_snstat) {
         AnscTraceError(("Snooper shm not ready\n"));
@@ -305,7 +337,6 @@ CosaDml_HsSsidGetNumberOfEntries(void)
     char ifs[1024];
     char *tok, *delim, *sp, *from;
     ULONG cnt;
-    
     if (load_hs_ssid() != 0) {
         AnscTraceError(("Fail to load HHS SSID list\n"));
         return 0;
