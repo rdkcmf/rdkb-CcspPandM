@@ -178,7 +178,7 @@ HsAssoDev_GetParamStringValue
 {
     COSA_DML_HOTSPOT_ASSODEV        *assoDev = (COSA_DML_HOTSPOT_ASSODEV *)hInsContext;
 
-    CosaDml_HsSsidAssoDevGetCfg(assoDev->SsidIns, assoDev->InstanceNumber, assoDev);
+   // CosaDml_HsSsidAssoDevGetCfg(assoDev->SsidIns, assoDev->InstanceNumber, assoDev);
 
     if (AnscEqualString(ParamName, "Alias", TRUE))
     {
@@ -284,20 +284,20 @@ HsAssoDev_GetParamStringValue
 }
 
 BOOL
-HsAssoDev_GetParamUlongValue
+HsAssoDev_GetParamIntValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
-        ULONG*                      pUlong
+        int*                        pInt
     )
 {
     COSA_DML_HOTSPOT_ASSODEV        *assoDev = (COSA_DML_HOTSPOT_ASSODEV *)hInsContext;
 
-    CosaDml_HsSsidAssoDevGetCfg(assoDev->SsidIns, assoDev->InstanceNumber, assoDev);
+   // CosaDml_HsSsidAssoDevGetCfg(assoDev->SsidIns, assoDev->InstanceNumber, assoDev);
 
     if (AnscEqualString(ParamName, "RSSILevel", TRUE))
     {
-        *pUlong = assoDev->RSSILevel;
+        *pInt = assoDev->RSSILevel;
         return TRUE;
     }
 

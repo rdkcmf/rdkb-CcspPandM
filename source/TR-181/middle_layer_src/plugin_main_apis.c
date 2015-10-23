@@ -191,7 +191,8 @@ CosaBackEndManagerCreate
     pMyObject->Create            = CosaBackEndManagerCreate;
     pMyObject->Remove            = CosaBackEndManagerRemove;
     pMyObject->Initialize        = CosaBackEndManagerInitialize;
-
+printf("-- %s %d\n", __func__, __LINE__);
+    CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : Entering %s %d\n", __func__, __LINE__));
     /*pMyObject->Initialize   ((ANSC_HANDLE)pMyObject);*/
 
     return  (ANSC_HANDLE)pMyObject;
@@ -235,25 +236,21 @@ CosaBackEndManagerInitialize
 #endif
 
     AnscTraceWarning(("%s...\n", __FUNCTION__));
+    CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PandM DM initialize...\n"));
     printf("PandM DM initialize...\n");
 
     /* Create all object */
     pMyObject->hNat           = (ANSC_HANDLE)CosaNatCreate();
     AnscTraceWarning(("  CosaNatCreate done!\n"));
-    pMyObject->hDiag          = (ANSC_HANDLE)CosaDiagnosticsCreate();
-    AnscTraceWarning(("  CosaDiagnosticsCreate done!\n"));
     pMyObject->hProcStatus    = (ANSC_HANDLE)CosaProcStatusCreate();    
     AnscTraceWarning(("  CosaProcStatusCreate done!\n"));
     pMyObject->hDeviceInfo    = (ANSC_HANDLE)CosaDeviceInfoCreate();
     AnscTraceWarning(("  CosaDeviceInfoCreate done!\n"));
-    pMyObject->hTime          = (ANSC_HANDLE)CosaTimeCreate();
-    AnscTraceWarning(("  CosaTimeCreate done!\n"));
     pMyObject->hUserinterface = (ANSC_HANDLE)CosaUserinterfaceCreate();
     AnscTraceWarning(("  CosaUserinterfaceCreate done!\n"));
     pMyObject->hEthernet      = (ANSC_HANDLE)CosaEthernetCreate();
     AnscTraceWarning(("  CosaEthernetCreate done!\n"));
-    pMyObject->hMoCA          = (ANSC_HANDLE)CosaMoCACreate();
-    AnscTraceWarning(("  CosaMoCACreate done!\n"));
+
     pMyObject->hUsers         = (ANSC_HANDLE)CosaUsersCreate();
     AnscTraceWarning(("  CosaUsersCreate done!\n"));
     pMyObject->hDdns          = (ANSC_HANDLE)CosaDdnsCreate();
@@ -274,8 +271,6 @@ CosaBackEndManagerInitialize
     AnscTraceWarning(("  CosaRoutingCreate done!\n"));
     pMyObject->hBridging      = (ANSC_HANDLE)CosaBridgingCreate();
     AnscTraceWarning(("  CosaBridgingCreate done!\n"));
-    pMyObject->hUpnp          = (ANSC_HANDLE)CosaUpnpCreate();
-    AnscTraceWarning(("  CosaUpnpCreate done!\n"));
     pMyObject->hInterfaceStack = (ANSC_HANDLE)CosaIFStackCreate();
     AnscTraceWarning(("  CosaIFStackCreate done!\n"));
     pMyObject->hPPP           = (ANSC_HANDLE)CosaPPPCreate();
@@ -298,22 +293,46 @@ CosaBackEndManagerInitialize
     AnscTraceWarning(("  CosaMTACreate done!\n"));
 #endif
     */
+
+    returnStatus = CosaDmlMlanInit((ANSC_HANDLE)pMyObject, &pMyObject->hMultiLan);
+    AnscTraceWarning(("  CosaDmlMlanInit -- status %d!\n", returnStatus));
+
+   printf("**************** sysevent set pnm-status up \n");
+   fflush(stdout);
+   system("sysevent set pnm-status up");
+
+    pMyObject->hDiag          = (ANSC_HANDLE)CosaDiagnosticsCreate();
+    AnscTraceWarning(("  CosaDiagnosticsCreate done!\n"));
+    pMyObject->hTime          = (ANSC_HANDLE)CosaTimeCreate();
+    AnscTraceWarning(("  CosaTimeCreate done!\n"));
+    pMyObject->hMoCA          = (ANSC_HANDLE)CosaMoCACreate();
+    AnscTraceWarning(("  CosaMoCACreate done!\n"));
+    pMyObject->hUpnp          = (ANSC_HANDLE)CosaUpnpCreate();
+    AnscTraceWarning(("  CosaUpnpCreate done!\n"));
+
     pMyObject->hParentalControl = (ANSC_HANDLE)TR181_ParentalControlCreate();
     AnscTraceWarning(("  CosaParentalControlCreate done - hParentalControl = 0x%X!\n", pMyObject->hParentalControl));
     pMyObject->hRLog          = (ANSC_HANDLE)CosaRLogCreate();
     AnscTraceWarning(("  CosaRLogCreate done!\n"));
 
-    returnStatus = CosaDmlMlanInit((ANSC_HANDLE)pMyObject, &pMyObject->hMultiLan);
-    AnscTraceWarning(("  CosaDmlMlanInit -- status %d!\n", returnStatus));
 
-#ifdef CONFIG_CISCO_HOTSPOT
+
+
+//#ifdef CONFIG_CISCO_HOTSPOT
+	
     pMyObject->hGRE           = (ANSC_HANDLE)CosaGreCreate();
     AnscTraceWarning(("  CosaGreCreate done!\n"));
+	//zqiu>>
+	printf("-- %s %d CosaGreTunnelCreate\n", __func__, __LINE__);
+    pMyObject->hTGRE       = (ANSC_HANDLE)CosaGreTunnelCreate();
+    AnscTraceWarning(("  CosaGreTunnelCreate done!\n"));	
+	//zqiu<<
     pMyObject->hCGRE           = (ANSC_HANDLE)CosaCGreCreate();
     AnscTraceWarning(("  CosaCGreCreate done!\n"));
     pMyObject->hHotspot       = (ANSC_HANDLE)CosaHotspotCreate();
     AnscTraceWarning(("  CosaHotspotCreate done!\n"));
-#endif
+	
+//#endif
 
 #if CONFIG_CISCO_FILE_TRANSFER
     pMyObject->hFileTransfer  = (ANSC_HANDLE)CosaFileTransferCreate();
@@ -336,6 +355,7 @@ CosaBackEndManagerInitialize
 #endif
 
     printf("PandM DM initialization done!\n");
+    CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PandM DM initialization done!\n"));
     return returnStatus;
 }
 
@@ -540,6 +560,12 @@ CosaBackEndManagerRemove
     {
         CosaHotspotRemove((ANSC_HANDLE)pMyObject->hHotspot);
     }
+	//zqiu>>
+	if ( pMyObject->hTGRE )
+    {		
+		CosaGreTunnelRemove((ANSC_HANDLE)pMyObject->hTGRE);
+    }
+	//zqiu<<
 #endif
 
 #if CONFIG_CISCO_TRUE_STATIC_IP

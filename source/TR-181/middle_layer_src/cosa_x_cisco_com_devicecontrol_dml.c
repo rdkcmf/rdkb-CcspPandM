@@ -213,6 +213,13 @@ X_CISCO_COM_DeviceControl_GetParamBoolValue
         return TRUE;
     }
 
+    if (AnscEqualString(ParamName, "ReinitCmMac", TRUE))
+    {
+		/* Always return false for this parameter while a GET operation.*/
+       *pBool = FALSE;
+		return TRUE;
+    }
+
     if (AnscEqualString(ParamName, "IGMPProxyEnable", TRUE))
     {
         if (CosaDmlDcGetIGMPProxyEnable(NULL, pBool) != ANSC_STATUS_SUCCESS)
@@ -840,6 +847,29 @@ X_CISCO_COM_DeviceControl_SetParamBoolValue
 
         return TRUE;
     }
+
+    /* check the parameter name and set the corresponding value */
+    if (AnscEqualString(ParamName, "ReinitCmMac", TRUE))
+    {
+        if(bValue == 1)
+        {
+           	// Call reinit mac function
+       	   	if(CosaDmlDcSetReInitCmMac() == 0)
+	   		{
+           		return TRUE;
+	   		}
+	   		else
+				return FALSE;
+        }
+        else if(bValue == 0)
+        {
+           /* Need not have to set and return true from here*/
+           return TRUE;
+        }
+        else
+           return FALSE;
+    }
+
 
     if (AnscEqualString(ParamName, "IGMPProxyEnable", TRUE))
     {
@@ -1927,11 +1957,13 @@ LanMngm_SetParamUlongValue
     }
     if (AnscEqualString(ParamName, "LanSubnetMask", TRUE))
     {
+		CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Setting new LanSubnetMask value  ...\n"));
         pLanMngm->LanSubnetMask.Value = uValuepUlong;
         return TRUE;
     }
     if (AnscEqualString(ParamName, "LanIPAddress", TRUE))
     {
+		CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Setting new LanIPAddress value  ...\n"));
         pLanMngm->LanIPAddress.Value = uValuepUlong;
         return TRUE;
     }
@@ -1975,6 +2007,7 @@ LanMngm_Validate
        pLanMngm->LanSubnetMask.Value != 0xFFFFFF80 &&
        pLanMngm->LanSubnetMask.Value != 0xFFFFFFFC )
     {
+		CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Modified LanSubnetMask doesn't meet the conditions,reverting back to old value  ...\n"));
         goto RET_ERR;
     }
     /* check the gateway IP address */
@@ -1982,6 +2015,8 @@ LanMngm_Validate
     /* range: 10.0.0.0 to 10.255.255.254, 172.16.0.0 to 172.31.255.255, 192.168.0.0 to 192.168.255.255  */
     if(((pLanMngm->LanIPAddress.Value & pLanMngm->LanSubnetMask.Value) == pLanMngm->LanIPAddress.Value) || 
        ((pLanMngm->LanIPAddress.Value | pLanMngm->LanSubnetMask.Value) == 0xFFFFFFFF)){
+
+		CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Modified LanIPAddress doesn't meet the conditions,reverting back to old value  ...\n"));
         goto RET_ERR;
     }else if(pLanMngm->LanIPAddress.Dot[0] == 10 ){
         return TRUE;

@@ -6052,6 +6052,7 @@ Pool_SetParamUlongValue
             is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)))
             return(FALSE);
         pPool->Cfg.MinAddress.Value  = uValue;
+        CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MinAddress of DHCP Range Changed ...\n"));
         
         return TRUE;
     }
@@ -6081,6 +6082,7 @@ Pool_SetParamUlongValue
             uValue < pPool->Cfg.MinAddress.Value)
             return(FALSE);
         pPool->Cfg.MaxAddress.Value  = uValue;
+        CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MaxAddress of DHCP Range Changed ...\n"));
         
         return TRUE;
     }
@@ -8827,8 +8829,10 @@ Client2_GetParamBoolValue
         CosaDmlDhcpsGetPrevClientNumber(1, &n);
         if(n<=6){
          /* collect value */
-            //returnStatus = CosaDmlDhcpsPing(&(PClientContent->pIPAddress[0]));
-            returnStatus = CosaDmlDhcpsARPing(&(PClientContent->pIPAddress[0]));
+            if(!strncmp("172.16.12.", _ansc_inet_ntoa(*((struct in_addr*)&(PClientContent->pIPAddress[0].IPAddress))),10)) 
+             	returnStatus = CosaDmlDhcpsPing(&(PClientContent->pIPAddress[0]));
+            else
+            	returnStatus = CosaDmlDhcpsARPing(&(PClientContent->pIPAddress[0]));
             if ( returnStatus == ANSC_STATUS_SUCCESS ){
                 *pBool = TRUE;
             }else{

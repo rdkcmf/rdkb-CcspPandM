@@ -124,9 +124,52 @@ DeviceInfo_GetParamBoolValue_Custom
         BOOL*                       pBool
     )
 {
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+#ifdef CONFIG_INTERNET2.0
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureWiFi", TRUE))
+    {
+       *pBool = pMyObject->bWiFiConfigued;
+	return TRUE;
+    }
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUICapable", TRUE))
+    {
+/*       *pBool = pMyObject->bCloudCapable;
+	return TRUE; */
+
+	char buf[5];
+        syscfg_get( NULL, "cloud_capable_flag", buf, sizeof(buf));
+    	if( buf != NULL )
+    		{
+    		    if (strcmp(buf,"1") == 0)
+    		        pMyObject->bCloudCapable = TRUE;
+    		    else
+    		        pMyObject->bCloudCapable = FALSE;
+    		}
+	*pBool = pMyObject->bCloudCapable;
+	return TRUE;
+
+    }
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIEnable", TRUE))
+    {
+       *pBool = pMyObject->bCloudEnable;
+	char buf[5];
+        syscfg_get( NULL, "cloud_enable_flag", buf, sizeof(buf));
+    	if( buf != NULL )
+    		{
+    		    if (strcmp(buf,"1") == 0)
+    		        pMyObject->bCloudEnable = TRUE;
+    		    else
+    		        pMyObject->bCloudEnable = FALSE;
+    		}
+	*pBool = pMyObject->bCloudEnable;
+	return TRUE;
+    }
+#endif
+ 
 #ifdef CONFIG_CISCO_HOTSPOT
     /* check the parameter name and return the corresponding value */
-    if (AnscEqualString(ParamName, "X_COMCAST-COM_xfinitywifiCapable", TRUE))
+    if (AnscEqualString(ParamName, "X_COMCAST-COM_xfinitywifiCapableCPE", TRUE))
     {
         if (CosaDmlDiGetXfinityWiFiCapable(pBool) != ANSC_STATUS_SUCCESS)
             return FALSE;
@@ -139,6 +182,12 @@ DeviceInfo_GetParamBoolValue_Custom
         return TRUE;
     }
 #endif
+
+    if (AnscEqualString(ParamName, "X_COMCAST-COM_rdkbPlatformCapable", TRUE))
+    {
+       *pBool = TRUE;
+	    return TRUE;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -193,7 +242,16 @@ DeviceInfo_GetParamStringValue_Custom
     )
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
-    
+
+#ifdef CONFIG_INTERNET2.0   
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL", TRUE))
+    { 
+	syscfg_get(NULL, "redirection_url", pMyObject->WebURL, sizeof(pMyObject->WebURL));
+	AnscCopyString(pValue, pMyObject->WebURL);
+        return 0;
+    } 
+#endif
+
 #ifdef CONFIG_VENDOR_CUSTOMER_COMCAST
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_CM_MAC", TRUE))
 	{
@@ -202,6 +260,12 @@ DeviceInfo_GetParamStringValue_Custom
 	}
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_WAN_MAC", TRUE))
+	{
+	   CosaDmlDiGetRouterMacAddress(NULL, pValue,pulSize);
+	   return 0;
+	}
+
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_AP_MAC", TRUE))
 	{
 	   CosaDmlDiGetRouterMacAddress(NULL, pValue,pulSize);
 	   return 0;
@@ -275,6 +339,130 @@ DeviceInfo_SetParamBoolValue_Custom
         BOOL                        bValue
     )
 {
+
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+#ifdef CONFIG_INTERNET2.0
+
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureWiFi", TRUE))
+    {
+	if ( bValue == TRUE )
+	{
+	   if ( pMyObject->bWiFiConfigued == TRUE )
+		{
+			printf("Already set to TRUE, do nothing\n");
+		}
+	   else
+		{
+		CcspTraceWarning(("CaptivePortal:Wi-Fi SSID and Passphrase are not configured,setting ConfigureWiFi to true ...\n"));
+		CcspTraceWarning(("RDKB_GW_MODE:Setting RDKB GW to CaptivePortal  ...\n"));
+		printf("Wi-Fi SSID and Passphrase are not configured,setting ConfigureWiFi to true ...\n");
+			pMyObject->bWiFiConfigued = bValue;
+
+			printf("%s calling redirect_url.sh script to start redirection\n",__FUNCTION__);
+			system("source /etc/redirect_url.sh &");
+
+		}
+		return TRUE;
+	 }
+	
+         else if  ( bValue == FALSE )
+	 {
+                if ( pMyObject->bWiFiConfigued == FALSE )
+		{
+			printf("Already set to FALSE, do nothing\n");
+		}
+		else
+		{
+		CcspTraceWarning(("CaptivePortal:Wi-Fi SSID and Passphrase are configured,setting ConfigureWiFi to false ...\n"));
+		CcspTraceWarning(("RDKB_GW_MODE:Setting RDKB GW to Online  ...\n"));
+		printf("Wi-Fi SSID and Passphrase are configured,setting ConfigureWiFi to false ...\n");
+
+			pMyObject->bWiFiConfigued = bValue;
+			printf("%s calling revert_redirect.sh script to remove the redirection changes\n",__FUNCTION__);
+			system("source /etc/revert_redirect.sh &");
+		}
+	    return TRUE;
+	 }	
+	return FALSE;
+    } 
+
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUICapable", TRUE))
+    {
+       // We should not allow SET of Capable flag.
+#if 0 
+	  if( bValue == TRUE) {
+
+             if (syscfg_set(NULL, "cloud_capable_flag", "1") != 0) {
+                     AnscTraceWarning(("syscfg_set failed\n"));
+             } else {
+
+                    if (syscfg_commit() != 0) {
+                            AnscTraceWarning(("syscfg_commit failed\n"));
+                    }
+		    pMyObject->bCloudCapable = bValue;
+             }
+
+         } else {
+
+             if (syscfg_set(NULL, "cloud_capable_flag", "0") != 0) {
+                     AnscTraceWarning(("syscfg_set failed\n"));
+             }  else {
+
+                 if (syscfg_commit() != 0) {
+                     AnscTraceWarning(("syscfg_commit failed\n"));
+                 }
+		  pMyObject->bCloudCapable = bValue;
+             }
+         }
+#endif
+	return TRUE;
+
+
+    }
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIEnable", TRUE))
+    {
+        
+
+	if ( pMyObject->bCloudCapable == TRUE )
+	{
+
+          if( bValue == TRUE) {
+
+             if (syscfg_set(NULL, "cloud_enable_flag", "1") != 0) {
+                     AnscTraceWarning(("syscfg_set failed\n"));
+             } else {
+
+                    if (syscfg_commit() != 0) {
+                            AnscTraceWarning(("syscfg_commit failed\n"));
+                    }
+			pMyObject->bCloudEnable = bValue;
+			CcspTraceWarning(("CaptivePortal:Enabling CloudUIEnable to start redirection to Cloud URL ...\n"));
+             }
+
+         } else {
+
+             if (syscfg_set(NULL, "cloud_enable_flag", "0") != 0) {
+                     AnscTraceWarning(("syscfg_set failed\n"));
+             }  else {
+
+                 if (syscfg_commit() != 0) {
+                     AnscTraceWarning(("syscfg_commit failed\n"));
+                 }
+			pMyObject->bCloudEnable = bValue;
+			CcspTraceWarning(("CaptivePortal:Disabling CloudUIEnable to stop redirection to Cloud URL ...\n"));
+             }
+         }
+	}
+	else
+	{
+		printf("First enable cloud capable to modify this parameter\n");
+		return FALSE;
+	}
+	return TRUE;
+    }
+#endif
+
 #ifdef CONFIG_CISCO_HOTSPOT
     /* check the parameter name and return the corresponding value */
     if (AnscEqualString(ParamName, "X_COMCAST_COM_xfinitywifiEnable", TRUE))

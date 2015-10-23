@@ -239,7 +239,12 @@ ssp_engage_pnm
     if ( returnStatus == ANSC_STATUS_SUCCESS || returnStatus == CCSP_SUCCESS )
     {
         /* System is fully initialized */
+        CcspTraceWarning(("PandMInit:%s PandM registered with CR ,setting the health to Green...\n",__FUNCTION__));
         g_pComponent_Common_Dm->Health = CCSP_COMMON_COMPONENT_HEALTH_Green;
+    }
+    else
+    {
+	CcspTraceWarning(("PandMInit:%s PandM's registartion with CR fails...\n",__FUNCTION__));
     }
 
     AnscFreeMemory(pXmlCfgList);

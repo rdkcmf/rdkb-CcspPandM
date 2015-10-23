@@ -1576,8 +1576,6 @@ Interface1_SetParamUlongValue
     if( AnscEqualString(ParamName, "BeaconPowerLimit", TRUE))
     {
 
-        AnscTraceWarning(("pMoCAIfFull->Cfg.BeaconPowerLimit: %d\n", uValue));
-
         /* save update to backup */
         pMoCAIfFull->Cfg.BeaconPowerLimit = uValue;
         return TRUE;
@@ -1655,9 +1653,7 @@ Interface1_SetParamStringValue
     {
         /* save update to backup */
         
-        AnscTraceWarning(("pString: %s\n", pString));
         AnscCopyString((PCHAR)pMoCAIfFull->Cfg.FreqCurrentMaskSetting, pString);
-        AnscTraceWarning(("pMoCAIfFull->Cfg.FreqCurrentMaskSetting: %s\n", pMoCAIfFull->Cfg.FreqCurrentMaskSetting));
         return TRUE;
     }
 
@@ -1852,7 +1848,7 @@ Interface1_Rollback
 
  APIs for Object:
 
-    MoCA.Interface.{i}.QoS.X_CISCO_COM_PeerTable.{i}.
+    MoCA.Interface.{i}.X_CISCO_COM_PeerTable.{i}.
 
     *  X_CISCO_COM_PeerTable_GetEntryCount
     *  X_CISCO_COM_PeerTable_GetEntry
@@ -2244,6 +2240,620 @@ X_CISCO_COM_PeerTable_GetParamStringValue
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
+}
+
+static ANSC_STATUS
+_MeshTxNodeTable_Release
+    (
+        ANSC_HANDLE                 hThisObject
+    )
+{
+    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
+    PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFull     = (PCOSA_DML_MOCA_IF_FULL_TABLE)hThisObject;
+    PCOSA_DML_MOCA_MeshTxNode       pMeshTxNode     = NULL;
+    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = NULL;
+    PSINGLE_LINK_ENTRY              pSLinkEntry     = AnscSListGetFirstEntry(&pMoCAIfFull->MoCAMeshTxNodeTable);
+    
+    while ( pSLinkEntry )
+    {
+        pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+        pSLinkEntry = AnscSListGetNextEntry(pSLinkEntry);
+
+        AnscSListPopEntryByLink(&pMoCAIfFull->MoCAMeshTxNodeTable, &pCosaContext->Linkage);
+
+
+        pMeshTxNode = (PCOSA_DML_MOCA_MeshTxNode)pCosaContext->hContext;
+
+        if ( AnscSListQueryDepth(&pMeshTxNode->MoCAMeshRxNodeTable) )
+        {
+            PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = NULL;
+            PSINGLE_LINK_ENTRY              pSLinkEntry     = AnscSListGetFirstEntry(&pMeshTxNode->MoCAMeshRxNodeTable);
+            
+            while ( pSLinkEntry )
+            {
+                pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+                pSLinkEntry = AnscSListGetNextEntry(pSLinkEntry);
+            
+                AnscSListPopEntryByLink(&pMeshTxNode->MoCAMeshRxNodeTable, &pCosaContext->Linkage);
+                AnscFreeMemory(pCosaContext->hContext);
+                AnscFreeMemory(pCosaContext);
+            }
+        }
+        
+        AnscFreeMemory(pCosaContext->hContext);
+        AnscFreeMemory(pCosaContext);
+    }
+    
+    AnscSListInitializeHeader(&pMoCAIfFull->MoCAMeshTxNodeTable);
+    return returnStatus;
+}
+
+static PCOSA_DML_MOCA_MeshTxNode
+_MeshTxNodeTable_StoreTxNode
+    (
+        PSLIST_HEADER               pMoCAMeshTxNodeTable,
+        ULONG                       ulInterfaceIndex,
+        ULONG                       TxNodeID
+    )
+{
+    ULONG                           instNum         = 0;
+    PCOSA_DML_MOCA_MeshTxNode       pMeshTxNode     = NULL;
+    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = NULL;
+    PSINGLE_LINK_ENTRY              pSLinkEntry     = AnscSListGetFirstEntry(pMoCAMeshTxNodeTable);
+    PCOSA_CONTEXT_MOCA_LINK_OBJECT  pMocaLink       = NULL;
+
+    //check duplicate
+    while ( pSLinkEntry )
+    {
+        pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+        pSLinkEntry = AnscSListGetNextEntry(pSLinkEntry);
+
+        pMeshTxNode = (PCOSA_DML_MOCA_MeshTxNode)pCosaContext->hContext;
+        //printf("HOUJIN: %s: Existing InstanceNumber=%u and TxNodeID=%u, New TxNodeID=%u\n",
+        //    __func__, pCosaContext->InstanceNumber, pMeshTxNode->TxNodeID, TxNodeID);
+        
+        if ( instNum < pCosaContext->InstanceNumber )
+            instNum = pCosaContext->InstanceNumber;
+
+        if ( pMeshTxNode->TxNodeID == TxNodeID )
+            return pMeshTxNode;
+    }
+
+
+    //append entity
+    pMeshTxNode = (PCOSA_DML_MOCA_MeshTxNode)AnscAllocateMemory(sizeof(COSA_DML_MOCA_MeshTxNode));
+    if ( !pMeshTxNode )
+        return NULL;
+
+    AnscSListInitializeHeader(&pMeshTxNode->MoCAMeshRxNodeTable);
+    pMeshTxNode->TxNodeID = TxNodeID;
+
+    
+    //append context
+    pMocaLink = (PCOSA_CONTEXT_MOCA_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_MOCA_LINK_OBJECT));
+    if ( !pMocaLink )
+    {
+        AnscFreeMemory(pMeshTxNode);
+        return NULL;
+    }
+
+    pMocaLink->InterfaceIndex = ulInterfaceIndex;
+    pMocaLink->Index          = instNum++;
+    pMocaLink->InstanceNumber = instNum;
+    pMocaLink->hContext       = (ANSC_HANDLE)pMeshTxNode;
+
+    //printf("HOUJIN: %s: Created InstanceNumber=%u and TxNodeID=%u\n",
+    //    __func__, instNum, TxNodeID);
+    CosaSListPushEntryByInsNum(pMoCAMeshTxNodeTable, (PCOSA_CONTEXT_LINK_OBJECT)pMocaLink);
+    
+    return pMeshTxNode;
+}
+
+static PCOSA_DML_MOCA_MeshRxNode
+_MeshTxNodeTable_StoreRxNode
+    (
+        PSLIST_HEADER               pMoCAMeshRxNodeTable,
+        ULONG                       ulInterfaceIndex,
+        ULONG                       RxNodeID,
+        ULONG                       TxRate
+    )
+{
+    ULONG                           instNum         = 0;
+    PCOSA_DML_MOCA_MeshRxNode       pMeshRxNode     = NULL;
+    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = NULL;
+    PSINGLE_LINK_ENTRY              pSLinkEntry     = AnscSListGetFirstEntry(pMoCAMeshRxNodeTable);
+    PCOSA_CONTEXT_MOCA_LINK_OBJECT  pMocaLink       = NULL;
+
+    //check duplicate
+    while ( pSLinkEntry )
+    {
+        pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+        pSLinkEntry = AnscSListGetNextEntry(pSLinkEntry);
+
+        pMeshRxNode = (PCOSA_DML_MOCA_MeshRxNode)pCosaContext->hContext;
+        //printf("HOUJIN: %s: Existing InstanceNumber=%u and RxNodeID=%u, New RxNodeID=%u\n",
+        //    __func__, pCosaContext->InstanceNumber, pMeshRxNode->RxNodeID, RxNodeID);
+        
+        if ( instNum < pCosaContext->InstanceNumber )
+            instNum = pCosaContext->InstanceNumber;
+
+        if ( pMeshRxNode->RxNodeID == RxNodeID )
+            return pMeshRxNode;
+    }
+
+
+    //append entity
+    pMeshRxNode = (PCOSA_DML_MOCA_MeshRxNode)AnscAllocateMemory(sizeof(COSA_DML_MOCA_MeshRxNode));
+    if ( !pMeshRxNode )
+        return NULL;
+
+    pMeshRxNode->RxNodeID = RxNodeID;
+    pMeshRxNode->TxRate = TxRate;
+
+    
+    //append context
+    pMocaLink = (PCOSA_CONTEXT_MOCA_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_MOCA_LINK_OBJECT));
+    if ( !pMocaLink )
+    {
+        AnscFreeMemory(pMeshRxNode);
+        return NULL;
+    }
+
+    pMocaLink->InterfaceIndex = ulInterfaceIndex;
+    pMocaLink->Index          = instNum++;
+    pMocaLink->InstanceNumber = instNum;
+    pMocaLink->hContext       = (ANSC_HANDLE)pMeshRxNode;
+
+    //printf("HOUJIN: %s: Created InstanceNumber=%u, RxNodeID=%u, TxRate=%u\n",
+    //    __func__, instNum, RxNodeID, TxRate);
+    CosaSListPushEntryByInsNum(pMoCAMeshRxNodeTable, (PCOSA_CONTEXT_LINK_OBJECT)pMocaLink);
+    
+    return pMeshRxNode;
+}
+
+static ANSC_STATUS
+_MeshTxNodeTable_Populate
+    (
+        ANSC_HANDLE                 hThisObject,
+        ULONG                       ulInterfaceIndex,
+        const COSA_DML_MOCA_MESH*   pMoCAMesh,
+        ULONG                       Count
+    )
+{
+    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
+    PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFull     = (PCOSA_DML_MOCA_IF_FULL_TABLE)hThisObject;
+    PCOSA_DML_MOCA_MeshTxNode       pMeshTxNode     = NULL;
+    ULONG                           i               = 0;
+
+    if ( AnscSListQueryDepth(&pMoCAIfFull->MoCAMeshTxNodeTable) )
+    {
+        _MeshTxNodeTable_Release(hThisObject);
+    }
+
+    for ( i = 0; i < Count; ++i )
+    {
+        pMeshTxNode = _MeshTxNodeTable_StoreTxNode(&pMoCAIfFull->MoCAMeshTxNodeTable, ulInterfaceIndex, pMoCAMesh[i].TxNodeID);
+        if ( pMeshTxNode )
+        {
+            _MeshTxNodeTable_StoreRxNode(&pMeshTxNode->MoCAMeshRxNodeTable, ulInterfaceIndex, pMoCAMesh[i].RxNodeID, pMoCAMesh[i].TxRate);
+        }
+    }
+    
+    return returnStatus;
+}
+
+/***********************************************************************
+
+ APIs for Object:
+
+    MoCA.Interface.{i}.X_CISCO_COM_Mesh.MeshTxNodeTable.{i}.
+
+    *  MeshTxNodeTable_GetEntryCount
+    *  MeshTxNodeTable_GetEntry
+    *  MeshTxNodeTable_IsUpdated
+    *  MeshTxNodeTable_Synchronize
+    *  MeshTxNodeTable_GetParamUlongValue
+
+***********************************************************************/
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        MeshTxNodeTable_GetEntryCount
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to retrieve the count of the table.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The count of the table
+
+**********************************************************************/
+ULONG
+MeshTxNodeTable_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DML_MOCA_IF_FULL_TABLE pMoCAIfFull = (PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext;
+    return AnscSListQueryDepth(&pMoCAIfFull->MoCAMeshTxNodeTable);
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ANSC_HANDLE
+        MeshTxNodeTable_GetEntry
+            (
+                ANSC_HANDLE                 hInsContext,
+                ULONG                       nIndex,
+                ULONG*                      pInsNumber
+            );
+
+    description:
+
+        This function is called to retrieve the entry specified by the index.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                ULONG                       nIndex,
+                The index of this entry;
+
+                ULONG*                      pInsNumber
+                The output instance number;
+
+    return:     The handle to identify the entry
+
+**********************************************************************/
+ANSC_HANDLE
+MeshTxNodeTable_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    )
+{   
+    PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFull     = (PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext;
+    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = NULL;
+    PSINGLE_LINK_ENTRY              pSLinkEntry     = NULL;
+
+    pSLinkEntry = AnscSListGetEntryByIndex(&pMoCAIfFull->MoCAMeshTxNodeTable, nIndex);
+
+    if ( pSLinkEntry )
+    {
+        pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+        *pInsNumber = pCosaContext->InstanceNumber;
+    }
+
+    return pCosaContext;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        MeshTxNodeTable_IsUpdated
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is checking whether the table is updated or not.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     TRUE or FALSE.
+
+**********************************************************************/
+BOOL
+MeshTxNodeTable_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    static ULONG last_tick = 0;
+    
+    if ( !last_tick ) 
+    {
+        last_tick = AnscGetTickInSeconds();
+
+        return TRUE;
+    }
+    
+    if ( last_tick >= TIME_NO_NEGATIVE(AnscGetTickInSeconds() - MOCA_REFRESH_INTERVAL) )
+    {
+        return FALSE;
+    }
+    else 
+    {
+        last_tick = AnscGetTickInSeconds();
+
+        return TRUE;
+    }
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        MeshTxNodeTable_Synchronize
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to synchronize the table.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+MeshTxNodeTable_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DML_MOCA_IF_FULL_TABLE    pMoCAIfFull     = (PCOSA_DML_MOCA_IF_FULL_TABLE)hInsContext;
+    PCOSA_DML_MOCA_IF_FULL          pIf             = (PCOSA_DML_MOCA_IF_FULL)hInsContext;
+    ULONG                           InterfaceIndex  = pIf->Cfg.InstanceNumber - 1;
+    PCOSA_DML_MOCA_MESH             pMoCAMesh       = NULL;
+    ULONG                           Count           = 0;
+    ANSC_STATUS                     ret             = ANSC_STATUS_SUCCESS;
+
+    _MeshTxNodeTable_Release(hInsContext);
+
+    //fetch data
+    ret = CosaDmlMocaIfMeshTableGetTable((ANSC_HANDLE)NULL, InterfaceIndex, &pMoCAMesh, &Count);
+    if ( ret != ANSC_STATUS_SUCCESS )
+    {
+        goto FIN;
+    }
+
+    _MeshTxNodeTable_Populate(hInsContext, InterfaceIndex, pMoCAMesh, Count);
+
+FIN:
+    if ( pMoCAMesh )
+        AnscFreeMemory(pMoCAMesh);
+    return ret;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        MeshTxNodeTable_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+MeshTxNodeTable_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    PCOSA_CONTEXT_LINK_OBJECT pContextLinkObject = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    PCOSA_DML_MOCA_MeshTxNode pConf = (PCOSA_DML_MOCA_MeshTxNode)pContextLinkObject->hContext;
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "TxNodeID", TRUE))
+    {
+        /* collect value */
+        *puLong = pConf->TxNodeID;
+        
+        return TRUE;
+    }
+    
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/***********************************************************************
+
+ APIs for Object:
+
+    MoCA.Interface.{i}.X_CISCO_COM_Mesh.MeshTxNodeTable.{i}.MeshRxNodeTable.{i}.
+
+    *  MeshRxNodeTable_GetEntryCount
+    *  MeshRxNodeTable_GetEntry
+    *  MeshRxNodeTable_GetParamUlongValue
+
+***********************************************************************/
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        MeshRxNodeTable_GetEntryCount
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to retrieve the count of the table.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The count of the table
+
+**********************************************************************/
+ULONG
+MeshRxNodeTable_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_CONTEXT_LINK_OBJECT pContextLinkObject = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    PCOSA_DML_MOCA_MeshTxNode pMoCAMeshTxNode = (PCOSA_DML_MOCA_MeshTxNode)pContextLinkObject->hContext;
+    return AnscSListQueryDepth(&pMoCAMeshTxNode->MoCAMeshRxNodeTable);
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ANSC_HANDLE
+        MeshRxNodeTable_GetEntry
+            (
+                ANSC_HANDLE                 hInsContext,
+                ULONG                       nIndex,
+                ULONG*                      pInsNumber
+            );
+
+    description:
+
+        This function is called to retrieve the entry specified by the index.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                ULONG                       nIndex,
+                The index of this entry;
+
+                ULONG*                      pInsNumber
+                The output instance number;
+
+    return:     The handle to identify the entry
+
+**********************************************************************/
+ANSC_HANDLE
+MeshRxNodeTable_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    )
+{   
+    PCOSA_CONTEXT_LINK_OBJECT   pContextLinkObject  = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    PCOSA_DML_MOCA_MeshTxNode   pMoCAMeshTxNode     = (PCOSA_DML_MOCA_MeshTxNode)pContextLinkObject->hContext;
+    PCOSA_CONTEXT_LINK_OBJECT   pCosaContext        = NULL;
+    PSINGLE_LINK_ENTRY          pSLinkEntry         = NULL;
+
+    pSLinkEntry = AnscSListGetEntryByIndex(&pMoCAMeshTxNode->MoCAMeshRxNodeTable, nIndex);
+
+    if ( pSLinkEntry )
+    {
+        pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+        *pInsNumber = pCosaContext->InstanceNumber;
+    }
+
+    return pCosaContext;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        MeshRxNodeTable_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+MeshRxNodeTable_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    PCOSA_CONTEXT_LINK_OBJECT   pContextLinkObject  = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    PCOSA_DML_MOCA_MeshRxNode   pConf               = (PCOSA_DML_MOCA_MeshRxNode)pContextLinkObject->hContext;
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "RxNodeID", TRUE))
+    {
+        /* collect value */
+        *puLong = pConf->RxNodeID;
+        
+        return TRUE;
+    }
+    
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "TxRate", TRUE))
+    {
+        /* collect value */
+        *puLong = pConf->TxRate;
+        
+        return TRUE;
+    }
+    
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
 }
 
 /***********************************************************************
@@ -2880,7 +3490,7 @@ Stats2_Rollback
 
  APIs for Object:
 
-    MoCA.Interface.{i}.
+    MoCA.Interface.{i}.Stats.X_CISCO_COM_ExtCounterTable.{i}.
 
     *  X_CISCO_COM_ExtCounterTable_GetEntryCount
     *  X_CISCO_COM_ExtCounterTable_GetEntry
@@ -2888,9 +3498,6 @@ Stats2_Rollback
     *  X_CISCO_COM_ExtCounterTable_GetParamIntValue
     *  X_CISCO_COM_ExtCounterTable_GetParamUlongValue
     *  X_CISCO_COM_ExtCounterTable_GetParamStringValue
-    *  X_CISCO_COM_ExtCounterTable_Validate
-    *  X_CISCO_COM_ExtCounterTable_Commit
-    *  X_CISCO_COM_ExtCounterTable_Rollback
 
 ***********************************************************************/
 /**********************************************************************  
@@ -3245,118 +3852,11 @@ X_CISCO_COM_ExtCounterTable_GetParamStringValue
     return -1;
 }
 
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        BOOL
-        X_CISCO_COM_ExtCounterTable_Validate
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       pReturnParamName,
-                ULONG*                      puLength
-            );
-
-    description:
-
-        This function is called to finally commit all the update.
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       pReturnParamName,
-                The buffer (128 bytes) of parameter name if there's a validation. 
-
-                ULONG*                      puLength
-                The output length of the param name. 
-
-    return:     TRUE if there's no validation.
-
-**********************************************************************/
-BOOL
-X_CISCO_COM_ExtCounterTable_Validate
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       pReturnParamName,
-        ULONG*                      puLength
-    )
-{
-
-    return TRUE;
-}
-
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        ULONG
-        X_CISCO_COM_ExtCounterTable_Commit
-            (
-                ANSC_HANDLE                 hInsContext
-            );
-
-    description:
-
-        This function is called to finally commit all the update.
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-    return:     The status of the operation.
-
-**********************************************************************/
-ULONG
-X_CISCO_COM_ExtCounterTable_Commit
-    (
-        ANSC_HANDLE                 hInsContext
-    )
-{
-    
-    return 0;
-}
-
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        ULONG
-        X_CISCO_COM_ExtCounterTable_Rollback
-            (
-                ANSC_HANDLE                 hInsContext
-            );
-
-    description:
-
-        This function is called to roll back the update whenever there's a 
-        validation found.
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-    return:     The status of the operation.
-
-**********************************************************************/
-ULONG
-X_CISCO_COM_ExtCounterTable_Rollback
-    (
-        ANSC_HANDLE                 hInsContext
-    )
-{
-
-    return 0;
-}
-
 /***********************************************************************
 
  APIs for Object:
 
-    MoCA.Interface.{i}.
+    MoCA.Interface.{i}.Stats.X_CISCO_COM_ExtAggrCounterTable.{i}.
 
     *  X_CISCO_COM_ExtAggrCounterTable_GetEntryCount
     *  X_CISCO_COM_ExtAggrCounterTable_GetEntry
@@ -3364,9 +3864,6 @@ X_CISCO_COM_ExtCounterTable_Rollback
     *  X_CISCO_COM_ExtAggrCounterTable_GetParamIntValue
     *  X_CISCO_COM_ExtAggrCounterTable_GetParamUlongValue
     *  X_CISCO_COM_ExtAggrCounterTable_GetParamStringValue
-    *  X_CISCO_COM_ExtAggrCounterTable_Validate
-    *  X_CISCO_COM_ExtAggrCounterTable_Commit
-    *  X_CISCO_COM_ExtAggrCounterTable_Rollback
 
 ***********************************************************************/
 /**********************************************************************  
@@ -3682,113 +4179,6 @@ X_CISCO_COM_ExtAggrCounterTable_GetParamStringValue
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
-}
-
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        BOOL
-        X_CISCO_COM_ExtAggrCounterTable_Validate
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       pReturnParamName,
-                ULONG*                      puLength
-            );
-
-    description:
-
-        This function is called to finally commit all the update.
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       pReturnParamName,
-                The buffer (128 bytes) of parameter name if there's a validation. 
-
-                ULONG*                      puLength
-                The output length of the param name. 
-
-    return:     TRUE if there's no validation.
-
-**********************************************************************/
-BOOL
-X_CISCO_COM_ExtAggrCounterTable_Validate
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       pReturnParamName,
-        ULONG*                      puLength
-    )
-{
-
-    return TRUE;
-}
-
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        ULONG
-        X_CISCO_COM_ExtAggrCounterTable_Commit
-            (
-                ANSC_HANDLE                 hInsContext
-            );
-
-    description:
-
-        This function is called to finally commit all the update.
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-    return:     The status of the operation.
-
-**********************************************************************/
-ULONG
-X_CISCO_COM_ExtAggrCounterTable_Commit
-    (
-        ANSC_HANDLE                 hInsContext
-    )
-{
-    
-    return 0;
-}
-
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        ULONG
-        X_CISCO_COM_ExtAggrCounterTable_Rollback
-            (
-                ANSC_HANDLE                 hInsContext
-            );
-
-    description:
-
-        This function is called to roll back the update whenever there's a 
-        validation found.
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-    return:     The status of the operation.
-
-**********************************************************************/
-ULONG
-X_CISCO_COM_ExtAggrCounterTable_Rollback
-    (
-        ANSC_HANDLE                 hInsContext
-    )
-{
-
-    return 0;
 }
 
 
@@ -4321,16 +4711,14 @@ Qos_Rollback
 
  APIs for Object:
 
-    MoCA.Interface.{i}.QoS.X_CISCO_COM_FlowTable.{i}.
+    MoCA.Interface.{i}.QoS.FlowStats.{i}.
 
-    *  X_CISCO_COM_FlowTable_GetEntryCount
-    *  X_CISCO_COM_FlowTable_GetEntry
-    *  X_CISCO_COM_FlowTable_IsUpdated
-    *  X_CISCO_COM_FlowTable_Synchronize
-    *  X_CISCO_COM_FlowTable_GetParamBoolValue
-    *  X_CISCO_COM_FlowTable_GetParamIntValue
-    *  X_CISCO_COM_FlowTable_GetParamUlongValue
-    *  X_CISCO_COM_FlowTable_GetParamStringValue
+    *  FlowStats_GetEntryCount
+    *  FlowStats_GetEntry
+    *  FlowStats_IsUpdated
+    *  FlowStats_Synchronize
+    *  FlowStats_GetParamUlongValue
+    *  FlowStats_GetParamStringValue
 
 ***********************************************************************/
 /**********************************************************************  
@@ -4340,7 +4728,7 @@ Qos_Rollback
     prototype: 
 
         ULONG
-        X_CISCO_COM_FlowTable_GetEntryCount
+        FlowStats_GetEntryCount
             (
                 ANSC_HANDLE                 hInsContext
             );
@@ -4356,7 +4744,7 @@ Qos_Rollback
 
 **********************************************************************/
 ULONG
-X_CISCO_COM_FlowTable_GetEntryCount
+FlowStats_GetEntryCount
     (
         ANSC_HANDLE                 hInsContext
     )
@@ -4375,7 +4763,7 @@ X_CISCO_COM_FlowTable_GetEntryCount
     prototype: 
 
         ANSC_HANDLE
-        X_CISCO_COM_FlowTable_GetEntry
+        FlowStats_GetEntry
             (
                 ANSC_HANDLE                 hInsContext,
                 ULONG                       nIndex,
@@ -4399,7 +4787,7 @@ X_CISCO_COM_FlowTable_GetEntryCount
 
 **********************************************************************/
 ANSC_HANDLE
-X_CISCO_COM_FlowTable_GetEntry
+FlowStats_GetEntry
     (
         ANSC_HANDLE                 hInsContext,
         ULONG                       nIndex,
@@ -4425,7 +4813,7 @@ X_CISCO_COM_FlowTable_GetEntry
     prototype: 
 
         BOOL
-        X_CISCO_COM_FlowTable_IsUpdated
+        FlowStats_IsUpdated
             (
                 ANSC_HANDLE                 hInsContext
             );
@@ -4441,7 +4829,7 @@ X_CISCO_COM_FlowTable_GetEntry
 
 **********************************************************************/
 BOOL
-X_CISCO_COM_FlowTable_IsUpdated
+FlowStats_IsUpdated
     (
         ANSC_HANDLE                 hInsContext
     )
@@ -4474,7 +4862,7 @@ X_CISCO_COM_FlowTable_IsUpdated
     prototype: 
 
         ULONG
-        X_CISCO_COM_FlowTable_Synchronize
+        FlowStats_Synchronize
             (
                 ANSC_HANDLE                 hInsContext
             );
@@ -4490,7 +4878,7 @@ X_CISCO_COM_FlowTable_IsUpdated
 
 **********************************************************************/
 ULONG
-X_CISCO_COM_FlowTable_Synchronize
+FlowStats_Synchronize
     (
         ANSC_HANDLE                 hInsContext
     )
@@ -4518,7 +4906,7 @@ X_CISCO_COM_FlowTable_Synchronize
     pMyObject->MoCAIfFullTable[InterfaceIndex].pMoCAFlowTable       = pConf;
     pMyObject->MoCAIfFullTable[InterfaceIndex].ulMoCAFlowTableCount = Count;
 
-    return 0;
+    return ret;
 }
 
 /**********************************************************************  
@@ -4528,95 +4916,7 @@ X_CISCO_COM_FlowTable_Synchronize
     prototype: 
 
         BOOL
-        X_CISCO_COM_FlowTable_GetParamBoolValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                BOOL*                       pBool
-            );
-
-    description:
-
-        This function is called to retrieve Boolean parameter value; 
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                BOOL*                       pBool
-                The buffer of returned boolean value;
-
-    return:     TRUE if succeeded.
-
-**********************************************************************/
-BOOL
-X_CISCO_COM_FlowTable_GetParamBoolValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        BOOL*                       pBool
-    )
-{
-    /* check the parameter name and return the corresponding value */
-
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
-    return FALSE;
-}
-
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        BOOL
-        X_CISCO_COM_FlowTable_GetParamIntValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                int*                        pInt
-            );
-
-    description:
-
-        This function is called to retrieve integer parameter value; 
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                int*                        pInt
-                The buffer of returned integer value;
-
-    return:     TRUE if succeeded.
-
-**********************************************************************/
-BOOL
-X_CISCO_COM_FlowTable_GetParamIntValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        int*                        pInt
-    )
-{
-    /* check the parameter name and return the corresponding value */
-
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
-    return FALSE;
-}
-
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        BOOL
-        X_CISCO_COM_FlowTable_GetParamUlongValue
+        FlowStats_GetParamUlongValue
             (
                 ANSC_HANDLE                 hInsContext,
                 char*                       ParamName,
@@ -4640,7 +4940,7 @@ X_CISCO_COM_FlowTable_GetParamIntValue
 
 **********************************************************************/
 BOOL
-X_CISCO_COM_FlowTable_GetParamUlongValue
+FlowStats_GetParamUlongValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -4674,7 +4974,7 @@ X_CISCO_COM_FlowTable_GetParamUlongValue
         return TRUE;
     }
     
-    if( AnscEqualString(ParamName, "FlowTimeLeft", TRUE))
+    if( AnscEqualString(ParamName, "LeaseTimeLeft", TRUE))
     {
         /* collect value */
         *puLong = pConf->FlowTimeLeft;
@@ -4682,7 +4982,7 @@ X_CISCO_COM_FlowTable_GetParamUlongValue
         return TRUE;
     }
     
-    if( AnscEqualString(ParamName, "PacketSize", TRUE))
+    if( AnscEqualString(ParamName, "FlowPackets", TRUE))
     {
         /* collect value */
         *puLong = pConf->PacketSize;
@@ -4690,7 +4990,7 @@ X_CISCO_COM_FlowTable_GetParamUlongValue
         return TRUE;
     }
     
-    if( AnscEqualString(ParamName, "PeakDataRate", TRUE))
+    if( AnscEqualString(ParamName, "MaxRate", TRUE))
     {
         /* collect value */
         *puLong = pConf->PeakDataRate;
@@ -4698,7 +4998,7 @@ X_CISCO_COM_FlowTable_GetParamUlongValue
         return TRUE;
     }
     
-    if( AnscEqualString(ParamName, "BurstSize", TRUE))
+    if( AnscEqualString(ParamName, "MaxBurstSize", TRUE))
     {
         /* collect value */
         *puLong = pConf->BurstSize;
@@ -4714,6 +5014,14 @@ X_CISCO_COM_FlowTable_GetParamUlongValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "LeaseTime", TRUE))
+    {
+        /* collect value */
+        *puLong = pConf->LeaseTime;
+
+        return TRUE;
+    }
+
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -4726,7 +5034,7 @@ X_CISCO_COM_FlowTable_GetParamUlongValue
     prototype: 
 
         ULONG
-        X_CISCO_COM_FlowTable_GetParamStringValue
+        FlowStats_GetParamStringValue
             (
                 ANSC_HANDLE                 hInsContext,
                 char*                       ParamName,
@@ -4758,7 +5066,7 @@ X_CISCO_COM_FlowTable_GetParamUlongValue
 
 **********************************************************************/
 ULONG
-X_CISCO_COM_FlowTable_GetParamStringValue
+FlowStats_GetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -4769,7 +5077,7 @@ X_CISCO_COM_FlowTable_GetParamStringValue
     PCOSA_DML_MOCA_FLOW             pConf           = (PCOSA_DML_MOCA_FLOW)hInsContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "DestinationMACAddress", TRUE))
+    if( AnscEqualString(ParamName, "PacketDA", TRUE))
     {
         /* collect value */
         _ansc_strcpy(pValue, (PCHAR)pConf->DestinationMACAddress );

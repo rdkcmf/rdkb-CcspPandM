@@ -104,6 +104,40 @@
 
 ***********************************************************************/
 BOOL
+UserInterface_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+BOOL
+UserInterface_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    UserInterface.RemoteAccess.
+
+    *  RemoteAccess_GetParamBoolValue
+    *  RemoteAccess_GetParamIntValue
+    *  RemoteAccess_GetParamUlongValue
+    *  RemoteAccess_GetParamStringValue
+    *  RemoteAccess_SetParamBoolValue
+    *  RemoteAccess_SetParamIntValue
+    *  RemoteAccess_SetParamUlongValue
+    *  RemoteAccess_SetParamStringValue
+    *  RemoteAccess_Validate
+    *  RemoteAccess_Commit
+    *  RemoteAccess_Rollback
+
+***********************************************************************/
+BOOL
 RemoteAccess_GetParamBoolValue
     (
         ANSC_HANDLE                 hInsContext,

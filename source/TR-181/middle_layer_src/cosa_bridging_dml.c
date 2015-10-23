@@ -2470,14 +2470,23 @@ Port_SetParamStringValue
             varStruct.parameterName = ucEntryParamName;
             varStruct.parameterValue = ucEntryNameValue;
             ulEntryNameLen = sizeof(ucEntryNameValue);
-            if (_ansc_strstr(pString,"WiFi") &&
-                !(COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen)))
+fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1\n"); 	
+			if (_ansc_strstr(pString,"WiFi"))
             {
-                AnscCopyString(pPort->Cfg.LinkName, ucEntryNameValue);
-                pPort->Cfg.LinkType = COSA_DML_BRG_LINK_TYPE_WiFiSsid;
-                _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
-                _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
-                _ansc_sprintf(ucEntryParamName, "%s%s", pString, ".LowerLayers");
+            
+                int ret = COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen);
+                
+                AnscTraceFlow(("<HL>%s >>>>>> ret is %d \n",__func__,ret));
+            
+                 if ( ret == 0 && AnscSizeOfString(ucEntryNameValue) != 0 ) {
+                 
+                    AnscTraceFlow(("<HL>%s 11 STRING LENGTH NOT ZERO \n",__func__));
+                    AnscCopyString(pPort->Cfg.LinkName, ucEntryNameValue);
+                    pPort->Cfg.LinkType = COSA_DML_BRG_LINK_TYPE_WiFiSsid;
+                    _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
+                    _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
+                    _ansc_sprintf(ucEntryParamName, "%s%s", pString, ".LowerLayers");
+                  }  
             }
             else if (( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen ) ) &&
                 ( AnscSizeOfString(ucEntryNameValue) != 0 ) )
@@ -2532,9 +2541,29 @@ Port_SetParamStringValue
             varStruct.parameterValue = ucEntryNameValue;
             ulEntryNameLen = sizeof(ucEntryNameValue);
             pPort->Cfg.bUpstream = FALSE;
+fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2\n"); 
+			if (_ansc_strstr(pString,"WiFi") &&
+                0 == (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen)) && ( AnscSizeOfString(ucEntryNameValue) != 0 ))
+            {
+            
+                AnscTraceFlow(("<HL>%s 222 STRING LENGTH NOT ZERO \n",__func__));
+                AnscTraceFlow(("<HL>%s %s=%s\n", __func__,pString,ucEntryNameValue));
+                _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
+                _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryNameValue,".Upstream");
+                _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
 
+                if( 0 == (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen)) &&
+                    ( AnscSizeOfString(ucEntryNameValue) != 0 ) )
+                {
+                    AnscTraceFlow(("<HL>%s %s=%s\n", __func__, pString, ucEntryNameValue));
+                    if (_ansc_strstr(ucEntryNameValue,"true"))
+                    {
+                        pPort->Cfg.bUpstream = true;
+                    }
+                }
+            }
             if (_ansc_strstr(pString,"WiFi") &&
-                !(COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen)))
+                !(COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen)) && ( AnscSizeOfString(ucEntryNameValue) != 0 ))
             {
                 AnscTraceFlow(("<HL>%s %s=%s\n", __FUNCTION__,pString,ucEntryNameValue));
                 _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));

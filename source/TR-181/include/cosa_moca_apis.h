@@ -96,14 +96,29 @@ COSA_DML_IF_STATUS
     IF_STATUS_Error
 }
 COSA_DML_IF_STATUS, *PCOSA_DML_IF_STATUS;
+
+typedef  struct
+_SINGLE_LINK_ENTRY
+{
+    struct  _SINGLE_LINK_ENTRY*     Next;
+}
+SINGLE_LINK_ENTRY,  *PSINGLE_LINK_ENTRY;
+
+typedef  struct
+_SLIST_HEADER
+{
+    SINGLE_LINK_ENTRY               Next;
+    USHORT                          Depth;
+    USHORT                          Sequence;
+}
+SLIST_HEADER,  *PSLIST_HEADER;
 #endif
 
 /**********************************************************************
                 STRUCTURE AND CONSTANT DEFINITIONS
 **********************************************************************/
-
-#define MOCA_INTEFACE_NUMBER                        1
 #define COSA_DML_MOCA_AssocDeviceSafeguard          8
+#define MOCA_INTEFACE_NUMBER        1
 
 typedef 
 enum _MOCA_PROVISIONING_SERVERADDRESS_TYPE
@@ -280,6 +295,34 @@ struct _COSA_DML_MOCA_PEER
 
 typedef struct _COSA_DML_MOCA_PEER COSA_DML_MOCA_PEER,  *PCOSA_DML_MOCA_PEER;
 
+
+//Device.MoCA.Interface.{i}.X_CISCO_COM_Mesh.MeshTxNodeTable.{i}.MeshRxNodeTable.{i}.XXX
+struct _COSA_DML_MOCA_MeshRxNode
+{
+    ULONG                           RxNodeID;
+    ULONG                           TxRate;
+}_struct_pack_;
+
+typedef struct _COSA_DML_MOCA_MeshRxNode COSA_DML_MOCA_MeshRxNode,  *PCOSA_DML_MOCA_MeshRxNode;
+
+struct _COSA_DML_MOCA_MeshTxNode
+{
+    SLIST_HEADER                    MoCAMeshRxNodeTable;
+    ULONG                           TxNodeID;
+}_struct_pack_;
+
+typedef struct _COSA_DML_MOCA_MeshTxNode COSA_DML_MOCA_MeshTxNode,  *PCOSA_DML_MOCA_MeshTxNode;
+
+struct _COSA_DML_MOCA_MESH
+{
+    ULONG                           TxNodeID;
+    ULONG                           RxNodeID;
+    ULONG                           TxRate;
+}_struct_pack_;
+
+typedef struct _COSA_DML_MOCA_MESH COSA_DML_MOCA_MESH,  *PCOSA_DML_MOCA_MESH;
+
+
 struct _COSA_DML_MOCA_FLOW
 {
     ULONG                           FlowID;
@@ -291,6 +334,7 @@ struct _COSA_DML_MOCA_FLOW
     ULONG                           PeakDataRate;
     ULONG                           BurstSize;
     ULONG                           FlowTag;
+    ULONG                           LeaseTime;
 }_struct_pack_;
 
 typedef struct _COSA_DML_MOCA_FLOW COSA_DML_MOCA_FLOW, *PCOSA_DML_MOCA_FLOW;
@@ -473,6 +517,15 @@ CosaDmlMocaIfPeerTableGetTable
         ANSC_HANDLE                      hContext,
         ULONG                            ulInterfaceIndex,
         PCOSA_DML_MOCA_PEER             *ppConf,
+        PULONG                           pCount
+    );
+
+ANSC_STATUS
+CosaDmlMocaIfMeshTableGetTable
+    (
+        ANSC_HANDLE                      hContext,
+        ULONG                            ulInterfaceIndex,
+        PCOSA_DML_MOCA_MESH             *ppConf,
         PULONG                           pCount
     );
 

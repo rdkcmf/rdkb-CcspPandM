@@ -155,6 +155,7 @@ COSA_DML_MultiHomedMode, *PCOSA_DML_MultiHomedMode;
     UCHAR                                   FactoryReset[256];               \
     UCHAR                                   UserChangedFlags[64];           \
     BOOL                                    TelnetEnable;                   \
+    BOOL                                    ReinitCmMac;                       \
     BOOL                                    SSHEnable;                      \
     BOOL                                    HNAPEnable;                     \
     BOOL                                    EnableZeroConfig;               \

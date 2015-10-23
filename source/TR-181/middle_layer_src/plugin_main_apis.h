@@ -202,6 +202,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
     ANSC_HANDLE                  hRLog;                                                     \
     ANSC_HANDLE                  hMultiLan;                                                 \
     ANSC_HANDLE                  hGRE;                                                      \
+    ANSC_HANDLE                  hTGRE;                                                     \
     ANSC_HANDLE                  hCGRE;                                                     \
     ANSC_HANDLE                  hHotspot;                                                  \
     ANSC_HANDLE                  hTSIP;                                                     \

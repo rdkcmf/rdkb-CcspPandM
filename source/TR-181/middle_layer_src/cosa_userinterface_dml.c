@@ -166,6 +166,99 @@
 
 **********************************************************************/
 BOOL
+UserInterface_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+	if( AnscEqualString(ParamName, "PasswordReset", TRUE))
+    {
+        *pBool = FALSE;
+        return TRUE;
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+void ResetPassword()
+{
+	pthread_detach(pthread_self());
+	system("dmcli eRT setv Device.Users.User.3.X_CISCO_COM_Password string password");
+}
+
+BOOL
+UserInterface_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+	if( AnscEqualString(ParamName, "PasswordReset", TRUE))
+    {
+        if(bValue == TRUE)
+		{
+			pthread_t PwdRst;
+			pthread_create(&PwdRst, NULL, &ResetPassword, NULL);
+		}
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+/***********************************************************************
+
+ APIs for Object:
+
+    UserInterface.RemoteAccess.
+
+    *  RemoteAccess_GetParamBoolValue
+    *  RemoteAccess_GetParamIntValue
+    *  RemoteAccess_GetParamUlongValue
+    *  RemoteAccess_GetParamStringValue
+    *  RemoteAccess_SetParamBoolValue
+    *  RemoteAccess_SetParamIntValue
+    *  RemoteAccess_SetParamUlongValue
+    *  RemoteAccess_SetParamStringValue
+    *  RemoteAccess_Validate
+    *  RemoteAccess_Commit
+    *  RemoteAccess_Rollback
+
+***********************************************************************/
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        RemoteAccess_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
 RemoteAccess_GetParamBoolValue
     (
         ANSC_HANDLE                 hInsContext,

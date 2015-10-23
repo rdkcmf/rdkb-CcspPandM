@@ -42,6 +42,7 @@
 #include "ssp_global.h"
 #include "stdlib.h"
 #include "ccsp_dm_api.h"
+#include "pcdapi.h"
 //#include <docsis_ext_interface.h>
 
 PDSLH_CPE_CONTROLLER_OBJECT     pDslhCpeController      = NULL;
@@ -52,6 +53,7 @@ PCCSP_FC_CONTEXT                pPnmFcContext           = (PCCSP_FC_CONTEXT     
 PCCSP_CCD_INTERFACE             pPnmCcdIf               = (PCCSP_CCD_INTERFACE        )NULL;
 PCCC_MBI_INTERFACE              pPnmMbiIf               = (PCCC_MBI_INTERFACE         )NULL;
 BOOL                            g_bActive               = FALSE;
+extern  ANSC_HANDLE                     bus_handle;
 
 int  cmd_dispatch(int  command)
 {
@@ -298,6 +300,16 @@ void sig_handler(int sig)
         CcspTraceInfo(("SIGKILL received!\n"));
         exit(0);
     }
+	else if ( sig == SIGALRM ) 
+	{
+
+    	signal(SIGALRM, sig_handler); /* reset it to this function */
+    	CcspTraceInfo(("SIGALRM received!\n"));
+		RDKLogEnable = GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
+		RDKLogLevel = (char)GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_LogLevel");
+		PAM_RDKLogLevel = GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_PAM_LogLevel");
+		PAM_RDKLogEnable = (char)GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_PAM_LoggerEnable");
+	}
     else {
     	/* get stack trace first */
     	_print_stack_backtrace();
@@ -351,6 +363,9 @@ int main(int argc, char* argv[])
     DmErr_t                         err;
     char                            *subSys            = NULL;
     extern ANSC_HANDLE bus_handle;
+	#ifdef FEATURE_SUPPORT_RDKLOG
+	rdk_logger_init("/fss/gw/lib/debug.ini");
+	#endif
 
     /*
      *  Load the start configuration
@@ -363,6 +378,7 @@ int main(int argc, char* argv[])
     }
     else
     {
+        CcspTraceError(("RDKB_SYSTEM_BOOT_UP_LOG : PandM,Insufficient resources for start configuration, quit!\n"));
         printf("Insufficient resources for start configuration, quit!\n");
         exit(1);
     }
@@ -442,8 +458,17 @@ int main(int argc, char* argv[])
         signal(SIGPIPE, SIG_IGN);
     }
 
+
+    printf("Registering PCD exception handler\n");
+    CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PandM Registering PCD exception handler... \n"));
+    PCD_api_register_exception_handlers( argv[0], NULL );
+
     cmd_dispatch('e');
 
+	RDKLogEnable = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
+	RDKLogLevel = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-X_RDKCENTRAL-COM_LogLevel");
+	PAM_RDKLogLevel = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PAM_LogLevel");
+	PAM_RDKLogEnable = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PAM_LoggerEnable");
     // printf("Calling Docsis\n");
 
     // ICC_init();
@@ -464,6 +489,7 @@ int main(int argc, char* argv[])
     system("touch /tmp/pam_initialized");
 
     printf("Entering P&M loop\n");
+    CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : Entering P&M loop... \n"));
 
     if ( bRunAsDaemon )
     {

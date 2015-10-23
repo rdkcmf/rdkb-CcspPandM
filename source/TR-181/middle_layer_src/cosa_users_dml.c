@@ -891,11 +891,45 @@ User_SetParamStringValue
     if( AnscEqualString(ParamName, "Password", TRUE)
         || AnscEqualString(ParamName, "X_CISCO_COM_Password", TRUE) )
     {
-        /* save update to backup */
-        AnscCopyString(pUser->Password, pString);
+	if( AnscEqualString(pUser->Username, "mso", TRUE) )
+	{
+		unsigned int ret=0;
+
+		ret = mso_validatepwd(pString);
+
+		if ( ret == Invalid_PWD )
+		{
+			AnscCopyString(pUser->Password, "Invalid_PWD");
+		}
+		else if ( ret == Good_PWD )
+		{
+			AnscCopyString(pUser->Password, "Good_PWD");
+		}
+		else if ( ret == Unique_PWD )
+		{
+			AnscCopyString(pUser->Password, "Unique_PWD");
+		}
+		else if ( ret == Expired_PWD )
+		{
+			AnscCopyString(pUser->Password, "Expired_PWD");
+		}
+		else
+		{
+			AnscCopyString(pUser->Password, "TimeError");
+		}
+
+	}
+	else
+	{
+        	/* save update to backup */
+       		 AnscCopyString(pUser->Password, pString);
+	}
     #if CFG_USE_CCSP_SYSLOG
         /* Bad practice to use platform dependent and will be rectified -- CCSP_TRACE should be used */
-        syslog_systemlog("Password change", LOG_NOTICE, "Accound %s's password changed", pUser->Username); 
+        if( AnscEqualString(pUser->Username, "admin", TRUE) )
+        {    syslog_systemlog("Password change", LOG_NOTICE, "Account %s's password changed", pUser->Username);
+             return TRUE;
+        }  
     #endif
 
         return TRUE;
