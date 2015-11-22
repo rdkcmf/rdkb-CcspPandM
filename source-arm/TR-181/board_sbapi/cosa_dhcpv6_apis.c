@@ -1,22 +1,3 @@
-/*
- * If not stated otherwise in this file or this component's Licenses.txt file the
- * following copyright and licenses apply:
- *
- * Copyright 2015 RDK Management
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
 /**********************************************************************
    Copyright [2014] [Cisco Systems, Inc.]
  
@@ -3221,6 +3202,10 @@ void __cosa_dhcpsv6_refresh_config()
     ULONG IAPDPrefixes_Len = 0;
     char  ServerOption[256] = {0};
     char *pServerOption = NULL;
+    FILE *responsefd;
+    char *networkResponse = "/var/tmp/networkresponse.txt";
+    int iresCode = 0;
+    char responseCode[10];
     ULONG  T1 = 0;
     ULONG  T2 = 0;
 
@@ -3398,8 +3383,35 @@ OPTIONS:
                    char dnsStr[256] = {0};
                    ret = CosaDmlDHCPv6sGetDNS(g_recv_options[Index4].Value, dnsStr, sizeof(dnsStr) );
 
-                   if ( !ret )
-                       fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+                   	if ( !ret )
+			{
+		       		char buf[6];
+				// During captive portal no need to pass DNS
+				// Check the reponse code received from Web Service
+   				if((responsefd = fopen(networkResponse, "r")) != NULL) 
+   				{
+       					if(fgets(responseCode, sizeof(responseCode), responsefd) != NULL)
+       					{
+		  				iresCode = atoi(responseCode);
+          				}
+   				}
+        			syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
+    				if( buf != NULL )
+    				{
+
+    		    			if ((strncmp(buf,"true",4) == 0) && iresCode == 204)
+					{
+
+				   		fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+					}
+    		    			else
+					{
+
+				   		fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+					}
+    				}
+			}
+
                 }
                 else if ( g_recv_options[Index4].Tag == 24 )
                 { //domain
@@ -4934,6 +4946,7 @@ dhcpv6c_dbg_thrd(void * in)
 
     while (1) 
     {
+	int retCode = 0;
         tm.tv_sec  = 60;
         tm.tv_usec = 0;
     
@@ -4941,10 +4954,13 @@ dhcpv6c_dbg_thrd(void * in)
         FD_SET(fd, &rfds);
         FD_SET(fd1, &rfds);
 
+	retCode = select( (fd>fd1)?(fd+1):(fd1+1), &rfds, NULL, NULL, &tm);
         /* When return -1, it's error.
            When return 0, it's timeout
            When return >0, it's the number of valid fds */
-        if (select( (fd>fd1)?(fd+1):(fd1+1), &rfds, NULL, NULL, &tm) < 0) {
+        if (retCode < 0) {
+	    fprintf(stderr, "dbg_thrd : select returns error \n" );
+
             if (errno == EINTR)
                 continue;
             
@@ -4952,6 +4968,8 @@ dhcpv6c_dbg_thrd(void * in)
             CcspTraceWarning(("%s -- select(): %s", __FUNCTION__, strerror(errno)));
             goto EXIT;
         }
+	else if(retCode == 0 )
+	    continue;
 
         /*We need consume the data.
           It's possible more than one triggering events are consumed in one time, which is expected.*/
@@ -4963,18 +4981,22 @@ dhcpv6c_dbg_thrd(void * in)
             sleep(3);
             memset(msg, 0, sizeof(msg));
             read(fd1, msg, sizeof(msg));
-        }
 
-        if ( !FD_ISSET(fd, &rfds) )
-        {
-            /*check dibbler server status*/
             CosaDmlDhcpv6sRebootServer();
-
-            continue;
+	    continue;
         }
 
-        memset(msg, 0, sizeof(msg));
-        read(fd, msg, sizeof(msg));
+        if ( FD_ISSET(fd, &rfds) )
+        {
+	     memset(msg, 0, sizeof(msg));
+             read(fd, msg, sizeof(msg));
+
+            /*check dibbler server status*/
+//            CosaDmlDhcpv6sRebootServer();
+//            continue;
+        }
+	else
+		continue;
 
         CcspTraceInfo(("%s: get message %s\n", __func__, msg)); 
 
@@ -5113,7 +5135,7 @@ dhcpv6c_dbg_thrd(void * in)
 
                             /*This is for brlan0 interface */
                             commonSyseventSet("lan_ipaddr_v6", globalIP);
-                            _ansc_sprintf(cmd, "%d", 64); //hardcode to 64
+                            _ansc_sprintf(cmd, "%d", pref_len);
                             commonSyseventSet("lan_prefix_v6", cmd);
 
                             commonSyseventSet("lan-restart", "1");

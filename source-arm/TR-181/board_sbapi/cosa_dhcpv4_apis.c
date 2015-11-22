@@ -1,22 +1,3 @@
-/*
- * If not stated otherwise in this file or this component's Licenses.txt file the
- * following copyright and licenses apply:
- *
- * Copyright 2015 RDK Management
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
 /**********************************************************************
    Copyright [2014] [Cisco Systems, Inc.]
  
@@ -3130,7 +3111,7 @@ option 60 4D53465420352E30
 option 53 03 
 
 */
-int _cosa_get_dhcps_client(ULONG instancenum, ULONG minAddress, ULONG maxAddress)
+int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, ULONG maxAddress)
 {
     FILE * fp = NULL, *fpTmp = NULL;
     PCOSA_DML_DHCPSV4_CLIENT  pEntry  = NULL;
@@ -3155,7 +3136,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, ULONG minAddress, ULONG maxAddress
     char * pTmp2 = NULL;
     time_t t1    = 0;
     struct tm t2 = {0};
-    char buf[128] = {0}, macArray[6];
+    char buf[128] = {0}, macArray[6]={0};
     UtopiaContext utctx;
     struct timeval tval;
     struct tm tm;
@@ -3295,7 +3276,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, ULONG minAddress, ULONG maxAddress
 		pEntry = &pEntry2[size];
 		sizeClient = size + 1;
 		_ansc_snprintf(pEntry->Alias, 63, "Alias%d", size);
-		if(!find_arp_entry(pIP,LAN_L3_IFNAME,macArray))
+		if(!find_arp_entry(pIP,ifName,macArray))
 			pEntry->Active = TRUE;
 		_ansc_snprintf(pEntry->Chaddr, 18, pMac);
 		if(pEntry->Active==TRUE)
@@ -3502,6 +3483,9 @@ CosaDmlDhcpsGetClient
 {        
     int                     ret = 0;
     COSA_DML_DHCPS_POOL_CFG poolCfg;
+    UCHAR                           ucEntryParamName[256] = {0};
+    UCHAR                           ucEntryNameValue[256] = {0};
+    ULONG                           ulEntryNameLen=sizeof(ucEntryNameValue);
 
     poolCfg.InstanceNumber = ulPoolInstanceNumber;
 
@@ -3511,8 +3495,13 @@ CosaDmlDhcpsGetClient
         // not supporting other pool yet.
         //return ANSC_STATUS_FAILURE;
     //}
-
-    ret = _cosa_get_dhcps_client(ulPoolInstanceNumber, poolCfg.MinAddress.Value, poolCfg.MaxAddress.Value);
+    if(poolCfg.InstanceNumber == 1) {
+        snprintf(ucEntryNameValue, sizeof(ucEntryNameValue), "%s", poolCfg.Interface);
+    } else {
+        snprintf(ucEntryParamName, sizeof(ucEntryParamName), "%s.Name", poolCfg.Interface);
+        CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen );
+    }
+    ret = _cosa_get_dhcps_client(ulPoolInstanceNumber, ucEntryNameValue, poolCfg.MinAddress.Value, poolCfg.MaxAddress.Value);
 
     if ( !ret )
     {

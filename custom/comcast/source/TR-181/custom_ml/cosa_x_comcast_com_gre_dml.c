@@ -15,7 +15,7 @@
 **********************************************************************/
 /**************************************************************************
 
-    module: cosa_x_comcast-com_gre_dml.c
+    module: cosa_x_comcast_com_gre_dml.c
 
         For COSA Data Model Library Development
 
@@ -50,8 +50,8 @@
 #include "dml_tr181_custom_cfg.h"
 
 #ifdef CONFIG_CISCO_HOTSPOT
-#include "cosa_x_comcast-com_gre_dml.h"
-#include "cosa_x_comcast-com_gre_internal.h"
+#include "cosa_x_comcast_com_gre_dml.h"
+#include "cosa_x_comcast_com_gre_internal.h"
 
 ULONG GreTunnel_GetEntryCount (  ANSC_HANDLE hInsContext  ) {
     return CosaDml_GreTunnelGetNumberOfEntries();

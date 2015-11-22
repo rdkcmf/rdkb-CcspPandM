@@ -1,22 +1,3 @@
-/*
- * If not stated otherwise in this file or this component's Licenses.txt file the
- * following copyright and licenses apply:
- *
- * Copyright 2015 RDK Management
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
 /**********************************************************************
    Copyright [2014] [Cisco Systems, Inc.]
  
@@ -118,12 +99,21 @@
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>
+#include <autoconf.h>
 
 #include "platform_hal.h"
-        
+ 
 #define _ERROR_ "NOT SUPPORTED"
 
 extern void* g_pDslhDmlAgent;
+
+void strip_line (char *str)
+{
+    if (NULL==str)
+        return;
+    int len = strlen(str);
+    str[len-1] = 0;    
+}
 
 static int
 PsmGet(const char *param, char *value, int size)
@@ -164,7 +154,7 @@ CosaDmlDiGetManufacturer
         ULONG*                      pulSize
     )
 {
-    AnscCopyString(pValue, "Cisco");
+    AnscCopyString(pValue, CONFIG_VENDOR_NAME);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
@@ -198,7 +188,7 @@ CosaDmlDiGetManufacturerOUI
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 */
-
+/*
     char val[64] = {0};
     char param_name[256] = {0};
 
@@ -214,6 +204,11 @@ CosaDmlDiGetManufacturerOUI
         *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
     }
+*/
+        sprintf(pValue, "%06X%c", CONFIG_VENDOR_ID, '\0');
+        *pulSize = AnscSizeOfString(pValue);
+        return ANSC_STATUS_SUCCESS;
+
 }
 
 ANSC_STATUS
@@ -264,7 +259,7 @@ CosaDmlDiGetDescription
         ULONG*                      pulSize
     )
 {
-    AnscCopyString(pValue,"Cisco VideoScape Gateway");
+    AnscCopyString(pValue, CONFIG_TI_GW_DESCRIPTION);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
@@ -277,7 +272,7 @@ CosaDmlDiGetProductClass
         ULONG*                      pulSize
     )
 {
-    char val[64] = {0};
+/*    char val[64] = {0};
     char param_name[256] = {0};
 
     _ansc_sprintf(param_name, "%s%s", DMSB_TR181_PSM_DeviceInfo_Root, DMSB_TR181_PSM_DeviceInfo_ProductClass);        
@@ -292,6 +287,10 @@ CosaDmlDiGetProductClass
         *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
     }
+*/
+    AnscCopyString(pValue, "XB3");
+    *pulSize = AnscSizeOfString(pValue);
+    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -392,6 +391,7 @@ CosaDmlDiGetProvisioningCode
         ULONG*                      pulSize
     )
 {
+#if 0
     UtopiaContext ctx;
     int rc = -1;
     char temp[64];
@@ -403,6 +403,18 @@ CosaDmlDiGetProvisioningCode
 
     Utopia_Free(&ctx,0);
     AnscCopyString(pValue,temp);
+    *pulSize = AnscSizeOfString(pValue);
+#endif
+
+// Provisioning Code sent to ACS is Serial Number of the device
+#ifdef _COSA_DRG_TPG_
+    plat_GetFlashValue("unitsn", unitsn);
+    sprintf(pValue, "%c%c%c%c%c%c%c",unitsn[0],unitsn[1],unitsn[2],unitsn[3],unitsn[4],unitsn[5],unitsn[6]);
+#elif _COSA_INTEL_USG_ARM_
+
+    if (platform_hal_GetSerialNumber(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+#endif
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS; 
 }
@@ -425,6 +437,228 @@ CosaDmlDiSetProvisioningCode
     Utopia_Free(&ctx,!rc);
 
     return ANSC_STATUS_SUCCESS;
+}
+
+
+
+void uploadLogUtilityThread(void* vptr_value)
+{
+	pthread_detach(pthread_self());
+	char uploadOnRequest[150];
+	char *str = (char *) vptr_value;
+	snprintf(uploadOnRequest,sizeof(uploadOnRequest),"sh /fss/gw/rdklogger/opsLogUpload.sh %s",str);
+	system(uploadOnRequest);
+	return;
+
+}
+ANSC_STATUS
+COSADmlUploadLogsNow
+	(
+		ANSC_HANDLE                 hContext,
+        	BOOL                        bEnable
+	)
+{
+	pthread_t tid;
+	char* operation = NULL;
+
+	if (bEnable)
+	{
+		operation = "upload";
+		pthread_create(&tid, NULL, &uploadLogUtilityThread, (void *)operation);
+        return ANSC_STATUS_SUCCESS;
+	}
+	else 
+	{
+       	operation = "stop";
+		pthread_create(&tid, NULL, &uploadLogUtilityThread, (void *)operation);
+    	return ANSC_STATUS_SUCCESS;
+    }
+    return ANSC_STATUS_FAILURE;
+}
+
+ANSC_STATUS
+COSADmlUploadLogsStatus
+    (
+        ANSC_HANDLE                 Context,
+	char* 	pValue,
+	ULONG*	pUlSize
+    )
+{
+	char uploadStatus[150];
+	int ret, status;
+	FILE *ptr_file;
+    char buf[50];
+	snprintf(uploadStatus,sizeof(uploadStatus),"sh /fss/gw/rdklogger/opsLogUpload.sh %s","status");
+	ret=system(uploadStatus);
+	status=WEXITSTATUS(ret);
+	
+	switch (status)
+	{
+		case 0 : 
+			AnscCopyString(pValue, "Not triggered");
+        	*pUlSize = AnscSizeOfString(pValue);
+			break;
+		case 1 :
+			AnscCopyString(pValue, "Triggered");
+        	*pUlSize = AnscSizeOfString(pValue);
+			break;
+		case 2:
+			AnscCopyString(pValue, "In progress");
+       		*pUlSize = AnscSizeOfString(pValue);
+			break;
+		case 3 :
+			AnscCopyString(pValue, "Failed");
+       		*pUlSize = AnscSizeOfString(pValue);
+			break;
+		case 4 :
+			ptr_file =fopen("/nvram/uploadsuccess","r");
+    			if (!ptr_file)
+        		break;
+
+    			if (fgets(buf,50, ptr_file)!=NULL)
+			{
+				fclose(ptr_file);
+				strip_line(buf);
+    				AnscCopyString(pValue, buf);
+        			*pUlSize = AnscSizeOfString(pValue);
+			}
+			break;
+		default :
+			AnscCopyString(pValue, "Not triggered");
+       		*pUlSize = AnscSizeOfString(pValue);
+			break;
+	}
+	return ANSC_STATUS_SUCCESS;
+
+}
+
+/*Webpa*/
+
+#define LINE_SIZE 128
+#define TMP_WEBPA_CFG "/tmp/webpa_cfg.txt"
+#define WEBPA_CFG     "/nvram/webpa_cfg.json"
+
+ANSC_STATUS
+CosaDmlDiGetWebPACfg
+    (
+        char*                       ParamName,
+        char*                       pValue
+    )
+{
+    char str[128];
+    char line[LINE_SIZE];
+    FILE *fd;
+	memset(str, 0, 128);
+	fd = fopen("/nvram/webpa_cfg.json", "r");
+	if(!fd)
+	{	
+		printf("WEBPA_CFG not available");
+		return ANSC_STATUS_FAILURE;
+	}	
+	fclose(fd);
+	if (AnscEqualString(ParamName, "ServerURL", TRUE))
+	{
+		sprintf(str, "grep -r ServerIP %s | awk '{print $2}' | sed 's|[\"\",]||g' > %s", WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+	if (AnscEqualString(ParamName, "ServerPort", TRUE))
+	{
+		sprintf(str, "grep -r ServerPort %s | awk '{print $2}' | sed 's|[,]||g' > %s", WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+	if (AnscEqualString(ParamName, "DeviceNetworkInterface", TRUE))
+	{
+		sprintf(str, "grep -r DeviceNetworkInterface %s | awk '{print $2}' | sed 's|[\"\",]||g' > %s", WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+	if (AnscEqualString(ParamName, "RetryIntervalInSec", TRUE))
+	{
+		sprintf(str, "grep -r RetryIntervalInSec %s | awk '{print $2}' | sed 's|[,]||g' > %s", WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+	if (AnscEqualString(ParamName, "MaxPingWaitTimeInSec", TRUE))
+	{
+		sprintf(str, "grep -r MaxPingWaitTimeInSec %s | awk '{print $2}' | sed 's|[,]||g' > %s", WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+	if (AnscEqualString(ParamName, "Enable", TRUE))
+	{
+		sprintf(str, "grep -r EnablePa %s | awk '{print $2}' | sed 's|[\"\",]||g' > %s", WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+
+	fd = fopen(TMP_WEBPA_CFG, "r");
+	if(fgets(line, LINE_SIZE, fd) != NULL)
+	{
+		strncpy(pValue, line, strlen(line));
+		pValue[strlen(pValue)-1] = '\0';
+		fclose(fd);
+		memset(str, 0, 128);
+		sprintf(str, "rm -rf %s", TMP_WEBPA_CFG);
+		system(str);
+		return ANSC_STATUS_SUCCESS;
+	}
+	return ANSC_STATUS_FAILURE;
+		
+}
+
+ANSC_STATUS
+CosaDmlDiSetWebPACfg
+    (
+        char*                       ParamName,
+        char*                       pValue
+    )
+{
+    char str[128];
+    char line[LINE_SIZE];
+    FILE *fd;
+	if ((fd = fopen(WEBPA_CFG, "r")) == NULL)
+	{
+		printf("WEBPA_CFG do not exist\n");
+		return ANSC_STATUS_FAILURE;
+	}
+	fclose(fd);
+	memset(str, 0, 128);
+	if (AnscEqualString(ParamName, "ServerURL", TRUE))
+	{
+		sprintf(str, "sed 's/\\(\"ServerIP\": \\).*/\\1\"%s\",/' %s > %s", pValue, WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+	if (AnscEqualString(ParamName, "ServerPort", TRUE))
+	{
+		sprintf(str, "sed 's/\\(\"ServerPort\": \\).*/\\1%s,/' %s > %s", pValue, WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+	if (AnscEqualString(ParamName, "DeviceNetworkInterface", TRUE))
+	{
+		sprintf(str, "sed 's/\\(\"DeviceNetworkInterface\": \\).*/\\1\"%s\",/' %s > %s", pValue, WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+	if (AnscEqualString(ParamName, "RetryIntervalInSec", TRUE))
+	{
+		sprintf(str, "sed 's/\\(\"RetryIntervalInSec\": \\).*/\\1%s,/' %s > %s", pValue, WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+	if (AnscEqualString(ParamName, "MaxPingWaitTimeInSec", TRUE))
+	{
+		sprintf(str, "sed 's/\\(\"MaxPingWaitTimeInSec\": \\).*/\\1%s,/' %s > %s", pValue, WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+	if (AnscEqualString(ParamName, "Enable", TRUE))
+	{
+		sprintf(str, "sed 's/\\(\"EnablePa\": \\).*/\\1\"%s\",/' %s > %s", pValue, WEBPA_CFG, TMP_WEBPA_CFG);
+		system(str);
+	}
+	memset(str, 0, 128);
+	sprintf(str, "rm -rf %s", WEBPA_CFG);
+	system(str);
+	sprintf(str, "cp %s %s", TMP_WEBPA_CFG, WEBPA_CFG);
+	system(str);
+		
+	memset(str, 0, 128);
+	sprintf(str, "rm -rf %s", TMP_WEBPA_CFG);
+	system(str);
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -567,6 +801,38 @@ CosaDmlDiGetHardware
     )
 {
     if ( platform_hal_GetHardware(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue); 
+        return ANSC_STATUS_SUCCESS;
+    }
+}
+
+ANSC_STATUS
+CosaDmlDiGetHardware_MemUsed
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+    if ( platform_hal_GetHardware_MemUsed(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue); 
+        return ANSC_STATUS_SUCCESS;
+    }
+}
+
+ANSC_STATUS
+CosaDmlDiGetHardware_MemFree
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+    if ( platform_hal_GetHardware_MemFree(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
         *pulSize = AnscSizeOfString(pValue); 
@@ -963,7 +1229,25 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
      }
      else if(AnscEqualString(ParamName, "Free", TRUE))
      {
+#ifdef _COSA_INTEL_USG_ARM_
+	if ( platform_hal_GetFreeMemorySize(&tmp) != RETURN_OK )
+        return 0;
+    	else
+        return tmp;
+#else
          return si.freeram*si.mem_unit/(1024);
+#endif
+     }
+
+
+     else if(AnscEqualString(ParamName, "Used", TRUE))
+     {
+#ifdef _COSA_INTEL_USG_ARM_
+	if ( platform_hal_GetUsedMemorySize(&tmp) != RETURN_OK )
+        return 0;
+    	else 
+        return tmp;
+#endif
      }
      else 
      {

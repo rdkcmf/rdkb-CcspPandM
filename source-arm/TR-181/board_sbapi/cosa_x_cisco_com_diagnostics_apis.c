@@ -1,22 +1,3 @@
-/*
- * If not stated otherwise in this file or this component's Licenses.txt file the
- * following copyright and licenses apply:
- *
- * Copyright 2015 RDK Management
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
 /**********************************************************************
    Copyright [2014] [Cisco Systems, Inc.]
  
@@ -160,6 +141,9 @@ CosaDmlDiagnosticsGetEntry
 #define EVT_LOG_TEMP_DIR "/tmp/asioiwoDf_evtlog" 
 #define EVT_SYSLOG_USER "local4."
 #define SYS_SYSLOG_USER "local5."
+#define MERGED_LOG_FILE "/nvram/log/mergeLog.txt"
+#define SORT_MERGE_LOG_FILE "/nvram/log/sortLog.txt"
+
 
 ANSC_STATUS
 CosaDmlDiagnosticsInit
@@ -427,12 +411,15 @@ CONTINUE:
 }
 
 static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user, size_t *bufsize){
-    struct dirent *ptr;    
+    struct dirent *ptr;
     DIR *dir;
     FILE* fd;
+    FILE* revfd;
     int count=0;
     PCOSA_DML_DIAGNOSTICS_ENTRY entry = NULL;
     char fName[64];
+    char str[128];
+    int i = 0;
 
     dir = opendir(path);
     if(dir == NULL)
@@ -441,24 +428,27 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
     while(( ptr = readdir(dir)) != NULL){
         if(ptr->d_name[0] == '.')
             continue;
-        sprintf(fName, "%s/%s", path,ptr->d_name);
-        fd = fopen(fName, "r");
-        if(fd == NULL)
-            continue;
-        if(bufsize != NULL)
-        {
-            struct stat fileinfo;
-            if(stat(fName, &fileinfo) == 0){
-                *bufsize += fileinfo.st_size;    
-            }else{
-                fclose(fd);
-                continue;
-            }
-        }
-        _getLogInfo(fd, &entry, &count, user);
-        fclose(fd);
+
+        memset(str, 0, sizeof(str));
+        sprintf(str, "cat %s/%s >> %s", path,ptr->d_name,MERGED_LOG_FILE);
+        system(str);
     }
+
+    /* Sort the logs in descending order of timestamp*/
+    memset(str, 0, sizeof(str));
+    sprintf(str, "grep ARRIS %s | sort -r -n -k4 > %s", MERGED_LOG_FILE, SORT_MERGE_LOG_FILE);
+    system(str);
+
+    fd = fopen(SORT_MERGE_LOG_FILE, "r");
+    _getLogInfo(fd, &entry, &count, user);
+    fclose(fd);
+
     closedir(dir);
+
+    memset(str, 0, sizeof(str));
+    sprintf(str, "rm -rf %s %s", MERGED_LOG_FILE, SORT_MERGE_LOG_FILE);  
+    system(str);
+
     *ppEntry = entry;
     return count;
 }
@@ -512,9 +502,10 @@ CosaDmlDiagnosticsGetEntry
     }
     
     *pulCount = _get_log(ppDiagnosticsEntry, dir, SYS_SYSLOG_USER, NULL);
-    snprintf(temp, sizeof(temp), "rm -rf %s", dir);
+    /*snprintf(temp, sizeof(temp), "rm -rf %s", dir);
     printf("%s\n",temp);
     system(temp);
+*/
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -566,9 +557,10 @@ CosaDmlDiagnosticsGetEventlog
     }
     
     *pulCount = _get_log(ppDiagnosticsEntry, dir, EVT_SYSLOG_USER, NULL);
-    snprintf(temp, sizeof(temp), "rm -rf %s", dir);
+    /*snprintf(temp, sizeof(temp), "rm -rf %s", dir);
     printf("%s\n",temp);
     system(temp);
+*/
     printf("*pulCount %d \n",*pulCount);    
     return ANSC_STATUS_SUCCESS;
 }

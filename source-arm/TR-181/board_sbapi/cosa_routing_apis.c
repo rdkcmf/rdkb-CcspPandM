@@ -1,22 +1,3 @@
-/*
- * If not stated otherwise in this file or this component's Licenses.txt file the
- * following copyright and licenses apply:
- *
- * Copyright 2015 RDK Management
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
 /**********************************************************************
    Copyright [2014] [Cisco Systems, Inc.]
  
@@ -559,7 +540,7 @@ COSA_DML_RIPD_CONF CosaDmlRIPDefaultConfig =
     /* global */
     FALSE,
     COSA_RIP_VERSION_2,
-    30,
+    5,
     180,
     120,
     1,
@@ -2695,7 +2676,8 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
         bzero(info6, sizeof(RouteInfo6_t));
 
         if (strcmp(prefix, "default") == 0)
-            snprintf(info6->prefix, sizeof(info6->prefix), "::/0");
+            //snprintf(info6->prefix, sizeof(info6->prefix), "::/0");
+			continue;
         else
             snprintf(info6->prefix, sizeof(info6->prefix), "%s", prefix);
 
@@ -2720,9 +2702,54 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 
         entryCnt++;
     }
+	pclose(fp);
+	//Fix for issue RDKB-367 
+    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table 3");
+    if ((fp = popen(cmd, "r")) == NULL)
+        return -1;
+	
+    while (fgets(line, sizeof(line), fp) != NULL)
+    {
+        if (entryCnt >= *numInfo) 
+            break;
 
+        /* first token is prefix */
+        if ((prefix = strtok_r(line, delim, &saveptr)) == NULL)
+            continue;
+
+        info6 = &infos[entryCnt];
+        bzero(info6, sizeof(RouteInfo6_t));
+
+        if (strcmp(prefix, "default") == 0) {
+            snprintf(info6->prefix, sizeof(info6->prefix), "::/0");
+	}
+        else
+            snprintf(info6->prefix, sizeof(info6->prefix), "%s", prefix);
+
+        /* record the interface */
+        snprintf(info6->interface, sizeof(info6->interface), "%s", ifname);
+
+        /* key/val pairs */
+        while ((key = strtok_r(NULL, delim, &saveptr)) != NULL
+                && (val = strtok_r(NULL, delim, &saveptr)) != NULL)
+        {
+            if (strcmp(key, "dev") == 0) /* should not appear, just put it here*/
+                snprintf(info6->interface, sizeof(info6->interface), "%s", val);
+            else if (strcmp(key, "via") == 0) 		
+                snprintf(info6->gateway, sizeof(info6->gateway), "%s", val);
+            else if (strcmp(key, "proto") == 0) 
+                snprintf(info6->proto, sizeof(info6->proto), "%s", val);
+            else if (strcmp(key, "metric") == 0) 
+                info6->metric = atoi(val);
+            
+            /* skip unneeded keys. */
+        }
+	entryCnt++;
+     }
+	pclose(fp);
+  //Fix ends
     *numInfo = entryCnt;
-    pclose(fp);
+     
     return 0;
 }
 
