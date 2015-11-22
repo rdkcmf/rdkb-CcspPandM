@@ -5,7 +5,12 @@ export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
 
 SUBSYSLOCATION="/fss/gw/usr/ccsp"
 rebootNeeded=0
+rebootNeededPAM=0
+rebootNeededPSM=0
+rebootNeededCR=0
+rebootNeededTR69=0
 FLAG_REBOOT="/var/tmp/waitingreboot"
+NEEDREBOOT="/var/tmp/processcrashed"
 
 if [ -f $SUBSYSLOCATION/cp_subsys_ert ]; then
 	Subsys="eRT."
@@ -29,25 +34,36 @@ do
 	# Checking PandM's PID
 	PAM_PID=`pidof CcspPandMSsp`
 	if [ "$PAM_PID" = "" ]; then
-		echo "RDKB_PROCESS_CRASHED : PAM_process is not running, need to reboot the unit"
+		if [ "$rebootNeededPAM" -eq 0 ]; then
+		echo "RDKB_PROCESS_CRASHED : PAM_process is not running, need to reboot the unit now"
+		rebootNeededPAM=1
 		rebootNeeded=1
+    		touch $NEEDREBOOT
+	        /fss/gw/rdklogger/backupLogs.sh
 		#/fss/gw/rdklogger/backupLogs.sh
+		fi
 	fi
 
 	# Checking PSM's PID
 	PSM_PID=`pidof PsmSsp`
 	if [ "$PSM_PID" = "" ]; then
+		if [ "$rebootNeededPSM" -eq 0 ]; then
 		echo "RDKB_PROCESS_CRASHED : PSM_process is not running, need to reboot the unit"
+		rebootNeededPSM=1
 		rebootNeeded=1
 		#/fss/gw/rdklogger/backupLogs.sh
+		fi
 	fi
 
 	# Checking CR's PID
 	CR_PID=`pidof CcspCrSsp`
 	if [ "$CR_PID" = "" ]; then
+		if [ "$rebootNeededCR" -eq 0 ]; then
 		echo "RDKB_PROCESS_CRASHED : CR_process is not running, need to reboot the unit"
 		rebootNeeded=1
+		rebootNeededCR=1
 		#/fss/gw/rdklogger/backupLogs.sh
+		fi
 	fi
 
 	
@@ -89,9 +105,12 @@ do
 	# Checking TR69's PID
 	TR69_PID=`pidof CcspTr069PaSsp`
 	if [ "$TR69_PID" = "" ]; then
+		if [ "$rebootNeededTR69" -eq 0 ]; then
 		echo "RDKB_PROCESS_CRASHED : TR69_process is not running, need to reboot the unit"
 		rebootNeeded=1
+		rebootNeededTR69=1
 		#/fss/gw/rdklogger/backupLogs.sh
+		fi
 	fi
 
 	# Checking Test adn Daignostic's PID
@@ -193,9 +212,19 @@ do
 		totalMemSys=`free | awk 'FNR == 2 {print $2}'`
 		usedMemSys=`free | awk 'FNR == 2 {print $3}'`
 		freeMemSys=`free | awk 'FNR == 2 {print $3}'`
+		
+		TotalNumOfDevicesConnected=`dmcli eRT getv Device.Hosts.HostNumberOfEntries | grep value | cut -f3  -d":" | cut -f2 -d" "`
 		echo "RDKB_SYS_MEM_INFO_SYS : Total memory in system is $totalMemSys"
 		echo "RDKB_SYS_MEM_INFO_SYS : Used memory in system is $usedMemSys"
 		echo "RDKB_SYS_MEM_INFO_SYS : Free memory in system is $freeMemSys"
+		echo "RDKB_CONNECTED_CLIENTS : Total No. of connected clients $TotalNumOfDevicesConnected"
+		
+		LOAD_AVG=`cat /proc/loadavg`
+	    echo "RDKB_LOAD_AVERAGE : Load Average is $LOAD_AVG"
+	    
+	    CPU_INFO=`mpstat | tail -1` 
+	    echo "RDKB_CPUINFO : Cpu Info is $CPU_INFO "
+	    
 		
 		
    fi

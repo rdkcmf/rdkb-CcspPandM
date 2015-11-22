@@ -152,6 +152,8 @@ int fwSync = 0;
 #define HTTPD_PID       "/var/run/lighttpd.pid"
 
 static void configBridgeMode(int bEnable);
+static int curticket   = 1; /*The thread should be run with the ticket*/
+static int totalticket = 0;
 
 #if 0
 void configWifi()
@@ -2870,11 +2872,28 @@ CosaDmlLanMngm_GetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
     return ret;
 }
 
+/*To make multi thread to exec sequentially*/
+static void  checkTicket(int ticket)
+{
+    while(1)
+    {
+        if(ticket != curticket)
+            sleep(5);
+        else
+            break;
+    }    
+}
+
 void* bridge_mode_wifi_notifier_thread(void* arg) {
-    char* enableStr = (char*)arg;
+    PCOSA_NOTIFY_WIFI pNotify = (PCOSA_NOTIFY_WIFI)arg;
+    char* enableStr = (char*)(pNotify->flag?"false" : "true");
     char*   faultParam = NULL;
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
     ANSC_STATUS ret = ANSC_STATUS_FAILURE;
+    parameterValStruct_t* theVals;
+    int numVals;
+
+    checkTicket(pNotify->ticket);
     
 #ifdef CONFIG_CISCO_FEATURE_CISCOCONNECT
     char param[50];
@@ -2897,20 +2916,76 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
     
 #endif
     
- parameterValStruct_t           val[] = { {"Device.WiFi.Radio.1.Enable", enableStr, ccsp_boolean}, {"Device.WiFi.Radio.2.Enable", enableStr, ccsp_boolean},
+    //Full bridge
+ parameterValStruct_t           val[] = { 
 #ifdef CONFIG_CISCO_FEATURE_CISCOCONNECT
  {guestnetDM, guestEnableStr, ccsp_boolean},
+#endif 
+ {"Device.WiFi.Radio.1.Enable", enableStr, ccsp_boolean}, 
+ {"Device.WiFi.Radio.2.Enable", enableStr, ccsp_boolean}
+#ifdef CONFIG_CISCO_XHS
+ ,{"Device.WiFi.SSID.3.Enable", enableStr, ccsp_boolean}
 #endif
+};
+ 
+// Pseudo bridge
+ parameterValStruct_t val2[] = { 
+ {"Device.WiFi.SSID.1.Enable", enableStr, ccsp_boolean}, 
+ {"Device.WiFi.SSID.2.Enable", enableStr, ccsp_boolean}};
+ 
+ parameterValStruct_t valCommit[] = { 
  {"Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, {"Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean} };
+ 
+            //Run the full bridge radio disable params only on router and full bridge transitions
+            if (!pNotify->flag || pNotify->flag != 3) {
+                ret = CcspBaseIf_setParameterValues
+                                (
+                                        bus_handle, 
+                                        ppComponents[0]->componentName, 
+                                        ppComponents[0]->dbusPath,
+                                        0, 0x0,   /* session id and write id */
+                                        val, 
+                                        sizeof(val)/sizeof(*val), 
+                                        TRUE,   /* no commit */
+                                        &faultParam
+                                );      
+                        
+                if (ret != CCSP_SUCCESS && faultParam)
+                {
+                    AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
+                    bus_info->freefunc(faultParam);
+                }  
+            }
             
+            //Run the pseudo bridge ssid disable params only on router and pseudofs bridge transitions
+            if (!pNotify->flag || pNotify->flag == 3) {
+                ret = CcspBaseIf_setParameterValues
+                                (
+                                        bus_handle, 
+                                        ppComponents[0]->componentName, 
+                                        ppComponents[0]->dbusPath,
+                                        0, 0x0,   /* session id and write id */
+                                        val2, 
+                                        sizeof(val2)/sizeof(*val2), 
+                                        TRUE,   /* no commit */
+                                        &faultParam
+                                );      
+                        
+                if (ret != CCSP_SUCCESS && faultParam)
+                {
+                    AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
+                    bus_info->freefunc(faultParam);
+                }  
+            }
+        
         ret = CcspBaseIf_setParameterValues
                         (
                                 bus_handle, 
                                 ppComponents[0]->componentName, 
                                 ppComponents[0]->dbusPath,
                                 0, 0x0,   /* session id and write id */
-                                val, 
-                                sizeof(val)/sizeof(val[0]), 
+                                valCommit, 
+                                2, 
                                 TRUE,   /* no commit */
                                 &faultParam
                         );      
@@ -2919,7 +2994,9 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
         {
             AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
             bus_info->freefunc(faultParam);
-        }   
+        } 
+        curticket++;
+        AnscFreeMemory(arg);
         return NULL;
 }
 
@@ -3126,9 +3203,13 @@ static void configBridgeMode(int bEnable) {
     char primaryl2inst[5];
         char primarybrp[5];
         char brpdm[50];
+        char brmode[5];
+        PCOSA_NOTIFY_WIFI pnotifypara = (PCOSA_NOTIFY_WIFI)AnscAllocateMemory(sizeof(pnotifypara));
+        
+        memset(pnotifypara, 0, sizeof(*pnotifypara));
         commonSyseventGet("primary_lan_l2net", primaryl2inst, sizeof(primaryl2inst));
         commonSyseventGet("primary_lan_brport", primarybrp, sizeof(primaryl2inst));
-        
+        commonSyseventGet("bridge_mode", brmode, sizeof(brmode));
         snprintf(brpdm, sizeof(brpdm), "Device.Bridging.Bridge.%s.Port.%s.Enable", primaryl2inst, primarybrp);
 //         varstruct.parameterName = brpdm;
 //         varstruct.parameterValue = enableStr;
@@ -3141,8 +3222,10 @@ static void configBridgeMode(int bEnable) {
             syslog_systemlog("Local Network", LOG_NOTICE, "Bridge mode transition: Failed to acquire wifi component.");
             return ANSC_STATUS_SUCCESS;
         }
-            
-        AnscCreateTask(bridge_mode_wifi_notifier_thread, USER_DEFAULT_TASK_STACK_SIZE, USER_DEFAULT_TASK_PRIORITY, (void*)(bEnable ? "false" : "true"), "BridgeModeWifiNotifierThread");
+        totalticket += 1;
+        pnotifypara->flag = brmode[0] == '3' ? 3 : bEnable;
+        pnotifypara->ticket = totalticket;
+        AnscCreateTask(bridge_mode_wifi_notifier_thread, USER_DEFAULT_TASK_STACK_SIZE, USER_DEFAULT_TASK_PRIORITY, (void *)pnotifypara, "BridgeModeWifiNotifierThread");
 }
 
 ANSC_STATUS
