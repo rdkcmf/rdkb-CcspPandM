@@ -1,22 +1,3 @@
-/*
- * If not stated otherwise in this file or this component's Licenses.txt file the
- * following copyright and licenses apply:
- *
- * Copyright 2015 RDK Management
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
 /**********************************************************************
    Copyright [2014] [Cisco Systems, Inc.]
  
@@ -1632,7 +1613,7 @@ CosaDmlNatGetDmz
         if (strlen(pDmz->dest_ipv6)){
             AnscCopyString(pDmlDmz->IPv6Host, pDmz->dest_ipv6);
         }else{
-            AnscCopyString(pDmlDmz->IPv6Host, "x");
+            AnscCopyString(pDmlDmz->IPv6Host, "0.0.0.0.0.0.0.0");
         }
 
         //AnscFreeMemory(pInternalIPStr);
@@ -3167,7 +3148,8 @@ BOOL CosaDmlNatChkPortMappingClient(ULONG client)
     if((client != ipaddr) &&
         !IPv4Addr_IsBroadcast(client, ipaddr, netmask) &&
         !IPv4Addr_IsNetworkAddr(client, ipaddr, netmask) &&
-        IPv4Addr_IsSameNetwork(client, ipaddr, netmask) )
+        //zqiu
+	(IPv4Addr_IsSameNetwork(client, ipaddr, netmask) || IPv4Addr_IsSameNetwork(client, 0xac100c00, 0xffffff00)))
         ret =  TRUE; 
 #ifdef CONFIG_CISCO_HOME_SECURITY 
     else if(_Check_HS_PF_client(client) == TRUE)

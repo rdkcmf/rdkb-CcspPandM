@@ -1,22 +1,3 @@
-/*
- * If not stated otherwise in this file or this component's Licenses.txt file the
- * following copyright and licenses apply:
- *
- * Copyright 2015 RDK Management
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
 /**********************************************************************
    Copyright [2014] [Cisco Systems, Inc.]
  
@@ -172,6 +153,47 @@ int fwSync = 0;
 
 static void configBridgeMode(int bEnable);
 
+#if 0
+void configWifi()
+{
+	     sleep(2);
+             CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+              componentStruct_t **        ppComponents = NULL;
+	      char* faultParam = NULL;
+	      int size =0;
+	      int ret;
+	snprintf(dst_pathname_cr, sizeof(dst_pathname_cr), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+	    ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
+                dst_pathname_cr,
+                "Device.DeviceInfo.X_RDKCENTRAL-COM_ConfigureWiFi",
+                g_Subsystem,        /* prefix */
+                &ppComponents,
+                &size);
+	   if ( ret != CCSP_SUCCESS )	
+		return ANSC_STATUS_FAILURE;
+
+parameterValStruct_t                value = { "Device.DeviceInfo.X_RDKCENTRAL-COM_ConfigureWiFi", "true", ccsp_boolean};
+            ret = CcspBaseIf_setParameterValues
+                                (
+                                        bus_handle,
+                                        ppComponents[0]->componentName,
+                                        ppComponents[0]->dbusPath,
+                                        0, 0x0,   /* session id and write id */
+                                        &value,
+                                        1,
+                                        TRUE,   /* no commit */
+                                        &faultParam
+                                );
+
+                if (ret != CCSP_SUCCESS && faultParam)
+                {
+                    AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
+                    bus_info->freefunc(faultParam);
+                }
+
+}
+
+#endif
 static int initWifiComp() {
     int size =0 ,ret;
     snprintf(dst_pathname_cr, sizeof(dst_pathname_cr), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
@@ -616,6 +638,20 @@ CosaDmlDcGetWanStaticIPAddress
     return ANSC_STATUS_SUCCESS;
 }
 
+ANSC_STATUS 
+CosaDmlDcSetReInitCmMac ()
+{
+
+    if(cm_hal_ReinitMac() == 0)
+    {
+       return ANSC_STATUS_SUCCESS;
+    }
+    else
+    {
+       return ANSC_STATUS_FAILURE;
+    }
+    
+}
 ANSC_STATUS
 CosaDmlDcGetWanStaticSubnetMask
     (
@@ -1219,6 +1255,87 @@ CosaDmlDcSetDeviceConfigIgnore
     return ANSC_STATUS_SUCCESS;
 }
 
+static ANSC_STATUS
+CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
+{
+	CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+	fprintf(stderr, "WiFi is going to reboot\n");
+	pthread_detach(pthread_self());
+	CcspTraceWarning(("RebootDevice:WiFi is going to reboot now\n"));
+	int                         ret;
+	int                         size = 0;
+	componentStruct_t **        ppComponents = NULL;
+	char*   faultParam = NULL;
+
+	sprintf(dst_pathname_cr, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+
+	ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
+		    dst_pathname_cr,
+//		    "Device.WiFi.Radio.",
+                    "Device.WiFi.",
+		    g_Subsystem,        /* prefix */
+		    &ppComponents,
+		    &size);
+
+	if ( ret == CCSP_SUCCESS && size == 1)
+	{
+//	    parameterValStruct_t val[2] = { { "Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, 
+//				            { "Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean} };
+            parameterValStruct_t val[1] = { { "Device.WiFi.X_CISCO_COM_ResetRadios", "true", ccsp_boolean}};
+ 
+	    ret = CcspBaseIf_setParameterValues
+				(
+					bus_handle, 
+					ppComponents[0]->componentName, 
+					ppComponents[0]->dbusPath,
+					0, 0x0,   /* session id and write id */
+					&val, 
+//					2,
+                                        1, 
+					TRUE,   /* no commit */
+					&faultParam
+				);	
+
+		if (ret != CCSP_SUCCESS && faultParam)
+		{
+		    CcspTraceError(("RebootDevice:%s Failed to SetValue for param '%s'\n",__FUNCTION__,faultParam));
+		    bus_info->freefunc(faultParam);
+		} else {
+
+			char buf[7] = {0};
+			int wifiresetcount = 0;
+			syscfg_get( NULL, "wifi_reset_count", buf, sizeof(buf));
+			wifiresetcount = atoi(buf);
+			wifiresetcount++;
+			memset(buf,0,sizeof(buf));
+			snprintf(buf,sizeof(buf),"%d",wifiresetcount);
+			syscfg_set(NULL, "wifi_reset_count", buf);
+
+			FILE *fp = NULL;
+			memset(buf,0,sizeof(buf));
+			sprintf(buf, "date");
+			char buffer[50] = {0};
+			memset(buffer,0,sizeof(buffer));
+			fp = popen(buf, "r");
+			if( fp != NULL) {         
+			while(fgets(buffer, sizeof(buffer), fp)!=NULL){
+				buffer[strlen(buffer) - 1] = '\0';
+				syscfg_set(NULL, "latest_wifi_reset_time", buffer);
+			}
+				pclose(fp);
+			}
+
+			if (syscfg_commit() != 0) 
+			{
+				CcspTraceWarning(("syscfg_commit failed\n"));
+			}
+		    CcspTraceWarning(("WIFI_RESET_COUNT : %d Time : %s  \n",wifiresetcount,buffer));
+		}
+	    free_componentStruct_t(bus_handle, size, ppComponents);
+	}
+	return ANSC_STATUS_SUCCESS;
+}
+
 ANSC_STATUS
 CosaDmlDcSetRebootDevice
     (
@@ -1261,73 +1378,75 @@ CosaDmlDcSetRebootDevice
     }
 
     if (all) {
+
+		char buf[7] = {0};
+		int rebootcount = 0;
+    	syscfg_get( NULL, "reboot_count", buf, sizeof(buf));
+		rebootcount = atoi(buf);
+		rebootcount++;
+		memset(buf,0,sizeof(buf));
+		snprintf(buf,sizeof(buf),"%d",rebootcount);
+     	syscfg_set(NULL, "reboot_count", buf);
+
+		FILE *fp = NULL;
+		memset(buf,0,sizeof(buf));
+		sprintf(buf, "date");
+		char buffer[50] = {0};
+		memset(buffer,0,sizeof(buffer));
+        fp = popen(buf, "r");
+		if( fp != NULL) {         
+		    while(fgets(buffer, sizeof(buffer), fp)!=NULL){
+			    buffer[strlen(buffer) - 1] = '\0';
+				syscfg_set(NULL, "latest_reboot_time", buffer);
+			}
+			pclose(fp);
+		}
+		if (syscfg_commit() != 0) 
+		{
+			CcspTraceWarning(("syscfg_commit failed\n"));
+		}
+		
+		CcspTraceWarning(("REBOOT_COUNT : %d Time : %s  \n",rebootcount,buffer));
+
         if(delay) {
             if(delay_time)
             {
-                fprintf(stderr, "Device is going to reboot in %d seconds\n", delay_time);
-                char cmd[100] = {0};
-                sprintf(cmd, "(sleep %d && reboot) &", delay_time);
-                system(cmd);
-            }
-            else
+            	fprintf(stderr, "Device is going to reboot in %d seconds\n", delay_time);
+		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
+            	//system("(sleep 5 && reboot) &");
+            	sleep (delay_time);
+            	system("/fss/gw/rdklogger/backupLogs.sh");
+        	}
+        	else
             {
                 fprintf(stderr, "Device is going to reboot in 5 seconds\n");
-                system("(sleep 5 && reboot) &");
-            }            
-        }
-        else {
-            fprintf(stderr, "Device is going to reboot now\n");
-            system("reboot");
-        }
+		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
+                //system("(sleep 5 && reboot) &");
+				sleep(5);
+				system("/fss/gw/rdklogger/backupLogs.sh");
+            }
+		}
+		else {
+	        fprintf(stderr, "Device is going to reboot now\n");
+			CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
+	         //system("reboot");
+	         system("/fss/gw/rdklogger/backupLogs.sh");
+	    }
     }
 
     if (router) {
         fprintf(stderr, "Router is going to reboot\n");
+		CcspTraceWarning(("RebootDevice:Router is going to reboot\n"));
         system("sysevent set lan-stop");
         system("sysevent set forwarding-restart"); 
     }
+
     if (wifi) {
-        fprintf(stderr, "WiFi is going to reboot\n");
-        int                         ret;
-        int                         size = 0;
-        componentStruct_t **        ppComponents = NULL;
-        char*   faultParam = NULL;
-        
-        sprintf(dst_pathname_cr, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
-
-        ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
-                    dst_pathname_cr,
-                    "Device.WiFi.Radio.",
-                    g_Subsystem,        /* prefix */
-                    &ppComponents,
-                    &size);
-
-        if ( ret == CCSP_SUCCESS && size == 1)
-        {
-            parameterValStruct_t val[2] = { { "Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, 
-                                            { "Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean} };
-            
-            ret = CcspBaseIf_setParameterValues
-				(
-					bus_handle, 
-					ppComponents[0]->componentName, 
-					ppComponents[0]->dbusPath,
-					0, 0x0,   /* session id and write id */
-					&val, 
-					2, 
-					TRUE,   /* no commit */
-					&faultParam
-				);	
-                
-                if (ret != CCSP_SUCCESS && faultParam)
-                {
-                    AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
-                    bus_info->freefunc(faultParam);
-                }
-
-            free_componentStruct_t(bus_handle, size, ppComponents);
-        }
+        pthread_t tid;
+	CcspTraceWarning(("RebootDevice:CosaDmlDcRebootWifi thread called to reboot WiFi\n"));
+   	pthread_create(&tid, NULL, &CosaDmlDcRebootWifi, NULL);
     }
+    
     if (voip) {
         fprintf(stderr, "VoIP is going to reboot\n");
         // TODO: 
@@ -1395,13 +1514,16 @@ CosaDmlDcSetFactoryReset
 	}
 
 	if (!factory_reset_mask)
+	    {
+	   	CcspTraceError(("FactoryReset:%s BAD parameter passed to factory defaults parameter ...\n",__FUNCTION__));
 		return ANSC_STATUS_BAD_PARAMETER;
+	    }
 
     if (factory_reset_mask & FR_FW) {
         int rc = -1;
         UtopiaContext ctx;
         firewall_t fw;
-
+   		CcspTraceWarning(("FactoryReset:%s Resetting Firewall to factory defaults ...\n",__FUNCTION__));
         fwSync = 1; //inform middle layer to get data from backend not cache
 
         if (!Utopia_Init(&ctx))
@@ -1430,30 +1552,42 @@ CosaDmlDcSetFactoryReset
     }
 
 	if (factory_reset_mask & FR_OTHER ) {
+   		CcspTraceWarning(("FactoryReset:%s Restoring all the DBs to factory defaults  ...\n",__FUNCTION__));
+        system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
+		system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
 		system("restoreAllDBs"); //Perform factory reset on other components
 	}
 
 	if (factory_reset_mask & FR_ROUTER) {
+   		CcspTraceWarning(("FactoryReset:%s Restoring router to factory defaults  ...\n",__FUNCTION__));
 		tok = FACTORY_RESET_ROUTER_VALUE;
 		if (!Utopia_Init(&utctx))
+		{
+        		CcspTraceWarning(("FactoryReset: Error in initializing context during router factory reset!!! \n" ));
 			return ANSC_STATUS_FAILURE;              
-			
+		}
+	
 		if(!Utopia_RawSet(&utctx, NULL, FACTORY_RESET_KEY, tok)) {
 			Utopia_Free(&utctx,0);
+      		CcspTraceWarning(("FactoryReset: Error in setting FACTORY_RESET_KEY!!! \n" ));
 			return ANSC_STATUS_FAILURE;
 		}
 		
 		Utopia_Free(&utctx,1);
-		system("reboot");
+		//system("reboot");
+		system("/fss/gw/rdklogger/backupLogs.sh");
 	} else if (factory_reset_mask & FR_WIFI) {
 		/*TODO: SEND EVENT TO WIFI PAM  Device.WiFi.X_CISCO_COM_FactoryReset*/
         int                         ret;
         char* faultParam = NULL;
 
-        
+      	CcspTraceWarning(("FactoryReset:%s Restoring WiFi to factory defaults  ...\n",__FUNCTION__));     
             if (ppComponents == NULL && initWifiComp())
-                return ANSC_STATUS_FAILURE;
-            
+		{
+    		  	CcspTraceError(("FactoryReset:%s Restoring WiFi to factory defaults returned error  ...\n",__FUNCTION__));     
+			
+                	return ANSC_STATUS_FAILURE;
+            	}
             parameterValStruct_t		val = { "Device.WiFi.X_CISCO_COM_FactoryReset", "true", ccsp_boolean};
             
             ret = CcspBaseIf_setParameterValues
@@ -1470,10 +1604,33 @@ CosaDmlDcSetFactoryReset
                 
                 if (ret != CCSP_SUCCESS && faultParam)
                 {
-                    AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
+					CcspTraceError(("FactoryReset:%s SettingX_CISCO_COM_FactoryReset returned error for param '%s'  ...\n",__FUNCTION__,faultParam));  
                     bus_info->freefunc(faultParam);
                 }
 
+#if 0
+		FILE *fp;
+		char command[30];
+
+		 memset(command,0,sizeof(command));
+		sprintf(command, "ls /tmp/*walledgarden*");
+		char buffer[50];
+		 memset(buffer,0,sizeof(buffer));
+                if(!(fp = popen(command, "r"))){
+                           exit(1);
+                    }
+	        while(fgets(buffer, sizeof(buffer), fp)!=NULL){
+		        buffer[strlen(buffer) - 1] = '\0';
+    }
+
+if ( strlen(buffer) == 0 )
+{
+		pthread_t captive;
+		pthread_create(&captive, NULL, &configWifi, NULL);
+
+}
+pclose(fp);
+#endif
 //            free_componentStruct_t(bus_handle, size, ppComponents);
             return  ANSC_STATUS_SUCCESS;
         
@@ -1883,6 +2040,18 @@ CosaDmlDcGetTelnetEnable
         BOOLEAN                     *pFlag
     )
 {
+    char buf[5];
+    //printf("Got value mgmt_wan_telnetaccess = %d\n", *pFlag);
+    syscfg_get( NULL, "mgmt_wan_telnetaccess", buf, sizeof(buf));
+    if( buf != NULL )
+    {
+        //printf("%s buf = %s\n", __FUNCTION__, buf);
+        if (strcmp(buf,"1") == 0)
+            *pFlag = 1;
+        else
+            *pFlag = 0;
+    }
+ 
     if (platform_hal_GetTelnetEnable(pFlag) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else
@@ -1896,6 +2065,15 @@ CosaDmlDcGetSSHEnable
         BOOLEAN                     *pFlag
     )
 {
+    char buf[5];
+    syscfg_get( NULL, "mgmt_wan_sshaccess", buf, sizeof(buf));
+    if( buf != NULL )
+    {
+        if (strcmp(buf,"1") == 0) 
+            *pFlag = 1;
+        else
+            *pFlag = 0;
+    }
     if (platform_hal_GetSSHEnable(pFlag) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else
@@ -1920,14 +2098,21 @@ CosaDmlDcSetTelnetEnable
         BOOLEAN                     flag
     )
 {
+    char buf[5];
     BOOLEAN bTelnetEnable;
-
+    printf("%s \n", __FUNCTION__);
+    //printf("%s got flag = %d\n", __FUNCTION__, flag);
     if (CosaDmlDcGetTelnetEnable(NULL, &bTelnetEnable) == ANSC_STATUS_FAILURE)
         return ANSC_STATUS_FAILURE;
 
     if (flag != bTelnetEnable) {
+        snprintf(buf,sizeof(buf),"%d",flag);
+        syscfg_set( NULL, "mgmt_wan_telnetaccess", buf);
+        syscfg_commit();
+        system("sysevent set firewall-restart");
+
         if (platform_hal_SetTelnetEnable(flag) == RETURN_ERR )
-            return ANSC_STATUS_FAILURE;
+            return ANSC_STATUS_SUCCESS;
     }
     return ANSC_STATUS_SUCCESS;
 
@@ -1940,12 +2125,17 @@ CosaDmlDcSetSSHEnable
         BOOLEAN                     flag
     )
 {
+    char buf[5];
     BOOLEAN bSSHEnable;
 
     if (CosaDmlDcGetSSHEnable(NULL, &bSSHEnable) == ANSC_STATUS_FAILURE)
             return ANSC_STATUS_FAILURE;
 
     if (flag != bSSHEnable) {
+        snprintf(buf,sizeof(buf),"%d",flag);
+        syscfg_set( NULL, "mgmt_wan_sshaccess", buf);
+        syscfg_commit();
+        system("sysevent set firewall-restart");
         if (platform_hal_SetSSHEnable(flag) == RETURN_ERR )
             return ANSC_STATUS_FAILURE;
     }   
@@ -2819,7 +3009,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
             bEnable = 1;
         }
         
-        configBridgeMode(bEnable);
+        //configBridgeMode(bEnable);
         
         ret = ANSC_STATUS_SUCCESS;
     }

@@ -38,6 +38,57 @@ AC_PROG_INSTALL
 AM_PROG_CC_C_O
 AM_PROG_LIBTOOL(libtool)
 
+# Specify ccsp cpu arch
+
+AC_ARG_WITH([ccsp-arch],
+[AC_HELP_STRING([--with-ccsp-arch={arm,atom,pc}],
+                [specify the ccsp board CPU platform])],
+[case x"$withval" in
+   xarm)
+     CCSP_ARCH=arm
+     ;;
+   xatom)
+     CCSP_ARCH=atom
+     ;;
+   xpc)
+     CCSP_ARCH=pc
+     ;;
+   *)
+     AC_MSG_ERROR([$withval is an invalid option to --with-ccsp-arch])
+     ;;
+ esac],
+[CCSP_ARCH=''])
+if test x"${CCSP_ARCH}" != x; then
+  AC_DEFINE_UNQUOTED(CCSP_ARCH, "$CCSP_ARCH",
+                     [The board CPU architecture])
+fi
+
+AM_CONDITIONAL(CCSP_ARCH_ARM, test "x$CCSP_ARCH" = xarm)
+AM_CONDITIONAL(CCSP_ARCH_ATOM, test "x$CCSP_ARCH" = xatom)
+AM_CONDITIONAL(CCSP_ARCH_PC, test "x$CCSP_ARCH" = xpc)
+
+# Specify ccsp platform (device)
+
+AC_ARG_WITH([ccsp-platform],
+[AC_HELP_STRING([--with-ccsp-platform={intel_usg,pc}],
+                [specify the ccsp platform])],
+[case x"$withval" in
+   xintel_usg)
+     CCSP_PLATFORM=intel_usg
+     ;;
+   xpc)
+     CCSP_PLATFORM=pc
+     ;;
+   *)
+     AC_MSG_ERROR([$withval is an invalid option to --with-ccsp-platform])
+     ;;
+ esac],
+[CCSP_PLATFORM=''])
+if test x"${CCSP_PLATFORM}" != x; then
+  AC_DEFINE_UNQUOTED(CCSP_PLATFORM, "$CCSP_PLATFORM",
+                     [The CCSP platform device])
+fi
+
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
 
@@ -48,7 +99,19 @@ AC_C_INLINE
 # Checks for library functions.
 AC_FUNC_MALLOC
 
+AC_SUBST(CCSP_ARCH)
+
 AC_CONFIG_FILES(
+	custom/Makefile
+	custom/comcast/Makefile
+	custom/comcast/source/Makefile
+	custom/comcast/source/TR-181/Makefile
+	custom/comcast/source/TR-181/custom_ml/Makefile
+	custom/comcast/source/TR-181/custom_sbapi/Makefile
+	source-arm/TR-181/board_sbapi/Makefile
+	source-arm/TR-181/board_ml/Makefile
+	source-arm/TR-181/Makefile
+	source-arm/Makefile
 	source-pc/TR-181/board_sbapi/Makefile
 	source-pc/TR-181/Makefile
 	source-pc/Makefile

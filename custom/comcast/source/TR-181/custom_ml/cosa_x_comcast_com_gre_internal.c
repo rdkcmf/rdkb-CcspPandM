@@ -58,7 +58,7 @@
 
 #ifdef CONFIG_CISCO_HOTSPOT
 #include "plugin_main_apis.h"
-#include "cosa_x_comcast-com_gre_internal.h"
+#include "cosa_x_comcast_com_gre_internal.h"
 
 extern void* g_pDslhDmlAgent;
 

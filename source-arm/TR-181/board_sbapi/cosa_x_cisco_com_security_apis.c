@@ -1,22 +1,3 @@
-/*
- * If not stated otherwise in this file or this component's Licenses.txt file the
- * following copyright and licenses apply:
- *
- * Copyright 2015 RDK Management
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
 /**********************************************************************
    Copyright [2014] [Cisco Systems, Inc.]
  
@@ -5111,6 +5092,8 @@ CosaDmlIaPolicySetBlockedApp
 #define FIREWALL_LOG_DIR "/tmp/098ujsadf_firewall"
 #define GEN_CURRENT_LOG_CMD "/fss/gw/usr/sbin/GenFWLog "
 //#define GEN_CURRENT_LOG_CMD "/var/GenFWLog -nz"
+#define MERGED_FW_LOG_FILE "/nvram/log/mergeLog.txt"
+#define SORT_FW_LOG_FILE "/nvram/log/sortLog.txt"
 #define MAX_LOG_ENTRY_COUNT 500
 const char format[4][20] = { "Count=\"", "Time=\"", "Action=\"", "Desp=\""};
 
@@ -5138,7 +5121,7 @@ int _get_value(char **line, int index, char *val, size_t val_size){
 int anlz_line(char *line, PCOSA_DML_IA_LOG_ENTRY entry){
     int i;
     char *pos = line;
-    char tmp[20];
+    char tmp[20]={0};
 
     memset(entry, 0, sizeof(COSA_DML_IA_LOG_ENTRY)); 
     if( 0 >= _get_value(&pos, 0, tmp, sizeof(tmp)) || \
@@ -5147,6 +5130,8 @@ int anlz_line(char *line, PCOSA_DML_IA_LOG_ENTRY entry){
         0 >= _get_value(&pos, 3, entry->Description, sizeof(entry->Description))){
         return -1;
     }
+	//No of attempts
+	entry->Count = atoi(tmp);
     return 0;
 }
 
@@ -5198,7 +5183,7 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
     struct dirent *ptr;    
     DIR *dir;
     PCOSA_DML_IA_LOG_ENTRY entry = NULL;
-    char fName[64];
+    char str[128];
 
     *count = 0;
 
@@ -5209,8 +5194,17 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
     while(( ptr = readdir(dir)) != NULL){
         if(ptr->d_name[0] == '.')
             continue;
-        sprintf(fName, "%s/%s", FIREWALL_LOG_DIR,ptr->d_name);
+        //sprintf(fName, "%s/%s", FIREWALL_LOG_DIR,ptr->d_name);
 
+        memset(str, 0, sizeof(str));
+        sprintf(str, "cat %s/%s >> %s", FIREWALL_LOG_DIR,ptr->d_name,MERGED_FW_LOG_FILE);
+        system(str);
+    }
+
+    /* Sort the logs in descending order of timestamp*/
+    memset(str, 0, sizeof(str));
+    sprintf(str, "grep Time %s | sort -r -k2,5 > %s", MERGED_FW_LOG_FILE, SORT_FW_LOG_FILE);
+    system(str);
         /* Check log time format */
 		/* Old timestemp not include year, 
  		 * add year to support it */
@@ -5226,7 +5220,7 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
         ptime=localtime(&t);
         year[0] = '\0';
 #endif
-        get_log_entry(fName, &entry, count);
+        get_log_entry(SORT_FW_LOG_FILE, &entry, count);
 
 #ifdef FWLOG_SUPPORT_OLD_TIME_FORMAT
         for(;tmp < *count; tmp++)
@@ -5244,7 +5238,10 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
             }   
         }
 #endif
-    }
+    memset(str, 0, sizeof(str));
+    sprintf(str, "rm -rf %s %s", MERGED_FW_LOG_FILE, SORT_FW_LOG_FILE);  
+    system(str);
+
     closedir(dir);
     return entry;
 }
@@ -5402,6 +5399,8 @@ CosaDmlIaGetALLLogEntries
     static int first_flg = 1;
     int i;
     size_t tmpsize=0;
+    char str[128];
+
     /* Don't get the log when initializing */
     if(__is_updated(&FWLogLastTick)){
         fw_log_path[0] = '\0';

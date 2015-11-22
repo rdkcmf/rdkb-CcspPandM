@@ -1,22 +1,3 @@
-/*
- * If not stated otherwise in this file or this component's Licenses.txt file the
- * following copyright and licenses apply:
- *
- * Copyright 2015 RDK Management
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
 /**********************************************************************
    Copyright [2014] [Cisco Systems, Inc.]
  
@@ -613,6 +594,8 @@ static int _get_datetime_lfts(char * p_pref_datetime, int len1,  char * p_valid_
     /*this is a SLAAC address from RA*/
     char cmd[256] = {0};
     int  valid_lft = 0, prefered_lft = 0;
+    char iana_pretm[32] = {0};
+    char iana_vldtm[32] = {0};
 
     /*it's hard to use iproute2 C code to obtain 2 lifetimes, here call "ip" directly*/
     sprintf(cmd, "ip -6 addr show dev %s > %s", g_ipif_names[ulIndex], TMP_IP_OUTPUT);
@@ -621,6 +604,12 @@ static int _get_datetime_lfts(char * p_pref_datetime, int len1,  char * p_valid_
     _get_2_lfts(TMP_IP_OUTPUT, &valid_lft, &prefered_lft, p_v6addr);
     _get_datetime_offset(valid_lft, p_valid_datetime, len1);
     _get_datetime_offset(prefered_lft, p_pref_datetime, len2);
+
+    sprintf(iana_pretm,"%d",prefered_lft);
+    sprintf(iana_vldtm,"%d",valid_lft);
+
+    commonSyseventSet(COSA_DML_DHCPV6C_ADDR_PRETM_SYSEVENT_NAME, iana_pretm);
+    commonSyseventSet(COSA_DML_DHCPV6C_ADDR_VLDTM_SYSEVENT_NAME, iana_vldtm);
 
     return 0;
 }
@@ -838,7 +827,7 @@ IPIF_getEntry_for_Ipv6Addr
                    else
                         g_ipif_be_bufs[ulIndex].Info.iana_t2  = 0;
 
-                   if (!commonSyseventGet(COSA_DML_DHCPV6C_ADDR_PRETM_SYSEVENT_NAME, out, sizeof(out)) )
+                   /*if (!commonSyseventGet(COSA_DML_DHCPV6C_ADDR_PRETM_SYSEVENT_NAME, out, sizeof(out)) )
                         p_dml_v6addr->iana_pretm = atoi(out);
                    else
                         p_dml_v6addr->iana_pretm = 0;
@@ -846,7 +835,7 @@ IPIF_getEntry_for_Ipv6Addr
                    if (!commonSyseventGet(COSA_DML_DHCPV6C_ADDR_VLDTM_SYSEVENT_NAME, out, sizeof(out)) )
                         p_dml_v6addr->iana_vldtm = atoi(out);
                    else
-                        p_dml_v6addr->iana_vldtm = 0;
+                        p_dml_v6addr->iana_vldtm = 0;*/
 
                }
             }
@@ -909,6 +898,22 @@ IPIF_getEntry_for_Ipv6Addr
                                (char *)p_dml_v6addr->ValidLifetime, sizeof(p_dml_v6addr->ValidLifetime),
                                p_v6addr, ulIndex);
         }
+	
+	    if ( _ansc_strstr(g_ipif_names[ulIndex], "erouter0" )  ) {
+		if (!commonSyseventGet(COSA_DML_DHCPV6C_ADDR_PRETM_SYSEVENT_NAME, out, sizeof(out)) ) {
+			p_dml_v6addr->iana_pretm = atoi(out);
+		}
+		else {
+			p_dml_v6addr->iana_pretm = 0;
+		}
+
+		if (!commonSyseventGet(COSA_DML_DHCPV6C_ADDR_VLDTM_SYSEVENT_NAME, out, sizeof(out)) ) {
+			p_dml_v6addr->iana_vldtm = atoi(out);
+		}
+		else {
+			p_dml_v6addr->iana_vldtm = 0;
+		}
+	  }
 
         p_dml_v6addr->bAnycast = FALSE;
 

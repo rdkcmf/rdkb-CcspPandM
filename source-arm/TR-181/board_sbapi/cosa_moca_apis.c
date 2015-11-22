@@ -1,22 +1,3 @@
-/*
- * If not stated otherwise in this file or this component's Licenses.txt file the
- * following copyright and licenses apply:
- *
- * Copyright 2015 RDK Management
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
 /**********************************************************************
    Copyright [2014] [Cisco Systems, Inc.]
  
@@ -271,6 +252,20 @@ COSA_DML_MOCA_PEER  g_MoCAPeer[2] =
         }
     };
 
+COSA_DML_MOCA_MESH  g_MoCAMesh[2] = 
+    {
+        {
+        .TxNodeID=6602,
+        .RxNodeID=6601,
+        .TxRate=6001
+        },
+        {
+        .TxNodeID=6609,
+        .RxNodeID=6608,
+        .TxRate=6002
+        }
+    };
+
 COSA_DML_MOCA_FLOW  g_MoCAFlow[2] = 
     {
         {
@@ -297,12 +292,13 @@ COSA_DML_MOCA_FLOW  g_MoCAFlow[2] =
         }
     };
 
-#define JUDGE_MOCA_HARDWARE_AVAILABLE(RET) \
-    if (CosaDmlGetMocaHardwareStatus() != 1 ) { \
-        CcspTraceWarning(("%s -- Moca hardware is not available.\n")); \
-        return RET; \
-    }; \
+static int is_moca_available = 0;
 
+#define JUDGE_MOCA_HARDWARE_AVAILABLE(RET) \
+    if (!is_moca_available) { \
+        CcspTraceWarning((" -- Moca hardware is not available.\n")); \
+        return RET; \
+    }; 
 
 ANSC_STATUS
 CosaDmlMocaInit
@@ -313,7 +309,12 @@ CosaDmlMocaInit
 {
     PCOSA_DATAMODEL_MOCA  pMyObject    = (PCOSA_DATAMODEL_MOCA)phContext;
 
-    JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_SUCCESS)
+    if (CosaDmlGetMocaHardwareStatus() != 1 ) { 
+        CcspTraceWarning(("%s -- Moca hardware is not available.\n")); 
+        return ANSC_STATUS_FAILURE; 
+    } else {
+        is_moca_available = 1;
+    }
 
     AnscTraceWarning(("CosaDmlMocaInit -- \n"));
 
@@ -378,9 +379,6 @@ CosaDmlMocaIfGetEntry
     )
 {
     JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
-	moca_static_info_t mocaSInfo;
-
-	memset(&mocaSInfo, 0, sizeof(moca_static_info_t));
 
     AnscTraceWarning(("CosaDmlMocaIfGetEntry -- ulInterfaceIndex:%lu.\n", ulInterfaceIndex));
 
@@ -397,25 +395,9 @@ CosaDmlMocaIfGetEntry
     {
         CosaDmlMocaIfGetCfg(hContext, ulInterfaceIndex, &pEntry->Cfg);
         CosaDmlMocaIfGetDinfo(hContext, ulInterfaceIndex, &pEntry->DynamicInfo);
-        moca_IfGetStaticInfo(ulInterfaceIndex, &mocaSInfo);
-        //moca_IfGetStaticInfo(ulInterfaceIndex, &pEntry->StaticInfo);
-
-		/* Translate the Data Structures */
-		memcpy(pEntry->StaticInfo.Name, 				  mocaSInfo.Name, 64);
-		pEntry->StaticInfo.bUpstream 					= FALSE;
-		memcpy(pEntry->StaticInfo.MacAddress, 			  mocaSInfo.MacAddress, 18);
-		memcpy(pEntry->StaticInfo.FirmwareVersion, 		  mocaSInfo.FirmwareVersion, 64);
-		pEntry->StaticInfo.MaxBitRate 					= mocaSInfo.MaxBitRate;
-		memcpy(pEntry->StaticInfo.HighestVersion, 		  mocaSInfo.HighestVersion, 64);
-		memcpy(pEntry->StaticInfo.FreqCapabilityMask, 	  mocaSInfo.FreqCapabilityMask, 8);
-		memcpy(pEntry->StaticInfo.NetworkTabooMask, 	  mocaSInfo.NetworkTabooMask, 128);
-		pEntry->StaticInfo.TxBcastPowerReduction 		= mocaSInfo.TxBcastPowerReduction;
-		pEntry->StaticInfo.QAM256Capable 				= mocaSInfo.QAM256Capable;
-		pEntry->StaticInfo.PacketAggregationCapability 	= mocaSInfo.PacketAggregationCapability;
-		pEntry->StaticInfo.X_CISCO_COM_CycleMaster 		= pEntry->DynamicInfo.NetworkCoordinator;
-
-        /* Multi-LAN distates the Name to be speicific switch port name */
-        AnscCopyString(pEntry->StaticInfo.Name, "sw_5");
+        moca_IfGetStaticInfo(ulInterfaceIndex, &pEntry->StaticInfo);
+				
+		AnscCopyString(pEntry->StaticInfo.Name, "sw_5");
     }
     else
     {
@@ -766,8 +748,9 @@ CosaDmlMocaIfSetCfg
 
              AnscTraceWarning(("pCfg->FreqCurrentMaskSetting: %s\n", pCfg->FreqCurrentMaskSetting));
     
-             sscanf(pCfg->FreqCurrentMaskSetting, "%016x", &mask);
-             freq = moca_FreqMaskToValue(mask); 
+             //sscanf(pCfg->FreqCurrentMaskSetting, "%016x", &mask);
+             //freq = moca_FreqMaskToValue(mask); 
+             freq = moca_FreqMaskToValue(pCfg->FreqCurrentMaskSetting);
              status = snprintf(str_value, kMax_FreqCurrentMaskSetting, "%d", freq);
              
              AnscTraceWarning(("freq: %s\n", str_value));
@@ -1171,9 +1154,53 @@ CosaDmlMocaIfPeerTableGetTable
 }
 
 /*
+    This function is used to get total Mesh tables.
+    The returned memory should be allocated by AnscAllocateMemory. Or else there is leaking.
+*/
+ANSC_STATUS
+CosaDmlMocaIfMeshTableGetTable
+    (
+        ANSC_HANDLE                      hContext,
+        ULONG                            ulInterfaceIndex,
+        PCOSA_DML_MOCA_MESH             *ppConf,
+        PULONG                           pCount
+    )
+{
+    JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
+
+    AnscTraceWarning(("CosaDmlMocaIfFlowTableGetTable -- ulInterfaceIndex:%lu, ppConf:%x\n", ulInterfaceIndex, (UINT)ppConf));
+
+    if ( !pCount || !ppConf || ulInterfaceIndex != 0)
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
+    *pCount = kMoca_MaxMocaNodes;
+
+    *ppConf = (PCOSA_DML_MOCA_MESH)AnscAllocateMemory(sizeof(COSA_DML_MOCA_MESH) * kMoca_MaxMocaNodes);
+    if ( !*ppConf )
+    {
+        *pCount = 0;
+        return ANSC_STATUS_FAILURE;
+    }
+    
+    if (moca_GetFullMeshRates(ulInterfaceIndex, *ppConf, pCount) != STATUS_SUCCESS)
+    {
+        AnscFreeMemory(*ppConf);
+        *ppConf = NULL;
+        *pCount = 0;
+        AnscTraceError(("%s: fail to get MoCA associated device\n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+/*
     This function is used to get total Flow tables.
     The returned memory should be allocated by AnscAllocateMemory. Or else there is leaking.
 */
+
 ANSC_STATUS
 CosaDmlMocaIfFlowTableGetTable
     (
@@ -1187,17 +1214,29 @@ CosaDmlMocaIfFlowTableGetTable
 
     AnscTraceWarning(("CosaDmlMocaIfFlowTableGetTable -- ulInterfaceIndex:%lu, ppConf:%x\n", ulInterfaceIndex, (UINT)ppConf));
 
-    *ppConf = (PCOSA_DML_MOCA_FLOW)AnscAllocateMemory(sizeof(g_MoCAFlow));
-    if ( !ppConf )
+    if ( !pCount || !ppConf || ulInterfaceIndex != 0)
     {
-        *ppConf = NULL;
+        return ANSC_STATUS_FAILURE;
+    }
+
+    *pCount = kMoca_MaxMocaNodes;
+    *ppConf = (PCOSA_DML_MOCA_FLOW)AnscAllocateMemory(sizeof(COSA_DML_MOCA_FLOW) * kMoca_MaxMocaNodes);
+
+    if ( !*ppConf )
+    {
         *pCount = 0;
         return ANSC_STATUS_FAILURE;
     }
     
-    AnscCopyMemory( *ppConf, &g_MoCAFlow, sizeof(g_MoCAFlow) );
-    *pCount = sizeof(g_MoCAFlow)/sizeof(COSA_DML_MOCA_FLOW);
-
+    if (moca_GetFlowStatistics(ulInterfaceIndex, *ppConf, pCount) != STATUS_SUCCESS)
+    {
+        AnscFreeMemory(*ppConf);
+        *ppConf = NULL;
+        *pCount = 0;
+        AnscTraceError(("%s: fail to get MoCA flow table\n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+    
     return ANSC_STATUS_SUCCESS;
 }
 
