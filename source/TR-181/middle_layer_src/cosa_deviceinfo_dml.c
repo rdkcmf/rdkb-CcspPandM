@@ -798,9 +798,14 @@ DeviceInfo_SetParamStringValue
          }
 		 else if (AnscEqualString(pString, "reboot_device", TRUE))
          {
-		    CcspTraceInfo(("RDKB_REBOOT : RebootDevice triggered from GUI\n"));
-		 }
-            
+                CcspTraceInfo(("RDKB_REBOOT : RebootDevice triggered from GUI\n"));
+	 }
+         else if(AnscEqualString(pString, "factory_reset", TRUE))
+         {
+                
+		CcspTraceInfo(("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n"));
+             
+         }     
          else
          {
 	        CcspTraceInfo(("Local UI Access : Unsupported value\n"));

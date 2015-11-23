@@ -157,6 +157,13 @@ _COSA_DML_LAN_MANAGEMENT
 }
 COSA_DML_LAN_MANAGEMENT, *PCOSA_DML_LAN_MANAGEMENT;
 
+typedef struct
+_COSA_NOTIFY_WIFI
+{
+    int flag;
+    int ticket;
+}
+COSA_NOTIFY_WIFI, *PCOSA_NOTIFY_WIFI;
 
 #define FACTORY_RESET_KEY "factory_reset"
 #define FACTORY_RESET_WIFI_VALUE "w"

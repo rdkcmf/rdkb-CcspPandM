@@ -39,6 +39,11 @@ CM_MAC=`dmcli eRT getv Device.X_CISCO_COM_CableModem.MACAddress | grep string | 
 #echo $CM_MAC
 #echo "Getting Device.X_CISCO_COM_CableModem.IPAddress.."
 CM_IP=`dmcli eRT getv Device.X_CISCO_COM_CableModem.IPAddress | grep string | awk '{print $5}'`
+
+if [ "$CM_IP" = "0.0.0.0" ]
+then
+	CM_IP=`dmcli eRT getv Device.X_CISCO_COM_CableModem.IPv6Address | grep string | awk '{print $5}'`
+fi
 #echo $CM_IP
 #echo "Getting Mobile Number.."
 Mobile_Number=`dmcli eRT getv Device.DeviceInfo.X_COMCAST-COM_EMS_MobileNumber | grep string | awk '{print $5}'`

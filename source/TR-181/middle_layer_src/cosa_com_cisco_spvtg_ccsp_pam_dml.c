@@ -232,7 +232,7 @@ Pam_GetFirstIpInterfaceObjectName
                 _ansc_strcpy (pObjName, LowerLayers);
                 _ansc_sprintf(Buffer, "%s.LowerLayers", LowerLayers);
             
-                CcspTraceInfo(("Checking %s...\n", Buffer));
+                CcspTraceDebug(("Checking %s...\n", Buffer));
                 
                 LowerLayersSize = sizeof(LowerLayers);
                 iReturnValue    = CosaGetParamValueString(Buffer, LowerLayers, &LowerLayersSize);
@@ -258,7 +258,7 @@ Pam_GetFirstIpInterfaceObjectName
             
             if ( bUpstream == bLowerLayerUpstream )
             {
-                CcspTraceInfo
+                CcspTraceDebug
                     ((
                          "Found the lowest %s layer %s for IP interface Device.IP.Interface.%d.\n",
                          bUpstream ? "upstream" : "downstream",
