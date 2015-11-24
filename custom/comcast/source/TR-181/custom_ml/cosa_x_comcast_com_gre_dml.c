@@ -1,5 +1,5 @@
 /**********************************************************************
-   Copyright [2015] [Comcast Corp.]
+   Copyright [2014] [Cisco Systems, Inc.]
  
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,39 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 **********************************************************************/
-/**************************************************************************
 
-    module: cosa_x_comcast_com_gre_dml.c
-
-        For COSA Data Model Library Development
-
-    -------------------------------------------------------------------
-
-    copyright:
-
-        Comcast Corp.
-        All Rights Reserved.
-
-    -------------------------------------------------------------------
-
-    description:
-
-        This file defines the functions for objects to support Data Model Library.
-
-    -------------------------------------------------------------------
-
-
-    author:
-
-        zhicheng_qiu@cable.comcast.com
-
-    -------------------------------------------------------------------
-
-    revision:
-
-        05/18/2015    initial revision.
-
-**************************************************************************/
+/*
+ *  Where is the file header section? Taking shortcut?...
+ */
 
 #include "dml_tr181_custom_cfg.h"
 
@@ -53,682 +24,594 @@
 #include "cosa_x_comcast_com_gre_dml.h"
 #include "cosa_x_comcast_com_gre_internal.h"
 
-ULONG GreTunnel_GetEntryCount (  ANSC_HANDLE hInsContext  ) {
-    return CosaDml_GreTunnelGetNumberOfEntries();
+ULONG
+GreIf_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    COSA_DATAMODEL_GRE              *pMyObject = (COSA_DATAMODEL_GRE *)g_pCosaBEManager->hGRE;
+
+    return CosaDml_GreIfGetNumberOfEntries();
 }
 
-ULONG GreTunnelIf_GetEntryCount (  ANSC_HANDLE hInsContext  ) {
-	//COSA_DATAMODEL_GRET              *pMyObject = (COSA_DATAMODEL_GRETU *)g_pCosaBEManager->hGRE;
-	//TUDO: get Tunnel index somewhere
-	return CosaDml_GreTunnelIfGetNumberOfEntries(1);
-}
+ANSC_HANDLE
+GreIf_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    )
+{
+    COSA_DATAMODEL_GRE              *pMyObject   = (COSA_DATAMODEL_GRE *)g_pCosaBEManager->hGRE;
 
-ANSC_HANDLE GreTunnel_GetEntry( ANSC_HANDLE hInsContext, ULONG nIndex, ULONG* pInsNumber ) {
-	COSA_DATAMODEL_GRE2           *pMyObject   = (COSA_DATAMODEL_GRE2 *)g_pCosaBEManager->hTGRE;
-	
-    if (nIndex >= MAX_GRE_TU)
+    if (nIndex >= MAX_GRE_IF)
         return NULL;
 
-    *pInsNumber = pMyObject->GreTu[nIndex].InstanceNumber;
-    return (ANSC_HANDLE)&pMyObject->GreTu[nIndex];
+    *pInsNumber = pMyObject->GreIf[nIndex].InstanceNumber;
+    return (ANSC_HANDLE)&pMyObject->GreIf[nIndex];
 }
 
-ANSC_HANDLE GreTunnelIf_GetEntry( ANSC_HANDLE hInsContext, ULONG nIndex, ULONG* pInsNumber ) {
-	COSA_DATAMODEL_GRE2             *pGre2   = (COSA_DATAMODEL_GRE2 *)g_pCosaBEManager->hTGRE;
-	COSA_DML_GRE_TUNNEL_IF			*pTuIf=NULL;
-    if (nIndex >= MAX_GRE_TUIF)
-        return NULL;
-
-	//TODO: donot hardcode tunnel index
-    *pInsNumber = pGre2->GreTu[0].GreTunnelIf[nIndex].InstanceNumber;
-    return (ANSC_HANDLE)&pGre2->GreTu[0].GreTunnelIf[nIndex];
-}
-
-BOOL GreTunnel_GetParamBoolValue ( ANSC_HANDLE hInsContext, char*  ParamName, BOOL*  pBool) {
-	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
-    //ULONG                           ins = pGreTu->InstanceNumber;
+BOOL
+GreIf_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
+    ULONG                           ins = pGreIf->InstanceNumber;
 
     if (AnscEqualString(ParamName, "Enable", TRUE))
     {
-        *pBool = pGreTu->Enable;
+        *pBool = pGreIf->Enable;
         return TRUE;
     }
     if (AnscEqualString(ParamName, "UseSequenceNumber", TRUE))
     {
-        *pBool = pGreTu->UseSequenceNumber;
+        *pBool = pGreIf->UseSequenceNumber;
         return TRUE;
     }
     if (AnscEqualString(ParamName, "UseChecksum", TRUE))
     {
-        *pBool = pGreTu->UseChecksum;
+        *pBool = pGreIf->UseChecksum;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "EnableCircuitID", TRUE))
+    if (AnscEqualString(ParamName, "DHCPCircuitIDSSID", TRUE))
     {
-        *pBool = pGreTu->EnableCircuitID;
-        if(pGreTu->EnableCircuitID) {
+        *pBool = pGreIf->DHCPCircuitIDSSID;
+        if(pGreIf->DHCPCircuitIDSSID) {
 		// update  circuit ids 
-		//TODO: hotspot_update_circuit_ids ?
 			hotspot_update_circuit_ids(1,1);
 	    }
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "EnableRemoteID", TRUE))
+    if (AnscEqualString(ParamName, "DHCPRemoteID", TRUE))
     {
-        *pBool = pGreTu->EnableRemoteID;
+        *pBool = pGreIf->DHCPRemoteID;
         return TRUE;
     }
 
     return FALSE;
 }
 
-BOOL GreTunnelIf_GetParamBoolValue ( ANSC_HANDLE hInsContext, char*  ParamName, BOOL*  pBool) {
-	COSA_DML_GRE_TUNNEL_IF                 *pGreTuIf      = (COSA_DML_GRE_TUNNEL_IF *)hInsContext;
-    //ULONG                           ins = pGreTuIf->InstanceNumber;
-
-    if (AnscEqualString(ParamName, "Enable", TRUE))
-    {
-        *pBool = pGreTuIf->Enable;
-        return TRUE;
-    }
-	
-	return FALSE;
-}
-
-BOOL GreTunnel_GetParamUlongValue ( ANSC_HANDLE hInsContext, char* ParamName, ULONG* pUlong) {
-    COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
-    ULONG                           ins = pGreTu->InstanceNumber;
+BOOL
+GreIf_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      pUlong
+    )
+{
+    COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
+    ULONG                           ins = pGreIf->InstanceNumber;
 
     if (AnscEqualString(ParamName, "Status", TRUE))
     {
-        if (CosaDml_GreTunnelGetStatus(ins, (COSA_DML_GRE_STATUS *)pUlong) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfGetStatus(ins, (COSA_DML_GRE_STATUS *)pUlong) != ANSC_STATUS_SUCCESS)
             return FALSE;
         return TRUE;
     }
     if (AnscEqualString(ParamName, "LastChange", TRUE))
     {
-        if (CosaDml_GreTunnelGetLastchange(ins, pUlong) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfGetLastchange(ins, pUlong) != ANSC_STATUS_SUCCESS)
             return FALSE;
         return TRUE;
     }
     if (AnscEqualString(ParamName, "KeyIdentifierGenerationPolicy", TRUE))
     {
-        *pUlong = pGreTu->KeyIdentifierGenerationPolicy;
+        *pUlong = pGreIf->KeyIdentifierGenerationPolicy;
         return TRUE;
     }
     if (AnscEqualString(ParamName, "KeepAlivePolicy", TRUE))
     {
-        *pUlong = pGreTu->KeepAlivePolicy;
+        *pUlong = pGreIf->KeepAlivePolicy;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpointHealthCheckPingInterval", TRUE))
+    if (AnscEqualString(ParamName, "KeepAliveInterval", TRUE))
     {
-        *pUlong = pGreTu->RemoteEndpointHealthCheckPingInterval;
+        *pUlong = pGreIf->KeepAliveInterval;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpointHealthCheckPingFailThreshold", TRUE))
+    if (AnscEqualString(ParamName, "KeepAliveThreshold", TRUE))
     {
-        *pUlong = pGreTu->RemoteEndpointHealthCheckPingFailThreshold;
+        *pUlong = pGreIf->KeepAliveThreshold;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpointHealthCheckPingCount", TRUE))
+    if (AnscEqualString(ParamName, "KeepAliveCount", TRUE))
     {
-        *pUlong = pGreTu->RemoteEndpointHealthCheckPingCount;
+        *pUlong = pGreIf->KeepAliveCount;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpointHealthCheckPingIntervalInFailure", TRUE))
+    if (AnscEqualString(ParamName, "KeepAliveFailInterval", TRUE))
     {
-        *pUlong = pGreTu->RemoteEndpointHealthCheckPingIntervalInFailure;
+        *pUlong = pGreIf->KeepAliveFailInterval;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ReconnectToPrimaryRemoteEndpoint", TRUE))
+    if (AnscEqualString(ParamName, "ReconnectPrimary", TRUE))
     {
-        *pUlong = pGreTu->ReconnectToPrimaryRemoteEndpoint;
+        *pUlong = pGreIf->ReconnectPrimary;
         return TRUE;
     }
 
     return FALSE;
 }
 
-BOOL GreTunnelIf_GetParamUlongValue ( ANSC_HANDLE hInsContext, char* ParamName, ULONG* pUlong) {
-	COSA_DML_GRE_TUNNEL_IF                 *pGreTuIf      = (COSA_DML_GRE_TUNNEL_IF *)hInsContext;
-    ULONG                           ins = pGreTuIf->InstanceNumber;
+ULONG
+GreIf_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+    COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
+    ULONG                           ins = pGreIf->InstanceNumber;
 
-    if (AnscEqualString(ParamName, "Status", TRUE))
+    if (AnscEqualString(ParamName, "LocalInterfaces", TRUE))
     {
-		//TODO: do not hardcode tunnel id
-        if (CosaDml_GreTunnelIfGetStatus(1, ins, (COSA_DML_GRE_STATUS *)pUlong) != ANSC_STATUS_SUCCESS)
-            return FALSE;
-        return TRUE;
-    }
-    if (AnscEqualString(ParamName, "LastChange", TRUE))
-    {
-        if (CosaDml_GreTunnelIfGetLastchange(1, ins, pUlong) != ANSC_STATUS_SUCCESS)
-            return FALSE;
-        return TRUE;
-    }
-
-    if (AnscEqualString(ParamName, "VLANID", TRUE))
-    {
-        *pUlong = pGreTuIf->VLANID;
-        return TRUE;
-    } 
-	
-	return FALSE;
-}
-
-ULONG GreTunnel_GetParamStringValue ( ANSC_HANDLE  hInsContext, char* ParamName, char* pValue, ULONG* pUlSize ) {
-	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
-    ULONG                           ins = pGreTu->InstanceNumber;
-
-    if (AnscEqualString(ParamName, "PrimaryRemoteEndpoint", TRUE))
-    {
-        snprintf(pValue, *pUlSize, "%s", pGreTu->PrimaryRemoteEndpoint);
+        snprintf(pValue, *pUlSize, "%s", pGreIf->LocalInterfaces);
         return 0;
     }
-	if (AnscEqualString(ParamName, "SecondaryRemoteEndpoint", TRUE))
+    if (AnscEqualString(ParamName, "RemoteEndpoints", TRUE))
     {
-        snprintf(pValue, *pUlSize, "%s", pGreTu->SecondaryRemoteEndpoint);
+        snprintf(pValue, *pUlSize, "%s", pGreIf->RemoteEndpoints);
         return 0;
     }
     if (AnscEqualString(ParamName, "ConnectedRemoteEndpoint", TRUE))
     {	
-		CosaDml_GreTunnelGetConnectedRemoteEndpoint(ins,pGreTu);
-	   	snprintf(pValue, *pUlSize, "%s", pGreTu->ConnectedRemoteEndpoint);
+		CosaDml_GreIfGetConnectedRemoteEndpoint(ins,pGreIf);
+	   	snprintf(pValue, *pUlSize, "%s", pGreIf->ConnectedRemoteEndpoint);
         return 0;
     }
     if (AnscEqualString(ParamName, "KeyIdentifier", TRUE))
     {
-        snprintf(pValue, *pUlSize, "%s", pGreTu->KeyIdentifier);
+        snprintf(pValue, *pUlSize, "%s", pGreIf->KeyIdentifier);
         return 0;
     }
-    if (AnscEqualString(ParamName, "GRENetworkTunnel", TRUE))
+    if (AnscEqualString(ParamName, "AssociatedBridges", TRUE))
     {
-        snprintf(pValue, *pUlSize, "%s", pGreTu->GRENetworkTunnel);
+        snprintf(pValue, *pUlSize, "%s", pGreIf->AssociatedBridges);
+        return 0;
+    }
+    if (AnscEqualString(ParamName, "AssociatedBridgesWiFiPort", TRUE))
+    {
+        snprintf(pValue, *pUlSize, "%s", pGreIf->AssociatedBridgesWiFiPort);
+        return 0;
+    }
+    if (AnscEqualString(ParamName, "GRENetworkInterface", TRUE))
+    {
+        snprintf(pValue, *pUlSize, "%s", pGreIf->GRENetworkInterface);
         return 0;
     }
 
     return -1;
 }
 
-ULONG GreTunnelIf_GetParamStringValue ( ANSC_HANDLE  hInsContext, char* ParamName, char* pValue, ULONG* pUlSize ) {
-	COSA_DML_GRE_TUNNEL_IF                 *pGreTuIf      = (COSA_DML_GRE_TUNNEL_IF *)hInsContext;
-    //ULONG                           ins = pGreTuIf->InstanceNumber;
-
-    if (AnscEqualString(ParamName, "LocalInterfaces", TRUE))
-    {
-        snprintf(pValue, *pUlSize, "%s", pGreTuIf->LocalInterfaces);
-        return 0;
-    }
-	if (AnscEqualString(ParamName, "AssociatedBridges", TRUE))
-    {
-        snprintf(pValue, *pUlSize, "%s", pGreTuIf->AssociatedBridges);
-        return 0;
-    }
-    if (AnscEqualString(ParamName, "AssociatedBridgesWiFiPort", TRUE))
-    {
-        snprintf(pValue, *pUlSize, "%s", pGreTuIf->AssociatedBridgesWiFiPort);
-        return 0;
-    }
-
-	return -1;
-}
-
-BOOL GreTunnel_GetParamIntValue ( ANSC_HANDLE hInsContext, char* ParamName, int*  pInt ) {
-    COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
-    //ULONG                           ins = pGreTu->InstanceNumber;
+BOOL
+GreIf_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    )
+{
+    COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
+    ULONG                           ins = pGreIf->InstanceNumber;
 
     if (AnscEqualString(ParamName, "DSCPMarkPolicy", TRUE))
     {
-        *pInt = pGreTu->DSCPMarkPolicy;
+        *pInt = pGreIf->DSCPMarkPolicy;
         return TRUE;
-    }   
-
-    return FALSE;
-}
-
-
-BOOL GreTunnelIf_GetParamIntValue ( ANSC_HANDLE hInsContext, char* ParamName, int*  pInt ) {
-	COSA_DML_GRE_TUNNEL_IF                 *pGreTuIf      = (COSA_DML_GRE_TUNNEL_IF *)hInsContext;
-    //ULONG                           ins = pGreTuIf->InstanceNumber;
-
+    }
     if (AnscEqualString(ParamName, "VLANID", TRUE))
     {
-        *pInt = pGreTuIf->VLANID;
+        *pInt = pGreIf->VLANID;
         return TRUE;
-    } 
+    }
 
     return FALSE;
 }
 
-BOOL GreTunnel_SetParamBoolValue ( ANSC_HANDLE hInsContext, char* ParamName, BOOL bValue) {
-	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
+BOOL
+GreIf_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
 
     if (AnscEqualString(ParamName, "Enable", TRUE))
     {
-        pGreTu->Enable = bValue;
-        pGreTu->ChangeFlag |= GRETU_CF_ENABLE;
+        pGreIf->Enable = bValue;
+        pGreIf->ChangeFlag |= GREIF_CF_ENABLE;
         return TRUE;
     }
     if (AnscEqualString(ParamName, "UseSequenceNumber", TRUE))
     {
-        pGreTu->UseSequenceNumber = bValue;
-        pGreTu->ChangeFlag |= GRETU_CF_USESEQ;
+        pGreIf->UseSequenceNumber = bValue;
+        pGreIf->ChangeFlag |= GREIF_CF_USESEQ;
         return TRUE;
     }
     if (AnscEqualString(ParamName, "UseChecksum", TRUE))
     {
-        pGreTu->UseChecksum = bValue;
-        pGreTu->ChangeFlag |= GRETU_CF_USECSUM;
+        pGreIf->UseChecksum = bValue;
+        pGreIf->ChangeFlag |= GREIF_CF_USECSUM;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "EnableCircuitID", TRUE))
+    if (AnscEqualString(ParamName, "DHCPCircuitIDSSID", TRUE))
     {
-        pGreTu->EnableCircuitID = bValue;
-        pGreTu->ChangeFlag |= GRETU_CF_DHCPCIRID;
+        pGreIf->DHCPCircuitIDSSID = bValue;
+        pGreIf->ChangeFlag |= GREIF_CF_DHCPCIRID;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "EnableRemoteID", TRUE))
+    if (AnscEqualString(ParamName, "DHCPRemoteID", TRUE))
     {
-        pGreTu->EnableRemoteID = bValue;
-        pGreTu->ChangeFlag |= GRETU_CF_DHCPRMID;
+        pGreIf->DHCPRemoteID = bValue;
+        pGreIf->ChangeFlag |= GREIF_CF_DHCPRMID;
         return TRUE;
     }
 
     return FALSE;
 }
 
-
-BOOL GreTunnelIf_SetParamBoolValue ( ANSC_HANDLE hInsContext, char* ParamName, BOOL bValue) {
-	COSA_DML_GRE_TUNNEL_IF                 *pGreTuIf      = (COSA_DML_GRE_TUNNEL_IF *)hInsContext;
-
-    if (AnscEqualString(ParamName, "Enable", TRUE))
-    {
-        pGreTuIf->Enable = bValue;
-        pGreTuIf->ChangeFlag |= GRETUIF_CF_ENABLE;
-        return TRUE;
-    }
-	return FALSE;
-}
-
-BOOL GreTunnel_SetParamUlongValue ( ANSC_HANDLE  hInsContext, char* ParamName, ULONG  uValue) {
-	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
+BOOL
+GreIf_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    )
+{
+    COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
 
     if (AnscEqualString(ParamName, "KeyIdentifierGenerationPolicy", TRUE))
     {
-        pGreTu->KeyIdentifierGenerationPolicy = uValue;
-        pGreTu->ChangeFlag |= GRETU_CF_KEYGENPOL;
+        pGreIf->KeyIdentifierGenerationPolicy = uValue;
+        pGreIf->ChangeFlag |= GREIF_CF_KEYGENPOL;
         return TRUE;
     }
     if (AnscEqualString(ParamName, "KeepAlivePolicy", TRUE))
     {
-        pGreTu->KeepAlivePolicy = uValue;
-        pGreTu->ChangeFlag |= GRETU_CF_KEEPPOL;
+        pGreIf->KeepAlivePolicy = uValue;
+        pGreIf->ChangeFlag |= GREIF_CF_KEEPPOL;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpointHealthCheckPingInterval", TRUE))
+    if (AnscEqualString(ParamName, "KeepAliveInterval", TRUE))
     {
-        pGreTu->RemoteEndpointHealthCheckPingInterval = uValue;
-        pGreTu->ChangeFlag |= GRETU_CF_KEEPITVL;
+        pGreIf->KeepAliveInterval = uValue;
+        pGreIf->ChangeFlag |= GREIF_CF_KEEPITVL;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpointHealthCheckPingFailThreshold", TRUE))
+    if (AnscEqualString(ParamName, "KeepAliveThreshold", TRUE))
     {
-        pGreTu->RemoteEndpointHealthCheckPingFailThreshold = uValue;
-        pGreTu->ChangeFlag |= GRETU_CF_KEEPTHRE;
+        pGreIf->KeepAliveThreshold = uValue;
+        pGreIf->ChangeFlag |= GREIF_CF_KEEPTHRE;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpointHealthCheckPingCount", TRUE))
+    if (AnscEqualString(ParamName, "KeepAliveCount", TRUE))
     {
-        pGreTu->RemoteEndpointHealthCheckPingCount = uValue;
-        pGreTu->ChangeFlag |= GRETU_CF_KEEPCNT;
+        pGreIf->KeepAliveCount = uValue;
+        pGreIf->ChangeFlag |= GREIF_CF_KEEPCNT;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpointHealthCheckPingIntervalInFailure", TRUE))
+    if (AnscEqualString(ParamName, "KeepAliveFailInterval", TRUE))
     {
-        pGreTu->RemoteEndpointHealthCheckPingIntervalInFailure = uValue;
-        pGreTu->ChangeFlag |= GRETU_CF_KEEPFAILITVL;
+        pGreIf->KeepAliveFailInterval = uValue;
+        pGreIf->ChangeFlag |= GREIF_CF_KEEPFAILITVL;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ReconnectToPrimaryRemoteEndpoint", TRUE))
+    if (AnscEqualString(ParamName, "ReconnectPrimary", TRUE))
     {
-        pGreTu->ReconnectToPrimaryRemoteEndpoint = uValue;
-        pGreTu->ChangeFlag |= GRETU_CF_RECONNPRIM;
+        pGreIf->ReconnectPrimary = uValue;
+        pGreIf->ChangeFlag |= GREIF_CF_RECONNPRIM;
         return TRUE;
     }
 
     return FALSE;
 }
 
-BOOL GreTunnelIf_SetParamUlongValue ( ANSC_HANDLE  hInsContext, char* ParamName, ULONG  uValuepUlong) {
-	COSA_DML_GRE_TUNNEL_IF                 *pGreTuIf      = (COSA_DML_GRE_TUNNEL_IF *)hInsContext;
-    if (AnscEqualString(ParamName, "VLANID", TRUE))
-    {
-        pGreTuIf->VLANID = uValuepUlong;
-        pGreTuIf->ChangeFlag |= GRETUIF_CF_VLANID;
-        return TRUE;
-    }
-	return FALSE;
-}
+BOOL
+GreIf_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       strValue
+    )
+{
+    COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
 
-BOOL GreTunnel_SetParamStringValue ( ANSC_HANDLE hInsContext, char*  ParamName, char*  strValue ) {
-	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
-    
-    if (AnscEqualString(ParamName, "PrimaryRemoteEndpoint", TRUE))
+    if (AnscEqualString(ParamName, "LocalInterfaces", TRUE))
     {
-        snprintf(pGreTu->PrimaryRemoteEndpoint, sizeof(pGreTu->PrimaryRemoteEndpoint), "%s", strValue);
-        pGreTu->ChangeFlag |= GRETU_CF_PRIEP;
+        snprintf(pGreIf->LocalInterfaces, sizeof(pGreIf->LocalInterfaces), "%s", strValue);
+        pGreIf->ChangeFlag |= GREIF_CF_LOCALIF;
         return TRUE;
     }
-	if (AnscEqualString(ParamName, "SecondaryRemoteEndpoint", TRUE))
+    if (AnscEqualString(ParamName, "RemoteEndpoints", TRUE))
     {
-        snprintf(pGreTu->SecondaryRemoteEndpoint, sizeof(pGreTu->SecondaryRemoteEndpoint), "%s", strValue);
-        pGreTu->ChangeFlag |= GRETU_CF_SECEP;
+        snprintf(pGreIf->RemoteEndpoints, sizeof(pGreIf->RemoteEndpoints), "%s", strValue);
+        pGreIf->ChangeFlag |= GREIF_CF_RMEP;
         return TRUE;
     }
     if (AnscEqualString(ParamName, "KeyIdentifier", TRUE))
     {
-        snprintf(pGreTu->KeyIdentifier, sizeof(pGreTu->KeyIdentifier), "%s", strValue);
-        pGreTu->ChangeFlag |= GRETU_CF_KEYID;
-        return TRUE;
-    }    
-    if (AnscEqualString(ParamName, "GRENetworkTunnel", TRUE))
-    {
-        snprintf(pGreTu->GRENetworkTunnel, sizeof(pGreTu->GRENetworkTunnel), "%s", strValue);
-        pGreTu->ChangeFlag |= GRETU_CF_GRETU;
+        snprintf(pGreIf->KeyIdentifier, sizeof(pGreIf->KeyIdentifier), "%s", strValue);
+        pGreIf->ChangeFlag |= GREIF_CF_KEYID;
         return TRUE;
     }
-
-    return FALSE;
-}
-
-BOOL GreTunnelIf_SetParamStringValue ( ANSC_HANDLE hInsContext, char*  ParamName, char*  strValue ) {
-	COSA_DML_GRE_TUNNEL_IF                 *pGreTuIf      = (COSA_DML_GRE_TUNNEL_IF *)hInsContext;
-
-    if (AnscEqualString(ParamName, "LocalInterfaces", TRUE))
+    if (AnscEqualString(ParamName, "AssociatedBridges", TRUE))
     {
-        snprintf(pGreTuIf->LocalInterfaces, sizeof(pGreTuIf->LocalInterfaces), "%s", strValue);
-        pGreTuIf->ChangeFlag |= GRETUIF_CF_LOCALIF;
-        return TRUE;
-    }
-	if (AnscEqualString(ParamName, "AssociatedBridges", TRUE))
-    {
-        snprintf(pGreTuIf->AssociatedBridges, sizeof(pGreTuIf->AssociatedBridges), "%s", strValue);
-        pGreTuIf->ChangeFlag |= GRETUIF_CF_ASSOBR;
+        snprintf(pGreIf->AssociatedBridges, sizeof(pGreIf->AssociatedBridges), "%s", strValue);
+        pGreIf->ChangeFlag |= GREIF_CF_ASSOBR;
         return TRUE;
     }
     if (AnscEqualString(ParamName, "AssociatedBridgesWiFiPort", TRUE))
     {
-        snprintf(pGreTuIf->AssociatedBridgesWiFiPort, sizeof(pGreTuIf->AssociatedBridgesWiFiPort), "%s", strValue);
-        pGreTuIf->ChangeFlag |= GRETUIF_CF_ASSOBRWFP;
+        snprintf(pGreIf->AssociatedBridgesWiFiPort, sizeof(pGreIf->AssociatedBridgesWiFiPort), "%s", strValue);
+        pGreIf->ChangeFlag |= GREIF_CF_ASSOBRWFP;
         return TRUE;
     }
-	return FALSE;
+    if (AnscEqualString(ParamName, "GRENetworkInterface", TRUE))
+    {
+        snprintf(pGreIf->GRENetworkInterface, sizeof(pGreIf->GRENetworkInterface), "%s", strValue);
+        pGreIf->ChangeFlag |= GREIF_CF_GREIF;
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
-BOOL GreTunnel_SetParamIntValue ( ANSC_HANDLE hInsContext, char* ParamName, int value ) {
-	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
+BOOL
+GreIf_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         value
+    )
+{
+    COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
 
     if (AnscEqualString(ParamName, "DSCPMarkPolicy", TRUE))
     {
-        if(pGreTu->DSCPMarkPolicy == value)
+        if(pGreIf->DSCPMarkPolicy == value)
             return TRUE;
 
-        pGreTu->DSCPMarkPolicy = value;
-        pGreTu->ChangeFlag |= GRETU_CF_DSCP;
+        pGreIf->DSCPMarkPolicy = value;
+        pGreIf->ChangeFlag |= GREIF_CF_DSCP;
         return TRUE;
     }
-    
-    return FALSE;
-}
-
-BOOL GreTunnelIf_SetParamIntValue ( ANSC_HANDLE hInsContext, char* ParamName, int value ) {
-	COSA_DML_GRE_TUNNEL_IF                 *pGreTuIf      = (COSA_DML_GRE_TUNNEL_IF *)hInsContext;
-
     if (AnscEqualString(ParamName, "VLANID", TRUE))
     {
-        pGreTuIf->VLANID = value;
-        pGreTuIf->ChangeFlag |= GRETUIF_CF_VLANID;
+        pGreIf->VLANID = value;
+        pGreIf->ChangeFlag |= GREIF_CF_VLANID;
         return TRUE;
     }
 
     return FALSE;
 }
 
-BOOL GreTunnel_Validate ( ANSC_HANDLE hInsContext, char* pReturnParamName, ULONG* puLength ) 
+BOOL
+GreIf_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    )
 {
-	//>>zqiu
-	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
-	if (pGreTu->Enable) {
-		//Do not allow to enable hotspot when both endpoint are empty
-		if( strcmp(pGreTu->PrimaryRemoteEndpoint, "0.0.0.0") ==0 && strcmp(pGreTu->SecondaryRemoteEndpoint, "0.0.0.0") ==0) {
-			fprintf(stderr, "%s: Do not allow to enable hotspot when both endpoint are empty\n", __func__);
-			return FALSE;
-		}
-	}	
-	//<<zqiu
-	return TRUE;
-}	
+    return TRUE;
+}
 
-BOOL GreTunnelIf_Validate ( ANSC_HANDLE hInsContext, char* pReturnParamName, ULONG* puLength )
+ULONG
+GreIf_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    )
 {
-	return TRUE;
-}	
+    COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
+    ULONG                           ins = pGreIf->InstanceNumber;
 
-ULONG GreTunnel_Commit ( ANSC_HANDLE hInsContext ) {
-	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
-    ULONG                           ins = pGreTu->InstanceNumber;
-
-    if (pGreTu->ChangeFlag == 0)
+    if (pGreIf->ChangeFlag == 0)
         return ANSC_STATUS_SUCCESS;
 
-    if (pGreTu->ChangeFlag & GRETU_CF_ENABLE)
+    if (pGreIf->ChangeFlag & GREIF_CF_ENABLE)
     {
-        if (CosaDml_GreTunnelSetEnable(ins, pGreTu->Enable) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetEnable(ins, pGreIf->Enable) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    
-    if (pGreTu->ChangeFlag & GRETU_CF_PRIEP)
+    if (pGreIf->ChangeFlag & GREIF_CF_LOCALIF)
     {
-        if (CosaDml_GreTunnelSetPrimaryEndpoints(ins, pGreTu->PrimaryRemoteEndpoint) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetLocalInterfaces(ins, pGreIf->LocalInterfaces) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-	if (pGreTu->ChangeFlag & GRETU_CF_SECEP)
+    if (pGreIf->ChangeFlag & GREIF_CF_RMEP)
     {
-        if (CosaDml_GreTunnelSetSecondaryEndpoints(ins, pGreTu->SecondaryRemoteEndpoint) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetEndpoints(ins, pGreIf->RemoteEndpoints) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_KEYGENPOL)
+    if (pGreIf->ChangeFlag & GREIF_CF_KEYGENPOL)
     {
-        if (CosaDml_GreTunnelSetKeyGenPolicy(ins, pGreTu->KeyIdentifierGenerationPolicy) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetKeyGenPolicy(ins, pGreIf->KeyIdentifierGenerationPolicy) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_KEYID)
+    if (pGreIf->ChangeFlag & GREIF_CF_KEYID)
     {
-        if (CosaDml_GreTunnelSetKeyId(ins, pGreTu->KeyIdentifier) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetKeyId(ins, pGreIf->KeyIdentifier) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_USESEQ)
+    if (pGreIf->ChangeFlag & GREIF_CF_USESEQ)
     {
-        if (CosaDml_GreTunnelSetUseSeqNum(ins, pGreTu->UseSequenceNumber) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetUseSeqNum(ins, pGreIf->UseSequenceNumber) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_USECSUM)
+    if (pGreIf->ChangeFlag & GREIF_CF_USECSUM)
     {
-        if (CosaDml_GreTunnelSetUseChecksum(ins, pGreTu->UseChecksum) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetUseChecksum(ins, pGreIf->UseChecksum) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_DSCP)
+    if (pGreIf->ChangeFlag & GREIF_CF_DSCP)
     {
-        if (CosaDml_GreTunnelSetDSCPMarkPolicy(ins, pGreTu->DSCPMarkPolicy) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetDSCPMarkPolicy(ins, pGreIf->DSCPMarkPolicy) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    
-    if (pGreTu->ChangeFlag & GRETU_CF_KEEPPOL)
+    if (pGreIf->ChangeFlag & GREIF_CF_VLANID)
     {
-        if (CosaDml_GreTunnelSetKeepAlivePolicy(ins, pGreTu->KeepAlivePolicy) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetVlanId(ins, pGreIf->VLANID) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_KEEPITVL)
+    if (pGreIf->ChangeFlag & GREIF_CF_KEEPPOL)
     {
-        if (CosaDml_GreTunnelSetKeepAliveInterval(ins, pGreTu->RemoteEndpointHealthCheckPingInterval) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetKeepAlivePolicy(ins, pGreIf->KeepAlivePolicy) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_KEEPTHRE)
+    if (pGreIf->ChangeFlag & GREIF_CF_KEEPITVL)
     {
-        if (CosaDml_GreTunnelSetKeepAliveThreshold(ins, pGreTu->RemoteEndpointHealthCheckPingFailThreshold) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetKeepAliveInterval(ins, pGreIf->KeepAliveInterval) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_KEEPCNT)
+    if (pGreIf->ChangeFlag & GREIF_CF_KEEPTHRE)
     {
-        if (CosaDml_GreTunnelSetKeepAliveCount(ins, pGreTu->RemoteEndpointHealthCheckPingCount) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetKeepAliveThreshold(ins, pGreIf->KeepAliveThreshold) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_KEEPFAILITVL)
+    if (pGreIf->ChangeFlag & GREIF_CF_KEEPCNT)
     {
-        if (CosaDml_GreTunnelSetKeepAliveFailInterval(ins, pGreTu->RemoteEndpointHealthCheckPingIntervalInFailure) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetKeepAliveCount(ins, pGreIf->KeepAliveCount) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_RECONNPRIM)
+    if (pGreIf->ChangeFlag & GREIF_CF_KEEPFAILITVL)
     {
-        if (CosaDml_GreTunnelSetReconnPrimary(ins, pGreTu->ReconnectToPrimaryRemoteEndpoint) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetKeepAliveFailInterval(ins, pGreIf->KeepAliveFailInterval) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_DHCPCIRID)
+    if (pGreIf->ChangeFlag & GREIF_CF_RECONNPRIM)
     {
-        if (CosaDml_GreTunnelSetDhcpCircuitSsid(ins, pGreTu->EnableCircuitID) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetReconnPrimary(ins, pGreIf->ReconnectPrimary) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    if (pGreTu->ChangeFlag & GRETU_CF_DHCPRMID)
+    if (pGreIf->ChangeFlag & GREIF_CF_DHCPCIRID)
     {
-        if (CosaDml_GreTunnelSetDhcpRemoteId(ins, pGreTu->EnableRemoteID) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetDhcpCircuitSsid(ins, pGreIf->DHCPCircuitIDSSID) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
-    
-    if (pGreTu->ChangeFlag & GRETU_CF_GRETU)
+    if (pGreIf->ChangeFlag & GREIF_CF_DHCPRMID)
     {
-        if (CosaDml_GreTunnelGetGRETunnel(ins, pGreTu->GRENetworkTunnel, sizeof(pGreTu->GRENetworkTunnel)) != ANSC_STATUS_SUCCESS)
+        if (CosaDml_GreIfSetDhcpRemoteId(ins, pGreIf->DHCPRemoteID) != ANSC_STATUS_SUCCESS)
+            goto rollback;
+    }
+    if (pGreIf->ChangeFlag & GREIF_CF_ASSOBR)
+    {
+        if (CosaDml_GreIfSetAssociatedBridges(ins, pGreIf->AssociatedBridges) != ANSC_STATUS_SUCCESS)
+            goto rollback;
+    }
+    if (pGreIf->ChangeFlag & GREIF_CF_ASSOBRWFP)
+    {
+        if (CosaDml_GreIfSetAssociatedBridgesWiFiPort(ins, pGreIf->AssociatedBridgesWiFiPort) != ANSC_STATUS_SUCCESS)
+            goto rollback;
+    }
+    if (pGreIf->ChangeFlag & GREIF_CF_GREIF)
+    {
+        if (CosaDml_GreIfSetGREInterface(ins, pGreIf->GRENetworkInterface) != ANSC_STATUS_SUCCESS)
             goto rollback;
     }
 
-    pGreTu->ChangeFlag = 0;
+    pGreIf->ChangeFlag = 0;
     return ANSC_STATUS_SUCCESS;
 
 rollback:
-    pGreTu->ChangeFlag = 0;
-    GreTunnel_Rollback((ANSC_HANDLE)pGreTu);
+    pGreIf->ChangeFlag = 0;
+    GreIf_Rollback((ANSC_HANDLE)pGreIf);
     return ANSC_STATUS_FAILURE;
 }
 
-ULONG GreTunnelIf_Commit ( ANSC_HANDLE hInsContext ) {
-	COSA_DML_GRE_TUNNEL_IF                 *pGreTuIf      = (COSA_DML_GRE_TUNNEL_IF *)hInsContext;
-    ULONG                           ins = pGreTuIf->InstanceNumber;
+ULONG
+GreIf_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
+    ULONG                           ins = pGreIf->InstanceNumber;
 
-    if (pGreTuIf->ChangeFlag == 0)
-        return ANSC_STATUS_SUCCESS;
-
-    if (pGreTuIf->ChangeFlag & GRETUIF_CF_ENABLE)
-    {
-	//TODO: do not hardcode Tunnel index
-        if (CosaDml_GreTunnelIfSetEnable(1, ins, pGreTuIf->Enable) != ANSC_STATUS_SUCCESS)
-            goto rollback;
-    }
-	if (pGreTuIf->ChangeFlag & GRETUIF_CF_LOCALIF)
-    {
-        if (CosaDml_GreTunnelIfSetLocalInterfaces(1, ins, pGreTuIf->LocalInterfaces) != ANSC_STATUS_SUCCESS)
-            goto rollback;
-    }	
-	if (pGreTuIf->ChangeFlag & GRETUIF_CF_VLANID)
-    {
-        if (CosaDml_GreTunnelIfSetVlanId(1, ins, pGreTuIf->VLANID) != ANSC_STATUS_SUCCESS)
-            goto rollback;
-    }
-	if (pGreTuIf->ChangeFlag & GRETUIF_CF_ASSOBR)
-    {
-        if (CosaDml_GreTunnelIfSetAssociatedBridges(1, ins, pGreTuIf->AssociatedBridges) != ANSC_STATUS_SUCCESS)
-            goto rollback;
-    }
-    if (pGreTuIf->ChangeFlag & GRETUIF_CF_ASSOBRWFP)
-    {
-        if (CosaDml_GreTunnelIfSetAssociatedBridgesWiFiPort(1, ins, pGreTuIf->AssociatedBridgesWiFiPort) != ANSC_STATUS_SUCCESS)
-            goto rollback;
-    }
-	 pGreTuIf->ChangeFlag = 0;
-    return ANSC_STATUS_SUCCESS;
-
-rollback:
-    pGreTuIf->ChangeFlag = 0;
-    GreTunnelIf_Rollback((ANSC_HANDLE)pGreTuIf);
-    return ANSC_STATUS_FAILURE;
-}
-
-ULONG GreTunnel_Rollback( ANSC_HANDLE hInsContext) {
-	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
-    ULONG                           ins = pGreTu->InstanceNumber;
-
-    if (CosaDml_GreTunnelGetEnable(ins, &pGreTu->Enable) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetEnable(ins, &pGreIf->Enable) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetPrimaryEndpoint(ins, pGreTu->PrimaryRemoteEndpoint, sizeof(pGreTu->PrimaryRemoteEndpoint)) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetLocalInterfaces(ins, pGreIf->LocalInterfaces, sizeof(pGreIf->LocalInterfaces)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-	if (CosaDml_GreTunnelGetSecondaryEndpoint(ins, pGreTu->SecondaryRemoteEndpoint, sizeof(pGreTu->SecondaryRemoteEndpoint)) != ANSC_STATUS_SUCCESS)
-        return ANSC_STATUS_FAILURE;	
-    if (CosaDml_GreTunnelGetKeyGenPolicy(ins, &pGreTu->KeyIdentifierGenerationPolicy) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetEndpoints(ins, pGreIf->RemoteEndpoints, sizeof(pGreIf->RemoteEndpoints)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetKeyId(ins, pGreTu->KeyIdentifier, sizeof(pGreTu->KeyIdentifier)) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetKeyGenPolicy(ins, &pGreIf->KeyIdentifierGenerationPolicy) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetUseSeqNum(ins, &pGreTu->UseSequenceNumber) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetKeyId(ins, pGreIf->KeyIdentifier, sizeof(pGreIf->KeyIdentifier)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetUseChecksum(ins, &pGreTu->UseChecksum) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetUseSeqNum(ins, &pGreIf->UseSequenceNumber) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetDSCPMarkPolicy(ins, &pGreTu->DSCPMarkPolicy) != ANSC_STATUS_SUCCESS)
-        return ANSC_STATUS_FAILURE;		
-    if (CosaDml_GreTunnelGetKeepAlivePolicy(ins, &pGreTu->KeepAlivePolicy) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetUseChecksum(ins, &pGreIf->UseChecksum) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetKeepAliveInterval(ins, &pGreTu->RemoteEndpointHealthCheckPingInterval) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetDSCPMarkPolicy(ins, &pGreIf->DSCPMarkPolicy) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetKeepAliveThreshold(ins, &pGreTu->RemoteEndpointHealthCheckPingFailThreshold) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetVlanId(ins, &pGreIf->VLANID) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetKeepAliveCount(ins, &pGreTu->RemoteEndpointHealthCheckPingCount) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetKeepAlivePolicy(ins, &pGreIf->KeepAlivePolicy) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetKeepAliveFailInterval(ins, &pGreTu->RemoteEndpointHealthCheckPingIntervalInFailure) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetKeepAliveInterval(ins, &pGreIf->KeepAliveInterval) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetReconnPrimary(ins, &pGreTu->ReconnectToPrimaryRemoteEndpoint) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetKeepAliveThreshold(ins, &pGreIf->KeepAliveThreshold) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetDhcpCircuitSsid(ins, &pGreTu->EnableCircuitID) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetKeepAliveCount(ins, &pGreIf->KeepAliveCount) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetDhcpRemoteId(ins, &pGreTu->EnableRemoteID) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetKeepAliveFailInterval(ins, &pGreIf->KeepAliveFailInterval) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetGRETunnel(ins, &pGreTu->GRENetworkTunnel, sizeof(pGreTu->GRENetworkTunnel)) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetReconnPrimary(ins, &pGreIf->ReconnectPrimary) != ANSC_STATUS_SUCCESS)
+        return ANSC_STATUS_FAILURE;
+    if (CosaDml_GreIfGetDhcpCircuitSsid(ins, &pGreIf->DHCPCircuitIDSSID) != ANSC_STATUS_SUCCESS)
+        return ANSC_STATUS_FAILURE;
+    if (CosaDml_GreIfGetDhcpRemoteId(ins, &pGreIf->DHCPRemoteID) != ANSC_STATUS_SUCCESS)
+        return ANSC_STATUS_FAILURE;
+    if (CosaDml_GreIfGetAssociatedBridges(ins, &pGreIf->AssociatedBridges, sizeof(pGreIf->AssociatedBridges)) != ANSC_STATUS_SUCCESS)
+        return ANSC_STATUS_FAILURE;
+    if (CosaDml_GreIfGetAssociatedBridgesWiFiPort(ins, &pGreIf->AssociatedBridgesWiFiPort, sizeof(pGreIf->AssociatedBridgesWiFiPort)) != ANSC_STATUS_SUCCESS)
+        return ANSC_STATUS_FAILURE;
+    if (CosaDml_GreIfGetGREInterface(ins, &pGreIf->GRENetworkInterface, sizeof(pGreIf->GRENetworkInterface)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
     return ANSC_STATUS_SUCCESS;
 }
 
-ULONG GreTunnelIf_Rollback( ANSC_HANDLE hInsContext) {
-	COSA_DML_GRE_TUNNEL_IF                 *pGreTuIf      = (COSA_DML_GRE_TUNNEL_IF *)hInsContext;
-    ULONG                           ins = pGreTuIf->InstanceNumber;
+BOOL
+GreIfStat_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      pUlong
+    )
+{
+    COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
+    COSA_DML_GRE_IF_STATS           *pStats      = (COSA_DML_GRE_IF_STATS *)&pGreIf->IfStats;
 
-	//TODO: do not hardcode tunnel ID
-    if (CosaDml_GreTunnelIfGetEnable(1, ins, &pGreTuIf->Enable) != ANSC_STATUS_SUCCESS)
-        return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelIfGetLocalInterfaces(1, ins, pGreTuIf->LocalInterfaces, sizeof(pGreTuIf->LocalInterfaces)) != ANSC_STATUS_SUCCESS)
-        return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelIfGetVlanId(1, ins, &pGreTuIf->VLANID) != ANSC_STATUS_SUCCESS)
-        return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelIfGetAssociatedBridges(1, ins, pGreTuIf->AssociatedBridges, sizeof(pGreTuIf->AssociatedBridges)) != ANSC_STATUS_SUCCESS)
-        return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelIfGetAssociatedBridgesWiFiPort(1, ins, pGreTuIf->AssociatedBridgesWiFiPort, sizeof(pGreTuIf->AssociatedBridgesWiFiPort)) != ANSC_STATUS_SUCCESS)
-        return ANSC_STATUS_FAILURE;
-
-	return ANSC_STATUS_SUCCESS;
-
-}
-
-BOOL GreTunnelStat_GetParamUlongValue ( ANSC_HANDLE hInsContext, char* ParamName, ULONG* pUlong ) {
-	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
-    COSA_DML_GRE_TUNNEL_STATS           *pStats      = (COSA_DML_GRE_TUNNEL_STATS *)&pGreTu->TuStats;
-
-    CosaDml_GreTunnelGetStats(pGreTu->InstanceNumber, pStats);
+    CosaDml_GreIfGetStats(pGreIf->InstanceNumber, pStats);
 
     if (AnscEqualString(ParamName, "KeepAliveSent", TRUE))
     {
@@ -750,7 +633,8 @@ BOOL GreTunnelStat_GetParamUlongValue ( ANSC_HANDLE hInsContext, char* ParamName
         *pUlong = pStats->DiscardSequenceNumberReceived;
         return TRUE;
     }
-	return FALSE;
+
+    return FALSE;
 }
 
 #endif
