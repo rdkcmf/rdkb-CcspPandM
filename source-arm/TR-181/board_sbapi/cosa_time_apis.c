@@ -388,11 +388,12 @@ CosaDmlTimeInit
 
     CosaDmlTimeGetCfg(NULL, pTimeCfg);
 
+/*
     if(ANSC_STATUS_SUCCESS != updateTimeZone(pTimeCfg->LocalTimeZone))
     {
         AnscTraceWarning(("%s: Fail to update time zone!\n", __FUNCTION__));
     }
-
+*/
     return ANSC_STATUS_SUCCESS;
 }
 

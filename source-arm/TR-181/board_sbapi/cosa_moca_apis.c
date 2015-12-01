@@ -823,9 +823,10 @@ CosaDmlMocaIfGetCfg
     {
 		memset(&mocaCfg, 0, sizeof(moca_cfg_t));
         moca_GetIfConfig(uIndex, &mocaCfg);
-		
+		/*RDKB-701 :Commenting out fetching from HAL because hal returns InstanceNumber as Zero always,but stack expects 
+InstanceNumber to be 1 , and InstanceNumber is already assigned to 1 during MoCA initialization   */	
 		/* Translate the data structures */
-		pCfg->InstanceNumber 						= mocaCfg.InstanceNumber;
+		//pCfg->InstanceNumber 						= mocaCfg.InstanceNumber;
 		strcpy(pCfg->Alias, 						  mocaCfg.Alias);
 		pCfg->bEnabled 								= mocaCfg.bEnabled;
 		pCfg->bPreferredNC 							= mocaCfg.bPreferredNC;
