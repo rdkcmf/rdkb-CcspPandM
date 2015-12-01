@@ -179,13 +179,13 @@ int g_PortIDs[]={
 
 CosaEthInterfaceInfo g_EthEntries[] = 
     {
-        {g_EthIntSInfo + 0, "LAN Ethernet Port 1", 1, 0, &swFuncs, g_PortIDs + 0, {0}},
-        {g_EthIntSInfo + 1, "LAN Ethernet Port 2", 2, 0, &swFuncs, g_PortIDs + 1, {0}},
-        {g_EthIntSInfo + 2, "LAN Ethernet Port 3", 3, 0, &swFuncs, g_PortIDs + 2, {0}},
-        {g_EthIntSInfo + 3, "LAN Ethernet Port 4", 4, 0, &swFuncs, g_PortIDs + 3, {0}},
+        {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
+        {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
+        {g_EthIntSInfo + 2, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 2, {0}},
+        {g_EthIntSInfo + 3, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 3, {0}},
 
-        {g_EthIntSInfo + 4, "WAN Routing Port", 5, 0, &ifFuncs, NULL,          {0}},
-        {g_EthIntSInfo + 5, "WAN Bridging Port", 6, 0, &ifFuncs, NULL,          {0}}
+        {g_EthIntSInfo + 4, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 5, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
     };
 
 #endif
@@ -994,8 +994,6 @@ int puma6_getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg)
 
     /* By default, port is enabled */
     pcfg->bEnabled = TRUE;
-    pcfg->InstanceNumber = eth->instanceNumber;
-    strcpy(pcfg->Alias, eth->Alias);
 
     status = CcspHalEthSwGetPortAdminStatus(port, &AdminStatus);
 
@@ -1049,7 +1047,7 @@ int puma6_getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg)
             }
             case CCSP_HAL_ETHSW_LINK_Auto:
             {
-                pcfg->MaxBitRate = -1;
+                pcfg->MaxBitRate = 0;
                 break;
             }
             default:
@@ -1092,6 +1090,17 @@ int puma6_getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg)
      
 }
 int puma6_setSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg) {
+    CCSP_HAL_ETHSW_PORT         port        = *((PCCSP_HAL_ETHSW_PORT)eth->hwid);
+	CCSP_HAL_ETHSW_ADMIN_STATUS AdminStatus;
+	if(pcfg->bEnabled == TRUE)
+	{
+		AdminStatus = CCSP_HAL_ETHSW_AdminUp;
+	}
+	else
+	{	
+		AdminStatus = CCSP_HAL_ETHSW_AdminDown;
+	}
+	CcspHalEthSwSetPortAdminStatus(port,AdminStatus);
     return ANSC_STATUS_SUCCESS; 
 }
 int puma6_getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDinfo){
@@ -1156,7 +1165,7 @@ int puma6_getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDi
             }
             case CCSP_HAL_ETHSW_LINK_Auto:
             {
-                pDinfo->CurrentBitRate = -1;
+                pDinfo->CurrentBitRate = 0;
                 break;
             }
             default:
@@ -1189,9 +1198,6 @@ static int getIfCfg(PCosaEthInterfaceInfo pEthIf, PCOSA_DML_ETH_PORT_CFG pCfg)
         pCfg->bEnabled = FALSE;
     }
 
-    pCfg->InstanceNumber = pEthIf->instanceNumber;
-    strcpy(pCfg->Alias, pEthIf->Alias);
-	
     pCfg->DuplexMode = COSA_DML_ETH_DUPLEX_Auto;
     pCfg->MaxBitRate = 1000;
 
