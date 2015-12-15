@@ -13695,7 +13695,7 @@
       </objects>
       
     </object>
-
+<!--    
     <object>
         
         <name>X_CISCO_COM_Diagnostics</name>
@@ -13931,7 +13931,7 @@
       </objects>
             
     </object>
-
+-->
     <object>
         <name>X_Comcast_com_ParentalControl</name>
         <objectType>object</objectType>
