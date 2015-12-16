@@ -20,7 +20,7 @@
 
 #include "dml_tr181_custom_cfg.h"
 
-#ifdef CONFIG_CISCO_HOTSPOT
+//#ifdef CONFIG_CISCO_HOTSPOT
 #include "plugin_main_apis.h"
 #include "cosa_x_comcast_com_gre_internal.h"
 
@@ -99,4 +99,4 @@ CosaGreRemove
         AnscFreeMemory(gre);
     return ANSC_STATUS_SUCCESS;
 }
-#endif
+//#endif

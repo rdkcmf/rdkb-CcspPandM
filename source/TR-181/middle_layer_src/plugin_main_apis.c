@@ -318,7 +318,7 @@ CosaBackEndManagerInitialize
 
 
 
-#ifdef CONFIG_CISCO_HOTSPOT
+//#ifdef CONFIG_CISCO_HOTSPOT
 	
     pMyObject->hGRE           = (ANSC_HANDLE)CosaGreCreate();
     AnscTraceWarning(("  CosaGreCreate done!\n"));
@@ -332,7 +332,7 @@ CosaBackEndManagerInitialize
     pMyObject->hHotspot       = (ANSC_HANDLE)CosaHotspotCreate();
     AnscTraceWarning(("  CosaHotspotCreate done!\n"));
 	
-#endif
+//#endif
 
 #if CONFIG_CISCO_FILE_TRANSFER
     pMyObject->hFileTransfer  = (ANSC_HANDLE)CosaFileTransferCreate();
