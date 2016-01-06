@@ -212,7 +212,8 @@ struct
 _COSA_DML_DHCPS_CFG
 {
     BOOLEAN                         bEnabled;
-}_struct_pack_;
+};
+//}_struct_pack_;
 typedef struct _COSA_DML_DHCPS_CFG COSA_DML_DHCPS_CFG,  *PCOSA_DML_DHCPS_CFG;
 
 
@@ -246,7 +247,8 @@ _COSA_DML_DHCPS_POOL_CFG
     int                             LeaseTime;
     int                             X_CISCO_COM_TimeOffset;
     BOOLEAN                         bAllowDelete;
-}_struct_pack_;
+};
+//}_struct_pack_;
 typedef struct _COSA_DML_DHCPS_POOL_CFG COSA_DML_DHCPS_POOL_CFG,  *PCOSA_DML_DHCPS_POOL_CFG;
 
 
@@ -255,7 +257,8 @@ _COSA_DML_DHCPS_POOL_INFO
 {
     COSA_DML_DHCP_STATUS            Status;
     ULONG                           X_CISCO_COM_Connected_Device_Number;
-}_struct_pack_;
+};
+//}_struct_pack_;
 typedef  struct _COSA_DML_DHCPS_POOL_INFO COSA_DML_DHCPS_POOL_INFO,  *PCOSA_DML_DHCPS_POOL_INFO;
 
 
@@ -264,7 +267,8 @@ _COSA_DML_DHCPS_POOL_FULL
 {
     COSA_DML_DHCPS_POOL_CFG    Cfg;
     COSA_DML_DHCPS_POOL_INFO   Info;
-}_struct_pack_;
+};
+//}_struct_pack_;
 typedef  struct _COSA_DML_DHCPS_POOL_FULL COSA_DML_DHCPS_POOL_FULL, *PCOSA_DML_DHCPS_POOL_FULL;
 
 struct
@@ -274,7 +278,8 @@ _COSA_DML_DHCPS_POOL_FULL_LINK_OBJ
     COSA_DML_DHCPS_POOL_FULL    SPool;
     SLIST_HEADER                StaticAddressList;
     SLIST_HEADER                OptionList;
-}_struct_pack_;
+};
+//}_struct_pack_;
 typedef  struct _COSA_DML_DHCPS_POOL_FULL_LINK_OBJ COSA_DML_DHCPS_POOL_FULL_LINK_OBJ, *PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ;
 
 struct
@@ -286,7 +291,8 @@ _COSA_DML_DHCPS_X_CISCO_COM_SADDR
     UCHAR                           Chaddr[6];
     ANSC_IPV4_ADDRESS               Yiaddr;
     char                            DeviceName[COSA_DML_ALIAS_NAME_LENGTH];
-}_struct_pack_;
+};
+//}_struct_pack_;
 typedef  struct _COSA_DML_DHCPS_X_CISCO_COM_SADDR COSA_DML_DHCPS_X_CISCO_COM_SADDR,  *PCOSA_DML_DHCPS_X_CISCO_COM_SADDR;
 
 // Need to define link object for dynamic table
@@ -302,7 +308,8 @@ _COSA_DML_DHCPS_SADDR
     char                            DeviceName[COSA_DML_ALIAS_NAME_LENGTH];
     char                            Comment[256];
     BOOLEAN                         ActiveFlag;
-}_struct_pack_;
+};
+//}_struct_pack_;
 typedef  struct _COSA_DML_DHCPS_SADDR COSA_DML_DHCPS_SADDR,  *PCOSA_DML_DHCPS_SADDR;
 
 struct
@@ -310,7 +317,8 @@ _COSA_DML_DHCPS_SADDR_LINK_OBJ
 {
     SINGLE_LINK_ENTRY           Linkage;
     COSA_DML_DHCPS_SADDR        SPoolSADDR;
-}_struct_pack_;
+};
+//}_struct_pack_;
 typedef  struct _COSA_DML_DHCPS_SADDR_LINK_OBJ COSA_DML_DHCPS_SADDR_LINK_OBJ,  *PCOSA_DML_DHCPS_SADDR_LINK_OBJ;
 
 // Need to define link object for dynamic table 
@@ -324,7 +332,8 @@ _COSA_DML_DHCPSV4_OPTION
     ULONG                           Tag;
     UCHAR                           Value[512];
     BOOLEAN                         bEnabled;
-}_struct_pack_;
+};
+//}_struct_pack_;
 typedef  struct _COSA_DML_DHCPSV4_OPTION COSA_DML_DHCPSV4_OPTION,  *PCOSA_DML_DHCPSV4_OPTION;
 
 struct
@@ -332,7 +341,8 @@ _COSA_DML_DHCPSV4_OPTION_LINK_OBJ
 {
     SINGLE_LINK_ENTRY           Linkage;
     COSA_DML_DHCPSV4_OPTION     SPoolOption;
-}_struct_pack_;
+};
+//}_struct_pack_;
 typedef  struct _COSA_DML_DHCPSV4_OPTION_LINK_OBJ COSA_DML_DHCPSV4_OPTION_LINK_OBJ,  *PCOSA_DML_DHCPSV4_OPTION_LINK_OBJ;
 
 struct
