@@ -3162,6 +3162,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
     ULONG currClientPool = 50;
     ULONG tempIPAddr=0;
 
+    AnscTraceFlow(("Entered Inside %s\n", __FUNCTION__));
 #if 0   
     gettimeofday(&tval, NULL);
     tm = *localtime(&tval.tv_sec);
@@ -3306,7 +3307,11 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 			Utopia_get_lan_host_comments(&utctx,macArray,pEntry->X_CISCO_COM_Comment);
 			Utopia_Free(&utctx, 0);
 		}
-		sprintf(pEntry->ClassId, "%s", pVClass);
+		// This check is to prevent P&M crash
+		if(pVClass != NULL)
+                {
+			sprintf(pEntry->ClassId, "%s", pVClass);
+		}
 
 		/* for client content */
 		pContentEntry  = &pContentEntry2[size];
@@ -3376,6 +3381,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 	printf("%02d-%02d-%02d EXITING %s %d\n", tm.tm_hour, tm.tm_min, tm.tm_sec, __func__, __LINE__);
 #endif
 
+        AnscTraceFlow(("%s, Done with client parameters\n", __FUNCTION__));
     /* for option */
     
 	fp = fopen(COSA_DML_DHCP_OPTIONS_FILE, "r");
@@ -3452,6 +3458,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 
         }            
     }
+    AnscTraceFlow(("%s, Done with Option parameters\n", __FUNCTION__));
     if (fp)
         fclose(fp);
 #if 0
@@ -3459,6 +3466,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
     tm = *localtime(&tval.tv_sec);
     printf("%02d-%02d-%02d EXITING %s %d\n", tm.tm_hour, tm.tm_min, tm.tm_sec, __func__, __LINE__);
 #endif
+    AnscTraceFlow(("Exiting from %s without error\n", __FUNCTION__));
     return 0;
 
 ErrRet:
@@ -3475,6 +3483,7 @@ ErrRet:
 	if(pContentEntry2)
 		AnscFreeMemory(pContentEntry2);
 	g_dhcpv4_server_client_count = 0;
+	AnscTraceFlow(("Exiting from %s with error\n", __FUNCTION__));
 	return(-1);
 }
 
