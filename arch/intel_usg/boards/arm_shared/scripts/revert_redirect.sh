@@ -26,13 +26,13 @@ echo "Obtaining the SSID and Password for 2.4 and 5 GHz"
 SSID_1=`dmcli eRT getv Device.WiFi.SSID.1.SSID | grep string | awk '{print $5}'`
 #echo $SSID_1
 #echo "Getting Device.WiFi.AccessPoint.1.Security.KeyPassphrase.."
-Password_1=`dmcli eRT getv Device.WiFi.AccessPoint.1.Security.X_CISCO_COM_KeyPassphrase | grep string | awk '{print $5}'`
+Password_1=`dmcli eRT getv Device.WiFi.AccessPoint.1.Security.X_COMCAST-COM_KeyPassphrase | grep string | awk '{print $5}'`
 #echo $Password_1
 #echo "Getting Device.WiFi.SSID.2.SSID.."
 SSID_2=`dmcli eRT getv Device.WiFi.SSID.2.SSID | grep string | awk '{print $5}'`
 #echo $SSID_2
 #echo "Getting Device.WiFi.AccessPoint.2.Security.KeyPassphrase.."
-Password_2=`dmcli eRT getv Device.WiFi.AccessPoint.2.Security.KeyPassphrase | grep string | awk '{print $5}'`
+Password_2=`dmcli eRT getv Device.WiFi.AccessPoint.2.Security.X_COMCAST-COM_KeyPassphrase | grep string | awk '{print $5}'`
 #echo $Password_2
 #echo "Getting Device.X_CISCO_COM_CableModem.MACAddress.."
 CM_MAC=`dmcli eRT getv Device.X_CISCO_COM_CableModem.MACAddress | grep string | awk '{print $5}'`

@@ -118,9 +118,9 @@
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>
-#include <autoconf.h>
 
 #include "platform_hal.h"
+#include "autoconf.h"     
  
 #define _ERROR_ "NOT SUPPORTED"
 
@@ -1351,5 +1351,29 @@ CosaDmlDiGetProcessorSpeed
     if(pValue[*pulSize-1] == '\n') pValue[--(*pulSize)] = '\0';
     return ANSC_STATUS_SUCCESS; 
 }
+
+ANSC_STATUS
+CosaDmlDiGetFactoryResetCount
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       *pValue
+    )
+{
+
+	platform_hal_GetFactoryResetCount(pValue);
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS CosaDmlDiClearResetCount
+    (
+        ANSC_HANDLE                 hContext,
+        BOOL                        bValue
+   )
+{
+
+	platform_hal_ClearResetCount(bValue);
+    return ANSC_STATUS_SUCCESS;
+}
+   
 
 #endif

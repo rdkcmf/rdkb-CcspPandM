@@ -3,14 +3,14 @@
 export LD_LIBRARY_PATH=$PWD:.:$PWD/../../lib:$PWD/../../.:/lib:/usr/lib:$LD_LIBRARY_PATH
 export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
 
+source /fss/gw/etc/utopia/service.d/log_env_var.sh
+
 SUBSYSLOCATION="/fss/gw/usr/ccsp"
 rebootNeeded=0
 rebootNeededPAM=0
 rebootNeededPSM=0
 rebootNeededCR=0
 rebootNeededTR69=0
-FLAG_REBOOT="/var/tmp/waitingreboot"
-NEEDREBOOT="/var/tmp/processcrashed"
 
 if [ -f $SUBSYSLOCATION/cp_subsys_ert ]; then
 	Subsys="eRT."
@@ -20,15 +20,14 @@ else
 	Subsys=""
 fi
 
-echo "Entering newWhile $Subsys"
 crashed=0
 source /etc/utopia/service.d/log_capture_path.sh
 loop=1
-countForMem=0
+
 while [ $loop -eq 1 ]
 do
 	sleep 300
-    countForMem=$((countForMem+1))
+
 	cd /fss/gw/usr/ccsp/
 
 	# Checking PandM's PID
@@ -38,8 +37,8 @@ do
 		echo "RDKB_PROCESS_CRASHED : PAM_process is not running, need to reboot the unit now"
 		rebootNeededPAM=1
 		rebootNeeded=1
-    		touch $NEEDREBOOT
-	        /fss/gw/rdklogger/backupLogs.sh
+    		touch $HAVECRASH
+	         /fss/gw/rdklogger/backupLogs.sh "true" "PAM"
 		#/fss/gw/rdklogger/backupLogs.sh
 		fi
 	fi
@@ -152,7 +151,7 @@ do
 	#hotspot_arpd -q 0
 	#dhcp_snooperd -q 1 -n 2 -e 1
 	HOTSPOT_ENABLE=`dmcli eRT getv Device.DeviceInfo.X_COMCAST_COM_xfinitywifiEnable | grep value | cut -f3 -d : | cut -f2 -d" "`
-	if [ $HOTSPOT_ENABLE = "true" ]
+	if [ "$HOTSPOT_ENABLE" = "true" ]
 	then
    		BASEQUEUE=1
    		keepalive_args="-n `sysevent get wan_ifname` -e 1"
@@ -190,47 +189,8 @@ do
 	
 	fi
 
-	if [ $countForMem -eq 12 ]
-    then
-       	countForMem=0
-
-		#Checking for Total in system
-		#TOTALMEM=`free | awk 'FNR == 2 {print $2}'`
-		TOTALMEM=`dmcli eRT getv Device.DeviceInfo.MemoryStatus.Total | grep value | cut -f3  -d":" | cut -f2 -d" "`
-		echo "RDKB_SYS_MEM_INFO_HAL : Total memory in system is $TOTALMEM MB"
-
-		#Checking for memory used in system
-		#USEDMEM=`free | awk 'FNR == 2 {print $3}'`
-		USEDMEM=`dmcli eRT getv Device.DeviceInfo.MemoryStatus.Used | grep value | cut -f3  -d":" | cut -f2 -d" "`
-		echo "RDKB_SYS_MEM_INFO_HAL : Used memory in system is $USEDMEM MB"
-
-		#Checking for memory availble in system
-		#FREEMEM=`free | awk 'FNR == 2 {print $4}'`
-		FREEMEM=`dmcli eRT getv Device.DeviceInfo.MemoryStatus.Free | grep value | cut -f3  -d":" | cut -f2 -d" "`
-		echo "RDKB_SYS_MEM_INFO_HAL : Free memory in system is $FREEMEM MB"
-
-		totalMemSys=`free | awk 'FNR == 2 {print $2}'`
-		usedMemSys=`free | awk 'FNR == 2 {print $3}'`
-		freeMemSys=`free | awk 'FNR == 2 {print $3}'`
-		
-		TotalNumOfDevicesConnected=`dmcli eRT getv Device.Hosts.HostNumberOfEntries | grep value | cut -f3  -d":" | cut -f2 -d" "`
-		echo "RDKB_SYS_MEM_INFO_SYS : Total memory in system is $totalMemSys"
-		echo "RDKB_SYS_MEM_INFO_SYS : Used memory in system is $usedMemSys"
-		echo "RDKB_SYS_MEM_INFO_SYS : Free memory in system is $freeMemSys"
-		echo "RDKB_CONNECTED_CLIENTS : Total No. of connected clients $TotalNumOfDevicesConnected"
-		
-		LOAD_AVG=`cat /proc/loadavg`
-	    echo "RDKB_LOAD_AVERAGE : Load Average is $LOAD_AVG"
-	    
-	    CPU_INFO=`mpstat | tail -1` 
-	    echo "RDKB_CPUINFO : Cpu Info is $CPU_INFO "
-	    
-		
-		
-   fi
-
 	#cd /
-	if [ $rebootNeeded -eq 1 ]
+	if [ "$rebootNeeded" -eq 1 ]
 	then
 		cur_hr=`date +"%H"`
        		cur_min=`date +"%M"`
@@ -243,7 +203,19 @@ do
 				#Check if we have already flagged reboot is needed
 				if [ ! -e $FLAG_REBOOT ]
 				then
-                	sh /etc/calc_random_time_to_reboot_dev.sh &
+					if [ "$rebootNeededPSM" -eq 1 ]
+					then
+						echo "rebootNeededPSM"
+			                	sh /etc/calc_random_time_to_reboot_dev.sh "PSM" &
+
+					elif [ "$rebootNeededCR" -eq 1 ]
+					then
+						echo "rebootNeededCR"
+			                	sh /etc/calc_random_time_to_reboot_dev.sh "CR" &
+					else 
+						echo "rebootNeededTR69"
+			                	sh /etc/calc_random_time_to_reboot_dev.sh "TR69" &
+					fi
 					touch $FLAG_REBOOT
 #				fi
 				else

@@ -132,6 +132,27 @@ DeviceInfo_GetParamBoolValue_Custom
        *pBool = pMyObject->bWiFiConfigued;
 	return TRUE;
     }
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_WiFiNeedsPersonalization",TRUE))
+    {
+	    char buf[5];
+        syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
+    	if( buf != NULL )
+    	{
+    		if (strcmp(buf,"true") == 0)
+    		        *pBool = TRUE;
+    		    else
+    		        *pBool = FALSE;
+    	}
+	    return TRUE;
+    }
+	    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CaptivePortalEnable", TRUE))
+    {
+ //      *pBool = pMyObject->bCaptivePortalEnable;
+        if (CosaDmlGetCaptivePortalEnable(&pMyObject->bCaptivePortalEnable) != ANSC_STATUS_SUCCESS)
+            return FALSE;
+       *pBool = pMyObject->bCaptivePortalEnable;
+	return TRUE;
+    }
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUICapable", TRUE))
     {
 /*       *pBool = pMyObject->bCloudCapable;
@@ -289,6 +310,12 @@ DeviceInfo_GetParamStringValue_Custom
 	   return 0;
 	}
 
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_WAN_IPv6", TRUE))
+	{
+	   CosaDmlDiGetRouterIPv6Address(NULL, pValue,pulSize);
+	   return 0;
+	}
+
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_MTA_IP", TRUE))
 	{
 	   CosaDmlDiGetMTAIPAddress(NULL, pValue,pulSize);
@@ -386,6 +413,18 @@ DeviceInfo_SetParamBoolValue_Custom
 	 }	
 	return FALSE;
     } 
+
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CaptivePortalEnable", TRUE))
+    {
+	if( pMyObject->bCaptivePortalEnable == bValue )
+	{
+		return TRUE;	
+	}
+        if (CosaDmlSetCaptivePortalEnable(bValue) != ANSC_STATUS_SUCCESS)
+            return FALSE;
+     	pMyObject->bCaptivePortalEnable = bValue;
+        return TRUE;
+    }
 
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUICapable", TRUE))
     {

@@ -168,6 +168,12 @@ DeviceInfo_GetParamBoolValue
     )
 {
     BOOL                            bReturnValue;
+    
+    if( AnscEqualString(ParamName, "ClearResetCount", TRUE))
+    {
+        *pBool = FALSE ; 
+        return TRUE;
+    }
 
     bReturnValue =
         DeviceInfo_GetParamBoolValue_Custom
@@ -300,6 +306,13 @@ DeviceInfo_GetParamUlongValue
 
 	   fclose(fp);	
            return TRUE;
+    }
+    
+    if( AnscEqualString(ParamName, "FactoryResetCount", TRUE))
+    {
+        /* collect value */
+        CosaDmlDiGetFactoryResetCount(NULL,puLong);
+        return TRUE;
     }
 	
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -589,6 +602,14 @@ DeviceInfo_SetParamBoolValue
     )
 {
     BOOL                            bReturnValue;
+    
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "ClearResetCount", TRUE))
+    {
+        /* collect value */
+        CosaDmlDiClearResetCount(NULL,bValue);
+        return TRUE;
+    }
 
     bReturnValue =
         DeviceInfo_SetParamBoolValue_Custom
@@ -785,18 +806,13 @@ DeviceInfo_SetParamStringValue
 
          if (AnscEqualString(pString, "ui_access", TRUE))
          {
-		    CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_ACCESS\n"));
-             
-         }
-         else if(AnscEqualString(pString, "ui_success", TRUE))
-         {
-            CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_SUCCESS\n"));
+		 CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_ACCESS\n"));
          }
          else if(AnscEqualString(pString, "ui_failed", TRUE))
          {
-            CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_FAILED\n"));
+         	CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_FAILED\n"));
          }
-		 else if (AnscEqualString(pString, "reboot_device", TRUE))
+	 else if (AnscEqualString(pString, "reboot_device", TRUE))
          {
                 CcspTraceInfo(("RDKB_REBOOT : RebootDevice triggered from GUI\n"));
 	 }
@@ -804,8 +820,11 @@ DeviceInfo_SetParamStringValue
          {
                 
 		CcspTraceInfo(("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n"));
-             
-         }     
+         }
+	 else if(AnscEqualString(pString, "captiveportal_failure", TRUE)) {
+
+	 	CcspTraceInfo(("Local UI Access : Out of Captive Poratl, Captive Portal is disabled\n"));
+	 }
          else
          {
 	        CcspTraceInfo(("Local UI Access : Unsupported value\n"));
@@ -3421,7 +3440,7 @@ Webpa_GetParamBoolValue
 		{
 			return FALSE;
 		}
-		if(!strcmp(pchar,"true"))
+		if(!strncmp(pchar,"true",strlen("true")))
 		{
 			*pBool = TRUE;
 		}
