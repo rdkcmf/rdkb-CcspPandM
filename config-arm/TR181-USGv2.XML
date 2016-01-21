@@ -228,6 +228,29 @@
           <writable>true</writable>
 
          </parameter>
+	<parameter>
+
+          <name>X_RDKCENTRAL-COM_CaptivePortalEnable</name>
+	
+          <type>boolean</type>
+	
+          <syntax>bool</syntax>
+
+          <writable>true</writable>
+
+         </parameter>	
+	 
+	 <parameter>
+
+          <name>X_RDKCENTRAL-COM_WiFiNeedsPersonalization</name>
+	
+          <type>boolean</type>
+	
+          <syntax>bool</syntax>
+
+          <writable>false</writable>
+
+    </parameter>
          
 	<parameter>
 
@@ -316,6 +339,16 @@
           <syntax>string</syntax>
                                                  
         </parameter>        
+
+		<parameter>
+
+          <name>X_COMCAST-COM_WAN_IPv6</name>
+
+          <type>string(64)</type>
+
+          <syntax>string</syntax>
+
+        </parameter>
         
         <parameter>
     
@@ -614,7 +647,21 @@
           <syntax>uint32</syntax>
 	  <writable>true</writable>
         </parameter>
-	</parameters>
+        
+        <parameter>
+          <name>FactoryResetCount</name>
+          <type>unsignedInt</type>
+          <syntax>uint32</syntax>
+        </parameter>
+        
+        <parameter>
+          <name>ClearResetCount</name>
+          <type>boolean</type>
+          <syntax>bool</syntax>
+	     <writable>true</writable>
+        </parameter>
+
+        </parameters>
 
       <objects>
 	  
@@ -2561,6 +2608,16 @@
           <writable>true</writable>
 
         </parameter>
+        
+        <parameter>
+
+          <name>MocaResetCount</name>
+
+          <type>unsignedInt</type>
+
+          <syntax>uint32</syntax>
+
+        </parameter>
     
       </parameters>
 
@@ -3796,7 +3853,7 @@
 
             <object>
 
-              <name>X_CISCO_COM_Mesh</name>
+              <name>X_RDKCENTRAL-COM_MeshTable</name>
 
               <objectType>object</objectType>
 
@@ -3836,7 +3893,7 @@
 
                 <parameter>
 
-                  <name>TxNodeID</name>
+                  <name>MeshTxNodeId</name>
 
                   <type>unsignedInt</type>
 
@@ -3870,7 +3927,7 @@
 
                 <parameter>
 
-                  <name>RxNodeID</name>
+                  <name>MeshRxNodeId</name>
 
                   <type>unsignedInt</type>
 
@@ -3879,7 +3936,7 @@
                 </parameter>
                 <parameter>
 
-                  <name>TxRate</name>
+                  <name>MeshPHYTxRate</name>
 
                   <type>unsignedInt</type>
 
@@ -13695,7 +13752,7 @@
       </objects>
       
     </object>
-
+    
     <object>
         
         <name>X_CISCO_COM_Diagnostics</name>
@@ -14371,6 +14428,7 @@
 
         </parameters>
     </object>      
+    
     <object>
         <name>X_COMCAST_COM_GRE</name>
         <objectType>object</objectType>
@@ -14672,7 +14730,8 @@
 					<parameter>
                         <name>RemoteEndpointHealthCheckPingCount</name>
                         <type>unsignedInt</type>
-                        <syntax>uint32</syntax>                        
+                        <syntax>uint32</syntax>
+                        <writable>true</writable>
                     </parameter>
 					<parameter>
                         <name>RemoteEndpointHealthCheckPingInterval</name>

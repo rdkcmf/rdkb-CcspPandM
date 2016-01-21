@@ -220,7 +220,12 @@ fi
 # If they are up, restart it.
 # This check is needed because when WAN comes up later than LAN we should make all 
 # configurations in sync
-if [ "$REDIRECTION_FLAG" = "true" ]
+
+CAPTIVEPORTAL_ENABLED=`syscfg get CaptivePortal_Enable`
+echo "Network Response : CaptivePortal enabled val is $CAPTIVEPORTAL_ENABLED"
+
+
+if [ "$REDIRECTION_FLAG" = "true" ] && [ "$CAPTIVEPORTAL_ENABLED" == "true" ] 
 then
 
 	# Check if dnsmasq is up
@@ -245,7 +250,6 @@ then
 	if [ "$CHECK_LIGHTTPD" != "" ]
 	then
 		echo "Network Response: Check ConfigureWiFi parameter is in sync or not"
-		WIFIUNCONFIGURED=`syscfg get redirection_flag`
 		SET_CONFIGURE_FLAG=`psmcli get eRT.com.cisco.spvtg.ccsp.Device.WiFi.NotifyWiFiChanges`
 
 		#Read the http response value
@@ -260,9 +264,8 @@ then
 			SET_CONFIGURE_FLAG=`psmcli get eRT.com.cisco.spvtg.ccsp.Device.WiFi.NotifyWiFiChanges`
 		done
 		echo "Network Response: NotifyWiFiChanges is $SET_CONFIGURE_FLAG"
-		echo "Network Response: Redirection_flag value is $WIFIUNCONFIGURED"
-		if [ "$WIFIUNCONFIGURED" = "true" ]
-		then
+		echo "Network Response: Redirection_flag value is $REDIRECTION_FLAG"
+
 			if [ "$NETWORKRESPONSEVALUE" = "204" ] && [ "$SET_CONFIGURE_FLAG" = "true" ]
 			then
 
@@ -289,7 +292,7 @@ then
 					touch $REVERT_FLAG
 				fi
 			fi
-		fi
+
 	fi
 fi
 

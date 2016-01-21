@@ -1865,7 +1865,7 @@ CosaDmlDhcpsGetState
     } 
     else 
     { 
-        AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = %s \n", __FUNCTION__,param_name,param_value)); 
+       // AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = %s \n", __FUNCTION__,param_name,param_value)); 
         /* reading from PSM, but take the one from Utopia.
         if(strcmp(param_value, PSM_ENABLE_STRING_TRUE))
         {

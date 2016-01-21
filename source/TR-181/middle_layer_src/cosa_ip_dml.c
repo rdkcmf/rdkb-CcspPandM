@@ -1300,7 +1300,7 @@ Interface2_GetParamStringValue
     {
         if(_ansc_strlen(pIPInterface->Cfg.LowerLayers) == 0)
         {
-            AnscTraceFlow
+            CcspTraceDebug
                 ((
                     "%s -- LowerLayers, IpIf %d, LinkName is %s, EthLink %d, IfType %d\n",
                     __FUNCTION__,
@@ -1332,7 +1332,7 @@ Interface2_GetParamStringValue
             }
         }
 
-        AnscTraceFlow
+        CcspTraceDebug
             ((
                 "%s -- LowerLayers is %s\n",
                 __FUNCTION__,

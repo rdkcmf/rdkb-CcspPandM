@@ -86,6 +86,8 @@
 #include <utapi_util.h>
 #define _ERROR_ "NOT SUPPORTED"
 
+#define CAPTIVEPORTAL_EANBLE     "CaptivePortal_Enable"
+
 extern void* g_pDslhDmlAgent;
 
 static int
@@ -194,6 +196,34 @@ CosaDmlDiGetRouterIPAddress
 	unsigned int UIntIP = (unsigned int)CosaUtilGetIfAddr("erouter0");
 	sprintf(pValue, "%d.%d.%d.%d", (UIntIP >> 24),((UIntIP >> 16) & 0xff),((UIntIP >> 8) & 0xff),(UIntIP & 0xff));
 	*pulSize = AnscSizeOfString(pValue);
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+/*X_COMCAST-COM_WAN_IPv6*/
+ANSC_STATUS
+CosaDmlDiGetRouterIPv6Address
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+	ipv6_addr_info_t * p_v6addr = NULL;
+    int  v6addr_num = 0, i, l_iIpV6AddrLen;
+
+	CosaUtilGetIpv6AddrInfo("erouter0", &p_v6addr, &v6addr_num);
+    for(i = 0; i < v6addr_num; i++ )
+    {
+        if(p_v6addr[i].scope == IPV6_ADDR_SCOPE_GLOBAL)
+        {
+			l_iIpV6AddrLen = strlen(p_v6addr[i].v6addr);
+			strncpy(pValue, p_v6addr[i].v6addr, l_iIpV6AddrLen);
+			pValue[l_iIpV6AddrLen] = '\0';
+        }
+    }
+	if(p_v6addr)
+        free(p_v6addr);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -337,3 +367,70 @@ CosaDmlDiSetXfinityWiFiEnable
     return ANSC_STATUS_SUCCESS;
 }
 #endif
+
+ANSC_STATUS
+CosaDmlGetCaptivePortalEnable
+    (
+        BOOL *pValue
+    )
+{
+	char buf[5];
+        syscfg_get( NULL, CAPTIVEPORTAL_EANBLE , buf, sizeof(buf));
+
+    	if( buf != NULL )
+    		{
+    		    if (strcmp(buf,"true") == 0)
+		    {
+			CcspTraceWarning(("CaptivePortal: Captive Portal switch is enabled...\n"));		
+    		       *pValue = true;
+		    }
+    		    else
+			{
+			CcspTraceWarning(("CaptivePortal: Captive Portal switch is disabled...\n"));		
+    		        *pValue = false;	
+			}
+    		}
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlSetCaptivePortalEnable
+    (
+        BOOL value
+    )
+{
+
+	char buf[10];
+	char cmd[50];
+	memset(buf,0,sizeof(buf));
+	memset(cmd,0,sizeof(cmd));
+	if (value)
+	{
+		strcpy(buf,"true");
+		CcspTraceWarning(("CaptivePortal: Enabling Captive Portal switch ...\n"));		
+	}
+	else
+	{
+		CcspTraceWarning(("CaptivePortal: Disabling Captive Portal switch ...\n"));		
+		strcpy(buf,"false");
+	}
+	if (syscfg_set(NULL, CAPTIVEPORTAL_EANBLE , buf) != 0) {
+                     CcspTraceWarning(("syscfg_set failed to enable/disable captive portal\n"));
+		     return ANSC_STATUS_FAILURE;
+             } else {
+
+                    if (syscfg_commit() != 0) {
+                            CcspTraceWarning(("syscfg_commit failed\n"));
+		     return ANSC_STATUS_FAILURE;
+                    }
+	  }
+
+    sprintf(cmd,"sh /etc/restart_services.sh %s",buf);
+    system(cmd);
+    /*commonSyseventSet("dhcp-server-restart", "");
+    commonSyseventSet("firewall-restart", "");
+    commonSyseventSet("zebra-restart", ""); */
+
+    return ANSC_STATUS_SUCCESS;
+}
+

@@ -174,6 +174,9 @@ static void configBridgeMode(int bEnable);
 static int curticket   = 1; /*The thread should be run with the ticket*/
 static int totalticket = 0;
 
+extern int commonSyseventFd ;
+extern token_t commonSyseventToken;
+
 #if 0
 void configWifi()
 {
@@ -1357,6 +1360,45 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 	return ANSC_STATUS_SUCCESS;
 }
 
+static int openCommonSyseventConnection() {
+    if (commonSyseventFd == -1) {
+        commonSyseventFd = s_sysevent_connect(&commonSyseventToken);
+    }
+    return 0;
+}
+
+static ANSC_STATUS CosaDmlDcRestartRouter()
+{
+    char statusValue[256] = {0};
+    int count = 0;
+    pthread_detach(pthread_self());
+    system("sysevent set lan-stop");
+       
+    while(1) {
+
+        if(commonSyseventFd == -1) {
+            openCommonSyseventConnection();
+        }
+        sleep(3);
+        /*lan-status event*/
+        if( 0 == sysevent_get(commonSyseventFd, commonSyseventToken, "lan-status", statusValue, sizeof(statusValue)) && '\0' != statusValue[0] )
+        {
+            if (0 == strncmp(statusValue, "stopped", strlen("stopped"))) {
+                CcspTraceWarning(("Lan is restarting \n"));
+                system("sysevent set forwarding-restart");
+                break;
+            }
+        }
+        if(count > 5) {
+            CcspTraceWarning(("Lan Restart Time Out\n"));
+            break;
+        }
+        count++;            
+    } 
+    
+    return ANSC_STATUS_SUCCESS;      
+}
+
 ANSC_STATUS
 CosaDmlDcSetRebootDevice
     (
@@ -1458,8 +1500,13 @@ CosaDmlDcSetRebootDevice
     if (router) {
         fprintf(stderr, "Router is going to reboot\n");
 		CcspTraceWarning(("RebootDevice:Router is going to reboot\n"));
-        system("sysevent set lan-stop");
-        system("sysevent set forwarding-restart"); 
+		
+		/*Since two sysevents are issued simultaneously , lan is stopped but forwarding-restart is not bringing up. 
+		Fix added is for waiting till lan-stop is done , then issuing command to bring up*/
+		//system("sysevent set lan-stop");
+		//system("sysevent set forwarding-restart");
+		pthread_t tid2;
+		pthread_create(&tid2, NULL, &CosaDmlDcRestartRouter, NULL); 
     }
 
     if (wifi) {

@@ -320,7 +320,7 @@ X_CISCO_COM_PeerTable_GetParamStringValue
 
  APIs for Object:
 
-    MoCA.Interface.{i}.X_CISCO_COM_Mesh.MeshTxNodeTable.{i}.
+    MoCA.Interface.{i}.X_RDKCENTRAL-COM_MeshTable.MeshTxNodeTable.{i}.
 
     *  MeshTxNodeTable_GetEntryCount
     *  MeshTxNodeTable_GetEntry
@@ -367,7 +367,7 @@ MeshTxNodeTable_GetParamUlongValue
 
  APIs for Object:
 
-    MoCA.Interface.{i}.X_CISCO_COM_Mesh.MeshTxNodeTable.{i}.MeshRxNodeTable.{i}.
+    MoCA.Interface.{i}.X_RDKCENTRAL-COM_MeshTable.MeshTxNodeTable.{i}.MeshRxNodeTable.{i}.
 
     *  MeshRxNodeTable_GetEntryCount
     *  MeshRxNodeTable_GetEntry

@@ -270,6 +270,13 @@ MoCA_GetParamUlongValue
         *puLong = pCfg->X_CISCO_COM_ProvisioningServerAddressType;
         return TRUE;
     }
+    if( AnscEqualString(ParamName, "MocaResetCount", TRUE) )
+	{
+		if (CosaDmlMocaGetResetCount(NULL,puLong) != ANSC_STATUS_SUCCESS)
+			return FALSE;
+
+		return TRUE;
+	}
 
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2446,7 +2453,7 @@ _MeshTxNodeTable_Populate
 
  APIs for Object:
 
-    MoCA.Interface.{i}.X_CISCO_COM_Mesh.MeshTxNodeTable.{i}.
+    MoCA.Interface.{i}.X_RDKCENTRAL-COM_MeshTable.MeshTxNodeTable.{i}.
 
     *  MeshTxNodeTable_GetEntryCount
     *  MeshTxNodeTable_GetEntry
@@ -2683,7 +2690,7 @@ MeshTxNodeTable_GetParamUlongValue
     PCOSA_DML_MOCA_MeshTxNode pConf = (PCOSA_DML_MOCA_MeshTxNode)pContextLinkObject->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "TxNodeID", TRUE))
+    if( AnscEqualString(ParamName, "MeshTxNodeId", TRUE))
     {
         /* collect value */
         *puLong = pConf->TxNodeID;
@@ -2699,7 +2706,7 @@ MeshTxNodeTable_GetParamUlongValue
 
  APIs for Object:
 
-    MoCA.Interface.{i}.X_CISCO_COM_Mesh.MeshTxNodeTable.{i}.MeshRxNodeTable.{i}.
+    MoCA.Interface.{i}.X_RDKCENTRAL-COM_MeshTable.MeshTxNodeTable.{i}.MeshRxNodeTable.{i}.
 
     *  MeshRxNodeTable_GetEntryCount
     *  MeshRxNodeTable_GetEntry
@@ -2835,7 +2842,7 @@ MeshRxNodeTable_GetParamUlongValue
     PCOSA_DML_MOCA_MeshRxNode   pConf               = (PCOSA_DML_MOCA_MeshRxNode)pContextLinkObject->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "RxNodeID", TRUE))
+    if( AnscEqualString(ParamName, "MeshRxNodeId", TRUE))
     {
         /* collect value */
         *puLong = pConf->RxNodeID;
@@ -2844,7 +2851,7 @@ MeshRxNodeTable_GetParamUlongValue
     }
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "TxRate", TRUE))
+    if( AnscEqualString(ParamName, "MeshPHYTxRate", TRUE))
     {
         /* collect value */
         *puLong = pConf->TxRate;

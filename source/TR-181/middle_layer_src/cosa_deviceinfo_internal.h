@@ -88,6 +88,7 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
     
 #ifdef CONFIG_INTERNET2.0
     BOOL		bWiFiConfigued;	
+    BOOL		bCaptivePortalEnable;	
     BOOL		bCloudCapable;	
     BOOL		bCloudEnable;				    
     CHAR		WebURL[64];

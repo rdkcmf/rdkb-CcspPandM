@@ -296,7 +296,7 @@ struct _COSA_DML_MOCA_PEER
 typedef struct _COSA_DML_MOCA_PEER COSA_DML_MOCA_PEER,  *PCOSA_DML_MOCA_PEER;
 
 
-//Device.MoCA.Interface.{i}.X_CISCO_COM_Mesh.MeshTxNodeTable.{i}.MeshRxNodeTable.{i}.XXX
+//Device.MoCA.Interface.{i}.X_RDKCENTRAL-COM_MeshTable.MeshTxNodeTable.{i}.MeshRxNodeTable.{i}.XXX
 struct _COSA_DML_MOCA_MeshRxNode
 {
     ULONG                           RxNodeID;
