@@ -1397,6 +1397,17 @@ CosaDmlMocaIfGetAssocDevices
     return ANSC_STATUS_SUCCESS;
 }
 
+ANSC_STATUS
+CosaDmlMocaGetResetCount
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       *pValue
+    )
+{
+	moca_GetResetCount(pValue);	
+    return ANSC_STATUS_SUCCESS;
+}
+
 #elif (_COSA_DRG_TPG_)
 
 #include <utctx.h>
@@ -1682,19 +1693,6 @@ CosaDmlMocaIfGetDinfo
 
     return ANSC_STATUS_FAILURE;
 }
-
-ANSC_STATUS
-CosaDmlMocaGetResetCount
-    (
-        ANSC_HANDLE                 hContext,
-        ULONG                       *pValue
-    )
-{
-
-	moca_GetResetCount(pValue);
-    return ANSC_STATUS_SUCCESS;
-}
-
 
 #elif ( _COSA_SIM_ )
 
