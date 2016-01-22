@@ -70,8 +70,8 @@ do
 	MTA_PID=`pidof CcspMtaAgentSsp`
 	if [ "$MTA_PID" = "" ]; then
 		echo "RDKB_PROCESS_CRASHED : MTA_process is not running, restarting it"
-		cd mta/
-		./CcspMtaAgentSsp -subsys $Subsys
+		#cd mta/
+		/usr/bin/CcspMtaAgentSsp -subsys $Subsys
 		cd ..
 	fi
 
@@ -79,8 +79,8 @@ do
 	CM_PID=`pidof CcspCMAgentSsp`
 	if [ "$CM_PID" = "" ]; then
 		echo "RDKB_PROCESS_CRASHED : CM_process is not running, restarting it"
-		cd cm/
-		./CcspCMAgentSsp -subsys $Subsys
+		#cd cm/
+		/usr/bin/CcspCMAgentSsp -subsys $Subsys
 		cd ..
 	fi
 
@@ -88,8 +88,8 @@ do
 	WEBC_PID=`pidof CcspWecbController`
 	if [ "$WEBC_PID" = "" ]; then
 		echo "RDKB_PROCESS_CRASHED : WECBController_process is not running, restarting it"
-		cd wecb/
-		./CcspWecbController -subsys $Subsys
+		#cd wecb/
+		/usr/bin/CcspWecbController -subsys $Subsys
 		cd ..
 	fi
 
@@ -97,8 +97,8 @@ do
 	Rm_PID=`pidof CcspRmSsp`
 	if [ "$Rm_PID" = "" ]; then
 		echo "RDKB_PROCESS_CRASHED : RebootManager_process is not running, restarting it"
-		cd rm/
-		./CcspRmSsp -subsys $Subsys
+		#cd rm/
+		/usr/bin/CcspRmSsp -subsys $Subsys
 	fi
 
 	# Checking TR69's PID
@@ -116,8 +116,8 @@ do
 	TandD_PID=`pidof CcspTandDSsp`
 	if [ "$TandD_PID" = "" ]; then
 		echo "RDKB_PROCESS_CRASHED : TandD_process is not running, restarting it"
-		cd tad/
-		./CcspTandDSsp -subsys $Subsys
+		#cd tad/
+		/usr/bin/CcspTandDSsp -subsys $Subsys
 		cd ..
 	fi
 
@@ -125,8 +125,8 @@ do
 	LM_PID=`pidof CcspLMLite`
 	if [ "$LM_PID" = "" ]; then
 		echo "RDKB_PROCESS_CRASHED : LanManager_process is not running, restarting it"
-		cd lm/
-		./CcspLMLite &
+		#cd lm/
+		/usr/bin/CcspLMLite &
 		cd ..
 	
 	fi
@@ -180,8 +180,8 @@ do
 		echo "ENABLEWEBPA is $ENABLEWEBPA"
 		if [ "$ENABLEWEBPA" = "true" ];then
 		echo "RDKB_PROCESS_CRASHED : WebPA_process is not running, trying to restart it"
-			cd webpa/
-			./webpa -subsys $Subsys
+			#cd webpa/
+			/usr/bin/webpa -subsys $Subsys
 			cd ..
 		else
 			echo "EnablePa is false in config file. Hence not initializng WebPA.."
