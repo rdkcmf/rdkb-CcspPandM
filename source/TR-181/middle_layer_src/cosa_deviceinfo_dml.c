@@ -3744,7 +3744,7 @@ Webpa_SetParamBoolValue
 					printf("***checking pwd\n");
 					system("pwd");					
 					char path[200];
-					snprintf(path, 200, "/fss/gw/usr/ccsp/webpa/");
+					snprintf(path, 200, "/usr/bin/");
 					chdir(path);
 					system("pwd");
 					printf("***Starting webpa\n");
