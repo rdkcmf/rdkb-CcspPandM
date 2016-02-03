@@ -439,6 +439,7 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
     char fName[64];
     char str[128];
     int i = 0;
+    char HOSTNAME[64] = {0};
 
     dir = opendir(path);
     if(dir == NULL)
@@ -453,9 +454,10 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
         system(str);
     }
 
+    syscfg_get(NULL, "hostname",HOSTNAME, sizeof(HOSTNAME));
     /* Sort the logs in descending order of timestamp*/
     memset(str, 0, sizeof(str));
-    sprintf(str, "grep ARRIS %s | sort -r -n -k4 > %s", MERGED_LOG_FILE, SORT_MERGE_LOG_FILE);
+    sprintf(str, "grep %s %s | sort -r -n -k4 > %s",HOSTNAME, MERGED_LOG_FILE, SORT_MERGE_LOG_FILE);
     system(str);
 
     fd = fopen(SORT_MERGE_LOG_FILE, "r");
