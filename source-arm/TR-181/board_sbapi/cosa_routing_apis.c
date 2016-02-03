@@ -2602,6 +2602,16 @@ typedef struct ProtoOrigMap_s
     COSA_DML_ROUTING_V6_ORIGIN    origin;
 } ProtoOrigMap_t;
 
+typedef struct RouteInfo6_KeyParam_s 
+{
+    char        	prefix[64];
+    char        	gateway[64];
+    char        	interface[64];
+
+} RouteInfo6_KeyParam_t;
+
+static RouteInfo6_KeyParam_t result_arr[MAX_RTENTRY];
+
 /* XXX: we may use variable length array ? */
 static int          g_numRtInfo6;
 static RouteInfo6_t g_routeInfos6[MAX_RTENTRY];
@@ -2665,10 +2675,11 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 {
     FILE *fp;
     char cmd[256], line[256];
-    int entryCnt;
+    int entryCnt, i;
     char *prefix, *key, *val;
     char *delim = " \t\r\n", *saveptr;
     RouteInfo6_t *info6;
+	BOOL bFound = FALSE;
 
     if (!ifname || !infos || !numInfo)
         return -1;
@@ -2681,7 +2692,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
     if ((fp = popen(cmd, "r")) == NULL)
         return -1;
 
-    entryCnt = 0;
+    entryCnt = g_numRtInfo6;
     while (fgets(line, sizeof(line), fp) != NULL)
     {
         if (entryCnt >= *numInfo)
@@ -2718,8 +2729,31 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
             
             /* skip unneeded keys. */
         }
+		bFound = FALSE;
 
-        entryCnt++;
+		for(i=0; i < g_numRtInfo6; i++)
+		{
+			if( (strcmp(result_arr[i].prefix,info6->prefix) == 0) && \
+				(strcmp(result_arr[i].gateway,info6->gateway) == 0)&& \
+				(strcmp(result_arr[i].interface,info6->interface) == 0)) 
+			{
+				
+				printf(" \n Harnish : < %s : %d > Duplicate ", __FUNCTION__,__LINE__);
+				bFound = TRUE;
+				break;
+			}
+		}
+	
+		if (g_numRtInfo6 == 0 || bFound == FALSE)
+		{
+			_ansc_strcpy(result_arr[g_numRtInfo6].prefix, info6->prefix);
+			_ansc_strcpy(result_arr[g_numRtInfo6].gateway, info6->gateway);
+			_ansc_strcpy(result_arr[g_numRtInfo6].interface, info6->interface);
+			g_numRtInfo6++;
+			entryCnt ++;
+			printf(" \n Harnish : < %s : %d > Added , g_numRtInfo6 = %d ",__FUNCTION__,__LINE__, g_numRtInfo6);
+			printf(" \n Harnish : < %s : %d > entryCnt = %d ",__FUNCTION__,__LINE__, entryCnt);
+		}
     }
 	pclose(fp);
 	//Fix for issue RDKB-367 
@@ -2763,11 +2797,36 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
             
             /* skip unneeded keys. */
         }
-	entryCnt++;
+		 bFound = FALSE;
+		 
+		 for(i=0; i < g_numRtInfo6; i++)
+		 {
+			 if( (strcmp(result_arr[i].prefix,info6->prefix) == 0) && \
+				 (strcmp(result_arr[i].gateway,info6->gateway) == 0)&& \
+				 (strcmp(result_arr[i].interface,info6->interface) == 0)) 
+			 {
+				 
+				 printf(" \n Harnish : < %s : %d > Duplicate ", __FUNCTION__,__LINE__);
+				 bFound = TRUE;
+				 break;
+			 }
+		 }
+		 
+		 if (g_numRtInfo6 == 0 || bFound == FALSE)
+		 {
+			 _ansc_strcpy(result_arr[g_numRtInfo6].prefix, info6->prefix);
+			 _ansc_strcpy(result_arr[g_numRtInfo6].gateway, info6->gateway);
+			 _ansc_strcpy(result_arr[g_numRtInfo6].interface, info6->interface);
+			 g_numRtInfo6++;
+			 entryCnt ++;
+			 printf(" \n Harnish : < %s : %d > Added , g_numRtInfo6 = %d ",__FUNCTION__,__LINE__, g_numRtInfo6); 
+			 printf(" \n Harnish : < %s : %d > entryCnt = %d ",__FUNCTION__,__LINE__, entryCnt);
+		 }
+
      }
 	pclose(fp);
   //Fix ends
-    *numInfo = entryCnt;
+    *numInfo = g_numRtInfo6;
      
     return 0;
 }
@@ -2965,13 +3024,13 @@ Route6_LoadRouteInfo(void)
         if ((rtcnt = NELEM(g_routeInfos6) - g_numRtInfo6) <= 0)
             break;
 
-        if (Route6_GetRouteTable(iflist[i], &g_routeInfos6[g_numRtInfo6], &rtcnt) != 0)
+        if (Route6_GetRouteTable(iflist[i], &g_routeInfos6[0], &rtcnt) != 0)
         {
             CcspTraceWarning(("%s: Fail to get IPv6 route table for %s\n", 
                         __FUNCTION__, iflist[i]));
             continue;
         }
-        g_numRtInfo6 += rtcnt;
+        g_numRtInfo6 = rtcnt;
     }
 
 	if (!Utopia_Init(&ctx))
