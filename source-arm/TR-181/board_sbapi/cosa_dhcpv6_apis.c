@@ -1684,7 +1684,9 @@ CosaDmlDhcpv6SMsgHandler
             CcspTraceWarning(("%s error in creating dhcpv6c_dbg_thrd\n", __FUNCTION__));
     }
 
-    CosaDmlStartDHCP6Client();
+    //CosaDmlStartDHCP6Client();
+    pthread_t dibblerthread;
+    pthread_create(&dibblerthread, NULL, &CosaDmlStartDHCP6Client, NULL);
 
     return 0;
 }
@@ -2167,6 +2169,7 @@ static int _dibbler_client_operation(char * arg)
 /*internal.c will call this when obtained Client and SentOptions. so we don't need to start service in getEntry for Client and SentOptions.*/
 int  CosaDmlStartDHCP6Client()
 {
+    pthread_detach(pthread_self());
     _dibbler_client_operation("restart");    
     return 0;
 }
