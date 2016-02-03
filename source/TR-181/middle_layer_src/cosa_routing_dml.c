@@ -3453,9 +3453,13 @@ IPv6Forwarding_Synchronize
             
             pCxtLink->hContext   = (ANSC_HANDLE)pEntry;
             pCxtLink->InstanceNumber = pEntry->InstanceNumber;
+			pCxtLink->hParentTable = (ANSC_HANDLE)pRouter; //Fix The Crash
             pCxtLink->bNew       = FALSE;
 
-
+			/* Generate Alias */
+			_ansc_sprintf(pEntry->Alias, "IPv6Forwarding%d", pCxtLink->InstanceNumber);
+			
+			CosaDmlRoutingSetV6EntryValues(NULL,i,pEntry->InstanceNumber,pEntry->Alias);
             CosaSListPushEntryByInsNum(&pRouter->IPv6ForwardList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
         }
     }
