@@ -2737,8 +2737,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 				(strcmp(result_arr[i].gateway,info6->gateway) == 0)&& \
 				(strcmp(result_arr[i].interface,info6->interface) == 0)) 
 			{
-				
-				printf(" \n Harnish : < %s : %d > Duplicate ", __FUNCTION__,__LINE__);
+					
 				bFound = TRUE;
 				break;
 			}
@@ -2751,8 +2750,6 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 			_ansc_strcpy(result_arr[g_numRtInfo6].interface, info6->interface);
 			g_numRtInfo6++;
 			entryCnt ++;
-			printf(" \n Harnish : < %s : %d > Added , g_numRtInfo6 = %d ",__FUNCTION__,__LINE__, g_numRtInfo6);
-			printf(" \n Harnish : < %s : %d > entryCnt = %d ",__FUNCTION__,__LINE__, entryCnt);
 		}
     }
 	pclose(fp);
@@ -2806,7 +2803,6 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 				 (strcmp(result_arr[i].interface,info6->interface) == 0)) 
 			 {
 				 
-				 printf(" \n Harnish : < %s : %d > Duplicate ", __FUNCTION__,__LINE__);
 				 bFound = TRUE;
 				 break;
 			 }
@@ -2819,8 +2815,6 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 			 _ansc_strcpy(result_arr[g_numRtInfo6].interface, info6->interface);
 			 g_numRtInfo6++;
 			 entryCnt ++;
-			 printf(" \n Harnish : < %s : %d > Added , g_numRtInfo6 = %d ",__FUNCTION__,__LINE__, g_numRtInfo6); 
-			 printf(" \n Harnish : < %s : %d > entryCnt = %d ",__FUNCTION__,__LINE__, entryCnt);
 		 }
 
      }
