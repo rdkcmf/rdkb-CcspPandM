@@ -23,22 +23,8 @@ AM_LDFLAGS = -lccsp_common
 AM_CPPFLAGS = -Wall -Werror
 ACLOCAL_AMFLAGS = -I m4
 hardware_platform = i686-linux-gnu
-bin_PROGRAMS = CcspPandMSsp
-CcspPandMSsp_CPPFLAGS = -I$(top_srcdir)/source/TR-181/board_sbapi -I$(top_srcdir)/source/TR-181/middle_layer_src -I$(top_srcdir)/custom/comcast/source/TR-181/custom_include -I$(top_srcdir)/custom/comcast/source/TR-181/custom_ml -I$(top_srcdir)/custom/comcast -I$(top_srcdir)/source/TR-181/include -I$(top_srcdir)/source/Custom $(CPPFLAGS)
 
-if CCSP_ARCH_ARM
-AM_CFLAGS += -D_ANSC_LITTLE_ENDIAN_
-CcspPandMSsp_CPPFLAGS += -I$(top_srcdir)/source-arm/TR-181/board_include -I$(top_srcdir)/source-arm/TR-181/board_sbapi
-endif
-
-if CCSP_ARCH_MIPS
-CcspPandMSsp_CPPFLAGS += -I$(top_srcdir)/source-mips/TR-181/board_include -I$(top_srcdir)/source-mips/TR-181/board_sbapi
-endif
-
-if CCSP_ARCH_PC
-AM_CFLAGS += -D_ANSC_LITTLE_ENDIAN_
-CcspPandMSsp_CPPFLAGS += -I$(top_srcdir)/source-pc/TR-181/board_include -I$(top_srcdir)/source-pc/TR-181/board_sbapi
-endif
-
-CcspPandMSsp_SOURCES = ssp_messagebus_interface.c ssp_main.c ssp_action.c
-CcspPandMSsp_LDFLAGS = -lccsp_common -ldl -rdynamic
+noinst_LTLIBRARIES = libCcspPandM_board_ml.la
+libCcspPandM_board_ml_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/board_ml -I$(top_srcdir)/source/TR-181/middle_layer_src -I$(top_srcdir)/source-mips/TR-181/board_include -I$(top_srcdir)/custom/comcast/source/TR-181/custom_include -I$(top_srcdir)/custom/comcast/source/TR-181/custom_ml -I$(top_srcdir)/custom/comcast -I$(top_srcdir)/source/TR-181/include -I$(top_srcdir)/source-mips/TR-181/board_ml/ $(CPPFLAGS)
+libCcspPandM_board_ml_la_SOURCES = cosa_x_cisco_com_filetransfer_dml.c cosa_x_cisco_com_filetransfer_internal.c
+libCcspPandM_board_ml_la_LDFLAGS = -lccsp_common

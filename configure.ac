@@ -41,7 +41,7 @@ AM_PROG_LIBTOOL(libtool)
 # Specify ccsp cpu arch
 
 AC_ARG_WITH([ccsp-arch],
-[AC_HELP_STRING([--with-ccsp-arch={arm,atom,pc}],
+[AC_HELP_STRING([--with-ccsp-arch={arm,atom,pc,mips}],
                 [specify the ccsp board CPU platform])],
 [case x"$withval" in
    xarm)
@@ -52,6 +52,9 @@ AC_ARG_WITH([ccsp-arch],
      ;;
    xpc)
      CCSP_ARCH=pc
+     ;;
+   xmips)
+     CCSP_ARCH=mips
      ;;
    *)
      AC_MSG_ERROR([$withval is an invalid option to --with-ccsp-arch])
@@ -66,11 +69,12 @@ fi
 AM_CONDITIONAL(CCSP_ARCH_ARM, test "x$CCSP_ARCH" = xarm)
 AM_CONDITIONAL(CCSP_ARCH_ATOM, test "x$CCSP_ARCH" = xatom)
 AM_CONDITIONAL(CCSP_ARCH_PC, test "x$CCSP_ARCH" = xpc)
+AM_CONDITIONAL(CCSP_ARCH_MIPS, test "x$CCSP_ARCH" = xmips)
 
 # Specify ccsp platform (device)
 
 AC_ARG_WITH([ccsp-platform],
-[AC_HELP_STRING([--with-ccsp-platform={intel_usg,pc}],
+[AC_HELP_STRING([--with-ccsp-platform={intel_usg,pc,bcm}],
                 [specify the ccsp platform])],
 [case x"$withval" in
    xintel_usg)
@@ -78,6 +82,9 @@ AC_ARG_WITH([ccsp-platform],
      ;;
    xpc)
      CCSP_PLATFORM=pc
+     ;;
+   xbcm)
+     CCSP_PLATFORM=bcm
      ;;
    *)
      AC_MSG_ERROR([$withval is an invalid option to --with-ccsp-platform])
@@ -112,6 +119,10 @@ AC_CONFIG_FILES(
 	source-arm/TR-181/board_ml/Makefile
 	source-arm/TR-181/Makefile
 	source-arm/Makefile
+    source-mips/TR-181/board_sbapi/Makefile
+    source-mips/TR-181/board_ml/Makefile
+    source-mips/TR-181/Makefile
+    source-mips/Makefile
 	source-pc/TR-181/board_sbapi/Makefile
 	source-pc/TR-181/Makefile
 	source-pc/Makefile

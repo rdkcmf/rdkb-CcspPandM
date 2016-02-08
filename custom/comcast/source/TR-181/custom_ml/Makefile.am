@@ -18,7 +18,6 @@
 ##########################################################################
 AM_CFLAGS = -D_ANSC_LINUX
 AM_CFLAGS += -D_ANSC_USER
-AM_CFLAGS += -D_ANSC_LITTLE_ENDIAN_
 AM_LDFLAGS = -lccsp_common
 
 AM_CPPFLAGS = -Wall -Werror
@@ -26,6 +25,20 @@ ACLOCAL_AMFLAGS = -I m4
 hardware_platform = i686-linux-gnu
 
 noinst_LTLIBRARIES = libCcspPandM_comcast_ml.la
-libCcspPandM_comcast_ml_la_CPPFLAGS = -I$(top_srcdir)/source-arm/TR-181/board_ml -I$(top_srcdir)/source/TR-181/board_ml -I$(top_srcdir)/source/TR-181/middle_layer_src -I$(top_srcdir)/source-arm/TR-181/board_include -I$(top_srcdir)/custom/comcast/source/TR-181/custom_include -I$(top_srcdir)/custom/comcast -I$(top_srcdir)/source/TR-181/include -I$(top_srcdir)/source-arm/TR-181/board_ml/ $(CPPFLAGS)
+libCcspPandM_comcast_ml_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/board_ml -I$(top_srcdir)/source/TR-181/middle_layer_src -I$(top_srcdir)/custom/comcast/source/TR-181/custom_include -I$(top_srcdir)/custom/comcast -I$(top_srcdir)/source/TR-181/include $(CPPFLAGS)
 libCcspPandM_comcast_ml_la_SOURCES = cosa_deviceinfo_dml_custom.c cosa_x_cisco_com_gre_internal.c cosa_x_cisco_com_hotspot_internal.c cosa_x_cisco_com_truestaticip_internal.c cosa_x_comcast_com_gre_internal.c cosa_x_comcast-com_gre_internal.c cosa_x_cisco_com_gre_dml.c cosa_x_cisco_com_hotspot_dml.c cosa_x_cisco_com_truestaticip_dml.c cosa_x_comcast_com_gre_dml.c  cosa_x_comcast-com_gre_dml.c
 libCcspPandM_comcast_ml_la_LDFLAGS = -lccsp_common
+
+if CCSP_ARCH_ARM
+AM_CFLAGS += -D_ANSC_LITTLE_ENDIAN_
+libCcspPandM_comcast_ml_la_CPPFLAGS += -I$(top_srcdir)/source-arm/TR-181/board_ml -I$(top_srcdir)/source-arm/TR-181/board_include -I$(top_srcdir)/source-arm/TR-181/board_ml/
+endif
+
+if CCSP_ARCH_MIPS
+libCcspPandM_comcast_ml_la_CPPFLAGS += -I$(top_srcdir)/source-mips/TR-181/board_ml -I$(top_srcdir)/source-mips/TR-181/board_include -I$(top_srcdir)/source-mips/TR-181/board_ml/
+endif
+
+if CCSP_ARCH_PC
+AM_CFLAGS += -D_ANSC_LITTLE_ENDIAN_
+libCcspPandM_comcast_ml_la_CPPFLAGS += -I$(top_srcdir)/source-pc/TR-181/board_ml -I$(top_srcdir)/source-pc/TR-181/board_include -I$(top_srcdir)/source-pc/TR-181/board_ml/
+endif

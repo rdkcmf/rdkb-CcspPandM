@@ -24,6 +24,10 @@ if CCSP_ARCH_PC
 OPT_SRCDIR = source-pc
 endif
 
+if CCSP_ARCH_MIPS
+OPT_SRCDIR = source-mips custom
+endif
+
 SUBDIRS = $(OPT_SRCDIR) source
 
 lib_LTLIBRARIES=libtr181.la
@@ -43,6 +47,16 @@ EXTRA_DEPENDENCIES= \
 	source-pc/TR-181/board_ml/libCcspPandM_board_ml.la \
 	source-pc/TR-181/board_sbapi/libCcspPandM_board_sbapi.la
 endif
+
+if CCSP_ARCH_MIPS
+EXTRA_DEPENDENCIES= \
+    source-mips/TR-181/board_ml/libCcspPandM_board_ml.la \
+    source-mips/TR-181/board_sbapi/libCcspPandM_board_sbapi.la \
+    custom/comcast/source/TR-181/custom_sbapi/libCcspPandM_comcast_sbapi.la \
+    custom/comcast/source/TR-181/custom_ml/libCcspPandM_comcast_ml.la
+libtr181_la_LDFLAGS += -lmoca_mgnt -lapi_dhcpv4c -lhal_msomgmt -lhal_platform -lhal_ethsw -llmapi -lccsp_common -lcm_mgnt -lcurl
+endif
+
 
 libtr181_la_DEPENDENCIES= \
 	$(EXTRA_DEPENDENCIES) \
