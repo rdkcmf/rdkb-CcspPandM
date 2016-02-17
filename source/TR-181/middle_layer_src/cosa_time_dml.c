@@ -397,7 +397,12 @@ Time_GetParamStringValue
         return 0;
     }
 
-
+    if( AnscEqualString(ParamName, "TimeOffset", TRUE))
+    {
+        /* collect value */
+        CosaDmlTimeGetTimeOffset(NULL,pValue);
+	return 0;
+    }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
