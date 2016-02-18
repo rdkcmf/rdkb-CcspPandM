@@ -8,8 +8,26 @@ Uncommented_line=""
 REVERTED_FLAG="/nvram/reverted"
 
 echo "Revert Redirect : Reverting back the changes made for redirecting the URL's"
-syscfg set redirection_flag false 
+syscfg set redirection_flag false
+
+# Check if command execution was success
+# If not, set syscfg value once again
+result=`echo $?`
+if [ "$result" != "0" ]
+then
+	echo "Revert Redirect : Setting redirection_flag to false failed, try resetting it.."
+	syscfg set redirection_flag false
+fi
+
 syscfg commit
+
+# Check if command execution was success
+# If not, commit syscfg value once again
+result=`echo $?`
+if [ "$result" != "0" ]
+then
+	syscfg commit
+fi
 
 echo "Revert Redirect : Indicate revert rediretion is triggered"
 touch $REVERTED_FLAG
@@ -107,6 +125,15 @@ sysevent set firewall-restart
 
 # Restart Zebra to populate RDNSS
 sysevent set zebra-restart
+
+# Check syscfg value once again to reconfirm
+redirectVal=`syscfg get redirection_flag`
+if [ "$redirectVal" = "true" ]
+then
+    echo "Revert Redirect : Setting redirection_flag to false failed even after retry, trying to reset it again.."
+    syscfg set redirection_flag false
+    syscfg commit
+fi
 		
 sysevent set captiveportaldhcp reverted
 
