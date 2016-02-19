@@ -308,6 +308,13 @@ DeviceInfo_GetParamUlongValue
            return TRUE;
     }
     
+    if( AnscEqualString(ParamName, "BootTime", TRUE))
+    {
+        /* collect value */
+       *puLong = CosaDmlDiGetBootTime(NULL);
+        return TRUE;
+    }
+    
     if( AnscEqualString(ParamName, "FactoryResetCount", TRUE))
     {
         /* collect value */
