@@ -117,6 +117,7 @@
 #include <utctx.h>
 #include <utctx_api.h>
 #include <utapi.h>
+#include <time.h>
 #include <utapi_util.h>
 
 #include "platform_hal.h"
@@ -725,6 +726,38 @@ CosaDmlDiGetUpTime
     {
         return s_info.uptime;
     }
+}
+
+ULONG
+CosaDmlDiGetBootTime
+    (
+	ANSC_HANDLE                 Context
+    )
+{
+	static ULONG value;
+	struct sysinfo s_info;
+	struct timeval currentTime;
+	
+	if(!value)
+	{
+		if(sysinfo(&s_info))
+		{
+			return 0;
+		}
+		int upTime = s_info.uptime; 
+
+		gettimeofday(&currentTime, NULL);
+
+		value = currentTime.tv_sec - upTime;
+    }	
+        
+	if(value != 0)
+	{
+		return value;
+	}
+	else
+		return 0;
+		
 }
 
 ANSC_STATUS
