@@ -286,6 +286,11 @@ then
 				echo "Network Response: WiFi is not configured,setting ConfigureWiFi to true"	
 				dmcli eRT setvalues Device.DeviceInfo.X_RDKCENTRAL-COM_ConfigureWiFi bool TRUE
 			else
+				echo "Network Response: WiFi is already personalized setting redirection_flag to false"
+				# We reached here as redirection_flag is "true". But WiFi is configured already as per notification status.
+				# Set syscfg value to false now.
+				syscfg set redirection_flag false
+				syscfg commit
 				echo "Network Response: ConfigureWiFi is false.Set reverted flag in nvram"
 				if [ ! -e "$REVERT_FLAG" ]
 				then
