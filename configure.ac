@@ -96,6 +96,20 @@ if test x"${CCSP_PLATFORM}" != x; then
                      [The CCSP platform device])
 fi
 
+SYSTEMD_CFLAGS=" "
+SYSTEMD_LDFLAGS=" "
+AC_ARG_ENABLE([notify],
+	AS_HELP_STRING([--enable-notify],[enable systemd notify]),
+	[
+	  case "${enableval}" in
+  	   yes) SYSTEMD_CFLAGS="-DENABLE_SD_NOTIFY"
+                SYSTEMD_LDFLAGS="-lsystemd" ;;
+           no) AC_MSG_ERROR([systemd notify is disabled]) ;;
+          *) AC_MSG_ERROR([bad value ${enableval} for --enable-notify ]) ;;
+           esac
+           ],
+	 [echo "headless build is enable"])
+
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
 
@@ -107,6 +121,8 @@ AC_C_INLINE
 AC_FUNC_MALLOC
 
 AC_SUBST(CCSP_ARCH)
+AC_SUBST(SYSTEMD_CFLAGS)
+AC_SUBST(SYSTEMD_LDFLAGS)
 
 AC_CONFIG_FILES(
 	custom/Makefile
