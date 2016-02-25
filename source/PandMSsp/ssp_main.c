@@ -45,6 +45,10 @@
 #ifdef USE_PCD_API_EXCEPTION_HANDLING
 #include "pcdapi.h"
 #endif
+#ifdef ENABLE_SD_NOTIFY
+#include <systemd/sd-daemon.h>
+#endif
+
 //#include <docsis_ext_interface.h>
 
 #define DEBUG_INI_NAME  "/etc/debug.ini"
@@ -490,6 +494,12 @@ int main(int argc, char* argv[])
         fprintf(stderr, "Cdm_Init: %s\n", Cdm_StrError(err));
         exit(1);
     }
+
+#ifdef ENABLE_SD_NOTIFY
+    sd_notifyf(0, "READY=1\n"
+              "STATUS=CcspPandMSsp is Successfully Initialized\n"
+              "MAINPID=%lu", (unsigned long) getpid());
+#endif
 
     system("touch /tmp/pam_initialized");
 

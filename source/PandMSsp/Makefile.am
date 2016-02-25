@@ -40,5 +40,6 @@ AM_CFLAGS += -D_ANSC_LITTLE_ENDIAN_
 CcspPandMSsp_CPPFLAGS += -I$(top_srcdir)/source-pc/TR-181/board_include -I$(top_srcdir)/source-pc/TR-181/board_sbapi
 endif
 
+CcspPandMSsp_CFLAGS = $(SYSTEMD_CFLAGS)
 CcspPandMSsp_SOURCES = ssp_messagebus_interface.c ssp_main.c ssp_action.c
-CcspPandMSsp_LDFLAGS = -lccsp_common -ldl -rdynamic
+CcspPandMSsp_LDFLAGS = -lccsp_common -ldl -rdynamic $(SYSTEMD_LDFLAGS)
