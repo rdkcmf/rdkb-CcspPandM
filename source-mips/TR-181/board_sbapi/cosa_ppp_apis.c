@@ -328,7 +328,7 @@ CosaPPPApiRemove(ANSC_HANDLE  hContext)
     return ANSC_STATUS_SUCCESS;
 }
 
-#elif ( defined _COSA_INTEL_USG_ARM_ )
+#elif ( defined _COSA_BCM_MIPS_ )
 #include <utctx.h>
 #include <utctx_api.h>
 #include <utapi.h>

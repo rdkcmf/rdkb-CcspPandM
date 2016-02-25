@@ -81,10 +81,10 @@
 
 #ifndef CONFIG_SYSTEM_MOCA
 #define _COSA_SIM_ 1 
-#undef _COSA_INTEL_USG_ARM_
+#undef _COSA_BCM_MIPS_
 #endif
 
-#if  _COSA_INTEL_USG_ARM_
+#if  _COSA_BCM_MIPS_
 
 #include "moca_hal.h"
 

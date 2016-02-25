@@ -182,7 +182,7 @@ CosaDmlUpnpDevGetArchVer
     return ANSC_STATUS_SUCCESS;
 }
 
-#elif (_COSA_INTEL_USG_ARM_)
+#elif (_COSA_BCM_MIPS_)
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>

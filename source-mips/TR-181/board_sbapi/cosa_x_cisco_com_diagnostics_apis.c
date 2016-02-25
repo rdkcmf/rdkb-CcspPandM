@@ -136,7 +136,7 @@ CosaDmlDiagnosticsGetEntry
 }
 
 
-#elif ( defined _COSA_INTEL_USG_ARM_ )
+#elif ( defined _COSA_BCM_MIPS_ )
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

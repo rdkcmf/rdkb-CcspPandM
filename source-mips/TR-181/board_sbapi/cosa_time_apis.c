@@ -146,7 +146,7 @@ CosaDmlTimeGetLocalTime
     return ANSC_STATUS_SUCCESS;
 }
 
-#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_)
+#elif (_COSA_BCM_MIPS_ || _COSA_DRG_TPG_)
 
 #include <utctx.h>
 #include <utctx_api.h>
@@ -581,5 +581,16 @@ CosaDmlTimeGetLocalTime
 
     return ANSC_STATUS_SUCCESS;
 }
+
+ANSC_STATUS
+CosaDmlTimeGetTimeOffset
+    (
+       ANSC_HANDLE                 hContext,
+       char                       *pTimeOffset
+    )
+{
+    return ANSC_STATUS_SUCCESS;
+}
+
 
 #endif

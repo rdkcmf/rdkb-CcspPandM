@@ -742,7 +742,7 @@ CosaDmlMDDev_SetConf(ULONG ins, COSA_DML_MD_DEV *pEntry)
     return ANSC_STATUS_SUCCESS;
 }
 
-#elif defined(_COSA_INTEL_USG_ARM_)
+#elif defined(_COSA_BCM_MIPS_)
 #define _CHK_TIME(h, m) ((h) >= 0 && (h) < 24 && (m) >= 0 && (m) < 60)
 BOOL
 CosaDmlMngSites_Chktime(COSA_DML_BLOCKEDURL *pBlkURL)
