@@ -975,7 +975,7 @@ BOOL tagPermitted(int tag)
     return TRUE;
 }
 
-#elif defined _COSA_INTEL_USG_ARM_
+#elif defined _COSA_BCM_MIPS_
 
 #include <net/if.h>
 #include <sys/ioctl.h>
@@ -2131,7 +2131,7 @@ static int _dibbler_client_operation(char * arg)
     if (!strncmp(arg, "stop", 4))
     {
         CcspTraceInfo(("%s stop\n", __func__));
-#ifdef _COSA_INTEL_USG_ARM_
+#ifdef _COSA_BCM_MIPS_
         system("/etc/utopia/service.d/service_dhcpv6_client.sh disable");
 #else
         sprintf(cmd, "killall %s", CLIENT_BIN);
@@ -2151,7 +2151,7 @@ static int _dibbler_client_operation(char * arg)
     else if (!strncmp(arg, "start", 5))
     {
         CcspTraceInfo(("%s start\n", __func__));
-#ifdef _COSA_INTEL_USG_ARM_
+#ifdef _COSA_BCM_MIPS_
         system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
 #else
         sprintf(cmd, "%s start", CLIENT_BIN);
@@ -3189,7 +3189,7 @@ int CosaDmlDHCPv6sGetDNS(char* Dns, char* output, int outputLen)
 
 void __cosa_dhcpsv6_refresh_config()
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#ifdef _COSA_BCM_MIPS_
     FILE * fp = fopen(SERVER_CONF_LOCATION, "w+");
 #else
     FILE * fp = fopen(TMP_SERVER_CONF, "w+");
@@ -3480,7 +3480,7 @@ OPTIONS:
     
     fclose(fp);
         
-#ifndef _COSA_INTEL_USG_ARM_
+#ifndef _COSA_BCM_MIPS_
     /*we will copy the updated conf file at once*/
     if (rename(TMP_SERVER_CONF, SERVER_CONF_LOCATION))
         CcspTraceWarning(("%s rename failed %s\n", __FUNCTION__, strerror(errno)));

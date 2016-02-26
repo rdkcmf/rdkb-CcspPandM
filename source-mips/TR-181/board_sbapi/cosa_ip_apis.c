@@ -78,7 +78,7 @@
 
 extern void* g_pDslhDmlAgent;
 
-#if ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_))
+#if ( defined(_COSA_BCM_MIPS_) || defined(_COSA_DRG_TPG_))
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <ctype.h>
@@ -131,7 +131,7 @@ IPIF_getEntry_for_Ipv6Pre
 
 BOOL CosaIpifGetSetSupported(char * pParamName)
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#ifdef _COSA_BCM_MIPS_
     char * not_supported_param_list[]= {"addentry", "delentry", /*"Enable",*/ "AutoIPEnable", \
         "Loopback", "ipv4addr_addentry", "ipv4addr_delentry", "Router", \
         "Anycast", "Status", "StaticType", "IPAddressStatus", "Prefix", "PrefixStatus", "PreferredLifetime", \
@@ -297,7 +297,7 @@ static int _is_in_linux_bridge(char * if_name, char * br_name)
                   The operation status..
 
 **********************************************************************/
-#ifdef _COSA_INTEL_USG_ARM_
+#ifdef _COSA_BCM_MIPS_
 
 #define COSA_USG_IF_NUM 4
 
@@ -344,7 +344,7 @@ CosaDmlIpInit
         PANSC_HANDLE                phContext
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#ifdef _COSA_BCM_MIPS_
     ANSC_STATUS                     returnStatus;
     int i;
     for(i = 0; i < COSA_USG_IF_NUM; i++)
@@ -1416,7 +1416,7 @@ IPIF_getEntry_for_Ipv6Pre
         if (g_ipif_be_bufs[ulIndex].ulNumOfV6Pre >= MAX_IPV6_ENTRY_NUM)
             break;
         
-#ifdef _COSA_INTEL_USG_ARM_
+#ifdef _COSA_BCM_MIPS_
         /* We just put this prefix into erouter0 entry */
         if ( ulIndex > 0 )
             break;
@@ -1941,7 +1941,7 @@ CosaDmlIpIfSetCfg
 
             AnscCopyString(p_be_buf_cfg->Alias, pCfg->Alias);
         }
-    #ifdef _COSA_INTEL_USG_ARM_
+    #ifdef _COSA_BCM_MIPS_
         if (pCfg->MaxMTUSize != p_be_buf_cfg->MaxMTUSize)
         {
             /*
@@ -2137,7 +2137,7 @@ CosaDmlIpIfReset
     }
     else
     {
-    #ifdef _COSA_INTEL_USG_ARM_
+    #ifdef _COSA_BCM_MIPS_
         return ANSC_STATUS_FAILURE;
     #else
         ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
@@ -2396,7 +2396,7 @@ CosaDmlIpIfSetV4AddrValues
     }
     else
     {
-    #ifdef _COSA_INTEL_USG_ARM_
+    #ifdef _COSA_BCM_MIPS_
         return ANSC_STATUS_FAILURE;
     #else
         /*this API will never be called*/

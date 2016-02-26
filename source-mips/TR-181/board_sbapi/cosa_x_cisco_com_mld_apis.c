@@ -186,7 +186,7 @@ CosaDmlMldGetGroup
 }
 
 
-#elif ( defined _COSA_INTEL_USG_ARM_ )
+#elif ( defined _COSA_BCM_MIPS_ )
 
 ANSC_STATUS
 CosaDmlMldInit

@@ -102,14 +102,17 @@
 
 // this file is in integration_src.intel_usg_arm directory
 
-#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_)
+#elif (_COSA_BCM_MIPS_ || _COSA_DRG_TPG_)
 
+#define CONFIG_VENDOR_NAME "Broadcom Corporation"
+#define CONFIG_TI_GW_DESCRIPTION "DOCSIS 3.0 Cable Modem Gateway Device"
+#define CONFIG_VENDOR_ID 0x0050F1
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
 
 #ifdef _COSA_DRG_TPG_
 #include "libplat.h"
-#elif _COSA_INTEL_USG_ARM_
+#elif _COSA_BCM_MIPS_
 //#include "libplat_flash.h"
 #endif
 
@@ -192,7 +195,7 @@ CosaDmlDiGetManufacturerOUI
     memset(strMaceMG,0,128);
 #ifdef _COSA_DRG_TPG_
     plat_GetFlashValue("macmgwan", strMaceMG);
-#elif _COSA_INTEL_USG_ARM_
+#elif _COSA_BCM_MIPS_
     //    SaPermanentDb_GetFactoryId(pValue);
     ProdDb_GetCmMacAddress(strMaceMG);
 #if 0
@@ -238,7 +241,7 @@ CosaDmlDiGetModelName
         ULONG*                      pulSize
     )
 {    
-#ifdef _COSA_INTEL_USG_ARM_
+#ifdef _COSA_BCM_MIPS_
 
     if ( platform_hal_GetModelName(pValue) != RETURN_OK)
         return ANSC_STATUS_FAILURE;
@@ -326,7 +329,7 @@ CosaDmlDiGetSerialNumber
 #ifdef _COSA_DRG_TPG_
     plat_GetFlashValue("unitsn", unitsn);
     sprintf(pValue, "%c%c%c%c%c%c%c",unitsn[0],unitsn[1],unitsn[2],unitsn[3],unitsn[4],unitsn[5],unitsn[6]);
-#elif _COSA_INTEL_USG_ARM_
+#elif _COSA_BCM_MIPS_
 
     if (platform_hal_GetSerialNumber(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
@@ -344,7 +347,7 @@ CosaDmlDiGetHardwareVersion
     )
 {
 
-#ifdef _COSA_INTEL_USG_ARM_    
+#ifdef _COSA_BCM_MIPS_
 
     if (platform_hal_GetHardwareVersion(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
@@ -429,7 +432,7 @@ CosaDmlDiGetProvisioningCode
 #ifdef _COSA_DRG_TPG_
     plat_GetFlashValue("unitsn", unitsn);
     sprintf(pValue, "%c%c%c%c%c%c%c",unitsn[0],unitsn[1],unitsn[2],unitsn[3],unitsn[4],unitsn[5],unitsn[6]);
-#elif _COSA_INTEL_USG_ARM_
+#elif _COSA_BCM_MIPS_
 
     if (platform_hal_GetSerialNumber(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
@@ -835,12 +838,12 @@ CosaDmlDiGetHardware_MemUsed
         PULONG                      pulSize
     )
 {
-    if ( platform_hal_GetHardware_MemUsed(pValue) != RETURN_OK )
-        return ANSC_STATUS_FAILURE;
-    else {
-        *pulSize = AnscSizeOfString(pValue); 
+//    if ( platform_hal_GetHardware_MemUsed(pValue) != RETURN_OK )
+//        return ANSC_STATUS_FAILURE;
+//    else {
+//        *pulSize = AnscSizeOfString(pValue); 
         return ANSC_STATUS_SUCCESS;
-    }
+//    }
 }
 
 ANSC_STATUS
@@ -851,12 +854,12 @@ CosaDmlDiGetHardware_MemFree
         PULONG                      pulSize
     )
 {
-    if ( platform_hal_GetHardware_MemFree(pValue) != RETURN_OK )
-        return ANSC_STATUS_FAILURE;
-    else {
-        *pulSize = AnscSizeOfString(pValue); 
+//    if ( platform_hal_GetHardware_MemFree(pValue) != RETURN_OK )
+//        return ANSC_STATUS_FAILURE;
+//    else {
+//        *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
-    }
+ //   }
 }
 
 ANSC_STATUS
@@ -1209,7 +1212,7 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
      }
      if( AnscEqualString(ParamName, "Total", TRUE))
      {
-#ifdef  _COSA_INTEL_USG_ARM_
+#ifdef  _COSA_BCM_MIPS_
 #if 0
          /* we want to get the real Physical memory size */
         FILE *fp;
@@ -1360,7 +1363,7 @@ CosaDmlDiGetFactoryResetCount
     )
 {
 
-	platform_hal_GetFactoryResetCount(pValue);
+//	platform_hal_GetFactoryResetCount(pValue);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1371,7 +1374,7 @@ ANSC_STATUS CosaDmlDiClearResetCount
    )
 {
 
-	platform_hal_ClearResetCount(bValue);
+//	platform_hal_ClearResetCount(bValue);
     return ANSC_STATUS_SUCCESS;
 }
    

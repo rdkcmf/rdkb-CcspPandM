@@ -2518,7 +2518,7 @@ CosaDmlDnsRelayGetServer
     return ANSC_STATUS_CANT_FIND;
 }
 
-#elif ( defined(_COSA_INTEL_USG_ARM_) )
+#elif ( defined(_COSA_BCM_MIPS_) )
 
 #include <utctx_api.h>
 #include <utapi.h>
