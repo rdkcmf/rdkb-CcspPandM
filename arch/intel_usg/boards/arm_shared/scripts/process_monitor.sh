@@ -94,12 +94,12 @@ do
 	fi
 
 	# Checking RebootManager's PID
-	Rm_PID=`pidof CcspRmSsp`
-	if [ "$Rm_PID" = "" ]; then
-		echo "RDKB_PROCESS_CRASHED : RebootManager_process is not running, restarting it"
+#	Rm_PID=`pidof CcspRmSsp`
+#	if [ "$Rm_PID" = "" ]; then
+#		echo "RDKB_PROCESS_CRASHED : RebootManager_process is not running, restarting it"
 		#cd rm/
-		/usr/bin/CcspRmSsp -subsys $Subsys
-	fi
+#		/usr/bin/CcspRmSsp -subsys $Subsys
+#	fi
 
 	# Checking TR69's PID
 	TR69_PID=`pidof CcspTr069PaSsp`
