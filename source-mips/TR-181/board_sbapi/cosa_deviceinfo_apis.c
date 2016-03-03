@@ -1378,5 +1378,37 @@ ANSC_STATUS CosaDmlDiClearResetCount
     return ANSC_STATUS_SUCCESS;
 }
    
+ULONG
+CosaDmlDiGetBootTime
+    (
+	ANSC_HANDLE                 Context
+    )
+{
+	static ULONG value;
+	struct sysinfo s_info;
+	struct timeval currentTime;
+	
+	if(!value)
+	{
+		if(sysinfo(&s_info))
+		{
+			return 0;
+		}
+		int upTime = s_info.uptime; 
+
+		gettimeofday(&currentTime, NULL);
+
+		value = currentTime.tv_sec - upTime;
+    }	
+        
+	if(value != 0)
+	{
+		return value;
+	}
+	else
+		return 0;
+		
+}
+
 
 #endif
