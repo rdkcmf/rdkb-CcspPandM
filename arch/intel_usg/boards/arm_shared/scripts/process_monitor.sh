@@ -147,6 +147,14 @@ do
 		CcspHomeSecurity 8081&
 	fi
 
+        # Checking dropbear PID
+	DROPBEAR_PID=`pidof dropbear`
+	if [ "$DROPBEAR_PID" = "" ]; then
+		echo "RDKB_PROCESS_CRASHED : dropbear_process is not running, restarting it"
+		sh /etc/utopia/service.d/service_sshd.sh sshd-restart &
+	fi
+
+
 	#hotspotfd -n erouter0 -e 1
 	#hotspot_arpd -q 0
 	#dhcp_snooperd -q 1 -n 2 -e 1
