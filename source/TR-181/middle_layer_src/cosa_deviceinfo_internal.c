@@ -167,6 +167,8 @@ CosaDeviceInfoInitialize
     _ansc_memset(pMyObject->ProvisioningCode, 0, 64);
 
     CosaDmlDiInit(NULL, NULL);
+    CosaDmlDiGetXfinityWiFiEnable(&pMyObject->bxfinitywifiEnable);
+    printf("%s : bxfinitywifiEnable value is : %d\n",__FUNCTION__,pMyObject->bxfinitywifiEnable);
 
     return returnStatus;
 }

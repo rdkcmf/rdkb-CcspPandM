@@ -198,8 +198,10 @@ DeviceInfo_GetParamBoolValue_Custom
     }
     if (AnscEqualString(ParamName, "X_COMCAST_COM_xfinitywifiEnable", TRUE))
     {
-        if (CosaDmlDiGetXfinityWiFiEnable(pBool) != ANSC_STATUS_SUCCESS)
-            return FALSE;
+//        if (CosaDmlDiGetXfinityWiFiEnable(pBool) != ANSC_STATUS_SUCCESS)
+//            return FALSE;
+			// printf("%s : bxfinitywifiEnable value is : %d\n",__FUNCTION__,pMyObject->bxfinitywifiEnable);
+			*pBool = pMyObject->bxfinitywifiEnable;
         return TRUE;
     }
 #endif
@@ -508,6 +510,8 @@ DeviceInfo_SetParamBoolValue_Custom
     {
         if (CosaDmlDiSetXfinityWiFiEnable(bValue) != ANSC_STATUS_SUCCESS)
             return FALSE;
+        pMyObject->bxfinitywifiEnable = bValue;
+		printf("%s : bxfinitywifiEnable value is : %d\n",__FUNCTION__,pMyObject->bxfinitywifiEnable);
         return TRUE;
     }
 #endif
