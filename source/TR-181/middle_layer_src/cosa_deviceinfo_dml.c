@@ -4031,3 +4031,127 @@ Webpa_SetParamStringValue
 	/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
 	return FALSE;
 }
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Iot_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Iot_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "X_COMCAST-COM_ENABLEIOT", TRUE))
+    {
+        /* collect value */
+        char buf[8];
+        syscfg_get( NULL, "X_COMCAST-COM_ENABLEIOT", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Iot_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Iot_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "X_COMCAST-COM_ENABLEIOT", TRUE))
+    {
+        char buf[8];
+        memset(buf, 0, sizeof(buf));
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+
+        if (syscfg_set(NULL, "X_COMCAST-COM_ENABLEIOT", buf) != 0) 
+        {
+            AnscTraceWarning(("syscfg_set failed\n"));
+        }
+        else 
+        {
+            if (syscfg_commit() != 0) 
+            {
+                AnscTraceWarning(("syscfg_commit failed\n"));
+            }
+            else
+            {
+                return TRUE;
+            }
+        }
+    }
+
+    return FALSE;
+}

@@ -803,6 +803,37 @@
    
         </object> <!--end of Webpa-->
 
+	<object>
+		<name>Iot</name>
+
+		<objectType>object</objectType>
+
+		<functions>
+
+			<func_GetParamBoolValue>Iot_GetParamBoolValue</func_GetParamBoolValue>
+
+			<func_SetParamBoolValue>Iot_SetParamBoolValue</func_SetParamBoolValue>
+
+		</functions>
+
+		<parameters>
+
+			<parameter>
+
+				<name>X_COMCAST-COM_ENABLEIOT</name>
+
+				<type>boolean</type>
+
+				<syntax>bool</syntax>
+
+				<writable>true</writable>
+
+			</parameter>
+
+		</parameters>
+
+	</object> <!--End of Iot-->
+
         <object>
 
           <name>VendorConfigFile</name>
