@@ -4072,11 +4072,11 @@ Iot_GetParamBoolValue
     )
 {
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "X_COMCAST-COM_ENABLEIOT", TRUE))
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ENABLEIOT", TRUE))
     {
         /* collect value */
         char buf[8];
-        syscfg_get( NULL, "X_COMCAST-COM_ENABLEIOT", buf, sizeof(buf));
+        syscfg_get( NULL, "X_RDKCENTRAL-COM_ENABLEIOT", buf, sizeof(buf));
 
         if( buf != NULL )
         {
@@ -4130,13 +4130,13 @@ Iot_SetParamBoolValue
     )
 {
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "X_COMCAST-COM_ENABLEIOT", TRUE))
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ENABLEIOT", TRUE))
     {
         char buf[8];
         memset(buf, 0, sizeof(buf));
         snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
 
-        if (syscfg_set(NULL, "X_COMCAST-COM_ENABLEIOT", buf) != 0) 
+        if (syscfg_set(NULL, "X_RDKCENTRAL-COM_ENABLEIOT", buf) != 0) 
         {
             AnscTraceWarning(("syscfg_set failed\n"));
         }
