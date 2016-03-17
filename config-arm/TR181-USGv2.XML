@@ -806,7 +806,7 @@
 
 			<parameter>
 
-				<name>X_COMCAST-COM_ENABLEIOT</name>
+				<name>X_RDKCENTRAL-COM_ENABLEIOT</name>
 
 				<type>boolean</type>
 
