@@ -24,6 +24,15 @@ then
 			sh run_subagent.sh /var/tmp/cm_snmp_ma &
 			cd ..
 		fi
+		
+		# Checking Lan Manager PID
+		LM_PID=`pidof CcspLMLite`
+		if [ "$LM_PID" = "" ]; then
+			echo "RDKB_PROCESS_CRASHED : LanManager_process is not running, restarting it"
+			#cd lm/
+			/usr/bin/CcspLMLite &
+			cd ..	
+		fi
 
 		# Checking Home Security's PID
 		HOMESEC_PID=`pidof CcspHomeSecurity`
