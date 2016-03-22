@@ -815,6 +815,10 @@ DeviceInfo_SetParamStringValue
          {
 		 CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_ACCESS\n"));
          }
+         else if (AnscEqualString(pString, "ui_success", TRUE))
+         {
+		 CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_SUCCESS\n"));
+         }
          else if(AnscEqualString(pString, "ui_failed", TRUE))
          {
          	CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_FAILED\n"));
