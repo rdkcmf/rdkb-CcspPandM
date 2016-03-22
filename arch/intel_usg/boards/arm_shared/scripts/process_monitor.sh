@@ -20,6 +20,8 @@ else
 	Subsys=""
 fi
 
+LIGHTTPD_CONF="/var/lighttpd.conf"
+
 crashed=0
 source /etc/utopia/service.d/log_capture_path.sh
 loop=1
@@ -196,6 +198,14 @@ do
 		fi
 	
 	fi
+
+	# Checking lighttpd PID
+	LIGHTTPD_PID=`pidof lighttpd`
+	if [ "$LIGHTTPD_PID" = "" ]; then
+		echo "RDKB_PROCESS_CRASHED : lighttpd is not running, restarting it"
+		lighttpd -f $LIGHTTPD_CONF
+	fi
+
 
 	#cd /
 	if [ "$rebootNeeded" -eq 1 ]
