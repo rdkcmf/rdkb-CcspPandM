@@ -4152,6 +4152,14 @@ Iot_SetParamBoolValue
             }
             else
             {
+                if(bValue){
+                   AnscTraceWarning(("IOT_LOG : Raise IOT event up from DML\n"));
+                   system("sysevent set iot_status up");
+                }
+                else{
+                   AnscTraceWarning(("IOT_LOG : Raise IOT event down from DML\n"));
+                   system("sysevent set iot_status down");
+                }
                 return TRUE;
             }
         }
