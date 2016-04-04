@@ -316,7 +316,8 @@ PCOSA_DML_NAT_PTRIGGER
 CosaDmlNatGetPortTriggers
     (
         ANSC_HANDLE                 hContext,
-        PULONG                      pulCount
+        PULONG                      pulCount,
+        BOOLEAN                     bCommit
     );
 
 ANSC_STATUS

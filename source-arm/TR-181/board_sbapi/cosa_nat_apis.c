@@ -510,7 +510,8 @@ CosaDmlNatSetPortMapping
         CosaDmlNatGetPortTriggers
             (
                 ANSC_HANDLE                 hContext,
-                PULONG                      pulCount
+                PULONG                      pulCount,
+                BOOLEAN                     bCommit
             )
         Description:
             This routine is to retrieve the complete list of NAT port triggers, which is a table.
@@ -527,7 +528,8 @@ PCOSA_DML_NAT_PTRIGGER
 CosaDmlNatGetPortTriggers
     (
         ANSC_HANDLE                 hContext,
-        PULONG                      pulCount
+        PULONG                      pulCount,
+        BOOLEAN                     bCommit
     )
 {
     *pulCount = 0;
@@ -912,7 +914,8 @@ CosaDmlNatSetPortMapping
         CosaDmlNatGetPortTriggers
             (
                 ANSC_HANDLE                 hContext,
-                PULONG                      pulCount
+                PULONG                      pulCount,
+                BOOLEAN                     bCommit
             )
         Description:
             This routine is to retrieve the complete list of NAT port triggers, which is a table.
@@ -929,7 +932,8 @@ PCOSA_DML_NAT_PTRIGGER
 CosaDmlNatGetPortTriggers
     (
         ANSC_HANDLE                 hContext,
-        PULONG                      pulCount
+        PULONG                      pulCount,
+        BOOLEAN                     bCommit
     )
 {
     *pulCount = 0;
@@ -1216,9 +1220,27 @@ unsetIDPt
     int i;  \
     for(i = 0; i < COUNT; i++){  \
         if(DATA[i].internal_port == 0)   \
-            DATA[i].enabled = (PF_ENABLE == -1 ? (DATA[i].enabled) : PF_ENABLE); \
+    	{ \
+            if( 1 == PF_ENABLE )\
+        	{ \
+				DATA[i].enabled = DATA[i].prevRuleEnabledState; \
+        	} \
+			else \
+			{ \
+				DATA[i].enabled = (PF_ENABLE == -1 ? (DATA[i].enabled) : PF_ENABLE); \
+			} \
+    	} \
         else    \
-            DATA[i].enabled = (HS_ENABLE == -1 ? (DATA[i].enabled) : HS_ENABLE); \
+    	{ \
+            if( 1 == HS_ENABLE )\
+        	{ \
+				DATA[i].enabled = DATA[i].prevRuleEnabledState; \
+        	} \
+			else \
+			{ \
+				DATA[i].enabled = (HS_ENABLE == -1 ? (DATA[i].enabled) : HS_ENABLE); \
+			} \
+    	} \
     }   \
 }
 
@@ -1227,13 +1249,38 @@ unsetIDPt
     for(i = 0; i < COUNT; i++){  \
         if(strcmp("0.0.0.0", DATA[i].public_ip) != 0) \
         { \
-            DATA[i].enabled = (NAT_ENABLE == -1 ? (DATA[i].enabled) : NAT_ENABLE); \
+            if( 1 == NAT_ENABLE )\
+        	{ \
+				DATA[i].enabled = DATA[i].prevRuleEnabledState; \
+        	} \
+			else \
+			{ \
+				DATA[i].enabled = (NAT_ENABLE == -1 ? (DATA[i].enabled) : NAT_ENABLE); \
+			} \
             printf("Setting the rule as %d \n", NAT_ENABLE); \
         }else{ \
             if(DATA[i].internal_port == 0)   \
-                DATA[i].enabled = (PF_ENABLE == -1 ? (DATA[i].enabled) : PF_ENABLE); \
-            else    \
-                DATA[i].enabled = (HS_ENABLE == -1 ? (DATA[i].enabled) : HS_ENABLE); \
+            { \
+				if( 1 == PF_ENABLE )\
+				{ \
+					DATA[i].enabled = DATA[i].prevRuleEnabledState; \
+				} \
+				else \
+				{ \
+					DATA[i].enabled = (PF_ENABLE == -1 ? (DATA[i].enabled) : PF_ENABLE); \
+				} \
+            } \
+            else \
+            { \
+				if( 1 == HS_ENABLE )\
+				{ \
+					DATA[i].enabled = DATA[i].prevRuleEnabledState; \
+				} \
+				else \
+				{ \
+					DATA[i].enabled = (HS_ENABLE == -1 ? (DATA[i].enabled) : HS_ENABLE); \
+				} \
+            } \
         } \
     }   \
 }
@@ -1796,6 +1843,7 @@ ANSC_STATUS _AddPortMapping(
               pEntry->InternalClient.Dot[3]);
 
         singleInfo.enabled = pEntry->bEnabled;
+		singleInfo.prevRuleEnabledState = pEntry->bEnabled;
         singleInfo.external_port = pEntry->ExternalPort;
         singleInfo.internal_port = pEntry->InternalPort;
         singleInfo.protocol = SB_2_U_PF_PPOTOCOL(pEntry->Protocol);
@@ -1822,6 +1870,7 @@ ANSC_STATUS _AddPortMapping(
               pEntry->PublicIP.Dot[2],\
               pEntry->PublicIP.Dot[3]);
         rangeInfo.enabled = pEntry->bEnabled;
+		rangeInfo.prevRuleEnabledState = pEntry->bEnabled;		
         rangeInfo.end_port = pEntry->ExternalPortEndRange;
         rangeInfo.internal_port = pEntry->InternalPort;
         rangeInfo.protocol = SB_2_U_PF_PPOTOCOL(pEntry->Protocol);
@@ -3261,7 +3310,8 @@ CosaDmlNatGetPortTrigger
         CosaDmlNatGetPortTriggers
             (
                 ANSC_HANDLE                 hContext,
-                PULONG                      pulCount
+                PULONG                      pulCount,
+                BOOLEAN                     bCommit
             )
         Description:
             This routine is to retrieve the complete list of NAT port triggers, which is a table.
@@ -3278,7 +3328,8 @@ PCOSA_DML_NAT_PTRIGGER
 CosaDmlNatGetPortTriggers
     (
         ANSC_HANDLE                 hContext,
-        PULONG                      pulCount
+        PULONG                      pulCount,
+        BOOLEAN                     bCommit
     )
 {
     UtopiaContext                   Ctx;
@@ -3345,7 +3396,8 @@ CosaDmlNatGetPortTriggers
         strncpy(pNatPTrigger[ulIndex].Description, porttrigger[ulIndex].name,sizeof(pNatPTrigger[ulIndex].Description));
     }
 
-    Utopia_Free(&Ctx, 0);
+
+    Utopia_Free(&Ctx, bCommit);
     free(porttrigger);
     return pNatPTrigger;
 }
@@ -3402,6 +3454,7 @@ CosaDmlNatAddPortTrigger
         goto EXIT1;
     }
     porttriggerNew.enabled           = pEntry->bEnabled;
+	porttriggerNew.prevRuleEnabledState = pEntry->bEnabled;
     porttriggerNew.trigger_proto     = SB_2_U_PF_PPOTOCOL(pEntry->TriggerProtocol);
     /* Because SNMP cannot set forward proto, set forward proto = trigger proto */
     //    porttriggerNew.forward_proto     = SB_2_U_PF_PPOTOCOL(pEntry->ForwardProtocol);
@@ -3554,6 +3607,7 @@ CosaDmlNatSetPortTrigger
     }
 
     porttrigger.enabled           = pEntry->bEnabled;
+	porttrigger.prevRuleEnabledState = pEntry->bEnabled;
     porttrigger.trigger_proto     = SB_2_U_PF_PPOTOCOL(pEntry->TriggerProtocol);
     porttrigger.forward_proto     =  porttrigger.trigger_proto;
     //    porttrigger.forward_proto     = SB_2_U_PF_PPOTOCOL(pEntry->ForwardProtocol);
@@ -3619,7 +3673,15 @@ CosaDmlNatSetPortTriggerEnable(BOOL vBool)
     /* change each rules enabled status */
     for(i = 0; i < count; i++)
     {
-        porttrigger[i].enabled = vBool;    
+		/* Need to assign the backup value during port triggering enable case */
+		if( TRUE == vBool )
+		{
+			porttrigger[i].enabled = porttrigger[i].prevRuleEnabledState;    
+		}
+		else
+		{
+			porttrigger[i].enabled = vBool;    
+		}
     }
 
     /* set rules */
