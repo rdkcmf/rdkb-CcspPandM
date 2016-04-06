@@ -1,5 +1,7 @@
 #! /bin/sh
 
+BINPATH="/usr/bin"
+
 SELFHEAL_ENABLE=`syscfg get selfheal_enable`
 if [ "$SELFHEAL_ENABLE" == "false" ]
 then
@@ -29,16 +31,14 @@ then
 		LM_PID=`pidof CcspLMLite`
 		if [ "$LM_PID" = "" ]; then
 			echo "RDKB_PROCESS_CRASHED : LanManager_process is not running, restarting it"
-			#cd lm/
-			/usr/bin/CcspLMLite &
-			cd ..	
+			$BINPATH/CcspLMLite &
 		fi
 
 		# Checking Home Security's PID
 		HOMESEC_PID=`pidof CcspHomeSecurity`
 		if [ "$HOMESEC_PID" = "" ]; then
 			echo "RDKB_PROCESS_CRASHED : HomeSecurity_process is not running, restarting it"
-			CcspHomeSecurity 8081&
+			$BINPATH/CcspHomeSecurity 8081&
 		fi
 
 			# Checking dropbear PID
@@ -60,20 +60,19 @@ then
 			HOTSPOTDAEMON_PID=`pidof hotspotfd`
 			if [ "$HOTSPOTDAEMON_PID" = "" ]; then
 				echo "RDKB_PROCESS_CRASHED : HotSpot_process is not running, restarting it"
-					hotspotfd $keepalive_args  > /dev/null &
+					$BINPATH/hotspotfd $keepalive_args  > /dev/null &
 			fi    
 			DHCP_SNOOPERD_PID=`pidof dhcp_snooperd`
 			if [ "$DHCP_SNOOPERD_PID" = "" ]; then
 				echo "RDKB_PROCESS_CRASHED : DhcpSnooper_process is not running, restarting it"
-					dhcp_snooperd -q $BASEQUEUE -n 2 -e 1  > /dev/null &
+					$BINPATH/dhcp_snooperd -q $BASEQUEUE -n 2 -e 1  > /dev/null &
 			fi 
 			DHCP_ARP_PID=`pidof hotspot_arpd`
 			if [ "$DHCP_ARP_PID" = "" ]; then
 				echo "RDKB_PROCESS_CRASHED : DhcpArp_process is not running, restarting it"
-					hotspot_arpd -q 0  > /dev/null &
+					$BINPATH/hotspot_arpd -q 0  > /dev/null &
 			fi
 		fi
-
 	
 		# Checking webpa PID
 		WEBPA_PID=`pidof webpa`
@@ -82,14 +81,28 @@ then
 			echo "ENABLEWEBPA is $ENABLEWEBPA"
 			if [ "$ENABLEWEBPA" = "true" ];then
 			echo "RDKB_PROCESS_CRASHED : WebPA_process is not running, trying to restart it"
-				#cd webpa/
-				/usr/bin/webpa -subsys $Subsys
-				cd ..
+				$BINPATH/webpa -subsys $Subsys
 			else
 				echo "EnablePa is false in config file. Hence not initializng WebPA.."
 			fi
 
 		fi
+		
+		# Checking WiFi Agent PID
+		WiFi_PID=`pidof CcspWifiSsp`
+		if [ "$WiFi_PID" = "" ]; then
+			echo "WiFi process is not running, restarting it"
+			dmcli eRT setv Device.LogAgent.WifiLogMsg string "RDK_LOG_ERROR,RDKB_PROCESS_CRASHED : WiFiAgent_process is not running, need restart"
+			$BINPATH/CcspWifiSsp -subsys $Subsys &
+		fi
+		
+		# Checking Harvester PID
+		Harvester_PID=`pidof harvester`
+		if [ "$Harvester_PID" = "" ]; then
+			echo "Harvester process is not running, restarting it"
+			$BINPATH/harvester &
+		fi
+	fi
 fi
 
 done
