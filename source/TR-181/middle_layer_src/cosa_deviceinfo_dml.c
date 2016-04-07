@@ -521,6 +521,40 @@ DeviceInfo_GetParamStringValue
     	CosaDmlDiGetProcessorSpeed(NULL, pValue,pulSize);
         return 0;
     }
+
+    /* Required for WebPA timestamp */
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_SystemTime", TRUE))
+    {
+        static unsigned long long int llprevtime = 0;
+        static int count = 0;
+        unsigned long long lltime = 0;
+        char sbuf[32] = {0};
+        struct timespec sysTime;
+
+        if( clock_gettime(CLOCK_REALTIME, &sysTime) != -1 )
+        {
+              //printf("Old Time nsec:   %llu \n", llprevtime);
+              lltime = (unsigned long long int)sysTime.tv_sec * 1000000000L + sysTime.tv_nsec;
+              //printf("Time in nanosec: %llu \n", lltime);
+
+              if(lltime == llprevtime)
+              {
+                    count++;
+              }
+              else
+              {
+                    count = 0;
+                    llprevtime = lltime;
+              }
+
+              sprintf(sbuf, "%llu", lltime + count);
+              //printf(" sbuf = \"%s\"\n", sbuf);
+              AnscCopyString(pValue, sbuf);
+              *pulSize = strlen(sbuf)+1;
+        }
+        return 0;
+    }
+
 	
 	/* Changes for EMS begins here */
 	

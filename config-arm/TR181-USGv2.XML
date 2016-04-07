@@ -589,6 +589,16 @@
           <syntax>uint32</syntax>
 
         </parameter>
+        
+       <parameter>
+
+          <name>X_RDKCENTRAL-COM_SystemTime</name>
+
+          <type>string(64)</type>
+
+          <syntax>string</syntax>
+
+        </parameter>
 
         <parameter>
 
