@@ -51,6 +51,10 @@
 
 //#include <docsis_ext_interface.h>
 
+#ifdef INCLUDE_BREAKPAD
+#include "breakpad_wrapper.h"
+#endif
+
 #define DEBUG_INI_NAME  "/etc/debug.ini"
 
 PDSLH_CPE_CONTROLLER_OBJECT     pDslhCpeController      = NULL;
@@ -441,6 +445,10 @@ int main(int argc, char* argv[])
         fputs(cmd, fd);
         fclose(fd);
     }
+#ifdef INCLUDE_BREAKPAD
+    breakpad_ExceptionHandler();
+#endif
+#ifndef INCLUDE_BREAKPAD
 
     if (is_core_dump_opened())
     {
@@ -470,6 +478,7 @@ int main(int argc, char* argv[])
     printf("Registering PCD exception handler\n");
     CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PandM Registering PCD exception handler... \n"));
     PCD_api_register_exception_handlers( argv[0], NULL );
+#endif
 #endif
 
     cmd_dispatch('e');
