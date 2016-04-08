@@ -102,7 +102,5 @@ then
 			echo "Harvester process is not running, restarting it"
 			$BINPATH/harvester &
 		fi
-	fi
+	done
 fi
-
-done
