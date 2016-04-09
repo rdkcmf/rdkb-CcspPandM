@@ -425,6 +425,14 @@ CosaDmlMocaIfGetDinfo
     );
 
 ANSC_STATUS
+CosaDmlMocaIfGetStaticInfo
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       uIndex,
+        PCOSA_DML_MOCA_IF_SINFO       pSInfo
+    );
+
+ANSC_STATUS
 CosaDmlMocaIfGetStats
     (
         ANSC_HANDLE                 hContext,
