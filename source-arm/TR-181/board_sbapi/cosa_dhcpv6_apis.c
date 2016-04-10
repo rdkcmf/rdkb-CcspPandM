@@ -2152,6 +2152,23 @@ static int _dibbler_client_operation(char * arg)
     {
         CcspTraceInfo(("%s start\n", __func__));
 #ifdef _COSA_INTEL_USG_ARM_
+#ifdef INTEL_PUMA7
+        sprintf(cmd, "syscfg get last_erouter_mode");
+        _get_shell_output(cmd, out, sizeof(out));
+	/* TODO: To be fixed by Comcast
+	         IPv6 address assigned to erouter0 gets deleted when erouter_mode=3(IPV4 and IPV6 both)
+	         Don't start v6 service in parallel. Wait for wan-status to be set to 'started' by IPv4 DHCP client.
+	*/
+        if (strstr(out, "3"))// If last_erouter_mode is both IPV4/IPV6
+	{
+	     	do{
+            		sprintf(cmd, "sysevent get wan-status");
+        		_get_shell_output(cmd, out, sizeof(out));
+        		CcspTraceInfo(("%s waiting for wan-status to started\n", __func__));
+			sleep(1);//sleep(1) is to avoid lots of trace msgs when there is latency
+		}while(!strstr(out,"started"));
+	}
+#endif
         system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
 #else
         sprintf(cmd, "%s start", CLIENT_BIN);
