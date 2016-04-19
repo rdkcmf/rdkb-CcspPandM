@@ -11,6 +11,8 @@ rebootNeededPAM=0
 rebootNeededPSM=0
 rebootNeededCR=0
 rebootNeededTR69=0
+rebootNeededforbrlan1=0
+rebootNeededforbrlan0=0
 
 if [ -f $SUBSYSLOCATION/cp_subsys_ert ]; then
 	Subsys="eRT."
@@ -206,6 +208,37 @@ do
 		lighttpd -f $LIGHTTPD_CONF
 	fi
 
+	ifconfig | grep brlan1
+	if [ $? == 1 ]; then
+		if [ "$rebootNeededforbrlan1" -eq 0 ]; then
+			echo "[RKDB_PLATFORM_ERROR] : brlan1 interface is not up, need to reboot the unit." 
+			rebootNeededforbrlan1=1
+			rebootNeeded=1
+		fi
+	fi
+
+	ifconfig | grep brlan0
+	if [ $? == 1 ]; then
+		if [ "$rebootNeededforbrlan0" -eq 0 ]; then
+			echo "[RKDB_PLATFORM_ERROR] : brlan0 interface is not up" 
+			echo "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
+			rebootNeededforbrlan0=1
+			rebootNeeded=1
+	      		/fss/gw/rdklogger/backupLogs.sh "true" ""
+		fi
+	fi
+
+	dmcli eRT getv Device.WiFi.SSID.2.Status | grep Up
+	if [ $? == 1 ]; then
+		echo "[RKDB_PLATFORM_ERROR] : 5G private SSID (ath1) is off, resetting WiFi now"
+		dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
+	fi
+
+	iptables-save -t nat | grep "A PREROUTING -i"
+	if [ $? == 1 ]; then
+		echo "[RDKB_PLATFORM_ERROR] : iptable corrupted. Restarting firewall"
+		sysevent set firewall-restart
+	fi
 
 	#cd /
 	if [ "$rebootNeeded" -eq 1 ]
@@ -229,7 +262,15 @@ do
 					elif [ "$rebootNeededCR" -eq 1 ]
 					then
 						echo "rebootNeededCR"
+
 			                	sh /etc/calc_random_time_to_reboot_dev.sh "CR" &
+
+					elif [ "$rebootNeededforbrlan1" -eq 1 ]
+					then
+						echo "rebootNeededforbrlan1"
+						echo "RDKB_REBOOT : brlan1 interface is not up, rebooting the device."
+						sh /etc/calc_random_time_to_reboot_dev.sh "" &
+
 					else 
 						echo "rebootNeededTR69"
 			                	sh /etc/calc_random_time_to_reboot_dev.sh "TR69" &
