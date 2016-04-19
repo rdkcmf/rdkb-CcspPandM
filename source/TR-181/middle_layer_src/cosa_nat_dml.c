@@ -2789,7 +2789,7 @@ PortTrigger_GetParamBoolValue
         ULONG                           entryCount    = 0;
         ULONG                           i             = 0;
         
-        pPortTrigger = CosaDmlNatGetPortTriggers(NULL,&entryCount);
+        pPortTrigger = CosaDmlNatGetPortTriggers(NULL,&entryCount,FALSE);
         
         if ( pPortTrigger )
         {

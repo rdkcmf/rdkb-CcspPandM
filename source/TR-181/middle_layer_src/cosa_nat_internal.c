@@ -1149,7 +1149,7 @@ CosaNatSyncPortTrigger
 
     CcspTraceWarning(("!!!!!!!! in CosaNatSyncPortTrigger !!!!!!!!\n"));
 
-    pPortTrigger = CosaDmlNatGetPortTriggers(NULL,&entryCount);
+    pPortTrigger = CosaDmlNatGetPortTriggers(NULL,&entryCount,TRUE);
 
     if ( !pPortTrigger )
     {
