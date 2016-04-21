@@ -1621,9 +1621,10 @@ CosaDmlDcSetFactoryReset
 
 	if (factory_reset_mask & FR_OTHER ) {
    		CcspTraceWarning(("FactoryReset:%s Restoring all the DBs to factory defaults  ...\n",__FUNCTION__));
-        system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
-		system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
-		system("restoreAllDBs"); //Perform factory reset on other components
+                system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
+                system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
+                system("xf3_erase_nvram");
+                //system("restoreAllDBs"); //Perform factory reset on other components
 	}
 
 	if (factory_reset_mask & FR_ROUTER) {
