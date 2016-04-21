@@ -559,7 +559,8 @@ BOOL CosaDmlNatChkPortMappingClient(ULONG client)
         CosaDmlNatGetPortTriggers
             (
                 ANSC_HANDLE                 hContext,
-                PULONG                      pulCount
+                PULONG                      pulCount,
+		BOOLEAN                     bCommit
             )
         Description:
             This routine is to retrieve the complete list of NAT port triggers, which is a table.
@@ -576,7 +577,8 @@ PCOSA_DML_NAT_PTRIGGER
 CosaDmlNatGetPortTriggers
     (
         ANSC_HANDLE                 hContext,
-        PULONG                      pulCount
+        PULONG                      pulCount,
+	BOOLEAN                     bCommit
     )
 {
     *pulCount = 0;
