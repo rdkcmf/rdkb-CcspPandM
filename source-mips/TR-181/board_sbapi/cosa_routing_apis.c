@@ -2957,10 +2957,16 @@ Route6_GetIfNames(char iflist[][IFNAME_SIZ], int *nlist)
 
         snprintf(iflist[0], IFNAME_SIZ, "%s", "erouter0");
         snprintf(iflist[1], IFNAME_SIZ, "%s", "brlan0");
+#if defined (_COSA_BCM_MIPS_)
+        snprintf(iflist[2], IFNAME_SIZ, "%s", "lo");
+        *nlist = 3;
+#else
         snprintf(iflist[2], IFNAME_SIZ, "%s", "wan0");
         snprintf(iflist[3], IFNAME_SIZ, "%s", "lo");
-
         *nlist = 4;
+#endif
+
+
 #if defined(USE_TR181_PATH)
     }
     else

@@ -312,7 +312,9 @@ typedef struct USG_IF_CFG
 USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
 {
     {"erouter0",    COSA_DML_LINK_TYPE_EthLink, TRUE},
+#if !defined(_COSA_BCM_MIPS_)
     {"wan0",        COSA_DML_LINK_TYPE_DOCSIS,  TRUE},  /*DH  wan0 should never appear here -- CM extensions are for DOCSIS interfaces */
+#endif
     {"lo",          COSA_DML_LINK_TYPE_EthLink, FALSE}, /*DH  change the value of gDmsbIpIfLoopbackInstNum too, if "lo" is moved to a different location */
     /*
      *  Multi-LAN -- still have to keep primary LAN interface for IPv6 settings -- overlapping with MLAN configuration
@@ -2137,9 +2139,6 @@ CosaDmlIpIfReset
     }
     else
     {
-    #ifdef _COSA_BCM_MIPS_
-        return ANSC_STATUS_FAILURE;
-    #else
         ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
         /*TODO: TR181 requires to delay this operation after the end of current CWMP session, not supported*/
         
@@ -2149,15 +2148,25 @@ CosaDmlIpIfReset
         {
             system("sysevent set lan-restart");
         }
+#if defined(_COSA_BCM_MIPS_)
+        // not sure what we are supposed to do here  on XF3 since we don't have wan0.
+        // should this be erouter0?
+        else if (strstr((char *)g_ipif_names[ulInstanceNumber-1], "erouter0"))
+        {
+            system("sysevent set wan-restart");
+        }
+        /*we do nothing when the interface is loopback*/
+#else
+        // not sure what we are supposed to do here  on XF3 since we don't have wan0.
+        // should this be erouter0?
         else if (strstr((char *)g_ipif_names[ulInstanceNumber-1], "wan0"))
         {
             system("sysevent set wan-restart");        
         }
         /*we do nothing when the interface is loopback*/
-
-        
+#endif
         return returnStatus;
-    #endif
+
     }
 }
 
