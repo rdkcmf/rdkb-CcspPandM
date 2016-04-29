@@ -361,16 +361,55 @@ void _get_unwelcome_list()
    } 
 }
 
+int FindHostInLeases(char *Temp)
+{
+	FILE *fp = NULL;
+	char buf[200] = {0};
+	int ret = 0;
+	
+	if ( (fp=fopen("/nvram/dnsmasq.leases", "r")) == NULL )
+	{
+		return 1;
+	}
+
+	while ( fgets(buf, sizeof(buf), fp)!= NULL )
+	{
+	
+		if(strstr(buf,Temp))
+		{
+			ret = 0;
+			break;
+		}
+		else
+		{
+			ret = 1;
+		}
+	}
+	fclose(fp);
+	return ret; 
+}
 int host_filter(LM_host_t *host)
 {
     int i;
     LM_ip_addr_t *pIp;
+	char str[100];
     if(0 == *(int*)(_g_atom_if_ip))
         return FALSE;
     for(i = 0; i < host->ipv4AddrAmount; i++){
         pIp = &(host->ipv4AddrList[i]);
         if(0 == memcmp(pIp->addr, _g_atom_if_ip, sizeof(_g_atom_if_ip)))
+		{
             return TRUE;
+		}
+		if(host->online == 0)
+		{
+			 sprintf(str,"%02x:%02x:%02x:%02x:%02x:%02x", host->phyAddr[0], host->phyAddr[1], host->phyAddr[2], host->phyAddr[3], host->phyAddr[4], host->phyAddr[5]);
+			if(FindHostInLeases(str))
+			{
+				return TRUE;
+			}
+		}
+		
     }
     return FALSE; 
 }
