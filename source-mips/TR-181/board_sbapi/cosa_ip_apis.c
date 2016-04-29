@@ -299,7 +299,7 @@ static int _is_in_linux_bridge(char * if_name, char * br_name)
 **********************************************************************/
 #ifdef _COSA_BCM_MIPS_
 
-#define COSA_USG_IF_NUM 4
+#define COSA_USG_IF_NUM 3 // we only have 3 interfaces for XF3
 
 typedef struct USG_IF_CFG
 {
@@ -312,9 +312,6 @@ typedef struct USG_IF_CFG
 USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
 {
     {"erouter0",    COSA_DML_LINK_TYPE_EthLink, TRUE},
-#if !defined(_COSA_BCM_MIPS_)
-    {"wan0",        COSA_DML_LINK_TYPE_DOCSIS,  TRUE},  /*DH  wan0 should never appear here -- CM extensions are for DOCSIS interfaces */
-#endif
     {"lo",          COSA_DML_LINK_TYPE_EthLink, FALSE}, /*DH  change the value of gDmsbIpIfLoopbackInstNum too, if "lo" is moved to a different location */
     /*
      *  Multi-LAN -- still have to keep primary LAN interface for IPv6 settings -- overlapping with MLAN configuration
@@ -1417,12 +1414,6 @@ IPIF_getEntry_for_Ipv6Pre
     {
         if (g_ipif_be_bufs[ulIndex].ulNumOfV6Pre >= MAX_IPV6_ENTRY_NUM)
             break;
-        
-#ifdef _COSA_BCM_MIPS_
-        /* We just put this prefix into erouter0 entry */
-        if ( ulIndex > 0 )
-            break;
-#endif
 
         p_dml_v6pre = &g_ipif_be_bufs[ulIndex].V6PreList[g_ipif_be_bufs[ulIndex].ulNumOfV6Pre];
 
@@ -2405,12 +2396,8 @@ CosaDmlIpIfSetV4AddrValues
     }
     else
     {
-    #ifdef _COSA_BCM_MIPS_
-        return ANSC_STATUS_FAILURE;
-    #else
         /*this API will never be called*/
         return ANSC_STATUS_SUCCESS;
-    #endif
     }
 }
 
