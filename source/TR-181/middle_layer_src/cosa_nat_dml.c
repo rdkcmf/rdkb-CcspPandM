@@ -2063,7 +2063,12 @@ PortMapping_SetParamUlongValue
         /* save update to backup */
         /* pNatPMapping->LeaseDuration = uValue; */
         /* Shiywan: LeaseDuration support for dynamic (non-static) port mappings is OPTIONAL */
-
+		/* Return true for SET if the value to be set is 0. As static port mapping 0 is valid.
+			This is to allow SET during rollback of cached rows that were deleted during WEBPA PUT */
+		if(uValue == 0 && pNatPMapping->LeaseDuration == 0)
+		{
+			return TRUE;
+		}
         return FALSE;
     }
 
