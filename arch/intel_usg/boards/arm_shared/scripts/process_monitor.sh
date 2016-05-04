@@ -37,6 +37,13 @@ do
 	# Checking PandM's PID
 	PAM_PID=`pidof CcspPandMSsp`
 	if [ "$PAM_PID" = "" ]; then
+                if [ -f /etc/os-release ];then
+                    while [ ! -f /tmp/crash_reboot ]
+		    do
+			sleep 2
+		    done
+                    if [ -f /tmp/crash_reboot ];then rm -rf /tmp/crash_reboot; fi
+                fi
 		if [ "$rebootNeededPAM" -eq 0 ]; then
 		echo "RDKB_PROCESS_CRASHED : PAM_process is not running, need to reboot the unit now"
 		rebootNeededPAM=1
