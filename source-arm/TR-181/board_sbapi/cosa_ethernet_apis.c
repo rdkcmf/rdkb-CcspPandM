@@ -180,21 +180,14 @@ int g_PortIDs[]={
 
 CosaEthInterfaceInfo g_EthEntries[] = 
     {
-
-#if defined(_XB6_PRODUCT_REQ_)
         {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
         {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
-        {g_EthIntSInfo + 2, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
-        {g_EthIntSInfo + 3, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
-#else
-        {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
-        {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
+#if !defined(_XB6_PRODUCT_REQ_)
         {g_EthIntSInfo + 2, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 2, {0}},
         {g_EthIntSInfo + 3, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 3, {0}},
+#endif
         {g_EthIntSInfo + 4, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
         {g_EthIntSInfo + 5, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
-#endif
-
     };
 
 #endif
@@ -238,20 +231,12 @@ CosaDmlEthInit
 
     if ( -1 != _getMac("erouter0", strMac) )
     {
-#if defined(_XB6_PRODUCT_REQ_)
-    	AnscCopyMemory(g_EthIntSInfo[2].MacAddress, strMac, 6);
-#else
-    	AnscCopyMemory(g_EthIntSInfo[4].MacAddress, strMac, 6);
-#endif
+        AnscCopyMemory(g_EthIntSInfo[4].MacAddress, strMac, 6);
     }
 
     if ( -1 != _getMac("lbr0", strMac) )
     {
-#if defined(_XB6_PRODUCT_REQ_)
-    	 AnscCopyMemory(g_EthIntSInfo[3].MacAddress, strMac, 6);
-#else
         AnscCopyMemory(g_EthIntSInfo[5].MacAddress, strMac, 6);
-#endif
     }
  
 #endif
