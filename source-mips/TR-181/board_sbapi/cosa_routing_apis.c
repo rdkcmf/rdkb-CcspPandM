@@ -2689,6 +2689,8 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
      * we use "ip -6 route" instead of "route -A inet6".
      */
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname);
+	printf(" \n [%s:%d] Checking Interface: %s", __FUNCTION__,__LINE__, ifname);
+
     if ((fp = popen(cmd, "r")) == NULL)
         return -1;
 
@@ -2738,7 +2740,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 				(strcmp(result_arr[i].interface,info6->interface) == 0)) 
 			{
 				
-				printf(" \n Harnish : < %s : %d > Duplicate ", __FUNCTION__,__LINE__);
+				printf(" \n [%s:%d] Duplicate ", __FUNCTION__,__LINE__);
 				bFound = TRUE;
 				break;
 			}
@@ -2751,13 +2753,18 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 			_ansc_strcpy(result_arr[g_numRtInfo6].interface, info6->interface);
 			g_numRtInfo6++;
 			entryCnt ++;
-			printf(" \n Harnish : < %s : %d > Added , g_numRtInfo6 = %d ",__FUNCTION__,__LINE__, g_numRtInfo6);
-			printf(" \n Harnish : < %s : %d > entryCnt = %d ",__FUNCTION__,__LINE__, entryCnt);
+			printf(" \n [%s:%d] Added prefix: %s gateway: %s iface: %s, g_numRtInfo6 = %d ",
+					__FUNCTION__,__LINE__, info6->prefix, info6->gateway, info6->interface, g_numRtInfo6);
+			printf(" \n [%s:%d] entryCnt = %d ",__FUNCTION__,__LINE__, entryCnt);
 		}
     }
 	pclose(fp);
 	//Fix for issue RDKB-367 
+#if defined(_COSA_BCM_MIPS_)
+    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table main");
+#else
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table 3");
+#endif
     if ((fp = popen(cmd, "r")) == NULL)
         return -1;
 	
@@ -2806,7 +2813,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 				 (strcmp(result_arr[i].interface,info6->interface) == 0)) 
 			 {
 				 
-				 printf(" \n Harnish : < %s : %d > Duplicate ", __FUNCTION__,__LINE__);
+				 printf(" \n [%s:%d] Duplicate ", __FUNCTION__,__LINE__);
 				 bFound = TRUE;
 				 break;
 			 }
@@ -2819,8 +2826,9 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 			 _ansc_strcpy(result_arr[g_numRtInfo6].interface, info6->interface);
 			 g_numRtInfo6++;
 			 entryCnt ++;
-			 printf(" \n Harnish : < %s : %d > Added , g_numRtInfo6 = %d ",__FUNCTION__,__LINE__, g_numRtInfo6); 
-			 printf(" \n Harnish : < %s : %d > entryCnt = %d ",__FUNCTION__,__LINE__, entryCnt);
+			 printf(" \n [%s:%d] Added prefix: %s gateway: %s iface: %s, g_numRtInfo6 = %d ",
+						__FUNCTION__,__LINE__, info6->prefix, info6->gateway, info6->interface, g_numRtInfo6);
+			 printf(" \n [%s:%d] entryCnt = %d ",__FUNCTION__,__LINE__, entryCnt);
 		 }
 
      }
