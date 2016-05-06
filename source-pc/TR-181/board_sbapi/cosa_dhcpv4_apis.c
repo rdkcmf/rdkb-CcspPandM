@@ -78,6 +78,7 @@
 #include "cosa_dhcpv4_apis.h"
 #include "cosa_dhcpv4_internal.h"
 #include "plugin_main_apis.h"
+#include "ccsp_hal_dhcpv4_emu_api.h"    
 
 
 COSA_DML_DHCPC_FULL  g_dhcpv4_client[] =
@@ -735,7 +736,14 @@ CosaDmlDhcpsGetState
         ANSC_HANDLE                 hContext
     )
 {
-    return g_dhcpv4_server;
+	int udhcpdPid = CcspHalGetPIDbyName("udhcpd /etc/udhcpd.conf") ;
+	if(udhcpdPid < 0) {
+		printf("error on get udhcpd pid\n");
+		return FALSE;
+	} else {
+		printf("udhcpd pid: %d\n", udhcpdPid);
+		return g_dhcpv4_server;
+	}
 }
 
 
@@ -874,12 +882,24 @@ CosaDmlDhcpsGetPool
         PCOSA_DML_DHCPS_POOL_FULL   pEntry
     )
 {
-    if ( ulIndex+1 > sizeof(g_dhcpv4_server_pool)/sizeof(COSA_DML_DHCPS_POOL_FULL) )
-        return ANSC_STATUS_FAILURE;
+	char value[100];
+	if ( ulIndex+1 > sizeof(g_dhcpv4_server_pool)/sizeof(COSA_DML_DHCPS_POOL_FULL) )
+		return ANSC_STATUS_FAILURE;
+	CcspHalGetConfigValue("start", value, sizeof value);
+	printf("\n DHCP start Address: (%s) \n" ,value);
+	g_dhcpv4_server_pool->Cfg.MinAddress.Value = inet_addr(value);
 
-    AnscCopyMemory(pEntry, &g_dhcpv4_server_pool[ulIndex], sizeof(COSA_DML_DHCPS_POOL_FULL));
-    
-    return ANSC_STATUS_SUCCESS;
+	CcspHalGetConfigValue("end", value, sizeof value);
+	printf("\n DHCP end Address: (%s) \n" ,value);
+
+	g_dhcpv4_server_pool->Cfg.MaxAddress.Value = inet_addr(value);
+
+	CcspHalGetConfigLeaseValue("lease", value, sizeof value);
+	g_dhcpv4_server_pool->Cfg.LeaseTime = atoi(value);
+
+	AnscCopyMemory(pEntry, &g_dhcpv4_server_pool[ulIndex], sizeof(COSA_DML_DHCPS_POOL_FULL));
+
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS

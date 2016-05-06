@@ -135,11 +135,13 @@ AC_CONFIG_FILES(
 	source-arm/TR-181/board_ml/Makefile
 	source-arm/TR-181/Makefile
 	source-arm/Makefile
-    source-mips/TR-181/board_sbapi/Makefile
-    source-mips/TR-181/board_ml/Makefile
-    source-mips/TR-181/Makefile
-    source-mips/Makefile
+        source-mips/TR-181/board_sbapi/Makefile
+        source-mips/TR-181/board_ml/Makefile
+        source-mips/TR-181/Makefile
+        source-mips/Makefile
 	source-pc/TR-181/board_sbapi/Makefile
+	source-pc/TR-181/middle_layer_src/Makefile
+	source-pc/PandMSsp/Makefile
 	source-pc/TR-181/Makefile
 	source-pc/Makefile
 	source/TR-181/middle_layer_src/Makefile

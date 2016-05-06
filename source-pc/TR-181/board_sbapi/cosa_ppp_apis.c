@@ -363,12 +363,13 @@ static void get_wan_proto(wanProto_t * p_wan_proto)
         return;
     
     *p_wan_proto = DHCP;
-
+#if 0//LNT_EMU
     if ( !syscfg_get(NULL, "wan_proto", output, sizeof(output)) )
     {
         if (!strncmp(output, "pppoe", 5))
             *p_wan_proto = PPPOE;
     }
+#endif
 }
 
 /*this API is used by bbhm to get pppoe IF address*/

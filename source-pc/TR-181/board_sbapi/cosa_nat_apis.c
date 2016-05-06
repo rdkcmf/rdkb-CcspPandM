@@ -84,9 +84,15 @@
 #include "plugin_main_apis.h"
 
 PFN_COSA_DML_NAT_GEN   g_nat_pportmapping_callback = NULL;
+int g_count=0;//LNT
+int pt_count=0;//LNT
+static BOOL g_NatPFEnable;
 
+COSA_DML_NAT_PTRIGGER g_nat_porttrigger[32]=
+        {
+        };//LNT
 
-COSA_DML_NAT_PMAPPING   g_nat_portmapping[] =
+COSA_DML_NAT_PMAPPING   g_nat_portmapping[32] =
     {
         {
             0,
@@ -140,10 +146,10 @@ COSA_DML_NAT_PMAPPING   g_nat_portmapping[] =
 
 COSA_DML_NAT_DMZ    g_Dmz =
     {
-        TRUE,
+        FALSE,
         "10.10.10.10",
         "10.10.10.11",
-        "192.168.1.66"
+        "0.0.0.0"
     };
 
 ANSC_STATUS
@@ -155,8 +161,27 @@ CosaDmlNatGetLanIP
     return ANSC_STATUS_SUCCESS;
 }
 
-int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)
+int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)//LNT
 {
+       if( pPortMapping->PublicIP.Value == 0 &&
+                        ((pPortMapping->ExternalPort == 0) ||
+                         (pPortMapping->ExternalPortEndRange < pPortMapping->ExternalPort) ||
+                         (pPortMapping->Protocol > 3 || pPortMapping->Protocol < 1)
+                        ))
+        {
+                CcspTraceWarning(("Wrong Port Mapping parameter external Port %d ~ %d, protocol %d, InternalPort %d,InternalClient %x PublicIP %x\n", \
+                                        pPortMapping->ExternalPort, pPortMapping->ExternalPortEndRange, \
+                                        pPortMapping->Protocol,pPortMapping->InternalPort, pPortMapping->InternalClient.Value,\
+                                        pPortMapping->PublicIP.Value ));
+                return FALSE;
+        }
+
+        if( pPortMapping->InternalClient.Value == 0)
+        {
+                CcspTraceWarning(("Wrong InternalClient value %x\n",pPortMapping->InternalClient.Value ));
+                return FALSE;
+        }
+
     return TRUE;
 }
 
@@ -199,7 +224,7 @@ CosaDmlNatInit
     )
 {
     g_nat_pportmapping_callback = pValueGenFn;
-
+    g_NatPFEnable = TRUE;
     return ANSC_STATUS_SUCCESS;
 
 }
@@ -274,6 +299,7 @@ CosaDmlNatSet
     }
     else
     {
+	port_forwarding_disable();//LNT
         printf("X_Comcast_com_EnablePortMapping is disabled!\n");
     }
 
@@ -356,7 +382,6 @@ CosaDmlNatGetDmz
             The pointer to the info of DMZ.
 
 **********************************************************************/
-
 ANSC_STATUS
 CosaDmlNatSetDmz
     (
@@ -365,6 +390,13 @@ CosaDmlNatSetDmz
     )
 {
     AnscCopyMemory(&g_Dmz, pDmz, sizeof(COSA_DML_NAT_DMZ));
+//LNT
+    if(pDmz->bEnabled == FALSE)
+		DeleteDMZIptableRules();
+    
+    else
+		DMZIptableRulesOperation(pDmz->InternalIP);
+
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -398,32 +430,30 @@ CosaDmlNatGetPortMappings
         PULONG                      pulCount
     )
 {
-    PCOSA_DML_NAT_PMAPPING pNatPMapping = NULL;
-    ULONG                         index = 0;
+	PCOSA_DML_NAT_PMAPPING pNatPMapping = NULL;
+        ULONG                         index = 0;
 
-    for(index =0; index < sizeof(g_nat_portmapping)/sizeof(COSA_DML_NAT_PMAPPING); index++)
-    {
-        if ( g_nat_portmapping[index].InstanceNumber  ==  0 )
+        for(index =0; index < sizeof(g_nat_portmapping[0])*g_count/sizeof(COSA_DML_NAT_PMAPPING); index++)
         {
-            g_nat_pportmapping_callback( NULL, &g_nat_portmapping[index] );
-
+                if ( g_nat_portmapping[index].InstanceNumber  ==  0 )
+                {
+                        g_nat_pportmapping_callback( NULL, &g_nat_portmapping[index] );
+                }
         }
-    }
 
-    pNatPMapping = (PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(g_nat_portmapping) );
+        pNatPMapping = (PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(g_nat_portmapping[0])*(g_count+1));
 
-    if ( pNatPMapping )
-    {
-         AnscCopyMemory(pNatPMapping, g_nat_portmapping, sizeof(g_nat_portmapping) );
+        if ( pNatPMapping )
+        {
+                AnscCopyMemory(pNatPMapping, g_nat_portmapping, sizeof(g_nat_portmapping[0])*g_count);
+                *pulCount=g_count;
+        }
+        else
+        {
+                *pulCount = 0;
+        }
 
-        *pulCount = 2;
-    }
-    else
-    {
-        *pulCount = 0;
-    }
-
-    return pNatPMapping;
+        return pNatPMapping;
 }
 
 /**********************************************************************
@@ -456,6 +486,34 @@ CosaDmlNatAddPortMapping
         PCOSA_DML_NAT_PMAPPING      pEntry
     )
 {
+	ULONG                          index = 0;
+        char cmd[1024]= {'\0'};
+        char *prot;
+        index=sizeof(g_nat_portmapping[0])*g_count/sizeof(COSA_DML_NAT_PMAPPING);
+        if(pEntry != NULL)//LNT
+        {
+                g_count++;
+                g_nat_portmapping[index].InstanceNumber=pEntry->InstanceNumber;
+                AnscCopyString(g_nat_portmapping[index].Alias, pEntry->Description);
+                g_nat_portmapping[index].bEnabled = pEntry->bEnabled;
+                g_nat_portmapping[index].Status = COSA_DML_NAT_STATUS_Enabled;
+                g_nat_portmapping[index].AllInterfaces=TRUE;
+                g_nat_portmapping[index].LeaseDuration = 0;
+                g_nat_portmapping[index].RemoteHost.Value = 0;
+                g_nat_portmapping[index].PublicIP.Value = 0;
+                g_nat_portmapping[index].ExternalPort =  pEntry->ExternalPort;
+                g_nat_portmapping[index].ExternalPortEndRange = pEntry->ExternalPortEndRange;
+                g_nat_portmapping[index].InternalPort = pEntry->InternalPort;
+                g_nat_portmapping[index].Protocol =  pEntry->Protocol;
+                g_nat_portmapping[index].InternalClient.Value = pEntry->InternalClient.Value;
+                strncpy(g_nat_portmapping[index].X_CISCO_COM_InternalClientV6,pEntry->X_CISCO_COM_InternalClientV6,
+                                sizeof(g_nat_portmapping[index].X_CISCO_COM_InternalClientV6));
+                strncpy(g_nat_portmapping[index].Description,
+                                pEntry->Description, sizeof(g_nat_portmapping[index].Description));
+                //Add PortForwarding Rule For TCP,UDP,TCP/UDP
+                        prot = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
+                        port_forwarding_add_rule(g_nat_portmapping[index].InternalClient.Dot,prot,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
+        }
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -488,8 +546,28 @@ CosaDmlNatDelPortMapping
         ULONG                       ulInstanceNumber
     )
 {
+	ULONG                          index = 0;
+        PCOSA_DML_NAT_PMAPPING pNatPMapping;
+        char cmd[1024]= {'\0'};
+        char *prot;
+        for(index =0; index < sizeof(g_nat_portmapping[0])*g_count/sizeof(COSA_DML_NAT_PMAPPING); index++)
+        {
+                if (g_nat_portmapping[index].InstanceNumber==ulInstanceNumber)//LNT
+                {
+                        //Delete PortForwarding Rule For TCP,UDP,TCP/UDP
+                                prot = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
+                                port_forwarding_delete_rule(g_nat_portmapping[index].InternalClient.Dot,prot,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
+                }
+        }
+        for(index=ulInstanceNumber-1;index<g_count-1;index++)
+        {
+                g_nat_portmapping[index]=g_nat_portmapping[index+1];
+                if(g_nat_portmapping[index].InstanceNumber!=0){
+                        g_nat_portmapping[index].InstanceNumber--;}
+        }
+        g_count--;
 
-    return ANSC_STATUS_SUCCESS;
+        return ANSC_STATUS_SUCCESS;
 }
 
 
@@ -522,20 +600,40 @@ CosaDmlNatSetPortMapping
         PCOSA_DML_NAT_PMAPPING      pEntry          /* Identified by InstanceNumber */
     )
 {
-    ULONG                          index = 0;
-
-    for(index =0; index < sizeof(g_nat_portmapping)/sizeof(COSA_DML_NAT_PMAPPING); index++)
-    {
-        if ( g_nat_portmapping[index].InstanceNumber  ==  pEntry->InstanceNumber )
+	        ULONG                          index = 0;
+        char cmd[1024]= {'\0'};
+        char str[1024]= {'\0'};
+        char *prot,*del;
+        for(index =0; index < sizeof(g_nat_portmapping)/sizeof(COSA_DML_NAT_PMAPPING); index++)
         {
-            AnscCopyMemory(&g_nat_portmapping[index], pEntry, sizeof(COSA_DML_NAT_PMAPPING));
-
-            break;
+                if ( g_nat_portmapping[index].InstanceNumber  ==  pEntry->InstanceNumber )//LNT
+                {
+                                del = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
+                                port_forwarding_delete_rule(g_nat_portmapping[index].InternalClient.Dot,del,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
+                        if(pEntry != NULL)
+                        {
+                                g_nat_portmapping[index].InstanceNumber=pEntry->InstanceNumber;
+                                g_nat_portmapping[index].bEnabled = pEntry->bEnabled;
+                                g_nat_portmapping[index].AllInterfaces=TRUE;
+                                g_nat_portmapping[index].LeaseDuration = 0;
+                                g_nat_portmapping[index].RemoteHost.Value = 0;
+                                g_nat_portmapping[index].PublicIP.Value = 0;
+                                g_nat_portmapping[index].ExternalPort =  pEntry->ExternalPort;
+                                g_nat_portmapping[index].ExternalPortEndRange = pEntry->ExternalPortEndRange;
+                                g_nat_portmapping[index].InternalPort = pEntry->InternalPort;
+                                g_nat_portmapping[index].Protocol =  pEntry->Protocol;
+                                g_nat_portmapping[index].InternalClient.Value=  pEntry->InternalClient.Value;
+                                g_nat_portmapping[index].Status = COSA_DML_NAT_STATUS_Enabled;
+                                strncpy(g_nat_portmapping[index].Description,
+                                                pEntry->Description, sizeof(g_nat_portmapping[index].Description));
+                                AnscCopyString(g_nat_portmapping[index].Alias, pEntry->Description);
+                                //After set function iptable rules are deleted and add new iptable to same ruleNumber
+                                prot = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
+                                port_forwarding_add_rule(g_nat_portmapping[index].InternalClient.Dot,prot,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
+                        }break;
+                }
         }
-    }
-
-    return ANSC_STATUS_SUCCESS;
-
+        return ANSC_STATUS_SUCCESS;
 }
 
 /* TBC      -- need to be normalized */
@@ -559,8 +657,7 @@ BOOL CosaDmlNatChkPortMappingClient(ULONG client)
         CosaDmlNatGetPortTriggers
             (
                 ANSC_HANDLE                 hContext,
-                PULONG                      pulCount,
-		BOOLEAN                     bCommit
+                PULONG                      pulCount
             )
         Description:
             This routine is to retrieve the complete list of NAT port triggers, which is a table.
@@ -577,12 +674,21 @@ PCOSA_DML_NAT_PTRIGGER
 CosaDmlNatGetPortTriggers
     (
         ANSC_HANDLE                 hContext,
-        PULONG                      pulCount,
-	BOOLEAN                     bCommit
+        PULONG                      pulCount
     )
 {
-    *pulCount = 0;
-    return NULL;
+     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger = NULL;
+     pNatPTrigger = (PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory( sizeof(g_nat_porttrigger[0])*(pt_count+1));//LNT
+        if (  pNatPTrigger )
+        {
+                AnscCopyMemory( pNatPTrigger, g_nat_porttrigger, sizeof(g_nat_porttrigger[0])*(pt_count+1));
+                *pulCount=pt_count;
+        }
+        else
+        {
+                *pulCount = 0;
+        }
+        return  pNatPTrigger;
 }
 
 /**********************************************************************
@@ -616,7 +722,25 @@ CosaDmlNatAddPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pEntry
     )
 {
-    return ANSC_STATUS_SUCCESS;
+	ULONG                          index = 0;
+        char cmd[1024]= {'\0'};
+        char *prot;
+        index=sizeof(g_nat_porttrigger[0])*pt_count/sizeof(COSA_DML_NAT_PTRIGGER);
+        if(pEntry != NULL)//LNT
+        {
+                g_nat_porttrigger[index].InstanceNumber=pEntry->InstanceNumber;
+                g_nat_porttrigger[index].bEnabled=pEntry->bEnabled;
+                g_nat_porttrigger[index].TriggerProtocol=pEntry->TriggerProtocol;
+                g_nat_porttrigger[index].TriggerPortStart=pEntry->TriggerPortStart;
+                g_nat_porttrigger[index].TriggerPortEnd=pEntry->TriggerPortEnd;
+                g_nat_porttrigger[index].ForwardProtocol=pEntry->ForwardProtocol;
+                g_nat_porttrigger[index].ForwardPortStart=pEntry->ForwardPortStart;
+                g_nat_porttrigger[index].ForwardPortEnd=pEntry->ForwardPortEnd;
+                pt_count++;
+                prot = g_nat_porttrigger[index].TriggerProtocol==0?"tcp":g_nat_porttrigger[index].TriggerProtocol==1?"udp":"both";
+                port_triggering_add_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,prot,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);
+        }
+        return ANSC_STATUS_SUCCESS;
 }
 
 /**********************************************************************
@@ -648,7 +772,30 @@ CosaDmlNatDelPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pEntry
     )
 {
-    return ANSC_STATUS_SUCCESS;
+	ULONG                          index = 0;
+        ULONG                          count = 0;
+        PCOSA_DML_NAT_PTRIGGER         pNatPTrigger;
+        ULONG                          ulInstanceNumber=0;
+        ulInstanceNumber=pEntry->InstanceNumber;
+        char cmd[1024]= {'\0'};
+        char *prot;
+        for(index =0; index < sizeof(g_nat_porttrigger[0])*pt_count/sizeof(COSA_DML_NAT_PTRIGGER); index++)//LNT
+        {
+                if ( g_nat_porttrigger[index].InstanceNumber  ==  pEntry->InstanceNumber )
+                {
+                        prot = g_nat_porttrigger[index].TriggerProtocol==0?"tcp":g_nat_porttrigger[index].TriggerProtocol==1?"udp":"both";
+			//Delete iptable rule
+                        port_triggering_delete_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,prot,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);
+                }
+        }
+        for(index=ulInstanceNumber-1;index<pt_count-1;index++)
+        {
+                g_nat_porttrigger[index]=g_nat_porttrigger[index+1];
+                if(g_nat_porttrigger[index].InstanceNumber!=0){
+                        g_nat_porttrigger[index].InstanceNumber--;}
+        }
+        pt_count--;
+        return ANSC_STATUS_SUCCESS;
 }
 
 /**********************************************************************
@@ -682,12 +829,40 @@ CosaDmlNatSetPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pEntry          /* Identified by InstanceNumber */
     )
 {
-    return ANSC_STATUS_SUCCESS;
+	ULONG                          index = 0;
+        char cmd[1024]= {'\0'};
+        char *prot,*del;
+        for(index =0; index < sizeof(g_nat_porttrigger[0])*pt_count/sizeof(COSA_DML_NAT_PTRIGGER); index++)//LNT
+        {
+                if ( g_nat_porttrigger[index].InstanceNumber  ==  pEntry->InstanceNumber )
+                {
+                        del = g_nat_porttrigger[index].TriggerProtocol==0?"tcp":g_nat_porttrigger[index].TriggerProtocol==1?"udp":"both";
+                        //Delete iptable table rules 
+                        port_triggering_delete_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,del,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);
+                        if(pEntry != NULL)
+                        {
+                                g_nat_porttrigger[index].InstanceNumber=pEntry->InstanceNumber;
+                                g_nat_porttrigger[index].bEnabled=pEntry->bEnabled;
+                                g_nat_porttrigger[index].TriggerProtocol=pEntry->TriggerProtocol;
+                                g_nat_porttrigger[index].TriggerPortStart=pEntry->TriggerPortStart;
+                                g_nat_porttrigger[index].TriggerPortEnd=pEntry->TriggerPortEnd;
+                                g_nat_porttrigger[index].ForwardProtocol=pEntry->ForwardProtocol;
+                                g_nat_porttrigger[index].ForwardPortStart=pEntry->ForwardPortStart;
+                                g_nat_porttrigger[index].ForwardPortEnd=pEntry->ForwardPortEnd;
+                                prot = g_nat_porttrigger[index].TriggerProtocol==0?"tcp":g_nat_porttrigger[index].TriggerProtocol==1?"udp":"both";
+                                //Add iptable rule after edit functonality 
+                                port_triggering_add_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,prot,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);
+                        }break;
+                }
+        }
+
+        return ANSC_STATUS_SUCCESS;
+
 }
 
 
 
-static BOOL g_NatPTTriggerEnable = TRUE;
+static BOOL g_NatPTTriggerEnable = FALSE;
 
 ANSC_STATUS
 CosaDmlNatGetPortTriggerEnable(BOOL *pBool)
@@ -699,8 +874,12 @@ CosaDmlNatGetPortTriggerEnable(BOOL *pBool)
 ANSC_STATUS
 CosaDmlNatSetPortTriggerEnable(BOOL vBool)
 {
-    g_NatPTTriggerEnable = vBool;
-    return ANSC_STATUS_SUCCESS;
+	g_NatPTTriggerEnable = vBool;
+	if( vBool == FALSE )
+	{
+		port_triggering_disable();//LNT
+	}
+	return ANSC_STATUS_SUCCESS;
 }
 
 

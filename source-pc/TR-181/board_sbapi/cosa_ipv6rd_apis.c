@@ -128,9 +128,10 @@ syscfg_get_bool(const char *key, BOOL *bvalue)
     char value[MAX_LINE];
 
     bzero(value, sizeof(value));
+#if 0//LNT_EMU
     if (syscfg_get(NULL, key, value, sizeof(value)) != 0)
         return -1;
-
+#endif
     if (atoi(value) == 1) {
         *bvalue = TRUE;
     } else {
@@ -146,9 +147,10 @@ syscfg_set_bool(const char *key, BOOL bvalue)
     char value[MAX_LINE];
 
     snprintf(value, sizeof(value), "%d", bvalue ? 1 : 0);
+#if 0//LNT_EMU
     if (syscfg_set(NULL, key, value) != 0)
         return -1;
-
+#endif
     return 0;
 }
 
@@ -158,9 +160,10 @@ syscfg_get_ulong(const char *key, ULONG *ulvalue)
     char value[MAX_LINE];
 
     bzero(value, sizeof(value));
+#if 0//LNT_EMU
     if (syscfg_get(NULL, key, value, sizeof(value)) != 0)
         return -1;
-
+#endif
     *ulvalue = (ULONG)atoi(value);
     return 0;
 }
@@ -171,22 +174,27 @@ syscfg_set_ulong(const char *key, ULONG ulvalue)
     char value[MAX_LINE];
 
     snprintf(value, sizeof(value), "%u", ulvalue);
+#if 0//LNT_EMU
     if (syscfg_set(NULL, key, value) != 0)
         return -1;
-
+#endif
     return 0;
 }
 
 static int 
 syscfg_get_string(const char *key, char *buf, unsigned int size)
 {
+#if 0//LNT_EMU
     return syscfg_get(NULL, key, buf, size);
+#endif
 }
 
 static int
 syscfg_set_string(const char *key, const char *svalue)
 {
+#if 0//LNT_EMU
     return syscfg_set(NULL, key, svalue);
+#endif
 }
 
 static struct ipv6rd_conf *

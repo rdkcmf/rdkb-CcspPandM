@@ -75,7 +75,26 @@
 #include "plugin_main_apis.h"
 #include "cosa_hosts_apis.h"
 #include "cosa_hosts_internal.h"
+#include "lm_api.h"
 
+extern void* g_pDslhDmlAgent;
+
+#define NAME_DM_LEN  257
+#define CDM_PATH_SZ     257
+typedef struct _Name_DM
+{
+    char name[NAME_DM_LEN];
+    char dm[NAME_DM_LEN];
+}Name_DM_t;
+
+int g_IPIfNameDMListNum = 0;
+Name_DM_t *g_pIPIfNameDMList = NULL;
+
+int g_MoCAADListNum = 0;
+Name_DM_t *g_pMoCAADList = NULL;
+
+int g_DHCPv4ListNum = 0;
+Name_DM_t *g_pDHCPv4List = NULL;
 
 /*
  *  Worst kind of practice to share a global variable between DM middle layer code and SBAPI!
@@ -92,6 +111,14 @@ LmObjectHosts lmHosts = {
     .pIPv6AddressStringParaName = {"IPAddress"}
 };
 
+char _g_atom_if_ip[4];
+
+#define MACADDR_SZ 18
+#define LM_HOST_OBJECT_NAME_HEADER  "Device.Hosts.Host."
+#define STRNCPY_NULL_CHK(dest, src) { if((dest) != NULL ) AnscFreeMemory((dest));\
+                                           (dest) = _CloneString((src));}
+#define STRSET_NULL_CHK(dest, src)  { if((dest) != NULL) AnscFreeMemory((dest)); \
+                                            (dest) = (src);}
 
 COSA_DML_HOST_ENTRY  g_user_entrys1 = 
     {
@@ -146,7 +173,7 @@ CosaDmlHostsInit
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DML_HOST_ENTRY            pEntry       = NULL;
-
+#if 0
     pEntry = (PCOSA_DML_HOST_ENTRY)g_user_Entrys;
 
     /*Copy first entry */
@@ -163,8 +190,15 @@ CosaDmlHostsInit
     pEntry++;
     /* Copy flexible string */
     AnscCopyString( (PUCHAR)pEntry, "CiscoSamaPCUser1234567890" );
-
     return returnStatus;
+#else
+    lmHosts.availableInstanceNum = 1;
+    lmHosts.hostArray = NULL;
+    lmHosts.numHost = 0;
+    lmHosts.sizeHost = 0;
+    return ANSC_STATUS_SUCCESS;
+
+#endif
 }
 
 /**********************************************************************
@@ -192,29 +226,6 @@ CosaDmlHostsInit
 
 **********************************************************************/
 
-ANSC_STATUS
-CosaDmlHostsGetHosts
-    (
-        ANSC_HANDLE                 hContext,
-        PULONG                      pulCount
-    )
-{
-    PCOSA_DML_HOST_ENTRY            pHostEntry    = NULL;
-
-    pHostEntry = AnscAllocateMemory( g_user_pEntrys_len );
-    if ( !pHostEntry )
-    {
-        *pulCount = 0;
-        return NULL;
-    }
-
-    AnscCopyMemory(pHostEntry, g_user_Entrys, g_user_pEntrys_len );
-
-    *pulCount = 2;
-
-    return pHostEntry;
-}
-
 
 ANSC_STATUS
 CosaDmlHostsSetHostComment
@@ -229,6 +240,366 @@ CosaDmlHostsSetHostComment
 
 ULONG CosaDmlHostsGetOnline()
 {
-    return 2;
+	ULONG rVal = 0;
+        rVal = CcspHalNoofClientConnected();
+        return rVal;
 }
 
+char * _CloneString
+    (
+    const char * src
+    )
+{
+    if(src == NULL) return NULL;
+    size_t len = strlen(src) + 1;
+    if(len <= 1) return NULL;
+    char * dest = AnscAllocateMemory(len);
+    if ( dest )
+    {
+        strncpy(dest, src, len);
+        dest[len - 1] = 0;
+    }
+    return dest;
+}
+inline char* _get_addr_source(enum LM_ADDR_SOURCE source )
+{
+    switch (source){
+        case LM_ADDRESS_SOURCE_DHCP:
+            return _CloneString("DHCP");
+        case LM_ADDRESS_SOURCE_STATIC:
+            return _CloneString("Static");
+        case LM_ADDRESS_SOURCE_RESERVED:
+            return _CloneString("ReservedIP");
+        case LM_ADDRESS_SOURCE_NONE:
+        default:
+            return _CloneString("None");
+    }
+}
+
+PLmObjectHostIPv4Address
+Host_AddIPv4Address
+    (
+        PLmObjectHost pHost,
+        int instanceNum,
+        char * ipv4Address
+    )
+{
+    /* check if the address has already exist. */
+    int i;
+    for(i=0; i<pHost->numIPv4Addr; i++){
+        /* If IP address already exists, return. */
+        if(AnscEqualString(pHost->ipv4AddrArray[i]->pStringParaValue[LM_HOST_IPv4Address_IPAddressId],ipv4Address, FALSE))
+            return pHost->ipv4AddrArray[i];
+    }
+
+    for(i=0; i<pHost->numIPv4Addr; i++){
+        /* If instance number is occuppied, assign a new instance number. It may not happen in DHCP mode. */
+        if(pHost->ipv4AddrArray[i]->instanceNum == instanceNum){
+            instanceNum = pHost->availableInstanceNumIPv4Address;
+            pHost->availableInstanceNumIPv4Address++;
+        }
+    }
+
+    PLmObjectHostIPv4Address pIPv4Address = AnscAllocateMemory(sizeof(LmObjectHostIPv4Address));
+    pIPv4Address->instanceNum = instanceNum;
+    pIPv4Address->pStringParaValue[LM_HOST_IPv4Address_IPAddressId] = _CloneString(ipv4Address);
+    if(pHost->availableInstanceNumIPv4Address <= pIPv4Address->instanceNum)
+        pHost->availableInstanceNumIPv4Address = pIPv4Address->instanceNum + 1;
+
+    if(pHost->numIPv4Addr >= pHost->sizeIPv4Addr){
+        pHost->sizeIPv4Addr += LM_HOST_ARRAY_STEP;
+        PLmObjectHostIPv4Address *newArray = AnscAllocateMemory(pHost->sizeIPv4Addr * sizeof(PLmObjectHostIPv4Address));
+        for(i=0; i<pHost->numIPv4Addr; i++){
+            newArray[i] = pHost->ipv4AddrArray[i];
+        }
+        PLmObjectHostIPv4Address *backupArray = pHost->ipv4AddrArray;
+        pHost->ipv4AddrArray = newArray;
+if(backupArray) AnscFreeMemory(backupArray);
+    }
+    pIPv4Address->id = pHost->numIPv4Addr;
+    pHost->ipv4AddrArray[pIPv4Address->id] = pIPv4Address;
+    pHost->numIPv4Addr++;
+    return pIPv4Address;
+}
+
+
+inline void _get_host_ipaddress(LM_host_t *pSrcHost, PLmObjectHost pHost)
+{
+    int i;
+    LM_ip_addr_t *pIp;
+    char str[100];
+    for(i = 0; i < pSrcHost->ipv4AddrAmount ;i++){
+        pIp = &(pSrcHost->ipv4AddrList[i]);
+        inet_ntop(AF_INET, pIp->addr, str, sizeof(str));
+        Host_AddIPv4Address(pHost, 1, str);
+        if(i == 0){
+            STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_IPAddressId], str);
+            // !!!!!!!!!!!!!!!! Lm struct not support mutli address source
+            /* Mark TrueStaticIP client */
+            if ( 0 == strncmp(str, "192.168", 7) ||
+                 0 == strncmp(str, "10.", 3) ||
+                 0 == strncmp(str, "172.", 4)
+               )
+            {
+                pHost->bTrueStaticIPClient = FALSE;
+            }
+            else
+            {
+                pHost->bTrueStaticIPClient = TRUE;
+            }
+            STRSET_NULL_CHK(pHost->pStringParaValue[LM_HOST_AddressSource], _get_addr_source(pIp->addrSource));
+            if(pIp->addrSource == LM_ADDRESS_SOURCE_DHCP){
+                _get_dmbyname(g_DHCPv4ListNum, g_pDHCPv4List, &(pHost->pStringParaValue[LM_HOST_DHCPClientId]), pHost->pStringParaValue[LM_HOST_PhysAddressId]);
+            }else if(pHost->pStringParaValue[LM_HOST_DHCPClientId] != NULL){
+                LanManager_Free(pHost->pStringParaValue[LM_HOST_DHCPClientId]);
+                pHost->pStringParaValue[LM_HOST_DHCPClientId] = NULL;
+            }
+            pHost->LeaseTime = pIp->LeaseTime;
+        }
+    }
+}
+void _get_dmbyname(int num, Name_DM_t *list, char** dm, char* name)
+{
+    int i;
+
+    for(i = 0; i < num; i++){
+        if(NULL != strcasestr(list[i].name, name)){
+            STRNCPY_NULL_CHK((*dm), list[i].dm);
+            break;
+        }
+    }
+}
+
+inline void _get_host_info(LM_host_t *pDestHost, PLmObjectHost pHost)
+{
+        pHost->bBoolParaValue[LM_HOST_ActiveId]= pDestHost->online;
+
+        STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_HostNameId], pDestHost->hostName);
+        strstr(pDestHost->l1IfName, "Ethernet.");
+        if(NULL != strstr(pDestHost->l1IfName, "Ethernet."))
+        {
+           int port;
+           sscanf(pDestHost->l1IfName,"Ethernet.%d", &port);
+           char tmpstr[100];
+           if(port != 0){
+                snprintf(tmpstr, sizeof(tmpstr), "Device.Ethernet.Interface.%d", port);
+                STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Layer1InterfaceId], tmpstr);
+                if(pHost->pStringParaValue[LM_HOST_AssociatedDeviceId] != NULL){
+                    AnscFreeMemory(pHost->pStringParaValue[LM_HOST_AssociatedDeviceId]);
+                    pHost->pStringParaValue[LM_HOST_AssociatedDeviceId] = NULL;
+                }
+           }
+        }else if(strstr(pDestHost->l1IfName, "MoCA") != NULL){
+            _get_dmbyname(g_MoCAADListNum, g_pMoCAADList, &(pHost->pStringParaValue[LM_HOST_AssociatedDeviceId]), pHost->pStringParaValue[LM_HOST_PhysAddressId]);
+            STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Layer1InterfaceId], pDestHost->l1IfName);
+        }else if(strstr(pDestHost->l1IfName, "WiFi") != NULL){
+            STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Layer1InterfaceId], pDestHost->l1IfName);
+            STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_AssociatedDeviceId], pDestHost->AssociatedDevice)
+        }else{
+            STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Layer1InterfaceId], pDestHost->l1IfName);
+            STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_AssociatedDeviceId], NULL);
+        }
+
+        _get_dmbyname(g_IPIfNameDMListNum, g_pIPIfNameDMList, &(pHost->pStringParaValue[LM_HOST_Layer3InterfaceId]), pDestHost->l3IfName);
+        STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Comments], pDestHost->comments);
+        pHost->iIntParaValue[LM_HOST_X_CISCO_COM_RSSIId] = pDestHost->RSSI;
+        pHost->activityChangeTime = pDestHost->activityChangeTime;
+        _get_host_ipaddress(pDestHost, pHost);
+}
+
+void Hosts_RmHosts(){
+    int i;
+
+    if(lmHosts.numHost == 0)
+        return;
+
+    for(i = 0; i < lmHosts.numHost; i++){
+        Hosts_FreeHost(lmHosts.hostArray[i]);
+    }
+    AnscFreeMemory(lmHosts.hostArray);
+    lmHosts.availableInstanceNum = 1;
+    lmHosts.hostArray = NULL;
+    lmHosts.numHost = 0;
+    lmHosts.sizeHost = 0;
+    return;
+}
+void Hosts_FreeHost(PLmObjectHost pHost){
+    int i;
+    if(pHost == NULL)
+        return;
+    for(i=0; i<LM_HOST_NumStringPara; i++)
+        if(NULL != pHost->pStringParaValue[i])
+            AnscFreeMemory(pHost->pStringParaValue[i]);
+    if(pHost->objectName != NULL)
+        AnscFreeMemory(pHost->objectName);
+
+    if(pHost->ipv4AddrArray != NULL){
+        for(i = 0; i < pHost->numIPv4Addr; i++){
+            if(pHost->ipv4AddrArray[i] == NULL)
+                continue;
+            if (pHost->ipv4AddrArray[i]->pStringParaValue[LM_HOST_IPv4Address_IPAddressId])
+            {
+                AnscFreeMemory(pHost->ipv4AddrArray[i]->pStringParaValue[LM_HOST_IPv4Address_IPAddressId]);
+            }
+            AnscFreeMemory(pHost->ipv4AddrArray[i]);
+        }
+        AnscFreeMemory(pHost->ipv4AddrArray);
+    }
+
+    if(pHost->ipv6AddrArray != NULL){
+        for(i = 0; i < pHost->numIPv4Addr; i++){
+            if(pHost->ipv6AddrArray[i] == NULL)
+                continue;
+            if (pHost->ipv6AddrArray[i]->pStringParaValue[LM_HOST_IPv4Address_IPAddressId])
+            {
+                AnscFreeMemory(pHost->ipv6AddrArray[i]->pStringParaValue[LM_HOST_IPv4Address_IPAddressId]);
+            }
+            AnscFreeMemory(pHost->ipv6AddrArray[i]);
+        }
+        AnscFreeMemory(pHost->ipv6AddrArray);
+    }
+
+    AnscFreeMemory(pHost);
+}
+
+
+PLmObjectHost Hosts_AddHost(int instanceNum)
+{
+//    printf("in Hosts_AddHost %d \n", instanceNum);
+    PLmObjectHost pHost = AnscAllocateMemory(sizeof(LmObjectHost));
+    if(pHost == NULL)
+    {
+        return NULL;
+    }
+    pHost->instanceNum = instanceNum;
+    /* Compose Host object name. */
+    char objectName[100] = LM_HOST_OBJECT_NAME_HEADER;
+    char instanceNumStr[50] = {0};
+    _ansc_itoa(pHost->instanceNum, instanceNumStr, 10);
+    strcat(instanceNumStr, ".");
+    strcat(objectName, instanceNumStr);
+    pHost->objectName = _CloneString(objectName);
+
+    pHost->l3unReachableCnt = 0;
+    pHost->l1unReachableCnt = 0;
+    pHost->ipv4AddrArray = NULL;
+    pHost->sizeIPv4Addr = 0;
+    pHost->numIPv4Addr = 0;
+    pHost->ipv6AddrArray = NULL;
+    pHost->sizeIPv6Addr = 0;
+    pHost->numIPv6Addr = 0;
+
+    /* Default it is inactive. */
+    pHost->bBoolParaValue[LM_HOST_ActiveId] = FALSE;
+    pHost->ipv4Active = FALSE;
+    pHost->ipv6Active = FALSE;
+    pHost->availableInstanceNumIPv4Address = 1;
+    pHost->availableInstanceNumIPv6Address = 1;
+    //$HL 9/5/2013
+    ANSC_UNIVERSAL_TIME currentTime = {0};
+    AnscGetLocalTime(&currentTime);
+    pHost->activityChangeTime  = AnscCalendarToSecond(&currentTime);
+
+    pHost->iIntParaValue[LM_HOST_X_CISCO_COM_ActiveTimeId] = -1;
+    pHost->iIntParaValue[LM_HOST_X_CISCO_COM_RSSIId] = INT_MAX;
+
+    int i;
+    for(i=0; i<LM_HOST_NumStringPara; i++) pHost->pStringParaValue[i] = NULL;
+
+    if(lmHosts.numHost >= lmHosts.sizeHost){
+        lmHosts.sizeHost += LM_HOST_ARRAY_STEP;
+        PLmObjectHost *newArray = AnscAllocateMemory(lmHosts.sizeHost * sizeof(PLmObjectHost));
+        for(i=0; i<lmHosts.numHost; i++){
+            newArray[i] = lmHosts.hostArray[i];
+        }
+        PLmObjectHost *backupArray = lmHosts.hostArray;
+        lmHosts.hostArray = newArray;
+        if(backupArray) AnscFreeMemory(backupArray);
+    }
+    pHost->id = lmHosts.numHost;
+    lmHosts.hostArray[pHost->id] = pHost;
+    lmHosts.numHost++;
+    return pHost;
+}
+PLmObjectHost Hosts_FindHostByPhysAddress(char * physAddress)
+{
+    int i = 0;
+    for(; i<lmHosts.numHost; i++){
+        if(AnscEqualString(lmHosts.hostArray[i]->pStringParaValue[LM_HOST_PhysAddressId], physAddress, FALSE)){
+            return lmHosts.hostArray[i];
+        }
+    }
+    return NULL;
+}
+
+PLmObjectHost Hosts_AddHostByPhysAddress(char * physAddress)
+{
+    char comments[256] = {0};
+    if(!physAddress) return NULL;
+    if(strlen(physAddress) != MACADDR_SZ-1) return NULL;
+    PLmObjectHost pHost = Hosts_FindHostByPhysAddress(physAddress);
+
+    if(pHost) return pHost;
+    pHost = Hosts_AddHost(lmHosts.availableInstanceNum);
+    if(pHost){
+        pHost->pStringParaValue[LM_HOST_PhysAddressId] = _CloneString(physAddress);
+        //pHost->pStringParaValue[LM_HOST_HostNameId] = _CloneString(physAddress);
+        //_getLanHostComments(physAddress, comments);
+        //if ( comments[0] != 0 )
+        //{
+        //    pHost->pStringParaValue[LM_HOST_Comments] = _CloneString(comments);
+        //}
+        pHost->pStringParaValue[LM_HOST_Layer1InterfaceId] = _CloneString("Ethernet");
+        lmHosts.availableInstanceNum++;
+    }
+    return pHost;
+}
+ANSC_STATUS
+CosaDmlHostsGetHosts
+    (
+        ANSC_HANDLE                 hContext,
+        PULONG                      pulCount
+    )
+{
+    PCOSA_DML_HOST_ENTRY            pHostEntry    = NULL;
+#if 0
+    pHostEntry = AnscAllocateMemory( g_user_pEntrys_len );
+    if ( !pHostEntry )
+    {
+        *pulCount = 0;
+        return NULL;
+    }
+
+    AnscCopyMemory(pHostEntry, g_user_Entrys, g_user_pEntrys_len );
+
+    *pulCount = 2;
+
+    return pHostEntry;
+#else
+    LM_hosts_t hosts;
+    LM_host_t *plmHost;
+    PLmObjectHost pHost;
+    char str[100];
+    int i;
+    int ret;
+    BOOL   bridgeMode;
+
+         Hosts_RmHosts();
+       if(LM_RET_SUCCESS == lm_get_all_hosts(&hosts))
+        {
+                *pulCount = hosts.count;
+                for(i = 0; i < hosts.count; i++){
+                       plmHost = &(hosts.hosts[i]);
+                      /* filter unwelcome device */
+sprintf(str,"%02x:%02x:%02x:%02x:%02x:%02x", plmHost->phyAddr[0], plmHost->phyAddr[1], plmHost->phyAddr[2], plmHost->phyAddr[3], plmHost->phyAddr[4], plmHost->phyAddr[5]);
+                        pHost = Hosts_AddHostByPhysAddress(str);
+                        if(pHost == NULL)
+                                continue;
+                       _get_host_info(plmHost, pHost);
+              }
+        }else{
+                *pulCount = 0;
+        }
+        return ANSC_STATUS_SUCCESS;
+#endif
+}

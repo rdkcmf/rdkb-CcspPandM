@@ -28,7 +28,12 @@ if CCSP_ARCH_MIPS
 OPT_SRCDIR = source-mips custom
 endif
 
+
+if CCSP_ARCH_PC
+SUBDIRS = $(OPT_SRCDIR) 
+else
 SUBDIRS = $(OPT_SRCDIR) source
+endif
 
 lib_LTLIBRARIES=libtr181.la
 libtr181_la_SOURCES=
@@ -44,8 +49,8 @@ endif
 
 if CCSP_ARCH_PC
 EXTRA_DEPENDENCIES= \
-	source-pc/TR-181/board_ml/libCcspPandM_board_ml.la \
-	source-pc/TR-181/board_sbapi/libCcspPandM_board_sbapi.la
+	source-pc/TR-181/board_sbapi/libCcspPandM_board_sbapi.la \
+	source-pc/TR-181/middle_layer_src/libCcspPandM_middle_layer_src.la
 endif
 
 if CCSP_ARCH_MIPS
@@ -58,10 +63,15 @@ libtr181_la_LDFLAGS += -lmoca_mgnt -lapi_dhcpv4c -lhal_msomgmt -lhal_platform -l
 endif
 
 
+if CCSP_ARCH_PC
+libtr181_la_DEPENDENCIES= \
+	$(EXTRA_DEPENDENCIES) 
+else
 libtr181_la_DEPENDENCIES= \
 	$(EXTRA_DEPENDENCIES) \
 	source/TR-181/integration_src.shared/libCcspPandM_integration_src_shared.la \
 	source/TR-181/middle_layer_src/libCcspPandM_middle_layer_src.la
+endif
 
 libtr181_la_LIBADD=$(libtr181_la_DEPENDENCIES)
 #libtr181_la_LDFLAGS+=-Wl,--no-undefined -Wl,--no-allow-shlib-undefined

@@ -1,4 +1,5 @@
 /*
+
  * If not stated otherwise in this file or this component's Licenses.txt file the
  * following copyright and licenses apply:
  *
@@ -82,11 +83,11 @@ static COSA_DML_RA_CFG  g_RaCfg = {
     .bEnabled           = TRUE,
     .bFromAnyIp         = FALSE,
     .SupportedProtocols = "HTTP,HTTPS,SSH,Telnet",
-    .StartIp.Dot        = {10, 74, 120, 100},
-    .EndIp.Dot          = {10, 74, 120, 200},
-    .HttpEnable         = TRUE,
+    .StartIp.Dot        = {0, 0, 0, 0},
+    .EndIp.Dot          = {0, 0, 0, 0},
+    .HttpEnable         = FALSE,
     .HttpPort           = 80,
-    .HttpsEnable        = TRUE,
+    .HttpsEnable        = FALSE,
     .HttpsPort          = 443,
     .SSHEnable          = FALSE,
     .SSHPort            = 22,
@@ -104,7 +105,6 @@ CosaDmlRaInit
 {
     return ANSC_STATUS_SUCCESS;
 }
-
 ANSC_STATUS
 CosaDmlRaSetCfg
     (
@@ -114,7 +114,7 @@ CosaDmlRaSetCfg
 {
     if (pCfg)
         AnscCopyMemory(&g_RaCfg, pCfg, sizeof(COSA_DML_RA_CFG));
-    
+	RemoteManagementiptableRulessetoperation(pCfg);//LNT_EMU
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -125,9 +125,11 @@ CosaDmlRaGetCfg
         PCOSA_DML_RA_CFG            pCfg
     )
 {
+	ULONG value;
     if (pCfg)
         AnscCopyMemory(pCfg, &g_RaCfg, sizeof(COSA_DML_RA_CFG));
-    
+	pCfg->HttpPort  = GetHttpPortValue(value);//LNT_EMU
+	pCfg->HttpsPort = GetHttpsPortValue(value);//LNT_EMU
     return ANSC_STATUS_SUCCESS;
 }
 
