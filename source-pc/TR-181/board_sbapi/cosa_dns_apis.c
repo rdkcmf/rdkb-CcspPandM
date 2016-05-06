@@ -1051,7 +1051,9 @@ CosaDmlDnsInit
             memset(sAlias, 0, sizeof(sAlias));
             //snprintf(tmpBuff, sizeof(tmpBuff),  "tr_dns_client_server_alias_%d", g_DnsClientServerNum+1);
             //syscfg_get(NULL, tmpBuff, sAlias, sizeof(sAlias));
+#if 0//LNT_EMU
             syscfg_get(NULL, "tr_dns_client_server_alias", sAlias,  sizeof(sAlias) );
+#endif
             AnscCopyString(g_dns_client_server[g_DnsClientServerNum].Alias, sAlias );
             //ulogf(ULOG_SYSTEM, UL_DHCP, "%s, Alias %s \n", __FUNCTION__, g_dns_client_server[ g_DnsClientServerNum ].Alias );
             

@@ -68,8 +68,14 @@
 **************************************************************************/
 
 #include "cosa_x_cisco_com_security_apis.h"
+#include "hal_firewall.h"
+#include <stdint.h>
 
 #ifdef _COSA_SIM_
+
+#define  UPLINK_IF_NAME 		"eth0"	  
+#define  UPLINKBR_IF_NAME 		"brlan0"	  
+
 
 /*
 BOOLEAN                       ApplyFirewallSettings;
@@ -169,6 +175,27 @@ CosaDmlIaInit
         PANSC_HANDLE                phContext
     )
 {
+    char firewall_level[20];
+    struct custom_option option;
+    struct NetworkDetails netDetails;
+    uint32_t ip_integer;
+    uint32_t  netmask;
+    ip_integer = CosaUtilGetIfAddr(UPLINK_IF_NAME);
+    netmask=CosaUtilIoctlXXX(UPLINK_IF_NAME,"netmask",NULL);
+    *(uint32_t *)(netDetails.WanIPAddress).Dot =ip_integer;
+    *(uint32_t *)(netDetails.WanSubnetMask).Dot =netmask;
+
+    ip_integer = CosaUtilGetIfAddr(UPLINKBR_IF_NAME);
+    netmask=CosaUtilIoctlXXX(UPLINKBR_IF_NAME,"netmask",NULL);
+    *(uint32_t *)(netDetails.LanIPAddress).Dot = ip_integer;
+    *(uint32_t *)(netDetails.LanSubnetMask).Dot = netmask;
+
+    BasicRouting_Wan2Lan_SetupConnection();//LNT_EMU
+    option.isFirewallEnabled = 1;
+    firewall_service_init(&option);
+    strcpy(firewall_level,"Low");
+    firewall_service_start(firewall_level,&netDetails);//LNT_EMU
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -385,6 +412,12 @@ CosaDmlFirewallSetConfig2
         PCOSA_DML_FIREWALL_CFG2     pCfg
     )
 {
+    char firewall_level[20];
+    struct custom_option option;
+    struct NetworkDetails netDetails;
+    uint32_t ip_integer;
+    uint32_t  netmask;
+ 
     g_FirewallConfig2.FirewallLevel                   = pCfg->FirewallLevel;
     g_FirewallConfig2.FilterAnonymousInternetRequests = pCfg->FilterAnonymousInternetRequests;
     g_FirewallConfig2.FilterIdent                     = pCfg->FilterIdent;
@@ -401,7 +434,79 @@ CosaDmlFirewallSetConfig2
     g_FirewallConfig2.FilterHTTPs                     = pCfg->FilterHTTPs;
     g_FirewallConfig2.FilterP2P                       = pCfg->FilterP2P;
     g_FirewallConfig2.FilterIdent                     = pCfg->FilterIdent;
+#if 0
+    printf("1)  g_FirewallConfig2.FirewallLevel       %d ======================\n",pCfg->FirewallLevel);
+    printf("2)  g_FirewallConfig2.FilterAnonymousInternetRequests      %d ======================\n",g_FirewallConfig2.FilterAnonymousInternetRequests);
+    printf("3)  g_FirewallConfig2.FilterIdent       %d ======================\n",g_FirewallConfig2.FilterIdent);
+    printf("4)  g_FirewallConfig2.FilterMulticast       %d======================\n", g_FirewallConfig2.FilterMulticast);
+    printf("5)  g_FirewallConfig2.FilterNATRedirection       %d ======================\n",g_FirewallConfig2.FilterNATRedirection);
+    printf("6)  g_FirewallConfig2.IPSecPassthrough       %d ======================\n",g_FirewallConfig2.IPSecPassthrough);
+    printf("7)  g_FirewallConfig2.L2TPPassthrough       %d ======================\n",g_FirewallConfig2.L2TPPassthrough);
+    printf("8)  g_FirewallConfig2.PPTPPassthrough       %d ======================\n",g_FirewallConfig2.PPTPPassthrough);
+    printf("9)  g_FirewallConfig2.WebBlockActiveX       %d ======================\n", g_FirewallConfig2.WebBlockActiveX);
+    printf("10) g_FirewallConfig2.WebBlockCookies       %d ======================\n", g_FirewallConfig2.WebBlockCookies);
+    printf("11) g_FirewallConfig2.WebBlockJava      %d ======================\n",g_FirewallConfig2.WebBlockJava);
+    printf("12) g_FirewallConfig2.WebBlockProxy      %d ======================\n",g_FirewallConfig2.WebBlockProxy);
+    printf("13) g_FirewallConfig2.FilterHTTP       %d ======================\n", g_FirewallConfig2.FilterHTTP );
+    printf("14) g_FirewallConfig2.FilterHTTPs      %d ======================\n",g_FirewallConfig2.FilterHTTPs);
+    printf("15) g_FirewallConfig2.FilterP2P      %d  ======================\n",g_FirewallConfig2.FilterP2P);
+    printf(" g_FirewallConfig2.FilterIdent      %d ======================\n",g_FirewallConfig2.FilterIdent);
+    printf("service_init\n");
+   #endif	 
+    option.isHttpBlocked = g_FirewallConfig2.FilterHTTP;
+    option.isHttpsBlocked = g_FirewallConfig2.FilterHTTPs;
+    option.isIdentBlocked = g_FirewallConfig2.FilterIdent;
+    option.isMulticastBlocked = g_FirewallConfig2.FilterMulticast;
+    option.isP2pBlocked  = g_FirewallConfig2.FilterP2P;
+    option.isPingBlocked = g_FirewallConfig2.FilterAnonymousInternetRequests;
 
+    strcpy(netDetails.UpLink_IF,UPLINK_IF_NAME); 
+    strcpy(netDetails.UpLinkBr_IF,UPLINKBR_IF_NAME); 
+
+    ip_integer = CosaUtilGetIfAddr(UPLINK_IF_NAME);
+    netmask=CosaUtilIoctlXXX(UPLINK_IF_NAME,"netmask",NULL);
+    *(uint32_t *)(netDetails.WanIPAddress).Dot =ip_integer;
+    *(uint32_t *)(netDetails.WanSubnetMask).Dot =netmask; 
+
+    ip_integer = CosaUtilGetIfAddr(UPLINKBR_IF_NAME);
+    netmask=CosaUtilIoctlXXX(UPLINKBR_IF_NAME,"netmask",NULL);
+    *(uint32_t *)(netDetails.LanIPAddress).Dot = ip_integer;
+    *(uint32_t *)(netDetails.LanSubnetMask).Dot = netmask; 
+    
+    switch(pCfg->FirewallLevel)
+    {
+	case 1:
+    		option.isFirewallEnabled = 1;
+    		printf("service_init\n");
+		firewall_service_init(&option);
+                strcpy(firewall_level,"High");    
+		firewall_service_start(firewall_level,&netDetails);	
+		break;
+	case 2:
+    		option.isFirewallEnabled = 1;
+		firewall_service_init(&option);
+    		option.isPingBlocked = 1;
+                strcpy(firewall_level,"Medium");    
+		firewall_service_start(firewall_level,&netDetails);	
+		break;
+	case 3:
+    		option.isFirewallEnabled = 1;
+		firewall_service_init(&option);
+                strcpy(firewall_level,"Low");    
+		firewall_service_start(firewall_level,&netDetails);	
+		break;
+	case 4:
+    		option.isFirewallEnabled = 1;
+                firewall_service_init(&option);
+                strcpy(firewall_level,"Custom");    
+		firewall_service_start(firewall_level,&netDetails);	
+		break;
+	case 5:
+    		option.isFirewallEnabled = 0;
+                strcpy(firewall_level,"Disable");    
+		firewall_service_stop(firewall_level);	
+		break;
+    }
     return ANSC_STATUS_SUCCESS;
 }
 

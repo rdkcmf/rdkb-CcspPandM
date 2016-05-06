@@ -78,6 +78,7 @@
 **************************************************************************/
 
 #include "cosa_x_cisco_com_devicecontrol_apis.h"
+#include "ccsp_hal_dhcpv4_emu_api.h" 
 
 int fwSync = 0;
 
@@ -1317,11 +1318,19 @@ CosaDmlLanMngm_GetNumberOfEntries(void)
 ANSC_STATUS
 CosaDmlLanMngm_GetEntryByIndex(ULONG index, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 {
-    if (index >= g_lanMngmCnt)
-        return ANSC_STATUS_FAILURE;
+	uint32_t ip_integer;
+	uint32_t  netmask;
+	if (index >= g_lanMngmCnt)
+		return ANSC_STATUS_FAILURE;
 
-    *pLanMngm = g_lanMngmTab[index];
-    return ANSC_STATUS_SUCCESS;
+	*pLanMngm = g_lanMngmTab[index];
+	netmask=CosaUtilIoctlXXX("brlan0","netmask",NULL);
+	ip_integer=CosaUtilGetIfAddr("brlan0");
+
+	*(uint32_t*)pLanMngm->LanIPAddress.Dot = ip_integer;
+	*(uint32_t*)pLanMngm->LanSubnetMask.Dot = netmask;
+
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -1376,17 +1385,32 @@ CosaDmlLanMngm_GetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
     return ANSC_STATUS_SUCCESS;
 }
 
+
 ANSC_STATUS
 CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 {
-    int i;
+	int i;
+	char str[INET_ADDRSTRLEN];
+	char str1[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, pLanMngm->LanIPAddress.Dot, str, INET_ADDRSTRLEN);
+	inet_ntop(AF_INET, pLanMngm->LanSubnetMask.Dot, str1, INET_ADDRSTRLEN);
+	ConfigValues config_values;
 
-    if ((i = CosaDmlLanMngm_InsGetIndex(ins)) == -1)
-        return ANSC_STATUS_FAILURE;
+	config_values.gateway = str;
+	config_values.subnet = str1;
+	if ((i = CosaDmlLanMngm_InsGetIndex(ins)) == -1)
+		return ANSC_STATUS_FAILURE;
+	if(CcspHalSetDHCPConfigValues(GATEWAY, &config_values)==-1)//LNT_EMU
+		printf("SetDHCPConfigValues failed\n");
+	if(CcspHalSetDHCPConfigValues(GATEWAY|SUBNET_MASK, &config_values)==-1)//LNT_EMU
+		printf("SetDHCPConfigValues failed\n");
+	CcspHalInterfacesetval("brlan0",str);//LNT_EMU
+	CcspHalNetmasksetvalue("brlan0",str1);//LNT_EMU
+	CcspHalUpdateInterfaceval(str);//LNT_EMU
 
-    g_lanMngmTab[i] = *pLanMngm;
-    g_lanMngmTab[i].InstanceNumber = ins; /* just in case */
+	g_lanMngmTab[i] = *pLanMngm;
+	g_lanMngmTab[i].InstanceNumber = ins; /* just in case */
 
-    return ANSC_STATUS_SUCCESS;
+	return ANSC_STATUS_SUCCESS;
 }
 

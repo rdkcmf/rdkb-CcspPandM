@@ -128,7 +128,6 @@ COSA_DML_ETH_PORT_FULL              g_EthPortFull2 =
     {COSA_DML_IF_STATUS_Up,     0,  2, {0x38, 0xC8, 0x5C, 0xFF, 0xD9, 0x03, 0x38, 0xC8, 0x5C, 0xFF, 0xD9, 0x04}}
 };
 
-
 ANSC_STATUS
 CosaDmlEthInit
     (
@@ -233,6 +232,16 @@ CosaDmlEthPortGetCfg
     if (!pCfg)
         return ANSC_STATUS_FAILURE;
 
+    if(checkLan())
+        {
+                pCfg->bEnabled = true;
+        }
+        else
+        {
+                pCfg->bEnabled = false;
+        }
+
+#if 0//LNT_EMU
     if (pCfg->InstanceNumber == 1)
     {
         AnscCopyMemory(pCfg, &g_EthPortFull1.Cfg, sizeof(COSA_DML_ETH_PORT_CFG));
@@ -243,6 +252,7 @@ CosaDmlEthPortGetCfg
     }
     else
         return ANSC_STATUS_FAILURE;
+#endif
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -261,7 +271,17 @@ CosaDmlEthPortGetDinfo
         return ANSC_STATUS_FAILURE;
 
     _ansc_memset(pInfo, 0, sizeof(COSA_DML_ETH_PORT_DINFO));
-    
+	
+	if(checkLan())
+	{
+	pInfo->Status = COSA_DML_IF_STATUS_Up;
+	}
+	else
+	{
+	pInfo->Status = COSA_DML_IF_STATUS_Down;
+	}
+
+#if 0//LNT_EMU
     if (ulInstanceNumber == 1)
     {
         AnscCopyMemory(pInfo, &g_EthPortFull1.DynamicInfo, sizeof(COSA_DML_ETH_PORT_DINFO));
@@ -274,7 +294,7 @@ CosaDmlEthPortGetDinfo
     }
     else
         return ANSC_STATUS_FAILURE;
-    
+#endif
     return ANSC_STATUS_SUCCESS;
 }
 
