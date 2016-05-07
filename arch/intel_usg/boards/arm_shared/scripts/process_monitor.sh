@@ -57,6 +57,13 @@ do
 	# Checking PSM's PID
 	PSM_PID=`pidof PsmSsp`
 	if [ "$PSM_PID" = "" ]; then
+               if [ -f /etc/os-release ];then
+                    while [ ! -f /tmp/crash_reboot ]
+                    do
+                        sleep 2
+                    done
+                    if [ -f /tmp/crash_reboot ];then rm -rf /tmp/crash_reboot; fi
+                fi
 		if [ "$rebootNeededPSM" -eq 0 ]; then
 		echo "RDKB_PROCESS_CRASHED : PSM_process is not running, need to reboot the unit"
 		rebootNeededPSM=1
@@ -68,6 +75,13 @@ do
 	# Checking CR's PID
 	CR_PID=`pidof CcspCrSsp`
 	if [ "$CR_PID" = "" ]; then
+               if [ -f /etc/os-release ];then
+                    while [ ! -f /tmp/crash_reboot ]
+                    do
+                        sleep 2
+                    done
+                    if [ -f /tmp/crash_reboot ];then rm -rf /tmp/crash_reboot; fi
+                fi
 		if [ "$rebootNeededCR" -eq 0 ]; then
 		echo "RDKB_PROCESS_CRASHED : CR_process is not running, need to reboot the unit"
 		rebootNeeded=1
@@ -115,6 +129,13 @@ do
 	# Checking TR69's PID
 	TR69_PID=`pidof CcspTr069PaSsp`
 	if [ "$TR69_PID" = "" ]; then
+               if [ -f /etc/os-release ];then
+                    while [ ! -f /tmp/crash_reboot ]
+                    do
+                        sleep 2
+                    done
+                    if [ -f /tmp/crash_reboot ];then rm -rf /tmp/crash_reboot; fi
+                fi
 		if [ "$rebootNeededTR69" -eq 0 ]; then
 		echo "RDKB_PROCESS_CRASHED : TR69_process is not running, need to reboot the unit"
 		rebootNeeded=1
@@ -195,6 +216,13 @@ do
 	# Checking webpa PID
 	WEBPA_PID=`pidof webpa`
 	if [ "$WEBPA_PID" = "" ]; then
+               if [ -f /etc/os-release ];then
+                    while [ ! -f /tmp/crash_reboot ]
+                    do
+                        sleep 2
+                    done
+                    if [ -f /tmp/crash_reboot ];then rm -rf /tmp/crash_reboot; fi
+                fi
 		ENABLEWEBPA=`cat /nvram/webpa_cfg.json | grep -r EnablePa | awk '{print $2}' | sed 's|[\"\",]||g'`
 		echo "ENABLEWEBPA is $ENABLEWEBPA"
 		if [ "$ENABLEWEBPA" = "true" ];then
