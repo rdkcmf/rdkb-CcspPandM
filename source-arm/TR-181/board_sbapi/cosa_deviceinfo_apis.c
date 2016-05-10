@@ -308,7 +308,16 @@ CosaDmlDiGetProductClass
         return ANSC_STATUS_SUCCESS;
     }
 */
-    AnscCopyString(pValue, "XB3");
+#if defined(_XB6_PRODUCT_REQ_)
+	{
+		 AnscCopyString(pValue, "XB6");
+	}
+#else
+	{
+		AnscCopyString(pValue, "XB3");
+	}
+#endif
+
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
