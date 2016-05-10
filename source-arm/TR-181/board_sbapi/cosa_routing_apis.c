@@ -2754,7 +2754,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
     }
 	pclose(fp);
 	//Fix for issue RDKB-367 
-    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table 3");
+    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table erouter");
     if ((fp = popen(cmd, "r")) == NULL)
         return -1;
 	
