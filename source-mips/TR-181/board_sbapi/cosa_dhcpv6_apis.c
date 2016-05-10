@@ -5020,7 +5020,10 @@ dhcpv6c_dbg_thrd(void * in)
 	else
 		continue;
 
-        CcspTraceInfo(("%s: get message %s\n", __func__, msg)); 
+	if (msg[0] != 0)
+	{
+	     CcspTraceInfo(("%s: get message %s\n", __func__, msg)); 
+	}
 
         if (!strncmp(msg, "dibbler-client", strlen("dibbler-client"))) 
         {
