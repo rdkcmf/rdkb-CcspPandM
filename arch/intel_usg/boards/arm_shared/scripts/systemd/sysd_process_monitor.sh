@@ -9,6 +9,13 @@ then
 	export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
 
 	source /etc/utopia/service.d/log_env_var.sh
+	rebootNeeded=0
+	rebootNeededforbrlan1=0
+	rebootNeededforbrlan0=0
+	LIGHTTPD_CONF="/var/lighttpd.conf"
+
+	crashed=0
+	
 	source /etc/utopia/service.d/log_capture_path.sh
 	loop=1
 
@@ -25,13 +32,6 @@ then
 			cd snmp/
 			sh run_subagent.sh /var/tmp/cm_snmp_ma &
 			cd ..
-		fi
-		
-		# Checking Lan Manager PID
-		LM_PID=`pidof CcspLMLite`
-		if [ "$LM_PID" = "" ]; then
-			echo "RDKB_PROCESS_CRASHED : LanManager_process is not running, restarting it"
-			$BINPATH/CcspLMLite &
 		fi
 
 		# Checking Home Security's PID
@@ -77,6 +77,13 @@ then
 		# Checking webpa PID
 		WEBPA_PID=`pidof webpa`
 		if [ "$WEBPA_PID" = "" ]; then
+               if [ -f /etc/os-release ];then
+                    while [ ! -f /tmp/crash_reboot ]
+                    do
+                        sleep 2
+                    done
+                    if [ -f /tmp/crash_reboot ];then rm -rf /tmp/crash_reboot; fi
+                fi
 			ENABLEWEBPA=`cat /nvram/webpa_cfg.json | grep -r EnablePa | awk '{print $2}' | sed 's|[\"\",]||g'`
 			echo "ENABLEWEBPA is $ENABLEWEBPA"
 			if [ "$ENABLEWEBPA" = "true" ];then
@@ -101,6 +108,77 @@ then
 		if [ "$Harvester_PID" = "" ]; then
 			echo "Harvester process is not running, restarting it"
 			$BINPATH/harvester &
+		fi
+		
+		# Checking lighttpd PID
+		LIGHTTPD_PID=`pidof lighttpd`
+		if [ "$LIGHTTPD_PID" = "" ]; then
+			echo "RDKB_PROCESS_CRASHED : lighttpd is not running, restarting it"
+			lighttpd -f $LIGHTTPD_CONF
+		fi
+
+		ifconfig | grep brlan1
+		if [ $? == 1 ]; then
+			if [ "$rebootNeededforbrlan1" -eq 0 ]; then
+				echo "[RKDB_PLATFORM_ERROR] : brlan1 interface is not up, need to reboot the unit." 
+				rebootNeededforbrlan1=1
+				rebootNeeded=1
+			fi
+		fi
+
+		ifconfig | grep brlan0
+		if [ $? == 1 ]; then
+			if [ "$rebootNeededforbrlan0" -eq 0 ]; then
+				echo "[RKDB_PLATFORM_ERROR] : brlan0 interface is not up" 
+				echo "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
+				rebootNeededforbrlan0=1
+				rebootNeeded=1
+					/fss/gw/rdklogger/backupLogs.sh "true" ""
+			fi
+		fi
+
+		dmcli eRT getv Device.WiFi.SSID.2.Status | grep Up
+		if [ $? == 1 ]; then
+			echo "[RKDB_PLATFORM_ERROR] : 5G private SSID (ath1) is off, resetting WiFi now"
+			dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
+		fi
+
+		iptables-save -t nat | grep "A PREROUTING -i"
+		if [ $? == 1 ]; then
+			echo "[RDKB_PLATFORM_ERROR] : iptable corrupted. Restarting firewall"
+			sysevent set firewall-restart
+		fi
+
+		if [ "$rebootNeeded" -eq 1 ]
+		then
+			cur_hr=`date +"%H"`
+				cur_min=`date +"%M"`
+			if [ $cur_hr -ge 02 ] && [ $cur_hr -le 03 ]
+			then
+					if [ $cur_hr -eq 03 ] && [ $cur_min -ne 00 ]
+					then
+						echo "Maintanance window for the current day is over , unit will be rebooted in next Maintanance window "
+					else
+						#Check if we have already flagged reboot is needed
+						if [ ! -e $FLAG_REBOOT ]
+						then
+							if [ "$rebootNeededforbrlan0" -eq 1 ]
+							then
+								echo "rebootNeededforbrlan0"
+								echo "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
+								sh /etc/calc_random_time_to_reboot_dev.sh "" &
+							elif [ "$rebootNeededforbrlan1" -eq 1 ]
+							then
+								echo "rebootNeededforbrlan1"
+								echo "RDKB_REBOOT : brlan1 interface is not up, rebooting the device."
+								sh /etc/calc_random_time_to_reboot_dev.sh "" &
+							fi
+							touch $FLAG_REBOOT
+						else
+							echo "Already waiting for reboot"
+						fi					
+					fi
+			fi
 		fi
 	done
 fi
