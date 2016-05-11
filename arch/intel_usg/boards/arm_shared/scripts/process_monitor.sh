@@ -37,7 +37,7 @@ do
 	# Checking PandM's PID
 	PAM_PID=`pidof CcspPandMSsp`
 	if [ "$PAM_PID" = "" ]; then
-                if [ -f /etc/os-release ];then
+                if [ -d /tmp/.uploadCoredumps.lock.d ];then
                     while [ ! -f /tmp/crash_reboot ]
 		    do
 			sleep 2
@@ -57,7 +57,7 @@ do
 	# Checking PSM's PID
 	PSM_PID=`pidof PsmSsp`
 	if [ "$PSM_PID" = "" ]; then
-               if [ -f /etc/os-release ];then
+                if [ -d /tmp/.uploadCoredumps.lock.d ];then
                     while [ ! -f /tmp/crash_reboot ]
                     do
                         sleep 2
@@ -75,7 +75,7 @@ do
 	# Checking CR's PID
 	CR_PID=`pidof CcspCrSsp`
 	if [ "$CR_PID" = "" ]; then
-               if [ -f /etc/os-release ];then
+                if [ -d /tmp/.uploadCoredumps.lock.d ];then
                     while [ ! -f /tmp/crash_reboot ]
                     do
                         sleep 2
@@ -129,7 +129,7 @@ do
 	# Checking TR69's PID
 	TR69_PID=`pidof CcspTr069PaSsp`
 	if [ "$TR69_PID" = "" ]; then
-               if [ -f /etc/os-release ];then
+                if [ -d /tmp/.uploadCoredumps.lock.d ];then
                     while [ ! -f /tmp/crash_reboot ]
                     do
                         sleep 2
@@ -216,7 +216,7 @@ do
 	# Checking webpa PID
 	WEBPA_PID=`pidof webpa`
 	if [ "$WEBPA_PID" = "" ]; then
-               if [ -f /etc/os-release ];then
+                if [ -d /tmp/.uploadCoredumps.lock.d ];then
                     while [ ! -f /tmp/crash_reboot ]
                     do
                         sleep 2
