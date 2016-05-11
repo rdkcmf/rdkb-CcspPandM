@@ -2689,7 +2689,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
      * we use "ip -6 route" instead of "route -A inet6".
      */
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname);
-	printf(" \n [%s:%d] Checking Interface: %s", __FUNCTION__,__LINE__, ifname);
+	CcspTraceInfo(("[%s:%d] Checking Interface: %s\n", __FUNCTION__,__LINE__, ifname));
 
     if ((fp = popen(cmd, "r")) == NULL)
         return -1;
@@ -2739,8 +2739,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 				(strcmp(result_arr[i].gateway,info6->gateway) == 0)&& \
 				(strcmp(result_arr[i].interface,info6->interface) == 0)) 
 			{
-				
-				printf(" \n [%s:%d] Duplicate ", __FUNCTION__,__LINE__);
+				CcspTraceInfo(("[%s:%d] Duplicate \n", __FUNCTION__,__LINE__));
 				bFound = TRUE;
 				break;
 			}
@@ -2753,9 +2752,9 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 			_ansc_strcpy(result_arr[g_numRtInfo6].interface, info6->interface);
 			g_numRtInfo6++;
 			entryCnt ++;
-			printf(" \n [%s:%d] Added prefix: %s gateway: %s iface: %s, g_numRtInfo6 = %d ",
-					__FUNCTION__,__LINE__, info6->prefix, info6->gateway, info6->interface, g_numRtInfo6);
-			printf(" \n [%s:%d] entryCnt = %d ",__FUNCTION__,__LINE__, entryCnt);
+			CcspTraceInfo(("[%s:%d] Added prefix: %s gateway: %s iface: %s, g_numRtInfo6 = %d \n",
+			 		__FUNCTION__,__LINE__, info6->prefix, info6->gateway, info6->interface, g_numRtInfo6));
+			CcspTraceInfo(("[%s:%d] entryCnt = %d \n",__FUNCTION__,__LINE__, entryCnt));
 		}
     }
 	pclose(fp);
@@ -2813,7 +2812,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 				 (strcmp(result_arr[i].interface,info6->interface) == 0)) 
 			 {
 				 
-				 printf(" \n [%s:%d] Duplicate ", __FUNCTION__,__LINE__);
+				 CcspTraceInfo(("[%s:%d] Duplicate \n", __FUNCTION__,__LINE__));
 				 bFound = TRUE;
 				 break;
 			 }
@@ -2826,9 +2825,9 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 			 _ansc_strcpy(result_arr[g_numRtInfo6].interface, info6->interface);
 			 g_numRtInfo6++;
 			 entryCnt ++;
-			 printf(" \n [%s:%d] Added prefix: %s gateway: %s iface: %s, g_numRtInfo6 = %d ",
-						__FUNCTION__,__LINE__, info6->prefix, info6->gateway, info6->interface, g_numRtInfo6);
-			 printf(" \n [%s:%d] entryCnt = %d ",__FUNCTION__,__LINE__, entryCnt);
+			 CcspTraceInfo(("[%s:%d] Added prefix: %s gateway: %s iface: %s, g_numRtInfo6 = %d \n",
+					__FUNCTION__,__LINE__, info6->prefix, info6->gateway, info6->interface, g_numRtInfo6));
+			 CcspTraceInfo(("[%s:%d] entryCnt = %d \n",__FUNCTION__,__LINE__, entryCnt));
 		 }
 
      }
