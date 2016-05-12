@@ -1359,7 +1359,19 @@ CosaDmlMocaIfGetAssocDevices
 
     if ( ulInterfaceIndex == 0 )
     {
-        moca_GetNumAssociatedDevices(ulInterfaceIndex, pulCount);
+	moca_cpe_t cpes[kMoca_MaxCpeList];
+        int        pnum_cpes     = 0,
+                   iReturnStatus = STATUS_SUCCESS;
+
+       iReturnStatus =  moca_GetMocaCPEs(ulInterfaceIndex, cpes, &pnum_cpes);
+
+       AnscTraceWarning(("pnum_cpes: %u\n", pnum_cpes));
+
+       if( ( iReturnStatus == STATUS_SUCCESS ) && \
+           ( 0 < pnum_cpes )
+         )
+        {
+		moca_GetNumAssociatedDevices(ulInterfaceIndex, pulCount);
 
         AnscTraceWarning(("*pulCount: %lu\n", *pulCount));
 
@@ -1432,8 +1444,9 @@ CosaDmlMocaIfGetAssocDevices
                     *ppDeviceArray = NULL;
                 }
 
-                return  ANSC_STATUS_RESOURCES;
-            }
+			return  ANSC_STATUS_RESOURCES;
+		    }
+		}
         }
     }
 
