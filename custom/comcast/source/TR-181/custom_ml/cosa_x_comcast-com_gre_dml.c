@@ -497,16 +497,7 @@ BOOL GreTunnelIf_SetParamIntValue ( ANSC_HANDLE hInsContext, char* ParamName, in
 
 BOOL GreTunnel_Validate ( ANSC_HANDLE hInsContext, char* pReturnParamName, ULONG* puLength ) 
 {
-	//>>zqiu
-	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
-	if (pGreTu->Enable) {
-		//Do not allow to enable hotspot when both endpoint are empty
-		if( strcmp(pGreTu->PrimaryRemoteEndpoint, "0.0.0.0") ==0 && strcmp(pGreTu->SecondaryRemoteEndpoint, "0.0.0.0") ==0) {
-			fprintf(stderr, "%s: Do not allow to enable hotspot when both endpoint are empty\n", __func__);
-			return FALSE;
-		}
-	}	
-	//<<zqiu
+    //All the parameters are validated in hotspot code
 	return TRUE;
 }	
 
