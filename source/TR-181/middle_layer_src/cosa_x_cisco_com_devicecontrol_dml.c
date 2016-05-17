@@ -2001,11 +2001,19 @@ LanMngm_Validate
     /* check subnetmask */
     /* Subnet mask MUST accept ONLY the following IP addresses: */
     /* 255.255.255.0, 255.255.0.0, 255.0.0.0, 255.255.255.128, 255.255.255.252 */
+#ifdef _XB6_PRODUCT_REQ_
+    if(pLanMngm->LanSubnetMask.Value != 0x00FFFFFF &&
+       pLanMngm->LanSubnetMask.Value != 0x0000FFFF &&
+       pLanMngm->LanSubnetMask.Value != 0x000000FF &&  
+       pLanMngm->LanSubnetMask.Value != 0x08FFFFFF && 
+       pLanMngm->LanSubnetMask.Value != 0xCFFFFFFF ) 
+#else
     if(pLanMngm->LanSubnetMask.Value != 0xFFFFFF00 &&
        pLanMngm->LanSubnetMask.Value != 0xFFFF0000 &&
        pLanMngm->LanSubnetMask.Value != 0xFF000000 &&
        pLanMngm->LanSubnetMask.Value != 0xFFFFFF80 &&
        pLanMngm->LanSubnetMask.Value != 0xFFFFFFFC )
+#endif
     {
 		CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Modified LanSubnetMask doesn't meet the conditions,reverting back to old value  ...\n"));
         goto RET_ERR;
