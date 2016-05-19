@@ -2005,8 +2005,8 @@ LanMngm_Validate
     if(pLanMngm->LanSubnetMask.Value != 0x00FFFFFF &&
        pLanMngm->LanSubnetMask.Value != 0x0000FFFF &&
        pLanMngm->LanSubnetMask.Value != 0x000000FF &&  
-       pLanMngm->LanSubnetMask.Value != 0x08FFFFFF && 
-       pLanMngm->LanSubnetMask.Value != 0xCFFFFFFF ) 
+       pLanMngm->LanSubnetMask.Value != 0x80FFFFFF && 
+       pLanMngm->LanSubnetMask.Value != 0xFCFFFFFF ) 
 #else
     if(pLanMngm->LanSubnetMask.Value != 0xFFFFFF00 &&
        pLanMngm->LanSubnetMask.Value != 0xFFFF0000 &&
@@ -2030,7 +2030,13 @@ LanMngm_Validate
         return TRUE;
     }else if(pLanMngm->LanIPAddress.Dot[0] == 172 && pLanMngm->LanIPAddress.Dot[1] >= 16 && pLanMngm->LanIPAddress.Dot[1] <= 31){
         return TRUE;
-    }else if((pLanMngm->LanIPAddress.Value & 0xFFFF0000) == 0xC0A80000){
+    }
+#ifdef _XB6_PRODUCT_REQ_
+   else if((pLanMngm->LanIPAddress.Value & 0x0000FFFF) == 0x0000A8C0 )
+#else
+   else if((pLanMngm->LanIPAddress.Value & 0xFFFF0000) == 0xC0A80000)
+#endif
+{
         return TRUE;
     }
 
