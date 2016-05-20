@@ -616,4 +616,43 @@ MDDev_Rollback
         ANSC_HANDLE                 hInsContext
     );
 
+ULONG
+MDRed_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+
+BOOL
+MDRed_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       strValue
+    );
+
+BOOL
+MDRed_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    );
+
+ULONG
+MDRed_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
+MDRed_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+
 #endif

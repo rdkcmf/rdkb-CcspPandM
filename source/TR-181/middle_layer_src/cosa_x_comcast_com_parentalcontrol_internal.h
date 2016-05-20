@@ -87,6 +87,8 @@
     SLIST_HEADER                            MSTrustedUserList;                    \
     ULONG                                   ulMSTrustedUserNextInsNum;            \
     ANSC_HANDLE                             hIrepFolderMSTrustedUser;              \
+    /* ManagedDevices.Redirect */                                      \
+    COSA_DML_MD_RED                         MDRedirect;                \
     /* ManagedDevices.Device.{i}. */                                      \
     SLIST_HEADER                            MDDevList;                    \
     ULONG                                   ulMDDevNextInsNum;            \
