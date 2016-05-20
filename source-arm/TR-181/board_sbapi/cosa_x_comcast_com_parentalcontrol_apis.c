@@ -873,6 +873,163 @@ CosaDmlMngServs_SetConf(COSA_DML_MANAGED_SERVS *conf)
  * ManagedDevices
  */
 ANSC_STATUS
+CosaDmlMDRed_GetConf(COSA_DML_MD_RED *pEntry)
+{
+    char ipv4[17];
+    char ipv6[64];
+
+	/* HTTP_Server_IP */
+    memset(ipv4, 0, sizeof(ipv4));
+    syscfg_get( NULL, "HTTP_Server_IP", ipv4, sizeof(ipv4));
+    if( ipv4 != NULL )
+    {
+       AnscCopyString(pEntry->HTTP_Server_IP, ipv4);
+    }
+
+	/* HTTPS_Server_IP */
+    memset(ipv4, 0, sizeof(ipv4));
+    syscfg_get( NULL, "HTTPS_Server_IP", ipv4, sizeof(ipv4));
+    if( ipv4 != NULL )
+    {
+       AnscCopyString(pEntry->HTTPS_Server_IP, ipv4);
+    }
+
+	/* Default_Server_IP */
+    memset(ipv4, 0, sizeof(ipv4));
+    syscfg_get( NULL, "Default_Server_IP", ipv4, sizeof(ipv4));
+    if( ipv4 != NULL )
+    {
+       AnscCopyString(pEntry->Default_Server_IP, ipv4);
+    }
+
+	/* HTTP_Server_IPv6 */
+    memset(ipv6, 0, sizeof(ipv6));
+    syscfg_get( NULL, "HTTP_Server_IPv6", ipv6, sizeof(ipv6));
+    if( ipv6 != NULL )
+    {
+       AnscCopyString(pEntry->HTTP_Server_IPv6, ipv6);
+    }
+
+	/* HTTPS_Server_IPv6 */
+    memset(ipv6, 0, sizeof(ipv6));
+    syscfg_get( NULL, "HTTPS_Server_IPv6", ipv6, sizeof(ipv6));
+    if( ipv6 != NULL )
+    {
+       AnscCopyString(pEntry->HTTPS_Server_IPv6, ipv6);
+    }
+
+	/* Default_Server_IPv6 */
+    memset(ipv6, 0, sizeof(ipv6));
+    syscfg_get( NULL, "Default_Server_IPv6", ipv6, sizeof(ipv6));
+    if( ipv6 != NULL )
+    {
+       AnscCopyString(pEntry->Default_Server_IPv6, ipv6);
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry)
+{
+   char ipv4[17];
+   char ipv6[64];
+
+   /* HTTP_Server_IP */
+   memset(ipv4, 0, sizeof(ipv4));
+   snprintf(ipv4,sizeof(ipv4),"%s",pEntry->HTTP_Server_IP);
+   if (syscfg_set(NULL, "HTTP_Server_IP", ipv4) != 0) 
+   {
+		CcspTraceWarning(("syscfg_set failed\n"));
+   }
+   else 
+   {
+	    if (syscfg_commit() != 0) 
+		{
+		    CcspTraceWarning(("syscfg_commit failed\n"));
+		}
+   }
+
+
+   /* HTTPS_Server_IP */
+   memset(ipv4, 0, sizeof(ipv4));
+   snprintf(ipv4,sizeof(ipv4),"%s",pEntry->HTTPS_Server_IP);
+   if (syscfg_set(NULL, "HTTPS_Server_IP", ipv4) != 0) 
+   {
+		CcspTraceWarning(("syscfg_set failed\n"));
+   }
+   else 
+   {
+	    if (syscfg_commit() != 0) 
+		{
+		    CcspTraceWarning(("syscfg_commit failed\n"));
+		}
+   }
+
+   /* Default_Server_IP */
+   memset(ipv4, 0, sizeof(ipv4));
+   snprintf(ipv4,sizeof(ipv4),"%s",pEntry->Default_Server_IP);
+   if (syscfg_set(NULL, "Default_Server_IP", ipv4) != 0) 
+   {
+		CcspTraceWarning(("syscfg_set failed\n"));
+   }
+   else 
+   {
+	    if (syscfg_commit() != 0) 
+		{
+		    CcspTraceWarning(("syscfg_commit failed\n"));
+		}
+   }
+
+   /* HTTP_Server_IPv6 */
+   memset(ipv6, 0, sizeof(ipv6));
+   snprintf(ipv6,sizeof(ipv6),"%s",pEntry->HTTP_Server_IPv6);
+   if (syscfg_set(NULL, "HTTP_Server_IPv6", ipv6) != 0) 
+   {
+		CcspTraceWarning(("syscfg_set failed\n"));
+   }
+   else 
+   {
+	    if (syscfg_commit() != 0) 
+		{
+		    CcspTraceWarning(("syscfg_commit failed\n"));
+		}
+   }
+
+   /* HTTPS_Server_IPv6 */
+   memset(ipv6, 0, sizeof(ipv6));
+   snprintf(ipv6,sizeof(ipv6),"%s",pEntry->HTTPS_Server_IPv6);
+   if (syscfg_set(NULL, "HTTPS_Server_IPv6", ipv6) != 0) 
+   {
+		CcspTraceWarning(("syscfg_set failed\n"));
+   }
+   else 
+   {
+	    if (syscfg_commit() != 0) 
+		{
+		    CcspTraceWarning(("syscfg_commit failed\n"));
+		}
+   }
+
+   /* Default_Server_IPv6 */
+   memset(ipv6, 0, sizeof(ipv6));
+   snprintf(ipv6,sizeof(ipv6),"%s",pEntry->Default_Server_IPv6);
+   if (syscfg_set(NULL, "Default_Server_IPv6", ipv6) != 0) 
+   {
+		CcspTraceWarning(("syscfg_set failed\n"));
+   }
+   else 
+   {
+	    if (syscfg_commit() != 0) 
+		{
+		    CcspTraceWarning(("syscfg_commit failed\n"));
+		}
+   }
+
+   return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
 CosaDmlMngDevs_GetConf(COSA_DML_MANAGED_DEVS *conf)
 {
     UtopiaContext ctx;

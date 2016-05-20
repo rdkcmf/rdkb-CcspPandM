@@ -1943,3 +1943,139 @@ MDDev_Rollback
 
     return 0;
 }
+
+ULONG
+MDRed_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+    COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
+    COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
+
+    if (AnscEqualString(ParamName, "HTTP_Server_IP", TRUE))
+    {
+        AnscCopyString(pValue, pMDRed->HTTP_Server_IP);
+        return 0;
+    }
+    if (AnscEqualString(ParamName, "HTTPS_Server_IP", TRUE))
+    {
+        AnscCopyString(pValue, pMDRed->HTTPS_Server_IP);
+        return 0;
+    }
+    if (AnscEqualString(ParamName, "Default_Server_IP", TRUE))
+    {
+        AnscCopyString(pValue, pMDRed->Default_Server_IP);
+        return 0;
+    }
+    if (AnscEqualString(ParamName, "HTTP_Server_IPv6", TRUE))
+    {
+        AnscCopyString(pValue, pMDRed->HTTP_Server_IPv6);
+        return 0;
+    }
+    if (AnscEqualString(ParamName, "HTTPS_Server_IPv6", TRUE))
+    {
+        AnscCopyString(pValue, pMDRed->HTTPS_Server_IPv6);
+        return 0;
+    }
+    if (AnscEqualString(ParamName, "Default_Server_IPv6", TRUE))
+    {
+        AnscCopyString(pValue, pMDRed->Default_Server_IPv6);
+        return 0;
+    }
+
+    return -1;
+}
+
+
+BOOL
+MDRed_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       strValue
+    )
+{
+    COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
+    COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
+
+    if (AnscEqualString(ParamName, "HTTP_Server_IP", TRUE))
+    {
+        AnscCopyString(pMDRed->HTTP_Server_IP, strValue);
+        return TRUE;
+    }
+    if (AnscEqualString(ParamName, "HTTPS_Server_IP", TRUE))
+    {
+        AnscCopyString(pMDRed->HTTPS_Server_IP, strValue);
+        return TRUE;
+    }
+    if (AnscEqualString(ParamName, "Default_Server_IP", TRUE))
+    {
+	    AnscCopyString(pMDRed->Default_Server_IP, strValue);
+        return TRUE;
+    }
+    if (AnscEqualString(ParamName, "HTTP_Server_IPv6", TRUE))
+    {
+        AnscCopyString(pMDRed->HTTP_Server_IPv6, strValue);
+        return TRUE;
+    }
+    if (AnscEqualString(ParamName, "HTTPS_Server_IPv6", TRUE))
+    {
+        AnscCopyString(pMDRed->HTTPS_Server_IPv6, strValue);
+        return TRUE;
+    }
+    if (AnscEqualString(ParamName, "Default_Server_IPv6", TRUE))
+    {
+        AnscCopyString(pMDRed->Default_Server_IPv6, strValue);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+BOOL
+MDRed_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    )
+{
+    return TRUE;
+}
+
+ULONG
+MDRed_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
+    COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
+
+    if (CosaDmlMDRed_SetConf(pMDRed) != ANSC_STATUS_SUCCESS)
+    {
+        CosaDmlMDRed_GetConf(pMDRed);
+        return -1;
+    }
+
+    return 0;
+}
+
+ULONG
+MDRed_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
+    COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
+
+    if (CosaDmlMDRed_GetConf(pMDRed) != ANSC_STATUS_SUCCESS)
+        return -1;
+
+    return 0;
+}

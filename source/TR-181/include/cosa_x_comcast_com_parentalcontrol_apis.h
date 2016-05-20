@@ -164,6 +164,20 @@ _COSA_DML_MS_TRUSTEDUSER
 COSA_DML_MS_TRUSTEDUSER;
 
 /*
+ * .ManagedDevices.Redirect
+ */
+typedef struct 
+_COSA_DML_MD_RED
+{
+    char                        HTTP_Server_IP[17];
+    char                        HTTPS_Server_IP[17];
+    char                        Default_Server_IP[17];
+    char                        HTTP_Server_IPv6[64];
+    char                        HTTPS_Server_IPv6[64];
+    char                        Default_Server_IPv6[64];
+} 
+COSA_DML_MD_RED;
+/*
  * .ManagedDevices.
  */
 typedef struct
@@ -318,5 +332,10 @@ CosaDmlMDDev_GetConf(ULONG ins, COSA_DML_MD_DEV *pEntry);
 
 ANSC_STATUS
 CosaDmlMDDev_SetConf(ULONG ins, COSA_DML_MD_DEV *pEntry);
+ANSC_STATUS
+CosaDmlMDRed_GetConf(COSA_DML_MD_RED *pEntry);
+
+ANSC_STATUS
+CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry);
 
 #endif /* _COSA_X_COMCAST_COM_PARENTALCONTROL_H_ */
