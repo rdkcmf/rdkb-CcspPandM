@@ -153,6 +153,7 @@ CosaDmlTimeGetLocalTime
 #include <utapi.h>
 #include <utapi_util.h>
 #include "cosa_drg_common.h"
+#include "platform_hal.h"
 #define UTOPIA_TR181_PARAM_SIZE1   256
 
 #define MAXBUF              512
@@ -589,8 +590,12 @@ CosaDmlTimeGetTimeOffset
        char                       *pTimeOffset
     )
 {
+    platform_hal_getTimeOffSet(pTimeOffset);
     return ANSC_STATUS_SUCCESS;
 }
+
+
+
 
 
 #endif

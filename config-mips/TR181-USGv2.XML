@@ -580,6 +580,26 @@
 
         </parameter>
 
+	<parameter>
+
+          <name>BootTime</name>
+
+          <type>unsignedInt</type>
+
+          <syntax>uint32</syntax>
+
+        </parameter>
+        
+       <parameter>
+
+          <name>X_RDKCENTRAL-COM_SystemTime</name>
+
+          <type>string(64)</type>
+
+          <syntax>string</syntax>
+
+        </parameter>
+
         <parameter>
 
           <name>FirstUseDate</name>
@@ -621,7 +641,7 @@
           <writable>true</writable>
         </parameter>
 		
-		<parameter>
+	<parameter>
           <name>X_COMCAST-COM_rdkbPlatformCapable</name>
           <type>boolean</type>
           <syntax>bool</syntax>
@@ -778,6 +798,37 @@
 				</parameters>
    
         </object> <!--end of Webpa-->
+
+	<object>
+		<name>Iot</name>
+
+		<objectType>object</objectType>
+
+		<functions>
+
+			<func_GetParamBoolValue>Iot_GetParamBoolValue</func_GetParamBoolValue>
+
+			<func_SetParamBoolValue>Iot_SetParamBoolValue</func_SetParamBoolValue>
+
+		</functions>
+
+		<parameters>
+
+			<parameter>
+
+				<name>X_RDKCENTRAL-COM_ENABLEIOT</name>
+
+				<type>boolean</type>
+
+				<syntax>bool</syntax>
+
+				<writable>true</writable>
+
+			</parameter>
+
+		</parameters>
+
+	</object> <!--End of Iot-->
 
         <object>
 
@@ -1375,6 +1426,18 @@
         <parameter>
 
           <name>LocalTimeZone</name>
+
+          <type>string(256)</type>
+
+          <syntax>string</syntax>
+
+          <writable>true</writable>
+
+        </parameter>
+
+        <parameter>
+
+          <name>TimeOffset</name>
 
           <type>string(256)</type>
 
@@ -14269,6 +14332,55 @@
                 </parameters>
                 <objects>
                     <object>
+                      <name>Redirect</name>
+                      <objectType>object</objectType>
+                      <functions> 
+                        <func_GetParamStringValue>MDRed_GetParamStringValue</func_GetParamStringValue>
+                        <func_SetParamStringValue>MDRed_SetParamStringValue</func_SetParamStringValue>
+                        <func_Validate>MDRed_Validate</func_Validate>
+                        <func_Commit>MDRed_Commit</func_Commit>
+                        <func_Rollback>MDRed_Rollback</func_Rollback>
+                      </functions>
+                      <parameters>
+                        <parameter>
+                            <name>HTTP_Server_IP</name>
+                            <type>string</type>
+                            <syntax>string</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                            <name>HTTPS_Server_IP</name>
+                            <type>string</type>
+                            <syntax>string</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                            <name>Default_Server_IP</name>
+                            <type>string</type>
+                            <syntax>string</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                            <name>HTTP_Server_IPv6</name>
+                            <type>string</type>
+                            <syntax>string</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                            <name>HTTPS_Server_IPv6</name>
+                            <type>string</type>
+                            <syntax>string</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                            <name>Default_Server_IPv6</name>
+                            <type>string</type>
+                            <syntax>string</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                      </parameters>
+                    </object>
+                    <object>
                         <name>Device</name>
                         <objectType>writableTable</objectType>
                         <maxInstance>128</maxInstance>
@@ -14331,6 +14443,9 @@
                                 <writable>true</writable>
                             </parameter>
                         </parameters>
+                    </object>
+                    <object>
+
                     </object>
                 </objects>
             </object>
