@@ -525,30 +525,33 @@ DeviceInfo_GetParamStringValue
     /* Required for WebPA timestamp */
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_SystemTime", TRUE))
     {
-        static unsigned long long int llprevtime = 0;
-        static int count = 0;
-        unsigned long long lltime = 0;
-        char sbuf[32] = {0};
         struct timespec sysTime;
 
         if( clock_gettime(CLOCK_REALTIME, &sysTime) != -1 )
         {
-              //printf("Old Time nsec:   %llu \n", llprevtime);
-              lltime = (unsigned long long int)sysTime.tv_sec * 1000000000L + sysTime.tv_nsec;
-              //printf("Time in nanosec: %llu \n", lltime);
+              static long prevtime_sec = 0;
+              static long prevtime_nsec = 0;
+              static int count = 0;
+              char sbuf[32] = {0};
 
-              if(lltime == llprevtime)
+              if( (sysTime.tv_sec == prevtime_sec) && (sysTime.tv_nsec == prevtime_nsec) )
               {
                     count++;
-              }
-              else
-              {
+              } else {
                     count = 0;
-                    llprevtime = lltime;
               }
+              prevtime_sec = sysTime.tv_sec;
+              prevtime_nsec = sysTime.tv_nsec;
+              sysTime.tv_nsec += count;
 
-              sprintf(sbuf, "%llu", lltime + count);
-              //printf(" sbuf = \"%s\"\n", sbuf);
+              if( sysTime.tv_nsec > 999999999L)
+              {
+                   sysTime.tv_sec = sysTime.tv_sec + 1;
+                   sysTime.tv_nsec = sysTime.tv_nsec - 1000000000L;
+              }                   
+
+              sprintf(sbuf, "%ld.%09ld", sysTime.tv_sec, sysTime.tv_nsec);
+
               AnscCopyString(pValue, sbuf);
               *pulSize = strlen(sbuf)+1;
         }
