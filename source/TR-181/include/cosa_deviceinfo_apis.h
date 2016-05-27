@@ -320,21 +320,4 @@ CosaDmlDiGetProcessorSpeed
         ULONG*                      pulSize
     );
 
-	
-/*WebPA*/
-ANSC_STATUS
-CosaDmlDiGetWebPACfg
-    (
-        char*                       ParamName,
-        char*                       pValue
-    );
-
-ANSC_STATUS
-CosaDmlDiSetWebPACfg
-    (
-        char*                       ParamName,
-        char*                       pValue
-    );
-	
-
 #endif
