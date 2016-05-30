@@ -585,7 +585,14 @@ DeviceInfo_GetParamStringValue
     }
 
 	/* Changes for EMS end here */
-	
+	/*Changes for RDKB-5878*/
+	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudPersonalizationURL", TRUE))
+	{
+	   syscfg_get(NULL, "CloudPersonalizationURL", pMyObject->CloudPersonalizationURL, sizeof(pMyObject->CloudPersonalizationURL));
+	   AnscCopyString(pValue, pMyObject->CloudPersonalizationURL);
+	   return 0;
+	}
+	/*Changes for RDKB-5878 end*/
 
     ReturnValue =
         DeviceInfo_GetParamStringValue_Custom
@@ -845,6 +852,27 @@ DeviceInfo_SetParamStringValue
 
     }
 #endif
+    /*Changes for 5878 start*/
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudPersonalizationURL", TRUE))
+    {
+		if (syscfg_set(NULL, "CloudPersonalizationURL", pString) != 0)
+		{
+	        AnscTraceWarning(("syscfg_set failed\n"));
+	    } 
+		else
+		{
+		    if (syscfg_commit() != 0)
+			{
+	        	AnscTraceWarning(("syscfg_commit failed\n"));
+	    	}
+			AnscCopyString(pMyObject->CloudPersonalizationURL, pString);
+			CcspTraceWarning(("CloudPersonalizationURL URL is changed, new URL is %s ...\n",pMyObject->CloudPersonalizationURL));
+	    }
+
+		return TRUE;
+
+	}
+	/*Changes for 5878 end*/
    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_UI_ACCESS", TRUE))
    {
 
