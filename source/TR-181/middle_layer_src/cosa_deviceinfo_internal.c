@@ -168,6 +168,7 @@ CosaDeviceInfoInitialize
 
     CosaDmlDiInit(NULL, NULL);
     CosaDmlDiGetXfinityWiFiEnable(&pMyObject->bxfinitywifiEnable);
+	syscfg_get(NULL, "CloudPersonalizationURL", pMyObject->CloudPersonalizationURL, sizeof(pMyObject->CloudPersonalizationURL));
     printf("%s : bxfinitywifiEnable value is : %d\n",__FUNCTION__,pMyObject->bxfinitywifiEnable);
 
     return returnStatus;

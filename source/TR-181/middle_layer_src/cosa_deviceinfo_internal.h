@@ -93,7 +93,8 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
     BOOL		bCloudEnable;				    
     CHAR		WebURL[64];
 #endif
-/*Added for EMS*/
+    char        CloudPersonalizationURL[64];
+	/*Added for EMS*/
 	CHAR 		EMS_ServerURL[64];
 	CHAR 		EMS_MobileNo[64];
 /*change ends here*/
