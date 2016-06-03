@@ -74,7 +74,10 @@
 #include "plugin_main_apis.h"
 #include "cosa_hosts_apis.h"
 #include "cosa_hosts_internal.h"
+
+#ifdef CONFIG_TI_PACM
 #include "pacm_manager_utilities.h"
+#endif
 
 extern void* g_pDslhDmlAgent;
 
