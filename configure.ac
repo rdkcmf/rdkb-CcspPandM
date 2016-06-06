@@ -96,6 +96,8 @@ if test x"${CCSP_PLATFORM}" != x; then
                      [The CCSP platform device])
 fi
 
+AM_CONDITIONAL(CCSP_PLATFORM_BCM, test "x$CCSP_PLATFORM" = xbcm)
+
 SYSTEMD_CFLAGS=" "
 SYSTEMD_LDFLAGS=" "
 AC_ARG_ENABLE([notify],
