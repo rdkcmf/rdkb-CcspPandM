@@ -69,7 +69,7 @@ endif
 
 # MOCA
 ifeq ($(CONFIG_SYSTEM_MOCA), y)
-    MOCA_LDFLAGS += -lmoca_mgnt
+    MOCA_LDFLAGS += -lhal_moca
     #MOCA_LDFLAGS += -lmoca_api
     CFLAGS += -DCONFIG_SYSTEM_MOCA
     LDFLAGS += $(MOCA_LDFLAGS)
