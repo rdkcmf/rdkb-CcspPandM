@@ -35,6 +35,7 @@
 
 #include "cosa_x_comcast_com_parentalcontrol_dml.h"
 #include "dml_tr181_custom_cfg.h"
+#include "ccsp_trace.h"
 
 BOOL
 MngSites_GetParamBoolValue
@@ -2005,31 +2006,37 @@ MDRed_SetParamStringValue
     if (AnscEqualString(ParamName, "HTTP_Server_IP", TRUE))
     {
         AnscCopyString(pMDRed->HTTP_Server_IP, strValue);
+		CcspTraceWarning(("HTTP_Server_IP is set to %s\n", pMDRed->HTTP_Server_IP));
         return TRUE;
     }
     if (AnscEqualString(ParamName, "HTTPS_Server_IP", TRUE))
     {
         AnscCopyString(pMDRed->HTTPS_Server_IP, strValue);
+		CcspTraceWarning(("HTTPS_Server_IP is set to %s\n", pMDRed->HTTPS_Server_IP));
         return TRUE;
     }
     if (AnscEqualString(ParamName, "Default_Server_IP", TRUE))
     {
 	    AnscCopyString(pMDRed->Default_Server_IP, strValue);
+		CcspTraceWarning(("Default_Server_IP is set to %s\n", pMDRed->Default_Server_IP));
         return TRUE;
     }
     if (AnscEqualString(ParamName, "HTTP_Server_IPv6", TRUE))
     {
         AnscCopyString(pMDRed->HTTP_Server_IPv6, strValue);
+		CcspTraceWarning(("HTTP_Server_IPv6 is set to %s\n", pMDRed->HTTP_Server_IPv6));
         return TRUE;
     }
     if (AnscEqualString(ParamName, "HTTPS_Server_IPv6", TRUE))
     {
         AnscCopyString(pMDRed->HTTPS_Server_IPv6, strValue);
+		CcspTraceWarning(("HTTPS_Server_IPv6 is set to %s\n", pMDRed->HTTPS_Server_IPv6));
         return TRUE;
     }
     if (AnscEqualString(ParamName, "Default_Server_IPv6", TRUE))
     {
         AnscCopyString(pMDRed->Default_Server_IPv6, strValue);
+		CcspTraceWarning(("Default_Server_IPv6 is set to %s\n", pMDRed->Default_Server_IPv6));
         return TRUE;
     }
 
