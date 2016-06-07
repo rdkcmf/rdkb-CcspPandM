@@ -62,11 +62,6 @@ then
 				echo "RDKB_PROCESS_CRASHED : HotSpot_process is not running, restarting it"
 					$BINPATH/hotspotfd $keepalive_args  > /dev/null &
 			fi    
-			DHCP_SNOOPERD_PID=`pidof dhcp_snooperd`
-			if [ "$DHCP_SNOOPERD_PID" = "" ]; then
-				echo "RDKB_PROCESS_CRASHED : DhcpSnooper_process is not running, restarting it"
-					$BINPATH/dhcp_snooperd -q $BASEQUEUE -n 2 -e 1  > /dev/null &
-			fi 
 			DHCP_ARP_PID=`pidof hotspot_arpd`
 			if [ "$DHCP_ARP_PID" = "" ]; then
 				echo "RDKB_PROCESS_CRASHED : DhcpArp_process is not running, restarting it"
