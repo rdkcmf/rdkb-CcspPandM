@@ -233,7 +233,17 @@ DeviceInfo_GetParamIntValue
     )
 {
     /* check the parameter name and return the corresponding value */
-
+         if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootCounter", TRUE))
+           {
+                char buf[8];
+		syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf, sizeof(buf));
+    	        if( buf != NULL )
+    		{
+		    *pInt = atoi(buf);
+		    return TRUE;
+    		}
+	        return FALSE;
+           }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -557,7 +567,23 @@ DeviceInfo_GetParamStringValue
         }
         return 0;
     }
-
+        
+     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootReason", TRUE))
+    {
+        char buf[64] = {'\0'};
+        syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", buf, sizeof(buf));
+    	if( buf != NULL )
+    		{
+    		    AnscCopyString(pValue,  buf);
+    		    
+    		}
+		else
+		{
+			printf("Error in syscfg_get for RebootReason\n");
+		}
+		return 0;
+        
+    }
 	
 	/* Changes for EMS begins here */
 	
@@ -720,7 +746,23 @@ DeviceInfo_SetParamIntValue
     )
 {
     /* check the parameter name and set the corresponding value */
-
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootCounter", TRUE))
+	{
+	        char buf[8];
+		snprintf(buf,sizeof(buf),"%d",iValue);
+	        if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0) 
+	        {
+                     CcspTraceWarning(("syscfg_set failed\n"));
+                }
+                else 
+			{
+		     if (syscfg_commit() != 0)
+	             {
+                        CcspTraceWarning(("syscfg_commit failed\n"));
+                     }
+	        }
+	        return TRUE;
+	}
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -891,11 +933,38 @@ DeviceInfo_SetParamStringValue
 	 else if (AnscEqualString(pString, "reboot_device", TRUE))
          {
                 CcspTraceInfo(("RDKB_REBOOT : RebootDevice triggered from GUI\n"));
+                char buf[8];
+		snprintf(buf,sizeof(buf),"%d",1);
+		               
+		if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", "gui-reboot") != 0) 
+		{
+		        AnscTraceWarning(("RDKB_REBOOT : RebootDevice syscfg_set failed GUI\n"));
+		}
+		else 
+		{
+			if (syscfg_commit() != 0) 
+			{
+				AnscTraceWarning(("RDKB_REBOOT : RebootDevice syscfg_commit failed GUI\n"));
+			}
+		}
+	        
+	        
+	        if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0) 
+	        {
+                      CcspTraceWarning(("syscfg_set failed\n"));
+                }
+                else 
+		{
+		      if (syscfg_commit() != 0)
+	              {
+                          CcspTraceWarning(("syscfg_commit failed\n"));
+                      }
+	        }
+	        
 	 }
          else if(AnscEqualString(pString, "factory_reset", TRUE))
          {
-                
-		CcspTraceInfo(("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n"));
+               CcspTraceInfo(("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n"));
          }
 	 else if(AnscEqualString(pString, "captiveportal_failure", TRUE)) {
 
@@ -926,7 +995,26 @@ DeviceInfo_SetParamStringValue
 	return TRUE;
 
     }
-
+    
+     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootReason", TRUE))
+        {
+             if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", pString) != 0) 
+	        {
+			AnscTraceWarning(("syscfg_set failed\n"));
+			
+		}
+		else 
+		{
+		     if (syscfg_commit() != 0) 
+		        {
+				AnscTraceWarning(("syscfg_commit failed\n"));
+				
+			}
+			
+			return TRUE;
+		}
+        }
+    
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))
     {
         /* save update to backup */
