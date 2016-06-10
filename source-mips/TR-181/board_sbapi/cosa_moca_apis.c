@@ -414,9 +414,9 @@ CosaDmlMocaIfGetEntry
     {
         CosaDmlMocaIfGetCfg(hContext, ulInterfaceIndex, &pEntry->Cfg);
         CosaDmlMocaIfGetDinfo(hContext, ulInterfaceIndex, &pEntry->DynamicInfo);
-        moca_IfGetStaticInfo(ulInterfaceIndex, &pEntry->StaticInfo);
-				
-		AnscCopyString(pEntry->StaticInfo.Name, "sw_5");
+       // moca_IfGetStaticInfo(ulInterfaceIndex, &pEntry->StaticInfo);
+       CosaDmlMocaIfGetStaticInfo(hContext,ulInterfaceIndex,&pEntry->StaticInfo);				
+		//AnscCopyString(pEntry->StaticInfo.Name, "sw_5");
     }
     else
     {
@@ -911,6 +911,51 @@ CosaDmlMocaIfGetDinfo
     return ANSC_STATUS_SUCCESS;
 }
 
+ANSC_STATUS
+CosaDmlMocaIfGetStaticInfo
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       uIndex,
+        PCOSA_DML_MOCA_IF_SINFO       pSInfo
+    )
+{
+    JUDGE_MOCA_HARDWARE_AVAILABLE(ANSC_STATUS_FAILURE)
+	moca_static_info_t mocaStaticCfg;
+
+    AnscTraceWarning(("CosaDmlMocaIfGetStaticInfo -- ulInterfaceIndex:%lu.\n", uIndex));
+    
+    if ( !pSInfo )
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if ( uIndex == 0 )
+    {
+		memset(&mocaStaticCfg, 0, sizeof(moca_static_info_t));
+        moca_IfGetStaticInfo(uIndex, &mocaStaticCfg);
+		
+		/* Translate the data structures */
+		AnscCopyString(pSInfo->Name, "sw_5");
+		memcpy(pSInfo->MacAddress, 	mocaStaticCfg.MacAddress, 18);
+		memcpy(pSInfo->FirmwareVersion, mocaStaticCfg.FirmwareVersion, 64);
+		pSInfo->MaxBitRate  = mocaStaticCfg.MaxBitRate;
+		memcpy(pSInfo->HighestVersion, mocaStaticCfg.HighestVersion, 64);
+		memcpy(pSInfo->FreqCapabilityMask, mocaStaticCfg.FreqCapabilityMask, 8);
+		memcpy(pSInfo->NetworkTabooMask, mocaStaticCfg.NetworkTabooMask, 128);
+		pSInfo->TxBcastPowerReduction = mocaStaticCfg.TxBcastPowerReduction;
+		pSInfo->QAM256Capable = mocaStaticCfg.QAM256Capable;
+		pSInfo->PacketAggregationCapability = mocaStaticCfg.PacketAggregationCapability;
+		
+    }
+    else
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
+    return ANSC_STATUS_SUCCESS;
+    
+}
+
 
 ANSC_STATUS
 CosaDmlMocaIfGetStats
@@ -1314,7 +1359,19 @@ CosaDmlMocaIfGetAssocDevices
 
     if ( ulInterfaceIndex == 0 )
     {
-        moca_GetNumAssociatedDevices(ulInterfaceIndex, pulCount);
+	moca_cpe_t cpes[kMoca_MaxCpeList];
+        int        pnum_cpes     = 0,
+                   iReturnStatus = STATUS_SUCCESS;
+
+       iReturnStatus =  moca_GetMocaCPEs(ulInterfaceIndex, cpes, &pnum_cpes);
+
+       AnscTraceWarning(("pnum_cpes: %u\n", pnum_cpes));
+
+       if( ( iReturnStatus == STATUS_SUCCESS ) && \
+           ( 0 < pnum_cpes )
+         )
+        {
+		moca_GetNumAssociatedDevices(ulInterfaceIndex, pulCount);
 
         AnscTraceWarning(("*pulCount: %lu\n", *pulCount));
 
@@ -1387,8 +1444,9 @@ CosaDmlMocaIfGetAssocDevices
                     *ppDeviceArray = NULL;
                 }
 
-                return  ANSC_STATUS_RESOURCES;
-            }
+			return  ANSC_STATUS_RESOURCES;
+		    }
+		}
         }
     }
 
