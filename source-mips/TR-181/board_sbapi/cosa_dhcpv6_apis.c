@@ -5134,7 +5134,7 @@ dhcpv6c_dbg_thrd(void * in)
                         CosaDmlDHCPv6sTriggerRestart(FALSE);
                         
                         /*We need get a global ip addres */
-                        ret = dhcpv6_assign_global_ip(v6pref, "l2sd0", globalIP);
+                        ret = dhcpv6_assign_global_ip(v6pref, COSA_DML_DHCPV6_SERVER_IFNAME, globalIP);
 
                         if ( _ansc_strcmp(globalIP, globalIP2 ) ){
                             bRestartLan = TRUE;
