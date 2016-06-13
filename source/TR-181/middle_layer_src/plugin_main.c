@@ -426,12 +426,12 @@ COSA_Async_Init
         {
             PCOSA_DATAMODEL_MOCA pMoca = g_pCosaBEManager->hMoCA;
             pMoca->Remove(pMoca);
-            g_pCosaBEManager->hMoCA = (ANSC_HANDLE)CosaMoCACreate();
+            //g_pCosaBEManager->hMoCA = (ANSC_HANDLE)CosaMoCACreate();
         }
 #elif defined(_COSA_DRG_CNS_)
         PCOSA_DATAMODEL_MOCA pMoca = g_pCosaBEManager->hMoCA;
         pMoca->Remove(pMoca);
-        g_pCosaBEManager->hMoCA = (ANSC_HANDLE)CosaMoCACreate();
+        //g_pCosaBEManager->hMoCA = (ANSC_HANDLE)CosaMoCACreate();
 #endif
 
     }
