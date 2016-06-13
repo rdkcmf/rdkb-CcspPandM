@@ -161,11 +161,19 @@ then
 							then
 								echo "rebootNeededforbrlan0"
 								echo "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
+								echo "Setting last reboot reason"
+								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string brlan0_down
+								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
+								echo "SET succeeded"
 								sh /etc/calc_random_time_to_reboot_dev.sh "" &
 							elif [ "$rebootNeededforbrlan1" -eq 1 ]
 							then
 								echo "rebootNeededforbrlan1"
 								echo "RDKB_REBOOT : brlan1 interface is not up, rebooting the device."
+								echo "Setting last reboot reason"
+								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string brlan1_down
+								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
+								echo "SET succeeded"
 								sh /etc/calc_random_time_to_reboot_dev.sh "" &
 							fi
 							touch $FLAG_REBOOT

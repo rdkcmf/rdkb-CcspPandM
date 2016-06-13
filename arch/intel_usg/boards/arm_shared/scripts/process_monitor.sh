@@ -46,6 +46,10 @@ do
                 fi
 		if [ "$rebootNeededPAM" -eq 0 ]; then
 		echo "RDKB_PROCESS_CRASHED : PAM_process is not running, need to reboot the unit now"
+		echo "Setting Last reboot reason"
+		dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string PandM_crash
+		dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
+		echo "SET succeeded"
 		rebootNeededPAM=1
 		rebootNeeded=1
     		touch $HAVECRASH
@@ -257,6 +261,10 @@ do
 		if [ "$rebootNeededforbrlan0" -eq 0 ]; then
 			echo "[RKDB_PLATFORM_ERROR] : brlan0 interface is not up" 
 			echo "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
+			echo "Setting Last reboot reason"
+			dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string brlan0_dwn
+			dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
+			echo "SET succeeded"
 			rebootNeededforbrlan0=1
 			rebootNeeded=1
 	      		/fss/gw/rdklogger/backupLogs.sh "true" ""
@@ -292,22 +300,33 @@ do
 					if [ "$rebootNeededPSM" -eq 1 ]
 					then
 						echo "rebootNeededPSM"
+								echo "Setting last reboot reason"
+								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string Psm_crash
+								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
+								echo "SET succeeded"
 			                	sh /etc/calc_random_time_to_reboot_dev.sh "PSM" &
 
 					elif [ "$rebootNeededCR" -eq 1 ]
 					then
 						echo "rebootNeededCR"
-
 			                	sh /etc/calc_random_time_to_reboot_dev.sh "CR" &
 
 					elif [ "$rebootNeededforbrlan1" -eq 1 ]
 					then
 						echo "rebootNeededforbrlan1"
 						echo "RDKB_REBOOT : brlan1 interface is not up, rebooting the device."
+						echo "Setting last reboot reason"
+						dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string brlan1_down
+						dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
+						echo "SET succeeded"
 						sh /etc/calc_random_time_to_reboot_dev.sh "" &
 
 					else 
 						echo "rebootNeededTR69"
+								echo "Setting last reboot reason"
+								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string Tr069_crash
+								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
+								echo "SET succeeded"
 			                	sh /etc/calc_random_time_to_reboot_dev.sh "TR69" &
 					fi
 					touch $FLAG_REBOOT
