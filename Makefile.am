@@ -44,12 +44,7 @@ EXTRA_DEPENDENCIES= \
 	source-arm/TR-181/board_sbapi/libCcspPandM_board_sbapi.la \
 	custom/comcast/source/TR-181/custom_sbapi/libCcspPandM_comcast_sbapi.la \
 	custom/comcast/source/TR-181/custom_ml/libCcspPandM_comcast_ml.la
-if CCSP_PLATFORM_BCM
-libtr181_la_LDFLAGS += -lmoca_mgnt -lapi_dhcpv4c -lhal_msomgmt -lhal_platform -lhal_ethsw -llmapi -lccsp_common -lcm_mgnt -lcurl
-else
 libtr181_la_LDFLAGS += -lhal_moca -lapi_dhcpv4c -lhal_msomgmt -lhal_platform -lhal_ethsw -llmapi -lccsp_common -lcm_mgnt -lcurl
-endif
-
 endif
 
 if CCSP_ARCH_PC
@@ -64,7 +59,7 @@ EXTRA_DEPENDENCIES= \
     source-mips/TR-181/board_sbapi/libCcspPandM_board_sbapi.la \
     custom/comcast/source/TR-181/custom_sbapi/libCcspPandM_comcast_sbapi.la \
     custom/comcast/source/TR-181/custom_ml/libCcspPandM_comcast_ml.la
-libtr181_la_LDFLAGS += -lmoca_mgnt -lapi_dhcpv4c -lhal_msomgmt -lhal_platform -lhal_ethsw -llmapi -lccsp_common -lcm_mgnt -lcurl
+libtr181_la_LDFLAGS += -lhal_moca -lapi_dhcpv4c -lhal_msomgmt -lhal_platform -lhal_ethsw -llmapi -lccsp_common -lcm_mgnt -lcurl
 endif
 
 
