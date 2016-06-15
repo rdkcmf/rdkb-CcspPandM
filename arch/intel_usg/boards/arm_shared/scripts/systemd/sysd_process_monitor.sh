@@ -55,13 +55,6 @@ then
 		HOTSPOT_ENABLE=`dmcli eRT getv Device.DeviceInfo.X_COMCAST_COM_xfinitywifiEnable | grep value | cut -f3 -d : | cut -f2 -d" "`
 		if [ "$HOTSPOT_ENABLE" = "true" ]
 		then
-			BASEQUEUE=1
-			keepalive_args="-n `sysevent get wan_ifname` -e 1"
-			HOTSPOTDAEMON_PID=`pidof hotspotfd`
-			if [ "$HOTSPOTDAEMON_PID" = "" ]; then
-				echo "RDKB_PROCESS_CRASHED : HotSpot_process is not running, restarting it"
-					$BINPATH/hotspotfd $keepalive_args  > /dev/null &
-			fi    
 			DHCP_ARP_PID=`pidof hotspot_arpd`
 			if [ "$DHCP_ARP_PID" = "" ]; then
 				echo "RDKB_PROCESS_CRASHED : DhcpArp_process is not running, restarting it"
