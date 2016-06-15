@@ -171,7 +171,7 @@ _COSA_DML_GRE_TUNNEL
  	BOOL                        EnableCircuitID;
  	BOOL                        EnableRemoteID;
 	char                        GRENetworkTunnel[256];	//GRENetworkInterface[256];
-	char                        ClientChange[256];	//for notification
+
 	COSA_DML_GRE_TUNNEL_STATS       TuStats;
 	
 	ULONG                       InterfaceNumberOfEntries;

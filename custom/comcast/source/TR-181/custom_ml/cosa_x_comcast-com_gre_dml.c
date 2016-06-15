@@ -438,11 +438,7 @@ BOOL GreTunnel_SetParamStringValue ( ANSC_HANDLE hInsContext, char*  ParamName, 
         pGreTu->ChangeFlag |= GRETU_CF_GRETU;
         return TRUE;
     }
-	if (AnscEqualString(ParamName, "ClientChange", TRUE))
-    {
-        snprintf(pGreTu->ClientChange, sizeof(pGreTu->ClientChange), "%s", strValue);
-        return TRUE;
-    }
+
     return FALSE;
 }
 
