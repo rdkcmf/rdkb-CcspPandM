@@ -14777,13 +14777,7 @@
 						<name>InterfaceNumberOfEntries</name>
 						<type>unsignedInt</type>
 						<syntax>uint32</syntax>
-					</parameter>	
-					<parameter>
-						<name>ClientChange</name>
-						<type>string</type>
-						<syntax>string</syntax>
-						<writable>true</writable>
-					</parameter>
+					</parameter>					
 				</parameters>
 				
 				<objects>
