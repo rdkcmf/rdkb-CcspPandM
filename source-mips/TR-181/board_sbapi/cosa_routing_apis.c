@@ -2762,7 +2762,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 #if defined(_COSA_BCM_MIPS_)
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table main");
 #else
-    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table 3");
+    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table erouter");
 #endif
     if ((fp = popen(cmd, "r")) == NULL)
         return -1;
