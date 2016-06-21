@@ -1250,7 +1250,7 @@ CosaDmlDiGetProcessorSpeed
    
     while(fgets(line, MAX_LINE_SIZE, fp) != NULL )
     {
-       if(strstr(line, TOKEN_STR) != NULL)
+       if(strcasestr(line, TOKEN_STR) != NULL)
        {
         pcur = strstr(line, ":");
         pcur++;
