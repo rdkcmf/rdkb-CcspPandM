@@ -194,7 +194,11 @@ CosaDmlDiGetRouterIPAddress
     )
 {
 	unsigned int UIntIP = (unsigned int)CosaUtilGetIfAddr("erouter0");
+#ifdef INTEL_PUMA7
+	sprintf(pValue, "%d.%d.%d.%d",(UIntIP & 0xff),((UIntIP >> 8) & 0xff),((UIntIP >> 16) & 0xff),(UIntIP >> 24));
+#else
 	sprintf(pValue, "%d.%d.%d.%d", (UIntIP >> 24),((UIntIP >> 16) & 0xff),((UIntIP >> 8) & 0xff),(UIntIP & 0xff));
+#endif
 	*pulSize = AnscSizeOfString(pValue);
 
     return ANSC_STATUS_SUCCESS;
