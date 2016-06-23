@@ -231,6 +231,25 @@ do
 		echo "ENABLEWEBPA is $ENABLEWEBPA"
 		if [ "$ENABLEWEBPA" = "true" ];then
 		echo "RDKB_PROCESS_CRASHED : WebPA_process is not running, trying to restart it"
+		#We'll set the reason only if webpa reconnect is not due to DNS resolve
+		syscfg get X_RDKCENTRAL-COM_LastReconnectReason | grep "Dns_Res_webpa_reconnect"
+		if [ $? != 0 ]; then
+			
+			echo "setting reconnect reason from process_monitor.sh"
+			syscfg set X_RDKCENTRAL-COM_LastReconnectReason WebPa_crash
+			result=`echo $?`
+			if [ "$result" != "0" ]
+			then
+			    echo "SET for Reconnect Reason failed"
+			fi
+			syscfg commit
+			result=`echo $?`
+			if [ "$result" != "0" ]
+			then
+			    echo "Commit for Reconnect Reason failed"
+			fi
+		fi
+			
 			#cd webpa/
 			/usr/bin/webpa -subsys $Subsys
 			cd ..
