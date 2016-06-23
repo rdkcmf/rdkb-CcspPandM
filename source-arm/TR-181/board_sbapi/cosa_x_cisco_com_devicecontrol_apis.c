@@ -1478,7 +1478,7 @@ CosaDmlDcSetRebootDevice
 		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
             	//system("(sleep 5 && reboot) &");
             	sleep (delay_time);
-            	system("/fss/gw/rdklogger/backupLogs.sh");
+            	system("/fss/gw/rdklogger/backupLogs.sh &");
         	}
         	else
             {
@@ -1486,14 +1486,14 @@ CosaDmlDcSetRebootDevice
 		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
                 //system("(sleep 5 && reboot) &");
 				sleep(5);
-				system("/fss/gw/rdklogger/backupLogs.sh");
+				system("/fss/gw/rdklogger/backupLogs.sh &");
             }
 		}
 		else {
 	        fprintf(stderr, "Device is going to reboot now\n");
 			CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
 	         //system("reboot");
-	         system("/fss/gw/rdklogger/backupLogs.sh");
+	         system("/fss/gw/rdklogger/backupLogs.sh &");
 	    }
     }
 
@@ -1548,7 +1548,7 @@ void restoreAllDBs()
 void backuplogs()
 {
 	pthread_detach(pthread_self());
-	system("/fss/gw/rdklogger/backupLogs.sh");
+	system("/fss/gw/rdklogger/backupLogs.sh &");
 }
 
 /*****************************************
