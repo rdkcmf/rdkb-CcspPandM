@@ -231,19 +231,8 @@ DeviceInfo_GetParamIntValue
         char*                       ParamName,
         int*                        pInt
     )
-{
+    {
     /* check the parameter name and return the corresponding value */
-         if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootCounter", TRUE))
-           {
-                char buf[8];
-		syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf, sizeof(buf));
-    	        if( buf != NULL )
-    		{
-		    *pInt = atoi(buf);
-		    return TRUE;
-    		}
-	        return FALSE;
-           }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -579,7 +568,7 @@ DeviceInfo_GetParamStringValue
     		}
 		else
 		{
-			printf("Error in syscfg_get for RebootReason\n");
+			AnscTraceWarning(("Error in syscfg_get for RebootReason\n"));
 		}
 		return 0;
         
@@ -746,24 +735,7 @@ DeviceInfo_SetParamIntValue
     )
 {
     /* check the parameter name and set the corresponding value */
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootCounter", TRUE))
-	{
-	        char buf[8];
-		snprintf(buf,sizeof(buf),"%d",iValue);
-	        if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0) 
-	        {
-                     CcspTraceWarning(("syscfg_set failed\n"));
-                }
-                else 
-			{
-		     if (syscfg_commit() != 0)
-	             {
-                        CcspTraceWarning(("syscfg_commit failed\n"));
-                     }
-	        }
-	        return TRUE;
-	}
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+	/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
 
@@ -951,13 +923,13 @@ DeviceInfo_SetParamStringValue
 	        
 	        if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0) 
 	        {
-                      CcspTraceWarning(("syscfg_set failed\n"));
+                    AnscTraceWarning(("syscfg_set failed\n"));
                 }
                 else 
 		{
 		      if (syscfg_commit() != 0)
 	              {
-                          CcspTraceWarning(("syscfg_commit failed\n"));
+                         AnscTraceWarning(("syscfg_commit failed\n"));
                       }
 	        }
 	        
@@ -998,21 +970,36 @@ DeviceInfo_SetParamStringValue
     
      if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootReason", TRUE))
         {
-             if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", pString) != 0) 
-	        {
-			AnscTraceWarning(("syscfg_set failed\n"));
-			
-		}
-		else 
-		{
-		     if (syscfg_commit() != 0) 
+            int val = 1;
+            char buf[8];
+		    snprintf(buf,sizeof(buf),"%d",val);     
+        
+                if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", pString) != 0) 
+	            {
+			        AnscTraceWarning(("syscfg_set failed for Reason and counter \n"));
+			    }
+		   	    else 
 		        {
-				AnscTraceWarning(("syscfg_commit failed\n"));
+		             if (syscfg_commit() != 0) 
+		            {
+				        AnscTraceWarning(("syscfg_commit failed for Reason and counter \n"));
 				
-			}
-			
-			return TRUE;
-		}
+			        }
+		
+		        }
+		        if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0) 
+	            {
+                      AnscTraceWarning(("syscfg_set failed\n"));
+                }
+                else 
+		        {
+		          if (syscfg_commit() != 0)
+	                  {
+                            AnscTraceWarning(("syscfg_commit failed\n"));
+                       }
+	             }
+	    return TRUE;
+				
         }
     
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))

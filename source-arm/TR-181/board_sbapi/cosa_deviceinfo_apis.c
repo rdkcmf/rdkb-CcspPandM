@@ -1290,3 +1290,70 @@ ANSC_STATUS CosaDmlDiClearResetCount
    
 
 #endif
+int getRebootCounter()
+{       
+        char buf[8];
+		syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf, sizeof(buf));
+    	    if( buf != NULL )
+    		{
+    		    return atoi(buf);
+	   		}
+	   		else
+	   		{
+	   		    AnscTraceWarning(("syscfg_get failed\n"));
+	   		    return -1;
+	   		}
+	   		
+}
+
+int setRebootCounter()
+{
+           
+            int val = 0;
+            char buf[8];
+		    snprintf(buf,sizeof(buf),"%d",val);     
+        
+                if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0)) 
+	            {
+			        AnscTraceWarning(("syscfg_set failed\n"));
+			        return -1;
+			    }
+		   	    else 
+		        {
+		         if (syscfg_commit() != 0) 
+		        {
+				    AnscTraceWarning(("syscfg_commit failed\n"));
+				     return -1;
+				
+			    }
+			
+			    return 0;
+		    }  
+}
+
+int setUnknownRebootReason()
+{
+   
+            int val = 0;
+            char buf[8];
+		    snprintf(buf,sizeof(buf),"%d",val);     
+        
+                if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", "unknown") != 0)) 
+	            {
+			        AnscTraceWarning(("syscfg_set failed\n"));
+			        return -1;
+			    }
+		   	    else 
+		        {
+		         if (syscfg_commit() != 0) 
+		        {
+				    AnscTraceWarning(("syscfg_commit failed\n"));
+				     return -1;
+				
+			    }
+			
+			    return 0;
+		    }        
+}
+
+

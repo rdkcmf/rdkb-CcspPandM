@@ -617,14 +617,6 @@
           <syntax>string</syntax>
 	  <writable>true</writable>
         </parameter>
-
-        <parameter>
-          <name>X_RDKCENTRAL-COM_LastRebootCounter</name>
-          <type>int</type>
-          <syntax>int</syntax>
-	  <writable>true</writable>
-        </parameter>
-              
         <parameter>
 
           <name>FirstUseDate</name>
