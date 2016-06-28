@@ -603,6 +603,38 @@ CosaDmlDiGetUpTime
     }
 }
 
+ULONG
+CosaDmlDiGetBootTime
+    (
+	ANSC_HANDLE                 Context
+    )
+{
+	static ULONG value;
+	struct sysinfo s_info;
+	struct timeval currentTime;
+	
+	if(!value)
+	{
+		if(sysinfo(&s_info))
+		{
+			return 0;
+		}
+		int upTime = s_info.uptime; 
+
+		gettimeofday(&currentTime, NULL);
+
+		value = currentTime.tv_sec - upTime;
+    }	
+        
+	if(value != 0)
+	{
+		return value;
+	}
+	else
+		return 0;
+		
+}
+
 ANSC_STATUS
 CosaDmlDiGetBootloaderVersion
     (
@@ -1251,37 +1283,72 @@ ANSC_STATUS CosaDmlDiClearResetCount
     return ANSC_STATUS_SUCCESS;
 }
    
-ULONG
-CosaDmlDiGetBootTime
-    (
-	ANSC_HANDLE                 Context
-    )
+
+#endif
+int getRebootCounter()
+{       
+        char buf[8];
+		syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf, sizeof(buf));
+    	    if( buf != NULL )
+    		{
+    		    return atoi(buf);
+	   		}
+	   		else
+	   		{
+	   		    AnscTraceWarning(("syscfg_get failed\n"));
+	   		    return -1;
+	   		}
+	   		
+}
+
+int setRebootCounter()
 {
-	static ULONG value;
-	struct sysinfo s_info;
-	struct timeval currentTime;
-	
-	if(!value)
-	{
-		if(sysinfo(&s_info))
-		{
-			return 0;
-		}
-		int upTime = s_info.uptime; 
-
-		gettimeofday(&currentTime, NULL);
-
-		value = currentTime.tv_sec - upTime;
-    }	
+           
+            int val = 0;
+            char buf[8];
+		    snprintf(buf,sizeof(buf),"%d",val);     
         
-	if(value != 0)
-	{
-		return value;
-	}
-	else
-		return 0;
-		
+                if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0)) 
+	            {
+			        AnscTraceWarning(("syscfg_set failed\n"));
+			        return -1;
+			    }
+		   	    else 
+		        {
+		         if (syscfg_commit() != 0) 
+		        {
+				    AnscTraceWarning(("syscfg_commit failed\n"));
+				     return -1;
+				
+			    }
+			
+			    return 0;
+		    }  
+}
+
+int setUnknownRebootReason()
+{
+   
+            int val = 0;
+            char buf[8];
+		    snprintf(buf,sizeof(buf),"%d",val);     
+        
+                if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", "unknown") != 0)) 
+	            {
+			        AnscTraceWarning(("syscfg_set failed\n"));
+			        return -1;
+			    }
+		   	    else 
+		        {
+		         if (syscfg_commit() != 0) 
+		        {
+				    AnscTraceWarning(("syscfg_commit failed\n"));
+				     return -1;
+				
+			    }
+			
+			    return 0;
+		    }        
 }
 
 
-#endif
