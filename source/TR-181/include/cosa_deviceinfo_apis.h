@@ -132,7 +132,9 @@ COSA_DATAMODEL_PROCSTATUS,  *PCOSA_DATAMODEL_PROCSTATUS;
 /**********************************************************************
                 FUNCTION PROTOTYPES
 **********************************************************************/
-
+int getRebootCounter();
+int setRebootCounter();
+int setUnknownRebootReason();
 ANSC_HANDLE CosaProcStatusCreate();
 void COSADmlRemoveProcessInfo(PCOSA_DATAMODEL_PROCSTATUS pObj);
 void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info);

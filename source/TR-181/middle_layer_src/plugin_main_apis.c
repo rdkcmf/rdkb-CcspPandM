@@ -118,7 +118,7 @@
 #if  CFG_USE_Common_Util
 #include "cosa_common_util.h"
 #endif
-
+static void CheckAndSetRebootReason();
 /*PCOSA_DIAG_PLUGIN_INFO             g_pCosaDiagPluginInfo;*/
 COSAGetParamValueByPathNameProc    g_GetParamValueByPathNameProc;
 COSASetParamValueByPathNameProc    g_SetParamValueByPathNameProc;
@@ -356,6 +356,10 @@ CosaBackEndManagerInitialize
 
     printf("PandM DM initialization done!\n");
     CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PandM DM initialization done!\n"));
+    //Unknown Reboot Reason 
+    
+    CheckAndSetRebootReason();
+    
     return returnStatus;
 }
 
@@ -586,4 +590,39 @@ CosaBackEndManagerRemove
     AnscFreeMemory((ANSC_HANDLE)pMyObject);
 
     return returnStatus;
+}
+
+static void CheckAndSetRebootReason()
+{
+  
+    int value = -1;
+    if(fopen("/var/tmp/lastrebootreason","r")==NULL)
+    {
+        CcspTraceWarning((" /var/tmp/lastrebootreason File doesn't exist --Create new file\n"));
+        system("touch /var/tmp/lastrebootreason");
+        //Check for Rebootcounter value--GET & SET
+        value = getRebootCounter();
+        if(value == -1)
+        {
+            CcspTraceWarning(("Error to GET Counter Value\n"));
+        }
+        else
+        {
+            value = value -1;
+            if(value<0)
+            {
+                //SET unknown as reason 
+                if(-1 == setUnknownRebootReason())
+                     CcspTraceWarning(("Error to SET unknown reboot reason \n"));
+            }
+                // reset counter to 0 for both known and unknown reason
+                if(-1 == setRebootCounter())
+                    CcspTraceWarning(("Error to SET reboot counter \n"));
+        }
+           
+    }
+    else
+    {
+        CcspTraceWarning(("/var/tmp/lastrebootreason File exists\n"));
+    }
 }

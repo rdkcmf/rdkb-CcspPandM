@@ -24,6 +24,38 @@ fi
 
 LIGHTTPD_CONF="/var/lighttpd.conf"
 
+setRebootreason()
+{
+
+        echo "Setting rebootReason to $1 and rebootCounter to $2"
+        
+        syscfg set X_RDKCENTRAL-COM_LastRebootReason $1
+        result=`echo $?`
+        if [ "$result" != "0" ]
+        then
+            echo "SET for Reboot Reason failed"
+        fi
+        syscfg commit
+        result=`echo $?`
+        if [ "$result" != "0" ]
+        then
+            echo "Commit for Reboot Reason failed"
+        fi
+
+        syscfg set X_RDKCENTRAL-COM_LastRebootCounter $2
+        result=`echo $?`
+        if [ "$result" != "0" ]
+        then
+            echo "SET for Reboot Counter failed"
+        fi
+        syscfg commit
+        result=`echo $?`
+        if [ "$result" != "0" ]
+        then
+            echo "Commit for Reboot Counter failed"
+        fi
+}
+
 crashed=0
 source /etc/utopia/service.d/log_capture_path.sh
 loop=1
@@ -46,9 +78,12 @@ do
                 fi
 		if [ "$rebootNeededPAM" -eq 0 ]; then
 		echo "RDKB_PROCESS_CRASHED : PAM_process is not running, need to reboot the unit now"
+		
 		echo "Setting Last reboot reason"
-		dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string PandM_crash
-		dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
+		reason="PAM_crash"
+		rebootCount=1
+		
+		setRebootreason $reason $rebootCount
 		echo "SET succeeded"
 		rebootNeededPAM=1
 		rebootNeeded=1
@@ -281,8 +316,7 @@ do
 			echo "[RKDB_PLATFORM_ERROR] : brlan0 interface is not up" 
 			echo "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
 			echo "Setting Last reboot reason"
-			dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string brlan0_dwn
-			dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
+			dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string brlan0_down
 			echo "SET succeeded"
 			rebootNeededforbrlan0=1
 			rebootNeeded=1
@@ -319,15 +353,19 @@ do
 					if [ "$rebootNeededPSM" -eq 1 ]
 					then
 						echo "rebootNeededPSM"
-								echo "Setting last reboot reason"
-								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string Psm_crash
-								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
-								echo "SET succeeded"
+							echo "Setting last reboot reason"
+						    dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string Psm_crash
+						    echo "SET succeeded"	
 			                	sh /etc/calc_random_time_to_reboot_dev.sh "PSM" &
 
 					elif [ "$rebootNeededCR" -eq 1 ]
 					then
 						echo "rebootNeededCR"
+						  echo "Setting Last reboot reason"
+		                    reason="CR_crash"
+		                    rebootCount=1
+		                    setRebootreason $reason $rebootCount
+		                    echo "SET succeeded"
 			                	sh /etc/calc_random_time_to_reboot_dev.sh "CR" &
 
 					elif [ "$rebootNeededforbrlan1" -eq 1 ]
@@ -336,7 +374,6 @@ do
 						echo "RDKB_REBOOT : brlan1 interface is not up, rebooting the device."
 						echo "Setting last reboot reason"
 						dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string brlan1_down
-						dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
 						echo "SET succeeded"
 						sh /etc/calc_random_time_to_reboot_dev.sh "" &
 
@@ -344,7 +381,6 @@ do
 						echo "rebootNeededTR69"
 								echo "Setting last reboot reason"
 								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string Tr069_crash
-								dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootCounter int 1
 								echo "SET succeeded"
 			                	sh /etc/calc_random_time_to_reboot_dev.sh "TR69" &
 					fi
