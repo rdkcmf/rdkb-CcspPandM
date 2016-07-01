@@ -107,7 +107,7 @@
 // These should really be part of the build parameters
 #define CONFIG_VENDOR_NAME "ARRIS Group, Inc."
 #define CONFIG_TI_GW_DESCRIPTION "DPoE 2.0 Fiber Modem Gateway Device"
-#define CONFIG_VENDOR_ID 0x0050F1
+#define CONFIG_VENDOR_ID 0xA055DE
 
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
