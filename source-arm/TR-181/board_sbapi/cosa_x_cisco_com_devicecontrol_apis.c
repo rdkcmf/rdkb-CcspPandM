@@ -1497,9 +1497,6 @@ CosaDmlDcSetRebootDevice
 	    }
     }
 
-    //zqiu: dump the rxtx log
-    system("/usr/ccsp/tad/rxtx_dmp.sh");
-    
     if (router) {
         fprintf(stderr, "Router is going to reboot\n");
 		CcspTraceWarning(("RebootDevice:Router is going to reboot\n"));
