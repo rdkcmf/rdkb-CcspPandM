@@ -34,107 +34,9 @@
 **********************************************************************/
 
 #include "cosa_x_comcast_com_parentalcontrol_apis.h"
-#if 1
-static BOOL DEV_ENABLE = false;
-static BOOL DEV_ALLOWALL = false;
-static int forwardCounter = 1;
-static int inputCounter = 1;
 
-struct  InputRuleMap
-{
-	LONG ins;
-	int Type;
-	LONG ruleNumber;
-
-} INPUT_RULEMAP[1024];
-
-struct  forwardRuleMap
-{
-	LONG ins;
-	int Type;
-	LONG ruleNumber;
-
-} FORWARD_RULEMAP[1024];
-#endif
 #ifdef _COSA_SIM_
-#if 1
-void CosaDmlTrustedUser_Accept(int block_type,int i,int Operation);
 
-void printForwardTable(int start)
-{
-	int count;
-	for(count=start; count<forwardCounter; count++)
-	{
-		 printf("\n%ld	%d	%ld\n",FORWARD_RULEMAP[count].ins, FORWARD_RULEMAP[count].Type,FORWARD_RULEMAP[count].ruleNumber); 
-	}
-}	
-	
-void printInputTable(int start)
-{
-	int count;
-	for(count=start; count<inputCounter; count++)
-	{
-		 printf("\n%ld	%d	%ld\n",INPUT_RULEMAP[count].ins, INPUT_RULEMAP[count].Type,INPUT_RULEMAP[count].ruleNumber); 
-	
-	}	
-}
-void insertForwardTable(LONG ins, int type)
-{
-	int count;
-	for(count=forwardCounter+1; count>1; count--)
-	{
-		FORWARD_RULEMAP[count].ins = FORWARD_RULEMAP[count-1].ins;
-		FORWARD_RULEMAP[count].ruleNumber = FORWARD_RULEMAP[count-1].ruleNumber +1;
-		FORWARD_RULEMAP[count].Type = FORWARD_RULEMAP[count-1].Type;
-	}
-	FORWARD_RULEMAP[1].ins = ins;
-	FORWARD_RULEMAP[1].ruleNumber = 1;
-	FORWARD_RULEMAP[1].Type = type;
-	forwardCounter++;
-}
-
-void forwardTableDelete(int start)
-{
-	int count;
-	for(count=start; count<forwardCounter; count++)
-	{
-		FORWARD_RULEMAP[count].ins = FORWARD_RULEMAP[count+1].ins;
-		FORWARD_RULEMAP[count].ruleNumber = FORWARD_RULEMAP[count+1].ruleNumber -1;
-		FORWARD_RULEMAP[count].Type = FORWARD_RULEMAP[count+1].Type;
-	}
-	forwardCounter--;
-}
-
-LONG getForwardRuleNumber(int type, LONG instanceNumber)
-{
-	int i;
-	for(i=1;i<forwardCounter;i++)
-		if((FORWARD_RULEMAP[i].Type == type) && (FORWARD_RULEMAP[i].ins == instanceNumber))	
-			return FORWARD_RULEMAP[i].ruleNumber;	
-
-}
-
-LONG getInputRuleNumber(int type, LONG instanceNumber)
-{
-	int i;
-	for(i=1;i<inputCounter;i++)
-		if((INPUT_RULEMAP[i].Type == type) && (INPUT_RULEMAP[i].ins == instanceNumber))	
-			return INPUT_RULEMAP[i].ruleNumber;	
-
-}
-
-void inputTableDelete(int start)
-{
-	int count;
-	for(count=start; count<inputCounter; count++)
-	{
-		INPUT_RULEMAP[count].ins = INPUT_RULEMAP[count+1].ins;
-		INPUT_RULEMAP[count].ruleNumber = INPUT_RULEMAP[count+1].ruleNumber-1;
-		INPUT_RULEMAP[count].Type = INPUT_RULEMAP[count+1].Type;
-	}
-	inputCounter--;
-}
-#endif
 ANSC_STATUS
 CosaDmlParentalControlInit(ANSC_HANDLE hDml, PANSC_HANDLE phContext)
 {
@@ -154,14 +56,7 @@ CosaDmlMngSites_GetConf(COSA_DML_MANAGEDSITES *conf)
     memcpy(conf, &g_ManagedSites, sizeof(COSA_DML_MANAGEDSITES));
     return ANSC_STATUS_SUCCESS;
 }
-#if 0
-ANSC_STATUS
-CosaDmlMngSites_SetConf(COSA_DML_MANAGEDSITES *conf)
-{
-    memcpy(&g_ManagedSites, conf, sizeof(COSA_DML_MANAGEDSITES));
-    return ANSC_STATUS_SUCCESS;
-}
-#endif
+
 /*
  * ManagedServices
  */
@@ -175,14 +70,6 @@ CosaDmlMngServs_GetConf(COSA_DML_MANAGED_SERVS *conf)
     memcpy(conf, &g_ManagedServs, sizeof(COSA_DML_MANAGED_SERVS));
     return ANSC_STATUS_SUCCESS;
 }
-#if 0
-ANSC_STATUS
-CosaDmlMngServs_SetConf(COSA_DML_MANAGED_SERVS *conf)
-{
-    memcpy(&g_ManagedServs, conf, sizeof(COSA_DML_MANAGED_SERVS));
-    return ANSC_STATUS_SUCCESS;
-}
-#endif
 
 /*
  * ManagedDevices
@@ -192,35 +79,69 @@ static COSA_DML_MANAGED_DEVS g_ManagedDevs = {
     .AllowAll           = FALSE,
 };
 
+
 ANSC_STATUS
 CosaDmlMngDevs_GetConf(COSA_DML_MANAGED_DEVS *conf)
 {
     memcpy(conf, &g_ManagedDevs, sizeof(COSA_DML_MANAGED_DEVS));
     return ANSC_STATUS_SUCCESS;
 }
-#if 0
-ANSC_STATUS
-CosaDmlMngDevs_SetConf(COSA_DML_MANAGED_DEVS *conf)
-{
-    memcpy(&g_ManagedDevs, conf, sizeof(COSA_DML_MANAGED_DEVS));
-    return ANSC_STATUS_SUCCESS;
-}
-#endif
+
+/*
+ * TrustedUser
+ */
+
+#define  MAX_TRUSTEDUSER_ENTRY      1024
+
+static int g_NrTrustedUser  = 0; 
+
+static COSA_DML_TRUSTEDUSER g_TrustedUsers[MAX_TRUSTEDUSER_ENTRY] = {
+    {
+        .InstanceNumber = 1,
+        .Alias          = "cpe-TrustedUser-1",
+        .HostDescription = "Host-1",
+        .IPAddressType  = IPADDR_IPV4,
+        .IPAddress      = "192.168.0.1",
+    },
+    {
+        .InstanceNumber = 2,
+        .Alias          = "cpe-TrustedUser-2",
+        .HostDescription = "Host-2",
+        .IPAddressType  = IPADDR_IPV6,
+        .IPAddress      = "2012:CAFE::1",
+    },
+};
+#define  MAX_MSTRUSTEDUSER_ENTRY      4
+
+static int g_NrMSTrustedUsers   = 0;
+
+static COSA_DML_MS_TRUSTEDUSER g_MSTrustedUsers[MAX_MSTRUSTEDUSER_ENTRY] = {
+    {
+        .InstanceNumber = 1,
+        .Alias          = "cpe-MSTrustedUser-1",
+        .HostDescription = "Dummy",
+        .IPAddressType  = IPADDR_IPV6,
+        .IPAddress      = "2012:cafe::3",
+        .Trusted        = FALSE,
+    },
+    {
+        .InstanceNumber = 2,
+        .Alias          = "cpe-MSTrustedUser-2",
+        .HostDescription = "Dummy",
+        .IPAddressType  = IPADDR_IPV4,
+        .IPAddress      = "192.168.0.4",
+        .Trusted        = TRUE,
+    },
+};
+
+
 /*
  * Blocked URL
  */
-#if 0
-#define  MAX_URL_ENTRY      4
-#endif
-#if 1
+
 #define  MAX_URL_ENTRY      1024
-#endif
-#if 0
-static int g_NrBlkURL   = MAX_URL_ENTRY / 2;
-#endif
-#if 1
+
 static int g_NrBlkURL   = 0;
-#endif
 
 static COSA_DML_BLOCKEDURL g_BlockedURLs[MAX_URL_ENTRY] = {
     {
@@ -243,109 +164,35 @@ static COSA_DML_BLOCKEDURL g_BlockedURLs[MAX_URL_ENTRY] = {
         .EndTime        = "12:00",
         .BlockDays      = "Mon,Wed,Fri",
     },
-
 };
-#if 1
-void BlkURL_UpdateConfigFiles(int OPERATION, ULONG ins)
-{
-	int i,len;
-	char newvar[1024];
-	char cmd[1024]= {'\0'};
-	char protocol1[10];
-	char url[1024];
-	const char s[] = "://";
-	char *token;
-	char action1[15];
-	char strWord[1024];	
-	LONG ruleNumber;
-	switch(OPERATION)
-	{
-		case ADD:
-			sprintf(newvar,"iptables  -t filter -I FORWARD %ld ",forwardCounter);
-			break;
-		case ENABLE:
-		case DISABLE:
-		case REPLACE:
-			ruleNumber = getForwardRuleNumber(SITE_TYPE,g_BlockedURLs[ins].InstanceNumber);	
-			sprintf(newvar,"iptables -t filter -R FORWARD %ld ",ruleNumber);
-			break;
-		case DELETE:
-			ruleNumber = getForwardRuleNumber(SITE_TYPE,g_BlockedURLs[ins].InstanceNumber);	
-			sprintf(newvar,"iptables -t filter -D FORWARD %ld ",ruleNumber);
-			break;
-	}
-	if(OPERATION == DISABLE)
-	{
-		sprintf(action1," ACCEPT");
-	}
-	else
-	{
-		sprintf(action1," DROP");
-	}
-	if(g_BlockedURLs[ins].BlockMethod == BLOCK_METHOD_URL)
-	{
-		token = strtok(g_BlockedURLs[ins].Site,s);
-		len = strlen(token);
-		strcpy(strWord,g_BlockedURLs[ins].Site+len+3);
-	}
-	else if(g_BlockedURLs[ins].BlockMethod == BLOCK_METHOD_KEYWORD)
-	{ 
-		strcpy(strWord,g_BlockedURLs[ins].Site);
-	}
-
-	if(OPERATION == DELETE)
-	{
-		system(newvar);
-		forwardTableDelete(ruleNumber);
-		printForwardTable(1);
-	}
-	else
-	{
-		if( !g_BlockedURLs[ins].AlwaysBlock )
-		{
-			snprintf(cmd,sizeof(cmd),"%s  -m string --algo bm --string %s -m time --timestart %s --timestop %s --weekdays %s -j %s",newvar,strWord,g_BlockedURLs[ins].StartTime,g_BlockedURLs[ins].EndTime,g_BlockedURLs[ins].BlockDays,action1);
-		}
-		else
-		{
-			snprintf(cmd,sizeof(cmd),"%s  -m string --algo bm --string %s -j %s",newvar,strWord,action1);
-		}
-		system(cmd);
-	}
-	if(OPERATION == ADD)
-	{
-		FORWARD_RULEMAP[forwardCounter].ins =g_BlockedURLs[ins].InstanceNumber;
-		FORWARD_RULEMAP[forwardCounter].ruleNumber = forwardCounter;
-		FORWARD_RULEMAP[forwardCounter].Type = SITE_TYPE;
-		forwardCounter++;
-		printForwardTable(1);
-	}
-
-}
 
 ANSC_STATUS
 CosaDmlMngSites_SetConf(COSA_DML_MANAGEDSITES *conf)
 {
-	int i;
-	memcpy(&g_ManagedSites, conf, sizeof(COSA_DML_MANAGEDSITES));
-	for(i=0;i<g_NrBlkURL;i++)
-	{
-		if(conf != NULL)
-		{
-			if(!conf->Enable)
-			{
-
-				BlkURL_UpdateConfigFiles(DISABLE,i);
-			}
-			else
-			{
-				BlkURL_UpdateConfigFiles(ENABLE,i);
-			}
+    int i;
+    memcpy(&g_ManagedSites, conf, sizeof(COSA_DML_MANAGEDSITES));
+    if(conf != NULL)
+    {
+        if(!conf->Enable)
+        {
+		do_parentalControl_Delrule_Sites(); //LNT_EMU
+        }
+        else
+        {
+                do_parentalControl_Addrule_Sites(); //LNT_EMU
+		for(i=0;i<g_NrBlkURL;i++)
+		{	    	
+    			do_parentalControl_Sites(ADD,&g_BlockedURLs[i]);
 		}
-	}
-
-	return ANSC_STATUS_SUCCESS;
+		for(i=0;i<g_NrTrustedUser;i++)
+		{	    
+		  CosaDmlTrustedUser_Accept(TRUSTEDSITE_TYPE,g_TrustedUsers[i].IPAddress,ADD);
+		}	
+        }
+   }
+   return ANSC_STATUS_SUCCESS;
 }
-#endif
+
 static int
 BlkURL_InsGetIndex(ULONG ins)
 {
@@ -393,11 +240,10 @@ CosaDmlBlkURL_AddEntry(COSA_DML_BLOCKEDURL *pEntry)
     if (g_NrBlkURL >= MAX_URL_ENTRY)
         return ANSC_STATUS_FAILURE;
 
-	g_BlockedURLs[g_NrBlkURL++] = *pEntry;
-#if 1
-	BlkURL_UpdateConfigFiles(ADD,g_NrBlkURL-1);
-#endif
-	return ANSC_STATUS_SUCCESS;
+    g_BlockedURLs[g_NrBlkURL++] = *pEntry;
+    do_parentalControl_Sites(ADD,&g_BlockedURLs[g_NrBlkURL-1]); //LNT_EMU
+    
+    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -407,13 +253,13 @@ CosaDmlBlkURL_DelEntry(ULONG ins)
 
     if ((i = BlkURL_InsGetIndex(ins)) == -1)
         return ANSC_STATUS_FAILURE;
-#if 1
-	BlkURL_UpdateConfigFiles(DELETE,i);
-#endif
+
+    do_parentalControl_Sites(DELETE,&g_BlockedURLs[i]); //LNT_EMU
     memmove(&g_BlockedURLs[i], &g_BlockedURLs[i+1], 
             (g_NrBlkURL - i - 1) * sizeof(COSA_DML_BLOCKEDURL));
     g_NrBlkURL--;
-	return ANSC_STATUS_SUCCESS;
+
+    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -438,48 +284,13 @@ CosaDmlBlkURL_SetConf(ULONG ins, COSA_DML_BLOCKEDURL *pEntry)
 
     if ((i = BlkURL_InsGetIndex(ins)) == -1)
         return ANSC_STATUS_FAILURE;
-
-	g_BlockedURLs[i] = *pEntry;
-	g_BlockedURLs[i].InstanceNumber = ins; /* just in case */
-#if 1
-	BlkURL_UpdateConfigFiles(REPLACE,i);
-#endif
+    do_parentalControl_Sites(DELETE,&g_BlockedURLs[i]); //LNT_EMU
+    g_BlockedURLs[i] = *pEntry;
+    g_BlockedURLs[i].InstanceNumber = ins; /* just in case */
+    do_parentalControl_Sites(ADD,&g_BlockedURLs[i]);    //LNT_EMU
 
     return ANSC_STATUS_SUCCESS;
 }
-
-/*
- * TrustedUser
- */
-#if 0
-#define  MAX_TRUSTEDUSER_ENTRY      4
-#endif
-#if 1
-#define  MAX_TRUSTEDUSER_ENTRY      100
-#endif
-#if 0
-static int g_NrTrustedUser   = MAX_TRUSTEDUSER_ENTRY / 2;
-#endif
-#if 1
-static int g_NrTrustedUser   = 0;
-#endif
-
-static COSA_DML_TRUSTEDUSER g_TrustedUsers[MAX_TRUSTEDUSER_ENTRY] = {
-    {
-        .InstanceNumber = 1,
-        .Alias          = "cpe-TrustedUser-1",
-        .HostDescription = "Host-1",
-        .IPAddressType  = IPADDR_IPV4,
-        .IPAddress      = "192.168.0.1",
-    },
-    {
-        .InstanceNumber = 2,
-        .Alias          = "cpe-TrustedUser-2",
-        .HostDescription = "Host-2",
-        .IPAddressType  = IPADDR_IPV6,
-        .IPAddress      = "2012:CAFE::1",
-    },
-};
 
 static int
 TrustedUser_InsGetIndex(ULONG ins)
@@ -528,11 +339,9 @@ CosaDmlTrustedUser_AddEntry(COSA_DML_TRUSTEDUSER *pEntry)
     if (g_NrTrustedUser >= MAX_TRUSTEDUSER_ENTRY)
         return ANSC_STATUS_FAILURE;
 
-	g_TrustedUsers[g_NrTrustedUser++] = *pEntry;
-#if 1
-	CosaDmlTrustedUser_Accept(TRUSTEDSITE_TYPE,g_NrTrustedUser-1,ADD);
-#endif
-	return ANSC_STATUS_SUCCESS;
+    g_TrustedUsers[g_NrTrustedUser++] = *pEntry;
+    CosaDmlTrustedUser_Accept(TRUSTEDSITE_TYPE,g_TrustedUsers[g_NrTrustedUser-1].IPAddress,ADD);
+    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -542,7 +351,7 @@ CosaDmlTrustedUser_DelEntry(ULONG ins)
 
     if ((i = TrustedUser_InsGetIndex(ins)) == -1)
         return ANSC_STATUS_FAILURE;
-
+    CosaDmlTrustedUser_Accept(TRUSTEDSITE_TYPE,g_TrustedUsers[i].IPAddress,DELETE);
     memmove(&g_TrustedUsers[i], &g_TrustedUsers[i+1], 
             (g_NrTrustedUser - i - 1) * sizeof(COSA_DML_TRUSTEDUSER));
     g_NrTrustedUser--;
@@ -569,36 +378,25 @@ ANSC_STATUS
 CosaDmlTrustedUser_SetConf(ULONG ins, COSA_DML_TRUSTEDUSER *pEntry)
 {
     int i;
-
     if ((i = TrustedUser_InsGetIndex(ins)) == -1)
         return ANSC_STATUS_FAILURE;
 
-	g_TrustedUsers[i] = *pEntry;
-	g_TrustedUsers[i].InstanceNumber = ins; /* just in case */
-#if 1
-	if(pEntry->Trusted)
-		CosaDmlTrustedUser_Accept(TRUSTEDSITE_TYPE,i,ADD);
-	else
-		CosaDmlTrustedUser_Accept(TRUSTEDSITE_TYPE,i,DELETE);
-#endif
-	return ANSC_STATUS_SUCCESS;
+    g_TrustedUsers[i] = *pEntry;
+    g_TrustedUsers[i].InstanceNumber = ins; /* just in case */
+    if(pEntry->Trusted)
+        CosaDmlTrustedUser_Accept(TRUSTEDSITE_TYPE,g_TrustedUsers[i].IPAddress,ADD); //LNT_EMU
+    else
+        CosaDmlTrustedUser_Accept(TRUSTEDSITE_TYPE,g_TrustedUsers[i].IPAddress,DELETE); //LNT_EMU
+    return ANSC_STATUS_SUCCESS;
 }
 
 /*
  * ManagedServices.Service
  */
-#if 0
-#define  MAX_MSSERV_ENTRY      4
-#endif
-#if 1
+
 #define  MAX_MSSERV_ENTRY      1024
-#endif
-#if 0
-static int g_NrMSServs   = MAX_MSSERV_ENTRY / 2;
-#endif
-#if 1
+
 static int g_NrMSServs   = 0;
-#endif
 
 static COSA_DML_MS_SERV g_MSServs[MAX_MSSERV_ENTRY] = {
     {
@@ -626,165 +424,32 @@ static COSA_DML_MS_SERV g_MSServs[MAX_MSSERV_ENTRY] = {
         .BlockDays      = "Mon,Tue",
     },
 };
-#if 1
-void UpdateCosaDmlMSServ_Protocol(int OPERATION,ULONG ins)
-{
-	int i;
-	char newvar[1024];
-	char action[10];
-	ULONG startport;
-	char cmd[1024]= {'\0'};
-	char protocol[10];
-	char protocol1[10];
-	LONG ruleNumber;
-	switch(OPERATION)
-	{
-		case ADD:
-			sprintf(newvar,"iptables -I FORWARD %ld ",inputCounter);
-			break;
-		case REPLACE:
-		case ENABLE:
-		case DISABLE:
-			ruleNumber = getInputRuleNumber(SERVICE_TYPE,g_MSServs[ins].InstanceNumber);	
-			sprintf(newvar,"iptables -R FORWARD %ld ",ruleNumber);
-			break;
-		case DELETE:
-			ruleNumber = getInputRuleNumber(SERVICE_TYPE,g_MSServs[ins].InstanceNumber);	
-			sprintf(newvar,"iptables -D FORWARD %ld ",ruleNumber);
-			break;
-	}
-	switch(g_MSServs[ins].Protocol)
-	{
-		case PROTO_TCP:
-			strcpy(protocol,"tcp");
-			break;
-		case PROTO_UDP:
-			strcpy(protocol,"udp");
-			break;
-		case PROTO_BOTH:
-			strcpy(protocol,"tcp");
-			strcpy(protocol1,"udp");
-			break;
-	}
-	if(OPERATION == DISABLE)
-	{
-		sprintf(action," ACCEPT");
-	}
-	else
-	{
-		sprintf(action," DROP");
-	}
 
-	if(OPERATION == DELETE)
-	{
-		system(newvar);
-		inputTableDelete(ruleNumber);
-	}
-	else 
-	{
-		if(g_MSServs[ins].StartPort == g_MSServs[ins].EndPort)
-		{
-			if(!g_MSServs[ins].AlwaysBlock)
-			{
-				if(g_MSServs[ins].Protocol != PROTO_BOTH)
-				{
-					snprintf(cmd,sizeof(cmd),"%s -p %s  --destination-port %ld -m time --timestart %s --timestop %s --weekdays %s -j %s",newvar,protocol,g_MSServs[ins].StartPort,g_MSServs[ins].StartTime,g_MSServs[ins].EndTime,g_MSServs[ins].BlockDays,action);
-					system(cmd);
-				}
-				else
-				{
-					snprintf(cmd,sizeof(cmd),"%s -p %s --destination-port %ld -m time --timestart %s --timestop %s --weekdays %s -j %s",newvar,protocol,g_MSServs[ins].StartPort,g_MSServs[ins].StartTime,g_MSServs[ins].EndTime,g_MSServs[ins].BlockDays,action);
-					system(cmd);
-					snprintf(cmd,sizeof(cmd),"%s -p %s --destination-port %ld -m time --timestart %s --timestop %s --weekdays %s-j %s",newvar,protocol1,g_MSServs[ins].StartPort,g_MSServs[ins].StartTime,g_MSServs[ins].EndTime,g_MSServs[ins].BlockDays,action);
-					system(cmd);
-
-				}
-			}
-			else
-			{
-				if(g_MSServs[ins].Protocol != PROTO_BOTH)
-				{
-					snprintf(cmd,sizeof(cmd),"%s -p %s  --destination-port %ld  -j %s",newvar,protocol,g_MSServs[ins].StartPort,action);
-					system(cmd);
-				}
-				else
-				{
-					snprintf(cmd,sizeof(cmd),"%s -p %s --destination-port %ld  -j %s",newvar,protocol,g_MSServs[ins].StartPort,action);
-					system(cmd);
-					snprintf(cmd,sizeof(cmd),"%s -p %s  --destination-port %ld  -j %s",newvar,protocol1,g_MSServs[ins].StartPort,action);
-					system(cmd);
-
-				}
-
-			}
-		}
-		else
-		{
-			if(!g_MSServs[ins].AlwaysBlock)
-			{
-				if(g_MSServs[ins].Protocol != PROTO_BOTH)
-				{
-					snprintf(cmd,sizeof(cmd),"%s -p %s -m multiport --dports %ld:%ld -m time --timestart %s --timestop %s --weekdays %s -j %s",newvar,protocol,g_MSServs[ins].StartPort,g_MSServs[ins].EndPort,g_MSServs[ins].StartTime,g_MSServs[ins].EndTime,g_MSServs[ins].BlockDays,action);
-					system(cmd);
-				}
-				else
-				{
-					snprintf(cmd,sizeof(cmd),"%s -p %s -m multiport --dports %ld:%ld -m time --timestart %s --timestop %s --weekdays %s -j %s",newvar,protocol,g_MSServs[ins].StartPort,g_MSServs[ins].EndPort,g_MSServs[ins].StartTime,g_MSServs[ins].EndTime,g_MSServs[ins].BlockDays,action);
-					system(cmd);
-					snprintf(cmd,sizeof(cmd),"%s -p %s -m multiport --dports %ld:%ld -m time --timestart %s --timestop %s --weekdays %s-j %s",newvar,protocol1,g_MSServs[ins].StartPort,g_MSServs[ins].EndPort,g_MSServs[ins].StartTime,g_MSServs[ins].EndTime,g_MSServs[ins].BlockDays,action);
-					system(cmd);
-
-				}	
-			}
-			else
-			{
-				if(g_MSServs[ins].Protocol != PROTO_BOTH)
-				{
-					snprintf(cmd,sizeof(cmd),"%s -p %s -m multiport --dports %ld:%ld  -j %s",newvar,protocol,g_MSServs[ins].StartPort,g_MSServs[ins].EndPort,action);
-					system(cmd);
-				}
-				else
-				{
-					snprintf(cmd,sizeof(cmd),"%s -p %s -m multiport --dports %ld:%ld  -j %s",newvar,protocol,g_MSServs[ins].StartPort,g_MSServs[ins].EndPort,action);
-					system(cmd);
-					snprintf(cmd,sizeof(cmd),"%s -p %s -m multiport --dports %ld:%ld  -j %s",newvar,protocol1,g_MSServs[ins].StartPort,g_MSServs[ins].EndPort,action);
-					system(cmd);
-
-				}
-			}
-
-		}
-	}
-	if(OPERATION == ADD)
-	{
-		INPUT_RULEMAP[inputCounter].ins = g_MSServs[ins].InstanceNumber;
-		INPUT_RULEMAP[inputCounter].ruleNumber = inputCounter;
-		INPUT_RULEMAP[inputCounter].Type = SERVICE_TYPE;
-		inputCounter++;
-	}
-
-}
 ANSC_STATUS
 CosaDmlMngServs_SetConf(COSA_DML_MANAGED_SERVS *conf)
 {
-	char cmd[1024];
-	int i;
-	memcpy(&g_ManagedServs, conf, sizeof(COSA_DML_MANAGED_SERVS));
-	for(i=0;i<g_NrMSServs;i++)
-	{
-		if(!conf->Enable)
-		{
-			UpdateCosaDmlMSServ_Protocol(DISABLE,i);
-		}
-		else
-		{
-			UpdateCosaDmlMSServ_Protocol(ENABLE,i);
-		}
-	}
+    int i;
+    memcpy(&g_ManagedServs, conf, sizeof(COSA_DML_MANAGED_SERVS));
+    if(!conf->Enable)
+    {
+	    do_parentalControl_Delrule_Services(); //LNT_EMU
+    }
+    else
+    {
+            do_parentalControl_Addrule_Services();
+	    for(i = 0;i < g_NrMSServs; i++)
+	    { 	
+		    do_parentalControl_Services(ADD,&g_MSServs[i]); //LNT_EMU
+	    }	
+	   for(i=0;i<g_NrMSTrustedUsers;i++)
+	   {	    
+		CosaDmlTrustedUser_Accept(TRUSTEDSERVICE_TYPE,g_MSTrustedUsers[i].IPAddress,ADD);	   
+	   }	
+    }
 
-	return ANSC_STATUS_SUCCESS;
+   return ANSC_STATUS_SUCCESS;
 }
-#endif
+
 static int
 MSServ_InsGetIndex(ULONG ins)
 {
@@ -832,11 +497,9 @@ CosaDmlMSServ_AddEntry(COSA_DML_MS_SERV *pEntry)
     if (g_NrMSServs >= MAX_MSSERV_ENTRY)
         return ANSC_STATUS_FAILURE;
 
-	g_MSServs[g_NrMSServs++] = *pEntry;
-#if 1
-	UpdateCosaDmlMSServ_Protocol(ADD,g_NrMSServs-1);  
-#endif
-	return ANSC_STATUS_SUCCESS;
+    g_MSServs[g_NrMSServs++] = *pEntry;
+    do_parentalControl_Services(ADD,&g_MSServs[g_NrMSServs-1]); //LNT_EMU
+    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -846,14 +509,13 @@ CosaDmlMSServ_DelEntry(ULONG ins)
 
     if ((i = MSServ_InsGetIndex(ins)) == -1)
         return ANSC_STATUS_FAILURE;
-#if 1
-	UpdateCosaDmlMSServ_Protocol(DELETE,i);  
-#endif
-	memmove(&g_MSServs[i], &g_MSServs[i+1], 
-			(g_NrMSServs - i - 1) * sizeof(COSA_DML_MS_SERV));
-	g_NrMSServs--;
-	
-	return ANSC_STATUS_SUCCESS;
+
+    do_parentalControl_Services(DELETE,&g_MSServs[i]); //LNT_EMU
+    memmove(&g_MSServs[i], &g_MSServs[i+1], 
+            (g_NrMSServs - i - 1) * sizeof(COSA_DML_MS_SERV));
+    g_NrMSServs--;
+
+    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -879,93 +541,17 @@ CosaDmlMSServ_SetConf(ULONG ins, COSA_DML_MS_SERV *pEntry)
     if ((i = MSServ_InsGetIndex(ins)) == -1)
         return ANSC_STATUS_FAILURE;
 
-	g_MSServs[i] = *pEntry;
-	g_MSServs[i].InstanceNumber = ins; /* just in case */
-#if 1
-	UpdateCosaDmlMSServ_Protocol(REPLACE,i);
-#endif
+    do_parentalControl_Services(DELETE,&g_MSServs[i]); //LNT_EMU
+    g_MSServs[i] = *pEntry;
+    g_MSServs[i].InstanceNumber = ins; /* just in case */
+    do_parentalControl_Services(ADD,&g_MSServs[i]);    //LNT_EMU
 
-	return ANSC_STATUS_SUCCESS;
+    return ANSC_STATUS_SUCCESS;
 }
 
 /*
  * ManagedServices.TrustedUser
  */
-
-#if 0
-#define  MAX_MSTRUSTEDUSER_ENTRY      4
-#endif
-#if 1
-#define  MAX_MSTRUSTEDUSER_ENTRY      100
-#endif
-#if 0
-static int g_NrMSTrustedUsers   = MAX_MSTRUSTEDUSER_ENTRY / 2;
-#endif
-#if 1
-static int g_NrMSTrustedUsers   = 0;
-#endif
-
-static COSA_DML_MS_TRUSTEDUSER g_MSTrustedUsers[MAX_MSTRUSTEDUSER_ENTRY] = {
-    {
-        .InstanceNumber = 1,
-        .Alias          = "cpe-MSTrustedUser-1",
-        .HostDescription = "Dummy",
-        .IPAddressType  = IPADDR_IPV6,
-        .IPAddress      = "2012:cafe::3",
-        .Trusted        = FALSE,
-    },
-    {
-        .InstanceNumber = 2,
-        .Alias          = "cpe-MSTrustedUser-2",
-        .HostDescription = "Dummy",
-        .IPAddressType  = IPADDR_IPV4,
-        .IPAddress      = "192.168.0.4",
-        .Trusted        = TRUE,
-    },
-};
-#if 1
-void CosaDmlTrustedUser_Accept(int block_type,int ins,int operation)
-{
-	char cmd[1024];
-	LONG ruleNumber;
-	switch(block_type)
-	{
-		case TRUSTEDSITE_TYPE:
-			if(operation == ADD)
-			{
-				sprintf(cmd,"iptables -I FORWARD 1 -s %s -j ACCEPT",g_TrustedUsers[ins].IPAddress);
-				insertForwardTable(g_TrustedUsers[ins].InstanceNumber,TRUSTEDSITE_TYPE); 
-				printForwardTable(1);
-			}
-			else
-			{
-				ruleNumber = getForwardRuleNumber(TRUSTEDSITE_TYPE,g_TrustedUsers[ins].InstanceNumber);	
-				sprintf(cmd,"iptables -D FORWARD %d ",ruleNumber);
-				forwardTableDelete(ruleNumber);
-				printForwardTable(1);
-			}
-
-			break;
-		case TRUSTEDSERVICE_TYPE:
-			if(operation == ADD)
-			{
-				sprintf(cmd,"iptables -I FORWARD 1 -s %s -j ACCEPT",g_MSTrustedUsers[ins].IPAddress);
-				insertForwardTable(g_MSTrustedUsers[ins].InstanceNumber,TRUSTEDSERVICE_TYPE); 
-				printForwardTable(1);
-			}
-			else
-			{
-				ruleNumber = getForwardRuleNumber(TRUSTEDSERVICE_TYPE,g_TrustedUsers[ins].InstanceNumber);	
-				sprintf(cmd,"iptables -D FORWARD %d ",ruleNumber);
-				forwardTableDelete(ruleNumber);
-				printForwardTable(1);
-			}
-			break;
-	}
-	system(cmd);
-
-}
-#endif
 
 static int
 MSTrustedUser_InsGetIndex(ULONG ins)
@@ -1015,9 +601,8 @@ CosaDmlMSTrustedUser_AddEntry(COSA_DML_MS_TRUSTEDUSER *pEntry)
         return ANSC_STATUS_FAILURE;
 
     g_MSTrustedUsers[g_NrMSTrustedUsers++] = *pEntry;
-	#if 1
-	CosaDmlTrustedUser_Accept(TRUSTEDSERVICE_TYPE,g_NrMSTrustedUsers-1,ADD);
-	#endif
+    CosaDmlTrustedUser_Accept(TRUSTEDSERVICE_TYPE,g_MSTrustedUsers[g_NrMSTrustedUsers-1].IPAddress,ADD);  //LNT_EMU
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1028,7 +613,8 @@ CosaDmlMSTrustedUser_DelEntry(ULONG ins)
 
     if ((i = MSTrustedUser_InsGetIndex(ins)) == -1)
         return ANSC_STATUS_FAILURE;
-
+   
+    CosaDmlTrustedUser_Accept(TRUSTEDSERVICE_TYPE,g_MSTrustedUsers[i].IPAddress,DELETE);   //LNT_EMU
     memmove(&g_MSTrustedUsers[i], &g_MSTrustedUsers[i+1], 
             (g_NrMSTrustedUsers - i - 1) * sizeof(COSA_DML_MS_TRUSTEDUSER));
     g_NrMSTrustedUsers--;
@@ -1061,32 +647,23 @@ CosaDmlMSTrustedUser_SetConf(ULONG ins, COSA_DML_MS_TRUSTEDUSER *pEntry)
 
     g_MSTrustedUsers[i] = *pEntry;
     g_MSTrustedUsers[i].InstanceNumber = ins; /* just in case */
-#if 1
-	if(pEntry->Trusted)
-		CosaDmlTrustedUser_Accept(TRUSTEDSERVICE_TYPE,i,ADD);
-	else
-		CosaDmlTrustedUser_Accept(TRUSTEDSERVICE_TYPE,i,DELETE);
-#endif
+    if(pEntry->Trusted)
+        CosaDmlTrustedUser_Accept(TRUSTEDSERVICE_TYPE,g_MSTrustedUsers[i].IPAddress,ADD); // LNT_EMU
+    else
+        CosaDmlTrustedUser_Accept(TRUSTEDSERVICE_TYPE,g_MSTrustedUsers[i].IPAddress,DELETE); //LNT_EMU
 
-	return ANSC_STATUS_SUCCESS;
+    return ANSC_STATUS_SUCCESS;
 }
 
 /*
  * ManagedDevices.Device
  */
-#if 0
-#define  MAX_MDDEV_ENTRY      4
-#endif
-#if 1
-#define  MAX_MDDEV_ENTRY      1024
-#endif
-#if 0
-static int g_NrMDDevs   = MAX_MDDEV_ENTRY / 2;
-#endif
-#if 1
-static int g_NrMDDevs   = 0;
-#endif
 
+#define  MAX_MDDEV_ENTRY      4
+
+static int g_NrMDDevs   = 0;
+static int AllowAll = MD_TYPE_BLOCK;
+static int Type = MD_TYPE_BLOCK;
 static COSA_DML_MD_DEV g_MDDevs[MAX_MDDEV_ENTRY] = {
     {
         .InstanceNumber = 1,
@@ -1111,133 +688,45 @@ static COSA_DML_MD_DEV g_MDDevs[MAX_MDDEV_ENTRY] = {
         .BlockDays      = "Mon,Tue",
     },
 };
-#if 1
-void UpdateCosaDmlMDDev_MacAddress(int OPERATION, ULONG ins)
-{
-	int i;
-	char newvar[1024];
-	char cmd[1024]= {'\0'};
-	char protocol1[10];
-	char action[15];
-	LONG ruleNumber;
-	switch(OPERATION)
-	{
-		case ADD:
-			sprintf(newvar,"iptables  -t filter -I INPUT %ld ",inputCounter);
-			break;
-
-		case ENABLE:
-		case DISABLE:
-		case REPLACE:
-			ruleNumber = getInputRuleNumber(DEVICE_TYPE,g_MDDevs[ins].InstanceNumber);	
-			sprintf(newvar,"iptables -t filter -R INPUT %ld ",ruleNumber);
-			break;
-
-		case DELETE:
-			ruleNumber = getInputRuleNumber(DEVICE_TYPE,g_MDDevs[ins].InstanceNumber);	
-			sprintf(newvar,"iptables -D INPUT %ld ",ruleNumber);
-			break;
-	}
-	if(OPERATION == DELETE)
-	{
-		system(newvar);
-		inputTableDelete(ruleNumber);
-		printInputTable(1);
-	}
-	else 
-	{
-		if( !g_MDDevs[ins].AlwaysBlock )
-		{	
-			if(g_MDDevs[ins].Type == MD_TYPE_BLOCK)
-			{
-				if(OPERATION == DISABLE )
-				{
-					sprintf(action,"ACCEPT");
-
-				}
-				else	
-				{
-					sprintf(action,"DROP");
-				}
-				snprintf(cmd,sizeof(cmd),"%s  -m mac --mac-source %s -m time --timestart %s --timestop %s --weekdays %s -j %s",newvar,g_MDDevs[ins].MACAddress,g_MDDevs[ins].StartTime,g_MDDevs[ins].EndTime,g_MDDevs[ins].BlockDays,action);
-			}
-			else if(g_MDDevs[ins].Type == MD_TYPE_ALLOW)
-			{
-				if(OPERATION == DISABLE  )
-				{
-					sprintf(action,"DROP");
-				}
-				else	
-				{
-					sprintf(action,"ACCEPT");
-				}
-				snprintf(cmd,sizeof(cmd),"%s  -m mac --mac-source %s -m time --timestart %s --timestop %s --weekdays %s -j %s",newvar,g_MDDevs[ins].MACAddress,g_MDDevs[ins].StartTime,g_MDDevs[ins].EndTime,g_MDDevs[ins].BlockDays,action);
-			}
-		}
-		else
-		{
-			if(g_MDDevs[ins].Type == MD_TYPE_BLOCK)
-			{
-				if(OPERATION == DISABLE  )
-				{
-					sprintf(action,"ACCEPT");
-				}
-				else	
-				{
-					sprintf(action,"DROP");
-				}
-				snprintf(cmd,sizeof(cmd),"%s  -m mac --mac-source %s -j %s",newvar,g_MDDevs[ins].MACAddress,action);
-			}
-			else if(g_MDDevs[ins].Type == MD_TYPE_ALLOW)
-			{
-				if(OPERATION == DISABLE  )
-				{
-					sprintf(action,"DROP");
-				}
-				else	
-				{
-					sprintf(action,"ACCEPT");
-				}
-				snprintf(cmd,sizeof(cmd),"%s  -m mac --mac-source %s -j %s",newvar,g_MDDevs[ins].MACAddress,action);
-			}
-		}
-		system(cmd);
-	}
-
-	if(OPERATION == ADD)
-	{
-		INPUT_RULEMAP[inputCounter].ins = g_MDDevs[ins].InstanceNumber;
-		INPUT_RULEMAP[inputCounter].ruleNumber = inputCounter;
-		INPUT_RULEMAP[inputCounter].Type = DEVICE_TYPE;
-		inputCounter++;
-		printInputTable(1);
-	}
-}
 
 ANSC_STATUS
 CosaDmlMngDevs_SetConf(COSA_DML_MANAGED_DEVS *conf)
 {
-	int i;
-	memcpy(&g_ManagedDevs, conf, sizeof(COSA_DML_MANAGED_DEVS));
-	if(DEV_ENABLE != conf->Enable)
-	{
+    int i;
+    memcpy(&g_ManagedDevs, conf, sizeof(COSA_DML_MANAGED_DEVS));
+    if(!conf->Enable)
+    {
+	     do_parentalControl_Delrule_Devices();   //LNT_EMU
+    }
+   else
+    {
+	    if(conf->AllowAll)
+            {
+			Type = MD_TYPE_BLOCK;
+	    }
+	    else
+	    {	
+			Type = MD_TYPE_ALLOW;
+	    }
+	     if( AllowAll != Type)
+	     {
+	     	     do_parentalControl_Delrule_Devices();   //LNT_EMU
+	     }		
+	     do_parentalControl_Addrule_Devices();
+	     for( i=0; i < g_NrMDDevs; i++)
+	     {
+ 
+		      if(g_MDDevs[i].Type == Type)
+		      {		
+		    	      do_parentalControl_Devices(ADD,&g_MDDevs[i]);
+		      }	
+	     }
+     	     AllowAll = Type;
 
-		for(i=0;i<g_NrMDDevs;i++)
-		{
-			if(!conf->Enable)
-			{
-				UpdateCosaDmlMDDev_MacAddress(DISABLE,i);
-			}
-			else
-			{
-				UpdateCosaDmlMDDev_MacAddress(ENABLE,i);
-			}
-		}
-		DEV_ENABLE = conf->Enable;
-	}
-	return ANSC_STATUS_SUCCESS;
+    }
+
+    return ANSC_STATUS_SUCCESS;
 }
-#endif
 
 static int
 MDDev_InsGetIndex(ULONG ins)
@@ -1286,28 +775,26 @@ CosaDmlMDDev_AddEntry(COSA_DML_MD_DEV *pEntry)
     if (g_NrMDDevs >= MAX_MDDEV_ENTRY)
         return ANSC_STATUS_FAILURE;
 
-	g_MDDevs[g_NrMDDevs++] = *pEntry;
-#if 1
-	UpdateCosaDmlMDDev_MacAddress(ADD,g_NrMDDevs-1);
-#endif
-
-	return ANSC_STATUS_SUCCESS;
+    g_MDDevs[g_NrMDDevs++] = *pEntry;
+    do_parentalControl_Devices(ADD,&g_MDDevs[g_NrMDDevs-1]); //LNT_EMU
+    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
 CosaDmlMDDev_DelEntry(ULONG ins)
 {
-	int i;
-	if ((i = MDDev_InsGetIndex(ins)) == -1)
-		return ANSC_STATUS_FAILURE;
-#if 1
-	UpdateCosaDmlMDDev_MacAddress(DELETE,i);
-#endif
-	memmove(&g_MDDevs[i], &g_MDDevs[i+1], 
-			(g_NrMDDevs - i - 1) * sizeof(COSA_DML_MD_DEV));
-	g_NrMDDevs--;
+    int i;
 
-	return ANSC_STATUS_SUCCESS;
+    if ((i = MDDev_InsGetIndex(ins)) == -1)
+        return ANSC_STATUS_FAILURE;
+
+    do_parentalControl_Devices(DELETE,&g_MDDevs[i]); //LNT_EMU
+
+    memmove(&g_MDDevs[i], &g_MDDevs[i+1], 
+            (g_NrMDDevs - i - 1) * sizeof(COSA_DML_MD_DEV));
+    g_NrMDDevs--;
+
+    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -1332,13 +819,11 @@ CosaDmlMDDev_SetConf(ULONG ins, COSA_DML_MD_DEV *pEntry)
 
     if ((i = MDDev_InsGetIndex(ins)) == -1)
         return ANSC_STATUS_FAILURE;
+    do_parentalControl_Devices(DELETE,&g_MDDevs[i]);  //LNT_EMU
 
-	g_MDDevs[i] = *pEntry;
-	g_MDDevs[i].InstanceNumber = ins; /* just in case */
-#if 1
-	UpdateCosaDmlMDDev_MacAddress(REPLACE,i);
-#endif
-
+    g_MDDevs[i] = *pEntry;
+    g_MDDevs[i].InstanceNumber = ins; /* just in case */
+    do_parentalControl_Devices(ADD,&g_MDDevs[i]);     //LNT_EMU
 
     return ANSC_STATUS_SUCCESS;
 }
