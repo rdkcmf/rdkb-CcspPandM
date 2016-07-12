@@ -1478,7 +1478,7 @@ CosaDmlDcSetRebootDevice
 		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
             	//system("(sleep 5 && reboot) &");
             	sleep (delay_time);
-            	system("/fss/gw/rdklogger/backupLogs.sh");
+            	system("/fss/gw/rdklogger/backupLogs.sh &");
         	}
         	else
             {
@@ -1486,14 +1486,14 @@ CosaDmlDcSetRebootDevice
 		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
                 //system("(sleep 5 && reboot) &");
 				sleep(5);
-				system("/fss/gw/rdklogger/backupLogs.sh");
+				system("/fss/gw/rdklogger/backupLogs.sh &");
             }
 		}
 		else {
 	        fprintf(stderr, "Device is going to reboot now\n");
 			CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
 	         //system("reboot");
-	         system("/fss/gw/rdklogger/backupLogs.sh");
+	         system("/fss/gw/rdklogger/backupLogs.sh &");
 	    }
     }
 
@@ -1529,6 +1529,24 @@ CosaDmlDcSetRebootDevice
     }
     
     return ANSC_STATUS_SUCCESS;
+}
+
+void restoreAllDBs()
+{
+
+	pthread_detach(pthread_self());
+	CcspTraceWarning(("FactoryReset:%s in thread  Restoring all the DBs to factory defaults  ...\n",__FUNCTION__));
+	system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
+	system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
+	//system("restoreAllDBs"); //Perform factory reset on other components
+        system("xf3_erase_nvram");
+	return;
+}
+
+void backuplogs()
+{
+	pthread_detach(pthread_self());
+	system("/fss/gw/rdklogger/backupLogs.sh &");
 }
 
 /*****************************************
@@ -1620,11 +1638,12 @@ CosaDmlDcSetFactoryReset
     }
 
 	if (factory_reset_mask & FR_OTHER ) {
-   		CcspTraceWarning(("FactoryReset:%s Restoring all the DBs to factory defaults  ...\n",__FUNCTION__));
-                system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
-                system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
-                system("xf3_erase_nvram");
-                //system("restoreAllDBs"); //Perform factory reset on other components
+   	//	CcspTraceWarning(("FactoryReset:%s Restoring all the DBs to factory defaults  ...\n",__FUNCTION__));
+       // system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
+	//	system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
+	//	system("restoreAllDBs"); //Perform factory reset on other components
+	pthread_t other;
+        pthread_create(&other, NULL, &restoreAllDBs, NULL);
 	}
 
 	if (factory_reset_mask & FR_ROUTER) {
@@ -1643,8 +1662,10 @@ CosaDmlDcSetFactoryReset
 		}
 		
 		Utopia_Free(&utctx,1);
-		//system("reboot");
-		system("/fss/gw/rdklogger/backupLogs.sh");
+		//system("reboot");i
+		pthread_t logs;
+        pthread_create(&logs, NULL, &backuplogs, NULL);
+	//	system("/fss/gw/rdklogger/backupLogs.sh");
 	} else if (factory_reset_mask & FR_WIFI) {
 		/*TODO: SEND EVENT TO WIFI PAM  Device.WiFi.X_CISCO_COM_FactoryReset*/
         int                         ret;
