@@ -307,7 +307,7 @@ DeviceInfo_GetParamUlongValue
            return TRUE;
     }
     
-    if( AnscEqualString(ParamName, "BootTime", TRUE))
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_BootTime", TRUE))
     {
         /* collect value */
        *puLong = CosaDmlDiGetBootTime(NULL);

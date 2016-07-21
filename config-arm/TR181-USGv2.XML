@@ -593,7 +593,7 @@
 
 	<parameter>
 
-          <name>BootTime</name>
+          <name>X_RDKCENTRAL-COM_BootTime</name>
 
           <type>unsignedInt</type>
 
