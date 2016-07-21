@@ -1024,7 +1024,7 @@ CosaDmlEthLinkUpdateStaticMac
     (
         ANSC_HANDLE                 hContext,
         PCOSA_DML_ETH_LINK_CFG      pCfg,
-	PCOSA_DML_ETH_LINK_FULL	     pEntry
+        PCOSA_DML_ETH_LINK_FULL     pEntry
     )
 {
     PDMSB_TR181_ETH_CONTEXT         pEthContext     = (PDMSB_TR181_ETH_CONTEXT)hContext;
@@ -1034,25 +1034,28 @@ CosaDmlEthLinkUpdateStaticMac
 
     pEthLink = CosaDmlEthLinkFindByInstNum(pEthContext, pCfg->InstanceNumber);
 
-    if( (0x00 == pEthLink->StaticInfo.MacAddress[0]) && (0x00 == pEthLink->StaticInfo.MacAddress[1]) && (0x00 == pEthLink->StaticInfo.MacAddress[2]) && (0x00 == pEthLink->StaticInfo.MacAddress[3]) && (0x00 == pEthLink->StaticInfo.MacAddress[4]) && (0x00 == pEthLink->StaticInfo.MacAddress[5]))
-    {	
-	  UCHAR strMac[128] = {0};
-	  if ( -1 != _getMac(pEthLink->StaticInfo.Name, strMac) )
-	  {
-		  AnscCopyMemory(pEthLink->StaticInfo.MacAddress,strMac,6);
-		  AnscCopyMemory(pEntry->StaticInfo.MacAddress,strMac,6);
-	  }
-    }
-    
+    /*RDKB-6734, CID-33535, 32988, perform null check before use*/
     if ( !pEthLink )
     {
         return  ANSC_STATUS_CANT_FIND;
     }
     else
     {
+
+        if( (0x00 == pEthLink->StaticInfo.MacAddress[0]) && (0x00 == pEthLink->StaticInfo.MacAddress[1]) && (0x00 == pEthLink->StaticInfo.MacAddress[2]) && (0x00 == pEthLink->StaticInfo.MacAddress[3]) && (0x00 == pEthLink->StaticInfo.MacAddress[4]) && (0x00 == pEthLink->StaticInfo.MacAddress[5]))
+        {
+            UCHAR strMac[128] = {0};
+            if ( -1 != _getMac(pEthLink->StaticInfo.Name, strMac) )
+            {
+                AnscCopyMemory(pEthLink->StaticInfo.MacAddress,strMac,6);
+                AnscCopyMemory(pEntry->StaticInfo.MacAddress,strMac,6);
+            }
+        }
+
         return  ANSC_STATUS_SUCCESS;
     }
 }
+
 
 ANSC_STATUS
 CosaDmlEthLinkGetCfg
