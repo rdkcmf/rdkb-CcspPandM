@@ -284,11 +284,24 @@ CosaDmlTSIPLoadMappingFile
                     ulCount,
                     pMapping
                 );
-            
+
+
+        /*RDKB-6733, CID-33317, free unused resourses before return*/
+        if( pMappingEntryChain )
+        {
+            AnscTcFree((ANSC_HANDLE)pMappingEntryChain);
+            pMappingEntryChain = (PANSC_TOKEN_CHAIN )NULL;
+        }
+
         AnscFreeMemory(pStringToken);
     }
 
 EXIT:
+    /*RDKB-6733, CID-33451, free unused resourses before return*/
+    if( pMappingTokenChain )
+    {
+        AnscTcFree((ANSC_HANDLE)pMappingTokenChain);
+    }
     if ( pBuffer )
     {
         AnscFreeMemory(pBuffer);
@@ -437,6 +450,8 @@ CosaDmlTSIPApplyConfigFileTask
         if ( !pBuffer2 )
         {
             fclose(fpConfig);
+            /*RDKB-6733, CID-33238, set null after free*/
+            fpConfig = NULL;
             returnStatus = ANSC_STATUS_RESOURCES;
             goto EXIT;
         }
@@ -487,7 +502,11 @@ Start:
         pSeparator = _ansc_strstr(pStringToken->Name, " ");
         if ( !pSeparator )
         {
-            AnscFreeMemory(pStringToken);
+            if(pStringToken)
+            {
+                AnscFreeMemory(pStringToken);
+                pStringToken = (PANSC_STRING_TOKEN  )NULL;
+            }
             continue;
         }
         *pSeparator++ = '\0';
@@ -503,7 +522,11 @@ Start:
         if ( !pAtomItem )
         {
             AnscTraceWarning(("%s is NOT found in the mapping file!\n", pStringToken->Name));
-            AnscFreeMemory(pStringToken);
+            if(pStringToken)
+            {
+                AnscFreeMemory(pStringToken);
+                pStringToken = (PANSC_STRING_TOKEN	)NULL;
+            }
             continue;
         }
     
@@ -541,7 +564,11 @@ Start:
                     if ( ret != CCSP_SUCCESS )
                     {
                         free_parameterValStruct(g_MessageBusHandle, 1, pVal);
-                        AnscFreeMemory(pStringToken);
+                        if(pStringToken)
+                        {
+                            AnscFreeMemory(pStringToken);
+                            pStringToken = (PANSC_STRING_TOKEN	)NULL;
+                        }
                         continue;
                     }
                     else
@@ -557,7 +584,11 @@ Start:
                 if ( !pVal[0].parameterName )
                 {
                     free_parameterValStruct(g_MessageBusHandle, 1, pVal);
-                    AnscFreeMemory(pStringToken);
+                    if(pStringToken)
+                    {
+                        AnscFreeMemory(pStringToken);
+                        pStringToken = (PANSC_STRING_TOKEN	)NULL;
+                    }
                     continue;
                 }
                 _ansc_sprintf(pVal[0].parameterName, pMapping[0].FullPath, iBlockedURLInsNum);
@@ -593,7 +624,11 @@ Start:
                 }
 
                 free_parameterValStruct(g_MessageBusHandle, 1, pVal);
-                AnscFreeMemory(pStringToken);
+                if(pStringToken)
+                {
+                    AnscFreeMemory(pStringToken);
+                    pStringToken = (PANSC_STRING_TOKEN  )NULL;
+                }
                 continue;
             }
             else if ( _ansc_strstr(pStringToken->Name, "wan_rip2") && AnscEqualString(pValue, "true", FALSE) )
@@ -604,7 +639,11 @@ Start:
                 g_SetParamValueBool  ("Device.Routing.RIP.Enable", TRUE);
 
                 free_parameterValStruct(g_MessageBusHandle, 1, pVal);
-                AnscFreeMemory(pStringToken);
+                if(pStringToken)
+                {
+                    AnscFreeMemory(pStringToken);
+                    pStringToken = (PANSC_STRING_TOKEN	)NULL;
+                }
                 continue;
             }
             else 
@@ -631,7 +670,12 @@ Start:
                 if ( ret != CCSP_SUCCESS )
                 {
                     free_parameterValStruct(g_MessageBusHandle, 1, pVal);
-                    AnscFreeMemory(pStringToken);
+                    if(pStringToken)
+                    {
+                        AnscFreeMemory(pStringToken);
+                        pStringToken = (PANSC_STRING_TOKEN  )NULL;
+                    }
+
                     continue;
                 }
                 
@@ -641,7 +685,11 @@ Start:
                     if ( !pVal[i].parameterName )
                     {
                         free_parameterValStruct(g_MessageBusHandle, 1, pVal);
-                        AnscFreeMemory(pStringToken);
+                        if(pStringToken)
+                        {
+                            AnscFreeMemory(pStringToken);
+                            pStringToken = (PANSC_STRING_TOKEN  )NULL;
+                        }
                         continue;
                     }
                     
@@ -694,7 +742,11 @@ Start:
                     if ( ret != CCSP_SUCCESS )
                     {
                         free_parameterValStruct(g_MessageBusHandle, 1, pVal);
-                        AnscFreeMemory(pStringToken);
+                        if(pStringToken)
+                        {
+                            AnscFreeMemory(pStringToken);
+                            pStringToken = (PANSC_STRING_TOKEN  )NULL;
+                        }
                         continue;
                     }
                     else
@@ -743,7 +795,12 @@ Start:
                     if ( !pVal[i].parameterName )
                     {
                         free_parameterValStruct(g_MessageBusHandle, 1, pVal);
-                        AnscFreeMemory(pStringToken);
+                        /*RDKB-6733, CID-33028, avoiding double free*/
+                        if(pStringToken)
+                        {
+                            AnscFreeMemory(pStringToken);
+                            pStringToken = (PANSC_STRING_TOKEN  )NULL;
+                        }
                         continue;
                     }
                     _ansc_sprintf(pVal[i].parameterName, pMapping[i].FullPath, iBlockedURLInsNum);
@@ -770,7 +827,11 @@ Start:
                 );
 
         free_parameterValStruct(g_MessageBusHandle, ulParamCount, pVal);
-        AnscFreeMemory(pStringToken);
+        if(pStringToken)
+        {
+            AnscFreeMemory(pStringToken);
+            pStringToken = (PANSC_STRING_TOKEN  )NULL;
+        }
 
         if ( ret != CCSP_SUCCESS )
         {
