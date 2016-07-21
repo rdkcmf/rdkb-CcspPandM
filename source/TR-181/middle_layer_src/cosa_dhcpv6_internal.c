@@ -681,6 +681,7 @@ CosaDhcpv6BackendGetDhcpv6Info
         returnStatus = CosaDmlDhcpv6sGetPool(NULL, ulIndex, pPool);
         if ( returnStatus != ANSC_STATUS_SUCCESS )
         {
+            AnscFreeMemory(pPool); /*RDKB-6737, CID-33316, free unused resource before exit */
             break;
         }
 
@@ -1345,7 +1346,9 @@ CosaDhcpv6RegGetDhcpv6Info
             pDhcpv6SntOpt = (PCOSA_DML_DHCPCV6_SENT)AnscAllocateMemory(sizeof(COSA_DML_DHCPCV6_SENT));
             if ( !pDhcpv6SntOpt )
             {
-                returnStatus = ANSC_STATUS_FAILURE;                
+                returnStatus = ANSC_STATUS_FAILURE;
+                AnscFreeMemory(pDhcpv6SntOpt); /*RDKB-6737, CID-32983, free unused resource before exit*/
+                pDhcpv6SntOpt = NULL;
                 goto EXIT3;
             }
 
