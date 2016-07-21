@@ -5573,6 +5573,13 @@ Client4_Synchronize
         }
 
     }
+    else /*RDKB-6736, CID-33320, free unsed resource before return*/
+    {
+        if(pDhcpsClient)
+        {
+            AnscFreeMemory(pDhcpsClient);
+        }
+    }
 
     return returnStatus;
 }
