@@ -18,7 +18,10 @@ then
 	
 	source /etc/utopia/service.d/log_capture_path.sh
 	loop=1
-
+	check_dmesg=""
+	time=0
+	newline="
+"
 	while [ $loop -eq 1 ]
 	do
 		sleep 300
@@ -92,7 +95,7 @@ then
 			echo "WiFi process is not running, restarting it"
 			cd /wifi
 			export LD_LIBRARY_PATH=$PWD:.:$PWD/../../lib:$PWD/../../.:/lib:/usr/lib:$LD_LIBRARY_PATH
-			dmcli eRT setv Device.LogAgent.WifiLogMsg string "RDK_LOG_ERROR,RDKB_PROCESS_CRASHED : WiFiAgent_process is not running, need restart"
+			dmcli eRT setv Device.LogAgent.WifiLogMsg string "RDK_LOG_ERROR,RDKB_PROCESS_CRASHED : WiFiAgent_process is not running, need restart $newline"
 			sh /etc/ath/fast_down.sh
 			$BINPATH/CcspWifiSsp -subsys $Subsys &
 			cd ..
@@ -106,7 +109,7 @@ then
 				if [ "$HOSTAPD_PID" == "" ]; then
 	        		WIFI_RESTART=1
 					echo "Hostapd process is not running, restarting WiFi"
-					dmcli eRT setv Device.LogAgent.WifiLogMsg string "RDK_LOG_ERROR,RDKB_PROCESS_CRASHED : Hostapd_process is not running, restarting WiFi"
+					dmcli eRT setv Device.LogAgent.WifiLogMsg string "RDK_LOG_ERROR,RDKB_PROCESS_CRASHED : Hostapd_process is not running, restarting WiFi $newline"
 					#dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
 				fi
                         
@@ -118,18 +121,40 @@ then
 				check_interface_up2=`ifconfig | grep ath0`
 				check_interface_iw2=`iwconfig ath0 | grep Access | awk '{print $6}'`
 				check_interface_iw5=`iwconfig ath1 | grep Access | awk '{print $6}'`
-                        
+
+				tmp=`dmesg | grep "resetting hardware for Rx stuck"`
+				if [ "$tmp" == "$check_dmesg" ]; then 
+					check_dmesg=""
+				else
+					check_dmesg="$tmp"
+				fi
+				time=$(($time + 300))
+				if [ $time -eq 1800 ]; then
+					check_apstats_iw2_p_req=`apstats -v -i ath0 | grep "Rx Probe request" | cut -d"=" -f2`
+					check_apstats_iw2_p_res=`apstats -v -i ath0 | grep "Tx Probe response" | cut -d"=" -f2`
+					check_apstats_iw2_au_req=`apstats -v -i ath0 | grep "Rx auth request" | cut -d"=" -f2`
+					check_apstats_iw2_au_resp=`apstats -v -i ath0 | grep "Tx auth response" | cut -d"=" -f2`
+
+					check_apstats_iw5_p_req=`apstats -v -i ath1 | grep "Rx Probe request" | cut -d"=" -f2`
+					check_apstats_iw5_p_rep=`apstats -v -i ath1 | grep "Tx Probe response" | cut -d"=" -f2`
+					check_apstats_iw5_au_req=`apstats -v -i ath1 | grep "Rx auth request" | cut -d"=" -f2`
+					check_apstats_iw5_au_resp=`apstats -v -i ath1 | grep "Tx auth response" | cut -d"=" -f2`
+
+					dmcli eRT setv Device.LogAgent.WifiLogMsg string "RDK_LOG_ERROR,2G counters:$check_apstats_iw2_p_req,$check_apstats_iw2_p_res,$check_apstats_iw2_au_req,$check_apstats_iw2_au_resp $newline"
+					dmcli eRT setv Device.LogAgent.WifiLogMsg string "RDK_LOG_ERROR,5G counters:$check_apstats_iw5_p_req,$check_apstats_iw5_p_res,$check_apstats_iw5_au_req,$check_apstats_iw5_au_resp $newline"
+					time=0
+				fi
 
 				if [ "$check_ap_enable2" == "1" ] && [ "$check_radio_enable2" == "1" ] && [ "$check_interface_iw2" == "Not-Associated" ];then				
 					echo "ath0 is Not-Associated, restarting WiFi"
-					dmcli eRT setv Device.LogAgent.WifiLogMsg string "[RKDB_PLATFORM_ERROR]: ath0 is Not-Associated, restarting WiFi"
+					dmcli eRT setv Device.LogAgent.WifiLogMsg string "RKDB_LOG_ERROR: ath0 is Not-Associated, restarting WiFi $newline"
 					WIFI_RESTART=1
 					#dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
 				fi
 
 				if [ "$check_ap_enable5" == "1" ] && [ "$check_radio_enable5" == "1" ] && [ "$check_interface_iw5" == "Not-Associated" ];then				
 					echo "ath1 is Not-Associated, restarting WiFi"
-					dmcli eRT setv Device.LogAgent.WifiLogMsg string "[RKDB_PLATFORM_ERROR]: ath1 is Not-Associated, restarting WiFi"
+					dmcli eRT setv Device.LogAgent.WifiLogMsg string "RKDB_LOG_ERROR: ath1 is Not-Associated, restarting WiFi $newline"
 					WIFI_RESTART=1
 					#dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
 				fi
@@ -137,16 +162,21 @@ then
 
 				if [ "$check_ap_enable5" == "1" ] && [ "$check_radio_enable5" == "1" ] && [ "$check_interface_up5" == "" ]; then
 					echo "ath1 is down, restarting WiFi"
-					dmcli eRT setv Device.LogAgent.WifiLogMsg string "[RKDB_PLATFORM_ERROR]: ath1 is down, restarting WiFi"
+					dmcli eRT setv Device.LogAgent.WifiLogMsg string "RKDB_LOG_ERROR: ath1 is down, restarting WiFi $newline"
 					WIFI_RESTART=1
 					#dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
 				fi
 		
 				if [ "$check_ap_enable2" == "1" ] && [ "$check_radio_enable2" == "1" ] && [ "$check_interface_up2" == "" ]; then
 					echo "ath0 is down, restarting WiFi"
-					dmcli eRT setv Device.LogAgent.WifiLogMsg string "[RKDB_PLATFORM_ERROR]: ath0 is down, restarting WiFi"
+					dmcli eRT setv Device.LogAgent.WifiLogMsg string "RKDB_LOG_ERROR: ath0 is down, restarting WiFi $newline"
 					WIFI_RESTART=1
 					#dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
+				fi
+			
+				if [ "$check_dmesg" != "" ]; then
+					echo "resetting wifi hardware for Rx stuck"
+					dmcli eRT setv Device.LogAgent.WifiLogMsg string "RKDB_LOG_ERROR: resetting WiFi hardware for Rx stuck $newline"
 				fi
 
 				if [ "$WIFI_RESTART" == "1" ]; then
