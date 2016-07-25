@@ -399,9 +399,13 @@ IPv6rdIF_GetParamBoolValue(
         BOOL *pBool)
 {
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObject = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext;
+    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)NULL;
 
-    if (!pLinkObject || !pEntry)
+    if (!pLinkObject)
+        return FALSE;
+
+    pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext; /*RDKB-6740, CID-33461, null must checked before use*/
+    if (!pEntry)
         return FALSE;
 
     CosaDml_IPv6rdGetEntry(NULL, pEntry->InstanceNumber, pEntry);
@@ -428,11 +432,15 @@ IPv6rdIF_GetParamStringValue(
         ULONG           *pSize)
 {
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObject = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext;
-    char *path;
+    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)NULL;
+    char *path = NULL;
     char tmp[128];
-	
-    if (!pLinkObject || !pEntry)
+
+    if (!pLinkObject)
+        return FALSE;
+
+    pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext; /*RDKB-6740, CID-33563, null must checked before use*/
+    if (!pEntry)
         return FALSE;
 
     CosaDml_IPv6rdGetEntry(NULL, pEntry->InstanceNumber, pEntry);
@@ -461,13 +469,14 @@ IPv6rdIF_GetParamStringValue(
             return 0;
         }
 
-		path = NULL;
         path = CosaUtilGetFullPathNameByKeyword("Device.IP.Interface.", "Name", CFG_TR181_6rd_IfName);
-        if (path != NULL && _ansc_strlen(path) > 0)
+        if ((path != NULL) && (_ansc_strlen(path) > 0))
         {
             if (path[_ansc_strlen(path) - 1] == '.')
                 path[_ansc_strlen(path) - 1] = '\0';
             _ansc_sprintf(tmp, "%s.IPv4Address.", path);
+            AnscFreeMemory(path); /*RDKB-6740, CID-33386, free unused resource before exit*/
+            path = NULL;
             path = CosaUtilGetFullPathNameByKeyword(tmp, "IPAddress", pEntry->AddressSource);
         }
 
@@ -502,6 +511,13 @@ IPv6rdIF_GetParamStringValue(
         return -1;
     }
 
+     /*RDKB-6740, CID-33386, free unusd resource before return*/
+    if(path)
+    {
+        AnscFreeMemory(path); /*RDKB-6740, CID-33386, free unused resource before exit*/
+        path = NULL;
+    }
+
     return 0;
 }
 
@@ -512,9 +528,13 @@ IPv6rdIF_GetParamUlongValue(
         ULONG *pUlong)
 {
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObject = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext;
+    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)NULL;
 
-    if (!pLinkObject || !pEntry)
+    if (!pLinkObject)
+        return FALSE;
+
+    pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext; /*RDKB-6740, CID-33484, null must checked before use*/
+    if (!pEntry)
         return FALSE;
 
     CosaDml_IPv6rdGetEntry(NULL, pEntry->InstanceNumber, pEntry);
@@ -536,9 +556,13 @@ IPv6rdIF_SetParamBoolValue(
         )
 {
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObject = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext;
+    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)NULL;
 
-    if (!pLinkObject || !pEntry)
+    if (!pLinkObject)
+        return FALSE;
+
+    pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext;  /*RDKB-6740, CID-33063, null must checked before use*/
+    if (!pEntry)
         return FALSE;
 
     if (AnscEqualString(ParamName, "Enable", TRUE))
@@ -563,12 +587,16 @@ IPv6rdIF_SetParamStringValue(
         )
 {
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObject = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext;
+    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)NULL;
     char v4addr[16];
     ULONG addlen;
     char tmp[128];
 
-    if (!pLinkObject || !pEntry)
+    if (!pLinkObject)
+        return FALSE;
+
+    pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext; /*RDKB-6740, CID-33172, null must checked before use*/
+    if (!pEntry)
         return FALSE;
 
     if (AnscEqualString(ParamName, "Alias", TRUE))
@@ -618,9 +646,13 @@ IPv6rdIF_SetParamUlongValue(
         )
 {
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObject = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext;
+    PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)NULL;
 
-    if (!pLinkObject || !pEntry)
+    if (!pLinkObject)
+        return FALSE;
+
+    pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext;  /*RDKB-6740, CID-33243, null must checked before use*/
+    if (!pEntry)
         return FALSE;
 
     if (AnscEqualString(ParamName, "IPv4MaskLength", TRUE))
