@@ -159,7 +159,7 @@ EvtDispterRgstCbFuncToList
     )
 {
     ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
-    PEVT_DISPTER_CALLBACK_FUNC  pCbFunc;
+    PEVT_DISPTER_CALLBACK_FUNC  pCbFunc = NULL;
     PEVT_DISPTER_METHOD_NODE    pNewMethodNode = NULL;
     EVT_DISPTER_EVENT_CB_LIST   eventCbList = NULL;
     PEVT_DISPTER_METHOD_NODE    tmpNode = NULL;
@@ -176,10 +176,16 @@ EvtDispterRgstCbFuncToList
         pCbFunc->Func = func;
         pCbFunc->Arg = arg;
     }
+    else /*RDKB-6747, CID-32958, return if malloc failed */
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+        return returnStatus;
+    }
 
     /*create the new callback function node*/
     pNewMethodNode = (PEVT_DISPTER_METHOD_NODE)malloc(sizeof(EVT_DISPTER_METHOD_NODE));
     if(NULL == pNewMethodNode) {
+        free(pCbFunc);  /*RDKB-6747, CID-32958, free unused resources */
         returnStatus = ANSC_STATUS_FAILURE;
         return returnStatus;
     }
