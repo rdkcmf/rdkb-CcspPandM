@@ -541,16 +541,17 @@ COSADmlUploadLogsStatus
 			break;
 		case 4 :
 			ptr_file =fopen("/nvram/uploadsuccess","r");
-    			if (!ptr_file)
-        		break;
 
-    			if (fgets(buf,50, ptr_file)!=NULL)
+			if (!ptr_file)
+				break;
+
+			if (fgets(buf,50, ptr_file)!=NULL)
 			{
-				fclose(ptr_file);
 				strip_line(buf);
-    				AnscCopyString(pValue, buf);
-        			*pUlSize = AnscSizeOfString(pValue);
+				AnscCopyString(pValue, buf);
+				*pUlSize = AnscSizeOfString(pValue);
 			}
+			fclose(ptr_file);/*RDKB-6748, CID-33503, close to free resources*/
 			break;
 		default :
 			AnscCopyString(pValue, "Not triggered");
