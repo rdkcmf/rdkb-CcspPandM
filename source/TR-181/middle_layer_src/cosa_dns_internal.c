@@ -309,10 +309,14 @@ CosaDNSInitialize
 
     pDnsServer = CosaDmlDnsClientGetServers(NULL, (PULONG)&ulEntryCount);
     
-    if ( !pDnsServer )
+    if ( !pDnsServer || (ulEntryCount ==0))
     {
+        if(pDnsServer) /*RDKB-6738, CID-33327, free unused resources before exit*/
+        {
+            AnscFreeMemory(pDnsServer);
+            pDnsServer = NULL;
+        }
         returnStatus = ANSC_STATUS_RESOURCES;
-        
         goto  EXIT;
     }
     else
@@ -323,10 +327,8 @@ CosaDNSInitialize
 
             if ( !pCosaContext )
             {
-                AnscFreeMemory(&pDnsServer[ulIndex]);   
-                
+                AnscFreeMemory(pDnsServer); /*RDKB-6738, CID-32697*/
                 returnStatus = ANSC_STATUS_RESOURCES;
-                
                 goto  EXIT;
             }
 
