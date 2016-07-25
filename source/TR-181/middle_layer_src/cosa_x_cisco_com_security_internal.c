@@ -588,6 +588,11 @@ CosaSecurityInitialize
 
                 CosaSListPushEntryByInsNum(&pDmlIAPolicy->URLList, pCosaContext2);
             }
+            else /*RDKB-6746, CID-33059, free unused resource before exit*/
+            {
+                AnscFreeMemory(pURL);
+            }
+            pURL = NULL; /*Make null for next iteration*/
         }
 
         /* Blocked Keyword */
@@ -715,6 +720,11 @@ CosaSecurityInitialize
 
                 CosaSListPushEntryByInsNum(&pDmlIAPolicy->KeywordList, pCosaContext2);
             }
+            else /*RDKB-6746, CID-33437, free unused resource before exit*/
+            {
+                AnscFreeMemory(pKeyword);
+            }
+            pKeyword = NULL; /*Make null for next iteration*/
         }
 
         /* Blocked App */
@@ -842,6 +852,11 @@ CosaSecurityInitialize
 
                 CosaSListPushEntryByInsNum(&pDmlIAPolicy->AppList, pCosaContext2);
             }
+            else  /*RDKB-6746, CID-33351, free unused resource before exit*/
+            {
+                AnscFreeMemory(pApp);
+            }
+            pApp = NULL; /*Make null for next iteration*/
         }
     }
 
