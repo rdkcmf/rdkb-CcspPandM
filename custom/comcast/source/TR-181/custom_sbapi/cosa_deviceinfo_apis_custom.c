@@ -345,18 +345,38 @@ CosaDmlDiSetXfinityWiFiEnable
     //    AnscTraceWarning(("%s: set WiFi ApplySetting OK\n", __FUNCTION__));
     //}
 
-	//When Xfinitywifi is enabled /disabled individually then SSID 5 and 6 should also 
-    //be enabled and disabled accordingly.
-    if (DmSetBool("Device.WiFi.SSID.5.Enable", value) != ANSC_STATUS_SUCCESS) {
-        fprintf(stderr, "%s: set WiFi SSID Enable error\n", __FUNCTION__);
-    } else {
-        AnscTraceWarning(("%s: set WiFi SSID Enable OK\n", __FUNCTION__));
-    }
 
-    if (DmSetBool("Device.WiFi.SSID.6.Enable", value) != ANSC_STATUS_SUCCESS) {
-        fprintf(stderr, "%s: set WiFi SSID Enable error\n", __FUNCTION__);
-    } else {
-        AnscTraceWarning(("%s: set WiFi SSID Enable OK\n", __FUNCTION__));
+    //Only in Xfinitywifi Disable case SSIDs 5,6,9,10 should be disabled so that 
+    //Xfinitywifi SSIDs broadcast will be stopped.
+    //In enable case it is not required because user has to explicitly set SSIDs 5 and 6 or
+    //SSIDs 9 and 10 that will be used for broadcast.
+    if (FALSE == value)
+    {
+        //SSIDs 5 and 6 case
+        if (DmSetBool("Device.WiFi.SSID.5.Enable", value) != ANSC_STATUS_SUCCESS) {
+            fprintf(stderr, "%s: set WiFi.SSID.5 Disable error\n", __FUNCTION__);
+        } else {
+            fprintf(stderr, "%s: set WiFi.SSID.5 Disable OK\n", __FUNCTION__);
+        }
+
+        if (DmSetBool("Device.WiFi.SSID.6.Enable", value) != ANSC_STATUS_SUCCESS) {
+            fprintf(stderr, "%s: set WiFi.SSID.6 Disable error\n", __FUNCTION__);
+        } else {
+            fprintf(stderr, "%s: set WiFi.SSID.6 Disable OK\n", __FUNCTION__);
+        }
+    	
+        //SSIDs 9 and 10 case
+        if (DmSetBool("Device.WiFi.SSID.9.Enable", value) != ANSC_STATUS_SUCCESS) {
+            fprintf(stderr, "%s: set WiFi.SSID.9 Disable error\n", __FUNCTION__);
+        } else {
+            fprintf(stderr, "%s: set WiFi.SSID.9 Disable OK\n", __FUNCTION__);
+        }
+	
+        if (DmSetBool("Device.WiFi.SSID.10.Enable", value) != ANSC_STATUS_SUCCESS) {
+            fprintf(stderr, "%s: set WiFi.SSID.10 Disable error\n", __FUNCTION__);
+        } else {
+            fprintf(stderr, "%s: set WiFi.SSID.10 Diable OK\n", __FUNCTION__);
+        }
     }
 	
 	if (g_SetParamValueBool("Device.X_COMCAST-COM_GRE.Tunnel.1.Enable", value) != ANSC_STATUS_SUCCESS) {
