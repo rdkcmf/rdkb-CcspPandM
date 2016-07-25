@@ -565,7 +565,7 @@ static ANSC_STATUS CosaDmlDhcpcScan()
     CHAR            line[128];
     char            *tok;
     int             nmu_dns_server =  0;
-    FILE            *fp;
+    FILE            *fp = NULL;
     
     PCOSA_DML_DHCPC_FULL  pEntry = NULL;
     
@@ -582,11 +582,20 @@ static ANSC_STATUS CosaDmlDhcpcScan()
         }       
         else if (ulIndex == 1)
         {
+
+            /*RDKB-6750, CID-33082, free resources before exit*/
+            if(fp)
+            {
+                fclose(fp);
+                fp = NULL;
+            }
+
             #ifdef _COSA_DRG_TPG_
             fp = fopen("/tmp/udhcp_lan.log", "r"); 
             #else
                 return ANSC_STATUS_SUCCESS;
             #endif
+
         }
         pEntry = &CH_g_dhcpv4_client[ulIndex];
         
@@ -603,9 +612,9 @@ static ANSC_STATUS CosaDmlDhcpcScan()
 
             tok = strtok( line, ":");
             if(tok) strncpy(str_key, tok, sizeof(str_key)-1 );
-       
+
             tok = strtok(NULL, ":");
-            while( tok[0] == ' ' ) tok++;
+            while( tok && (tok[0] == ' ') ) tok++; /*RDKB-6750, CID-33384, CID-32954; null check before use*/
             if(tok) strncpy(str_val, tok, sizeof(str_val)-1 );
 
             if ( str_val[ _ansc_strlen(str_val) - 1 ] == '\n' )
@@ -667,8 +676,8 @@ static ANSC_STATUS CosaDmlDhcpcScan()
                     {    
                         AnscWriteUlong(&pEntry->Info.DNSServers[nmu_dns_server].Value, _ansc_inet_addr(dns[nmu_dns_server]));
                         ++nmu_dns_server;
-                        if( nmu_dns_server > 3) 
-                            nmu_dns_server = 3;
+                        if( nmu_dns_server > 2) /*RDKB-6750, CID-33057, Fixing Out-of-bounds read of dns[3][] */
+                            nmu_dns_server = 2;
                     }
                 }
             }
@@ -2846,6 +2855,9 @@ CosaDmlDhcpsSetOptionValues
         // Write Option to PSM and update to new option value
         dhcpServerRestart = writeDHCPv4ServerPoolOptionToPSM(ulPoolInstanceNumber, pNewEntry, pPoolOption);
 
+        /*RDKB-6750, CID-33558, free unused resources before exit*/
+        AnscFreeMemory(pNewEntry);
+        pNewEntry = NULL;
 /* Don't need to restart DHCP server for alias change
         if(dhcpServerRestart)
         {
