@@ -737,6 +737,8 @@ CosaDhcpv4BackendGetDhcpv4Info
         returnStatus = CosaDmlDhcpsGetPool(NULL, ulIndex, pPool);
         if ( returnStatus != ANSC_STATUS_SUCCESS )
         {
+            AnscFreeMemory(pPool);/*RDKB-6735, CID-33032, free unused resource before exit*/
+            pPool = NULL; 
             break;
         }
 
@@ -744,6 +746,7 @@ CosaDhcpv4BackendGetDhcpv4Info
         if ( !pPoolCxtLink )
         {
             AnscFreeMemory(pPool);
+            pPool = NULL; 
             break;
         }
 
@@ -1452,7 +1455,9 @@ CosaDhcpv4RegGetDhcpv4Info
             pCosaReqOptionContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
             if ( !pCosaReqOptionContext )
             {
-                returnStatus = ANSC_STATUS_FAILURE;            
+                returnStatus = ANSC_STATUS_FAILURE;
+                AnscFreeMemory( pDhcpv4ReqOpt ); /*RDKB-6735, CID-33487, free unused resource before exit*/
+                pDhcpv4ReqOpt = NULL;
                 goto EXIT2;
             }
 
@@ -1610,6 +1615,8 @@ SentOption:
             pCosaSendOptionContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
             if ( !pCosaSendOptionContext )
             {
+                AnscFreeMemory(pDhcpv4SndOpt); /*RDKB-6735, CID-33261, free unused resource before exit*/
+                pDhcpv4SndOpt = NULL;
                 returnStatus = ANSC_STATUS_FAILURE;            
                 goto EXIT2;
             }
@@ -1789,6 +1796,15 @@ ClientEnd:
         if ( !pCosaX_COM_CISCO_SAddrContext )
         {
             returnStatus = ANSC_STATUS_FAILURE;
+            AnscFreeMemory( pDhcpv4X_COM_CISCO_SAddr ); /*RDKB-6735, CID-33543, free unused resource before exit*/
+            pDhcpv4X_COM_CISCO_SAddr = NULL;
+
+            if( pAliasX_COM_CISCO_SAddr )
+            {
+                AnscFreeMemory( pAliasX_COM_CISCO_SAddr ); /*RDKB-6735, CID-33425, free unused resource before exit*/
+                pAliasX_COM_CISCO_SAddr = NULL;
+            }
+
             goto EXIT3;
         }
     
@@ -2087,6 +2103,8 @@ ClientEnd:
             pCosaStaticAddrContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
             if ( !pCosaStaticAddrContext )
             {
+                AnscFreeMemory(pDhcpv4StaticAddr);/*RDKB-6735, CID-33116, free unused resource before exit*/
+                pDhcpv4StaticAddr = NULL;
                 returnStatus = ANSC_STATUS_FAILURE;            
                 goto EXIT2;
             }
@@ -2244,6 +2262,8 @@ ClientEnd:
             pCosaOptionContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
             if ( !pCosaOptionContext )
             {
+                AnscFreeMemory(pDhcpv4Option); /*RDKB-6735, CID-33374, free unused resource before exit*/
+                pDhcpv4Option = NULL;
                 returnStatus = ANSC_STATUS_FAILURE;            
                 goto EXIT2;
             }
