@@ -1342,6 +1342,12 @@ Interface2_GetParamStringValue
         AnscCopyString(pValue, pIPInterface->Cfg.LowerLayers);
     }
 
+    /*RDKB-, CID-33002, free unused resource before exit*/
+    if(pLowerLayer)
+    {
+        AnscFreeMemory(pLowerLayer);
+    }
+
     if( AnscEqualString(ParamName, "Router", TRUE))
     {
         /* collect value */
@@ -3167,14 +3173,16 @@ IPv6Address_AddEntry
     PCOSA_DML_IP_V6ADDR             pIPv6Addr        = (PCOSA_DML_IP_V6ADDR)NULL;
 
     pIPv6Addr = (PCOSA_DML_IP_V6ADDR)AnscAllocateMemory(sizeof(COSA_DML_IP_V6ADDR));
-    pIPv6Addr->Origin = COSA_DML_IP6_ORIGIN_Static;
-    AnscCopyString(pIPv6Addr->PreferredLifetime, "9999-12-31T23:59:59Z");
-    AnscCopyString(pIPv6Addr->ValidLifetime, "9999-12-31T23:59:59Z");
-
+    /*RDKB-, CID-33520, perform null check before use */
     if ( !pIPv6Addr )
     {
         return NULL;
     }
+
+    pIPv6Addr->Origin = COSA_DML_IP6_ORIGIN_Static;
+    AnscCopyString(pIPv6Addr->PreferredLifetime, "9999-12-31T23:59:59Z");
+    AnscCopyString(pIPv6Addr->ValidLifetime, "9999-12-31T23:59:59Z");
+
 
     _ansc_sprintf(pIPv6Addr->Alias, "IPv6Address%d", pIPInterface->ulNextIPV6InsNum);
 
@@ -5210,8 +5218,9 @@ IPv6Prefix_Validate
             {
                 _ansc_strcpy(pReturnParamName, "Prefix");
                 *puLength = AnscSizeOfString("Prefix");
-    
+
                 CcspTraceWarning(("IPv6Prefix_Validate() on Prefix failed.\n"));
+                AnscFreeMemory(dup);/*RDKB-, CID-33094, free unused resources before exit*/
                 return FALSE;
             }
         }
