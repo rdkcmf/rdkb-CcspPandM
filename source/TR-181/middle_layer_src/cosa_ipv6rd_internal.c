@@ -196,6 +196,7 @@ CosaIPv6rdInitialize(
         /* get entry info from backend */
         if (CosaDml_IPv6rdGetEntry(NULL, InsNumArray[ulIndex], pEntry) != ANSC_STATUS_SUCCESS)
         {
+            AnscFreeMemory(pEntry);/*RDKB-6741, CID-33367, free resources before exit*/
             CcspTraceError(("CosaIPv6rdInitialize: CosaDml_IPv6rdGetEntry error\n"));
             return ANSC_STATUS_FAILURE;
         }
