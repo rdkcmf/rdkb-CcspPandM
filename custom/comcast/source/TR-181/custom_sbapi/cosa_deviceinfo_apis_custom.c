@@ -344,6 +344,20 @@ CosaDmlDiSetXfinityWiFiEnable
     //} else {
     //    AnscTraceWarning(("%s: set WiFi ApplySetting OK\n", __FUNCTION__));
     //}
+
+	//When Xfinitywifi is enabled /disabled individually then SSID 5 and 6 should also 
+    //be enabled and disabled accordingly.
+    if (DmSetBool("Device.WiFi.SSID.5.Enable", value) != ANSC_STATUS_SUCCESS) {
+        fprintf(stderr, "%s: set WiFi SSID Enable error\n", __FUNCTION__);
+    } else {
+        AnscTraceWarning(("%s: set WiFi SSID Enable OK\n", __FUNCTION__));
+    }
+
+    if (DmSetBool("Device.WiFi.SSID.6.Enable", value) != ANSC_STATUS_SUCCESS) {
+        fprintf(stderr, "%s: set WiFi SSID Enable error\n", __FUNCTION__);
+    } else {
+        AnscTraceWarning(("%s: set WiFi SSID Enable OK\n", __FUNCTION__));
+    }
 	
 	if (g_SetParamValueBool("Device.X_COMCAST-COM_GRE.Tunnel.1.Enable", value) != ANSC_STATUS_SUCCESS) {
 		fprintf(stderr, "%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable error\n", __FUNCTION__);
