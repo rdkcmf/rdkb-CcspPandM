@@ -568,8 +568,10 @@ CosaDdnsRegGetDdnsInfo
 
         if ( !pCosaContext )
         {
-            AnscFreeMemory(pAlias);
-
+            if(pAlias)
+            {
+                AnscFreeMemory(pAlias);
+            }
             return ANSC_STATUS_RESOURCES;
         }
 
@@ -578,15 +580,29 @@ CosaDdnsRegGetDdnsInfo
         if ( !pDdnsService )
         {
             AnscFreeMemory(pCosaContext);
-            AnscFreeMemory(pAlias);
+            if(pAlias)
+            {
+                AnscFreeMemory(pAlias);
+            }
 
             return ANSC_STATUS_RESOURCES;
         }
 
         pDdnsService->InstanceNumber = ulInstanceNumber;
-        AnscCopyString(pDdnsService->Alias, pAlias);
+        if(pAlias) /*RDKB-6744, CID-33330, use only after null check*/
+        {
+            AnscCopyString(pDdnsService->Alias, pAlias);
+        }
+        else
+        {
+            AnscCopyString(pDdnsService->Alias, "");
+        }
 
-        AnscFreeMemory(pAlias);
+        if(pAlias) /*RDKB-6744, CID-33330,free only after null check*/
+        {
+            AnscFreeMemory(pAlias);
+            pAlias = NULL;
+        }
 
         pCosaContext->InstanceNumber   = ulInstanceNumber;
         pCosaContext->bNew             = TRUE;
