@@ -1767,8 +1767,11 @@ CosaDmlDhcpv6Init
     Utopia_Free(&utctx,1);
 
 
-
-    for ( Index = 0; Index < uDhcpv6ServerPoolNum; Index++ )
+    /* RDKB-6780, CID-33283, Out-of-bounds read
+    ** Maximum size of Dhcp Server Pool and DHCP Server Pool Option Number 
+    ** is defined as DHCPV6S_POOL_NUM. Limiting max number w.r.t global variables defined.
+    */
+    for ( Index = 0; (Index < uDhcpv6ServerPoolNum) && (Index < DHCPV6S_POOL_NUM); Index++ )
     {
         getpool_from_utopia(DHCPV6S_NAME, "pool", Index, &sDhcpv6ServerPool[Index]);
 
@@ -1777,7 +1780,7 @@ CosaDmlDhcpv6Init
         GETI_FROM_UTOPIA(DHCPV6S_NAME,  "pool", Index, "", 0, "optionnumber", uDhcpv6ServerPoolOptionNum[Index])
         Utopia_Free(&utctx,0);
 
-        for( Index2 = 0; Index2 < uDhcpv6ServerPoolOptionNum[Index]; Index2++ )
+        for( Index2 = 0; (Index2 < uDhcpv6ServerPoolOptionNum[Index]) && (Index2 < DHCPV6S_POOL_OPTION_NUM); Index2++ )
         {
             getpooloption_from_utopia(DHCPV6S_NAME,"pool",Index,"option",Index2,&sDhcpv6ServerPoolOption[Index][Index2]);
         }
@@ -2904,7 +2907,11 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
                 break;
 
             if (sscanf(buf, "%d %d", &opt_len, &p_rcv->Tag) != 2)
+            {
+                AnscFreeMemory(p_rcv); /*RDKB-6780, CID-33399, free unused resource*/
+                p_rcv = NULL;
                 continue;
+            }
 
             /*don't trust opt_len record in file, calculate by self*/
             if ((p = strrchr(buf, ' ')))
@@ -2914,15 +2921,26 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
                     opt_len = (strlen(buf)- (p-buf))/2;
             }
             else 
+            {
+                AnscFreeMemory(p_rcv); /*RDKB-6780, CID-33399, free unused resource*/
+                p_rcv = NULL;
                 continue;
+            }
 
             if (opt_len*2 >= sizeof(p_rcv->Value))
+            {
+                AnscFreeMemory(p_rcv); /*RDKB-6780, CID-33399, free unused resource*/
+                p_rcv = NULL;
                 continue;
+            }
 
             /*finally we are safe, copy string into Value*/
             if (sscanf(buf, "%*d %*d %s", p_rcv->Value) != 1)
+            {
+                AnscFreeMemory(p_rcv); /*RDKB-6780, CID-33399, free unused resource*/
+                p_rcv = NULL;
                 continue;
-
+            }
             /*we only support one server, hardcode it*/
             safe_strcpy(p_rcv->Server, "Device.DHCPv6.Client.1.Server.1", sizeof(p_rcv->Server));
             AnscSListPushEntryAtBack(&option_list, &p_rcv->Link);
@@ -3496,7 +3514,13 @@ OPTIONS:
     }
     
     fclose(fp);
-        
+
+    /*RDKB-6780, CID-33149, free unused resources before return*/
+    if(responsefd)
+    {
+        fclose(responsefd);
+    }
+
 #ifndef _COSA_INTEL_USG_ARM_
     /*we will copy the updated conf file at once*/
     if (rename(TMP_SERVER_CONF, SERVER_CONF_LOCATION))
@@ -3720,25 +3744,32 @@ CosaDmlDhcpv6sDelPool
     ULONG         Index  = 0;
     ULONG         Index2 = 0;
 
-    for( Index = 0; Index < uDhcpv6ServerPoolNum; Index++)
+    /* RDKB-6780, CID-33220, Out-of-bounds read
+    ** Global array defined is of size DHCPV6S_POOL_NUM
+    ** Hence limiting upper boundary of index to avoid out of boud access.
+    */
+    for( Index = 0; (Index < uDhcpv6ServerPoolNum) && (Index < DHCPV6S_POOL_NUM); Index++)
     {
         if ( sDhcpv6ServerPool[Index].Cfg.InstanceNumber == ulInstanceNumber )
             break;
     }
 
-    for ( Index2 = Index+1; Index2 < uDhcpv6ServerPoolNum; Index2++ )
+#if 0 /*RDKB-6780, CID-33220, with upper boundary check and current sDhcpv6ServerPool[] size below code will not be executed dead code*/
+    for ( Index2 = Index+1; (Index2 < uDhcpv6ServerPoolNum) && (Index2 < DHCPV6S_POOL_NUM); Index2++ )
     {
         setpool_into_utopia(DHCPV6S_NAME, "pool", Index2-1, &sDhcpv6ServerPool[Index2]);
         sDhcpv6ServerPool[Index2-1] =  sDhcpv6ServerPool[Index2];
     }
-    
-    /* unset last one in utopia */
-    Index = uDhcpv6ServerPoolNum - 1;
+#endif
+    /* unset last one in utopia  RDKB-6780, CID-33220, limiting upper bounday*/
+    Index =((uDhcpv6ServerPoolNum < DHCPV6S_POOL_NUM)? (uDhcpv6ServerPoolNum - 1):(DHCPV6S_POOL_NUM-1));
     unsetpool_from_utopia(DHCPV6S_NAME, "pool", Index );
     AnscZeroMemory(&sDhcpv6ServerPool[Index], sizeof(sDhcpv6ServerPool[Index]));
 
     /* do this lastly */
-    uDhcpv6ServerPoolNum--;
+    /* limiting lower boundary of the DHCP Server Pool Num to avoid -ve values*/
+    uDhcpv6ServerPoolNum = (0 >(uDhcpv6ServerPoolNum-1)? 0 : (uDhcpv6ServerPoolNum-1) );
+
 
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
@@ -3763,11 +3794,11 @@ _get_iapd_prefix_pathname(char ** pp_pathname, int * p_len)
     ULONG inst2 = 0;
     ULONG val_len = 0;
 
-    *p_len = 1;
-
     if (!p_len || !pp_pathname)
         return -1;
-    
+
+    *p_len = 1; /*RDKB-6780, CID-33107, use after null check*/
+
     p_ipif_path = CosaUtilGetFullPathNameByKeyword
         (
             "Device.IP.Interface.",
@@ -3804,7 +3835,10 @@ _get_iapd_prefix_pathname(char ** pp_pathname, int * p_len)
                     *pp_pathname = realloc(*pp_pathname, *p_len);
                 
                 if (!*pp_pathname)
+                {
+                    AnscFreeMemory(p_ipif_path); /*RDKB-6780, CID-33072, free unused resource before return*/
                     return -3;
+                }
                 
                 sprintf(*pp_pathname+strlen(*pp_pathname), "%s,",path);
 
@@ -3880,13 +3914,23 @@ CosaDmlDhcpv6sSetPoolCfg
 {
     ULONG                           Index = 0;
 
-    for( Index = 0; Index < uDhcpv6ServerPoolNum; Index++)
+    /* RDKB-6780, CID-33383, Out-of-bounds write
+    ** Maximum size of Dhcp Server Pool is DHCPV6S_POOL_NUM.
+    */
+    for( Index = 0; (Index < uDhcpv6ServerPoolNum) && (Index < DHCPV6S_POOL_NUM); Index++)
     {
         if ( sDhcpv6ServerPool[Index].Cfg.InstanceNumber == pCfg->InstanceNumber)
             break;
     }
 
-    sDhcpv6ServerPool[Index].Cfg = *pCfg;
+    if(Index < DHCPV6S_POOL_NUM)
+    {
+        sDhcpv6ServerPool[Index].Cfg = *pCfg;
+    }
+    else
+    {
+        sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg = *pCfg;
+    }
 
     /* We do this synchronization here*/
     if ( ( _ansc_strlen(sDhcpv6ServerPool[Index].Cfg.IANAManualPrefixes) > 0 ) && 
@@ -3911,14 +3955,23 @@ CosaDmlDhcpv6sGetPoolCfg
 {
     ULONG                           Index = 0;
 
-    for( Index = 0; Index < uDhcpv6ServerPoolNum; Index++)
+    /* RDKB-6780, CID-33390, out of bound read
+    ** Index must be less than the max array size
+    */
+    for( Index = 0; (Index < uDhcpv6ServerPoolNum) && (Index < DHCPV6S_POOL_NUM); Index++)
     {
         if ( sDhcpv6ServerPool[Index].Cfg.InstanceNumber == pCfg->InstanceNumber)
             break;
     }
 
-    *pCfg = sDhcpv6ServerPool[Index].Cfg;
-
+    if(Index < DHCPV6S_POOL_NUM)
+    {
+        *pCfg = sDhcpv6ServerPool[Index].Cfg;
+    }
+    else
+    {
+        *pCfg = sDhcpv6ServerPool[DHCPV6S_POOL_NUM-1].Cfg;
+    }
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -3935,7 +3988,11 @@ CosaDmlDhcpv6sGetPoolInfo
 
     ULONG                           Index = 0;
 
-    for( Index = 0; Index < uDhcpv6ServerPoolNum; Index++)
+    /* RDKB-6780, CID-33131, Out-of-bounds read
+    ** Global array defined is of size DHCPV6S_POOL_NUM
+    ** Hence limiting upper boundary of index to avoid out of boud access.
+    */
+    for( Index = 0; (Index < uDhcpv6ServerPoolNum) && (Index < DHCPV6S_POOL_NUM); Index++)
     {
         if ( sDhcpv6ServerPool[Index].Cfg.InstanceNumber == ulInstanceNumber )
             break;
@@ -4525,14 +4582,24 @@ CosaDmlDhcpv6sGetNumberOfOption
     )
 {
     ULONG                           Index  =  0;
-
-    for( Index = 0 ; Index < uDhcpv6ServerPoolNum; Index++ )
+    /*RDKB-6780, CID-33219, boundary check for upper limit*/
+    for( Index = 0 ; (Index < uDhcpv6ServerPoolNum) && (Index < DHCPV6S_POOL_NUM) ; Index++ )
     {
         if ( sDhcpv6ServerPool[Index].Cfg.InstanceNumber == ulPoolInstanceNumber )
             break;
     }
-    
-    return uDhcpv6ServerPoolOptionNum[Index];
+
+    /* RDKB-6780, CID-33219, boundary check for upper limit
+    ** In case index exceeds the upper limit, return last value.
+    */
+    if(Index < DHCPV6S_POOL_NUM)
+    {
+        return uDhcpv6ServerPoolOptionNum[Index];
+    }
+    else
+    {
+        return uDhcpv6ServerPoolOptionNum[DHCPV6S_POOL_NUM - 1];
+    }
 }
 
 ANSC_STATUS
@@ -4562,13 +4629,23 @@ CosaDmlDhcpv6sGetOption
 {
     ULONG                           Index  =  0;
 
-    for( Index = 0 ; Index < uDhcpv6ServerPoolNum; Index++ )
+    /* RDKB-6780, CID-33221, out of bound read
+    ** Index must be less than the max array size
+    */
+    for( Index = 0 ; (Index < uDhcpv6ServerPoolNum) && (Index < DHCPV6S_POOL_NUM); Index++ )
     {
         if ( sDhcpv6ServerPool[Index].Cfg.InstanceNumber == ulPoolInstanceNumber )
             break;
     }
 
-    *pEntry = sDhcpv6ServerPoolOption[Index][ulIndex];
+    if(Index < DHCPV6S_POOL_NUM)
+    {
+        *pEntry = sDhcpv6ServerPoolOption[Index][ulIndex];
+    }
+    else
+    {
+        *pEntry = sDhcpv6ServerPoolOption[DHCPV6S_POOL_NUM - 1][ulIndex];
+    }
 
     return ANSC_STATUS_SUCCESS;
 }
