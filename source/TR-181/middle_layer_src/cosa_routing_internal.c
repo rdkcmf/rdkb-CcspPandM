@@ -864,10 +864,13 @@ CosaRoutingRemove
     {
         pPoamIrepFoTemp->Remove(pPoamIrepFoTemp);
     }
-   
+
+    /*RDKB-6743, CID-32970, use after free, NULL assignment is made to remove Static Analyzer warning*/
     AnscFreeMemory((ANSC_HANDLE)pMyObject);
+    pMyObject = (PCOSA_DATAMODEL_ROUTING)NULL;
 
     CosaDmlRoutingRemove((ANSC_HANDLE)pMyObject);
+
 
     return returnStatus;
 }
