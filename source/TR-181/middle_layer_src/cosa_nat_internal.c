@@ -771,6 +771,8 @@ CosaNatRegGetNatInfo
         pCosaNatPtContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
         if ( !pCosaNatPtContext )
         {
+            AnscFreeMemory(pCosaNatPt); /*RDKB-6742, CID-33206, Free unused resources after use*/
+            pCosaNatPt = NULL;
             returnStatus = ANSC_STATUS_FAILURE;
             goto EXIT2;
         }
@@ -1162,6 +1164,7 @@ CosaNatSyncPortTrigger
 
     if ( !pbFoundPt )
     {
+        AnscFreeMemory(pPortTrigger); /*RDKB-6742, CID-32996, free unused resources before exit*/
         return ANSC_STATUS_RESOURCES;
     }
 
