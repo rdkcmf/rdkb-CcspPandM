@@ -287,6 +287,7 @@ CosaDmlMldSetCfg
         if(fgets(buffer, 255,pid_f) != '\0')
         {
             fclose(pid_f);
+            pid_f = NULL;
             sscanf( buffer, "%d", &pid);
             CcspTraceWarning(("Sending SIGUSR1 to proccess %d...\n", pid));
             if ( kill(pid,SIGUSR1) == -1 )
@@ -305,6 +306,10 @@ CosaDmlMldSetCfg
                 }
             }
         }
+
+        if(pid_f) /*RDKB-6846, CID-33252, CID-33248, Free unused resources before exit*/
+            fclose(pid_f);
+
     }
     else
     {
@@ -339,6 +344,7 @@ CosaDmlMldGetInfo
         if(fgets(buffer, 255,pid_f) != '\0')
         {
             fclose(pid_f);
+            pid_f = NULL;
             sscanf( buffer, "%d", &pid);
             CcspTraceWarning(("Sending SIGUSR1 to proccess %d...\n", pid));
             if ( kill(pid,SIGUSR1) == -1 )
@@ -350,6 +356,10 @@ CosaDmlMldGetInfo
                 pInfo->Status = COSA_DML_MLD_STATUS_Enabled;
             }
         }
+
+        if(pid_f) /*RDKB-6846, CID-33365, free unused resources before exit*/
+            fclose(pid_f);
+
     }
     else
     {
@@ -383,6 +393,7 @@ CosaDmlMldGetGroup
         if(fgets(buffer, 255,pid_f) != '\0')
         {
             fclose(pid_f);
+            pid_f = NULL;
             sscanf( buffer, "%d", &pid);
             CcspTraceWarning(("Sending SIGUSR1 to proccess %d...\n", pid));
             if ( kill(pid,SIGUSR1) == -1 )
@@ -390,6 +401,10 @@ CosaDmlMldGetGroup
                 return ANSC_STATUS_FAILURE;
             }
         }
+
+        if(pid_f)
+            fclose(pid_f); /*RDKB-6846, CID-33197, free unused resources before exit*/
+
     }
     else
     {
@@ -424,6 +439,7 @@ CosaDmlMldGetGroup
                         if (count >= MLD_MAXINSTANCE)
                         {
                             *pulCount = count;
+                            fclose(stat_f); /*RDKB-6846, CID-33403, free unused resources before exit*/
                             return ANSC_STATUS_SUCCESS;
                         }
                         
