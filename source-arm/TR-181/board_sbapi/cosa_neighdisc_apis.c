@@ -1138,6 +1138,7 @@ void CosaDmlNeighborTableGetEntry
             p = _ansc_strstr(p, "dev ");
             if ( p == NULL ){
                 *pulInstanceNumber = i;
+                fclose(fp);/*RDKB-6843, CID-33223, free unused resource befor exit*/
                 return;
             }
 
@@ -1155,6 +1156,7 @@ void CosaDmlNeighborTableGetEntry
             p = _ansc_strstr(p, "lladdr ");
             if ( p == NULL ){
                 *pulInstanceNumber = i;
+                fclose(fp);/*RDKB-6843, CID-33223, free unused resource befor exit*/
                 return;
             }
 
@@ -1181,6 +1183,7 @@ void CosaDmlNeighborTableGetEntry
                 (*ppNbTbl)[i].Status = NEIGHBOR_STATUS_PROBE;
             }else{
                 *pulInstanceNumber = i;
+                fclose(fp);/*RDKB-6843, CID-33223, free unused resource befor exit*/
                 return;
             }
 
