@@ -757,9 +757,14 @@ void _init_DM_List(int *num, Name_DM_t **pList, char *path, char *name)
                     (*pList)[i].dm[0] = '\0';
             }
         }
-        Cdm_FreeNames(dmnames); 
     }
     *num = nname;
+
+    /*RDKB-6839, CID-33454, free unsed resource before exit*/
+    if(dmnames)
+    {
+        Cdm_FreeNames(dmnames); 
+    }
 }
 
 void _get_dmbyname(int num, Name_DM_t *list, char** dm, char* name)
