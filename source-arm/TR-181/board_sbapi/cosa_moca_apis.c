@@ -1203,19 +1203,32 @@ CosaDmlMocaIfPeerTableGetTable
 
     AnscTraceWarning(("CosaDmlMocaIfPeerTableGetTable -- ulInterfaceIndex:%lu, ppConf:%x\n", ulInterfaceIndex, (UINT)ppConf));
 
+    /*RDKB-6841,CID-33162, null check before use*/
+    if ( !ppConf || !pCount)
+    {
+        if(ppConf)
+            *ppConf = NULL;
+
+        if(pCount)
+            *pCount = 0;
+
+        return ANSC_STATUS_FAILURE;
+    }
+
     *ppConf = (PCOSA_DML_MOCA_PEER)AnscAllocateMemory(sizeof(g_MoCAPeer));
-    if ( !ppConf )
+    if(*ppConf)
     {
         *ppConf = NULL;
         *pCount = 0;
         return ANSC_STATUS_FAILURE;
     }
-    
+
     AnscCopyMemory( *ppConf, &g_MoCAPeer, sizeof(g_MoCAPeer) );
     *pCount = sizeof(g_MoCAPeer)/sizeof(COSA_DML_MOCA_PEER);
 
     return ANSC_STATUS_SUCCESS;
 }
+
 
 /*
     This function is used to get total Mesh tables.
