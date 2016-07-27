@@ -2382,11 +2382,13 @@ CosaDmlStaticRouteGetEntryByName
             rc = ANSC_STATUS_SUCCESS;
         }
 
-        if (sroutes) 
-        {
-            free(sroutes);
-        }
     } 
+
+    /*RDKB-6844, CID-33204, free unused resources before exit*/
+    if (sroutes) 
+    {
+        free(sroutes);
+    }
 
     Utopia_Free(&ctx,1);
 
