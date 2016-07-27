@@ -2651,7 +2651,10 @@ AccessPolicy_GetParamStringValue
         }
         else
         {
-            for ( i = 0; i < pDmlIAPolicy->LanHost.MacCount; i++ )
+            /* RDKB-6745, CID-32995, Out-of-bounds read
+            ** Adding upper bounday check for MacList to avoid out of bound access.
+            */
+            for ( i = 0; (i < pDmlIAPolicy->LanHost.MacCount) && (i < COSA_DML_IA_LH_MAX_MAC); i++ )
             {
                 _ansc_sprintf
                     (
@@ -2689,7 +2692,10 @@ AccessPolicy_GetParamStringValue
         }
         else
         {
-            for ( i =0; i< pDmlIAPolicy->LanHost.IpCount; i++ )
+            /* RDKB-6745, CID-33020,  Out-of-bounds read
+            ** Adding upper bounday check for MacList to avoid out of bound access.
+            */
+            for ( i =0; (i< pDmlIAPolicy->LanHost.IpCount) && (i < COSA_DML_IA_LH_MAX_IP); i++ )
             {
                 AnscGetIpAddrString(&pDmlIAPolicy->LanHost.IpList[i].Ip.Value, pValue);
 
@@ -2717,7 +2723,10 @@ AccessPolicy_GetParamStringValue
         }
         else
         {
-            for ( i = 0; i < pDmlIAPolicy->LanHost.IprCount; i++ )
+            /* RDKB-6745, CID-33020,  Out-of-bounds read
+            ** Adding upper bounday check for MacList to avoid out of bound access.
+            */
+            for ( i = 0; (i < pDmlIAPolicy->LanHost.IprCount) && (i < COSA_DML_IA_LH_MAX_IP_RANGE); i++ )
             {
                 AnscGetIpAddrString(&pDmlIAPolicy->LanHost.IprList[i].StartIp.Value, pValue);
 
