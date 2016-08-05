@@ -197,7 +197,7 @@ then
 					fi
 				fi #if [ "$APUP_PID" == "" ]; then
 			fi #if [ "$check_radio_enable5" == "1" ] || [ "$check_radio_enable2" == "1" ]; then
-		fi#if [ "$WiFi_PID" == "" ]; then
+		fi #if [ "$WiFi_PID" == "" ]; then
 
 		# Checking Harvester PID
 		Harvester_PID=`pidof harvester`
