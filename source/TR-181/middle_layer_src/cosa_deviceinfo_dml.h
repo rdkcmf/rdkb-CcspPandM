@@ -374,6 +374,7 @@ SupportedDataModel_GetParamStringValue
     *  MemoryStatus_GetParamIntValue
     *  MemoryStatus_GetParamUlongValue
     *  MemoryStatus_GetParamStringValue
+    *  MemoryStatus_SetParamUlongValue
 
 ***********************************************************************/
 BOOL
@@ -407,6 +408,14 @@ MemoryStatus_GetParamStringValue
         char*                       ParamName,
         char*                       pValue,
         ULONG*                      pUlSize
+    );
+
+BOOL
+MemoryStatus_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
     );
 
 /***********************************************************************
