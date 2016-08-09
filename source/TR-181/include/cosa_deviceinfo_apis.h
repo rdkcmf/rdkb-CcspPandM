@@ -141,6 +141,7 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info);
 ULONG COSADmlGetCpuUsage();
 ULONG COSADmlGetMemoryStatus(char * ParamName);
 ULONG COSADmlGetMaxWindowSize();
+int COSADmlSetMemoryStatus(char * ParamName, ULONG val);
 
 ANSC_STATUS
 CosaDmlDiInit

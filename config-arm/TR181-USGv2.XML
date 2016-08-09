@@ -831,6 +831,8 @@
 
             <func_GetParamStringValue>MemoryStatus_GetParamStringValue</func_GetParamStringValue>
 
+            <func_SetParamUlongValue>MemoryStatus_SetParamUlongValue</func_SetParamUlongValue>
+
           </functions>
 
           <parameters>
@@ -864,6 +866,17 @@
             <syntax>uint32</syntax>
 
             <notify>off</notify>
+
+          </parameter>
+          <parameter>
+
+            <name>X_RDKCENTRAL-COM_FreeMemThreshold</name>
+
+            <type>unsignedInt</type>
+
+            <syntax>uint32</syntax>
+
+            <writable>true</writable>
 
           </parameter>
 
