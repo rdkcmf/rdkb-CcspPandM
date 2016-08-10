@@ -3498,13 +3498,13 @@ OPTIONS:
     
     fclose(fp);
 
+#ifndef _COSA_BCM_MIPS_
     /*RDKB-6780, CID-33149, free unused resources before return*/
     if(responsefd)
     {
         fclose(responsefd);
     }
 
-#ifndef _COSA_BCM_MIPS_
     /*we will copy the updated conf file at once*/
     if (rename(TMP_SERVER_CONF, SERVER_CONF_LOCATION))
         CcspTraceWarning(("%s rename failed %s\n", __FUNCTION__, strerror(errno)));
