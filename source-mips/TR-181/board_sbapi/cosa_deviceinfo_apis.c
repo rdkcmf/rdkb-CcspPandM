@@ -536,16 +536,17 @@ COSADmlUploadLogsStatus
 			break;
 		case 4 :
 			ptr_file =fopen("/nvram/uploadsuccess","r");
-    			if (!ptr_file)
-        		break;
 
-    			if (fgets(buf,50, ptr_file)!=NULL)
+			if (!ptr_file)
+				break;
+
+			if (fgets(buf,50, ptr_file)!=NULL)
 			{
-				fclose(ptr_file);
 				strip_line(buf);
-    				AnscCopyString(pValue, buf);
-        			*pUlSize = AnscSizeOfString(pValue);
+				AnscCopyString(pValue, buf);
+				*pUlSize = AnscSizeOfString(pValue);
 			}
+			fclose(ptr_file);/*RDKB-6748, CID-33503, close to free resources*/
 			break;
 		default :
 			AnscCopyString(pValue, "Not triggered");
@@ -1106,6 +1107,30 @@ ULONG COSADmlGetCpuUsage()
     return  CPUUsage;
 }
 
+int COSADmlSetMemoryStatus(char * ParamName, ULONG val)
+{
+    if(AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FreeMemThreshold", TRUE))
+     {
+            char buf[10];
+	    memset(buf,sizeof(buf),0);
+	    snprintf(buf,sizeof(buf),"%d",val);            		    
+	    if ((syscfg_set(NULL, "MinMemoryThreshold_Value", buf) != 0)) 
+	    {
+	        CcspTraceWarning(("syscfg_set failed\n"));
+	        return -1;
+	    }
+	    else 
+	    {
+	        if (syscfg_commit() != 0) 
+	        {
+		    CcspTraceWarning(("syscfg_commit failed\n"));
+		    return -1;
+	        }
+			
+	       return 0;
+	     } 
+     }
+}
 ULONG COSADmlGetMemoryStatus(char * ParamName)
 {
      struct sysinfo si;
@@ -1176,6 +1201,17 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
         return tmp;
 #endif
      }
+     else if(AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FreeMemThreshold", TRUE))
+     {
+	char buf[10];
+	memset(buf,sizeof(buf),0);
+        syscfg_get( NULL, "MinMemoryThreshold_Value", buf, sizeof(buf));
+        if( buf != NULL )
+        {
+            return atoi(buf);
+        }
+	return 0;
+     }
      else 
      {
           return 0;
@@ -1245,7 +1281,7 @@ CosaDmlDiGetProcessorSpeed
    
     while(fgets(line, MAX_LINE_SIZE, fp) != NULL )
     {
-       if(strstr(line, TOKEN_STR) != NULL)
+       if(strcasestr(line, TOKEN_STR) != NULL)
        {
         pcur = strstr(line, ":");
         pcur++;
