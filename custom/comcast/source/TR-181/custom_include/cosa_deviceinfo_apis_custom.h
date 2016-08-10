@@ -173,6 +173,13 @@ CosaDmlDiSetXfinityWiFiEnable
     (
         BOOL value
     );
+
+ANSC_STATUS
+	CosaDmlDiGetCloudCapable
+	(
+		BOOL *pValue
+	);
+
 #endif
 
 
