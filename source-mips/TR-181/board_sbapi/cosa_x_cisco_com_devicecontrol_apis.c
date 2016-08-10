@@ -2830,7 +2830,7 @@ void _Get_LanMngm_Setting(UtopiaContext *utctx, ULONG index, PCOSA_DML_LAN_MANAG
     lanSetting_t lan;
     ANSC_IPV4_ADDRESS network, netmask, ipaddr;
     int temp;
-    bridgeInfo_t bridge_info;
+    bridgeInfo_t bridge_info = {0}; /*RDKB-6845, CID-33087, initialize before use*/
     boolean_t bool_tmp;
     int int_tmp;
     napt_mode_t napt_mode; 
@@ -3292,9 +3292,9 @@ static void configBridgeMode(int bEnable) {
         char primarybrp[5];
         char brpdm[50];
         char brmode[5];
-        PCOSA_NOTIFY_WIFI pnotifypara = (PCOSA_NOTIFY_WIFI)AnscAllocateMemory(sizeof(pnotifypara));
-        
-        memset(pnotifypara, 0, sizeof(*pnotifypara));
+        PCOSA_NOTIFY_WIFI pnotifypara = (PCOSA_NOTIFY_WIFI)AnscAllocateMemory(sizeof(COSA_NOTIFY_WIFI)); /*RDKB-6845, CID-32969, free unused resource before return */
+
+        memset(pnotifypara, 0, sizeof(COSA_NOTIFY_WIFI));
         commonSyseventGet("primary_lan_l2net", primaryl2inst, sizeof(primaryl2inst));
         commonSyseventGet("primary_lan_brport", primarybrp, sizeof(primaryl2inst));
         commonSyseventGet("bridge_mode", brmode, sizeof(brmode));
@@ -3308,6 +3308,7 @@ static void configBridgeMode(int bEnable) {
 
         if (ppComponents == NULL && initWifiComp()) {
             syslog_systemlog("Local Network", LOG_NOTICE, "Bridge mode transition: Failed to acquire wifi component.");
+            AnscFreeMemory( pnotifypara ); /*RDKB-6845, CID-33015, free unused resource before return */
             return ANSC_STATUS_SUCCESS;
         }
         totalticket += 1;

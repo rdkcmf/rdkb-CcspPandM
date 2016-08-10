@@ -2252,16 +2252,16 @@ CosaDmlNatGetPortMapping
         PCOSA_DML_NAT_PMAPPING      pNatPMapping
     )
 {
-    UtopiaContext          Ctx;
-    portFwdSingle_t        singleInfo;
-    portFwdRange_t         rangeInfo;
-    portMapDyn_t           dynInfo;
+    UtopiaContext          Ctx = {0};
+    portFwdSingle_t        singleInfo = {0};
+    portFwdRange_t         rangeInfo = {0};
+    portMapDyn_t           dynInfo ={0};
 //    lanSetting_t           lan;
     ULONG                  ulIndex = 0;
     int                    PortFwdDynCount = 0;
     ULONG                  rc,i;
 //    ANSC_IPV4_ADDRESS             nat_lan;  
-    COSA_DML_NAT_PMAPPING  tmp;
+    COSA_DML_NAT_PMAPPING  tmp ={0};
     if (pNatPMapping == NULL)
     {
         return ANSC_STATUS_FAILURE;
@@ -2297,6 +2297,8 @@ CosaDmlNatGetPortMapping
         }
     }
 #endif
+
+    AnscZeroMemory( &rangeInfo,sizeof(portFwdRange_t)); /*RDKB-6842, CID-33182, initializing */
 
     rangeInfo.rule_id = InstanceNumber; 
     rc = Utopia_GetPortForwardingRangeByRuleId(&Ctx, &rangeInfo);
@@ -2518,6 +2520,11 @@ CosaDmlNatGetPortMappings
     {
         Utopia_Free(&Ctx, 0);
         *pulCount = 0;
+        /*RDKB,CID-33473, CID-32920; free unused resource before return*/
+        if(rangeInfo) 
+            free(rangeInfo);
+        if(singleInfo) 
+            free(singleInfo);
         return NULL;
     }
 
@@ -2531,9 +2538,10 @@ CosaDmlNatGetPortMappings
     if(pNatPMapping == NULL)
     {
         CcspTraceWarning((" AnscAllocateMemory failed rc %d in %s\n", rc, __FUNCTION__));
-        if(PortFwdRangeCount != 0)
+        /*RDKB,CID-33473, CID-32920; free unused resource before return*/
+        if(rangeInfo) 
             free(rangeInfo);
-        if(PortFwdSingleCount != 0)
+        if(singleInfo)
             free(singleInfo);
         *pulCount = 0;
         Utopia_Free(&Ctx, 0);
@@ -2562,6 +2570,7 @@ CosaDmlNatGetPortMappings
             AnscCopyString(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6, singleInfo[i].dest_ipv6);
         }
         free(singleInfo);
+        singleInfo = NULL;
     }
 
     if ( PortFwdRangeCount != 0 )
@@ -2585,6 +2594,7 @@ CosaDmlNatGetPortMappings
             AnscCopyString(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6, rangeInfo[i].dest_ipv6);
         }
         free(rangeInfo);
+        rangeInfo = NULL;
     }
 
     if ( PortFwdDynCount != 0 )
@@ -2598,6 +2608,10 @@ CosaDmlNatGetPortMappings
             if ( UT_SUCCESS != rc )
             {
                 CcspTraceWarning(("Utopia_GetDynPortMapping failed rc %d in %s\n", rc, __FUNCTION__));
+                if(rangeInfo) /*RDKB-6842, CID-33473, free unused resource before exit*/
+                    free(rangeInfo);
+                if(singleInfo)
+                    free(singleInfo);
                 *pulCount = 0;
                 Utopia_Free(&Ctx, 0);
                 AnscFreeMemory(pNatPMapping);
@@ -2665,6 +2679,13 @@ CosaDmlNatGetPortMappings
             g_NatPortFwdDynInstanceNum[i] = pNatPMapping[ulIndex].InstanceNumber;
         }
     }
+
+    if(rangeInfo) /*RDKB-6842, CID-33473, free unused resource before exit*/
+        free(rangeInfo);
+
+    if(singleInfo)
+        free(singleInfo);
+
     *pulCount = allCount;
     Utopia_Free(&Ctx, 1);
     return pNatPMapping;
@@ -2771,9 +2792,9 @@ CosaDmlNatDelPortMapping
     )
 {
     UtopiaContext                   Ctx;
-    portFwdSingle_t          singleInfo;
-    portFwdRange_t            rangeInfo;
-    portMapDyn_t                dynInfo;
+    portFwdSingle_t          singleInfo = {0};
+    portFwdRange_t            rangeInfo = {0};
+    portMapDyn_t                dynInfo = {0};
     ULONG                       ulIndex = 0;
     int                 PortFwdDynCount = 0;
     ULONG                            rc = 0;
@@ -2809,6 +2830,7 @@ CosaDmlNatDelPortMapping
             return ANSC_STATUS_FAILURE;
         }
     }
+    AnscZeroMemory(&rangeInfo, sizeof(portFwdRange_t)); /*RDKB-6842, CID-32930, initializing*/
     rangeInfo.rule_id = ulInstanceNumber;
     rc = Utopia_GetPortForwardingRangeByRuleId(&Ctx, &rangeInfo);
     if(SUCCESS == rc)
@@ -3259,8 +3281,8 @@ CosaDmlNatGetPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pNatPTrigger
     )
 {
-    UtopiaContext                   Ctx;
-    portRangeTrig_t                 porttrigger;
+    UtopiaContext                   Ctx = {0};
+    portRangeTrig_t                 porttrigger = {0};
     BOOL                            bSetBack     = FALSE;
     ULONG                           ulIndex      = 0;
     int                             rc           = 0;
@@ -3276,6 +3298,8 @@ CosaDmlNatGetPortTrigger
         CcspTraceWarning(("%s Error initializing context\n", __FUNCTION__));
         return ANSC_STATUS_FAILURE;
     }
+
+    AnscZeroMemory(&porttrigger, sizeof(portRangeTrig_t)); /*RDKB-6842, CID-33457, initialize before use*/
 
     porttrigger.rule_id = InstanceNum;
     rc = Utopia_GetPortTriggerByRuleId(&Ctx, &porttrigger);
@@ -3365,6 +3389,8 @@ CosaDmlNatGetPortTriggers
     *pulCount = count;
     if (*pulCount == 0)
     {
+        if(porttrigger) /*RDKB-6842, CID-33375, free ununsed resources before exit*/
+            free(porttrigger);
         Utopia_Free(&Ctx, 0);
         return NULL;
     }
@@ -3373,6 +3399,8 @@ CosaDmlNatGetPortTriggers
     if ( !pNatPTrigger )
     {
         CcspTraceError(("CosaDmlNatGetPortTriggers not enough memory!\n"));
+        if(porttrigger) /*RDKB-6842, CID-33375, free ununsed resources before exit*/
+            free(porttrigger);
         *pulCount = 0;
         Utopia_Free(&Ctx, 0);
         return NULL;

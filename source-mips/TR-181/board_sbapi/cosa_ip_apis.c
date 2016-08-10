@@ -325,7 +325,7 @@ USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
 
 static int _is_bridge_mode(){
     UtopiaContext utctx = {0};
-    bridgeInfo_t bridge_info;
+    bridgeInfo_t bridge_info ={0}; /*RDKB-6840, CID-33568, initialize before use*/
     int ret = TRUE;
     if(Utopia_Init(&utctx)){
         Utopia_GetBridgeSettings(&utctx, &bridge_info);
@@ -1652,8 +1652,16 @@ CosaDmlIpIfGetEntry
 
     /*not supported*/
     pEntry->Cfg.bEnabled            = TRUE;
-    
-    pEntry->Cfg.LinkType            = G_USG_IF_LINKTYPE(pEntry->Cfg.InstanceNumber - 1);
+
+    /*RDKB-6840,CID-33138, InstanceNumber==0 will lead to memory violation*/
+    if(pEntry->Cfg.InstanceNumber > 0)
+    {
+        pEntry->Cfg.LinkType            = G_USG_IF_LINKTYPE(pEntry->Cfg.InstanceNumber - 1);
+    }
+    else
+    {
+        pEntry->Cfg.LinkType            = G_USG_IF_LINKTYPE(pEntry->Cfg.InstanceNumber);
+    }
 
     if (strcmp((char *)g_ipif_names[ulIndex], "lo") == 0)
     {
@@ -3133,6 +3141,7 @@ static int _del_one_token(char * buf, int inst_num, int buf_len)
     for (i=0; i<size; i++)
         sprintf(buf+strlen(buf), "%d,", num_array[i]);
 
+    free(num_array); /*RDKB-6840,CID-33498, free unused resource before exit*/
     return 0;
 }
 
@@ -3427,6 +3436,10 @@ CosaDmlIPGetIPv6Prefixes
         PULONG                      p_num
     )
 {
+    /*RDKB-6840, CID-33130, null check before use*/
+    if (!p_ipif || !p_num)
+        return NULL;
+
     if ( p_ipif->Cfg.InstanceNumber > COSA_USG_IF_NUM )
     {
         /*return  CosaDmlIpIfMlanGetIPv6Prefixes(hContext, ulIpIfInstanceNumber, pEntry);*/
@@ -3438,10 +3451,6 @@ CosaDmlIPGetIPv6Prefixes
         PCOSA_DML_IP_V6PREFIX p_dml_pref = NULL;
 
         AnscTraceFlow(("%s...\n", __FUNCTION__));
-
-        if (!p_ipif || !p_num)
-            return NULL;
-
 
         for (i=0; i<g_ipif_num; i++)
             if (!strncmp(g_ipif_names[i], p_ipif->Info.Name, sizeof(p_ipif->Info.Name)))

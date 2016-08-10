@@ -5179,12 +5179,15 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
             return;
         }
     }else{
+        fclose(fp);  /*RDKB-6847, CID-33364, free unused resources before exit*/
         return;
     }
-    
+
+    /*coverity[deref_ptr_in_call]  RDKB-6847, CID-33205, annotation to ignore coverity error*/
     while(-1 != getline(&line, &len, fp)){
         if(0 == anlz_line(line, *entry + *count))
             (*count)++;        
+        /*coverity[check_after_deref] RDKB-6847, CID-33205*/
         if(line){
             free(line);
             line = NULL;
@@ -5192,7 +5195,7 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
     }
     fclose(fp);
     if(*count == 0){
-        AnscFreeMemory(entry);
+        AnscFreeMemory(*entry); /*RDKB-6847, CID-33423, free the allocated */
         *entry = NULL;
     }
     return;
@@ -5564,6 +5567,8 @@ static int ssmtp_send(const char *msgFilePath, const char *subject, const char *
 
     snprintf(buf, sizeof(buf), "(((cat %s; echo 'Subject: %s'; echo; echo; uuencode %s %s) | ssmtp %s) && rm %s) &", msgFilePath, subject, attachmentPath, basename(attachmentPathCopy), recipient, attachmentPath);
     system(buf);
+
+    fclose(fp); /*RDKB-6847, CID-33064, free unused resources before exit*/
 
     return 0;
 }

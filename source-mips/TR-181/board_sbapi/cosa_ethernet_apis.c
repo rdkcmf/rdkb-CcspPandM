@@ -331,12 +331,21 @@ CosaDmlEthPortSetCfg
     )
 {
     COSA_DML_ETH_PORT_CFG origCfg;
-    PCosaEthInterfaceInfo pEthIf = getIF(pCfg->InstanceNumber);
-    
-    if ( !pCfg || !pEthIf )
+    PCosaEthInterfaceInfo pEthIf = (PCosaEthInterfaceInfo  )NULL;
+
+    /*RDKB-6838, CID-32984, null check before use*/
+    if ( !pCfg )
     {
         return ANSC_STATUS_FAILURE;
     }
+
+    pEthIf = getIF(pCfg->InstanceNumber);
+
+    if ( !pEthIf )
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
 
     pEthIf->control->getCfg(pEthIf, &origCfg);
 
@@ -365,12 +374,21 @@ CosaDmlEthPortGetCfg
         PCOSA_DML_ETH_PORT_CFG      pCfg
     )
 {
-    PCosaEthInterfaceInfo pEthIf = getIF(pCfg->InstanceNumber);
-    
-    if ( !pCfg || !pEthIf )
+    PCosaEthInterfaceInfo pEthIf = (PCosaEthInterfaceInfo  )NULL;
+
+    /*RDKB-6838, CID-33167, null check before use*/
+    if ( !pCfg )
     {
         return ANSC_STATUS_FAILURE;
     }
+
+    pEthIf = getIF(pCfg->InstanceNumber);
+
+    if ( !pEthIf )
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
 
     pEthIf->control->getCfg(pEthIf, pCfg);
     

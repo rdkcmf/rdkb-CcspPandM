@@ -2961,6 +2961,8 @@ CosaDmlDnsClientGetServer
             memcpy(pEntry, &pTable[i], sizeof(COSA_DML_DNS_CLIENT_SERVER));
             ret = ANSC_STATUS_SUCCESS;
     }
+
+    AnscFreeMemory(pTable);/*RDKB-6837, CID-33471, free unused resource before exit*/
     return ret;
 }
 
