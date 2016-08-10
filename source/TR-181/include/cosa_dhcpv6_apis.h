@@ -115,7 +115,12 @@
 #define COSA_DML_DHCPV6C_ADDR_PRETM_SYSEVENT_NAME     "tr_"COSA_DML_DHCPV6_CLIENT_IFNAME"_dhcpv6_client_addr_pretm"
 #define COSA_DML_DHCPV6C_ADDR_VLDTM_SYSEVENT_NAME     "tr_"COSA_DML_DHCPV6_CLIENT_IFNAME"_dhcpv6_client_addr_vldtm"
 
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+#define COSA_DML_DHCPV6S_ADDR_SYSEVENT_NAME      "ipv6_"COSA_DML_DHCPV6_SERVER_IFNAME"-addr"
+#else
 #define COSA_DML_DHCPV6S_ADDR_SYSEVENT_NAME      "tr_"COSA_DML_DHCPV6_SERVER_IFNAME"_dhcpv6_server_v6addr"
+#endif
+
 /*
  *  DHCP Client
  */
@@ -675,6 +680,15 @@ CosaDmlDhcpv6sGetIAPDPrefixes
         ULONG*                      pSize
      );
 
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+int 
+CosaDmlDhcpv6sGetIAPDPrefixes2
+    (
+        PCOSA_DML_DHCPSV6_POOL_CFG  pCfg,
+        char*                       pValue,
+        ULONG*                      pSize
+     );
+#endif
 ULONG
 CosaDmlDhcpv6sGetType
     (

@@ -4413,12 +4413,22 @@ Pool1_GetParamStringValue
     if( AnscEqualString(ParamName, "Interface", TRUE) )
     {
         /* collect value */
+     #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+        pString = CosaUtilGetFullPathNameByKeyword
+                    (
+                        "Device.IP.Interface.",
+                        "Name",
+                        pPool->Cfg.Interface /* When brlan0 works ,change to "brlan0"*/
+                    );
+     #else
         pString = CosaUtilGetFullPathNameByKeyword
                     (
                         "Device.IP.Interface.",
                         "Name",
                         "brlan0" /* When brlan0 works ,change to "brlan0"*/
-                    );
+                    );     
+     #endif
+     
         if ( pString )
         {
             if ( AnscSizeOfString(pString) < *pUlSize)
@@ -4567,8 +4577,16 @@ Pool1_GetParamStringValue
     if( AnscEqualString(ParamName, "IAPDPrefixes", TRUE) )
     {
         /* collect value */
-#ifdef _COSA_DRG_CNS_
-        return CosaDmlDhcpv6sGetIAPDPrefixes(&pPool->Cfg, pValue, pUlSize);
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+	#ifdef _COSA_DRG_CNS_
+	        return CosaDmlDhcpv6sGetIAPDPrefixes(&pPool->Cfg, pValue, pUlSize);
+	#else
+	        return CosaDmlDhcpv6sGetIAPDPrefixes2(&pPool->Cfg, pValue, pUlSize);
+	#endif
+#else
+	#ifdef _COSA_DRG_CNS_
+	        return CosaDmlDhcpv6sGetIAPDPrefixes(&pPool->Cfg, pValue, pUlSize);
+	#endif
 #endif
 
         if ( AnscSizeOfString(pPool->Info.IAPDPrefixes) < *pUlSize)

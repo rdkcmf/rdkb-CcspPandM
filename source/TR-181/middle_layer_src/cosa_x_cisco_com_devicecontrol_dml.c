@@ -2006,13 +2006,40 @@ LanMngm_Validate
        pLanMngm->LanSubnetMask.Value != 0x0000FFFF &&
        pLanMngm->LanSubnetMask.Value != 0x000000FF &&  
        pLanMngm->LanSubnetMask.Value != 0x80FFFFFF && 
-       pLanMngm->LanSubnetMask.Value != 0xFCFFFFFF ) 
+       pLanMngm->LanSubnetMask.Value != 0xFCFFFFFF )
+#else 
+#ifdef _BCI_FEATURE_REQ
+    if(pLanMngm->LanSubnetMask.Value != 0xFF000000 &&   //8
+       pLanMngm->LanSubnetMask.Value != 0xFF800000 &&   //9
+       pLanMngm->LanSubnetMask.Value != 0xFFC00000 &&   //10
+       pLanMngm->LanSubnetMask.Value != 0xFFE00000 &&	 //11
+       pLanMngm->LanSubnetMask.Value != 0xFFF00000 &&	 //12
+       pLanMngm->LanSubnetMask.Value != 0xFFF80000 &&   //13
+       pLanMngm->LanSubnetMask.Value != 0xFFFC0000 &&   //14
+       pLanMngm->LanSubnetMask.Value != 0xFFFE0000 &&   //15
+       pLanMngm->LanSubnetMask.Value != 0xFFFF0000 &&   //16
+       pLanMngm->LanSubnetMask.Value != 0xFFFF8000 &&   //17
+       pLanMngm->LanSubnetMask.Value != 0xFFFFC000 &&   //18
+       pLanMngm->LanSubnetMask.Value != 0xFFFFE000 &&   //19
+       pLanMngm->LanSubnetMask.Value != 0xFFFFF000 &&   //20
+       pLanMngm->LanSubnetMask.Value != 0xFFFFF800 &&   //21
+       pLanMngm->LanSubnetMask.Value != 0xFFFFFC00 &&   //22
+       pLanMngm->LanSubnetMask.Value != 0xFFFFFE00 &&   //23
+       pLanMngm->LanSubnetMask.Value != 0xFFFFFF00 &&   //24
+       pLanMngm->LanSubnetMask.Value != 0xFFFFFF80 &&   //25
+       pLanMngm->LanSubnetMask.Value != 0xFFFFFFC0 &&   //26
+       pLanMngm->LanSubnetMask.Value != 0xFFFFFFE0 &&   //27
+       pLanMngm->LanSubnetMask.Value != 0xFFFFFFF0 &&   //28
+       pLanMngm->LanSubnetMask.Value != 0xFFFFFFF8 &&   //29
+       pLanMngm->LanSubnetMask.Value != 0xFFFFFFFC &&   //30
+       pLanMngm->LanSubnetMask.Value != 0xFFFFFFFE )   //31
 #else
     if(pLanMngm->LanSubnetMask.Value != 0xFFFFFF00 &&
        pLanMngm->LanSubnetMask.Value != 0xFFFF0000 &&
        pLanMngm->LanSubnetMask.Value != 0xFF000000 &&
        pLanMngm->LanSubnetMask.Value != 0xFFFFFF80 &&
        pLanMngm->LanSubnetMask.Value != 0xFFFFFFFC )
+#endif
 #endif
     {
 		CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Modified LanSubnetMask doesn't meet the conditions,reverting back to old value  ...\n"));
