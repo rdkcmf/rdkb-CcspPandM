@@ -79,6 +79,42 @@
 
 #include "cosa_x_cisco_com_devicecontrol_apis.h"
 #include "ccsp_hal_dhcpv4_emu_api.h" 
+#include "dmsb_tr181_psm_definitions.h"
+
+#if 1//LNT_EMU
+// for PSM access
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
+// PSM access MACRO
+#define _PSM_WRITE_PARAM(_PARAM_NAME) { \
+        _ansc_sprintf(param_name, _PARAM_NAME, instancenum); \
+        retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value); \
+        if (retPsmSet != CCSP_SUCCESS) { \
+            AnscTraceFlow(("%s Error %d writing %s %s\n", __FUNCTION__, retPsmSet, param_name, param_value));\
+        } \
+        else \
+        { \
+            AnscTraceFlow(("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value)); \
+           printf("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value); \
+        } \
+        _ansc_memset(param_name, 0, sizeof(param_name)); \
+        _ansc_memset(param_value, 0, sizeof(param_value)); \
+    }
+#define _PSM_READ_PARAM(_PARAM_NAME) { \
+        _ansc_memset(param_name, 0, sizeof(param_name)); \
+        _ansc_sprintf(param_name, _PARAM_NAME, instancenum); \
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value); \
+        if (retPsmGet != CCSP_SUCCESS) { \
+            AnscTraceFlow(("%s Error %d reading %s %s\n", __FUNCTION__, retPsmGet, param_name, param_value));\
+        } \
+        else { \
+            AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = \n%s\n", __FUNCTION__,param_name, param_value)); \
+		printf("param_name (%s) and param_value (%s) \n",param_name, param_value); \
+        } \
+    }
+
+#endif
+
 
 int fwSync = 0;
 
@@ -1297,6 +1333,33 @@ static COSA_DML_LAN_MANAGEMENT  g_lanMngmTab[MAX_LANMNGM_ENTRY] = {
     }
 };
 
+int PSMGetDhcpv4RecordValues(PCOSA_DML_LAN_MANAGEMENT pLanMngt,ULONG instancenum)//LNT_EMU
+{
+        int retPsmGet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char *param_value = NULL;
+	instancenum = instancenum - 1;
+        _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_IPROUTERS);
+                pLanMngt->LanIPAddress.Value = inet_addr(param_value);
+        _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_SUBNETMASK);
+                pLanMngt->LanSubnetMask.Value = inet_addr(param_value);
+        return 0;
+}
+
+int PSMSettDHCPV4RecordValues(PCOSA_DML_LAN_MANAGEMENT pNewCfg,ULONG instancenum)//LNT_EMU
+{
+        int retPsmSet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char param_value[256] = {0};
+        _ansc_sprintf(param_value, "%d.%d.%d.%d",
+            pNewCfg->LanIPAddress.Dot[0], pNewCfg->LanIPAddress.Dot[1], pNewCfg->LanIPAddress.Dot[2], pNewCfg->LanIPAddress.Dot[3]);
+         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_IPROUTERS);
+        _ansc_sprintf(param_value, "%d.%d.%d.%d",
+            pNewCfg->LanSubnetMask.Dot[0], pNewCfg->LanSubnetMask.Dot[1],pNewCfg->LanSubnetMask.Dot[2],pNewCfg->LanSubnetMask.Dot[3]);
+        _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_SUBNETMASK);
+        return 0;
+}
+
 static int
 CosaDmlLanMngm_InsGetIndex(ULONG ins)
 {
@@ -1320,6 +1383,10 @@ CosaDmlLanMngm_GetEntryByIndex(ULONG index, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 {
 	uint32_t ip_integer;
 	uint32_t  netmask;
+    	char lan_ip[256] = {0};
+    	char lan_subnet[256] = {0};
+	PCOSA_DML_LAN_MANAGEMENT pLanMngt = NULL;//LNT_EMU
+        pLanMngt = (PCOSA_DML_LAN_MANAGEMENT) AnscAllocateMemory( sizeof(COSA_DML_LAN_MANAGEMENT));
 	if (index >= g_lanMngmCnt)
 		return ANSC_STATUS_FAILURE;
 
@@ -1329,6 +1396,28 @@ CosaDmlLanMngm_GetEntryByIndex(ULONG index, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 
 	*(uint32_t*)pLanMngm->LanIPAddress.Dot = ip_integer;
 	*(uint32_t*)pLanMngm->LanSubnetMask.Dot = netmask;
+	
+	_ansc_sprintf(lan_ip, "%d.%d.%d.%d",
+            pLanMngm->LanIPAddress.Dot[0], pLanMngm->LanIPAddress.Dot[1], pLanMngm->LanIPAddress.Dot[2], pLanMngm->LanIPAddress.Dot[3]);
+	_ansc_sprintf(lan_subnet, "%d.%d.%d.%d",
+            pLanMngm->LanSubnetMask.Dot[0], pLanMngm->LanSubnetMask.Dot[1],pLanMngm->LanSubnetMask.Dot[2], pLanMngm->LanSubnetMask.Dot[3]);
+	if(strcmp(lan_ip,"0.0.0.0") == 0)
+        {
+        PSMGetDhcpv4RecordValues(pLanMngt,pLanMngm->InstanceNumber);
+        pLanMngm->LanIPAddress.Dot[0] = pLanMngt->LanIPAddress.Dot[0];
+        pLanMngm->LanIPAddress.Dot[1] = pLanMngt->LanIPAddress.Dot[1];
+        pLanMngm->LanIPAddress.Dot[2] = pLanMngt->LanIPAddress.Dot[2];
+        pLanMngm->LanIPAddress.Dot[3] = pLanMngt->LanIPAddress.Dot[3];
+        }
+        if(strcmp(lan_subnet,"0.0.0.0") == 0)
+        {
+        PSMGetDhcpv4RecordValues(pLanMngt,pLanMngm->InstanceNumber);
+        pLanMngm->LanSubnetMask.Dot[0] = pLanMngt->LanSubnetMask.Dot[0];
+        pLanMngm->LanSubnetMask.Dot[1] = pLanMngt->LanSubnetMask.Dot[1];
+        pLanMngm->LanSubnetMask.Dot[2] = pLanMngt->LanSubnetMask.Dot[2];
+        pLanMngm->LanSubnetMask.Dot[3] = pLanMngt->LanSubnetMask.Dot[3];
+        }
+
 
 	return ANSC_STATUS_SUCCESS;
 }
@@ -1392,6 +1481,20 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 	int i;
 	char str[INET_ADDRSTRLEN];
 	char str1[INET_ADDRSTRLEN];
+#if 1//LNT_EMU
+        PCOSA_DML_LAN_MANAGEMENT pSLanCfg = NULL;
+        pSLanCfg = (PCOSA_DML_LAN_MANAGEMENT)AnscAllocateMemory( sizeof(COSA_DML_LAN_MANAGEMENT));
+        pSLanCfg->LanIPAddress.Dot[0] = pLanMngm->LanIPAddress.Dot[0];
+        pSLanCfg->LanIPAddress.Dot[1] = pLanMngm->LanIPAddress.Dot[1];
+        pSLanCfg->LanIPAddress.Dot[2] = pLanMngm->LanIPAddress.Dot[2];
+        pSLanCfg->LanIPAddress.Dot[3] = pLanMngm->LanIPAddress.Dot[3];
+        pSLanCfg->LanSubnetMask.Dot[0] = pLanMngm->LanSubnetMask.Dot[0];
+        pSLanCfg->LanSubnetMask.Dot[1] = pLanMngm->LanSubnetMask.Dot[1];
+        pSLanCfg->LanSubnetMask.Dot[2] = pLanMngm->LanSubnetMask.Dot[2];
+        pSLanCfg->LanSubnetMask.Dot[3] = pLanMngm->LanSubnetMask.Dot[3];
+        PSMSettDHCPV4RecordValues(pSLanCfg,pSLanCfg->InstanceNumber);
+#endif
+
 	inet_ntop(AF_INET, pLanMngm->LanIPAddress.Dot, str, INET_ADDRSTRLEN);
 	inet_ntop(AF_INET, pLanMngm->LanSubnetMask.Dot, str1, INET_ADDRSTRLEN);
 	ConfigValues config_values;
