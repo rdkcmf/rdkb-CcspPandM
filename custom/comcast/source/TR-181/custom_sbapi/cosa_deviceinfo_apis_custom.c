@@ -472,3 +472,23 @@ CosaDmlSetCaptivePortalEnable
     return ANSC_STATUS_SUCCESS;
 }
 
+ANSC_STATUS
+	CosaDmlDiGetCloudCapable
+	(
+     	BOOL *pValue
+	)
+{
+	int rc;
+    char buf[5];
+
+	memset(buf, 0, sizeof(buf));
+	rc = syscfg_get( NULL, "cloud_capable_flag", buf, sizeof(buf));
+    if( rc == 0 )
+    {
+        if (strcmp(buf,"1") == 0)
+            *pValue = TRUE;
+        else
+    		*pValue = FALSE;
+    }
+	return ANSC_STATUS_SUCCESS;
+}

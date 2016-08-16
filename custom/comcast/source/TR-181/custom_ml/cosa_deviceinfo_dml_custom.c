@@ -155,20 +155,9 @@ DeviceInfo_GetParamBoolValue_Custom
     }
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUICapable", TRUE))
     {
-/*       *pBool = pMyObject->bCloudCapable;
-	return TRUE; */
 
-	char buf[5];
-        syscfg_get( NULL, "cloud_capable_flag", buf, sizeof(buf));
-    	if( buf != NULL )
-    		{
-    		    if (strcmp(buf,"1") == 0)
-    		        pMyObject->bCloudCapable = TRUE;
-    		    else
-    		        pMyObject->bCloudCapable = FALSE;
-    		}
-	*pBool = pMyObject->bCloudCapable;
-	return TRUE;
+	    *pBool = pMyObject->bCloudCapable;
+	     return TRUE;
 
     }
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIEnable", TRUE))
