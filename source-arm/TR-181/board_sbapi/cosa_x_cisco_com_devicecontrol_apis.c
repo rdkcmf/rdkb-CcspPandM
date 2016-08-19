@@ -3084,6 +3084,31 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
             AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
             bus_info->freefunc(faultParam);
         } 
+
+        //Reset Radios only when Enabled router mode
+        if (!pNotify->flag)
+        {
+                parameterValStruct_t resetRadio[] = {{"Device.WiFi.X_CISCO_COM_ResetRadios", "true", ccsp_boolean}};
+
+                ret = CcspBaseIf_setParameterValues
+                        (
+                                bus_handle,
+                                ppComponents[0]->componentName,
+                                ppComponents[0]->dbusPath,
+                                0, 0x0,   /* session id and write id */
+                                resetRadio,
+                                1,
+                                TRUE,   /* no commit */
+                                &faultParam
+                        );
+
+                if (ret != CCSP_SUCCESS && faultParam)
+                {
+                    AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
+                    bus_info->freefunc(faultParam);
+                }
+        }
+
         curticket++;
         AnscFreeMemory(arg);
         return NULL;
