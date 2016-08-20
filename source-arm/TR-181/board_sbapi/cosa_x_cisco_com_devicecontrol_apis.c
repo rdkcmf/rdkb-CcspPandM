@@ -1360,6 +1360,55 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 	return ANSC_STATUS_SUCCESS;
 }
 
+ANSC_STATUS
+CosaDmlDcResetBr0(char *ip, char *sub) {
+	int ret;
+	
+	char objName[256]="Device.WiFi.X_RDKCENTRAL-COM_Br0_Sync";
+	char objValue[256]={0};
+	parameterValStruct_t  value[1] = { objName, objValue, ccsp_string};
+	
+	char dst_pathname_cr[64]  =  {0};
+	componentStruct_t **        ppComponents = NULL;
+	int size =0;
+	
+	CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+	char* faultParam = NULL;
+    snprintf(objValue, sizeof(objValue), "%s,%s", ip, sub);
+	fprintf(stderr, "-- %s %d %s\n", __func__, __LINE__, objValue);
+	
+	snprintf(dst_pathname_cr, sizeof(dst_pathname_cr), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+	ret = CcspBaseIf_discComponentSupportingNamespace(
+				bus_handle,
+				dst_pathname_cr,
+				objName,
+				g_Subsystem,        /* prefix */
+				&ppComponents,
+				&size);
+	if ( ret != CCSP_SUCCESS ) {
+		fprintf(stderr, "Error:'%s' is not exist\n", objName);
+		return ANSC_STATUS_FAILURE;
+	}	
+
+	ret = CcspBaseIf_setParameterValues(
+				bus_handle,
+				ppComponents[0]->componentName,
+				ppComponents[0]->dbusPath,
+				0, 0x0,   /* session id and write id */
+				&value,
+				1,
+				TRUE,   /* no commit */
+				&faultParam
+			);
+
+	if (ret != CCSP_SUCCESS && faultParam) {
+		fprintf(stderr, "Error:Failed to SetValue for param '%s'\n", faultParam);
+		bus_info->freefunc(faultParam);
+	}
+	free_componentStruct_t(bus_handle, 1, ppComponents);
+	return ANSC_STATUS_SUCCESS;
+}
+
 static int openCommonSyseventConnection() {
     if (commonSyseventFd == -1) {
         commonSyseventFd = s_sysevent_connect(&commonSyseventToken);
