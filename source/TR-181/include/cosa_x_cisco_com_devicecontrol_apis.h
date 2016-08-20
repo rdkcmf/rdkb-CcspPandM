@@ -692,6 +692,9 @@ CosaDmlLanMngm_SetConf
         PCOSA_DML_LAN_MANAGEMENT pLanMngm
     );
 
+ANSC_STATUS CosaDmlDcResetBr0(char *ip, char *sub);
+	
+
 void _CosaDmlDcStartZeroConfig();
 
 void _CosaDmlDcStopZeroConfig();
