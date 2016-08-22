@@ -2069,7 +2069,11 @@ LanMngm_Commit
         {
             CosaDmlLanMngm_GetConf(pLanMngm->InstanceNumber, pLanMngm);
             return -1;
-        } else {
+        }
+      
+#if !defined(_COSA_BCM_MIPS_) 
+        else 
+        {
 
 			char ip[64]={0};
 			char sub[64]={0};
@@ -2080,7 +2084,8 @@ LanMngm_Commit
 CcspTraceWarning( ("--------- LanMngm_Commit CosaDmlDcResetBr0 %s,%s>>\n", ip, sub));				
 			CosaDmlDcResetBr0(ip, sub);
 CcspTraceWarning( ("--------- LanMngm_Commit CosaDmlDcResetBr0 <<\n"));		
-		}
+	}
+#endif
     }
 
     return 0;
