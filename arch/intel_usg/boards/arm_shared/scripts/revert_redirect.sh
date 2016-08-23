@@ -7,7 +7,7 @@ SERVER6_BKUP="/nvram/server_bkup.conf"
 Uncommented_line=""
 REVERTED_FLAG="/nvram/reverted"
 
-echo "Revert Redirect : Reverting back the changes made for redirecting the URL's"
+echo_t "Revert Redirect : Reverting back the changes made for redirecting the URL's"
 syscfg set redirection_flag false
 
 # Check if command execution was success
@@ -15,7 +15,7 @@ syscfg set redirection_flag false
 result=`echo $?`
 if [ "$result" != "0" ]
 then
-	echo "Revert Redirect : Setting redirection_flag to false failed, try resetting it.."
+	echo_t "Revert Redirect : Setting redirection_flag to false failed, try resetting it.."
 	syscfg set redirection_flag false
 fi
 
@@ -29,17 +29,17 @@ then
 	syscfg commit
 fi
 
-echo "Revert Redirect : Indicate revert rediretion is triggered"
+echo_t "Revert Redirect : Indicate revert rediretion is triggered"
 touch $REVERTED_FLAG
 
-echo "Revert Redirect : Reverting dns configuration changes and restarting DHCP servers"
+echo_t "Revert Redirect : Reverting dns configuration changes and restarting DHCP servers"
 sysevent set dhcp_server-stop
 # Let's make sure dhcp server restarts properly
 sleep 1
 sysevent set dhcp_server-start
 
 #Changes for EMS starts here
-echo "Obtaining the SSID and Password for 2.4 and 5 GHz"
+echo_t "Obtaining the SSID and Password for 2.4 and 5 GHz"
 #echo "Getting Device.WiFi.SSID.1.SSID.."
 SSID_1=`dmcli eRT getv Device.WiFi.SSID.1.SSID | grep string | cut -d":" -f3- | cut -d" " -f2-`
 #echo $SSID_1
@@ -70,7 +70,7 @@ Mobile_Number=`dmcli eRT getv Device.DeviceInfo.X_COMCAST-COM_EMS_MobileNumber |
 Server_URL=`dmcli eRT getv Device.DeviceInfo.X_COMCAST-COM_EMS_ServerURL | grep string | awk '{print $5}'`
 #echo $Server_URL
 
-echo "Exporting path for curl.."
+echo_t "Exporting path for curl.."
 export PATH=/fss/gw:$PATH
 
 defaultMobileNumber="0000000000"
@@ -78,7 +78,7 @@ defaultMobileNumber="0000000000"
 #echo "Mobile_Number = $Mobile_Number"
 if [ "$Mobile_Number" != "$defaultMobileNumber" ]
 then
-	echo "Revert Redirect : Triggering EMS service using curl.."
+	echo_t "Revert Redirect : Triggering EMS service using curl.."
 	#curl --data "SSID_1=$SSID_1&Password_1=$Password_1&Mobile_Number=$Mobile_Number&SSID_2=$SSID_1&Password_2=$Password_2&CM_MAC=$CM_MAC&CM_IP=$CM_IP" http://96.119.182.89:8080/captiveportalEMS
 
 	# If SSID for 2.4 and 5 are same, then SMS to be send is single band template
@@ -90,11 +90,11 @@ then
 	
 	curl -v --cacert /nvram/cacert.pem --interface erouter0 --data "SSID_1=$SSID_1&Password_1=$Password_1&Mobile_Number=$Mobile_Number&SSID_2=$SSID_2&Password_2=$Password_2&CM_MAC=$CM_MAC&CM_IP=$CM_IP" $Server_URL
 	
-	echo "Revert Redirect : SMS Execution complete.."
+	echo_t "Revert Redirect : SMS Execution complete.."
 	`dmcli eRT setv Device.DeviceInfo.X_COMCAST-COM_EMS_MobileNumber string 0000000000`
 
 else
-	echo "Revert Redirect : SMS option is not opted for.."
+	echo_t "Revert Redirect : SMS option is not opted for.."
 fi
 
 sleep 5
@@ -111,16 +111,16 @@ then
 	rm $SERVER6_BKUP
 	cat $SERVER6_CONF
 else
-	echo "No dibbler6 configuration available...."
+	echo_t "No dibbler6 configuration available...."
 fi
 
-echo "Revert Redirect : Restarting 6servers..."
+echo_t "Revert Redirect : Restarting 6servers..."
 dibbler-server stop
 dibbler-server start
 
 #Restart Firewall
 #Make sure all DNS redirection rules are removed
-echo "Revert Redirect : Restarting firewall"
+echo_t "Revert Redirect : Restarting firewall"
 sysevent set firewall-restart
 
 # Restart Zebra to populate RDNSS
@@ -130,7 +130,7 @@ sysevent set zebra-restart
 redirectVal=`syscfg get redirection_flag`
 if [ "$redirectVal" = "true" ]
 then
-    echo "Revert Redirect : Setting redirection_flag to false failed even after retry, trying to reset it again.."
+    echo_t "Revert Redirect : Setting redirection_flag to false failed even after retry, trying to reset it again.."
     syscfg set redirection_flag false
     syscfg commit
 fi

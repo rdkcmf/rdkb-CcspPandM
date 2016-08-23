@@ -10,10 +10,10 @@ DHCPDONE=`sysevent get captiveportaldhcp`
 # /nvram/reverted will be created only when user changes WiFI and password
 if [ -e "$REVERTED_FLAG" ]
 then
-	echo "Redirect URL : Removing reverted flag"
+	echo_t "Redirect URL : Removing reverted flag"
 	rm -f $REVERTED_FLAG
 
-	echo "Redirect URL : Restarting dnsmasq daemon for redirection"
+	echo_t "Redirect URL : Restarting dnsmasq daemon for redirection"
 	cat /var/dnsmasq.conf
 	sysevent set dhcp_server-stop
 	# Let's make sure dhcp server restarts properly

@@ -29,7 +29,7 @@ gotResponse=0
 
 source /etc/utopia/service.d/log_capture_path.sh
 
-echo "Network Response: Checking erouter0 ip address"
+echo_t "Network Response: Checking erouter0 ip address"
 
 # This loop will wait till the erouter0 interface gets IP
 while [ $HAS_IP -ne 1 ]
@@ -50,7 +50,7 @@ done
 # If unit is in captive portal mode, then restart all necessary services
 # to get the corresponding configuration updated.
 REDIRECTION_FLAG=`syscfg get redirection_flag`
-echo "REDIRECTION_FLAG got is : $REDIRECTION_FLAG"
+echo_t "REDIRECTION_FLAG got is : $REDIRECTION_FLAG"
 if [ "$REDIRECTION_FLAG" = "true" ]
 then
 	# gotResponse will be marked 1 when any of the required responses are available.
@@ -93,7 +93,7 @@ then
 	#	curl -sL -w '%{http_code}\n' --interface $WAN_INTERFACE $URL_2 --connect-timeout 10 -m 10 -o /dev/null > $RESPONSE_2 
 
 		export PATH=$PATH:/fss/gw
-		echo "Network Response: Running curl commands to check network access"
+		echo_t "Network Response: Running curl commands to check network access"
 
 		# If any of the service returned success code, mark device is activated	
 		# Return codes can be 200 or 302
@@ -106,13 +106,13 @@ then
 			responseCode_1=`cat $RESPONSE_1`
 			if [ "$responseCode_1" = "" ]
 			then
-				echo "Network Response: Responsefile for $URL_1 was empty.."
+				echo_t "Network Response: Responsefile for $URL_1 was empty.."
 				responseCode_1=0
 			fi
 
 			if [ "$responseCode_1" = "204" ]
 			then
-				echo "Network Response: Got success response with URL1"
+				echo_t "Network Response: Got success response with URL1"
 				gotResponse=1
 			fi
 		fi
@@ -190,15 +190,15 @@ then
 		then
 			#superResponse=204
 			echo 204 > $RESPONSE
-			echo "Network Response: Got 204. Move on.."
+			echo_t "Network Response: Got 204. Move on.."
 			if [ -e "$REVERT_FLAG" ]
 			then
-				echo "Network Response: Reverted flag should not be present in case of default state"	
+				echo_t "Network Response: Reverted flag should not be present in case of default state"	
 				rm -f $REVERT_FLAG
 			fi
 			break;
 		else
-			echo "Network Response: Didnt recieve success response..should retry.."
+			echo_t "Network Response: Didnt recieve success response..should retry.."
 			sleep 5
 		fi
 
@@ -206,12 +206,12 @@ then
 else
 	# We are here as Db value indicate that the unit is already configured with personalized
 	# WiFi settings. So we mark the device as activated rather querying any service.
-	echo "Network Response: WiFi is already configured. Hence marking as got response 204"
+	echo_t "Network Response: WiFi is already configured. Hence marking as got response 204"
 	echo 204 > $RESPONSE
 
 	if [ ! -e "$REVERT_FLAG" ]
 	then
-		echo "Network Response: WiFi is already configured. Set reverted flag in nvram"	
+		echo_t "Network Response: WiFi is already configured. Set reverted flag in nvram"	
 		touch $REVERT_FLAG
 	fi
 fi
@@ -222,7 +222,7 @@ fi
 # configurations in sync
 
 CAPTIVEPORTAL_ENABLED=`syscfg get CaptivePortal_Enable`
-echo "Network Response : CaptivePortal enabled val is $CAPTIVEPORTAL_ENABLED"
+echo_t "Network Response : CaptivePortal enabled val is $CAPTIVEPORTAL_ENABLED"
 
 
 if [ "$REDIRECTION_FLAG" = "true" ] && [ "$CAPTIVEPORTAL_ENABLED" == "true" ] 
@@ -232,7 +232,7 @@ then
 	CHECK_DNSMASQ=`pidof dnsmasq`
 	if [ "$CHECK_DNSMASQ" != "" ]
 	then
-		echo "Network Response: DHCP Server is already running , set an event to restart it"
+		echo_t "Network Response: DHCP Server is already running , set an event to restart it"
 		sysevent set dhcp_server-restart
 	fi
 	
@@ -241,7 +241,7 @@ then
 
 	if [ "$CHECK_ZEBRA" != "" ]
 	then
-		echo "Network Response: ZebraService is already running ,restarting it..."
+		echo_t "Network Response: ZebraService is already running ,restarting it..."
 		sysevent set zebra-restart
 	fi
 
@@ -249,7 +249,7 @@ then
 	CHECK_LIGHTTPD=`pidof lighttpd`
 	if [ "$CHECK_LIGHTTPD" != "" ]
 	then
-		echo "Network Response: Check ConfigureWiFi parameter is in sync or not"
+		echo_t "Network Response: Check ConfigureWiFi parameter is in sync or not"
 		SET_CONFIGURE_FLAG=`psmcli get eRT.com.cisco.spvtg.ccsp.Device.WiFi.NotifyWiFiChanges`
 
 		#Read the http response value
@@ -260,16 +260,16 @@ then
 		while [ "$SET_CONFIGURE_FLAG" = "" ] && [ "$iter" -le $max_iter ]
 		do
 			iter=$((iter+1))
-			echo "$iter"
+			echo_t "$iter"
 			SET_CONFIGURE_FLAG=`psmcli get eRT.com.cisco.spvtg.ccsp.Device.WiFi.NotifyWiFiChanges`
 		done
-		echo "Network Response: NotifyWiFiChanges is $SET_CONFIGURE_FLAG"
-		echo "Network Response: Redirection_flag value is $REDIRECTION_FLAG"
+		echo_t "Network Response: NotifyWiFiChanges is $SET_CONFIGURE_FLAG"
+		echo_t "Network Response: Redirection_flag value is $REDIRECTION_FLAG"
 
 			if [ "$NETWORKRESPONSEVALUE" = "204" ] && [ "$SET_CONFIGURE_FLAG" = "true" ]
 			then
 
-				echo "Network Response: Restarting v6Service"
+				echo_t "Network Response: Restarting v6Service"
 				#Modify DNS server option in dibbler configuration
 				if [ -e $SERVER6_CONF ]
 				then
@@ -277,21 +277,21 @@ then
 					sed -e '/dns-server/s/^/#/g' -i $SERVER6_CONF 
 					cat $SERVER6_CONF
 				else
-					echo "No dibbler6 configuration available...."
+					echo_t "No dibbler6 configuration available...."
 				fi
 
 				dibbler-server stop
 				dibbler-server start
 
-				echo "Network Response: WiFi is not configured,setting ConfigureWiFi to true"	
+				echo_t "Network Response: WiFi is not configured,setting ConfigureWiFi to true"	
 				dmcli eRT setvalues Device.DeviceInfo.X_RDKCENTRAL-COM_ConfigureWiFi bool TRUE
 			else
-				echo "Network Response: WiFi is already personalized setting redirection_flag to false"
+				echo_t "Network Response: WiFi is already personalized setting redirection_flag to false"
 				# We reached here as redirection_flag is "true". But WiFi is configured already as per notification status.
 				# Set syscfg value to false now.
 				syscfg set redirection_flag false
 				syscfg commit
-				echo "Network Response: ConfigureWiFi is false.Set reverted flag in nvram"
+				echo_t "Network Response: ConfigureWiFi is false.Set reverted flag in nvram"
 				if [ ! -e "$REVERT_FLAG" ]
 				then
 					touch $REVERT_FLAG
