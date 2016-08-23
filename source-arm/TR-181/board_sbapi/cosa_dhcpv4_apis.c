@@ -1110,14 +1110,14 @@ static void getDHCPv4ServerPoolParametersFromPSM(ULONG instancenum, PCOSA_DML_DH
     _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_DNSSERVERS);
     if (retPsmGet == CCSP_SUCCESS)
     {
-        CosaDmlSetIpaddr((PULONG)&pPoolCfg->DNSServers[0].Value, param_value, COSA_DML_DHCP_MAX_RESERVED_ADDRESSES);
+        CosaDmlSetIpaddr((PULONG)&pPoolCfg->DNSServers[0].Value, param_value, COSA_DML_DHCP_MAX_ENTRIES);
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);   
     }
 
     _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_IPROUTERS);
     if (retPsmGet == CCSP_SUCCESS)
     {
-        CosaDmlSetIpaddr((PULONG)&pPoolCfg->IPRouters[0].Value, param_value, COSA_DML_DHCP_MAX_RESERVED_ADDRESSES);
+        CosaDmlSetIpaddr((PULONG)&pPoolCfg->IPRouters[0].Value, param_value, COSA_DML_DHCP_MAX_ENTRIES);
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);   
     }
 
