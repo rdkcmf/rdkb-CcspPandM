@@ -80,6 +80,26 @@
 #include "plugin_main_apis.h"
 #include "ccsp_hal_dhcpv4_emu_api.h"    
 
+#if 1 //LNT_EMU
+#include "dmsb_tr181_psm_definitions.h"
+#define _PSM_READ_PARAM(_PARAM_NAME) { \
+        _ansc_memset(param_name, 0, sizeof(param_name)); \
+        _ansc_sprintf(param_name, _PARAM_NAME, instancenum); \
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value); \
+        if (retPsmGet != CCSP_SUCCESS) { \
+            AnscTraceFlow(("%s Error %d reading %s %s\n", __FUNCTION__, retPsmGet, param_name, param_value));\
+        } \
+        else { \
+            AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = \n%s\n", __FUNCTION__,param_name, param_value)); \
+            printf("param_name (%s) and param_value (%s) \n",param_name, param_value); \
+        } \
+    }
+
+#endif
+// for PSM access
+extern ANSC_HANDLE bus_handle;//lnt
+extern char g_Subsystem[32];
+
 
 COSA_DML_DHCPC_FULL  g_dhcpv4_client[] =
     {
@@ -865,6 +885,20 @@ CosaDmlDhcpsSetX_COM_CISCO_Saddr
 /*
  *  DHCP Server Pool
  */
+int PSMGetDHCPV4RecordValues(PCOSA_DML_DHCPS_POOL_FULL Ppool,ULONG instancenum)//LNT_EMU
+{
+        int retPsmGet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char *param_value = NULL;
+        _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_MINADDRESS);
+        Ppool->Cfg.MinAddress.Value = inet_addr(param_value);
+        _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_MAXADDRESS);
+        Ppool->Cfg.MaxAddress.Value = inet_addr(param_value);
+        _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_LEASETIME);
+        Ppool->Cfg.LeaseTime = atoi(param_value);
+        return 0;
+}
+
 ULONG
 CosaDmlDhcpsGetNumberOfPools
     (
@@ -882,23 +916,40 @@ CosaDmlDhcpsGetPool
         PCOSA_DML_DHCPS_POOL_FULL   pEntry
     )
 {
+	PCOSA_DML_DHCPS_POOL_FULL Ppool = NULL;//LNT_EMU
+        Ppool = (PCOSA_DML_DHCPS_POOL_FULL) AnscAllocateMemory( sizeof(COSA_DML_DHCPS_POOL_FULL));
 	char value[100];
+
 	if ( ulIndex+1 > sizeof(g_dhcpv4_server_pool)/sizeof(COSA_DML_DHCPS_POOL_FULL) )
 		return ANSC_STATUS_FAILURE;
+
 	CcspHalGetConfigValue("start", value, sizeof value);
 	printf("\n DHCP start Address: (%s) \n" ,value);
 	g_dhcpv4_server_pool->Cfg.MinAddress.Value = inet_addr(value);
+	if(g_dhcpv4_server_pool->Cfg.MinAddress.Value == 0 )//lnt
+        {
+        PSMGetDHCPV4RecordValues(Ppool,g_dhcpv4_server_pool->Cfg.InstanceNumber);
+        g_dhcpv4_server_pool->Cfg.MinAddress.Value = Ppool->Cfg.MinAddress.Value;
+        }
 
 	CcspHalGetConfigValue("end", value, sizeof value);
 	printf("\n DHCP end Address: (%s) \n" ,value);
-
 	g_dhcpv4_server_pool->Cfg.MaxAddress.Value = inet_addr(value);
+	if(g_dhcpv4_server_pool->Cfg.MaxAddress.Value == 0)//lnt
+        {
+        PSMGetDHCPV4RecordValues(Ppool,g_dhcpv4_server_pool->Cfg.InstanceNumber);
+        g_dhcpv4_server_pool->Cfg.MaxAddress.Value = Ppool->Cfg.MaxAddress.Value;
+        }
 
 	CcspHalGetConfigLeaseValue("lease", value, sizeof value);
 	g_dhcpv4_server_pool->Cfg.LeaseTime = atoi(value);
+	 if(g_dhcpv4_server_pool->Cfg.LeaseTime == 0)//lnt
+        {
+        PSMGetDHCPV4RecordValues(Ppool,g_dhcpv4_server_pool->Cfg.InstanceNumber);
+        g_dhcpv4_server_pool->Cfg.LeaseTime = Ppool->Cfg.LeaseTime;
+        }
 
 	AnscCopyMemory(pEntry, &g_dhcpv4_server_pool[ulIndex], sizeof(COSA_DML_DHCPS_POOL_FULL));
-
 	return ANSC_STATUS_SUCCESS;
 }
 

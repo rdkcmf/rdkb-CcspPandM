@@ -78,8 +78,39 @@
 #include "cosa_dhcpv4_apis.h"
 #include "cosa_dhcpv4_internal.h"
 #include "plugin_main_apis.h"
-#if 1
+#if 1//LNT_EMU
 #include "ccsp_hal_dhcpv4_emu_api.h"
+#include "dmsb_tr181_psm_definitions.h"
+// for PSM access
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
+// PSM access MACRO
+#define _PSM_WRITE_PARAM(_PARAM_NAME) { \
+        _ansc_sprintf(param_name, _PARAM_NAME, instancenum); \
+        retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value); \
+        if (retPsmSet != CCSP_SUCCESS) { \
+            AnscTraceFlow(("%s Error %d writing %s %s\n", __FUNCTION__, retPsmSet, param_name, param_value));\
+        } \
+        else \
+        { \
+            AnscTraceFlow(("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value)); \
+        } \
+        _ansc_memset(param_name, 0, sizeof(param_name)); \
+        _ansc_memset(param_value, 0, sizeof(param_value)); \
+    }
+
+#define _PSM_READ_PARAM(_PARAM_NAME) { \
+        _ansc_memset(param_name, 0, sizeof(param_name)); \
+        _ansc_sprintf(param_name, _PARAM_NAME, instancenum); \
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value); \
+        if (retPsmGet != CCSP_SUCCESS) { \
+            AnscTraceFlow(("%s Error %d reading %s %s\n", __FUNCTION__, retPsmGet, param_name, param_value));\
+        } \
+        else { \
+            AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = \n%s\n", __FUNCTION__,param_name, param_value)); \
+        } \
+    }
+
 #endif
 extern void* g_pDslhDmlAgent;
 
@@ -4889,6 +4920,35 @@ X_CISCO_COM_StaticAddress_Rollback
     *  Pool_Rollback
 
 ***********************************************************************/
+#if 1//LNT_EMU
+int PSMSetDHCPV4RecordValues(PCOSA_DML_DHCPS_POOL_FULL pNewCfg,ULONG instancenum)
+{
+        int retPsmSet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char param_value[256] = {0};
+        char start_buf[100];
+        struct in_addr start_addr;
+        start_addr.s_addr =  pNewCfg->Cfg.MinAddress.Value;
+        inet_ntop(AF_INET, &start_addr, start_buf, sizeof start_buf);
+        strcpy(param_value,start_buf);
+        _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_MINADDRESS);
+_ansc_sprintf(param_value, "%d.%d.%d.%d",
+            pNewCfg->Cfg.MaxAddress.Dot[0], pNewCfg->Cfg.MaxAddress.Dot[1], pNewCfg->Cfg.MaxAddress.Dot[2], pNewCfg->Cfg.MaxAddress.Dot[3]);
+        _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_MAXADDRESS);
+        return 0;
+
+}
+int PSMSetLeaseTimeDHCPV4RecordValues(PCOSA_DML_DHCPS_POOL_FULL pNewCfg,ULONG instancenum)
+{
+        int retPsmSet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char param_value[256] = {0};
+        _ansc_sprintf(param_value, "%d", pNewCfg->Cfg.LeaseTime );
+        _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_LEASETIME);
+        return 0;
+}
+#endif
+
 
 static is_invalid_unicast_ip_addr(unsigned int gw, unsigned int mask, unsigned int ipaddr)
 {
@@ -5928,6 +5988,8 @@ Pool_SetParamIntValue
 	PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
 	BOOL bridgeInd = FALSE;	
 	char str[1024];
+	PCOSA_DML_DHCPS_POOL_CFG pSPoolCfg = NULL;
+        pSPoolCfg = (PCOSA_DML_DHCPS_POOL_CFG)AnscAllocateMemory( sizeof(COSA_DML_DHCPS_POOL_CFG));//LNT_EMU
 	is_usg_in_bridge_mode(&bridgeInd);
 	if(bridgeInd)
 		return(FALSE);
@@ -5946,6 +6008,8 @@ Pool_SetParamIntValue
 
 		/* save update to backup */
 		pPool->Cfg.LeaseTime  = iValue;//LNT_EMU
+		pSPoolCfg->LeaseTime = pPool->Cfg.LeaseTime;
+                PSMSetLeaseTimeDHCPV4RecordValues(pSPoolCfg,pPool->Cfg.InstanceNumber);
 		sprintf(str,"%d",pPool->Cfg.LeaseTime );
 		ConfigValues config_values;
 		config_values.lease_time = str;
@@ -6015,6 +6079,8 @@ Pool_SetParamUlongValue
     COSA_DML_DHCPS_POOL_CFG poolCfg;    
     BOOL bridgeInd = FALSE;	
 
+        PCOSA_DML_DHCPS_POOL_FULL pSPoolCfg = NULL;//LNT_EMU
+        pSPoolCfg = (PCOSA_DML_DHCPS_POOL_FULL)AnscAllocateMemory( sizeof(COSA_DML_DHCPS_POOL_FULL));
 	is_usg_in_bridge_mode(&bridgeInd);
 	if(bridgeInd)
 		return(FALSE);
@@ -6065,6 +6131,7 @@ Pool_SetParamUlongValue
             is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)))
             return(FALSE);
         pPool->Cfg.MinAddress.Value  = uValue;
+	PSMSetDHCPV4RecordValues(pPool,pPool->Cfg.InstanceNumber);//LNT_EMU
 #if 1
        inet_ntop(AF_INET, &(pPool->Cfg.MinAddress.Value) , str1, INET_ADDRSTRLEN);
         ConfigValues config_values;
@@ -6106,6 +6173,7 @@ Pool_SetParamUlongValue
             uValue < pPool->Cfg.MinAddress.Value)
             return(FALSE);
         pPool->Cfg.MaxAddress.Value  = uValue;
+	PSMSetDHCPV4RecordValues(pPool,pPool->Cfg.InstanceNumber);//LNT_EMU
 #if 1
         inet_ntop(AF_INET, &(pPool->Cfg.MaxAddress.Value) , str1, INET_ADDRSTRLEN);
         ConfigValues config_values;
