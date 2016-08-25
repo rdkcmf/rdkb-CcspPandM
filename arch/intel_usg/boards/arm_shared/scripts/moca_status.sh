@@ -11,7 +11,7 @@ source /etc/utopia/service.d/log_capture_path.sh
 #while [ $loop -eq 1 ]
 #do
 #       sleep 10
-	echo "Obtaining the MoCA status.."
+	echo_t "Obtaining the MoCA status.."
 	moca_status=`dmcli eRT getv Device.MoCA.Interface.1.Status | grep string | awk '{print $5}'`
-	echo "MoCA is $moca_status"
+	echo_t "MoCA is $moca_status"
 #done
