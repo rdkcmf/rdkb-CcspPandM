@@ -2134,28 +2134,27 @@ static int _dibbler_client_operation(char * arg)
     if (!strncmp(arg, "stop", 4))
     {
         CcspTraceInfo(("%s stop\n", __func__));
-#ifdef _COSA_INTEL_USG_ARM_
+
+#if defined (_COSA_INTEL_USG_ARM_) && !defined(_COSA_BCM_ARM_)
         system("/etc/utopia/service.d/service_dhcpv6_client.sh disable");
 #else
         sprintf(cmd, "killall %s", CLIENT_BIN);
         system(cmd);
-    
         sleep(2);
-    
         sprintf(cmd, "ps -A|grep %s", CLIENT_BIN);
         _get_shell_output(cmd, out, sizeof(out));
-        if (strstr(out, CLIENT_BIN))
-        {
+         if (strstr(out, CLIENT_BIN))
+         {
             sprintf(cmd, "killall -9 %s", CLIENT_BIN);
             system(cmd);
-        }
+          }
 #endif
     }
     else if (!strncmp(arg, "start", 5))
     {
         CcspTraceInfo(("%s start\n", __func__));
-#ifdef _COSA_INTEL_USG_ARM_
-#ifdef INTEL_PUMA7
+
+#if defined(INTEL_PUMA7) || defined(_COSA_BCM_ARM_)
         sprintf(cmd, "syscfg get last_erouter_mode");
         _get_shell_output(cmd, out, sizeof(out));
 	/* TODO: To be fixed by Comcast
@@ -2172,8 +2171,12 @@ static int _dibbler_client_operation(char * arg)
 		}while(!strstr(out,"started"));
 	}
 #endif
+        /*This is for ArrisXB6 */
+#if defined (_COSA_INTEL_USG_ARM_) && !defined(_COSA_BCM_ARM_)
         system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
 #else
+        /*Start Dibber client for tchxb6*/
+        CcspTraceInfo(("%s Dibbler Client Started \n", __func__));
         sprintf(cmd, "%s start", CLIENT_BIN);
         system(cmd);
 #endif
