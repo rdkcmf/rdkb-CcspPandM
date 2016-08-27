@@ -84,7 +84,6 @@
 #ifndef  _DML_TR181_CUSTOM_CFG_H_
 #define  _DML_TR181_CUSTOM_CFG_H_
 
-#include "puma_autoconf.h"
 #include "autoconf.h"
 #include "dml_tr181_custom_cfg_custom.h"            /* include customer specific configurations */
 
