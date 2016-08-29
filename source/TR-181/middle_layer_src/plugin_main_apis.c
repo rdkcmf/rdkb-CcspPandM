@@ -305,7 +305,7 @@ CosaBackEndManagerInitialize
     AnscTraceWarning(("  CosaDiagnosticsCreate done!\n"));
     pMyObject->hTime          = (ANSC_HANDLE)CosaTimeCreate();
     AnscTraceWarning(("  CosaTimeCreate done!\n"));
-    pMyObject->hMoCA          = (ANSC_HANDLE)CosaMoCACreate();
+    //pMyObject->hMoCA          = (ANSC_HANDLE)CosaMoCACreate();
     AnscTraceWarning(("  CosaMoCACreate done!\n"));
     pMyObject->hUpnp          = (ANSC_HANDLE)CosaUpnpCreate();
     AnscTraceWarning(("  CosaUpnpCreate done!\n"));
@@ -431,12 +431,12 @@ CosaBackEndManagerRemove
     {
         CosaEthernetRemove((ANSC_HANDLE)pMyObject->hEthernet);
     }
-
+/*
     if ( pMyObject->hMoCA )
     {
         CosaMoCARemove((ANSC_HANDLE)pMyObject->hMoCA);
     }
-    
+*/
     if ( pMyObject->hDhcpv4 )
     {
         CosaDhcpv4Remove((ANSC_HANDLE)pMyObject->hDhcpv4);
