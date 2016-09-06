@@ -395,7 +395,7 @@ CosaNatGen
     {
         pNat->MaxInstanceNumber++;
 
-        if ( pNat->MaxInstanceNumber == 0 )
+        if ( pNat->MaxInstanceNumber <= 0 )
         {
             pNat->MaxInstanceNumber   = 1;
         }
