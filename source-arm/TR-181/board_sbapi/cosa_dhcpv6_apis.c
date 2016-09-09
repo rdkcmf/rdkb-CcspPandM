@@ -3273,7 +3273,7 @@ void __cosa_dhcpsv6_refresh_config()
         goto EXIT;
 
     /*Begin write configuration */
-    fprintf(fp, "log-level 8\n");
+    fprintf(fp, "log-level 4\n");
 
     if ( g_dhcpv6_server_type != DHCPV6_SERVER_TYPE_STATEFUL )
         fprintf(fp, "stateless\n");
