@@ -106,6 +106,7 @@
     ANSC_HANDLE                      hIrepFolderCOSA;                                       \
     ANSC_HANDLE                      hIrepFolderBRG;                                        \
     ANSC_HANDLE                      hIrepFolderBRGHA;                                      \
+    ULONG                            PreviousVisitTime;     
 
 
 typedef  struct

@@ -288,7 +288,7 @@ Bridging_GetParamUlongValue
     if( AnscEqualString(ParamName, "MaxVLANEntries", TRUE) )
     {
         /* collect value */
-        *puLong = 0;
+        *puLong = 8;//LNT_EMU
         return TRUE;
     }
 
@@ -520,7 +520,8 @@ Bridge_AddEntry
     pDmlBridge->Cfg.Std = COSA_DML_BRG_STD_8021Q_2005;
     pDmlBridge->Cfg.bAllowDelete = TRUE;
     //$HL 12/2/2013
-    pDmlBridge->Cfg.bEnabled = FALSE;
+    //pDmlBridge->Cfg.bEnabled = FALSE;
+    pDmlBridge->Cfg.bEnabled = TRUE;//LNT_EMU
     AnscSListInitializeHeader(&pDmlBridge->PortList);
     AnscSListInitializeHeader(&pDmlBridge->VLANList);
     AnscSListInitializeHeader(&pDmlBridge->VLANPortList);
@@ -618,7 +619,8 @@ Bridge_AddEntry
         //pVLAN->Cfg.bEnabled = TRUE;
         //$HL 12/3/2012
         pVLAN->Cfg.bEnabled = FALSE;
-        AnscCopyString(pVLAN->Info.Name,CosaDmlBrgGetName(pDmlBridge->Cfg.InstanceNumber));
+        //AnscCopyString(pVLAN->Info.Name,CosaDmlBrgGetName(pDmlBridge->Cfg.InstanceNumber));
+        AnscCopyString(pVLAN->Info.Name, pVLAN->Cfg.Alias);//LNT_EMU
         pVLAN->Cfg.VLANID = CosaDmlBrgGetVLANID(pDmlBridge->Cfg.InstanceNumber);
         CosaDmlBrgVlanAddEntry(NULL, pDmlBridge->Cfg.InstanceNumber,pVLAN);
     }
@@ -673,6 +675,7 @@ Bridge_DelEntry
     {
         return -1;
     }
+
     if ( pCosaContext->bNew )
     {
         pCosaContext->bNew = FALSE;
@@ -687,7 +690,6 @@ Bridge_DelEntry
     
     AnscFreeMemory(pDmlBridge);
     AnscFreeMemory(pCosaContext);
-
     return 0; /* succeeded */
 }
 
@@ -837,6 +839,7 @@ Bridge_GetParamUlongValue
     if( AnscEqualString(ParamName, "Status", TRUE) )
     {
         /* collect value */
+
         CosaDmlBrgGetInfo(NULL, pDmlBridge->Cfg.InstanceNumber, &pDmlBridge->Info);
 
         *puLong = pDmlBridge->Info.Status;
@@ -847,7 +850,8 @@ Bridge_GetParamUlongValue
     if( AnscEqualString(ParamName, "Standard", TRUE) )
     {
         /* collect value */
-        *puLong = pDmlBridge->Cfg.Std;
+        //*puLong = pDmlBridge->Cfg.Std;
+        *puLong = COSA_DML_BRG_STD_8021Q_2005;//LNT_EMU
 
         return TRUE;
     }
@@ -1466,6 +1470,195 @@ Port_GetEntry
 }
 
 /**********************************************************************  
+To Resolve Port Deletion issue Port_IsUpdated and Port_Synchronize is 
+implemented by LNT
+**********************************************************************/
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Port_IsUpdated
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is checking whether the table is updated or not.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     TRUE or FALSE.
+
+**********************************************************************/
+
+BOOL
+Port_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DATAMODEL_BRIDGING             pMyObject    = (PCOSA_DATAMODEL_BRIDGING)g_pCosaBEManager->hBridging;
+    BOOL                            bIsUpdated   = TRUE;
+
+    /*
+        We can use one rough granularity interval to get whole table in case
+        that the updating is too frequent.
+        */
+    if ( ( AnscGetTickInSeconds() - pMyObject->PreviousVisitTime ) < COSA_DML_BRIDGE_ACCESS_INTERVAL )
+    {
+        bIsUpdated  = FALSE;
+    }
+    else
+    {
+        pMyObject->PreviousVisitTime =  AnscGetTickInSeconds();
+        bIsUpdated  = TRUE;
+    }
+
+    return bIsUpdated;
+}
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        Port_Synchronize
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to synchronize the table.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+
+ULONG
+Port_Synchronize
+ (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+	ANSC_STATUS                           returnStatus      = ANSC_STATUS_FAILURE;
+	PCOSA_DATAMODEL_BRIDGING        pCosaDMBridging = (PCOSA_DATAMODEL_BRIDGING )g_pCosaBEManager->hBridging;
+	PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+	PCOSA_DML_BRG_FULL_ALL          pDmlBridge      = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
+	PSLIST_HEADER                   pBridgeHead       = (PSLIST_HEADER            )&pCosaDMBridging->BridgeList;
+	PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pDmlBridge->PortList;
+	PCOSA_DML_BRG_PORT_FULL         pPort           = (PCOSA_DML_BRG_PORT_FULL  )NULL;
+	PCOSA_DML_BRG_PORT_FULL         pPort2           = (PCOSA_DML_BRG_PORT_FULL  )NULL;
+	PSINGLE_LINK_ENTRY              pSLinkEntry   = (PSINGLE_LINK_ENTRY       )NULL;
+	PSINGLE_LINK_ENTRY              pSLinkEntry2   = (PSINGLE_LINK_ENTRY       )NULL;
+	ULONG                                 entryCount        = 0;
+	ULONG                                 i                 = 0;
+	ULONG                                 j                 = 0;
+	ULONG                                 HashValue         = 0;
+	PULONG                                pulTmp            = 0;
+
+	if(pDmlBridge->Cfg.InstanceNumber!=1)
+		printf("pDmlBridge->Cfg.InstanceNumber%d\n",pDmlBridge->Cfg.InstanceNumber);
+	if(pDmlBridge->Cfg.InstanceNumber!=0){
+		pPort         = CosaDmlPortGetEntry(NULL,&entryCount,pDmlBridge->Cfg.InstanceNumber-1);}
+	if ( pPort && entryCount )
+	{
+		pulTmp    =   AnscAllocateMemory( entryCount * sizeof(ULONG) );
+		if ( !pulTmp )
+		{
+			goto EXIT;
+		}
+	}
+	/* Search the whole link and mark bFound of exist entry to FALSE */
+	pSLinkEntry =   AnscSListGetFirstEntry(pListHead);
+	while( pSLinkEntry )
+	{
+		pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+		pSLinkEntry       = AnscSListGetNextEntry(pSLinkEntry);
+		pCosaContext->Found  = FALSE;
+	}
+
+	/* go over all new entries, find them in current link table and mark them */
+	for ( i = 0; i < entryCount; i++)
+	{
+		pSLinkEntry =   AnscSListGetFirstEntry(pListHead);
+		while( pSLinkEntry )
+		{
+			pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+			pSLinkEntry       = AnscSListGetNextEntry(pSLinkEntry);
+			pPort2 = (PCOSA_DML_BRG_PORT_FULL)pCosaContext->hContext;
+			if ( pPort2->Cfg.InstanceNumber == pPort[i].Cfg.InstanceNumber )
+			{
+				pulTmp[i]         =  1;
+				pCosaContext->Found  = TRUE;
+
+				/* If found, update the content also */
+				*pPort2    = pPort[i];
+				pCosaContext->bNew    = FALSE;
+
+				break;
+			}
+		}
+	}
+	/* We need del unreferred entry if it's not delay_added entry */
+	pSLinkEntry =   AnscSListGetFirstEntry(pListHead);
+	while( pSLinkEntry )
+	{   
+		pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+		pSLinkEntry2      = pSLinkEntry;
+		pSLinkEntry       = AnscSListGetNextEntry(pSLinkEntry);
+
+		if ( pCosaContext->Found  == FALSE && pCosaContext->bNew  == FALSE )
+		{
+			AnscSListPopEntryByLink(pListHead, pSLinkEntry2);
+			AnscFreeMemory( pCosaContext->hContext );
+			AnscFreeMemory( pCosaContext );
+		}
+	}
+	/* We add new entry into our link table */
+	for ( i = 0; i < entryCount; i++ )
+	{
+		if ( pulTmp[i] == 0 )
+		{
+			/* Add new one */
+			pCosaContext = AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
+			if ( !pCosaContext )
+			{
+				goto EXIT;
+			}
+
+			pPort2 = AnscAllocateMemory(sizeof(COSA_DML_BRG_PORT_FULL));
+			if ( !pPort2 )
+			{
+				AnscFreeMemory(pCosaContext);
+				goto EXIT;
+			}
+			/* copy new content which should include InstanceNumber and Alias */
+			*pPort2       = pPort[i];
+			pCosaContext->hContext         = (ANSC_HANDLE)pPort2;          
+			pCosaContext->InstanceNumber = pPort2->Cfg.InstanceNumber;
+			pCosaContext->bNew       = FALSE;
+			CosaSListPushEntryByInsNum(pListHead,pCosaContext);
+		}
+	}
+	returnStatus =  ANSC_STATUS_SUCCESS;
+EXIT:
+	if (pulTmp)
+		AnscFreeMemory(pulTmp);
+
+	return returnStatus;
+}
+/**********************************************************************  
 
     caller:     owner of this object 
 
@@ -1498,65 +1691,71 @@ Port_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    PCOSA_DATAMODEL_BRIDGING        pCosaDMBridging = (PCOSA_DATAMODEL_BRIDGING )g_pCosaBEManager->hBridging;
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_BRG_FULL_ALL          pDmlBridge      = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
-    PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pDmlBridge->PortList;
-    PCOSA_DML_BRG_PORT_FULL         pPort           = (PCOSA_DML_BRG_PORT_FULL  )NULL;
+	PCOSA_DATAMODEL_BRIDGING        pCosaDMBridging = (PCOSA_DATAMODEL_BRIDGING )g_pCosaBEManager->hBridging;
+	PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+	PCOSA_DML_BRG_FULL_ALL          pDmlBridge      = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
+	PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pDmlBridge->PortList;
+	PCOSA_DML_BRG_PORT_FULL         pPort           = (PCOSA_DML_BRG_PORT_FULL  )NULL;
 
-    pPort = (PCOSA_DML_BRG_PORT_FULL)AnscAllocateMemory(sizeof(COSA_DML_BRG_PORT_FULL));
+	pPort = (PCOSA_DML_BRG_PORT_FULL)AnscAllocateMemory(sizeof(COSA_DML_BRG_PORT_FULL));
 
-    if ( !pPort )
-    {
-        return NULL;
-    }
+	if ( !pPort )
+	{
+		return NULL;
+	}
 
-    _ansc_sprintf(pPort->Cfg.Alias, "Port%d", pDmlBridge->ulNextPortInsNum);
+	_ansc_sprintf(pPort->Cfg.Alias, "Port%d", pDmlBridge->ulNextPortInsNum);
 
-    /* Update the middle layer cache */
-    if ( TRUE )
-    {
-        pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
+	if(pDmlBridge->ulNextPortInsNum<3){
+		_ansc_sprintf(pPort->Cfg.LinkName, "eth%d",pDmlBridge->ulNextPortInsNum);//LNT_EMU
+	}else{_ansc_sprintf(pPort->Cfg.LinkName, "wlan0");}
 
-        if ( !pCosaContext )
-        {
-            AnscFreeMemory(pPort);
-            
-            return NULL;
-        }
+	/* Update the middle layer cache */
+	if ( TRUE )
+	{
+		pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
 
-        pCosaContext->InstanceNumber = pPort->Cfg.InstanceNumber = pDmlBridge->ulNextPortInsNum;
+		if ( !pCosaContext )
+		{
+			AnscFreeMemory(pPort);
 
-        pDmlBridge->ulNextPortInsNum++;
+			return NULL;
+		}
 
-        if ( pDmlBridge->ulNextPortInsNum == 0 )
-        {
-            pDmlBridge->ulNextPortInsNum = 1;
-        }
+		pCosaContext->InstanceNumber = pPort->Cfg.InstanceNumber = pDmlBridge->ulNextPortInsNum;
 
-        pCosaContext->hContext         = (ANSC_HANDLE)pPort;
-        pCosaContext->hParentTable     = (ANSC_HANDLE)pDmlBridge;
-        pCosaContext->hPoamIrepUpperFo = pCosaDMBridging->hIrepFolderBRGHA;
-        pCosaContext->bNew             = TRUE;
+		pDmlBridge->ulNextPortInsNum++;
 
-        CosaSListPushEntryByInsNum(pListHead, (ANSC_HANDLE)pCosaContext);
+		if ( pDmlBridge->ulNextPortInsNum == 0 )
+		{
+			pDmlBridge->ulNextPortInsNum = 1;
+		}
 
-        CosaBridgingRegAddInfo
-            (
-                (ANSC_HANDLE)pCosaDMBridging,
-                COSA_DML_RR_NAME_Bridge_Port_NextInsNumber,
-                pDmlBridge->ulNextPortInsNum,
-                COSA_DML_RR_NAME_Bridge_Port_Prefix,
-                pDmlBridge->Cfg.InstanceNumber,
-                pPort->Cfg.Alias,
-                (ANSC_HANDLE)pCosaContext
-            );
-    }
+		pCosaContext->hContext         = (ANSC_HANDLE)pPort;
+		pCosaContext->hParentTable     = (ANSC_HANDLE)pDmlBridge;
+		pCosaContext->hPoamIrepUpperFo = pCosaDMBridging->hIrepFolderBRGHA;
+		pCosaContext->bNew             = TRUE;
 
-    pPort->Cfg.bAllowDelete = TRUE;
-    *pInsNumber = pCosaContext->InstanceNumber;
+		CosaSListPushEntryByInsNum(pListHead, (ANSC_HANDLE)pCosaContext);
 
-    return (ANSC_HANDLE)pCosaContext; /* return the handle */
+		CosaBridgingRegAddInfo
+			(
+			 (ANSC_HANDLE)pCosaDMBridging,
+			 COSA_DML_RR_NAME_Bridge_Port_NextInsNumber,
+			 pDmlBridge->ulNextPortInsNum,
+			 COSA_DML_RR_NAME_Bridge_Port_Prefix,
+			 pDmlBridge->Cfg.InstanceNumber,
+			 pPort->Cfg.Alias,
+			 (ANSC_HANDLE)pCosaContext
+			);
+	}
+
+	pPort->Cfg.bAllowDelete = TRUE;
+	if(pDmlBridge->Cfg.InstanceNumber!=1){
+		pPort->Cfg.bEnabled=TRUE;}//LNT_EMU
+	*pInsNumber = pCosaContext->InstanceNumber;
+
+	return (ANSC_HANDLE)pCosaContext; /* return the handle */
 }
 
 /**********************************************************************  
@@ -1592,34 +1791,43 @@ Port_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_BRG_FULL_ALL          pDmlBridge      = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
-    PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pDmlBridge->PortList;
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2   = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
-    PCOSA_DML_BRG_PORT_FULL         pPort           = (PCOSA_DML_BRG_PORT_FULL  )pCosaContext2->hContext;
+	PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+	PCOSA_DML_BRG_FULL_ALL          pDmlBridge      = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
+	PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pDmlBridge->PortList;
+	PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2   = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
+	PCOSA_DML_BRG_PORT_FULL         pPort           = (PCOSA_DML_BRG_PORT_FULL  )pCosaContext2->hContext;
 
-    //$HL 5/17/2013
-    if (!pPort->Cfg.bAllowDelete)
-    {
-        return -1;
-    }
-    if ( pCosaContext->bNew )
-    {
-        pCosaContext->bNew = FALSE;
-        CosaBridgingRegDelInfo(NULL, pCosaContext2);
-    }
-    else 
-    {    
-        CosaDmlBrgPortDelEntry(NULL, pCosaContext->InstanceNumber, pPort->Cfg.InstanceNumber);
-    }    
-    /* Update the middle layer cache */
+	//$HL 5/17/2013
+#if 0 //LNT_EMU
+	if (!pPort->Cfg.bAllowDelete)
+	{
+		printf("Cfg.bAllowDelete IF\n");
+		return -1;
+	}
+#endif
+	if(pDmlBridge->Cfg.InstanceNumber==1)//LNT_EMU
+	{
+		return -1;
+	}
+	if ( pCosaContext->bNew )
+	{
+		pCosaContext->bNew = FALSE;
+		CosaBridgingRegDelInfo(NULL, pCosaContext2);
+	}
+	else 
+	{    
+		CosaDmlBrgPortDelEntry(NULL, pCosaContext->InstanceNumber, pPort->Cfg.InstanceNumber);
+	}    
+	/* Update the middle layer cache */
 
-    AnscSListPopEntryByLink(pListHead, &pCosaContext2->Linkage);
+	AnscSListPopEntryByLink(pListHead, &pCosaContext2->Linkage);
 
-    AnscFreeMemory(pPort);
-    AnscFreeMemory(pCosaContext2);
+	AnscFreeMemory(pPort);
+	AnscFreeMemory(pCosaContext2);
 
-    return 0; /* succeeded */
+	pDmlBridge->ulNextPortInsNum--;//LNT_EMU
+
+	return ANSC_STATUS_SUCCESS;
 }
 
 /**********************************************************************  
@@ -1748,8 +1956,8 @@ Port_GetParamIntValue
     {
         //$HL 7/3/2013
         /* collect value */
-        //*pInt = pPort->Cfg.PVID;
-        *pInt = CosaDmlBrgGetVLANID(pDmlBridge->Cfg.InstanceNumber);
+        *pInt = pPort->Cfg.PVID;
+       // *pInt = CosaDmlBrgGetVLANID(pDmlBridge->Cfg.InstanceNumber);
         return TRUE;
     }
 
@@ -1804,7 +2012,7 @@ Port_GetParamUlongValue
     if( AnscEqualString(ParamName, "Status", TRUE) )
     {
         /* collect value */
-        CosaDmlBrgPortGetInfo(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &pPort->Info);
+        //CosaDmlBrgPortGetInfo(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &pPort->Info);//LNT_EMU
 
         *puLong = pPort->Info.Status;
 
@@ -1814,7 +2022,7 @@ Port_GetParamUlongValue
     if( AnscEqualString(ParamName, "LastChange", TRUE) )
     {
         /* collect value */
-        CosaDmlBrgPortGetInfo(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &pPort->Info);
+	// CosaDmlBrgPortGetInfo(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &pPort->Info);//LNT_EMU
 
         *puLong = AnscGetTimeIntervalInSeconds(pPort->Info.LastChange, AnscGetTickInSeconds());
 
@@ -1840,7 +2048,7 @@ Port_GetParamUlongValue
     if( AnscEqualString(ParamName, "PortState", TRUE) )
     {
         /* collect value */
-        CosaDmlBrgPortGetInfo(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &pPort->Info);
+        //CosaDmlBrgPortGetInfo(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &pPort->Info);//LNT_EMU
 
         *puLong = pPort->Info.PortState;
 
@@ -1935,21 +2143,40 @@ Port_GetParamStringValue
     if( AnscEqualString(ParamName, "Name", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pPort->Info.Name);
+        AnscCopyString(pValue, pPort->Cfg.LinkName);//LNT_EMU
 
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE) )
+    //if( AnscEqualString(ParamName, "LowerLayers", TRUE) )
+    if( AnscEqualString(ParamName, "LinkName", TRUE) )
     {
         /* collect value */
 #ifdef _COSA_SIM_
-        pLowerLayer = CosaUtilGetLowerLayers("Device.Ethernet.Interface.", pPort->Cfg.LinkName);
 
+#if 0 //LNT_EMU
+        pLowerLayer = CosaUtilGetLowerLayers("Device.Ethernet.Interface.", "eth1");
         if ( pLowerLayer != NULL )
         {
             AnscCopyString(pValue, pLowerLayer);
             AnscFreeMemory(pLowerLayer);
+        }
+#endif
+	if(AnscEqualString( pPort->Cfg.LinkName, "wlan0", TRUE))//LNT_EMU
+	{
+		AnscCopyString(pValue, "Device.WiFi.SSID.1");
+	}
+	else if ( AnscEqualString( pPort->Cfg.LinkName, "eth1", TRUE)) {
+        	    AnscCopyString(pValue, "Device.Ethernet.Interface.1");
+        }
+	else if ( AnscEqualString( pPort->Cfg.LinkName, "eth2", TRUE)) {
+        	    AnscCopyString(pValue, "Device.Ethernet.Interface.2");
+        }
+	else if ( AnscEqualString( pPort->Cfg.LinkName, "eth3", TRUE)) {
+        	    AnscCopyString(pValue, "Device.Ethernet.Interface.3");
+        }
+        else {
+            CcspTraceInfo(("----------Unknown interface...\n")); 
         }
 #elif defined  _COSA_DRG_CNS_
         CcspTraceInfo(("----------LinkName:%s\n", pPort->Info.Name)); 
@@ -2448,12 +2675,15 @@ Port_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE) )
+
+    if( AnscEqualString(ParamName, "LinkName", TRUE) )//LNT_EMU
+    //if( AnscEqualString(ParamName, "LowerLayers", TRUE) )
     {
         /* save update to backup */
 #ifdef _COSA_SIM_
-        _ansc_sprintf(ucEntryParamName, "%s%s", pString, "Name");
 
+#if 0 //LNT_EMU
+        _ansc_sprintf(ucEntryParamName, "%s%s", pString, "Name");
         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen ) ) &&
              ( AnscSizeOfString(ucEntryNameValue) != 0 ) )
         {
@@ -2461,6 +2691,9 @@ Port_SetParamStringValue
             
             return TRUE;
         }
+#endif
+	AnscCopyString(pPort->Cfg.LinkName, pString);//LNT_EMU
+	return TRUE;
 #else
         //$HL 4/16/2013
         //fixed the linkname and linktype issue
@@ -2887,7 +3120,7 @@ PortStats_GetParamUlongValue
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge       = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hParentTable;
     COSA_DML_IF_STATS               Stats;
 
-    CosaDmlBrgPortGetStats(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &Stats);
+    //CosaDmlBrgPortGetStats(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &Stats);//LNT_EMU
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "ErrorsSent", TRUE) )
@@ -3267,6 +3500,8 @@ VLAN_AddEntry
                 pVLAN->Cfg.Alias,
                 (ANSC_HANDLE)pCosaContext
             );
+
+        CosaDmlBrgVlanAddEntry(NULL, pDmlBridge->Cfg.InstanceNumber,pVLAN);
     }
 
     *pInsNumber = pCosaContext->InstanceNumber;
@@ -3331,9 +3566,12 @@ VLAN_DelEntry
         }
     }
 */
+
     if (pVLAN->Cfg.bEnabled && pVLAN->Cfg.VLANID > 0)
     {
-        CosaDmlBrgVlanDelEntry(NULL, pCosaContext->InstanceNumber, pVLAN->Cfg.InstanceNumber);
+	printf("Inside IF\n");
+       //CosaDmlBrgVlanDelEntry(NULL, pCosaContext->InstanceNumber, pVLAN->Cfg.InstanceNumber);
+       CosaDmlBrgVlanDelEntry(NULL, pDmlBridge->Cfg.InstanceNumber, pVLAN->Cfg.VLANID);//LNT_EMU
     }
 
     /* Update the middle layer cache */
@@ -3560,8 +3798,9 @@ VLAN_GetParamStringValue
     if( AnscEqualString(ParamName, "Name", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pVLAN->Info.Name);
-        return -1;
+        //AnscCopyString(pValue, pVLAN->Info.Name);
+        AnscCopyString(pValue, pVLAN->Cfg.Alias);//LNT_EMU
+        return 0;
     }
 
 
@@ -3615,9 +3854,9 @@ VLAN_SetParamBoolValue
     {
         /* save update to backup */
         //$HL 07/2/2013
-        //pVLAN->Cfg.bEnabled = bValue;
+        pVLAN->Cfg.bEnabled = bValue;//LNT_EMU
 
-        return FALSE;
+        return TRUE;//LNT_EMU
     }
 
 
@@ -3907,7 +4146,7 @@ VLAN_Commit
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge       = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hParentTable;
 
     //$HL 07/2/2013
-    /*if (pVLAN->Cfg1.bEnabled && pVLAN->Cfg1.VLANID > 0)
+/*    if (pVLAN->Cfg1.bEnabled && pVLAN->Cfg1.VLANID > 0)
     {
         if (!pVLAN->Cfg.bEnabled || pVLAN->Cfg.VLANID != pVLAN->Cfg1.VLANID)
         {
@@ -3924,10 +4163,11 @@ VLAN_Commit
             PSINGLE_LINK_ENTRY      pSLinkEntry      = (PSINGLE_LINK_ENTRY       )NULL;
             PCOSA_CONTEXT_LINK_OBJECT pCosaContext2  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
             PCOSA_DML_BRG_VLANPORT_FULL pVLANPort    = (PCOSA_DML_BRG_VLANPORT_FULL)NULL;
-
+	    printf("Add before vlan commit\n");
             // add new vlan if just enabled or vlanID changed
-            CosaDmlBrgVlanAddEntry(NULL, pDmlBridge->Cfg.InstanceNumber, pVLAN->Cfg1.VLANID);
+            CosaDmlBrgVlanAddEntry(NULL, pDmlBridge->Cfg.InstanceNumber, pVLAN->Cfg.VLANID);
 
+	    printf("Add After vlan commit\n");
             pSLinkEntry = AnscSListGetFirstEntry(pListHead);
 
             while ( pSLinkEntry )
@@ -3942,8 +4182,8 @@ VLAN_Commit
                               && pVLANPort->Cfg.PortInsNum)
                 {
                     // activate all associated vlan port entry
-                    CosaDmlBrgVlanPortAddEntry(NULL, pDmlBridge->Cfg.InstanceNumber, pVLAN->Cfg.VLANID,
-                                               pVLANPort->Cfg.PortInsNum, pVLANPort->Cfg.bUntagged);
+                //    CosaDmlBrgVlanPortAddEntry(NULL, pDmlBridge->Cfg.InstanceNumber, pVLAN->Cfg.VLANID,
+                  //                             pVLANPort->Cfg.PortInsNum, pVLANPort->Cfg.bUntagged);
                 }
             }
         }
@@ -4506,7 +4746,7 @@ VLANPort_GetParamStringValue
         if (pVLANPort->Cfg.PortInsNum > 0)
         {
             _ansc_sprintf(pValue, "Device.Bridging.Bridge.%u.Port.%u.",
-                          pDmlBridge->Cfg.InstanceNumber, pVLANPort->Cfg.PortInsNum);
+                        pDmlBridge->Cfg.InstanceNumber, pVLANPort->Cfg.PortInsNum);
         }
         else
         {

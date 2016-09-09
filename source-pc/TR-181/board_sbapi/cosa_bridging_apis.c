@@ -73,7 +73,7 @@
 
 COSA_PRI_BRG_FULL g_BrgFull[8]=
 {
-    {
+/*    {
         {2, "alias1", TRUE, FALSE, COSA_DML_BRG_STD_8021D_2004},
         {COSA_DML_BRG_STATUS_Disabled},
         2, 
@@ -128,15 +128,21 @@ COSA_PRI_BRG_FULL g_BrgFull[8]=
     {0},
     {0},
     {0},
-    {0}
+    {0}*/
 };
 
 COSA_DML_IF_STATS g_Stats=
 {
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+    //0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
 };
 
-ULONG    g_BrgFullNum = 2;
+//LNT_EMU
+COSA_DML_BRG_VLAN_FULL gvlan[8]={
+};
+
+ULONG    g_BrgFullNum = 0;//LNT_EMU
+ULONG    g_vlancount= 0;//LNT_EMU
+
 #endif
 
 
@@ -205,7 +211,7 @@ CosaDmlBrgGetNumberOfEntries
     )
 {
 #if defined _COSA_SIM_ 
-    return g_BrgFullNum;
+        return g_BrgFullNum;
 #endif
 }
 
@@ -343,20 +349,21 @@ CosaDmlBrgAddEntry
     )
 {
 #if defined _COSA_SIM_     
-    if ( g_BrgFullNum >= 10 )
-    {
-        return ANSC_STATUS_FAILURE;
-    }
+	if ( g_BrgFullNum >= 10 )
+	{
+		return ANSC_STATUS_FAILURE;
+	}
+	if(pEntry != NULL)//LNT_EMU
+	{
+		g_BrgFull[g_BrgFullNum].Cfg.bEnabled = pEntry->bEnabled;
+		g_BrgFull[g_BrgFullNum].Cfg.InstanceNumber = pEntry->InstanceNumber;
+		g_BrgFull[g_BrgFullNum].Cfg.Std = pEntry->Std;
+		AnscCopyString(g_BrgFull[g_BrgFullNum].Cfg.Alias, pEntry->Alias);
+		g_BrgFull[g_BrgFullNum].Info.Status = COSA_DML_BRG_STATUS_Enabled;
+		g_BrgFullNum++;
+         	return ANSC_STATUS_SUCCESS;
+	}
 
-    g_BrgFull[g_BrgFullNum].Cfg.bEnabled = pEntry->bEnabled;
-    g_BrgFull[g_BrgFullNum].Cfg.InstanceNumber = pEntry->InstanceNumber;
-    g_BrgFull[g_BrgFullNum].Cfg.Std = pEntry->Std;
-    AnscCopyString(g_BrgFull[g_BrgFullNum].Cfg.Alias, pEntry->Alias);
-    g_BrgFull[g_BrgFullNum].Info.Status = COSA_DML_BRG_STATUS_Disabled;
-
-    g_BrgFullNum++;
-
-    return ANSC_STATUS_SUCCESS;
 #endif
 }
 
@@ -405,7 +412,10 @@ CosaDmlBrgDelEntry
             for ( j = i; j < g_BrgFullNum; j++ )
             {
                 g_BrgFull[j].Cfg.bEnabled = g_BrgFull[j + 1].Cfg.bEnabled;
-                g_BrgFull[j].Cfg.InstanceNumber = g_BrgFull[j + 1].Cfg.InstanceNumber;
+		if(!g_BrgFull[j + 1].Cfg.InstanceNumber==0){//LNT_EMU
+                g_BrgFull[j].Cfg.InstanceNumber = g_BrgFull[j + 1].Cfg.InstanceNumber-1;}
+		else{
+		g_BrgFull[j].Cfg.InstanceNumber = g_BrgFull[j + 1].Cfg.InstanceNumber;}
                 g_BrgFull[j].Cfg.Std = g_BrgFull[j + 1].Cfg.Std;
                 AnscCopyString(g_BrgFull[j].Cfg.Alias, g_BrgFull[j + 1].Cfg.Alias);
                 g_BrgFull[j].Info.Status = g_BrgFull[j + 1].Info.Status;
@@ -555,7 +565,9 @@ CosaDmlBrgGetInfo
     }
 
     _ansc_memset(pInfo, 0, sizeof(COSA_DML_BRG_INFO));
-    
+    pInfo->Status = COSA_DML_BRG_STATUS_Enabled;//LNT_EMU
+
+#if 0 //LNT_EMU
     if (ulInstanceNumber == 1)
     {
         pInfo->Status = COSA_DML_BRG_STATUS_Disabled;
@@ -568,7 +580,7 @@ CosaDmlBrgGetInfo
     {
         pInfo->Status = COSA_DML_BRG_STATUS_Error;
     }
-
+#endif
     return ANSC_STATUS_SUCCESS;
 #endif
 }
@@ -578,7 +590,8 @@ int CosaDmlBrgGetVLANID
         ULONG                       ulInstanceNumber
     )
 {
-    return   0;
+	return   gvlan[ulInstanceNumber-1].Cfg.VLANID;//LNT_EMU
+
 }
 
 char * CosaDmlBrgGetName
@@ -587,7 +600,7 @@ char * CosaDmlBrgGetName
     )
 {
     /* DH  Temp fix for pc build */
-    return  "brgtest";
+    return  "brlan0";
 }
 
 /**********************************************************************
@@ -627,7 +640,7 @@ CosaDmlBrgPortGetNumberOfEntries
     {
         if ( g_BrgFull[i].Cfg.InstanceNumber == ulBrgInstanceNumber )
         {
-            return g_BrgFull[i].ulNumOfPort;
+           return g_BrgFull[i].ulNumOfPort;
         }
     }
 
@@ -665,6 +678,30 @@ CosaDmlBrgPortGetNumberOfEntries
     Return:       The status of the operation.
 
 **********************************************************************/
+
+//LNT_EMU
+PCOSA_DML_BRG_PORT_FULL
+CosaDmlPortGetEntry
+ (
+        ANSC_HANDLE                 hContext,
+        PULONG                      pulCount,
+	ULONG                       bridgeIndex
+    )
+{
+	PCOSA_DML_BRG_PORT_FULL port=NULL;
+        port = (PCOSA_DML_BRG_PORT_FULL)AnscAllocateMemory( sizeof(g_BrgFull[0].PortList[0])*(g_BrgFull[0].ulNumOfPort+1));
+        if ( port )
+        {
+                AnscCopyMemory(port, g_BrgFull[bridgeIndex].PortList, sizeof(g_BrgFull[0].PortList[0])*g_BrgFull[0].ulNumOfPort);
+                *pulCount=g_BrgFull[bridgeIndex].ulNumOfPort;
+        }
+        else
+        {
+                *pulCount = 0;
+        }
+
+        return port;
+}
 
 ANSC_STATUS
 CosaDmlBrgPortGetEntry
@@ -809,45 +846,64 @@ CosaDmlBrgPortAddEntry
     )
 {
 #if defined _COSA_SIM_ 
-    ULONG                           i = 0;
+	ULONG                           i = 0;
+	int index=ulBrgInstanceNumber-1;
+	char cmd[1024]= {'\0'};
+	Interfacelist INF=NULL;
+	INF=GetInterfaceName();//LNT_EMU
+	for ( i = 0; i < g_BrgFullNum; i++ )
+	{
+		if ( g_BrgFull[i].Cfg.InstanceNumber == ulBrgInstanceNumber )
+		{
+			if ( g_BrgFull[i].ulNumOfPort >= 10 )
+			{
+				return ANSC_STATUS_FAILURE;
+			}
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.AcceptableFrameTypes = pEntry->AcceptableFrameTypes;
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.bEnabled = pEntry->bEnabled;
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.bIngressFiltering = pEntry->bIngressFiltering;
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.bManagementPort = pEntry->bManagementPort;
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.bPriorityTagging = pEntry->bPriorityTagging;
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.DftUserPriority = pEntry->DftUserPriority;
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.InstanceNumber = pEntry->InstanceNumber;
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.LinkType = COSA_DML_BRG_LINK_TYPE_Eth;//LNT_EMU
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.PVID = gvlan[index].Cfg.VLANID;//LNT_EMU
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.Std = pEntry->Std;
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.mode = pEntry->mode;
+			printf("%s: bridge=%d, port=%d, mode=%d\n", __FUNCTION__, i, g_BrgFull[i].ulNumOfPort, pEntry->mode);
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Info.LastChange = AnscGetTickInSeconds();
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Info.PortState = COSA_DML_BRG_PORT_STATE_Listening;
+			g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Info.Status = COSA_DML_IF_STATUS_Up;//LNT_EMU
 
-    for ( i = 0; i < g_BrgFullNum; i++ )
-    {
-        if ( g_BrgFull[i].Cfg.InstanceNumber == ulBrgInstanceNumber )
-        {
-            if ( g_BrgFull[i].ulNumOfPort >= 10 )
-            {
-                return ANSC_STATUS_FAILURE;
-            }
+			AnscCopyString(g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.PriorityRegeneration, pEntry->PriorityRegeneration);
 
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.AcceptableFrameTypes = pEntry->AcceptableFrameTypes;
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.bEnabled = pEntry->bEnabled;
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.bIngressFiltering = pEntry->bIngressFiltering;
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.bManagementPort = pEntry->bManagementPort;
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.bPriorityTagging = pEntry->bPriorityTagging;
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.DftUserPriority = pEntry->DftUserPriority;
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.InstanceNumber = pEntry->InstanceNumber;
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.LinkType = pEntry->LinkType;
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.PVID = pEntry->PVID;
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.Std = pEntry->Std;
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.mode = pEntry->mode;
-            printf("%s: bridge=%d, port=%d, mode=%d\n", __FUNCTION__, i, g_BrgFull[i].ulNumOfPort, pEntry->mode);
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Info.LastChange = AnscGetTickInSeconds();
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Info.PortState = COSA_DML_BRG_PORT_STATE_Disabled;
-            g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Info.Status = COSA_DML_IF_STATUS_Up;
+			if(ulBrgInstanceNumber==1){//LNT_EMU
+				AnscCopyString(g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.LinkName,INF[g_BrgFull[i].ulNumOfPort].InterfaceName);
+			}
+			else{
+				AnscCopyString(g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.LinkName, pEntry->LinkName);
+			}
+			AnscCopyString(g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.Alias, pEntry->Alias);
+			AnscCopyString(g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Info.Name, "brlan0");
 
-            AnscCopyString(g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.PriorityRegeneration, pEntry->PriorityRegeneration);
-            AnscCopyString(g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.LinkName, pEntry->LinkName);
-            AnscCopyString(g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.Alias, pEntry->Alias);
-            AnscCopyString(g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Info.Name, "infox");
+			if(ulBrgInstanceNumber==1){//LNT_EMU
+				if(!strcmp(g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.LinkName,"wlan0")==0){
+					vlan_hal_addInterface("brlan0",g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.LinkName,gvlan[index].Cfg.VLANID);}	//hal cal	
+				else{
+					vlan_hal_delInterface("brlan0",g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.LinkName,gvlan[index].Cfg.VLANID);
+					vlan_hal_addInterface("brlan0",g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.LinkName,gvlan[index].Cfg.VLANID);
+				}
+			}
+			else{
+				vlan_hal_delInterface("brlan0",g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.LinkName,gvlan[index].Cfg.VLANID);
+				vlan_hal_addInterface(gvlan[index].Info.Name,g_BrgFull[i].PortList[g_BrgFull[i].ulNumOfPort].Cfg.LinkName,gvlan[index].Cfg.VLANID);
+			}
+			g_BrgFull[i].ulNumOfPort++;
+			return ANSC_STATUS_SUCCESS;
+		}
+	}
 
-            g_BrgFull[i].ulNumOfPort++;
-
-            return ANSC_STATUS_SUCCESS;
-        }
-    }
-
-    return ANSC_STATUS_CANT_FIND;
+	return ANSC_STATUS_CANT_FIND;
 #endif
 }
 
@@ -895,10 +951,13 @@ CosaDmlBrgPortDelEntry
     {
         if ( g_BrgFull[k].Cfg.InstanceNumber == ulBrgInstanceNumber )
         {
-            for ( i = 0; i < g_BrgFull[k].ulNumOfPort; i++ )
-            {
+            for ( i = 0; i <g_BrgFull[k].ulNumOfPort; i++ )
+	    {
                 if ( g_BrgFull[k].PortList[i].Cfg.InstanceNumber == ulInstanceNumber )
                 {
+        	    	vlan_hal_delInterface("brlan0",g_BrgFull[k].PortList[i].Cfg.LinkName,gvlan[ulBrgInstanceNumber-1].Cfg.VLANID);//LNT_EMU
+            			if(ulBrgInstanceNumber!=1){//LNT_EMU
+				        vlan_hal_addInterface("brlan0",g_BrgFull[k].PortList[i].Cfg.LinkName,gvlan[ulBrgInstanceNumber-1].Cfg.VLANID);}
                     for ( j = i; j < g_BrgFull[k].ulNumOfPort; j++ )
                     {
                         g_BrgFull[k].PortList[j].Cfg.AcceptableFrameTypes = g_BrgFull[k].PortList[j + 1].Cfg.AcceptableFrameTypes;
@@ -907,7 +966,10 @@ CosaDmlBrgPortDelEntry
                         g_BrgFull[k].PortList[j].Cfg.bManagementPort = g_BrgFull[k].PortList[j + 1].Cfg.bManagementPort;
                         g_BrgFull[k].PortList[j].Cfg.bPriorityTagging = g_BrgFull[k].PortList[j + 1].Cfg.bPriorityTagging;
                         g_BrgFull[k].PortList[j].Cfg.DftUserPriority = g_BrgFull[k].PortList[j + 1].Cfg.DftUserPriority;
-                        g_BrgFull[k].PortList[j].Cfg.InstanceNumber = g_BrgFull[k].PortList[j + 1].Cfg.InstanceNumber;
+			if(g_BrgFull[k].PortList[j + 1].Cfg.InstanceNumber!=0){//LNT_EMU
+                        g_BrgFull[k].PortList[j].Cfg.InstanceNumber = g_BrgFull[k].PortList[j + 1].Cfg.InstanceNumber-1;}
+			else{
+			g_BrgFull[k].PortList[j].Cfg.InstanceNumber =g_BrgFull[k].PortList[j + 1].Cfg.InstanceNumber;}
                         g_BrgFull[k].PortList[j].Cfg.LinkType = g_BrgFull[k].PortList[j + 1].Cfg.LinkType;
                         g_BrgFull[k].PortList[j].Cfg.PVID = g_BrgFull[k].PortList[j + 1].Cfg.PVID;
                         g_BrgFull[k].PortList[j].Cfg.Std = g_BrgFull[k].PortList[j + 1].Cfg.Std;
@@ -996,7 +1058,13 @@ CosaDmlBrgPortSetCfg
                     AnscCopyString(g_BrgFull[k].PortList[i].Cfg.PriorityRegeneration, pCfg->PriorityRegeneration);
                     AnscCopyString(g_BrgFull[k].PortList[i].Cfg.LinkName, pCfg->LinkName);
                     AnscCopyString(g_BrgFull[k].PortList[i].Cfg.Alias, pCfg->Alias);
-
+		    if(ulBrgInstanceNumber==1){//LNT_EMU
+		    if(g_BrgFull[k].PortList[i].Cfg.bEnabled ==FALSE)
+                        {
+                                vlan_hal_delInterface("brlan0",g_BrgFull[k].PortList[i].Cfg.LinkName,gvlan[ulBrgInstanceNumber-1].Cfg.VLANID);
+                        }
+                    else{vlan_hal_addInterface("brlan0",g_BrgFull[k].PortList[i].Cfg.LinkName,gvlan[ulBrgInstanceNumber-1].Cfg.VLANID);}
+		    }
                     return ANSC_STATUS_SUCCESS;
                 }
             }
@@ -1126,7 +1194,10 @@ CosaDmlBrgPortGetInfo
     }
 
     _ansc_memset(pInfo, 0, sizeof(COSA_DML_BRG_PORT_INFO));
-    
+
+    pInfo->Status = COSA_DML_IF_STATUS_Up;  //LNT_EMU
+
+#if 0 //LNT_EMU
     if (ulInstanceNumber == 1)
     {
         pInfo->Status = COSA_DML_IF_STATUS_Down;
@@ -1145,7 +1216,7 @@ CosaDmlBrgPortGetInfo
         pInfo->LastChange = 33;
         pInfo->PortState = COSA_DML_BRG_PORT_STATE_Listening;
     }
-
+#endif
     return ANSC_STATUS_SUCCESS;
 #endif
 }
@@ -1247,8 +1318,23 @@ CosaDmlBrgVlanAddEntry
         PCOSA_DML_BRG_VLAN_FULL     pVLAN 
     )
 {
-#if defined _COSA_SIM_ 
-    return ANSC_STATUS_CANT_FIND;
+	ULONG                          index = 0;
+#if defined _COSA_SIM_ //LNT_EMU
+	if ( g_vlancount >= 10 )
+	{
+		return ANSC_STATUS_FAILURE;
+	}
+	g_vlancount++;
+	for(index=ulBrgInstanceNumber-1;index<g_vlancount;index++){
+		if(pVLAN != NULL){
+			gvlan[index].Cfg.bEnabled = pVLAN->Cfg.bEnabled;
+			gvlan[index].Cfg.InstanceNumber = pVLAN->Cfg.InstanceNumber;
+			gvlan[index].Cfg.VLANID = pVLAN->Cfg.VLANID;
+			AnscCopyString(gvlan[index].Cfg.Alias, pVLAN->Cfg.Alias);
+			AnscCopyString(gvlan[index].Info.Name,pVLAN->Info.Name);
+		}
+	}
+	return  ANSC_STATUS_SUCCESS;
 #endif
 }
 
@@ -1291,8 +1377,23 @@ CosaDmlBrgVlanDelEntry
         int                         VLANID
     )
 {
-#if defined _COSA_SIM_ 
-    return ANSC_STATUS_CANT_FIND;
+#if defined _COSA_SIM_//LNT_EMU 
+	ULONG                           i = 0;
+	ULONG                           j = 0;
+	i=ulBrgInstanceNumber-1;
+	vlan_hal_delGroup(gvlan[i].Info.Name);
+	for ( j = i; j <= g_vlancount; j++ )
+	{
+		gvlan[j].Cfg.bEnabled = gvlan[j + 1].Cfg.bEnabled;
+		gvlan[j].Cfg.InstanceNumber = gvlan[j + 1].Cfg.InstanceNumber-1;
+		gvlan[j].Cfg.VLANID = gvlan[j + 1].Cfg.VLANID;
+		AnscCopyString(gvlan[j].Cfg.Alias, gvlan[j + 1].Cfg.Alias);
+		AnscCopyString(gvlan[j].Info.Name,gvlan[j + 1].Info.Name);
+	}
+
+	g_vlancount--;
+
+	return ANSC_STATUS_SUCCESS;
 #endif
 }
 
@@ -1304,7 +1405,7 @@ CosaDmlBrgVlanGetNumberOfEntries
         ULONG                       ulBrgInstanceNumber
     )
 {
-    return  0;
+	return g_vlancount;//LNT_EMU
 }
 
 
@@ -1318,7 +1419,11 @@ CosaDmlBrgVlanSetValues
         char*                       pAlias
     )
 {
-    return  ANSC_STATUS_SUCCESS;
+#if defined _COSA_SIM_//LNT_EMU
+	gvlan[ulIndex].Cfg.InstanceNumber = ulInstanceNumber;
+	AnscCopyString(gvlan[ulIndex].Cfg.Alias, pAlias);
+	return ANSC_STATUS_SUCCESS;
+#endif
 }
 
 
@@ -1331,7 +1436,14 @@ CosaDmlBrgVlanGetEntry
         PCOSA_DML_BRG_VLAN_FULL     pEntry
     )
 {
-    return  ANSC_STATUS_FAILURE;
+#if defined _COSA_SIM_//LNT_EMU
+	pEntry->Cfg.bEnabled = gvlan[ulIndex].Cfg.bEnabled; //According to the data model, this should always return false.
+	pEntry->Cfg.InstanceNumber = gvlan[ulIndex].Cfg.InstanceNumber;
+	pEntry->Cfg.VLANID = gvlan[ulIndex].Cfg.VLANID;
+	AnscCopyString(pEntry->Cfg.Alias, gvlan[ulIndex].Cfg.Alias);
+	AnscCopyString(pEntry->Info.Name, gvlan[ulIndex].Info.Name);
+	return ANSC_STATUS_SUCCESS;
+#endif
 }
 
 ANSC_STATUS
@@ -1342,7 +1454,22 @@ CosaDmlBrgVlanSetCfg
         PCOSA_DML_BRG_VLAN_CFG      pCfg
     )
 {
-    return  ANSC_STATUS_FAILURE;
+#if defined _COSA_SIM_   //LNT_EMU
+	ULONG                          index = ulBrgInstanceNumber-1;
+	char buf[512];
+	gvlan[index].Cfg.InstanceNumber=pCfg->InstanceNumber;
+	gvlan[index].Cfg.bEnabled = pCfg->bEnabled;
+	gvlan[index].Cfg.VLANID = pCfg->VLANID;
+	AnscCopyString(gvlan[index].Cfg.Alias, pCfg->Alias);
+	AnscCopyString(gvlan[index].Info.Name,gvlan[index].Cfg.Alias);
+	sprintf(buf,"%d",gvlan[index].Cfg.VLANID);
+	if(gvlan[index].Cfg.VLANID!=0 && gvlan[index].Cfg.bEnabled==TRUE){
+		vlan_hal_addGroup(gvlan[index].Info.Name,buf);
+	}
+
+	return ANSC_STATUS_SUCCESS;
+
+#endif
 }
 
 
