@@ -319,7 +319,6 @@ CosaBackEndManagerInitialize
 
 
 //#ifdef CONFIG_CISCO_HOTSPOT
-#if 0//LNT_EMU
 	
     pMyObject->hGRE           = (ANSC_HANDLE)CosaGreCreate();
     AnscTraceWarning(("  CosaGreCreate done!\n"));
@@ -327,6 +326,7 @@ CosaBackEndManagerInitialize
 	printf("-- %s %d CosaGreTunnelCreate\n", __func__, __LINE__);
     pMyObject->hTGRE       = (ANSC_HANDLE)CosaGreTunnelCreate();
     AnscTraceWarning(("  CosaGreTunnelCreate done!\n"));	
+#if 0//LNT_EMU
 	//zqiu<<
     pMyObject->hCGRE           = (ANSC_HANDLE)CosaCGreCreate();
     AnscTraceWarning(("  CosaCGreCreate done!\n"));
