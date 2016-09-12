@@ -305,6 +305,11 @@ _COSA_DML_BRG_VLANPORT_FULL
 }
 COSA_DML_BRG_VLANPORT_FULL, *PCOSA_DML_BRG_VLANPORT_FULL;
 
+//To Maintain InterfaceNames
+typedef struct InterfaceDetails   //LNT_EMU
+{
+         char InterfaceName[10];
+}*Interfacelist;
 
 /**********************************************************************
                 FUNCTION PROTOTYPES
@@ -405,6 +410,15 @@ CosaDmlBrgPortGetEntry
         ULONG                       ulIndex,
         PCOSA_DML_BRG_PORT_FULL     pEntry
     );
+
+//LNT_EMU
+PCOSA_DML_BRG_PORT_FULL
+CosaDmlPortGetEntry
+ (
+        ANSC_HANDLE                 hContext,
+        PULONG                      pulCount,
+        ULONG                       bridgeIndex
+ );
 
 ANSC_STATUS
 CosaDmlBrgPortSetValues
@@ -534,7 +548,6 @@ CosaDmlBrgVlanPortDelEntry
         int                         VLANID,
         ULONG                       ulPortInstanceNumber
     );
-
 
 #endif
 

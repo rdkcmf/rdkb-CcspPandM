@@ -71,6 +71,7 @@
 
 #ifndef  _COSA_BRIDGING_DML_H
 #define  _COSA_BRIDGING_DML_H
+#define COSA_DML_BRIDGE_ACCESS_INTERVAL 10//LNT_EMU
 
 /***********************************************************************
 
@@ -289,6 +290,19 @@ Port_GetEntry
         ULONG                       nIndex,
         ULONG*                      pInsNumber
     );
+
+ULONG
+Port_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    );//LNT_EMU
+
+BOOL
+Port_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    );//LNT_EMU
+
 
 ANSC_HANDLE
 Port_AddEntry
