@@ -5238,8 +5238,15 @@ dhcpv6c_dbg_thrd(void * in)
                                commonSyseventSet("lan_ipaddr_v6_prev", globalIP2);
 
                             _ansc_strcpy(globalIP2, globalIP);
-                        }else
-                            bRestartLan = FALSE;
+                        }else{
+								char lanrestart[8] = {0};
+		    					commonSyseventGet("lan_restarted",lanrestart, sizeof(lanrestart));
+								fprintf(stderr,"lan restart staus is %s \n",lanrestart);
+   			       				if (strcmp("true",lanrestart) == 0)
+							    	bRestartLan = TRUE;
+								else
+                            		bRestartLan = FALSE;
+						}
 
                         fprintf(stderr, "%s -- %d !!! ret:%d bRestartLan:%d %s %s \n", __FUNCTION__, __LINE__,ret,  bRestartLan,  globalIP, globalIP2);
 

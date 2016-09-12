@@ -1422,7 +1422,11 @@ static ANSC_STATUS CosaDmlDcRestartRouter()
     int count = 0;
     pthread_detach(pthread_self());
     system("sysevent set lan-stop");
-       
+
+	sleep(3);
+    system("sysevent set lan_restarted true");
+	system("sysevent set forwarding-restart");
+#if 0
     while(1) {
 
         if(commonSyseventFd == -1) {
@@ -1444,7 +1448,7 @@ static ANSC_STATUS CosaDmlDcRestartRouter()
         }
         count++;            
     } 
-    
+#endif 
     return ANSC_STATUS_SUCCESS;      
 }
 
