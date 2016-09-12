@@ -112,6 +112,18 @@ AC_ARG_ENABLE([notify],
            ],
 	 [echo "headless build is enable"])
 
+AC_ARG_ENABLE([xbb1],
+  AS_HELP_STRING([--enable-xbb1],[enable TR-181 support for XBB1]),
+  [
+    case "${enableval}" in
+       yes) XBB1_SUPPORTED="true" ;;
+        no) XBB1_SUPPORTED="false" ;;
+         *) AC_MSG_ERROR([bad value ${enableval} for --enable-notify ]) ;;
+    esac
+  ],
+  [echo "xbb1 support is enabled"])
+AM_CONDITIONAL(XBB1_SUPPORTED, test "x$XBB1_SUPPORTED" = xtrue)
+
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
 
