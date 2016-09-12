@@ -174,7 +174,6 @@ DeviceInfo_GetParamBoolValue
         *pBool = FALSE ; 
         return TRUE;
     }
-#if 0//LNT_EMU
     bReturnValue =
         DeviceInfo_GetParamBoolValue_Custom
             (
@@ -182,7 +181,6 @@ DeviceInfo_GetParamBoolValue
                 ParamName,
                 pBool
             );
-#endif
     if ( bReturnValue )
     {
         return bReturnValue;
@@ -559,7 +557,6 @@ DeviceInfo_GetParamStringValue
 
 	/* Changes for EMS end here */
 	
-#if 0//LNT_EMU
     ReturnValue =
         DeviceInfo_GetParamStringValue_Custom
             (
@@ -568,7 +565,6 @@ DeviceInfo_GetParamStringValue
                 pValue,
                 pulSize
             );
-#endif
     if ( ReturnValue == 0 )
     {
         return ReturnValue;
@@ -629,7 +625,6 @@ DeviceInfo_SetParamBoolValue
 #endif
         return TRUE;
     }
-#if 0//LNT_EMU
     bReturnValue =
         DeviceInfo_SetParamBoolValue_Custom
             (
@@ -637,7 +632,6 @@ DeviceInfo_SetParamBoolValue
                 ParamName,
                 bValue
             );
-#endif
     if ( bReturnValue )
     {
         return bReturnValue;

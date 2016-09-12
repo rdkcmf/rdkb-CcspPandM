@@ -21,7 +21,7 @@ OPT_SRCDIR = source-arm custom
 endif
 
 if CCSP_ARCH_PC
-OPT_SRCDIR = source-pc
+OPT_SRCDIR = source-pc custom-pc
 endif
 
 if CCSP_ARCH_MIPS
@@ -50,7 +50,9 @@ endif
 if CCSP_ARCH_PC
 EXTRA_DEPENDENCIES= \
 	source-pc/TR-181/board_sbapi/libCcspPandM_board_sbapi.la \
-	source-pc/TR-181/middle_layer_src/libCcspPandM_middle_layer_src.la
+	source-pc/TR-181/middle_layer_src/libCcspPandM_middle_layer_src.la \
+	custom-pc/comcast/source/TR-181/custom_sbapi/libCcspPandM_comcast_sbapi.la \
+        custom-pc/comcast/source/TR-181/custom_ml/libCcspPandM_comcast_ml.la
 endif
 
 if CCSP_ARCH_MIPS

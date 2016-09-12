@@ -133,6 +133,12 @@ AC_CONFIG_FILES(
 	custom/comcast/source/TR-181/Makefile
 	custom/comcast/source/TR-181/custom_ml/Makefile
 	custom/comcast/source/TR-181/custom_sbapi/Makefile
+	custom-pc/Makefile
+        custom-pc/comcast/Makefile
+        custom-pc/comcast/source/Makefile
+        custom-pc/comcast/source/TR-181/Makefile
+        custom-pc/comcast/source/TR-181/custom_ml/Makefile
+        custom-pc/comcast/source/TR-181/custom_sbapi/Makefile
 	source-arm/TR-181/board_sbapi/Makefile
 	source-arm/TR-181/board_ml/Makefile
 	source-arm/TR-181/Makefile
