@@ -2134,10 +2134,11 @@ static int _dibbler_client_operation(char * arg)
     if (!strncmp(arg, "stop", 4))
     {
         CcspTraceInfo(("%s stop\n", __func__));
-
-#if defined (_COSA_INTEL_USG_ARM_) && !defined(_COSA_BCM_ARM_)
+        /*TCXB6 is also calling service_dhcpv6_client.sh but the actuall script is installed from meta-rdk-oem layer as the intel specific code
+                   had to be removed */
         system("/etc/utopia/service.d/service_dhcpv6_client.sh disable");
-#else
+      
+#ifdef _COSA_BCM_ARM_
         sprintf(cmd, "killall %s", CLIENT_BIN);
         system(cmd);
         sleep(2);
@@ -2172,9 +2173,15 @@ static int _dibbler_client_operation(char * arg)
 	}
 #endif
         /*This is for ArrisXB6 */
-#if defined (_COSA_INTEL_USG_ARM_) && !defined(_COSA_BCM_ARM_)
+        /*TCXB6 is also calling service_dhcpv6_client.sh but the actuall script is installed from meta-rdk-oem layer as the intel specific code
+         had to be removed */
+        CcspTraceInfo(("%s  Callin service_dhcpv6_client.sh enable \n", __func__));
         system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
-#else
+      
+#ifdef _COSA_BCM_ARM_
+        /* Dibbler-init is called to set the pre-configuration for dibbler */            
+        CcspTraceInfo(("%s dibbler-init.sh Called \n", __func__));
+        system("/etc/dibbler/dibbler-init.sh");
         /*Start Dibber client for tchxb6*/
         CcspTraceInfo(("%s Dibbler Client Started \n", __func__));
         sprintf(cmd, "%s start", CLIENT_BIN);
@@ -2341,7 +2348,14 @@ CosaDmlDhcpv6cGetEnabled
     BOOL bEnabled = FALSE;
     char out[256] = {0};
 
+#if defined (_COSA_BCM_ARM_)
+    FILE *fp = popen("ps |grep -i dibbler-client | grep -v grep", "r");
+
+#else
+
     FILE *fp = popen("ps |grep -i ti_dhcp6c | grep erouter0 | grep -v grep", "r");
+#endif
+
     if ( fp != NULL){
         if ( fgets(out, sizeof(out), fp) != NULL )
             if ( _ansc_strstr(out, "erouter_dhcp6c") )
@@ -5228,8 +5242,13 @@ dhcpv6c_dbg_thrd(void * in)
                         CosaDmlDHCPv6sTriggerRestart(FALSE);
                         
                         /*We need get a global ip addres */
+#if defined(_COSA_BCM_ARM_)
+                        /*this is for tchxb6*/
+                        CcspTraceWarning((" %s dhcpv6_assign_global_ip to brlan0 \n", __FUNCTION__));
+                        ret = dhcpv6_assign_global_ip(v6pref, "brlan0", globalIP);
+#else
                         ret = dhcpv6_assign_global_ip(v6pref, "l2sd0", globalIP);
-
+#endif
                         if ( _ansc_strcmp(globalIP, globalIP2 ) ){
                             bRestartLan = TRUE;
 
