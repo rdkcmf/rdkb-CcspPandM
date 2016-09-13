@@ -201,6 +201,20 @@ DeviceInfo_GetParamBoolValue_Custom
 	    return TRUE;
     }
 
+    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_IsCloudReachable", TRUE))
+    {
+		CcspTraceWarning(("IsCloudReachable: %s \n",pMyObject->CloudPersonalizationURL));
+
+		/* Get the CloudURL reachable status */
+		if ( ANSC_STATUS_SUCCESS != CosaDmlGetCloudUIReachableStatus( pMyObject->CloudPersonalizationURL,
+																	  pBool ) )
+		{
+            return FALSE;
+		}
+
+	    return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
