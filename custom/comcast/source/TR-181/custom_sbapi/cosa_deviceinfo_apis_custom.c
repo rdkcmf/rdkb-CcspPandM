@@ -492,3 +492,64 @@ ANSC_STATUS
     }
 	return ANSC_STATUS_SUCCESS;
 }
+
+ANSC_STATUS
+CosaDmlGetCloudUIReachableStatus
+    (
+		CHAR *pCloudPersonalizationURL,
+        BOOL *pValue
+    )
+{
+	ANSC_STATUS returnStatus   = ANSC_STATUS_SUCCESS;
+	BOOL 		bProcessFuther = TRUE;
+	/* Received Param Validation */
+	if( NULL == pCloudPersonalizationURL )
+	{
+		*pValue        = FALSE;
+		returnStatus   = ANSC_STATUS_FAILURE;
+		bProcessFuther = FALSE;		
+	}
+
+	if( bProcessFuther )
+	{
+		FILE  *fp;
+		char   cmdBuff[512]   = { 0 },
+			   retBuff[256]   = { 0 };
+		int    curlResponse   = 0;
+
+		snprintf( cmdBuff,
+				  sizeof( cmdBuff ),	
+				  "curl --connect-timeout 10 --interface erouter0 --write-out %%{http_code} --silent --output /dev/null %s",
+				  pCloudPersonalizationURL);
+		
+		fp = popen( cmdBuff, "r" );
+
+		if( NULL != fp )
+		{
+			fgets( retBuff, sizeof(retBuff), fp );
+			pclose(fp);
+			curlResponse = atoi(retBuff);
+
+			CcspTraceInfo(("URL[ %s ] curlResponse[ %d ]\n",
+									pCloudPersonalizationURL,
+									curlResponse));
+		
+			if( ( curlResponse >= 200 ) && \
+				( curlResponse < 400 ) 
+			  )
+			{
+				*pValue = TRUE;
+			}
+			else
+			{
+				*pValue = FALSE;
+			}
+		}
+		else
+		{
+			*pValue = FALSE;
+		}
+	}
+	
+    return returnStatus;
+}
