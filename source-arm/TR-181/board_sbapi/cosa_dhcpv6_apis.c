@@ -3276,7 +3276,7 @@ void __cosa_dhcpsv6_refresh_config()
     ULONG IAPDPrefixes_Len = 0;
     char  ServerOption[256] = {0};
     char *pServerOption = NULL;
-    FILE *responsefd;
+    FILE *responsefd=NULL;
     char *networkResponse = "/var/tmp/networkresponse.txt";
     int iresCode = 0;
     char responseCode[10];
@@ -3530,10 +3530,11 @@ OPTIONS:
         
     }
     
-    fclose(fp);
+    if(fp != NULL)
+      fclose(fp);
 
     /*RDKB-6780, CID-33149, free unused resources before return*/
-    if(responsefd)
+    if(responsefd != NULL)
     {
         fclose(responsefd);
     }
