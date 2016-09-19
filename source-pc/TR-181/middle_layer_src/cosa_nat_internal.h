@@ -86,6 +86,7 @@
 
 
 #define   COSA_DML_NAT_PORTMAPPING_ACCESS_INTERVAL   10 /* seconds*/
+#define   COSA_DML_NAT_PORTTRIGGER_ACCESS_INTERVAL   10 /* seconds*///LNT_EMU
 
 
 #define  COSA_DATAMODEL_NAT_CLASS_CONTENT                                                   \

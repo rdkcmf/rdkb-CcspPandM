@@ -677,12 +677,14 @@ CosaDmlNatGetPortTriggers
         PULONG                      pulCount
     )
 {
+     printf("Inside %s :%d\n",__FUNCTION__,__LINE__);
      PCOSA_DML_NAT_PTRIGGER          pNatPTrigger = NULL;
      pNatPTrigger = (PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory( sizeof(g_nat_porttrigger[0])*(pt_count+1));//LNT
         if (  pNatPTrigger )
         {
                 AnscCopyMemory( pNatPTrigger, g_nat_porttrigger, sizeof(g_nat_porttrigger[0])*(pt_count+1));
                 *pulCount=pt_count;
+		printf("pt_count%d\n",pt_count);
         }
         else
         {
@@ -722,10 +724,12 @@ CosaDmlNatAddPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pEntry
     )
 {
+	printf("Inside %s :%d\n",__FUNCTION__,__LINE__);
 	ULONG                          index = 0;
         char cmd[1024]= {'\0'};
         char *prot;
         index=sizeof(g_nat_porttrigger[0])*pt_count/sizeof(COSA_DML_NAT_PTRIGGER);
+	printf("index is:%d\n",index);
         if(pEntry != NULL)//LNT
         {
                 g_nat_porttrigger[index].InstanceNumber=pEntry->InstanceNumber;
@@ -736,6 +740,9 @@ CosaDmlNatAddPortTrigger
                 g_nat_porttrigger[index].ForwardProtocol=pEntry->ForwardProtocol;
                 g_nat_porttrigger[index].ForwardPortStart=pEntry->ForwardPortStart;
                 g_nat_porttrigger[index].ForwardPortEnd=pEntry->ForwardPortEnd;
+		strncpy(g_nat_porttrigger[index].Description,
+                                                pEntry->Description, sizeof(g_nat_porttrigger[index].Description));
+                AnscCopyString(g_nat_porttrigger[index].Alias, pEntry->Description);
                 pt_count++;
                 prot = g_nat_porttrigger[index].TriggerProtocol==0?"tcp":g_nat_porttrigger[index].TriggerProtocol==1?"udp":"both";
                 port_triggering_add_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,prot,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);
@@ -772,6 +779,7 @@ CosaDmlNatDelPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pEntry
     )
 {
+	printf("Inside %s :%d\n",__FUNCTION__,__LINE__);
 	ULONG                          index = 0;
         ULONG                          count = 0;
         PCOSA_DML_NAT_PTRIGGER         pNatPTrigger;
@@ -788,11 +796,13 @@ CosaDmlNatDelPortTrigger
                         port_triggering_delete_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,prot,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);
                 }
         }
-        for(index=ulInstanceNumber-1;index<pt_count-1;index++)
+        for(index=ulInstanceNumber-1;index<=pt_count-1;index++)
         {
                 g_nat_porttrigger[index]=g_nat_porttrigger[index+1];
                 if(g_nat_porttrigger[index].InstanceNumber!=0){
                         g_nat_porttrigger[index].InstanceNumber--;}
+		else{g_nat_porttrigger[index].InstanceNumber=g_nat_porttrigger[index+1].InstanceNumber;}
+		
         }
         pt_count--;
         return ANSC_STATUS_SUCCESS;
@@ -849,6 +859,9 @@ CosaDmlNatSetPortTrigger
                                 g_nat_porttrigger[index].ForwardProtocol=pEntry->ForwardProtocol;
                                 g_nat_porttrigger[index].ForwardPortStart=pEntry->ForwardPortStart;
                                 g_nat_porttrigger[index].ForwardPortEnd=pEntry->ForwardPortEnd;
+				strncpy(g_nat_porttrigger[index].Description,
+                                                pEntry->Description, sizeof(g_nat_porttrigger[index].Description));
+                		AnscCopyString(g_nat_porttrigger[index].Alias, pEntry->Description);
                                 prot = g_nat_porttrigger[index].TriggerProtocol==0?"tcp":g_nat_porttrigger[index].TriggerProtocol==1?"udp":"both";
                                 //Add iptable rule after edit functonality 
                                 port_triggering_add_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,prot,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);

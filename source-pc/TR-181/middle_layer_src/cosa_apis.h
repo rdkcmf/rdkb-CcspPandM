@@ -133,7 +133,8 @@ COSA_BASE_OBJECT,  *PCOSA_BASE_OBJECT;
          BOOL                             bNew;                                             \
          ANSC_HANDLE                      hPoamIrepUpperFo;                                 \
          ANSC_HANDLE                      hPoamIrepFo;                                      \
-         BOOL				  Found;
+         BOOL				  Found;					    \
+         BOOL				  tFound;
 typedef  struct
 _COSA_CONTEXT_LINK_OBJECT
 {
