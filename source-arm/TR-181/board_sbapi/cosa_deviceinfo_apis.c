@@ -1270,13 +1270,35 @@ CosaDmlDiGetProcessorSpeed
     )
 {
     #define TOKEN_STR       "BogoMIPS"
- #define MAX_LINE_SIZE   30
+    #define MAX_LINE_SIZE   30
     char line[MAX_LINE_SIZE];
     char *pcur;
     FILE *fp;
     int status;
 
     memset(line, 0, MAX_LINE_SIZE);
+
+#ifdef _COSA_BCM_ARM_
+
+    fp = popen("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "r");
+    if (fp == NULL)
+    {
+        CcspTraceWarning(("Read cpuinfo ERROR '%s'\n","ERROR"));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    /* Processor speed shown in file is in KHz. Convert it into MHz to comply with GUI */
+    while(fgets(line, MAX_LINE_SIZE, fp) != NULL )
+    {
+        int procSpeed;
+        procSpeed = atoi (line);
+        procSpeed = procSpeed / 1000;
+        sprintf (line, "%d", procSpeed);
+        AnscCopyString(pValue, line);
+    }
+
+#else
+
     fp = popen("cat /proc/cpuinfo", "r");
     if (fp == NULL)
     {
@@ -1294,6 +1316,8 @@ CosaDmlDiGetProcessorSpeed
         AnscCopyString(pValue, pcur);   
        }     
     }
+
+#endif
 
     status = pclose(fp);
     *pulSize = AnscSizeOfString(pValue);
