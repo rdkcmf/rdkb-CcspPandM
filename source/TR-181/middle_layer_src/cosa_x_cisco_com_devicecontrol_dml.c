@@ -1931,14 +1931,15 @@ LanMngm_SetParamUlongValue
 
     if (CosaDmlDcGetDeviceMode(NULL, &deviceMode) != ANSC_STATUS_SUCCESS)
             return FALSE;
-    
-    if (!(deviceMode-1)) 
+     if (!(deviceMode-1)) 
         return FALSE;
 
     if (AnscEqualString(ParamName, "LanMode", TRUE))
     {
-        pLanMngm->LanMode = uValuepUlong;
-        return TRUE;
+	pLanMngm->LanMode = uValuepUlong;
+	CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Setting new LanMode value (bridge-dhcp(1),bridge-static(2),router(3)) as (%d)...\n",
+				uValuepUlong ));	
+	 return TRUE;
     }
 
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
