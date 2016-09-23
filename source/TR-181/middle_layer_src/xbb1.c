@@ -133,7 +133,6 @@ XBB1_GetParamBoolValue(ANSC_HANDLE h, char* name, BOOL* val)
 
   XBB1_COPY_PARAM(BOOL, "chargingStatus", xbbStatus.isCharging);
   XBB1_COPY_PARAM(BOOL, "testingStatus", xbbStatus.isUnderTest);
-  XBB1_COPY_PARAM(BOOL, "testingState", xbbStatus.testingState);
 
   return FALSE;
 }
@@ -154,11 +153,14 @@ XBB1_GetParamIntValue(ANSC_HANDLE h, char* name, int* val)
 
   xbbUpdateStatus();
   xbbUpdateAlarms();
+  xbbUpdateConfig();
 
   XBB1_COPY_PARAM(int, "currentTemperature", xbbStatus.currentTemperature);
   XBB1_COPY_PARAM(int, "maxTempExperienced", xbbStatus.maxTempExperienced);
   XBB1_COPY_PARAM(int, "minTempExperienced", xbbStatus.minTempExperienced);
   XBB1_COPY_PARAM(int, "hwVersion", xbbStatus.hardwareVersion);
+  XBB1_COPY_PARAM(int, "lowTempThreshold", xbbConfig.lowTempThreshold);
+  XBB1_COPY_PARAM(int, "highTempThreshold", xbbConfig.highTempThreshold);
 
   if (XBB1_StringEquals("alarmNumberOfEntries", name))
   {
@@ -180,6 +182,7 @@ BOOL
 XBB1_SetParamIntValue(ANSC_HANDLE h, char* name, int val)
 {
   XBB1_DEBUG_ENTER(name);
+  XbbConfiguration config;
 
   if (XBB1_StringEquals("discover", name))
   {
@@ -192,6 +195,14 @@ XBB1_SetParamIntValue(ANSC_HANDLE h, char* name, int val)
     {
       return FALSE;
     }
+  }
+  if (XBB1_StringEquals("lowTempThreshold",name))
+  {
+    config.lowTempThreshold = val;
+  }
+  if (XBB1_StringEquals("highTempThreshold",name))
+  {
+    config.highTempThreshold = val;
   }
 
   xbbUpdateConfig();
@@ -227,6 +238,12 @@ XBB1_GetParamUlongValue(ANSC_HANDLE h, char* name, ULONG* val)
   XBB1_COPY_PARAM(ULONG, "estimatedChargeRemaining", xbbStatus.estimatedChargeRemainingPercent);
   XBB1_COPY_PARAM(ULONG, "estimatedMinutesRemaining", xbbStatus.estimatedMinutesRemaining);
 
+  XBB1_COPY_PARAM(ULONG, "configLowBattTime", xbbConfig.configLowBatteryMinutes);
+  XBB1_COPY_PARAM(ULONG, "testingState", xbbStatus.testingState);
+
+  XBB1_COPY_PARAM(ULONG, "lowTempDwellTripPointSeconds", xbbConfig.lowTempDwellTripPointSeconds);
+  XBB1_COPY_PARAM(ULONG, "highTempDwellTripPointSeconds", xbbConfig.highTempDwellTripPointSeconds);
+
   return FALSE;
 }
 
@@ -248,6 +265,26 @@ XBB1_SetParamUlongValue(ANSC_HANDLE h, char* name, ULONG val)
   if (XBB1_StringEquals(name, "configLowBattTime"))
   {
     config.configLowBatteryMinutes = val;
+    dirty = 1;
+  }
+  if (XBB1_StringEquals(name, "poweredDeviceIdlePower1"))
+  {
+    config.poweredDeviceIdlePower1 = val;
+    dirty = 1;
+  }
+  if (XBB1_StringEquals(name, "poweredDeviceIdlePower2"))
+  {
+    config.poweredDeviceIdlePower2 = val;
+    dirty = 1;
+  }
+  if (XBB1_StringEquals(name, "lowTempDwellTripPointSeconds"))
+  {
+    config.lowTempDwellTripPointSeconds = val;
+    dirty = 1;
+  }
+  if (XBB1_StringEquals(name, "highTempDwellTripPointSeconds"))
+  {
+    config.highTempDwellTripPointSeconds = val;
     dirty = 1;
   }
 
@@ -291,7 +328,7 @@ XBB1_GetParamStringValue(ANSC_HANDLE h, char* name, char* val, ULONG* size)
   {
     char buff[64];
     memset(buff, 0, sizeof(buff));
-    snprintf(buff, sizeof(buff), "%" PRIu64, xbbStatus.firmwareVersion);
+    snprintf(buff, sizeof(buff), "%" PRIx64, xbbStatus.firmwareVersion);
 
     return XBB1_StringCopy(val, buff, size);
   }
@@ -323,6 +360,7 @@ XBB1_Alarm_GetEntryCount(ANSC_HANDLE h)
 ANSC_HANDLE
 XBB1_Alarm_GetEntry(ANSC_HANDLE h, ULONG index, ULONG* inst)
 {
+  xbbUpdateAlarms();
   XBB1_CHECK_NULL(h);
   XBB1_CHECK_NULL(inst);
 
