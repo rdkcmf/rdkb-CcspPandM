@@ -1463,7 +1463,11 @@ void setpool_into_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1Inde
     SETI_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "instancenumber", pEntry->Cfg.InstanceNumber)
     SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "alias", pEntry->Cfg.Alias)
     SETI_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "Order", pEntry->Cfg.Order)
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+    SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IAInterface", pEntry->Cfg.Interface)
+#else
     SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "Interface", pEntry->Cfg.Interface)
+#endif
     SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "VendorClassID", pEntry->Cfg.VendorClassID)
     SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "UserClassID", pEntry->Cfg.UserClassID)
     SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "SourceAddress", pEntry->Cfg.SourceAddress)
@@ -1483,7 +1487,11 @@ void setpool_into_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1Inde
     SETI_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "DUIDExclude", pEntry->Cfg.DUIDExclude)
     SETI_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "bEnabled", pEntry->Cfg.bEnabled)
     SETI_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "Status", pEntry->Info.Status)
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+    SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAInterfacePrefixes", pEntry->Info.IANAPrefixes)
+#else
     SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAPrefixes", pEntry->Info.IANAPrefixes)
+#endif
     SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IAPDPrefixes", pEntry->Info.IAPDPrefixes)
     SETI_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "RapidEnable", pEntry->Cfg.RapidEnable)
     SETI_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "UnicastEnable", pEntry->Cfg.UnicastEnable)
@@ -1506,7 +1514,11 @@ void unsetpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1In
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "instancenumber" )
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "alias")
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "Order")
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+    UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IAInterface")
+#else
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "Interface")
+#endif
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "VendorClassID")
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "UserClassID")
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "SourceAddress")
@@ -1526,7 +1538,11 @@ void unsetpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1In
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "DUIDExclude")
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "bEnabled")
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "Status")
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+    UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAInterfacePrefixes")
+#else
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAPrefixes")
+#endif
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IAPDPrefixes")
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "RapidEnable")
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "UnicastEnable")
@@ -1549,7 +1565,11 @@ void getpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1Inde
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "instancenumber", pEntry->Cfg.InstanceNumber)
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "alias", pEntry->Cfg.Alias)
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "Order", pEntry->Cfg.Order)
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+    GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IAInterface", pEntry->Cfg.Interface)
+#else
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "Interface", pEntry->Cfg.Interface)
+#endif
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "VendorClassID", pEntry->Cfg.VendorClassID)
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "UserClassID", pEntry->Cfg.UserClassID)
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "SourceAddress", pEntry->Cfg.SourceAddress)
@@ -1569,7 +1589,11 @@ void getpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1Inde
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "DUIDExclude", pEntry->Cfg.DUIDExclude)
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "bEnabled", pEntry->Cfg.bEnabled)
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "Status", pEntry->Info.Status)
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+    GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAInterfacePrefixes", pEntry->Info.IANAPrefixes)
+#else
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAPrefixes", pEntry->Info.IANAPrefixes)
+#endif
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IAPDPrefixes", pEntry->Info.IAPDPrefixes)
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "RapidEnable", pEntry->Cfg.RapidEnable)
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "UnicastEnable", pEntry->Cfg.UnicastEnable)
@@ -1655,6 +1679,9 @@ void _cosa_dhcpsv6_refresh_config();
 static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger);
 #define DHCPS6V_SERVER_RESTART_FIFO "/tmp/ccsp-dhcpv6-server-restart-fifo.txt"
 
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+
+#else
 ANSC_STATUS
 CosaDmlDhcpv6SMsgHandler
     (
@@ -1702,6 +1729,7 @@ int CosaDmlDhcpv6sRestartOnLanStarted(void * arg)
 
     return 0;
 }
+#endif
 
 ANSC_STATUS
 CosaDmlDhcpv6Init
@@ -1817,6 +1845,9 @@ CosaDmlDhcpv6Init
     SETI_INTO_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "serverenable", g_dhcpv6_server)
     Utopia_Free(&utctx,1);
 
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+
+#else
     /*register callback function to handle message from wan dchcp6 client */
     pEntry = (PDSLHDMAGNT_CALLBACK)AnscAllocateMemory(sizeof(*pEntry));
     pEntry->func = CosaDmlDhcpv6SMsgHandler;
@@ -1825,6 +1856,10 @@ CosaDmlDhcpv6Init
     /*register callback function to restart dibbler-server at right time*/
     CcspTraceWarning(("%s -- %d register lan-status to event dispatcher \n", __FUNCTION__, __LINE__));
     EvtDispterRgstCallbackForEvent("lan-status", CosaDmlDhcpv6sRestartOnLanStarted, NULL);
+
+
+#endif
+
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -2135,7 +2170,12 @@ static int _dibbler_client_operation(char * arg)
     {
         CcspTraceInfo(("%s stop\n", __func__));
 #ifdef _COSA_BCM_MIPS_
+        
+      #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+        commonSyseventSet("dhcpv6_client-stop", "");
+      #else
         system("/etc/utopia/service.d/service_dhcpv6_client.sh disable");
+      #endif
 #else
         sprintf(cmd, "killall %s", CLIENT_BIN);
         system(cmd);
@@ -2155,7 +2195,11 @@ static int _dibbler_client_operation(char * arg)
     {
         CcspTraceInfo(("%s start\n", __func__));
 #ifdef _COSA_BCM_MIPS_
-        system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+      commonSyseventSet("dhcpv6_client-start", "");
+#else
+      system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
+#endif
 #else
         sprintf(cmd, "%s start", CLIENT_BIN);
         system(cmd);
@@ -2971,7 +3015,10 @@ static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger)
     char str[32] = "restart";
     
     DHCPVS_DEBUG_PRINT
-
+  #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+    commonSyseventSet("dhcpv6_server-restart", "");
+  #else
+  
     //not restart really.we only need trigger pthread to check whether there is pending action.
     if ( !OnlyTrigger ) {
         g_dhcpv6s_restart_count++;
@@ -2988,6 +3035,7 @@ static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger)
     write( fd, str, sizeof(str) );
     close(fd);
 
+  #endif
     return 0;
 }
 
@@ -3545,7 +3593,12 @@ CosaDmlDhcpv6sEnable
     else if ( !bEnable  )
     {
         /* we need disable server. */
+        
+       #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+        commonSyseventSet("dhcpv6_server-stop", "");
+       #else
         _dibbler_server_operation("stop");
+       #endif
     }
     
     return ANSC_STATUS_SUCCESS;
@@ -3887,7 +3940,47 @@ CosaDmlDhcpv6sGetIAPDPrefixes
 
     return ret;
 }
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+/*this function gets IAPD prefixes from sysevent, the value is PD prefix range*/
+int 
+CosaDmlDhcpv6sGetIAPDPrefixes2
+    (
+        PCOSA_DML_DHCPSV6_POOL_CFG  pCfg,
+        char*                       pValue,
+        ULONG*                      pSize
+    )
+{
+    int size = 0;
+    int ret = 0;
+    char pd_pool[128] = {0};
+    char evt_val[64] = {0};
+    char start[64], end[64], pd_len[4];
 
+    commonSyseventGet("ipv6_subprefix-start", start, sizeof(start));
+    commonSyseventGet("ipv6_subprefix-end", end, sizeof(end));
+    commonSyseventGet("ipv6_pd-length", pd_len, sizeof(pd_len));
+
+    if(start[0] != '\0' && end[0] != '\0' && pd_len[0] != '\0')
+        snprintf(pd_pool, sizeof(pd_pool), "%s-%s/%s", start, end, pd_len);
+    
+    size = strlen(pd_pool); 
+
+    if (size > *pSize)
+    {
+        *pSize = size+1;
+        ret = 1;
+    }
+    else
+    {
+        /*pValue is big enough*/
+        strcpy(pValue, pd_pool);
+
+        ret = 0;
+    }
+
+    return ret;
+}
+#endif
 ANSC_STATUS
 CosaDmlDhcpv6sSetPoolCfg
     (

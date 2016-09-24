@@ -1256,7 +1256,59 @@ ULONG CosaDmlIPv6addrGetV6Status(PCOSA_DML_IP_V6ADDR p_dml_v6addr, PCOSA_DML_IP_
 
     return COSA_DML_IP6_ADDRSTATUS_Invalid;
 }
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+PCOSA_DML_IP_V6ADDR
+CosaDmlIPGetIPv6Addresses
+    (
+        PCOSA_DML_IP_IF_FULL2       p_ipif,
+        PULONG                      p_num
+    )
+{
+    ULONG i = 0;
+    PCOSA_DML_IP_V6ADDR p_dml_addr = NULL;
 
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    if (!p_ipif || !p_num)
+        return NULL;
+
+    if (p_ipif->Cfg.InstanceNumber > COSA_USG_IF_NUM) {
+        /*current only support one global ipv6 addr for multilan*/
+        *p_num = 1;
+        p_dml_addr = (PCOSA_DML_IP_V6ADDR)AnscAllocateMemory(*p_num * sizeof(COSA_DML_IP_V6ADDR));
+
+        if (!p_dml_addr)
+            return NULL;
+
+        p_dml_addr->InstanceNumber = 1;
+        CosaDmlIpIfMlanGetV6Addr2(NULL, p_ipif->Cfg.InstanceNumber, p_dml_addr);
+    } else {
+
+        for (i=0; i<g_ipif_num; i++)
+            if (!strncmp(g_ipif_names[i], p_ipif->Info.Name, sizeof(p_ipif->Info.Name)))
+                break;
+
+        if (i == g_ipif_num)
+            return NULL;
+
+        IPIF_getEntry_for_Ipv6Addr(p_ipif, i);
+
+        *p_num = g_ipif_be_bufs[i].ulNumOfV6Addr;
+
+        if (*p_num)
+        {
+            p_dml_addr = (PCOSA_DML_IP_V6ADDR)AnscAllocateMemory(*p_num * sizeof(COSA_DML_IP_V6ADDR));
+
+            if (!p_dml_addr)
+                return NULL;
+
+            AnscCopyMemory(p_dml_addr, g_ipif_be_bufs[i].V6AddrList, *p_num*sizeof(COSA_DML_IP_V6ADDR));
+        }
+
+    }
+    return p_dml_addr;
+}
+#else
 PCOSA_DML_IP_V6ADDR
 CosaDmlIPGetIPv6Addresses
     (
@@ -1297,6 +1349,7 @@ CosaDmlIPGetIPv6Addresses
     return p_dml_addr;
 }
 
+#endif
 
 
 static int
@@ -1415,8 +1468,27 @@ IPIF_getEntry_for_Ipv6Pre
     {
         if (g_ipif_be_bufs[ulIndex].ulNumOfV6Pre >= MAX_IPV6_ENTRY_NUM)
             break;
-        
-#ifdef _COSA_INTEL_USG_ARM_
+
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION        
+  #ifdef _COSA_INTEL_USG_ARM_
+        /* We just put this prefix into erouter0 && brlan0 entry */
+        if ( ulIndex > 0 && ulIndex != 3)
+            break;
+  #endif
+
+        p_dml_v6pre = &g_ipif_be_bufs[ulIndex].V6PreList[g_ipif_be_bufs[ulIndex].ulNumOfV6Pre];
+
+        if (ulIndex == 3)
+            commonSyseventGet("ipv6_brlan0-prefix", dhcpv6_pref, sizeof(dhcpv6_pref));
+        else
+            commonSyseventGet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME, dhcpv6_pref, sizeof(dhcpv6_pref));
+
+        if (dhcpv6_pref[0])
+            p_dml_v6pre->Origin = (ulIndex == 0) ? COSA_DML_IP6PREFIX_ORIGIN_PrefixDelegation : COSA_DML_IP6PREFIX_ORIGIN_Child;
+        else 
+            break;
+#else
+  #ifdef _COSA_INTEL_USG_ARM_
         /* We just put this prefix into erouter0 entry */
         if ( ulIndex > 0 )
             break;
@@ -1430,7 +1502,9 @@ IPIF_getEntry_for_Ipv6Pre
             p_dml_v6pre->Origin = COSA_DML_IP6PREFIX_ORIGIN_PrefixDelegation;
         else 
             break;
-        
+
+
+#endif        
 
         if (Utopia_Init(&utctx))
         {
@@ -3433,6 +3507,61 @@ CosaDmlIpIfGetV6Addr2
 /*
  *  IP Interface IPv6Prefix
  */
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+PCOSA_DML_IP_V6PREFIX
+CosaDmlIPGetIPv6Prefixes
+    (
+        PCOSA_DML_IP_IF_FULL2       p_ipif,
+        PULONG                      p_num
+    )
+{       
+    ULONG i = 0;
+    PCOSA_DML_IP_V6PREFIX p_dml_pref = NULL;
+
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    if (!p_ipif || !p_num)
+        return NULL;
+
+    if ( p_ipif->Cfg.InstanceNumber > COSA_USG_IF_NUM )
+    {
+        *p_num = 1; /*current only support only one prefix for multinet*/
+
+        p_dml_pref = (PCOSA_DML_IP_V6PREFIX)AnscAllocateMemory(*p_num * sizeof(COSA_DML_IP_V6PREFIX));
+
+        if (!p_dml_pref)
+            return NULL;
+
+        p_dml_pref->InstanceNumber = 1;
+        CosaDmlIpIfMlanGetV6Prefix2(NULL, p_ipif->Cfg.InstanceNumber, p_dml_pref);
+    }
+    else
+    {
+        for (i=0; i<g_ipif_num; i++)
+            if (!strncmp(g_ipif_names[i], p_ipif->Info.Name, sizeof(p_ipif->Info.Name)))
+                break;
+
+        if (i == g_ipif_num)
+            return NULL;
+        
+        IPIF_getEntry_for_Ipv6Pre(p_ipif, i);
+
+        *p_num = g_ipif_be_bufs[i].ulNumOfV6Pre;
+        
+        if (*p_num)
+        {
+            p_dml_pref = (PCOSA_DML_IP_V6PREFIX)AnscAllocateMemory(*p_num * sizeof(COSA_DML_IP_V6PREFIX));
+        
+            if (!p_dml_pref)
+                return NULL;
+            
+            AnscCopyMemory(p_dml_pref, g_ipif_be_bufs[i].V6PreList, *p_num*sizeof(COSA_DML_IP_V6PREFIX));
+        }
+    }
+
+    return p_dml_pref;
+}
+#else
 PCOSA_DML_IP_V6PREFIX
 CosaDmlIPGetIPv6Prefixes
     (
@@ -3481,6 +3610,7 @@ CosaDmlIPGetIPv6Prefixes
     }
 }
 
+#endif
 
 /**********************************************************************
 

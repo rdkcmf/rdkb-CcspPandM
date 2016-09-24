@@ -85,6 +85,7 @@
 #include "cosa_apis.h"
 #include "cosa_ip_apis_multilan.h"
 #include "ccsp_psm_helper.h"
+#include "cosa_dhcpv6_apis.h"
 
 #include "linux/if.h"
 #include "linux/sockios.h"
@@ -1738,11 +1739,91 @@ CosaDmlIpIfMlanGetV6Addr2
         PCOSA_DML_IP_V6ADDR         pEntry         
     )
 {
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION	
+    int                             iReturnValue    = CCSP_SUCCESS;
+    char                            pParamPath[64]  = {0};
+    unsigned int                    RecordType      = 0;
+    SLAP_VARIABLE                   SlapValue       = {0};
+    unsigned int                    l2_instnum = 0;
+    char                            evt_name[64] = {0};
+    char                            evt_value[64] = {0};
+    char                            out[32] = {0};
+
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    /*
+     *  Retrieve the EthLink
+     */
+    if ( ulIpIfInstanceNumber )
+    {
+        SlapInitVariable(&SlapValue);
+
+        _ansc_sprintf
+            (
+                pParamPath,
+                DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
+                ulIpIfInstanceNumber
+            );
+
+        iReturnValue =
+            PSM_Get_Record_Value
+                (
+                    g_MessageBusHandle,
+                    g_SubsystemPrefix,
+                    pParamPath,
+                    &RecordType,
+                    &SlapValue
+                );
+
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        {
+            AnscTraceWarning(("%s -- failed to retrieve 'EthLink' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
+        }
+        else
+        {
+            l2_instnum = SlapValue.Variant.varUint32;
+        }
+
+        SlapCleanVariable(&SlapValue);
+    }
+
+    if (l2_instnum) {
+        snprintf(evt_name, sizeof(evt_name), "multinet_%d-name", l2_instnum);
+        commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
+
+        snprintf(evt_name, sizeof(evt_name), "ipv6_%s-addr", evt_value);
+        commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
+        if (evt_value[0] != '\0') {
+            strncpy(pEntry->IP6Address, evt_value, sizeof(pEntry->IP6Address));
+            pEntry->bEnabled = TRUE;
+            pEntry->Status = COSA_DML_IP_ADDR_STATUS_Enabled;
+            pEntry->V6Status = COSA_DML_IP6_ADDRSTATUS_Preferred;
+            pEntry->Origin = COSA_DML_IP6_ORIGIN_AutoConfigured;
+            pEntry->bAnycast = FALSE;
+
+            /*life time*/
+            if (!commonSyseventGet(COSA_DML_DHCPV6C_ADDR_PRETM_SYSEVENT_NAME, out, sizeof(out)) )
+                pEntry->iana_pretm = atoi(out);
+            else
+                pEntry->iana_pretm = 0;
+
+            if (!commonSyseventGet(COSA_DML_DHCPV6C_ADDR_VLDTM_SYSEVENT_NAME, out, sizeof(out)) )
+                pEntry->iana_vldtm = atoi(out);
+            else
+                pEntry->iana_vldtm = 0;
+        }
+
+    }
+    return  ANSC_STATUS_SUCCESS;
+#else
     /*
      *  No IPv6 support for Multi-LAN at the moment
      *  It should not have got here at all!
      */
     return  ANSC_STATUS_UNAPPLICABLE;    
+
+#endif    
+        
 }
 
 
@@ -1802,11 +1883,93 @@ CosaDmlIpIfMlanGetV6Prefix2
         PCOSA_DML_IP_V6PREFIX       pEntry         
     )
 {
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+    int                             iReturnValue    = CCSP_SUCCESS;
+    char                            pParamPath[64]  = {0};
+    unsigned int                    RecordType      = 0;
+    SLAP_VARIABLE                   SlapValue       = {0};
+    unsigned int                    l2_instnum = 0;
+    char                            evt_name[64] = {0};
+    char                            evt_value[64] = {0};
+    char                            out[32] = {0};
+
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    /*
+     *  Retrieve the EthLink
+     */
+    if ( ulIpIfInstanceNumber )
+    {
+        SlapInitVariable(&SlapValue);
+
+        _ansc_sprintf
+            (
+                pParamPath,
+                DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
+                ulIpIfInstanceNumber
+            );
+
+        iReturnValue =
+            PSM_Get_Record_Value
+                (
+                    g_MessageBusHandle,
+                    g_SubsystemPrefix,
+                    pParamPath,
+                    &RecordType,
+                    &SlapValue
+                );
+
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        {
+            AnscTraceWarning(("%s -- failed to retrieve 'EthLink' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
+        }
+        else
+        {
+            l2_instnum = SlapValue.Variant.varUint32;
+        }
+
+        SlapCleanVariable(&SlapValue);
+    }
+
+    if (l2_instnum) {
+        snprintf(evt_name, sizeof(evt_name), "multinet_%d-name", l2_instnum);
+        commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
+
+        snprintf(evt_name, sizeof(evt_name), "ipv6_%s-prefix", evt_value);
+        commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
+        if (evt_value[0] != '\0') {
+            strncpy(pEntry->Prefix, evt_value, sizeof(pEntry->Prefix));
+            pEntry->bEnabled = TRUE;
+            pEntry->Status = COSA_DML_PREFIXENTRY_STATUS_Enabled;
+            pEntry->PrefixStatus = COSA_DML_IP6PREFIX_STATUS_Preferred;
+            pEntry->Origin = COSA_DML_IP6PREFIX_ORIGIN_Child;
+            pEntry->StaticType = COSA_DML_IP6PREFIX_STATICTYPE_Inapplicable;
+            /*always set these 2 fields to TRUE*/
+            pEntry->bOnlink = TRUE;
+            pEntry->bAutonomous = TRUE;
+
+            /*life time*/
+            if (!commonSyseventGet(COSA_DML_DHCPV6C_PREF_PRETM_SYSEVENT_NAME, out, sizeof(out)) )
+                pEntry->iapd_pretm = atoi(out);
+            else
+                pEntry->iapd_pretm = 0;
+
+            if (!commonSyseventGet(COSA_DML_DHCPV6C_PREF_VLDTM_SYSEVENT_NAME, out, sizeof(out)) )
+                pEntry->iapd_vldtm = atoi(out);
+            else
+                pEntry->iapd_vldtm = 0;
+        }
+    }
+
+    return  ANSC_STATUS_SUCCESS; 
+#else
     /*
      *  No IPv6 support for Multi-LAN at the moment
      *  It should not have got here at all!
      */
     return  ANSC_STATUS_UNAPPLICABLE;    
+
+#endif
 }
 
 /*
