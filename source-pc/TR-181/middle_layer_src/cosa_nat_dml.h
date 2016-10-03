@@ -378,6 +378,19 @@ PortTrigger_GetEntry
         ULONG*                      pInsNumber
     );
 
+//LNT_EMU
+BOOL
+PortTrigger_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
+PortTrigger_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
 ANSC_HANDLE
 PortTrigger_AddEntry
     (
@@ -476,4 +489,5 @@ NatPortTrigger_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+
 #endif

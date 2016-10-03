@@ -2584,6 +2584,198 @@ PortTrigger_GetEntry
     return (ANSC_HANDLE)pSListEntry;
 }
 
+/**********************************************************************  
+To Resolve PortTrigger Deletion issue PortTrigger_IsUpdated and PortTrigger_Synchronize is 
+implemented by LNT
+**********************************************************************/
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        PortTrigger_IsUpdated
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is checking whether the table is updated or not.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     TRUE or FALSE.
+
+**********************************************************************/
+BOOL
+PortTrigger_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DATAMODEL_NAT             pMyObject    = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
+    BOOL                            bIsUpdated   = TRUE;
+
+
+    /*
+        We can use one rough granularity interval to get whole table in case
+        that the updating is too frequent.
+        */
+    if ( ( AnscGetTickInSeconds() - pMyObject->PreviousVisitTime ) < COSA_DML_NAT_PORTTRIGGER_ACCESS_INTERVAL )
+    {
+        bIsUpdated  = FALSE;
+    }
+    else
+    {
+        pMyObject->PreviousVisitTime =  AnscGetTickInSeconds();
+        bIsUpdated  = TRUE;
+    }
+
+    return bIsUpdated;
+}
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        PortTrigger_Synchronize
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to synchronize the table.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+PortTrigger_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+	printf("Inside %s :%d\n",__FUNCTION__,__LINE__);
+
+	ANSC_STATUS                           returnStatus      = ANSC_STATUS_FAILURE;
+	PCOSA_DATAMODEL_NAT                   pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
+	PCOSA_CONTEXT_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+	PSINGLE_LINK_ENTRY                    pSListEntry       = NULL;
+	PSINGLE_LINK_ENTRY                    pSListEntry2      = NULL;
+	PCOSA_DML_NAT_PTRIGGER               pNatPTrigger      = NULL;
+	PCOSA_DML_NAT_PTRIGGER               pNatPTrigger2      = NULL;
+	ULONG                                 entryCount        = 0;
+	ULONG                                 i                 = 0;
+	ULONG                                 HashValue         = 0;
+	PULONG                                pulTmp            = 0;
+
+	pNatPTrigger         = CosaDmlNatGetPortTriggers(NULL,&entryCount);
+	if ( pNatPTrigger && entryCount )
+	{
+		pulTmp    =   AnscAllocateMemory( entryCount * sizeof(ULONG) );
+		if ( !pulTmp )
+		{
+			goto EXIT;
+		}
+	}
+	pSListEntry =   AnscSListGetFirstEntry(&pNat->NatPTriggerList);
+	while( pSListEntry )
+	{
+		pCxtLink          = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSListEntry);
+		pSListEntry       = AnscSListGetNextEntry(pSListEntry);
+
+		pCxtLink->tFound  = FALSE;
+	}
+
+	/* go over all new entries, find them in current link table and mark them */
+	for ( i = 0; i < entryCount; i++)
+	{
+		pSListEntry =   AnscSListGetFirstEntry(&pNat->NatPTriggerList);
+		while( pSListEntry )
+		{
+			pCxtLink          = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSListEntry);
+			pSListEntry       = AnscSListGetNextEntry(pSListEntry);
+
+			pNatPTrigger2     = (PCOSA_DML_NAT_PTRIGGER)pCxtLink->hContext;
+			if ( pNatPTrigger2->InstanceNumber == pNatPTrigger[i].InstanceNumber )
+			{
+				pulTmp[i]         =  1;
+				pCxtLink->tFound  = TRUE;
+				/* If found, update the content also */
+				*pNatPTrigger2    = pNatPTrigger[i];
+				pCxtLink->bNew    = FALSE;
+
+				break;
+			}
+		}
+	}
+
+
+	/* We need del unreferred entry if it's not delay_added entry */
+	pSListEntry =   AnscSListGetFirstEntry(&pNat->NatPTriggerList);
+	while( pSListEntry )
+	{
+		pCxtLink          = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSListEntry);
+		pSListEntry2      = pSListEntry;
+		pSListEntry       = AnscSListGetNextEntry(pSListEntry);
+
+		if ( pCxtLink->tFound  == FALSE && pCxtLink->bNew  == FALSE )
+		{
+			AnscSListPopEntryByLink(&pNat->NatPTriggerList, pSListEntry2);
+			AnscFreeMemory( pCxtLink->hContext );
+			AnscFreeMemory( pCxtLink );
+		}
+	}
+	/* We add new entry into our link table */
+	for ( i = 0; i < entryCount; i++ )
+	{
+		if ( pulTmp[i] == 0 )
+		{
+			/* Add new one */
+			pCxtLink = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
+			if ( !pCxtLink )
+			{
+				goto EXIT;
+			}
+
+			pNatPTrigger2        = (PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory(sizeof(COSA_DML_NAT_PTRIGGER));
+			if ( !pNatPTrigger2 )
+			{
+				AnscFreeMemory(pCxtLink);
+				goto EXIT;
+			}
+			/* copy new content which should include InstanceNumber and Alias */
+			*pNatPTrigger2       = pNatPTrigger[i];
+
+			pCxtLink->hContext   = (ANSC_HANDLE)pNatPTrigger2;
+			pCxtLink->InstanceNumber = pNatPTrigger2->InstanceNumber;
+			pCxtLink->bNew       = FALSE;
+			CosaSListPushEntryByInsNum(&pNat->NatPTriggerList,pCxtLink);
+		}
+	}
+
+	returnStatus =  ANSC_STATUS_SUCCESS;
+EXIT:
+	if (pulTmp)
+		AnscFreeMemory(pulTmp);
+
+	if (pNatPTrigger)
+		AnscFreeMemory(pNatPTrigger);
+
+	return returnStatus;
+}
+
+
 /**********************************************************************
 
     caller:     owner of this object
@@ -2728,6 +2920,9 @@ PortTrigger_DelEntry
 
         AnscFreeMemory(pPTriggerCxtLink->hContext);
         AnscFreeMemory(pPTriggerCxtLink);
+	printf("pNat->ulPtNextInstanceNumber%d\n",pNat->ulPtNextInstanceNumber);
+	pNat->ulPtNextInstanceNumber--;//LNT_EMU
+	printf("pNat->ulPtNextInstanceNumber%d\n",pNat->ulPtNextInstanceNumber);
     }
 
     return returnStatus;
