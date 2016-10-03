@@ -76,7 +76,6 @@
 #include "cosa_users_internal.h"
 #include "plugin_main_apis.h"
 
-
 #if ( defined _COSA_SIM_ )
 
 COSA_DML_USER  g_users_user[] = 
@@ -85,16 +84,24 @@ COSA_DML_USER  g_users_user[] =
         1,
         TRUE,
         TRUE,
-        "Sam",
-        "XDFSXE",
+        "mso",
+        "pod",
         "En"
     },
     {
         2,
         TRUE,
         TRUE,
-        "Jerry",
-        "X72SXE",
+        "cusadmin",
+        "Xfinity",
+        "Fr"
+    },
+   {
+        3,
+        TRUE,
+        TRUE,
+        "admin",
+        "password",
         "Fr"
     }
 };
@@ -201,7 +208,6 @@ CosaDmlUserSetCfg
             return ANSC_STATUS_SUCCESS;
         }
     }
-
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -222,7 +228,6 @@ CosaDmlUserGetCfg
             return ANSC_STATUS_SUCCESS;
         }
     }
-
     return ANSC_STATUS_FAILURE;
 
 }

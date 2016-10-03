@@ -85,6 +85,11 @@
     #include <ccsp_syslog.h>
 #endif
 
+//LNT_EMU - PSM ACCESS
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
+
+
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -653,6 +658,19 @@ User_GetParamStringValue
         
         if ( AnscSizeOfString(pUser->Password) < *pUlSize)
         {
+	    #if 1
+//LNT_EMU-PSM ACCESS
+                if(pUser->InstanceNumber == 3)
+                {
+                char *param_value;
+                char *user_password = "dmsb.users.user.%d.password";
+                char param_name[100] ={0};
+                memset(param_name, 0, sizeof(param_name));
+                sprintf(param_name,user_password,pUser->InstanceNumber);
+                PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value);
+                strcpy(pUser->Password,param_value);
+                }
+	     #endif
             AnscCopyString(pValue, pUser->Password);
             return 0;
         }
@@ -924,6 +942,19 @@ User_SetParamStringValue
         	/* save update to backup */
        		 AnscCopyString(pUser->Password, pString);
 	}
+		#if 1
+//LNT_EMU - PSM ACCESS
+		if(pUser->InstanceNumber == 3)
+		{
+                char param_value[50] = {0};
+                char *user_password = "dmsb.users.user.%d.password";
+                char param_name[100] ={0};
+                memset(param_name, 0, sizeof(param_name));
+                strcpy(param_value,pUser->Password);
+                sprintf(param_name,user_password,pUser->InstanceNumber);
+                PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+		}
+		#endif
     #if CFG_USE_CCSP_SYSLOG
         /* Bad practice to use platform dependent and will be rectified -- CCSP_TRACE should be used */
         if( AnscEqualString(pUser->Username, "admin", TRUE) )
