@@ -1048,8 +1048,19 @@ CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry)
 {
    char ipv4[17];
    char ipv6[64];
+   char syscommand[256];
+   int rc;
 
    /* HTTP_Server_IP */
+   memset(ipv4, 0, sizeof(ipv4));
+   rc = syscfg_get( NULL, "HTTP_Server_IP", ipv4, sizeof(ipv4));
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "iptables -t nat -D prerouting_redirect -p tcp --dport 80 -j DNAT --to-destination %s:80", ipv4);
+   system(syscommand);
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "iptables -t nat -A prerouting_redirect -p tcp --dport 80 -j DNAT --to-destination %s:80", pEntry->HTTP_Server_IP);
+   system(syscommand);
+   
    memset(ipv4, 0, sizeof(ipv4));
    snprintf(ipv4,sizeof(ipv4),"%s",pEntry->HTTP_Server_IP);
    if (syscfg_set(NULL, "HTTP_Server_IP", ipv4) != 0) 
@@ -1067,6 +1078,15 @@ CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry)
 
    /* HTTPS_Server_IP */
    memset(ipv4, 0, sizeof(ipv4));
+   rc = syscfg_get( NULL, "HTTPS_Server_IP", ipv4, sizeof(ipv4));
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "iptables -t nat -D prerouting_redirect -p tcp --dport 443 -j DNAT --to-destination %s:443", ipv4);
+   system(syscommand);
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "iptables -t nat -A prerouting_redirect -p tcp --dport 443 -j DNAT --to-destination %s:443", pEntry->HTTPS_Server_IP);
+   system(syscommand);
+   
+   memset(ipv4, 0, sizeof(ipv4));
    snprintf(ipv4,sizeof(ipv4),"%s",pEntry->HTTPS_Server_IP);
    if (syscfg_set(NULL, "HTTPS_Server_IP", ipv4) != 0) 
    {
@@ -1081,6 +1101,21 @@ CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry)
    }
 
    /* Default_Server_IP */
+   memset(ipv4, 0, sizeof(ipv4));
+   rc = syscfg_get( NULL, "Default_Server_IP", ipv4, sizeof(ipv4));
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "iptables -t nat -D prerouting_redirect -p tcp -j DNAT --to-destination %s:443", ipv4);
+   system(syscommand);
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "iptables -t nat -D prerouting_redirect -p udp ! --dport 53 -j DNAT --to-destination %s:80", ipv4);
+   system(syscommand);
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "iptables -t nat -A prerouting_redirect -p tcp -j DNAT --to-destination %s:443", pEntry->Default_Server_IP);
+   system(syscommand);
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "iptables -t nat -A prerouting_redirect -p udp ! --dport 53 -j DNAT --to-destination %s:80", pEntry->Default_Server_IP);
+   system(syscommand);
+   
    memset(ipv4, 0, sizeof(ipv4));
    snprintf(ipv4,sizeof(ipv4),"%s",pEntry->Default_Server_IP);
    if (syscfg_set(NULL, "Default_Server_IP", ipv4) != 0) 
@@ -1097,6 +1132,15 @@ CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry)
 
    /* HTTP_Server_IPv6 */
    memset(ipv6, 0, sizeof(ipv6));
+   rc = syscfg_get( NULL, "HTTP_Server_IPv6", ipv6, sizeof(ipv6));
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "ip6tables -t nat -D prerouting_redirect -p tcp --dport 80 -j DNAT --to-destination [%s]:80", ipv6); 
+   system(syscommand);
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "ip6tables -t nat -A prerouting_redirect -p tcp --dport 80 -j DNAT --to-destination [%s]:80", pEntry->HTTP_Server_IPv6); 
+   system(syscommand);
+
+   memset(ipv6, 0, sizeof(ipv6));
    snprintf(ipv6,sizeof(ipv6),"%s",pEntry->HTTP_Server_IPv6);
    if (syscfg_set(NULL, "HTTP_Server_IPv6", ipv6) != 0) 
    {
@@ -1112,6 +1156,15 @@ CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry)
 
    /* HTTPS_Server_IPv6 */
    memset(ipv6, 0, sizeof(ipv6));
+   rc = syscfg_get( NULL, "HTTPS_Server_IPv6", ipv6, sizeof(ipv6));
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "ip6tables -t nat -D prerouting_redirect -p tcp --dport 443 -j DNAT --to-destination [%s]:443", ipv6); 
+   system(syscommand); 
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "ip6tables -t nat -A prerouting_redirect -p tcp --dport 443 -j DNAT --to-destination [%s]:443", pEntry->HTTPS_Server_IPv6); 
+   system(syscommand);
+		
+   memset(ipv6, 0, sizeof(ipv6));
    snprintf(ipv6,sizeof(ipv6),"%s",pEntry->HTTPS_Server_IPv6);
    if (syscfg_set(NULL, "HTTPS_Server_IPv6", ipv6) != 0) 
    {
@@ -1126,6 +1179,21 @@ CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry)
    }
 
    /* Default_Server_IPv6 */
+   memset(ipv6, 0, sizeof(ipv6));
+   rc = syscfg_get( NULL, "Default_Server_IPv6", ipv6, sizeof(ipv6));
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "ip6tables -t nat -D prerouting_redirect -p tcp -j DNAT --to-destination [%s]:443", ipv6); 
+   system(syscommand);
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "ip6tables -t nat -D prerouting_redirect -p udp ! --dport 53 -j DNAT --to-destination [%s]:80", ipv6);
+   system(syscommand);
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "ip6tables -t nat -A prerouting_redirect -p tcp -j DNAT --to-destination [%s]:443", pEntry->Default_Server_IPv6); 
+   system(syscommand);
+   memset(syscommand,0,sizeof(syscommand));
+   sprintf(syscommand, "ip6tables -t nat -A prerouting_redirect -p udp ! --dport 53 -j DNAT --to-destination [%s]:80", pEntry->Default_Server_IPv6);
+   system(syscommand);   
+   
    memset(ipv6, 0, sizeof(ipv6));
    snprintf(ipv6,sizeof(ipv6),"%s",pEntry->Default_Server_IPv6);
    if (syscfg_set(NULL, "Default_Server_IPv6", ipv6) != 0) 
