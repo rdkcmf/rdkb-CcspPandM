@@ -508,6 +508,8 @@ int main(int argc, char* argv[])
     sd_notifyf(0, "READY=1\n"
               "STATUS=CcspPandMSsp is Successfully Initialized\n"
               "MAINPID=%lu", (unsigned long) getpid());
+	
+    CcspTraceInfo(("RDKB_SYSTEM_BOOT_UP_LOG : P&M sd_notify Called\n"));
 #endif
 
     system("touch /tmp/pam_initialized");
