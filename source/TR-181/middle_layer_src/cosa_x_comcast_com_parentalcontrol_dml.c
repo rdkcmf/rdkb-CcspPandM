@@ -1956,20 +1956,24 @@ MDRed_GetParamStringValue
 {
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
+    char IPv4[17] = "0"; 
 
     if (AnscEqualString(ParamName, "HTTP_Server_IP", TRUE))
-    {
-        AnscCopyString(pValue, pMDRed->HTTP_Server_IP);
+    { 
+        syscfg_get(NULL, "HTTP_Server_IP", IPv4, sizeof(IPv4));
+        AnscCopyString(pValue, IPv4);
         return 0;
     }
     if (AnscEqualString(ParamName, "HTTPS_Server_IP", TRUE))
     {
-        AnscCopyString(pValue, pMDRed->HTTPS_Server_IP);
+        syscfg_get(NULL, "HTTPS_Server_IP", IPv4, sizeof(IPv4));
+        AnscCopyString(pValue, IPv4);
         return 0;
     }
     if (AnscEqualString(ParamName, "Default_Server_IP", TRUE))
     {
-        AnscCopyString(pValue, pMDRed->Default_Server_IP);
+        syscfg_get(NULL, "Default_Server_IP", IPv4, sizeof(IPv4));
+        AnscCopyString(pValue, IPv4);
         return 0;
     }
     if (AnscEqualString(ParamName, "HTTP_Server_IPv6", TRUE))
