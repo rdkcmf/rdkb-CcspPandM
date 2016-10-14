@@ -1,7 +1,7 @@
 #!/bin/sh
 
-source /fss/gw/etc/utopia/service.d/log_env_var.sh
-
+source /etc/utopia/service.d/log_env_var.sh
+SyseventdCrashed="/rdklogs/syseventd_crashed"
 calcRandTimetoReboot()
 {
     rand_hr=0
@@ -23,7 +23,8 @@ process_crashed_is=$1
     sec_to_sleep=$(($min_to_sleep*60 + $rand_sec))
     sleep $sec_to_sleep;
     touch $HAVECRASH
-     /fss/gw/rdklogger/backupLogs.sh "true" "$process_crashed_is"
+    rm -rf $SyseventdCrashed
+     /rdklogger/backupLogs.sh "true" "$process_crashed_is"
 }
 
 calcRandTimetoReboot $1
