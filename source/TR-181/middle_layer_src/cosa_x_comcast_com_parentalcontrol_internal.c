@@ -38,7 +38,7 @@
 #include "plugin_main_apis.h"
 
 extern void * g_pDslhDmlAgent;
-
+    BOOL                            bMigration         = FALSE;
 ANSC_HANDLE
 CosaParentalControlCreate
     (
@@ -111,7 +111,16 @@ CosaParentalControlInitialize
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoMDDev   = NULL;
     COSA_DML_MD_DEV             *pMDDev;
     PCOSA_CONTEXT_LINK_OBJECT       pMDDevLinkObj      = NULL;
-
+	FILE *fp = NULL;
+	#ifdef UTC_ENABLE
+    if ( (fp=fopen("/nvram/UTC_ENABLE", "r")) == NULL )
+    {
+        bMigration = TRUE;
+    }else
+	{
+		fclose(fp);
+	}
+	#endif
     /* Initiation all functions */
     CosaDmlParentalControlInit(NULL, NULL);
 
@@ -124,6 +133,26 @@ CosaParentalControlInitialize
 
     /* ManagedSites.BlockedURL.{i}. */
     ulBlkUrlCnt = CosaDmlBlkURL_GetNumberOfEntries();
+	#ifdef UTC_ENABLE
+	
+	if(bMigration == TRUE)
+	{
+		AnscTraceWarning(("%s -- calling 1 CosaDmlBlkURL_Migration ...\n", __FUNCTION__));
+		printf("%s -- calling 1 CosaDmlBlkURL_Migration ...\n", __FUNCTION__);
+		
+		if (ANSC_STATUS_SUCCESS == CosaDmlBlkURL_Migration())
+		{
+			AnscTraceWarning(("%s -- Success CosaDmlBlkURL_Migration ...\n", __FUNCTION__));
+			printf("%s -- Success CosaDmlBlkURL_Migration ...\n", __FUNCTION__);
+		}
+		else
+		{
+			AnscTraceWarning(("%s -- Failed CosaDmlBlkURL_Migration ...\n", __FUNCTION__));
+			printf("%s -- failed CosaDmlBlkURL_Migration ...\n", __FUNCTION__);
+		}
+		
+	}	
+	#endif
 
     AnscSListInitializeHeader(&pParCtrl->BlkUrlList);
     pParCtrl->ulBlkUrlNextInsNum = 1;
@@ -312,7 +341,25 @@ CosaParentalControlInitialize
 
     /* ManagedServices.Service.{i}. */
     ulMSServCnt = CosaDmlMSServ_GetNumberOfEntries();
-
+	#ifdef UTC_ENABLE
+	if(bMigration == TRUE)
+	{
+		AnscTraceWarning(("%s -- Call CosaDmlMSServ_Migration ...\n", __FUNCTION__));
+		printf("%s -- call CosaDmlMSServ_Migration ...\n", __FUNCTION__);
+		
+		if (ANSC_STATUS_SUCCESS == CosaDmlMSServ_Migration())
+		{
+			AnscTraceWarning(("%s -- Success CosaDmlMSServ_Migration ...\n", __FUNCTION__));
+			printf("%s -- Success CosaDmlMSServ_Migration ...\n", __FUNCTION__);
+		}
+		else
+		{
+			AnscTraceWarning(("%s -- Failed CosaDmlMSServ_Migration ...\n", __FUNCTION__));
+			printf("%s -- failed CosaDmlMSServ_Migration ...\n", __FUNCTION__);
+		}
+		
+	}
+	#endif
     AnscSListInitializeHeader(&pParCtrl->MSServList);
     pParCtrl->ulMSServNextInsNum = 1;
     pParCtrl->hIrepFolderCOSA = g_GetRegistryRootFolder(g_pDslhDmlAgent);
@@ -500,7 +547,25 @@ CosaParentalControlInitialize
 
     /* ManagedDevices.Device.{i}. */
     ulMDDevCnt = CosaDmlMDDev_GetNumberOfEntries();
-
+	#ifdef UTC_ENABLE
+	if(bMigration == TRUE)
+	{
+		AnscTraceWarning(("%s -- Call CosaDmlMDDev_Migration ...\n", __FUNCTION__));
+		printf("%s -- call CosaDmlMDDev_Migration ...\n", __FUNCTION__);
+		
+		if (ANSC_STATUS_SUCCESS == CosaDmlMDDev_Migration())
+		{
+			AnscTraceWarning(("%s -- Success CosaDmlMDDev_Migration ...\n", __FUNCTION__));
+			printf("%s -- Success CosaDmlMDDev_Migration ...\n", __FUNCTION__);
+		}
+		else
+		{
+			AnscTraceWarning(("%s -- Failed CosaDmlMDDev_Migration ...\n", __FUNCTION__));
+			printf("%s -- failed CosaDmlMDDev_Migration ...\n", __FUNCTION__);
+		}
+		
+	}
+	#endif
     AnscSListInitializeHeader(&pParCtrl->MDDevList);
     pParCtrl->ulMDDevNextInsNum = 1;
     pParCtrl->hIrepFolderCOSA = g_GetRegistryRootFolder(g_pDslhDmlAgent);
@@ -591,6 +656,10 @@ CosaParentalControlInitialize
     }
 
     CosaPcReg_MDDevGetInfo((ANSC_HANDLE)pParCtrl);
+	#ifdef UTC_ENABLE
+    bMigration = FALSE;
+    system("touch /nvram/UTC_ENABLE");
+	#endif
 
     return ANSC_STATUS_SUCCESS;
 }

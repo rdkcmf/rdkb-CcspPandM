@@ -41,6 +41,22 @@
 #include "cosa_x_comcast_com_parentalcontrol_internal.h"
 
 BOOL
+ParentalControl_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+ParentalControl_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+	
+BOOL
 MngSites_GetParamBoolValue
     (
         ANSC_HANDLE                 hInsContext,

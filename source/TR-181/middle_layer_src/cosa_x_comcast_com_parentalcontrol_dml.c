@@ -38,6 +38,57 @@
 #include "ccsp_trace.h"
 
 BOOL
+ParentalControl_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+
+    if (AnscEqualString(ParamName, "RollbackUTC_Local", TRUE))
+    {
+        *pBool = FALSE;
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+BOOL
+ParentalControl_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+  
+    if (AnscEqualString(ParamName, "RollbackUTC_Local", TRUE))
+    {
+		#ifdef UTC_ENABLE
+
+        if(TRUE == bValue)
+		{
+			CcspTraceWarning(("Rollback to LocalTime requested\n"));
+			CosaDmlBlkURL_RollbackUTCtoLocal();
+
+			CosaDmlMSServ_RollbackUTCtoLocal();
+
+			CosaDmlMDDev_RollbackUTCtoLocal();
+			system("rm /nvram/UTC_ENABLE");
+			CcspTraceWarning(("Parental Control rules are converted in Local time zone\n"));
+		}
+		#endif
+        return TRUE;
+    }
+
+    return FALSE;
+
+}
+
+
+BOOL
 MngSites_GetParamBoolValue
     (
         ANSC_HANDLE                 hInsContext,

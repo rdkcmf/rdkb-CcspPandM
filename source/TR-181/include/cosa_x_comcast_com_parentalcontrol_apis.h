@@ -337,5 +337,18 @@ CosaDmlMDRed_GetConf(COSA_DML_MD_RED *pEntry);
 
 ANSC_STATUS
 CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry);
+#ifdef UTC_ENABLE
 
+ANSC_STATUS CosaDmlBlkURL_Migration();
+
+ANSC_STATUS CosaDmlMSServ_Migration();
+
+ANSC_STATUS CosaDmlMDDev_Migration();
+
+ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal();
+
+ANSC_STATUS CosaDmlMSServ_RollbackUTCtoLocal();
+
+ANSC_STATUS CosaDmlMDDev_RollbackUTCtoLocal();
+#endif
 #endif /* _COSA_X_COMCAST_COM_PARENTALCONTROL_H_ */
