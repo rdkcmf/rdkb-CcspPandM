@@ -261,12 +261,17 @@ int find_arp_entry(char *ipaddr, char *ifname, unsigned char *pMac)
 #ifdef CONFIG_SYSTEM_MOCA
 int usg_cpe_from_moca(char *pMac)
 {
+
+    AnscTraceFlow(("Inside %s\n", __FUNCTION__));
     int n=0,i;
     unsigned char macArray[6];
     moca_cpe_t cpes[kMoca_MaxCpeList];
 
     mac_string_to_array(pMac,macArray);
+    
+    AnscTraceFlow(("Calling moca_GetMocaCPEs, %s\n", __FUNCTION__));
     moca_GetMocaCPEs(0, cpes, &n);
+    AnscTraceFlow(("Returned from moca_GetMocaCPEs, %s\n", __FUNCTION__));
     printf("");
     for(i=0;i<n;i++){
         printf("MAC[%d]-> %02x:02x:02x:02x:02x:02x\n", cpes[i].mac_addr[0],cpes[i].mac_addr[1],cpes[i].mac_addr[2],
@@ -531,6 +536,7 @@ reopen:
 
 int usg_get_cpe_associate_interface(char *pMac, char ifname[64])
 {
+
     unsigned char macArray[6];
     LM_cmd_common_result_t result;
 
@@ -3180,23 +3186,33 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
     tm = *localtime(&tval.tv_sec);
     printf("%02d-%02d-%02d ENTERING %s %d\n",tm.tm_hour, tm.tm_min, tm.tm_sec, __func__, __LINE__);
 #endif
+
     fp = fopen(COSA_DML_DHCP_LEASES_FILE, "r");
     if ( !fp )
     {
+    	 AnscTraceFlow(("Opening COSA_DML_DHCP_LEASES_FILE failed %s\n", __FUNCTION__));
         /* the file doesn't exist and no host currently*/
         return -1;
     }
 
+    AnscTraceFlow(("Opening COSA_DML_DHCP_LEASES_FILE in a read mode complete %s\n", __FUNCTION__));
+
     fpTmp = fopen(COSA_DML_DHCP_LEASES_FILE_TMP, "w");
     if (!fpTmp){
         /* failed to create temp leases file */
+
+    	AnscTraceFlow(("Opening COSA_DML_DHCP_LEASES_FILE_TMP failed %s\n", __FUNCTION__));
         fclose(fp);
         return -1;
     }
 
+    AnscTraceFlow(("Opening COSA_DML_DHCP_LEASES_FILE_TMP in a write mode complete, %s\n", __FUNCTION__));
     while(fgets(oneline, sizeof(oneline), fp)){
         fputs(oneline, fpTmp);
     }
+
+
+    AnscTraceFlow(("Writing dnsmasq lease info to tmp file complete, %s\n", __FUNCTION__));
     fclose(fp);
     fclose(fpTmp);
     fp = NULL;
@@ -3205,6 +3221,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
     fp = fopen(COSA_DML_DHCP_LEASES_FILE_TMP, "r");
     if (!fp){
         /* failed to open tmp lease file */
+    	 AnscTraceFlow(("Opening COSA_DML_DHCP_LEASES_FILE_TMP in read mode failed %s\n", __FUNCTION__));
         return -1;
     }
     
@@ -3308,11 +3325,20 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 		pEntry = &pEntry2[size];
 		sizeClient = size + 1;
 		_ansc_snprintf(pEntry->Alias, 63, "Alias%d", size);
+
+
 		if(!find_arp_entry(pIP,ifName,macArray))
 			pEntry->Active = TRUE;
+		
 		_ansc_snprintf(pEntry->Chaddr, 18, pMac);
 		if(pEntry->Active==TRUE)
+		{
+
+    			AnscTraceFlow(("Get CPE associate interface %s\n", __FUNCTION__));
 			usg_get_cpe_associate_interface(pMac,pEntry->X_CISCO_COM_Interface);
+
+    			AnscTraceFlow(("Geting CPE associate interface complete %s\n", __FUNCTION__));
+		}
 		snprintf(pEntry->X_CISCO_COM_HostName, 63, "%s", pHost);
 		mac_string_to_array(pMac,macArray);
 		if(Utopia_Init(&utctx)){
