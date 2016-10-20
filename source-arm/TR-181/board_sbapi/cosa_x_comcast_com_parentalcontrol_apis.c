@@ -1299,6 +1299,110 @@ CosaDmlBlkURL_GetNumberOfEntries(void)
     return g_NrBlkURL;
 }
 
+#ifdef UTC_ENABLE
+
+ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
+{
+    UtopiaContext ctx;
+    blkurl_t blkurl;
+    ULONG index =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+printf("<<< %s -- ...\n", __FUNCTION__);
+for(index = 0;index < g_NrBlkURL; index++)
+{
+     AnscTraceWarning(("<<< %s -- index %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- index %d ...\n", __FUNCTION__,index);
+
+    if (index >= g_NrBlkURL || !Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+     AnscTraceWarning(("<<< %s -- Call GetBlkURLByIndex %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- call GetBlkURLByIndex %d ...\n", __FUNCTION__,index);
+
+     Utopia_GetBlkURLByIndex(&ctx, index, &blkurl);
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+    
+     AnscTraceWarning(("%s -- blkurl.alias = %s...\n", __FUNCTION__, blkurl.alias));
+     AnscTraceWarning(("%s -- blkurl.site = %s...\n", __FUNCTION__, blkurl.site));
+     AnscTraceWarning(("%s -- blkurl.start_time = %s...\n", __FUNCTION__, blkurl.start_time));
+     AnscTraceWarning(("%s -- blkurl.end_time = %s...\n", __FUNCTION__, blkurl.end_time));
+
+     strcpy(start_time, blkurl.start_time);
+     strcpy(end_time, blkurl.end_time);
+     ConvUTCToLocal(start_time, blkurl.start_time);
+     ConvUTCToLocal(end_time, blkurl.end_time);
+     AnscTraceWarning(("%s -- Converted blkurl.start_time = %s...\n", __FUNCTION__, blkurl.start_time));
+     AnscTraceWarning(("%s -- Converted blkurl.end_time = %s...\n", __FUNCTION__, blkurl.end_time));
+     
+
+     rc = Utopia_SetBlkURLByIndex(&ctx, index, &blkurl);
+
+     Utopia_Free(&ctx, !rc);
+    if (rc != 0)
+	{
+	AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+	}
+
+}
+ return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS CosaDmlBlkURL_Migration()
+{
+    UtopiaContext ctx;
+    blkurl_t blkurl;
+    ULONG index =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+printf("<<< %s -- ...\n", __FUNCTION__);
+for(index = 0;index < g_NrBlkURL; index++)
+{
+     AnscTraceWarning(("<<< %s -- index %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- index %d ...\n", __FUNCTION__,index);
+
+    if (index >= g_NrBlkURL || !Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+     AnscTraceWarning(("<<< %s -- Call GetBlkURLByIndex %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- call GetBlkURLByIndex %d ...\n", __FUNCTION__,index);
+
+     Utopia_GetBlkURLByIndex(&ctx, index, &blkurl);
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+    
+     AnscTraceWarning(("%s -- blkurl.alias = %s...\n", __FUNCTION__, blkurl.alias));
+     AnscTraceWarning(("%s -- blkurl.site = %s...\n", __FUNCTION__, blkurl.site));
+     AnscTraceWarning(("%s -- blkurl.start_time = %s...\n", __FUNCTION__, blkurl.start_time));
+     AnscTraceWarning(("%s -- blkurl.end_time = %s...\n", __FUNCTION__, blkurl.end_time));
+
+     strcpy(start_time, blkurl.start_time);
+     strcpy(end_time, blkurl.end_time);
+     ConvLocalToUTC(start_time, blkurl.start_time);
+     ConvLocalToUTC(end_time, blkurl.end_time);
+     AnscTraceWarning(("%s -- Converted blkurl.start_time = %s...\n", __FUNCTION__, blkurl.start_time));
+     AnscTraceWarning(("%s -- Converted blkurl.end_time = %s...\n", __FUNCTION__, blkurl.end_time));
+     
+
+     rc = Utopia_SetBlkURLByIndex(&ctx, index, &blkurl);
+
+     Utopia_Free(&ctx, !rc);
+    if (rc != 0)
+	{
+	AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+	}
+
+}
+ return ANSC_STATUS_SUCCESS;
+}
+#endif
 ANSC_STATUS
 CosaDmlBlkURL_GetEntryByIndex(ULONG index, COSA_DML_BLOCKEDURL *pEntry)
 {
@@ -1322,8 +1426,15 @@ CosaDmlBlkURL_GetEntryByIndex(ULONG index, COSA_DML_BLOCKEDURL *pEntry)
 
     _ansc_strncpy(pEntry->Alias, blkurl.alias, sizeof(pEntry->Alias));
     _ansc_strncpy(pEntry->Site, blkurl.site, sizeof(pEntry->Site));
+#ifndef UTC_ENABLE
+
     _ansc_strncpy(pEntry->StartTime, blkurl.start_time, sizeof(pEntry->StartTime));
     _ansc_strncpy(pEntry->EndTime, blkurl.end_time, sizeof(pEntry->EndTime));
+#else
+        ConvUTCToLocal(blkurl.start_time, pEntry->StartTime);
+        ConvUTCToLocal(blkurl.end_time, pEntry->EndTime);
+    
+#endif
     _ansc_strncpy(pEntry->BlockDays, blkurl.block_days, sizeof(pEntry->BlockDays));
     if(pEntry->StartTime != NULL)
         pEntry->StartTimeFlg = TRUE;
@@ -1412,8 +1523,15 @@ CosaDmlBlkURL_AddEntry(COSA_DML_BLOCKEDURL *pEntry)
 
     _ansc_strncpy(blkurl.alias, pEntry->Alias, sizeof(blkurl.alias));
     _ansc_strncpy(blkurl.site, pEntry->Site, sizeof(blkurl.site));
+
+#ifndef UTC_ENABLE
+
     _ansc_strncpy(blkurl.start_time, pEntry->StartTime, sizeof(blkurl.start_time));
     _ansc_strncpy(blkurl.end_time, pEntry->EndTime, sizeof(blkurl.end_time));
+#else
+    ConvLocalToUTC(pEntry->StartTime, blkurl.start_time);
+    ConvLocalToUTC(pEntry->EndTime, blkurl.end_time);
+#endif
     _ansc_strncpy(blkurl.block_days, pEntry->BlockDays, sizeof(blkurl.block_days));
 #ifdef CONFIG_CISCO_FEATURE_CISCOCONNECT
     _ansc_strncpy(blkurl.mac, pEntry->MAC, sizeof(blkurl.mac));
@@ -1520,8 +1638,14 @@ CosaDmlBlkURL_SetConf(ULONG ins, COSA_DML_BLOCKEDURL *pEntry)
 
     _ansc_strncpy(blkurl.alias, pEntry->Alias, sizeof(blkurl.alias));
     _ansc_strncpy(blkurl.site, pEntry->Site, sizeof(blkurl.site));
+#ifndef UTC_ENABLE
+
     _ansc_strncpy(blkurl.start_time, pEntry->StartTime, sizeof(blkurl.start_time));
     _ansc_strncpy(blkurl.end_time, pEntry->EndTime, sizeof(blkurl.end_time));
+#else
+    ConvLocalToUTC(pEntry->StartTime, blkurl.start_time);
+    ConvLocalToUTC(pEntry->EndTime, blkurl.end_time);
+#endif
     _ansc_strncpy(blkurl.block_days, pEntry->BlockDays, sizeof(blkurl.block_days));
 #ifdef CONFIG_CISCO_FEATURE_CISCOCONNECT
     _ansc_strncpy(blkurl.mac, pEntry->MAC, sizeof(blkurl.mac));
@@ -1789,7 +1913,105 @@ CosaDmlMSServ_GetNumberOfEntries(void)
 
     return g_NrMSServs;
 }
+#ifdef UTC_ENABLE
 
+ANSC_STATUS CosaDmlMSServ_RollbackUTCtoLocal()
+{
+    UtopiaContext ctx;
+    ms_serv_t ms_serv;
+    ULONG index =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+printf("<<< %s -- ...\n", __FUNCTION__);
+for(index = 0;index < g_NrMSServs; index++)
+{
+     AnscTraceWarning(("<<< %s -- index %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- index %d ...\n", __FUNCTION__,index);
+
+    if (index >= g_NrMSServs || !Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+     AnscTraceWarning(("<<< %s -- Call Utopia_GetMSServByIndex %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- call Utopia_GetMSServByIndex %d ...\n", __FUNCTION__,index);
+
+     Utopia_GetMSServByIndex(&ctx, index, &ms_serv);
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+    
+     AnscTraceWarning(("%s -- ms_serv.alias = %s...\n", __FUNCTION__, ms_serv.alias));
+     AnscTraceWarning(("%s -- ms_serv.start_time = %s...\n", __FUNCTION__, ms_serv.start_time));
+     AnscTraceWarning(("%s -- ms_serv.end_time = %s...\n", __FUNCTION__, ms_serv.end_time));
+
+     strcpy(start_time, ms_serv.start_time);
+     strcpy(end_time, ms_serv.end_time);
+     ConvUTCToLocal(start_time, ms_serv.start_time);
+     ConvUTCToLocal(end_time, ms_serv.end_time);
+     AnscTraceWarning(("%s -- Converted ms_serv.start_time = %s...\n", __FUNCTION__, ms_serv.start_time));
+     AnscTraceWarning(("%s -- Converted ms_serv.end_time = %s...\n", __FUNCTION__, ms_serv.end_time));
+     
+
+     rc = Utopia_SetMSServByIndex(&ctx, index, &ms_serv);
+
+     Utopia_Free(&ctx, !rc);
+    if (rc != 0)
+	{
+	AnscTraceWarning(("%s -- Utopia_SetMSServByIndex failed...\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+	}
+
+}
+}
+ANSC_STATUS CosaDmlMSServ_Migration()
+{
+    UtopiaContext ctx;
+    ms_serv_t ms_serv;
+    ULONG index =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+printf("<<< %s -- ...\n", __FUNCTION__);
+for(index = 0;index < g_NrMSServs; index++)
+{
+     AnscTraceWarning(("<<< %s -- index %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- index %d ...\n", __FUNCTION__,index);
+
+    if (index >= g_NrMSServs || !Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+     AnscTraceWarning(("<<< %s -- Call Utopia_GetMSServByIndex %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- call Utopia_GetMSServByIndex %d ...\n", __FUNCTION__,index);
+
+     Utopia_GetMSServByIndex(&ctx, index, &ms_serv);
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+    
+     AnscTraceWarning(("%s -- ms_serv.alias = %s...\n", __FUNCTION__, ms_serv.alias));
+     AnscTraceWarning(("%s -- ms_serv.start_time = %s...\n", __FUNCTION__, ms_serv.start_time));
+     AnscTraceWarning(("%s -- ms_serv.end_time = %s...\n", __FUNCTION__, ms_serv.end_time));
+
+     strcpy(start_time, ms_serv.start_time);
+     strcpy(end_time, ms_serv.end_time);
+     ConvLocalToUTC(start_time, ms_serv.start_time);
+     ConvLocalToUTC(end_time, ms_serv.end_time);
+     AnscTraceWarning(("%s -- Converted ms_serv.start_time = %s...\n", __FUNCTION__, ms_serv.start_time));
+     AnscTraceWarning(("%s -- Converted ms_serv.end_time = %s...\n", __FUNCTION__, ms_serv.end_time));
+     
+
+     rc = Utopia_SetMSServByIndex(&ctx, index, &ms_serv);
+
+     Utopia_Free(&ctx, !rc);
+    if (rc != 0)
+	{
+	AnscTraceWarning(("%s -- Utopia_SetMSServByIndex failed...\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+	}
+
+}
+}
+#endif
 ANSC_STATUS
 CosaDmlMSServ_GetEntryByIndex(ULONG index, COSA_DML_MS_SERV *pEntry)
 {
@@ -1809,8 +2031,16 @@ CosaDmlMSServ_GetEntryByIndex(ULONG index, COSA_DML_MS_SERV *pEntry)
     
     _ansc_strncpy(pEntry->Alias, ms_serv.alias, sizeof(pEntry->Alias));
     _ansc_strncpy(pEntry->Description, ms_serv.descp, sizeof(pEntry->Description));
+
+#ifndef UTC_ENABLE
+
     _ansc_strncpy(pEntry->StartTime, ms_serv.start_time, sizeof(pEntry->StartTime));
     _ansc_strncpy(pEntry->EndTime, ms_serv.end_time, sizeof(pEntry->EndTime));
+#else
+        ConvUTCToLocal(ms_serv.start_time, pEntry->StartTime);
+        ConvUTCToLocal(ms_serv.end_time, pEntry->EndTime);
+    
+#endif
     _ansc_strncpy(pEntry->BlockDays, ms_serv.block_days, sizeof(pEntry->BlockDays));
     
     if(!_ansc_strcmp(ms_serv.protocol, "TCP"))
@@ -1861,8 +2091,14 @@ CosaDmlMSServ_AddEntry(COSA_DML_MS_SERV *pEntry)
     
     _ansc_strncpy(ms_serv.alias, pEntry->Alias, sizeof(ms_serv.alias));
     _ansc_strncpy(ms_serv.descp, pEntry->Description, sizeof(ms_serv.descp));
+#ifndef UTC_ENABLE
+
     _ansc_strncpy(ms_serv.start_time, pEntry->StartTime, sizeof(ms_serv.start_time));
     _ansc_strncpy(ms_serv.end_time, pEntry->EndTime, sizeof(ms_serv.end_time));
+#else
+    ConvLocalToUTC(pEntry->StartTime, ms_serv.start_time);
+    ConvLocalToUTC(pEntry->EndTime, ms_serv.end_time);
+#endif
     _ansc_strncpy(ms_serv.block_days, pEntry->BlockDays, sizeof(ms_serv.block_days));
 
     switch(pEntry->Protocol)
@@ -1947,8 +2183,14 @@ CosaDmlMSServ_SetConf(ULONG ins, COSA_DML_MS_SERV *pEntry)
     
     _ansc_strncpy(ms_serv.alias, pEntry->Alias, sizeof(ms_serv.alias));
     _ansc_strncpy(ms_serv.descp, pEntry->Description, sizeof(ms_serv.descp));
+#ifndef UTC_ENABLE
+
     _ansc_strncpy(ms_serv.start_time, pEntry->StartTime, sizeof(ms_serv.start_time));
     _ansc_strncpy(ms_serv.end_time, pEntry->EndTime, sizeof(ms_serv.end_time));
+#else
+    ConvLocalToUTC(pEntry->StartTime, ms_serv.start_time);
+    ConvLocalToUTC(pEntry->EndTime, ms_serv.end_time);
+#endif
     _ansc_strncpy(ms_serv.block_days, pEntry->BlockDays, sizeof(ms_serv.block_days));
 
     switch(pEntry->Protocol)
@@ -2207,7 +2449,105 @@ CosaDmlMDDev_GetNumberOfEntries(void)
 
     return g_NrMDDevs;
 }
+#ifdef UTC_ENABLE
 
+ANSC_STATUS CosaDmlMDDev_RollbackUTCtoLocal()
+{
+    UtopiaContext ctx;
+    md_dev_t md_dev;
+    ULONG index =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+printf("<<< %s -- ...\n", __FUNCTION__);
+for(index = 0;index < g_NrMDDevs; index++)
+{
+     AnscTraceWarning(("<<< %s -- index %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- index %d ...\n", __FUNCTION__,index);
+
+    if (index >= g_NrMDDevs || !Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+     AnscTraceWarning(("<<< %s -- Call Utopia_GetMDDevByIndex %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- call Utopia_GetMDDevByIndex %d ...\n", __FUNCTION__,index);
+
+     Utopia_GetMDDevByIndex(&ctx, index, &md_dev);
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+    
+     AnscTraceWarning(("%s -- md_dev.alias = %s...\n", __FUNCTION__, md_dev.alias));
+     AnscTraceWarning(("%s -- md_dev.start_time = %s...\n", __FUNCTION__, md_dev.start_time));
+     AnscTraceWarning(("%s -- md_dev.end_time = %s...\n", __FUNCTION__, md_dev.end_time));
+
+     strcpy(start_time, md_dev.start_time);
+     strcpy(end_time, md_dev.end_time);
+     ConvUTCToLocal(start_time, md_dev.start_time);
+     ConvUTCToLocal(end_time, md_dev.end_time);
+     AnscTraceWarning(("%s -- Converted md_dev.start_time = %s...\n", __FUNCTION__, md_dev.start_time));
+     AnscTraceWarning(("%s -- Converted md_dev.end_time = %s...\n", __FUNCTION__, md_dev.end_time));
+     
+
+     rc = Utopia_SetMDDevByIndex(&ctx, index, &md_dev);
+
+     Utopia_Free(&ctx, !rc);
+    if (rc != 0)
+	{
+	AnscTraceWarning(("%s -- Utopia_SetMDDevByIndex failed...\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+	}
+
+}
+}
+ANSC_STATUS CosaDmlMDDev_Migration()
+{
+    UtopiaContext ctx;
+    md_dev_t md_dev;
+    ULONG index =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+printf("<<< %s -- ...\n", __FUNCTION__);
+for(index = 0;index < g_NrMDDevs; index++)
+{
+     AnscTraceWarning(("<<< %s -- index %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- index %d ...\n", __FUNCTION__,index);
+
+    if (index >= g_NrMDDevs || !Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+     AnscTraceWarning(("<<< %s -- Call Utopia_GetMDDevByIndex %d ...\n", __FUNCTION__,index));
+     printf("<<< %s -- call Utopia_GetMDDevByIndex %d ...\n", __FUNCTION__,index);
+
+     Utopia_GetMDDevByIndex(&ctx, index, &md_dev);
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+    
+     AnscTraceWarning(("%s -- md_dev.alias = %s...\n", __FUNCTION__, md_dev.alias));
+     AnscTraceWarning(("%s -- md_dev.start_time = %s...\n", __FUNCTION__, md_dev.start_time));
+     AnscTraceWarning(("%s -- md_dev.end_time = %s...\n", __FUNCTION__, md_dev.end_time));
+
+     strcpy(start_time, md_dev.start_time);
+     strcpy(end_time, md_dev.end_time);
+     ConvLocalToUTC(start_time, md_dev.start_time);
+     ConvLocalToUTC(end_time, md_dev.end_time);
+     AnscTraceWarning(("%s -- Converted md_dev.start_time = %s...\n", __FUNCTION__, md_dev.start_time));
+     AnscTraceWarning(("%s -- Converted md_dev.end_time = %s...\n", __FUNCTION__, md_dev.end_time));
+     
+
+     rc = Utopia_SetMDDevByIndex(&ctx, index, &md_dev);
+
+     Utopia_Free(&ctx, !rc);
+    if (rc != 0)
+	{
+	AnscTraceWarning(("%s -- Utopia_SetMDDevByIndex failed...\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+	}
+
+}
+}
+#endif
 ANSC_STATUS
 CosaDmlMDDev_GetEntryByIndex(ULONG index, COSA_DML_MD_DEV *pEntry)
 {
@@ -2225,8 +2565,15 @@ CosaDmlMDDev_GetEntryByIndex(ULONG index, COSA_DML_MD_DEV *pEntry)
     pEntry->AlwaysBlock = md_dev.always; 
     _ansc_strncpy(pEntry->Alias, md_dev.alias, sizeof(pEntry->Alias));
     _ansc_strncpy(pEntry->Description, md_dev.descp, sizeof(pEntry->Description));
+
+#ifndef UTC_ENABLE
     _ansc_strncpy(pEntry->StartTime, md_dev.start_time, sizeof(pEntry->StartTime));
     _ansc_strncpy(pEntry->EndTime, md_dev.end_time, sizeof(pEntry->EndTime));
+#else
+        ConvUTCToLocal(md_dev.start_time, pEntry->StartTime);
+        ConvUTCToLocal(md_dev.end_time, pEntry->EndTime);
+    
+#endif
     _ansc_strncpy(pEntry->BlockDays, md_dev.block_days, sizeof(pEntry->BlockDays));
     _ansc_strncpy(pEntry->MACAddress, md_dev.macaddr, sizeof(pEntry->MACAddress));
 
@@ -2269,8 +2616,14 @@ CosaDmlMDDev_AddEntry(COSA_DML_MD_DEV *pEntry)
     md_dev.always = pEntry->AlwaysBlock;
     _ansc_strncpy(md_dev.alias, pEntry->Alias, sizeof(md_dev.alias));
     _ansc_strncpy(md_dev.descp, pEntry->Description, sizeof(md_dev.descp));
+#ifndef UTC_ENABLE
+
     _ansc_strncpy(md_dev.start_time, pEntry->StartTime, sizeof(md_dev.start_time));
     _ansc_strncpy(md_dev.end_time, pEntry->EndTime, sizeof(md_dev.end_time));
+#else
+    ConvLocalToUTC(pEntry->StartTime, md_dev.start_time);
+    ConvLocalToUTC(pEntry->EndTime, md_dev.end_time);
+#endif
     _ansc_strncpy(md_dev.block_days, pEntry->BlockDays, sizeof(md_dev.block_days));
     _ansc_strncpy(md_dev.macaddr, pEntry->MACAddress, sizeof(md_dev.macaddr));
 
@@ -2340,8 +2693,14 @@ CosaDmlMDDev_SetConf(ULONG ins, COSA_DML_MD_DEV *pEntry)
     md_dev.always = pEntry->AlwaysBlock;
     _ansc_strncpy(md_dev.alias, pEntry->Alias, sizeof(md_dev.alias));
     _ansc_strncpy(md_dev.descp, pEntry->Description, sizeof(md_dev.descp));
+#ifndef UTC_ENABLE
+
     _ansc_strncpy(md_dev.start_time, pEntry->StartTime, sizeof(md_dev.start_time));
     _ansc_strncpy(md_dev.end_time, pEntry->EndTime, sizeof(md_dev.end_time));
+#else
+    ConvLocalToUTC(pEntry->StartTime, md_dev.start_time);
+    ConvLocalToUTC(pEntry->EndTime, md_dev.end_time);
+#endif
     _ansc_strncpy(md_dev.block_days, pEntry->BlockDays, sizeof(md_dev.block_days));
     _ansc_strncpy(md_dev.macaddr, pEntry->MACAddress, sizeof(md_dev.macaddr));
     
