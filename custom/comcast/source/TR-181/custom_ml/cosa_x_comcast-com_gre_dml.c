@@ -93,6 +93,12 @@ BOOL GreTunnel_GetParamBoolValue ( ANSC_HANDLE hInsContext, char*  ParamName, BO
         *pBool = pGreTu->Enable;
         return TRUE;
     }
+	if (AnscEqualString(ParamName, "HotSpotReset", TRUE))
+	{
+		//always return false 
+		*pBool = pGreTu->HotSpotReset;
+		return TRUE;
+	}
     if (AnscEqualString(ParamName, "UseSequenceNumber", TRUE))
     {
         *pBool = pGreTu->UseSequenceNumber;
@@ -310,6 +316,16 @@ BOOL GreTunnel_SetParamBoolValue ( ANSC_HANDLE hInsContext, char* ParamName, BOO
         pGreTu->ChangeFlag |= GRETU_CF_ENABLE;
         return TRUE;
     }
+	if (AnscEqualString(ParamName, "HotSpotReset", TRUE))
+	{
+		if(bValue)
+		{
+			CosaDml_GreTunnelHotspotReset(pGreTu);
+			pGreTu->HotSpotReset = FALSE;
+			pGreTu->ChangeFlag = (GRETU_CF_DSCP|GRETU_CF_PRIEP|GRETU_CF_SECEP|GRETU_CF_KEEPCNT|GRETU_CF_KEEPITVL|GRETU_CF_KEEPTHRE|GRETU_CF_KEEPFAILITVL|GRETU_CF_RECONNPRIM|GRETU_CF_DHCPCIRID|GRETU_CF_DHCPRMID);
+		}
+		return TRUE;
+	}
     if (AnscEqualString(ParamName, "UseSequenceNumber", TRUE))
     {
         pGreTu->UseSequenceNumber = bValue;
