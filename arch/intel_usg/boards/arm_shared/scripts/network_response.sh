@@ -100,7 +100,7 @@ then
 		# 302 means : URL is redirected by the server
 		# 200 means : Successful GET
 
-		curl -w '%{http_code}\n' --interface $WAN_INTERFACE $URL_1 --connect-timeout 10 -m 10 > $RESPONSE_1 	
+		curl -w '%{http_code}\n' --interface $WAN_INTERFACE $URL_1 --connect-timeout 30 -m 30 > $RESPONSE_1 	
 		if [ -e $RESPONSE_1 ]
 		then
 			responseCode_1=`cat $RESPONSE_1`
