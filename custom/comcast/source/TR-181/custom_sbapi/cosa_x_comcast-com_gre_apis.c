@@ -557,6 +557,7 @@ CosaDml_GreTunnelGetEntryByIndex(ULONG ins, COSA_DML_GRE_TUNNEL *greTu)
         return ANSC_STATUS_FAILURE;
     if (GrePsmGetStr(GRETU_PARAM_GRETU, ins, greTu->GRENetworkTunnel, sizeof(greTu->GRENetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
+	greTu->HotSpotReset = FALSE;
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1852,5 +1853,24 @@ CosaDml_GreTunnelGetStats( ULONG ins, COSA_DML_GRE_TUNNEL_STATS *stats)
 
     return ANSC_STATUS_SUCCESS;
 }
+ANSC_STATUS CosaDml_GreTunnelHotspotReset(COSA_DML_GRE_TUNNEL *pGreTu)
+{
+
+	/*Set the default values to paramaeters*/
+	pGreTu->DSCPMarkPolicy=44;
+	strcpy(pGreTu->PrimaryRemoteEndpoint,"0.0.0.0");
+	strcpy(pGreTu->SecondaryRemoteEndpoint,"0.0.0.0");
+	pGreTu->RemoteEndpointHealthCheckPingCount = 3;
+	pGreTu->RemoteEndpointHealthCheckPingInterval = 60;
+	pGreTu->RemoteEndpointHealthCheckPingFailThreshold = 3;
+	pGreTu->RemoteEndpointHealthCheckPingIntervalInFailure = 300;
+	pGreTu->ReconnectToPrimaryRemoteEndpoint = 43200;
+	pGreTu->EnableCircuitID = TRUE;
+	pGreTu->EnableRemoteID = TRUE;
+	
+	return ANSC_STATUS_SUCCESS;
+
+}
+
 
 #endif

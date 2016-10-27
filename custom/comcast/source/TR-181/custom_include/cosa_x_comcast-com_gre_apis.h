@@ -176,6 +176,7 @@ _COSA_DML_GRE_TUNNEL
 	
 	ULONG                       InterfaceNumberOfEntries;
 	COSA_DML_GRE_TUNNEL_IF 		GreTunnelIf[MAX_GRE_TUIF];
+	BOOL                        HotSpotReset;
 } 
 COSA_DML_GRE_TUNNEL;
 
@@ -347,6 +348,10 @@ CosaDml_GreTunnelSetGRETunnel(ULONG ins, const char *greif); //
 
 ANSC_STATUS
 CosaDml_GreTunnelGetStats(ULONG ins, COSA_DML_GRE_TUNNEL_STATS *stats); //
+
+ANSC_STATUS
+CosaDml_GreTunnelHotspotReset(COSA_DML_GRE_TUNNEL *pGreTu ); //
+
 
 int GreTunnel_hotspot_update_circuit_ids(ULONG tuIns, int queuestart);//
 int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart); //

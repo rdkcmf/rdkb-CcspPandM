@@ -13137,7 +13137,13 @@
 						<name>InterfaceNumberOfEntries</name>
 						<type>unsignedInt</type>
 						<syntax>uint32</syntax>
-					</parameter>					
+					</parameter>
+					<parameter>
+             			<name>HotSpotReset</name>
+			         	<type>boolean</type>
+                		<syntax>bool</syntax>
+				        <writable>true</writable>
+                	</parameter>
 				</parameters>
 				
 				<objects>
