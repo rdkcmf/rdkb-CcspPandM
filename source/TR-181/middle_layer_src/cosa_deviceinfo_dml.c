@@ -428,7 +428,7 @@ DeviceInfo_GetParamStringValue
     if( AnscEqualString(ParamName, "SoftwareVersion", TRUE))
     {
         /* collect value */
-        CosaDmlDiGetSoftwareVersion(NULL,pValue,pulSize);
+        CosaDmlDiGetFirmwareName(NULL, pValue,pulSize);
         return 0;
     }
 
