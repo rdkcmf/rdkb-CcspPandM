@@ -24,6 +24,7 @@ responseCode_1=0
 responseCode_2=0
 responseCode_3=0
 responseCode_4=0
+responseCode=0
 superResponse=0
 gotResponse=0
 
@@ -63,7 +64,8 @@ then
 		# Remove all response files if it already exists
 		if [ -e $RESPONSE ]
 		then
-			rm -rf $RESPONSE
+			responseCode=`cat $RESPONSE`
+			rm -rf $RESPONSE				
 		fi
 
 		if [ -e $RESPONSE_1 ]
@@ -100,7 +102,14 @@ then
 		# 302 means : URL is redirected by the server
 		# 200 means : Successful GET
 
-		curl -w '%{http_code}\n' --interface $WAN_INTERFACE $URL_1 --connect-timeout 30 -m 30 > $RESPONSE_1 	
+		if [ $responseCode -eq 204 ]
+		then
+			echo_t "Network Response: Already $RESPONSE has been available with 204 response code."
+			echo $responseCode > $RESPONSE_1
+		else
+			curl -w '%{http_code}\n' --interface $WAN_INTERFACE $URL_1 --connect-timeout 30 -m 30 > $RESPONSE_1 	
+		fi
+			
 		if [ -e $RESPONSE_1 ]
 		then
 			responseCode_1=`cat $RESPONSE_1`
