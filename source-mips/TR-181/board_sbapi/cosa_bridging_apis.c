@@ -101,7 +101,7 @@ static int saveID(char* Namespace, char* ifName, ULONG ulInstanceNumber,char* pA
 
 
 #ifdef _COSA_DRG_TPG_
-#include "cosa_moca_apis.h"
+//#include "cosa_moca_apis.h"
 #include "ulog/ulog.h"
 
 #include "libswcfg.h"

@@ -72,7 +72,7 @@
 #include "cosa_userinterface_dml.h"
 #include "cosa_interfacestack_dml.h"
 #include "cosa_ethernet_dml.h"
-#include "cosa_moca_dml.h"
+//#include "cosa_moca_dml.h"
 #include "cosa_ip_dml.h"
 #include "cosa_routing_dml.h"
 #include "cosa_hosts_dml.h"
@@ -95,7 +95,7 @@
 #include "cosa_x_cisco_com_mld_dml.h"
 
 #include "plugin_main_apis.h"
-#include "cosa_moca_internal.h"
+//#include "cosa_moca_internal.h"
 
 
 PCOSA_BACKEND_MANAGER_OBJECT g_pCosaBEManager;
