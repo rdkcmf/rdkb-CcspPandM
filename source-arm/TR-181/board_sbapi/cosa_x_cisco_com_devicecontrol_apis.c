@@ -3177,6 +3177,15 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
     char str[IFNAME_SZ];    
     char *enableStr;
     napt_mode_t napt;
+
+	parameterValStruct_t **valMoCAstatus;
+	char pMoCAComponentName[64]="eRT.com.cisco.spvtg.ccsp.moca";
+	char pComponentPath[64]="/com/cisco/spvtg/ccsp/moca";
+	char *paramNames[]={"Device.MoCA.Interface.1.Enable"};
+	int nval;
+	char buf[16];
+	int MoCAstate;
+
     
     COSA_DML_LAN_MANAGEMENT orgLanMngm;
 
@@ -3187,6 +3196,37 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         Utopia_SetLanMngmInsNum(&utctx, pLanMngm->InstanceNumber);
         bridge_info.mode = pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic ? BRIDGE_MODE_STATIC : BRIDGE_MODE_OFF; 
         Utopia_SetBridgeSettings(&utctx,&bridge_info);
+		ret = CcspBaseIf_getParameterValues(
+		    bus_handle,
+		    pMoCAComponentName,
+		    pComponentPath,
+		    paramNames,
+		    1,
+		    &nval,
+		    &valMoCAstatus);
+			CcspTraceWarning(("valMoCAstatus[0]->parameterValue = %s\n",valMoCAstatus[0]->parameterValue));
+			if(strcmp("true", valMoCAstatus[0]->parameterValue)==0)
+					MoCAstate=1;
+			else
+					MoCAstate=0;
+			snprintf(buf,sizeof(buf),"%d",MoCAstate);
+			if ((syscfg_set(NULL, "MoCA_current_status", buf) != 0)) 
+		    {
+		        CcspTraceWarning(("syscfg_set failed\n"));
+	    	    return -1;
+	    	}
+	    	else 
+	    	{
+	        	if (syscfg_commit() != 0) 
+	        	{
+		    		CcspTraceWarning(("syscfg_commit failed\n"));
+				    return -1;
+	    	    }				       		
+	     	} 
+			free_parameterValStruct_t (bus_handle, nval, valMoCAstatus);
+		CcspTraceWarning(("after syscfg get\n"));
+
+		
         
         memset(&lan, 0 ,sizeof(lan));
         inet_ntop(AF_INET, &(pLanMngm->LanIPAddress), str, sizeof(str));
