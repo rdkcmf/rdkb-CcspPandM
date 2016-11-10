@@ -167,6 +167,7 @@ printf(" *************** Local_CosaDmlGetParamValueByPathName ***** \n");
     }
 }
 
+#if 0
 /*X_COMCAST-COM_CM_MAC*/
 ANSC_STATUS
 CosaDmlDiGetCMMacAddress
@@ -179,6 +180,7 @@ CosaDmlDiGetCMMacAddress
 
     return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.MACAddress", pValue, pulSize);
 }
+#endif
 
 /*X_COMCAST-COM_WAN_MAC*/
 ANSC_STATUS
@@ -267,6 +269,7 @@ CosaDmlDiGetMTAIPAddress
     return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_MTA.IPAddress", pValue, pulSize);
 }
 
+#if 0
 /*X_COMCAST-COM_CM_IP*/
 ANSC_STATUS
 CosaDmlDiGetCMIPAddress
@@ -278,7 +281,7 @@ CosaDmlDiGetCMIPAddress
 {
     return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.IPAddress", pValue, pulSize);
 }
-
+#endif
 #endif
 
 
