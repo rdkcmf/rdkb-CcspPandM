@@ -297,9 +297,13 @@ CosaBackEndManagerInitialize
     returnStatus = CosaDmlMlanInit((ANSC_HANDLE)pMyObject, &pMyObject->hMultiLan);
     AnscTraceWarning(("  CosaDmlMlanInit -- status %d!\n", returnStatus));
 
+#if !defined(INTEL_PUMA7) && !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_)
+    printf("pnm-status is renamed to bring-lan and set in PSM for XB3\n");
+#else
    printf("**************** sysevent set pnm-status up \n");
    fflush(stdout);
    system("sysevent set pnm-status up");
+#endif
 
     pMyObject->hDiag          = (ANSC_HANDLE)CosaDiagnosticsCreate();
     AnscTraceWarning(("  CosaDiagnosticsCreate done!\n"));
