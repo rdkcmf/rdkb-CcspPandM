@@ -310,19 +310,6 @@
            <writable>true</writable>
 
         </parameter>
-
-	<!-- MURUGAN : for XDNS feature -->
-	<parameter>
-	
-		<name>X_RDKCENTRAL-COM_EnableXDNS</name>
-		
-		<type>boolean</type>
-		
-		<syntax>bool</syntax>
-		
-		<writable>true</writable>
-	
-	</parameter>
 	
         <parameter>
     

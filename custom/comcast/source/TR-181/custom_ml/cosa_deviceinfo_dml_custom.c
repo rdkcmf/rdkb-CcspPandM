@@ -176,25 +176,6 @@ DeviceInfo_GetParamBoolValue_Custom
 	return TRUE;
     }
 #endif
-
-    // MURUGAN - get XDNS Enable/Disable flag
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_EnableXDNS", TRUE))
-    {
-    	char buf[5] = {0};
-    	syscfg_get( NULL, "X_RDKCENTRAL-COM_XDNS", buf, sizeof(buf));
-    	if( buf != NULL )
-    	{
-    		if (strcmp(buf,"1") == 0)
-    		{
-    			*pBool = TRUE;
-    			return TRUE;
-    		}
-    	}
-
-    	*pBool = FALSE;
-
-    	return TRUE;
-    }
  
 #ifdef CONFIG_CISCO_HOTSPOT
     /* check the parameter name and return the corresponding value */
@@ -525,37 +506,6 @@ DeviceInfo_SetParamBoolValue_Custom
 	return TRUE;
     }
 #endif
-
-
-    // MURUGAN -  set XDNS Enable/Disable flag
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_EnableXDNS", TRUE))
-    {
-    	char bval[2] = {0};
-    	if( bValue == TRUE)
-    		bval[0] = '1';
-    	else
-    		bval[0] = '0';
-
-
-    	if (syscfg_set(NULL, "X_RDKCENTRAL-COM_XDNS", bval) != 0)
-    	{
-    		AnscTraceWarning(("[XDNS] syscfg_set X_RDKCENTRAL-COM_XDNS failed!\n"));
-    	}
-    	else
-    	{
-    		if (syscfg_commit() != 0)
-    		{
-    			AnscTraceWarning(("[XDNS] syscfg_commit X_RDKCENTRAL-COM_XDNS failed!\n"));
-    		}
-    		else
-    		{
-    			//Restart firewall to apply XDNS setting
-    			commonSyseventSet("firewall-restart", "");
-    		}
-    	}
-
-    	return TRUE;
-    }
 
 #ifdef CONFIG_CISCO_HOTSPOT
     /* check the parameter name and return the corresponding value */
