@@ -265,11 +265,13 @@ DeviceInfo_GetParamStringValue_Custom
 #endif
 
 #ifdef CONFIG_VENDOR_CUSTOMER_COMCAST
+#if 0
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_CM_MAC", TRUE))
 	{
 	   CosaDmlDiGetCMMacAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
+#endif
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_WAN_MAC", TRUE))
 	{
@@ -288,13 +290,13 @@ DeviceInfo_GetParamStringValue_Custom
 	   CosaDmlDiGetMTAMacAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
-
+#if 0
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_CM_IP", TRUE))
 	{
 	   CosaDmlDiGetCMIPAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
-
+#endif
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_WAN_IP", TRUE))
 	{
 	   CosaDmlDiGetRouterIPAddress(NULL, pValue,pulSize);
