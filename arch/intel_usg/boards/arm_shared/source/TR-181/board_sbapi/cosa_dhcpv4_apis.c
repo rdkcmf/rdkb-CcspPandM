@@ -87,7 +87,7 @@
 #include <utapi/utapi_tr_dhcp.h>
 #include "dhcpv4c_api.h"
 #include <syslog.h>
-#include "cosa_moca_apis.h"
+//#include "cosa_moca_apis.h"
 #include <ccsp_syslog.h>
 #include <sys/stat.h>
 #include <sys/file.h>

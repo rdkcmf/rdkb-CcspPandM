@@ -74,7 +74,7 @@
 #include "dml_tr181_custom_cfg.h"
 #include "plugin_main_apis.h"
 #include "cosa_ethernet_apis.h"
-#include "cosa_moca_apis.h"
+//#include "cosa_moca_apis.h"
 #include "cosa_time_apis.h"
 #include "cosa_userinterface_apis.h"
 #include "cosa_nat_apis.h"
@@ -96,7 +96,7 @@
 #include "cosa_routing_internal.h"
 #include "cosa_deviceinfo_internal.h"
 #include "cosa_ethernet_internal.h"
-#include "cosa_moca_internal.h"
+//#include "cosa_moca_internal.h"
 #include "cosa_time_internal.h"
 #include "cosa_userinterface_internal.h"
 #include "cosa_ppp_internal.h"
@@ -305,8 +305,8 @@ CosaBackEndManagerInitialize
     AnscTraceWarning(("  CosaDiagnosticsCreate done!\n"));
     pMyObject->hTime          = (ANSC_HANDLE)CosaTimeCreate();
     AnscTraceWarning(("  CosaTimeCreate done!\n"));
-    pMyObject->hMoCA          = (ANSC_HANDLE)CosaMoCACreate();
-    AnscTraceWarning(("  CosaMoCACreate done!\n"));
+//    pMyObject->hMoCA          = (ANSC_HANDLE)CosaMoCACreate();
+//    AnscTraceWarning(("  CosaMoCACreate done!\n"));
     pMyObject->hUpnp          = (ANSC_HANDLE)CosaUpnpCreate();
     AnscTraceWarning(("  CosaUpnpCreate done!\n"));
 
@@ -429,11 +429,11 @@ CosaBackEndManagerRemove
         CosaEthernetRemove((ANSC_HANDLE)pMyObject->hEthernet);
     }
 
-    if ( pMyObject->hMoCA )
+/*    if ( pMyObject->hMoCA )
     {
         CosaMoCARemove((ANSC_HANDLE)pMyObject->hMoCA);
     }
-    
+*/ 
     if ( pMyObject->hDhcpv4 )
     {
         CosaDhcpv4Remove((ANSC_HANDLE)pMyObject->hDhcpv4);
