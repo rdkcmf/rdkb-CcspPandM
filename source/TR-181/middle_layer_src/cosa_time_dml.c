@@ -182,6 +182,13 @@ Time_GetParamBoolValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "UTC_Enable", TRUE))
+    {
+        /* collect value */
+        *pBool = pMyObject->TimeCfg.bUTCEnabled;
+        return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
