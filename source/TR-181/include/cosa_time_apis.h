@@ -102,10 +102,11 @@ _COSA_DML_TIME_CFG
     BOOLEAN                         bDaylightSaving;
     LONG                            DaylightSavingOffset;
     ULONG                           cityIndex;
+    BOOLEAN                         bUTCEnabled;
 }
 COSA_DML_TIME_CFG,  *PCOSA_DML_TIME_CFG;
 
-
+#define DEV_PROPERTIES_FILE "/etc/device.properties"
 /**********************************************************************
                 FUNCTION PROTOTYPES
 **********************************************************************/
