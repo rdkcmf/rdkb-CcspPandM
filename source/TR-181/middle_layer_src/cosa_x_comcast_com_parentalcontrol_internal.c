@@ -133,22 +133,22 @@ CosaParentalControlInitialize
 
     /* ManagedSites.BlockedURL.{i}. */
     ulBlkUrlCnt = CosaDmlBlkURL_GetNumberOfEntries();
+	AnscTraceWarning(("%s -- ulBlkUrlCnt = %d ...\n", __FUNCTION__,ulBlkUrlCnt));
 	#ifdef UTC_ENABLE
 	
 	if(bMigration == TRUE)
 	{
-		AnscTraceWarning(("%s -- calling 1 CosaDmlBlkURL_Migration ...\n", __FUNCTION__));
-		printf("%s -- calling 1 CosaDmlBlkURL_Migration ...\n", __FUNCTION__);
+		AnscTraceWarning(("%s -- callCosaDmlBlkURL_Migration ...\n", __FUNCTION__));
 		
 		if (ANSC_STATUS_SUCCESS == CosaDmlBlkURL_Migration())
 		{
 			AnscTraceWarning(("%s -- Success CosaDmlBlkURL_Migration ...\n", __FUNCTION__));
-			printf("%s -- Success CosaDmlBlkURL_Migration ...\n", __FUNCTION__);
+		    ulBlkUrlCnt = CosaDmlBlkURL_GetNumberOfEntries();
+			AnscTraceWarning(("%s -- ulBlkUrlCnt = %d ...\n", __FUNCTION__,ulBlkUrlCnt));
 		}
 		else
 		{
 			AnscTraceWarning(("%s -- Failed CosaDmlBlkURL_Migration ...\n", __FUNCTION__));
-			printf("%s -- failed CosaDmlBlkURL_Migration ...\n", __FUNCTION__);
 		}
 		
 	}	
@@ -344,18 +344,15 @@ CosaParentalControlInitialize
 	#ifdef UTC_ENABLE
 	if(bMigration == TRUE)
 	{
-		AnscTraceWarning(("%s -- Call CosaDmlMSServ_Migration ...\n", __FUNCTION__));
-		printf("%s -- call CosaDmlMSServ_Migration ...\n", __FUNCTION__);
-		
+		AnscTraceWarning(("%s -- Call CosaDmlMSServ_Migration ...\n", __FUNCTION__));		
 		if (ANSC_STATUS_SUCCESS == CosaDmlMSServ_Migration())
 		{
 			AnscTraceWarning(("%s -- Success CosaDmlMSServ_Migration ...\n", __FUNCTION__));
-			printf("%s -- Success CosaDmlMSServ_Migration ...\n", __FUNCTION__);
+			ulMSServCnt = CosaDmlMSServ_GetNumberOfEntries();
 		}
 		else
 		{
 			AnscTraceWarning(("%s -- Failed CosaDmlMSServ_Migration ...\n", __FUNCTION__));
-			printf("%s -- failed CosaDmlMSServ_Migration ...\n", __FUNCTION__);
 		}
 		
 	}
@@ -556,12 +553,11 @@ CosaParentalControlInitialize
 		if (ANSC_STATUS_SUCCESS == CosaDmlMDDev_Migration())
 		{
 			AnscTraceWarning(("%s -- Success CosaDmlMDDev_Migration ...\n", __FUNCTION__));
-			printf("%s -- Success CosaDmlMDDev_Migration ...\n", __FUNCTION__);
+			ulMDDevCnt = CosaDmlMDDev_GetNumberOfEntries();
 		}
 		else
 		{
 			AnscTraceWarning(("%s -- Failed CosaDmlMDDev_Migration ...\n", __FUNCTION__));
-			printf("%s -- failed CosaDmlMDDev_Migration ...\n", __FUNCTION__);
 		}
 		
 	}
