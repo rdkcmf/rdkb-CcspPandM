@@ -1979,6 +1979,8 @@ LanMngm_SetParamUlongValue
     if (AnscEqualString(ParamName, "LanMode", TRUE))
     {
         pLanMngm->LanMode = uValuepUlong;
+	if(pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic)
+                system("cp /etc/udhcpd.conf /var/udhcpd_org.conf");//LNT_EMU
         return TRUE;
     }
 

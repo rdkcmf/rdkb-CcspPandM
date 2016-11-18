@@ -83,6 +83,7 @@
 
 #if 1//LNT_EMU
 // for PSM access
+static char *PSM_LanMode = "dmsb.X_CISCO_COM_DeviceControl.LanManagementEntry.%d.LanMode";
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 // PSM access MACRO
@@ -1385,6 +1386,8 @@ CosaDmlLanMngm_GetEntryByIndex(ULONG index, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 	uint32_t  netmask;
     	char lan_ip[256] = {0};
     	char lan_subnet[256] = {0};
+	char *param_value = NULL;
+        char param_name[256] = {0};
 	PCOSA_DML_LAN_MANAGEMENT pLanMngt = NULL;//LNT_EMU
         pLanMngt = (PCOSA_DML_LAN_MANAGEMENT) AnscAllocateMemory( sizeof(COSA_DML_LAN_MANAGEMENT));
 	if (index >= g_lanMngmCnt)
@@ -1417,7 +1420,14 @@ CosaDmlLanMngm_GetEntryByIndex(ULONG index, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         pLanMngm->LanSubnetMask.Dot[2] = pLanMngt->LanSubnetMask.Dot[2];
         pLanMngm->LanSubnetMask.Dot[3] = pLanMngt->LanSubnetMask.Dot[3];
         }
-
+//PSM_ACCESS
+        memset(param_name, 0, sizeof(param_name));//LNT_EMU
+        sprintf(param_name, PSM_LanMode, pLanMngm->InstanceNumber);
+        PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value);
+        if(strcmp(param_value,"router") == 0)
+                pLanMngm->LanMode = COSA_DML_LanMode_Router;
+        else
+                pLanMngm->LanMode = COSA_DML_LanMode_BridgeStatic;
 
 	return ANSC_STATUS_SUCCESS;
 }
@@ -1481,6 +1491,8 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 	int i;
 	char str[INET_ADDRSTRLEN];
 	char str1[INET_ADDRSTRLEN];
+        char recName[256] = {0};//LNT_EMU
+        char string[100] ={0};
 #if 1//LNT_EMU
         PCOSA_DML_LAN_MANAGEMENT pSLanCfg = NULL;
         pSLanCfg = (PCOSA_DML_LAN_MANAGEMENT)AnscAllocateMemory( sizeof(COSA_DML_LAN_MANAGEMENT));
@@ -1510,6 +1522,24 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 	CcspHalInterfacesetval("brlan0",str);//LNT_EMU
 	CcspHalNetmasksetvalue("brlan0",str1);//LNT_EMU
 	CcspHalUpdateInterfaceval(str);//LNT_EMU
+
+//PSM-ACCESS - To Store BridgeMode values in PSM DataBase.
+        memset(recName, 0, sizeof(recName));
+        sprintf(recName, PSM_LanMode, pLanMngm->InstanceNumber);
+        if(pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic)
+                strcpy(string,"bridge-static");
+        else if(pLanMngm->LanMode == COSA_DML_LanMode_Router)
+                strcpy(string,"router");
+        PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, string);
+
+//LNT_EMU
+        if(pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic)
+                system("sh /lib/rdk/BridgeMode.sh");
+        else if(pLanMngm->LanMode == COSA_DML_LanMode_Router)
+        {
+                system("cp /var/udhcpd_org.conf /etc/udhcpd.conf");
+                system("sh /lib/rdk/RouterMode.sh");
+        }
 
 	g_lanMngmTab[i] = *pLanMngm;
 	g_lanMngmTab[i].InstanceNumber = ins; /* just in case */
