@@ -70,12 +70,15 @@
 #include "cosa_x_cisco_com_security_apis.h"
 #include "hal_firewall.h"
 #include <stdint.h>
+#include "dmsb_tr181_psm_definitions.h"
 
 #ifdef _COSA_SIM_
 
 #define  UPLINK_IF_NAME 		"eth0"	  
 #define  UPLINKBR_IF_NAME 		"brlan0"	  
-
+//PSM-Access
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
 
 /*
 BOOLEAN                       ApplyFirewallSettings;
@@ -189,13 +192,14 @@ CosaDmlIaInit
     netmask=CosaUtilIoctlXXX(UPLINKBR_IF_NAME,"netmask",NULL);
     *(uint32_t *)(netDetails.LanIPAddress).Dot = ip_integer;
     *(uint32_t *)(netDetails.LanSubnetMask).Dot = netmask;
-
-    BasicRouting_Wan2Lan_SetupConnection();//LNT_EMU
+    BasicRouting_Wan2Lan_SetupConnection();//RDKB_EMULATOR
+    xfinitywifi_InitialBootuprules_setup();
+#if 0 //RDKB_EMULATOR
     option.isFirewallEnabled = 1;
     firewall_service_init(&option);
     strcpy(firewall_level,"Low");
-    firewall_service_start(firewall_level,&netDetails);//LNT_EMU
-
+    firewall_service_start(firewall_level,&netDetails);
+#endif
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -358,7 +362,7 @@ CosaDmlFirewallGetConfig2
         PCOSA_DML_FIREWALL_CFG2     pCfg
     )
 {
-    pCfg->FirewallLevel                   = g_FirewallConfig2.FirewallLevel;
+//    pCfg->FirewallLevel                   = g_FirewallConfig2.FirewallLevel;
     pCfg->FilterAnonymousInternetRequests = g_FirewallConfig2.FilterAnonymousInternetRequests;
     pCfg->FilterIdent                     = g_FirewallConfig2.FilterIdent;
     pCfg->FilterMulticast                 = g_FirewallConfig2.FilterMulticast;
@@ -374,6 +378,29 @@ CosaDmlFirewallGetConfig2
     pCfg->FilterHTTPs                     = g_FirewallConfig2.FilterHTTPs;
     pCfg->FilterP2P                       = g_FirewallConfig2.FilterP2P;
     pCfg->FilterIdent                     = g_FirewallConfig2.FilterIdent;
+ //PSM_ACCESS
+    char *param_value = NULL;
+    char param_name[256] ={0};
+    int firewall_level = 0;
+    memset(param_name, 0, sizeof(param_name));
+    sprintf(param_name, PSM_FW_FIREWALL_LEVEL);
+    PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value);
+    if( param_value != NULL ){
+    if(strcmp(param_value,"High") == 0)
+                pCfg->FirewallLevel = COSA_DML_FIREWALL_LEVEL_High;
+
+   else if(strcmp(param_value,"Medium") == 0)
+                                pCfg->FirewallLevel = COSA_DML_FIREWALL_LEVEL_Medium;
+
+   else if(strcmp(param_value,"Low") == 0)
+                        pCfg->FirewallLevel = COSA_DML_FIREWALL_LEVEL_Low;
+    else if(strcmp(param_value,"Custom") == 0)
+                        pCfg->FirewallLevel = COSA_DML_FIREWALL_LEVEL_Custom;
+   else if(strcmp(param_value,"Disable") == 0)
+                        pCfg->FirewallLevel = COSA_DML_FIREWALL_LEVEL_None;
+    }else{
+                return 0;
+        }
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -417,7 +444,8 @@ CosaDmlFirewallSetConfig2
     struct NetworkDetails netDetails;
     uint32_t ip_integer;
     uint32_t  netmask;
- 
+    char recName[256] = {0};//RDKB_EMULATOR
+
     g_FirewallConfig2.FirewallLevel                   = pCfg->FirewallLevel;
     g_FirewallConfig2.FilterAnonymousInternetRequests = pCfg->FilterAnonymousInternetRequests;
     g_FirewallConfig2.FilterIdent                     = pCfg->FilterIdent;
@@ -472,12 +500,14 @@ CosaDmlFirewallSetConfig2
     netmask=CosaUtilIoctlXXX(UPLINKBR_IF_NAME,"netmask",NULL);
     *(uint32_t *)(netDetails.LanIPAddress).Dot = ip_integer;
     *(uint32_t *)(netDetails.LanSubnetMask).Dot = netmask; 
+//PSM-ACCESS
+        memset(recName, 0, sizeof(recName));
+        sprintf(recName, PSM_FW_FIREWALL_LEVEL);
     
     switch(pCfg->FirewallLevel)
     {
 	case 1:
     		option.isFirewallEnabled = 1;
-    		printf("service_init\n");
 		firewall_service_init(&option);
                 strcpy(firewall_level,"High");    
 		firewall_service_start(firewall_level,&netDetails);	
@@ -507,6 +537,7 @@ CosaDmlFirewallSetConfig2
 		firewall_service_stop(firewall_level);	
 		break;
     }
+    PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string,firewall_level);
     return ANSC_STATUS_SUCCESS;
 }
 
