@@ -82,15 +82,91 @@
 #include "cosa_nat_apis.h"
 #include "cosa_nat_internal.h"
 #include "plugin_main_apis.h"
+#include "dmsb_tr181_psm_definitions.h"
 
 PFN_COSA_DML_NAT_GEN   g_nat_pportmapping_callback = NULL;
-int g_count=0;//LNT
-int pt_count=0;//LNT
-static BOOL g_NatPFEnable;
+int g_count=0;//RDKB_EMULATOR 
+int pt_count=0;//RDKB_EMULATOR 
+static BOOL g_NatPFEnable  = FALSE;//RDKB_EMULATOR 
+#if 1
+// for PSM access
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
+// PSM access MACRO FOR PF & PT
+#define _PSM_WRITE_PARAM(_PARAM_NAME) { \
+        _ansc_sprintf(param_name, _PARAM_NAME, instancenum); \
+        retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value); \
+        if (retPsmSet != CCSP_SUCCESS) { \
+            AnscTraceFlow(("%s Error %d writing %s %s\n", __FUNCTION__, retPsmSet, param_name, param_value));\
+        } \
+        else \
+        { \
+            AnscTraceFlow(("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value)); \
+           printf("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value); \
+        } \
+        _ansc_memset(param_name, 0, sizeof(param_name)); \
+        _ansc_memset(param_value, 0, sizeof(param_value)); \
+    }
+#define _PSM_READ_PARAM(_PARAM_NAME) { \
+        _ansc_memset(param_name, 0, sizeof(param_name)); \
+        _ansc_sprintf(param_name, _PARAM_NAME, instancenum); \
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value); \
+        if (retPsmGet != CCSP_SUCCESS) { \
+            AnscTraceFlow(("%s Error %d reading %s %s\n", __FUNCTION__, retPsmGet, param_name, param_value));\
+        } \
+        else { \
+            AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = \n%s\n", __FUNCTION__,param_name, param_value)); \
+                printf("param_name (%s) and param_value (%s) \n",param_name, param_value); \
+        } \
+    }
+//PSM access MACRO for DMZ
+#define _PSM_WRITE_PARAM_DMZ(_PARAM_NAME) { \
+        _ansc_sprintf(param_name, _PARAM_NAME); \
+        retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value); \
+        if (retPsmSet != CCSP_SUCCESS) { \
+            AnscTraceFlow(("%s Error %d writing %s %s\n", __FUNCTION__, retPsmSet, param_name, param_value));\
+        } \
+        else \
+        { \
+            AnscTraceFlow(("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value)); \
+           printf("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value); \
+        } \
+        _ansc_memset(param_name, 0, sizeof(param_name)); \
+        _ansc_memset(param_value, 0, sizeof(param_value)); \
+    }
+
+#define _PSM_READ_PARAM_DMZ(_PARAM_NAME) { \
+        _ansc_memset(param_name, 0, sizeof(param_name)); \
+        _ansc_sprintf(param_name, _PARAM_NAME); \
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value); \
+        if (retPsmGet != CCSP_SUCCESS) { \
+            AnscTraceFlow(("%s Error %d reading %s %s\n", __FUNCTION__, retPsmGet, param_name, param_value));\
+        } \
+        else { \
+            AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = \n%s\n", __FUNCTION__,param_name, param_value)); \
+                printf("param_name (%s) and param_value (%s) \n",param_name, param_value); \
+        } \
+    }
+
+#endif
+
+#define _PSM_DEL_PARAM(_PARAM_NAME) { \
+		 _ansc_sprintf(param_name, _PARAM_NAME, instancenum); \
+		retPsmDel = PSM_Del_Record(bus_handle, g_Subsystem, param_name); \
+		if (retPsmDel != CCSP_SUCCESS) { \
+		    AnscTraceFlow(("%s Error %d deletion %s %s\n", __FUNCTION__, retPsmSet, param_name, param_value));\
+		} \
+	        else \
+        	{ \
+            	   AnscTraceFlow(("%s: retPsmSet == CCSP_SUCCESS deletion %s = %s \n", __FUNCTION__,param_name,param_value)); \
+	           printf("%s: retPsmSet == CCSP_SUCCESS deletion %s = %s \n", __FUNCTION__,param_name,param_value); \
+        	} \
+            _ansc_memset(param_name, 0, sizeof(param_name)); \
+	}	
 
 COSA_DML_NAT_PTRIGGER g_nat_porttrigger[32]=
         {
-        };//LNT
+        };//RDKB_EMULATOR 
 
 COSA_DML_NAT_PMAPPING   g_nat_portmapping[32] =
     {
@@ -151,6 +227,32 @@ COSA_DML_NAT_DMZ    g_Dmz =
         "10.10.10.11",
         "0.0.0.0"
     };
+void PSM_Set_DMZ_RecordValues(PCOSA_DML_NAT_DMZ pDmz)
+{
+        int retPsmSet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char param_value[256] = {0};
+        if(pDmz->bEnabled == TRUE)
+        AnscCopyString(param_value,"TRUE");
+        else
+        AnscCopyString(param_value,"FALSE");
+        _PSM_WRITE_PARAM_DMZ(PSM_DMZ_ENABLE);
+        AnscCopyString(param_value,pDmz->InternalIP);
+        _PSM_WRITE_PARAM_DMZ(PSM_DMZ_INTERNALIP);
+}
+void PSM_Get_DMZ_RecordValues(PCOSA_DML_NAT_DMZ pDmz)
+{
+         int retPsmGet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char *param_value = NULL;
+        _PSM_READ_PARAM_DMZ(PSM_DMZ_ENABLE);
+        if(strcmp(param_value,"TRUE") == 0)
+        pDmz->bEnabled = TRUE;
+        else
+        pDmz->bEnabled = FALSE;
+        _PSM_READ_PARAM_DMZ(PSM_DMZ_INTERNALIP);
+        AnscCopyString(pDmz->InternalIP,param_value);
+}
 
 ANSC_STATUS
 CosaDmlNatGetLanIP
@@ -161,7 +263,7 @@ CosaDmlNatGetLanIP
     return ANSC_STATUS_SUCCESS;
 }
 
-int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)//LNT
+int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)//RDKB_EMULATOR 
 {
        if( pPortMapping->PublicIP.Value == 0 &&
                         ((pPortMapping->ExternalPort == 0) ||
@@ -223,8 +325,8 @@ CosaDmlNatInit
         PFN_COSA_DML_NAT_GEN        pValueGenFn
     )
 {
+
     g_nat_pportmapping_callback = pValueGenFn;
-    g_NatPFEnable = TRUE;
     return ANSC_STATUS_SUCCESS;
 
 }
@@ -259,7 +361,23 @@ CosaDmlNatGet
         PCOSA_DML_NAT               pDmlNat
     )
 {
-    return ANSC_STATUS_SUCCESS;
+	char *param_value;//RDKB_EMULATOR
+	char *pf_enable = "dmsb.nat.PortMapping.Enable";
+	char param_name[100] ={0};
+	memset(param_name, 0, sizeof(param_name));
+	sprintf(param_name,pf_enable);
+	PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value);
+	if(param_value!=NULL){
+        	if(strcmp(param_value,"0") == 0)
+        	g_NatPFEnable = FALSE;
+	        else
+        	g_NatPFEnable = TRUE;
+		COSA_DML_NAT_CUSTOM_SET_ENABLEPORTMAPPING(pDmlNat, g_NatPFEnable);
+	}
+	else{
+		return 0;
+	}
+	return ANSC_STATUS_SUCCESS;
 }
 
 
@@ -293,13 +411,33 @@ CosaDmlNatSet
         PCOSA_DML_NAT               pDmlNat
     )
 {
-    if ( COSA_DML_NAT_CUSTOM_GET_ENABLEPORTMAPPING(pDmlNat) )
+    if ( COSA_DML_NAT_CUSTOM_GET_ENABLEPORTMAPPING(pDmlNat) )//RDKB_EMULATOR
     {
+	g_NatPFEnable=TRUE;	
+	#if 1
+	char param_value[50] = {0};
+        char param_name[100] ={0};
+        char *pf_enable = "dmsb.nat.PortMapping.Enable";
+        memset(param_name, 0, sizeof(param_name));
+        sprintf(param_name,pf_enable);
+        sprintf(param_value,"%d",g_NatPFEnable);
+        PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+	#endif
         printf("X_Comcast_com_EnablePortMapping is enabled!\n");
     }
     else
     {
-	port_forwarding_disable();//LNT
+	port_forwarding_disable();//RDKB_EMULATOR
+	#if 1
+	g_NatPFEnable=FALSE;	
+        char param_value[50] = {0};
+        char param_name[100] ={0};
+        char *pf_enable = "dmsb.nat.PortMapping.Enable";
+        memset(param_name, 0, sizeof(param_name));
+        sprintf(param_name,pf_enable);
+        sprintf(param_value,"%d",g_NatPFEnable);
+        PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+        #endif
         printf("X_Comcast_com_EnablePortMapping is disabled!\n");
     }
 
@@ -356,7 +494,7 @@ CosaDmlNatGetDmz
     )
 {
     AnscCopyMemory(pDmlDmz, &g_Dmz, sizeof(COSA_DML_NAT_DMZ));
-
+    PSM_Get_DMZ_RecordValues(pDmlDmz);//RDKB_EMULATOR
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -390,14 +528,14 @@ CosaDmlNatSetDmz
     )
 {
     AnscCopyMemory(&g_Dmz, pDmz, sizeof(COSA_DML_NAT_DMZ));
-//LNT
+//RDKB_EMULATOR
     if(pDmz->bEnabled == FALSE)
 		DeleteDMZIptableRules();
     
     else
 		DMZIptableRulesOperation(pDmz->InternalIP);
 
-
+    PSM_Set_DMZ_RecordValues(pDmz);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -423,6 +561,57 @@ CosaDmlNatSetDmz
             The pointer to the array of NAT port mappings, allocated by callee. If no entry is found, NULL is returned.
 
 **********************************************************************/
+int PSMGetPortMappingRecordValues(PCOSA_DML_NAT_PMAPPING  pMapping,ULONG instancenum)//RDKB_EMULATOR
+{
+        int retPsmGet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char *param_value = NULL;
+
+        pMapping->InstanceNumber=instancenum;
+	
+	_PSM_READ_PARAM(PSM_MAPPING_Enable);
+	if(strcmp(param_value,"TRUE") == 0)
+                pMapping->bEnabled = TRUE;
+        else
+                pMapping->bEnabled = FALSE;
+
+	_PSM_READ_PARAM(PSM_MAPPING_Status);
+	if(strcmp(param_value,"Enabled"))
+		pMapping->Status = TRUE;
+	else
+		pMapping->Status = FALSE;
+
+	_PSM_READ_PARAM(PSM_MAPPING_AllInterfaces);
+	if(strcmp(param_value,"TRUE") == 0)
+		pMapping->AllInterfaces=TRUE;
+	else
+		pMapping->AllInterfaces=FALSE;
+
+	_PSM_READ_PARAM(PSM_MAPPING_LeaseDuration)
+	pMapping->LeaseDuration=atoi(param_value);
+	
+	_PSM_READ_PARAM(PSM_MAPPING_ExternalPort);
+	pMapping->ExternalPort=atoi(param_value);
+
+	_PSM_READ_PARAM(PSM_MAPPING_ExternalPortEndRange);
+	pMapping->ExternalPortEndRange=atoi(param_value);
+
+	_PSM_READ_PARAM(PSM_MAPPING_InternalPort);
+	pMapping->InternalPort=atoi(param_value);
+
+	_PSM_READ_PARAM(PSM_MAPPING_Protocol);
+	pMapping->Protocol=atoi(param_value);
+
+	_PSM_READ_PARAM(PSM_MAPPING_Description);
+	AnscCopyString(	pMapping->Description,param_value);
+
+	_PSM_READ_PARAM(PSM_MAPPING_Alias);
+	AnscCopyString( pMapping->Alias,param_value);
+
+	_PSM_READ_PARAM(PSM_MAPPING_InternalClient);
+	pMapping->InternalClient.Value=inet_addr(param_value);
+}
+
 PCOSA_DML_NAT_PMAPPING
 CosaDmlNatGetPortMappings
     (
@@ -430,30 +619,63 @@ CosaDmlNatGetPortMappings
         PULONG                      pulCount
     )
 {
-	PCOSA_DML_NAT_PMAPPING pNatPMapping = NULL;
-        ULONG                         index = 0;
+	if(g_count==0)//RDKB_EMULATOR
+	{
+		PCOSA_DML_NAT_PMAPPING pNatPMapping = NULL;
+		char *param_value;
+		int i;
+		ULONG numOfEntries;
+		PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.NAT.PortMapping.MaxInstance", NULL, &param_value);
+		if(param_value!=NULL){
+			numOfEntries = atol(param_value);
+			g_count=numOfEntries;
+		}
+		else{
+			return 0;
+		}
+		pNatPMapping = (PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(g_nat_portmapping[0])*(g_count));
+		if ( pNatPMapping )
+		{
+			for(i=1;i<=numOfEntries;i++){
+				PSMGetPortMappingRecordValues(pNatPMapping,i);
+				g_nat_portmapping[i-1]=*pNatPMapping;
+			}
+			AnscCopyMemory( pNatPMapping,g_nat_portmapping,sizeof(g_nat_portmapping[0])*(g_count));
+			*pulCount=g_count;
+		}
+		else
+		{
+			*pulCount = 0;
+		}
 
-        for(index =0; index < sizeof(g_nat_portmapping[0])*g_count/sizeof(COSA_DML_NAT_PMAPPING); index++)
-        {
-                if ( g_nat_portmapping[index].InstanceNumber  ==  0 )
-                {
-                        g_nat_pportmapping_callback( NULL, &g_nat_portmapping[index] );
-                }
-        }
+		return pNatPMapping;
 
-        pNatPMapping = (PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(g_nat_portmapping[0])*(g_count+1));
+	}
+	else{
+		PCOSA_DML_NAT_PMAPPING pNatPMapping = NULL;
+		ULONG                         index = 0;
+		for(index =0; index < sizeof(g_nat_portmapping[0])*g_count/sizeof(COSA_DML_NAT_PMAPPING); index++)
+		{
+			if ( g_nat_portmapping[index].InstanceNumber  ==  0 )
+			{
+				g_nat_pportmapping_callback( NULL, &g_nat_portmapping[index] );
+			}
+		}
 
-        if ( pNatPMapping )
-        {
-                AnscCopyMemory(pNatPMapping, g_nat_portmapping, sizeof(g_nat_portmapping[0])*g_count);
-                *pulCount=g_count;
-        }
-        else
-        {
-                *pulCount = 0;
-        }
+		pNatPMapping = (PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(g_nat_portmapping[0])*(g_count+1));
 
-        return pNatPMapping;
+		if ( pNatPMapping )
+		{
+			AnscCopyMemory(pNatPMapping, g_nat_portmapping, sizeof(g_nat_portmapping[0])*g_count);
+			*pulCount=g_count;
+		}
+		else
+		{
+			*pulCount = 0;
+		}
+
+		return pNatPMapping;
+	}
 }
 
 /**********************************************************************
@@ -479,6 +701,57 @@ CosaDmlNatGetPortMappings
         he pointer to the array of NAT port mappings, allocated by callee. If no entry is found, NULL is returned.
 
 **********************************************************************/
+int PSMSetPortMappingRecordValues(PCOSA_DML_NAT_PMAPPING pMapping,ULONG instancenum)//RDKB_EMULATOR
+{
+        int retPsmSet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char param_value[256] = {0};
+        if (pMapping->bEnabled==TRUE){
+        _ansc_sprintf(param_value,"%s","TRUE");
+        }else{
+        _ansc_sprintf(param_value,"%s","FALSE");
+        }
+        _PSM_WRITE_PARAM(PSM_MAPPING_Enable);
+
+	if(pMapping->Status==COSA_DML_NAT_STATUS_Enabled){
+	_ansc_sprintf(param_value,"%s","Enabled");
+	}else{
+        _ansc_sprintf(param_value,"%s","Disabled");
+        }
+	_PSM_WRITE_PARAM(PSM_MAPPING_Status);
+
+	if(pMapping->AllInterfaces==TRUE){
+	_ansc_sprintf(param_value,"%s","TRUE");
+	}else{
+        _ansc_sprintf(param_value,"%s","FALSE");
+        }
+	_PSM_WRITE_PARAM(PSM_MAPPING_AllInterfaces);
+
+	_ansc_sprintf(param_value,"%d",pMapping->LeaseDuration);
+	_PSM_WRITE_PARAM(PSM_MAPPING_LeaseDuration);
+
+	_ansc_sprintf(param_value, "%u",pMapping->ExternalPort);
+        _PSM_WRITE_PARAM(PSM_MAPPING_ExternalPort);
+	
+	_ansc_sprintf(param_value, "%u",pMapping->ExternalPortEndRange);
+	_PSM_WRITE_PARAM(PSM_MAPPING_ExternalPortEndRange);
+
+	_ansc_sprintf(param_value, "%u",pMapping->InternalPort);
+	 _PSM_WRITE_PARAM(PSM_MAPPING_InternalPort);
+	
+	_ansc_sprintf(param_value, "%u",pMapping->Protocol);
+	_PSM_WRITE_PARAM(PSM_MAPPING_Protocol);
+
+	_ansc_sprintf(param_value, "%s",pMapping->Description);
+	_PSM_WRITE_PARAM(PSM_MAPPING_Description);
+	
+	 _ansc_sprintf(param_value, "%s",pMapping->Alias);
+	_PSM_WRITE_PARAM(PSM_MAPPING_Alias);
+
+	_ansc_sprintf(param_value, "%u.%u.%u.%u",pMapping->InternalClient.Dot[0],pMapping->InternalClient.Dot[1],pMapping->InternalClient.Dot[2],pMapping->InternalClient.Dot[3]);
+	_PSM_WRITE_PARAM(PSM_MAPPING_InternalClient);
+}
+
 ANSC_STATUS
 CosaDmlNatAddPortMapping
     (
@@ -490,26 +763,31 @@ CosaDmlNatAddPortMapping
         char cmd[1024]= {'\0'};
         char *prot;
         index=sizeof(g_nat_portmapping[0])*g_count/sizeof(COSA_DML_NAT_PMAPPING);
-        if(pEntry != NULL)//LNT
+	printf("index=%d\n",index);
+        PCOSA_DML_NAT_PMAPPING pMapping;
+        pMapping=(PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(COSA_DML_NAT_PMAPPING));
+        if(pEntry != NULL)//RDKB_EMULATOR
         {
                 g_count++;
-                g_nat_portmapping[index].InstanceNumber=pEntry->InstanceNumber;
-                AnscCopyString(g_nat_portmapping[index].Alias, pEntry->Description);
-                g_nat_portmapping[index].bEnabled = pEntry->bEnabled;
-                g_nat_portmapping[index].Status = COSA_DML_NAT_STATUS_Enabled;
-                g_nat_portmapping[index].AllInterfaces=TRUE;
-                g_nat_portmapping[index].LeaseDuration = 0;
-                g_nat_portmapping[index].RemoteHost.Value = 0;
-                g_nat_portmapping[index].PublicIP.Value = 0;
-                g_nat_portmapping[index].ExternalPort =  pEntry->ExternalPort;
-                g_nat_portmapping[index].ExternalPortEndRange = pEntry->ExternalPortEndRange;
-                g_nat_portmapping[index].InternalPort = pEntry->InternalPort;
-                g_nat_portmapping[index].Protocol =  pEntry->Protocol;
-                g_nat_portmapping[index].InternalClient.Value = pEntry->InternalClient.Value;
-                strncpy(g_nat_portmapping[index].X_CISCO_COM_InternalClientV6,pEntry->X_CISCO_COM_InternalClientV6,
-                                sizeof(g_nat_portmapping[index].X_CISCO_COM_InternalClientV6));
-                strncpy(g_nat_portmapping[index].Description,
-                                pEntry->Description, sizeof(g_nat_portmapping[index].Description));
+		pMapping->InstanceNumber=pEntry->InstanceNumber;
+		pMapping->bEnabled=pEntry->bEnabled;
+		pMapping->Status=COSA_DML_NAT_STATUS_Enabled;
+		pMapping->AllInterfaces=TRUE;
+		pMapping->LeaseDuration = 0;
+		pMapping->RemoteHost.Value = 0;
+		pMapping->PublicIP.Value = 0;
+		pMapping->ExternalPort =  pEntry->ExternalPort;
+		pMapping->ExternalPortEndRange = pEntry->ExternalPortEndRange;
+		pMapping->InternalPort = pEntry->InternalPort;
+          	pMapping->Protocol =  pEntry->Protocol;
+		AnscCopyString(pMapping->Alias, pEntry->Description);
+                pMapping->InternalClient.Value = pEntry->InternalClient.Value;
+                strncpy(pMapping->X_CISCO_COM_InternalClientV6,pEntry->X_CISCO_COM_InternalClientV6,
+                                sizeof(pMapping->X_CISCO_COM_InternalClientV6));
+                strncpy(pMapping->Description,pEntry->Description, sizeof(pMapping->Description));
+		PSMSetPortMappingRecordValues(pMapping,pMapping->InstanceNumber);
+		g_nat_portmapping[index]=*pMapping;
+		g_nat_portmapping[index].InstanceNumber=pEntry->InstanceNumber;
                 //Add PortForwarding Rule For TCP,UDP,TCP/UDP
                         prot = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
                         port_forwarding_add_rule(g_nat_portmapping[index].InternalClient.Dot,prot,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
@@ -545,29 +823,34 @@ CosaDmlNatDelPortMapping
         ANSC_HANDLE                 hContext,
         ULONG                       ulInstanceNumber
     )
-{
-	ULONG                          index = 0;
-        PCOSA_DML_NAT_PMAPPING pNatPMapping;
-        char cmd[1024]= {'\0'};
-        char *prot;
-        for(index =0; index < sizeof(g_nat_portmapping[0])*g_count/sizeof(COSA_DML_NAT_PMAPPING); index++)
-        {
-                if (g_nat_portmapping[index].InstanceNumber==ulInstanceNumber)//LNT
-                {
-                        //Delete PortForwarding Rule For TCP,UDP,TCP/UDP
-                                prot = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
-                                port_forwarding_delete_rule(g_nat_portmapping[index].InternalClient.Dot,prot,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
-                }
-        }
-        for(index=ulInstanceNumber-1;index<g_count-1;index++)
-        {
-                g_nat_portmapping[index]=g_nat_portmapping[index+1];
-                if(g_nat_portmapping[index].InstanceNumber!=0){
-                        g_nat_portmapping[index].InstanceNumber--;}
-        }
-        g_count--;
+    {
+	    ULONG                          index = 0;
+	    PCOSA_DML_NAT_PMAPPING pNatPMapping;
+	    char cmd[1024]= {'\0'};
+	    char *prot;
+	    for(index =0; index < sizeof(g_nat_portmapping[0])*g_count/sizeof(COSA_DML_NAT_PMAPPING); index++)
+	    {
+		    if (g_nat_portmapping[index].InstanceNumber==ulInstanceNumber)//RDKB_EMULATOR
+		    {
+			    //Delete PortForwarding Rule For TCP,UDP,TCP/UDP
+			    prot = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
+			    port_forwarding_delete_rule(g_nat_portmapping[index].InternalClient.Dot,prot,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
+		    }
+	    }
+	pNatPMapping = (PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(g_nat_portmapping[0])*(g_count));//PSM_ACCESS
 
-        return ANSC_STATUS_SUCCESS;
+	    for(index=ulInstanceNumber-1;index<g_count-1;index++)
+	    {
+		    g_nat_portmapping[index]=g_nat_portmapping[index+1];
+		    if(g_nat_portmapping[index].InstanceNumber!=0){
+			    g_nat_portmapping[index].InstanceNumber--;}
+		    /*Update PSM PortMapping Data*/
+		    *pNatPMapping = g_nat_portmapping[index];
+		    PSMSetPortMappingRecordValues(pNatPMapping,pNatPMapping->InstanceNumber);
+	    }
+	    g_count--;
+
+	    return ANSC_STATUS_SUCCESS;
 }
 
 
@@ -600,40 +883,47 @@ CosaDmlNatSetPortMapping
         PCOSA_DML_NAT_PMAPPING      pEntry          /* Identified by InstanceNumber */
     )
 {
-	        ULONG                          index = 0;
-        char cmd[1024]= {'\0'};
-        char str[1024]= {'\0'};
-        char *prot,*del;
-        for(index =0; index < sizeof(g_nat_portmapping)/sizeof(COSA_DML_NAT_PMAPPING); index++)
-        {
-                if ( g_nat_portmapping[index].InstanceNumber  ==  pEntry->InstanceNumber )//LNT
-                {
-                                del = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
-                                port_forwarding_delete_rule(g_nat_portmapping[index].InternalClient.Dot,del,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
-                        if(pEntry != NULL)
-                        {
-                                g_nat_portmapping[index].InstanceNumber=pEntry->InstanceNumber;
-                                g_nat_portmapping[index].bEnabled = pEntry->bEnabled;
-                                g_nat_portmapping[index].AllInterfaces=TRUE;
-                                g_nat_portmapping[index].LeaseDuration = 0;
-                                g_nat_portmapping[index].RemoteHost.Value = 0;
-                                g_nat_portmapping[index].PublicIP.Value = 0;
-                                g_nat_portmapping[index].ExternalPort =  pEntry->ExternalPort;
-                                g_nat_portmapping[index].ExternalPortEndRange = pEntry->ExternalPortEndRange;
-                                g_nat_portmapping[index].InternalPort = pEntry->InternalPort;
-                                g_nat_portmapping[index].Protocol =  pEntry->Protocol;
-                                g_nat_portmapping[index].InternalClient.Value=  pEntry->InternalClient.Value;
-                                g_nat_portmapping[index].Status = COSA_DML_NAT_STATUS_Enabled;
-                                strncpy(g_nat_portmapping[index].Description,
-                                                pEntry->Description, sizeof(g_nat_portmapping[index].Description));
-                                AnscCopyString(g_nat_portmapping[index].Alias, pEntry->Description);
-                                //After set function iptable rules are deleted and add new iptable to same ruleNumber
-                                prot = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
-                                port_forwarding_add_rule(g_nat_portmapping[index].InternalClient.Dot,prot,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
-                        }break;
-                }
-        }
-        return ANSC_STATUS_SUCCESS;
+	ULONG                          index = 0;
+	char cmd[1024]= {'\0'};
+	char str[1024]= {'\0'};
+	char *prot,*del;
+	PCOSA_DML_NAT_PMAPPING pMapping;
+	pMapping=(PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(COSA_DML_NAT_PMAPPING));
+	for(index =0; index < sizeof(g_nat_portmapping)/sizeof(COSA_DML_NAT_PMAPPING); index++)
+	{
+		if ( g_nat_portmapping[index].InstanceNumber  ==  pEntry->InstanceNumber )//RDKB_EMULATOR
+		{
+			del = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
+			port_forwarding_delete_rule(g_nat_portmapping[index].InternalClient.Dot,del,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
+			if(pEntry != NULL)//RDKB_EMULATOR
+			{
+				pMapping->InstanceNumber=pEntry->InstanceNumber;
+				pMapping->bEnabled=pEntry->bEnabled;
+				pMapping->Status=COSA_DML_NAT_STATUS_Enabled;
+				pMapping->AllInterfaces=TRUE;
+				pMapping->LeaseDuration = 0;
+				pMapping->RemoteHost.Value = 0;
+				pMapping->PublicIP.Value = 0;
+				pMapping->ExternalPort =  pEntry->ExternalPort;
+				pMapping->ExternalPortEndRange = pEntry->ExternalPortEndRange;
+				pMapping->InternalPort = pEntry->InternalPort;
+				pMapping->Protocol =  pEntry->Protocol;
+				AnscCopyString(pMapping->Alias, pEntry->Description);
+				pMapping->InternalClient.Value = pEntry->InternalClient.Value;
+				strncpy(pMapping->X_CISCO_COM_InternalClientV6,pEntry->X_CISCO_COM_InternalClientV6,
+						sizeof(pMapping->X_CISCO_COM_InternalClientV6));
+				strncpy(pMapping->Description,pEntry->Description, sizeof(pMapping->Description));
+				PSMSetPortMappingRecordValues(pMapping,pMapping->InstanceNumber);
+				g_nat_portmapping[index]=*pMapping;
+				g_nat_portmapping[index].InstanceNumber=pEntry->InstanceNumber;
+
+				//After set function iptable rules are deleted and add new iptable to same ruleNumber
+				prot = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
+				port_forwarding_add_rule(g_nat_portmapping[index].InternalClient.Dot,prot,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
+			}break;
+		}
+	}
+	return ANSC_STATUS_SUCCESS;
 }
 
 /* TBC      -- need to be normalized */
@@ -669,6 +959,43 @@ BOOL CosaDmlNatChkPortMappingClient(ULONG client)
             The pointer to the array of NAT port triggers, allocated by callee. If no entry is found, NULL is returned.
 
 **********************************************************************/
+int PSMGetPortTriggerRecordValues(PCOSA_DML_NAT_PTRIGGER pTrigger,ULONG instancenum)//RDKB_EMULATOR
+{
+        int retPsmGet = CCSP_SUCCESS;
+	char param_name[256] = {0};
+        char *param_value = NULL;
+
+	pTrigger->InstanceNumber=instancenum;	
+
+        _PSM_READ_PARAM(PSM_TRIGGERING_Enable);
+	if(strcmp(param_value,"TRUE") == 0)
+                pTrigger->bEnabled = TRUE;
+        else
+                pTrigger->bEnabled = FALSE;
+	_PSM_READ_PARAM(PSM_TRIGGERING_TriggerProtocol);
+        pTrigger->TriggerProtocol=atoi(param_value);
+
+	_PSM_READ_PARAM(PSM_TRIGGERING_ForwardProtocol);
+	pTrigger->ForwardProtocol=atoi(param_value);
+
+	_PSM_READ_PARAM(PSM_TRIGGERING_TriggerPortStart);
+	pTrigger->TriggerPortStart=atoi(param_value);
+	
+	 _PSM_READ_PARAM(PSM_TRIGGERING_TriggerPortEnd );
+	pTrigger->TriggerPortEnd=atoi(param_value);
+
+	 _PSM_READ_PARAM(PSM_TRIGGERING_ForwardPortStart);
+	pTrigger->ForwardPortStart=atoi(param_value);
+
+	_PSM_READ_PARAM(PSM_TRIGGERING_ForwardPortEnd);
+	pTrigger->ForwardPortEnd=atoi(param_value);
+
+	 _PSM_READ_PARAM(PSM_TRIGGERING_Description);
+	AnscCopyString(pTrigger->Description,param_value);
+	AnscCopyString(pTrigger->Alias,pTrigger->Description);
+	
+        return 0;
+}
 
 PCOSA_DML_NAT_PTRIGGER
 CosaDmlNatGetPortTriggers
@@ -676,22 +1003,56 @@ CosaDmlNatGetPortTriggers
         ANSC_HANDLE                 hContext,
         PULONG                      pulCount
     )
+
 {
-     printf("Inside %s :%d\n",__FUNCTION__,__LINE__);
-     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger = NULL;
-     pNatPTrigger = (PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory( sizeof(g_nat_porttrigger[0])*(pt_count+1));//LNT
-        if (  pNatPTrigger )
-        {
-                AnscCopyMemory( pNatPTrigger, g_nat_porttrigger, sizeof(g_nat_porttrigger[0])*(pt_count+1));
-                *pulCount=pt_count;
-		printf("pt_count%d\n",pt_count);
-        }
-        else
-        {
-                *pulCount = 0;
-        }
-        return  pNatPTrigger;
+	if(pt_count==0){//RDKB_EMULATOR
+		PCOSA_DML_NAT_PTRIGGER          pNatPTrigger = NULL;
+		char *param_value;
+		int i;
+		ULONG numOfEntries;
+		PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Provision.COSALibrary.NAT.PORTTRIGGER.NextInstanceNumber", NULL, &param_value);
+		if(param_value!=NULL){
+			numOfEntries = atol(param_value);
+			numOfEntries=numOfEntries-1;
+			pt_count=numOfEntries;
+		}
+		else{
+			return 0;
+		}
+		pNatPTrigger = (PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory(sizeof(g_nat_porttrigger[0])*(pt_count));//RDKB_EMULATOR
+		if (  pNatPTrigger )
+		{
+			for(i=1;i<=numOfEntries;i++){
+				PSMGetPortTriggerRecordValues(pNatPTrigger,i);
+				g_nat_porttrigger[i-1]=*pNatPTrigger;
+			}
+			AnscCopyMemory( pNatPTrigger, g_nat_porttrigger,sizeof(g_nat_porttrigger[0])*(pt_count));
+			*pulCount=pt_count;
+			printf("pulCount%u\n",*pulCount);
+		}
+		else
+		{
+			*pulCount = 0;
+		}
+
+		return  pNatPTrigger;
+	}
+	else{
+		PCOSA_DML_NAT_PTRIGGER          pNatPTrigger = NULL;
+		pNatPTrigger = (PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory( sizeof(g_nat_porttrigger[0])*(pt_count+1));//RDKB_EMULATOR
+		if (  pNatPTrigger )
+		{
+			AnscCopyMemory( pNatPTrigger, g_nat_porttrigger, sizeof(g_nat_porttrigger[0])*(pt_count));
+			*pulCount=pt_count;
+		}
+		else
+		{
+			*pulCount = 0;
+		}
+		return  pNatPTrigger;
+	}
 }
+
 
 /**********************************************************************
 
@@ -716,7 +1077,41 @@ CosaDmlNatGetPortTriggers
         Status of the operation.
 
 **********************************************************************/
+int PSMSetPortTriggerRecordValues(PCOSA_DML_NAT_PTRIGGER pTrigger,ULONG instancenum)//RDKB_EMULATOR
+{
+        int retPsmSet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char param_value[256] = {0};
+	if (pTrigger->bEnabled==TRUE){
+	_ansc_sprintf(param_value,"%s","TRUE");
+	}else{
+	_ansc_sprintf(param_value,"%s","FALSE");
+	}
+	_PSM_WRITE_PARAM(PSM_TRIGGERING_Enable);
+	
+	_ansc_sprintf(param_value, "%u",pTrigger->TriggerProtocol);
+	_PSM_WRITE_PARAM(PSM_TRIGGERING_TriggerProtocol);
 
+	_ansc_sprintf(param_value, "%u",pTrigger->ForwardProtocol);
+        _PSM_WRITE_PARAM(PSM_TRIGGERING_ForwardProtocol);
+
+	_ansc_sprintf(param_value,"%u",pTrigger->TriggerPortStart);
+	_PSM_WRITE_PARAM( PSM_TRIGGERING_TriggerPortStart);
+
+	_ansc_sprintf(param_value,"%u",pTrigger->TriggerPortEnd);
+	_PSM_WRITE_PARAM(PSM_TRIGGERING_TriggerPortEnd );
+	
+	_ansc_sprintf(param_value,"%u",pTrigger->ForwardPortStart);
+	_PSM_WRITE_PARAM(PSM_TRIGGERING_ForwardPortStart);
+
+	_ansc_sprintf(param_value,"%u",pTrigger->ForwardPortEnd);
+	_PSM_WRITE_PARAM(PSM_TRIGGERING_ForwardPortEnd);
+
+	_ansc_sprintf(param_value,"%s",pTrigger->Description);
+	_PSM_WRITE_PARAM(PSM_TRIGGERING_Description);
+	
+        return 0;
+}
 ANSC_STATUS
 CosaDmlNatAddPortTrigger
     (
@@ -724,26 +1119,27 @@ CosaDmlNatAddPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pEntry
     )
 {
-	printf("Inside %s :%d\n",__FUNCTION__,__LINE__);
 	ULONG                          index = 0;
         char cmd[1024]= {'\0'};
         char *prot;
         index=sizeof(g_nat_porttrigger[0])*pt_count/sizeof(COSA_DML_NAT_PTRIGGER);
-	printf("index is:%d\n",index);
-        if(pEntry != NULL)//LNT
+	PCOSA_DML_NAT_PTRIGGER pTrigger;
+        pTrigger=(PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory( sizeof(COSA_DML_NAT_PTRIGGER));
+        if(pEntry != NULL)//RDKB_EMULATOR
         {
-                g_nat_porttrigger[index].InstanceNumber=pEntry->InstanceNumber;
-                g_nat_porttrigger[index].bEnabled=pEntry->bEnabled;
-                g_nat_porttrigger[index].TriggerProtocol=pEntry->TriggerProtocol;
-                g_nat_porttrigger[index].TriggerPortStart=pEntry->TriggerPortStart;
-                g_nat_porttrigger[index].TriggerPortEnd=pEntry->TriggerPortEnd;
-                g_nat_porttrigger[index].ForwardProtocol=pEntry->ForwardProtocol;
-                g_nat_porttrigger[index].ForwardPortStart=pEntry->ForwardPortStart;
-                g_nat_porttrigger[index].ForwardPortEnd=pEntry->ForwardPortEnd;
-		strncpy(g_nat_porttrigger[index].Description,
-                                                pEntry->Description, sizeof(g_nat_porttrigger[index].Description));
-                AnscCopyString(g_nat_porttrigger[index].Alias, pEntry->Description);
                 pt_count++;
+		pTrigger->InstanceNumber=pEntry->InstanceNumber;
+		pTrigger->bEnabled=pEntry->bEnabled;
+		pTrigger->TriggerProtocol=pEntry->TriggerProtocol;
+		pTrigger->TriggerPortStart=pEntry->TriggerPortStart;
+		pTrigger->TriggerPortEnd=pEntry->TriggerPortEnd;
+		pTrigger->ForwardProtocol=pEntry->ForwardProtocol;
+		pTrigger->ForwardPortStart=pEntry->ForwardPortStart;
+		pTrigger->ForwardPortEnd=pEntry->ForwardPortEnd;
+		strncpy(pTrigger->Description,pEntry->Description, sizeof(pTrigger->Description));
+                PSMSetPortTriggerRecordValues(pTrigger,pTrigger->InstanceNumber);
+		g_nat_porttrigger[index]=*pTrigger;
+		g_nat_porttrigger[index].InstanceNumber=pEntry->InstanceNumber;
                 prot = g_nat_porttrigger[index].TriggerProtocol==0?"tcp":g_nat_porttrigger[index].TriggerProtocol==1?"udp":"both";
                 port_triggering_add_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,prot,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);
         }
@@ -779,7 +1175,6 @@ CosaDmlNatDelPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pEntry
     )
 {
-	printf("Inside %s :%d\n",__FUNCTION__,__LINE__);
 	ULONG                          index = 0;
         ULONG                          count = 0;
         PCOSA_DML_NAT_PTRIGGER         pNatPTrigger;
@@ -787,7 +1182,7 @@ CosaDmlNatDelPortTrigger
         ulInstanceNumber=pEntry->InstanceNumber;
         char cmd[1024]= {'\0'};
         char *prot;
-        for(index =0; index < sizeof(g_nat_porttrigger[0])*pt_count/sizeof(COSA_DML_NAT_PTRIGGER); index++)//LNT
+        for(index =0; index < sizeof(g_nat_porttrigger[0])*pt_count/sizeof(COSA_DML_NAT_PTRIGGER); index++)//RDKB_EMULATOR
         {
                 if ( g_nat_porttrigger[index].InstanceNumber  ==  pEntry->InstanceNumber )
                 {
@@ -796,13 +1191,15 @@ CosaDmlNatDelPortTrigger
                         port_triggering_delete_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,prot,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);
                 }
         }
-        for(index=ulInstanceNumber-1;index<=pt_count-1;index++)
+	pNatPTrigger = (PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory( sizeof(g_nat_porttrigger[0])*(pt_count));//PSM_ACCESS		
+        for(index=ulInstanceNumber-1;index<pt_count-1;index++)
         {
                 g_nat_porttrigger[index]=g_nat_porttrigger[index+1];
                 if(g_nat_porttrigger[index].InstanceNumber!=0){
                         g_nat_porttrigger[index].InstanceNumber--;}
-		else{g_nat_porttrigger[index].InstanceNumber=g_nat_porttrigger[index+1].InstanceNumber;}
-		
+		/*Update PSM PortMapping Data*/
+                    *pNatPTrigger = g_nat_porttrigger[index];
+		    PSMSetPortTriggerRecordValues(pNatPTrigger,pNatPTrigger->InstanceNumber);
         }
         pt_count--;
         return ANSC_STATUS_SUCCESS;
@@ -842,26 +1239,29 @@ CosaDmlNatSetPortTrigger
 	ULONG                          index = 0;
         char cmd[1024]= {'\0'};
         char *prot,*del;
-        for(index =0; index < sizeof(g_nat_porttrigger[0])*pt_count/sizeof(COSA_DML_NAT_PTRIGGER); index++)//LNT
+	PCOSA_DML_NAT_PTRIGGER pTrigger;//RDKB_EMULATOR
+        pTrigger=(PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory( sizeof(COSA_DML_NAT_PTRIGGER));
+        for(index =0; index < sizeof(g_nat_porttrigger[0])*pt_count/sizeof(COSA_DML_NAT_PTRIGGER); index++)//RDKB_EMULATOR
         {
                 if ( g_nat_porttrigger[index].InstanceNumber  ==  pEntry->InstanceNumber )
                 {
                         del = g_nat_porttrigger[index].TriggerProtocol==0?"tcp":g_nat_porttrigger[index].TriggerProtocol==1?"udp":"both";
                         //Delete iptable table rules 
                         port_triggering_delete_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,del,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);
-                        if(pEntry != NULL)
+                        if(pEntry != NULL)//RDKB_EMULATOR
                         {
-                                g_nat_porttrigger[index].InstanceNumber=pEntry->InstanceNumber;
-                                g_nat_porttrigger[index].bEnabled=pEntry->bEnabled;
-                                g_nat_porttrigger[index].TriggerProtocol=pEntry->TriggerProtocol;
-                                g_nat_porttrigger[index].TriggerPortStart=pEntry->TriggerPortStart;
-                                g_nat_porttrigger[index].TriggerPortEnd=pEntry->TriggerPortEnd;
-                                g_nat_porttrigger[index].ForwardProtocol=pEntry->ForwardProtocol;
-                                g_nat_porttrigger[index].ForwardPortStart=pEntry->ForwardPortStart;
-                                g_nat_porttrigger[index].ForwardPortEnd=pEntry->ForwardPortEnd;
-				strncpy(g_nat_porttrigger[index].Description,
-                                                pEntry->Description, sizeof(g_nat_porttrigger[index].Description));
-                		AnscCopyString(g_nat_porttrigger[index].Alias, pEntry->Description);
+                		pTrigger->InstanceNumber=pEntry->InstanceNumber;
+		                pTrigger->bEnabled=pEntry->bEnabled;
+                		pTrigger->TriggerProtocol=pEntry->TriggerProtocol;
+		                pTrigger->TriggerPortStart=pEntry->TriggerPortStart;
+                		pTrigger->TriggerPortEnd=pEntry->TriggerPortEnd;
+		                pTrigger->ForwardProtocol=pEntry->ForwardProtocol;
+                		pTrigger->ForwardPortStart=pEntry->ForwardPortStart;
+		                pTrigger->ForwardPortEnd=pEntry->ForwardPortEnd;
+                		strncpy(pTrigger->Description,pEntry->Description, sizeof(pTrigger->Description));
+                		PSMSetPortTriggerRecordValues(pTrigger,pTrigger->InstanceNumber);
+                		g_nat_porttrigger[index]=*pTrigger;
+		                g_nat_porttrigger[index].InstanceNumber=pEntry->InstanceNumber;
                                 prot = g_nat_porttrigger[index].TriggerProtocol==0?"tcp":g_nat_porttrigger[index].TriggerProtocol==1?"udp":"both";
                                 //Add iptable rule after edit functonality 
                                 port_triggering_add_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,prot,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);
@@ -880,18 +1280,35 @@ static BOOL g_NatPTTriggerEnable = FALSE;
 ANSC_STATUS
 CosaDmlNatGetPortTriggerEnable(BOOL *pBool)
 {
-    *pBool = g_NatPTTriggerEnable;
-    return ANSC_STATUS_SUCCESS;
+	char *param_value;//RDKB_EMULATOR
+	char *pt_enable = "dmsb.nat.X_CISCO_COM_PortTriggers.Enable";
+	char param_name[100] ={0};
+	memset(param_name, 0, sizeof(param_name));
+	sprintf(param_name,pt_enable);
+	PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value);
+	if(strcmp(param_value,"0") == 0)
+	*pBool = FALSE;
+	else
+	*pBool = TRUE;
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
 CosaDmlNatSetPortTriggerEnable(BOOL vBool)
 {
-	g_NatPTTriggerEnable = vBool;
+	g_NatPTTriggerEnable = vBool;//RDKB_EMULATOR
 	if( vBool == FALSE )
 	{
-		port_triggering_disable();//LNT
+		port_triggering_disable();//RDKB_EMULATOR
 	}
+	char param_value[50] = {0};
+        char param_name[100] ={0};
+        char *pt_enable = "dmsb.nat.X_CISCO_COM_PortTriggers.Enable";
+        memset(param_name, 0, sizeof(param_name));
+        sprintf(param_name,pt_enable);
+        sprintf(param_value,"%d",g_NatPTTriggerEnable);
+        PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+
 	return ANSC_STATUS_SUCCESS;
 }
 

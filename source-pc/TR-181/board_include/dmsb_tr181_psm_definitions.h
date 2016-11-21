@@ -287,4 +287,102 @@
 #define  DMSB_TR181_PSM_DeviceInfo_ProductClass     "ProductClass"
 #define  DMSB_TR181_PSM_DeviceInfo_ManufacturerOUI  "ManufacturerOUI"
 
+/******************************************************************************
+                        Firewall IPv4
+*******************************************************************************/
+#define PSM_FW_FIREWALL_LEVEL "dmsb.X_CISCO_COM_Security.Firewall.FirewallLevel"
+
+/**********************************************************************
+                            Port Mapping
+**********************************************************************/
+#define  PSM_MAPPING_Enable "dmsb.nat.PortMapping.%d.enable"
+#define  PSM_MAPPING_Status "dmsb.nat.PortMapping.%d.status"
+#define  PSM_MAPPING_Alias "dmsb.nat.PortMapping.%d.alias"
+#define  PSM_MAPPING_AllInterfaces "dmsb.nat.PortMapping.%d.allInterfaces"
+#define  PSM_MAPPING_LeaseDuration "dmsb.nat.PortMapping.%d.leaseDuration"
+#define  PSM_MAPPING_ExternalPortEndRange "dmsb.nat.PortMapping.%d.externalPortEndRange"
+#define  PSM_MAPPING_ExternalPort "dmsb.nat.PortMapping.%d.externalPort"
+#define  PSM_MAPPING_InternalPort "dmsb.nat.PortMapping.%d.internalPort"
+#define  PSM_MAPPING_Protocol "dmsb.nat.PortMapping.%d.protocol"
+#define  PSM_MAPPING_InternalClient "dmsb.nat.PortMapping.%d.internalClient"
+#define  PSM_MAPPING_Description "dmsb.nat.PortMapping.%d.description"
+
+
+/**********************************************************************
+                            Port Triggering
+**********************************************************************/
+#define  PSM_TRIGGERING_Enable "dmsb.nat.X_CISCO_COM_PortTriggers.trigger.%d.enable"
+#define  PSM_TRIGGERING_TriggerProtocol "dmsb.nat.X_CISCO_COM_PortTriggers.trigger.%d.triggerProtocol"
+#define  PSM_TRIGGERING_TriggerPortStart "dmsb.nat.X_CISCO_COM_PortTriggers.trigger.%d.triggerPortStart"
+#define  PSM_TRIGGERING_TriggerPortEnd "dmsb.nat.X_CISCO_COM_PortTriggers.trigger.%d.triggerPortEnd"
+#define  PSM_TRIGGERING_ForwardProtocol "dmsb.nat.X_CISCO_COM_PortTriggers.trigger.%d.forwardProtocol"
+#define  PSM_TRIGGERING_ForwardPortStart "dmsb.nat.X_CISCO_COM_PortTriggers.trigger.%d.forwardPortStart"
+#define  PSM_TRIGGERING_ForwardPortEnd "dmsb.nat.X_CISCO_COM_PortTriggers.trigger.%d.forwardPortEnd"
+#define  PSM_TRIGGERING_Description "dmsb.nat.X_CISCO_COM_PortTriggers.trigger.%d.description"
+
+/*******************************************************************************
+                            RemoteManagement 
+********************************************************************************/
+#define PSM_RM_HTTPPORT "dmsb.UserInterface.X_CISCO_COM_RemoteAccess.HttpPort"
+#define PSM_RM_HTTPENABLE "dmsb.UserInterface.X_CISCO_COM_RemoteAccess.HttpEnable"
+#define PSM_RM_HTTPSPORT "dmsb.UserInterface.X_CISCO_COM_RemoteAccess.HttpsPort"
+#define PSM_RM_HTTPSENABLE "dmsb.UserInterface.X_CISCO_COM_RemoteAccess.HttpsEnable"
+#define PSM_RM_STARTIP "dmsb.UserInterface.X_CISCO_COM_RemoteAccess.StartIp"
+#define PSM_RM_ENDIP "dmsb.UserInterface.X_CISCO_COM_RemoteAccess.EndIp"
+#define PSM_RM_FROMANYIP "dmsb.UserInterface.X_CISCO_COM_RemoteAccess.FromAnyIP"
+
+/*******************************************************************************
+                            	DMZ
+********************************************************************************/
+
+#define PSM_DMZ_ENABLE "dmsb.NAT.X_CISCO_COM_DMZ.Enable"
+#define PSM_DMZ_INTERNALIP "dmsb.NAT.X_CISCO_COM_DMZ.InternalIP"
+
+/*******************************************************************************
+                        Parental Control
+********************************************************************************/
+//Managed Sites
+#define PSM_PC_MS_ENABLE "dmsb.X_Comcast_com_ParentalControl.ManagedSites.Enable"
+#define PSM_PC_MS_BLOCKED_SITES_NUMBER_OF_ENTRIES "dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSiteNumberOfEntries"
+#define PSM_PC_MS_TRUSTED_USER_NUMBER_OF_ENTRIES "dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUserNumberOfEntries"
+#define PSM_PC_MS_BLOCKMETHOD "dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.BlockMethod"
+#define PSM_PC_MS_SITE "dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.Site"
+#define PSM_PC_MS_ALWAYSBLOCK "dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.AlwaysBlock"
+#define PSM_PC_MS_STARTTIME "dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.StartTime"
+#define PSM_PC_MS_ENDTIME "dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.EndTime"
+#define PSM_PC_MS_BLOCKDAYS "dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.BlockDays"
+#define PSM_PC_MS_TRUSTED_ENABLE "dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUser.%d.Trusted"
+#define PSM_PC_MS_TRUSTED_IPADDRESS "dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUser.%d.IPAddress"
+#define PSM_PC_MS_TRUSTED_IPADDRESS_TYPE "dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUser.%d.IPAddressType"
+#define PSM_PC_MS_TRUSTED_HOST_DESCRIPTION "dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUser.%d.HostDescription"
+
+//Managed Services
+#define PSM_PC_MSE_ENABLE "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Enable"
+#define PSM_PC_MSE_SERVICE_NUMBER_OF_ENTRIES "dmsb.X_Comcast_com_ParentalControl.ManagedServices.ServiceNumberOfEntries"
+#define PSM_PC_MSE_TRUSTED_USER_NUMBER_OF_ENTRIES "dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUserNumberOfEntries"
+#define PSM_PC_MSE_DESCRIPTION "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%d.Description"
+#define PSM_PC_MSE_PROTOCOL "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%d.Protocol"
+#define PSM_PC_MSE_STARTPORT "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%d.StartPort"
+#define PSM_PC_MSE_ENDPORT "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%d.EndPort"
+#define PSM_PC_MSE_ALWAYSBLOCK "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%d.AlwaysBlock"
+#define PSM_PC_MSE_STARTTIME "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%d.StartTime"
+#define PSM_PC_MSE_ENDTIME "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%d.EndTime"
+#define PSM_PC_MSE_BLOCKDAYS "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%d.BlockDays"
+#define PSM_PC_MSE_TRUSTED_ENABLE "dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUser.%d.Trusted"
+#define PSM_PC_MSE_TRUSTED_IPADDRESS "dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUser.%d.IPAddress"
+#define PSM_PC_MSE_TRUSTED_IPADDRESS_TYPE "dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUser.%d.IPAddressType"
+#define PSM_PC_MSE_TRUSTED_HOST_DESCRIPTION "dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUser.%d.HostDescription"
+
+//Managed Devices
+#define PSM_PC_MD_ENABLE "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Enable"
+#define PSM_PC_MD_ALLOWALL "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.AllowAll"
+#define PSM_PC_MD_DEVICE_NUMBER_OF_ENTRIES "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.DeviceNumberOfEntries"
+#define PSM_PC_MD_TYPE "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%d.Type"
+#define PSM_PC_MD_DESCRIPTION "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%d.Description"
+#define PSM_PC_MD_MACADDRESS "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%d.MACAddress"
+#define PSM_PC_MD_ALWAYSBLOCK "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%d.AlwaysBlock"
+#define PSM_PC_MD_STARTTIME "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%d.StartTime"
+#define PSM_PC_MD_ENDTIME "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%d.EndTime"
+#define PSM_PC_MD_BLOCKDAYS "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%d.BlockDays"
+
 #endif
