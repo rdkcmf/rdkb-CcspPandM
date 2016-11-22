@@ -624,9 +624,17 @@ CosaDmlTimeGetLocalTime
     )
 {
     time_t t;
+#ifdef UTC_ENABLE
+struct tm now_time, *pLcltime, temp;
+   time(&t);
+   t = t + getOffset();
+   localtime_r(&t, &temp);
+   pLcltime = &temp;
+#else
     struct tm *pLcltime;
     t = time(NULL);
     pLcltime = localtime(&t);
+#endif
     _ansc_sprintf(pCurrLocalTime, "%.4u-%.2u-%.2u %.2u:%.2u:%.2u",
             (pLcltime->tm_year)+1900,
             (pLcltime->tm_mon)+1,
