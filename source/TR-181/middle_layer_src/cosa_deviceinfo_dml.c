@@ -912,7 +912,7 @@ DeviceInfo_SetParamStringValue
 	 else if (AnscEqualString(pString, "reboot_device", TRUE))
          {
                 CcspTraceInfo(("RDKB_REBOOT : RebootDevice triggered from GUI\n"));
-                char buf[8];
+                /*char buf[8];
 		snprintf(buf,sizeof(buf),"%d",1);
 		               
 		if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", "gui-reboot") != 0) 
@@ -938,7 +938,7 @@ DeviceInfo_SetParamStringValue
 	              {
                          AnscTraceWarning(("syscfg_commit failed\n"));
                       }
-	        }
+	        }*/
 	        
 	 }
          else if(AnscEqualString(pString, "factory_reset", TRUE))

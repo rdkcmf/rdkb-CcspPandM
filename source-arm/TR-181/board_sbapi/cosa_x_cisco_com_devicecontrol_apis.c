@@ -1502,7 +1502,7 @@ CosaDmlDcSetRebootDevice
 		rebootcount++;
 		memset(buf,0,sizeof(buf));
 		snprintf(buf,sizeof(buf),"%d",rebootcount);
-     	syscfg_set(NULL, "reboot_count", buf);
+     	//syscfg_set(NULL, "reboot_count", buf);
 
 		FILE *fp = NULL;
 		memset(buf,0,sizeof(buf));
@@ -1513,14 +1513,14 @@ CosaDmlDcSetRebootDevice
 		if( fp != NULL) {         
 		    while(fgets(buffer, sizeof(buffer), fp)!=NULL){
 			    buffer[strlen(buffer) - 1] = '\0';
-				syscfg_set(NULL, "latest_reboot_time", buffer);
+				//syscfg_set(NULL, "latest_reboot_time", buffer);
 			}
 			pclose(fp);
 		}
-		if (syscfg_commit() != 0) 
+		/*if (syscfg_commit() != 0) 
 		{
 			CcspTraceWarning(("syscfg_commit failed\n"));
-		}
+		}*/
 		
 		CcspTraceWarning(("REBOOT_COUNT : %d Time : %s  \n",rebootcount,buffer));
 
