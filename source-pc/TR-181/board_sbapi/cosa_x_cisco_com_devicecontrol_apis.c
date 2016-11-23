@@ -173,6 +173,16 @@ PCHAR g_avahi_daemon_conf[] =
     NULL
 };
 
+#define FR_NONE 1
+#define FR_WIFI (1<<1)
+#define FR_ROUTER (1<<2)
+#define FR_FW (1<<3)
+#define FR_OTHER (1<<4)
+
+extern ANSC_HANDLE bus_handle;
+char   dst_pathname_cr[64]  =  {0};
+static componentStruct_t **        ppComponents = NULL;
+extern char        g_Subsystem[32];
 
 #include "ansc_string_util.h"
 
@@ -561,8 +571,20 @@ CosaDmlDcGetRebootDevice
         char*                       pValue
     )
 {
-    AnscCopyString(pValue, "Router");
-    return ANSC_STATUS_SUCCESS;
+	if (strstr(pValue, "Router") != NULL) {
+		AnscCopyString(pValue, "Router");
+	}
+	else if (strstr(pValue, "Wifi") != NULL) {
+		AnscCopyString(pValue, "Wifi");
+	}
+	else if (strstr(pValue, "Router,Wifi") != NULL) {
+		AnscCopyString(pValue, "Router,Wifi");
+	}
+	else {
+		AnscCopyString(pValue, "All");
+	}
+
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -572,8 +594,20 @@ CosaDmlDcGetFactoryReset
         char*                       pValue
     )
 {
-    AnscCopyString(pValue, "Router");
-    return ANSC_STATUS_SUCCESS;
+	if (strstr(pValue, "Router") != NULL) {
+		AnscCopyString(pValue, "Router");
+	}
+	else if (strstr(pValue, "Wifi") != NULL) {
+		AnscCopyString(pValue, "Wifi");
+	}
+	else if (strstr(pValue, "Router,Wifi") != NULL) {
+		AnscCopyString(pValue, "Router,Wifi");
+	}
+	else {
+		AnscCopyString(pValue, "All");
+	}
+
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -619,14 +653,110 @@ CosaDmlDcSetDeviceConfigIgnore
     return ANSC_STATUS_SUCCESS;
 }
 
+static ANSC_STATUS
+CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
+{//RDKB_EMULATOR
+	CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+	fprintf(stderr, "WiFi is going to reboot\n");
+	pthread_detach(pthread_self());
+	CcspTraceWarning(("RebootDevice:WiFi is going to reboot now\n"));
+	int                         ret;
+	int                         size = 0;
+	componentStruct_t **        ppComponents = NULL;
+	char*   faultParam = NULL;
+
+	sprintf(dst_pathname_cr, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+
+	ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
+		    dst_pathname_cr,
+                    "Device.WiFi.",
+		    g_Subsystem,        /* prefix */
+		    &ppComponents,
+		    &size);
+
+	if ( ret == CCSP_SUCCESS && size == 1)
+	{
+	    parameterValStruct_t val[2] = { { "Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, 
+				            { "Device.WiFi.Radio.5.X_CISCO_COM_ApplySetting", "true", ccsp_boolean} };
+ 
+	    ret = CcspBaseIf_setParameterValues
+				(
+					bus_handle, 
+					ppComponents[0]->componentName, 
+					ppComponents[0]->dbusPath,
+					0, 0x0,   /* session id and write id */
+					&val, 		
+                                        1, 
+					TRUE,   /* no commit */
+					&faultParam
+				);	
+
+		if (ret != CCSP_SUCCESS && faultParam)
+		{
+		    CcspTraceError(("RebootDevice:%s Failed to SetValue for param '%s'\n",__FUNCTION__,faultParam));
+		    bus_info->freefunc(faultParam);
+		} else {
+			return 0;
+			}
+		}
+	    free_componentStruct_t(bus_handle, size, ppComponents);
+	
+	return ANSC_STATUS_SUCCESS;
+}
 ANSC_STATUS
 CosaDmlDcSetRebootDevice
     (
         ANSC_HANDLE                 hContext,
         char*                       pValue
     )
-{
-    return ANSC_STATUS_SUCCESS;
+{//RDKB_EMULATOR
+	int router, wifi, all;
+	router = wifi = all = 0;
+
+	if (strstr(pValue, "Router") != NULL) {
+		router = 1;
+	}
+	if (strstr(pValue, "Wifi") != NULL) {
+		wifi = 1;
+	}
+	if (router && wifi) {
+		all = 1;
+	}
+
+	if ( all ) {
+		pthread_t tid1;
+		CcspTraceWarning(("RebootDevice:CosaDmlDcRebootWifi thread called to reboot WiFi\n"));
+		pthread_create(&tid1, NULL, &CosaDmlDcRebootWifi, NULL);
+		system("sleep 20");
+		system("systemctl restart network-setup.service");
+	}
+	else  if (wifi) {
+		pthread_t tid;
+		CcspTraceWarning(("RebootDevice:CosaDmlDcRebootWifi thread called to reboot WiFi\n"));
+		pthread_create(&tid, NULL, &CosaDmlDcRebootWifi, NULL);
+	}
+
+	else if (router) {
+		fprintf(stderr, "Router is going to reboot\n");
+		CcspTraceWarning(("RebootDevice:Router is going to reboot\n"));
+		system("(sleep 5 && reboot) &");
+	}
+
+	return ANSC_STATUS_SUCCESS;
+}
+
+static int initWifiComp() {//RDKB_EMULATOR
+	int size =0 ,ret;
+	snprintf(dst_pathname_cr, sizeof(dst_pathname_cr), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+
+	ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
+			dst_pathname_cr,
+			"Device.WiFi.X_CISCO_COM_FactoryReset",
+			g_Subsystem,        /* prefix */
+			&ppComponents,
+			&size);
+
+	return ret == CCSP_SUCCESS ? 0 : ret;
 }
 
 ANSC_STATUS
@@ -635,8 +765,88 @@ CosaDmlDcSetFactoryReset
         ANSC_HANDLE                 hContext,
         char*                       pValue
     )
-{
-    return ANSC_STATUS_SUCCESS;
+{//RDKB_EMULATOR
+	char* tok;
+	char* sv;
+	char value[50];
+	int factory_reset_mask = 0;
+	CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+
+	if (pValue == NULL || pValue[0] == '\0')
+		factory_reset_mask |= FR_NONE;
+	else {
+		strncpy(value, pValue, sizeof(value));
+		tok = strtok_r(value, ",", &sv);
+
+		while (tok) {
+			if (strcmp("Router", tok) == 0) {
+				factory_reset_mask |= FR_ROUTER;
+			} else if (strcmp("Wifi", tok) == 0) {
+				factory_reset_mask |= FR_WIFI;
+			} else if(strcmp("VoIP", tok) == 0 || strcmp("Docsis", tok) == 0) {
+				factory_reset_mask |= FR_OTHER;
+			}
+
+			tok = strtok_r(NULL, ",", &sv);
+		}
+	}
+	if (!factory_reset_mask)
+	{
+		CcspTraceError(("FactoryReset:%s BAD parameter passed to factory defaults parameter ...\n",__FUNCTION__));
+		return ANSC_STATUS_BAD_PARAMETER;
+	}
+	if (factory_reset_mask & FR_OTHER ) {
+	}
+	if(factory_reset_mask & FR_WIFI) {
+		/*TODO: SEND EVENT TO WIFI PAM  Device.WiFi.X_CISCO_COM_FactoryReset*/
+		int                         ret;
+		char* faultParam = NULL;
+
+		CcspTraceWarning(("FactoryReset:%s Restoring WiFi to factory defaults  ...\n",__FUNCTION__));     
+		if (ppComponents == NULL && initWifiComp())
+		{
+			CcspTraceError(("FactoryReset:%s Restoring WiFi to factory defaults returned error  ...\n",__FUNCTION__));     
+
+			return ANSC_STATUS_FAILURE;
+		}
+		parameterValStruct_t		val = { "Device.WiFi.X_CISCO_COM_FactoryReset", "true", ccsp_boolean};
+
+		ret = CcspBaseIf_setParameterValues
+			(
+			 bus_handle, 
+			 ppComponents[0]->componentName, 
+			 ppComponents[0]->dbusPath,
+			 0, 0x0,   /* session id and write id */
+			 &val, 
+			 1, 
+			 TRUE,   /* no commit */
+			 &faultParam
+			);	
+
+		if (ret != CCSP_SUCCESS && faultParam)
+		{
+			CcspTraceError(("FactoryReset:%s SettingX_CISCO_COM_FactoryReset returned error for param '%s'  ...\n",__FUNCTION__,faultParam));  
+			bus_info->freefunc(faultParam);
+		}
+
+	}
+
+	if (factory_reset_mask & FR_ROUTER) {
+		/*RESTORE DEFAULT LAN SETTINGS*/
+		system("/lib/rdk/restore-bridgemode-to-routermode.sh");
+		system("/lib/rdk/restore-lan-conf.sh");
+		system("sleep 10");
+		system("/lib/rdk/restore-rules.sh");
+		system("sleep 5");
+		system("iptables -t nat -F && iptables -t mangle -F && iptables -F");
+		system("(sleep 5 && reboot) &");
+
+	}
+	else if (factory_reset_mask & FR_NONE){
+
+	}
+
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
