@@ -673,6 +673,7 @@ X_CISCO_COM_DeviceControl_GetParamStringValue
     if( AnscEqualString(ParamName, "RebootDevice", TRUE) )
     {
         /* collect value */
+	AnscCopyString(pValue, pMyObject->RebootDevice);//LNT_EMU
         if (CosaDmlDcGetRebootDevice(NULL, pValue) != ANSC_STATUS_SUCCESS)
             return -1;
 
@@ -682,6 +683,7 @@ X_CISCO_COM_DeviceControl_GetParamStringValue
     if( AnscEqualString(ParamName, "FactoryReset", TRUE) )
     {
         /* collect value */
+	AnscCopyString(pValue, pMyObject->RebootDevice);//LNT_EMU
         if (CosaDmlDcGetFactoryReset(NULL, pValue) != ANSC_STATUS_SUCCESS)
             return -1;
 
