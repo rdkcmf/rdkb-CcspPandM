@@ -103,6 +103,10 @@
 #include "ccsp_vendor.h"
 #endif
 
+#ifdef _PLATFORM_RASPBERRYPI_
+#include "ccsp_vendor.h"
+#endif
+
 #ifdef _COSA_SIM_
 
 // this file is in integration_src.intel_usg_arm directory
