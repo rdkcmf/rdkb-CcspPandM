@@ -98,6 +98,10 @@
 #include "cosa_deviceinfo_apis_custom.h"
 #include "dml_tr181_custom_cfg.h" 
 
+#ifdef _PLATFORM_RASPBERRYPI_
+#include "ccsp_vendor.h"
+#endif
+
 #ifdef _COSA_SIM_
 
 // this file is in integration_src.intel_usg_arm directory
