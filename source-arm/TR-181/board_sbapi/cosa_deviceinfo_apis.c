@@ -99,7 +99,12 @@
 #define DEVICE_PROPERTIES    "/etc/device.properties"
 #define PARTNERS_INFO_FILE		"/nvram/partners_defaults.json"
 
-#if defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_IPQ_)
+#if defined(_PLATFORM_IPQ_)
+#include "ccsp_vendor.h"
+#endif
+
+
+#ifdef _PLATFORM_RASPBERRYPI_
 #include "ccsp_vendor.h"
 #endif
 
