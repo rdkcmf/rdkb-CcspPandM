@@ -299,15 +299,11 @@ DeviceInfo_GetParamStringValue_Custom
 #endif
 
 #ifdef CONFIG_VENDOR_CUSTOMER_COMCAST
-
-//This  parameter implementation is moved to CMAgent
-#if 0
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_CM_MAC", TRUE))
 	{
 	   CosaDmlDiGetCMMacAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
-#endif
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_WAN_MAC", TRUE))
 	{
@@ -327,14 +323,11 @@ DeviceInfo_GetParamStringValue_Custom
 	   return 0;
 	}
 
-//This  parameter implementation is moved to CMAgent
-#if 0
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_CM_IP", TRUE))
 	{
 	   CosaDmlDiGetCMIPAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
-#endif
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_WAN_IP", TRUE))
 	{

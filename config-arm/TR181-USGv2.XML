@@ -323,7 +323,27 @@
 		<writable>true</writable>
 
 	</parameter>
- 
+	
+        <parameter>
+    
+          <name>X_COMCAST-COM_CM_MAC</name>
+                   
+          <type>string(64)</type>
+                                  
+          <syntax>string</syntax>
+                                                 
+        </parameter>
+        
+        <parameter>
+    
+          <name>X_COMCAST-COM_CM_IP</name>
+                   
+          <type>string(64)</type>
+                                  
+          <syntax>string</syntax>
+                                                 
+        </parameter>    
+        
         <parameter>
     
           <name>X_COMCAST-COM_WAN_MAC</name>
@@ -1347,16 +1367,6 @@
           <writable>true</writable>
 
         </parameter>
-
-        <parameter>
-
-          <name>UTC_Enable</name>
-
-          <type>boolean</type>
-
-          <syntax>bool</syntax>
-
-       </parameter>
 
       </parameters>
 
