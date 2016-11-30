@@ -291,9 +291,31 @@ then
 
 				dibbler-server stop
 				dibbler-server start
+				count=0
+				MaxCount=30
+				while : ; do
 
-				echo_t "Network Response: WiFi is not configured,setting ConfigureWiFi to true"	
-				dmcli eRT setvalues Device.DeviceInfo.X_RDKCENTRAL-COM_ConfigureWiFi bool TRUE
+		  	        	if [ -f "/tmp/pam_initialized" ]
+		   			then
+						echo_t "Network Response: WiFi is not configured,setting ConfigureWiFi to true"
+						output=`dmcli eRT setvalues Device.DeviceInfo.X_RDKCENTRAL-COM_ConfigureWiFi bool TRUE`
+						check_success=`echo $output | grep  "Execution succeed."`
+		  	        		if [ "$check_success" != "" ]
+		   				then
+							echo_t "Network Response : Setting ConfigureWiFi to true is success"
+		 	       			fi
+ 		      			        break
+					else
+						sleep 5
+						count=$((count+1))
+						if [ "$count" -ge "$MaxCount" ]
+						then
+							echo_t "Network Response : Max wait for PandM reached , breaking the loop"
+							break
+						fi
+		 	       		fi
+
+				done
 			else
 				echo_t "Network Response: WiFi is already personalized setting redirection_flag to false"
 				# We reached here as redirection_flag is "true". But WiFi is configured already as per notification status.
