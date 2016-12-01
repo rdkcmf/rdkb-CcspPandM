@@ -98,7 +98,6 @@
 
 #ifdef CONFIG_VENDOR_CUSTOMER_COMCAST
 
-#if 0
 /*X_COMCAST-COM_CM_MAC*/
 ANSC_STATUS
 CosaDmlDiGetCMMacAddress
@@ -107,7 +106,6 @@ CosaDmlDiGetCMMacAddress
         char*                       pValue,
         PULONG                      pulSize
     );
-#endif
 
 /*X_COMCAST-COM_WAN_IP*/
 ANSC_STATUS
@@ -127,7 +125,6 @@ CosaDmlDiGetMTAMacAddress
         PULONG                      pulSize
     );
 
-#if 0
 /*X_COMCAST-COM_CM_IP*/
 ANSC_STATUS
 CosaDmlDiGetCMIPAddress
@@ -137,7 +134,6 @@ CosaDmlDiGetCMIPAddress
         PULONG                      pulSize
     );
 
-#endif
 /*X_COMCAST-COM_WAN_IP*/
 ANSC_STATUS
 CosaDmlDiGetRouterIPAddress
