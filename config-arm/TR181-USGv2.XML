@@ -1368,6 +1368,16 @@
 
         </parameter>
 
+        <parameter>
+
+          <name>UTC_Enable</name>
+
+          <type>boolean</type>
+
+          <syntax>bool</syntax>
+
+       </parameter>
+
       </parameters>
 
     </object>
