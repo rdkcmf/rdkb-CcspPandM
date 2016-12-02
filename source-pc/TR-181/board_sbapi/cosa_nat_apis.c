@@ -529,13 +529,85 @@ CosaDmlNatSetDmz
 {
     AnscCopyMemory(&g_Dmz, pDmz, sizeof(COSA_DML_NAT_DMZ));
 //RDKB_EMULATOR
-    if(pDmz->bEnabled == FALSE)
-		DeleteDMZIptableRules();
-    
-    else
-		DMZIptableRulesOperation(pDmz->InternalIP);
+ 	int retPsmSet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char param_value[256] = {0};
 
-    PSM_Set_DMZ_RecordValues(pDmz);
+        if(pDmz->bEnabled == TRUE)
+                AnscCopyString(param_value,"TRUE");
+        else
+                AnscCopyString(param_value,"FALSE");
+        _PSM_WRITE_PARAM_DMZ(PSM_DMZ_ENABLE);
+	if(pDmz->bEnabled == FALSE)
+        {
+                DeleteDMZIptableRules();
+                AnscCopyString(pDmz->InternalIP,"0.0.0.0");
+                PSM_Set_DMZ_RecordValues(pDmz);
+        }
+
+        else
+        {
+                char start_range[100],end_range[100],dmz_last_bit[100];
+                int start = 0 , end = 0 , dmz = 0;
+
+                FILE *fp;
+                char path[256],Gateway_IP[256],command[256],dmz_ip[256];
+                int count = 0;
+                fp = popen ("cat /etc/udhcpd.conf | grep router | cut -d ' ' -f3 | cut -d '.' -f1-3","r");
+                if(fp == NULL)
+                        return 0;
+                fgets(path,sizeof(path),fp);
+                for(count=0;path[count]!='\n';count++)
+                        Gateway_IP[count]=path[count];
+                Gateway_IP[count]='\0';//Getting Gateway_IP Address
+                sprintf(command,"%s%s%s","echo ",pDmz->InternalIP," > /tmp/dmz_ip");
+                system(command);
+                fp = popen ("cat /tmp/dmz_ip | cut -d '.' -f1-3","r");
+                if(fp == NULL)
+                        return 0;
+                fgets(path,sizeof(path),fp);
+                for(count=0;path[count]!='\n';count++)
+                        dmz_ip[count]=path[count];//Getting DMZ Internal IP Address (First three bits)
+                dmz_ip[count]='\0';
+                if(strcmp(Gateway_IP,dmz_ip) == 0)
+                {
+                        fp = popen ("cat /etc/udhcpd.conf | grep start | cut -d ' ' -f2 | cut -d '.' -f4","r");
+                        if(fp == NULL)
+                                return 0;
+                        fgets(path,sizeof(path),fp);
+                        for(count=0;path[count]!='\n';count++)
+                                start_range[count]=path[count];
+                        start_range[count]='\0';//Getting start range
+                        start = atoi(start_range);
+                        fp = popen ("cat /etc/udhcpd.conf | grep end | cut -d ' ' -f2 | cut -d '.' -f4","r");
+                        if(fp == NULL)
+                                return 0;
+                        fgets(path,sizeof(path),fp);
+                        for(count=0;path[count]!='\n';count++)
+                                end_range[count]=path[count];
+                        end_range[count]='\0';//Getting end range 
+                        end = atoi(end_range);
+                        fp = popen ("cat /tmp/dmz_ip | cut -d '.' -f4","r");
+                        if(fp == NULL)
+                                return 0;
+			fgets(path,sizeof(path),fp);
+                        for(count=0;path[count]!='\n';count++)
+                                dmz_last_bit[count]=path[count];//Getting DMZ Internal IP Address (last bits)
+                        dmz_last_bit[count]='\0';
+                        dmz = atoi(dmz_last_bit);
+                        if((dmz >= start ) && (dmz <= end))
+                        {
+
+                                DMZIptableRulesOperation(pDmz->InternalIP);//Inserting Rules into iptables
+                                PSM_Set_DMZ_RecordValues(pDmz);//Storing dmz values into PSM
+                        }
+                        else
+                        {
+                                printf("Could you please cross check the inputs \n");
+                                return;
+                        }
+                }
+        }
     return ANSC_STATUS_SUCCESS;
 }
 

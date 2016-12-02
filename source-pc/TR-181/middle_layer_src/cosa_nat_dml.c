@@ -635,6 +635,7 @@ X_CISCO_COM_DMZ_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
+	PSM_Get_DMZ_RecordValues(pDmz);//RDKB-EMULATOR
         *pBool = pDmz->bEnabled;
 
         return TRUE;
@@ -730,6 +731,7 @@ X_CISCO_COM_DMZ_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pDmz->InternalIP) < *pUlSize)
         {
+	    PSM_Get_DMZ_RecordValues(pDmz);//RDKB_EMULATOR
             AnscCopyString(pValue, pDmz->InternalIP);
             return 0;
         }
