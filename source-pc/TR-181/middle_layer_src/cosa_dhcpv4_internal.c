@@ -3044,7 +3044,7 @@ ClientEnd:
             pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_uint32;
             pSlapVariable->Variant.varUint32 = pCosaPoolContext->maxInstanceOfStaticAddress;
         
-            returnStatus =
+           /* returnStatus =
                 pPoamIrepFoStaticAddress->AddRecord
                     (
                         (ANSC_HANDLE)pPoamIrepFoStaticAddress,
@@ -3053,7 +3053,7 @@ ClientEnd:
                         SYS_RECORD_CONTENT_DEFAULT,
                         pSlapVariable,
                         0
-                    );
+                    );*/ //RDKB_EMULATOR
         
             SlapCleanVariable(pSlapVariable);
             SlapInitVariable (pSlapVariable);
@@ -3136,7 +3136,7 @@ ClientEnd:
             pPoamIrepFoEnumStaticAddress = NULL;
         }
 
-        pPoamIrepFoStaticAddress->Remove((ANSC_HANDLE)pPoamIrepFoStaticAddress);
+        //pPoamIrepFoStaticAddress->Remove((ANSC_HANDLE)pPoamIrepFoStaticAddress);//RDKB-EMULATOR
         pPoamIrepFoStaticAddress = NULL;
 
         /*

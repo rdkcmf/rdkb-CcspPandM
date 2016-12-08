@@ -79,8 +79,8 @@
 #include "cosa_dhcpv4_internal.h"
 #include "plugin_main_apis.h"
 #include "ccsp_hal_dhcpv4_emu_api.h"    
-
-#if 1 //LNT_EMU
+#include <arpa/inet.h>
+#if 1 //RDKB-EMULATOR
 #include "dmsb_tr181_psm_definitions.h"
 #define _PSM_READ_PARAM(_PARAM_NAME) { \
         _ansc_memset(param_name, 0, sizeof(param_name)); \
@@ -99,8 +99,42 @@
 // for PSM access
 extern ANSC_HANDLE bus_handle;//lnt
 extern char g_Subsystem[32];
+//RDKB-EMUALTOR
+void PSM_GET_ReservedIp_RecordValues(PCOSA_DML_DHCPS_SADDR pDhcpStaticAddress,ULONG instancenum)
+{
+        int retPsmGet = CCSP_SUCCESS;
+        char param_name[256] = {0};
+        char *param_value = NULL;
+        struct sockaddr_in antelope;
+        char path[1024];
+        int bssidindex=0;
+        int arr[6];
+        unsigned char mac[6];
+        _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_ALIAS);
+        AnscCopyString(pDhcpStaticAddress->Alias,param_value);
+        _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_ENABLE);
+        if(strcmp(param_value,"TRUE") == 0)
+                pDhcpStaticAddress->bEnabled = TRUE;
+        else
+                pDhcpStaticAddress->bEnabled = FALSE;
+        _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_YIADDR);
+        antelope.sin_addr.s_addr = inet_addr(param_value);
+         pDhcpStaticAddress->Yiaddr.Value = antelope.sin_addr.s_addr;
+        _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_X_CISCO_COM_DEVICENAME);
+        AnscCopyString(pDhcpStaticAddress->DeviceName,param_value);
+        _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_X_CISCO_COM_COMMENT);
+        AnscCopyString(pDhcpStaticAddress->Comment,param_value);
 
-
+        _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_CHADDR);
+        if( 6 == sscanf(param_value, "%02x:%02x:%02x:%02x:%02x:%02x",&arr[0],&arr[1],&arr[2],&arr[3],&arr[4],&arr[5]) )
+        {
+                for( bssidindex = 0; bssidindex < 6; ++bssidindex )
+                {
+                        pDhcpStaticAddress->Chaddr[bssidindex] = (unsigned char) arr[bssidindex];
+                }
+        }
+}
+static int g_StaticAddressCount   = 0; //RDKB-EMULATOR
 COSA_DML_DHCPC_FULL  g_dhcpv4_client[] =
     {
         {
@@ -756,14 +790,14 @@ CosaDmlDhcpsGetState
         ANSC_HANDLE                 hContext
     )
 {
-	int udhcpdPid = CcspHalGetPIDbyName("udhcpd /etc/udhcpd.conf") ;
-	if(udhcpdPid < 0) {
-		printf("error on get udhcpd pid\n");
-		return FALSE;
-	} else {
-		printf("udhcpd pid: %d\n", udhcpdPid);
-		return g_dhcpv4_server;
-	}
+	int dnsmasqPid = CcspHalGetPIDbyName("dnsmasq") ;//RDKB-EMULATOR
+        if(dnsmasqPid < 0) {
+                printf("error on get dnsmasq pid\n");
+                return FALSE;
+        } else {
+                printf("dnsmasq pid: %d\n", dnsmasqPid);
+                return g_dhcpv4_server;
+        }
 }
 
 
@@ -916,34 +950,37 @@ CosaDmlDhcpsGetPool
         PCOSA_DML_DHCPS_POOL_FULL   pEntry
     )
 {
-	PCOSA_DML_DHCPS_POOL_FULL Ppool = NULL;//LNT_EMU
+	PCOSA_DML_DHCPS_POOL_FULL Ppool = NULL;//RDKB-EMULATOR
         Ppool = (PCOSA_DML_DHCPS_POOL_FULL) AnscAllocateMemory( sizeof(COSA_DML_DHCPS_POOL_FULL));
 	char value[100];
 
 	if ( ulIndex+1 > sizeof(g_dhcpv4_server_pool)/sizeof(COSA_DML_DHCPS_POOL_FULL) )
 		return ANSC_STATUS_FAILURE;
 
-	CcspHalGetConfigValue("start", value, sizeof value);
+	//CcspHalGetConfigValue("start", value, sizeof value);
+        CcspHalGetConfigValues(DHCP_STARTING_RANGE,value, sizeof value);
 	printf("\n DHCP start Address: (%s) \n" ,value);
 	g_dhcpv4_server_pool->Cfg.MinAddress.Value = inet_addr(value);
-	if(g_dhcpv4_server_pool->Cfg.MinAddress.Value == 0 )//lnt
+	if(g_dhcpv4_server_pool->Cfg.MinAddress.Value == 0 )//RDKB-EMULATOR
         {
         PSMGetDHCPV4RecordValues(Ppool,g_dhcpv4_server_pool->Cfg.InstanceNumber);
         g_dhcpv4_server_pool->Cfg.MinAddress.Value = Ppool->Cfg.MinAddress.Value;
         }
 
-	CcspHalGetConfigValue("end", value, sizeof value);
+	//CcspHalGetConfigValue("end", value, sizeof value);
+	CcspHalGetConfigValues(DHCP_ENDING_RANGE,value, sizeof value);
 	printf("\n DHCP end Address: (%s) \n" ,value);
 	g_dhcpv4_server_pool->Cfg.MaxAddress.Value = inet_addr(value);
-	if(g_dhcpv4_server_pool->Cfg.MaxAddress.Value == 0)//lnt
+	if(g_dhcpv4_server_pool->Cfg.MaxAddress.Value == 0)//RDKB-EMULATOR
         {
         PSMGetDHCPV4RecordValues(Ppool,g_dhcpv4_server_pool->Cfg.InstanceNumber);
         g_dhcpv4_server_pool->Cfg.MaxAddress.Value = Ppool->Cfg.MaxAddress.Value;
         }
 
-	CcspHalGetConfigLeaseValue("lease", value, sizeof value);
+	//CcspHalGetConfigLeaseValue("lease", value, sizeof value);
+	CcspHalGetConfigValues(DHCP_LEASE_TIME,value, sizeof value);
 	g_dhcpv4_server_pool->Cfg.LeaseTime = atoi(value);
-	 if(g_dhcpv4_server_pool->Cfg.LeaseTime == 0)//lnt
+	if(g_dhcpv4_server_pool->Cfg.LeaseTime == 0)//RDKB-EMULATOR
         {
         PSMGetDHCPV4RecordValues(Ppool,g_dhcpv4_server_pool->Cfg.InstanceNumber);
         g_dhcpv4_server_pool->Cfg.LeaseTime = Ppool->Cfg.LeaseTime;
@@ -1068,7 +1105,14 @@ CosaDmlDhcpsGetNumberOfSaddr
         ULONG                       ulPoolInstanceNumber
     )
 {
-    return sizeof(g_dhcpv4_server_pool_stadicaddress)/sizeof(COSA_DML_DHCPS_SADDR);
+	//    return sizeof(g_dhcpv4_server_pool_stadicaddress)/sizeof(COSA_DML_DHCPS_SADDR);
+	char *param_value = NULL;
+	PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.dhcpv4.server.pool.1.StaticAddress.InstanceNumber", NULL, &param_value);
+	if(param_value!=NULL)
+		g_StaticAddressCount  = atoi(param_value);
+	else
+		g_StaticAddressCount  = 0;
+	return g_StaticAddressCount;
 }
 
 ANSC_STATUS
@@ -1080,12 +1124,47 @@ CosaDmlDhcpsGetSaddr
         PCOSA_DML_DHCPS_SADDR       pEntry
     )
 {        
-    if ( ulIndex+1 > sizeof(g_dhcpv4_server_pool_stadicaddress)/sizeof(COSA_DML_DHCPS_SADDR) )
-        return ANSC_STATUS_FAILURE;
+	char command[50],string[512],str[512];
+	FILE *fp;
+	char path[256];
+	int count,flag = 0,valid_index = 0;
+	//RDKB-EMULATOR
+	/* if ( ulIndex+1 > sizeof(g_dhcpv4_server_pool_stadicaddress)/sizeof(COSA_DML_DHCPS_SADDR) )
+	   return ANSC_STATUS_FAILURE;
 
-    AnscCopyMemory(pEntry, &g_dhcpv4_server_pool_stadicaddress[ulIndex], sizeof(COSA_DML_DHCPS_SADDR));
-    
-    return ANSC_STATUS_SUCCESS;
+	   AnscCopyMemory(pEntry, &g_dhcpv4_server_pool_stadicaddress[ulIndex], sizeof(COSA_DML_DHCPS_SADDR));*/
+	if ( ulIndex >= g_StaticAddressCount)
+		return ANSC_STATUS_FAILURE;
+
+	sprintf(string,"dmsb.dhcpv4.server.pool.1.StaticAddress.%ld.Chaddr",ulIndex+1);
+	sprintf(command,"%s %s%s","cat /nvram/bbhm_cur_cfg.xml | grep",string," > /tmp/PSM_Check.txt");
+	system(command);
+	fp = popen("cat /tmp/PSM_Check.txt | tail -1 ","r");
+	if(fp == NULL)
+	{
+		printf("Failed to run command in Function %s\n",__FUNCTION__);
+		return 0;
+	}
+
+	if(fgets(path, sizeof(path)-1, fp) == NULL)
+	{
+		ulIndex=ulIndex+1;
+	}
+	else
+	{
+		flag=1;
+		valid_index=index;
+	}
+
+	if ( flag )
+	{
+		if(valid_index == index)
+		{
+			PSM_GET_ReservedIp_RecordValues(pEntry,ulIndex+1);
+		}
+	}
+	pclose(fp);
+	return ANSC_STATUS_SUCCESS;
 }
 
 

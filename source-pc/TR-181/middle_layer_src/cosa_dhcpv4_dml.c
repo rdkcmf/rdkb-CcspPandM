@@ -113,6 +113,42 @@ extern char g_Subsystem[32];
 
 #endif
 extern void* g_pDslhDmlAgent;
+//PSM-ACCESS
+void PSM_Set_ReversedIP_RecordValues(PCOSA_DML_DHCPS_SADDR pDhcpStaticAddress)
+{
+	int retPsmSet = CCSP_SUCCESS;
+	char param_name[256] = {0};
+	char param_value[256] = {0};
+	ULONG instancenum;
+	instancenum = pDhcpStaticAddress->InstanceNumber;
+	sprintf(param_value,"%02x:%02x:%02x:%02x:%02x:%02x",pDhcpStaticAddress->Chaddr[0],pDhcpStaticAddress->Chaddr[1],pDhcpStaticAddress->Chaddr[2],pDhcpStaticAddress->Chaddr[3],pDhcpStaticAddress->Chaddr[4],pDhcpStaticAddress->Chaddr[5]);
+	_PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_CHADDR);
+	struct in_addr ip_addr;
+	ip_addr.s_addr = pDhcpStaticAddress->Yiaddr.Value;
+	inet_ntop(AF_INET, &ip_addr, param_value, sizeof param_value);
+	_PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_YIADDR);
+	sprintf(param_value,pDhcpStaticAddress->DeviceName);
+	_PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_X_CISCO_COM_DEVICENAME);
+	if(pDhcpStaticAddress->bEnabled == TRUE)
+		AnscCopyString(param_value,"TRUE");
+	else
+		AnscCopyString(param_value,"FALSE");
+	_PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_ENABLE);
+	sprintf(param_value,pDhcpStaticAddress->Alias);
+	_PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_ALIAS);
+	sprintf(param_value,pDhcpStaticAddress->Comment);
+	_PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_X_CISCO_COM_COMMENT);
+}
+void PSM_Del_ReversedIP_RecordValues(ULONG ins)
+{
+	char param_name[256] = {0};
+	_PSM_DEL_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_CHADDR);
+	_PSM_DEL_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_YIADDR);
+	_PSM_DEL_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_X_CISCO_COM_DEVICENAME);
+	_PSM_DEL_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_X_CISCO_COM_COMMENT);
+	_PSM_DEL_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_ENABLE);
+	_PSM_DEL_PARAM(PSM_DHCPV4_SERVER_POOL_STATICADDRESS_ALIAS);
+}
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -5989,7 +6025,7 @@ Pool_SetParamIntValue
 	BOOL bridgeInd = FALSE;	
 	char str[1024];
 	PCOSA_DML_DHCPS_POOL_CFG pSPoolCfg = NULL;
-        pSPoolCfg = (PCOSA_DML_DHCPS_POOL_CFG)AnscAllocateMemory( sizeof(COSA_DML_DHCPS_POOL_CFG));//LNT_EMU
+        pSPoolCfg = (PCOSA_DML_DHCPS_POOL_CFG)AnscAllocateMemory( sizeof(COSA_DML_DHCPS_POOL_CFG));//RDKB-EMUALTOR
 	is_usg_in_bridge_mode(&bridgeInd);
 	if(bridgeInd)
 		return(FALSE);
@@ -6007,18 +6043,15 @@ Pool_SetParamIntValue
 			return(FALSE);
 
 		/* save update to backup */
-		pPool->Cfg.LeaseTime  = iValue;//LNT_EMU
+		pPool->Cfg.LeaseTime  = iValue;//RDKB-EMULATOR
 		pSPoolCfg->LeaseTime = pPool->Cfg.LeaseTime;
                 PSMSetLeaseTimeDHCPV4RecordValues(pSPoolCfg,pPool->Cfg.InstanceNumber);
 		sprintf(str,"%d",pPool->Cfg.LeaseTime );
-		ConfigValues config_values;
+	/*	ConfigValues config_values;
 		config_values.lease_time = str;
 		if(CcspHalSetDHCPConfigValues(DHCP_LEASE_TIME, &config_values)==-1)
-			printf("SetDHCPConfigValues failed\n");
-
-
-
-
+			printf("SetDHCPConfigValues failed\n");*/
+		CcspHalSetDHCPConfigValues(DHCP_LEASE_TIME,str);
 		return TRUE;
 	}
 
@@ -6079,7 +6112,7 @@ Pool_SetParamUlongValue
     COSA_DML_DHCPS_POOL_CFG poolCfg;    
     BOOL bridgeInd = FALSE;	
 
-        PCOSA_DML_DHCPS_POOL_FULL pSPoolCfg = NULL;//LNT_EMU
+        PCOSA_DML_DHCPS_POOL_FULL pSPoolCfg = NULL;//RDKB-EMULATOR
         pSPoolCfg = (PCOSA_DML_DHCPS_POOL_FULL)AnscAllocateMemory( sizeof(COSA_DML_DHCPS_POOL_FULL));
 	is_usg_in_bridge_mode(&bridgeInd);
 	if(bridgeInd)
@@ -6131,13 +6164,14 @@ Pool_SetParamUlongValue
             is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)))
             return(FALSE);
         pPool->Cfg.MinAddress.Value  = uValue;
-	PSMSetDHCPV4RecordValues(pPool,pPool->Cfg.InstanceNumber);//LNT_EMU
+	PSMSetDHCPV4RecordValues(pPool,pPool->Cfg.InstanceNumber);//RDKB-EMULATOR
 #if 1
        inet_ntop(AF_INET, &(pPool->Cfg.MinAddress.Value) , str1, INET_ADDRSTRLEN);
-        ConfigValues config_values;
+      /*  ConfigValues config_values;
                 config_values.start = str1;
         if(CcspHalSetDHCPConfigValues(DHCP_STARTING_RANGE, &config_values)==-1)//LNT_EMU
-                printf("SetDHCPConfigValues failed\n");
+                printf("SetDHCPConfigValues failed\n");*/
+	CcspHalSetDHCPConfigValues(DHCP_STARTING_RANGE,str1);
 
 #endif
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MinAddress of DHCP Range Changed ...\n"));
@@ -6173,15 +6207,14 @@ Pool_SetParamUlongValue
             uValue < pPool->Cfg.MinAddress.Value)
             return(FALSE);
         pPool->Cfg.MaxAddress.Value  = uValue;
-	PSMSetDHCPV4RecordValues(pPool,pPool->Cfg.InstanceNumber);//LNT_EMU
+	PSMSetDHCPV4RecordValues(pPool,pPool->Cfg.InstanceNumber);//RDKB-EMULATOR
 #if 1
         inet_ntop(AF_INET, &(pPool->Cfg.MaxAddress.Value) , str1, INET_ADDRSTRLEN);
-        ConfigValues config_values;
+       /* ConfigValues config_values;
                 config_values.end = str1;
         if(CcspHalSetDHCPConfigValues(DHCP_ENDING_RANGE, &config_values)==-1)
-                printf("SetDHCPConfigValues failed\n");
-
-
+                printf("SetDHCPConfigValues failed\n");*/
+	CcspHalSetDHCPConfigValues(DHCP_ENDING_RANGE,str1);//RDKB_EMULATOR
 #endif
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MaxAddress of DHCP Range Changed ...\n"));
         
@@ -6779,6 +6812,13 @@ StaticAddress_AddEntry
     *pInsNumber                        = pDhcpStaticAddress->InstanceNumber;
 
     _ansc_sprintf( pDhcpStaticAddress->Alias, "StaticAddress%d", pDhcpStaticAddress->InstanceNumber);
+#if 1 //RDKB-EMULATOR
+     char param_value[256] = {0};
+     char param_name[256]  = {0};
+     sprintf(param_value,"%ld",pDhcpStaticAddress->InstanceNumber);
+     sprintf(param_name,PSM_DHCPV4_SERVER_POOL_STATICADDRESS_INSTANCENUMBER);
+     PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+#endif
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pCxtPoolLink->StaticAddressList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -6837,6 +6877,9 @@ StaticAddress_DelEntry
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_DHCPS_SADDR           pDhcpStaticAddress   = (PCOSA_DML_DHCPS_SADDR)pCxtLink->hContext;
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4              = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
+
+    CcspHalDHCPv4DeleteReservedClients(pDhcpStaticAddress);//RDKB-EMULATOR
+    PSM_Del_ReversedIP_RecordValues(pDhcpStaticAddress->InstanceNumber);
 
     AnscTraceFlow(("%s: pool instance %d, addr instance %d\n", __FUNCTION__, pDhcsPool->Cfg.InstanceNumber, pDhcpStaticAddress->InstanceNumber));    
     if ( !pCxtLink->bNew )
@@ -7312,6 +7355,11 @@ StaticAddress_SetParamUlongValue
 #endif
         /* save update to backup */
         pDhcpStaticAddress->Yiaddr.Value  =  uValue;
+#if 1 //RDKB-EMULATOR
+        //PSM-ACCESS - To store static table entries in PSM Database.
+        PSM_Set_ReversedIP_RecordValues(pDhcpStaticAddress);
+        CcspHalDHCPv4ReservedClients(pDhcpStaticAddress);
+#endif
 
         return TRUE;
     }
@@ -7425,6 +7473,7 @@ StaticAddress_SetParamStringValue
     {
         /* save update to backup */
         AnscCopyString(pDhcpStaticAddress->Comment,pString);
+	PSM_Set_ReversedIP_RecordValues(pDhcpStaticAddress);//RDKB-EMULATOR
         return TRUE;
     }
 
