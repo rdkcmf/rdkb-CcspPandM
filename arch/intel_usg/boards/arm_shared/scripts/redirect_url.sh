@@ -12,15 +12,17 @@ if [ -e "$REVERTED_FLAG" ]
 then
 	echo_t "Redirect URL : Removing reverted flag"
 	rm -f $REVERTED_FLAG
-
-	echo_t "Redirect URL : Restarting dnsmasq daemon for redirection"
-	cat /var/dnsmasq.conf
-	sysevent set dhcp_server-stop
-	# Let's make sure dhcp server restarts properly
-	sleep 1
-	sysevent set dhcp_server-start
-	
-	#Restart Firewall. 
-	#This is required as have to put DNS redirection rules in case of WiFi factory restore/Factory restore.
-	sysevent set firewall-restart
 fi
+
+echo_t "Redirect URL : Restarting dnsmasq daemon for redirection"
+cat /var/dnsmasq.conf
+sysevent set dhcp_server-stop
+# Let's make sure dhcp server restarts properly
+sleep 1
+sysevent set dhcp_server-start
+	
+#Restart Firewall. 
+#This is required as have to put DNS redirection rules in case of WiFi factory restore/Factory restore.
+echo_t "Redirect URL : Restarting firewall"
+sysevent set firewall-restart
+

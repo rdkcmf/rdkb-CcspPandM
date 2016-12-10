@@ -102,7 +102,7 @@ then
 	do
 
 		# Remove all response files if it already exists
-		if [ -e $RESPONSE ]
+		if [ -e $RESPONSE ] && [ -f "/tmp/.gotnetworkresponse" ]
 		then
 			responseCode=`cat $RESPONSE`
 			rm -rf $RESPONSE				
@@ -283,17 +283,19 @@ then
                               break
                            fi
                         fi
-                        echo_t "Network Response: Restarting v6Service"
-                        # Modify DNS server option in dibbler configuration
-                        if [ -e $SERVER6_CONF ]
-                        then
-                           sed -e '/dns-server/s/^/#/g' -i $SERVER6_CONF 
-                           cat $SERVER6_CONF
-                        else
-                           echo_t "No dibbler6 configuration available...."
-                        fi
-
                     done
+                    echo_t "Network Response: Restarting dibblerServer"
+                    # Modify DNS server option in dibbler configuration
+                    if [ -e $SERVER6_CONF ]
+                    then
+                        sed -e '/dns-server/s/^/#/g' -i $SERVER6_CONF 
+                        cat $SERVER6_CONF
+                    else
+                        echo_t "No dibbler6 configuration available...."
+                    fi
+                    
+                    dibbler-server stop
+                    dibbler-server start
                 else
                     echo_t "Network Response: WiFi is already personalized setting redirection_flag to false"
                     #We reached here as redirection_flag is "true". But WiFi is configured already as per notification status.
