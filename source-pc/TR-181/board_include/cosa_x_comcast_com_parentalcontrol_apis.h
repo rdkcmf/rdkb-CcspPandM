@@ -122,7 +122,7 @@ _COSA_DML_BLOCKEDURL
     char            MAC[32];
     char            DeviceName[128];
 }
-COSA_DML_BLOCKEDURL;
+COSA_DML_BLOCKEDURL,*PCOSA_DML_BLOCKEDURL;
 
 /*
  * .ManagedSites.TrustedUser.{i}.
@@ -138,7 +138,7 @@ _COSA_DML_TRUSTEDUSER
     char                    IPAddress[64];
     BOOL                    Trusted;
 }
-COSA_DML_TRUSTEDUSER;
+COSA_DML_TRUSTEDUSER,*PCOSA_DML_TRUSTEDUSER;
 
 /*
  * .ManagedServices.
@@ -168,7 +168,7 @@ _COSA_DML_MS_SERV
     char            EndTime[64];
     char            BlockDays[64];
 }
-COSA_DML_MS_SERV;
+COSA_DML_MS_SERV,*PCOSA_DML_MS_SERV;
 
 /*
  * .ManagedServices.TrustedUser.{i}.
@@ -184,7 +184,7 @@ _COSA_DML_MS_TRUSTEDUSER
     char                    IPAddress[64];
     BOOL                    Trusted;
 }
-COSA_DML_MS_TRUSTEDUSER;
+COSA_DML_MS_TRUSTEDUSER,*PCOSA_DML_MS_TRUSTEDUSER;
 
 /*
  * .ManagedDevices.
@@ -214,7 +214,7 @@ _COSA_DML_MD_DEV
     char            EndTime[64];
     char            BlockDays[64];
 }
-COSA_DML_MD_DEV;
+COSA_DML_MD_DEV,*PCOSA_DML_MD_DEV;
 
 ANSC_STATUS
 CosaDmlParentalControlInit(ANSC_HANDLE hDml, PANSC_HANDLE phContext);
