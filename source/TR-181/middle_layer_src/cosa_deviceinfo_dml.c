@@ -600,6 +600,13 @@ DeviceInfo_GetParamStringValue
     }
 
 	/* Changes for EMS end here */
+	/*Changes for RDKB-6560*/
+   	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CMTS_MAC", TRUE))
+    		{
+		    CosaDmlDiGetCMTSMac(NULL, pValue,pulSize);
+        	    return 0;
+    		}
+	/*Changes for RDKB-6560 end*/
 	/*Changes for RDKB-5878*/
 	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudPersonalizationURL", TRUE))
 	{
