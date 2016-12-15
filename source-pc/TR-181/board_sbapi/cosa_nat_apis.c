@@ -549,11 +549,11 @@ CosaDmlNatSetDmz
         {
                 char start_range[100],end_range[100],dmz_last_bit[100];
                 int start = 0 , end = 0 , dmz = 0;
-
                 FILE *fp;
                 char path[256],Gateway_IP[256],command[256],dmz_ip[256];
                 int count = 0;
-                fp = popen ("cat /etc/udhcpd.conf | grep router | cut -d ' ' -f3 | cut -d '.' -f1-3","r");
+               // fp = popen ("cat /etc/udhcpd.conf | grep router | cut -d ' ' -f3 | cut -d '.' -f1-3","r");
+		fp = popen ("cat /etc/dnsmasq.conf | grep dhcp-range | cut -d ',' -f2 | cut -d '.' -f1-3","r");
                 if(fp == NULL)
                         return 0;
                 fgets(path,sizeof(path),fp);
@@ -571,7 +571,8 @@ CosaDmlNatSetDmz
                 dmz_ip[count]='\0';
                 if(strcmp(Gateway_IP,dmz_ip) == 0)
                 {
-                        fp = popen ("cat /etc/udhcpd.conf | grep start | cut -d ' ' -f2 | cut -d '.' -f4","r");
+                       // fp = popen ("cat /etc/udhcpd.conf | grep start | cut -d ' ' -f2 | cut -d '.' -f4","r");
+			fp = popen ("cat /etc/dnsmasq.conf | grep dhcp-range | cut -d ',' -f1 | cut -d '=' -f2 | cut -d '.' -f4","r");
                         if(fp == NULL)
                                 return 0;
                         fgets(path,sizeof(path),fp);
@@ -579,7 +580,8 @@ CosaDmlNatSetDmz
                                 start_range[count]=path[count];
                         start_range[count]='\0';//Getting start range
                         start = atoi(start_range);
-                        fp = popen ("cat /etc/udhcpd.conf | grep end | cut -d ' ' -f2 | cut -d '.' -f4","r");
+                       // fp = popen ("cat /etc/udhcpd.conf | grep end | cut -d ' ' -f2 | cut -d '.' -f4","r");
+			fp = popen ("cat /etc/dnsmasq.conf | grep dhcp-range | cut -d ',' -f2 | cut -d '.' -f4","r");
                         if(fp == NULL)
                                 return 0;
                         fgets(path,sizeof(path),fp);
