@@ -227,10 +227,13 @@
 #define PSM_DHCPV4_SERVER_POOL_TIMEOFFSET "dmsb.dhcpv4.server.pool.%d.TimeOffset"    
 
 #define PSM_DHCPV4_SERVER_POOL_STATICADDRESS "dmsb.dhcpv4.server.pool.%d.StaticAddress."
-#define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_ENABLE "dmsb.dhcpv4.server.pool.%d.StaticAddress.%d.Enable"
-#define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_ALIAS "dmsb.dhcpv4.server.pool.%d.StaticAddress.%d.Alias"
-#define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_CHADDR "dmsb.dhcpv4.server.pool.%d.StaticAddress.%d.Chaddr"
-#define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_YIADDR "dmsb.dhcpv4.server.pool.%d.StaticAddress.%d.Yiaddr"
+#define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_ENABLE "dmsb.dhcpv4.server.pool.1.StaticAddress.%d.Enable"
+#define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_ALIAS "dmsb.dhcpv4.server.pool.1.StaticAddress.%d.Alias"
+#define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_CHADDR "dmsb.dhcpv4.server.pool.1.StaticAddress.%d.Chaddr"
+#define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_YIADDR "dmsb.dhcpv4.server.pool.1.StaticAddress.%d.Yiaddr"
+#define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_X_CISCO_COM_DEVICENAME "dmsb.dhcpv4.server.pool.1.StaticAddress.%d.X_CISCO_COM_DeviceName"
+#define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_X_CISCO_COM_COMMENT "dmsb.dhcpv4.server.pool.1.StaticAddress.%d.X_CISCO_COM_Comment"
+#define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_INSTANCENUMBER "dmsb.dhcpv4.server.pool.1.StaticAddress.InstanceNumber"
 
 #define PSM_DHCPV4_SERVER_POOL_OPTION "dmsb.dhcpv4.server.pool.%d.Option."
 #define PSM_DHCPV4_SERVER_POOL_OPTION_ENABLE "dmsb.dhcpv4.server.pool.%d.Option.%d.Enable"

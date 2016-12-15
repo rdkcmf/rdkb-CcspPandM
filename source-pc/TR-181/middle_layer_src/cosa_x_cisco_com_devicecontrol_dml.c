@@ -1982,7 +1982,7 @@ LanMngm_SetParamUlongValue
     {
         pLanMngm->LanMode = uValuepUlong;
 	if(pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic)
-                system("cp /etc/udhcpd.conf /var/udhcpd_org.conf");//LNT_EMU
+                system("cp /etc/dnsmasq.conf /var/dnsmasq_org.conf");//LNT_EMU
         return TRUE;
     }
 

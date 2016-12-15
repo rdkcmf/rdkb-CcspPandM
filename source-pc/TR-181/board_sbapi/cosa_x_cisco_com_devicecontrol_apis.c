@@ -1598,7 +1598,7 @@ CosaDmlLanMngm_GetEntryByIndex(ULONG index, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
     	char lan_subnet[256] = {0};
 	char *param_value = NULL;
         char param_name[256] = {0};
-	PCOSA_DML_LAN_MANAGEMENT pLanMngt = NULL;//LNT_EMU
+	PCOSA_DML_LAN_MANAGEMENT pLanMngt = NULL;//RDKB-EMULATOR
         pLanMngt = (PCOSA_DML_LAN_MANAGEMENT) AnscAllocateMemory( sizeof(COSA_DML_LAN_MANAGEMENT));
 	if (index >= g_lanMngmCnt)
 		return ANSC_STATUS_FAILURE;
@@ -1631,7 +1631,7 @@ CosaDmlLanMngm_GetEntryByIndex(ULONG index, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         pLanMngm->LanSubnetMask.Dot[3] = pLanMngt->LanSubnetMask.Dot[3];
         }
 //PSM_ACCESS
-        memset(param_name, 0, sizeof(param_name));//LNT_EMU
+        memset(param_name, 0, sizeof(param_name));//RDKB-EMULATOR
         sprintf(param_name, PSM_LanMode, pLanMngm->InstanceNumber);
         PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value);
         if(strcmp(param_value,"router") == 0)
@@ -1701,9 +1701,9 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 	int i;
 	char str[INET_ADDRSTRLEN];
 	char str1[INET_ADDRSTRLEN];
-        char recName[256] = {0};//LNT_EMU
+        char recName[256] = {0};
         char string[100] ={0};
-#if 1//LNT_EMU
+#if 1//RDKB-EMULATOR
         PCOSA_DML_LAN_MANAGEMENT pSLanCfg = NULL;
         pSLanCfg = (PCOSA_DML_LAN_MANAGEMENT)AnscAllocateMemory( sizeof(COSA_DML_LAN_MANAGEMENT));
         pSLanCfg->LanIPAddress.Dot[0] = pLanMngm->LanIPAddress.Dot[0];
@@ -1719,17 +1719,17 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 
 	inet_ntop(AF_INET, pLanMngm->LanIPAddress.Dot, str, INET_ADDRSTRLEN);
 	inet_ntop(AF_INET, pLanMngm->LanSubnetMask.Dot, str1, INET_ADDRSTRLEN);
-	ConfigValues config_values;
-
+	/*ConfigValues config_values;
 	config_values.gateway = str;
-	config_values.subnet = str1;
+	config_values.subnet = str1;*/
 	if ((i = CosaDmlLanMngm_InsGetIndex(ins)) == -1)
 		return ANSC_STATUS_FAILURE;
-	if(CcspHalSetDHCPConfigValues(GATEWAY, &config_values)==-1)//LNT_EMU
+/*	if(CcspHalSetDHCPConfigValues(GATEWAY, &config_values)==-1)//LNT_EMU
 		printf("SetDHCPConfigValues failed\n");
 	if(CcspHalSetDHCPConfigValues(GATEWAY|SUBNET_MASK, &config_values)==-1)//LNT_EMU
-		printf("SetDHCPConfigValues failed\n");
-	CcspHalInterfacesetval("brlan0",str);//LNT_EMU
+		printf("SetDHCPConfigValues failed\n");*/
+	CcspHalSetDHCPConfigValues(SUBNET_MASK,str1);
+	CcspHalInterfacesetval("brlan0",str);//RDKB-EMULATOR
 	CcspHalNetmasksetvalue("brlan0",str1);//LNT_EMU
 	CcspHalUpdateInterfaceval(str);//LNT_EMU
 
@@ -1742,12 +1742,12 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
                 strcpy(string,"router");
         PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, string);
 
-//LNT_EMU
+//RDKB-EMUALTOR
         if(pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic)
                 system("sh /lib/rdk/BridgeMode.sh");
         else if(pLanMngm->LanMode == COSA_DML_LanMode_Router)
         {
-                system("cp /var/udhcpd_org.conf /etc/udhcpd.conf");
+                system("cp /var/dnsmasq_org.conf /etc/dnsmasq.conf");
                 system("sh /lib/rdk/RouterMode.sh");
         }
 

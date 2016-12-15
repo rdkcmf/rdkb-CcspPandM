@@ -77,6 +77,11 @@
 #include "cosa_hosts_internal.h"
 #include "lm_api.h"
 
+#include <utctx/utctx.h>
+#include <utctx/utctx_api.h>
+#include <utapi/utapi.h>
+#include <utapi/utapi_util.h>
+
 extern void* g_pDslhDmlAgent;
 
 #define NAME_DM_LEN  257
@@ -163,6 +168,22 @@ COSA_DML_HOST_ENTRY  g_user_entrys2 =
 UCHAR       g_user_Entrys[1024]      = {0};
 ULONG       g_user_pEntrys_len       = sizeof(g_user_Entrys);
 
+inline int _mac_string_to_array(char *pStr, unsigned char array[6])
+{
+    int tmp[6],n,i;
+        if(pStr == NULL)
+                return -1;
+
+    memset(array,0,6);
+    n = sscanf(pStr,"%02x:%02x:%02x:%02x:%02x:%02x",&tmp[0],&tmp[1],&tmp[2],&tmp[3],&tmp[4],&tmp[5]);
+    if(n==6){
+        for(i=0;i<n;i++)
+            array[i] = (unsigned char)tmp[i];
+        return 0;
+    }
+
+    return -1;
+}
 
 ANSC_STATUS
 CosaDmlHostsInit
@@ -235,6 +256,15 @@ CosaDmlHostsSetHostComment
         char*                       pComment
     )
 {
+//RDKB EMULATOR
+    int ret;
+    char mac[6];
+
+    ret = _mac_string_to_array(pMac, mac);
+    if(ret == 0){
+        if(LM_RET_SUCCESS != lm_set_host_comments(mac,pComment))
+            return ANSC_STATUS_FAILURE;
+    }
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -401,7 +431,7 @@ inline void _get_host_info(LM_host_t *pDestHost, PLmObjectHost pHost)
         }
 
         _get_dmbyname(g_IPIfNameDMListNum, g_pIPIfNameDMList, &(pHost->pStringParaValue[LM_HOST_Layer3InterfaceId]), pDestHost->l3IfName);
-        STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Comments], pDestHost->comments);
+        //STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Comments], pDestHost->comments); //RDKB-EMULATOR
         pHost->iIntParaValue[LM_HOST_X_CISCO_COM_RSSIId] = pDestHost->RSSI;
         pHost->activityChangeTime = pDestHost->activityChangeTime;
         _get_host_ipaddress(pDestHost, pHost);
@@ -531,6 +561,44 @@ PLmObjectHost Hosts_FindHostByPhysAddress(char * physAddress)
     }
     return NULL;
 }
+//RDKB-EMULATOR
+void lm_wrapper_priv_getLanHostComments(char *physAddress, char *pComments)
+{
+	char buffer[256] = {0};
+	UtopiaContext ctx;
+	char *comment;
+
+	pComments[0] = 0;
+
+	if ( physAddress == NULL && pComments == NULL)
+		return;
+
+	if( !Utopia_Init(&ctx) )
+		return;
+
+	Utopia_GetNamed(&ctx, UtopiaValue_USGv2_Lan_Clients_Mac, physAddress, buffer, sizeof(buffer));
+
+	Utopia_Free(&ctx, 0);
+
+	if(buffer[0])
+	{
+		char *p;
+		p = strchr(buffer, '+');
+		if(p!=NULL)
+		{
+			strcpy(pComments,p+1);
+		}
+	}
+
+	return;
+}
+
+static void _getLanHostComments(char *physAddress, char *pComments)
+{
+	lm_wrapper_priv_getLanHostComments(physAddress, pComments);
+	return;
+}
+
 
 PLmObjectHost Hosts_AddHostByPhysAddress(char * physAddress)
 {
@@ -544,11 +612,11 @@ PLmObjectHost Hosts_AddHostByPhysAddress(char * physAddress)
     if(pHost){
         pHost->pStringParaValue[LM_HOST_PhysAddressId] = _CloneString(physAddress);
         //pHost->pStringParaValue[LM_HOST_HostNameId] = _CloneString(physAddress);
-        //_getLanHostComments(physAddress, comments);
-        //if ( comments[0] != 0 )
-        //{
-        //    pHost->pStringParaValue[LM_HOST_Comments] = _CloneString(comments);
-        //}
+        _getLanHostComments(physAddress, comments);
+        if ( comments[0] != 0 )
+        {
+            pHost->pStringParaValue[LM_HOST_Comments] = _CloneString(comments);
+        }
         pHost->pStringParaValue[LM_HOST_Layer1InterfaceId] = _CloneString("Ethernet");
         lmHosts.availableInstanceNum++;
     }
