@@ -354,10 +354,12 @@
 #define PSM_PC_MS_STARTTIME "dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.StartTime"
 #define PSM_PC_MS_ENDTIME "dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.EndTime"
 #define PSM_PC_MS_BLOCKDAYS "dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.BlockDays"
+#define PSM_PC_MS_INSTANCENUMBER "dmsb.X_Comcast_com_ParentalControl.ManagedSites.InstanceNumber"
 #define PSM_PC_MS_TRUSTED_ENABLE "dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUser.%d.Trusted"
 #define PSM_PC_MS_TRUSTED_IPADDRESS "dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUser.%d.IPAddress"
 #define PSM_PC_MS_TRUSTED_IPADDRESS_TYPE "dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUser.%d.IPAddressType"
 #define PSM_PC_MS_TRUSTED_HOST_DESCRIPTION "dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUser.%d.HostDescription"
+#define PSM_PC_MS_TRUSTED_INSTANCENUMBER "dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUser.InstanceNumber"
 
 //Managed Services
 #define PSM_PC_MSE_ENABLE "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Enable"
@@ -371,10 +373,12 @@
 #define PSM_PC_MSE_STARTTIME "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%d.StartTime"
 #define PSM_PC_MSE_ENDTIME "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%d.EndTime"
 #define PSM_PC_MSE_BLOCKDAYS "dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%d.BlockDays"
+#define PSM_PC_MSE_INSTANCENUMBER "dmsb.X_Comcast_com_ParentalControl.ManagedServices.InstanceNumber"
 #define PSM_PC_MSE_TRUSTED_ENABLE "dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUser.%d.Trusted"
 #define PSM_PC_MSE_TRUSTED_IPADDRESS "dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUser.%d.IPAddress"
 #define PSM_PC_MSE_TRUSTED_IPADDRESS_TYPE "dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUser.%d.IPAddressType"
 #define PSM_PC_MSE_TRUSTED_HOST_DESCRIPTION "dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUser.%d.HostDescription"
+#define PSM_PC_MSE_TRUSTED_INSTANCENUMBER "dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUser.InstanceNumber"
 
 //Managed Devices
 #define PSM_PC_MD_ENABLE "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Enable"
@@ -387,5 +391,6 @@
 #define PSM_PC_MD_STARTTIME "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%d.StartTime"
 #define PSM_PC_MD_ENDTIME "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%d.EndTime"
 #define PSM_PC_MD_BLOCKDAYS "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%d.BlockDays"
+#define PSM_PC_MD_INSTANCENUMBER "dmsb.X_Comcast_com_ParentalControl.ManagedDevices.InstanceNumber"
 
 #endif

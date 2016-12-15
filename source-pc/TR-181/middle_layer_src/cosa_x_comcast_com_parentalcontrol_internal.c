@@ -787,7 +787,7 @@ CosaPcReg_BlkUrlAddInfo(
         pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_uint32;
         pSlapVariable->Variant.varUint32 = pMyObject->ulBlkUrlNextInsNum;
 
-        returnStatus =
+      /*  returnStatus =
             pPoamIrepFoBlkUrl->AddRecord
                 (
                     (ANSC_HANDLE)pPoamIrepFoBlkUrl,
@@ -796,7 +796,7 @@ CosaPcReg_BlkUrlAddInfo(
                     SYS_RECORD_CONTENT_DEFAULT,
                     pSlapVariable,
                     0
-                );
+                );*/ // RDKB-EMULATOR
 
         SlapCleanVariable(pSlapVariable);
         SlapInitVariable (pSlapVariable);
@@ -1090,7 +1090,7 @@ CosaPcReg_TrustedUserAddInfo(
         pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_uint32;
         pSlapVariable->Variant.varUint32 = pMyObject->ulTrustedUserNextInsNum;
 
-        returnStatus =
+      /*  returnStatus =
             pPoamIrepFoTrustedUser->AddRecord
                 (
                     (ANSC_HANDLE)pPoamIrepFoTrustedUser,
@@ -1099,7 +1099,7 @@ CosaPcReg_TrustedUserAddInfo(
                     SYS_RECORD_CONTENT_DEFAULT,
                     pSlapVariable,
                     0
-                );
+                );*/ //RDKB-EMULATOR
 
         SlapCleanVariable(pSlapVariable);
         SlapInitVariable (pSlapVariable);
@@ -1393,7 +1393,7 @@ CosaPcReg_MSServAddInfo(
         pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_uint32;
         pSlapVariable->Variant.varUint32 = pMyObject->ulMSServNextInsNum;
 
-        returnStatus =
+      /*  returnStatus =
             pPoamIrepFoMSServ->AddRecord
                 (
                     (ANSC_HANDLE)pPoamIrepFoMSServ,
@@ -1402,7 +1402,7 @@ CosaPcReg_MSServAddInfo(
                     SYS_RECORD_CONTENT_DEFAULT,
                     pSlapVariable,
                     0
-                );
+                );*/ //RDKB-EMULATOR
 
         SlapCleanVariable(pSlapVariable);
         SlapInitVariable (pSlapVariable);
@@ -1696,7 +1696,7 @@ CosaPcReg_MSTrustedUserAddInfo(
         pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_uint32;
         pSlapVariable->Variant.varUint32 = pMyObject->ulMSTrustedUserNextInsNum;
 
-        returnStatus =
+       /* returnStatus =
             pPoamIrepFoMSTrustedUser->AddRecord
                 (
                     (ANSC_HANDLE)pPoamIrepFoMSTrustedUser,
@@ -1705,7 +1705,7 @@ CosaPcReg_MSTrustedUserAddInfo(
                     SYS_RECORD_CONTENT_DEFAULT,
                     pSlapVariable,
                     0
-                );
+                );*/ //RDKB-EMULATOR
 
         SlapCleanVariable(pSlapVariable);
         SlapInitVariable (pSlapVariable);
@@ -1999,7 +1999,7 @@ CosaPcReg_MDDevAddInfo(
         pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_uint32;
         pSlapVariable->Variant.varUint32 = pMyObject->ulMDDevNextInsNum;
 
-        returnStatus =
+       /* returnStatus =
             pPoamIrepFoMDDev->AddRecord
                 (
                     (ANSC_HANDLE)pPoamIrepFoMDDev,
@@ -2008,7 +2008,7 @@ CosaPcReg_MDDevAddInfo(
                     SYS_RECORD_CONTENT_DEFAULT,
                     pSlapVariable,
                     0
-                );
+                );*/ //RDKB-EMULATOR
 
         SlapCleanVariable(pSlapVariable);
         SlapInitVariable (pSlapVariable);

@@ -35,6 +35,10 @@
 
 #include "cosa_x_comcast_com_parentalcontrol_dml.h"
 #include "dml_tr181_custom_cfg.h"
+//RDKB-EMULATOR
+#include "dmsb_tr181_psm_definitions.h"
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
 
 BOOL
 MngSites_GetParamBoolValue
@@ -390,6 +394,14 @@ PcBlkURL_AddEntry
     pLinkObj->hContext      = (ANSC_HANDLE)pBlkUrl;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
+#if 1
+//RDKB-EMULATOR
+     char param_value[256] = {0};
+     char param_name[256]  = {0};
+     sprintf(param_value,"%ld",pBlkUrl->InstanceNumber);
+     sprintf(param_name,PSM_PC_MS_INSTANCENUMBER);
+     PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+#endif
 
     CosaSListPushEntryByInsNum((PSLIST_HEADER)&pParCtrl->BlkUrlList, pLinkObj);
     CosaPcReg_BlkUrlAddInfo((ANSC_HANDLE)pParCtrl, (ANSC_HANDLE)pLinkObj);
@@ -755,6 +767,14 @@ PcTrustedUser_AddEntry
     pLinkObj->hContext      = (ANSC_HANDLE)pTrustedUser;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
+#if 1
+//RDKB-EMULATOR
+     char param_value[256] = {0};
+     char param_name[256]  = {0};
+     sprintf(param_value,"%ld",pTrustedUser->InstanceNumber);
+     sprintf(param_name,PSM_PC_MS_TRUSTED_INSTANCENUMBER);
+     PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+#endif
 
     CosaSListPushEntryByInsNum((PSLIST_HEADER)&pParCtrl->TrustedUserList, pLinkObj);
     CosaPcReg_TrustedUserAddInfo((ANSC_HANDLE)pParCtrl, (ANSC_HANDLE)pLinkObj);
@@ -1051,6 +1071,14 @@ MSServ_AddEntry
     pLinkObj->hContext      = (ANSC_HANDLE)pMSServ;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
+#if 1
+//RDKB-EMULATOR
+     char param_value[256] = {0};
+     char param_name[256]  = {0};
+     sprintf(param_value,"%ld",pMSServ->InstanceNumber);
+     sprintf(param_name,PSM_PC_MSE_INSTANCENUMBER);
+     PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+#endif
 
     CosaSListPushEntryByInsNum((PSLIST_HEADER)&pParCtrl->MSServList, pLinkObj);
     CosaPcReg_MSServAddInfo((ANSC_HANDLE)pParCtrl, (ANSC_HANDLE)pLinkObj);
@@ -1389,6 +1417,14 @@ MSTrustedUser_AddEntry
     pLinkObj->hContext      = (ANSC_HANDLE)pMSTrustedUser;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
+#if 1
+//RDKB-EMULATOR
+     char param_value[256] = {0};
+     char param_name[256]  = {0};
+     sprintf(param_value,"%ld",pMSTrustedUser->InstanceNumber);
+     sprintf(param_name,PSM_PC_MSE_TRUSTED_INSTANCENUMBER);
+     PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+#endif
 
     CosaSListPushEntryByInsNum((PSLIST_HEADER)&pParCtrl->MSTrustedUserList, pLinkObj);
     CosaPcReg_MSTrustedUserAddInfo((ANSC_HANDLE)pParCtrl, (ANSC_HANDLE)pLinkObj);
@@ -1685,6 +1721,14 @@ MDDev_AddEntry
     pLinkObj->hContext      = (ANSC_HANDLE)pMDDev;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
+#if 1
+//RDKB-EMULATOR
+     char param_value[256] = {0};
+     char param_name[256]  = {0};
+     sprintf(param_value,"%ld",pMDDev->InstanceNumber);
+     sprintf(param_name,PSM_PC_MD_INSTANCENUMBER);
+     PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+#endif
 
     CosaSListPushEntryByInsNum((PSLIST_HEADER)&pParCtrl->MDDevList, pLinkObj);
     CosaPcReg_MDDevAddInfo((ANSC_HANDLE)pParCtrl, (ANSC_HANDLE)pLinkObj);
