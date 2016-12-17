@@ -110,7 +110,13 @@ extern char g_Subsystem[32];
             AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = \n%s\n", __FUNCTION__,param_name, param_value)); \
         } \
     }
-
+#define _PSM_DEL_PARAM(_PARAM_NAME) { \
+        _ansc_sprintf(param_name,_PARAM_NAME,ins); \
+        AnscTraceFlow(("%s ins = %ld param_name=%s\n", __FUNCTION__,\
+                                ins,param_name));\
+        PSM_Del_Record(bus_handle, g_Subsystem, param_name); \
+        _ansc_memset(param_name, 0, sizeof(param_name)); \
+}
 #endif
 extern void* g_pDslhDmlAgent;
 //PSM-ACCESS
