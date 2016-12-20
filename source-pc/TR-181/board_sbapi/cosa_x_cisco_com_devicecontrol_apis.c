@@ -1742,14 +1742,8 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
                 strcpy(string,"router");
         PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, string);
 
-//RDKB-EMUALTOR
-        if(pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic)
-                system("sh /lib/rdk/BridgeMode.sh");
-        else if(pLanMngm->LanMode == COSA_DML_LanMode_Router)
-        {
-                system("cp /var/dnsmasq_org.conf /etc/dnsmasq.conf");
-                system("sh /lib/rdk/RouterMode.sh");
-        }
+	if(pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic)
+                system("killall dnsmasq");
 
 	g_lanMngmTab[i] = *pLanMngm;
 	g_lanMngmTab[i].InstanceNumber = ins; /* just in case */

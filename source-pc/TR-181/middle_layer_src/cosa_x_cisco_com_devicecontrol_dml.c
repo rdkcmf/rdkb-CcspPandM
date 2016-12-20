@@ -1981,8 +1981,17 @@ LanMngm_SetParamUlongValue
     if (AnscEqualString(ParamName, "LanMode", TRUE))
     {
         pLanMngm->LanMode = uValuepUlong;
-	if(pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic)
-                system("cp /etc/dnsmasq.conf /var/dnsmasq_org.conf");//LNT_EMU
+	//RDKB-EMUALTOR
+        if(pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic)
+        {
+                system("cp /etc/dnsmasq.conf /var/dnsmasq_org.conf");
+                system("sh /lib/rdk/BridgeMode.sh");
+        }
+        else if(pLanMngm->LanMode == COSA_DML_LanMode_Router)
+        {
+                system("cp /var/dnsmasq_org.conf /etc/dnsmasq.conf");
+                system("sh /lib/rdk/RouterMode.sh");
+        }
         return TRUE;
     }
 
