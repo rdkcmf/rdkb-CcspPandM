@@ -174,11 +174,11 @@ then
 			#superResponse=204
 			echo 204 > $RESPONSE
 			echo_t "Network Response: Got 204. Move on.."
-
 			# Set syscfg parameter to indicate unit is activated
 			syscfg set unit_activated 1
 			syscfg commit
-
+			echo_t "Network Response: Restart Firewall"
+			sysevent set firewall-restart
 			if [ -e "$REVERT_FLAG" ]
 			then
 				echo_t "Network Response: Reverted flag should not be present in case of default state"	
