@@ -688,15 +688,6 @@ Interface_GetParamStringValue
 		}
 	}
 #endif 	    
-	if( (0x00 == pEthernetPortFull->StaticInfo.MacAddress[0]) && (0x00 == pEthernetPortFull->StaticInfo.MacAddress[1]) && (0x00 == pEthernetPortFull->StaticInfo.MacAddress[2]) && (0x00 == pEthernetPortFull->StaticInfo.MacAddress[3]) && (0x00 == pEthernetPortFull->StaticInfo.MacAddress[4]) && (0x00 == pEthernetPortFull->StaticInfo.MacAddress[5]))
-        {
-                UCHAR strMac[128] = {0};
-                if ( -1 != _getMac("eth0", strMac) )
-                {
-                        AnscCopyMemory(pEthernetPortFull->StaticInfo.MacAddress,strMac,6);
-                }
-        }
-
         _ansc_sprintf
             (
                 pValue,

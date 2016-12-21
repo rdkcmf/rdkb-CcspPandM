@@ -112,7 +112,15 @@
                         GLOBAL VARIABLES
 **************************************************************************/
 
-#define ETH_INT_COUNT                               2
+//#define ETH_INT_COUNT                               2
+//RDKB-EMULATOR
+#define ETH_INT_COUNT                               3
+
+struct ethernet_ports_details
+{
+        char Name[64];
+        UCHAR MacAddress[6];
+};
 
 COSA_DML_ETH_PORT_FULL              g_EthPortFull1 =
 {
@@ -157,6 +165,7 @@ CosaDmlEthPortGetEntry
         PCOSA_DML_ETH_PORT_FULL     pEntry
     )
 {
+    struct ethernet_ports_details interface_details;
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     if (pEntry)
@@ -164,7 +173,10 @@ CosaDmlEthPortGetEntry
     else
         return ANSC_STATUS_FAILURE;
     
-    if (ulIndex == 0)
+    CcspHalGetInterfaceDetails(ulIndex+1,&interface_details);//RDKB-EMULATOR        
+    strcpy(pEntry->StaticInfo.Name,interface_details.Name);
+    AnscCopyMemory(pEntry->StaticInfo.MacAddress,interface_details.MacAddress,6);
+/*  if (ulIndex == 0)
     {
         AnscCopyMemory(pEntry, &g_EthPortFull1, sizeof(COSA_DML_ETH_PORT_FULL));
     }
@@ -175,7 +187,7 @@ CosaDmlEthPortGetEntry
     else
     {
         return ANSC_STATUS_FAILURE;
-    }
+    }*/
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -232,7 +244,7 @@ CosaDmlEthPortGetCfg
     if (!pCfg)
         return ANSC_STATUS_FAILURE;
 
-    if(checkLan())
+    if(CcspHalGetInterfaceEnableDetails(pCfg->InstanceNumber))
         {
                 pCfg->bEnabled = true;
         }
@@ -241,7 +253,7 @@ CosaDmlEthPortGetCfg
                 pCfg->bEnabled = false;
         }
 
-#if 0//LNT_EMU
+#if 0//RDKB-EMULATOR
     if (pCfg->InstanceNumber == 1)
     {
         AnscCopyMemory(pCfg, &g_EthPortFull1.Cfg, sizeof(COSA_DML_ETH_PORT_CFG));
@@ -272,16 +284,8 @@ CosaDmlEthPortGetDinfo
 
     _ansc_memset(pInfo, 0, sizeof(COSA_DML_ETH_PORT_DINFO));
 	
-	if(checkLan())
-	{
-	pInfo->Status = COSA_DML_IF_STATUS_Up;
-	}
-	else
-	{
-	pInfo->Status = COSA_DML_IF_STATUS_Down;
-	}
-
-#if 0//LNT_EMU
+    CcspHalGetInterfaceStatusDetails(ulInstanceNumber,pInfo);//RDKB-EMULATOR
+#if 0//RDKB-EMULATOR
     if (ulInstanceNumber == 1)
     {
         AnscCopyMemory(pInfo, &g_EthPortFull1.DynamicInfo, sizeof(COSA_DML_ETH_PORT_DINFO));
@@ -312,8 +316,19 @@ CosaDmlEthPortGetStats
         return ANSC_STATUS_FAILURE;
 
     _ansc_memset(pStats, 0, sizeof(COSA_DML_ETH_STATS));
-    
-    if (ulInstanceNumber == 1)
+  
+    //RDKB-EMU
+    if(ulInstanceNumber == 1)
+	    if (CosaUtilGetIfStats("eth1", pStats) != 0)
+		    return ANSC_STATUS_SUCCESS;
+    if(ulInstanceNumber == 2)
+	    if (CosaUtilGetIfStats("eth0", pStats) != 0)
+		    return ANSC_STATUS_SUCCESS;
+    if(ulInstanceNumber == 3)
+	    if (CosaUtilGetIfStats("eth2", pStats) != 0)
+		    return ANSC_STATUS_SUCCESS;
+
+    /*  if (ulInstanceNumber == 1)
     {
         pStats->BytesSent = 11;
     }
@@ -322,7 +337,7 @@ CosaDmlEthPortGetStats
         pStats->BytesSent = 22;
     }
     else
-        return ANSC_STATUS_FAILURE;
+        return ANSC_STATUS_FAILURE;*/
 
     return ANSC_STATUS_SUCCESS;
 }
