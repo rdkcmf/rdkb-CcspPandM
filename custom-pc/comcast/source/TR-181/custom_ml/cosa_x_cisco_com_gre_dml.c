@@ -101,6 +101,7 @@ CGreIf_GetParamBoolValue
 
     if (AnscEqualString(ParamName, "Enable", TRUE))
     {
+	CosaDml_CGreIfGetCfg(pCGreIf->InstanceNumber,pCGreIf);//RDKB-EMULATOR
         *pBool = pCGreIf->Enable;
         return TRUE;
     }

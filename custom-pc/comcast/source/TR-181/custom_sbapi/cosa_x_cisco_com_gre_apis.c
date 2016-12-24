@@ -64,6 +64,7 @@
 #include <net/if.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <stdbool.h>
 #include <sysevent/sysevent.h>
 
 #include "cosa_apis.h"
@@ -135,7 +136,8 @@ static int if_get_stat(const char *ifname, int *up)
     return 0;
 }
 
-static COSA_DML_CGRE_STATUS 
+//RDKB-EMULATOR
+/*static COSA_DML_CGRE_STATUS 
 CGre_GetStatus(const char *ifname, const char *lowlayers)
 {
     char buf[1024];
@@ -149,7 +151,7 @@ CGre_GetStatus(const char *ifname, const char *lowlayers)
 
     snprintf(buf, sizeof(buf), "%s", lowlayers);
 
-    if ((lowif = strtok_r(buf, ",", &sp)) == NULL) /* no lower if */
+    if ((lowif = strtok_r(buf, ",", &sp)) == NULL) // no lower if 
         return COSA_DML_CGRE_STATUS_ERROR;
     if (if_get_stat(lowif, &up) != 0)
         return COSA_DML_CGRE_STATUS_ERROR;
@@ -164,6 +166,54 @@ CGre_GetStatus(const char *ifname, const char *lowlayers)
     }
 
     return COSA_DML_CGRE_STATUS_UP;
+}*/
+static COSA_DML_CGRE_STATUS 
+CGre_GetStatus()
+{
+	FILE *fp;
+        char path[256] = {0},status[100] = {0};
+        int count = 0;
+	fp = popen("ifconfig gretap0 | grep RUNNING | tr -s ' ' | cut -d ' ' -f4","r");
+                if(fp == NULL)
+                {
+                        printf("Failed to run command in Function %s\n",__FUNCTION__);
+                        return 0;
+                }
+                while(fgets(path, sizeof(path)-1, fp) != NULL)
+                {
+                        for(count=0;path[count]!='\n';count++)
+                                status[count]=path[count];
+                        status[count]='\0';
+                }
+                if(strcmp(status,"RUNNING") == 0)
+                        return COSA_DML_CGRE_STATUS_UP;
+                else
+                        return COSA_DML_CGRE_STATUS_DOWN;
+                pclose(fp);
+}
+//RDKB_EMULATOR
+static bool CGre_GetEnable()
+{
+	FILE *fp;
+	char path[256] = {0},status[100] = {0};
+	int count = 0;
+	fp = popen("ifconfig | grep gretap0 | grep -v grep | wc -l","r");
+	if(fp == NULL)
+	{
+		printf("Failed to run command in Function %s\n",__FUNCTION__);
+		return 0;
+	}
+	while(fgets(path, sizeof(path)-1, fp) != NULL)
+	{
+		for(count=0;path[count]!='\n';count++)
+			status[count]=path[count];
+		status[count]='\0';
+	}
+	pclose(fp);
+	if(strcmp(status,"1") == 0)
+		return TRUE;
+	else
+		return FALSE;
 }
 
 static int CGre_PsmGetInsNums(const char *obj, unsigned int insList[], unsigned int *insCnt)
@@ -224,10 +274,11 @@ CGre_LoadConf(ULONG ins, COSA_DML_CGRE_IF *cfg)
 
     cfg->InstanceNumber = ins;
 
-    snprintf(rec, sizeof(rec), CGRE_PARAM_ENABLE, ins);
+//RDKB-EMULATOR
+/*  snprintf(rec, sizeof(rec), CGRE_PARAM_ENABLE, ins);
     if (CGre_PsmGet(rec, val, sizeof(val)) != 0)
         return -1;
-    cfg->Enable = atoi(val);
+    cfg->Enable = atoi(val);*/
 
     snprintf(rec, sizeof(rec), CGRE_PARAM_ALIAS, ins);
     if (CGre_PsmGet(rec, cfg->Alias, sizeof(cfg->Alias)) != 0)
@@ -437,6 +488,12 @@ CosaDml_CGreIfSetInsAlias(ULONG idx, ULONG ins, const char *alias)
 ANSC_STATUS
 CosaDml_CGreIfGetCfg(ULONG ins, COSA_DML_CGRE_IF *greIf)
 {
+//RDKB_EMULATOR
+    if(CGre_GetEnable())
+	greIf->Enable = TRUE;
+    else
+	greIf->Enable = FALSE;
+
     if (CGre_LoadConf(ins, greIf) != 0)
         return ANSC_STATUS_FAILURE;
 
@@ -450,7 +507,9 @@ CosaDml_CGreIfGetStatus(const COSA_DML_CGRE_IF *greIf,
     if (!greIf || !status)
         return ANSC_STATUS_FAILURE;
 
-    *status = CGre_GetStatus(greIf->Name, greIf->LowerLayers);
+//RDKB-EMULATOR
+    //*status = CGre_GetStatus(greIf->Name, greIf->LowerLayers);
+      *status = CGre_GetStatus();
     return ANSC_STATUS_SUCCESS;
     }
 
