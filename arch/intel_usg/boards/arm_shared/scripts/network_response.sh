@@ -27,6 +27,8 @@ responseCode_4=0
 responseCode=0
 superResponse=0
 gotResponse=0
+v4Count=0
+v6Count=0
 
 source /etc/utopia/service.d/log_capture_path.sh
 
@@ -147,7 +149,33 @@ then
 			echo_t "Network Response: Already $RESPONSE has been available with 204 response code."
 			echo $responseCode > $RESPONSE_1
 		else
-			curl -w '%{http_code}\n' --interface $WAN_INTERFACE $URL_1 --connect-timeout 30 -m 30 > $RESPONSE_1 	
+		   # Check v4Count. This variable will be incremented only when we have IPv6 for erouter0
+		   # Try curl command for 3 times in v4 mode. If all 3 fails, try curl command for 3 times in v6 mode
+                   # only if erouter0 has an IPv6.
+		   if [ $v4Count -lt 3 ]
+		   then
+		      echo_t "Network Response: Executing command for ipv4"
+		      curl -4 -w '%{http_code}\n' --interface $WAN_INTERFACE $URL_1 --connect-timeout 30 -m 30 > $RESPONSE_1
+		      has_ipv6=`ifconfig $WAN_INTERFACE | grep inet6 | grep Global`
+		      if [ "$has_ipv6" != "" ]
+		      then
+		         echo_t "Network Response: Increment count as we have ipv6 ip"
+		         v4Count=`expr $v4Count + 1`
+		      fi
+		   else
+		      # We will come into this else condition, only if erouter0 has IPv6 and 
+		      # curl command failed 3 times for IPv4
+		      if [ $v6Count -lt 3 ]
+		      then
+		         echo_t "Network Response: Executing command for ipv6"
+		         curl -6 -w '%{http_code}\n' --interface $WAN_INTERFACE $URL_1 --connect-timeout 30 -m 30 > $RESPONSE_1
+		         v6Count=`expr $v6Count + 1`
+		      else
+		         v4Count=0
+		         v6Count=0
+		      fi
+		   fi
+
 		fi
 			
 		if [ -e $RESPONSE_1 ]
@@ -156,6 +184,7 @@ then
                         touch /tmp/.gotnetworkresponse
 
 			responseCode_1=`cat $RESPONSE_1`
+			echo_t "Network Response: Response code received is $responseCode_1"
 			if [ "$responseCode_1" = "" ]
 			then
 				echo_t "Network Response: Responsefile for $URL_1 was empty.."
@@ -174,11 +203,36 @@ then
 			#superResponse=204
 			echo 204 > $RESPONSE
 			echo_t "Network Response: Got 204. Move on.."
-			# Set syscfg parameter to indicate unit is activated
-			syscfg set unit_activated 1
-			syscfg commit
-			echo_t "Network Response: Restart Firewall"
-			sysevent set firewall-restart
+			isUnitActivated=`syscfg get unit_activated`
+			if [ "$isUnitActivated" = "" ]
+			then
+			    echo_t "Network Response: unit_activated is NULL. Retry"
+			    isUnitActivated=`syscfg get unit_activated`
+			    if [ "$isUnitActivated" = "" ]
+			    then
+			       echo_t "Network Response: unit_activated is NULL after retry. Fallback to 0"
+			       isUnitActivated=0
+			    fi
+			fi
+
+			if [ $isUnitActivated -eq 0 ]
+			then
+				# Set syscfg parameter to indicate unit is activated
+				syscfg set unit_activated 1
+				syscfg commit
+				echo_t "Network Response: Restart DHCP server"
+				sysevent set dhcp_server-stop
+				# Let's make sure dhcp server restarts properly
+				sleep 1
+				sysevent set dhcp_server-start
+				echo_t "Network Response: Restart Firewall"
+				sysevent set firewall-restart
+				# We will flag that DHCP server is restarted after activation
+				# This event is checked in redirect_url.sh
+				echo_t "Network Response: Set sysevent to indicate dhcp started"
+				sysevent set dhcp_after_activation flagged
+			fi
+
 			if [ -e "$REVERT_FLAG" ]
 			then
 				echo_t "Network Response: Reverted flag should not be present in case of default state"	
@@ -186,23 +240,23 @@ then
 			fi
 			break;
 		else
-                        echo_t "Network Response: Didnt recieve success response..should retry.."
-                        unitActivated=`syscfg get unit_activated`
-                        if [ "$unitActivated" != 0 ]
-                        then
-                            # As we haven't received 204 response, indicate unit is not activated
-                            syscfg set unit_activated 0
-                            syscfg commit
-                            # Remove /var/tmp/networkresponse.txt file.
-                            # LAN services should not be in captive portal configuration. 
-                            # LAN services depend on 204 response to configure captive portal.
-                            # By default, we have put 204 into /var/tmp/networkresponse.txt from utopia_init.sh
-                            echo_t "Network Response: Removing networkresponse.txt file before restarting services.."
-                            rm -rf $RESPONSE
-                            restartLanServices
-                        fi
+				echo_t "Network Response: Didnt recieve success response..should retry.."
+				unitActivated=`syscfg get unit_activated`
+				if [ "$unitActivated" != 0 ]
+				then
+				    # As we haven't received 204 response, indicate unit is not activated
+				    syscfg set unit_activated 0
+				    syscfg commit
+				    # Remove /var/tmp/networkresponse.txt file.
+				    # LAN services should not be in captive portal configuration. 
+				    # LAN services depend on 204 response to configure captive portal.
+				    # By default, we have put 204 into /var/tmp/networkresponse.txt from utopia_init.sh
+				    echo_t "Network Response: Removing networkresponse.txt file before restarting services.."
+				    rm -rf $RESPONSE
+				    restartLanServices
+				fi
                         
-			sleep 5
+				sleep 5
 		fi
 
 	done
