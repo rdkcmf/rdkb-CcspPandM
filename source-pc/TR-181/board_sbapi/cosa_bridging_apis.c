@@ -73,53 +73,38 @@
 
 COSA_PRI_BRG_FULL g_BrgFull[8]=
 {
-/*    {
+    {
         {2, "alias1", TRUE, FALSE, COSA_DML_BRG_STD_8021D_2004},
         {COSA_DML_BRG_STATUS_Disabled},
-        2, 
+        3, 
         {
             {
                 {
-                    1, "portalias1", TRUE, COSA_DML_BRG_STD_8021D_2004, 
-                    COSA_DML_BRG_LINK_TYPE_EthVlan, "eth0", TRUE, 0, 0, 0,
-                    COSA_DML_BRG_PORT_AFT_AdmitAll, FALSE, FALSE,
-                    COSA_DML_BPORT_TAGGING, TRUE, FALSE
                 },
-                {"Port1", COSA_DML_IF_STATUS_Up, 1000, COSA_DML_BRG_PORT_STATE_Disabled}
+                {}
             },
             {
-                {
-                    2, "portalias2", TRUE, COSA_DML_BRG_STD_8021Q_2005,
-                    COSA_DML_BRG_LINK_TYPE_Eth, "eth1", FALSE, 0, 0, 0,
-                    COSA_DML_BRG_PORT_AFT_AdmitAll, FALSE, FALSE,
-                    COSA_DML_BPORT_TAGGING, FALSE, FALSE
+                 {
                 },
-                {"Port2", COSA_DML_IF_STATUS_Down, 100, COSA_DML_BRG_PORT_STATE_Blocking}
+                {}
             }
         }
     },
     {
         {1, "alias2", TRUE, TRUE, COSA_DML_BRG_STD_8021Q_2005},
         {COSA_DML_BRG_STATUS_Enabled},
-        2, 
+        3, 
         {
             {
                 {
-                    1, "portalias1", TRUE, COSA_DML_BRG_STD_8021D_2004,
-                    COSA_DML_BRG_LINK_TYPE_EthVlan, "eth1", TRUE, 0, 0, 0,
-                    COSA_DML_BRG_PORT_AFT_AdmitAll, FALSE, FALSE,
-                    COSA_DML_BPORT_TAGGING, FALSE, TRUE
+
                 },
-                {"Port1", COSA_DML_IF_STATUS_Up, 10000, COSA_DML_BRG_PORT_STATE_Disabled}
+                {}
             },
             {
                 {
-                    2, "portalias2", TRUE, COSA_DML_BRG_STD_8021Q_2005, 
-                    COSA_DML_BRG_LINK_TYPE_Eth, "eth0", FALSE, 0, 0, 0,
-                    COSA_DML_BRG_PORT_AFT_AdmitAll, FALSE, FALSE, 
-                    COSA_DML_BPORT_TAGGING, FALSE, TRUE
                 },
-                {"Port2", COSA_DML_IF_STATUS_Down, 100000, COSA_DML_BRG_PORT_STATE_Blocking}
+                {}
             }
         }
     },
@@ -128,7 +113,7 @@ COSA_PRI_BRG_FULL g_BrgFull[8]=
     {0},
     {0},
     {0},
-    {0}*/
+    {0}
 };
 
 COSA_DML_IF_STATS g_Stats=
@@ -140,7 +125,7 @@ COSA_DML_IF_STATS g_Stats=
 COSA_DML_BRG_VLAN_FULL gvlan[8]={
 };
 
-ULONG    g_BrgFullNum = 0;//LNT_EMU
+ULONG    g_BrgFullNum = 2;//RDKB-EMULATOR
 ULONG    g_vlancount= 0;//LNT_EMU
 
 #endif
@@ -256,7 +241,8 @@ CosaDmlBrgGetEntry
 {
 #if defined _COSA_SIM_ 
     pEntry->Cfg.bEnabled = g_BrgFull[ulIndex].Cfg.bEnabled; //According to the data model, this should always return false.
-    pEntry->Cfg.InstanceNumber = g_BrgFull[ulIndex].Cfg.InstanceNumber;
+    //pEntry->Cfg.InstanceNumber = g_BrgFull[ulIndex].Cfg.InstanceNumber;
+    pEntry->Cfg.InstanceNumber = ulIndex+1;//RDKB-EMULATOR
     pEntry->Cfg.Std = g_BrgFull[ulIndex].Cfg.Std;
     pEntry->Info.Status = g_BrgFull[ulIndex].Info.Status;
     AnscCopyString(pEntry->Cfg.Alias, g_BrgFull[ulIndex].Cfg.Alias);
@@ -643,8 +629,7 @@ CosaDmlBrgPortGetNumberOfEntries
            return g_BrgFull[i].ulNumOfPort;
         }
     }
-
-    return 0;
+  //  return 0;
 #endif
 }
 
@@ -678,7 +663,7 @@ CosaDmlBrgPortGetNumberOfEntries
     Return:       The status of the operation.
 
 **********************************************************************/
-
+#if 1
 //LNT_EMU
 PCOSA_DML_BRG_PORT_FULL
 CosaDmlPortGetEntry
@@ -686,7 +671,7 @@ CosaDmlPortGetEntry
         ANSC_HANDLE                 hContext,
         PULONG                      pulCount,
 	ULONG                       bridgeIndex
-    )
+ )
 {
 	PCOSA_DML_BRG_PORT_FULL port=NULL;
         port = (PCOSA_DML_BRG_PORT_FULL)AnscAllocateMemory( sizeof(g_BrgFull[0].PortList[0])*(g_BrgFull[0].ulNumOfPort+1));
@@ -702,6 +687,7 @@ CosaDmlPortGetEntry
 
         return port;
 }
+#endif
 
 ANSC_STATUS
 CosaDmlBrgPortGetEntry
@@ -720,7 +706,7 @@ CosaDmlBrgPortGetEntry
         if ( g_BrgFull[i].Cfg.InstanceNumber == ulBrgInstanceNumber )
         {
             pEntry->Cfg.AcceptableFrameTypes = g_BrgFull[i].PortList[ulIndex].Cfg.AcceptableFrameTypes;
-            pEntry->Cfg.bEnabled = g_BrgFull[i].PortList[ulIndex].Cfg.bEnabled;
+            //pEntry->Cfg.bEnabled = g_BrgFull[i].PortList[ulIndex].Cfg.bEnabled;
             pEntry->Cfg.bIngressFiltering = g_BrgFull[i].PortList[ulIndex].Cfg.bIngressFiltering;
             pEntry->Cfg.bManagementPort = g_BrgFull[i].PortList[ulIndex].Cfg.bManagementPort;
             pEntry->Cfg.bPriorityTagging = g_BrgFull[i].PortList[ulIndex].Cfg.bPriorityTagging;
@@ -735,13 +721,18 @@ CosaDmlBrgPortGetEntry
 
             pEntry->Info.LastChange = g_BrgFull[i].PortList[ulIndex].Info.LastChange;
             pEntry->Info.PortState = g_BrgFull[i].PortList[ulIndex].Info.PortState;
-            pEntry->Info.Status = g_BrgFull[i].PortList[ulIndex].Info.Status;
+  //          pEntry->Info.Status = g_BrgFull[i].PortList[ulIndex].Info.Status;
 
             AnscCopyString(pEntry->Cfg.PriorityRegeneration, g_BrgFull[i].PortList[ulIndex].Cfg.PriorityRegeneration);
             AnscCopyString(pEntry->Cfg.LinkName, g_BrgFull[i].PortList[ulIndex].Cfg.LinkName);
             AnscCopyString(pEntry->Cfg.Alias, g_BrgFull[i].PortList[ulIndex].Cfg.Alias);
-            AnscCopyString(pEntry->Info.Name, g_BrgFull[i].PortList[ulIndex].Info.Name);
-
+//RDKB-EMULATOR
+	    char string[20];
+	    CcspHalGetBridgePortNames(ulBrgInstanceNumber,ulIndex+1,string);
+	    AnscCopyString(pEntry->Info.Name,string);
+	    pEntry->Cfg.bEnabled = CcspHalGetBridgePortEnable(ulIndex+1,ulBrgInstanceNumber);
+	    pEntry->Info.Status = CcspHalGetBridgePortStatus(ulBrgInstanceNumber,ulIndex+1);
+	
             return ANSC_STATUS_SUCCESS;
         }
     }
@@ -1145,8 +1136,6 @@ CosaDmlBrgPortGetCfg
     }
 
     memcpy(pCfg, &(pBPort->Cfg), sizeof(COSA_DML_BRG_PORT_CFG)); 
-    //    printf("%s: bridge=%d, port=%d, mode=%d\n", __FUNCTION__, 
-    //           ulBrgInstanceNumber, pCfg->InstanceNumber, pCfg->mode); // pBPort->Cfg.mode);    
     return ANSC_STATUS_SUCCESS;
 #endif
 }
@@ -1195,8 +1184,15 @@ CosaDmlBrgPortGetInfo
 
     _ansc_memset(pInfo, 0, sizeof(COSA_DML_BRG_PORT_INFO));
 
-    pInfo->Status = COSA_DML_IF_STATUS_Up;  //LNT_EMU
+    //pInfo->Status = COSA_DML_IF_STATUS_Up;  //LNT_EMU
+	
+  
+    //RDKB-EMULATOR
 
+    char string[20];
+    CcspHalGetBridgePortNames(ulBrgInstanceNumber,ulInstanceNumber,string);
+    AnscCopyString(pInfo->Name,string);
+    pInfo->Status = CcspHalGetBridgePortStatus(ulBrgInstanceNumber,ulInstanceNumber);
 #if 0 //LNT_EMU
     if (ulInstanceNumber == 1)
     {
@@ -1258,23 +1254,38 @@ CosaDmlBrgPortGetStats
     )
 {
 #if defined _COSA_SIM_
-    pStats->BroadcastPacketsReceived = g_Stats.BroadcastPacketsReceived;
-    pStats->BroadcastPacketsSent = g_Stats.BroadcastPacketsSent;
-    pStats->BytesReceived = g_Stats.BytesReceived;
-    pStats->BytesSent = g_Stats.BytesSent;
-    pStats->DiscardPacketsReceived = g_Stats.DiscardPacketsReceived;
-    pStats->DiscardPacketsSent = g_Stats.DiscardPacketsSent;
-    pStats->ErrorsReceived = g_Stats.ErrorsReceived;
-    pStats->ErrorsSent = g_Stats.ErrorsSent;
-    pStats->MulticastPacketsReceived = g_Stats.MulticastPacketsReceived;
-    pStats->MulticastPacketsSent = g_Stats.MulticastPacketsSent;
-    pStats->PacketsReceived = g_Stats.PacketsReceived;
-    pStats->PacketsSent = g_Stats.PacketsSent;
-    pStats->UnicastPacketsReceived = g_Stats.UnicastPacketsReceived;
-    pStats->UnicastPacketsSent = g_Stats.UnicastPacketsSent;
-    pStats->UnknownProtoPacketsReceived = g_Stats.UnknownProtoPacketsReceived;
+	//RDKB-EMULATOR
+	/*  pStats->BroadcastPacketsReceived = g_Stats.BroadcastPacketsReceived;
+	    pStats->BroadcastPacketsSent = g_Stats.BroadcastPacketsSent;
+	    pStats->BytesReceived = g_Stats.BytesReceived;
+	    pStats->BytesSent = g_Stats.BytesSent;
+	    pStats->DiscardPacketsReceived = g_Stats.DiscardPacketsReceived;
+	    pStats->DiscardPacketsSent = g_Stats.DiscardPacketsSent;
+	    pStats->ErrorsReceived = g_Stats.ErrorsReceived;
+	    pStats->ErrorsSent = g_Stats.ErrorsSent;
+	    pStats->MulticastPacketsReceived = g_Stats.MulticastPacketsReceived;
+	    pStats->MulticastPacketsSent = g_Stats.MulticastPacketsSent;
+	    pStats->PacketsReceived = g_Stats.PacketsReceived;
+	    pStats->PacketsSent = g_Stats.PacketsSent;
+	    pStats->UnicastPacketsReceived = g_Stats.UnicastPacketsReceived;
+	    pStats->UnicastPacketsSent = g_Stats.UnicastPacketsSent;
+	    pStats->UnknownProtoPacketsReceived = g_Stats.UnknownProtoPacketsReceived;*/
+	if( (ulInstanceNumber == 1) && (ulBrgInstanceNumber == 1) )
+		if (CosaUtilGetIfStats("brlan0", pStats) != 0)
+			return ANSC_STATUS_SUCCESS;
+	if( (ulInstanceNumber == 2) && (ulBrgInstanceNumber == 1) )
+	     		 CcspHalGetBridgePortStats(pStats); 
+	if( (ulInstanceNumber == 3) && (ulBrgInstanceNumber == 1) )
+	     		 CcspHalGetBridgePortStats(pStats); 
+	if( (ulInstanceNumber == 1) && (ulBrgInstanceNumber == 2) )
+		if (CosaUtilGetIfStats("brlan1", pStats) != 0)
+			return ANSC_STATUS_SUCCESS;
+	if( (ulInstanceNumber == 2) && (ulBrgInstanceNumber == 2) )
+	     		 CcspHalGetBridgePortStats(pStats); 
+	if( (ulInstanceNumber == 3) && (ulBrgInstanceNumber == 2) )
+	     		 CcspHalGetBridgePortStats(pStats); 
 
-    return ANSC_STATUS_SUCCESS;
+	return ANSC_STATUS_SUCCESS;
 #endif
 }
 
