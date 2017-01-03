@@ -1496,7 +1496,7 @@ implemented by LNT
     return:     TRUE or FALSE.
 
 **********************************************************************/
-
+#if defined __VLAN__
 BOOL
 Port_IsUpdated
     (
@@ -1658,6 +1658,7 @@ EXIT:
 
 	return returnStatus;
 }
+#endif
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -2012,7 +2013,7 @@ Port_GetParamUlongValue
     if( AnscEqualString(ParamName, "Status", TRUE) )
     {
         /* collect value */
-        //CosaDmlBrgPortGetInfo(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &pPort->Info);//LNT_EMU
+        CosaDmlBrgPortGetInfo(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &pPort->Info);//RDKB-EMU
 
         *puLong = pPort->Info.Status;
 
@@ -2143,24 +2144,63 @@ Port_GetParamStringValue
     if( AnscEqualString(ParamName, "Name", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pPort->Cfg.LinkName);//LNT_EMU
+        //AnscCopyString(pValue, pPort->Cfg.LinkName);//LNT_EMU
+        AnscCopyString(pValue, pPort->Info.Name);//RDKB_EMU
 
         return 0;
     }
 
-    //if( AnscEqualString(ParamName, "LowerLayers", TRUE) )
-    if( AnscEqualString(ParamName, "LinkName", TRUE) )
+    if( AnscEqualString(ParamName, "LowerLayers", TRUE) )
+    //if( AnscEqualString(ParamName, "LinkName", TRUE) )
     {
         /* collect value */
 #ifdef _COSA_SIM_
 
-#if 0 //LNT_EMU
-        pLowerLayer = CosaUtilGetLowerLayers("Device.Ethernet.Interface.", "eth1");
-        if ( pLowerLayer != NULL )
-        {
-            AnscCopyString(pValue, pLowerLayer);
-            AnscFreeMemory(pLowerLayer);
-        }
+#if 1 //RDKB-EMU
+	    if(pPort->Cfg.InstanceNumber == 2)
+	    {
+		    if(AnscEqualString( pPort->Info.Name, "eth1", TRUE))
+		    {
+			    pLowerLayer = CosaUtilGetLowerLayers("Device.Ethernet.Interface.", "eth1");
+			    if ( pLowerLayer != NULL )
+			    {
+				    AnscCopyString(pValue, pLowerLayer);
+				    AnscFreeMemory(pLowerLayer);
+			    }
+		}
+			    if(AnscEqualString( pPort->Info.Name, "gretap0", TRUE))
+			    {
+				    pLowerLayer = CosaUtilGetLowerLayers("Device.X_CISCO_COM_GRE.Interface.", "gretap0");
+				    if ( pLowerLayer != NULL )
+				    {
+					    AnscCopyString(pValue, pLowerLayer);
+					    AnscFreeMemory(pLowerLayer);
+				    }
+
+			    }
+	    }
+	    if(pPort->Cfg.InstanceNumber == 3)
+	    {
+		    if(AnscEqualString( pPort->Info.Name, "wlan0", TRUE))
+		    {
+			    pLowerLayer = CosaUtilGetLowerLayers("Device.WiFi.SSID.", "wlan0");
+			    if ( pLowerLayer != NULL )
+			    {
+				    AnscCopyString(pValue, pLowerLayer);
+				    AnscFreeMemory(pLowerLayer);
+			    }
+			}
+			    if(AnscEqualString( pPort->Info.Name, "wlan0_0", TRUE))
+			    {
+				    pLowerLayer = CosaUtilGetLowerLayers("Device.WiFi.SSID.", "wlan0_0");
+				    if ( pLowerLayer != NULL )
+				    {
+					    AnscCopyString(pValue, pLowerLayer);
+					    AnscFreeMemory(pLowerLayer);
+				    }
+
+			    }
+	    }
 #endif
 	if(AnscEqualString( pPort->Cfg.LinkName, "wlan0", TRUE))//LNT_EMU
 	{
@@ -3120,7 +3160,7 @@ PortStats_GetParamUlongValue
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge       = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hParentTable;
     COSA_DML_IF_STATS               Stats;
 
-    //CosaDmlBrgPortGetStats(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &Stats);//LNT_EMU
+    CosaDmlBrgPortGetStats(NULL, pDmlBridge->Cfg.InstanceNumber, pPort->Cfg.InstanceNumber, &Stats);//RDKB-EMU
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "ErrorsSent", TRUE) )
