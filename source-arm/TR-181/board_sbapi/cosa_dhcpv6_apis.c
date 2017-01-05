@@ -2221,6 +2221,12 @@ static int _dibbler_client_operation(char * arg)
       commonSyseventSet("dhcpv6_client-start", "");
 #else
       system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
+      sprintf(cmd, "syscfg get last_erouter_mode");
+      _get_shell_output(cmd, out, sizeof(out));
+      if (strstr(out, "2"))
+      {
+              system("sysevent set wan-status started");
+      }
 #endif
       
 #ifdef _COSA_BCM_ARM_
