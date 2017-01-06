@@ -14,15 +14,27 @@ then
 	rm -f $REVERTED_FLAG
 fi
 
-echo_t "Redirect URL : Restarting dnsmasq daemon for redirection"
-cat /var/dnsmasq.conf
-sysevent set dhcp_server-stop
-# Let's make sure dhcp server restarts properly
-sleep 1
-sysevent set dhcp_server-start
+# We need not have to restart dnsmasq if this event is set
+# We have set this event immediately after activation while doing 
+# DHCP server restart in network_response.sh
+dhcp_activation=`sysevent get dhcp_after_activation`
+if [ "$dhcp_activation" != "flagged" ]
+then
+   echo_t "Redirect URL : Restarting dnsmasq daemon for redirection"
+   cat /var/dnsmasq.conf
+   sysevent set dhcp_server-stop
+   # Let's make sure dhcp server restarts properly
+   sleep 1
+   sysevent set dhcp_server-start
+else
+   # Set a different value so that we will restart DHCP server in case 
+   # of a WiFi factory reset
+   sysevent set dhcp_after_activation completed
+fi
 	
-#Restart Firewall. 
-#This is required as have to put DNS redirection rules in case of WiFi factory restore/Factory restore.
+# Restart Firewall. 
+#This is required as have to put DNS redirection rules in case of 
+# WiFi factory restore/Factory restore.
 echo_t "Redirect URL : Restarting firewall"
 sysevent set firewall-restart
 
