@@ -423,7 +423,6 @@ static const char *g_bVlanTemple[] = {
         if (retPsmGet != CCSP_SUCCESS) { \
             goto _Psm_SetBPort_Err; \
         } \
-        AnscTraceFlow(("%s: retPsmSet == CCSP_SUCCESS setting %s = %s\n", __FUNCTION__,param_name,param_value)); \
         _ansc_memset(param_name, 0, sizeof(param_name)); \
         _ansc_memset(param_value, 0, sizeof(param_value)); \
     }    
