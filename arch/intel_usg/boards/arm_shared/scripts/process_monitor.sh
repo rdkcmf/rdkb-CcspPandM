@@ -203,7 +203,7 @@ do
 	fi
 
 	# Checking snmp subagent PID
-	SNMP_PID=`pidof snmp_subagnet`
+	SNMP_PID=`pidof snmp_subagent`
 	if [ "$SNMP_PID" = "" ]; then
 		echo_t "RDKB_PROCESS_CRASHED : snmpsubagent_process is not running, restarting it"
 		cd snmp/

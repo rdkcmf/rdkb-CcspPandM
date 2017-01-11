@@ -418,7 +418,7 @@ static int SnmpdConfig(int enable)
         if (system("ps | grep snmp_agent_cm | grep -v grep") != 0)
             if (system("/usr/sbin/snmp_agent_cm -c /etc/agent_cm.cnf -n") != 0)
                 return -1;
-        if (system("ps | grep snmp_subagnet | grep -v grep") != 0)
+        if (system("ps | grep snmp_subagent | grep -v grep") != 0)
             if (system("/fss/gw/usr/share/snmp/run_subagent.sh tcp:127.0.0.1:705") != 0)
                 return -1;
     }
@@ -426,7 +426,7 @@ static int SnmpdConfig(int enable)
     {
         system("killall snmp_agent_cm");
         system("killall run_subagent.sh");
-        system("killall snmp_subagnet");
+        system("killall snmp_subagent");
     }
 #endif
 
