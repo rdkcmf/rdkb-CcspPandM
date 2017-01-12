@@ -82,6 +82,11 @@
 static  COSA_DML_IP_V6ADDR          gIpv6Addr   = {1, "ipv6a-1",    TRUE, 1, 1, "", 0, 0, 1, "", "", "", FALSE};
 static  COSA_DML_IP_V6PREFIX        gIpv6Prefix = {1, "ipv6preA-1", TRUE, 1, 1, "", 0, 0, 1, 1,  "", "", TRUE, TRUE, "", ""};
 
+//RDKB-EMU
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
+
+
 /*
  *  IP Interface
  */
@@ -257,9 +262,24 @@ CosaDmlIpIfGetV4Addr
         PCOSA_DML_IP_V4ADDR         pEntry
     )
 {
-    AnscTraceFlow(("%s...\n", __FUNCTION__));
-
-    return  CosaDmlIpIfMlanGetV4Addr(hContext, ulIpIfInstanceNumber, ulIndex, pEntry);
+	AnscTraceFlow(("%s...\n", __FUNCTION__));
+	char status[100] ={0},path[256] = {0};//RDKB-EMU
+	FILE *fp;
+	int count = 0;
+	fp = popen("ifconfig eth0  | grep inet | tr -s ' ' | cut -d ' ' -f3 | cut -d ':' -f2","r");
+	if(fp == NULL)
+	{
+		printf("Failed to run command in Function %s\n",__FUNCTION__);
+		return 0;
+	}
+	if(fgets(path, sizeof(path)-1, fp) != NULL)
+	{
+		for(count=0;path[count]!='\n';count++)
+			status[count]=path[count];
+		status[count]='\0';
+	}
+	PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.l3net.1.V4Addr", ccsp_string, status);
+	return  CosaDmlIpIfMlanGetV4Addr(hContext, ulIpIfInstanceNumber, ulIndex, pEntry);
 }
 
 
