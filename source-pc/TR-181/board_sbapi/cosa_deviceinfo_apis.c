@@ -224,9 +224,10 @@ CosaDmlDiGetManufacturer
         ULONG*                      pulSize
     )
 {
-    AnscCopyString(pValue, "Cisco");
-    *pulSize = AnscSizeOfString(pValue);
-    return ANSC_STATUS_SUCCESS;
+	//AnscCopyString(pValue, "Cisco");
+	AnscCopyString(pValue, "L&T Technology Services");//RDKB-EMU
+	*pulSize = AnscSizeOfString(pValue);
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -238,27 +239,36 @@ CosaDmlDiGetManufacturerOUI
     )
 {
 
-    char val[64] = {0};
-    char param_name[256] = {0};
+	char val[64] = {0};
+	//char param_name[256] = {0};RDKB-EMU
+	int ManufacturerOUI_no;
 
-    _ansc_sprintf(param_name, "%s%s", DMSB_TR181_PSM_DeviceInfo_Root, DMSB_TR181_PSM_DeviceInfo_ManufacturerOUI);        
+	/*    _ansc_sprintf(param_name, "%s%s", DMSB_TR181_PSM_DeviceInfo_Root, DMSB_TR181_PSM_DeviceInfo_ManufacturerOUI);        
 
-    if (PsmGet(param_name, val, sizeof(val)) != 0) {
-        pValue[0] = '\0';
-        *pulSize = 0;
-        return ANSC_STATUS_FAILURE;
-    }
-    else {
-        AnscCopyString(pValue, val);
-        *pulSize = AnscSizeOfString(pValue);
-        return ANSC_STATUS_SUCCESS;
-    }
+	      if (PsmGet(param_name, val, sizeof(val)) != 0) {
+	      pValue[0] = '\0';
+	 *pulSize = 0;
+	 return ANSC_STATUS_FAILURE;
+	 }
+	 else {
+	 AnscCopyString(pValue, val);
+	 *pulSize = AnscSizeOfString(pValue);
+	 return ANSC_STATUS_SUCCESS;
+	 }*/
+	ManufacturerOUI_no=platform_hal_GetManufacturerOUI(val);
+	if(ManufacturerOUI_no == 0)
+		AnscCopyString(pValue, val);
+	else
+		AnscCopyString(pValue, "A086ED");
 
-    /*
-    AnscCopyString(pValue, "18550F");
-    *pulSize = AnscSizeOfString(pValue);
-    return ANSC_STATUS_SUCCESS;
-    */
+	*pulSize = AnscSizeOfString(pValue);
+	return ANSC_STATUS_SUCCESS;
+
+	/*
+	   AnscCopyString(pValue, "18550F");
+	 *pulSize = AnscSizeOfString(pValue);
+	 return ANSC_STATUS_SUCCESS;
+	 */
 }
 
 ANSC_STATUS
@@ -283,9 +293,10 @@ CosaDmlDiGetDescription
         ULONG*                      pulSize
     )
 {
-    AnscCopyString(pValue, _ERROR_);
-    *pulSize = AnscSizeOfString(pValue);
-    return ANSC_STATUS_SUCCESS;
+	// AnscCopyString(pValue, _ERROR_);//RDKB-EMU
+	AnscCopyString(pValue, "Emulates the Functionality of XB3 Router");//RDKB-EMU
+	*pulSize = AnscSizeOfString(pValue);
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -321,10 +332,16 @@ CosaDmlDiGetSerialNumber
         ULONG*                      pulSize
     )
 {
-    //    AnscCopyString(pValue, _ERROR_);
-    AnscCopyString(pValue, "0123456789");
-    *pulSize = AnscSizeOfString(pValue);
-    return ANSC_STATUS_SUCCESS;
+	//    AnscCopyString(pValue, _ERROR_);//RDKB-EMU
+	char serial_no[256] ={0};
+	int serial_no_status;
+	serial_no_status=platform_hal_GetSerialNumber(serial_no);
+	if(serial_no_status == 0)
+		AnscCopyString(pValue,serial_no );
+	else
+		AnscCopyString(pValue,"RDKB-EMULATOR_012345");
+	*pulSize = AnscSizeOfString(pValue);
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -335,7 +352,8 @@ CosaDmlDiGetHardwareVersion
         ULONG*                      pulSize
     )
 {
-    AnscCopyString(pValue, _ERROR_);
+    //AnscCopyString(pValue, _ERROR_);//RDKB-EMU
+    AnscCopyString(pValue, "1");
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
@@ -348,7 +366,8 @@ CosaDmlDiGetSoftwareVersion
         ULONG*                      pulSize
     )
 {
-    AnscCopyString(pValue, _ERROR_);
+    //AnscCopyString(pValue, _ERROR_);//RDKB-EMU
+    AnscCopyString(pValue, "0.0.0.0");
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
@@ -385,9 +404,17 @@ CosaDmlDiGetProvisioningCode
         ULONG*                      pulSize
     )
 {
-    AnscCopyString(pValue,g_DeviceInfo_ProvisioningCode);
-    *pulSize = AnscSizeOfString(pValue);
-    return ANSC_STATUS_SUCCESS; 
+	//AnscCopyString(pValue,g_DeviceInfo_ProvisioningCode);
+	char ProvisioningCode[256] ={0};//RDKB-EMU
+	int ProvisioningCode_status;
+	ProvisioningCode_status=platform_hal_GetSerialNumber(ProvisioningCode);
+	if(ProvisioningCode_status == 0)
+		AnscCopyString(pValue,ProvisioningCode);
+	else
+		AnscCopyString(pValue,"RDKB-EMULATOR_012345");
+
+	*pulSize = AnscSizeOfString(pValue);
+	return ANSC_STATUS_SUCCESS; 
 }
 
 ANSC_STATUS
