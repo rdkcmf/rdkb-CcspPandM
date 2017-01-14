@@ -2488,18 +2488,33 @@ fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1\n");
                     _ansc_sprintf(ucEntryParamName, "%s%s", pString, ".LowerLayers");
                   }  
             }
+
+            else if (_ansc_strstr(pString,"MoCA"))
+            {
+                int ret = COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen);
+
+                AnscTraceFlow(("<HL>%s >>>>>> ret is %d \n",__func__,ret));
+
+                 if ( ret == 0 && AnscSizeOfString(ucEntryNameValue) != 0 ) {
+
+                    AnscTraceFlow(("<HL>%s 11 STRING LENGTH NOT ZERO \n",__func__));
+                    AnscCopyString(pPort->Cfg.LinkName, ucEntryNameValue);
+                    pPort->Cfg.LinkType = COSA_DML_BRG_LINK_TYPE_Moca;
+                    _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
+                    _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
+                    _ansc_sprintf(ucEntryParamName, "%s%s", pString, ".LowerLayers");
+                  }
+
+            }   
             else if (( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen ) ) &&
                 ( AnscSizeOfString(ucEntryNameValue) != 0 ) )
             {
                 AnscCopyString(pPort->Cfg.LinkName, ucEntryNameValue);
                 if (_ansc_strstr(pString,"Ethernet"))
                 {
-                    pPort->Cfg.LinkType = COSA_DML_BRG_LINK_TYPE_Eth;
+
+                   pPort->Cfg.LinkType = COSA_DML_BRG_LINK_TYPE_Eth;
                 }
-                else if (_ansc_strstr(pString,"MoCA"))
-                {
-                    pPort->Cfg.LinkType = COSA_DML_BRG_LINK_TYPE_Moca;
-                }   
                 else if (_ansc_strstr(pString,"Bridge"))
                 {
                     pPort->Cfg.LinkType = COSA_DML_BRG_LINK_TYPE_Bridge;   
@@ -2562,7 +2577,7 @@ fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2\n");
                     }
                 }
             }
-            if (_ansc_strstr(pString,"WiFi") &&
+            else if (_ansc_strstr(pString,"MoCA") &&
                 !(COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen)) && ( AnscSizeOfString(ucEntryNameValue) != 0 ))
             {
                 AnscTraceFlow(("<HL>%s %s=%s\n", __FUNCTION__,pString,ucEntryNameValue));

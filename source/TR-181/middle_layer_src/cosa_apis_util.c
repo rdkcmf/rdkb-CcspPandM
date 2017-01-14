@@ -367,28 +367,52 @@ CosaUtilGetLowerLayers
             }
             else if ( AnscEqualString(pTableStringToken->Name, "Device.MoCA.Interface.", TRUE ) )
             {
-                ulNumOfEntries =       CosaGetParamValueUlong("Device.MoCA.InterfaceNumberOfEntries");
 
-                for ( i = 0 ; i < ulNumOfEntries; i++ )
+                parameterValStruct_t varStruct;
+                ulEntryNameLen   = sizeof(ucEntryNameValue);
+                  ulNumOfEntries = 0;
+                AnscCopyString(ucEntryParamName,"Device.MoCA.InterfaceNumberOfEntries");
+                varStruct.parameterName = ucEntryParamName;
+                varStruct.parameterValue = ucEntryNameValue;
+
+                if (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen))
                 {
-                    ulEntryInstanceNum = CosaGetInstanceNumberByIndex("Device.MoCA.Interface.", i);
-
-                    if ( ulEntryInstanceNum )
-                    {
-                        _ansc_sprintf(ucEntryFullPath, "%s%d", "Device.MoCA.Interface.", ulEntryInstanceNum);
-
-                        _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
-               
-                        ulEntryNameLen = sizeof(ucEntryNameValue);
-                        if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
-                             AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
-                        {
-                            pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
-
-                            break;
-                        }
-                    }
+                    AnscTraceFlow(("<HL>%s not found %s\n",__FUNCTION__,varStruct.parameterName ));
+                    break;
                 }
+
+                AnscTraceFlow(("<HL>%s ucEntryNameValue=%s\n", __FUNCTION__,ucEntryNameValue));
+                _ansc_sscanf(ucEntryNameValue,"%d",&ulNumOfEntries);
+                AnscTraceFlow(("<HL>%s Wifi # of entries=%d\n", __FUNCTION__,ulNumOfEntries));
+
+                i = 0;
+                ulEntryInstanceNum =1;
+                while (i < ulNumOfEntries)
+                {
+                    _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
+                    _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
+                    _ansc_sprintf(ucEntryParamName,"Device.MoCA.Interface.%d.Name",ulEntryInstanceNum);                    
+                        
+                    if (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen))
+                    {
+                        AnscTraceFlow(("<HL>%s WiFi instance(%d) not found\n", __FUNCTION__,
+                            ulEntryInstanceNum));
+                        ulEntryInstanceNum++;
+                        continue;
+                    }  
+                    AnscTraceFlow(("<HL>%s WiFi instance(%d) has name =%s inputName=%s\n", 
+                        __FUNCTION__,ulEntryInstanceNum,ucEntryNameValue,pKeyword));
+                    if ( AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
+                    {
+                        _ansc_sprintf(ucEntryFullPath,"Device.MoCA.Interface.%d",ulEntryInstanceNum);
+                        pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
+
+                        break;
+                    }
+                    ulEntryInstanceNum++;
+                    i++;
+                }
+
             }
             else if ( AnscEqualString(pTableStringToken->Name, "Device.X_CISCO_COM_GRE.Interface.", TRUE ) )
             {
