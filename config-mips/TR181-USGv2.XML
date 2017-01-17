@@ -900,7 +900,24 @@
 
             <func_GetParamStringValue>X_RDKCENTRAL_COM_GetParamStringValue</func_GetParamStringValue>
 
+			  <func_SetParamBoolValue>X_RDKCENTRAL_COM_SetParamBoolValue</func_SetParamBoolValue>
+
           </functions>
+
+			<parameters>
+				<parameter>
+					<name>DhcpServDetectEnable</name>
+					<type>boolean</type>
+					<syntax>bool</syntax>
+					<writable>true</writable>
+				</parameter>   
+				<parameter>
+					<name>MultipleGW</name>
+					<type>boolean</type>
+					<syntax>bool</syntax>
+					<writable>true</writable>
+				</parameter>   
+			</parameters>
 
           	<objects>			
 					

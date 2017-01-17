@@ -99,6 +99,8 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
 	CHAR 		EMS_MobileNo[64];
 /*change ends here*/
     BOOL		bxfinitywifiEnable;
+	BOOL		bDhcpServDetectEnable;	
+	BOOL		bMultipleGW;					
 }
 COSA_DATAMODEL_DEVICEINFO, *PCOSA_DATAMODEL_DEVICEINFO;
 

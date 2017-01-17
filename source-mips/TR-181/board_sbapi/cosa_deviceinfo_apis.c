@@ -1319,6 +1319,76 @@ ANSC_STATUS CosaDmlDiClearResetCount
     return ANSC_STATUS_SUCCESS;
 }
    
+ANSC_STATUS
+CosaDmlDiGetAndProcessDhcpServDetectionFlag
+  (
+	  ANSC_HANDLE				  hContext,
+	  BOOLEAN*					  pValue
+  )
+{
+	char buf[ 8 ] = { 0 };
+
+	if( 0 == syscfg_get( NULL, "DhcpServDetectEnable", buf, sizeof( buf ) ) )
+	{
+		if( 0 == strcmp( buf, "true" ) )
+		{
+			*pValue = 1;
+		}
+
+		if( 0 == strcmp( buf, "false" ) )
+		{
+			*pValue = 0;
+		}
+		
+		/* 
+		* To schedule/deschedule server test execution based on DhcpServDetectEnable flag 
+		*/
+		system( "sh /usr/ccsp/tad/schd_dhcp_server_detection_test.sh" );
+	}
+	else
+	{
+        CcspTraceWarning(("syscfg_get failed\n")); 
+
+		return ANSC_STATUS_FAILURE;
+	}
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiSetAndProcessDhcpServDetectionFlag
+   (
+	   ANSC_HANDLE				   hContext,
+	   BOOLEAN*					   pValue,
+	   BOOLEAN*					   pDhcpServDetectEnable
+   )
+{
+	if ( syscfg_set( NULL, 
+					  "DhcpServDetectEnable", 
+					  ((*pValue == 1 ) ? "true" : "false") )!= 0 ) 
+	{
+		CcspTraceWarning(("syscfg_set failed\n")); 
+		return ANSC_STATUS_FAILURE;
+	}
+	else 
+	{
+		if ( syscfg_commit( ) != 0 ) 
+		{
+			CcspTraceWarning(("syscfg_commit failed\n")); 
+			return ANSC_STATUS_FAILURE;
+		}
+
+		*pDhcpServDetectEnable = *pValue;
+
+		/* 
+		* To schedule/deschedule server test execution based on DhcpServDetectEnable flag 
+		*/
+		system( "sh /usr/ccsp/tad/schd_dhcp_server_detection_test.sh" );
+	}  
+
+    return ANSC_STATUS_SUCCESS;
+}
+
 
 #endif
 int getRebootCounter()
