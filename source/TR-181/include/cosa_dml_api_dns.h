@@ -79,7 +79,7 @@
 #ifndef  _COSA_DML_API_DNS_
 #define  _COSA_DML_API_DNS_
 
-#include "../middle_layer_src/cosa_dml_api_common.h"
+#include "cosa_dml_api_common.h"
 
 /**********************************************************************
                 STRUCTURE AND CONSTANT DEFINITIONS
