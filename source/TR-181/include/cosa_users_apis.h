@@ -71,8 +71,8 @@
 #ifndef  _COSA_USERS_APIS_H
 #define  _COSA_USERS_APIS_H
 
-#include "../middle_layer_src/cosa_apis.h"
-#include "../middle_layer_src/cosa_users_dml.h"
+#include "cosa_apis.h"
+#include "cosa_users_dml.h"
 
 
 typedef  enum

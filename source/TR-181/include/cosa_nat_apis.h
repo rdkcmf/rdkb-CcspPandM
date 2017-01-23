@@ -71,7 +71,7 @@
 #ifndef  _COSA_NAT_APIS_H
 #define  _COSA_NAT_APIS_H
 
-#include "../middle_layer_src/cosa_apis.h"
+#include "cosa_apis.h"
 #include "cosa_nat_apis_custom.h"
 
 /***********************************

@@ -71,8 +71,8 @@
 #ifndef  _COSA_X_CISCO_COM_DEVICECONTROL_APIS_H
 #define  _COSA_X_CISCO_COM_DEVICECONTROL_APIS_H
 
-#include "../middle_layer_src/cosa_apis.h"
-#include "../middle_layer_src/plugin_main_apis.h"
+#include "cosa_apis.h"
+#include "plugin_main_apis.h"
 
 #if defined(_ANSC_LINUX)
     #include <sys/sysinfo.h>

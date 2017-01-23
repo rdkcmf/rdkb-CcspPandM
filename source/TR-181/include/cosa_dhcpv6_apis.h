@@ -79,7 +79,7 @@
 #ifndef  _DML_API_DHCPV6_
 #define  _DML_API_DHCPV6_
 
-#include "../middle_layer_src/cosa_apis.h"
+#include "cosa_apis.h"
 #include "cosa_dhcpv4_apis.h"
 #include "dml_tr181_custom_cfg.h"
 

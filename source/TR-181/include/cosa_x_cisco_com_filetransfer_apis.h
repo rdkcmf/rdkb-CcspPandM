@@ -36,10 +36,10 @@
 #ifndef  _COSA_FILETRANSFER_APIS_H
 #define  _COSA_FILETRANSFER_APIS_H
 
-#include "../middle_layer_src/cosa_apis.h"
+#include "cosa_apis.h"
 #include "poam_irepfo_interface.h"
 #include "sys_definitions.h"
-#include "../middle_layer_src/plugin_main_apis.h"
+#include "plugin_main_apis.h"
 
 #define  TRUE_STATIC_IP_CONFIG_PATH  "/var/"
 

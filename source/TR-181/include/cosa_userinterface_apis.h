@@ -71,8 +71,8 @@
 #ifndef  _COSA_USERINTERFACE_API_H
 #define  _COSA_USERINTERFACE_API_H
 
-#include "../middle_layer_src/cosa_apis.h"
-#include "../middle_layer_src/plugin_main_apis.h"
+#include "cosa_apis.h"
+#include "plugin_main_apis.h"
 
 #define HTTP_INTERNAL_PORT            80
 #define HTTPS_INTERNAL_PORT           443

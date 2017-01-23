@@ -76,8 +76,8 @@
 #define  _COSA_X_CISCO_COM_DDNS_APIS_H
 
 #include "ansc_platform.h"
-#include "../middle_layer_src/cosa_apis.h"
-#include "../middle_layer_src/plugin_main_apis.h"
+#include "cosa_apis.h"
+#include "plugin_main_apis.h"
 #include "poam_irepfo_interface.h"
 #include "sys_definitions.h"
 
