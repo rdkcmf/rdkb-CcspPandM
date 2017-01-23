@@ -3177,7 +3177,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
     char str[IFNAME_SZ];    
     char *enableStr;
     napt_mode_t napt;
-
+#ifndef _CBR_PRODUCT_REQ_ // MOCA is not present for TCCBR environment
 	parameterValStruct_t **valMoCAstatus;
 	char pMoCAComponentName[64]="eRT.com.cisco.spvtg.ccsp.moca";
 	char pComponentPath[64]="/com/cisco/spvtg/ccsp/moca";
@@ -3185,7 +3185,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 	int nval;
 	char buf[16];
 	int MoCAstate;
-
+#endif
     
     COSA_DML_LAN_MANAGEMENT orgLanMngm;
 
@@ -3196,6 +3196,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         Utopia_SetLanMngmInsNum(&utctx, pLanMngm->InstanceNumber);
         bridge_info.mode = pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic ? BRIDGE_MODE_STATIC : BRIDGE_MODE_OFF; 
         Utopia_SetBridgeSettings(&utctx,&bridge_info);
+#ifndef _CBR_PRODUCT_REQ_ // MOCA is not present for TCCBR environment
 		ret = CcspBaseIf_getParameterValues(
 		    bus_handle,
 		    pMoCAComponentName,
@@ -3225,7 +3226,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 	     	} 
 			free_parameterValStruct_t (bus_handle, nval, valMoCAstatus);
 		CcspTraceWarning(("after syscfg get\n"));
-
+#endif
 		
         
         memset(&lan, 0 ,sizeof(lan));
