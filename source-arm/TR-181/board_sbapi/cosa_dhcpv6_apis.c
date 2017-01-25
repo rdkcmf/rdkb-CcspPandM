@@ -1679,7 +1679,7 @@ void _cosa_dhcpsv6_refresh_config();
 static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger);
 #define DHCPS6V_SERVER_RESTART_FIFO "/tmp/ccsp-dhcpv6-server-restart-fifo.txt"
 
-#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(_CBR_PRODUCT_REQ_)
 
 #else
 ANSC_STATUS
@@ -1845,9 +1845,10 @@ CosaDmlDhcpv6Init
     SETI_INTO_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "serverenable", g_dhcpv6_server)
     Utopia_Free(&utctx,1);
 
-#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(_CBR_PRODUCT_REQ_) 
 
 #else
+
     /*register callback function to handle message from wan dchcp6 client */
     pEntry = (PDSLHDMAGNT_CALLBACK)AnscAllocateMemory(sizeof(*pEntry));
     pEntry->func = CosaDmlDhcpv6SMsgHandler;
@@ -2171,7 +2172,7 @@ static int _dibbler_client_operation(char * arg)
         CcspTraceInfo(("%s stop\n", __func__));
         /*TCXB6 is also calling service_dhcpv6_client.sh but the actuall script is installed from meta-rdk-oem layer as the intel specific code
                    had to be removed */
-#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION)
         commonSyseventSet("dhcpv6_client-stop", "");
  #else
         system("/etc/utopia/service.d/service_dhcpv6_client.sh disable");
@@ -2217,7 +2218,7 @@ static int _dibbler_client_operation(char * arg)
         /*TCXB6 is also calling service_dhcpv6_client.sh but the actuall script is installed from meta-rdk-oem layer as the intel specific code
          had to be removed */
         CcspTraceInfo(("%s  Callin service_dhcpv6_client.sh enable \n", __func__));
-#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION)
       commonSyseventSet("dhcpv6_client-start", "");
 #else
       system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
