@@ -76,6 +76,7 @@
 #include "cosa_routing_apis.h"
 #include "cosa_routing_internal.h"
 #include "dml_tr181_custom_cfg.h"
+#include <utctx/utctx.h>
 
 extern void* g_pDslhDmlAgent;
 
