@@ -143,7 +143,18 @@ CosaDmlTimeGetLocalTime
        char                       *pCurrLocalTime
     )
 {
-    return ANSC_STATUS_SUCCESS;
+	time_t t;//RDKB-EMU
+	struct tm *pLcltime;
+	t = time(NULL);
+	pLcltime = localtime(&t);
+	_ansc_sprintf(pCurrLocalTime, "%.4u-%.2u-%.2u %.2u:%.2u:%.2u",
+			(pLcltime->tm_year)+1900,
+			(pLcltime->tm_mon)+1,
+			pLcltime->tm_mday,
+			pLcltime->tm_hour,
+			pLcltime->tm_min,
+			pLcltime->tm_sec);
+	return ANSC_STATUS_SUCCESS;
 }
 
 #elif (_COSA_DRG_CNS_ || _COSA_DRG_TPG_)

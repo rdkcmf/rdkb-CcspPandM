@@ -88,7 +88,7 @@ COSA_DML_DNS_RELAY_ENTRY  g_DnsRelayFull[10] =
         "\x40\x40\x40\x08", "wan8", COSA_DML_DNS_ADDR_SRC_DHCP}
 };
 
-ULONG g_NumOfDnsServers = 1;
+ULONG g_NumOfDnsServers = 2;//RDKB-EMU
 
 ULONG g_NumOfDnsRelays = 1;
 

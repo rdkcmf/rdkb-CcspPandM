@@ -1324,6 +1324,7 @@ Server1_GetParamStringValue
     if( AnscEqualString(ParamName, "DNSServer", TRUE) )
     {
         /* collect value */
+	CcspHalGetDNSServerValue(pDnsServer->InstanceNumber,pDnsServer->DNSServer);//RDKB-EMU
         AnscCopyString(pValue, pDnsServer->DNSServer);
         return 0;
     }

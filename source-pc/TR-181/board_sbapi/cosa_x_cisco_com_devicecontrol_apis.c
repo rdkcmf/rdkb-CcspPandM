@@ -319,8 +319,14 @@ CosaDmlDcGetWanAddressMode
         COSA_DML_WanAddrMode        *pMode
     )
 {
-    *pMode = g_DcWanDns.AddrMode;
-    return ANSC_STATUS_SUCCESS;
+	//RDKB-EMU
+	if(CcspHalGetWanAddressMode())
+		g_DcWanDns.AddrMode = COSA_DML_WanAddrMode_DHCP;
+	else
+		g_DcWanDns.AddrMode = COSA_DML_WanAddrMode_Static;
+
+	*pMode = g_DcWanDns.AddrMode;
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS

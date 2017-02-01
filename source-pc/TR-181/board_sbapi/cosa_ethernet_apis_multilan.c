@@ -1131,6 +1131,11 @@ CosaDmlEthLinkGetStats
         _ansc_memset(pStats, 0, sizeof(COSA_DML_ETH_STATS));
 
         CosaUtilGetIfStats(pEthLink->StaticInfo.Name, pStats);
+	if( ulInstanceNumber == 3)//RDKB-EMU
+        {
+                  AnscCopyString(pEthLink->StaticInfo.Name,"eth0");
+                  CosaUtilGetIfStats(pEthLink->StaticInfo.Name, pStats);
+        }
         
         pStats->BroadcastPacketsReceived    -= pEthLink->LastStats.BroadcastPacketsReceived;
         pStats->BroadcastPacketsSent        -= pEthLink->LastStats.BroadcastPacketsSent;
