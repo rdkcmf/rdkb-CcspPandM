@@ -163,6 +163,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
 #define COSA_DATAMODEL_TSIP_OID                                 40
 #define COSA_DATAMODEL_FILETRANSFER_OID                         41
 
+
 /*
  * This is the cosa datamodel backend manager which is used to manager all backend object
  */
@@ -207,7 +208,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
     ANSC_HANDLE                  hHotspot;                                                  \
     ANSC_HANDLE                  hTSIP;                                                     \
     ANSC_HANDLE                  hFileTransfer;                                             \
-    PCOSA_PLUGIN_INFO            hCosaPluginInfo;
+    PCOSA_PLUGIN_INFO            hCosaPluginInfo;								   		
 
 typedef  struct
 _COSA_BACKEND_MANAGER_OBJECT

@@ -323,4 +323,18 @@ CosaDmlDiGetProcessorSpeed
         ULONG*                      pulSize
     );
 
+ANSC_STATUS
+CosaDmlDiGetAndProcessDhcpServDetectionFlag
+   (
+	   ANSC_HANDLE				   hContext,
+	   BOOLEAN*			   		   pValue
+   );
+
+ANSC_STATUS
+CosaDmlDiSetAndProcessDhcpServDetectionFlag
+   (
+	   ANSC_HANDLE				   hContext,
+	   BOOLEAN*					   pValue,
+	   BOOLEAN*					   pDhcpServDetectEnable
+   );
 #endif

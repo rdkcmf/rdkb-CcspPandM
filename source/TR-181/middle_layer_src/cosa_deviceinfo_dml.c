@@ -2347,7 +2347,21 @@ X_RDKCENTRAL_COM_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
     /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "DhcpServDetectEnable", TRUE))
+    {
+        *pBool = pMyObject->bDhcpServDetectEnable;
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "MultipleGW", TRUE))
+    {
+        *pBool = pMyObject->bMultipleGW;
+        return TRUE;
+    }
+	
     return FALSE;
 }
 
@@ -2484,6 +2498,70 @@ X_RDKCENTRAL_COM_GetParamStringValue
 {
     /* check the parameter name and return the corresponding value */
     return -1;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        X_RDKCENTRAL_COM_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+X_RDKCENTRAL_COM_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "DhcpServDetectEnable", TRUE))
+    {
+		/* Same value should not be process at anytime */
+		if( bValue == pMyObject->bDhcpServDetectEnable )
+		{
+			return TRUE;
+		}
+
+		CosaDmlDiSetAndProcessDhcpServDetectionFlag( pMyObject, &bValue, &pMyObject->bDhcpServDetectEnable );
+
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "MultipleGW", TRUE))
+    {
+		pMyObject->bMultipleGW = bValue;
+
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 /***********************************************************************

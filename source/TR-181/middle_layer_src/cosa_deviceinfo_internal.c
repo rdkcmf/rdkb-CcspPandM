@@ -172,6 +172,9 @@ CosaDeviceInfoInitialize
 	syscfg_get(NULL, "CloudPersonalizationURL", pMyObject->CloudPersonalizationURL, sizeof(pMyObject->CloudPersonalizationURL));
     printf("%s : bxfinitywifiEnable value is : %d\n",__FUNCTION__,pMyObject->bxfinitywifiEnable);
 
+	CosaDmlDiGetAndProcessDhcpServDetectionFlag( pMyObject, &pMyObject->bDhcpServDetectEnable );
+	pMyObject->bMultipleGW	= FALSE;
+
     return returnStatus;
 }
 
