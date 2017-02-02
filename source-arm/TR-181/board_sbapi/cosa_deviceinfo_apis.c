@@ -334,7 +334,11 @@ CosaDmlDiGetProductClass
         return ANSC_STATUS_SUCCESS;
     }
 */
-#if defined(_XB6_PRODUCT_REQ_)
+#if defined(_CBR_PRODUCT_REQ_)
+	{
+		AnscCopyString(pValue, "CBR");
+	}
+#elif defined(_XB6_PRODUCT_REQ_)
 	{
 		 AnscCopyString(pValue, "XB6");
 	}
