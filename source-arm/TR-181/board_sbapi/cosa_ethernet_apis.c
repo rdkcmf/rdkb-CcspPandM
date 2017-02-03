@@ -146,9 +146,15 @@ COSA_DML_ETH_PORT_SINFO      g_EthIntSInfo[] =
         /* Downstream (LAN) ports */
         {SWITCH_PORT_0_NAME,                FALSE,  {0,0,0,0,0,0}},
         {SWITCH_PORT_1_NAME,                FALSE,  {0,0,0,0,0,0}},
-#if !defined(_XB6_PRODUCT_REQ_)
+#if !defined(_XB6_PRODUCT_REQ_) || defined(_CBR_PRODUCT_REQ_)
         {SWITCH_PORT_2_NAME,                FALSE,  {0,0,0,0,0,0}},
         {SWITCH_PORT_3_NAME,                FALSE,  {0,0,0,0,0,0}},
+#endif
+#if defined(_CBR_PRODUCT_REQ_)
+        {SWITCH_PORT_4_NAME,                FALSE,  {0,0,0,0,0,0}},
+        {SWITCH_PORT_5_NAME,                FALSE,  {0,0,0,0,0,0}},
+        {SWITCH_PORT_6_NAME,                FALSE,  {0,0,0,0,0,0}},
+        {SWITCH_PORT_7_NAME,                FALSE,  {0,0,0,0,0,0}},
 #endif
         /* Upstream (WAN) ports */
         {DMSB_ETH_IF_NAME_DFT_WanRouting,   TRUE,   {0,0,0,0,0,0}},
@@ -181,11 +187,22 @@ int g_PortIDs[]={
 CosaEthInterfaceInfo g_EthEntries[] = 
     {
 
-#if defined(_XB6_PRODUCT_REQ_)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
         {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
         {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
         {g_EthIntSInfo + 2, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
         {g_EthIntSInfo + 3, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
+#elif defined(_CBR_PRODUCT_REQ_)
+        {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
+        {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
+        {g_EthIntSInfo + 2, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 2, {0}},
+        {g_EthIntSInfo + 3, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 3, {0}},
+        {g_EthIntSInfo + 4, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 4, {0}},
+        {g_EthIntSInfo + 5, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 5, {0}},
+        {g_EthIntSInfo + 6, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 6, {0}},
+        {g_EthIntSInfo + 7, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 7, {0}},
+        {g_EthIntSInfo + 8, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 9, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
 #else
         {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
         {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
@@ -230,16 +247,24 @@ CosaDmlEthInit
     {
         AnscCopyMemory(g_EthIntSInfo[0].MacAddress, strMac, 6);
         AnscCopyMemory(g_EthIntSInfo[1].MacAddress, strMac, 6);
-#if !defined(_XB6_PRODUCT_REQ_)
+#if !defined(_XB6_PRODUCT_REQ_) || defined(_CBR_PRODUCT_REQ_)
         AnscCopyMemory(g_EthIntSInfo[2].MacAddress, strMac, 6);
         AnscCopyMemory(g_EthIntSInfo[3].MacAddress, strMac, 6);
+#endif
+#if defined(_CBR_PRODUCT_REQ_)
+        AnscCopyMemory(g_EthIntSInfo[4].MacAddress, strMac, 6);
+        AnscCopyMemory(g_EthIntSInfo[5].MacAddress, strMac, 6);
+        AnscCopyMemory(g_EthIntSInfo[6].MacAddress, strMac, 6);
+        AnscCopyMemory(g_EthIntSInfo[7].MacAddress, strMac, 6);
 #endif
     }
 
     if ( -1 != _getMac("erouter0", strMac) )
     {
-#if defined(_XB6_PRODUCT_REQ_)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
     	AnscCopyMemory(g_EthIntSInfo[2].MacAddress, strMac, 6);
+#elif defined(_CBR_PRODUCT_REQ_)
+        AnscCopyMemory(g_EthIntSInfo[8].MacAddress, strMac, 6);
 #else
     	AnscCopyMemory(g_EthIntSInfo[4].MacAddress, strMac, 6);
 #endif
@@ -247,8 +272,10 @@ CosaDmlEthInit
 
     if ( -1 != _getMac("lbr0", strMac) )
     {
-#if defined(_XB6_PRODUCT_REQ_)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
     	 AnscCopyMemory(g_EthIntSInfo[3].MacAddress, strMac, 6);
+#elif defined(_CBR_PRODUCT_REQ_)
+         AnscCopyMemory(g_EthIntSInfo[9].MacAddress, strMac, 6);
 #else
         AnscCopyMemory(g_EthIntSInfo[5].MacAddress, strMac, 6);
 #endif
