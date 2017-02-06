@@ -145,7 +145,7 @@ CosaUtilGetIfAddr
         if (!ioctl(fd, SIOCGIFADDR, &ifr))
            memcpy(&ip4_addr.Value, ifr.ifr_ifru.ifru_addr.sa_data + 2,4);
         else {
-           perror("CosaUtilGetIfAddr IOCTL failure.");
+           CcspTraceWarning(("CosaUtilGetIfAddr IOCTL failure\n"));
            CcspTraceWarning(("Cannot get ipv4 address of netdev:%s\n",netdev));
         }
         close(fd);
