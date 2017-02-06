@@ -2078,13 +2078,13 @@ Port_GetParamStringValue
                 break;
             case COSA_DML_BRG_LINK_TYPE_Moca:
                 pLowerLayer = CosaUtilGetLowerLayers("Device.MoCA.Interface.", pPort->Cfg.LinkName);
-                AnscTraceFlow(("<HL>%s moca lowerlayer=%s\n",__FUNCTION__,pLowerLayer ));
+                //AnscTraceFlow(("<HL>%s moca lowerlayer=%s\n",__FUNCTION__,pLowerLayer ));
                 AnscCopyString(pValue, pLowerLayer);
                 AnscFreeMemory(pLowerLayer);
                 break;
             case COSA_DML_BRG_LINK_TYPE_WiFiSsid:
                 pLowerLayer = CosaUtilGetLowerLayers("Device.WiFi.SSID.", pPort->Cfg.LinkName);
-                AnscTraceFlow(("<HL>%s wifi lowerlayer=%s\n",__FUNCTION__,pLowerLayer ));
+                //AnscTraceFlow(("<HL>%s wifi lowerlayer=%s\n",__FUNCTION__,pLowerLayer ));
                 AnscCopyString(pValue, pLowerLayer);
                 AnscFreeMemory(pLowerLayer);
                 break;
@@ -2095,7 +2095,7 @@ Port_GetParamStringValue
                 break;
             case COSA_DML_BRG_LINK_TYPE_Gre: //$HL 07/15/2013
                 pLowerLayer = CosaUtilGetLowerLayers("Device.X_CISCO_COM_GRE.Interface.", pPort->Cfg.LinkName);
-                AnscTraceFlow(("<HL>%s Gre lowerlayer=%s\n",__FUNCTION__,pLowerLayer ));
+                //AnscTraceFlow(("<HL>%s Gre lowerlayer=%s\n",__FUNCTION__,pLowerLayer ));
                 AnscCopyString(pValue, pLowerLayer);
                 AnscFreeMemory(pLowerLayer);
                 break;

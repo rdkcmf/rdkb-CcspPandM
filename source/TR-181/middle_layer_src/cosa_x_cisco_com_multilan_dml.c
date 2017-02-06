@@ -173,7 +173,7 @@ X_CISCO_COM_MultiLAN_GetParamStringValue
     ANSC_STATUS                     returnStatus;
     PCOSA_BASE_OBJECT               pMyObject    = (PCOSA_BASE_OBJECT)g_pCosaBEManager->hMultiLan;
 
-    AnscTraceFlow(("%s -- %s, buffer size %ul...\n", __FUNCTION__, ParamName, *pUlSize));
+//    AnscTraceFlow(("%s -- %s, buffer size %ul...\n", __FUNCTION__, ParamName, *pUlSize));
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "PrimayLANIPInterface", TRUE) )

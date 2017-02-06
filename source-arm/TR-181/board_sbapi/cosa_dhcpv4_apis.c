@@ -180,7 +180,7 @@ extern char g_Subsystem[32];
         } \
         else \
         { \
-            AnscTraceFlow(("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value)); \
+            /*AnscTraceFlow(("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value)); */\
         } \
         _ansc_memset(param_name, 0, sizeof(param_name)); \
         _ansc_memset(param_value, 0, sizeof(param_value)); \
@@ -194,7 +194,7 @@ extern char g_Subsystem[32];
             AnscTraceFlow(("%s Error %d reading %s %s\n", __FUNCTION__, retPsmGet, param_name, param_value));\
         } \
         else { \
-            AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = \n%s\n", __FUNCTION__,param_name, param_value)); \
+            /*AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = \n%s\n", __FUNCTION__,param_name, param_value)); */\
         } \
     }
 
@@ -207,7 +207,7 @@ extern char g_Subsystem[32];
         } \
         else \
         { \
-            AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value)); \
+            /*AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value));*/ \
             /*printf("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value);*/ \
         } \
         _ansc_memset(param_name, 0, sizeof(param_name)); \
@@ -223,7 +223,7 @@ extern char g_Subsystem[32];
             /*printf("%s Error %d reading %s %s\n", __FUNCTION__, retPsmGet, param_name, param_value);*/\
         } \
         else { \
-            AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = \n%s\n", __FUNCTION__,param_name, param_value)); \
+            /*AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s = \n%s\n", __FUNCTION__,param_name, param_value)); */\
             /*printf("%s: retPsmGet == CCSP_SUCCESS reading %s = \n%s\n", __FUNCTION__,param_name, param_value);*/ \
         } \
     }

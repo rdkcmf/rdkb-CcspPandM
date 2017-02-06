@@ -381,9 +381,9 @@ CosaUtilGetLowerLayers
                     break;
                 }
 
-                AnscTraceFlow(("<HL>%s ucEntryNameValue=%s\n", __FUNCTION__,ucEntryNameValue));
+                //AnscTraceFlow(("<HL>%s ucEntryNameValue=%s\n", __FUNCTION__,ucEntryNameValue));
                 _ansc_sscanf(ucEntryNameValue,"%d",&ulNumOfEntries);
-                AnscTraceFlow(("<HL>%s Wifi # of entries=%d\n", __FUNCTION__,ulNumOfEntries));
+                //AnscTraceFlow(("<HL>%s Wifi # of entries=%d\n", __FUNCTION__,ulNumOfEntries));
 
                 i = 0;
                 ulEntryInstanceNum =1;
@@ -400,8 +400,7 @@ CosaUtilGetLowerLayers
                         ulEntryInstanceNum++;
                         continue;
                     }  
-                    AnscTraceFlow(("<HL>%s WiFi instance(%d) has name =%s inputName=%s\n", 
-                        __FUNCTION__,ulEntryInstanceNum,ucEntryNameValue,pKeyword));
+                    //AnscTraceFlow(("<HL>%s WiFi instance(%d) has name =%s inputName=%s\n",__FUNCTION__,ulEntryInstanceNum,ucEntryNameValue,pKeyword));
                     if ( AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
                     {
                         _ansc_sprintf(ucEntryFullPath,"Device.MoCA.Interface.%d",ulEntryInstanceNum);
@@ -489,9 +488,9 @@ CosaUtilGetLowerLayers
                     AnscTraceFlow(("<HL>%s not found %s\n",__FUNCTION__,varStruct.parameterName ));
                     break;
                 }
-                AnscTraceFlow(("<HL>%s ucEntryNameValue=%s\n", __FUNCTION__,ucEntryNameValue));
+                //AnscTraceFlow(("<HL>%s ucEntryNameValue=%s\n", __FUNCTION__,ucEntryNameValue));
                 _ansc_sscanf(ucEntryNameValue,"%d",&ulNumOfEntries);
-                AnscTraceFlow(("<HL>%s Wifi # of entries=%d\n", __FUNCTION__,ulNumOfEntries));
+                //AnscTraceFlow(("<HL>%s Wifi # of entries=%d\n", __FUNCTION__,ulNumOfEntries));
                 i = 0;
                 ulEntryInstanceNum =1;
                 while (i < ulNumOfEntries)
@@ -507,8 +506,7 @@ CosaUtilGetLowerLayers
                         ulEntryInstanceNum++;
                         continue;
                     }  
-                    AnscTraceFlow(("<HL>%s WiFi instance(%d) has name =%s inputName=%s\n", 
-                        __FUNCTION__,ulEntryInstanceNum,ucEntryNameValue,pKeyword));
+                    //AnscTraceFlow(("<HL>%s WiFi instance(%d) has name =%s inputName=%s\n",__FUNCTION__,ulEntryInstanceNum,ucEntryNameValue,pKeyword));
                     if ( AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
                     {
                         _ansc_sprintf(ucEntryFullPath,"Device.WiFi.SSID.%d",ulEntryInstanceNum);
