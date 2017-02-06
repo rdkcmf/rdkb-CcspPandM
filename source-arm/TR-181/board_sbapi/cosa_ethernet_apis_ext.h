@@ -48,7 +48,17 @@
 #define SWITCH_PORT_1_NAME "sw_2"
 #define SWITCH_PORT_2_NAME "sw_3"
 #define SWITCH_PORT_3_NAME "sw_4"
-#define SWITCH_PORT_MOCA_NAME "sw_5"
+
+#if defined (_CBR_PRODUCT_REQ_)
+    #define SWITCH_PORT_4_NAME "sw_5"
+    #define SWITCH_PORT_5_NAME "sw_6"
+    #define SWITCH_PORT_6_NAME "sw_7"
+    #define SWITCH_PORT_7_NAME "sw_8"
+    #define SWITCH_PORT_MOCA_NAME "sw_9"
+#else
+    #define SWITCH_PORT_MOCA_NAME "sw_5"
+#endif
+
 #define SWITCH_PORT_EWAN_NAME "ewan"
 #define SWITCH_PORT_CM_NAME "cmwan"
 
