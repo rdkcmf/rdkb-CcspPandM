@@ -32,25 +32,36 @@ static XbbConfiguration xbbConfig;
 static XbbAlarmInfo*    xbbAlarms = NULL;
 static int const        kStatusCacheUpdateSeconds = 10;
 static int const        kConfigCacheUpdateSeconds = 10;
+static int const        kAlarmCacheUpdateSeconds = 10;
 static time_t           lastStatusUpdateTime = 0;
 static time_t           lastConfigUpdateTime = 0;
+static time_t           lastAlarmUpdateTime = 0;
 static int              alarmsDirty = 1;
 static uint16_t         numAlarms = 0;
+static int              alarmIndex = 0;
 
 static void xbbUpdateAlarms()
 {
-  if (xbbAlarms == NULL || alarmsDirty)
+  XBB1_DEBUG_ENTER("xbbUpdateAlarms");
+  if (alarmsDirty)
   {
-    if (xbbAlarms)
+    time_t now = time(0);
+    if(now > (kAlarmCacheUpdateSeconds + lastAlarmUpdateTime))
     {
-      free(xbbAlarms);
-      xbbAlarms = NULL;
-    }
+        if(xbbAlarms)
+        {
+        	free(xbbAlarms);
+                xbbAlarms = NULL;
+                numAlarms = 0;
+                alarmIndex = 0;
+        }
 
-    if (!xbbGetAlarms(&xbbAlarms, &numAlarms))
-    {
-      CcspTraceWarning(("error getting battery alarms list.\n"));
-      xbbAlarms = NULL;
+    	if (!xbbGetAlarms(&xbbAlarms, &numAlarms))
+    	{
+      		CcspTraceWarning(("error getting battery alarms list.\n"));
+      		xbbAlarms = NULL;
+    	}
+        lastAlarmUpdateTime = now;	 
     }
   }
 }
@@ -152,7 +163,6 @@ XBB1_GetParamIntValue(ANSC_HANDLE h, char* name, int* val)
   XBB1_CHECK_NULL(val);
 
   xbbUpdateStatus();
-  xbbUpdateAlarms();
   xbbUpdateConfig();
 
   XBB1_COPY_PARAM(int, "currentTemperature", xbbStatus.currentTemperature);
@@ -162,18 +172,11 @@ XBB1_GetParamIntValue(ANSC_HANDLE h, char* name, int* val)
   XBB1_COPY_PARAM(int, "lowTempThreshold", xbbConfig.lowTempThreshold);
   XBB1_COPY_PARAM(int, "highTempThreshold", xbbConfig.highTempThreshold);
 
-  if (XBB1_StringEquals("alarmNumberOfEntries", name))
-  {
-    xbbUpdateAlarms();
-  }
-
   if (XBB1_StringEquals("discover", name))
   {
     *val = 0;
     return TRUE;
   }
-
-  XBB1_COPY_PARAM(int, "alarmNumberOfEntries", numAlarms);
 
   return FALSE;
 }
@@ -227,6 +230,11 @@ XBB1_GetParamUlongValue(ANSC_HANDLE h, char* name, ULONG* val)
     return TRUE;
   }
 
+  if (XBB1_StringEquals("alarmNumberOfEntries", name))
+  {
+    xbbUpdateAlarms();
+  }
+
   XBB1_COPY_PARAM(ULONG, "batteryHealth", xbbStatus.batteryHealth);
   XBB1_COPY_PARAM(ULONG, "batteryStatus", xbbStatus.batteryStatus);
   XBB1_COPY_PARAM(ULONG, "secondsOnBattery", xbbStatus.secondsOnBattery);
@@ -243,6 +251,8 @@ XBB1_GetParamUlongValue(ANSC_HANDLE h, char* name, ULONG* val)
 
   XBB1_COPY_PARAM(ULONG, "lowTempDwellTripPointSeconds", xbbConfig.lowTempDwellTripPointSeconds);
   XBB1_COPY_PARAM(ULONG, "highTempDwellTripPointSeconds", xbbConfig.highTempDwellTripPointSeconds);
+
+  XBB1_COPY_PARAM(ULONG, "alarmNumberOfEntries", numAlarms);
 
   return FALSE;
 }
@@ -346,23 +356,23 @@ XBB1_SetParamStringValue(ANSC_HANDLE h, char* name, char* val, ULONG* n)
 ULONG
 XBB1_Alarm_GetEntryCount(ANSC_HANDLE h)
 {
+  XBB1_DEBUG_ENTER("XBB1_Alarm_GetEntryCount");
   uint16_t n;
-
+   
   xbbUpdateAlarms();
 
   n = numAlarms;
   if (n > 16)
     n = 16;
-
+  CcspTraceInfo(("Number of Alarms: %d\n", n));
   return (ULONG) n;
 }
 
 ANSC_HANDLE
 XBB1_Alarm_GetEntry(ANSC_HANDLE h, ULONG index, ULONG* inst)
 {
+  XBB1_DEBUG_ENTER("XBB1_Alarm_GetEntry");
   xbbUpdateAlarms();
-  XBB1_CHECK_NULL(h);
-  XBB1_CHECK_NULL(inst);
 
   *inst = index + 1;
 
@@ -370,25 +380,46 @@ XBB1_Alarm_GetEntry(ANSC_HANDLE h, ULONG index, ULONG* inst)
   {
     return (ANSC_HANDLE) &xbbAlarms[index];
   }
-
   return NULL;
+}
+
+BOOL
+XBB1_Alarm_IsUpdated(ANSC_HANDLE h)
+{
+    XBB1_DEBUG_ENTER("XBB1_Alarm_IsUpdated");
+    return TRUE;
+}
+
+
+ULONG
+XBB1_Alarm_Synchronize(ANSC_HANDLE h)
+{
+    XBB1_DEBUG_ENTER("XBB1_Alarm_Synchronize");
+    return 0;
+}
+
+BOOL
+XBB1_Alarm_GetParamIntValue(ANSC_HANDLE h, char* name, int* val)
+{
+  XBB1_DEBUG_ENTER("XBB1_Alarm_GetParamIntValue");
+  alarmIndex = ((XbbAlarmInfo *)h - xbbAlarms) + 1;
+  XBB1_COPY_PARAM(int, "alarm", alarmIndex); 
+  return FALSE; 
 }
 
 BOOL
 XBB1_Alarm_GetParamUlongValue(ANSC_HANDLE h, char* name, int* val)
 {
-  XbbAlarmInfo* alarm;
-
-  XBB1_DEBUG_ENTER(name);
-  XBB1_CHECK_NULL(name);
-  XBB1_CHECK_NULL(val);
-
+  XbbAlarmInfo* alarm = NULL;
+  XBB1_DEBUG_ENTER("XBB1_Alarm_GetParamUlongValue");
+  unsigned int alarmDesc[7] = {6, 4, 5, 0, 1, 2, 3};
+  xbbUpdateAlarms();
   alarm = (XbbAlarmInfo *) h;
+    
   if (alarm)
   {
-    XBB1_COPY_PARAM(ULONG, "timestamp", alarm->timestamp);
-    XBB1_COPY_PARAM(ULONG, "type", alarm->type);
+    XBB1_COPY_PARAM(ULONG, "timeStamp", alarm->timestamp);
+    XBB1_COPY_PARAM(ULONG, "alarmDescription", alarmDesc[alarm->type]);
   }
-
   return FALSE;
 }
