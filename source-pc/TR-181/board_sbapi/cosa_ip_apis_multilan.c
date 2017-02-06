@@ -972,7 +972,9 @@ CosaDmlIpIfMlanGetEntry
 
             AnscCopyMemory(&pEntry->Cfg, &pIpIf->Cfg, sizeof(pIpIf->Cfg));
             AnscCopyMemory(&pEntry->Info, &pIpIf->Info, sizeof(pIpIf->Info));
-
+	    AnscCopyString(pIpIf->Info.Name,"eth0");//RDKB-EMU
+            AnscCopyString(pEntry->Info.Name,pIpIf->Info.Name);//RDKB-EMU
+            AnscCopyString(pEntry->Cfg.LinkName,pIpIf->Info.Name);//RDKB-EMU
             pEntry->Info.Status = getIfStatus(pIpIf->Info.Name, NULL);
 
             return  ANSC_STATUS_SUCCESS;

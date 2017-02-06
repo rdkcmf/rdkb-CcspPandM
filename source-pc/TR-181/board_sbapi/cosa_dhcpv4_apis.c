@@ -498,6 +498,7 @@ CosaDmlDhcpcGetInfo
         if ( ulInstanceNumber == g_dhcpv4_client[index].Cfg.InstanceNumber )
         {
             AnscCopyMemory(pInfo,  &g_dhcpv4_client[index].Info, sizeof(COSA_DML_DHCPC_INFO));
+	    pInfo->LeaseTimeRemaining = CcspHalDhcpcGetInfo();//RDKB-EMU
             return ANSC_STATUS_SUCCESS;
         }
     }   

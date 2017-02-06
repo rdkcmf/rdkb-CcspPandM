@@ -224,8 +224,7 @@ CosaDmlDiGetManufacturer
         ULONG*                      pulSize
     )
 {
-	//AnscCopyString(pValue, "Cisco");
-	AnscCopyString(pValue, "L&T Technology Services");//RDKB-EMU
+	 AnscCopyString(pValue, "Cisco");
 	*pulSize = AnscSizeOfString(pValue);
 	return ANSC_STATUS_SUCCESS;
 }
@@ -240,29 +239,20 @@ CosaDmlDiGetManufacturerOUI
 {
 
 	char val[64] = {0};
-	//char param_name[256] = {0};RDKB-EMU
-	int ManufacturerOUI_no;
+	char param_name[256] = {0};
 
-	/*    _ansc_sprintf(param_name, "%s%s", DMSB_TR181_PSM_DeviceInfo_Root, DMSB_TR181_PSM_DeviceInfo_ManufacturerOUI);        
+	_ansc_sprintf(param_name, "%s%s", DMSB_TR181_PSM_DeviceInfo_Root, DMSB_TR181_PSM_DeviceInfo_ManufacturerOUI);
 
-	      if (PsmGet(param_name, val, sizeof(val)) != 0) {
-	      pValue[0] = '\0';
-	 *pulSize = 0;
-	 return ANSC_STATUS_FAILURE;
-	 }
-	 else {
-	 AnscCopyString(pValue, val);
-	 *pulSize = AnscSizeOfString(pValue);
-	 return ANSC_STATUS_SUCCESS;
-	 }*/
-	ManufacturerOUI_no=platform_hal_GetManufacturerOUI(val);
-	if(ManufacturerOUI_no == 0)
+	if (PsmGet(param_name, val, sizeof(val)) != 0) {
+		pValue[0] = '\0';
+		*pulSize = 0;
+		return ANSC_STATUS_FAILURE;
+	}
+	else {
 		AnscCopyString(pValue, val);
-	else
-		AnscCopyString(pValue, "A086ED");
-
-	*pulSize = AnscSizeOfString(pValue);
-	return ANSC_STATUS_SUCCESS;
+		*pulSize = AnscSizeOfString(pValue);
+		return ANSC_STATUS_SUCCESS;
+	}
 
 	/*
 	   AnscCopyString(pValue, "18550F");
@@ -339,7 +329,7 @@ CosaDmlDiGetSerialNumber
 	if(serial_no_status == 0)
 		AnscCopyString(pValue,serial_no );
 	else
-		AnscCopyString(pValue,"RDKB-EMULATOR_012345");
+		AnscCopyString(pValue,"RDKBEMULATOR-012345");
 	*pulSize = AnscSizeOfString(pValue);
 	return ANSC_STATUS_SUCCESS;
 }
@@ -367,7 +357,7 @@ CosaDmlDiGetSoftwareVersion
     )
 {
     //AnscCopyString(pValue, _ERROR_);//RDKB-EMU
-    AnscCopyString(pValue, "0.0.0.0");
+    AnscCopyString(pValue, "");
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
@@ -411,7 +401,7 @@ CosaDmlDiGetProvisioningCode
 	if(ProvisioningCode_status == 0)
 		AnscCopyString(pValue,ProvisioningCode);
 	else
-		AnscCopyString(pValue,"RDKB-EMULATOR_012345");
+		AnscCopyString(pValue,"RDKBEMULATOR-012345");
 
 	*pulSize = AnscSizeOfString(pValue);
 	return ANSC_STATUS_SUCCESS; 
@@ -451,7 +441,7 @@ CosaDmlDiGetUpTime
         ANSC_HANDLE                 Context
     )
 {
-#if defined _ANSC_LINUX_
+//#if defined _ANSC_LINUX_ //RDKB-EMU
     struct sysinfo s_info;
 
     if(sysinfo(&s_info))
@@ -462,8 +452,8 @@ CosaDmlDiGetUpTime
     {
         return s_info.uptime;
     }
-#endif 
-    return 0;
+//#endif 
+   // return 0;
 }
 
 

@@ -1025,7 +1025,7 @@ Client_GetParamStringValue
           
             AnscCopyString( &tmpBuff[len], _ansc_inet_ntoa(*((struct in_addr *)(&pDhcpc->Info.IPRouters[i]))) );
         }
-        
+       	CcspHaldhcpv4cGetGw(tmpBuff);//RDKB-EMU 
         if ( AnscSizeOfString(tmpBuff) < *pUlSize)
         {
             AnscCopyString(pValue, tmpBuff);
