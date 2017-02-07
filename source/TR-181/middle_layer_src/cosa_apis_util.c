@@ -563,6 +563,7 @@ CosaUtilGetLowerLayers
             
             if ( pMatchedLowerLayer )
             {
+		AnscFreeMemory(pTableStringToken);
                 break;
             }
         }
