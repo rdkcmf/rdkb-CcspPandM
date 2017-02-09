@@ -357,7 +357,9 @@ CosaDmlDiGetSoftwareVersion
     )
 {
     //AnscCopyString(pValue, _ERROR_);//RDKB-EMU
-    AnscCopyString(pValue, "");
+    char software_version[256] = {0};
+    platform_hal_GetSoftwareVersion(software_version,0);//RDKB-EMU
+    AnscCopyString(pValue,software_version);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
