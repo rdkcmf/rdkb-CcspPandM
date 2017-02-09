@@ -324,6 +324,7 @@ then
                               if [ "$check_success" != "" ]
                               then
                                  echo_t "Network Response : Setting ConfigureWiFi to true is success"
+				 echo_et "WIFI_PERSONALIZATION_CAPTIVE:1"
                                  touch /tmp/.configurewifidone
                               fi
                            fi
