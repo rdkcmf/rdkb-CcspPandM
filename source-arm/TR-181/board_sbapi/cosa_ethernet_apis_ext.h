@@ -54,7 +54,6 @@
     #define SWITCH_PORT_5_NAME "sw_6"
     #define SWITCH_PORT_6_NAME "sw_7"
     #define SWITCH_PORT_7_NAME "sw_8"
-    #define SWITCH_PORT_MOCA_NAME "sw_9"
 #else
     #define SWITCH_PORT_MOCA_NAME "sw_5"
 #endif
