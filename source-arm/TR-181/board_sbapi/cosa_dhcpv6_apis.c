@@ -5348,7 +5348,7 @@ dhcpv6c_dbg_thrd(void * in)
                         CosaDmlDHCPv6sTriggerRestart(FALSE);
                         
                         /*We need get a global ip addres */
-#if defined(_COSA_BCM_ARM_)
+#if defined(_COSA_BCM_ARM_) || defined(INTEL_PUMA7)
                         /*this is for tchxb6*/
                         CcspTraceWarning((" %s dhcpv6_assign_global_ip to brlan0 \n", __FUNCTION__));
                         ret = dhcpv6_assign_global_ip(v6pref, "brlan0", globalIP);
