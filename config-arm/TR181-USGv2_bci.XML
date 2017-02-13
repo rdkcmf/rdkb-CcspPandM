@@ -664,6 +664,50 @@
         </parameters>
 
       <objects>
+
+        <object>
+
+            <name>X_RDKCENTRAL-COM_MaintenanceWindow</name>
+
+            <objectType>object</objectType>
+
+            <functions>
+
+                <func_GetParamStringValue>MaintenanceWindow_GetParamStringValue</func_GetParamStringValue>
+
+                <func_SetParamStringValue>MaintenanceWindow_SetParamStringValue</func_SetParamStringValue>
+
+            </functions>
+
+            <parameters>
+
+                <parameter>
+
+                    <name>FirmwareUpgradeStartTime</name>
+
+                    <type>string(64)</type>
+
+                    <syntax>string</syntax>
+
+                    <writable>true</writable>
+
+                </parameter>
+
+                <parameter>
+
+                    <name>FirmwareUpgradeEndTime</name>
+
+                    <type>string(64)</type>
+
+                    <syntax>string</syntax>
+
+                    <writable>true</writable>
+
+                </parameter>
+
+            </parameters>
+
+        </object>
 	  
 	<!--	<object>
 

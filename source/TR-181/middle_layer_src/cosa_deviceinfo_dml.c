@@ -3922,3 +3922,160 @@ Logging_SetParamBoolValue
 
     return FALSE;
 }
+
+/* Maintenance window can be customized for bci routers */
+#if defined(_CBR_PRODUCT_REQ_)
+
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_MaintenanceWindow.
+
+    *  MaintenanceWindow_GetParamStringValue
+    *  MaintenanceWindow_SetParamStringValue
+
+***********************************************************************/
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        MaintenanceWindow_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     TRUE if succeeded;
+                FALSE if failed
+
+**********************************************************************/
+
+BOOL
+MaintenanceWindow_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    BOOL bReturnValue = FALSE;
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "FirmwareUpgradeStartTime", TRUE))
+    {
+        /* collect value */
+        bReturnValue = CosaDmlDiGetFirmwareUpgradeStartTime(NULL, pValue,pulSize);
+        return bReturnValue;
+    }
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "FirmwareUpgradeEndTime", TRUE))
+    {
+        /* collect value */
+        bReturnValue = CosaDmlDiGetFirmwareUpgradeEndTime (NULL, pValue,pulSize);
+        return bReturnValue;
+    }
+
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return bReturnValue;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        MaintenanceWindow_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded,
+                FALSE if failed.
+
+**********************************************************************/
+BOOL
+MaintenanceWindow_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    BOOL bReturnValue = FALSE;
+    ANSC_STATUS retValue = ANSC_STATUS_FAILURE;
+
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "FirmwareUpgradeStartTime", TRUE))
+    {
+        retValue = CosaDmlDiSetFirmwareUpgradeStartTime (pString);
+    }
+
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "FirmwareUpgradeEndTime", TRUE))
+    {
+        retValue = CosaDmlDiSetFirmwareUpgradeEndTime (pString);
+    }
+
+    else
+    {
+        CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    }
+
+    if (retValue == ANSC_STATUS_SUCCESS)
+    {
+        bReturnValue = TRUE;
+    }
+    else
+    {
+        bReturnValue = FALSE;
+    }
+
+    return bReturnValue;
+}
+
+#endif
