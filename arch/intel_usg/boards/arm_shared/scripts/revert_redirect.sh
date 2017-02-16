@@ -134,7 +134,16 @@ then
     syscfg set redirection_flag false
     syscfg commit
 fi
-		
+
+echo_t "Revert Redirect : Enabling Moca after personalization"
+mocaEnable=`dmcli eRT setv Device.MoCA.Interface.1.Enable bool true | grep succeed`
+if [ "$mocaEnable" != "" ]
+then
+   echo_t "Revert Redirect : Moca Enable success after personalization"
+else
+   echo_t "Revert Redirect : Moca Enable failed after personalization"
+fi
+
 sysevent set captiveportaldhcp reverted
 
 exit 0
