@@ -1398,28 +1398,6 @@
 
         </parameter>
 
-       <parameter>
-
-          <name>TimeOffset</name>
-
-          <type>string(256)</type>
-
-          <syntax>string</syntax>
-
-          <writable>true</writable>
-
-        </parameter>
-
-        <parameter>
-
-          <name>UTC_Enable</name>
-
-          <type>boolean</type>
-
-          <syntax>bool</syntax>
-
-       </parameter>
-
       </parameters>
 
     </object>

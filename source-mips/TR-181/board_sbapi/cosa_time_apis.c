@@ -466,48 +466,6 @@ CosaDmlTimeSetCfg
        return ANSC_STATUS_SUCCESS;
 }
 
-int checkIfUTCEnabled(const char *fname)
-{
-#if 0
-    FILE *file;
-    if (file = fopen(fname, "r"))
-    {
-        fclose(file);
-        return 0;
-    }
-    return 1;
-#endif
-
-
-       FILE *fp;
-       char temp[32]={0};
-       char *str="UTC_ENABLE=true";
-       if((fp = fopen(fname, "r")) == NULL) {
-
-                printf("dev proprties file is not available\n");
-                return 1;
-       }
-
-        while(fgets(temp, 32, fp) != NULL) {
-                if((strstr(temp, str)) != NULL) {
-                        printf("UTC is enabled****************\n");
-                        fclose(fp);
-                        return 0;
-                }
-        }
-
-        if(fp) {
-                fclose(fp);
-        }
-
-                        printf("UTC is not enabled *************\n");
-        return 1;
-
-}
-
-
-
-
 ANSC_STATUS
 CosaDmlTimeGetCfg
     (
@@ -517,7 +475,6 @@ CosaDmlTimeGetCfg
 {
     UtopiaContext ctx;
     int rc = 0;
-    int utc_enabled=0;
     int iEnbl = 0;
     char val[UTOPIA_TR181_PARAM_SIZE1];
 
@@ -575,21 +532,6 @@ CosaDmlTimeGetCfg
        /* Free Utopia Context */
        Utopia_Free(&ctx,0);
      }
-
-     utc_enabled = checkIfUTCEnabled(DEV_PROPERTIES_FILE);
-     if (0 == utc_enabled)
-     {
-        CcspTraceWarning(("%s: UTC Enable file exists\n", __FUNCTION__));
-        printf("%s: UTC Enable file exists\n", __FUNCTION__);
-        pTimeCfg->bUTCEnabled = TRUE;
-     }
-     else
-     {
-        CcspTraceWarning(("%s: UTC Enable file not exists\n", __FUNCTION__));
-        printf("%s: UTC Enable file not exists\n", __FUNCTION__);
-        pTimeCfg->bUTCEnabled = FALSE;
-      }
-
      if (rc != 0)
        return ERR_SYSCFG_FAILED;    
      else
@@ -620,13 +562,6 @@ CosaDmlTimeGetState
 }
 
 ANSC_STATUS
-CosaDmlTimeGetTimeOffset
-    (
-       ANSC_HANDLE                 hContext,
-       char                       *pTimeOffset
-    );
-
-ANSC_STATUS
 CosaDmlTimeGetLocalTime
     (
        ANSC_HANDLE                 hContext,
@@ -635,14 +570,7 @@ CosaDmlTimeGetLocalTime
 {
     time_t t;
     struct tm *pLcltime;
-    char timeOffset[256];
-    int offset;
     t = time(NULL);
-#if (_COSA_BCM_MIPS_)
-    CosaDmlTimeGetTimeOffset((ANSC_HANDLE)NULL, timeOffset);
-    offset = atoi(timeOffset);
-    t += (time_t)offset;
-#endif
     pLcltime = localtime(&t);
     _ansc_sprintf(pCurrLocalTime, "%.4u-%.2u-%.2u %.2u:%.2u:%.2u",
             (pLcltime->tm_year)+1900,
