@@ -337,4 +337,29 @@ CosaDmlDiSetAndProcessDhcpServDetectionFlag
 	   BOOLEAN*					   pValue,
 	   BOOLEAN*					   pDhcpServDetectEnable
    );
+
+#if defined(_CBR_PRODUCT_REQ_)
+ANSC_STATUS
+CosaDmlDiGetFirmwareUpgradeStartTime
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        ULONG*                      pulSize
+    );
+
+ANSC_STATUS
+CosaDmlDiGetFirmwareUpgradeEndTime
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        ULONG*                      pulSize
+    );
+
+ANSC_STATUS
+CosaDmlDiSetFirmwareUpgradeStartTime (char* pString);
+
+ANSC_STATUS
+CosaDmlDiSetFirmwareUpgradeEndTime (char* pString);
+#endif
+
 #endif
