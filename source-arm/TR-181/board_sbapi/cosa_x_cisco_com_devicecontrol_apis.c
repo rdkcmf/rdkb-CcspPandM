@@ -1629,6 +1629,11 @@ CosaDmlDcSetFactoryReset
 	int factory_reset_mask = 0;
 	UtopiaContext utctx = {0};
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+	
+#if defined (_XB6_PRODUCT_REQ_)
+	int delay_time = 0;
+	int delay = 0;
+#endif
 
 	if (pValue == NULL || pValue[0] == '\0')
 		factory_reset_mask |= FR_NONE;
@@ -1649,6 +1654,32 @@ CosaDmlDcSetFactoryReset
 
 			tok = strtok_r(NULL, ",", &sv);
 		}
+		
+#if defined (_XB6_PRODUCT_REQ_)
+		//XB6 Needs Time for SNMP packet to get out of device from Atom 
+		if (strstr(pValue, "delay") != NULL) {
+			delay = 1;
+		}
+		if (strstr(pValue, "delay=") != NULL) {
+			delay_time = atoi(strstr(pValue, "delay=") + strlen("delay="));
+		}
+		
+		if(delay) {
+			if(delay_time)
+			{
+				fprintf(stderr, "CosaDmlDcSetFactoryReset: is going to wait for %d seconds\n", delay_time);
+				CcspTraceWarning(("CosaDmlDcSetFactoryReset: is going to wait for %d seconds\n", delay_time));
+            	sleep (delay_time);
+			}
+			else
+			{
+				fprintf(stderr, "CosaDmlDcSetFactoryReset: is going to wait for 5 seconds\n");
+				CcspTraceWarning(("CosaDmlDcSetFactoryReset: is going to wait for 5 seconds\n"));
+				sleep(5);
+			}
+		}
+#endif
+		
 	}
 
 	if (!factory_reset_mask)
