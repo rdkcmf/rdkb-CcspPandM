@@ -3057,7 +3057,7 @@ static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger)
     char str[32] = "restart";
     
     DHCPVS_DEBUG_PRINT
-  #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+  #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(_CBR_PRODUCT_REQ_)
     commonSyseventSet("dhcpv6_server-restart", "");
   #else
   
@@ -3639,7 +3639,7 @@ CosaDmlDhcpv6sEnable
     {
         /* we need disable server. */
         
-       #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+       #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(_CBR_PRODUCT_REQ_)
         commonSyseventSet("dhcpv6_server-stop", "");
        #else
         _dibbler_server_operation("stop");
@@ -5131,7 +5131,7 @@ void CosaDmlDhcpv6sRebootServer()
          is_usg_in_bridge_mode(&isBridgeMode);
          if ( isBridgeMode )
             return;
-
+#ifndef _CBR_PRODUCT_REQ_
         //make sure it's not in a bad status
         sprintf(cmd, "ps|grep %s|grep -v grep", SERVER_BIN);
         _get_shell_output(cmd, out, sizeof(out));
@@ -5140,7 +5140,7 @@ void CosaDmlDhcpv6sRebootServer()
             sprintf(cmd, "kill `pidof %s`", SERVER_BIN);
             system(cmd);
         }
-
+#endif
         _dibbler_server_operation("start");
     } else{
         close(fd);
