@@ -1417,11 +1417,6 @@ PortMapping_AddEntry
     ANSC_STATUS                          returnStatus      = ANSC_STATUS_SUCCESS;
     CHAR                                 tmpBuff[64]       = {0};
     BOOL                                      bridgeMode;
-    extern ANSC_HANDLE bus_handle;//RDKB_EMULATOR PSM Access
-    extern char g_Subsystem[32];
-    char param_value[50] = {0};
-    char *Max_instance = "Device.NAT.PortMapping.MaxInstance";
-    char param_name[100] ={0};
 
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
@@ -1455,10 +1450,6 @@ PortMapping_AddEntry
     pNatPMapping->X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Static;
 
     CosaSListPushEntryByInsNum(&pNat->NatPMappingList, (PCOSA_CONTEXT_LINK_OBJECT)pPMappingCxtLink);
-    memset(param_name, 0, sizeof(param_name));//RDKB_EMULATOR PSM Access
-    sprintf(param_name,Max_instance);
-    sprintf(param_value,"%d",pNat->MaxInstanceNumber);
-    PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
 
     returnStatus = CosaNatRegSetNatInfo(pNat);
 
@@ -1508,11 +1499,6 @@ PortMapping_DelEntry
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT       pPMappingCxtLink  = (PCOSA_CONTEXT_PMAPPING_LINK_OBJECT)hInstance;
     PCOSA_DML_NAT_PMAPPING                   pNatPMapping      = (PCOSA_DML_NAT_PMAPPING)pPMappingCxtLink->hContext;
     BOOL                                      bridgeMode;
-    extern ANSC_HANDLE bus_handle;////RDKB_EMULATOR PSM Access
-    extern char g_Subsystem[32];
-    char param_value[50] = {0};
-    char *Max_instance = "Device.NAT.PortMapping.MaxInstance";
-    char param_name[100] ={0};
 
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
@@ -1537,13 +1523,11 @@ PortMapping_DelEntry
 
         AnscFreeMemory(pPMappingCxtLink->hContext);
         AnscFreeMemory(pPMappingCxtLink);
-	pNat->MaxInstanceNumber--;
+        if (pNat->MaxInstanceNumber)
+        {
+            pNat->MaxInstanceNumber--;
+        }
     }
-	/*PSM Deletion of MAXInstanceNumber*/
-        memset(param_name, 0, sizeof(param_name));
-        sprintf(param_name,Max_instance);
-        sprintf(param_value,"%d",pNat->MaxInstanceNumber);
-        PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
 
     return returnStatus;
 }

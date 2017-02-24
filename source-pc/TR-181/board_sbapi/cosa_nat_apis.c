@@ -839,6 +839,11 @@ CosaDmlNatAddPortMapping
         index=sizeof(g_nat_portmapping[0])*g_count/sizeof(COSA_DML_NAT_PMAPPING);
 	printf("index=%d\n",index);
         PCOSA_DML_NAT_PMAPPING pMapping;
+        extern ANSC_HANDLE bus_handle;//RDKB_EMULATOR PSM Access
+        extern char g_Subsystem[32];
+        char param_value[50] = {0};
+        char *Max_instance = "Device.NAT.PortMapping.MaxInstance";
+        char param_name[100] ={0};
         pMapping=(PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(COSA_DML_NAT_PMAPPING));
         if(pEntry != NULL)//RDKB_EMULATOR
         {
@@ -866,6 +871,10 @@ CosaDmlNatAddPortMapping
                         prot = g_nat_portmapping[index].Protocol==1?"tcp":g_nat_portmapping[index].Protocol==2?"udp":"both";
                         port_forwarding_add_rule(g_nat_portmapping[index].InternalClient.Dot,prot,g_nat_portmapping[index].ExternalPort,g_nat_portmapping[index].ExternalPortEndRange);
         }
+        memset(param_name, 0, sizeof(param_name));//RDKB_EMULATOR PSM Access
+        sprintf(param_name,Max_instance);
+        sprintf(param_value,"%d",g_count);
+        PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -902,6 +911,11 @@ CosaDmlNatDelPortMapping
 	    PCOSA_DML_NAT_PMAPPING pNatPMapping;
 	    char cmd[1024]= {'\0'};
 	    char *prot;
+            extern ANSC_HANDLE bus_handle;//RDKB_EMULATOR PSM Access
+            extern char g_Subsystem[32];
+            char param_value[50] = {0};
+            char *Max_instance = "Device.NAT.PortMapping.MaxInstance";
+            char param_name[100] ={0};
 	    for(index =0; index < sizeof(g_nat_portmapping[0])*g_count/sizeof(COSA_DML_NAT_PMAPPING); index++)
 	    {
 		    if (g_nat_portmapping[index].InstanceNumber==ulInstanceNumber)//RDKB_EMULATOR
@@ -923,6 +937,10 @@ CosaDmlNatDelPortMapping
 		    PSMSetPortMappingRecordValues(pNatPMapping,pNatPMapping->InstanceNumber);
 	    }
 	    g_count--;
+            memset(param_name, 0, sizeof(param_name));//RDKB_EMULATOR PSM Access
+            sprintf(param_name,Max_instance);
+            sprintf(param_value,"%d",g_count);
+            PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
 
 	    return ANSC_STATUS_SUCCESS;
 }
