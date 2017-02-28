@@ -76,7 +76,7 @@ export PATH=/fss/gw:$PATH
 defaultMobileNumber="0000000000"
 #echo "Default Mob No = $defaultMobileNumber"
 #echo "Mobile_Number = $Mobile_Number"
-if [ "$Mobile_Number" != "$defaultMobileNumber" ]
+if [ "$Mobile_Number" != "" ] && [ "$Mobile_Number" != "$defaultMobileNumber" ]
 then
 	echo_t "Revert Redirect : Triggering EMS service using curl.."
 	#curl --data "SSID_1=$SSID_1&Password_1=$Password_1&Mobile_Number=$Mobile_Number&SSID_2=$SSID_1&Password_2=$Password_2&CM_MAC=$CM_MAC&CM_IP=$CM_IP" http://96.119.182.89:8080/captiveportalEMS
@@ -95,6 +95,7 @@ then
 
 else
 	echo_t "Revert Redirect : SMS option is not opted for.."
+        echo_t "Mobile number:$Mobile_Number"
 fi
 
 sleep 5
