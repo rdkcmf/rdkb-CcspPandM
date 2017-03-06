@@ -2107,7 +2107,7 @@ LanMngm_Commit
 			char sub[64]={0};
 			unsigned int iip=pLanMngm->LanIPAddress.Value;
 			unsigned int isub=pLanMngm->LanSubnetMask.Value;
-			snprintf(ip, sizeof(ip), "%d.%d.%d.%d", (iip >> 24) & 0xFF, (iip >> 16) & 0xFF, (iip >> 8) & 0xFF, (iip ) & 0xFF);
+			snprintf(ip, sizeof(ip), "%d.%d.%d.%d", (iip >> 24) & 0xFF, (iip >> 16) & 0xFF, (iip >> 8) & 0xFF, 254);
 			snprintf(sub, sizeof(sub), "%d.%d.%d.%d", (isub >> 24) & 0xFF, (isub >> 16) & 0xFF, (isub >> 8) & 0xFF, (isub ) & 0xFF);
 CcspTraceWarning( ("--------- LanMngm_Commit CosaDmlDcResetBr0 %s,%s>>\n", ip, sub));				
 			CosaDmlDcResetBr0(ip, sub);
