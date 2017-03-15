@@ -81,10 +81,30 @@
 #include "cosa_nat_internal.h"
 
 #include "dml_tr181_custom_cfg.h"
+#include "dmsb_tr181_psm_definitions.h"
 
 #if     CFG_USE_CCSP_SYSLOG
     #include <ccsp_syslog.h>
 #endif
+
+// for PSM access
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
+
+#define _PSM_WRITE_PARAM_DMZ(_PARAM_NAME) { \
+        _ansc_sprintf(param_name, _PARAM_NAME); \
+        retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value); \
+        if (retPsmSet != CCSP_SUCCESS) { \
+            AnscTraceFlow(("%s Error %d writing %s %s\n", __FUNCTION__, retPsmSet, param_name, param_value));\
+        } \
+        else \
+        { \
+            AnscTraceFlow(("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value)); \
+           printf("%s: retPsmSet == CCSP_SUCCESS writing %s = %s \n", __FUNCTION__,param_name,param_value); \
+        } \
+        _ansc_memset(param_name, 0, sizeof(param_name)); \
+        _ansc_memset(param_value, 0, sizeof(param_value)); \
+    }
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -876,68 +896,138 @@ X_CISCO_COM_DMZ_SetParamStringValue
         char*                       pString
     )
 {
-    PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
-    PCOSA_DML_NAT_DMZ               pDmz         = &pNat->Dmz;
-    ULONG                           dmzHost;
-    /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "RemoteIPStart", TRUE))
-    {
-        /* save update to backup */
-        AnscCopyString( pDmz->RemoteIPStart, pString);
+	PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
+	PCOSA_DML_NAT_DMZ               pDmz         = &pNat->Dmz;
+	ULONG                           dmzHost;
+	/* check the parameter name and set the corresponding value */
+	if( AnscEqualString(ParamName, "RemoteIPStart", TRUE))
+	{
+		/* save update to backup */
+		AnscCopyString( pDmz->RemoteIPStart, pString);
 
-        return TRUE;
-    }
+		return TRUE;
+	}
 
-    if( AnscEqualString(ParamName, "RemoteIPEnd", TRUE))
-    {
-        /* save update to backup */
-        AnscCopyString( pDmz->RemoteIPEnd, pString );
+	if( AnscEqualString(ParamName, "RemoteIPEnd", TRUE))
+	{
+		/* save update to backup */
+		AnscCopyString( pDmz->RemoteIPEnd, pString );
 
-        return TRUE;
-    }
+		return TRUE;
+	}
 
-    if( AnscEqualString(ParamName, "InternalIP", TRUE))
-    {
-        /* save update to backup */
-        if (AnscEqualString(pString, "0.0.0.0", FALSE)){ /* keep sync between gui and snmp */
-            // pDmz->bEnabled = FALSE;
-            AnscCopyString(pDmz->InternalIP, pString);
-        }
-        else if (AnscEqualString(pString, "", FALSE)){   /* snmp comes with 0.0.0.0 */
-            // pDmz->bEnabled = FALSE;
-            AnscCopyString(pDmz->InternalIP, "0.0.0.0");
-        }
-        else{
-            dmzHost = (ULONG)_ansc_inet_addr(pString);
-            if(FALSE == CosaDmlNatChkPortMappingClient(dmzHost)){
-                return FALSE;   /* dmz host not in local lan network */
-            }else{
-                AnscCopyString( pDmz->InternalIP, pString );
-                pDmz->bEnabled = TRUE;
-            }
-        }
+	if( AnscEqualString(ParamName, "InternalIP", TRUE))
+	{
+		/* save update to backup */
+		if (AnscEqualString(pString, "0.0.0.0", FALSE)){ /* keep sync between gui and snmp */
+			// pDmz->bEnabled = FALSE;
+			AnscCopyString(pDmz->InternalIP, pString);
+		}
+		else if (AnscEqualString(pString, "", FALSE)){   /* snmp comes with 0.0.0.0 */
+			// pDmz->bEnabled = FALSE;
+			AnscCopyString(pDmz->InternalIP, "0.0.0.0");
+		}
+		else{
+			dmzHost = (ULONG)_ansc_inet_addr(pString);
+			if(FALSE == CosaDmlNatChkPortMappingClient(dmzHost)){
+				return FALSE;   /* dmz host not in local lan network */
+			}else{
+				AnscCopyString( pDmz->InternalIP, pString );
+				pDmz->bEnabled = TRUE;
+				//RDKB_EMULATOR
+				char start_range[100],end_range[100],dmz_last_bit[100];
+				int start = 0 , end = 0 , dmz = 0;
+				FILE *fp;
+				char path[256],Gateway_IP[256],command[256],dmz_ip[256];
+				int count = 0;
+				// fp = popen ("cat /etc/udhcpd.conf | grep router | cut -d ' ' -f3 | cut -d '.' -f1-3","r");
+				fp = popen ("cat /etc/dnsmasq.conf | grep dhcp-range | cut -d ',' -f2 | cut -d '.' -f1-3","r");
+				if(fp == NULL)
+					return 0;
+				fgets(path,sizeof(path),fp);
+				for(count=0;path[count]!='\n';count++)
+					Gateway_IP[count]=path[count];
+				Gateway_IP[count]='\0';//Getting Gateway_IP Address
+				sprintf(command,"%s%s%s","echo ",pDmz->InternalIP," > /tmp/dmz_ip");
+				system(command);
+				fp = popen ("cat /tmp/dmz_ip | cut -d '.' -f1-3","r");
+				if(fp == NULL)
+					return 0;
+				fgets(path,sizeof(path),fp);
+				for(count=0;path[count]!='\n';count++)
+					dmz_ip[count]=path[count];//Getting DMZ Internal IP Address (First three bits)
+				dmz_ip[count]='\0';
+				if(strcmp(Gateway_IP,dmz_ip) == 0)
+				{
+					// fp = popen ("cat /etc/udhcpd.conf | grep start | cut -d ' ' -f2 | cut -d '.' -f4","r");
+					fp = popen ("cat /etc/dnsmasq.conf | grep dhcp-range | cut -d ',' -f1 | cut -d '=' -f2 | cut -d '.' -f4","r");
+					if(fp == NULL)
+						return 0;
+					fgets(path,sizeof(path),fp);
+					for(count=0;path[count]!='\n';count++)
+						start_range[count]=path[count];
+					start_range[count]='\0';//Getting start range
+					start = atoi(start_range);
+					// fp = popen ("cat /etc/udhcpd.conf | grep end | cut -d ' ' -f2 | cut -d '.' -f4","r");
+					fp = popen ("cat /etc/dnsmasq.conf | grep dhcp-range | cut -d ',' -f2 | cut -d '.' -f4","r");
+					if(fp == NULL)
+						return 0;
+					fgets(path,sizeof(path),fp);
+					for(count=0;path[count]!='\n';count++)
+						end_range[count]=path[count];
+					end_range[count]='\0';//Getting end range 
+					end = atoi(end_range);
+					fp = popen ("cat /tmp/dmz_ip | cut -d '.' -f4","r");
+					if(fp == NULL)
+						return 0;
+					fgets(path,sizeof(path),fp);
+					for(count=0;path[count]!='\n';count++)
+						dmz_last_bit[count]=path[count];//Getting DMZ Internal IP Address (last bits)
+					dmz_last_bit[count]='\0';
+					dmz = atoi(dmz_last_bit);
+					if((dmz >= start ) && (dmz <= end))
+					{
 
-        return TRUE;
-    }
+						DMZIptableRulesOperation(pDmz->InternalIP);//Inserting Rules into iptables
+						PSM_Set_DMZ_RecordValues(pDmz);//Storing dmz values into PSM
+					}
+					else
+					{
+						printf("Could you please cross check the inputs \n");
+						return FALSE;
+					}
+				}
+				else if(strcmp(Gateway_IP,dmz_ip) != 0)
+				{
+					printf("Kindly cross check the input \n");
+					return FALSE;
+				}
+			}
 
-    if( AnscEqualString(ParamName, "InternalMAC", TRUE))
-    {
-        /* save update to backup */
-        AnscCopyString( pDmz->InternalMAC, pString );
 
-        return TRUE;
-    }
+		}
 
-    if( AnscEqualString(ParamName, "IPv6Host", TRUE))
-    {
-        /* save update to backup */
-        AnscCopyString( pDmz->IPv6Host, pString );
+		return TRUE;
+	}
 
-        return TRUE;
-    }
+	if( AnscEqualString(ParamName, "InternalMAC", TRUE))
+	{
+		/* save update to backup */
+		AnscCopyString( pDmz->InternalMAC, pString );
 
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
-    return FALSE;
+		return TRUE;
+	}
+
+	if( AnscEqualString(ParamName, "IPv6Host", TRUE))
+	{
+		/* save update to backup */
+		AnscCopyString( pDmz->IPv6Host, pString );
+
+		return TRUE;
+	}
+
+	/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+	return FALSE;
 }
 
 /**********************************************************************
