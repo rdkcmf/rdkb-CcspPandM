@@ -6051,13 +6051,15 @@ Pool_SetParamIntValue
 		/* save update to backup */
 		pPool->Cfg.LeaseTime  = iValue;//RDKB-EMULATOR
 		pSPoolCfg->LeaseTime = pPool->Cfg.LeaseTime;
-                PSMSetLeaseTimeDHCPV4RecordValues(pSPoolCfg,pPool->Cfg.InstanceNumber);
+		if(pPool->Cfg.InstanceNumber == 1)
+	                PSMSetLeaseTimeDHCPV4RecordValues(pSPoolCfg,pPool->Cfg.InstanceNumber);
 		sprintf(str,"%d",pPool->Cfg.LeaseTime );
 	/*	ConfigValues config_values;
 		config_values.lease_time = str;
 		if(CcspHalSetDHCPConfigValues(DHCP_LEASE_TIME, &config_values)==-1)
 			printf("SetDHCPConfigValues failed\n");*/
-		CcspHalSetDHCPConfigValues(DHCP_LEASE_TIME,str);
+		if(pPool->Cfg.InstanceNumber == 1)
+			CcspHalSetDHCPConfigValues(DHCP_LEASE_TIME,str);
 		return TRUE;
 	}
 
@@ -6170,14 +6172,16 @@ Pool_SetParamUlongValue
             is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)))
             return(FALSE);
         pPool->Cfg.MinAddress.Value  = uValue;
-	PSMSetDHCPV4RecordValues(pPool,pPool->Cfg.InstanceNumber);//RDKB-EMULATOR
+	if(pPool->Cfg.InstanceNumber == 1)
+		PSMSetDHCPV4RecordValues(pPool,pPool->Cfg.InstanceNumber);//RDKB-EMULATOR
 #if 1
        inet_ntop(AF_INET, &(pPool->Cfg.MinAddress.Value) , str1, INET_ADDRSTRLEN);
       /*  ConfigValues config_values;
                 config_values.start = str1;
         if(CcspHalSetDHCPConfigValues(DHCP_STARTING_RANGE, &config_values)==-1)//LNT_EMU
                 printf("SetDHCPConfigValues failed\n");*/
-	CcspHalSetDHCPConfigValues(DHCP_STARTING_RANGE,str1);
+	if(pPool->Cfg.InstanceNumber == 1)
+		CcspHalSetDHCPConfigValues(DHCP_STARTING_RANGE,str1);
 
 #endif
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MinAddress of DHCP Range Changed ...\n"));
@@ -6213,14 +6217,16 @@ Pool_SetParamUlongValue
             uValue < pPool->Cfg.MinAddress.Value)
             return(FALSE);
         pPool->Cfg.MaxAddress.Value  = uValue;
-	PSMSetDHCPV4RecordValues(pPool,pPool->Cfg.InstanceNumber);//RDKB-EMULATOR
+	if(pPool->Cfg.InstanceNumber == 1)
+		PSMSetDHCPV4RecordValues(pPool,pPool->Cfg.InstanceNumber);//RDKB-EMULATOR
 #if 1
         inet_ntop(AF_INET, &(pPool->Cfg.MaxAddress.Value) , str1, INET_ADDRSTRLEN);
        /* ConfigValues config_values;
                 config_values.end = str1;
         if(CcspHalSetDHCPConfigValues(DHCP_ENDING_RANGE, &config_values)==-1)
                 printf("SetDHCPConfigValues failed\n");*/
-	CcspHalSetDHCPConfigValues(DHCP_ENDING_RANGE,str1);//RDKB_EMULATOR
+	if(pPool->Cfg.InstanceNumber == 1)
+		CcspHalSetDHCPConfigValues(DHCP_ENDING_RANGE,str1);//RDKB_EMULATOR
 #endif
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MaxAddress of DHCP Range Changed ...\n"));
         

@@ -214,64 +214,123 @@ BOOL  g_dhcpv4_server = TRUE;
 
 COSA_DML_DHCPS_POOL_FULL  g_dhcpv4_server_pool[]=
 {
-    {
-        {
-            1,
-            "Pool1",
-            TRUE,
-            1,
-            "Layer3Interface",
-            "23feaa",                       /*VendorClassID*/
-            TRUE,
-            COSA_DML_DHCPS_VID_MODE_Prefix, /*VendorClassIDMode*/
-            "a23443",
-            TRUE,                           /*ClientIDExclude*/
-            "a23443",
-            TRUE,                           /*UserClassIDExclude*/
-            "\x23\x23\x23\x23\x23\x23",
-            "\xff\xff\xff\xff\xff\xff",
-            TRUE,
-            TRUE,
-            {
-                "\xc0\xa8\x00\x03"
-            },
-            {
-                "\xc0\xa8\x00\xfc"
-            },        
-            {
-                {
-                    "\xc0\xa8\x00\x01"
-                },
-                {
-                    "\xc0\xa8\x00\x02"
-                } 
-            },
-            {
-                "\xff\xff\xff\x00"
-            },  
-            {
-                {
-                    "\xc0\xa8\x00\x01"
-                },
-                {
-                    "\xc0\xa8\x00\x02"
-                } 
-            },
-            "cisco.com",
-            {
-                {
-                    "\xc0\xa8\x00\x01"
-                },
-                {
-                    "\xc0\xa8\x00\x02"
-                } 
-            },
-            232323
-        },
-        {
-            COSA_DML_DHCP_STATUS_Enabled
-        }
-    }
+	{
+		{
+			1,
+			"Pool1",
+			TRUE,
+			1,
+			"Layer3Interface",
+			"23feaa",                       /*VendorClassID*/
+			TRUE,
+			COSA_DML_DHCPS_VID_MODE_Prefix, /*VendorClassIDMode*/
+			"a23443",
+			TRUE,                           /*ClientIDExclude*/
+			"a23443",
+			TRUE,                           /*UserClassIDExclude*/
+			"\x23\x23\x23\x23\x23\x23",
+			"\xff\xff\xff\xff\xff\xff",
+			TRUE,
+			TRUE,
+			{
+				"\xc0\xa8\x00\x03"
+			},
+			{
+				"\xc0\xa8\x00\xfc"
+			},        
+			{
+				{
+					"\xc0\xa8\x00\x01"
+				},
+				{
+					"\xc0\xa8\x00\x02"
+				} 
+			},
+			{
+				"\xff\xff\xff\x00"
+			},  
+			{
+				{
+					"\xc0\xa8\x00\x01"
+				},
+				{
+					"\xc0\xa8\x00\x02"
+				} 
+			},
+			"cisco.com",
+			{
+				{
+					"\xc0\xa8\x00\x01"
+				},
+				{
+					"\xc0\xa8\x00\x02"
+				} 
+			},
+			232323
+		},
+		{
+			COSA_DML_DHCP_STATUS_Enabled
+		}
+	},
+	{
+		{
+			2,
+			"Pool2",
+			TRUE,
+			2,
+			"Layer3Interface",
+			"23feaa",                       /*VendorClassID*/
+			TRUE,
+			COSA_DML_DHCPS_VID_MODE_Prefix, /*VendorClassIDMode*/
+			"a23443",
+			TRUE,                           /*ClientIDExclude*/
+			"a23443",
+			TRUE,                           /*UserClassIDExclude*/
+			"\x23\x23\x23\x23\x23\x23",
+			"\xff\xff\xff\xff\xff\xff",
+			TRUE,
+			TRUE,
+			{
+				"\xc0\xa8\x00\x03"
+			},
+			{
+				"\xc0\xa8\x00\xfc"
+			},
+			{
+				{
+					"\xc0\xa8\x00\x01"
+				},
+				{
+					"\xc0\xa8\x00\x02"
+				}
+			},
+			{
+				"\xff\xff\xff\x00"
+			},
+			{
+				{
+					"\xc0\xa8\x00\x01"
+				},
+				{
+					"\xc0\xa8\x00\x02"
+				}
+			},
+			"cisco.com",
+			{
+				{
+					"\xc0\xa8\x00\x01"
+				},
+				{
+					"\xc0\xa8\x00\x02"
+				}
+			},
+			232323
+		},
+		{
+			COSA_DML_DHCP_STATUS_Enabled
+		}
+
+	}
 };
 
 COSA_DML_DHCPS_SADDR g_dhcpv4_server_pool_stadicaddress[] =
@@ -958,6 +1017,8 @@ CosaDmlDhcpsGetPool
 	if ( ulIndex+1 > sizeof(g_dhcpv4_server_pool)/sizeof(COSA_DML_DHCPS_POOL_FULL) )
 		return ANSC_STATUS_FAILURE;
 
+	if(g_dhcpv4_server_pool->Cfg.InstanceNumber == 1)
+        {
 	//CcspHalGetConfigValue("start", value, sizeof value);
         CcspHalGetConfigValues(DHCP_STARTING_RANGE,value, sizeof value);
 	printf("\n DHCP start Address: (%s) \n" ,value);
@@ -986,6 +1047,7 @@ CosaDmlDhcpsGetPool
         PSMGetDHCPV4RecordValues(Ppool,g_dhcpv4_server_pool->Cfg.InstanceNumber);
         g_dhcpv4_server_pool->Cfg.LeaseTime = Ppool->Cfg.LeaseTime;
         }
+	}
 
 	AnscCopyMemory(pEntry, &g_dhcpv4_server_pool[ulIndex], sizeof(COSA_DML_DHCPS_POOL_FULL));
 	return ANSC_STATUS_SUCCESS;
