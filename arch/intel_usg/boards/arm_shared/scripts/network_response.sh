@@ -100,6 +100,7 @@ then
 	# We still have to depend on 204 response and response file /var/tmp/networkresponse.txt to minimize code changes
 	# determining CP mode.
 	# This loop will wait till we get a success response from any one of the URLs
+	retry_count=1
 	while [ $gotResponse -ne 1 ]
 	do
 
@@ -220,6 +221,7 @@ then
 				# Set syscfg parameter to indicate unit is activated
 				syscfg set unit_activated 1
 				syscfg commit
+				echo_et "ACTIVATION_CAPTIVE:1"
 				echo_t "Network Response: Restart DHCP server"
 				sysevent set dhcp_server-stop
 				# Let's make sure dhcp server restarts properly
@@ -241,6 +243,7 @@ then
 			break;
 		else
 				echo_t "Network Response: Didnt recieve success response..should retry.."
+				echo_et "ACTIVATION_CAPTIVE:0,$retry_count"
 				unitActivated=`syscfg get unit_activated`
 				if [ "$unitActivated" != 0 ]
 				then
@@ -258,7 +261,7 @@ then
                         
 				sleep 5
 		fi
-
+		retry_count=$((retry_count+1))
 	done
 else
 	# We are here as Db value indicate that the unit is already configured with personalized
@@ -268,6 +271,7 @@ else
 	#Set syscfg parameter to indicate unit is activated
 	syscfg set unit_activated 1
 	syscfg commit
+	echo_et "ACTIVATION_CAPTIVE:1"
 
 	if [ ! -e "$REVERT_FLAG" ]
 	then
