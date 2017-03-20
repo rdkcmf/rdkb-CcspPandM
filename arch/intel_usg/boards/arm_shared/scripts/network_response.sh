@@ -243,6 +243,10 @@ then
 			break;
 		else
 				echo_t "Network Response: Didnt recieve success response..should retry.."
+				if  [ "$responseCode_1" = "" ] || [ "$responseCode_1" = "000" ] || [ "$responseCode_1" = "0" ]
+				then
+                                      echo_et "SERVER_ACCESS_FAIL"
+				fi
 				echo_et "ACTIVATION_CAPTIVE:0,$retry_count"
 				unitActivated=`syscfg get unit_activated`
 				if [ "$unitActivated" != 0 ]
