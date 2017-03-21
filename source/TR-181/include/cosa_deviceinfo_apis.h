@@ -338,6 +338,21 @@ CosaDmlDiSetAndProcessDhcpServDetectionFlag
 	   BOOLEAN*					   pDhcpServDetectEnable
    );
 
+ANSC_STATUS
+CosaDmlDiGetEnableMoCAforXi5Flag
+  (
+	  ANSC_HANDLE				  hContext,
+	  BOOLEAN*					  pValue
+  );
+
+ANSC_STATUS
+CosaDmlDiSetEnableMoCAforXi5Flag
+   (
+	   ANSC_HANDLE				   hContext,
+	   BOOLEAN*					   pValue,
+	   BOOLEAN*					   pEnableMoCAforXi5Flag
+   );
+
 #if defined(_CBR_PRODUCT_REQ_)
 ANSC_STATUS
 CosaDmlDiGetFirmwareUpgradeStartTime
