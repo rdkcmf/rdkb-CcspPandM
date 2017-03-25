@@ -278,7 +278,8 @@ int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)//RDKB_EMULATOR
                 return FALSE;
         }
 
-        if( pPortMapping->InternalClient.Value == 0)
+        if( pPortMapping->InternalClient.Value == 0 ||
+            FALSE == CosaDmlNatChkPortMappingClient(pPortMapping->InternalClient.Value))
         {
                 CcspTraceWarning(("Wrong InternalClient value %x\n",pPortMapping->InternalClient.Value ));
                 return FALSE;
@@ -961,7 +962,25 @@ BOOL CosaDmlNatChkEnableFlg(PCOSA_DML_NAT_PMAPPING pPortMapping)
 
 BOOL CosaDmlNatChkPortMappingClient(ULONG client)
 {
-    return  TRUE;
+     ULONG ipaddr;
+     ULONG netmask;
+     BOOL ret;
+     netmask=CosaUtilIoctlXXX("brlan0","netmask",NULL);
+     ipaddr=CosaUtilGetIfAddr("brlan0");
+
+    if((client != ipaddr) &&
+        !IPv4Addr_IsBroadcast(client, ipaddr, netmask) &&
+        !IPv4Addr_IsNetworkAddr(client, ipaddr, netmask) &&
+        (IPv4Addr_IsSameNetwork(client, ipaddr, netmask) || IPv4Addr_IsSameNetwork(client, 0xac100c00, 0xffffff00)))
+    {
+        ret = TRUE;
+    }
+    else
+    {
+        ret = FALSE;
+    }
+
+    return ret;
 }
 
 /**********************************************************************
