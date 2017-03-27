@@ -2020,7 +2020,7 @@ LanMngm_Validate
     /* check subnetmask */
     /* Subnet mask MUST accept ONLY the following IP addresses: */
     /* 255.255.255.0, 255.255.0.0, 255.0.0.0, 255.255.255.128, 255.255.255.252 */
-#if defined(_XB6_PRODUCT_REQ_)
+#if defined(_XB6_PRODUCT_REQ_)  || defined(_PLATFORM_RASPBERRYPI_)
     if(pLanMngm->LanSubnetMask.Value != 0x00FFFFFF &&
        pLanMngm->LanSubnetMask.Value != 0x0000FFFF &&
        pLanMngm->LanSubnetMask.Value != 0x000000FF &&  
@@ -2099,7 +2099,7 @@ LanMngm_Validate
     }else if(pLanMngm->LanIPAddress.Dot[0] == 172 && pLanMngm->LanIPAddress.Dot[1] >= 16 && pLanMngm->LanIPAddress.Dot[1] <= 31){
         return TRUE;
     }
-#if defined(_XB6_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_)
+#if defined(_XB6_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_) || defined(_PLATFORM_RASPBERRYPI_)
     else if((pLanMngm->LanIPAddress.Value & 0x0000FFFF) == 0x0000A8C0)
 #else
    else if((pLanMngm->LanIPAddress.Value & 0xFFFF0000) == 0xC0A80000)
