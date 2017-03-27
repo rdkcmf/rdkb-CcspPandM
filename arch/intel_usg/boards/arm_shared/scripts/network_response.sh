@@ -271,7 +271,6 @@ else
 	#Set syscfg parameter to indicate unit is activated
 	syscfg set unit_activated 1
 	syscfg commit
-	echo_et "ACTIVATION_CAPTIVE:1"
 
 	if [ ! -e "$REVERT_FLAG" ]
 	then
