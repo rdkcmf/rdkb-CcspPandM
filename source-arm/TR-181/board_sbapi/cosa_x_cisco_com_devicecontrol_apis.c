@@ -3470,7 +3470,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
     char str[IFNAME_SZ];    
     char *enableStr;
     napt_mode_t napt;
-#ifndef _CBR_PRODUCT_REQ_ // MOCA is not present for TCCBR environment
+#if !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) // MOCA is not present for TCCBR environment and RaspberryPi environment
 	parameterValStruct_t **valMoCAstatus;
 	char pMoCAComponentName[64]="eRT.com.cisco.spvtg.ccsp.moca";
 	char pComponentPath[64]="/com/cisco/spvtg/ccsp/moca";
@@ -3525,7 +3525,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 		}
 
         Utopia_SetBridgeSettings(&utctx,&bridge_info);
-#ifndef _CBR_PRODUCT_REQ_ // MOCA is not present for TCCBR environment
+#if !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) // MOCA is not present for TCCBR environment and RaspberryPi environment
 		ret = CcspBaseIf_getParameterValues(
 		    bus_handle,
 		    pMoCAComponentName,
