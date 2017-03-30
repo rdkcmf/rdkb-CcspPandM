@@ -175,6 +175,8 @@ CosaDeviceInfoInitialize
 	CosaDmlDiGetAndProcessDhcpServDetectionFlag( pMyObject, &pMyObject->bDhcpServDetectEnable );
 	pMyObject->bMultipleGW	= FALSE;
 
+	CosaDmlDiGetEnableMoCAforXi5Flag( pMyObject , &pMyObject->bEnableMoCAforXi5 );
+
     return returnStatus;
 }
 
