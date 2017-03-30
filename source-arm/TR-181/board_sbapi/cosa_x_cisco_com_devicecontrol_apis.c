@@ -3270,6 +3270,43 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         memcpy(&(lan.netmask), str, sizeof(str));
         Utopia_SetLanSettings(&utctx, &lan);
 
+#if defined(ENABLE_FEATURE_MESHWIFI)
+        {
+            // We have to send this over to the ATOM side
+            #define DATA_SIZE 1024
+            FILE *fp1;
+            char buf[DATA_SIZE] = {0};
+            char cmd1[DATA_SIZE] = {0};
+            char cmd2[DATA_SIZE] = {0};
+
+            // Grab the ATOM RPC IP address
+            sprintf(cmd1, "cat /etc/device.properties | grep ATOM_ARPING_IP | cut -f 2 -d\"=\"");
+
+            fp1 = popen(cmd1, "r");
+            if (fp1 == NULL) {
+                CcspTraceError(("Error opening command pipe! \n"));
+                return FALSE;
+            }
+
+            fgets(buf, DATA_SIZE, fp1);
+
+            buf[strcspn(buf, "\r\n")] = 0; // Strip off any carriage returns
+
+            if (buf[0] != 0 && strlen(buf) > 0) {
+                CcspTraceInfo(("Sending subnet_change notification to ATOM IP %s \n", buf));
+                sprintf(cmd2, "rpcclient %s \"/usr/bin/sysevent set subnet_change \"RDK|%s|%s\"\"", buf,
+                        lan.ipaddr,lan.netmask);
+                //CcspTraceInfo(("Command to run \"%s\"", cmd2));
+                system(cmd2);
+            }
+
+            if (pclose(fp1) != 0) {
+                /* Error reported by pclose() */
+                CcspTraceError(("Error closing command pipe! \n"));
+            }
+        }
+#endif
+
         Utopia_SetLanMngmLanNetworksAllow(&utctx, pLanMngm->LanNetworksAllow);
 #if 0 
         if(pLanMngm->LanNaptType == COSA_DML_LanNapt_DHCP && pLanMngm->LanNaptEnable == TRUE)        
