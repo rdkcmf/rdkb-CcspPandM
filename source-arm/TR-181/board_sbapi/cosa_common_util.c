@@ -71,7 +71,7 @@
 #include <pthread.h>
 #include <utapi.h>
 #include "cosa_common_util.h"
-
+#include "cosa_apis_util.h"
 
 /**
  * common callback function dispatcher for event
@@ -354,11 +354,19 @@ EvtDispterCallFuncByEvent
 
 static int se_fd = 0; 
 static token_t token;
-static async_id_t async_id[2];
+static async_id_t async_id[3];
 static short server_port;
 static char  server_ip[19];
 enum {EVENT_ERROR=-1, EVENT_OK, EVENT_TIMEOUT, EVENT_HANDLE_EXIT, EVENT_LAN_STARTED=0x10, EVENT_LAN_STOPPED, 
-        EVENT_WAN_STARTED=0x20, EVENT_WAN_STOPPED};
+        EVENT_WAN_STARTED=0x20, EVENT_WAN_STOPPED,EVENT_WAN_IPV4_RECD=0x30};
+
+static void
+EvtDispterWanIpAddrsCallback(char *ip_addrs)
+{
+    CcspTraceInfo(("EvtDispterWanIpAddrsCallback - erouter0 IP = %s\n",ip_addrs));
+    vsystem("/usr/ccsp/pam/erouter0_ip_sync.sh %s &",ip_addrs);
+}
+
 /*
  * Initialize sysevnt 
  *   return 0 if success and -1 if failture.
@@ -392,6 +400,12 @@ EvtDispterEventInits(void)
        return(EVENT_ERROR);
     } 
 
+	//register ipv4_wan_ipaddr event
+    sysevent_set_options(se_fd, token, "ipv4_wan_ipaddr", TUPLE_FLAG_EVENT);
+    rc = sysevent_setnotification(se_fd, token, "ipv4_wan_ipaddr", &async_id[2]);
+    if (rc) {
+       return(EVENT_ERROR);
+    }
     
     return(EVENT_OK);
 }
@@ -452,6 +466,11 @@ EvtDispterEventListen(void)
                 else if (!strncmp(value_str, "stopped", 7)) 
                     ret = EVENT_WAN_STOPPED;
             }
+            else if(!strcmp(name_str, "ipv4_wan_ipaddr"))
+            {
+                EvtDispterWanIpAddrsCallback(value_str);
+                ret = EVENT_WAN_IPV4_RECD;
+            }
         } else {
             CcspTraceWarning(("Received msg that is not a SE_MSG_NOTIFICATION (%d)\n", msg_type));
         }
@@ -470,6 +489,7 @@ EvtDispterEventClose(void)
     /* we are done with this notification, so unregister it using async_id provided earlier */
     sysevent_rmnotification(se_fd, token, async_id[0]);
     sysevent_rmnotification(se_fd, token, async_id[1]);
+    sysevent_rmnotification(se_fd, token, async_id[2]);
 
     /* close this session with syseventd */
     sysevent_close(se_fd, token);
@@ -502,6 +522,12 @@ EvtDispterCheckEvtStatus(int fd, token_t token)
         if (0 == strncmp(evtValue, "started", strlen("started")))
             if (ANSC_STATUS_SUCCESS != EvtDispterCallFuncByEvent("wan-status"))
                 returnStatus = ANSC_STATUS_FAILURE;
+    }
+
+    /*ipv4_wan_ipaddr*/
+    if ( 0 == sysevent_get(fd, token, "ipv4_wan_ipaddr", evtValue, sizeof(evtValue)) && '\0' != evtValue[0])
+    {
+        EvtDispterWanIpAddrsCallback(evtValue);
     }
 
     return returnStatus;
@@ -538,6 +564,8 @@ EvtDispterEventHandler(void *arg)
                 EvtDispterCallFuncByEvent("wan-status");
                 break;
             case EVENT_WAN_STOPPED:
+                break;
+            case EVENT_WAN_IPV4_RECD:
                 break;
             default :
                 CcspTraceWarning(("The received event status is not expected!\n"));
