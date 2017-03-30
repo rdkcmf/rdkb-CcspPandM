@@ -2990,11 +2990,6 @@ PortTrigger_DelEntry
     PCOSA_CONTEXT_LINK_OBJECT       pPTriggerCxtLink  = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger      = (PCOSA_DML_NAT_PTRIGGER)pPTriggerCxtLink->hContext;
     BOOL                                      bridgeMode;
-    extern ANSC_HANDLE bus_handle;//RDKB_EMULATOR PSM Access
-    extern char g_Subsystem[32];
-    char param_value[50] = {0};
-    char *PtNext_instance = "Provision.COSALibrary.NAT.PORTTRIGGER.NextInstanceNumber";
-    char param_name[100] ={0};
 
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
@@ -3020,12 +3015,11 @@ PortTrigger_DelEntry
 
         AnscFreeMemory(pPTriggerCxtLink->hContext);
         AnscFreeMemory(pPTriggerCxtLink);
-	pNat->ulPtNextInstanceNumber--;//RDKB_EMULATOR
+        if (pNat->ulPtNextInstanceNumber)
+        {
+            pNat->ulPtNextInstanceNumber--;//RDKB_EMULATOR
+        }
     }
-        memset(param_name, 0, sizeof(param_name));//PSM Access
-        sprintf(param_name,PtNext_instance);
-        sprintf(param_value,"%d",pNat->ulPtNextInstanceNumber);
-        PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
 
     return returnStatus;
 }
