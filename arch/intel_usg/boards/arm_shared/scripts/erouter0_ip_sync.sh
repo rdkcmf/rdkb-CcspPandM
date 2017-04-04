@@ -8,5 +8,5 @@ fi
 ATOM_RPC_IP=`cat /etc/device.properties | grep ATOM_ARPING_IP | cut -f 2 -d"="`
 if [ -e "/usr/bin/rpcclient" ]; then
 	#for Puma6
-	rpcclient $ATOM_RPC_IP "sec_pushown.sh --ip4=\"$1\""
+	rpcclient $ATOM_RPC_IP "/usr/ccsp/wifi/sec_pushown.sh --ip4=\"$1\""
 fi
