@@ -3337,6 +3337,19 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         Utopia_SetLanMngmAlias(&utctx, pLanMngm->Alias);
         Utopia_SetLanMngmInsNum(&utctx, pLanMngm->InstanceNumber);
         bridge_info.mode = pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic ? BRIDGE_MODE_STATIC : BRIDGE_MODE_OFF; 
+
+		/* To delete xi5 device connected file when device entering into bridge-mode */
+		if ( pLanMngm->LanMode == COSA_DML_LanMode_BridgeStatic )
+		{
+			FILE *fp = NULL;
+			
+			if( ( fp = fopen( "/tmp/MoCAforXi5DeviceConnected", "r" ) ) != NULL )
+			{
+				fclose(fp);
+				system("rm -rf /tmp/MoCAforXi5DeviceConnected");
+			}
+		}
+		
         Utopia_SetBridgeSettings(&utctx,&bridge_info);
 #if !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) // MOCA is not present for TCCBR environment and RaspberryPi environment
 		ret = CcspBaseIf_getParameterValues(
