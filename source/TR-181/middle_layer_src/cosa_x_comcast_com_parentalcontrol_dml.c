@@ -1730,8 +1730,12 @@ MDDev_AddEntry
     pLinkObj->InstanceNumber = pParCtrl->ulMDDevNextInsNum;
     pMDDev->InstanceNumber = pParCtrl->ulMDDevNextInsNum;
     pParCtrl->ulMDDevNextInsNum++;
-    if (pParCtrl->ulMDDevNextInsNum == 0)
-        pParCtrl->ulMDDevNextInsNum = 1;
+    if (pParCtrl->ulMDDevNextInsNum <= 0)
+        {
+            pParCtrl->ulMDDevNextInsNum = 1;
+            pLinkObj->InstanceNumber = pParCtrl->ulMDDevNextInsNum;
+            pMDDev->InstanceNumber = pParCtrl->ulMDDevNextInsNum;
+        }
 
     _ansc_sprintf(pMDDev->Alias, "cpe-MDDevice-%d", (int)pLinkObj->InstanceNumber);
     pLinkObj->hContext      = (ANSC_HANDLE)pMDDev;
