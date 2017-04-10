@@ -1175,6 +1175,9 @@ CosaDmlNatAddPortTrigger
         char param_value[50] = {0};
         char *PtNext_instance = "Provision.COSALibrary.NAT.PORTTRIGGER.NextInstanceNumber";
         char param_name[100] ={0};
+        ULONG ulInstanceNumber = 0;
+        PCOSA_DATAMODEL_NAT pNat = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
+        ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
         pTrigger=(PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory( sizeof(COSA_DML_NAT_PTRIGGER));
         if(pEntry != NULL)//RDKB_EMULATOR
         {
@@ -1193,13 +1196,16 @@ CosaDmlNatAddPortTrigger
 		g_nat_porttrigger[index].InstanceNumber=pEntry->InstanceNumber;
                 prot = g_nat_porttrigger[index].TriggerProtocol==0?"tcp":g_nat_porttrigger[index].TriggerProtocol==1?"udp":"both";
                 port_triggering_add_rule(g_nat_porttrigger[index].TriggerPortStart,g_nat_porttrigger[index].TriggerPortEnd,prot,g_nat_porttrigger[index].ForwardPortStart,g_nat_porttrigger[index].ForwardPortEnd);
+                ulInstanceNumber = pt_count + 1;
         }
         memset(param_name, 0, sizeof(param_name));//PSM Access
         sprintf(param_name,PtNext_instance);
-        sprintf(param_value,"%d",pTrigger->InstanceNumber);
+        sprintf(param_value,"%d", ulInstanceNumber);
         PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+        pNat->ulPtNextInstanceNumber = ulInstanceNumber;
+        returnStatus = CosaNatRegSetNatInfo(pNat);
 
-        return ANSC_STATUS_SUCCESS;
+        return returnStatus;
 }
 
 /**********************************************************************
@@ -1243,6 +1249,8 @@ CosaDmlNatDelPortTrigger
         char param_value[50] = {0};
         char *PtNext_instance = "Provision.COSALibrary.NAT.PORTTRIGGER.NextInstanceNumber";
         char param_name[100] ={0};
+        PCOSA_DATAMODEL_NAT pNat = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
+        ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
         for(index =0; index < sizeof(g_nat_porttrigger[0])*pt_count/sizeof(COSA_DML_NAT_PTRIGGER); index++)//RDKB_EMULATOR
         {
                 if ( g_nat_porttrigger[index].InstanceNumber  ==  pEntry->InstanceNumber )
@@ -1262,13 +1270,16 @@ CosaDmlNatDelPortTrigger
                     *pNatPTrigger = g_nat_porttrigger[index];
 		    PSMSetPortTriggerRecordValues(pNatPTrigger,pNatPTrigger->InstanceNumber);
         }
-        pt_count--;
         memset(param_name, 0, sizeof(param_name));//RDKB_EMULATOR PSM Access
         sprintf(param_name,PtNext_instance);
-        sprintf(param_value,"%d",pNatPTrigger->InstanceNumber);
+        sprintf(param_value,"%d", pt_count);
         PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
+        pNat->ulPtNextInstanceNumber = pt_count;
+        pt_count--;
 
-        return ANSC_STATUS_SUCCESS;
+        returnStatus = CosaNatRegSetNatInfo(pNat);
+
+        return returnStatus;
 }
 
 /**********************************************************************

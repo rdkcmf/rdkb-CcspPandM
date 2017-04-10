@@ -2941,8 +2941,6 @@ PortTrigger_AddEntry
 
     CosaSListPushEntryByInsNum(&pNat->NatPTriggerList, (PCOSA_CONTEXT_LINK_OBJECT)pPTriggerCxtLink);
 
-    returnStatus = CosaNatRegSetNatInfo(pNat);
-
     return (ANSC_HANDLE)pPTriggerCxtLink;
 
 EXIT:
@@ -2999,8 +2997,6 @@ PortTrigger_DelEntry
     {
         /* Set bNew to FALSE to indicate this node is not going to save to SysRegistry */
         pPTriggerCxtLink->bNew = FALSE;
-
-        returnStatus = CosaNatRegSetNatInfo(pNat);
     }
     else
     {

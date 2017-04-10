@@ -422,7 +422,6 @@ CosaNatGenForTriggerEntry
         PCOSA_DML_NAT_PTRIGGER      pEntry
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT             pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
 
     /*
@@ -455,10 +454,7 @@ CosaNatGenForTriggerEntry
 
     pNat->ulPtNextInstanceNumber++;
 
-    /* keep new ulPtInstanceNumber */
-    returnStatus = CosaNatRegSetNatInfo(pNat);
-
-    return returnStatus;
+    return ANSC_STATUS_SUCCESS;
 }
 
 
