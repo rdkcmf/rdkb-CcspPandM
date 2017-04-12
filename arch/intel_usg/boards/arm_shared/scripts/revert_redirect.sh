@@ -6,7 +6,10 @@ SERVER6_CONF="/etc/dibbler/server.conf"
 SERVER6_BKUP="/nvram/server_bkup.conf"
 Uncommented_line=""
 REVERTED_FLAG="/nvram/reverted"
-
+WAN_INTERFACE="erouter0"
+v4Count=0
+v6Count=0
+response=
 echo_t "Revert Redirect : Reverting back the changes made for redirecting the URL's"
 syscfg set redirection_flag false
 
@@ -87,12 +90,47 @@ then
 	then
 		SSID_2="default#@!$"
 	fi
-	
-	curl -v --cacert /nvram/cacert.pem --interface erouter0 --data "SSID_1=$SSID_1&Password_1=$Password_1&Mobile_Number=$Mobile_Number&SSID_2=$SSID_2&Password_2=$Password_2&CM_MAC=$CM_MAC&CM_IP=$CM_IP" $Server_URL
-	
-	echo_t "Revert Redirect : SMS Execution complete.."
-	`dmcli eRT setv Device.DeviceInfo.X_COMCAST-COM_EMS_MobileNumber string 0000000000`
-
+while :
+do 
+  		   # Check v4Count. This variable will be incremented only when we have IPv6 for erouter0
+		   # Try curl command for 3 times in v4 mode. If all 3 fails, try curl command for 3 times in v6 mode
+                   # only if erouter0 has an IPv6.
+		   if [ $v4Count -lt 3 ]
+		   then
+		      echo_t "Revert Redirect: Executing command for ipv4"
+		      curl -4 -v --cacert /nvram/cacert.pem --interface erouter0 --data "SSID_1=$SSID_1&Password_1=$Password_1&Mobile_Number=$Mobile_Number&SSID_2=$SSID_2&Password_2=$Password_2&CM_MAC=$CM_MAC&CM_IP=$CM_IP" $Server_URL
+		      response=`echo $?`
+		      v4Count=`expr $v4Count + 1`
+		   else
+		      has_ipv6=`ifconfig $WAN_INTERFACE | grep inet6 | grep Global`
+		      if [ "$has_ipv6" == "" ]
+		      then
+			  echo_t "Revert Redirect: Ipv6 not found"		
+			  break
+		      fi
+		      # We will come into this else condition, only if erouter0 has IPv6 and 
+		      # curl command failed 3 times for IPv4
+		      if [ $v6Count -lt 3 ]
+		      then
+		         echo_t "Revert Redirect: Executing command for ipv6"
+			curl -6 -v --cacert /nvram/cacert.pem --interface erouter0 --data "SSID_1=$SSID_1&Password_1=$Password_1&Mobile_Number=$Mobile_Number&SSID_2=$SSID_2&Password_2=$Password_2&CM_MAC=$CM_MAC&CM_IP=$CM_IP" $Server_URL
+			response=`echo $?`
+		         v6Count=`expr $v6Count + 1`
+		      else
+		         v4Count=0
+		         v6Count=0
+		         echo_t "Revert Redirect: Reseting counters"
+		         break
+		      fi
+		   fi
+		      if [ $response -eq 0 ] 
+		      then
+		      echo_t "Revert Redirect:Response is $response"
+		      	break
+		      fi
+done
+		      echo_t "Revert Redirect : SMS Execution complete.."
+		     `dmcli eRT setv Device.DeviceInfo.X_COMCAST-COM_EMS_MobileNumber string 0000000000`
 else
 	echo_t "Revert Redirect : SMS option is not opted for.."
         echo_t "Mobile number:$Mobile_Number"
