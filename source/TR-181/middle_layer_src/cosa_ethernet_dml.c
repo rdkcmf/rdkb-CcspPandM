@@ -1874,6 +1874,7 @@ Link_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    PCOSA_DATAMODEL_ETHERNET        pMyObject               = (PCOSA_DATAMODEL_ETHERNET )g_pCosaBEManager->hEthernet;
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ETH_LINK_FULL         pEntry                  = (PCOSA_DML_ETH_LINK_FULL)pContextLinkObject->hContext;
     PUCHAR                          pLowerLayer             = NULL;
@@ -1907,6 +1908,12 @@ Link_GetParamStringValue
             {
                 AnscTraceWarning(("%s -- failed to retrieve LowerLayer name parameter, error code %d\n", __FUNCTION__, returnStatus));
             }
+			else
+			{
+				CosaDmlEthLinkUpdateStaticLowerLayerName( pMyObject->hSbContext,
+	 													  pEntry->Cfg.InstanceNumber,
+	 													  pEntry );
+			}
         }
 
         AnscCopyString(pValue, pEntry->StaticInfo.Name);

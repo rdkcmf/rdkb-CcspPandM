@@ -404,6 +404,14 @@ CosaDmlEthLinkGetStats
         PCOSA_DML_ETH_STATS         pStats
     );
 
+ANSC_STATUS
+CosaDmlEthLinkUpdateStaticLowerLayerName
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       ulInstanceNumber,
+        PCOSA_DML_ETH_LINK_FULL     pEntry
+    );
+
 /*
  *  Ethernet VLAN Termination
  */
