@@ -338,6 +338,12 @@ CosaDmlDiSetAndProcessDhcpServDetectionFlag
 	   BOOLEAN*					   pDhcpServDetectEnable
    );
 
+ANSC_STATUS
+isValidInput
+    (
+        char                       *inputparam
+    );
+
 #if defined(_CBR_PRODUCT_REQ_)
 ANSC_STATUS
 CosaDmlDiGetFirmwareUpgradeStartTime

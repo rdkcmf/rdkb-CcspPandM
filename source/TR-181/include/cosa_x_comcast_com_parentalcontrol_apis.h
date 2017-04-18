@@ -337,6 +337,9 @@ CosaDmlMDRed_GetConf(COSA_DML_MD_RED *pEntry);
 
 ANSC_STATUS
 CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry);
+
+ANSC_STATUS isValidIP( int type, char *ipAddress );
+
 #ifdef UTC_ENABLE
 
 ANSC_STATUS CosaDmlBlkURL_Migration();

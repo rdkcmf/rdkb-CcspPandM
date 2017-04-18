@@ -2061,39 +2061,64 @@ MDRed_SetParamStringValue
 {
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
+    ANSC_STATUS ret=ANSC_STATUS_FAILURE;
 
     if (AnscEqualString(ParamName, "HTTP_Server_IP", TRUE))
     {
+	ret=isValidIP(4,strValue);
+        if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
+
         AnscCopyString(pMDRed->HTTP_Server_IP, strValue);
 		CcspTraceWarning(("HTTP_Server_IP is set to %s\n", pMDRed->HTTP_Server_IP));
         return TRUE;
     }
     if (AnscEqualString(ParamName, "HTTPS_Server_IP", TRUE))
     {
+        ret=isValidIP(4,strValue);
+        if(ANSC_STATUS_SUCCESS != ret)
+            return FALSE;
+
         AnscCopyString(pMDRed->HTTPS_Server_IP, strValue);
 		CcspTraceWarning(("HTTPS_Server_IP is set to %s\n", pMDRed->HTTPS_Server_IP));
         return TRUE;
     }
     if (AnscEqualString(ParamName, "Default_Server_IP", TRUE))
     {
+        ret=isValidIP(4,strValue);
+       if(ANSC_STATUS_SUCCESS != ret)
+            return FALSE;
+
 	    AnscCopyString(pMDRed->Default_Server_IP, strValue);
 		CcspTraceWarning(("Default_Server_IP is set to %s\n", pMDRed->Default_Server_IP));
         return TRUE;
     }
     if (AnscEqualString(ParamName, "HTTP_Server_IPv6", TRUE))
     {
+        ret=isValidIP(6,strValue);
+        if(ret!=1)
+            return FALSE;
+
         AnscCopyString(pMDRed->HTTP_Server_IPv6, strValue);
 		CcspTraceWarning(("HTTP_Server_IPv6 is set to %s\n", pMDRed->HTTP_Server_IPv6));
         return TRUE;
     }
     if (AnscEqualString(ParamName, "HTTPS_Server_IPv6", TRUE))
     {
+        ret=isValidIP(6,strValue);
+        if(ANSC_STATUS_SUCCESS != ret)
+            return FALSE;
+
         AnscCopyString(pMDRed->HTTPS_Server_IPv6, strValue);
 		CcspTraceWarning(("HTTPS_Server_IPv6 is set to %s\n", pMDRed->HTTPS_Server_IPv6));
         return TRUE;
     }
     if (AnscEqualString(ParamName, "Default_Server_IPv6", TRUE))
     {
+        ret=isValidIP(6,strValue);
+        if(ANSC_STATUS_SUCCESS != ret)
+            return FALSE;
+
         AnscCopyString(pMDRed->Default_Server_IPv6, strValue);
 		CcspTraceWarning(("Default_Server_IPv6 is set to %s\n", pMDRed->Default_Server_IPv6));
         return TRUE;

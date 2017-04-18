@@ -845,6 +845,7 @@ DeviceInfo_SetParamStringValue
     )
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    ANSC_STATUS ret=ANSC_STATUS_FAILURE;
     
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "ProvisioningCode", TRUE))
@@ -856,6 +857,10 @@ DeviceInfo_SetParamStringValue
 #ifdef CONFIG_INTERNET2.0
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL", TRUE))
     {
+	ret=isValidInput(pString);
+	if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
+	
 	if (syscfg_set(NULL, "redirection_url", pString) != 0) {
              AnscTraceWarning(("syscfg_set failed\n"));
           } else {
@@ -959,6 +964,10 @@ DeviceInfo_SetParamStringValue
    /* Changes for EMS */
    if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_ServerURL", TRUE))
     {
+	ret=isValidInput(pString);
+	if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
+	
 	if (syscfg_set(NULL, "ems_server_url", pString) != 0) {
              AnscTraceWarning(("syscfg_set failed\n"));
           } else {

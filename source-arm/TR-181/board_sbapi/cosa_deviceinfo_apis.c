@@ -842,6 +842,31 @@ CosaDmlGetTCPImplementation
     return ANSC_STATUS_SUCCESS;
 }
 
+ANSC_STATUS
+isValidInput
+    (
+        char                       *inputparam
+    )
+{
+    ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
+    	
+	// check for possible command injection	
+    if(strstr(inputparam,";"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam,"&"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam,"|"))
+     {
+        returnStatus = ANSC_STATUS_FAILURE;
+      }
+	return returnStatus;
+
+}
+
 /* Maitenance window can be customized for bci routers */
 #if defined(_CBR_PRODUCT_REQ_)
 
