@@ -253,7 +253,12 @@ CosaDmlDiGetCMIPAddress
         PULONG                      pulSize
     )
 {
-    return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.IPAddress", pValue, pulSize);
+    ANSC_STATUS retStatus;
+    retStatus = Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.IPv6Address", pValue, pulSize);
+    if(!(*pulSize))
+        return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.IPAddress", pValue, pulSize);
+
+    return retStatus;
 }
 
 #endif
