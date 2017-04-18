@@ -1169,6 +1169,7 @@ CosaDmlIpIfMlanSetCfg
     else
     {
         struct ifreq                ifr;
+		COSA_DML_IF_STATUS enifStatus = COSA_DML_IF_STATUS_Unknown;
 
         /* Save the configuraton */
         AnscCopyMemory(&pIpIf->Cfg, pCfg, sizeof(pIpIf->Cfg));
@@ -1182,10 +1183,14 @@ CosaDmlIpIfMlanSetCfg
         /*
          *  Reset stats
          */
-        if ( getIfStatus(pIpIf->Info.Name, &ifr) == COSA_DML_IF_STATUS_Unknown )
-        {
-            return ANSC_STATUS_FAILURE;
-        }
+		enifStatus = getIfStatus(pIpIf->Info.Name, &ifr);
+		
+		if ( ( enifStatus == COSA_DML_IF_STATUS_Unknown ) || \
+			 ( enifStatus == COSA_DML_IF_STATUS_NotPresent )
+			)
+		{
+			return ANSC_STATUS_FAILURE;
+		}
 
         if ( pCfg->bEnabled && !(pIpIf->Cfg.bEnabled) && !(ifr.ifr_flags & IFF_UP) )
         {

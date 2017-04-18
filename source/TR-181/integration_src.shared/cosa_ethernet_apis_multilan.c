@@ -85,6 +85,8 @@
 int                 _getMac(char* ifName, char* mac);
 COSA_DML_IF_STATUS  getIfStatus(const PUCHAR name, struct ifreq *pIfr);
 static int          setIfStatus(struct ifreq *pIfr);
+BOOLEAN 			getIfAvailability( const PUCHAR name );
+
 
 /**********************************************************************
                             MAIN ROUTINES
@@ -973,8 +975,20 @@ CosaDmlEthLinkSetCfg
         }
         else if ( pEthLink->Cfg.bEnabled != pCfg->bEnabled )
         {
+			COSA_DML_IF_STATUS enifStatus = COSA_DML_IF_STATUS_Unknown;
+			BOOLEAN 		   bProceedFurther = TRUE;
+			
+			enifStatus = getIfStatus(pEthLink->StaticInfo.Name, &ifr);
+			
+			if ( ( enifStatus == COSA_DML_IF_STATUS_Unknown ) || \
+				 ( enifStatus == COSA_DML_IF_STATUS_NotPresent )
+				)
+			{
+				bProceedFurther = FALSE;
+			}
+
             /* Check the actual if status to determine whether there is state change */
-            if ( getIfStatus(pEthLink->StaticInfo.Name, &ifr) != COSA_DML_IF_STATUS_Unknown )
+            if ( bProceedFurther )
             {
                 if ( pCfg->bEnabled && !(pEthLink->Cfg.bEnabled) && !(ifr.ifr_flags & IFF_UP) )
                 {
@@ -1182,8 +1196,15 @@ COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr)
     AnscCopyString(ifr.ifr_name, name);
     
     if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {
+		
         CcspTraceWarning(("cosa_ethernet_apis.c - getIfStatus: Get interface %s error...\n", name));
         close(skfd);
+
+		if ( FALSE == getIfAvailability( name ) )
+		{
+			return COSA_DML_IF_STATUS_NotPresent;
+		}
+
         return COSA_DML_IF_STATUS_Unknown;
     }
     close(skfd);
@@ -1220,4 +1241,31 @@ static int setIfStatus(struct ifreq *pIfr)
     close(skfd);
 
     return 0;
+}
+
+BOOLEAN getIfAvailability( const PUCHAR name )
+{
+    struct ifreq ifr;
+    int skfd;
+    
+    AnscTraceFlow(("%s... name %s\n", __FUNCTION__,name));
+
+    skfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    AnscCopyString(ifr.ifr_name, name);
+    
+    if (ioctl(skfd, SIOCGIFINDEX, &ifr) < 0) {
+		
+        CcspTraceWarning(("%s : Get interface %s error (%s)...\n", 
+									__FUNCTION__, 
+									name, 
+									strerror( errno )));
+        close( skfd );
+
+		return FALSE;
+    }
+	
+    close(skfd);
+
+	return TRUE;
 }
