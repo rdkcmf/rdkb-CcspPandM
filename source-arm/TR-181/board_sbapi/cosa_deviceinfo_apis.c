@@ -1552,66 +1552,6 @@ CosaDmlDiSetAndProcessDhcpServDetectionFlag
     return ANSC_STATUS_SUCCESS;
 }
 
-ANSC_STATUS
-CosaDmlDiGetEnableMoCAforXi5Flag
-  (
-	  ANSC_HANDLE				  hContext,
-	  BOOLEAN*					  pValue
-  )
-{
-	char buf[ 8 ] = { 0 };
-
-	if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_EnableMoCAforXi5", buf, sizeof( buf ) ) )
-	{
-		if( 0 == strcmp( buf, "true" ) )
-		{
-			*pValue = 1;
-		}
-
-		if( 0 == strcmp( buf, "false" ) )
-		{
-			*pValue = 0;
-		}
-	}
-	else
-	{
-        CcspTraceWarning(("syscfg_get failed\n")); 
-
-		return ANSC_STATUS_FAILURE;
-	}
-
-    return ANSC_STATUS_SUCCESS;
-}
-
-ANSC_STATUS
-CosaDmlDiSetEnableMoCAforXi5Flag
-   (
-	   ANSC_HANDLE				   hContext,
-	   BOOLEAN*					   pValue,
-	   BOOLEAN*					   pEnableMoCAforXi5Flag
-   )
-{
-	if ( syscfg_set( NULL, 
-					  "X_RDKCENTRAL-COM_EnableMoCAforXi5", 
-					  ((*pValue == 1 ) ? "true" : "false") )!= 0 ) 
-	{
-		CcspTraceWarning(("syscfg_set failed\n")); 
-		return ANSC_STATUS_FAILURE;
-	}
-	else 
-	{
-		if ( syscfg_commit( ) != 0 ) 
-		{
-			CcspTraceWarning(("syscfg_commit failed\n")); 
-			return ANSC_STATUS_FAILURE;
-		}
-
-		*pEnableMoCAforXi5Flag = *pValue;
-	}  
-
-    return ANSC_STATUS_SUCCESS;
-}
-
 #endif
 int getRebootCounter()
 {       

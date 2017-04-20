@@ -101,7 +101,6 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
     BOOL		bxfinitywifiEnable;
 	BOOL		bDhcpServDetectEnable;	
 	BOOL		bMultipleGW;					
-	BOOL		bEnableMoCAforXi5;	
 }
 COSA_DATAMODEL_DEVICEINFO, *PCOSA_DATAMODEL_DEVICEINFO;
 

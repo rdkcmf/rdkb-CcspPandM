@@ -227,12 +227,6 @@ DeviceInfo_GetParamBoolValue_Custom
 	    return TRUE;
     }
 
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_EnableMoCAforXi5", TRUE))
-    {
-       *pBool = pMyObject->bEnableMoCAforXi5;
-	    return TRUE;
-    }
-
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -576,19 +570,6 @@ DeviceInfo_SetParamBoolValue_Custom
         return TRUE;
     }
 #endif
-
-    if ( AnscEqualString( ParamName, "X_RDKCENTRAL-COM_EnableMoCAforXi5", TRUE ) )
-    {   
-		/* No need to process same value received case */
-		if( pMyObject->bEnableMoCAforXi5 == bValue )
-		{
-			return TRUE;
-		}
-
-		CosaDmlDiSetEnableMoCAforXi5Flag( pMyObject, &bValue, &pMyObject->bEnableMoCAforXi5 );
-
-    	return TRUE;
-    }   
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
