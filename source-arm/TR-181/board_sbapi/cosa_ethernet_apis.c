@@ -1272,8 +1272,13 @@ static int setIfCfg(PCosaEthInterfaceInfo pEthIf, PCOSA_DML_ETH_PORT_CFG pCfg)
 {
     FILE *pFile = NULL;
     struct ifreq ifr;
+	COSA_DML_IF_STATUS enifStatus = COSA_DML_IF_STATUS_Unknown;
 
-    if ( getIfStatus(pEthIf->sInfo->Name, &ifr) == COSA_DML_IF_STATUS_Unknown )
+	enifStatus = getIfStatus(pEthIf->sInfo->Name, &ifr);
+
+    if ( ( enifStatus == COSA_DML_IF_STATUS_Unknown ) || \
+		 ( enifStatus == COSA_DML_IF_STATUS_NotPresent )
+		)
     {
         return ANSC_STATUS_FAILURE;
     }
