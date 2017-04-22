@@ -1141,6 +1141,32 @@ CosaDmlEthLinkGetStats
     }
 }
 
+ANSC_STATUS
+CosaDmlEthLinkUpdateStaticLowerLayerName
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       ulInstanceNumber,
+        PCOSA_DML_ETH_LINK_FULL     pEntry
+    )
+{
+    PDMSB_TR181_ETH_CONTEXT         pEthContext     = (PDMSB_TR181_ETH_CONTEXT)hContext;
+    PDMSB_TR181_ETH_LINK            pEthLink;
+
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    pEthLink = CosaDmlEthLinkFindByInstNum(pEthContext, ulInstanceNumber);
+
+    if ( !pEthLink )
+    {
+        return  ANSC_STATUS_CANT_FIND;
+    }
+    else
+    {
+        AnscCopyMemory( pEthLink->StaticInfo.Name, pEntry->StaticInfo.Name,sizeof( pEntry->StaticInfo.Name ) );
+
+        return  ANSC_STATUS_SUCCESS;
+    }
+}
 
 /**********************************************************************
                     HELPER FUNCTION PROTOTYPES
