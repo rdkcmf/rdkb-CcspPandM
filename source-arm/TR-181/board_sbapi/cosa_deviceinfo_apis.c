@@ -513,7 +513,7 @@ void uploadLogUtilityThread(void* vptr_value)
 	pthread_detach(pthread_self());
 	char uploadOnRequest[150];
 	char *str = (char *) vptr_value;
-	snprintf(uploadOnRequest,sizeof(uploadOnRequest),"sh /fss/gw/rdklogger/opsLogUpload.sh %s",str);
+	snprintf(uploadOnRequest,sizeof(uploadOnRequest),"sh /rdklogger/opsLogUpload.sh %s &",str);
 	system(uploadOnRequest);
 	return;
 
@@ -555,7 +555,7 @@ COSADmlUploadLogsStatus
 	int ret, status;
 	FILE *ptr_file;
     char buf[50];
-	snprintf(uploadStatus,sizeof(uploadStatus),"sh /fss/gw/rdklogger/opsLogUpload.sh %s","status");
+	snprintf(uploadStatus,sizeof(uploadStatus),"sh /rdklogger/opsLogUpload.sh %s","status");
 	ret=system(uploadStatus);
 	status=WEXITSTATUS(ret);
 	
