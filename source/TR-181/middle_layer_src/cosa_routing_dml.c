@@ -3981,6 +3981,7 @@ IPv6Forwarding_SetParamStringValue
         char*                       pString
     )
 {
+    ANSC_STATUS ret=ANSC_STATUS_FAILURE;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V6_ENTRY)pCosaContext->hContext;
 
@@ -4010,6 +4011,10 @@ IPv6Forwarding_SetParamStringValue
 
     if( AnscEqualString(ParamName, "Interface", TRUE))
     {
+        ret=isValidInput(pString);
+        if(ANSC_STATUS_SUCCESS != ret)
+            return FALSE;
+
         /* save update to backup */
         AnscCopyString(pRouterForward->Interface, pString);
         return TRUE;

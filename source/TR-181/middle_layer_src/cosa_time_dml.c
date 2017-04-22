@@ -619,10 +619,15 @@ Time_SetParamStringValue
     )
 {
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
+    ANSC_STATUS ret=ANSC_STATUS_FAILURE;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "NTPServer1", TRUE))
     {
+        ret=isValidInput(pString);
+	if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
+
         /* save update to backup */
         AnscCopyString(pMyObject->TimeCfg.NTPServer1, pString);
         return TRUE;
@@ -630,6 +635,10 @@ Time_SetParamStringValue
 
     if( AnscEqualString(ParamName, "NTPServer2", TRUE))
     {
+        ret=isValidInput(pString);
+	if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
+
         /* save update to backup */
         AnscCopyString(pMyObject->TimeCfg.NTPServer2, pString);
         return TRUE;
@@ -637,6 +646,10 @@ Time_SetParamStringValue
 
     if( AnscEqualString(ParamName, "NTPServer3", TRUE))
     {
+	ret=isValidInput(pString);
+	if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
+
         /* save update to backup */
         AnscCopyString(pMyObject->TimeCfg.NTPServer3, pString);
         return TRUE;
@@ -644,6 +657,10 @@ Time_SetParamStringValue
 
     if( AnscEqualString(ParamName, "NTPServer4", TRUE))
     {
+	ret=isValidInput(pString);
+	if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
+
         /* save update to backup */
         AnscCopyString(pMyObject->TimeCfg.NTPServer4, pString);
         return TRUE;
@@ -651,6 +668,10 @@ Time_SetParamStringValue
 
     if( AnscEqualString(ParamName, "NTPServer5", TRUE))
     {
+        ret=isValidInput(pString);
+	if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
+
         /* save update to backup */
         AnscCopyString(pMyObject->TimeCfg.NTPServer5, pString);
         return TRUE;

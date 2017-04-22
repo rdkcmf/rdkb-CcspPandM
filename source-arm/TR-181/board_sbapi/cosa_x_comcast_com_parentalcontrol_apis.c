@@ -1211,6 +1211,22 @@ CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry)
    return ANSC_STATUS_SUCCESS;
 }
 
+ANSC_STATUS isValidIP( int type, char *ipAddress )
+{
+	struct sockaddr_in sa;
+	ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
+	int result=1;
+	if(type == 4)
+		result = inet_pton(AF_INET, ipAddress, &(sa.sin_addr));
+	else
+		result = inet_pton(AF_INET6, ipAddress, &(sa.sin_addr));
+
+	if (1!=result)
+		returnStatus = ANSC_STATUS_FAILURE;
+	
+	return returnStatus;
+}
+
 ANSC_STATUS
 CosaDmlMngDevs_GetConf(COSA_DML_MANAGED_DEVS *conf)
 {
