@@ -3495,7 +3495,7 @@ static void configBridgeMode(int bEnable) {
 //         varstruct.type = ccsp_boolean;
         g_SetParamValueBool(brpdm, bEnable);
 
-        vsystem("/bin/sh /etc/webgui.sh");
+        vsystem("/bin/sh /etc/webgui.sh &");
 
         if (ppComponents == NULL && initWifiComp()) {
             syslog_systemlog("Local Network", LOG_NOTICE, "Bridge mode transition: Failed to acquire wifi component.");
