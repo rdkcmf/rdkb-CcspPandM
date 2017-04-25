@@ -49,8 +49,6 @@
 #include <systemd/sd-daemon.h>
 #endif
 
-//#include <docsis_ext_interface.h>
-
 #ifdef INCLUDE_BREAKPAD
 #include "breakpad_wrapper.h"
 #endif
@@ -514,38 +512,61 @@ int main(int argc, char* argv[])
 
     system("touch /tmp/pam_initialized");
 
-#if defined(_COSA_INTEL_USG_ARM_)
+#if defined(_COSA_INTEL_USG_ARM_) && defined(ENABLE_FEATURE_MESHWIFI)
     {
-        // touch pam_initialized on the ATOM side
         #define DATA_SIZE 1024
         FILE *fp1;
         char buf[DATA_SIZE] = {0};
-        char cmd1[DATA_SIZE] = {0};
-        char cmd2[DATA_SIZE] = {0};
+        char *urlPtr = NULL;
 
         // Grab the ATOM RPC IP address
-        sprintf(cmd1, "cat /etc/device.properties | grep ATOM_ARPING_IP | cut -f 2 -d\"=\"");
+        // sprintf(cmd1, "cat /etc/device.properties | grep ATOM_ARPING_IP | cut -f 2 -d\"=\"");
 
-        fp1 = popen(cmd1, "r");
+        fp1 = fopen("/etc/device.properties", "r");
         if (fp1 == NULL) {
-            CcspTraceError(("Error opening command pipe! \n"));
+            CcspTraceError(("Error opening properties file! \n"));
             return FALSE;
         }
 
-        fgets(buf, DATA_SIZE, fp1);
+        CcspTraceInfo(("Searching for ATOM ARP IP\n"));
 
-        buf[strcspn(buf, "\r\n")] = 0; // Strip off any carriage returns
+        while (fgets(buf, DATA_SIZE, fp1) != NULL) {
+            // Look for ATOM_ARPING_IP
+            if (strstr(buf, "ATOM_ARPING_IP") != NULL) {
+                buf[strcspn(buf, "\r\n")] = 0; // Strip off any carriage returns
 
-        if (buf[0] != 0 && strlen(buf) > 0) {
-            CcspTraceInfo(("Reported an ATOM IP of %s \n", buf));
-            sprintf(cmd2, "rpcclient %s \"/bin/touch /tmp/pam_initialized\"", buf);
-            //CcspTraceInfo(("Command to run \"%s\"", cmd2));
-            system(cmd2);
+                // grab URL from string
+                urlPtr = strstr(buf, "=");
+                urlPtr++;
+                break;
+            }
         }
 
-        if (pclose(fp1) != 0) {
+        if (fclose(fp1) != 0) {
             /* Error reported by pclose() */
-            CcspTraceError(("Error closing command pipe! \n"));
+            CcspTraceError(("Error closing properties file! \n"));
+        }
+
+        if (urlPtr != NULL && urlPtr[0] != 0 && strlen(urlPtr) > 0) {
+            CcspTraceInfo(("Reported an ATOM IP of %s \n", urlPtr));
+            pid_t pid = fork();
+
+            if (pid == -1)
+            {
+                // error, failed to fork()
+            }
+            else if (pid > 0)
+            {
+                int status;
+                waitpid(pid, &status, 0); // wait here until the child completes
+            }
+            else
+            {
+                // we are the child
+                char *args[] = {"/fss/gw/usr/bin/rpcclient", urlPtr, "/bin/touch /tmp/pam_initialized", (char *) 0 };
+                execv(args[0], args);
+                _exit(EXIT_FAILURE);   // exec never returns
+            }
         }
     }
 #endif
