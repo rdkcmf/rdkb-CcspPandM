@@ -567,27 +567,43 @@ IPv6rdIF_SetParamStringValue(
     char v4addr[16];
     ULONG addlen;
     char tmp[128];
+    ANSC_STATUS ret=ANSC_STATUS_FAILURE;
 
     if (!pLinkObject || !pEntry)
         return FALSE;
 
     if (AnscEqualString(ParamName, "Alias", TRUE))
     {
+	ret=isValidInput(pString);
+	if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
+
         AnscCopyString(pEntry->Alias, pString);
         return TRUE;
     }
     else if (AnscEqualString(ParamName, "BorderRelayIPv4Addresses", TRUE))
     {
+	ret=isValidInput(pString);
+	if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
         AnscCopyString(pEntry->BorderRelayIPv4Addr, pString);
         return TRUE;
     }
     else if (AnscEqualString(ParamName, "SPIPv6Prefix", TRUE))
     {
+	ret=isValidInput(pString);
+	if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
+
         AnscCopyString(pEntry->SPIPv6Prefix, pString);
         return TRUE;
     }
     else if (AnscEqualString(ParamName, "AddressSource", TRUE))
     {
+	ret=isValidInput(pString);
+	if(ANSC_STATUS_SUCCESS != ret)
+	    return FALSE;
+
         if (!pString || _ansc_strlen(pString) == 0)
         {
             AnscCopyString(pEntry->AddressSource, "");
