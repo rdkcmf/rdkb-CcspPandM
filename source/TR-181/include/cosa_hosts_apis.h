@@ -128,7 +128,7 @@ COSA_DML_HOST_ENTRY,  *PCOSA_DML_HOST_ENTRY;
 #define LM_HOST_X_CISCO_COM_NetworkInterfaceId  1
 #define LM_HOST_X_CISCO_COM_ConnectionStatusId  2
 #define LM_HOST_X_CISCO_COM_OSType              3
-#define LM_HOST_X_COMCAST-COM_LastChange        4 
+#define LM_HOST_X_COMCAST_COM_LastChange        4 
 #define LM_HOST_NumUlongPara                    5
 
 //Unknown(1),Airport Base Station(2),AirTunes(3),AppleTV(4),Apple Device(5),Workstation(6),Network Storage(7),Set-Top Box(8),Router(9),Media Player(10), Printer(11)
