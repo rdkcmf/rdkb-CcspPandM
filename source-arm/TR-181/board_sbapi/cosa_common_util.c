@@ -363,8 +363,10 @@ enum {EVENT_ERROR=-1, EVENT_OK, EVENT_TIMEOUT, EVENT_HANDLE_EXIT, EVENT_LAN_STAR
 static void
 EvtDispterWanIpAddrsCallback(char *ip_addrs)
 {
+#ifdef DUAL_CORE_XB3
     CcspTraceInfo(("EvtDispterWanIpAddrsCallback - erouter0 IP = %s\n",ip_addrs));
     vsystem("/usr/ccsp/pam/erouter0_ip_sync.sh %s &",ip_addrs);
+#endif
 }
 
 /*
