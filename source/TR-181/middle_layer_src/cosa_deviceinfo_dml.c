@@ -3933,7 +3933,7 @@ Logging_SetParamBoolValue
 }
 
 /* Maintenance window can be customized for bci routers */
-#if defined(_CBR_PRODUCT_REQ_)
+#if defined(_CBR_PRODUCT_REQ_) || defined(_BCI_FEATURE_REQ)
 
 /***********************************************************************
 
