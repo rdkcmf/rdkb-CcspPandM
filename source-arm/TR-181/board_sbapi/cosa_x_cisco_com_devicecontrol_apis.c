@@ -3300,6 +3300,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 		    1,
 		    &nval,
 		    &valMoCAstatus);
+                 if( CCSP_SUCCESS == ret ){
 			CcspTraceWarning(("valMoCAstatus[0]->parameterValue = %s\n",valMoCAstatus[0]->parameterValue));
 			if(strcmp("true", valMoCAstatus[0]->parameterValue)==0)
 					MoCAstate=1;
@@ -3307,20 +3308,26 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 					MoCAstate=0;
 			snprintf(buf,sizeof(buf),"%d",MoCAstate);
 			if ((syscfg_set(NULL, "MoCA_current_status", buf) != 0)) 
-		    {
-		        CcspTraceWarning(("syscfg_set failed\n"));
-	    	    return -1;
-	    	}
-	    	else 
-	    	{
-	        	if (syscfg_commit() != 0) 
-	        	{
-		    		CcspTraceWarning(("syscfg_commit failed\n"));
+		        {
+                            CcspTraceWarning(("syscfg_set failed\n"));
+                            return -1;
+                        }
+                        else
+                        {
+                             if (syscfg_commit() != 0)
+                             {
+                                    CcspTraceWarning(("syscfg_commit failed\n"));
 				    return -1;
-	    	    }				       		
-	     	} 
+                             }
+                        }
+                   }
+                   else
+                   {
+                       CcspTraceError(("CcspBaseIf_getParameterValues failed to get MoCA status return vaule = %d\n",ret));
+		   }
+		   if(valMoCAstatus){
 			free_parameterValStruct_t (bus_handle, nval, valMoCAstatus);
-		CcspTraceWarning(("after syscfg get\n"));
+		}
 #endif
 		
         
