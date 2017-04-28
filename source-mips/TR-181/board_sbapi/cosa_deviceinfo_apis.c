@@ -74,6 +74,10 @@
         *  COSADmlGetProcessInfo
         *  COSADmlGetCpuUsage
         *  COSADmlGetMemoryStatus
+        *  CosaDmlDiGetFirmwareUpgradeStartTime
+        *  CosaDmlDiGetFirmwareUpgradeEndTime
+        *  CosaDmlDiSetFirmwareUpgradeStartTime
+        *  CosaDmlDiSetFirmwareUpgradeEndTime
     -------------------------------------------------------------------
 
     environment:
@@ -823,6 +827,104 @@ isValidInput
 	return returnStatus;
 
 }
+
+/* Maitenance window can be customized for bci routers */
+#if defined(_BCI_FEATURE_REQ)
+
+ANSC_STATUS
+CosaDmlDiGetFirmwareUpgradeStartTime
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    char value[25];
+    FILE *fp;
+
+    AnscCopyString(pValue, _ERROR_);
+    memset(value,0,10);
+
+    fp = popen("cat /nvram/.FirmwareUpgradeStartTime", "r");
+    if (fp == NULL)
+    {
+        CcspTraceError(("ERROR '%s'\n","ERROR"));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    while(fgets(value, 25, fp) != NULL)
+    {
+        AnscCopyString(pValue ,value);
+    }
+
+    pclose(fp);
+    *pulSize = AnscSizeOfString(pValue);
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiGetFirmwareUpgradeEndTime
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    char value[25];
+    FILE *fp;
+
+    AnscCopyString(pValue, _ERROR_);
+    memset(value,0,10);
+
+    fp = popen("cat /nvram/.FirmwareUpgradeEndTime", "r");
+    if (fp == NULL)
+    {
+        CcspTraceError(("ERROR '%s'\n","ERROR"));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    while(fgets(value, 25, fp) != NULL)
+    {
+        AnscCopyString(pValue ,value);
+    }
+
+    pclose(fp);
+    *pulSize = AnscSizeOfString(pValue);
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiSetFirmwareUpgradeStartTime (char* pString)
+{
+    /* collect value */
+    FILE *fptr;
+    fptr = fopen("/nvram/.FirmwareUpgradeStartTime", "w");
+    if(fptr == NULL)
+    {
+        CcspTraceError(("Cant open file /nvram/.FirmwareUpgradeStartTime"));
+        return ANSC_STATUS_FAILURE;
+    }
+    fprintf(fptr,"%s", pString);
+    fclose(fptr);
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiSetFirmwareUpgradeEndTime (char* pString)
+{
+    FILE *fptr;
+    fptr = fopen("/nvram/.FirmwareUpgradeEndTime", "w");
+    if(fptr == NULL)
+    {
+        CcspTraceError(("Cant open file /nvram/.FirmwareUpgradeEndTime"));
+        return ANSC_STATUS_FAILURE;
+    }
+    fprintf(fptr,"%s", pString);
+    fclose(fptr);
+    return ANSC_STATUS_SUCCESS;
+}
+
+#endif
 
 ANSC_HANDLE CosaProcStatusCreate()
 {

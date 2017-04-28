@@ -344,7 +344,7 @@ isValidInput
         char                       *inputparam
     );
 
-#if defined(_CBR_PRODUCT_REQ_)
+#if defined(_CBR_PRODUCT_REQ_) || defined(_BCI_FEATURE_REQ)
 ANSC_STATUS
 CosaDmlDiGetFirmwareUpgradeStartTime
     (
