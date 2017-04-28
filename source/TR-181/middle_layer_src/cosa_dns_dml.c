@@ -1545,15 +1545,14 @@ Server1_SetParamStringValue
 
     if( AnscEqualString(ParamName, "DNSServer", TRUE) )
     {
-        //if ( COSA_DML_DNS_ADDR_SRC_Static  == pDnsServer->Type )
-        if(pDnsServer->InstanceNumber <= 2)
+        if(( COSA_DML_DNS_ADDR_SRC_Static  == pDnsServer->Type ) && pDnsServer->InstanceNumber <= 2)
         {
             AnscCopyString(pDnsServer->DNSServer, pString);
             return TRUE;
         }
 
         CcspTraceWarning(("Only two static DNS servers are supported.\n"));
-        //CcspTraceWarning(("DNSServer is only writable when Type is Static \n"));
+        CcspTraceWarning(("DNSServer is only writable when Type is Static \n"));
         return FALSE;
     }
 
