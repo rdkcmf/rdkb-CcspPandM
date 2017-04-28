@@ -336,5 +336,10 @@ CosaDmlDiSetWebPACfg
         char*                       pValue
     );
 	
+ANSC_STATUS
+isValidInput
+    (
+        char                       *inputparam
+    );
 
 #endif
