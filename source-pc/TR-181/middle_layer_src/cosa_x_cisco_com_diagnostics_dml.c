@@ -231,7 +231,7 @@ Entry_Synchronize
             &pMyObject->ulDiagEntryNumber,
             &pMyObject->pDiagEntry
         );
-    
+
     return 0;
 }
 
@@ -571,14 +571,12 @@ Eventlog_Synchronize
         pMyObject->pDiagEventlog        = NULL;
         pMyObject->ulDiagEventlogNumber = 0;
     }
-#if 0//LNT_EMU
     CosaDmlDiagnosticsGetEventlog
         (
             (ANSC_HANDLE)NULL, 
             &pMyObject->ulDiagEventlogNumber,
             &pMyObject->pDiagEventlog
         );
-#endif
     
     return 0;
 }
@@ -819,7 +817,6 @@ X_CISCO_COM_Diagnostics_GetParamStringValue
     ULONG logSize = *pUlSize;
     if( AnscEqualString(ParamName, "DumpAllSyslog", TRUE))
     {
-#if 0//LNT_EMU
         if(ANSC_STATUS_FAILURE == CosaDmlDiagnosticsGetAllSyslog(pValue, &logSize) != ANSC_STATUS_SUCCESS)
         {
             if(logSize > *pUlSize){
@@ -829,13 +826,11 @@ X_CISCO_COM_Diagnostics_GetParamStringValue
             else
                 return -1;
         }
-#endif
         return 0;
     }
  
     if( AnscEqualString(ParamName, "DumpAllEventlog", TRUE))
     {
-#if 0//LNT_EMU
         if(ANSC_STATUS_FAILURE == CosaDmlDiagnosticsGetAllEventlog(pValue, &logSize) != ANSC_STATUS_SUCCESS)
         {
             if(logSize > *pUlSize){
@@ -845,7 +840,6 @@ X_CISCO_COM_Diagnostics_GetParamStringValue
             else
                 return -1;
         }
-#endif
         return 0;
     }
    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
