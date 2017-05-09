@@ -1655,6 +1655,9 @@ void restoreAllDBs()
 #if defined (_XB6_PRODUCT_REQ_)
 	system("rm -f /nvram/syscfg.db");
 #endif
+#if defined (_CBR_PRODUCT_REQ_)
+	system("rm -f /data/nvram");
+#endif
 	system("restoreAllDBs"); //Perform factory reset on other components
 	return;
 }
