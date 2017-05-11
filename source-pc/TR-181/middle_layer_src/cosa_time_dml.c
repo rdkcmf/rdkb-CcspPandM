@@ -454,6 +454,14 @@ Time_SetParamBoolValue
     {
         /* save update to backup */
         pMyObject->TimeCfg.bEnabled = bValue;
+        if ( pMyObject->TimeCfg.bEnabled )
+	{
+    		CcspTraceWarning(("Service_NTP : Enabling Network Time Sync \n")); 
+	}
+	else
+	{
+   		CcspTraceWarning(("Service_NTP : Disabling Network Time Sync \n")); 
+	}
         return TRUE;
     }
 
@@ -624,6 +632,7 @@ Time_SetParamStringValue
 	    return FALSE;
         /* save update to backup */
         AnscCopyString(pMyObject->TimeCfg.NTPServer1, pString);
+    	CcspTraceWarning(("Service_NTP : Setting NTPServer as %s \n",pMyObject->TimeCfg.NTPServer1)); 
         return TRUE;
     }
 
