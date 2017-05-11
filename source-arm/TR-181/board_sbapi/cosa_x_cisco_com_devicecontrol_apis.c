@@ -1657,6 +1657,9 @@ void restoreAllDBs()
 #endif
 #if defined (_CBR_PRODUCT_REQ_)
 	system("rm -f /data/nvram");
+        /* Remove maintenance window data on factory reset */
+        system("rm -f /nvram/.FirmwareUpgradeEndTime");
+        system("rm -f /nvram/.FirmwareUpgradeStartTime");
 #endif
 	system("restoreAllDBs"); //Perform factory reset on other components
 	return;
