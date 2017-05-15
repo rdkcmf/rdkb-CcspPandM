@@ -512,7 +512,7 @@ int main(int argc, char* argv[])
 
     system("touch /tmp/pam_initialized");
 
-#if defined(_COSA_INTEL_USG_ARM_) && defined(ENABLE_FEATURE_MESHWIFI)
+#if defined(_COSA_INTEL_USG_ARM_) 
     {
         #define DATA_SIZE 1024
         FILE *fp1;
