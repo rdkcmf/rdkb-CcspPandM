@@ -917,34 +917,44 @@ DeviceInfo_SetParamStringValue
 	 else if (AnscEqualString(pString, "reboot_device", TRUE))
          {
                 CcspTraceInfo(("RDKB_REBOOT : RebootDevice triggered from GUI\n"));
-                /*char buf[8];
-		snprintf(buf,sizeof(buf),"%d",1);
-		               
-		if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", "gui-reboot") != 0) 
+
+		char buffer[8] = {0};
+		syscfg_get( NULL, "restore_reboot", buffer, sizeof(buffer));
+
+		if (strcmp(buffer, "true") != 0)
 		{
-		        AnscTraceWarning(("RDKB_REBOOT : RebootDevice syscfg_set failed GUI\n"));
-		}
-		else 
-		{
-			if (syscfg_commit() != 0) 
+			char buf[8];
+			snprintf(buf,sizeof(buf),"%d",1);
+
+			if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", "gui-reboot") != 0)
 			{
-				AnscTraceWarning(("RDKB_REBOOT : RebootDevice syscfg_commit failed GUI\n"));
+				AnscTraceWarning(("RDKB_REBOOT : RebootDevice syscfg_set failed GUI\n"));
 			}
-		}
+			else
+			{
+				if (syscfg_commit() != 0)
+				{
+					AnscTraceWarning(("RDKB_REBOOT : RebootDevice syscfg_commit failed GUI\n"));
+				}
+			}
 	        
 	        
-	        if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0) 
-	        {
-                    AnscTraceWarning(("syscfg_set failed\n"));
-                }
-                else 
+			if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0)
+			{
+				AnscTraceWarning(("syscfg_set failed\n"));
+			}
+			else
+			{
+				if (syscfg_commit() != 0)
+				{
+					AnscTraceWarning(("syscfg_commit failed\n"));
+				}
+			}
+	        }
+		else
 		{
-		      if (syscfg_commit() != 0)
-	              {
-                         AnscTraceWarning(("syscfg_commit failed\n"));
-                      }
-	        }*/
-	        
+			CcspTraceInfo(("RDKB_REBOOT : RebootDevice to restore configuration\n"));
+		}
 	 }
          else if(AnscEqualString(pString, "factory_reset", TRUE))
          {
