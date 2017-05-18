@@ -132,6 +132,8 @@
 #include "autoconf.h"     
  
 #define _ERROR_ "NOT SUPPORTED"
+#define _START_TIME_12AM_ "0"
+#define _END_TIME_3AM_ "10800"
 
 extern void* g_pDslhDmlAgent;
 
@@ -839,24 +841,28 @@ CosaDmlDiGetFirmwareUpgradeStartTime
         ULONG*                      pulSize
     )
 {
-    char value[25];
+    char value[25] = {0};
     FILE *fp;
 
-    AnscCopyString(pValue, _ERROR_);
-    memset(value,0,10);
+    AnscCopyString(pValue, _START_TIME_12AM_);
 
     fp = popen("cat /nvram/.FirmwareUpgradeStartTime", "r");
     if (fp == NULL)
     {
         CcspTraceError(("ERROR '%s'\n","ERROR"));
-        return ANSC_STATUS_FAILURE;
     }
-
-    while(fgets(value, 25, fp) != NULL)
+    else
     {
-        AnscCopyString(pValue ,value);
+        while(fgets(value, 25, fp) != NULL)
+        {
+            AnscCopyString(pValue ,value);
+        }
     }
 
+    if ( !value[0] )  // if file does not exist
+    {
+        CosaDmlDiSetFirmwareUpgradeStartTime( pValue );
+    }
     pclose(fp);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
@@ -870,24 +876,28 @@ CosaDmlDiGetFirmwareUpgradeEndTime
         ULONG*                      pulSize
     )
 {
-    char value[25];
+    char value[25] = {0};
     FILE *fp;
 
-    AnscCopyString(pValue, _ERROR_);
-    memset(value,0,10);
+    AnscCopyString(pValue, _END_TIME_3AM_);
 
     fp = popen("cat /nvram/.FirmwareUpgradeEndTime", "r");
     if (fp == NULL)
     {
         CcspTraceError(("ERROR '%s'\n","ERROR"));
-        return ANSC_STATUS_FAILURE;
     }
-
-    while(fgets(value, 25, fp) != NULL)
+    else
     {
-        AnscCopyString(pValue ,value);
+        while(fgets(value, 25, fp) != NULL)
+        {
+            AnscCopyString(pValue ,value);
+        }
     }
 
+    if ( !value[0] )  // if file does not exist
+    {
+        CosaDmlDiSetFirmwareUpgradeEndTime( pValue );
+    }
     pclose(fp);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
