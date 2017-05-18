@@ -416,14 +416,6 @@ CosaDmlTimeSetCfg
     if (!pTimeCfg)
         return ANSC_STATUS_FAILURE;
 
-    err = pthread_create(&ntp_thread, NULL, startNTP, (void *)pTimeCfg);
-
-    if(0 != err)
-    {
-        CcspTraceError(("%s: create the ntp syn thread error!\n", __FUNCTION__));
-    }
-    else
-        pthread_detach(ntp_thread);
 
 //    startNTP(pTimeCfg);
 
@@ -460,6 +452,22 @@ CosaDmlTimeSetCfg
        /* Free Utopia Context */
        Utopia_Free(&ctx,!rc);
      }
+
+#ifdef NTPD_ENABLE
+       CcspTraceWarning(("%s: Triggering event to restart ntpd \n", __FUNCTION__));
+	commonSyseventSet("ntpd-restart", "");
+#else
+    err = pthread_create(&ntp_thread, NULL, startNTP, (void *)pTimeCfg);
+
+    if(0 != err)
+    {
+        CcspTraceError(("%s: create the ntp syn thread error!\n", __FUNCTION__));
+    }
+    else
+        pthread_detach(ntp_thread);
+
+#endif
+
      if (rc != 0)
        return ERR_SYSCFG_FAILED;
      else
