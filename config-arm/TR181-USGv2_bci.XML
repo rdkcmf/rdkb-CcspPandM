@@ -664,6 +664,61 @@
         </parameters>
 
       <objects>
+      	<object>
+			<name>X_RDKCENTRAL-COM_xOpsDeviceMgmt</name>
+
+			<objectType>object</objectType>
+
+			<functions></functions>
+			<parameters></parameters>
+
+			 <objects>
+	      <object>
+			<name>Logging</name>
+
+			<objectType>object</objectType>
+
+			<functions>
+
+				<func_GetParamBoolValue>Logging_GetParamBoolValue</func_GetParamBoolValue>
+
+				<func_SetParamBoolValue>Logging_SetParamBoolValue</func_SetParamBoolValue>
+
+				<func_GetParamStringValue>Logging_GetParamStringValue</func_GetParamStringValue>
+
+			</functions>
+
+			<parameters>
+
+				<parameter>
+
+					<name>xOpsDMUploadLogsNow</name>
+
+					<type>boolean</type>
+
+					<syntax>bool</syntax>
+
+					<writable>true</writable>
+
+				</parameter>
+
+				<parameter>
+
+					<name>xOpsDMLogsUploadStatus</name>
+
+					<type>string</type>
+
+					<syntax>string</syntax>
+
+					<writable>false</writable>
+
+				</parameter>
+
+			</parameters>
+
+		</object>
+		</objects>
+		</object>
 
         <object>
 
