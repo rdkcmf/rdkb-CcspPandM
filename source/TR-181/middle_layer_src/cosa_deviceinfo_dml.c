@@ -3874,6 +3874,13 @@ Logging_GetParamBoolValue
 		return TRUE;
         
     }
+	if( AnscEqualString(ParamName, "xOpsDMUploadLogsNow", TRUE))
+    {
+        /* collect value */
+		*pBool=FALSE;
+		return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -3917,6 +3924,7 @@ Logging_SetParamBoolValue
         BOOL                        bValue
     )
 {
+	BOOL bReturnValue;
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "xOpsDMRetrieveConfigLogNow", TRUE))
     {
@@ -3928,8 +3936,35 @@ Logging_SetParamBoolValue
 
     	return TRUE;
 	}
+	else if( AnscEqualString(ParamName, "xOpsDMUploadLogsNow", TRUE))
+	{
+		bReturnValue = COSADmlUploadLogsNow((ANSC_HANDLE)NULL, bValue);
+		if( !bReturnValue )
+		{
+			return TRUE;
+		}
+	}
 
     return FALSE;
+}
+
+ULONG
+Logging_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+    if( AnscEqualString(ParamName, "xOpsDMLogsUploadStatus", TRUE))
+    {
+        /* collect value */
+        COSADmlUploadLogsStatus(NULL, pValue,pUlSize);
+        return 0;
+    }
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return -1;
 }
 
 /* Maintenance window can be customized for bci routers */
