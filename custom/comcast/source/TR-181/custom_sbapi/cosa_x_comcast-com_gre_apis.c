@@ -298,8 +298,8 @@ int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) 
     varStruct.parameterName = paramname;
     varStruct.parameterValue = outdata;
 	
-    GreTunnelIfPsmGetStr(GRETUIF_PARAM_LOCALIFS, tuIns, ins, localinterfaces, sizeof(localinterfaces));  //LocalInterfaces: Device.WiFi.SSID.5.,Device.WiFi.SSID.6.
-    
+    if(0 != GreTunnelIfPsmGetStr(GRETUIF_PARAM_LOCALIFS, tuIns, ins, localinterfaces, sizeof(localinterfaces)))  //LocalInterfaces: Device.WiFi.SSID.5.,Device.WiFi.SSID.6
+        return -1;
     curInt = localinterfaces;
     //while (curInt) {
         circuitSave=0;
