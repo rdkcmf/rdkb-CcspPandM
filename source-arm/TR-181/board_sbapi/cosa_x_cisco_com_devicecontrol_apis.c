@@ -1661,6 +1661,10 @@ void restoreAllDBs()
         system("rm -f /nvram/.FirmwareUpgradeEndTime");
         system("rm -f /nvram/.FirmwareUpgradeStartTime");
 #endif
+#if defined (_COSA_BCM_ARM_)
+	/* Clear cable modem's dynamic nonvol settings */
+	system("rm -f /mnt/cmnonvol/cm_dyn.bin");
+#endif
 	system("restoreAllDBs"); //Perform factory reset on other components
 	return;
 }
