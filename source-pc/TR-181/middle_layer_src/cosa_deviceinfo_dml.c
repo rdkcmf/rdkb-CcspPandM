@@ -4197,3 +4197,145 @@ Iot_SetParamBoolValue
 
     return FALSE;
 }
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Logging_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Logging_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "xOpsDMUploadLogsNow", TRUE))
+    {
+        /* collect value */
+         *pBool = FALSE;
+         
+        return TRUE;
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Logging_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Logging_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    BOOL                     bReturnValue;
+
+    if( AnscEqualString(ParamName, "xOpsDMUploadLogsNow", TRUE))
+    {
+#if 0//LNT_EMU
+	bReturnValue =
+        	COSADmlUploadLogsNow
+            	(
+                	(ANSC_HANDLE)NULL, 
+			bValue
+            	);
+#endif
+
+    		if ( ! bReturnValue )
+    		{
+        		return TRUE;
+    		}
+    		else
+    		{
+        		/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+        		return FALSE;
+    		}
+    }
+    return FALSE;
+}
+
+ULONG
+Logging_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+
+    if( AnscEqualString(ParamName, "xOpsDMLogsUploadStatus", TRUE))
+    {
+#if 0//LNT_EMU
+        /* collect value */
+	COSADmlUploadLogsStatus(NULL, pValue,pUlSize);
+#endif
+        return 0;
+    }
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return -1;
+}
