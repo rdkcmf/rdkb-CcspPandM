@@ -811,7 +811,9 @@ isValidInput
         char                       *inputparam
     )
 {
+    char wrapstring[256]={0};
     ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
+
     	
 	// check for possible command injection	
     if(strstr(inputparam,";"))
@@ -826,6 +828,14 @@ isValidInput
      {
         returnStatus = ANSC_STATUS_FAILURE;
       }
+    else if(strstr(inputparam,"'"))
+               returnStatus = ANSC_STATUS_FAILURE;
+
+     if(ANSC_STATUS_SUCCESS == returnStatus)
+     {
+        sprintf(wrapstring,"'%s'",inputparam);
+        strcpy(inputparam,wrapstring);
+     }
 	return returnStatus;
 
 }
