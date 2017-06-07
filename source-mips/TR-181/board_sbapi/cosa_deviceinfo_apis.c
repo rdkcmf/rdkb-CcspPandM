@@ -514,53 +514,27 @@ COSADmlUploadLogsStatus
 	ULONG*	pUlSize
     )
 {
-	char uploadStatus[150];
-	int ret, status;
 	FILE *ptr_file;
-    char buf[50];
-	snprintf(uploadStatus,sizeof(uploadStatus),"sh /rdklogger/opsLogUpload.sh %s","status");
-	ret=system(uploadStatus);
-	status=WEXITSTATUS(ret);
-	
-	switch (status)
+	char buf[50];
+
+	ptr_file =fopen("/tmp/upload_log_status","r");
+
+	if (ptr_file)
 	{
-		case 0 : 
-			AnscCopyString(pValue, "Not triggered");
-        	*pUlSize = AnscSizeOfString(pValue);
-			break;
-		case 1 :
-			AnscCopyString(pValue, "Triggered");
-        	*pUlSize = AnscSizeOfString(pValue);
-			break;
-		case 2:
-			AnscCopyString(pValue, "In progress");
-       		*pUlSize = AnscSizeOfString(pValue);
-			break;
-		case 3 :
-			AnscCopyString(pValue, "Failed");
-       		*pUlSize = AnscSizeOfString(pValue);
-			break;
-		case 4 :
-			ptr_file =fopen("/nvram/uploadsuccess","r");
-
-			if (!ptr_file)
-				break;
-
-			if (fgets(buf,50, ptr_file)!=NULL)
-			{
-				strip_line(buf);
-				AnscCopyString(pValue, buf);
-				*pUlSize = AnscSizeOfString(pValue);
-			}
-			fclose(ptr_file);/*RDKB-6748, CID-33503, close to free resources*/
-			break;
-		default :
-			AnscCopyString(pValue, "Not triggered");
-       		*pUlSize = AnscSizeOfString(pValue);
-			break;
+		if (fgets(buf,50, ptr_file)!=NULL)
+		{
+			strip_line(buf);
+			AnscCopyString(pValue, buf);
+			*pUlSize = AnscSizeOfString(pValue);
+		}
+		fclose(ptr_file);
 	}
-	return ANSC_STATUS_SUCCESS;
-
+	else
+	{
+		AnscCopyString(pValue, "Not triggered");
+		*pUlSize = AnscSizeOfString(pValue);
+	}
+        return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
