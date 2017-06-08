@@ -14121,6 +14121,28 @@
         </object>        
       </objects>
     </object> 
+    <object>
+        <name>X_COMCAST-COM_Xcalibur</name>
+        <objectType>object</objectType>
+        <objects>
+          <object>
+           <name>Client</name>
+           <objectType>object</objectType>
+              <functions>
+                  <func_GetParamBoolValue>Xconf_GetParamBoolValue</func_GetParamBoolValue>
+                  <func_SetParamBoolValue>Xconf_SetParamBoolValue</func_SetParamBoolValue>
+              </functions>
+              <parameters>
+                  <parameter>
+                      <name>xconfCheckNow</name>
+                      <type>boolean</type>
+                      <syntax>bool</syntax>
+                      <writable>true</writable>
+                  </parameter>
+              </parameters>
+          </object>
+        </objects>
+    </object>
   </objects>
 
 </dataModelInfo>

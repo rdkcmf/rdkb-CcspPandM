@@ -3967,6 +3967,126 @@ Logging_GetParamStringValue
     return -1;
 }
 
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Xconf_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Xconf_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "xconfCheckNow", TRUE))
+    {
+        /* collect value */
+                *pBool=FALSE;
+                return TRUE;
+
+    }
+
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Xconf_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Xconf_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    int status;
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "xconfCheckNow", TRUE))
+    {
+      		AnscTraceWarning(("Triggering firmware download check from TR181\n"));
+                if( TRUE == bValue )
+                {
+			if(0 == system("pidof xb3_firmwareDwnld.sh"))  {
+ 
+                           system ("kill -9 `pidof xb3_firmwareDwnld.sh `");
+
+                       }
+                           status = system("/etc/xb3_firmwareDwnld.sh &");
+                           if (0 == status)
+                           {
+                                 AnscTraceWarning(("xconf process started successfully\n"));
+                           }
+                           else
+                           {
+                                 AnscTraceWarning(("xconf process did not start successfully\n"));
+                           }
+
+                       return TRUE;
+                }
+                
+     }
+     return FALSE;
+}
 /* Maintenance window can be customized for bci routers */
 #if defined(_CBR_PRODUCT_REQ_) || defined(_BCI_FEATURE_REQ)
 
