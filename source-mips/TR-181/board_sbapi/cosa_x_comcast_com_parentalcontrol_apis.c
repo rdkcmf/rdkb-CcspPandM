@@ -1146,7 +1146,9 @@ CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry)
 ANSC_STATUS isValidIP( int type, char *ipAddress )
 {
 	struct sockaddr_in sa;
+	char wrapstring[256]={0};
 	ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
+
 	int result=1;
 	if(type == 4)
 		result = inet_pton(AF_INET, ipAddress, &(sa.sin_addr));
@@ -1155,6 +1157,15 @@ ANSC_STATUS isValidIP( int type, char *ipAddress )
 
 	if (1!=result)
 		returnStatus = ANSC_STATUS_FAILURE;
+	
+	if(strstr(ipAddress,"'"))
+		returnStatus = ANSC_STATUS_FAILURE;
+
+     if(ANSC_STATUS_SUCCESS == returnStatus)
+     {
+        sprintf(wrapstring,"'%s'",ipAddress);
+        strcpy(ipAddress,wrapstring);
+     }
 	
 	return returnStatus;
 }
