@@ -3236,11 +3236,6 @@ BOOL CosaDmlNatChkPortMappingClient(ULONG client)
     inet_pton(AF_INET, lan.ipaddr, &ipaddr);
     inet_pton(AF_INET, lan.netmask, &netmask);
 
-/* Changing byte order */
-#ifdef _COSA_BCM_ARM_
-    client=htonl(client);
-#endif
-
     if((client != ipaddr) &&
         !IPv4Addr_IsBroadcast(client, ipaddr, netmask) &&
         !IPv4Addr_IsNetworkAddr(client, ipaddr, netmask) &&
