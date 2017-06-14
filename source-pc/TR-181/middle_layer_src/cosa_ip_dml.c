@@ -1557,7 +1557,19 @@ Interface2_SetParamUlongValue
     if( AnscEqualString(ParamName, "MaxMTUSize", TRUE))
     {
         /* save update to backup */
-        pIPInterface->Cfg.MaxMTUSize = uValue;
+            pIPInterface->Cfg.MaxMTUSize = uValue;
+	    if(pIPInterface->Cfg.InstanceNumber == 1)
+                    CosaUtilIoctlXXX("eth0","setmtu",&pIPInterface->Cfg.MaxMTUSize);
+            else if(pIPInterface->Cfg.InstanceNumber == 2)
+                    CosaUtilIoctlXXX("eth2","setmtu",&pIPInterface->Cfg.MaxMTUSize);
+            else if(pIPInterface->Cfg.InstanceNumber == 3)
+                    CosaUtilIoctlXXX("lo","setmtu",&pIPInterface->Cfg.MaxMTUSize);
+            else if(pIPInterface->Cfg.InstanceNumber == 4)
+                    CosaUtilIoctlXXX("brlan0","setmtu",&pIPInterface->Cfg.MaxMTUSize);
+            else if(pIPInterface->Cfg.InstanceNumber == 5)
+                    CosaUtilIoctlXXX("brlan1","setmtu",&pIPInterface->Cfg.MaxMTUSize);
+            else if(pIPInterface->Cfg.InstanceNumber == 6)
+                    CosaUtilIoctlXXX("brlan2","setmtu",&pIPInterface->Cfg.MaxMTUSize);
         return TRUE;
     }
 
