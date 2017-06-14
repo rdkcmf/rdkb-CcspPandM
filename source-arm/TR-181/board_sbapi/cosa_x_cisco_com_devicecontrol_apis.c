@@ -1855,7 +1855,27 @@ CosaDmlDcSetFactoryReset
 					CcspTraceError(("FactoryReset:%s SettingX_CISCO_COM_FactoryReset returned error for param '%s'  ...\n",__FUNCTION__,faultParam));  
                     bus_info->freefunc(faultParam);
                 }
+#if defined (_XB6_PRODUCT_REQ_)
+            faultParam = NULL;
+            parameterValStruct_t val1 = { "Device.WiFi.X_CISCO_COM_FactoryResetRadioAndAp", "1,2;1,2", ccsp_string};
+            ret = CcspBaseIf_setParameterValues
+                                (
+                                        bus_handle,
+                                        ppComponents[0]->componentName,
+                                        ppComponents[0]->dbusPath,
+                                        0, 0x0,   /* session id and write id */
+                                        &val1,
+                                        1,
+                                        TRUE,   /* no commit */
+                                        &faultParam
+                                );
 
+             if (ret != CCSP_SUCCESS && faultParam)
+             {
+                    CcspTraceError(("FactoryReset:%s Setting X_CISCO_COM_FactoryResetRadioAndAp returned error for param '%s'  ...\n",__FUNCTION__,faultParam));
+                    bus_info->freefunc(faultParam);
+             }
+#endif
 #if 0
 		FILE *fp;
 		char command[30];
