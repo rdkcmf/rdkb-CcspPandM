@@ -4066,12 +4066,23 @@ Xconf_SetParamBoolValue
       		AnscTraceWarning(("Triggering firmware download check from TR181\n"));
                 if( TRUE == bValue )
                 {
+#if defined(INTEL_PUMA7)
+			if(0 == system("pidof xb6_firmwareDwnld.sh"))  {
+                           system ("kill -9 `pidof xb6_firmwareDwnld.sh `");
+                       }
+                           status = system("/etc/xb6_firmwareDwnld.sh &");
+#elif defined(_COSA_BCM_MIPS_)
+			if(0 == system("pidof xf3_firmwareDwnld.sh"))  {
+                           system ("kill -9 `pidof xf3_firmwareDwnld.sh `");
+                       }
+                           status = system("/etc/xf3_firmwareDwnld.sh &");
+#else
 			if(0 == system("pidof xb3_firmwareDwnld.sh"))  {
- 
                            system ("kill -9 `pidof xb3_firmwareDwnld.sh `");
-
                        }
                            status = system("/etc/xb3_firmwareDwnld.sh &");
+#endif
+
                            if (0 == status)
                            {
                                  AnscTraceWarning(("xconf process started successfully\n"));
