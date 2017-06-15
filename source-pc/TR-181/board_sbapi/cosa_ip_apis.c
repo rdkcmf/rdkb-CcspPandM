@@ -263,22 +263,6 @@ CosaDmlIpIfGetV4Addr
     )
 {
 	AnscTraceFlow(("%s...\n", __FUNCTION__));
-	char status[100] ={0},path[256] = {0};//RDKB-EMU
-	FILE *fp;
-	int count = 0;
-	fp = popen("ifconfig eth0  | grep inet | tr -s ' ' | cut -d ' ' -f3 | cut -d ':' -f2","r");
-	if(fp == NULL)
-	{
-		printf("Failed to run command in Function %s\n",__FUNCTION__);
-		return 0;
-	}
-	if(fgets(path, sizeof(path)-1, fp) != NULL)
-	{
-		for(count=0;path[count]!='\n';count++)
-			status[count]=path[count];
-		status[count]='\0';
-	}
-	PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.l3net.1.V4Addr", ccsp_string, status);
 	return  CosaDmlIpIfMlanGetV4Addr(hContext, ulIpIfInstanceNumber, ulIndex, pEntry);
 }
 

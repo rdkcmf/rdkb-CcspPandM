@@ -76,12 +76,41 @@
 #include "linux/sockios.h"
 #include <sys/ioctl.h>
 
+//RDKB-EMU
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
 
-/**********************************************************************
+/********************************************************************n
                             HELPER FUNCTIONS
 **********************************************************************/
 COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr);
 
+BOOLEAN getIfEnable(const PUCHAR name)
+{
+	char buf[512] = {0},status[512] = {0};
+	FILE *fp = NULL;
+	int count = 0;
+	sprintf(buf,"%s%s%s%s%s","ifconfig ",name," | grep ",name," | wc -l > /tmp/Interface_EnablingStatus.txt");
+	system(buf);
+	fp = popen("cat /tmp/Interface_EnablingStatus.txt","r");
+	if(fp == NULL)
+	{
+		printf("Failed to run command in Function %s\n",__FUNCTION__);
+                return 0;
+        }
+	if(fgets(buf, sizeof(buf)-1, fp) != NULL)
+        {
+        for(count=0;buf[count]!='\n';count++)
+                status[count]=buf[count];
+        status[count]='\0';
+        }
+	pclose(fp);
+	if(strcmp(status,"1") == 0)
+		return TRUE;
+	else
+		return FALSE;
+
+}
 /**********************************************************************
                             MAIN ROUTINES
 **********************************************************************/
@@ -180,7 +209,7 @@ CosaDmlIpIfMlanLoadPsm
         goto  EXIT;
     }
 
-    for ( ulIndex = 0; ulIndex < iNumInst; ulIndex++ )
+    for ( ulIndex = 0+1; ulIndex < iNumInst; ulIndex++ )  //RDKB-EMU
     {
         pIpIf = (PDMSB_TR181_IP_IF)AnscAllocateMemory(sizeof(DMSB_TR181_IP_IF));
 
@@ -191,7 +220,8 @@ CosaDmlIpIfMlanLoadPsm
         }
         else
         {
-            pIpIf->Cfg.InstanceNumber = pInstArray[ulIndex];
+            //pIpIf->Cfg.InstanceNumber = pInstArray[ulIndex];
+            pIpIf->Cfg.InstanceNumber = ulIndex;
         }
 
         /* Fetch Cfg */
@@ -200,11 +230,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            /*_ansc_sprintf
                 (
                     pParamPath,
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_Enable,
                     pInstArray[ulIndex]
+                );*/
+             _ansc_sprintf
+                (
+                    pParamPath,
+                    DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_Enable,
+                    ulIndex
                 );
 
             iReturnValue =
@@ -244,11 +280,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            /*_ansc_sprintf
                 (
                     pParamPath,
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_Alias,
                     pInstArray[ulIndex]
+                );*/
+            _ansc_sprintf
+                (
+                    pParamPath,
+                    DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_Alias,
+                    ulIndex
                 );
 
             iReturnValue =
@@ -279,16 +321,21 @@ CosaDmlIpIfMlanLoadPsm
 
             SlapCleanVariable(&SlapValue);
         }
-
         if ( TRUE )     /* MaxMTU */
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            /*_ansc_sprintf
                 (
                     pParamPath,
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_MaxMTU,
                     pInstArray[ulIndex]
+                );*/
+            _ansc_sprintf
+                (
+                    pParamPath,
+                    DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_MaxMTU,
+                    ulIndex
                 );
 
             iReturnValue =
@@ -323,16 +370,21 @@ CosaDmlIpIfMlanLoadPsm
 
             SlapCleanVariable(&SlapValue);
         }
-
         if ( TRUE )     /* AutoIPEnable */
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            /*_ansc_sprintf
                 (
                     pParamPath,
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_AutoIPEnable,
                     pInstArray[ulIndex]
+                );*/
+            _ansc_sprintf
+                (
+                    pParamPath,
+                    DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_AutoIPEnable,
+                    ulIndex
                 );
 
             iReturnValue =
@@ -372,11 +424,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            /*_ansc_sprintf
                 (
                     pParamPath,
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_ArpCacheTimeout,
                     pInstArray[ulIndex]
+                );*/
+            _ansc_sprintf
+                (
+                    pParamPath,
+                    DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_ArpCacheTimeout,
+                    ulIndex
                 );
 
             iReturnValue =
@@ -416,11 +474,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+           /* _ansc_sprintf
                 (
                     pParamPath,
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_UpnpIgdEnabled,
                     pInstArray[ulIndex]
+                );*/
+             _ansc_sprintf
+                (
+                    pParamPath,
+                    DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_UpnpIgdEnabled,
+                    ulIndex
                 );
 
             iReturnValue =
@@ -460,13 +524,20 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            /*_ansc_sprintf
                 (
                     pParamPath,
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
                     pInstArray[ulIndex]
+                );*/
+             _ansc_sprintf
+                (
+                    pParamPath,
+                    DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
+                    ulIndex
                 );
 
+		printf(" EthLink Value is %s \n", pParamPath);
             iReturnValue =
                 PSM_Get_Record_Value
                     (
@@ -964,7 +1035,7 @@ CosaDmlIpIfMlanGetEntry
 
     if ( ulIndex < AnscSListQueryDepth(&pIpContext->IpIfList) )
     {
-        pSLinkEntry = AnscSListGetEntryByIndex(&pIpContext->IpIfList, ulIndex);
+        pSLinkEntry = AnscSListGetEntryByIndex(&pIpContext->IpIfList, ulIndex);//RDKB-EMU
 
         if ( pSLinkEntry )
         {
@@ -972,11 +1043,28 @@ CosaDmlIpIfMlanGetEntry
 
             AnscCopyMemory(&pEntry->Cfg, &pIpIf->Cfg, sizeof(pIpIf->Cfg));
             AnscCopyMemory(&pEntry->Info, &pIpIf->Info, sizeof(pIpIf->Info));
-	    AnscCopyString(pIpIf->Info.Name,"eth0");//RDKB-EMU
+	    if(pEntry->Cfg.InstanceNumber == 2)
+            {
+            AnscCopyString(pIpIf->Info.Name,"eth2");//RDKB-EMU
             AnscCopyString(pEntry->Info.Name,pIpIf->Info.Name);//RDKB-EMU
             AnscCopyString(pEntry->Cfg.LinkName,pIpIf->Info.Name);//RDKB-EMU
-            pEntry->Info.Status = getIfStatus(pIpIf->Info.Name, NULL);
-
+            }
+	    if(pEntry->Cfg.InstanceNumber == 3)
+            {
+            AnscCopyString(pIpIf->Info.Name,"lo");//RDKB-EMU
+            AnscCopyString(pEntry->Info.Name,pIpIf->Info.Name);//RDKB-EMU
+            AnscCopyString(pEntry->Cfg.LinkName,pIpIf->Info.Name);//RDKB-EMU
+            }
+	    if(pEntry->Cfg.InstanceNumber == 6)
+            {
+            AnscCopyString(pIpIf->Info.Name,"brlan2");//RDKB-EMU
+            AnscCopyString(pEntry->Info.Name,pIpIf->Info.Name);//RDKB-EMU
+            AnscCopyString(pEntry->Cfg.LinkName,pIpIf->Info.Name);//RDKB-EMU
+            }
+	    if((pEntry->Cfg.InstanceNumber != 6) && (pEntry->Cfg.InstanceNumber != 5))
+	    			pEntry->Cfg.bEnabled = getIfEnable(pIpIf->Info.Name); //RDKB-EMU
+	    if((pEntry->Cfg.InstanceNumber != 6) && (pEntry->Cfg.InstanceNumber != 5))
+	    			pEntry->Cfg.MaxMTUSize = CosaUtilIoctlXXX(pIpIf->Info.Name,"mtu",NULL);
             return  ANSC_STATUS_SUCCESS;
         }
         else
@@ -1336,6 +1424,10 @@ CosaDmlIpIfMlanGetV4Addr
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
+    char 			    lan_ip[256]     = {0};
+    char 			    lan_subnet[256] = {0};
+    uint32_t  			    ip_integer;
+    uint32_t                        netmask;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1423,13 +1515,44 @@ CosaDmlIpIfMlanGetV4Addr
     if ( TRUE )
     {
         pEntry->InstanceNumber  = 1;
-        _ansc_sprintf(pEntry->Alias, "%d", pEntry->InstanceNumber);
+        _ansc_sprintf(pEntry->Alias, "Interface_%d", pEntry->InstanceNumber);
         pEntry->bEnabled        = TRUE;
         pEntry->Status          = COSA_DML_IP_ADDR_STATUS_Enabled;
         pEntry->AddressingType  = COSA_DML_IP_ADDR_TYPE_Static;
 
-        return  ANSC_STATUS_SUCCESS;
     }
+   if(ulIpIfInstanceNumber == 1)
+   {
+	pEntry->bEnabled  = getIfEnable("eth0");
+        pEntry->AddressingType  = COSA_DML_IP_ADDR_TYPE_DHCP;
+	ip_integer = CosaUtilGetIfAddr("eth0");
+	netmask=CosaUtilIoctlXXX("eth0","netmask",NULL);
+	*(uint32_t*)pEntry->IPAddress.Dot = ip_integer;
+        *(uint32_t*)pEntry->SubnetMask.Dot = netmask;
+	 _ansc_sprintf(lan_ip, "%d.%d.%d.%d",
+            pEntry->IPAddress.Dot[0], pEntry->IPAddress.Dot[1], pEntry->IPAddress.Dot[2], pEntry->IPAddress.Dot[3]);
+        _ansc_sprintf(lan_subnet, "%d.%d.%d.%d",
+            pEntry->SubnetMask.Dot[0], pEntry->SubnetMask.Dot[1],pEntry->SubnetMask.Dot[2], pEntry->SubnetMask.Dot[3]);
+	PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.l3net.1.V4Addr", ccsp_string, lan_ip);
+	PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.l3net.1.V4SubnetMask", ccsp_string, lan_subnet);
+
+   }
+   else if(ulIpIfInstanceNumber == 2)
+   {
+	pEntry->bEnabled = getIfEnable("eth2");
+        pEntry->AddressingType  = COSA_DML_IP_ADDR_TYPE_DHCP;
+	ip_integer = CosaUtilGetIfAddr("eth2");
+        netmask=CosaUtilIoctlXXX("eth2","netmask",NULL);
+        *(uint32_t*)pEntry->IPAddress.Dot = ip_integer;
+        *(uint32_t*)pEntry->SubnetMask.Dot = netmask;
+         _ansc_sprintf(lan_ip, "%d.%d.%d.%d",
+            pEntry->IPAddress.Dot[0], pEntry->IPAddress.Dot[1], pEntry->IPAddress.Dot[2], pEntry->IPAddress.Dot[3]);
+        _ansc_sprintf(lan_subnet, "%d.%d.%d.%d",
+            pEntry->SubnetMask.Dot[0], pEntry->SubnetMask.Dot[1],pEntry->SubnetMask.Dot[2], pEntry->SubnetMask.Dot[3]);
+        PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.l3net.2.V4Addr", ccsp_string, lan_ip);
+        PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.l3net.2.V4SubnetMask", ccsp_string, lan_subnet);
+   }
+        return  ANSC_STATUS_SUCCESS;
 }
 
 
