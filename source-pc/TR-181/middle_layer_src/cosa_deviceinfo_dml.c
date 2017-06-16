@@ -76,6 +76,10 @@
 #include "cosa_deviceinfo_dml.h"
 #include "dml_tr181_custom_cfg.h" 
 
+// for PSM access - RDKB-EMU
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
+
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -527,10 +531,20 @@ DeviceInfo_GetParamStringValue
     	CosaDmlDiGetProcessorSpeed(NULL, pValue,pulSize);
         return 0;
     }
-	
+
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootReason", TRUE))
+    {
+	char *param_value = NULL;
+        PSM_Get_Record_Value2(bus_handle,g_Subsystem,"dmsb.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason", NULL, &param_value);
+        if( param_value != NULL)
+                AnscCopyString(pValue,  param_value);
+        else
+               AnscCopyString(pValue,"unknown");
+        return 0;
+     }	
 	/* Changes for EMS begins here */
 	
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))
+    if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))
     {
 		AnscCopyString(pValue,  pMyObject->EMS_MobileNo);
         return 0;
@@ -869,8 +883,14 @@ DeviceInfo_SetParamStringValue
 	return TRUE;
 
     }
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootReason", TRUE))
+    {
+	    PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason", ccsp_string,pString);
+            return TRUE;
 
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))
+     }
+
+    if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))
     {
         /* save update to backup */
         AnscCopyString(pMyObject->EMS_MobileNo, pString);
