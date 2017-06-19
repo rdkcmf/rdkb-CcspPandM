@@ -1278,6 +1278,8 @@ int COSADmlSetMemoryStatus(char * ParamName, ULONG val)
 	       return 0;
 	     } 
      }
+    CcspTraceWarning(("AnscEqualString failed\n"));
+    return -1;
 }
 ULONG COSADmlGetMemoryStatus(char * ParamName)
 {

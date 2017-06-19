@@ -499,6 +499,8 @@ CosaDmlIpIfSetV6Prefix
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     AnscCopyMemory(pEntry, &gIpv6Prefix, sizeof(COSA_DML_IP_V6PREFIX));
+
+    return ANSC_STATUS_SUCCESS;
 }
 
 
@@ -513,6 +515,8 @@ CosaDmlIpIfGetV6Prefix2
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     AnscCopyMemory(&gIpv6Prefix, pEntry, sizeof(COSA_DML_IP_V6PREFIX));
+
+    return ANSC_STATUS_SUCCESS;
 }
 
 int 

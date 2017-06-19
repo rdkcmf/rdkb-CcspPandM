@@ -371,6 +371,7 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
             }
         }
     }
+    return ANSC_STATUS_SUCCESS;
 }
 
 

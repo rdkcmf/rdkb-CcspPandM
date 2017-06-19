@@ -1426,6 +1426,7 @@ CosaDmlRoutingInit
     pEntry = (PDSLHDMAGNT_CALLBACK)AnscAllocateMemory(sizeof(*pEntry));
     pEntry->func = CosaDmlRipCallBack;
     g_RegisterCallBackAfterInitDml(g_pDslhDmlAgent, pEntry);
+    return returnStatus;
 }
 
 /**********************************************************************

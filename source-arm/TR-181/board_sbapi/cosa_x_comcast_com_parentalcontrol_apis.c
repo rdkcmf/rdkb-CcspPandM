@@ -1341,6 +1341,7 @@ int SetDelIndex(int ind,int ins)
 	blkIns[dCnt] = ins;
 	dCnt++;
 	AnscTraceWarning(("<<< %s -- set Del index %d ...\n", __FUNCTION__,ind));
+    return 0;
 }
 int ChkDelIndex(int ind)
 {
@@ -1387,7 +1388,7 @@ int delBlkUrl()
 	}
 	Utopia_GetNumberOfBlkURL(&ctx, &g_NrBlkURL);
 	Utopia_Free(&ctx, !rc);
-	
+	return 0;
 }
 ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
 {
@@ -2139,6 +2140,7 @@ int delMSServ()
 	}
 	Utopia_GetNumberOfMSServ(&ctx, &g_NrMSServs);
 	Utopia_Free(&ctx, !rc);
+    return 0;
 	
 }
 
@@ -2807,7 +2809,7 @@ int delMDDev()
 	}
 	Utopia_GetNumberOfMDDev(&ctx, &g_NrMDDevs);
 	Utopia_Free(&ctx, !rc);
-	
+	return 0;
 }
 ANSC_STATUS CosaDmlMDDev_RollbackUTCtoLocal()
 {

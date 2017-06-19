@@ -749,7 +749,7 @@ int genfwLog(void){
 
     lock = fLock();
     if(lock < 0 ){
-        return;
+        return 0;
     }
 
     sprintf(cmd, "%s > %s", IPT_COUNT_CMD , TEMP_FILE);
@@ -760,7 +760,7 @@ int genfwLog(void){
     ipt = fopen(TEMP_FILE, "r");
     if(ipt == NULL){
         fUnlock(lock);
-        return;
+        return 0;
     }
 
     while(-1 != getline(&line, &size, ipt)){
@@ -775,7 +775,7 @@ int genfwLog(void){
         fclose(ipt);
         remove(TEMP_FILE);
         fUnlock(lock);
-        return;
+        return 0;
     }
 
     log = fopen(fName, fFlag);
@@ -784,7 +784,7 @@ int genfwLog(void){
             fclose(ipt);
             remove(TEMP_FILE);
             fUnlock(lock);
-            return;
+            return 0;
         }
     }
 
@@ -806,7 +806,7 @@ int genfwLog(void){
     if(g_rule_tlb_len != 0)
         free(g_p_rule_tbl);
 
-    return;
+    return 0;
 }
 
 /**********************************************************************

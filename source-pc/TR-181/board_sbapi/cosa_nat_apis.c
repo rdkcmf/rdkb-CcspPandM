@@ -620,6 +620,8 @@ int PSMGetPortMappingRecordValues(PCOSA_DML_NAT_PMAPPING  pMapping,ULONG instanc
 
 	_PSM_READ_PARAM(PSM_MAPPING_InternalClient);
 	pMapping->InternalClient.Value=inet_addr(param_value);
+
+    return 0;
 }
 
 PCOSA_DML_NAT_PMAPPING
@@ -760,6 +762,8 @@ int PSMSetPortMappingRecordValues(PCOSA_DML_NAT_PMAPPING pMapping,ULONG instance
 
 	_ansc_sprintf(param_value, "%u.%u.%u.%u",pMapping->InternalClient.Dot[0],pMapping->InternalClient.Dot[1],pMapping->InternalClient.Dot[2],pMapping->InternalClient.Dot[3]);
 	_PSM_WRITE_PARAM(PSM_MAPPING_InternalClient);
+
+    return 0;
 }
 
 ANSC_STATUS
