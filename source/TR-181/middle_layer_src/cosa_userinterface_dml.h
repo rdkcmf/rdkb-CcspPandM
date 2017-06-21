@@ -88,16 +88,12 @@
 
  APIs for Object:
 
-    UserInterface.RemoteAccess.
+    UserInterface..
 
-    *  RemoteAccess_GetParamBoolValue
-    *  RemoteAccess_GetParamIntValue
-    *  RemoteAccess_GetParamUlongValue
-    *  RemoteAccess_GetParamStringValue
-    *  RemoteAccess_SetParamBoolValue
-    *  RemoteAccess_SetParamIntValue
-    *  RemoteAccess_SetParamUlongValue
-    *  RemoteAccess_SetParamStringValue
+    *  UserInterface_GetParamBoolValue
+    *  UserInterface_GetParamUlongValue
+    *  UserInterface_SetParamBoolValue
+    *  UserInterface_SetParamUlongValue
     *  RemoteAccess_Validate
     *  RemoteAccess_Commit
     *  RemoteAccess_Rollback
@@ -117,6 +113,37 @@ UserInterface_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+
+BOOL
+UserInterface_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    );
+
+BOOL
+UserInterface_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    );
+
+BOOL
+UserInterface_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    );
+
+ULONG
+UserInterface_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
 
 /***********************************************************************
 

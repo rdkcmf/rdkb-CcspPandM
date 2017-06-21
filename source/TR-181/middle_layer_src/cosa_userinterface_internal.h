@@ -87,6 +87,7 @@
     COSA_BASE_CONTENT                                                       \
     /* start of Time object class content */                                \
     COSA_DML_RA_CFG                 RaCfg;                                  \
+    COSA_DML_USERINTERFACE_CFG      UserInterfaceCfg;                       \
     SLIST_HEADER                    iprangeList;                            \
     ULONG                           uliprangeNextInsNum;                    \
     ANSC_HANDLE                     hIrepFolderCOSA;                        \

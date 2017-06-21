@@ -55,6 +55,8 @@
         *  CosaDmlRaInit
         *  CosaDmlRaSetCfg
         *  CosaDmlRaGetCfg
+	 *   CosaDmlUserInterfaceGetCfg
+	 * CosaDmlUserInterfaceSetCfg
         *  CosaDmlRaGetSupportedProtocols
     -------------------------------------------------------------------
 
@@ -350,6 +352,91 @@ errout:
     CcspTraceWarning(("%s: ERROR !!!!\n", __FUNCTION__));
     fprintf(stderr, "%s: ERROR !!!!\n", __FUNCTION__);
     return ANSC_STATUS_FAILURE;
+}
+
+
+ANSC_STATUS
+CosaDmlUserInterfaceGetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_USERINTERFACE_CFG            pCfg
+    )
+{
+
+        char buf[10];
+	memset(buf,0,sizeof(buf));
+        syscfg_get( NULL, "PasswordLockoutEnable", buf, sizeof(buf));
+
+        if( buf != NULL )
+       {
+                  if (strcmp(buf,"true") == 0)
+                       pCfg->bPasswordLockoutEnable = TRUE;
+                  else
+                       pCfg->bPasswordLockoutEnable = FALSE;
+      }
+	memset(buf,0,sizeof(buf));
+        syscfg_get( NULL, "PasswordLockoutAttempts", buf, sizeof(buf));
+
+        if( buf != NULL )
+       {
+			pCfg->PasswordLockoutAttempts=atoi(buf);
+       }
+
+	memset(buf,0,sizeof(buf));
+        syscfg_get( NULL, "PasswordLockoutTime", buf, sizeof(buf));
+
+        if( buf != NULL )
+       {
+			pCfg->PasswordLockoutTime=atoi(buf);
+       }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlUserInterfaceSetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_USERINTERFACE_CFG            pCfg
+    )
+{
+
+char buf[10];
+memset(buf,0,sizeof(buf));
+
+    if ( TRUE == pCfg->bPasswordLockoutEnable )
+    {
+
+	 if (syscfg_set(NULL, "PasswordLockoutEnable", "true") != 0) {
+                     AnscTraceWarning(("%s : syscfg_set failed\n",__FUNCTION__));
+	}
+
+     }
+     else
+     {
+
+		if (syscfg_set(NULL, "PasswordLockoutEnable", "false") != 0) {
+                    AnscTraceWarning(("%s :PasswordLockoutEnable syscfg_set failed\n",__FUNCTION__));
+	}
+     }
+
+ sprintf(buf, "%d",  pCfg->PasswordLockoutAttempts);
+	if (syscfg_set(NULL, "PasswordLockoutAttempts", buf) != 0) {
+                     AnscTraceWarning(("%s : PasswordLockoutAttempts syscfg_set failed\n",__FUNCTION__));
+	}
+
+memset(buf,0,sizeof(buf));
+sprintf(buf, "%d",  pCfg->PasswordLockoutTime);
+	 if (syscfg_set(NULL, "PasswordLockoutTime", buf) != 0) {
+                     AnscTraceWarning(("%s : PasswordLockoutTime syscfg_set failed\n",__FUNCTION__));
+	}
+
+         if (syscfg_commit() != 0) {
+                           AnscTraceWarning(("syscfg_commit failed\n"));
+       }
+
+
+    return ANSC_STATUS_SUCCESS;
 }
 
 #define IPRANGE_UTKEY_PREFIX "mgmt_wan_iprange_"

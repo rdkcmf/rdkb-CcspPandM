@@ -87,7 +87,8 @@ COSA_DML_USER  g_users_user[] =
         TRUE,
         "Sam",
         "XDFSXE",
-        "En"
+        "En",
+		"0"
     },
     {
         2,
@@ -95,7 +96,8 @@ COSA_DML_USER  g_users_user[] =
         TRUE,
         "Jerry",
         "X72SXE",
-        "Fr"
+        "Fr",
+		"0"
     }
 };
 
@@ -341,6 +343,7 @@ COSA_DML_USER  g_users_user[] =
         "mso",
         "pod",
         ""
+	"0"
     },
     {
         2,
@@ -349,6 +352,7 @@ COSA_DML_USER  g_users_user[] =
         "cusadmin",
         "Xfinity",
         ""
+	"0"
     },
     {
 	3,
@@ -357,6 +361,7 @@ COSA_DML_USER  g_users_user[] =
         "admin",
         "password",
         ""
+	"0"
     }
 
 };
@@ -502,6 +507,7 @@ CosaDmlUserDelEntry
 
 }
 
+
 ANSC_STATUS
 CosaDmlUserSetCfg
     (
@@ -510,6 +516,7 @@ CosaDmlUserSetCfg
     )
 {
     int rc = -1;
+
     UtopiaContext ctx;
 #if 0
     /*if (pEntry && (!strcmp(pEntry->Username, "mso"))){
@@ -536,6 +543,8 @@ CosaDmlUserSetCfg
         
     /* Free Utopia Context */
     Utopia_Free(&ctx,!rc);
+
+ 
 
     if (rc != 0)
        return ANSC_STATUS_FAILURE;

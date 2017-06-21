@@ -119,6 +119,15 @@ _COSA_DML_RA_CFG
 
 typedef struct _COSA_DML_RA_CFG  COSA_DML_RA_CFG,  *PCOSA_DML_RA_CFG;
 
+typedef struct
+_COSA_DML_USERINTERFACE_CFG
+{
+    BOOLEAN                         bPasswordLockoutEnable;
+    ULONG                           PasswordLockoutAttempts;
+    ULONG                           PasswordLockoutTime;
+}
+COSA_DML_USERINTERFACE_CFG,  *PCOSA_DML_USERINTERFACE_CFG;
+
 typedef  struct
 _COSA_DML_UI_IPRANGE_ENTRY
 {
@@ -155,6 +164,21 @@ CosaDmlRaGetCfg
         ANSC_HANDLE                 hContext,
         PCOSA_DML_RA_CFG            pCfg
     );
+
+ANSC_STATUS
+CosaDmlUserInterfaceSetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_USERINTERFACE_CFG            pCfg
+    );
+
+ANSC_STATUS
+CosaDmlUserInterfaceGetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_USERINTERFACE_CFG            pCfg
+    );
+
 
 ANSC_STATUS
 CosaDmlRaGetSupportedProtocols

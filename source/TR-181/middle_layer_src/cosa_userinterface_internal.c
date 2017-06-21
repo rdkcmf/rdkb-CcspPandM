@@ -175,10 +175,12 @@ CosaUserinterfaceInitialize
 
     /* Initiation all functions */
     _ansc_memset(&pMyObject->RaCfg, 0, sizeof(COSA_DML_RA_CFG));
+    _ansc_memset(&pMyObject->UserInterfaceCfg, 0, sizeof(COSA_DML_USERINTERFACE_CFG));
     
     CosaDmlRaInit(NULL, NULL);
 
     CosaDmlRaGetCfg(NULL, &pMyObject->RaCfg);
+    CosaDmlUserInterfaceGetCfg(NULL, &pMyObject->UserInterfaceCfg);
 
     pMyObject->hIrepFolderCOSA = g_GetRegistryRootFolder(g_pDslhDmlAgent);
 

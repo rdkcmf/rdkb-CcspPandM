@@ -90,10 +90,12 @@ struct _COSA_DML_USER
     ULONG                           InstanceNumber;
 
     BOOLEAN                         bEnabled;
+
     BOOLEAN                         RemoteAccessCapable;
     char                            Username[64];
     char                            Password[64];
     char                            Language[16];
+    char                            NumOfFailedAttempts;
     /*
      * *  Extensions
      * */

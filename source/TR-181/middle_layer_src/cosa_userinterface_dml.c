@@ -173,9 +173,16 @@ UserInterface_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 	if( AnscEqualString(ParamName, "PasswordReset", TRUE))
     {
         *pBool = FALSE;
+        return TRUE;
+    }
+
+     if( AnscEqualString(ParamName, "PasswordLockoutEnable", TRUE))
+    {
+        *pBool = pMyObject->UserInterfaceCfg.bPasswordLockoutEnable;
         return TRUE;
     }
 
@@ -196,6 +203,8 @@ UserInterface_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
+
 	if( AnscEqualString(ParamName, "PasswordReset", TRUE))
     {
         if(bValue == TRUE)
@@ -206,7 +215,201 @@ UserInterface_SetParamBoolValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "PasswordLockoutEnable", TRUE))
+    {
+        pMyObject->UserInterfaceCfg.bPasswordLockoutEnable = bValue;
+        return TRUE;
+    }
+
+
     return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        UserInterface_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+UserInterface_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
+
+    /* CosaDmlRaGetCfg(NULL, &pMyObject->RaCfg); */
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "PasswordLockoutAttempts", TRUE))
+    {
+        *puLong = pMyObject->UserInterfaceCfg.PasswordLockoutAttempts;
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "PasswordLockoutTime", TRUE))
+    {
+        *puLong = pMyObject->UserInterfaceCfg.PasswordLockoutTime;
+        return TRUE;
+    }
+  return FALSE;
+}
+
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        UserInterface_SetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG                       uValue
+            );
+
+    description:
+
+        This function is called to set ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG                       uValue
+                The updated ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+UserInterface_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    )
+{
+    PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
+
+    if( AnscEqualString(ParamName, "PasswordLockoutAttempts", TRUE))
+    {
+        pMyObject->UserInterfaceCfg.PasswordLockoutAttempts = uValue;
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "PasswordLockoutTime", TRUE))
+    {
+        pMyObject->UserInterfaceCfg.PasswordLockoutTime = uValue;
+        return TRUE;
+    }
+ return FALSE;
+}
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        UserInterface_Validate
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       pReturnParamName,
+                ULONG*                      puLength
+            );
+
+    description:
+
+        This function is called to finally commit all the update.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       pReturnParamName,
+                The buffer (128 bytes) of parameter name if there's a validation. 
+
+                ULONG*                      puLength
+                The output length of the param name. 
+
+    return:     TRUE if there's no validation.
+
+**********************************************************************/
+BOOL
+UserInterface_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    )
+{
+    return TRUE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        UserInterface_Commit
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to finally commit all the update.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+UserInterface_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
+
+    CosaDmlUserInterfaceSetCfg(NULL, &pMyObject->UserInterfaceCfg);
+    
+    return 0;
 }
 
 /***********************************************************************

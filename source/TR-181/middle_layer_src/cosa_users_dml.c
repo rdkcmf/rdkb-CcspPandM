@@ -85,6 +85,25 @@
     #include <ccsp_syslog.h>
 #endif
 
+
+void ResetFailedAttepmts(PCOSA_DML_USER  pEntry)
+{
+	printf("Inside ResetFailedAttepmts\n");
+        pthread_detach(pthread_self());
+        char buf[10];
+        int lockoutTime =0 ;
+
+        memset(buf,0,sizeof(buf));
+        syscfg_get( NULL, "PasswordLockoutTime", buf, sizeof(buf));
+        if( buf != NULL )
+       {
+                lockoutTime=atoi(buf);
+       }
+        usleep(1000*lockoutTime);
+        pEntry->NumOfFailedAttempts=0;
+
+}
+
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -544,6 +563,13 @@ User_GetParamUlongValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "NumOfFailedAttempts", TRUE))
+    {
+        /* collect value */
+        *puLong = pUser->NumOfFailedAttempts;
+        return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -821,6 +847,44 @@ User_SetParamUlongValue
     {
         /* save update to backup */
         pUser->AccessPermission   =  uValue;
+
+        return TRUE;
+    }
+
+
+    if( AnscEqualString(ParamName, "NumOfFailedAttempts", TRUE))
+    {
+        /* collect value */
+    	char buf[10];
+ 	int MaxFailureAttempts = 0;
+	int lockoutState=0;
+        pUser->NumOfFailedAttempts = uValue;
+    	memset(buf,0,sizeof(buf));
+        syscfg_get( NULL, "PasswordLockoutAttempts", buf, sizeof(buf));
+        if( buf != NULL )
+       {
+		MaxFailureAttempts=atoi(buf);
+		
+       }
+         
+	if ( MaxFailureAttempts == pUser->NumOfFailedAttempts )
+	{
+		//action required
+			lockoutState=1;
+			pthread_t rstattempt;
+			pthread_create(&rstattempt, NULL, &ResetFailedAttepmts, (void *)pUser);
+		CcspTraceWarning(("WebUI Login:  Num of invalid attempt is %d, WebUI is locked out for %s User\n", pUser->NumOfFailedAttempts, pUser->Username));
+	} 
+	else if ( MaxFailureAttempts <= pUser->NumOfFailedAttempts)
+	{
+		CcspTraceWarning(("WebUI Login: Num of invalid attempt is %d, WebUI is locked out for %s User \n", pUser->NumOfFailedAttempts, pUser->Username));
+		lockoutState=1;
+	}
+	else
+	{
+	
+        	CcspTraceWarning(("WebUI Login: Num of invalid attempt is %d, WebUI is not locked out for %s User\n", pUser->NumOfFailedAttempts,pUser->Username));
+	}	
 
         return TRUE;
     }

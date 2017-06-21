@@ -355,7 +355,7 @@ CosaUsersBackendGetUserInfo
         }
 
         USERS_USER_SET_DEFAULTVALUE(pCosaUser);
-        
+        pCosaUser->NumOfFailedAttempts=0;     
         returnStatus = CosaDmlUserGetEntry(NULL, ulIndex, pCosaUser);
         if ( returnStatus != ANSC_STATUS_SUCCESS )
         {
