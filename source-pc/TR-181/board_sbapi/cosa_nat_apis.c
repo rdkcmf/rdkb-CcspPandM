@@ -263,13 +263,51 @@ CosaDmlNatGetLanIP
     return ANSC_STATUS_SUCCESS;
 }
 
+int _check_PF_range(PCOSA_DML_NAT_PMAPPING pPortMapping){
+	PCOSA_DML_NAT_PMAPPING pNatPMapping = NULL;
+        char *param_value;
+        ULONG numOfEntries = 0;
+	if(g_count==0)//RDKB_EMULATOR
+        {
+           int i = 0;
+           PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.NAT.PortMapping.MaxInstance", NULL, &param_value);
+           if(param_value!=NULL){
+              numOfEntries = atol(param_value);
+           }
+           pNatPMapping = (PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(g_nat_portmapping[0])*(g_count));
+           for(i=1;i<=numOfEntries;i++){
+               PSMGetPortMappingRecordValues(pNatPMapping,i);
+               if(!strcmp(pPortMapping->Description,pNatPMapping->Description) ||
+                  (pPortMapping->ExternalPort == pNatPMapping->ExternalPort || (pPortMapping->ExternalPort > pNatPMapping->ExternalPort &&
+                  (pPortMapping->ExternalPort <= pNatPMapping->ExternalPortEndRange || pPortMapping->ExternalPortEndRange <= pNatPMapping->ExternalPortEndRange))) ||
+                   (pPortMapping->ExternalPort < pNatPMapping->ExternalPort && pPortMapping->ExternalPortEndRange >= pNatPMapping->ExternalPort))
+               {
+                      return FALSE;
+               }
+           }
+        }else{
+            int i = 0;
+            numOfEntries = ((sizeof(g_nat_portmapping[0])*g_count)/sizeof(COSA_DML_NAT_PMAPPING));
+            for(i = 0;i < numOfEntries;i++){
+               if(!strcmp(pPortMapping->Description,g_nat_portmapping[i].Description) ||
+                  (pPortMapping->ExternalPort == g_nat_portmapping[i].ExternalPort || (pPortMapping->ExternalPort > g_nat_portmapping[i].ExternalPort &&
+                  (pPortMapping->ExternalPort <= g_nat_portmapping[i].ExternalPortEndRange || pPortMapping->ExternalPortEndRange <= g_nat_portmapping[i].ExternalPortEndRange))) ||
+                  (pPortMapping->ExternalPort < g_nat_portmapping[i].ExternalPort && pPortMapping->ExternalPortEndRange >= g_nat_portmapping[i].ExternalPort))
+               {
+                      return FALSE;
+               }
+           }
+        }
+        return TRUE;
+}
+
 int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)//RDKB_EMULATOR 
 {
        if( pPortMapping->PublicIP.Value == 0 &&
                         ((pPortMapping->ExternalPort == 0) ||
                          (pPortMapping->ExternalPortEndRange < pPortMapping->ExternalPort) ||
-                         (pPortMapping->Protocol > 3 || pPortMapping->Protocol < 1)
-                        ))
+                         (pPortMapping->Protocol > 3 || pPortMapping->Protocol < 1)) ||
+                         (FALSE==_check_PF_range(pPortMapping)))
         {
                 CcspTraceWarning(("Wrong Port Mapping parameter external Port %d ~ %d, protocol %d, InternalPort %d,InternalClient %x PublicIP %x\n", \
                                         pPortMapping->ExternalPort, pPortMapping->ExternalPortEndRange, \
@@ -781,6 +819,18 @@ CosaDmlNatAddPortMapping
         char *Max_instance = "Device.NAT.PortMapping.MaxInstance";
         char param_name[100] ={0};
         pMapping=(PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(COSA_DML_NAT_PMAPPING));
+
+        if (!pEntry)
+        {
+               return ANSC_STATUS_FAILURE;
+        }
+
+        if( !_Check_PF_parameter(pEntry))
+        {
+               CcspTraceWarning(("Parameter Error in %s \n", __FUNCTION__));
+               return ANSC_STATUS_FAILURE;
+        }
+
         if(pEntry != NULL)//RDKB_EMULATOR
         {
                 g_count++;
@@ -917,6 +967,19 @@ CosaDmlNatSetPortMapping
 	char *prot,*del;
 	PCOSA_DML_NAT_PMAPPING pMapping;
 	pMapping=(PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(COSA_DML_NAT_PMAPPING));
+
+        if (!pEntry)
+        {
+                return ANSC_STATUS_FAILURE;
+        }
+
+        /* Check parameter */
+        if( !_Check_PF_parameter(pEntry))
+        {
+                CcspTraceWarning(("Parameter Error in %s \n", __FUNCTION__));
+                return ANSC_STATUS_FAILURE;
+        }
+
 	for(index =0; index < sizeof(g_nat_portmapping)/sizeof(COSA_DML_NAT_PMAPPING); index++)
 	{
 		if ( g_nat_portmapping[index].InstanceNumber  ==  pEntry->InstanceNumber )//RDKB_EMULATOR
