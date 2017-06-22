@@ -326,8 +326,65 @@ int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)//RDKB_EMULATOR
     return TRUE;
 }
 
+int _check_PT_range(PCOSA_DML_NAT_PTRIGGER pPortTrigger){
+        PCOSA_DML_NAT_PTRIGGER pNatPTrigger = NULL;
+        char *param_value;
+        ULONG numOfEntries = 0;
+        if(pt_count==0)//RDKB_EMULATOR
+        {
+           int i = 0;
+           PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Provision.COSALibrary.NAT.PORTTRIGGER.NextInstanceNumber", NULL, &param_value);
+           if(param_value!=NULL){
+              numOfEntries = atol(param_value) - 1;
+           }
+           pNatPTrigger = (PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory(sizeof(g_nat_porttrigger[0])*(pt_count));
+           for(i=1;i<=numOfEntries;i++){
+               PSMGetPortTriggerRecordValues(pNatPTrigger,i);
+               if(!strcmp(pPortTrigger->Description,pNatPTrigger->Description) ||
+                  (pPortTrigger->TriggerPortStart == pNatPTrigger->TriggerPortStart || (pPortTrigger->TriggerPortStart > pNatPTrigger->TriggerPortStart &&
+                  (pPortTrigger->TriggerPortStart <= pNatPTrigger->TriggerPortEnd || pPortTrigger->TriggerPortEnd <= pNatPTrigger->TriggerPortEnd))) ||
+                  (pPortTrigger->TriggerPortStart < pNatPTrigger->TriggerPortStart && pPortTrigger->TriggerPortEnd >= pNatPTrigger->TriggerPortStart) ||
+                  (pPortTrigger->ForwardPortStart == pNatPTrigger->ForwardPortStart || (pPortTrigger->ForwardPortStart > pNatPTrigger->ForwardPortStart &&
+                  (pPortTrigger->ForwardPortStart <= pNatPTrigger->ForwardPortEnd || pPortTrigger->ForwardPortEnd <= pNatPTrigger->ForwardPortEnd))) ||
+                  (pPortTrigger->ForwardPortStart < pNatPTrigger->ForwardPortStart && pPortTrigger->ForwardPortEnd >= pNatPTrigger->ForwardPortStart))
+               {
+                      return FALSE;
+               }
+           }
+        }else{
+            int i = 0;
+            numOfEntries = (sizeof(g_nat_porttrigger[0])*(pt_count+1))/sizeof(COSA_DML_NAT_PTRIGGER);
+            for(i = 0;i < numOfEntries;i++){
+               if(!strcmp(pPortTrigger->Description,pNatPTrigger->Description) ||
+                  (pPortTrigger->TriggerPortStart == g_nat_porttrigger[i].TriggerPortStart || (pPortTrigger->TriggerPortStart > g_nat_porttrigger[i].TriggerPortStart &&
+                  (pPortTrigger->TriggerPortStart <= g_nat_porttrigger[i].TriggerPortEnd || pPortTrigger->TriggerPortEnd <= g_nat_porttrigger[i].TriggerPortEnd))) ||
+                  (pPortTrigger->TriggerPortStart < g_nat_porttrigger[i].TriggerPortStart && pPortTrigger->TriggerPortEnd >= g_nat_porttrigger[i].TriggerPortStart) ||
+                  (pPortTrigger->ForwardPortStart == g_nat_porttrigger[i].ForwardPortStart || (pPortTrigger->ForwardPortStart > g_nat_porttrigger[i].ForwardPortStart &&
+                  (pPortTrigger->ForwardPortStart <= g_nat_porttrigger[i].ForwardPortEnd || pPortTrigger->ForwardPortEnd <= g_nat_porttrigger[i].ForwardPortEnd))) ||
+                  (pPortTrigger->ForwardPortStart < g_nat_porttrigger[i].ForwardPortStart && pPortTrigger->ForwardPortEnd >= g_nat_porttrigger[i].ForwardPortStart))
+               {
+                      return FALSE;
+               }
+           }
+        }
+        return TRUE;
+}
+
 int _Check_PT_parameter(PCOSA_DML_NAT_PTRIGGER pPortTrigger)
 {
+    // Check parameter setting
+    if( (pPortTrigger->TriggerProtocol > 3 || pPortTrigger->TriggerProtocol < 1) ||
+        (pPortTrigger->TriggerPortStart == 0) ||
+        (pPortTrigger->TriggerPortEnd == 0) ||
+        (pPortTrigger->TriggerPortEnd < pPortTrigger->TriggerPortStart) ||
+        (pPortTrigger->ForwardPortEnd == 0) ||
+        (pPortTrigger->ForwardPortStart == 0) ||
+        (pPortTrigger->ForwardPortEnd < pPortTrigger->ForwardPortStart) ||
+        (FALSE==_check_PT_range(pPortTrigger)))
+    {
+        CcspTraceWarning(("Port Trigger parameter error \n"));
+        return FALSE;
+    }
     return TRUE;
 }
 /**********************************************************************
@@ -1242,6 +1299,19 @@ CosaDmlNatAddPortTrigger
         PCOSA_DATAMODEL_NAT pNat = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
         ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
         pTrigger=(PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory( sizeof(COSA_DML_NAT_PTRIGGER));
+
+        if (!pEntry)
+        {
+           return ANSC_STATUS_FAILURE;
+        }
+
+        /* Check parameter */
+        if( !_Check_PT_parameter(pEntry))
+        {
+           CcspTraceWarning(("Parameter Error in %s \n", __FUNCTION__));
+           return ANSC_STATUS_FAILURE;
+        }
+
         if(pEntry != NULL)//RDKB_EMULATOR
         {
                 pt_count++;
@@ -1381,6 +1451,19 @@ CosaDmlNatSetPortTrigger
         char *prot,*del;
 	PCOSA_DML_NAT_PTRIGGER pTrigger;//RDKB_EMULATOR
         pTrigger=(PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory( sizeof(COSA_DML_NAT_PTRIGGER));
+
+        if (!pEntry)
+        {
+           return ANSC_STATUS_FAILURE;
+        }
+
+        /* Check parameter */
+        if(!_Check_PT_parameter(pEntry))
+        {
+           CcspTraceWarning(("Parameter Error in %s \n", __FUNCTION__));
+           return ANSC_STATUS_FAILURE;
+        }
+
         for(index =0; index < sizeof(g_nat_porttrigger[0])*pt_count/sizeof(COSA_DML_NAT_PTRIGGER); index++)//RDKB_EMULATOR
         {
                 if ( g_nat_porttrigger[index].InstanceNumber  ==  pEntry->InstanceNumber )
