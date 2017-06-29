@@ -1544,6 +1544,10 @@
         <functions>
             <func_GetParamBoolValue>UserInterface_GetParamBoolValue</func_GetParamBoolValue>
 			<func_SetParamBoolValue>UserInterface_SetParamBoolValue</func_SetParamBoolValue>
+			<func_GetParamUlongValue>UserInterface_GetParamUlongValue</func_GetParamUlongValue>
+            <func_SetParamUlongValue>UserInterface_SetParamUlongValue</func_SetParamUlongValue>
+            <func_Validate>UserInterface_Validate</func_Validate>
+            <func_Commit>UserInterface_Commit</func_Commit>			
         </functions>
 		<parameters>
 
@@ -1554,6 +1558,39 @@
             <type>boolean</type>
 
             <syntax>bool</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+          <parameter>
+
+            <name>PasswordLockoutEnable</name>
+
+            <type>boolean</type>
+
+            <syntax>bool</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+          <parameter>
+
+            <name>PasswordLockoutAttempts</name>
+
+            <type>unsignedInt</type>
+
+            <syntax>uint32</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+          <parameter>
+
+            <name>PasswordLockoutTime</name>
+
+            <type>unsignedInt</type>
+
+            <syntax>uint32</syntax>
 
             <writable>true</writable>
 
@@ -8577,6 +8614,18 @@
             <writable>true</writable>
 
           </parameter>
+
+		  <parameter>
+		  
+		  <name>NumOfFailedAttempts</name>
+
+		  <type>unsignedInt</type>
+
+		  <syntax>uint32</syntax>
+
+		  <writable>true</writable>
+
+		  </parameter>
 
           </parameters>
 
