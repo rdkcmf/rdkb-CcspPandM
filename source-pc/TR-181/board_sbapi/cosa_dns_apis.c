@@ -76,10 +76,12 @@
 
 #if (defined(_COSA_SIM_))
 
-COSA_DML_DNS_CLIENT_SERVER  g_DnsServerFull[10] =
+COSA_DML_DNS_CLIENT_SERVER  g_DnsServerFull[] =
 {
     {1, "Server1", TRUE, COSA_DML_DNS_STATUS_Enabled,
-        "\x40\x40\x40\x08", "wan8", COSA_DML_DNS_ADDR_SRC_DHCP}
+        "\x40\x40\x40\x08", "eth0", COSA_DML_DNS_ADDR_SRC_DHCPV4},
+    {2, "Server2", TRUE, COSA_DML_DNS_STATUS_Enabled,
+        "\x40\x40\x40\x08", "eth2", COSA_DML_DNS_ADDR_SRC_DHCPV4}
 };
 
 COSA_DML_DNS_RELAY_ENTRY  g_DnsRelayFull[10] =
