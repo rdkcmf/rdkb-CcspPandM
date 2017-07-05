@@ -1696,6 +1696,14 @@ CosaDmlLanMngm_GetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 
     *pLanMngm = g_lanMngmTab[i];
     pLanMngm->InstanceNumber = ins; /* just in case */
+//RDKB-EMU
+        uint32_t ip_integer;
+        uint32_t  netmask;
+        netmask=CosaUtilIoctlXXX("brlan0","netmask",NULL);
+        ip_integer=CosaUtilGetIfAddr("brlan0");
+
+        *(uint32_t*)pLanMngm->LanIPAddress.Dot = ip_integer;
+        *(uint32_t*)pLanMngm->LanSubnetMask.Dot = netmask;
 
     return ANSC_STATUS_SUCCESS;
 }
