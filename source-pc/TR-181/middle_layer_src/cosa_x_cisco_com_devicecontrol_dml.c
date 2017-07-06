@@ -2055,16 +2055,19 @@ LanMngm_Validate
     /* check subnetmask */
     /* Subnet mask MUST accept ONLY the following IP addresses: */
     /* 255.255.255.0, 255.255.0.0, 255.0.0.0, 255.255.255.128, 255.255.255.252 */
-    if(pLanMngm->LanSubnetMask.Value != 0xFFFFFF00 &&
+    /*if(pLanMngm->LanSubnetMask.Value != 0xFFFFFF00 &&
        pLanMngm->LanSubnetMask.Value != 0xFFFF0000 &&
        pLanMngm->LanSubnetMask.Value != 0xFF000000 &&
        pLanMngm->LanSubnetMask.Value != 0xFFFFFF80 &&
-       pLanMngm->LanSubnetMask.Value != 0xFFFFFFFC )
+       pLanMngm->LanSubnetMask.Value != 0xFFFFFFFC )*/ //RDKB-EMU
+    if(pLanMngm->LanSubnetMask.Dot[0] != 255 && pLanMngm->LanSubnetMask.Dot[1] != 255 && pLanMngm->LanSubnetMask.Dot[2] != 255 &&
+       pLanMngm->LanSubnetMask.Dot[0] != 255 && pLanMngm->LanSubnetMask.Dot[2] != 255 &&
+       pLanMngm->LanSubnetMask.Dot[0] != 255 &&
+       pLanMngm->LanSubnetMask.Dot[0] != 255 && pLanMngm->LanSubnetMask.Dot[1] != 255 && pLanMngm->LanSubnetMask.Dot[2] != 255 && pLanMngm->LanSubnetMask.Dot[3] != 128 &&
+       pLanMngm->LanSubnetMask.Dot[0] != 255 && pLanMngm->LanSubnetMask.Dot[1] != 255 && pLanMngm->LanSubnetMask.Dot[2] != 255 && pLanMngm->LanSubnetMask.Dot[3] != 252 )
     {
 		CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Modified LanSubnetMask doesn't meet the conditions,reverting back to old value  ...\n"));
-#if 0//LNT_EMU
         goto RET_ERR;
-#endif
     }
     /* check the gateway IP address */
     /* gateway IP address should be private address,*/
@@ -2073,22 +2076,19 @@ LanMngm_Validate
        ((pLanMngm->LanIPAddress.Value | pLanMngm->LanSubnetMask.Value) == 0xFFFFFFFF)){
 
 		CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Modified LanIPAddress doesn't meet the conditions,reverting back to old value  ...\n"));
-#if 0//LNT_EMU
         goto RET_ERR;
-#endif
     }else if(pLanMngm->LanIPAddress.Dot[0] == 10 ){
         return TRUE;
     }else if(pLanMngm->LanIPAddress.Dot[0] == 172 && pLanMngm->LanIPAddress.Dot[1] >= 16 && pLanMngm->LanIPAddress.Dot[1] <= 31){
         return TRUE;
     }else if((pLanMngm->LanIPAddress.Value & 0xFFFF0000) == 0xC0A80000){
         return TRUE;
+    }else if(pLanMngm->LanIPAddress.Dot[0] == 192 && pLanMngm->LanIPAddress.Dot[1] == 168){
+        return TRUE;
     }
-#if 0//LNT_EMU
 RET_ERR:
     CosaDmlLanMngm_GetConf(pLanMngm->InstanceNumber, pLanMngm);
     return FALSE;
-#endif
-    return TRUE;
 }
 
 ULONG
