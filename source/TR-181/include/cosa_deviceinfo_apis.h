@@ -341,7 +341,10 @@ CosaDmlDiSetAndProcessDhcpServDetectionFlag
 ANSC_STATUS
 isValidInput
     (
-        char                       *inputparam
+        char                       *inputparam,
+        char                       *wrapped_inputparam,
+    	int							lengthof_inputparam,
+    	int							sizeof_wrapped_inputparam    	
     );
 
 #if defined(_CBR_PRODUCT_REQ_) || defined(_BCI_FEATURE_REQ)

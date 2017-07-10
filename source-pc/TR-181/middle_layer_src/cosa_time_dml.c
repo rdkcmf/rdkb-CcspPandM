@@ -627,52 +627,57 @@ Time_SetParamStringValue
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "NTPServer1", TRUE))
     {
-        ret=isValidInput(pString);
+		char wrapped_inputparam[64]={0};
+		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer1, pString);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer1, wrapped_inputparam);
     	CcspTraceWarning(("Service_NTP : Setting NTPServer as %s \n",pMyObject->TimeCfg.NTPServer1)); 
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "NTPServer2", TRUE))
     {
-        ret=isValidInput(pString);
+		char wrapped_inputparam[64]={0};
+		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer2, pString);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer2, wrapped_inputparam);
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "NTPServer3", TRUE))
     {
-        ret=isValidInput(pString);
+		char wrapped_inputparam[64]={0};
+		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer3, pString);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer3, wrapped_inputparam);
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "NTPServer4", TRUE))
     {
-		ret=isValidInput(pString);
+		char wrapped_inputparam[64]={0};
+		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	    if(ANSC_STATUS_SUCCESS != ret)
 	        return FALSE;
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer4, pString);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer4, wrapped_inputparam);
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "NTPServer5", TRUE))
     {
-        ret=isValidInput(pString);
+		char wrapped_inputparam[64]={0};
+		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer5, pString);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer5, wrapped_inputparam);
         return TRUE;
     }
 

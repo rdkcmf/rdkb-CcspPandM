@@ -4011,11 +4011,12 @@ IPv6Forwarding_SetParamStringValue
 
     if( AnscEqualString(ParamName, "Interface", TRUE))
     {
-	ret=isValidInput(pString);
+	char wrapped_inputparam[64]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
         if(ANSC_STATUS_SUCCESS != ret)
             return FALSE;
         /* save update to backup */
-        AnscCopyString(pRouterForward->Interface, pString);
+        AnscCopyString(pRouterForward->Interface, wrapped_inputparam);
         return TRUE;
     }
 
