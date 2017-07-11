@@ -373,7 +373,7 @@ int _check_PT_range(PCOSA_DML_NAT_PTRIGGER pPortTrigger){
 int _Check_PT_parameter(PCOSA_DML_NAT_PTRIGGER pPortTrigger)
 {
     // Check parameter setting
-    if( (pPortTrigger->TriggerProtocol > 3 || pPortTrigger->TriggerProtocol < 1) ||
+    if( (pPortTrigger->TriggerProtocol > 2 || pPortTrigger->TriggerProtocol < 0) ||
         (pPortTrigger->TriggerPortStart == 0) ||
         (pPortTrigger->TriggerPortEnd == 0) ||
         (pPortTrigger->TriggerPortEnd < pPortTrigger->TriggerPortStart) ||
