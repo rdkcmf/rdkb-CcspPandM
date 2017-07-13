@@ -679,7 +679,18 @@ User_GetParamStringValue
         
         if ( AnscSizeOfString(pUser->Password) < *pUlSize)
         {
+            ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
             AnscCopyString(pValue, pUser->Password);
+            if( AnscEqualString(pUser->Username, "mso", TRUE) )
+            {
+            AnscCopyString(pUser->Password, "Invalid_PWD");
+            returnStatus = CosaDmlUserSetCfg(NULL, pUser);
+
+               if ( returnStatus != ANSC_STATUS_SUCCESS)
+               {
+                  CosaDmlUserGetCfg(NULL, pUser);
+               }
+            }
             return 0;
         }
         else
