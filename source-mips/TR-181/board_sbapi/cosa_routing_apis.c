@@ -1216,7 +1216,7 @@ CosaDmlRipIfGetCfg
     AnscTraceWarning(("pEntry->X_CISCO_COM_AuthenticationType :%lu\n", pEntry->X_CISCO_COM_AuthenticationType));    
     AnscTraceWarning(("pEntry->X_CISCO_COM_Md5KeyID :%lu\n", pEntry->X_CISCO_COM_Md5KeyID));
     AnscTraceWarning(("pEntry->X_CISCO_COM_Md5KeyValue :%s\n", pEntry->X_CISCO_COM_Md5KeyValue));
-    AnscTraceWarning(("pEntry->X_CISCO_COM_SimplePassword :%s\n", pEntry->X_CISCO_COM_SimplePassword));
+//    AnscTraceWarning(("pEntry->X_CISCO_COM_SimplePassword :%s\n", pEntry->X_CISCO_COM_SimplePassword));
     AnscTraceWarning(("pEntry->Alias :%s\n", pEntry->Alias));
     AnscTraceWarning(("pEntry->Interface :%s\n", pEntry->Interface));
 #endif
@@ -1380,7 +1380,7 @@ CosaDmlRipIfSetCfg
     AnscTraceWarning(("pConf->If1AuthenticateType :%lu\n", pConf->If1AuthenticateType));
     AnscTraceWarning(("pConf->If1KeyID :%lu\n", pConf->If1KeyID));
     AnscTraceWarning(("pConf->If1Md5KeyValue :%s\n", pConf->If1Md5KeyValue));
-    AnscTraceWarning(("pConf->If1SimplePassword :%s\n", pConf->If1SimplePassword));
+//    AnscTraceWarning(("pConf->If1SimplePassword :%s\n", pConf->If1SimplePassword));
     AnscTraceWarning(("pConf->If1Alias :%s\n", pConf->If1Alias));
     AnscTraceWarning(("pConf->If1Name :%s\n", pConf->If1Name));
 #endif

@@ -938,7 +938,6 @@ User_SetParamStringValue
     PCOSA_DML_USER                  pUser2            = NULL;
     BOOL                            bFound            = FALSE;
 
-    CcspTraceWarning(("Users: set %s to %s\n", ParamName, pString));
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Username", TRUE))
