@@ -857,20 +857,21 @@ DeviceInfo_SetParamStringValue
 #ifdef CONFIG_INTERNET2.0
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL", TRUE))
     {
-	ret=isValidInput(pString);
+    char wrapped_inputparam[256]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
 	
-	if (syscfg_set(NULL, "redirection_url", pString) != 0) {
+	if (syscfg_set(NULL, "redirection_url", wrapped_inputparam) != 0) {
              AnscTraceWarning(("syscfg_set failed\n"));
           } else {
 	       if (syscfg_commit() != 0) {
                     AnscTraceWarning(("syscfg_commit failed\n"));
                     }
 		char url[150];	
-		snprintf(url,sizeof(url),"/etc/whitelist.sh %s",pString);
+		snprintf(url,sizeof(url),"/etc/whitelist.sh %s",wrapped_inputparam);
 		system(url);
-		AnscCopyString(pMyObject->WebURL, pString);
+		AnscCopyString(pMyObject->WebURL, wrapped_inputparam);
 		CcspTraceWarning(("CaptivePortal:Cloud URL is changed, new URL is %s ...\n",pMyObject->WebURL));
              }
 
@@ -974,20 +975,21 @@ DeviceInfo_SetParamStringValue
    /* Changes for EMS */
    if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_ServerURL", TRUE))
     {
-	ret=isValidInput(pString);
+    char wrapped_inputparam[256]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
 	
-	if (syscfg_set(NULL, "ems_server_url", pString) != 0) {
+	if (syscfg_set(NULL, "ems_server_url", wrapped_inputparam) != 0) {
              AnscTraceWarning(("syscfg_set failed\n"));
           } else {
 	       if (syscfg_commit() != 0) {
                     AnscTraceWarning(("syscfg_commit failed\n"));
                     }
 		char ems_url[150];	
-		snprintf(ems_url,sizeof(ems_url),"/etc/whitelist.sh %s",pString);
+		snprintf(ems_url,sizeof(ems_url),"/etc/whitelist.sh %s",wrapped_inputparam);
 		system(ems_url);
-		AnscCopyString(pMyObject->EMS_ServerURL, pString);
+		AnscCopyString(pMyObject->EMS_ServerURL, wrapped_inputparam);
              }
 
 	return TRUE;

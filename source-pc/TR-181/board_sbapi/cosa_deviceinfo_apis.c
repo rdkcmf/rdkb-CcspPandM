@@ -907,35 +907,46 @@ ULONG COSADmlGetMaxWindowSize()
 ANSC_STATUS
 isValidInput
     (
-        char                       *inputparam
+        char                       *inputparam,
+        char                       *wrapped_inputparam,
+    	int							lengthof_inputparam,
+    	int							sizeof_wrapped_inputparam    	
     )
 {
-    char wrapstring[256]={0};
-    ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
-    	
-	// check for possible command injection	
-    if(strstr(inputparam,";"))
-    {
-        returnStatus = ANSC_STATUS_FAILURE;
-    }
-    else if(strstr(inputparam,"&"))
-    {
-        returnStatus = ANSC_STATUS_FAILURE;
-    }
-    else if(strstr(inputparam,"|"))
-     {
-        returnStatus = ANSC_STATUS_FAILURE;
-      }
-    else if(strstr(inputparam,"'"))
-        returnStatus = ANSC_STATUS_FAILURE;
+	ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
 
-    if(ANSC_STATUS_SUCCESS == returnStatus)
-    {
-       sprintf(wrapstring,"'%s'",inputparam);
-       strcpy(inputparam,wrapstring);
-    }
+	/*
+	  * Validate input/params 
+	  * sizeof_wrapped_inputparam it should always greater that ( lengthof_inputparam  + 2 ) because
+	  * we are adding 2 extra charecters here. so we need to have extra bytes 
+	  * in copied(wrapped_inputparam) string
+	  */ 
+	if( sizeof_wrapped_inputparam <= ( lengthof_inputparam  + 2 ) )
+	{
+		returnStatus = ANSC_STATUS_FAILURE;
+	}
+	else if(strstr(inputparam,";")) // check for possible command injection 
+	{
+		returnStatus = ANSC_STATUS_FAILURE;
+	}
+	else if(strstr(inputparam,"&"))
+	{
+		returnStatus = ANSC_STATUS_FAILURE;
+	}
+	else if(strstr(inputparam,"|"))
+	{
+		returnStatus = ANSC_STATUS_FAILURE;
+	}
+	else if(strstr(inputparam,"'"))
+		returnStatus = ANSC_STATUS_FAILURE;
 
+	if(ANSC_STATUS_SUCCESS == returnStatus)
+	{
+		sprintf(wrapped_inputparam,"'%s'",inputparam);
+	}
+	
 	return returnStatus;
 
 }
+
 #endif

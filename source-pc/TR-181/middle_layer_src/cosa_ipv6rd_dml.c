@@ -574,44 +574,50 @@ IPv6rdIF_SetParamStringValue(
 
     if (AnscEqualString(ParamName, "Alias", TRUE))
     {
-	ret=isValidInput(pString);
+    char wrapped_inputparam[256]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
 
-        AnscCopyString(pEntry->Alias, pString);
+        AnscCopyString(pEntry->Alias, wrapped_inputparam);
         return TRUE;
     }
     else if (AnscEqualString(ParamName, "BorderRelayIPv4Addresses", TRUE))
     {
-	ret=isValidInput(pString);
+    char wrapped_inputparam[256]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
-        AnscCopyString(pEntry->BorderRelayIPv4Addr, pString);
+        AnscCopyString(pEntry->BorderRelayIPv4Addr, wrapped_inputparam);
         return TRUE;
     }
     else if (AnscEqualString(ParamName, "SPIPv6Prefix", TRUE))
     {
-	ret=isValidInput(pString);
+    char wrapped_inputparam[256]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
 
-        AnscCopyString(pEntry->SPIPv6Prefix, pString);
+        AnscCopyString(pEntry->SPIPv6Prefix, wrapped_inputparam);
         return TRUE;
     }
     else if (AnscEqualString(ParamName, "AddressSource", TRUE))
     {
-	ret=isValidInput(pString);
+    char wrapped_inputparam[256]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
 
-        if (!pString || _ansc_strlen(pString) == 0)
+        if (( '\0' == wrapped_inputparam[ 0 ] ) || \
+			( _ansc_strlen(wrapped_inputparam) == 0) 
+		   )
         {
             AnscCopyString(pEntry->AddressSource, "");
             return TRUE;
         }
 
         addlen = sizeof(v4addr);
-        _ansc_sprintf(tmp, "%sIPAddress", pString);
+        _ansc_sprintf(tmp, "%sIPAddress", wrapped_inputparam);
         if (g_GetParamValueString(g_pDslhDmlAgent, tmp, v4addr, &addlen) != 0)
         {
             CcspTraceWarning(("IPv6rdIF_SetParamStringValue: fail to get %s\n", tmp));

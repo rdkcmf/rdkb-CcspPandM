@@ -339,7 +339,10 @@ CosaDmlDiSetWebPACfg
 ANSC_STATUS
 isValidInput
     (
-        char                       *inputparam
+        char                       *inputparam,
+        char                       *wrapped_inputparam,
+    	int							lengthof_inputparam,
+    	int							sizeof_wrapped_inputparam    	
     );
 
 #endif
