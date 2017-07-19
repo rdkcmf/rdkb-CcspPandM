@@ -123,6 +123,7 @@ typedef struct
 _COSA_DML_USERINTERFACE_CFG
 {
     BOOLEAN                         bPasswordLockoutEnable;
+    BOOLEAN                         bHTTPSecurityHeaderEnable;
     ULONG                           PasswordLockoutAttempts;
     ULONG                           PasswordLockoutTime;
 }
