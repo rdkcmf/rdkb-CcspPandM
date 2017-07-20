@@ -390,6 +390,17 @@ CosaDmlUserInterfaceGetCfg
 			pCfg->PasswordLockoutTime=atoi(buf);
        }
 
+       memset(buf,0,sizeof(buf));
+       syscfg_get( NULL, "HTTPSecurityHeaderEnable", buf, sizeof(buf));
+
+       if( buf != NULL )
+       {
+          if (strcmp(buf,"true") == 0)
+               pCfg->bHTTPSecurityHeaderEnable = TRUE;
+          else
+               pCfg->bHTTPSecurityHeaderEnable = FALSE;
+       }
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -435,6 +446,33 @@ sprintf(buf, "%d",  pCfg->PasswordLockoutTime);
                            AnscTraceWarning(("syscfg_commit failed\n"));
        }
 
+    char tmp[10];
+    memset(tmp,0,sizeof(tmp));
+    BOOL security_header_enabled = true;
+
+    if((syscfg_get( NULL, "HTTPSecurityHeaderEnable", tmp, sizeof(tmp)) == 0 ))
+    {
+       security_header_enabled = (!strcmp(tmp, "true")) ? TRUE : FALSE;
+    }
+
+    if (security_header_enabled != pCfg->bHTTPSecurityHeaderEnable)
+    {
+        memset(buf,0,sizeof(buf));
+        snprintf(buf,sizeof(buf),"%s",pCfg->bHTTPSecurityHeaderEnable ? "true" : "false");
+
+        if (syscfg_set(NULL, "HTTPSecurityHeaderEnable", buf) != 0)
+        {
+            AnscTraceWarning(("%s syscfg_set failed  for HTTPSecurityHeaderEnable\n",__FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+        }
+        if (syscfg_commit() != 0)
+        {
+            AnscTraceWarning(("%s syscfg_commit failed for HTTPSecurityHeaderEnable\n",__FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+        }
+
+        system("/bin/sh /etc/webgui.sh &");
+    }
 
     return ANSC_STATUS_SUCCESS;
 }

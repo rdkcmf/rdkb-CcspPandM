@@ -186,6 +186,12 @@ UserInterface_GetParamBoolValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "HTTPSecurityHeaderEnable", TRUE))
+    {
+        *pBool = pMyObject->UserInterfaceCfg.bHTTPSecurityHeaderEnable;
+        return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -221,6 +227,11 @@ UserInterface_SetParamBoolValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "HTTPSecurityHeaderEnable", TRUE))
+    {
+        pMyObject->UserInterfaceCfg.bHTTPSecurityHeaderEnable = bValue;
+        return TRUE;
+    }
 
     return FALSE;
 }
