@@ -1782,6 +1782,11 @@ ClientEnd:
         if ( !pDhcpv4X_COM_CISCO_SAddr )
         {
             returnStatus = ANSC_STATUS_FAILURE;            
+            if( pAliasX_COM_CISCO_SAddr )
+            {
+                AnscFreeMemory( pAliasX_COM_CISCO_SAddr );
+                pAliasX_COM_CISCO_SAddr = NULL;
+            }
             goto EXIT2;
         }
     

@@ -235,6 +235,7 @@ CosaDmlMldGetCfg
         if(fgets(buffer, 255,pid_f) != '\0')
         {
             fclose(pid_f);
+            pid_f = NULL;
             sscanf( buffer, "%d", &pid);
             CcspTraceWarning(("Sending SIGUSR1 to proccess %d...\n", pid));
             if ( kill(pid,SIGUSR1) == -1 )
@@ -246,6 +247,10 @@ CosaDmlMldGetCfg
             {
                 pCfg->bEnabled = TRUE;
             }
+        }
+        if (pid_f != NULL)
+        {
+            fclose(pid_f);
         }
     }
     else

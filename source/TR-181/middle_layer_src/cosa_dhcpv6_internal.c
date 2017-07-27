@@ -1724,9 +1724,6 @@ EXIT3:
     if(pDhcpv6Client)
         AnscFreeMemory(pDhcpv6Client);
 
-    if(pDhcpv6SntOpt )
-        AnscFreeMemory(pDhcpv6SntOpt);
-
     if(pDhcpv6Pool )
         AnscFreeMemory(pDhcpv6Pool);
 
@@ -1746,9 +1743,12 @@ EXIT2:
     
     if(pAliasPoolOption)
         AnscFreeMemory(pAliasPoolOption);
+
+    if(pDhcpv6SntOpt )
+        AnscFreeMemory(pDhcpv6SntOpt);
     
 EXIT1:
-    
+
     if ( pPoamIrepFoClient )
         pPoamIrepFoClient->Remove((ANSC_HANDLE)pPoamIrepFoClient);
 

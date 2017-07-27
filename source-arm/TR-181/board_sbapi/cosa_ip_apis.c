@@ -1730,6 +1730,10 @@ CosaDmlIpIfGetEntry
             break;
         }
     }
+    if (i >= COSA_USG_IF_NUM)
+    {
+        return ANSC_STATUS_FAILURE;
+    }
 
     /*not supported*/
     pEntry->Cfg.bEnabled            = TRUE;
