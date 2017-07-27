@@ -3847,7 +3847,15 @@ CosaDmlDhcpv6sDelPool
     }
 #endif
     /* unset last one in utopia  RDKB-6780, CID-33220, limiting upper bounday*/
-    Index =((uDhcpv6ServerPoolNum < DHCPV6S_POOL_NUM)? (uDhcpv6ServerPoolNum - 1):(DHCPV6S_POOL_NUM-1));
+    if (uDhcpv6ServerPoolNum == 0)
+    {
+        Index = DHCPV6S_POOL_NUM - 1;
+    }
+    else
+    {
+        Index =((uDhcpv6ServerPoolNum < DHCPV6S_POOL_NUM)? (uDhcpv6ServerPoolNum - 1):(DHCPV6S_POOL_NUM-1));
+    }
+
     unsetpool_from_utopia(DHCPV6S_NAME, "pool", Index );
     AnscZeroMemory(&sDhcpv6ServerPool[Index], sizeof(sDhcpv6ServerPool[Index]));
 
@@ -3878,8 +3886,6 @@ _get_iapd_prefix_pathname(char ** pp_pathname, int * p_len)
     char param_val[64] = {0};
     ULONG inst2 = 0;
     ULONG val_len = 0;
-
-    *p_len = 1;
 
     if (!p_len || !pp_pathname)
         return -1;
@@ -4056,12 +4062,8 @@ CosaDmlDhcpv6sSetPoolCfg
     }
     else
     {
-        /* Fix 'out of bounds read' because Index could be equal to DHCPV6S_POOL_NUM
-           which would exceed the size of sDhcpv6ServerPool */
-        CcspTraceWarning((stderr,"Index %s exceeded DHCPV6S_POOL_NUM.\n", Index));
-
-        Index = DHCPV6S_POOL_NUM -1;
-        sDhcpv6ServerPool[Index].Cfg = *pCfg;
+        sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg = *pCfg;
+        Index = DHCPV6S_POOL_NUM - 1;
     }
 
     /* We do this synchronization here*/
@@ -4128,6 +4130,11 @@ CosaDmlDhcpv6sGetPoolInfo
     {
         if ( sDhcpv6ServerPool[Index].Cfg.InstanceNumber == ulInstanceNumber )
             break;
+    }
+
+    if (Index >= DHCPV6S_POOL_NUM)
+    {
+        return ANSC_STATUS_FAILURE;
     }
 
     sprintf(cmd, "ps -A|grep %s", SERVER_BIN);
