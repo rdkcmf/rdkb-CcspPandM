@@ -4016,8 +4016,21 @@ IPv6Forwarding_SetParamStringValue
         if(ANSC_STATUS_SUCCESS != ret)
             return FALSE;
 
-        /* save update to backup */
-        AnscCopyString(pRouterForward->Interface, wrapped_inputparam);
+	char paramName[256] = {0};
+	char paramVal[32] = {0};
+	int len;
+	snprintf(paramName, sizeof(paramName), "%sName", pString);
+
+	if(0 == CosaGetParamValueString(paramName,paramVal,&len))
+	{
+	    /* save update to backup */
+	    AnscCopyString(pRouterForward->Interface, paramVal);
+	}
+	else
+	{
+	    return FALSE;
+	}
+
         return TRUE;
     }
 

@@ -2845,7 +2845,7 @@ Route6_Add(const char *prefix, const char *gw, const char *dev, int metric)
     }
 
 #if defined(USE_SYSTEM)
-    n = snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s ", prefix, dev);
+    n = snprintf(cmd, sizeof(cmd), "ip -6 route append %s dev %s ", prefix, dev);
     if (gw && strlen(gw))
         n += snprintf(cmd + n, sizeof(cmd) - n, "via %s ", gw);
     if (metric != 0)
