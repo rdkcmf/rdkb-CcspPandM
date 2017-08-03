@@ -221,7 +221,8 @@ then
 				# Set syscfg parameter to indicate unit is activated
 				syscfg set unit_activated 1
 				syscfg commit
-				echo_et "ACTIVATION_CAPTIVE:1"
+				uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+				echo_t "Exit_Captive_Mode:$uptime"
 				echo_t "Network Response: Restart DHCP server"
 				sysevent set dhcp_server-stop
 				# Let's make sure dhcp server restarts properly
@@ -247,13 +248,14 @@ then
 				then
                                       echo_et "SERVER_ACCESS_FAIL"
 				fi
-				echo_et "ACTIVATION_CAPTIVE:0,$retry_count"
 				unitActivated=`syscfg get unit_activated`
 				if [ "$unitActivated" != 0 ]
 				then
 				    # As we haven't received 204 response, indicate unit is not activated
 				    syscfg set unit_activated 0
 				    syscfg commit
+				    uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+				    echo_t "Enter_Captive_Mode:$uptime"
 				    # Remove /var/tmp/networkresponse.txt file.
 				    # LAN services should not be in captive portal configuration. 
 				    # LAN services depend on 204 response to configure captive portal.
