@@ -2254,7 +2254,7 @@ WebAccessLevel_GetParamIntValue
 
         return TRUE;
     }
-	
+	return FALSE;
 }
 
 BOOL
@@ -2404,6 +2404,7 @@ WebAccessLevel_SetParamIntValue
 
         return TRUE;
     }
+    return FALSE;
 }
 
 BOOL

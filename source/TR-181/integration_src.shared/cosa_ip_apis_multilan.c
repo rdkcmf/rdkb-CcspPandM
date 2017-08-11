@@ -1002,6 +1002,7 @@ CosaDmlIpIfMlanSetValues
     PDMSB_TR181_IP_CONTEXT          pIpContext     = (PDMSB_TR181_IP_CONTEXT)hContext;
     PSINGLE_LINK_ENTRY              pSLinkEntry;
     PDMSB_TR181_IP_IF               pIpIf;
+    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1015,6 +1016,8 @@ CosaDmlIpIfMlanSetValues
         _ansc_strcpy(pIpIf->Cfg.Alias, pAlias);
 
         CosaDmlIpIfMlanSavePsm(pIpContext, &pIpIf->Cfg);
+
+        returnStatus = ANSC_STATUS_SUCCESS;
     }
     else
     {
@@ -1027,8 +1030,9 @@ CosaDmlIpIfMlanSetValues
                 pAlias
             ));
 
-        return  ANSC_STATUS_CANT_FIND;
+        returnStatus = ANSC_STATUS_CANT_FIND;
     }
+    return returnStatus;
 }
 
 

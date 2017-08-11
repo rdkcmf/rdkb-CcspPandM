@@ -3628,7 +3628,7 @@ Webpa_GetParamUlongValue
 		*puLong = 0;
         return FALSE;
     }
-		
+    return FALSE;
 }
 
 /**********************************************************************  

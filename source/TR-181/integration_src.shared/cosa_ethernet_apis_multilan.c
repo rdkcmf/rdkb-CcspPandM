@@ -810,6 +810,7 @@ CosaDmlEthLinkSetValues
     PDMSB_TR181_ETH_CONTEXT         pEthContext     = (PDMSB_TR181_ETH_CONTEXT)hContext;
     PSINGLE_LINK_ENTRY              pSLinkEntry;
     PDMSB_TR181_ETH_LINK            pEthLink;
+    ANSC_STATUS                     returnStatus = ANSC_STATUS_CANT_FIND;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -823,11 +824,10 @@ CosaDmlEthLinkSetValues
         _ansc_strcpy(pEthLink->Cfg.Alias, pAlias);
 
         CosaDmlEthLinkSavePsm(pEthContext, &pEthLink->Cfg);
+
+        returnStatus = ANSC_STATUS_SUCCESS;
     }
-    else
-    {
-        return  ANSC_STATUS_CANT_FIND;
-    }
+    return returnStatus;
 }
 
 ANSC_STATUS

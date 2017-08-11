@@ -5386,6 +5386,7 @@ CosaDmlRouteInfoInit
     _set_routeinfo_to_sysctl(g_routeinfo_enabled);
 
     Utopia_Free(&utctx,0);                    
+    return ANSC_STATUS_SUCCESS;
 
 }
 

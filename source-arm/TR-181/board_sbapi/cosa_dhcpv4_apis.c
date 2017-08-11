@@ -2852,7 +2852,7 @@ CosaDmlDhcpsSetOptionValues
         if ( !pNewEntry )
         {
             AnscTraceFlow(("%s: Out of memory!\n", __FUNCTION__));
-            return;
+            return ANSC_STATUS_BAD_SIZE;
         }
         AnscZeroMemory(pNewEntry, sizeof(COSA_DML_DHCPSV4_OPTION));
         AnscCopyMemory(pNewEntry, pPoolOption, sizeof(COSA_DML_DHCPSV4_OPTION));
