@@ -1270,8 +1270,7 @@ int COSADmlSetMemoryStatus(char * ParamName, ULONG val)
 {
     if(AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FreeMemThreshold", TRUE))
      {
-            char buf[10];
-	    memset(buf,sizeof(buf),0);
+	    char buf[10] = {0};
 	    snprintf(buf,sizeof(buf),"%d",val);            		    
 	    if ((syscfg_set(NULL, "MinMemoryThreshold_Value", buf) != 0)) 
 	    {
