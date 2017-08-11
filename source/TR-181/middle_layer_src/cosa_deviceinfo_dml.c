@@ -4078,11 +4078,18 @@ Xconf_SetParamBoolValue
       		AnscTraceWarning(("Triggering firmware download check from TR181\n"));
                 if( TRUE == bValue )
                 {
-#if defined(INTEL_PUMA7)
+#if defined(INTEL_PUMA7) || defined(_COSA_BCM_ARM_)
+#ifdef _CBR_PRODUCT_REQ_
+            if(0 == system("pidof cbr_firmwareDwnld.sh"))  {
+                           system ("kill -9 `pidof cbr_firmwareDwnld.sh `");
+                       }
+                           status = system("/etc/cbr_firmwareDwnld.sh &");
+#else
 			if(0 == system("pidof xb6_firmwareDwnld.sh"))  {
                            system ("kill -9 `pidof xb6_firmwareDwnld.sh `");
                        }
                            status = system("/etc/xb6_firmwareDwnld.sh &");
+#endif
 #elif defined(_COSA_BCM_MIPS_)
 			if(0 == system("pidof xf3_firmwareDwnld.sh"))  {
                            system ("kill -9 `pidof xf3_firmwareDwnld.sh `");
