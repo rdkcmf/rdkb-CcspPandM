@@ -1776,7 +1776,14 @@ CosaDmlIpIfGetEntry
     }
 
     pEntry->Info.LastChange  =  AnscGetTickInSeconds();
-    AnscCopyString(pEntry->Info.Name, (char *)g_ipif_names[ulIndex]);  
+    AnscCopyString(pEntry->Info.Name, (char *)g_ipif_names[ulIndex]);
+ 
+    /* Fix 'out of bounds read' i can exit the loop above as COSA_USG_IF_NUM. */
+    if (i >= COSA_USG_IF_NUM)
+    {
+        CcspTraceWarning(("Out of bounds interface number.\n"));
+        i = COSA_USG_IF_NUM - 1;
+    }
 
     pEntry->Cfg.LinkType            = G_USG_IF_LINKTYPE(i);
     AnscCopyString(pEntry->Cfg.LinkName, (char *)g_ipif_names[ulIndex]);  

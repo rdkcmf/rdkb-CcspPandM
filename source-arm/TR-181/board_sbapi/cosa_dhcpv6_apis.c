@@ -4056,7 +4056,12 @@ CosaDmlDhcpv6sSetPoolCfg
     }
     else
     {
-        sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg = *pCfg;
+        /* Fix 'out of bounds read' because Index could be equal to DHCPV6S_POOL_NUM
+           which would exceed the size of sDhcpv6ServerPool */
+        CcspTraceWarning((stderr,"Index %s exceeded DHCPV6S_POOL_NUM.\n", Index));
+
+        Index = DHCPV6S_POOL_NUM -1;
+        sDhcpv6ServerPool[Index].Cfg = *pCfg;
     }
 
     /* We do this synchronization here*/
@@ -4127,6 +4132,13 @@ CosaDmlDhcpv6sGetPoolInfo
 
     sprintf(cmd, "ps -A|grep %s", SERVER_BIN);
     _get_shell_output(cmd, out, sizeof(out));
+
+    if (Index >= DHCPV6S_POOL_NUM) {
+        /* Fix 'out of bounds read' because Index could be equal to DHCPV6S_POOL_NUM
+           which would exceed the size of sDhcpv6ServerPool */
+        CcspTraceWarning((stderr,"Index %s exceeded DHCPV6S_POOL_NUM\n", Index));
+        Index = DHCPV6S_POOL_NUM - 1;
+    }
 
     if ( (strstr(out, SERVER_BIN)) && sDhcpv6ServerPool[Index].Cfg.bEnabled )
     {
