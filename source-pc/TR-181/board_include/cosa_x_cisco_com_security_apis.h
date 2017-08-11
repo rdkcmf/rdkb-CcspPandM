@@ -292,7 +292,7 @@ _COSA_SECURITY_IA_POLICY2
     BOOLEAN                         bUseLanHosts;
     COSA_DML_IA_POLICY_SCH          Schedule;
     USHORT                          ulNumOfMac;
-    COSA_DML_IA_LH_MAC              MacList[10];
+    COSA_DML_IA_LH_MAC              MacList[COSA_DML_IA_LH_MAX_MAC];
     USHORT                          ulNumOfIp;
     COSA_DML_IA_LH_IP               IPList[6];
     USHORT                          ulNumOfIpr;

@@ -2653,7 +2653,8 @@ AccessPolicy_GetParamStringValue
         }
         else
         {
-            for ( i = 0; i < pDmlIAPolicy->LanHost.MacCount; i++ )
+            /* Fix 'out of bounds read', MacCount could be larger than size of MacList. */
+            for ( i = 0; (i < pDmlIAPolicy->LanHost.MacCount) && (i < COSA_DML_IA_LH_MAX_MAC); i++ )
             {
                 _ansc_sprintf
                     (
@@ -2691,7 +2692,8 @@ AccessPolicy_GetParamStringValue
         }
         else
         {
-            for ( i =0; i< pDmlIAPolicy->LanHost.IpCount; i++ )
+            /* Fix 'out of bounds read', IpCount could be larger than size of IpList. */
+            for ( i =0; (i< pDmlIAPolicy->LanHost.IpCount) && (i < COSA_DML_IA_LH_MAX_IP); i++ )
             {
                 AnscGetIpAddrString(&pDmlIAPolicy->LanHost.IpList[i].Ip.Value, pValue);
 
@@ -2719,7 +2721,8 @@ AccessPolicy_GetParamStringValue
         }
         else
         {
-            for ( i = 0; i < pDmlIAPolicy->LanHost.IprCount; i++ )
+            /* Fix 'out of bounds read', IprCount could be larger than size of IprList. */
+            for ( i = 0; (i < pDmlIAPolicy->LanHost.IprCount) && (i < COSA_DML_IA_LH_MAX_IP_RANGE); i++ )
             {
                 AnscGetIpAddrString(&pDmlIAPolicy->LanHost.IprList[i].StartIp.Value, pValue);
 
