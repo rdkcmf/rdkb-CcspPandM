@@ -1668,6 +1668,7 @@ void restoreAllDBs()
 #endif
 #if defined (_CBR_PRODUCT_REQ_)
 	system("rm -f /data/nvram");
+	system("rm -f /data/country_code_*");
 	system("touch /tmp/wifi_factory_reset");
         /* Remove maintenance window data on factory reset */
         system("rm -f /nvram/.FirmwareUpgradeEndTime");
