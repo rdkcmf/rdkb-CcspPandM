@@ -75,7 +75,10 @@
 
 #include "cosa_deviceinfo_dml.h"
 #include "dml_tr181_custom_cfg.h" 
-
+#if defined(MOCA_HOME_ISOLATION)
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
+#endif
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -3979,6 +3982,160 @@ Logging_GetParamStringValue
     return -1;
 }
 
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Feature_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Feature_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+#if defined(MOCA_HOME_ISOLATION)
+    if( AnscEqualString(ParamName, "HomeNetworkIsolation", TRUE))
+    {
+        /* collect value */
+
+    char *strValue = NULL;
+    char str[2];
+    int retPsmGet = CCSP_SUCCESS;
+
+    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.HomeNetworkIsolation", NULL, &strValue);
+    if (retPsmGet == CCSP_SUCCESS) {
+        *pBool = _ansc_atoi(strValue);
+        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+    }
+    else
+        *pBool = FALSE;
+
+     return TRUE;   
+    }
+
+#endif
+    return FALSE;
+}
+
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Feature_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Feature_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+	BOOL bReturnValue;
+#if defined(MOCA_HOME_ISOLATION)
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "HomeNetworkIsolation", TRUE))
+    {
+    char *strValue = NULL;
+    char str[2];
+    int retPsmGet = CCSP_SUCCESS;
+    BOOL getVal = 0;
+
+    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.HomeNetworkIsolation", NULL, &strValue);
+    if (retPsmGet == CCSP_SUCCESS) {
+        getVal = _ansc_atoi(strValue);
+        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+    }
+
+    if(getVal != bValue)
+	{
+             sprintf(str,"%d",bValue);
+             retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.HomeNetworkIsolation", ccsp_string, str);
+             if (retPsmGet != CCSP_SUCCESS) {
+             CcspTraceError(("Set failed for HomeNetworkIsolation \n"));
+             return ANSC_STATUS_FAILURE;
+             }
+                if(bValue)
+                {
+                    CcspTraceInfo(("Apply changes for HomeNetworkIsolation \n"));
+                    system("sysevent set multinet-restart 1");
+                    system("sh /usr/ccsp/moca/MoCA_isolation.sh &");
+                    
+                }
+                else
+                {
+
+                    CcspTraceInfo(("reverting changes for HomeNetworkIsolation \n"));
+                    system("sysevent set multinet-down 9");
+                    system("rm /tmp/MoCABridge_up");
+                    system("sysevent set multinet-restart 1");
+                    system("killall MRD; killall smcroute;igmpproxy -c /tmp/igmpproxy.conf");
+                }
+	}
+	else
+		CcspTraceInfo(("HomeNetworkIsolation is already %d \n",getVal));
+	
+    	return TRUE;
+    }
+#endif
+    return FALSE;
+}
 /**********************************************************************  
 
     caller:     owner of this object 
