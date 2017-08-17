@@ -22,3 +22,15 @@ source /etc/utopia/service.d/log_capture_path.sh
         else 
         echo_t "MoCA is Disabled"
         fi
+        
+    echo_t "Obtaining the MoCA CurrentOperFreq.."
+	moca_freq=`dmcli eRT getv Device.MoCA.Interface.1.CurrentOperFreq | grep uint | awk '{print $5}'`
+	echo_t "MoCA_FREQ:$moca_freq"
+	
+	echo_t "Obtaining the MoCA PreferredNC.."
+	moca_pnc=`dmcli eRT getv Device.MoCA.Interface.1.PreferredNC | grep bool | awk '{print $5}'`
+	echo_t "MoCA_PNC:$moca_pnc"
+	
+	echo_t "Obtaining the MoCA ChannelScanning.."
+	moca_scan=`dmcli eRT getv Device.MoCA.Interface.1.X_CISCO_COM_ChannelScanning | grep bool | awk '{print $5}'`
+	echo_t "MoCA_SCAN:$moca_scan"
