@@ -4117,6 +4117,154 @@ Xconf_SetParamBoolValue
      }
      return FALSE;
 }
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.ReverseSSH
+
+    *  ReverseSSH_SetParamStringValue // Set args required for reverse SSH
+    *  ReverseSSH_GetParamStringValue // Get args set for reverse SSH
+
+***********************************************************************/
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        ReverseSSH_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     TRUE if succeeded;
+                FALSE if failed
+
+**********************************************************************/
+BOOL
+ReverseSSH_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    BOOL bReturnValue = FALSE;
+    char* activeStr = "ACTIVE";
+    char* inActiveStr = "INACTIVE";
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "xOpsReverseSshArgs", TRUE))
+    {
+        bReturnValue = getXOpsReverseSshArgs(NULL, pValue,pulSize);
+        return bReturnValue;
+    }
+
+    if( AnscEqualString(ParamName, "xOpsReverseSshStatus", TRUE))
+    {
+        if (isRevSshActive()) {
+            AnscCopyString(pValue, activeStr);
+            *pulSize = AnscSizeOfString(pValue);
+        } else {
+            AnscCopyString(pValue, inActiveStr);
+            *pulSize = AnscSizeOfString(pValue);
+        }
+        bReturnValue = TRUE;
+        return bReturnValue;
+    }
+
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return bReturnValue;
+}
+
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        ReverseSSH_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded,
+                FALSE if failed.
+
+**********************************************************************/
+BOOL
+ReverseSSH_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    BOOL bReturnValue = FALSE;
+    ANSC_STATUS retValue = ANSC_STATUS_FAILURE;
+
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "xOpsReverseSshArgs", TRUE))
+    {
+        bReturnValue = setXOpsReverseSshArgs(pString);
+        return TRUE ;
+    }
+
+    if( AnscEqualString(ParamName, "xOpsReverseSshTrigger", TRUE)) {
+        bReturnValue = setXOpsReverseSshTrigger(pString);
+        return TRUE ;
+
+    }
+
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+
+    return FALSE;
+}
+
+
 /* Maintenance window can be customized for bci routers */
 #if defined(_CBR_PRODUCT_REQ_) || defined(_BCI_FEATURE_REQ)
 

@@ -756,6 +756,34 @@
 			</parameters>
 
 		</object>
+            <object>
+              <name>ReverseSSH</name>
+              <objectType>object</objectType>
+              <functions>
+                <func_SetParamStringValue>ReverseSSH_SetParamStringValue</func_SetParamStringValue>
+                <func_GetParamStringValue>ReverseSSH_GetParamStringValue</func_GetParamStringValue>
+              </functions>
+              <parameters>
+                <parameter>
+                  <name>xOpsReverseSshArgs</name>
+                  <type>string</type>
+                  <syntax>string</syntax>
+                  <writable>true</writable>
+                </parameter>
+                <parameter>
+                  <name>xOpsReverseSshTrigger</name>
+                  <type>string</type>
+                  <syntax>string</syntax>
+                  <writable>true</writable>
+                </parameter>
+                <parameter>
+                  <name>xOpsReverseSshStatus</name>
+                  <type>string</type>
+                  <syntax>string</syntax>
+                  <writable>false</writable>
+                </parameter>
+              </parameters>
+            </object>
 		</objects>
 		</object>
 

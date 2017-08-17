@@ -104,8 +104,16 @@
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 
 #define _ERROR_ "NOT SUPPORTED"
+#define _SSH_ERROR_ "NOT SET"
 
 extern void* g_pDslhDmlAgent;
+
+static const int OK = 1 ;
+static const int NOK = 0 ;
+static char reverseSSHArgs[255] = { "\0" };
+const char* sshCommand = "/lib/rdk/startTunnel.sh";
+const char* rsshPidFile = "/var/tmp/rssh.pid";
+
 
 static int
 PsmGet(const char *param, char *value, int size)
@@ -124,6 +132,101 @@ PsmGet(const char *param, char *value, int size)
 
     return 0;
 }
+
+/**
+ * Form dropbear equivalent options from input arguments accepted by TR-69/181
+ */
+static char* mapArgsToSSHOption(char *revSSHConfig) {
+
+        char* value = NULL;
+        char* option = NULL;
+        option = (char*) calloc(125, sizeof(char));
+
+        if (option) {
+                if ((value = strstr(revSSHConfig, "idletimeout="))) {
+                        sprintf(option, " -I %s -f -N -y -T",
+                                        value + strlen("idletimeout="));
+                } else if ((value = strstr(revSSHConfig, "sshport=")) && !(value =
+                                strstr(revSSHConfig, "revsshport="))) {
+                        value = strstr(revSSHConfig, "sshport=");
+                        sprintf(option, " -p %s", value + strlen("sshport="));
+                } else if ((value = strstr(revSSHConfig, "revsshport="))) {
+                        sprintf(option, " -R %s:[CM_IP]:22", value + strlen("revsshport="));
+                } else {
+                        // Sanity check do not include unrecognised options
+                        free(option);
+                        option = NULL;
+                }
+        }
+
+        return option;
+}
+
+
+/*
+ * Returns string until the first occurrence of delimiter ';' is found.
+ */
+static char* findUntilFirstDelimiter(char* input) {
+
+        char tempCopy[255] = { "\0" };
+        char *tempStr;
+        char* option = NULL;
+        option = (char*) calloc(125, sizeof(char));
+
+        int inputMsgSize = strlen(input);
+        strncpy(tempCopy, input, inputMsgSize);
+        tempStr = (char*) strtok(tempCopy, ";");
+        if (tempStr) {
+                sprintf(option, "%s", tempStr);
+        } else {
+                sprintf(option, "%s", input);
+        }
+        return option;
+}
+
+
+/**
+ * Get login username/target for jump server
+ */
+static char* getHostLogin(char *tempStr) {
+        char* value = NULL;
+        char* hostIp = NULL;
+        char* user = NULL;
+        char* hostLogin = NULL;
+
+        int inputMsgSize = strlen(tempStr);
+        char tempCopy[255] = { "\0" };
+        strncpy(tempCopy, tempStr, inputMsgSize);
+
+        if ((value = strstr(tempStr, "host="))) {
+                hostIp = (char*) calloc(125, sizeof(char));
+                sprintf(hostIp, "%s", value + strlen("host="));
+        }
+
+        if ((value = strstr(tempStr, "user="))) {
+                user = (char*) calloc(125, sizeof(char));
+                sprintf(user, "%s", value + strlen("user="));
+        }
+
+        if (user && hostIp) {
+                user = findUntilFirstDelimiter(user);
+                hostIp = findUntilFirstDelimiter(hostIp);
+
+                hostLogin = (char*) calloc(255, sizeof(char));
+                if (hostLogin) {
+                        sprintf(hostLogin, " %s@%s", user, hostIp);
+                }
+        }
+
+        if (user)
+                free(user);
+
+        if (hostIp)
+                free(hostIp);
+
+        return hostLogin;
+}
+
 
 ANSC_STATUS
 CosaDmlDiGetBootloaderVersion
@@ -950,3 +1053,108 @@ isValidInput
 }
 
 #endif
+
+int setXOpsReverseSshArgs(char* pString) {
+
+    char tempCopy[255] = { "\0" };
+    char* tempStr;
+    char* option;
+    char* hostLogin = NULL;
+
+    int inputMsgSize = strlen(pString);
+
+    hostLogin = getHostLogin(pString);
+    if (!hostLogin) {
+        AnscTraceWarning(("syscfg_get failed\n"));
+        printf("Warning !!! Target host for establishing reverse SSH tunnel is missing !!!\n" );
+        strcpy(reverseSSHArgs,"");
+        return 1;
+    }
+    strncpy(tempCopy, pString, inputMsgSize);
+    tempStr = (char*) strtok(tempCopy, ";");
+    if (NULL != tempStr) {
+        option = mapArgsToSSHOption(tempStr);
+        strcpy(reverseSSHArgs, option);
+    } else {
+        AnscTraceWarning(("No Match Found !!!!\n"));
+        printf("No Match Found !!!!\n");
+    }
+
+    if (option) {
+        free(option);
+    }
+
+    while ((tempStr = strtok(NULL, ";")) != NULL) {
+        option = mapArgsToSSHOption(tempStr);
+        if ( NULL != option) {
+            strcat(reverseSSHArgs, option);
+            free(option);
+        }
+    }
+    strcat(reverseSSHArgs, hostLogin);
+    if (hostLogin)
+        free(hostLogin);
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+
+ANSC_STATUS getXOpsReverseSshArgs
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    AnscCopyString(pValue, reverseSSHArgs);
+    *pulSize = AnscSizeOfString(pValue);
+    return ANSC_STATUS_SUCCESS;
+}
+
+
+int setXOpsReverseSshTrigger(char *input) {
+
+    char *trigger = NULL;
+    char command[255] = { '\0' };
+    if (!input) {
+        printf("Input args are empty \n");
+        AnscTraceWarning(("Input args are empty !!!!\n"));
+    }
+
+    trigger = strstr(input, "start");
+    if (trigger) {
+        if (!isRsshactive()) {
+            strcpy(command, sshCommand);
+            strcat(command, " start");
+            strcat(command, reverseSSHArgs);
+        } else {
+            AnscTraceWarning(("Input args are empty !!!!\n"));
+            return NOK;
+        }
+    } else {
+        strcpy(command, sshCommand);
+        strcat(command, " stop ");
+    }
+    system(command);
+    return OK;
+}
+
+int isRevSshActive(void) {
+    int status = NOK;
+    int pid = 0;
+    int ret = 0 ;
+    FILE* pidFilePtr = NULL;
+    pidFilePtr = fopen(rsshPidFile, "r");
+    if ( NULL != pidFilePtr) {
+        if ( (ret = fscanf(pidFilePtr, "%d", &pid)) > 0 ) {
+            if (pid > 0) {
+                status = OK;
+            } else {
+                status = NOK;
+            }
+        }
+        fclose(pidFilePtr);
+    }
+    return status;
+}
+
