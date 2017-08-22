@@ -16,10 +16,12 @@ fi
 
 # We need not have to restart dnsmasq if this event is set
 # We have set this event immediately after activation while doing 
-# DHCP server restart in network_response.sh
+# DHCP server rnd lighttpd restarts in network_response.sh
 dhcp_activation=`sysevent get dhcp_after_activation`
 if [ "$dhcp_activation" != "flagged" ]
 then
+   echo_t "Redirect URL : Restart lighttpd"
+   /etc/webgui.sh &
    echo_t "Redirect URL : Restarting dnsmasq daemon for redirection"
    cat /var/dnsmasq.conf
    sysevent set dhcp_server-stop

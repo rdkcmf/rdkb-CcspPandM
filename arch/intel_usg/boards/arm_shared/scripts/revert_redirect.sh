@@ -42,6 +42,9 @@ sysevent set dhcp_server-stop
 sleep 1
 sysevent set dhcp_server-start
 
+echo_t "Revert Redirect : Restarting lighttpd"
+/etc/webgui.sh &
+
 #Changes for EMS starts here
 echo_t "Obtaining the SSID and Password for 2.4 and 5 GHz"
 #echo "Getting Device.WiFi.SSID.1.SSID.."
