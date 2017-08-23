@@ -962,7 +962,6 @@ isValidInput
 }
 
 /* Maitenance window can be customized for bci routers */
-#if defined(_CBR_PRODUCT_REQ_)
 
 ANSC_STATUS
 CosaDmlDiGetFirmwareUpgradeStartTime
@@ -1057,7 +1056,7 @@ CosaDmlDiSetFirmwareUpgradeEndTime (char* pString)
     return ANSC_STATUS_SUCCESS;
 }
 
-#endif
+
 
 ANSC_HANDLE CosaProcStatusCreate()
 {

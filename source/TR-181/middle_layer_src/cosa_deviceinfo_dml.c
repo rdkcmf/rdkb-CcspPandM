@@ -4423,7 +4423,7 @@ ReverseSSH_SetParamStringValue
 
 
 /* Maintenance window can be customized for bci routers */
-#if defined(_CBR_PRODUCT_REQ_) || defined(_BCI_FEATURE_REQ)
+
 
 /***********************************************************************
 
@@ -4577,4 +4577,4 @@ MaintenanceWindow_SetParamStringValue
     return bReturnValue;
 }
 
-#endif
+

@@ -347,7 +347,7 @@ isValidInput
     	int							sizeof_wrapped_inputparam    	
     );
 
-#if defined(_CBR_PRODUCT_REQ_) || defined(_BCI_FEATURE_REQ)
+
 ANSC_STATUS
 CosaDmlDiGetFirmwareUpgradeStartTime
     (
@@ -370,7 +370,6 @@ CosaDmlDiSetFirmwareUpgradeStartTime (char* pString);
 ANSC_STATUS
 CosaDmlDiSetFirmwareUpgradeEndTime (char* pString);
 
-#endif
 
 int setXOpsReverseSshTrigger(char *input); 
 int setXOpsReverseSshArgs(char* pString);
