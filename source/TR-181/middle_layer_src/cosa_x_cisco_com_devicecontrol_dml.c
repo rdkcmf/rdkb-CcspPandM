@@ -1936,10 +1936,16 @@ LanMngm_SetParamUlongValue
 
     if (AnscEqualString(ParamName, "LanMode", TRUE))
     {
-	pLanMngm->LanMode = uValuepUlong;
-	CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Setting new LanMode value (bridge-dhcp(1),bridge-static(2),router(3)) as (%d)...\n",
-				uValuepUlong ));	
-	 return TRUE;
+        if(CosaGetParamValueBool("Device.X_RDKCENTRAL-COM_VideoService.Enabled") && uValuepUlong != 3)
+        {
+            CcspTraceWarning(("LanMode setting to Bridge is not supported when VideoService is ENABLED\n"));
+            return FALSE;
+        }
+
+        pLanMngm->LanMode = uValuepUlong;
+        CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Setting new LanMode value (bridge-dhcp(1),bridge-static(2),router(3)) as (%d)...\n",
+        		uValuepUlong ));	
+        return TRUE;
     }
 
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&

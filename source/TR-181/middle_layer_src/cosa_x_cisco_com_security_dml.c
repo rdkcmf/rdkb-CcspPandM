@@ -1721,6 +1721,11 @@ Firewall1_SetParamUlongValue
     if( AnscEqualString(ParamName, "FirewallLevel", TRUE))
     {
         /* save update to backup */
+        if(CosaGetParamValueBool("Device.X_RDKCENTRAL-COM_VideoService.Enabled") && uValue == 1)
+        {
+            CcspTraceWarning(("Firewall Level can not be set to HIGH when VideoService is ENABLED\n"));
+            return FALSE;
+        }
         pCosaDMSecurity->FirewallConfig.FirewallLevel = uValue;
 
         return TRUE;
