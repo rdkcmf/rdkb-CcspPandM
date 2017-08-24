@@ -153,8 +153,11 @@ CosaDmlDiGetCMMacAddress
         PULONG                      pulSize
     )
 {
-
-    return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.MACAddress", pValue, pulSize);
+#ifndef _XF3_PRODUCT_REQ_
+	return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.MACAddress", pValue, pulSize);
+#else
+	return Local_CosaDmlGetParamValueByPathName("Device.DPoE.Mac_address",pValue, pulSize);
+#endif      
 }
 
 /*X_COMCAST-COM_WAN_MAC*/
