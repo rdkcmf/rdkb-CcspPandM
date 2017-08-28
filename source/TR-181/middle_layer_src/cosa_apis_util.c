@@ -1484,7 +1484,7 @@ ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode)
 {
     char retVal[128] = {'\0'};
     ULONG retLen;
-
+        retLen = sizeof( retVal );
     if (pBridgeMode == NULL)
         return ANSC_STATUS_FAILURE;
 
