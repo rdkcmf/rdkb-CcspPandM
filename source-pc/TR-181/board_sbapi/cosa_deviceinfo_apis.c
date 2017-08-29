@@ -1123,7 +1123,7 @@ int setXOpsReverseSshTrigger(char *input) {
 
     trigger = strstr(input, "start");
     if (trigger) {
-        if (!isRsshactive()) {
+        if (!isRevSshActive()) {
             strcpy(command, sshCommand);
             strcat(command, " start");
             strcat(command, reverseSSHArgs);
