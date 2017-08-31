@@ -279,6 +279,9 @@ int _check_PF_range(PCOSA_DML_NAT_PMAPPING pPortMapping){
            pNatPMapping = (PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory( sizeof(g_nat_portmapping[0])*(g_count));
            for(i=1;i<=numOfEntries;i++){
                PSMGetPortMappingRecordValues(pNatPMapping,i);
+               if(pPortMapping->InstanceNumber == pNatPMapping->InstanceNumber){
+                   continue;
+               }
                if(!strcmp(pPortMapping->Description,pNatPMapping->Description) ||
                   (pPortMapping->ExternalPort == pNatPMapping->ExternalPort || (pPortMapping->ExternalPort > pNatPMapping->ExternalPort &&
                   (pPortMapping->ExternalPort <= pNatPMapping->ExternalPortEndRange || pPortMapping->ExternalPortEndRange <= pNatPMapping->ExternalPortEndRange))) ||
@@ -291,6 +294,9 @@ int _check_PF_range(PCOSA_DML_NAT_PMAPPING pPortMapping){
             int i = 0;
             numOfEntries = ((sizeof(g_nat_portmapping[0])*g_count)/sizeof(COSA_DML_NAT_PMAPPING));
             for(i = 0;i < numOfEntries;i++){
+               if(pPortMapping->InstanceNumber == g_nat_portmapping[i].InstanceNumber){
+                   continue;
+               }
                if(!strcmp(pPortMapping->Description,g_nat_portmapping[i].Description) ||
                   (pPortMapping->ExternalPort == g_nat_portmapping[i].ExternalPort || (pPortMapping->ExternalPort > g_nat_portmapping[i].ExternalPort &&
                   (pPortMapping->ExternalPort <= g_nat_portmapping[i].ExternalPortEndRange || pPortMapping->ExternalPortEndRange <= g_nat_portmapping[i].ExternalPortEndRange))) ||
@@ -344,6 +350,9 @@ int _check_PT_range(PCOSA_DML_NAT_PTRIGGER pPortTrigger){
            pNatPTrigger = (PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory(sizeof(g_nat_porttrigger[0])*(pt_count));
            for(i=1;i<=numOfEntries;i++){
                PSMGetPortTriggerRecordValues(pNatPTrigger,i);
+                if(pPortTrigger->InstanceNumber == pNatPTrigger->InstanceNumber){
+                   continue;
+               }
                if(!strcmp(pPortTrigger->Description,pNatPTrigger->Description) ||
                   (pPortTrigger->TriggerPortStart == pNatPTrigger->TriggerPortStart || (pPortTrigger->TriggerPortStart > pNatPTrigger->TriggerPortStart &&
                   (pPortTrigger->TriggerPortStart <= pNatPTrigger->TriggerPortEnd || pPortTrigger->TriggerPortEnd <= pNatPTrigger->TriggerPortEnd))) ||
@@ -359,6 +368,9 @@ int _check_PT_range(PCOSA_DML_NAT_PTRIGGER pPortTrigger){
             int i = 0;
             numOfEntries = (sizeof(g_nat_porttrigger[0])*(pt_count+1))/sizeof(COSA_DML_NAT_PTRIGGER);
             for(i = 0;i < numOfEntries;i++){
+               if(pPortTrigger->InstanceNumber == g_nat_porttrigger[i].InstanceNumber){
+                   continue;
+               }
                if(!strcmp(pPortTrigger->Description,g_nat_porttrigger[i].Description) ||
                   (pPortTrigger->TriggerPortStart == g_nat_porttrigger[i].TriggerPortStart || (pPortTrigger->TriggerPortStart > g_nat_porttrigger[i].TriggerPortStart &&
                   (pPortTrigger->TriggerPortStart <= g_nat_porttrigger[i].TriggerPortEnd || pPortTrigger->TriggerPortEnd <= g_nat_porttrigger[i].TriggerPortEnd))) ||
