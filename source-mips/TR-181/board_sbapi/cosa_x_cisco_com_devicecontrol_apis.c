@@ -1539,6 +1539,9 @@ void restoreAllDBs()
 	system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
 	system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
 	//system("restoreAllDBs"); //Perform factory reset on other components
+        //Need to remove the custom maintenance window
+        system("rm -f /nvram/.FirmwareUpgradeEndTime");
+        system("rm -f /nvram/.FirmwareUpgradeStartTime");
         system("xf3_erase_nvram");
 	return;
 }

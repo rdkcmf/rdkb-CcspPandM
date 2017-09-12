@@ -1603,6 +1603,10 @@ void restoreAllDBs()
 	system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
 	system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
 
+        //Need to remove the custom maintenance window
+        system("rm -f /nvram/.FirmwareUpgradeEndTime");
+        system("rm -f /nvram/.FirmwareUpgradeStartTime");
+
 	// We have syscfg running on the ATOM side when mesh is running. We need to clear out the
     // syscfg.db on the ATOM side during factory reset.
 #if defined(_COSA_INTEL_USG_ARM_)
