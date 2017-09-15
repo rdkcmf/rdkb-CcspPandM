@@ -75,10 +75,9 @@
 
 #include "cosa_deviceinfo_dml.h"
 #include "dml_tr181_custom_cfg.h" 
-#if defined(MOCA_HOME_ISOLATION)
+
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
-#endif
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -4040,10 +4039,28 @@ Feature_GetParamBoolValue
     else
         *pBool = FALSE;
 
-     return TRUE;   
+     return TRUE;
     }
 
 #endif
+    if( AnscEqualString(ParamName, "ContainerSupport", TRUE))
+    {
+       /* Collect Value */
+       char *strValue = NULL;
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+
+
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Container", NULL, &strValue);
+        if (retPsmGet == CCSP_SUCCESS) {
+            *pBool = _ansc_atoi(strValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        }
+        else
+            *pBool = FALSE;
+
+         return TRUE;
+    }
     return FALSE;
 }
 
@@ -4134,6 +4151,20 @@ Feature_SetParamBoolValue
     	return TRUE;
     }
 #endif
+    if( AnscEqualString(ParamName, "ContainerSupport", TRUE))
+    {
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+
+       sprintf(str,"%d",bValue);
+       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Container", ccsp_string, str);
+       if (retPsmGet != CCSP_SUCCESS) {
+       CcspTraceError(("Set failed for ContainerSupport \n"));
+       return ANSC_STATUS_FAILURE;
+       }
+       CcspTraceInfo(("Successfully set ContainerSupport \n"));
+       return TRUE;
+    }
     return FALSE;
 }
 /**********************************************************************  
