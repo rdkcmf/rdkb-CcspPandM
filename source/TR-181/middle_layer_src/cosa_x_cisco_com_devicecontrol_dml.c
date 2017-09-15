@@ -1941,6 +1941,12 @@ LanMngm_SetParamUlongValue
             CcspTraceWarning(("LanMode setting to Bridge is not supported when VideoService is ENABLED\n"));
             return FALSE;
         }
+	
+        if((uValuepUlong == 2) && is_mesh_enabled())
+        {
+            CcspTraceWarning(("BRIDGE_ERROR:Fail to enable Bridge mode when Mesh is on\n"));
+            return FALSE;
+        }
 
         pLanMngm->LanMode = uValuepUlong;
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Setting new LanMode value (bridge-dhcp(1),bridge-static(2),router(3)) as (%d)...\n",
