@@ -1525,7 +1525,7 @@ int parseProcfileParams(char* lineToParse,ifv6Details *detailsToParse,char* inte
 
     struct sockaddr_in6 sAddr6;
     char splitv6[8][5];
-    CcspTraceInfo(("%s, Parse the line read from file\n",__FUNCTION__));
+    CcspTraceDebug(("%s, Parse the line read from file\n",__FUNCTION__));
 
     if (lineToParse == NULL)
            return 0;
@@ -1534,10 +1534,10 @@ int parseProcfileParams(char* lineToParse,ifv6Details *detailsToParse,char* inte
               &detailsToParse->bitsToMask,&detailsToParse->scopeofipv6,&detailsToParse->flags,detailsToParse->intrName) == 6)
     {
 
-       CcspTraceInfo(("%s, Check if interface matches\n",__FUNCTION__));
+       CcspTraceDebug(("%s, Check if interface matches\n",__FUNCTION__));
        if (!strcmp(interface, detailsToParse->intrName))
        {
-           CcspTraceInfo(("%s,Interface matched\n",__FUNCTION__));
+           CcspTraceDebug(("%s,Interface matched\n",__FUNCTION__));
            //Convert the raw interface ip to IPv6 format
            int position,placeholder=0;
            for (position=0; position<strlen(detailsToParse->ipv6_addr); position++)
@@ -1552,11 +1552,11 @@ int parseProcfileParams(char* lineToParse,ifv6Details *detailsToParse,char* inte
                    placeholder++;
                }
            }
-           CcspTraceInfo(("%s,Interface IPv6 address calculation\n",__FUNCTION__));
+           CcspTraceDebug(("%s,Interface IPv6 address calculation\n",__FUNCTION__));
            inet_pton(AF_INET6, detailsToParse->address6,(struct sockaddr *) &sAddr6.sin6_addr);
            sAddr6.sin6_family = AF_INET6;
            inet_ntop(AF_INET6, (struct sockaddr *) &sAddr6.sin6_addr, detailsToParse->address6, sizeof(detailsToParse->address6));
-           CcspTraceInfo(("%s,Interface IPv6 address is: %s\n",__FUNCTION__,detailsToParse->address6));
+           CcspTraceDebug(("%s,Interface IPv6 address is: %s\n",__FUNCTION__,detailsToParse->address6));
 
            if(sscanf(lineToParse, "%4s%4s%4s%4s%4s%4s%4s%4s", splitv6[0], splitv6[1], splitv6[2],
                                                               splitv6[3], splitv6[4],splitv6[5], splitv6[6], splitv6[7])==8)
@@ -1567,19 +1567,19 @@ int parseProcfileParams(char* lineToParse,ifv6Details *detailsToParse,char* inte
                {
                   sprintf(detailsToParse->prefix_v6+strlen(detailsToParse->prefix_v6), "%s:",splitv6[iCount]);
                }
-               CcspTraceInfo(("%s,Interface IPv6 prefix calculation done\n",__FUNCTION__));
+               CcspTraceDebug(("%s,Interface IPv6 prefix calculation done\n",__FUNCTION__));
             }
             return 1;
       }
       else
       {
-         CcspTraceInfo(("%s,Interface not found\n",__FUNCTION__));
+         CcspTraceDebug(("%s,Interface not found\n",__FUNCTION__));
          return 0;
       }
     }
     else
     {
-      CcspTraceInfo(("%s,Interface line read failed\n",__FUNCTION__));
+      CcspTraceError(("%s,Interface line read failed\n",__FUNCTION__));
       return 0;
     }
 }
