@@ -102,6 +102,8 @@
 #include "cosa_deviceinfo_apis_custom.h"
 #include "dml_tr181_custom_cfg.h" 
 
+#define DEVICE_PROPERTIES    "/etc/device.properties"
+
 #ifdef _COSA_SIM_
 
 // this file is in integration_src.intel_usg_arm directory
@@ -1792,3 +1794,74 @@ int isRevSshActive(void) {
     return status;
 }
 
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationPartnerId
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+    ANSC_STATUS retVal = ANSC_STATUS_FAILURE;
+    char fileContent[256] = {0};
+    FILE *deviceFilePtr = NULL;
+    char *pPartnerId = NULL;
+    const char partnerStr[] = "PARTNER_ID";
+
+    if (!pValue || !pulSize || *pulSize <= 64)
+        return ANSC_STATUS_FAILURE;
+
+    strcpy(pValue, "comcast"); // Set the default to comcast in case the partner id is not set in props file
+    *pulSize = AnscSizeOfString(pValue);
+    retVal = ANSC_STATUS_SUCCESS;
+
+    deviceFilePtr = fopen( DEVICE_PROPERTIES, "r" );
+    if (deviceFilePtr)
+    {
+        while (fgets(fileContent, sizeof(fileContent), deviceFilePtr) != NULL)
+        {
+            if ((pPartnerId = strstr(fileContent, partnerStr)) != NULL)
+            {
+                AnscCopyString(pValue ,pPartnerId+sizeof(partnerStr));
+                *pulSize = AnscSizeOfString(pValue);
+                break;
+            }
+        }
+        fclose(deviceFilePtr);
+    }
+    return retVal;
+}
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationTR69CertLocation
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationLocalUIBrandingTable
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationWifiUIBrandingTable
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+    return ANSC_STATUS_SUCCESS;
+}

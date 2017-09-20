@@ -4578,3 +4578,89 @@ MaintenanceWindow_SetParamStringValue
 }
 
 
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_Syndication.
+
+    *  MaintenanceWindow_GetParamStringValue
+***********************************************************************/
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        Syndication_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     0 if succeeded;
+                1 if short of buffer size; (*pUlSize = required size)
+                -1 if not supported.
+
+**********************************************************************/
+ULONG
+Syndication_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    if( AnscEqualString(ParamName, "PartnerId", TRUE))
+    {
+        /* collect value */
+        CosaDmlDiGetSyndicationPartnerId(NULL, pValue,pulSize);
+        return 0;
+    }
+
+    if( AnscEqualString(ParamName, "TR69CertLocation", TRUE))
+    {
+        /* collect value */
+        CosaDmlDiGetSyndicationTR69CertLocation(NULL, pValue,pulSize);
+        return 0;
+    }
+    if( AnscEqualString(ParamName, "LocalUIBrandingTable", TRUE))
+    {
+        /* collect value */
+        CosaDmlDiGetSyndicationLocalUIBrandingTable(NULL, pValue,pulSize);
+        return 0;
+    }
+    if( AnscEqualString(ParamName, "WifiUIBrandingTable", TRUE))
+    {
+        /* collect value */
+        CosaDmlDiGetSyndicationWifiUIBrandingTable(NULL, pValue,pulSize);
+        return 0;
+    }
+
+    return -1;
+}
+
+

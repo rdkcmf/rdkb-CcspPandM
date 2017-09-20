@@ -381,4 +381,36 @@ ANSC_STATUS getXOpsReverseSshArgs
     );
 int isRevSshActive(void);
 
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationPartnerId
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    );
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationTR69CertLocation
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    );
+ANSC_STATUS
+CosaDmlDiGetSyndicationLocalUIBrandingTable
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    );
+ANSC_STATUS
+CosaDmlDiGetSyndicationWifiUIBrandingTable
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    );
+
+
 #endif

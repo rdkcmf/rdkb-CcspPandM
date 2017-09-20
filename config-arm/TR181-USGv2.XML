@@ -730,6 +730,40 @@
         </parameters>
 
       <objects>
+        <object>
+        <name>X_RDKCENTRAL-COM_Syndication</name>
+        <objectType>object</objectType>
+        <functions>
+            <func_GetParamStringValue>Syndication_GetParamStringValue</func_GetParamStringValue>
+        </functions>
+        <parameters>
+            <parameter>
+                <name>PartnerId</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>false</writable>
+            </parameter>
+            <parameter>
+                <name>TR69CertLocation</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>false</writable>
+            </parameter>
+            <parameter>
+                <name>LocalUIBrandingTable</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>false</writable>
+            </parameter>
+            <parameter>
+                <name>WifiUIBrandingTable</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>false</writable>
+            </parameter>
+        </parameters>
+
+        </object> <!--X_RDKCENTRAL-COM_Syndication-->
       	<object>
 			<name>X_RDKCENTRAL-COM_xOpsDeviceMgmt</name>
 
