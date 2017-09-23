@@ -223,8 +223,6 @@ then
 				syscfg commit
 				uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
 				echo_t "Exit_Captive_Mode:$uptime"
-                                echo_t "Network Response: Restart lighttpd"
-                                /etc/webgui.sh "activated" &
 				echo_t "Network Response: Restart DHCP server"
 				sysevent set dhcp_server-stop
 				# Let's make sure dhcp server restarts properly
