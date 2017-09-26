@@ -697,6 +697,12 @@
 	     <writable>true</writable>
         </parameter>
 
+		<parameter>
+			<name>X_RDKCENTRAL-COM_EnableMoCAforXi5</name>
+			<type>boolean</type>
+			<syntax>bool</syntax>
+			<writable>true</writable>
+		</parameter>
         </parameters>
 
       <objects>

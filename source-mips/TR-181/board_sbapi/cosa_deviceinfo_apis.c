@@ -139,6 +139,145 @@
 #define _SSH_ERROR_ "NOT SET"
 
 extern void* g_pDslhDmlAgent;
+extern ANSC_HANDLE bus_handle;
+
+
+ANSC_STATUS
+CosaDmlDiGetEnableMoCAforXi5Flag
+  (
+	  ANSC_HANDLE				  hContext,
+	  BOOLEAN*					  pValue
+  )
+{
+	char buf[ 8 ] = { 0 };
+
+	if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_EnableMoCAforXi5", buf, sizeof( buf ) ) )
+	{
+		if( 0 == strcmp( buf, "true" ) )
+		{
+			*pValue = 1;
+		}
+
+		if( 0 == strcmp( buf, "false" ) )
+		{
+			*pValue = 0;
+		}
+	}
+	else
+	{
+        CcspTraceWarning(("syscfg_get failed\n")); 
+
+		return ANSC_STATUS_FAILURE;
+	}
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiSetEnableMoCAforXi5Flag
+   (
+	   ANSC_HANDLE				   hContext,
+	   BOOLEAN*					   pValue,
+	   BOOLEAN*					   pEnableMoCAforXi5Flag
+   )
+{
+	if ( syscfg_set( NULL, 
+					  "X_RDKCENTRAL-COM_EnableMoCAforXi5", 
+					  ((*pValue == 1 ) ? "true" : "false") )!= 0 ) 
+	{
+		CcspTraceWarning(("syscfg_set failed\n")); 
+		return ANSC_STATUS_FAILURE;
+	}
+	else 
+	{
+		if ( syscfg_commit( ) != 0 ) 
+		{
+			CcspTraceWarning(("syscfg_commit failed\n")); 
+			return ANSC_STATUS_FAILURE;
+		}
+
+		*pEnableMoCAforXi5Flag = *pValue;
+
+		/* 
+		 * We have to enable MoCA based on already xi5 device connected case 
+		 * during enable this feature 
+		 */
+		if( TRUE == *pEnableMoCAforXi5Flag )
+		{
+			CosaDmlDiCheckAndEnableMoCA( );
+		}
+	}  
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+/* CosaDmlDiCheckAndEnableMoCA() */
+void CosaDmlDiCheckAndEnableMoCA( void )
+{
+	FILE *fp 							 	= NULL;
+	BOOL  bMoCAforXi5DeviceConnFileAvail	= FALSE;	
+	
+	if( ( fp = fopen( "/tmp/MoCAforXi5DeviceConnected", "r" ) ) != NULL )
+	{
+		fclose( fp );
+		bMoCAforXi5DeviceConnFileAvail = TRUE;
+	}
+
+	if( bMoCAforXi5DeviceConnFileAvail )
+	{
+		parameterValStruct_t	value		 = { "Device.MoCA.Interface.1.Enable", "true", ccsp_boolean};
+		char					*paramNames[]= { "Device.MoCA.Interface.1.Enable" };
+		parameterValStruct_t	**valStrMoCAEnable;
+		char  compo[ 256 ]			  = "eRT.com.cisco.spvtg.ccsp.moca";
+		char  bus[ 256 ]			  = "/com/cisco/spvtg/ccsp/moca";
+		char* faultParam			  = NULL;
+		int   ret					  = 0, 
+			  nval					  = 0;
+		BOOL  bNeedtoEnablMoCA		  = FALSE;
+		
+		ret = CcspBaseIf_getParameterValues ( bus_handle,
+											  compo,
+											  bus,
+											  paramNames,
+											  1,
+											  &nval,
+											  &valStrMoCAEnable
+											 );
+		if( ret != CCSP_Message_Bus_OK )
+		{
+			CcspTraceError(("%s MoCA-Get %s Failed ret %d\n", __FUNCTION__, ret));
+			return;
+		}
+		
+		if( strcmp( "false", valStrMoCAEnable[0]->parameterValue ) == 0 )
+		{
+			bNeedtoEnablMoCA = TRUE;
+		}
+		
+		free_parameterValStruct_t ( bus_handle, nval, valStrMoCAEnable );
+		
+		/* If MoCA disabled then we have to enable when this case */
+		if( bNeedtoEnablMoCA )
+		{
+			ret = CcspBaseIf_setParameterValues(  bus_handle,
+												  compo,
+												  bus,
+												  0,
+												  0,
+												  &value,
+												  1,
+												  TRUE,
+												  &faultParam );
+		
+			CcspTraceWarning(("RDK_LOG_WARN, xi5 detected enabling moca \n"));
+		
+			if( ret != CCSP_Message_Bus_OK )
+			{
+				CcspTraceWarning(("RDK_LOG_WARN, MoCA-Set %s : Failed ret %d\n",__FUNCTION__,ret));
+			}	
+		}
+	}
+}
 
 static const int OK = 1 ;
 static const int NOK = 0 ;
