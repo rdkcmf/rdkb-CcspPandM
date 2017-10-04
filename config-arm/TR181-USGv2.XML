@@ -907,6 +907,18 @@
 
 				</parameter>
 
+				<parameter>
+
+					<name>CodebigSupport</name>
+
+					<type>boolean</type>
+
+					<syntax>bool</syntax>
+
+					<writable>true</writable>
+
+				</parameter>
+
 			</parameters>
 
                         <objects>

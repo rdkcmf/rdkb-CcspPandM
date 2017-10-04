@@ -4061,6 +4061,22 @@ Feature_GetParamBoolValue
 
          return TRUE;
     }
+    if( AnscEqualString(ParamName, "CodebigSupport", TRUE))
+    {
+         /* Collect Value */
+         char *strValue = NULL;
+         int retPsmGet = CCSP_SUCCESS;
+
+         retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CodebigSupport", NULL, &strValue);
+         if (retPsmGet == CCSP_SUCCESS) {
+             *pBool = _ansc_atoi(strValue);
+             ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+         }
+         else {
+             *pBool = FALSE;
+         }
+         return TRUE;
+    }
     return FALSE;
 }
 
@@ -4163,6 +4179,20 @@ Feature_SetParamBoolValue
        return ANSC_STATUS_FAILURE;
        }
        CcspTraceInfo(("Successfully set ContainerSupport \n"));
+       return TRUE;
+    }
+    if( AnscEqualString(ParamName, "CodebigSupport", TRUE))
+    {
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+
+       sprintf(str,"%d",bValue);
+       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CodebigSupport", ccsp_string, str);
+       if (retPsmGet != CCSP_SUCCESS) {
+       CcspTraceError(("Set failed for CodebigSupport \n"));
+       return ANSC_STATUS_FAILURE;
+       }
+       CcspTraceInfo(("Successfully set CodebigSupport \n"));
        return TRUE;
     }
     return FALSE;
