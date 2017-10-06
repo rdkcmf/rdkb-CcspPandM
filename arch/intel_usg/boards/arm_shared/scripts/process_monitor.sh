@@ -148,15 +148,6 @@ do
 		cd ..
 	fi
 
-	# Checking WEBController's PID
-#	WEBC_PID=`pidof CcspWecbController`
-#	if [ "$WEBC_PID" = "" ]; then
-#		echo_t "RDKB_PROCESS_CRASHED : WECBController_process is not running, restarting it"
-#		#cd wecb/
-#		/usr/bin/CcspWecbController -subsys $Subsys
-#		cd ..
-#	fi
-
 	# Checking RebootManager's PID
 #	Rm_PID=`pidof CcspRmSsp`
 #	if [ "$Rm_PID" = "" ]; then
