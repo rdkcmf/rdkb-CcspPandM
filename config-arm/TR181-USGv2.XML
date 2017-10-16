@@ -956,7 +956,49 @@
 				</parameter>
 
 			</parameters>
+			            <objects>
+              	<object>
+                        <name>SSIDPSWDCTRL</name>
 
+                        <objectType>object</objectType>
+
+                        <functions>
+
+                                <func_GetParamBoolValue>SSIDPSWDCTRL_GetParamBoolValue</func_GetParamBoolValue>
+
+                                <func_SetParamBoolValue>SSIDPSWDCTRL_SetParamBoolValue</func_SetParamBoolValue>
+
+                        </functions>
+
+                        <parameters>
+                                <parameter>
+
+                                        <name>SnmpEnable</name>
+
+                                        <type>boolean</type>
+
+                                        <syntax>bool</syntax>
+
+                                        <writable>true</writable>
+
+                                </parameter>
+						
+                                <parameter>
+
+                                        <name>Tr069Enable</name>
+
+                                        <type>boolean</type>
+
+                                        <syntax>bool</syntax>
+
+                                        <writable>true</writable>
+
+                                </parameter>
+
+                        </parameters>
+
+                </object>
+				</objects>
                         <objects>
               	<object>
                         <name>PeriodicFWCheck</name>
