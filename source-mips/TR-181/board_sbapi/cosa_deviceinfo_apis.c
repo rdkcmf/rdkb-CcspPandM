@@ -129,6 +129,7 @@
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>
+#include <unistd.h>
 
 #include "platform_hal.h"
 #include "autoconf.h"     
@@ -1893,18 +1894,14 @@ int setXOpsReverseSshTrigger(char *input) {
     char command[255] = { '\0' };
     if (!input) {
         AnscTraceWarning(("Input args are empty !!!!\n"));
+        return NOK;
     }
 
     trigger = strstr(input, "start");
     if (trigger) {
-        if (!isRevSshActive()) {
             strcpy(command, sshCommand);
             strcat(command, " start");
             strcat(command, reverseSSHArgs);
-        } else {
-            AnscTraceWarning(("Input args are empty !!!!\n"));
-            return NOK;
-        }
     } else {
         strcpy(command, sshCommand);
         strcat(command, " stop ");
@@ -1922,7 +1919,7 @@ int isRevSshActive(void) {
     pidFilePtr = fopen(rsshPidFile, "r");
     if ( NULL != pidFilePtr) {
         if ( (ret = fscanf(pidFilePtr, "%d", &pid)) > 0 ) {
-            if (pid > 0) {
+            if ( -1 != getpgid(pid)) {
                 status = OK;
             } else {
                 status = NOK;

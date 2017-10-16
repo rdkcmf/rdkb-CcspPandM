@@ -95,6 +95,7 @@
 **************************************************************************/
 
 #include "cosa_deviceinfo_apis.h"
+#include <unistd.h>
 
 #ifdef _COSA_SIM_
 
@@ -1119,18 +1120,14 @@ int setXOpsReverseSshTrigger(char *input) {
     if (!input) {
         printf("Input args are empty \n");
         AnscTraceWarning(("Input args are empty !!!!\n"));
+        return NOK;
     }
 
     trigger = strstr(input, "start");
     if (trigger) {
-        if (!isRevSshActive()) {
             strcpy(command, sshCommand);
             strcat(command, " start");
             strcat(command, reverseSSHArgs);
-        } else {
-            AnscTraceWarning(("Input args are empty !!!!\n"));
-            return NOK;
-        }
     } else {
         strcpy(command, sshCommand);
         strcat(command, " stop ");
@@ -1147,7 +1144,7 @@ int isRevSshActive(void) {
     pidFilePtr = fopen(rsshPidFile, "r");
     if ( NULL != pidFilePtr) {
         if ( (ret = fscanf(pidFilePtr, "%d", &pid)) > 0 ) {
-            if (pid > 0) {
+            if ( -1 != getpgid(pid)) {
                 status = OK;
             } else {
                 status = NOK;
