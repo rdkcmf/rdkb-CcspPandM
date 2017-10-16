@@ -118,7 +118,7 @@ DeviceInfo_GetParamBoolValue_Custom
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
-#ifdef CONFIG_INTERNET2.0
+#ifdef CONFIG_INTERNET2P0
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureWiFi", TRUE))
     {
        *pBool = pMyObject->bWiFiConfigued;
@@ -281,7 +281,7 @@ DeviceInfo_GetParamStringValue_Custom
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
-#ifdef CONFIG_INTERNET2.0   
+#ifdef CONFIG_INTERNET2P0   
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL", TRUE))
     { 
 	syscfg_get(NULL, "redirection_url", pMyObject->WebURL, sizeof(pMyObject->WebURL));
@@ -386,7 +386,7 @@ DeviceInfo_SetParamBoolValue_Custom
 
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
-#ifdef CONFIG_INTERNET2.0
+#ifdef CONFIG_INTERNET2P0
 
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureWiFi", TRUE))
     {

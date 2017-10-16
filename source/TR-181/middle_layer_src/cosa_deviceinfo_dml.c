@@ -856,7 +856,7 @@ DeviceInfo_SetParamStringValue
         AnscCopyString(pMyObject->ProvisioningCode, pString);
         return TRUE;
     }
-#ifdef CONFIG_INTERNET2.0
+#ifdef CONFIG_INTERNET2P0
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL", TRUE))
     {
     char wrapped_inputparam[256]={0};
