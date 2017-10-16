@@ -856,6 +856,7 @@ CosaNatRegSetNatInfo
     char*                           pAliasNat           = NULL;
     char*                           pFolderName         = NULL;
     char                            FolderName[16]      = {0};
+    BOOL                            isPortMapping       = false;
 
 
     if ( !pPoamIrepFoNat )
@@ -907,6 +908,7 @@ CosaNatRegSetNatInfo
         pSLinkEntry       = AnscSListGetNextEntry(pSLinkEntry);
 
         pCosaNat = (PCOSA_DML_NAT_PMAPPING)pCosaNatContext->hContext;
+        isPortMapping = true;
 
         if ( !pCosaNatContext->bNew )
         {
@@ -1013,6 +1015,7 @@ CosaNatRegSetNatInfo
     /* Save next instance number for port trigger */
     if ( TRUE )
     {
+      if(!isPortMapping){
         pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_uint32;
         pSlapVariable->Variant.varUint32 = pMyObject->ulPtNextInstanceNumber;
 
@@ -1029,6 +1032,7 @@ CosaNatRegSetNatInfo
 
         SlapCleanVariable(pSlapVariable);
         SlapInitVariable (pSlapVariable);
+      }
     }
 
     pSLinkEntry = AnscSListGetFirstEntry(&pMyObject->NatPTriggerList);
