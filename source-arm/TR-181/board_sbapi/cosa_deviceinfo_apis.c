@@ -1947,3 +1947,36 @@ CosaDmlDiGetSyndicationWifiUIBrandingTable
     return ANSC_STATUS_SUCCESS;
 }
 
+static void
+FirmwareDownloadAndFactoryReset()
+{
+    if( RETURN_ERR == cm_hal_FWupdateAndFactoryReset())
+    {
+       CcspTraceWarning(("FirmwareDownloadAndFactoryReset Thread:FWupdateAndFactoryReset already in progress\n"));
+    }
+
+}
+
+ANSC_STATUS
+CosaDmlDiSetFirmwareDownloadAndFactoryReset()
+{
+    pthread_t tid;
+    token_t  se_token;
+    int se_fd = s_sysevent_connect(&se_token);
+    char evtValue[64] = {0};
+
+    sysevent_get(se_fd, se_token, "fw_update_inprogress", evtValue, sizeof(evtValue));
+
+    if (0 == strncmp(evtValue, "true", strlen("true")))
+    {
+        CcspTraceWarning(("FirmwareDownloadAndFactoryReset already in progress\n"))
+        return ANSC_STATUS_FAILURE;
+    }
+    sysevent_set(se_fd, se_token,"fw_update_inprogress", "true",0);
+
+    CcspTraceWarning(("Calling FirmwareDownloadAndFactoryReset thread\n"));
+    pthread_create(&tid, NULL, &FirmwareDownloadAndFactoryReset, NULL);
+
+    return ANSC_STATUS_SUCCESS;
+}
+

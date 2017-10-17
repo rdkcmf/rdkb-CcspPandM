@@ -412,5 +412,7 @@ CosaDmlDiGetSyndicationWifiUIBrandingTable
         PULONG                      pulSize
     );
 
+ANSC_STATUS
+CosaDmlDiSetFirmwareDownloadAndFactoryReset(void);
 
 #endif

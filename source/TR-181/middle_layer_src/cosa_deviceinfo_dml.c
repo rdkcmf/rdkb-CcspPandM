@@ -235,6 +235,12 @@ DeviceInfo_GetParamIntValue
     )
     {
     /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FirmwareDownloadAndFactoryReset", TRUE))
+    {
+        *pInt = 0;
+        return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -744,6 +750,18 @@ DeviceInfo_SetParamIntValue
     )
 {
     /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FirmwareDownloadAndFactoryReset", TRUE))
+    {
+        if( iValue == 1)
+        {
+            if(ANSC_STATUS_SUCCESS != CosaDmlDiSetFirmwareDownloadAndFactoryReset())
+            {
+                return FALSE;
+            }
+        }
+	return TRUE;
+    }
+
 	/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }

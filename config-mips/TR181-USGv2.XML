@@ -703,6 +703,12 @@
 			<syntax>bool</syntax>
 			<writable>true</writable>
 		</parameter>
+                <parameter>
+                        <name>X_RDKCENTRAL-COM_FirmwareDownloadAndFactoryReset</name>
+                        <type>int</type>
+                        <syntax>int</syntax>
+                        <writable>true</writable>
+                </parameter>
         </parameters>
 
       <objects>
