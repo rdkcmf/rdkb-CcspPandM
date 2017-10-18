@@ -838,7 +838,7 @@
             </object>
 		</objects>
 		</object>
-
+		
         <object>
             <name>X_RDKCENTRAL-COM_RFC</name>
             <objectType>object</objectType>
@@ -857,6 +857,12 @@
                     <parameters>
                         <parameter>
                             <name>CodebigSupport</name>
+                            <type>boolean</type>
+                            <syntax>bool</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                            <name>HomeNetworkIsolation</name>
                             <type>boolean</type>
                             <syntax>bool</syntax>
                             <writable>true</writable>
