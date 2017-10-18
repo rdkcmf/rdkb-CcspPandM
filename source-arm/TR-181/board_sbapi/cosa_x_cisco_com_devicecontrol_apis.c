@@ -3385,7 +3385,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         memcpy(&(lan.netmask), str, sizeof(str));
         Utopia_SetLanSettings(&utctx, &lan);
 
-#if defined(_COSA_INTEL_USG_ARM_) && defined(ENABLE_FEATURE_MESHWIFI)
+#if defined(_COSA_INTEL_USG_ARM_) && !defined(INTEL_PUMA7) && defined(ENABLE_FEATURE_MESHWIFI)
         // Send subnet change message to ATOM so that MESH is notified.
         {
             #define DATA_SIZE 1024
@@ -3444,6 +3444,34 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
                     _exit(EXIT_FAILURE);   // exec never returns
                 }
             }
+        }
+#else if defined(ENABLE_FEATURE_MESHWIFI)
+        // In all the other platforms XB6, XF3, etc. PandM is running on the same processor as on Mesh, so we just need to
+        // send the sysevent call directly.
+        {
+            #define DATA_SIZE 1024
+
+			pid_t pid = fork();
+
+			if (pid == -1)
+			{
+				// error, failed to fork()
+			}
+			else if (pid > 0)
+			{
+				int status;
+				waitpid(pid, &status, 0); // wait here until the child completes
+			}
+			else
+			{
+				// we are the child
+				char cmd[DATA_SIZE] = {0};
+				CcspTraceInfo(("Sending subnet_change notification \n"));
+				sprintf(cmd, "RDK|%s|%s", lan.ipaddr, lan.netmask);
+				char *args[] = {"/usr/bin/sysevent", "set", "subnet_change", cmd, (char *) 0 };
+				execv(args[0], args);
+				_exit(EXIT_FAILURE);   // exec never returns
+			}
         }
 #endif
 
