@@ -174,6 +174,7 @@ CosaDeviceInfoInitialize
 
 	CosaDmlDiGetAndProcessDhcpServDetectionFlag( pMyObject, &pMyObject->bDhcpServDetectEnable );
 	pMyObject->bMultipleGW	= FALSE;
+	CosaDmlDiGet_DeferFWDownloadReboot(&pMyObject->DeferFWDownloadReboot);
 
     return returnStatus;
 }

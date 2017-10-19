@@ -4862,4 +4862,242 @@ Syndication_GetParamStringValue
     return -1;
 }
 
+/***********************************************************************
 
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.RPC.
+
+    *  RPC_GetParamUlongValue
+    *  RPC_SetParamUlongValue
+    *  RPC_GetParamStringValue
+    *  RPC_SetParamStringValue
+
+***********************************************************************/
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        RPC_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+RPC_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+	PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+	
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "DeferFWDownloadReboot", TRUE))
+    {
+        /* collect value */
+        *puLong = pMyObject->DeferFWDownloadReboot;
+        return TRUE;
+    }	
+    if( AnscEqualString(ParamName, "RebootPendingNotification", TRUE))
+    {
+        /* collect value */
+        *puLong = 0;
+        return TRUE;
+    }	    
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        RPC_SetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG                       uValue
+            );
+
+    description:
+
+        This function is called to set ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG                       uValue
+                The updated ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+RPC_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    )
+{
+	PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+	
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "DeferFWDownloadReboot", TRUE))
+    {
+        /* collect value */
+		CosaDmlDiSet_DeferFWDownloadReboot(&(pMyObject->DeferFWDownloadReboot),uValue);
+		return TRUE;
+    } 
+    if( AnscEqualString(ParamName, "RebootPendingNotification", TRUE))
+    {
+        /* collect value */
+        char buff[64] = {0};
+        sprintf(buff,"Delay=%d",uValue);
+	Send_Notification_Task(buff);
+        return TRUE;
+    }	       
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        RPC_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     0 if succeeded;
+                1 if short of buffer size; (*pUlSize = required size)
+                -1 if not supported.
+
+**********************************************************************/
+ULONG
+RPC_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "RebootDevice", TRUE) )
+    {
+        /* collect value */
+		AnscCopyString(pValue,"");
+        return 0;
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return -1;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        RPC_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+RPC_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+
+    /* check the parameter name and set the corresponding value */
+
+    if( AnscEqualString(ParamName, "RebootDevice", TRUE))
+    {
+        CosaDmlDiSet_RebootDevice(pString);
+        return TRUE;
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}

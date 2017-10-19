@@ -363,6 +363,10 @@ CosaBackEndManagerInitialize
     //Unknown Reboot Reason 
     
     CheckAndSetRebootReason();
+
+    printf("Calling PARODUS!\n");
+    CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PARODUS call!\n")); 
+    initparodusTask();
     
     return returnStatus;
 }

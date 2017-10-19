@@ -101,7 +101,7 @@
 #include "cosa_deviceinfo_apis.h"
 #include "cosa_deviceinfo_apis_custom.h"
 #include "dml_tr181_custom_cfg.h" 
-
+#include "cosa_x_cisco_com_devicecontrol_apis.h"
 #define DEVICE_PROPERTIES    "/etc/device.properties"
 
 #ifdef _PLATFORM_RASPBERRYPI_
@@ -1945,6 +1945,200 @@ CosaDmlDiGetSyndicationWifiUIBrandingTable
     )
 {
     return ANSC_STATUS_SUCCESS;
+}
+
+CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong)
+{
+	char buf[8] = { 0 };
+
+	if( 0 == syscfg_get( NULL, "DeferFWDownloadReboot", buf, sizeof( buf ) ) )
+	{
+		*puLong = atoi(buf);
+	}
+	else
+	{
+        CcspTraceWarning(("syscfg_get failed\n")); 
+	}
+
+}
+
+CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uValue)
+{
+	char buf[8] = { 0 };
+	
+	sprintf(buf,"%d",uValue);
+	if ( syscfg_set( NULL,"DeferFWDownloadReboot",buf)!= 0 ) 
+	{
+		CcspTraceWarning(("syscfg_set failed\n"));
+	}
+	else 
+	{
+		if ( syscfg_commit( ) != 0 ) 
+		{
+			CcspTraceWarning(("syscfg_commit failed\n")); 
+		}
+		else
+		{
+			*DeferFWDownloadReboot = 	uValue;
+		}
+	}
+}
+
+void* RebootDevice_thread(void* buff)
+{
+	char pValue[128],source_str[64];
+	char* source = NULL;
+	int router, wifi, voip, dect, moca, all;
+    int delay_time = 0;
+
+	pthread_detach(pthread_self());
+	
+	memset(pValue,0,sizeof(pValue));
+	if(buff)
+	{
+		strcpy(pValue,buff);
+		free(buff);		
+	}
+
+    router = wifi = voip = dect = moca = all = 0;
+    if (strstr(pValue, "Router") != NULL) {
+        router = 1;
+    }
+    if (strstr(pValue, "Wifi") != NULL) {
+        wifi = 1;
+    }
+    if (strstr(pValue, "VoIP") != NULL) {
+        voip = 1;
+    }
+    if (strstr(pValue, "Dect") != NULL) {
+        dect = 1;
+    }
+    if (strstr(pValue, "MoCA") != NULL) {
+        moca = 1;
+    }
+    if (strstr(pValue, "Device") != NULL) {
+        all = 1;
+    }
+	
+    if (strstr(pValue, "delay=") != NULL) {
+        delay_time = atoi(strstr(pValue, "delay=") + strlen("delay="));
+    }
+	
+	if(strstr(pValue, "source=") != NULL){
+		source = strstr(pValue, "source=") + strlen("source=");
+		int i=0;
+		while(source[i] != ' ' && source[i] != '\0'){
+			source_str[i] = source[i];
+			i++;
+		}
+		source_str[i] = '\0';
+	}
+	else{
+		strcpy(source_str,"webpa-reboot");
+	}
+
+	CcspTraceInfo(("reboot source - %s\n",source_str));
+	
+	if(!router && !wifi && !voip && !dect && !moca && !all){
+		all = 1;
+	}
+	
+    if (router && wifi && voip && dect && moca) {
+        all = 1;
+    }
+	
+	if(delay_time)
+	{
+		CcspTraceInfo(("Sleeping for %d seconds before reboot\n",delay_time));
+		sleep (delay_time);
+	}
+		
+    if (all) {
+
+		char buf[7] = {0};
+		int rebootcount = 0;
+    	syscfg_get( NULL, "reboot_count", buf, sizeof(buf));
+		rebootcount = atoi(buf);
+		rebootcount++;
+		memset(buf,0,sizeof(buf));
+		snprintf(buf,sizeof(buf),"%d",rebootcount);
+		syscfg_set(NULL, "reboot_count", buf);
+
+		FILE *fp = NULL;
+		memset(buf,0,sizeof(buf));
+		sprintf(buf, "date");
+		char buffer[50] = {0};
+		memset(buffer,0,sizeof(buffer));
+        fp = popen(buf, "r");
+		if( fp != NULL) {         
+		    while(fgets(buffer, sizeof(buffer), fp)!=NULL){
+			    buffer[strlen(buffer) - 1] = '\0';
+				syscfg_set(NULL, "latest_reboot_time", buffer);
+			}
+			pclose(fp);
+		}
+
+		char tmp[7] = {0};
+		syscfg_get(NULL, "restore_reboot", tmp, sizeof(tmp));
+
+		if(strcmp(tmp,"true") != 0)
+		{
+			if (syscfg_commit() != 0)
+			{
+				CcspTraceWarning(("syscfg_commit failed\n"));
+			}
+		}
+		else
+		{
+			CcspTraceWarning(("RebootDevice:Device is going to reboot to restore configuration \n"));
+		}
+		
+		CcspTraceWarning(("REBOOT_COUNT : %d Time : %s  \n",rebootcount,buffer));
+		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
+		system("/fss/gw/rdklogger/backupLogs.sh");
+		return NULL;
+    }
+
+    if (router) {
+        fprintf(stderr, "Router is going to reboot\n");
+		CcspTraceWarning(("RebootDevice:Router is going to reboot\n"));
+
+		pthread_t tid2;
+		pthread_create(&tid2, NULL, &CosaDmlDcRestartRouter, NULL); 
+    }
+
+    if (wifi) {
+		fprintf(stderr, "WiFi is going to reboot\n");
+		CcspTraceWarning(("RebootDevice:WiFi is going to reboot\n"));
+		
+		pthread_t tid;
+		pthread_create(&tid, NULL, &CosaDmlDcRebootWifi, NULL);
+    }
+    
+    if (voip) {
+        fprintf(stderr, "VoIP is going to reboot\n");
+        // TODO: 
+    }
+    if (dect) {
+        fprintf(stderr, "Dect is going to reboot\n");
+        // TODO: 
+    }
+    if (moca) {
+        fprintf(stderr, "MoCA is going to reboot\n");
+        // TODO: 
+    }
+	
+}
+
+CosaDmlDiSet_RebootDevice(char* pValue)
+{
+	pthread_t tid;
+
+	char* buff = (char*) malloc(strlen(pValue)+1);
+	memset(buff,0,strlen(pValue)+1);
+	strcpy(buff,pValue);
+	pthread_create(&tid, NULL, &RebootDevice_thread, (void*) buff); 
+    
 }
 
 static void

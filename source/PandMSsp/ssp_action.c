@@ -452,3 +452,10 @@ ssp_PnmCCDmApplyChanges
     return returnStatus;
 }
 
+#ifdef PARODUS_ENABLE
+const char *rdk_logger_module_fetch(void)
+{
+    return "LOG.RDK.PAM";
+}
+#endif
+

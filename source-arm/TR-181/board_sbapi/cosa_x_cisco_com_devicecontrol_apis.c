@@ -1279,7 +1279,7 @@ CosaDmlDcSetDeviceConfigIgnore
     return ANSC_STATUS_SUCCESS;
 }
 
-static ANSC_STATUS
+ANSC_STATUS
 CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 {
 	CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
@@ -1416,7 +1416,7 @@ static int openCommonSyseventConnection() {
     return 0;
 }
 
-static ANSC_STATUS CosaDmlDcRestartRouter()
+ANSC_STATUS CosaDmlDcRestartRouter()
 {
     char statusValue[256] = {0};
     int count = 0;

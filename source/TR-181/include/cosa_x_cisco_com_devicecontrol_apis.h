@@ -713,4 +713,7 @@ CosaDmlDcSetErouterEnabled
         BOOLEAN                     bFlag
     );
 
+ANSC_STATUS CosaDmlDcRebootWifi(ANSC_HANDLE   hContext);
+ANSC_STATUS CosaDmlDcRestartRouter();
+
 #endif

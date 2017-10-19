@@ -583,4 +583,49 @@ NetworkProperties_GetParamStringValue
         ULONG*                      pUlSize
     );
 	
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.RPC.
+
+    *  RPC_GetParamUlongValue
+    *  RPC_SetParamUlongValue
+    *  RPC_GetParamStringValue
+    *  RPC_SetParamStringValue
+
+***********************************************************************/
+BOOL
+RPC_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    );
+	
+BOOL
+RPC_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    );
+	
+ULONG
+RPC_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    );
+
+BOOL
+RPC_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
 #endif
