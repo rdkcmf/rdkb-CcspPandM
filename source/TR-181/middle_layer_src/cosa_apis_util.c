@@ -1521,26 +1521,18 @@ int getIpv6Scope(int scope_v6)
 {
     int scopeToReturn = scope_v6 & IPV6_ADDR_SCOPE_MASK;
 
-    if(scopeToReturn == 0)
-       return IPV6_ADDR_SCOPE_GLOBAL;
-    else if( scopeToReturn == IPV6_ADDR_LINKLOCAL)
-       return IPV6_ADDR_LINKLOCAL;
-    else if( scopeToReturn == IPV6_ADDR_SCOPE_LINKLOCAL)
-       return IPV6_ADDR_SCOPE_LINKLOCAL;
-    else if( scopeToReturn == IPV6_ADDR_SITELOCAL)
-       return IPV6_ADDR_SITELOCAL;
-    else if(scopeToReturn == IPV6_ADDR_SCOPE_SITELOCAL)
-        return IPV6_ADDR_SCOPE_SITELOCAL;
-    else if( scopeToReturn == IPV6_ADDR_COMPATv4)
-        return IPV6_ADDR_COMPATv4;
-    else if( scopeToReturn == IPV6_ADDR_SCOPE_COMPATv4)
-        return  IPV6_ADDR_SCOPE_COMPATv4;
-    else if( scopeToReturn == IPV6_ADDR_LOOPBACK)
-        return IPV6_ADDR_LOOPBACK;
-    else if( scopeToReturn == IPV6_ADDR_SCOPE_LOOPBACK)
-        return IPV6_ADDR_SCOPE_LOOPBACK;
-    else
-        return IPV6_ADDR_SCOPE_UNKNOWN;
+            if(scopeToReturn == 0)
+                return IPV6_ADDR_SCOPE_GLOBAL;                          
+            else if( scopeToReturn == IPV6_ADDR_LINKLOCAL)
+                return IPV6_ADDR_SCOPE_LINKLOCAL;
+            else if( scopeToReturn == IPV6_ADDR_SITELOCAL)
+                return IPV6_ADDR_SCOPE_SITELOCAL;
+            else if( scopeToReturn == IPV6_ADDR_COMPATv4)
+                return IPV6_ADDR_SCOPE_COMPATv4;
+            else if( scopeToReturn == IPV6_ADDR_LOOPBACK)
+                return IPV6_ADDR_SCOPE_LOOPBACK;
+            else
+                return IPV6_ADDR_SCOPE_UNKNOWN;
 }
 
 int parseProcfileParams(char* lineToParse,ifv6Details *detailsToParse,char* interface)
@@ -1563,7 +1555,7 @@ int parseProcfileParams(char* lineToParse,ifv6Details *detailsToParse,char* inte
            CcspTraceDebug(("%s,Interface matched\n",__FUNCTION__));
            //Convert the raw interface ip to IPv6 format
            int position,placeholder=0;
-           for (position=0; position<strlen(detailsToParse->ipv6_addr); position++)
+           for (position=0; detailsToParse->ipv6_addr[position] != '\0'; position++)
            {
                detailsToParse->address6[placeholder] = detailsToParse->ipv6_addr[position];
                placeholder++;
@@ -1575,7 +1567,9 @@ int parseProcfileParams(char* lineToParse,ifv6Details *detailsToParse,char* inte
                    placeholder++;
                }
            }
+           detailsToParse->address6[placeholder] = '\0';
            CcspTraceDebug(("%s,Interface IPv6 address calculation\n",__FUNCTION__));
+           CcspTraceDebug(("IPv6 address is %s \n",detailsToParse->address6));
            inet_pton(AF_INET6, detailsToParse->address6,(struct sockaddr *) &sAddr6.sin6_addr);
            sAddr6.sin6_family = AF_INET6;
            inet_ntop(AF_INET6, (struct sockaddr *) &sAddr6.sin6_addr, detailsToParse->address6, sizeof(detailsToParse->address6));
