@@ -4861,7 +4861,7 @@ Syndication_GetParamStringValue
 
     return -1;
 }
-
+#ifdef _COSA_INTEL_XB3_ARM_
 /***********************************************************************
 
  APIs for Object:
@@ -5103,3 +5103,4 @@ RPC_SetParamStringValue
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
+#endif

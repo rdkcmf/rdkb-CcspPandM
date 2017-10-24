@@ -1776,6 +1776,38 @@ int setUnknownRebootReason()
 		    }        
 }
 
+setLastRebootReason(char* reason)
+{
+
+	int val = 1;
+	char buf[8];
+	snprintf(buf,sizeof(buf),"%d",val);
+
+	if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", reason) != 0)
+	{
+		AnscTraceWarning(("syscfg_set failed for Reason\n"));
+	}
+	else
+	{
+		if (syscfg_commit() != 0)
+		{
+			AnscTraceWarning(("syscfg_commit failed for Reason\n"));
+		}
+
+	}
+
+	if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0)
+	{
+		AnscTraceWarning(("syscfg_set failed for Counter\n"));
+	}
+	else
+	{
+		if (syscfg_commit() != 0)
+		{
+			AnscTraceWarning(("syscfg_commit failed for Counter\n"));
+		}
+	}
+}
 
 int setXOpsReverseSshArgs(char* pString) {
 
@@ -2092,7 +2124,7 @@ void* RebootDevice_thread(void* buff)
 		{
 			CcspTraceWarning(("RebootDevice:Device is going to reboot to restore configuration \n"));
 		}
-		
+		setLastRebootReason(source_str);
 		CcspTraceWarning(("REBOOT_COUNT : %d Time : %s  \n",rebootcount,buffer));
 		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
 		system("/fss/gw/rdklogger/backupLogs.sh");
