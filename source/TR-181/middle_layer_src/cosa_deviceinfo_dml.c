@@ -4984,7 +4984,7 @@ RPC_SetParamUlongValue
         /* collect value */
 #ifdef PARODUS_ENABLE
         char buff[64] = {0};
-        sprintf(buff,"Delay=%d",uValue);
+        sprintf(buff,"%d",uValue);
 	Send_Notification_Task(buff);
 #endif
         return TRUE;

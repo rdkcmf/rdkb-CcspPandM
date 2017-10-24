@@ -221,7 +221,10 @@ void* sendNotification(void* pValue)
     char source[MAX_PARAMETERNAME_LEN/2] = {'\0'};
     cJSON *notifyPayload = cJSON_CreateObject();
     char  * stringifiedNotifyPayload;
+    unsigned long bootTime;
+
     char buff[64] = {0};
+    char dest[512] = {'\0'};
     
     pthread_detach(pthread_self());
 
@@ -237,8 +240,12 @@ void* sendNotification(void* pValue)
     CcspTraceDebug(("deviceMAC: %s\n",deviceMAC));
     snprintf(source, sizeof(source), "mac:%s", deviceMAC);
 
+    bootTime = CosaDmlDiGetBootTime(NULL);
+
     cJSON_AddStringToObject(notifyPayload,"device_id", source);
-    cJSON_AddStringToObject(notifyPayload,"pam", buff);
+    cJSON_AddStringToObject(notifyPayload,"status", "reboot-pending");
+    cJSON_AddNumberToObject(notifyPayload,"delay", atoi(buff));
+    cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
     stringifiedNotifyPayload = cJSON_PrintUnformatted(notifyPayload);
     CcspTraceInfo(("Notification payload %s\n",stringifiedNotifyPayload));
     
@@ -248,7 +255,9 @@ void* sendNotification(void* pValue)
     notif_wrp_msg ->msg_type = WRP_MSG_TYPE__EVENT;
     notif_wrp_msg ->u.event.source = strdup(source);
     CcspTraceDebug(("source: %s\n",notif_wrp_msg ->u.event.source));
-    notif_wrp_msg ->u.event.dest = strdup("event:REBOOT_NOTIFICATION");
+
+    snprintf(dest,sizeof(dest),"event:device-status/mac:%s/reboot-pending/%d/%s",deviceMAC,bootTime, buff);
+    notif_wrp_msg ->u.event.dest = strdup(dest);
     CcspTraceDebug(("destination: %s\n", notif_wrp_msg ->u.event.dest));
     notif_wrp_msg->u.event.content_type = strdup(CONTENT_TYPE_JSON);
     CcspTraceDebug(("content_type is %s\n",notif_wrp_msg->u.event.content_type));
