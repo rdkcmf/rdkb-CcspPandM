@@ -2033,31 +2033,31 @@ void* RebootDevice_thread(void* buff)
 	}
 
     router = wifi = voip = dect = moca = all = 0;
-    if (strstr(pValue, "Router") != NULL) {
+    if (strcasestr(pValue, "Router") != NULL) {
         router = 1;
     }
-    if (strstr(pValue, "Wifi") != NULL) {
+    if (strcasestr(pValue, "Wifi") != NULL) {
         wifi = 1;
     }
-    if (strstr(pValue, "VoIP") != NULL) {
+    if (strcasestr(pValue, "VoIP") != NULL) {
         voip = 1;
     }
-    if (strstr(pValue, "Dect") != NULL) {
+    if (strcasestr(pValue, "Dect") != NULL) {
         dect = 1;
     }
-    if (strstr(pValue, "MoCA") != NULL) {
+    if (strcasestr(pValue, "MoCA") != NULL) {
         moca = 1;
     }
-    if (strstr(pValue, "Device") != NULL) {
+    if (strcasestr(pValue, "Device") != NULL) {
         all = 1;
     }
 	
-    if (strstr(pValue, "delay=") != NULL) {
-        delay_time = atoi(strstr(pValue, "delay=") + strlen("delay="));
+    if (strcasestr(pValue, "delay=") != NULL) {
+        delay_time = atoi(strcasestr(pValue, "delay=") + strlen("delay="));
     }
 	
-	if(strstr(pValue, "source=") != NULL){
-		source = strstr(pValue, "source=") + strlen("source=");
+	if(strcasestr(pValue, "source=") != NULL){
+		source = strcasestr(pValue, "source=") + strlen("source=");
 		int i=0;
 		while(source[i] != ' ' && source[i] != '\0'){
 			source_str[i] = source[i];
