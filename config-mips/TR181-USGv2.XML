@@ -829,6 +829,34 @@
             </object>
 		</objects>
 		</object>
+
+        <object>
+            <name>X_RDKCENTRAL-COM_RFC</name>
+            <objectType>object</objectType>
+            <functions></functions>
+            <parameters></parameters>
+
+            <objects>
+                <object>
+                    <name>Feature</name>
+                    <objectType>object</objectType>
+                    <functions>
+                        <func_GetParamBoolValue>Feature_GetParamBoolValue</func_GetParamBoolValue>
+                        <func_SetParamBoolValue>Feature_SetParamBoolValue</func_SetParamBoolValue>
+                    </functions>
+
+                    <parameters>
+                        <parameter>
+                            <name>CodebigSupport</name>
+                            <type>boolean</type>
+                            <syntax>bool</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                    </parameters>
+                </object>
+            </objects>
+        </object>
+
         <object>
 
             <name>X_RDKCENTRAL-COM_MaintenanceWindow</name>
