@@ -49,7 +49,7 @@
 #define SWITCH_PORT_2_NAME "sw_3"
 #define SWITCH_PORT_3_NAME "sw_4"
 
-#if defined (_CBR_PRODUCT_REQ_)
+#if defined (_CBR_PRODUCT_REQ_) || defined(INTEL_PUMA7)
     #define SWITCH_PORT_4_NAME "sw_5"
     #define SWITCH_PORT_5_NAME "sw_6"
     #define SWITCH_PORT_6_NAME "sw_7"
@@ -63,6 +63,14 @@
 
 #define LAN_ETHERNET_IFNAME "lan0"
 #define BRLAN_ETHERNET_IFNAME "brlan0"
+
+#if defined(INTEL_PUMA7)
+#define LAN_ETHERNET_SGMII0 "nsgmii0"
+#define LAN_ETHERNET_SGMII1 "nsgmii1"
+#define LAN_ETHERNET_RGMII2 "nrgmii2"
+#define LAN_ETHERNET_RGMII3 "nrgmii3"
+#define LAN_ETHERNET_MOCA   "nmoca0"
+#endif
 
 #ifdef _COSA_INTEL_USG_ARM_
 #define WAN_ETHERNET_IFNAME "erouter0"

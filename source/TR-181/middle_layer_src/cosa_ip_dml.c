@@ -814,19 +814,16 @@ Interface2_AddEntry
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_IP_IF_FULL2           pIPInterface  = (PCOSA_DML_IP_IF_FULL2)NULL;
 
-#ifndef _COSA_SIM_
-    if (!CosaIpifGetSetSupported("addentry"))
-    {
-        return NULL;
-    }
-#endif
-
     pIPInterface = (PCOSA_DML_IP_IF_FULL2)AnscAllocateMemory(sizeof(COSA_DML_IP_IF_FULL2));
 
     if ( !pIPInterface )
     {
         return NULL;
     }
+    /*
+     * Adding default Interface type
+     */
+    pIPInterface->Cfg.IfType   = COSA_DML_IP_IF_TYPE_Normal;
 
     _ansc_sprintf(pIPInterface->Cfg.Alias, "Interface%d", pMyObject->ulNextInterfaceInsNum);
 
@@ -917,14 +914,6 @@ Interface2_DelEntry
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_IP_IF_FULL2           pIPInterface  = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
 
-#ifndef _COSA_SIM_
-    if (!CosaIpifGetSetSupported("delentry"))
-    {
-        return ANSC_STATUS_FAILURE;
-    }
-#endif
-
-    
     CosaDmlIpIfDelEntry(pMyObject->hSbContext, pIPInterface->Cfg.InstanceNumber);
 
     AnscSListPopEntryByLink(pIPIFHead, &pCosaContext->Linkage);
@@ -1021,7 +1010,7 @@ Interface2_GetParamBoolValue
     if( AnscEqualString(ParamName, "IPv6Enable", TRUE))
     {
         /* collect value */
-        *pBool = TRUE;
+        *pBool = pIPInterface->Cfg.bIPv6Enabled;
         return TRUE;
     }
 
@@ -1401,13 +1390,6 @@ Interface2_SetParamBoolValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
 
-#ifndef _COSA_SIM_
-    if (!CosaIpifGetSetSupported(ParamName))
-    {
-        return FALSE;
-    }
-#endif
-
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -1448,7 +1430,9 @@ Interface2_SetParamBoolValue
 
     if( AnscEqualString(ParamName, "IPv6Enable", TRUE))
     {
-        return FALSE;
+        /* save update to backup */
+        pIPInterface ->Cfg.bIPv6Enabled = bValue;
+        return TRUE;
     }
 
     if( AnscEqualString(ParamName, "ULAEnable", TRUE))
@@ -1552,13 +1536,6 @@ Interface2_SetParamUlongValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
 
-#ifndef _COSA_SIM_
-    if (!CosaIpifGetSetSupported(ParamName))
-    {
-        return FALSE;
-    }
-#endif
-
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "MaxMTUSize", TRUE))
     {
@@ -1623,13 +1600,6 @@ Interface2_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
 
-#ifndef _COSA_SIM_
-    if (!CosaIpifGetSetSupported(ParamName))
-    {
-        return FALSE;
-    }
-#endif
-
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
@@ -1651,10 +1621,9 @@ Interface2_SetParamStringValue
             ULONG                           ulIndex;
             UCHAR                           ucEntryParamName[256]       = {0};
             UCHAR                           ucEntryNameValue[256]       = {0};
-            int                             size;
-            parameterValStruct_t            varStruct;
-
-            AnscTraceWarning
+            ULONG                           ulEntryNameLen = 256;
+ 
+           AnscTraceWarning
                 ((
                     "%s -- IpIf %d, LinkName is %s, EthLink %d, LowerLayers %s\n",
                     __FUNCTION__,
@@ -1683,7 +1652,7 @@ Interface2_SetParamStringValue
                 /* Extract Instance Number */
                 ulIndex = _ansc_strlen(pString) - 1;
 
-                while ( (ulIndex != 0) && (pString[ulIndex] != '.') )
+                while ( (ulIndex != 0) && (pString[ulIndex -1] != '.') )
                 {
                     ulIndex--;
                 }
@@ -1700,11 +1669,8 @@ Interface2_SetParamStringValue
                 /* Retrieve LinkName */
                 _ansc_sprintf(ucEntryParamName, "%s.%s", pString, "Name");
 
-                varStruct.parameterName  = ucEntryParamName;
-                varStruct.parameterValue = ucEntryNameValue;
-
-                if ( ANSC_STATUS_SUCCESS == 
-                        COSAGetParamValueByPathName(&varStruct, &size) )
+                ulEntryNameLen = sizeof(ucEntryNameValue);
+                if ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen))
                 {
                     AnscCopyString(pIPInterface->Cfg.LinkName, ucEntryNameValue);
                 }
@@ -2041,13 +2007,6 @@ IPv4Address_AddEntry
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr        = (PCOSA_DML_IP_V4ADDR)NULL;
 
-#ifndef _COSA_SIM_
-    if (!CosaIpifGetSetSupported("ipv4addr_addentry"))
-    {
-        return NULL;
-    }
-#endif
-
     pIPv4Addr = (PCOSA_DML_IP_V4ADDR)AnscAllocateMemory(sizeof(COSA_DML_IP_V4ADDR));
 
     if ( !pIPv4Addr )
@@ -2141,13 +2100,6 @@ IPv4Address_DelEntry
     PCOSA_DML_IP_IF_FULL2           pIPInterface    = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr       = (PCOSA_DML_IP_V4ADDR)pSubCosaContext->hContext;
-
-#ifndef _COSA_SIM_
-    if (!CosaIpifGetSetSupported("ipv4addr_delentry"))
-    {
-        return ANSC_STATUS_FAILURE;
-    }
-#endif
 
     CosaDmlIpIfDelV4Addr(pMyObject->hSbContext, pIPInterface->Cfg.InstanceNumber, pIPv4Addr);
 
@@ -2464,13 +2416,7 @@ IPv4Address_SetParamBoolValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr    = (PCOSA_DML_IP_V4ADDR)pCosaContext->hContext;
-#ifndef _COSA_SIM_
-    if (!CosaIpifGetSetSupported(ParamName))
-    {
-        return FALSE;
-    }
-#endif
-   
+  
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -2567,12 +2513,6 @@ IPv4Address_SetParamUlongValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr    = (PCOSA_DML_IP_V4ADDR)pCosaContext->hContext;
-#ifndef _COSA_SIM_
-    if (!CosaIpifGetSetSupported(ParamName))
-    {
-        return FALSE;
-    }
-#endif
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "IPAddress", TRUE))
@@ -2648,13 +2588,6 @@ IPv4Address_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr    = (PCOSA_DML_IP_V4ADDR)pCosaContext->hContext;
 
-#ifndef _COSA_SIM_
-    if (!CosaIpifGetSetSupported(ParamName))
-    {
-        return FALSE;
-    }
-#endif
-   
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
@@ -11747,4 +11680,5 @@ UDPEchoConfig_Rollback
     return 0;
 }
 #endif
+
 

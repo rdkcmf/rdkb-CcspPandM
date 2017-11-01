@@ -457,6 +457,46 @@ CosaDmlIpIfMlanLoadPsm
             SlapCleanVariable(&SlapValue);
         }
 
+        if ( TRUE )     /* IPv6Enable */
+        {
+            SlapInitVariable(&SlapValue);
+
+            _ansc_sprintf
+                (
+                    pParamPath,
+                    DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_IPv6Enable,
+                    pInstArray[ulIndex]
+                );
+
+            iReturnValue =
+                PSM_Get_Record_Value
+                    (
+                        g_MessageBusHandle,
+                        g_SubsystemPrefix,
+                        pParamPath,
+                        &RecordType,
+                        &SlapValue
+                    );
+
+            if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_string) )
+            {
+                AnscTraceWarning
+                    ((
+                        "%s -- failed to retrieve the parameter %s, error code %d, type %d\n",
+                        __FUNCTION__,
+                        pParamPath,
+                        iReturnValue,
+                        RecordType
+                    ));
+            }
+            else
+            {
+                pIpIf->Cfg.bIPv6Enabled = AnscEqualString(SlapValue.Variant.varString, "true", TRUE);
+            }
+
+            SlapCleanVariable(&SlapValue);
+        }
+
         if ( TRUE )     /* EthLink */
         {
             SlapInitVariable(&SlapValue);
@@ -845,6 +885,42 @@ CosaDmlIpIfMlanSavePsm
         }
     }
 
+    if ( TRUE )     /* IPv6Enable */
+    {
+        _ansc_sprintf
+            (
+                pParamPath,
+                DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_IPv6Enable,
+                pCfg->InstanceNumber
+            );
+
+        RecordType = ccsp_string;
+        _ansc_strcpy(RecordValue, pCfg->bIPv6Enabled ? "true" : "false");
+
+        iReturnValue =
+            PSM_Set_Record_Value2
+                (
+                    g_MessageBusHandle,
+                    g_SubsystemPrefix,
+                    pParamPath,
+                    RecordType,
+                    RecordValue
+                );
+
+        if ( iReturnValue != CCSP_SUCCESS )
+        {
+            AnscTraceWarning
+                ((
+                    "%s -- failed to set the parameter %s, error code %d, type %d, value %s.\n",
+                    __FUNCTION__,
+                    pParamPath,
+                    iReturnValue,
+                    RecordType,
+                    RecordValue
+                ));
+        }
+    }
+
     if ( TRUE )     /* EthLink */
     {
         _ansc_sprintf
@@ -1073,39 +1149,83 @@ CosaDmlIpIfMlanAddEntry
                 char                            pParamPath[64]  = {0};
                 unsigned int                    RecordType      = 0;
                 SLAP_VARIABLE                   SlapValue       = {0};
+                ULONG                           ulL2netInst     = 0;
 
                 /*
-                 *  Fetch the "name" parameter from l2net PSM object
+                 *  Fetch the EthLink Instance from PSM 
                  */
                 SlapInitVariable(&SlapValue);
 
                 _ansc_sprintf
-                    (
-                        pParamPath,
-                        DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
-                        pIpIf->Cfg.LinkInstNum
-                    );
+                 (
+                     pParamPath,
+                     DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
+                     pIpIf->Cfg.LinkInstNum
+                  );
 
                 iReturnValue =
-                    PSM_Get_Record_Value
-                        (
-                            g_MessageBusHandle,
-                            g_SubsystemPrefix,
-                            pParamPath,
-                            &RecordType,
-                            &SlapValue
-                        );
+                   PSM_Get_Record_Value
+                    (
+                        g_MessageBusHandle,
+                        g_SubsystemPrefix,
+                        pParamPath,
+                        &RecordType,
+                        &SlapValue
+                    );
 
-                if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_string))
+                if ( (iReturnValue != CCSP_SUCCESS) )
                 {
-                    AnscTraceWarning(("%s -- failed to retrieve 'l2net.name' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
+                    AnscTraceWarning
+                    (("%s -- failed to retrieve the parameter %s, error code %d, type %d\n",__FUNCTION__,pParamPath,iReturnValue,RecordType));
                 }
-                else
+                else if (RecordType == ccsp_unsignedInt)
                 {
-                    _ansc_strcpy(pIpIf->Info.Name, SlapValue.Variant.varString);
+                    ulL2netInst = SlapValue.Variant.varUint32;
+                }
+                else if (RecordType == ccsp_string)
+                {
+                    ulL2netInst = _ansc_atoi(SlapValue.Variant.varString);
                 }
 
                 SlapCleanVariable(&SlapValue);
+       
+                /*
+                 *  Fetch the "name" parameter from l2net PSM object
+                 */
+                if ( ulL2netInst )
+                {
+                    SlapInitVariable(&SlapValue);
+
+                    _ansc_sprintf
+                      (
+                          pParamPath,
+                          DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
+                          ulL2netInst
+                      );
+
+                    iReturnValue =
+                      PSM_Get_Record_Value
+                      (
+                          g_MessageBusHandle,
+                          g_SubsystemPrefix,
+                          pParamPath,
+                          &RecordType,
+                          &SlapValue
+                      );
+
+                    if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_string))
+                    {
+                        AnscTraceWarning(("%s -- failed to retrieve the parameter %s, error code %d, type %d\n",__FUNCTION__,pParamPath,iReturnValue,RecordType));
+                    }
+			        else
+                    {
+                        _ansc_strcpy(pIpIf->Info.Name, SlapValue.Variant.varString);
+                        _ansc_strcpy(pIpIf->Cfg.LinkName, pIpIf->Info.Name);
+                        _ansc_strcpy(pEntry->Info.Name, pIpIf->Info.Name);
+                    }
+
+                    SlapCleanVariable(&SlapValue);
+                }
             }
 
             pEntry->Info.Status    = getIfStatus(pIpIf->Info.Name, NULL);
@@ -1181,6 +1301,8 @@ CosaDmlIpIfMlanSetCfg
 
         TR181_Mlan_Sysevent_Resync(pIpIf->Cfg.InstanceNumber);
 
+        commonSyseventSet("ipv6-restart", "");
+
         /* Update the name -- just copy LinkName to Name field */
         _ansc_strcpy(pIpIf->Info.Name, pCfg->LinkName);
 
@@ -1228,6 +1350,7 @@ CosaDmlIpIfMlanSetCfg
             pIpIf->Info.LastChange = AnscGetTickInSeconds();
             CosaUtilGetIfStats(pIpIf->Info.Name, &pIpIf->LastStats);
         }
+
 
         return  ANSC_STATUS_SUCCESS;
     }
@@ -1467,8 +1590,12 @@ CosaDmlIpIfMlanAddV4Addr
         PCOSA_DML_IP_V4ADDR         pEntry
     )
 {
-    /* Add/Del V4/V6 address is not supported */
-    return  ANSC_STATUS_UNAPPLICABLE;    
+   /* 
+    * This function is called only when the first instance is created 
+    */
+    pEntry->InstanceNumber = 1;
+    pEntry->AddressingType = COSA_DML_IP_ADDR_TYPE_Static;
+    return  ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -1734,12 +1861,12 @@ CosaDmlIpIfMlanGetV6Addr2
         PCOSA_DML_IP_V6ADDR         pEntry         
     )
 {
-#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION	
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
     unsigned int                    l2_instnum = 0;
+    unsigned int                    ethlink_instnum = 0;
     char                            evt_name[64] = {0};
     char                            evt_value[64] = {0};
     char                            out[32] = {0};
@@ -1776,6 +1903,39 @@ CosaDmlIpIfMlanGetV6Addr2
         }
         else
         {
+            ethlink_instnum = SlapValue.Variant.varUint32;
+        }
+
+        SlapCleanVariable(&SlapValue);
+
+        /*
+         *  Retrieve the l2 Instance of bridgee
+         */
+        SlapInitVariable(&SlapValue);
+
+        _ansc_sprintf
+            (
+                pParamPath,
+                DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
+                ethlink_instnum
+            );
+
+        iReturnValue =
+            PSM_Get_Record_Value
+                (
+                    g_MessageBusHandle,
+                    g_SubsystemPrefix,
+                    pParamPath,
+                    &RecordType,
+                    &SlapValue
+                );
+
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        {
+            AnscTraceWarning(("%s -- failed to retrieve 'l2net' instance, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType))
+        }
+        else
+        {
             l2_instnum = SlapValue.Variant.varUint32;
         }
 
@@ -1795,6 +1955,7 @@ CosaDmlIpIfMlanGetV6Addr2
             pEntry->V6Status = COSA_DML_IP6_ADDRSTATUS_Preferred;
             pEntry->Origin = COSA_DML_IP6_ORIGIN_AutoConfigured;
             pEntry->bAnycast = FALSE;
+            _ansc_snprintf( pEntry->Alias, sizeof(pEntry->Alias), "cpe-address-%d", pEntry->InstanceNumber );
 
             /*life time*/
             if (!commonSyseventGet(COSA_DML_DHCPV6C_ADDR_PRETM_SYSEVENT_NAME, out, sizeof(out)) )
@@ -1810,14 +1971,6 @@ CosaDmlIpIfMlanGetV6Addr2
 
     }
     return  ANSC_STATUS_SUCCESS;
-#else
-    /*
-     *  No IPv6 support for Multi-LAN at the moment
-     *  It should not have got here at all!
-     */
-    return  ANSC_STATUS_UNAPPLICABLE;    
-
-#endif    
         
 }
 
@@ -1878,12 +2031,12 @@ CosaDmlIpIfMlanGetV6Prefix2
         PCOSA_DML_IP_V6PREFIX       pEntry         
     )
 {
-#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
     unsigned int                    l2_instnum = 0;
+    unsigned int                    ethlink_instnum = 0;
     char                            evt_name[64] = {0};
     char                            evt_value[64] = {0};
     char                            out[32] = {0};
@@ -1920,6 +2073,39 @@ CosaDmlIpIfMlanGetV6Prefix2
         }
         else
         {
+            ethlink_instnum = SlapValue.Variant.varUint32;
+        }
+
+        SlapCleanVariable(&SlapValue);
+
+        /*
+         *  Retrieve the l2 Instance of bridgee
+         */
+        SlapInitVariable(&SlapValue);
+
+        _ansc_sprintf
+            (
+                pParamPath,
+                DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
+                ethlink_instnum
+            );
+
+        iReturnValue =
+            PSM_Get_Record_Value
+                (
+                    g_MessageBusHandle,
+                    g_SubsystemPrefix,
+                    pParamPath,
+                    &RecordType,
+                    &SlapValue
+                );
+
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
+        {
+            AnscTraceWarning(("%s -- failed to retrieve 'l2net' instance, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType))
+        }
+        else
+        {
             l2_instnum = SlapValue.Variant.varUint32;
         }
 
@@ -1942,6 +2128,7 @@ CosaDmlIpIfMlanGetV6Prefix2
             /*always set these 2 fields to TRUE*/
             pEntry->bOnlink = TRUE;
             pEntry->bAutonomous = TRUE;
+            _ansc_snprintf( pEntry->Alias, sizeof(pEntry->Alias), "cpe-prefix-%d", pEntry->InstanceNumber );
 
             /*life time*/
             if (!commonSyseventGet(COSA_DML_DHCPV6C_PREF_PRETM_SYSEVENT_NAME, out, sizeof(out)) )
@@ -1957,14 +2144,7 @@ CosaDmlIpIfMlanGetV6Prefix2
     }
 
     return  ANSC_STATUS_SUCCESS; 
-#else
-    /*
-     *  No IPv6 support for Multi-LAN at the moment
-     *  It should not have got here at all!
-     */
-    return  ANSC_STATUS_UNAPPLICABLE;    
 
-#endif
 }
 
 /*
@@ -2016,4 +2196,5 @@ CosaDmlIpIfMlanGetStats
         return ANSC_STATUS_SUCCESS;
     }
 }
+
 

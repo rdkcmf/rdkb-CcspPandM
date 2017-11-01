@@ -374,8 +374,9 @@ CosaBridgingInitialize
                 }
 
                 _ansc_sprintf(pDmlBridge->Cfg.Alias, "DmlBridge%d", pMyObject->ulNextBridgeInstance);
+                _ansc_sprintf(pDmlBridge->Cfg.name, "DmlBridge%d", pMyObject->ulNextBridgeInstance);
 
-                CosaDmlBrgSetValues(NULL, ulIndex, pDmlBridge->Cfg.InstanceNumber, pDmlBridge->Cfg.Alias);
+                CosaDmlBrgSetValues(NULL, ulIndex, pDmlBridge->Cfg.InstanceNumber, pDmlBridge->Cfg.Alias, pDmlBridge->Cfg.name);
             }
 
             pCosaContext->hContext     = (ANSC_HANDLE)pDmlBridge;

@@ -6248,12 +6248,9 @@ Pool_SetParamStringValue
             // For other pools, keep full path in Interface.
             if(length < 256)
             {
+                AnscCopyString(pPool->Cfg.Interface, pString);
                 // extra error checking
-                if(strstr(pPool->Cfg.Interface, "Device.IP.Interface."))
-                {
-                    AnscCopyString(pPool->Cfg.Interface, pString);
-                }
-                else
+                if(!strstr(pPool->Cfg.Interface, "Device.IP.Interface."))
                 {
                     AnscTraceFlow(("%s: interface path wrong %s\n", __FUNCTION__, pString));
                     return FALSE;

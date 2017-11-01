@@ -688,6 +688,19 @@ Interface_GetParamStringValue
 		}
 	}
 #endif 	    
+
+#if defined(INTEL_PUMA7)
+        //On Puma7 platform, always query upstream interface mac address because it can change
+        if(pEthernetPortFull->StaticInfo.bUpstream)
+        {
+            UCHAR strMac[128] = {0};
+            if ( -1 != _getMac(pEthernetPortFull->StaticInfo.Name, strMac) )
+            {
+                AnscCopyMemory(pEthernetPortFull->StaticInfo.MacAddress,strMac,6);
+            }
+        }
+#endif
+
         _ansc_sprintf
             (
                 pValue,
@@ -2193,9 +2206,8 @@ Link_SetParamStringValue
         ULONG                           ulIndex;
         UCHAR                           ucEntryParamName[256]       = {0};
         UCHAR                           ucEntryNameValue[256]       = {0};
-        int                             size;
-        parameterValStruct_t            varStruct;
-
+        ULONG                           ulEntryNameLen = 256;
+        
         if ( _ansc_strlen(pString) == 0 )
         {
             pEntry->Cfg.LinkType    = COSA_DML_LINK_TYPE_LAST;
@@ -2215,7 +2227,7 @@ Link_SetParamStringValue
             /* Extract Instance Number */
             ulIndex = _ansc_strlen(pString) - 1;
 
-            while ( (ulIndex != 0) && (pString[ulIndex] != '.') )
+            while ( (ulIndex != 0) && (pString[ulIndex - 1] != '.') )
             {
                 ulIndex--;
             }
@@ -2232,11 +2244,8 @@ Link_SetParamStringValue
             /* Retrieve LinkName */
             _ansc_sprintf(ucEntryParamName, "%s.%s", pString, "Name");
 
-            varStruct.parameterName  = ucEntryParamName;
-            varStruct.parameterValue = ucEntryNameValue;
-
-            if ( ANSC_STATUS_SUCCESS == 
-                    COSAGetParamValueByPathName(&varStruct, &size) )
+            ulEntryNameLen = sizeof(ucEntryNameValue);
+            if ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen))
             {
                 AnscCopyString(pEntry->Cfg.LinkName, ucEntryNameValue);
             }

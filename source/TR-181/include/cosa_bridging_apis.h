@@ -163,7 +163,7 @@ _COSA_DML_BRG_CFG
 {
     ULONG                           InstanceNumber;
     char                            Alias[COSA_DML_IF_NAME_LENGTH];
-
+    char                            name[COSA_DML_IF_NAME_LENGTH];
     BOOLEAN                         bEnabled;
     BOOLEAN                         bAllowDelete;
     COSA_DML_BRG_STD                Std;
@@ -348,7 +348,8 @@ CosaDmlBrgSetValues
         ANSC_HANDLE                 hContext,
         ULONG                       ulIndex,
         ULONG                       ulInstanceNumber,
-        char*                       pAlias
+        char*                       pAlias,
+        char*                       pName
     );
 
 ANSC_STATUS

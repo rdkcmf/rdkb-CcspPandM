@@ -11929,6 +11929,12 @@
             <func_Rollback>Bridge_Rollback</func_Rollback>
           </functions>
           <parameters>
+          <parameter> 
+            <name>Name</name>
+            <type>string</type>
+            <syntax>string</syntax>
+            <writable>true</writable>
+          </parameter>
           <parameter>
             <name>Enable</name>
             <type>boolean</type>

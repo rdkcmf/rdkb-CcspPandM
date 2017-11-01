@@ -3949,9 +3949,6 @@ Pool1_AddEntry
     PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = NULL;
     CHAR                              tmpBuff[64]       = {0};
 	
-	/* We just have one Pool. Not permit to add/delete. */
-	return NULL;
-	
 #if defined _COSA_DRG_CNS_  || defined _COSA_DRG_TPG_
     return NULL;
 #endif
@@ -4041,9 +4038,6 @@ Pool1_DelEntry
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)hInstance;
     PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = (PCOSA_DML_DHCPSV6_POOL_FULL)pCxtLink->hContext;
-
-	/* We just have one Pool. Not permit to add/delete. */
-	return ANSC_STATUS_FAILURE;
 
 #if defined _COSA_DRG_CNS_  || defined _COSA_DRG_TPG_
     return ANSC_STATUS_FAILURE;
@@ -4428,12 +4422,7 @@ Pool1_GetParamStringValue
                         pPool->Cfg.Interface /* When brlan0 works ,change to "brlan0"*/
                     );
      #else
-        pString = CosaUtilGetFullPathNameByKeyword
-                    (
-                        "Device.IP.Interface.",
-                        "Name",
-                        "brlan0" /* When brlan0 works ,change to "brlan0"*/
-                    );     
+        pString = pPool->Cfg.Interface;
      #endif
      
         if ( pString )
@@ -4442,16 +4431,18 @@ Pool1_GetParamStringValue
             {
                 AnscCopyString(pValue, pString);
 
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
                 AnscFreeMemory(pString);
-
+#endif
                 return 0;
             }
             else
             {
                 *pUlSize = AnscSizeOfString(pString)+1;
 
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
                 AnscFreeMemory(pString);
-                
+#endif
                 return 1;
             }
         }
@@ -5015,7 +5006,7 @@ Pool1_SetParamStringValue
         return FALSE;
 #endif
         
-        AnscCopyString(pPool->Cfg.Interface, pString);
+        _ansc_snprintf(pPool->Cfg.Interface, sizeof(pPool->Cfg.Interface), "%s.", pString);
 
         return TRUE;
     }
@@ -7320,9 +7311,6 @@ Option4_AddEntry
     CHAR                              tmpBuff[64]          = {0};
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6              = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
 
-	/* We just have two option:DNS, domain. Not permit to add/delete. */
-	return NULL;
-
     /* We need ask from backend */
     pDhcpOption  = (PCOSA_DML_DHCPSV6_POOL_OPTION)AnscAllocateMemory( sizeof(COSA_DML_DHCPSV6_POOL_OPTION) );
     if ( !pDhcpOption )
@@ -7408,9 +7396,6 @@ Option4_DelEntry
     PCOSA_CONTEXT_LINK_OBJECT         pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_DHCPSV6_POOL_OPTION     pDhcpOption          = (PCOSA_DML_DHCPSV6_POOL_OPTION)pCxtLink->hContext;
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6              = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
-
-	/* We just have two option:DNS, domain. Not permit to add/delete. */
-	return ANSC_STATUS_FAILURE;
 
     if ( !pCxtLink->bNew )
     {

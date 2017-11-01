@@ -3662,8 +3662,9 @@ static void configBridgeMode(int bEnable) {
 //         varstruct.parameterName = brpdm;
 //         varstruct.parameterValue = enableStr;
 //         varstruct.type = ccsp_boolean;
+#if !defined(INTEL_PUMA7)
         g_SetParamValueBool(brpdm, bEnable);
-
+#endif
         vsystem("/bin/sh /etc/webgui.sh &");
 
         if (ppComponents == NULL && initWifiComp()) {
