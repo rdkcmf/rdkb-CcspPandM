@@ -682,7 +682,7 @@ CosaDml_GreTunnelIfSetEnable(ULONG tuIns, ULONG ins, BOOL enable)
     if (GreTunnelIfPsmGetStr(GRETU_PARAM_GRETU, tuIns, ins, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
 	//greNetworkTunnel:	Device.X_CISCO_COM_GRE.Tunnel.1.
-    snprintf(tmpPath, sizeof(tmpPath), "%s.Interface.%lu.Enable", greNetworkTunnel, ins);
+    snprintf(tmpPath, sizeof(tmpPath), "%sEnable", greNetworkTunnel);
     if (g_SetParamValueBool(tmpPath, enable) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
