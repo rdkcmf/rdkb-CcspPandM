@@ -1583,3 +1583,8 @@ CosaDmlBrgVlanPortDelEntry
 #endif
 }
 
+ANSC_STATUS
+SetBridgePortEnable(ULONG ulBrgInstanceNumber,ULONG ulPortInstanceNumber,BOOLEAN enable)
+{
+    return ANSC_STATUS_SUCCESS;
+}

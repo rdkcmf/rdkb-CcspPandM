@@ -2178,6 +2178,7 @@ Port_SetParamBoolValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_PORT_FULL         pPort            = (PCOSA_DML_BRG_PORT_FULL  )pCosaContext->hContext;
+    PCOSA_DML_BRG_FULL_ALL          pBridge          = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hParentTable;
     static int			    pvid	     = 0;
 
     if (!pvid)
@@ -2193,6 +2194,12 @@ Port_SetParamBoolValue
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE) )
     {
+        if((pPort->Cfg.bEnabled != bValue) &&
+		SetBridgePortEnable(pBridge->Cfg.InstanceNumber,pPort->Cfg.InstanceNumber,bValue) != ANSC_STATUS_SUCCESS)
+        { 
+            CcspTraceWarning(("Not able to set port status, %s %d\n",__FUNCTION__,__LINE__));
+            return FALSE;
+        }
         /* save update to backup */
         pPort->Cfg.bEnabled = bValue;
 	

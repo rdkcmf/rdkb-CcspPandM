@@ -2173,6 +2173,30 @@ CosaDmlBrgVlanPortDelEntry
 #endif
 }
 
+ANSC_STATUS
+SetBridgePortEnable(ULONG ulBrgInstanceNumber,ULONG ulPortInstanceNumber,BOOLEAN enable)
+{
+#if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_
+    PBRIDGE pBridge = getBridge(ulBrgInstanceNumber);
+    if (pBridge == NULL) {
+        AnscTraceFlow(("<HL>%s cannot find the birdge inst=%d\n",__FUNCTION__,ulBrgInstanceNumber ));
+        return ANSC_STATUS_CANT_FIND;
+    }
+    PBRIDGE_PORT pBPort = getBPort(pBridge, ulPortInstanceNumber);
+
+    if (pBPort == NULL) {
+        AnscTraceFlow(("<HL> %s cannot find port inst=%d\n",__FUNCTION__,ulPortInstanceNumber));
+        return ANSC_STATUS_CANT_FIND;
+    }
+
+    if (pBPort->control->setEnabled(pBPort,enable) != ANSC_STATUS_SUCCESS)
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+#endif
+    return ANSC_STATUS_SUCCESS;
+}
+
 //Common functions to CNS and TPG
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_
 
@@ -3479,17 +3503,33 @@ ANSC_STATUS lanBrPCtlSetEnabled(PBRIDGE_PORT port, BOOLEAN enable) {
 
     AnscCopyString(ifr.ifr_name, port->name);
   
-    ioctl(fd, SIOCGIFFLAGS, &ifr);
+    if(ioctl(fd, SIOCGIFFLAGS, &ifr) < 0)
+    {
+       CcspTraceWarning(("%s %d : ioctl failure, error: %s, port name:%s \n",__FUNCTION__,__LINE__,strerror(errno),port->name));
+       close(fd);
+       return ANSC_STATUS_FAILURE;
+    }
 
     if(enable) {
         if (!(ifr.ifr_flags & IFF_UP)) {
             ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
-            ioctl(fd, SIOCSIFFLAGS, &ifr);
+	   if(ioctl(fd, SIOCSIFFLAGS, &ifr) < 0)
+           {
+              CcspTraceWarning(("%s %d : ioctl failure, error: %s, port name:%s \n",__FUNCTION__,__LINE__,strerror(errno),port->name));
+              close(fd);
+              return ANSC_STATUS_FAILURE;
+           }
         }
     } else {
         if ((ifr.ifr_flags & IFF_UP)) {
             ifr.ifr_flags &= ~IFF_UP;
-            ioctl(fd, SIOCSIFFLAGS, &ifr);
+            if(ioctl(fd, SIOCSIFFLAGS, &ifr) < 0)
+            {
+               CcspTraceWarning(("%s %d : ioctl failure, error: %s, port name:%s \n",__FUNCTION__,__LINE__,strerror(errno),port->name)); 
+               close(fd);
+               return ANSC_STATUS_FAILURE;
+            }
+
         }
     }
 
@@ -3505,7 +3545,12 @@ ANSC_STATUS lanBrPCtlGetEnabled(PBRIDGE_PORT port, BOOLEAN* enabled) {
 
     AnscCopyString(ifr.ifr_name, port->name);
   
-    ioctl(fd, SIOCGIFFLAGS, &ifr);
+    if(ioctl(fd, SIOCGIFFLAGS, &ifr) < 0)
+    {
+        CcspTraceWarning(("%s %d : ioctl failure, error: %s, port name:%s \n",__FUNCTION__,__LINE__,strerror(errno),port->name)); 
+        close(fd);
+        return ANSC_STATUS_FAILURE;
+    }
 
     *enabled = (ifr.ifr_flags & IFF_UP) && (ifr.ifr_flags & IFF_RUNNING);
 
@@ -3528,6 +3573,12 @@ ANSC_STATUS lanBrPCtlGetStatus(PBRIDGE_PORT port, PCOSA_DML_IF_STATUS status) {
     BOOLEAN enabled;
 //    CcspTraceInfo(("------lanBrPCtlGetStatus...\n"));
     port->control->getEnabled(port, &enabled);
+    if(port->control->getEnabled(port, &enabled) != ANSC_STATUS_SUCCESS)
+    {
+        CcspTraceInfo(("lanBrPCtlGetStatus : getEnabled retunrned failure \n"));
+        *status = COSA_DML_IF_STATUS_Unknown;
+        return ANSC_STATUS_FAILURE;
+    }
     if(enabled) {
         *status = COSA_DML_IF_STATUS_Up;
     } else {
