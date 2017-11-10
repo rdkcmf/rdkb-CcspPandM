@@ -177,6 +177,7 @@ CosaDeviceInfoInitialize
 #ifdef _COSA_INTEL_XB3_ARM_
 	CosaDmlDiGet_DeferFWDownloadReboot(&pMyObject->DeferFWDownloadReboot);
 #endif
+        pMyObject->AbortReboot	= FALSE;
 
     return returnStatus;
 }
