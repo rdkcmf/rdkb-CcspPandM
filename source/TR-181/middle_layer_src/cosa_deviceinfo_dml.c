@@ -4305,7 +4305,17 @@ Feature_SetParamBoolValue
     {
        char str[2];
        int retPsmGet = CCSP_SUCCESS;
-
+       
+       if ( bValue == TRUE)
+       {
+          syscfg_set(NULL, "containersupport", "true");
+       }
+       else
+       {
+          syscfg_set(NULL, "containersupport", "false");
+       }
+       syscfg_commit();
+       
        sprintf(str,"%d",bValue);
        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Container", ccsp_string, str);
        if (retPsmGet != CCSP_SUCCESS) {
