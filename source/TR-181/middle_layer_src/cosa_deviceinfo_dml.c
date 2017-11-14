@@ -5340,21 +5340,30 @@ RPC_SetParamBoolValue
         BOOL                        bValue
     )
 {
-    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
-    
-    if( AnscEqualString(ParamName, "AbortReboot", TRUE))
-    {
-        FILE *file = NULL;
-        if (file = fopen("/tmp/xconfdownloadurl", "r")){
-            pMyObject->AbortReboot = bValue; 
-            system("touch /tmp/AbortReboot");
-            fclose(file);
-            return TRUE;
-        } else {
-            CcspTraceWarning(("invalid request for parameter '%s'\n", ParamName));
-            return TRUE;
-        }
-    }
+   PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+   if( AnscEqualString(ParamName, "AbortReboot", TRUE))
+   {
+       FILE *file = NULL;
+       FILE *Abortfile = NULL;
+       if (file = fopen("/tmp/.deferringreboot", "r")){
+           if (Abortfile = fopen("/tmp/AbortReboot", "r")){
+               fclose(Abortfile);
+               CcspTraceWarning(("Abort already done '%s'\n", ParamName));
+               return TRUE;
+           }
+           pMyObject->AbortReboot = bValue;
+           if(pMyObject->AbortReboot == TRUE)
+              system("touch /tmp/AbortReboot");
+           else
+              CcspTraceWarning(("Parameter '%s' set to false\n", ParamName));
+           fclose(file);
+           return TRUE;
+       } else {
+           CcspTraceWarning(("Invalid request for parameter, no FW DL reboot wait in progress '%s'\n", ParamName));
+           return TRUE;
+       }
+   } 
        /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
         return FALSE;
 }
