@@ -2194,8 +2194,11 @@ Port_SetParamBoolValue
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE) )
     {
-        if((pPort->Cfg.bEnabled != bValue) &&
-		SetBridgePortEnable(pBridge->Cfg.InstanceNumber,pPort->Cfg.InstanceNumber,bValue) != ANSC_STATUS_SUCCESS)
+		//Except sw_ ports we need to get ioctl response
+        if( ( pPort->Cfg.bEnabled != bValue ) && \
+			( NULL == AnscStrStr( pPort->Cfg.LinkName, "sw_" ) ) && \
+		    ( SetBridgePortEnable(pBridge->Cfg.InstanceNumber,pPort->Cfg.InstanceNumber,bValue) != ANSC_STATUS_SUCCESS)
+		   )
         { 
             CcspTraceWarning(("Not able to set port status, %s %d\n",__FUNCTION__,__LINE__));
             return FALSE;
