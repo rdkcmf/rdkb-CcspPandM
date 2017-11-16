@@ -624,6 +624,7 @@ DeviceInfo_GetParamStringValue
     {
        //pMyObject->EMS_ServerURL;
 		char buf[60];
+        memset(buf, 0 ,sizeof(buf));
         syscfg_get( NULL, "ems_server_url", buf, sizeof(buf));
     	if( buf != NULL )
     		{
