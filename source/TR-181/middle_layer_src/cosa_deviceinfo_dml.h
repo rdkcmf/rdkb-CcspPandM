@@ -628,4 +628,50 @@ RPC_SetParamStringValue
         char*                       pString
     );
 
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_Syndication.
+
+    *  Syndication_GetParamStringValue
+    *  Syndication_SetParamStringValue
+    *  Syndication_GetParamBoolValue
+    *  Syndication_SetParamBoolValue
+    
+***********************************************************************/
+
+BOOL
+Syndication_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+Syndication_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+BOOL
+Syndication_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
+ULONG
+Syndication_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    );
+
 #endif

@@ -1946,14 +1946,98 @@ CosaDmlDiGetSyndicationPartnerId
     return retVal;
 }
 
+#define DMSB_TR181_PSM_Syndication_Tr069CertLocation "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation"
+#define DMSB_TR181_PSM_Syndication_Enable			 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.enable"
+
 ANSC_STATUS
 CosaDmlDiGetSyndicationTR69CertLocation
     (
         ANSC_HANDLE                 hContext,
-        char*                       pValue,
-        PULONG                      pulSize
+        char*                       pValue
     )
 {
+	char val[ 256 ] = {0};
+	
+	if ( PsmGet( DMSB_TR181_PSM_Syndication_Tr069CertLocation, val, sizeof( val ) ) != 0 ) 
+	{
+		pValue[ 0 ] = '\0';
+		CcspTraceError(("%s - Failed Get for '%s' \n", __FUNCTION__, DMSB_TR181_PSM_Syndication_Tr069CertLocation));
+		return ANSC_STATUS_FAILURE;
+	}
+	else 
+	{
+		AnscCopyString( pValue, val );
+	}
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiSetSyndicationTR69CertLocation
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    )
+{
+	int  retPsmSet = CCSP_SUCCESS;
+	
+	retPsmSet = PSM_Set_Record_Value2( g_MessageBusHandle, 
+									   g_GetSubsystemPrefix(g_pDslhDmlAgent), 
+									   DMSB_TR181_PSM_Syndication_Tr069CertLocation, 
+									   ccsp_string, 
+									   pValue );
+	if ( retPsmSet != CCSP_SUCCESS ) 
+	{
+		CcspTraceError(("%s - Failed Set for '%s' \n", __FUNCTION__, DMSB_TR181_PSM_Syndication_Tr069CertLocation));
+		return ANSC_STATUS_FAILURE;
+	}
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationEnable
+    (
+        ANSC_HANDLE                  hContext,
+		BOOL						*pbEnable
+    )
+{
+	char val[ 16 ] = {0};
+	
+	if ( PsmGet( DMSB_TR181_PSM_Syndication_Enable, val, sizeof( val ) ) != 0 ) 
+	{
+		*pbEnable = 0;
+		CcspTraceError(("%s - Failed Get for '%s' \n", __FUNCTION__, DMSB_TR181_PSM_Syndication_Enable));
+		return ANSC_STATUS_FAILURE;
+	}
+	else 
+	{
+		*pbEnable = ( strcmp ( val, "TRUE" ) ? 0 : 1 );
+	}
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiSetSyndicationEnable
+    (
+        ANSC_HANDLE                  hContext,
+		BOOL						 bEnable
+    )
+{
+	int  retPsmSet = CCSP_SUCCESS;
+	
+	retPsmSet = PSM_Set_Record_Value2( g_MessageBusHandle, 
+									   g_GetSubsystemPrefix(g_pDslhDmlAgent), 
+									   DMSB_TR181_PSM_Syndication_Enable, 
+									   ccsp_string,
+									   ( bEnable ) ? "TRUE"  : "FALSE" );
+	if ( retPsmSet != CCSP_SUCCESS ) 
+	{
+		CcspTraceError(("%s - Failed Set for '%s' \n", __FUNCTION__, DMSB_TR181_PSM_Syndication_Enable));
+		return ANSC_STATUS_FAILURE;
+	}
+
     return ANSC_STATUS_SUCCESS;
 }
 

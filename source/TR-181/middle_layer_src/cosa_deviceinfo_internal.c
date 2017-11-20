@@ -177,7 +177,15 @@ CosaDeviceInfoInitialize
 #ifdef _COSA_INTEL_XB3_ARM_
 	CosaDmlDiGet_DeferFWDownloadReboot(&pMyObject->DeferFWDownloadReboot);
 #endif
-        pMyObject->AbortReboot	= FALSE;
+
+	pMyObject->AbortReboot = FALSE;
+
+	//Get TR69CertLocation
+	CosaDmlDiGetSyndicationTR69CertLocation( (ANSC_HANDLE)pMyObject,
+											  pMyObject->TR69CertLocation );
+	//Get Syndication Enable
+	CosaDmlDiGetSyndicationEnable( (ANSC_HANDLE)pMyObject,
+								    &pMyObject->SyndicationEnable );
 
     return returnStatus;
 }

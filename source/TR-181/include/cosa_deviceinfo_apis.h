@@ -394,9 +394,30 @@ ANSC_STATUS
 CosaDmlDiGetSyndicationTR69CertLocation
     (
         ANSC_HANDLE                 hContext,
-        char*                       pValue,
-        PULONG                      pulSize
+        char*                       pValue
     );
+
+ANSC_STATUS
+CosaDmlDiSetSyndicationTR69CertLocation
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationEnable
+    (
+        ANSC_HANDLE                  hContext,
+		BOOL						*pbEnable
+    );
+
+ANSC_STATUS
+CosaDmlDiSetSyndicationEnable
+    (
+        ANSC_HANDLE                  hContext,
+		BOOL						 bEnable
+    );
+
 ANSC_STATUS
 CosaDmlDiGetSyndicationLocalUIBrandingTable
     (

@@ -709,6 +709,48 @@
         </parameters>
 
       <objects>
+        <object>
+        <name>X_RDKCENTRAL-COM_Syndication</name>
+        <objectType>object</objectType>
+        <functions>
+            <func_GetParamBoolValue>Syndication_GetParamBoolValue</func_GetParamBoolValue>
+            <func_SetParamBoolValue>Syndication_SetParamBoolValue</func_SetParamBoolValue>
+            <func_SetParamStringValue>Syndication_SetParamStringValue</func_SetParamStringValue>
+            <func_GetParamStringValue>Syndication_GetParamStringValue</func_GetParamStringValue>               
+        </functions>
+        <parameters>
+            <parameter>
+                <name>PartnerId</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>false</writable>
+            </parameter>
+            <parameter>
+                <name>TR69CertLocation</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>true</writable>
+            </parameter>
+            <parameter>
+                <name>LocalUIBrandingTable</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>false</writable>
+            </parameter>
+            <parameter>
+                <name>WifiUIBrandingTable</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>false</writable>
+            </parameter>
+			<parameter>
+				<name>enable</name>
+				<type>boolean</type>
+				<syntax>bool</syntax>
+				<writable>true</writable>
+			</parameter>
+        </parameters>
+        </object> <!--X_RDKCENTRAL-COM_Syndication-->      
       	<object>
 			<name>X_RDKCENTRAL-COM_xOpsDeviceMgmt</name>
 
