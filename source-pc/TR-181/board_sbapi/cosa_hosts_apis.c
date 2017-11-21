@@ -71,7 +71,6 @@
         01/11/2011    initial revision.
 
 **************************************************************************/
-
 #include "plugin_main_apis.h"
 #include "cosa_hosts_apis.h"
 #include "cosa_hosts_internal.h"
@@ -115,8 +114,6 @@ LmObjectHosts lmHosts = {
     .pIPv4AddressStringParaName = {"IPAddress"},
     .pIPv6AddressStringParaName = {"IPAddress"}
 };
-
-char _g_atom_if_ip[4];
 
 #define MACADDR_SZ 18
 #define LM_HOST_OBJECT_NAME_HEADER  "Device.Hosts.Host."
@@ -168,7 +165,7 @@ COSA_DML_HOST_ENTRY  g_user_entrys2 =
 UCHAR       g_user_Entrys[1024]      = {0};
 ULONG       g_user_pEntrys_len       = sizeof(g_user_Entrys);
 
-inline int _mac_string_to_array(char *pStr, unsigned char array[6])
+static inline int _mac_string_to_array(char *pStr, unsigned char array[6])
 {
     int tmp[6],n,i;
         if(pStr == NULL)
@@ -275,7 +272,7 @@ ULONG CosaDmlHostsGetOnline()
         return rVal;
 }
 
-char * _CloneString
+static char * _CloneString
     (
     const char * src
     )
@@ -291,7 +288,8 @@ char * _CloneString
     }
     return dest;
 }
-inline char* _get_addr_source(enum LM_ADDR_SOURCE source )
+
+static inline char* _get_addr_source(enum LM_ADDR_SOURCE source )
 {
     switch (source){
         case LM_ADDRESS_SOURCE_DHCP:
@@ -353,7 +351,19 @@ if(backupArray) AnscFreeMemory(backupArray);
 }
 
 
-inline void _get_host_ipaddress(LM_host_t *pSrcHost, PLmObjectHost pHost)
+static void _get_dmbyname(int num, Name_DM_t *list, char** dm, char* name)
+{
+    int i;
+
+    for(i = 0; i < num; i++){
+        if(NULL != strcasestr(list[i].name, name)){
+            STRNCPY_NULL_CHK((*dm), list[i].dm);
+            break;
+        }
+    }
+}
+
+static inline void _get_host_ipaddress(LM_host_t *pSrcHost, PLmObjectHost pHost)
 {
     int i;
     LM_ip_addr_t *pIp;
@@ -388,19 +398,8 @@ inline void _get_host_ipaddress(LM_host_t *pSrcHost, PLmObjectHost pHost)
         }
     }
 }
-void _get_dmbyname(int num, Name_DM_t *list, char** dm, char* name)
-{
-    int i;
 
-    for(i = 0; i < num; i++){
-        if(NULL != strcasestr(list[i].name, name)){
-            STRNCPY_NULL_CHK((*dm), list[i].dm);
-            break;
-        }
-    }
-}
-
-inline void _get_host_info(LM_host_t *pDestHost, PLmObjectHost pHost)
+static inline void _get_host_info(LM_host_t *pDestHost, PLmObjectHost pHost)
 {
         pHost->bBoolParaValue[LM_HOST_ActiveId]= pDestHost->online;
 
