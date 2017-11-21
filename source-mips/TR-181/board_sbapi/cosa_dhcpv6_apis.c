@@ -1915,6 +1915,7 @@ CosaDmlDhcpv6Init
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX)
 
 #else
+
     /*register callback function to handle message from wan dchcp6 client */
     pEntry = (PDSLHDMAGNT_CALLBACK)AnscAllocateMemory(sizeof(*pEntry));
     pEntry->func = CosaDmlDhcpv6SMsgHandler;
@@ -2439,6 +2440,7 @@ CosaDmlDhcpv6cGetEnabled
        	   if ( strstr(out, "RUNNING,") )         
 #else
     FILE *fp = popen("ps |grep -i ti_dhcp6c | grep erouter0 | grep -v grep", "r");
+
     if ( fp != NULL){
         if ( fgets(out, sizeof(out), fp) != NULL )
             if ( _ansc_strstr(out, "erouter_dhcp6c") )
@@ -3786,7 +3788,7 @@ void __cosa_dhcpsv6_refresh_config()
     ULONG IAPDPrefixes_Len = 0;
     char  ServerOption[256] = {0};
     char *pServerOption = NULL;
-    FILE *responsefd;
+    FILE *responsefd=NULL;
     char *networkResponse = "/var/tmp/networkresponse.txt";
     int iresCode = 0;
     char responseCode[10];
@@ -4067,12 +4069,19 @@ OPTIONS:
 
 			// During captive portal no need to pass DNS
 			// Check the reponse code received from Web Service
+
+			iresCode = 0;
+
 			if( ( responsefd = fopen( networkResponse, "r" ) ) != NULL ) 
 			{
 				if( fgets( responseCode, sizeof( responseCode ), responsefd ) != NULL )
 				{
 					iresCode = atoi( responseCode );
 				}
+
+				/* RDKB-6780, CID-33149, free unused resources before return */
+				fclose(responsefd);
+				responsefd = NULL;
 			}
 			
 			syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
@@ -4082,7 +4091,7 @@ OPTIONS:
 				{
 					 IsCaptivePortalMode = 1;
 				}
-			 }
+			}
 
             if ( sDhcpv6ServerPoolOption[Index][Index2].PassthroughClient[0] )
             {
@@ -4204,26 +4213,20 @@ OPTIONS:
 
                     if ( pServerOption )
                         fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
-                }else
-
+                }
+                else
+                {
                     if ( pServerOption )
                         fprintf(fp, "    option %s 0x%s\n", tagList[Index3].cmdstring, pServerOption);
-                
+                }
             }
-
         }     
 
         fprintf(fp, "}\n");
-        
     }
     
-    fclose(fp);
-
-    /*RDKB-6780, CID-33149, free unused resources before return*/
-    if(responsefd)
-    {
-        fclose(responsefd);
-    }
+    if(fp != NULL)
+      fclose(fp);
 
 #ifndef _COSA_BCM_MIPS_
     /*we will copy the updated conf file at once*/

@@ -2320,6 +2320,7 @@ CosaDmlDhcpv6cGetEnabled
     char out[256] = {0};
 
     FILE *fp = popen("ps |grep -i ti_dhcp6c | grep erouter0 | grep -v grep", "r");
+
     if ( fp != NULL){
         if ( fgets(out, sizeof(out), fp) != NULL )
             if ( _ansc_strstr(out, "erouter_dhcp6c") )
@@ -3225,7 +3226,7 @@ void __cosa_dhcpsv6_refresh_config()
     ULONG IAPDPrefixes_Len = 0;
     char  ServerOption[256] = {0};
     char *pServerOption = NULL;
-    FILE *responsefd;
+    FILE *responsefd=NULL;
     char *networkResponse = "/var/tmp/networkresponse.txt";
     int iresCode = 0;
     char responseCode[10];
@@ -3411,30 +3412,34 @@ OPTIONS:
 		       		char buf[6];
 				// During captive portal no need to pass DNS
 				// Check the reponse code received from Web Service
+
+				iresCode = 0;
+
    				if((responsefd = fopen(networkResponse, "r")) != NULL) 
    				{
        					if(fgets(responseCode, sizeof(responseCode), responsefd) != NULL)
        					{
 		  				iresCode = atoi(responseCode);
           				}
+
+					/* RDKB-6780, CID-33149, free unused resources before return */
+					fclose(responsefd);
+					responsefd = NULL;
    				}
+
         			syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
     				if( buf != NULL )
     				{
-
     		    			if ((strncmp(buf,"true",4) == 0) && iresCode == 204)
 					{
-
 				   		fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
 					}
     		    			else
 					{
-
 				   		fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
 					}
     				}
 			}
-
                 }
                 else if ( g_recv_options[Index4].Tag == 24 )
                 { //domain
@@ -3466,21 +3471,21 @@ OPTIONS:
 
                     if ( pServerOption )
                         fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
-                }else
-
+                }
+                else
+                {
                     if ( pServerOption )
                         fprintf(fp, "    option %s 0x%s\n", tagList[Index3].cmdstring, pServerOption);
-                
+                }
             }
-
         }     
 
         fprintf(fp, "}\n");
-        
     }
     
-    fclose(fp);
-        
+    if(fp != NULL)
+      fclose(fp);
+
 #ifndef _COSA_INTEL_USG_ARM_
     /*we will copy the updated conf file at once*/
     if (rename(TMP_SERVER_CONF, SERVER_CONF_LOCATION))
@@ -3747,11 +3752,11 @@ _get_iapd_prefix_pathname(char ** pp_pathname, int * p_len)
     ULONG inst2 = 0;
     ULONG val_len = 0;
 
-    *p_len = 1;
-
     if (!p_len || !pp_pathname)
         return -1;
-    
+
+    *p_len = 1; /*RDKB-6780, CID-33107, use after null check*/
+
     p_ipif_path = CosaUtilGetFullPathNameByKeyword
         (
             "Device.IP.Interface.",
