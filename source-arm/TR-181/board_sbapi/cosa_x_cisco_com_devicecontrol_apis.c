@@ -1602,6 +1602,8 @@ void restoreAllDBs()
 	CcspTraceWarning(("FactoryReset:%s in thread  Restoring all the DBs to factory defaults  ...\n",__FUNCTION__));
 	system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
 	system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
+	//Need to remove the encrypted shared keys
+	system("rm -f /nvram/.keys/*");
 
         //Need to remove the custom maintenance window
         system("rm -f /nvram/.FirmwareUpgradeEndTime");
