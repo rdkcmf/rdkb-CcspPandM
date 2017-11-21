@@ -109,6 +109,8 @@ COSA_DATAMODEL_USERS,  *PCOSA_DATAMODEL_USERS;
     AnscZeroMemory((pUser)->Password, sizeof((pUser)->Password) ); \
     AnscZeroMemory((pUser)->Language, sizeof((pUser)->Language) ); \
     (pUser)->NumOfFailedAttempts                    = '\0';       \
+    AnscZeroMemory((pUser)->X_RDKCENTRAL_COM_CompareAdminPassword, sizeof((pUser)->X_RDKCENTRAL_COM_CompareAdminPassword) ); \
+    AnscZeroMemory((pUser)->HashedPassword, sizeof((pUser)->HashedPassword) ); \
     (pUser)->AccessPermission = COSA_DML_USER_PERMISSION_HomeUser; \
 
 #define GET_RANDOM_STRING(ulValue, tmpBuff)                                            \

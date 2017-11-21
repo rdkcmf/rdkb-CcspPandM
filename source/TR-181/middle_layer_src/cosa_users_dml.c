@@ -464,6 +464,11 @@ User_GetParamBoolValue
         
         return TRUE;
     }
+    if ( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_PasswordReset", TRUE))
+    {
+        *pBool = FALSE;
+        return TRUE;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -680,6 +685,11 @@ User_GetParamStringValue
         if ( AnscSizeOfString(pUser->Password) < *pUlSize)
         {
             ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
+            if( AnscEqualString(pUser->Username, "admin",TRUE) )
+            {
+               AnscCopyString(pValue,pUser->HashedPassword);
+               return 0;
+            }
             AnscCopyString(pValue, pUser->Password);
             if( AnscEqualString(pUser->Username, "mso", TRUE) )
             {
@@ -696,6 +706,19 @@ User_GetParamStringValue
         else
         {
             *pUlSize = AnscSizeOfString(pUser->Password)+1;
+            return 1;
+        }
+     }
+     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CompareAdminPassword", TRUE))
+     {
+        if ( AnscSizeOfString(pUser->X_RDKCENTRAL_COM_CompareAdminPassword) < *pUlSize)
+        {
+            AnscCopyString(pValue, pUser->X_RDKCENTRAL_COM_CompareAdminPassword);
+            return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(pUser->X_RDKCENTRAL_COM_CompareAdminPassword)+1;
             return 1;
         }
      }
@@ -759,6 +782,11 @@ User_SetParamBoolValue
         /* save update to backup */
         pUser->RemoteAccessCapable   =  bValue;
         
+        return TRUE;
+    }
+    if(AnscEqualString(ParamName,"X_RDKCENTRAL-COM_PasswordReset", TRUE))
+    {
+        CosaDmlUserResetPassword(bValue,pUser);
         return TRUE;
     }
 
@@ -993,6 +1021,13 @@ User_SetParamStringValue
 		}
 
 	}
+        else if( AnscEqualString(pUser->Username, "admin", TRUE) )
+	{
+		unsigned int ret=0;
+		char resultBuffer[32]= {'\0'};
+		admin_hashandsavepwd(NULL,pString,pUser);
+                AnscCopyString(pUser->Password, pString);
+	}
 	else
 	{
         	/* save update to backup */
@@ -1007,6 +1042,16 @@ User_SetParamStringValue
     #endif
 
         return TRUE;
+    }
+
+    if(AnscEqualString(ParamName,"X_RDKCENTRAL-COM_CompareAdminPassword",TRUE))
+    {
+
+       unsigned int ret=0;
+       char resultBuffer[32]= {'\0'};
+       admin_validatepwd(NULL,pString,pUser,resultBuffer);
+       AnscCopyString(pUser->X_RDKCENTRAL_COM_CompareAdminPassword, resultBuffer);
+       return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Language", TRUE))

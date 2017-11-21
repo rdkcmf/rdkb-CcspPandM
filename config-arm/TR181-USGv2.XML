@@ -8891,6 +8891,28 @@
             <writable>true</writable>
 
           </parameter>
+          <parameter>
+
+            <name>X_RDKCENTRAL-COM_CompareAdminPassword</name>
+
+            <type>string(64)</type>
+
+            <syntax>string</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+          <parameter>
+
+            <name>X_RDKCENTRAL-COM_PasswordReset</name>
+
+            <type>boolean</type>
+
+            <syntax>bool</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
 
           </parameters>
 

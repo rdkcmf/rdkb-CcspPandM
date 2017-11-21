@@ -75,8 +75,9 @@
 #include "cosa_users_apis.h"
 #include "cosa_users_internal.h"
 #include "plugin_main_apis.h"
+#include <openssl/hmac.h>
 
-
+char SerialNumber[64] = {'\0'};
 #if ( defined _COSA_SIM_ )
 
 COSA_DML_USER  g_users_user[] = 
@@ -566,5 +567,174 @@ CosaDmlUserGetCfg
     else
        return ANSC_STATUS_SUCCESS;
 }
-  
+
+ANSC_STATUS
+        hash_adminPassword
+	(
+	        PCHAR              pString,
+        	char*              hashedpassword      /* Identified by InstanceNumber */
+	)
+{
+        CcspTraceWarning(("%s, Entered to hash password\n",__FUNCTION__));
+	ULONG SerialNumberLength = 0;
+	char password[128] = {'\0'};
+	if (SerialNumber[0] =='\0' )
+	{
+          CosaDmlDiGetSerialNumber(NULL,SerialNumber,&SerialNumberLength);
+	}
+        ANSC_CRYPTO_KEY	key	= {0};
+        ANSC_CRYPTO_HASH hash	= {0};
+        ULONG	hashLength	= 0;
+        char *tmp = NULL, *convertTo = NULL;
+        char cmp[128] = {'\0'};
+        char saltText[128] = {'\0'}, hashedmd[128] = {'\0'};
+        int  iIndex = 0, Key_len = 0, salt_len = 0, hashedmd_len = 0;
+        HMAC_CTX ctx;
+			
+        _ansc_sprintf(saltText, "%s", SerialNumber);
+
+        Key_len = strlen(pString);
+	
+        salt_len = strlen(saltText);
+        HMAC_CTX_init( &ctx);
+        HMAC_Init(	 &ctx, pString,  Key_len, EVP_sha256());
+        HMAC_Update( &ctx, (unsigned char *)saltText, salt_len);
+        HMAC_Final(  &ctx, (unsigned char *)hashedmd, (unsigned int *)&hashedmd_len );
+        convertTo = cmp;
+        for (iIndex = 0; iIndex < hashedmd_len; iIndex++) 
+        {
+          sprintf(convertTo,"%02x", hashedmd[iIndex] & 0xff);
+          convertTo += 2;
+        }
+        HMAC_CTX_cleanup( &ctx );
+        AnscCopyString(hashedpassword,cmp);
+        CcspTraceWarning(("%s, Returning success\n",__FUNCTION__));	
+        return ANSC_STATUS_SUCCESS ;
+
+} 
+
+ANSC_STATUS
+admin_validatepwd
+	(
+            ANSC_HANDLE                 hContext,
+            PCHAR                       pString,
+            PCOSA_DML_USER              pEntry,
+            char*                       hashpassword
+	
+	)
+{
+   CcspTraceWarning(("%s, Entered to validate password\n",__FUNCTION__));
+   char fromDB[128]={'\0'};
+   char val[32] = {'\0'};
+   syscfg_get( NULL, "hash_password_3",fromDB, sizeof(fromDB));
+   char getHash[128]= {'\0'};
+   int isDefault=0;
+   if (!strcmp("password",pString))
+   {
+     isDefault=1;
+   }
+   hash_adminPassword(pString,getHash);
+   CcspTraceWarning(("%s, Compare passwords\n",__FUNCTION__));
+   
+   if (strcmp(getHash, fromDB) == 0)
+   {
+     if(isDefault == 1)
+     {
+        strcpy(val,"Default_PWD");
+     }
+     else
+     {
+        strcpy(val,"Good_PWD");
+     }
+   }
+   else
+   {
+     strcpy(val,"Invalid_PWD");
+
+   }
+   AnscCopyString(hashpassword,val);
+   CcspTraceWarning(("%s, Comparison result: %s\n",__FUNCTION__,hashpassword));
+   return ANSC_STATUS_SUCCESS ;
+} 
+
+ANSC_STATUS
+admin_hashandsavepwd
+        (
+            ANSC_HANDLE                 hContext,
+            PCHAR                       pString,
+            PCOSA_DML_USER              pEntry
+
+        )
+{
+  char setHash[128]= {'\0'};
+  CcspTraceWarning(("%s, Hash Password using the passed string\n",__FUNCTION__));
+
+  hash_adminPassword(pString,setHash);
+  if(setHash[0] != '\0')
+  {
+     CcspTraceWarning(("%s, Set hash value to syscfg\n",__FUNCTION__));
+     if(syscfg_set(NULL,"hash_password_3",setHash) != 0)
+     {
+        AnscTraceWarning(("syscfg_set failed\n"));
+     } 
+     else
+     {
+        if (syscfg_commit() != 0) 
+        {
+           AnscTraceWarning(("syscfg_commit failed\n"));
+        }
+        else
+        {
+          AnscCopyString(pEntry->HashedPassword,setHash);
+          CcspTraceWarning(("%s, Hash value is saved to syscfg\n",__FUNCTION__));
+          return ANSC_STATUS_SUCCESS;
+        }
+     }
+  }
+  CcspTraceWarning(("%s, Returning failure\n",__FUNCTION__));
+  return ANSC_STATUS_FAILURE;
+
+}
+
+ANSC_STATUS
+CosaDmlUserResetPassword
+      (
+          BOOL                        bValue,
+          PCOSA_DML_USER              pEntry
+      )
+{
+   CcspTraceWarning(("%s, Entered Rest function\n",__FUNCTION__));
+   char* defPassword = NULL;
+   if(!strcmp(pEntry->Username,"admin"))
+   {
+     defPassword = "password";   
+   }
+   else
+   {
+     return ANSC_STATUS_FAILURE;
+   }
+
+   admin_hashandsavepwd(NULL,defPassword,pEntry);
+   CcspTraceWarning(("%s, Set default password to syscfg\n",__FUNCTION__));
+   if(syscfg_set(NULL, "user_password_3", defPassword) != 0)
+   {
+      AnscTraceWarning(("syscfg_set failed\n"));
+   }
+   else
+   {
+     if(syscfg_commit() != 0)
+     {
+       AnscTraceWarning(("syscfg_commit failed\n"));
+     }
+     else
+     {
+       AnscCopyString(pEntry->Password, defPassword);
+       CcspTraceWarning(("%s, Returning Success\n",__FUNCTION__));
+       return ANSC_STATUS_SUCCESS;
+     }
+   }
+   CcspTraceWarning(("%s, Returning Failure\n",__FUNCTION__));
+   return ANSC_STATUS_FAILURE;
+} 
+
 #endif 
