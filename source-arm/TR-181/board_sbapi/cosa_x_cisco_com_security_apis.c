@@ -5201,20 +5201,39 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
     char str[128];
 
     *count = 0;
+    
+    char line[4096] = {0};
+    FILE *rlist = NULL;
+    FILE *wlist = NULL;
 
     dir = opendir(FIREWALL_LOG_DIR);
     if(dir == NULL)
         return NULL;
+
+    memset(str, 0, sizeof(str));
+    sprintf(str,"%s",MERGED_FW_LOG_FILE);
+    if((wlist = fopen(str, "a+")) == NULL)
+        return;
+
 
     while(( ptr = readdir(dir)) != NULL){
         if(ptr->d_name[0] == '.')
             continue;
         //sprintf(fName, "%s/%s", FIREWALL_LOG_DIR,ptr->d_name);
 
-        memset(str, 0, sizeof(str));
-        sprintf(str, "cat %s/%s >> %s", FIREWALL_LOG_DIR,ptr->d_name,MERGED_FW_LOG_FILE);
-        system(str);
-    }
+         memset(str, 0, sizeof(str));
+         sprintf(str, "%s/%s", FIREWALL_LOG_DIR,ptr->d_name);
+
+         if((rlist = fopen(str, "r")) == NULL)
+             return;
+
+         while(fgets(line, sizeof(line), rlist)) {
+             fprintf(wlist,"%s",line); 
+         }
+         fclose(rlist);
+    }  
+         fclose(wlist);
+
 
     /* Sort the logs in descending order of timestamp*/
     memset(str, 0, sizeof(str));
