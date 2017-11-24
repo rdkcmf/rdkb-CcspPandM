@@ -929,11 +929,13 @@ DeviceInfo_SetParamStringValue
          }
          else if (AnscEqualString(pString, "ui_success", TRUE))
          {
-		 CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_SUCCESS\n"));
+		CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_SUCCESS\n"));
+                CcspTraceInfo(("WebUi admin login success\n"));
          }
          else if(AnscEqualString(pString, "ui_failed", TRUE))
          {
          	CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_FAILED\n"));
+                CcspTraceInfo(("WebUi admin login failed\n"));
          }
 	 else if (AnscEqualString(pString, "reboot_device", TRUE))
          {

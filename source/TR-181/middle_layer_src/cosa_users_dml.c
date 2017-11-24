@@ -787,6 +787,7 @@ User_SetParamBoolValue
     if(AnscEqualString(ParamName,"X_RDKCENTRAL-COM_PasswordReset", TRUE))
     {
         CosaDmlUserResetPassword(bValue,pUser);
+        CcspTraceInfo(("Password reset done for %s user\n",pUser->Username));
         return TRUE;
     }
 
@@ -1027,6 +1028,7 @@ User_SetParamStringValue
 		char resultBuffer[32]= {'\0'};
 		admin_hashandsavepwd(NULL,pString,pUser);
                 AnscCopyString(pUser->Password, pString);
+                CcspTraceInfo(("WebUi admin password is changed\n"));
 	}
 	else
 	{
