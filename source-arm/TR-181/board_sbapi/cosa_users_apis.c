@@ -636,17 +636,23 @@ admin_validatepwd
    CcspTraceWarning(("%s, Entered to validate password\n",__FUNCTION__));
    char fromDB[128]={'\0'};
    char val[32] = {'\0'};
-   syscfg_get( NULL, "hash_password_3",fromDB, sizeof(fromDB));
    char getHash[128]= {'\0'};
    int isDefault=0;
-   if (!strcmp("password",pString))
+
+   syscfg_get( NULL, "hash_password_3",fromDB, sizeof(fromDB));
+
+   if(fromDB[0] == '\0')
    {
+     admin_hashandsavepwd(hContext,pEntry->Password,pEntry);
+   }
+   if (!strcmp("password",pString))
+   { 
      isDefault=1;
    }
-   hash_adminPassword(pString,getHash);
+   hash_adminPassword(pString,getHash); 
    CcspTraceWarning(("%s, Compare passwords\n",__FUNCTION__));
    
-   if (strcmp(getHash, fromDB) == 0)
+   if (strcmp(getHash, pEntry->HashedPassword) == 0)
    {
      if(isDefault == 1)
      {
@@ -713,7 +719,7 @@ CosaDmlUserResetPassword
           PCOSA_DML_USER              pEntry
       )
 {
-   CcspTraceWarning(("%s, Entered Rest function\n",__FUNCTION__));
+   CcspTraceWarning(("%s, Entered Reset function\n",__FUNCTION__));
    char* defPassword = NULL;
    if(!strcmp(pEntry->Username,"admin"))
    {

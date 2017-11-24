@@ -362,14 +362,14 @@ CosaUsersBackendGetUserInfo
             AnscFreeMemory(pCosaUser);
             break;
         }
-        if (ulIndex == 2 && pCosaUser->HashedPassword[0]== '\0')
+        if (ulIndex == 2)
         {
-          char buff[128]= {'\0'};
-          hash_adminPassword(pCosaUser->Password,buff);
-
-          syscfg_set(NULL, "hash_password_3", buff);
-          syscfg_commit();
-          _ansc_strncpy(pCosaUser->HashedPassword,buff,sizeof(pCosaUser->HashedPassword));
+           char buff[128]={'\0'};
+           syscfg_get( NULL, "hash_password_3",buff, sizeof(buff));
+           if( buff[0] != '\0' && pCosaUser->HashedPassword[0]== '\0')
+           {
+             _ansc_strncpy(pCosaUser->HashedPassword,buff,sizeof(pCosaUser->HashedPassword));
+           }
         }
         pUserCxtLink = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory( sizeof(COSA_CONTEXT_LINK_OBJECT) );
         if ( !pUserCxtLink )
