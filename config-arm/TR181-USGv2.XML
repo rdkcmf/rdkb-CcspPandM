@@ -1015,8 +1015,6 @@
                         </parameters>
 
                 </object>
-				</objects>
-                        <objects>
               	<object>
                         <name>PeriodicFWCheck</name>
 
