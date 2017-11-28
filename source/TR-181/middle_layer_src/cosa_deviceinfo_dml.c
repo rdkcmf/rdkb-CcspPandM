@@ -5431,8 +5431,12 @@ RPC_SetParamStringValue
 
     if( AnscEqualString(ParamName, "RebootDevice", TRUE))
     {
-        CosaDmlDiSet_RebootDevice(pString);
-        return TRUE;
+      
+        if( TRUE == CosaDmlDi_ValidateRebootDeviceParam( pString ) )
+		{
+			CosaDmlDiSet_RebootDevice(pString);
+        	return TRUE;
+		}
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */

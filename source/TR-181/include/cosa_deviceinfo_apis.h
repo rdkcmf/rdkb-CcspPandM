@@ -439,5 +439,6 @@ CosaDmlDiSetFirmwareDownloadAndFactoryReset(void);
 CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong);
 CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uValue);
 CosaDmlDiSet_RebootDevice(char* pValue);
+BOOL CosaDmlDi_ValidateRebootDeviceParam(char *pValue);
 
 #endif

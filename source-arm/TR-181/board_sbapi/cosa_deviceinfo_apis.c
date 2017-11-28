@@ -2290,3 +2290,147 @@ CosaDmlDiSetFirmwareDownloadAndFactoryReset()
     return ANSC_STATUS_SUCCESS;
 }
 
+
+BOOL
+CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
+{
+	BOOL IsProceedFurther	= FALSE,
+		  IsActionValid 	= FALSE,
+		  IsSourceValid 	= FALSE,
+		  IsDelayValid		= FALSE;
+	CcspTraceWarning(("%s %d - String :%s", __FUNCTION__, __LINE__, ( pValue != NULL ) ?  pValue : "NULL" ));
+	if (strcasestr(pValue, "delay=") != NULL) {
+		IsDelayValid = TRUE;
+	}
+
+	if(strcasestr(pValue, "source=") != NULL) {
+		IsSourceValid = TRUE;
+	}
+
+	if (strcasestr(pValue, "Router") != NULL) {
+		IsActionValid = TRUE;
+	}
+
+	if (strcasestr(pValue, "Wifi") != NULL) {
+		IsActionValid = TRUE;
+	}
+
+	if (strcasestr(pValue, "VoIP") != NULL) {
+		IsActionValid = TRUE;
+	}
+
+	if (strcasestr(pValue, "Dect") != NULL) {
+		IsActionValid = TRUE;
+	}
+
+	if (strcasestr(pValue, "MoCA") != NULL) {
+		IsActionValid = TRUE;
+	}
+
+	if (strcasestr(pValue, "Device") != NULL) {
+		IsActionValid = TRUE;
+	}
+	if ( ( NULL != pValue )  && ( strlen( pValue )	== 0 ) )
+	{
+		IsProceedFurther = TRUE;
+	}
+	else if( IsActionValid && ( IsSourceValid || IsDelayValid ) )
+	{
+		IsProceedFurther = TRUE;
+	}
+	else if (  IsActionValid )
+	{
+		IsProceedFurther = TRUE;
+	}
+	else if( IsSourceValid || IsDelayValid )
+	{
+		if(  ( !IsSourceValid ) && IsDelayValid ) 
+		{
+			char   tmpCharBuffer [ 256 ] = { 0 };
+			char *subStringForDelay  = NULL,
+			     *subStringForDummy  = NULL;
+
+			strcpy( tmpCharBuffer,	pValue );
+			subStringForDelay       = strtok( tmpCharBuffer, " " );
+			subStringForDummy   = strtok( NULL, " " );
+			if ( strcasestr(subStringForDelay, "delay=") != NULL )
+			{
+				if ( subStringForDummy != NULL )
+				{
+					IsProceedFurther = FALSE;
+				}
+				else
+				{
+					IsProceedFurther = TRUE;
+				}
+
+			}
+			else if ( subStringForDelay != NULL )
+			{
+				IsProceedFurther = FALSE;
+			}
+		}
+		else if(  IsSourceValid  && ( !IsDelayValid ) ) 
+		{
+			char   tmpCharBuffer [ 256 ] = { 0 };
+			char *subStringForSource = NULL,
+			     *subStringForDummy  = NULL;
+
+			strcpy( tmpCharBuffer,	pValue );
+			subStringForSource   = strtok( tmpCharBuffer, " " );
+			subStringForDummy   = strtok( NULL, " " );
+			if ( strcasestr(subStringForSource, "source=") != NULL )
+			{
+				if ( subStringForDummy != NULL )
+				{
+					IsProceedFurther = FALSE;
+				}
+				else
+				{
+					IsProceedFurther = TRUE;
+				}
+
+			}
+			else if( subStringForSource != NULL )
+			{
+				IsProceedFurther = FALSE;
+			}
+		}
+		 else if(  IsSourceValid && IsDelayValid ) 
+		{
+			char   tmpCharBuffer [ 256 ] = { 0 };
+			char *subStringForDelay 	 = NULL,
+				*subStringForSource 	 = NULL,
+				*subStringForDummy  = NULL;
+			strcpy( tmpCharBuffer,	pValue );
+			subStringForDelay   = strtok( tmpCharBuffer, " " );
+			if ( (strcasestr(subStringForDelay, "delay=") != NULL )  || (strcasestr(subStringForDelay, "source=") != NULL ) )
+			{
+				subStringForSource = strtok( NULL, " " );
+				if ( (strcasestr(subStringForSource, "delay=") != NULL )  || (strcasestr(subStringForSource, "source=") != NULL ) )
+				{
+					subStringForDummy   = strtok( NULL, " " );
+					if( subStringForDummy != NULL )
+					{
+						IsProceedFurther = FALSE;
+					}
+					else
+					{
+						IsProceedFurther = TRUE;
+					}
+				}
+				else if(subStringForSource != NULL )
+				{
+					IsProceedFurther = FALSE;
+				}
+
+			}
+			else if( subStringForDelay != NULL )
+			{
+				IsProceedFurther = FALSE;
+			}
+		}
+	}
+
+	 return IsProceedFurther;
+}
