@@ -286,7 +286,7 @@ static char *GetTunnelIfAssoBridgeWiFiPort(ULONG tuIns, ULONG ins)
 
 int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) {
     int retval = 0;
-    char localinterfaces[200];
+    char localinterfaces[200]={0};
     char paramname[60];
     char circuitid[100];
     char outdata[80];
@@ -301,7 +301,7 @@ int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) 
     if(0 != GreTunnelIfPsmGetStr(GRETUIF_PARAM_LOCALIFS, tuIns, ins, localinterfaces, sizeof(localinterfaces)))  //LocalInterfaces: Device.WiFi.SSID.5.,Device.WiFi.SSID.6
         return -1;
     curInt = localinterfaces;
-    //while (curInt) {
+    if(curInt[0] != '\0') {
         circuitSave=0;
         //Trim off the trailing dot if it exists
         size = strlen(curInt);
@@ -378,7 +378,7 @@ int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) 
         //sysevent set snoopereventforcircuitid_queuestart++ circuitid
         
         //curInt = strtok_r(NULL, ",", &save);
-    //}
+    }
     
     return queuestart;
 }
