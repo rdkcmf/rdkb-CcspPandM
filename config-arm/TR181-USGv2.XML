@@ -940,7 +940,7 @@
 
 				<func_SetParamBoolValue>Feature_SetParamBoolValue</func_SetParamBoolValue>
 
-			</functions>
+                        </functions>
 
 			<parameters>
 
@@ -1023,6 +1023,32 @@
                         </parameters>
 
                 </object>
+
+                <object>
+                        <name>MEMSWAP</name>
+
+                        <objectType>object</objectType>
+
+                        <functions>
+                                <func_GetParamBoolValue>MEMSWAP_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>MEMSWAP_SetParamBoolValue</func_SetParamBoolValue>
+                        </functions>
+
+                        <parameters>
+                                <parameter>
+
+                                        <name>Enable</name>
+
+                                        <type>boolean</type>
+
+                                        <syntax>bool</syntax>
+
+                                        <writable>true</writable>
+
+                                </parameter>
+                         </parameters>
+                </object>
+
               	<object>
                         <name>PeriodicFWCheck</name>
 
