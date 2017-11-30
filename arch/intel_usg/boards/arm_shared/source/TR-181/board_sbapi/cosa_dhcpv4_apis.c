@@ -3257,7 +3257,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 			while( oneline[i] == ' ' ) i++;
 			if(oneline[i]){/*valid character*/
 				pCt = &oneline[i++];
-				while( (oneline[i] != ' ') && (oneline[i] != '\0') ) i++;
+				while( (oneline[i] != ' ') && (oneline[i] != '\0')  && (oneline[i] != '\n') ) i++;
 				oneline[i++] = 0; /*end of create time*/
 			}
 		
