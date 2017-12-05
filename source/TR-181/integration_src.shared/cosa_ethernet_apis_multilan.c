@@ -1203,7 +1203,11 @@ int _getMac(char* ifName, char* mac){
         return -1;
     }
     close(skfd);
-
+    #ifdef SA_CUSTOM
+    if(strcmp(ifName,"brlan0")==0){
+    ifr.ifr_hwaddr.sa_data[5]=ifr.ifr_hwaddr.sa_data[5]-6;
+    }
+    #endif
     AnscCopyMemory(mac, ifr.ifr_hwaddr.sa_data, 6);
     return 0; 
 
