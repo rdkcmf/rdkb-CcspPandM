@@ -690,6 +690,13 @@ User_GetParamStringValue
                AnscCopyString(pValue,pUser->HashedPassword);
                return 0;
             }
+#if defined(_COSA_FOR_BCI_)
+            if( AnscEqualString(pUser->Username, "cusadmin",TRUE) )
+            {
+               AnscCopyString(pValue,pUser->HashedPassword);
+               return 0;
+            }
+#endif
             AnscCopyString(pValue, pUser->Password);
             if( AnscEqualString(pUser->Username, "mso", TRUE) )
             {
@@ -709,16 +716,16 @@ User_GetParamStringValue
             return 1;
         }
      }
-     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CompareAdminPassword", TRUE))
+     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ComparePassword", TRUE))
      {
-        if ( AnscSizeOfString(pUser->X_RDKCENTRAL_COM_CompareAdminPassword) < *pUlSize)
+        if ( AnscSizeOfString(pUser->X_RDKCENTRAL_COM_ComparePassword) < *pUlSize)
         {
-            AnscCopyString(pValue, pUser->X_RDKCENTRAL_COM_CompareAdminPassword);
+            AnscCopyString(pValue, pUser->X_RDKCENTRAL_COM_ComparePassword);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pUser->X_RDKCENTRAL_COM_CompareAdminPassword)+1;
+            *pUlSize = AnscSizeOfString(pUser->X_RDKCENTRAL_COM_ComparePassword)+1;
             return 1;
         }
      }
@@ -1026,10 +1033,20 @@ User_SetParamStringValue
 	{
 		unsigned int ret=0;
 		char resultBuffer[32]= {'\0'};
-		admin_hashandsavepwd(NULL,pString,pUser);
+		user_hashandsavepwd(NULL,pString,pUser);
                 AnscCopyString(pUser->Password, pString);
                 CcspTraceInfo(("WebUi admin password is changed\n"));
 	}
+#if defined(_COSA_FOR_BCI_)
+        else if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
+        {
+                unsigned int ret=0;
+                char resultBuffer[32]= {'\0'};
+                user_hashandsavepwd(NULL,pString,pUser);
+                AnscCopyString(pUser->Password, pString);
+                CcspTraceInfo(("WebUi admin password is changed\n"));
+        }
+#endif
 	else
 	{
         	/* save update to backup */
@@ -1046,13 +1063,13 @@ User_SetParamStringValue
         return TRUE;
     }
 
-    if(AnscEqualString(ParamName,"X_RDKCENTRAL-COM_CompareAdminPassword",TRUE))
+    if(AnscEqualString(ParamName,"X_RDKCENTRAL-COM_ComparePassword",TRUE))
     {
 
        unsigned int ret=0;
        char resultBuffer[32]= {'\0'};
-       admin_validatepwd(NULL,pString,pUser,resultBuffer);
-       AnscCopyString(pUser->X_RDKCENTRAL_COM_CompareAdminPassword, resultBuffer);
+       user_validatepwd(NULL,pString,pUser,resultBuffer);
+       AnscCopyString(pUser->X_RDKCENTRAL_COM_ComparePassword, resultBuffer);
        return TRUE;
     }
 

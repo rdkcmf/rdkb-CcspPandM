@@ -96,7 +96,7 @@ struct _COSA_DML_USER
     char                            Password[64];
     char                            Language[16];
     char                            NumOfFailedAttempts;
-    char                            X_RDKCENTRAL_COM_CompareAdminPassword[32];
+    char                            X_RDKCENTRAL_COM_ComparePassword[32];
     char                            HashedPassword[128];
     /*
      * *  Extensions
@@ -168,7 +168,7 @@ CosaDmlUserGetCfg
         PCOSA_DML_USER              pEntry      /* Identified by InstanceNumber */
     );
 ANSC_STATUS
-admin_validatepwd
+user_validatepwd
         (
             ANSC_HANDLE                 hContext,
             PCHAR                       pString,
@@ -177,14 +177,14 @@ admin_validatepwd
         );
 
 ANSC_STATUS
-hash_adminPassword
+hash_userPassword
         (
                 PCHAR              pString,
                 char*              hashedpassword      /* Identified by InstanceNumber */
         );
 
 ANSC_STATUS
-admin_hashandsavepwd
+user_hashandsavepwd
         (
             ANSC_HANDLE                 hContext,
             PCHAR                       pString,

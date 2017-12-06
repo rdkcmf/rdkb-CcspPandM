@@ -657,7 +657,7 @@
           <type>string(64)</type>
           <syntax>string</syntax>
         </parameter>
-
+	
         <parameter>
           <name>X_COMCAST_COM_xfinitywifiEnable</name>
           <type>boolean</type>
@@ -8785,18 +8785,39 @@
             <writable>true</writable>
 
           </parameter>
+          <parameter>
 
-		  <parameter>
-		  
-		  <name>NumOfFailedAttempts</name>
+            <name>NumOfFailedAttempts</name>
 
-		  <type>unsignedInt</type>
+            <type>unsignedInt</type>
 
-		  <syntax>uint32</syntax>
+            <syntax>uint32</syntax>
 
-		  <writable>true</writable>
+            <writable>true</writable>
 
-		  </parameter>
+          </parameter>
+          <parameter>
+
+            <name>X_RDKCENTRAL-COM_ComparePassword</name>
+
+            <type>string(64)</type>
+
+            <syntax>string</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+          <parameter>
+
+            <name>X_RDKCENTRAL-COM_PasswordReset</name>
+
+            <type>boolean</type>
+
+            <syntax>bool</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
 
           </parameters>
 

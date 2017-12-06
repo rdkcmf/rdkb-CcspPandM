@@ -8891,7 +8891,7 @@
           </parameter>
           <parameter>
 
-            <name>X_RDKCENTRAL-COM_CompareAdminPassword</name>
+            <name>X_RDKCENTRAL-COM_ComparePassword</name>
 
             <type>string(64)</type>
 

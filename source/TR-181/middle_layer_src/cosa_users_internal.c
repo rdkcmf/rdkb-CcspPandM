@@ -371,6 +371,17 @@ CosaUsersBackendGetUserInfo
              _ansc_strncpy(pCosaUser->HashedPassword,buff,sizeof(pCosaUser->HashedPassword));
            }
         }
+#if defined(_COSA_FOR_BCI_)
+        if (ulIndex == 1)
+        {
+           char buff[128]={'\0'};
+           syscfg_get( NULL, "hash_password_2",buff, sizeof(buff));
+           if( buff[0] != '\0' && pCosaUser->HashedPassword[0]== '\0')
+           {
+             _ansc_strncpy(pCosaUser->HashedPassword,buff,sizeof(pCosaUser->HashedPassword));
+           }
+        }
+#endif
         pUserCxtLink = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory( sizeof(COSA_CONTEXT_LINK_OBJECT) );
         if ( !pUserCxtLink )
         {
