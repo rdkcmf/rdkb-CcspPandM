@@ -9576,7 +9576,7 @@
           </parameter>
           <parameter>
 
-            <name>X_RDKCENTRAL-COM_CompareAdminPassword</name>
+            <name>X_RDKCENTRAL-COM_ComparePassword</name>
 
             <type>string(64)</type>
 
@@ -9592,6 +9592,39 @@
             <type>boolean</type>
 
             <syntax>bool</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+	  <parameter>
+
+            <name>X_RDKCENTRAL-COM_RemainingAttempts</name>
+
+            <type>int</type>
+
+            <syntax>int</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+           <parameter>
+
+            <name>X_RDKCENTRAL-COM_LoginCounts</name>
+
+            <type>int</type>
+
+            <syntax>int</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+           <parameter>
+
+            <name>X_RDKCENTRAL-COM_LockOutRemainingTime</name>
+
+            <type>int</type>
+
+            <syntax>int</syntax>
 
             <writable>true</writable>
 

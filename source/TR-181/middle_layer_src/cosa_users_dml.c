@@ -88,12 +88,40 @@ void ResetFailedAttepmts(PCOSA_DML_USER  pEntry)
 
         memset(buf,0,sizeof(buf));
         syscfg_get( NULL, "PasswordLockoutTime", buf, sizeof(buf));
-        if( buf != NULL )
+        if( buf[0] != '\0' )
        {
-                lockoutTime=atoi(buf);
+                lockoutTime= ( atoi(buf) / 1000 ) ;
        }
-        usleep(1000*lockoutTime);
-        pEntry->NumOfFailedAttempts=0;
+        while ( lockoutTime > 0 )
+        {
+		pEntry->LockOutRemainingTime = lockoutTime ;
+		sleep ( 1 ) ;
+		lockoutTime-- ;
+        }
+		
+#if defined(_COSA_FOR_BCI_)
+	if( AnscEqualString(pEntry->Username, "cusadmin", TRUE) )
+	{
+		memset(buf,0,sizeof(buf));
+		sprintf(buf, "%d", 0);
+
+		if (syscfg_set(NULL, "NumOfFailedAttempts_2", buf) != 0) 
+		{
+			CcspTraceInfo(("syscfg_set failed\n"));
+		} 
+		else
+		{
+			if (syscfg_commit() != 0)
+			{
+				CcspTraceInfo(("syscfg_commit failed\n"));
+			}
+		}
+	}
+#endif /* _COSA_FOR_BCI_ */
+
+      pEntry->NumOfFailedAttempts = 0;
+       pEntry->LockOutRemainingTime=0;
+
 
 }
 
@@ -519,9 +547,38 @@ User_GetParamIntValue
         int*                        pInt
     )
 {
-    /* check the parameter name and return the corresponding value */
+	/* check the parameter name and return the corresponding value */
+	PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+	PCOSA_DML_USER				   pUser			 = (PCOSA_DML_USER)pCxtLink->hContext;
 
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+		if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_RemainingAttempts", TRUE))
+		{
+			/* collect value */
+			char buf[10];
+
+			memset(buf,0,sizeof(buf));
+			syscfg_get( NULL, "PasswordLockoutAttempts", buf, sizeof(buf));
+			if( buf [0] != '\0' )
+			{
+				*pInt = ( atoi(buf) - (pUser->NumOfFailedAttempts) );
+				return TRUE;
+			}
+		}
+
+		if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LoginCounts", TRUE))
+		{
+			/* collect value */
+			*pInt = pUser->LoginCounts ;
+			return TRUE;
+		}
+
+		if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LockOutRemainingTime", TRUE))
+		{
+			/* collect value */
+			*pInt = pUser->LockOutRemainingTime ;
+			return TRUE;
+		}
+
     return FALSE;
 }
 
@@ -705,6 +762,13 @@ User_GetParamStringValue
                AnscCopyString(pValue,pUser->HashedPassword);
                return 0;
             }
+#if defined(_COSA_FOR_BCI_)
+            if( AnscEqualString(pUser->Username, "cusadmin",TRUE) )
+            {
+               AnscCopyString(pValue,pUser->HashedPassword);
+               return 0;
+            }
+#endif
             AnscCopyString(pValue, pUser->Password);
             if( AnscEqualString(pUser->Username, "mso", TRUE) )
             {
@@ -724,16 +788,16 @@ User_GetParamStringValue
             return 1;
         }
      }
-     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CompareAdminPassword", TRUE))
+     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ComparePassword", TRUE))
      {
-        if ( AnscSizeOfString(pUser->X_RDKCENTRAL_COM_CompareAdminPassword) < *pUlSize)
+        if ( AnscSizeOfString(pUser->X_RDKCENTRAL_COM_ComparePassword) < *pUlSize)
         {
-            AnscCopyString(pValue, pUser->X_RDKCENTRAL_COM_CompareAdminPassword);
+            AnscCopyString(pValue, pUser->X_RDKCENTRAL_COM_ComparePassword);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pUser->X_RDKCENTRAL_COM_CompareAdminPassword)+1;
+            *pUlSize = AnscSizeOfString(pUser->X_RDKCENTRAL_COM_ComparePassword)+1;
             return 1;
         }
      }
@@ -849,9 +913,40 @@ User_SetParamIntValue
         int                         iValue
     )
 {
-    /* check the parameter name and set the corresponding value */
+	/* check the parameter name and set the corresponding value */
+	PCOSA_CONTEXT_LINK_OBJECT		pCxtLink		  = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
 
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+	PCOSA_DML_USER					pUser			  = (PCOSA_DML_USER)pCxtLink->hContext;
+
+	if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LoginCounts", TRUE))
+	{
+		if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
+		{
+			char buf[16]={0};
+
+			memset(buf,0,sizeof(buf));
+			sprintf(buf, "%d", iValue);
+
+			if (syscfg_set(NULL, "PasswordLoginCounts_2", buf) != 0) 
+			{
+			    CcspTraceInfo(("syscfg_set failed\n"));
+			} 
+			else
+			{
+			    if (syscfg_commit() != 0)
+			    {
+			        CcspTraceInfo(("syscfg_commit failed\n"));
+			    }
+			    else
+			    {
+			        pUser->LoginCounts= iValue;
+			    }
+			}
+
+			return TRUE;
+		}
+	}
+		
     return FALSE;
 }
 
@@ -913,7 +1008,33 @@ User_SetParamUlongValue
     	char buf[10];
  	int MaxFailureAttempts = 0;
 	int lockoutState=0;
-        pUser->NumOfFailedAttempts = uValue;
+
+	#if defined(_COSA_FOR_BCI_)
+		if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
+		{
+			memset(buf,0,sizeof(buf));
+			sprintf(buf, "%d", uValue);
+			
+			if (syscfg_set(NULL, "NumOfFailedAttempts_2", buf) != 0) 
+			{
+				CcspTraceInfo(("syscfg_set failed\n"));
+			} 
+			else
+			{
+				if (syscfg_commit() != 0)
+				{
+					CcspTraceInfo(("syscfg_commit failed\n"));
+				}
+				else
+				{
+					pUser->NumOfFailedAttempts = uValue;
+				}
+			}
+		}
+	#else
+		pUser->NumOfFailedAttempts = uValue;
+	#endif
+
     	memset(buf,0,sizeof(buf));
         syscfg_get( NULL, "PasswordLockoutAttempts", buf, sizeof(buf));
         if( buf != NULL )
@@ -1057,10 +1178,20 @@ User_SetParamStringValue
 	{
 		unsigned int ret=0;
 		char resultBuffer[32]= {'\0'};
-		admin_hashandsavepwd(NULL,pString,pUser);
+		user_hashandsavepwd(NULL,pString,pUser);
                 AnscCopyString(pUser->Password, pString);
                 CcspTraceInfo(("WebUi admin password is changed\n"));
 	}
+#if defined(_COSA_FOR_BCI_)
+        else if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
+        {
+                unsigned int ret=0;
+                char resultBuffer[32]= {'\0'};
+                user_hashandsavepwd(NULL,pString,pUser);
+                AnscCopyString(pUser->Password, pString);
+                CcspTraceInfo(("WebUi cusadmin password is changed\n"));
+        }
+#endif
 	else
 	{
         	/* save update to backup */
@@ -1077,13 +1208,13 @@ User_SetParamStringValue
         return TRUE;
     }
 
-    if(AnscEqualString(ParamName,"X_RDKCENTRAL-COM_CompareAdminPassword",TRUE))
+    if(AnscEqualString(ParamName,"X_RDKCENTRAL-COM_ComparePassword",TRUE))
     {
 
        unsigned int ret=0;
        char resultBuffer[32]= {'\0'};
-       admin_validatepwd(NULL,pString,pUser,resultBuffer);
-       AnscCopyString(pUser->X_RDKCENTRAL_COM_CompareAdminPassword, resultBuffer);
+       user_validatepwd(NULL,pString,pUser,resultBuffer);
+       AnscCopyString(pUser->X_RDKCENTRAL_COM_ComparePassword, resultBuffer);
        return TRUE;
     }
 
