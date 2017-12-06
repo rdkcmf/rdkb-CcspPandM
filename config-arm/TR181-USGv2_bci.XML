@@ -595,6 +595,18 @@
 
         <parameter>
 
+          <name>X_RDKCENTRAL-COM_LastRebootReason</name>
+
+          <type>string(64)</type>
+
+          <syntax>string</syntax>
+
+          <writable>true</writable>
+
+        </parameter>
+
+        <parameter>
+
           <name>FirstUseDate</name>
 
           <type>dateTime</type>
