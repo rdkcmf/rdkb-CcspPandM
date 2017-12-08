@@ -1930,6 +1930,7 @@ int isRevSshActive(void) {
     return status;
 }
 
+#define PARTNER_ID_LEN 64 
 
 ANSC_STATUS
 CosaDmlDiGetSyndicationPartnerId
@@ -1945,7 +1946,7 @@ CosaDmlDiGetSyndicationPartnerId
     char *pPartnerId = NULL;
     const char partnerStr[] = "PARTNER_ID";
 
-    if (!pValue || !pulSize || *pulSize <= 64)
+    if (!pValue || !pulSize || *pulSize >= PARTNER_ID_LEN)
         return ANSC_STATUS_FAILURE;
 
     strcpy(pValue, "comcast"); // Set the default to comcast in case the partner id is not set in props file
@@ -2039,6 +2040,99 @@ CosaDmlDiGetSyndicationEnable
 	}
 
     return ANSC_STATUS_SUCCESS;
+}
+ANSC_STATUS getFactoryPartnerId
+	(
+		char*                       pValue,
+        PULONG                      pulSize
+	)
+{
+	CcspTraceError(("%s - Failed Get factoryPartnerId \n", __FUNCTION__));
+	return ANSC_STATUS_FAILURE;
+}
+
+ANSC_STATUS getPartnerId
+	(
+		char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+	char buf[PARTNER_ID_LEN];
+	memset(buf, 0, sizeof(buf));
+    if(ANSC_STATUS_SUCCESS == syscfg_get( NULL, "PartnerID", buf, sizeof(buf)))
+    {
+   		if( buf != NULL )
+   		{
+ 			strncpy(pValue ,buf,strlen(buf));
+            *pulSize = AnscSizeOfString(pValue);
+			return ANSC_STATUS_SUCCESS;
+   		}
+		else
+			return ANSC_STATUS_FAILURE;
+    }
+	else
+		return ANSC_STATUS_FAILURE;
+
+}
+ANSC_STATUS setPartnerId
+	(
+		char*                       pValue
+    )
+{
+	if ((syscfg_set(NULL, "PartnerID", pValue) != 0)) 
+	{
+        AnscTraceWarning(("setPartnerId : syscfg_set failed\n"));
+		return ANSC_STATUS_FAILURE;
+	}
+	else 
+	{
+        if (syscfg_commit() != 0) 
+		{
+			AnscTraceWarning(("setPartnerId : syscfg_commit failed\n"));
+			return ANSC_STATUS_FAILURE;
+		}
+		return ANSC_STATUS_SUCCESS;
+	}
+}
+
+ANSC_STATUS
+CosaDeriveSyndicationPartnerID(char *Partner_ID)
+{
+	char PartnerID[PARTNER_ID_LEN];
+	ULONG size = PARTNER_ID_LEN - 1;
+	memset(PartnerID, 0, sizeof(PartnerID));
+	CcspTraceInfo(("%s \n",__FUNCTION__));
+// get if PartnerID is already available
+	if(ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size))
+	{
+		// TODO: check PartnerID from Boot config file
+	}
+	else
+	{
+		//Get FactoryPartnerID
+		CcspTraceInfo(("%s Get FactoryPartnerID\n",__FUNCTION__));
+		if(ANSC_STATUS_SUCCESS == getFactoryPartnerId(PartnerID,&size))
+			{
+				if(ANSC_STATUS_FAILURE == setPartnerId(PartnerID))
+					CcspTraceError(("%s - Failed Set for PartnerID \n", __FUNCTION__ ));
+			}
+		else
+			{
+			 // Check for PartnerID available in RDKB-build, if not then return default
+			CcspTraceInfo(("%s Check for PartnerID available in RDKB-build, if not then return defaul\n",__FUNCTION__));
+			 if(ANSC_STATUS_FAILURE == CosaDmlDiGetSyndicationPartnerId(NULL,&PartnerID, &size))
+			 	{
+			 		CcspTraceError(("%s - Failed to get PartnerID available in build \n", __FUNCTION__ ));
+			 	}
+			 else
+			 	{
+			 		if(ANSC_STATUS_FAILURE == setPartnerId(PartnerID))
+						CcspTraceError(("%s - Failed Set for PartnerID \n", __FUNCTION__ ));
+			 	}
+			}
+	}
+	strncpy(Partner_ID,PartnerID,sizeof(PartnerID));
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS

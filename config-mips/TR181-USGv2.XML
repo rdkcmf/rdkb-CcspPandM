@@ -726,7 +726,7 @@
                 <name>PartnerId</name>
                 <type>string</type>
                 <syntax>string</syntax>
-                <writable>false</writable>
+                <writable>true</writable>
             </parameter>
             <parameter>
                 <name>TR69CertLocation</name>

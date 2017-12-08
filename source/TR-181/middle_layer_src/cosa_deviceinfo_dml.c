@@ -5001,7 +5001,9 @@ Syndication_GetParamStringValue
     if( AnscEqualString(ParamName, "PartnerId", TRUE))
     {
         /* collect value */
-        CosaDmlDiGetSyndicationPartnerId(NULL, pValue,pulSize);
+        //CosaDmlDiGetSyndicationPartnerId(NULL, pValue,pulSize);
+        AnscCopyString( pValue, pMyObject->PartnerID);
+		*pulSize = AnscSizeOfString( pValue );	
         return 0;
     }
 
@@ -5078,6 +5080,17 @@ Syndication_SetParamStringValue
 		{
 			memset( pMyObject->TR69CertLocation, 0, sizeof( pMyObject->TR69CertLocation ));
 			AnscCopyString( pMyObject->TR69CertLocation, pString );
+		}
+		
+		return TRUE;
+    }
+    if( AnscEqualString(ParamName, "PartnerId", TRUE) )
+    {
+		retValue = setPartnerId( pString );
+		if( ANSC_STATUS_SUCCESS == retValue )
+		{
+			memset( pMyObject->PartnerID, 0, sizeof( pMyObject->PartnerID ));
+			AnscCopyString( pMyObject->PartnerID, pString );
 		}
 		
 		return TRUE;

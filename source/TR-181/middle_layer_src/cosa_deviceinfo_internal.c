@@ -186,7 +186,7 @@ CosaDeviceInfoInitialize
 	//Get Syndication Enable
 	CosaDmlDiGetSyndicationEnable( (ANSC_HANDLE)pMyObject,
 								    &pMyObject->SyndicationEnable );
-
+	CosaDeriveSyndicationPartnerID(pMyObject->PartnerID);
     return returnStatus;
 }
 
