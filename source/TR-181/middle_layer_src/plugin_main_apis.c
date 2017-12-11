@@ -609,6 +609,10 @@ static void CheckAndSetRebootReason()
     int value = -1;
     if(fopen("/var/tmp/lastrebootreason","r")==NULL)
     {
+        char rebootReason[64] = "unknown";
+        char BOOT_TIME_LOG_FILE[32] = "/rdklogs/logs/BootTime.log";
+        FILE *fpBootLogFile = NULL;
+
         CcspTraceWarning((" /var/tmp/lastrebootreason File doesn't exist --Create new file\n"));
         system("touch /var/tmp/lastrebootreason");
         //Check for Rebootcounter value--GET & SET
@@ -626,9 +630,28 @@ static void CheckAndSetRebootReason()
                 if(-1 == setUnknownRebootReason())
                      CcspTraceWarning(("Error to SET unknown reboot reason \n"));
             }
+            else
+            {
+                char buf[64] = {'\0'};
+                if(syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", buf, sizeof(buf))==0)
+                {
+                    AnscCopyString(rebootReason,buf);
+                }
+            }
                 // reset counter to 0 for both known and unknown reason
                 if(-1 == setRebootCounter())
                     CcspTraceWarning(("Error to SET reboot counter \n"));
+        }
+
+        fpBootLogFile = fopen(BOOT_TIME_LOG_FILE, "a+");
+        if (NULL != fpBootLogFile)
+        {
+            fprintf(fpBootLogFile, "Received reboot_reason as:%s\n", rebootReason);
+            fclose(fpBootLogFile);
+        }
+        else
+        {
+            CcspTraceWarning(("Fail to open BootTime.log to write reboot reason \n"));
         }
            
     }
