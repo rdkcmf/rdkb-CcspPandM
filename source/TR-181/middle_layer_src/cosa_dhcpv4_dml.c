@@ -7350,8 +7350,15 @@ StaticAddress_SetParamStringValue
     if( AnscEqualString(ParamName, "X_CISCO_COM_DeviceName", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pDhcpStaticAddress->DeviceName,pString);
-        return TRUE;
+	    if ( ( sizeof(pDhcpStaticAddress->DeviceName) - 1 )  > AnscSizeOfString(pString))
+    	{
+			AnscCopyString(pDhcpStaticAddress->DeviceName,pString);
+			return TRUE;
+    	}
+		else
+		{
+			CcspTraceWarning(("'%s' value should be less than (%d) charecters\n", ParamName, ( sizeof(pDhcpStaticAddress->DeviceName) - 1 )));
+		}
     }
 
     if( AnscEqualString(ParamName, "X_CISCO_COM_Comment", TRUE))
