@@ -1049,6 +1049,52 @@
                          </parameters>
                 </object>
 
+		<object>
+                        <name>IDS</name>
+
+                        <objectType>object</objectType>
+
+                        <functions>
+
+                                <func_GetParamBoolValue>IDS_GetParamBoolValue</func_GetParamBoolValue>
+
+                                <func_SetParamBoolValue>IDS_SetParamBoolValue</func_SetParamBoolValue>
+
+				<func_GetParamStringValue>IDS_GetParamStringValue</func_GetParamStringValue>
+
+                                <func_SetParamStringValue>IDS_SetParamStringValue</func_SetParamStringValue>
+
+                        </functions>
+
+                        <parameters>
+                                <parameter>
+
+                                        <name>Enable</name>
+
+                                        <type>boolean</type>
+
+                                        <syntax>bool</syntax>
+
+                                        <writable>true</writable>
+
+                                </parameter>
+
+                                <parameter>
+
+                                        <name>ScanTask</name>
+
+                                        <type>string(64)</type>
+
+                                        <syntax>string</syntax>
+
+					<writable>true</writable>
+
+                                </parameter>
+
+                        </parameters>
+
+                </object>
+
               	<object>
                         <name>PeriodicFWCheck</name>
 
