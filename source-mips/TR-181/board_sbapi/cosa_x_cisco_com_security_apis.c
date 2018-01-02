@@ -5203,30 +5203,10 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
 
 static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
     struct dirent *ptr;    
-    DIR *dir;
     PCOSA_DML_IA_LOG_ENTRY entry = NULL;
     char str[128];
 
     *count = 0;
-
-    dir = opendir(FIREWALL_LOG_DIR);
-    if(dir == NULL)
-        return NULL;
-
-    while(( ptr = readdir(dir)) != NULL){
-        if(ptr->d_name[0] == '.')
-            continue;
-        //sprintf(fName, "%s/%s", FIREWALL_LOG_DIR,ptr->d_name);
-
-        memset(str, 0, sizeof(str));
-        sprintf(str, "cat %s/%s >> %s", FIREWALL_LOG_DIR,ptr->d_name,MERGED_FW_LOG_FILE);
-        system(str);
-    }
-
-    /* Sort the logs in descending order of timestamp*/
-    memset(str, 0, sizeof(str));
-    sprintf(str, "grep Time %s | sort -r -k2,5 > %s", MERGED_FW_LOG_FILE, SORT_FW_LOG_FILE);
-    system(str);
         /* Check log time format */
 		/* Old timestemp not include year, 
  		 * add year to support it */
@@ -5264,7 +5244,6 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
     sprintf(str, "rm -rf %s %s", MERGED_FW_LOG_FILE, SORT_FW_LOG_FILE);  
     system(str);
 
-    closedir(dir);
     return entry;
 }
 
@@ -5303,7 +5282,7 @@ CosaDmlIaGetLogEntries
     )
 {
     char fw_log_path[50];
-    char temp[512];
+    char temp[1024];
     static int first_flg = 1;
 
     PCOSA_DML_IA_LOG_ENTRY pConf = NULL;
@@ -5333,16 +5312,7 @@ CosaDmlIaGetLogEntries
     /* Generate current log message */
     system(GEN_CURRENT_LOG_CMD);
 
-    sprintf(temp, "mkdir -p %s", FIREWALL_LOG_DIR);
-    //printf("%s\n", temp);
-    system(temp);
-
-    sprintf(temp, "log_handle.sh uncompress_fwlog %s", FIREWALL_LOG_DIR);
-    //printf("%s\n", temp);
-    system(temp);
-
-    sprintf(temp, "cp %s/???????? %s 2> /dev/null", fw_log_path, FIREWALL_LOG_DIR);
-//printf("%s\n", temp);
+    sprintf(temp, "mkdir -p %s ;log_handle.sh uncompress_fwlog %s %s", FIREWALL_LOG_DIR,FIREWALL_LOG_DIR,fw_log_path);
     system(temp);
 
 printf("%d\n",__LINE__);
@@ -5417,7 +5387,7 @@ CosaDmlIaGetALLLogEntries
     )
 {
     char fw_log_path[50];
-    char temp[512];
+    char temp[1024];
     static int first_flg = 1;
     int i;
     size_t tmpsize=0;
@@ -5448,16 +5418,7 @@ CosaDmlIaGetALLLogEntries
         /* Generate current log message */
         system(GEN_CURRENT_LOG_CMD);
 
-        sprintf(temp, "mkdir -p %s", FIREWALL_LOG_DIR);
-        //printf("%s\n", temp);
-        system(temp);
-
-        sprintf(temp, "log_handle.sh uncompress_fwlog %s", FIREWALL_LOG_DIR);
-        //printf("%s\n", temp);
-        system(temp);
-
-        sprintf(temp, "cp %s/???????? %s 2> /dev/null", fw_log_path, FIREWALL_LOG_DIR);
-    //printf("%s\n", temp);
+        sprintf(temp, "mkdir -p %s ;log_handle.sh uncompress_fwlog %s %s", FIREWALL_LOG_DIR,FIREWALL_LOG_DIR,fw_log_path);
         system(temp);
 
         /* get all log information */
