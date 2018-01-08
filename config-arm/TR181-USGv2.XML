@@ -721,6 +721,14 @@
 	     <writable>true</writable>
         </parameter>
 
+        <parameter>
+          <name>X_RDKCENTRAL-COM_AkerEnable</name>
+          <type>boolean</type>
+          <syntax>bool</syntax>
+          <writable>true</writable>
+        </parameter>
+
+
 		<parameter>
 			<name>X_RDKCENTRAL-COM_IsCloudReachable</name>
 			<type>boolean</type>

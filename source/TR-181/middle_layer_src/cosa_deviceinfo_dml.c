@@ -177,7 +177,31 @@ DeviceInfo_GetParamBoolValue
         return TRUE;
     }
 
-    bReturnValue =
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_AkerEnable", TRUE))
+    {
+        /* collect value */
+        char buf[8];
+        if( syscfg_get( NULL, "X_RDKCENTRAL-COM_AkerEnable", buf, sizeof(buf))==0)
+        {
+            if (strcmp(buf, "true") == 0)
+            {
+                *pBool = TRUE;
+            }
+            else
+            {
+                *pBool = FALSE;
+            }
+        }
+        else
+        {
+            CcspTraceWarning(("%s syscfg_get failed  for AkerEnable\n",__FUNCTION__));
+            *pBool = FALSE;
+        }
+
+        return TRUE;
+    }
+
+  bReturnValue =
         DeviceInfo_GetParamBoolValue_Custom
             (
                 hInsContext,
@@ -689,6 +713,28 @@ DeviceInfo_SetParamBoolValue
     {
         /* collect value */
         CosaDmlDiClearResetCount(NULL,bValue);
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_AkerEnable", TRUE))
+    {
+        /* collect value */
+        char buf[8];
+        memset(buf, 0, sizeof(buf));
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+
+        if (syscfg_set(NULL, "X_RDKCENTRAL-COM_AkerEnable", buf) != 0)
+        {
+            AnscTraceWarning(("syscfg_set failed for AkerEnable\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                AnscTraceWarning(("syscfg_commit failed for AkerEnable\n"));
+            }
+        }
+
         return TRUE;
     }
 
