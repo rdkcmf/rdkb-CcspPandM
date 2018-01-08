@@ -469,7 +469,7 @@ CosaDml_CGreIfGetLastChange(const COSA_DML_CGRE_IF *greIf,
 ANSC_STATUS
 CosaDml_CGreIfSetCfg(ULONG ins, COSA_DML_CGRE_IF *greIf)
 {
-    const char *evt = "gre-restart";
+    const char *evt = "gre-forceRestart";
     char val[64];
     char rec[128], old[16];
 
