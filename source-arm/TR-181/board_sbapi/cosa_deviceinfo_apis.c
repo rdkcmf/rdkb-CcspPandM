@@ -1776,7 +1776,7 @@ int setUnknownRebootReason()
 		    }        
 }
 
-setLastRebootReason(char* reason)
+void setLastRebootReason(char* reason)
 {
 
 	int val = 1;
@@ -2172,7 +2172,7 @@ CosaDmlDiGetSyndicationWifiUIBrandingTable
     return ANSC_STATUS_SUCCESS;
 }
 
-CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong)
+void CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong)
 {
 	char buf[8] = { 0 };
 
@@ -2187,7 +2187,8 @@ CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong)
 
 }
 
-CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uValue)
+
+void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uValue)
 {
 	char buf[8] = { 0 };
 	
@@ -2355,7 +2356,7 @@ void* RebootDevice_thread(void* buff)
 	
 }
 
-CosaDmlDiSet_RebootDevice(char* pValue)
+void CosaDmlDiSet_RebootDevice(char* pValue)
 {
 	pthread_t tid;
 

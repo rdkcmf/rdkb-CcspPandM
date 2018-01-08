@@ -5488,7 +5488,7 @@ Syndication_SetParamBoolValue
     return FALSE;
 }
 
-#ifdef _COSA_INTEL_XB3_ARM_
+#ifndef _COSA_FOR_BCI_
 /***********************************************************************
 
  APIs for Object:

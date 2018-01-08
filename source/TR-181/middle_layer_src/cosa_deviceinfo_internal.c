@@ -174,7 +174,7 @@ CosaDeviceInfoInitialize
 
 	CosaDmlDiGetAndProcessDhcpServDetectionFlag( pMyObject, &pMyObject->bDhcpServDetectEnable );
 	pMyObject->bMultipleGW	= FALSE;
-#ifdef _COSA_INTEL_XB3_ARM_
+#ifndef _COSA_FOR_BCI_
 	CosaDmlDiGet_DeferFWDownloadReboot(&pMyObject->DeferFWDownloadReboot);
 #endif
 

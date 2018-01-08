@@ -836,9 +836,46 @@
                 </parameter>
               </parameters>
             </object>
+                        <object>
+              <name>RPC</name>
+              <objectType>object</objectType>
+              <functions>
+                <func_SetParamStringValue>RPC_SetParamStringValue</func_SetParamStringValue>
+                <func_GetParamStringValue>RPC_GetParamStringValue</func_GetParamStringValue>
+                                <func_GetParamUlongValue>RPC_GetParamUlongValue</func_GetParamUlongValue>
+                                <func_SetParamUlongValue>RPC_SetParamUlongValue</func_SetParamUlongValue>
+                                <func_GetParamBoolValue>RPC_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>RPC_SetParamBoolValue</func_SetParamBoolValue>
+              </functions>
+              <parameters>
+                <parameter>
+                  <name>RebootPendingNotification</name>
+                  <type>unsignedInt</type>
+                  <syntax>uint32</syntax>
+                  <writable>true</writable>
+                </parameter>
+                <parameter>
+                  <name>DeferFWDownloadReboot</name>
+                  <type>unsignedInt</type>
+                  <syntax>uint32</syntax>
+                  <writable>true</writable>
+                </parameter>
+                <parameter>
+                  <name>RebootDevice</name>
+                  <type>string</type>
+                  <syntax>string</syntax>
+                  <writable>true</writable>
+                </parameter>
+                <parameter>
+                  <name>AbortReboot</name>
+                  <type>boolean</type>
+                  <syntax>bool</syntax>
+                  <writable>true</writable>
+                </parameter>
+              </parameters>
+            </object>
 		</objects>
 		</object>
-		
         <object>
             <name>X_RDKCENTRAL-COM_RFC</name>
             <objectType>object</objectType>

@@ -436,9 +436,9 @@ CosaDmlDiGetSyndicationWifiUIBrandingTable
 ANSC_STATUS
 CosaDmlDiSetFirmwareDownloadAndFactoryReset(void);
 
-CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong);
-CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uValue);
-CosaDmlDiSet_RebootDevice(char* pValue);
+void CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong);
+void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uValue);
+void CosaDmlDiSet_RebootDevice(char* pValue);
 BOOL CosaDmlDi_ValidateRebootDeviceParam(char *pValue);
 
 #endif
