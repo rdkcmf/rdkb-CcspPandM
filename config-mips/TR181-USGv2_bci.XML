@@ -14111,7 +14111,7 @@
           </objects>
         </object>
       </objects>
-    </object>
+    </object>-->
 
 	<object>
       <name>X_CISCO_COM_FileTransfer</name>
@@ -14174,7 +14174,7 @@
 		  <syntax>uint32/mapped</syntax>
 		</parameter>
 	  </parameters>
-	</object>-->
+	</object>
 
     <object>
       <name>X_CISCO_COM_TrueStaticIP</name>
