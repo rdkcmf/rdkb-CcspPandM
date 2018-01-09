@@ -1938,6 +1938,11 @@ CosaDmlDiGetSyndicationPartnerId
             if ((pPartnerId = strstr(fileContent, partnerStr)) != NULL)
             { 
                 AnscCopyString(pValue ,pPartnerId+sizeof(partnerStr));
+                
+                //Check for \n and replace 
+                if (pValue[AnscSizeOfString(pValue)-1] == '\n')
+                    pValue[AnscSizeOfString(pValue)-1] = '\0';
+
                 *pulSize = AnscSizeOfString(pValue);
                 break;
             }
