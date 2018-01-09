@@ -1336,6 +1336,24 @@
                             </parameters>
                         </object>
                         <object>
+                            <name>HTTPSConfigDownload</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>HTTPSConfigDownload_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>HTTPSConfigDownload_SetParamBoolValue</func_SetParamBoolValue>
+                            </functions>
+
+                            <parameters>
+                                <parameter>
+                                    <name>Enabled</name>
+                                    <type>boolean</type>
+                                    <syntax>bool</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                            </parameters>
+                        </object>
+
+                        <object>
                             <name>SSIDPSWDCTRL</name>
                             <objectType>object</objectType>
                             <functions>
@@ -14949,7 +14967,7 @@
           </objects>
         </object>
       </objects>
-    </object>
+    </object>-->
 
 	<object>
       <name>X_CISCO_COM_FileTransfer</name>
@@ -14965,14 +14983,14 @@
 	  </functions>
 	  <parameters>
         <parameter>
-          <name>ServerAddress</name>
-          <type>string(64)</type>
-          <syntax>string</syntax>
+          <name>Server</name>
+          <type>string: Server1(1),Server2(2)</type>
+          <syntax>uint32/mapped</syntax>
           <writable>true</writable>
         </parameter>
 		<parameter>
 		  <name>Protocol</name>
-		  <type>string: TFTP(1),FTP(2),HTTP(3)</type>
+		  <type>string: TFTP(1),FTP(2),HTTP(3),HTTPS(4)</type>
 		  <syntax>uint32/mapped</syntax>
 		  <writable>true</writable>
 		</parameter>
@@ -15008,11 +15026,11 @@
 		</parameter>
 		<parameter>
 		  <name>Status</name>
-		  <type>string: InProgress(1),Complete(2),Failed(3)</type>
+		  <type>string: InProgress(1),Complete(2),Failed(3),FileNotFound(4),ServerNotFound(5),IncorrectFileFormat(6)</type>
 		  <syntax>uint32/mapped</syntax>
 		</parameter>
 	  </parameters>
-	</object>-->
+	</object>
 
     <object>
       <name>X_CISCO_COM_TrueStaticIP</name>

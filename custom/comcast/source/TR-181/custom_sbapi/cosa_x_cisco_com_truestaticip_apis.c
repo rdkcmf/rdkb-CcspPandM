@@ -509,7 +509,7 @@ Start:
             *p = '\0';
         }
 
-        AnscTraceWarning(("!!!!!!!!!! pValue = %s!!!!!!!!!!\n", pValue));
+        AnscTraceWarning(("Configuration Field : %s, New Value : %s\n", pStringToken->Name, pValue));
         
         pAtomItem = (PANSC_ATOM_DESCRIPTOR)pAtomNamespace->GetAtomByName(pAtomNamespace, pStringToken->Name);
         if ( !pAtomItem )

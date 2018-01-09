@@ -71,6 +71,21 @@
 #include "dmsb_tr181_psm_definitions.h"
 #include <curl/curl.h>
 
+/* Set up default https server table */
+typedef struct
+{
+    COSA_DML_FILETRANSFER_SERVER    mStatus;
+    char                  *mServer;
+    char                  *mServerName;
+} FILETRANSFER_SERVER_item;
+
+
+FILETRANSFER_SERVER_item FileTransfer_HTTPSServers[] = {
+    {COSA_DML_FILETRANSFER_SERVER_NONE, "", ""},
+    {COSA_DML_FILETRANSFER_SERVER_HTTPS1, "tintaiih.comcast.net", "HTTPS Server 1"}
+};
+
+
 ANSC_STATUS
 CosaDmlFileTransferInit
     (
@@ -79,6 +94,82 @@ CosaDmlFileTransferInit
 )
 {
     return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+VerifyFileFormat (char* configFilePath)
+{
+    int formatVerifyStatus = FORMAT_VERIFY_SUCCESS;
+    FILE* refFile = NULL;
+    FILE* configFile = NULL;
+    int i = 0;
+    int totalRefLines = 0;
+    int foundMatch = 0;
+    char refStrings [MAX_STRING_COUNT][MAX_LINE_SIZE] = {{'\0'}};;
+    char configLine [MAX_LINE_SIZE];
+    char* configField;
+    char* Extension;
+    /* Reading reference file and populating array of refrence strings */
+
+    refFile = fopen ( TRUE_STATIC_IP_CONFIG_REFERENCE_FILE, "r" );
+    if ( refFile != NULL )
+    {
+        i = 0;
+        while ((fgets (refStrings[i], sizeof refStrings[i], refFile) != NULL) && (i < MAX_STRING_COUNT))
+        {
+            refStrings[i][strcspn(refStrings[i], "\n")] = 0;
+            i++;
+        }
+        totalRefLines = i;
+
+        fclose(refFile);
+    }
+    else
+    {
+        AnscTraceWarning(("Cannot open reference file\n"));
+        perror ( TRUE_STATIC_IP_CONFIG_REFERENCE_FILE );
+        formatVerifyStatus = FORMAT_VERIFY_FAILURE;
+    }
+    /* Check for config file extension */
+    Extension = strrchr(configFilePath, '.');
+    if (0 != strcmp(Extension+1,"txt")) {
+        AnscTraceWarning(("Invalid Config File extension Entered\n"));
+	formatVerifyStatus = FORMAT_VERIFY_FAILURE;
+        return formatVerifyStatus;
+    }
+    /* Reading downloaded configuration file and verifying configuration field with refrence strings */
+    configFile = fopen (configFilePath, "r");
+    if ((configFile != NULL) && (formatVerifyStatus != FORMAT_VERIFY_FAILURE))
+    {
+        while (fgets (configLine, sizeof configLine, configFile) != NULL )
+        {
+            configField = strtok (configLine, "  \t");
+            foundMatch = 0;
+
+            for (i = 0; ((i < totalRefLines) && (foundMatch == 0)); i++)
+            {
+                if ((strcmp (refStrings[i], configField)) == 0 )
+                {
+                    foundMatch = 1;
+                }
+            }
+
+            if (foundMatch == 0)
+            {
+                formatVerifyStatus = FORMAT_VERIFY_FAILURE;
+                break;
+            }
+        }
+
+        fclose (configFile);
+    }
+    else
+    {
+        AnscTraceWarning(("Cannot open config file\n"));
+        formatVerifyStatus = FORMAT_VERIFY_FAILURE;
+    }
+
+    return formatVerifyStatus;
 }
 
 static
@@ -95,7 +186,10 @@ FileTransferTask
     FILE*                           fp              = NULL;
     CURL*                           curl            = NULL;
     CURLcode                        ret             = CURLE_OK;
-
+    int                             httpCode        = 0;
+    int                             formatVerifyStatus = FORMAT_VERIFY_FAILURE;
+    char                            tmp[128]        = {0};
+    
     ret  = curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     if ( !curl ) 
@@ -104,33 +198,83 @@ FileTransferTask
         return ANSC_STATUS_FAILURE;
     }
 
-    _ansc_sprintf(URL, "tftp://%s/%s", pCfg->ServerAddress, pCfg->FileName);
+    if (pCfg->Server == COSA_DML_FILETRANSFER_SERVER_NONE)
+    {
+        AnscTraceWarning(("HTTPS Server not set!\n"));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    _ansc_sprintf(URL, "https://%s/%s", FileTransfer_HTTPSServers[pCfg->Server].mServer, pCfg->FileName);
     ret = curl_easy_setopt(curl, CURLOPT_URL, URL);
 
-    _ansc_sprintf(Path, "%s%s", TRUE_STATIC_IP_CONFIG_PATH, pCfg->FileName);
+    _ansc_sprintf(Path, "%s%s", TRUE_STATIC_IP_CONFIG_PATH, TRUE_STATIC_IP_CONFIG_FILE);
     if ((fp = fopen(Path,"w+"))== NULL )
     {
         curl_easy_cleanup(curl);
         return ANSC_STATUS_FAILURE;
     }
-
+    sprintf(tmp,"configparamgen jx %s %s",PRIVATE_KEY_ENCRYPTED,PRIVATE_KEY_GENERATED);
+    system(tmp);
+    ret = curl_easy_setopt(curl, CURLOPT_CAPATH, "/etc/ssl/certs/");
     ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-    ret = curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30);
+    ret = curl_easy_setopt(curl, CURLOPT_SSLCERT, PUBLIC_CERT_PATH);
+    ret = curl_easy_setopt(curl, CURLOPT_SSLKEY, PRIVATE_KEY_GENERATED);   
+    ret = curl_easy_setopt(curl, CURLOPT_TIMEOUT, 60);
+    #if defined(_BCI_FEATURE_REQ)
+    ret = curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+    #endif
     pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_InProgress;
     ret = curl_easy_perform(curl);
-
-    if ( ret == CURLE_OK ) 
+    curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &httpCode);
+    fclose(fp);
+    memset(tmp, 0, sizeof(tmp));
+    sprintf(tmp,"rm -rf %s",PRIVATE_KEY_GENERATED);
+    system(tmp);
+    
+    if ( ret == CURLE_OK )
     {
-        printf("!!!!!!!!!! File downloaded, length = %d\n", ftell(fp));
-        pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_Complete;
+        AnscTraceWarning(("Curl download Success, ret code = %d, status : %s, HTTP Code : %d\n", ret, curl_easy_strerror(ret), httpCode));
+        if (httpCode == 200)
+        {
+            formatVerifyStatus = VerifyFileFormat (Path);
+            if (formatVerifyStatus == FORMAT_VERIFY_SUCCESS)
+            {
+                pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_Complete;
+                AnscTraceWarning(("HTTPS server %s[%s] responded and file [%s] downloaded\n", FileTransfer_HTTPSServers[pCfg->Server].mServerName, FileTransfer_HTTPSServers[pCfg->Server].mServer, pCfg->FileName));
+            }
+            else
+            {
+                pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_IncorrectFileFormat;
+                AnscTraceWarning(("HTTPS server %s[%s] responded and file [%s] was found but the formatting in this file is not correct. File rejected\n", FileTransfer_HTTPSServers[pCfg->Server].mServerName, FileTransfer_HTTPSServers[pCfg->Server].mServer, pCfg->FileName));
+                return ANSC_STATUS_FAILURE;
+            }
+        }
+        else
+        {
+            AnscTraceWarning(("File download failed, HTTP Code : %d\n", httpCode));
+            if (httpCode == 404)
+            {
+                AnscTraceWarning(("HTTPS server %s[%s] responded but the requested file [%s] was not found on this server\n", FileTransfer_HTTPSServers[pCfg->Server].mServerName, FileTransfer_HTTPSServers[pCfg->Server].mServer, pCfg->FileName));
+                pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_FileNotFound;
+            }
+        }
     }
     else
     {
-        printf("File download failure, error code = %d\n", ret);
-        pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_Failed;
+        AnscTraceWarning(("File download failure, error code = %d, error : %s\n", ret, curl_easy_strerror(ret)));
+
+        if ( ret == CURLE_OPERATION_TIMEDOUT || ret == CURLE_COULDNT_CONNECT )
+        {
+            AnscTraceWarning(("HTTPS server at %s[%s] was not found or is not responding\n", FileTransfer_HTTPSServers[pCfg->Server].mServerName, FileTransfer_HTTPSServers[pCfg->Server].mServer));
+            pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_ServerNotFound;
+        }
+        else
+        {
+            AnscTraceWarning(("File [%s] transfer failed due to unknown reason from HTTPS server %s[%s]\n",pCfg->FileName, FileTransfer_HTTPSServers[pCfg->Server].mServerName, FileTransfer_HTTPSServers[pCfg->Server].mServer));
+            pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_Failed;
+        }
     }
-          
-    fclose(fp);
+ 
     curl_easy_cleanup(curl);
 
     return ANSC_STATUS_SUCCESS;
@@ -149,18 +293,18 @@ CosaDmlFileTransferSetCfg
     unsigned int                    RecordType      = ccsp_string;
     char                            RecordValue[64] = {0};
 
-    /* Only support TFTP download for now */
+    /* Only support HTTPS download for now */
 
-    if ( TRUE )     /* ServerAddress */
+    if ( TRUE )     /* Server */
     {
         _ansc_sprintf
             (
                 pParamPath,
-                DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_ServerAddress
+                DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_Server
             );
 
-        RecordType = ccsp_string;
-        AnscCopyString(RecordValue, pCfg->ServerAddress);
+        RecordType = ccsp_unsignedInt;
+        _ansc_sprintf(RecordValue, "%d", pCfg->Server);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -256,7 +400,7 @@ CosaDmlFileTransferSetCfg
         }
     }
 
-    if ( pCfg->Protocol == COSA_DML_FILETRANSFER_PROTOCOL_TFTP && pCfg->Action == COSA_DML_FILETRANSFER_ACTION_Download )
+    if ( pCfg->Protocol == COSA_DML_FILETRANSFER_PROTOCOL_HTTPS && pCfg->Action == COSA_DML_FILETRANSFER_ACTION_Download )
     {
         if ( pMyObject->Status == COSA_DML_FILETRANSFER_STATUS_InProgress )
         {
@@ -287,16 +431,16 @@ CosaDmlFileTransferGetCfg
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
 
-    /* Fetch Cfg, we only support tftp download for now */
+    /* Fetch Cfg, we only support https download for now */
 
-    if ( TRUE )     /* ServerAddress */
+    if ( TRUE )     /* Server */
     {
         SlapInitVariable(&SlapValue);
 
         _ansc_sprintf
             (
                 pParamPath,
-                DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_ServerAddress
+                DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_Server
             );
 
         iReturnValue =
@@ -309,7 +453,7 @@ CosaDmlFileTransferGetCfg
                     &SlapValue
                 );
 
-        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_string))
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
         {
             AnscTraceWarning
                 ((
@@ -322,7 +466,7 @@ CosaDmlFileTransferGetCfg
         }
         else
         {
-            AnscCopyString(pCfg->ServerAddress, SlapValue.Variant.varString);
+            pCfg->Server, SlapValue.Variant.varUint32;
         }
 
         SlapCleanVariable(&SlapValue);
