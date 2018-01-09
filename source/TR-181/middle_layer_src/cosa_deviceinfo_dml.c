@@ -4894,7 +4894,152 @@ Process_GetParamStringValue
     return -1;
 }
 
-/***********************************************************************
+
+/* HTTPS config download can be enabled/disabled for bci routers */
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        HTTPSConfigDownload_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+HTTPSConfigDownload_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+
+    if( AnscEqualString(ParamName, "Enabled", TRUE))
+    {
+        char *strValue = NULL;
+        char str[2];
+        int retPsmGet = CCSP_SUCCESS;
+
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_RFC.Feature.HTTPSConfigDownload.Enabled", NULL, &strValue);
+        if (retPsmGet == CCSP_SUCCESS)
+        {
+            *pBool = _ansc_atoi(strValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        }
+        else
+        {
+            *pBool = FALSE;
+        }
+
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
+/* HTTPS config download can be enabled/disabled for bci routers */
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        HTTPSConfigDownload_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+HTTPSConfigDownload_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Enabled", TRUE))
+    {
+        char *strValue = NULL;
+        char str[2];
+        int retPsmGet = CCSP_SUCCESS;
+        BOOL getVal = 0;
+
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_RFC.Feature.HTTPSConfigDownload.Enabled", NULL, &strValue);
+        if (retPsmGet == CCSP_SUCCESS)
+        {
+            getVal = _ansc_atoi(strValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        }
+
+        if(getVal != bValue)
+        {
+            sprintf(str,"%d",bValue);
+            retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_RFC.Feature.HTTPSConfigDownload.Enabled", ccsp_string, str);
+            if (retPsmGet != CCSP_SUCCESS)
+            {
+                CcspTraceError(("Set failed for HTTPSConfigDownloadEnabled \n"));
+                return ANSC_STATUS_FAILURE;
+            }
+        }
+        else
+        {
+            CcspTraceInfo(("HTTPSConfigDownloadEnabled is already %d \n",getVal));
+        }
+
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
+/**********************************************************************
 
  APIs for Object:
 

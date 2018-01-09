@@ -168,9 +168,9 @@ CosaFileTransferInitialize
 #ifdef _COSA_FOR_BCI_
     CosaDmlFileTransferGetCfg(NULL, pCfg);
 #endif
-
-    pCfg->Action      = COSA_DML_FILETRANSFER_PROTOCOL_TFTP;
-    pCfg->Protocol    = COSA_DML_FILETRANSFER_ACTION_Download;
+    pCfg->Server      = COSA_DML_FILETRANSFER_SERVER_HTTPS1;
+    pCfg->Action      = COSA_DML_FILETRANSFER_ACTION_Download;
+    pCfg->Protocol    = COSA_DML_FILETRANSFER_PROTOCOL_HTTPS;
     pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_Failed;
 
     return returnStatus;

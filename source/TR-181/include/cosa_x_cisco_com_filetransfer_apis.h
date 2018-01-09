@@ -42,17 +42,35 @@
 #include "plugin_main_apis.h"
 
 #define  TRUE_STATIC_IP_CONFIG_PATH  "/var/"
+#define  TRUE_STATIC_IP_CONFIG_FILE  "cliconfig.txt"
+#define  TRUE_STATIC_IP_CONFIG_REFERENCE_FILE  "/usr/ccsp/pam/cliconfig_ref.txt"
+#define  FORMAT_VERIFY_SUCCESS 1
+#define  FORMAT_VERIFY_FAILURE 0
+#define  MAX_LINE_SIZE 128
+#define  MAX_STRING_COUNT 128
+#define  PRIVATE_KEY_GENERATED "/tmp/key.pem"
+#define  PRIVATE_KEY_ENCRYPTED "/etc/ssl/certs/xadtcddyu.ovg"
+#define  PUBLIC_CERT_PATH "/etc/ssl/certs/bwg.clnt.xcal.tv.cert.pem"
 
 /***********************************
     Actual definition declaration
 ************************************/
+typedef  enum
+_COSA_DML_FILETRANSFER_SERVER
+{
+    COSA_DML_FILETRANSFER_SERVER_NONE,
+    COSA_DML_FILETRANSFER_SERVER_HTTPS1,
+    COSA_DML_FILETRANSFER_SERVER_HTTPS2
+}
+COSA_DML_FILETRANSFER_SERVER, *PCOSA_DML_FILETRANSFER_SERVER;
 
 typedef  enum
 _COSA_DML_FILETRANSFER_PROTOCOL
 {
     COSA_DML_FILETRANSFER_PROTOCOL_TFTP   = 1,
     COSA_DML_FILETRANSFER_PROTOCOL_FTP,
-    COSA_DML_FILETRANSFER_PROTOCOL_HTTP
+    COSA_DML_FILETRANSFER_PROTOCOL_HTTP,
+    COSA_DML_FILETRANSFER_PROTOCOL_HTTPS
 }
 COSA_DML_FILETRANSFER_PROTOCOL, *PCOSA_DML_FILETRANSFER_PROTOCOL;
 
@@ -77,7 +95,10 @@ _COSA_DML_FILETRANSFER_STATUS
 {
     COSA_DML_FILETRANSFER_STATUS_InProgress   = 1,
     COSA_DML_FILETRANSFER_STATUS_Complete,
-    COSA_DML_FILETRANSFER_STATUS_Failed
+    COSA_DML_FILETRANSFER_STATUS_Failed,
+    COSA_DML_FILETRANSFER_STATUS_FileNotFound,
+    COSA_DML_FILETRANSFER_STATUS_ServerNotFound,
+    COSA_DML_FILETRANSFER_STATUS_IncorrectFileFormat
 }
 COSA_DML_FILETRANSFER_STATUS, *PCOSA_DML_FILETRANSFER_STATUS;
 
@@ -87,7 +108,7 @@ COSA_DML_FILETRANSFER_STATUS, *PCOSA_DML_FILETRANSFER_STATUS;
 typedef  struct
 _COSA_DML_FILETRANSFER_CFG
 {
-    UCHAR               ServerAddress[64];                                  
+    ULONG               Server;
     ULONG               Protocol;                                           
     UCHAR               FileName[128];                                      
     UCHAR               Username[128];                                      
