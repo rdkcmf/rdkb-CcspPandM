@@ -234,7 +234,9 @@ _COSA_DML_DHCPSV6_POOL_CFG
     BOOLEAN                         bEnabled;
     BOOLEAN                         UnicastEnable;
     BOOLEAN                         RapidEnable;
-    BOOLEAN                         EUI64Enable;    
+    BOOLEAN                         EUI64Enable;
+    BOOLEAN                         X_RDKCENTRAL_COM_DNSServersEnabled;	
+    UCHAR                           X_RDKCENTRAL_COM_DNSServers[256];
 };
 typedef struct _COSA_DML_DHCPSV6_POOL_CFG COSA_DML_DHCPSV6_POOL_CFG,  *PCOSA_DML_DHCPSV6_POOL_CFG;
 
@@ -488,6 +490,8 @@ CosaDmlDhcpv6sEnable
         ANSC_HANDLE                 hContext,
         BOOL                        bEnable
     );
+
+int CosaDmlDhcpv6s_format_DNSoption( char *option );
 
 BOOLEAN
 CosaDmlDhcpv6sGetState

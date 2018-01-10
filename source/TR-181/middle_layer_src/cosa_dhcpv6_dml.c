@@ -4195,6 +4195,13 @@ Pool1_GetParamBoolValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_DNSServersEnabled", TRUE) )
+    {
+        /* collect value */
+        *pBool   =  pDhcpc->Cfg.X_RDKCENTRAL_COM_DNSServersEnabled;
+
+        return TRUE;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -4649,6 +4656,20 @@ Pool1_GetParamStringValue
         }
     }
 
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_DNSServers", TRUE) )
+    {
+        /* collect value */
+        if ( AnscSizeOfString(pPool->Cfg.X_RDKCENTRAL_COM_DNSServers) < *pUlSize)
+        {
+            AnscCopyString(pValue, pPool->Cfg.X_RDKCENTRAL_COM_DNSServers);
+            return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(pPool->Cfg.X_RDKCENTRAL_COM_DNSServers)+1;
+            return 1;
+        }
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
@@ -4790,6 +4811,13 @@ Pool1_SetParamBoolValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_DNSServersEnabled", TRUE) )
+    {
+        /* save update to backup */
+        pPool->Cfg.X_RDKCENTRAL_COM_DNSServersEnabled = bValue;
+
+        return TRUE;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -5075,6 +5103,14 @@ Pool1_SetParamStringValue
     {
         /* save update to backup */
         AnscCopyString(pPool->Cfg.StartAddress, pString);
+
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_DNSServers", TRUE) )
+    {
+        /* save update to backup */
+        AnscCopyString(pPool->Cfg.X_RDKCENTRAL_COM_DNSServers, pString);
 
         return TRUE;
     }

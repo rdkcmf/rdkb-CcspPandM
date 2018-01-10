@@ -1498,6 +1498,8 @@ void setpool_into_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1Inde
     SETI_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "EUI64Enable", pEntry->Cfg.EUI64Enable)
     SETI_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAAmount", pEntry->Cfg.IANAAmount)
     SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "StartAddress", pEntry->Cfg.StartAddress)
+    SETI_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "X_RDKCENTRAL_COM_DNSServersEnabled", pEntry->Cfg.X_RDKCENTRAL_COM_DNSServersEnabled)
+    SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "X_RDKCENTRAL_COM_DNSServers", pEntry->Cfg.X_RDKCENTRAL_COM_DNSServers)
 
     Utopia_Free(&utctx,1);
 
@@ -1549,6 +1551,8 @@ void unsetpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1In
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "EUI64Enable")
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAAmount")
     UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "StartAddress")
+    UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "X_RDKCENTRAL_COM_DNSServersEnabled")
+    UNSET_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "X_RDKCENTRAL_COM_DNSServers")
 
     Utopia_Free(&utctx,1); 
 
@@ -1600,6 +1604,8 @@ void getpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1Inde
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "EUI64Enable", pEntry->Cfg.EUI64Enable)
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAAmount", pEntry->Cfg.IANAAmount)
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "StartAddress", pEntry->Cfg.StartAddress)
+    GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "X_RDKCENTRAL_COM_DNSServersEnabled", pEntry->Cfg.X_RDKCENTRAL_COM_DNSServersEnabled)
+    GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "X_RDKCENTRAL_COM_DNSServers", pEntry->Cfg.X_RDKCENTRAL_COM_DNSServers)
 
     Utopia_Free(&utctx,0);
 
@@ -1831,6 +1837,7 @@ CosaDmlDhcpv6Init
         sDhcpv6ServerPool[0].Cfg.DUIDExclude = FALSE;
         sDhcpv6ServerPool[0].Cfg.VendorClassIDExclude = FALSE;
         sDhcpv6ServerPool[0].Cfg.UserClassIDExclude= FALSE;
+        sDhcpv6ServerPool[0].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled = FALSE;
 
         if (!Utopia_Init(&utctx))
             return ANSC_STATUS_FAILURE;
@@ -3612,38 +3619,70 @@ OPTIONS:
                 /* We need to translate hex to normal string */
                 if ( g_recv_options[Index4].Tag == 23 )
                 { //dns
-                   char dnsStr[256] = {0};
-                   ret = CosaDmlDHCPv6sGetDNS(g_recv_options[Index4].Value, dnsStr, sizeof(dnsStr) );
-
-                   	if ( !ret )
-			{
-		       		char buf[6];
-				// During captive portal no need to pass DNS
-				// Check the reponse code received from Web Service
-   				if((responsefd = fopen(networkResponse, "r")) != NULL) 
-   				{
-       					if(fgets(responseCode, sizeof(responseCode), responsefd) != NULL)
-       					{
-		  				iresCode = atoi(responseCode);
-          				}
-   				}
-        			syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
-    				if( buf != NULL )
-    				{
-
-    		    			if ((strncmp(buf,"true",4) == 0) && iresCode == 204)
-					{
-
-				   		fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+                   char dnsStr[ 256 ] = { 0 };
+				   char buf[ 6 ];
+				   int IsCaptivePortalMode = 0;
+				   
+				   // During captive portal no need to pass DNS
+				   // Check the reponse code received from Web Service
+				   if( ( responsefd = fopen( networkResponse, "r" ) ) != NULL ) 
+				   {
+					   if( fgets( responseCode, sizeof( responseCode ), responsefd ) != NULL )
+					   {
+						   iresCode = atoi( responseCode );
+					   }
+				   }
+				   
+				   syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
+				   if( buf != NULL )
+				   {
+					   if ( ( strncmp( buf,"true",4 ) == 0 ) && iresCode == 204 )
+					   {
+						   	IsCaptivePortalMode	= 1;
+					   }
 					}
-    		    			else
-					{
+				   
+				   /* Static DNS Servers */
+				   if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled )
+				   {
+					  memset( dnsStr, 0, sizeof( dnsStr ) );  	
+				   	  strcpy( dnsStr, sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
+					  CosaDmlDhcpv6s_format_DNSoption( dnsStr );
 
-				   		fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+					  // Check device is in captive portal mode or not
+					  if( 1 == IsCaptivePortalMode )
+					  {
+						  fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+					  }
+					  else
+					  {
+						  fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+					  }
+
+					  CcspTraceWarning(("%s %d - DNSServersEnabled:%d DNSServers:%s\n", __FUNCTION__, 
+					  																	__LINE__,
+					  																	sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled,
+					  																	sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers ));
+				   }
+				   else
+				   {
+					   ret = CosaDmlDHCPv6sGetDNS(g_recv_options[Index4].Value, dnsStr, sizeof(dnsStr) );
+					   
+					   if ( !ret )
+					   {
+							// Check device is in captive portal mode or not
+						   if ( 1 == IsCaptivePortalMode )
+						   {
+				   
+							   fprintf(fp, "#	 option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+						   }
+						   else
+						   {
+				   
+							   fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+						   }
+				   		}
 					}
-    				}
-			}
-
                 }
                 else if ( g_recv_options[Index4].Tag == 24 )
                 { //domain
@@ -3727,6 +3766,21 @@ OPTIONS:
 EXIT:
 
     return;
+}
+
+int CosaDmlDhcpv6s_format_DNSoption( char *option )
+{
+    if (option == NULL)
+        return -1;
+
+    int i;
+
+    for (i = 0; i < strlen(option); i++) {
+        if(option[i] == ' ')
+            option[i] = ',';
+    }
+
+    return 0;
 }
 
 ANSC_STATUS
@@ -4163,6 +4217,7 @@ CosaDmlDhcpv6sSetPoolCfg
     )
 {
     ULONG                           Index = 0;
+	BOOLEAN  						bNeedZebraRestart = FALSE;
 
     /* RDKB-6780, CID-33383, Out-of-bounds write
     ** Maximum size of Dhcp Server Pool is DHCPV6S_POOL_NUM.
@@ -4175,10 +4230,30 @@ CosaDmlDhcpv6sSetPoolCfg
 
     if(Index < DHCPV6S_POOL_NUM)
     {
+		// Zebra restart based on below criteria
+		if( ( pCfg->X_RDKCENTRAL_COM_DNSServersEnabled != sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled ) || \
+			( ( '\0' != pCfg->X_RDKCENTRAL_COM_DNSServers[ 0 ] ) && \
+			  ( 0 != strcmp( pCfg->X_RDKCENTRAL_COM_DNSServers, sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.X_RDKCENTRAL_COM_DNSServers ) )
+			 )
+		   )
+		{
+			bNeedZebraRestart = TRUE;
+		}
+
         sDhcpv6ServerPool[Index].Cfg = *pCfg;
     }
     else
     {
+		// Zebra restart based on below criteria
+		if( ( pCfg->X_RDKCENTRAL_COM_DNSServersEnabled != sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled ) || \
+			( ( '\0' != pCfg->X_RDKCENTRAL_COM_DNSServers[ 0 ] ) && \
+			  ( 0 != strcmp( pCfg->X_RDKCENTRAL_COM_DNSServers, sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.X_RDKCENTRAL_COM_DNSServers ) )
+			 )
+		   )
+		{
+			bNeedZebraRestart = TRUE;
+		}
+
         sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg = *pCfg;
         Index = DHCPV6S_POOL_NUM - 1;
     }
@@ -4193,6 +4268,13 @@ CosaDmlDhcpv6sSetPoolCfg
     setpool_into_utopia(DHCPV6S_NAME, "pool", Index, &sDhcpv6ServerPool[Index]);
 
     CosaDmlDHCPv6sTriggerRestart(FALSE);
+
+	// Check whether static DNS got enabled or not. If enabled then we need to restart the zebra process
+	if( bNeedZebraRestart )
+	{
+        CcspTraceWarning(("%s Restarting Zebra Process\n", __FUNCTION__));
+        system("sysevent set zebra-restart");
+	}
 
     return ANSC_STATUS_SUCCESS;
 }
