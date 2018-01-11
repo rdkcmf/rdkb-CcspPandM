@@ -42,6 +42,12 @@
 #include "plugin_main_apis.h"
 
 #define  TRUE_STATIC_IP_CONFIG_PATH  "/var/"
+#define  TRUE_STATIC_IP_CONFIG_FILE  "cliconfig.txt"
+#define  TRUE_STATIC_IP_CONFIG_REFERENCE_FILE  "/usr/ccsp/pam/cliconfig_ref.txt"
+#define  FORMAT_VERIFY_SUCCESS 1
+#define  FORMAT_VERIFY_FAILURE 0
+#define  MAX_LINE_SIZE 128
+#define  MAX_STRING_COUNT 128
 
 /***********************************
     Actual definition declaration
@@ -85,7 +91,10 @@ _COSA_DML_FILETRANSFER_STATUS
 {
     COSA_DML_FILETRANSFER_STATUS_InProgress   = 1,
     COSA_DML_FILETRANSFER_STATUS_Complete,
-    COSA_DML_FILETRANSFER_STATUS_Failed
+    COSA_DML_FILETRANSFER_STATUS_Failed,
+    COSA_DML_FILETRANSFER_STATUS_FileNotFound,
+    COSA_DML_FILETRANSFER_STATUS_ServerNotFound,
+    COSA_DML_FILETRANSFER_STATUS_IncorrectFileFormat
 }
 COSA_DML_FILETRANSFER_STATUS, *PCOSA_DML_FILETRANSFER_STATUS;
 

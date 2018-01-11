@@ -865,6 +865,24 @@
                     </parameters>
                     <objects>
                         <object>
+                            <name>TFTPConfigDownload</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>TFTPConfigDownload_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>TFTPConfigDownload_SetParamBoolValue</func_SetParamBoolValue>
+                            </functions>
+
+                            <parameters>
+                                <parameter>
+                                    <name>Enabled</name>
+                                    <type>boolean</type>
+                                    <syntax>bool</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                            </parameters>
+                        </object>
+
+                        <object>
                             <name>SSIDPSWDCTRL</name>
                             <objectType>object</objectType>
                             <functions>
@@ -14187,7 +14205,7 @@
 		</parameter>
 		<parameter>
 		  <name>Status</name>
-		  <type>string: InProgress(1),Complete(2),Failed(3)</type>
+		  <type>string: InProgress(1),Complete(2),Failed(3),FileNotFound(4),ServerNotFound(5),IncorrectFileFormat(6)</type>
 		  <syntax>uint32/mapped</syntax>
 		</parameter>
 	  </parameters>

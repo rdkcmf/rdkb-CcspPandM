@@ -83,13 +83,14 @@ typedef struct
 {
     COSA_DML_FILETRANSFER_SERVER    mStatus;
     char                  *mServer;
+    char                  *mServerName;
 } FILETRANSFER_SERVER_item;
 
 
 FILETRANSFER_SERVER_item FileTransfer_TFTPServers[] = {
-    {COSA_DML_FILETRANSFER_SERVER_NONE, ""},
-    {COSA_DML_FILETRANSFER_SERVER_TFTP1, "tftpwest01.comcast.net"},
-    {COSA_DML_FILETRANSFER_SERVER_TFTP2, "tftpwest02.comcast.net"}
+    {COSA_DML_FILETRANSFER_SERVER_NONE, "", ""},
+    {COSA_DML_FILETRANSFER_SERVER_TFTP1, "tftpwest01.comcast.net", "TFTP Server 1"},
+    {COSA_DML_FILETRANSFER_SERVER_TFTP2, "tftpwest02.comcast.net", "TFTP Server 2"}
 };
 
 
@@ -101,6 +102,76 @@ CosaDmlFileTransferInit
 )
 {
     return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+VerifyFileFormat (char* configFilePath)
+{
+    int formatVerifyStatus = FORMAT_VERIFY_SUCCESS;
+    FILE* refFile = NULL;
+    FILE* configFile = NULL;
+    int i = 0;
+    int totalRefLines = 0;
+    int foundMatch = 0;
+    char refStrings [MAX_STRING_COUNT][MAX_LINE_SIZE] = {{'\0'}};;
+    char configLine [MAX_LINE_SIZE];
+    char* configField;
+
+    /* Reading reference file and populating array of refrence strings */
+
+    refFile = fopen ( TRUE_STATIC_IP_CONFIG_REFERENCE_FILE, "r" );
+    if ( refFile != NULL )
+    {
+        i = 0;
+        while ((fgets (refStrings[i], sizeof refStrings[i], refFile) != NULL) && (i < MAX_STRING_COUNT))
+        {
+            refStrings[i][strcspn(refStrings[i], "\n")] = 0;
+            i++;
+        }
+        totalRefLines = i;
+
+        fclose(refFile);
+    }
+    else
+    {
+        AnscTraceWarning(("Cannot open reference file\n"));
+        perror ( TRUE_STATIC_IP_CONFIG_REFERENCE_FILE );
+        formatVerifyStatus = FORMAT_VERIFY_FAILURE;
+    }
+
+    /* Reading downloaded configuration file and verifying configuration field with refrence strings */
+    configFile = fopen (configFilePath, "r");
+    if ((configFile != NULL) && (formatVerifyStatus != FORMAT_VERIFY_FAILURE))
+    {
+        while (fgets (configLine, sizeof configLine, configFile) != NULL )
+        {
+            configField = strtok (configLine, "  \t");
+            foundMatch = 0;
+
+            for (i = 0; ((i < totalRefLines) && (foundMatch == 0)); i++)
+            {
+                if ((strcmp (refStrings[i], configField)) == 0 )
+                {
+                    foundMatch = 1;
+                }
+            }
+
+            if (foundMatch == 0)
+            {
+                formatVerifyStatus = FORMAT_VERIFY_FAILURE;
+                break;
+            }
+        }
+
+        fclose (configFile);
+    }
+    else
+    {
+        AnscTraceWarning(("Cannot open config file\n"));
+        formatVerifyStatus = FORMAT_VERIFY_FAILURE;
+    }
+
+    return formatVerifyStatus;
 }
 
 static
@@ -117,6 +188,7 @@ FileTransferTask
     FILE*                           fp              = NULL;
     CURL*                           curl            = NULL;
     CURLcode                        ret             = CURLE_OK;
+    int                             formatVerifyStatus = FORMAT_VERIFY_FAILURE;
 
     ret  = curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
@@ -135,7 +207,7 @@ FileTransferTask
     _ansc_sprintf(URL, "tftp://%s/%s", FileTransfer_TFTPServers[pCfg->Server].mServer, pCfg->FileName);
     ret = curl_easy_setopt(curl, CURLOPT_URL, URL);
 
-    _ansc_sprintf(Path, "%s%s", TRUE_STATIC_IP_CONFIG_PATH, pCfg->FileName);
+    _ansc_sprintf(Path, "%s%s", TRUE_STATIC_IP_CONFIG_PATH, TRUE_STATIC_IP_CONFIG_FILE);
     if ((fp = fopen(Path,"w+"))== NULL )
     {
         curl_easy_cleanup(curl);
@@ -143,22 +215,47 @@ FileTransferTask
     }
 
     ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-    ret = curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30);
+    ret = curl_easy_setopt(curl, CURLOPT_TIMEOUT, 60);
     pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_InProgress;
     ret = curl_easy_perform(curl);
+    fclose(fp);
 
-    if ( ret == CURLE_OK ) 
+    if ( ret == CURLE_OK )
     {
-        printf("!!!!!!!!!! File downloaded, length = %d\n", ftell(fp));
-        pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_Complete;
+        formatVerifyStatus = VerifyFileFormat (Path);
+        if (formatVerifyStatus == FORMAT_VERIFY_SUCCESS)
+        {
+            pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_Complete;
+            AnscTraceWarning(("TFTP server %s[%s] responded and file [%s] downloaded\n", FileTransfer_TFTPServers[pCfg->Server].mServerName, FileTransfer_TFTPServers[pCfg->Server].mServer, pCfg->FileName));
+        }
+        else
+        {
+            pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_IncorrectFileFormat;
+            AnscTraceWarning(("TFTP server %s[%s] responded and file [%s] was found but the formatting in this file is not correct. File rejected\n", FileTransfer_TFTPServers[pCfg->Server].mServerName, FileTransfer_TFTPServers[pCfg->Server].mServer, pCfg->FileName));
+            return ANSC_STATUS_FAILURE;
+        }
     }
     else
     {
-        printf("File download failure, error code = %d\n", ret);
-        pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_Failed;
+        printf("File download failure, error code = %d, error : %s\n", ret, curl_easy_strerror(ret));
+
+        if ( ret == CURLE_OPERATION_TIMEDOUT )
+        {
+            AnscTraceWarning(("TFTP server at %s[%s] was not found or is not responding\n", FileTransfer_TFTPServers[pCfg->Server].mServerName, FileTransfer_TFTPServers[pCfg->Server].mServer));
+            pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_ServerNotFound;
+        }
+        else if ( ret == CURLE_TFTP_NOTFOUND )
+        {
+            AnscTraceWarning(("TFTP server %s[%s] responded but the requested file [%s] was not found on this server\n", FileTransfer_TFTPServers[pCfg->Server].mServerName, FileTransfer_TFTPServers[pCfg->Server].mServer, pCfg->FileName));
+            pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_FileNotFound;
+        }
+        else
+        {
+            AnscTraceWarning(("File [%s] transfer failed due to unknown reason from TFTP server %s[%s]\n",pCfg->FileName, FileTransfer_TFTPServers[pCfg->Server].mServerName, FileTransfer_TFTPServers[pCfg->Server].mServer));
+            pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_Failed;
+        }
     }
-          
-    fclose(fp);
+ 
     curl_easy_cleanup(curl);
 
     return ANSC_STATUS_SUCCESS;
