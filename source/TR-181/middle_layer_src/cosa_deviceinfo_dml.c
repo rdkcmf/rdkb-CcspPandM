@@ -4667,6 +4667,123 @@ PeriodicFWCheck_SetParamBoolValue
     prototype: 
 
         BOOL
+        AllowOpenPorts_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+AllowOpenPorts_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+            /* collect value */
+            char buf[8];
+            syscfg_get( NULL, "RFCAllowOpenPorts", buf, sizeof(buf));
+
+            if( buf != NULL )
+            {
+                if (strcmp(buf, "true") == 0)
+                    *pBool = TRUE;
+                else
+                    *pBool = FALSE;
+            }
+            return TRUE;
+        }
+
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        AllowOpenPorts_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+AllowOpenPorts_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+        if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+            /* collect value */
+            syscfg_set(NULL, "RFCAllowOpenPorts", (bValue == TRUE ? "true": "false"));
+            syscfg_commit();
+
+            // Log that we are allowing open ports (or not)
+            CcspTraceWarning(("RFC_AllowOpenPorts set to '%s'\n", (bValue == TRUE ? "true":"false")));
+
+            // restart firewall
+            system("sysevent set firewall-restart");
+            return TRUE;
+        }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
         Xconf_GetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,
