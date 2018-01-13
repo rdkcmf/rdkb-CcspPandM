@@ -3301,6 +3301,24 @@ int CosaDmlDHCPv6sGetDNS(char* Dns, char* output, int outputLen)
     return 0;
 }
 
+#if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
+static int format_dibbler_option(char *option)
+{
+    if (option == NULL)
+        return -1;
+
+    int i;
+
+    for (i = 0; i < strlen(option); i++) {
+        if(option[i] == ' ')
+            option[i] = ',';
+    }
+
+    return 0;
+}
+#endif
+
+
 void __cosa_dhcpsv6_refresh_config()
 {
 #ifdef _COSA_INTEL_USG_ARM_
@@ -3333,6 +3351,9 @@ void __cosa_dhcpsv6_refresh_config()
     ULONG ret = 0;
     int   ret2 = 0;
     BOOL  bFound = FALSE;
+#if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
+    BOOL  isInCaptivePortal = FALSE;
+#endif
     char * saveptr = NULL;
     UCHAR IAPDPrefixes[320] = {0};
     ULONG IAPDPrefixes_Len = 0;
@@ -3342,6 +3363,9 @@ void __cosa_dhcpsv6_refresh_config()
     char *networkResponse = "/var/tmp/networkresponse.txt";
     int iresCode = 0;
     char responseCode[10];
+#if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
+    char buf[20]={0};
+#endif
     ULONG  T1 = 0;
     ULONG  T2 = 0;
 
@@ -3496,12 +3520,84 @@ OPTIONS:
 
             if ( Index3 >= sizeof(tagList)/sizeof(struct DHCP_TAG) )
                 continue;
-
+#if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
+            // During captive portal no need to pass DNS
+            // Check the reponse code received from Web Service
+            if((responsefd = fopen(networkResponse, "r")) != NULL)
+            {
+                if(fgets(responseCode, sizeof(responseCode), responsefd) != NULL)
+                {
+                    iresCode = atoi(responseCode);
+                }
+            }
+            // Get value of redirection_flag
+            syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
+            if( buf != NULL )
+            {
+                if ((strncmp(buf,"true",4) == 0) && iresCode == 204)
+                {
+                        isInCaptivePortal = TRUE;
+                        CcspTraceWarning((" _cosa_dhcpsv6_refresh_config -- Box is in captive portal mode \n"));
+                }
+                else
+                {
+                        //By default isInCaptivePortal is false
+                        CcspTraceWarning((" _cosa_dhcpsv6_refresh_config -- Box is not in captive portal mode \n"));
+                }
+            }
+#endif
             if ( sDhcpv6ServerPoolOption[Index][Index2].PassthroughClient[0] )
             {
                 /* this content get from v6 client directly. If there is problem, change to 
                                 get from data model tree
                             */
+#if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
+
+                static int sysevent_fd_gs;
+                static token_t sysevent_token_gs;
+                if ((sysevent_fd_gs = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT,
+                    SE_VERSION, "SERVICE-IPV6", &sysevent_token_gs)) < 0) {
+                fprintf(stderr, "%s: fail to open sysevent\n", __FUNCTION__);
+                return -1;
+                }
+                if ( sDhcpv6ServerPoolOption[Index][Index2].Tag == 23 )
+                {
+                    char dns_str[256] = {0};
+
+                    CcspTraceWarning(("_cosa_dhcpsv6_refresh_config -- Tag is 23 \n"));
+                    sysevent_get(sysevent_fd_gs, sysevent_token_gs, "wan6_ns", dns_str, sizeof(dns_str));
+                    if (dns_str[0] != '\0') {
+                        format_dibbler_option(dns_str);
+                        if( isInCaptivePortal == TRUE )
+                        {
+                            fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dns_str);
+                        }
+                        else
+                        {
+                            //By default isInCaptivePortal is false
+                            fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dns_str);
+                        }
+                    }
+                }
+                else if (sDhcpv6ServerPoolOption[Index][Index2].Tag == 24)
+                {//domain
+                    char domain_str[256] = {0};
+                        CcspTraceWarning(("_cosa_dhcpsv6_refresh_config -- Tag is 24 \n"));
+                    sysevent_get(sysevent_fd_gs, sysevent_token_gs, "ipv6_dnssl", domain_str, sizeof(domain_str));
+                    if (domain_str[0] != '\0') {
+                        format_dibbler_option(domain_str);
+                        if( isInCaptivePortal == TRUE )
+                        {
+                            fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, domain_str);
+                        }
+                        else
+                        {
+                            fprintf(fp, "     option %s %s\n", tagList[Index3].cmdstring, domain_str);
+                        }
+                    }
+                }
+
+#else
                 for ( Index4 = 0; Index4 < g_recv_option_num; Index4++ )
                 {
                     if ( g_recv_options[Index4].Tag != sDhcpv6ServerPoolOption[Index][Index2].Tag  )
@@ -3558,6 +3654,7 @@ OPTIONS:
                     if ( pServerOption )
                         fprintf(fp, "   option %s 0x%s\n", tagList[Index3].cmdstring, pServerOption);
                 }
+#endif
             }
             else
             {
@@ -3569,21 +3666,41 @@ OPTIONS:
                     else
                         pServerOption = CosaDmlDhcpv6sGetAddressFromString(sDhcpv6ServerPoolOption[Index][Index2].Value);
 
-                    if ( pServerOption )
+                    if ( pServerOption ){
+#if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
+			 if( isInCaptivePortal == TRUE ) {
+                                fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
+                        }
+#else
                         fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
+#endif
+                    }
 
                 }
                 else if ( g_recv_options[Index4].Tag == 24 )
                 { //domain
                     pServerOption = CosaDmlDhcpv6sGetStringFromHex(g_recv_options[Index4].Value);
 
-                    if ( pServerOption )
+                    if ( pServerOption ){
+#if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
+			 if( isInCaptivePortal == TRUE ) {
+                                fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
+                        }
+#else
                         fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
+#endif
+                    } 
                 }else
 
-                    if ( pServerOption )
+                    if ( pServerOption ){
+#if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
+			 if( isInCaptivePortal == TRUE ) {
+                            fprintf(fp, "#    option %s 0x%s\n", tagList[Index3].cmdstring, pServerOption);
+                        }
+#else
                         fprintf(fp, "    option %s 0x%s\n", tagList[Index3].cmdstring, pServerOption);
-                
+#endif
+                }
             }
 
         }     
