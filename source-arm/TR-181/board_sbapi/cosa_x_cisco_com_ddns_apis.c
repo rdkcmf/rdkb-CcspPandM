@@ -614,6 +614,122 @@ CosaDmlDdnsGetInfo
 }
 #elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_)
 
+#define STRINGCMP(sent,word) (strcmp(sent, word) == 0)
+#define MAX_PARAM  1024
+
+/**********************************************************************
+    prototype:
+        int secure_system_call_p( const char *cmd, char *argp[]);
+
+    Description:
+
+        Implementation of secure system call which takes parameters as
+        array.
+
+    Arguments:    const char *                 cmd
+                  command to be executed.
+
+                  char *                       argp[]
+                  list of parameters to be passed to command
+                  argp[0] : must be the command to be executed (cmd)
+                  argp[n] : last parameter must be NULL
+
+    Return:       The status of the operation. -1:Failure, 1:Success
+**********************************************************************/
+int secure_system_call_p( const char *cmd, char *argp[])
+{
+    pid_t pid;
+    int status;
+    int cmd_check;
+    int count=0;
+    char **env = NULL;
+    if ((cmd == NULL)||(*argp == NULL))
+    {
+        printf("bad input!!!\n");
+        return -1;
+    }
+    cmd_check=(STRINGCMP(cmd,"/bin/sh") || STRINGCMP(cmd,"sh"));
+    while(argp[count])
+    {
+        /* ... Sanitize arguments ...if command is /bin/sh or sh */
+        if( cmd_check &&
+            ( argp[count] && (STRINGCMP(argp[count],"-c")))
+          )
+          {
+                printf("Bad input, command rejected\n");
+                return -1;
+          }
+          count++;
+    }
+
+    pid = fork();
+    if (pid == -1){ /* Handle error */
+        printf(" Failed to fork!!!\n");
+        return -1;
+    }
+    else if (pid != 0) {
+        printf(" inside parent process\n");
+    }
+    else {
+        if (execve(cmd, argp, env) == -1){ /* Handle error */
+            printf("Failed to execve\n");
+            return -1;
+        }
+    }
+    return 1;
+}
+
+/**********************************************************************
+    prototype:
+        int secure_system_call_vp( const char *cmd, ...);
+
+    Description:
+
+        Implementation of secure system call which takes variable
+        parameters.
+
+    Arguments:    const char *                 cmd
+                  command to be executed.
+
+                  ...
+                  variable number of arguments (char *)
+                  Last argument must be NULL
+
+    Return:       The status of the operation. -1:Failure, 1:Success
+**********************************************************************/
+int secure_system_call_vp( const char *cmd, ...)
+{
+    int status;
+    char * arg[MAX_PARAM+1];
+    char *temp_arg=NULL;
+    int num_param=0;
+    va_list arguments;
+    if (cmd == NULL)
+    {
+        printf("bad input!!!\n");
+        return -1;
+    }
+    arg[0]=cmd; //arg[0] contains name execuatble filename
+    /*count number of incoming parameters*/
+    va_start(arguments,cmd);
+    do{
+        if(num_param >= MAX_PARAM+1)
+        {
+            printf("Parameter list too large\n");
+            return -1;
+        }
+        else
+        {
+            num_param++;
+            temp_arg = arg[num_param] = va_arg(arguments, char*);
+        }
+    }while(temp_arg);
+    va_end(arguments);
+
+    status = secure_system_call_p(cmd,arg);
+    return status;
+}
+
 static int saveID(char* Namespace, char* ServiceName, ULONG ulInstanceNumber,char* pAlias) {
     UtopiaContext utctx;
     char idStr[COSA_DML_SERVICE_NAME_LENGTH+10];
@@ -733,7 +849,8 @@ static int
 DdnsRestart(void)
 {
     ULONG   i = 0;
-    char    cmd[512]={0};
+    char    cmd[512] = {0};
+    int n;
 
     if (vsystem("killall -9 ez-ipupdate") != 0)
     {
@@ -748,35 +865,125 @@ DdnsRestart(void)
             {
                 if ( i == 2 )
                 {
-                    snprintf(cmd, sizeof(cmd), "wget -T 10 'http://nic.changeip.com/nic/update?u=%s&p=%s&hostname=%s'",
+                    n=snprintf(cmd, sizeof(cmd), "http://nic.changeip.com/nic/update?u=%s&p=%s&hostname=%s",
                     g_DdnsService[i].Username,
                     g_DdnsService[i].Password,
                     g_DdnsService[i].Domain);
+                    if (n >= 0 && n < sizeof(cmd))
+                    {
+					if(-1 == secure_system_call_vp("usr/bin/wget","-T","10",cmd,NULL))
+					{
+                    	fprintf(stderr, "%s: fail to start: %s\n", __FUNCTION__, cmd);
+					}
+                    }
+                    else
+                    {
+                        fprintf(stderr, "%s: fail to Write formatted output to sized buffer\n", __FUNCTION__ );
+                    }
                 }
                 else if ( i == 3 )
                 {
-                    sprintf(cmd ,"wget \"http://freedns.afraid.org/dynamic/update.php?%s\"",
+                    n=snprintf(cmd , sizeof(cmd),"\"http://freedns.afraid.org/dynamic/update.php?%s\"",
                     g_DdnsService[i].Password);
+                    if(n >=0 && n < sizeof(cmd))
+                    {
+					if(-1 == secure_system_call_vp("usr/bin/wget",cmd,NULL))
+					{
+                    	fprintf(stderr, "%s: fail to start: %s\n", __FUNCTION__, cmd);
+					}
+                    }
+                    else
+                    {
+                        fprintf(stderr, "%s: fail to Write formatted output to sized buffer\n", __FUNCTION__ );
+                    }
                 }
                 else
                 {
-                    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/bin/ez-ipupdate \
-                    --interface=erouter0 \
-                    --cache-file=/var/ez-ipupdate.cache.%s \
-                    --daemon \
-                    --max-interval=2073600 \
-                    --service-type=%s \
-                    --user=%s:%s \
-                    --host=%s",
-                    g_DdnsService[i].ServiceName,
-                    g_DdnsService[i].ServiceName,
-                    g_DdnsService[i].Username,
-                    g_DdnsService[i].Password,
-                    g_DdnsService[i].Domain);
-                }
-                if (vsystem(cmd) != 0)
-                {
-                    fprintf(stderr, "%s: fail to start: %s\n", __FUNCTION__, cmd);
+                    char *argp[9] = {NULL};
+                    int len=0;
+
+                    argp[0] = "/fss/gw/usr/bin/ez-ipupdate";
+                    
+                    argp[1] = "--interface=erouter0";
+
+                    len = strlen("--cache-file=/var/ez-ipupdate.cache.") +strlen(g_DdnsService[i].ServiceName)+1;
+                    if(argp[2] = malloc(len))
+                    {
+                        n=snprintf(argp[2], len, "--cache-file=/var/ez-ipupdate.cache.%s",g_DdnsService[i].ServiceName);
+                        if(n < 0 || n >= len)
+                        {
+                            fprintf(stderr, "%s: fail to Write formatted output to sized buffer\n", __FUNCTION__ );
+                            goto error;
+                        }
+                    }
+                    else
+                    {
+                        fprintf(stderr, "malloc failed to allocate memory\n");
+                        goto error;
+                    }
+
+                    argp[3] = "--daemon";
+
+                    argp[4] = "--max-interval=2073600";
+
+                    len = strlen("--service-type=%") + strlen(g_DdnsService[i].ServiceName) + 1;
+                    if(argp[5] = malloc(len))
+                    {
+                        n=snprintf(argp[5], len, "--service-type=%s",g_DdnsService[i].ServiceName);
+                        if(n < 0 || n >= len)
+                        {
+                            fprintf(stderr, "%s: fail to Write formatted output to sized buffer\n", __FUNCTION__ );
+                            goto error;
+                        }
+                    }
+                    else
+                    {
+                        fprintf(stderr, "malloc failed to allocate memory\n");
+                        goto error;
+                    }
+   
+                    len=strlen("--user=") + strlen(g_DdnsService[i].Username) + strlen(g_DdnsService[i].Password) + 1;
+                    if(argp[6] = malloc(len))
+                    {
+                        n=snprintf(argp[6], len, "--user=%s:%s",g_DdnsService[i].Username,g_DdnsService[i].Password);
+                        if(n < 0 || n >= len)
+                        {
+                            fprintf(stderr, "%s: fail to Write formatted output to sized buffer\n", __FUNCTION__ );
+                            goto error;
+                        }
+                    }
+                    else
+                    {
+                        fprintf(stderr, "malloc failed to allocate memory\n");
+                        goto error;
+                    }
+ 
+                    len = strlen("--host=") + strlen(g_DdnsService[i].Domain) + 1;
+                    if(argp[7] = malloc(len))
+                    {
+                        n=snprintf(argp[7], len, "--host=%s",g_DdnsService[i].Domain);
+                        if(n < 0 || n >= len)
+                        {
+                            fprintf(stderr, "%s: fail to Write formatted output to sized buffer\n", __FUNCTION__ );    
+                            goto error;
+                        }
+                    }
+                    else
+                    {
+                        fprintf(stderr, "malloc failed to allocate memory\n");
+                        goto error;
+                    }
+                    argp[8] = NULL; //array must be NULL terminated
+
+                    if(-1 == secure_system_call_p(argp[0],argp))
+					{
+						fprintf(stderr, "%s: fail to start: %s\n", __FUNCTION__, cmd);
+		    		        }
+                    error:
+                        if ( argp[2] != NULL ) { free( argp[2] ); }
+                        if ( argp[5] != NULL ) { free( argp[5] ); }
+                        if ( argp[6] != NULL ) { free( argp[6] ); }
+                        if ( argp[7] != NULL ) { free( argp[7] ); }
                 }
             }
         }
