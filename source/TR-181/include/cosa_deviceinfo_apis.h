@@ -73,6 +73,8 @@
 
 #include "cosa_apis.h"
 #include "plugin_main_apis.h"
+#include "cJSON.h"
+
 
 #if defined(_ANSC_LINUX)
     #include <sys/sysinfo.h>
@@ -128,6 +130,54 @@ _COSA_DATAMODEL_PROCESS
     COSA_DATAMODEL_PROCESS_CLASS_CONTENT
 }
 COSA_DATAMODEL_PROCSTATUS,  *PCOSA_DATAMODEL_PROCSTATUS;
+
+typedef  struct
+_COSA_DATAMODEL_RDKB_FOOTER_CLASS_CONTENT
+{
+	CHAR 		PartnerLink[512];
+	CHAR 		UserGuideLink[512];
+	CHAR 		CustomerCentralLink[512];
+}
+COSA_DATAMODEL_RDKB_FOOTER, *PCOSA_DATAMODEL_RDKB_FOOTER;
+
+typedef  struct
+_COSA_DATAMODEL_RDKB_CONNECTION_CLASS_CONTENT
+{
+	CHAR 		MSOmenu[512];
+	CHAR 		MSOinfo[512];
+	CHAR 		StatusTitle[512];
+	CHAR 		StatusInfo[512];
+}
+COSA_DATAMODEL_RDKB_CONNECTION, *PCOSA_DATAMODEL_RDKB_CONNECTION;
+
+typedef  struct
+_COSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS_CLASS_CONTENT
+{
+	CHAR 		ConnectivityTestURL[512];
+}
+COSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS, *PCOSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS;
+
+typedef  struct
+_COSA_DATAMODEL_RDKB_WIFIPERSONALIZATION_CLASS_CONTENT
+{
+	BOOL			Support;
+	CHAR			PartnerHelpLink[512];
+	BOOL			SMSsupport;
+	BOOL			MyAccountAppSupport;
+}
+COSA_DATAMODEL_RDKB_WIFIPERSONALIZATION, *PCOSA_DATAMODEL_RDKB_WIFIPERSONALIZATION;
+
+typedef  struct
+_COSA_DATAMODEL_RDKB_UIBRANDING_CLASS_CONTENT
+{
+	COSA_DATAMODEL_RDKB_FOOTER			Footer;
+	COSA_DATAMODEL_RDKB_CONNECTION			Connection;
+	COSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS	NDiagTool;
+	COSA_DATAMODEL_RDKB_WIFIPERSONALIZATION		WifiPersonal;
+	
+}
+COSA_DATAMODEL_RDKB_UIBRANDING, *PCOSA_DATAMODEL_RDKB_UIBRANDING;
+
 
 /**********************************************************************
                 FUNCTION PROTOTYPES
@@ -440,5 +490,22 @@ void CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong);
 void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uValue);
 void CosaDmlDiSet_RebootDevice(char* pValue);
 BOOL CosaDmlDi_ValidateRebootDeviceParam(char *pValue);
+
+ANSC_STATUS
+CosaDmlDiUiBrandingInit
+  (
+	PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand
+  );
+
+void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand);
+
+ANSC_STATUS UpdateJsonParam
+	(
+		char*           pKey,
+		char*			PartnerId,
+		char*			pValue
+    );
+
+static int writeToJson(char *data);
 
 #endif

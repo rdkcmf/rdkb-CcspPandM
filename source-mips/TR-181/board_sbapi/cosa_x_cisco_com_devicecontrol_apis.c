@@ -1539,6 +1539,7 @@ void restoreAllDBs()
 	system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
 	//Need to remove the encrypted shared keys
 	system("rm -f /nvram/.keys/*");
+	system("rm -f /nvram/partners_defaults.json");
 	system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
 	//system("restoreAllDBs"); //Perform factory reset on other components
         //Need to remove the custom maintenance window

@@ -78,7 +78,7 @@
 #include "cosa_deviceinfo_apis.h"
 
 #include "cosa_deviceinfo_dml_custom.h"
-
+#define  PARTNER_ID_LEN  64 
 /***********************************************************************
 
  APIs for Object:
@@ -672,6 +672,97 @@ Syndication_GetParamStringValue
         char*                       ParamName,
         char*                       pValue,
         ULONG*                      pulSize
+    );
+
+ULONG
+Footer_GetParamStringValue
+	(
+		ANSC_HANDLE 				hInsContext,
+		char*						ParamName,
+		char*						pValue,
+		ULONG*						pulSize
+	);
+
+BOOL
+Footer_SetParamStringValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
+ULONG
+Connection_GetParamStringValue
+
+	(
+		ANSC_HANDLE 				hInsContext,
+		char*						ParamName,
+		char*						pValue,
+		ULONG*						pulSize
+	);
+
+BOOL
+Connection_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
+
+ULONG
+NetworkDiagnosticTools_GetParamStringValue
+	(
+		ANSC_HANDLE 				hInsContext,
+		char*						ParamName,
+		char*						pValue,
+		ULONG*						pulSize
+	);
+
+BOOL
+NetworkDiagnosticTools_SetParamStringValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
+BOOL
+WiFiPersonalization_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+ULONG
+WiFiPersonalization_GetParamStringValue
+
+	(
+		ANSC_HANDLE 				hInsContext,
+		char*						ParamName,
+		char*						pValue,
+		ULONG*						pulSize
+	);
+
+BOOL
+WiFiPersonalization_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+BOOL
+WiFiPersonalization_SetParamStringValue
+
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
     );
 
 #endif

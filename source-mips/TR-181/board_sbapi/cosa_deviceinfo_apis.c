@@ -114,6 +114,7 @@
 #define CONFIG_VENDOR_NAME "ARRIS Group, Inc."
 #define CONFIG_TI_GW_DESCRIPTION "DPoE 2.0 Fiber Modem Gateway Device"
 #define CONFIG_VENDOR_ID 0xA055DE
+#define PARTNERS_INFO_FILE		"/nvram/partners_defaults.json"
 
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
@@ -2214,6 +2215,485 @@ CosaDmlDiGetSyndicationWifiUIBrandingTable
     return ANSC_STATUS_SUCCESS;
 }
 
+ANSC_STATUS
+CosaDmlDiUiBrandingInit
+  (
+	PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand
+  )
+ {
+        
+	char *data = NULL;
+	cJSON *cfgValObj = NULL;
+	cJSON *json = NULL;
+	FILE *fileRead = NULL;
+	char PartnerID[PARTNER_ID_LEN] = {0};
+	char cmd[512] = {0};
+	ULONG size = PARTNER_ID_LEN - 1;
+	int len;
+
+	if (!PUiBrand)
+	{
+		CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
+		return ANSC_STATUS_FAILURE;	
+	}
+
+	memset(PUiBrand, 0, sizeof(COSA_DATAMODEL_RDKB_UIBRANDING));
+	if (access(PARTNERS_INFO_FILE, F_OK) != 0)	
+	{
+		snprintf(cmd, sizeof(cmd), "cp %s %s", "/etc/partners_defaults.json", PARTNERS_INFO_FILE);
+		CcspTraceWarning(("%s\n",cmd));
+		system(cmd);
+	}
+
+
+	 fileRead = fopen( PARTNERS_INFO_FILE, "r" );
+	 if( fileRead == NULL ) 
+	 {
+		 CcspTraceWarning(("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ ));
+		 return ANSC_STATUS_FAILURE;
+	 }
+	 
+	 fseek( fileRead, 0, SEEK_END );
+	 len = ftell( fileRead );
+	 fseek( fileRead, 0, SEEK_SET );
+	 data = ( char* )malloc( len + 1 );
+	 if (data != NULL) 
+	 {
+	 	fread( data, 1, len, fileRead );
+	 } 
+	 else 
+	 {
+		 CcspTraceWarning(("%s-%d : Memory allocation failed \n", __FUNCTION__, __LINE__));
+		 fclose( fileRead );
+		 return ANSC_STATUS_FAILURE;
+	 }
+	 
+	 fclose( fileRead );
+	 
+	 if( data != NULL ) 
+	 {
+		 json = cJSON_Parse( data );
+		 if( !json ) 
+		 {
+			 CcspTraceWarning((  "%s-%d : json file parser error : [%s]\n", cJSON_GetErrorPtr() ,__FUNCTION__,__LINE__));
+			 free(data);
+			 return ANSC_STATUS_FAILURE;
+		 } 
+		 else 
+		 {
+			 if(ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size))
+			 {
+			 	if ( PartnerID[0] != '\0' )
+			 	{
+					FillPartnerIDValues(json, PartnerID, PUiBrand);
+			 	}
+				else
+				{
+					CcspTraceWarning(( "Reading Deafult PartnerID Values \n" ));
+					strcpy(PartnerID, "comcast");
+					FillPartnerIDValues(json, PartnerID, PUiBrand);
+				}
+			}
+	 		else{
+				CcspTraceWarning(("Failed to get Partner ID\n"));
+	 		}
+			cJSON_Delete(json);
+		}
+	  free(data);
+	  data = NULL;			 
+	 }
+	 return ANSC_STATUS_SUCCESS;
+ }
+
+void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand)
+{
+		cJSON *partnerObj = NULL;
+		char *partnerLink = NULL;
+		char *userGuideLink = NULL;
+		char *customerCentralLink = NULL;
+		char *msoMenu = NULL;
+		char *msoInfo = NULL;
+		char *statusTitle = NULL;
+		char *statusInfo = NULL;
+		char *connectivityTestURL = NULL;
+		char *support = NULL;
+		char *partnerHelpLink = NULL;
+		char *smsSupport = NULL;
+		char *myAccountAppSupport = NULL;
+		
+		
+		partnerObj = cJSON_GetObjectItem( json, partnerID );
+		if( partnerObj != NULL) 
+		{
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink") != NULL )
+				{
+					partnerLink = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink")->valuestring; 
+
+					if (partnerLink != NULL) 
+					{
+						AnscCopyString(PUiBrand->Footer.PartnerLink, partnerLink);
+						partnerLink = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - partnerLink Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - partnerLink Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideLink") != NULL)
+				{
+					userGuideLink = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideLink")->valuestring;
+
+					if (userGuideLink != NULL) 
+					{
+						AnscCopyString(PUiBrand->Footer.UserGuideLink, userGuideLink);
+						userGuideLink = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - userGuideLink Value is NULL\n", __FUNCTION__ ));
+					}
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - userGuideLink Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralLink") != NULL)
+				{
+					customerCentralLink = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralLink")->valuestring;
+
+					if (customerCentralLink != NULL) 
+					{
+						AnscCopyString(PUiBrand->Footer.CustomerCentralLink, customerCentralLink);
+						customerCentralLink = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - customerCentralLink Value is NULL\n", __FUNCTION__ ));
+					}
+
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - customerCentralLink Object is NULL\n", __FUNCTION__ ));
+				}
+				
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOmenu") != NULL )
+				{
+					msoMenu = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOmenu")->valuestring;
+
+					if (msoMenu != NULL) 
+					{
+						AnscCopyString(PUiBrand->Connection.MSOmenu, msoMenu);
+						msoMenu = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - msoMenu Value is NULL\n", __FUNCTION__ ));
+					}
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - msoMenu Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOinfo") != NULL)
+				{
+					msoInfo = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOinfo")->valuestring;
+
+					if (msoInfo != NULL) 
+					{
+						AnscCopyString(PUiBrand->Connection.MSOinfo, msoInfo);
+						msoInfo = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - msoInfo Value is NULL\n", __FUNCTION__ ));
+					}
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - msoInfo Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusTitle") != NULL)
+				{
+					statusTitle = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusTitle")->valuestring;
+
+					if (statusTitle != NULL) 
+					{
+						AnscCopyString(PUiBrand->Connection.StatusTitle, statusTitle);
+						statusTitle = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - statusTitle Value is NULL\n", __FUNCTION__ ));
+					}
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - statusTitle Object is NULL\n", __FUNCTION__ ));
+				}
+				
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusInfo") != NULL)
+				{
+					statusInfo = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusInfo")->valuestring;
+
+					if (statusInfo != NULL) 
+					{
+						AnscCopyString(PUiBrand->Connection.StatusInfo, statusInfo);
+						statusInfo = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - statusInfo Value is NULL\n", __FUNCTION__ ));
+					}
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - statusInfo Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.NetworkDiagnosticTools.ConnectivityTestURL") != NULL)
+				{
+					connectivityTestURL = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.NetworkDiagnosticTools.ConnectivityTestURL")->valuestring;
+
+					if (connectivityTestURL != NULL) 
+					{
+						AnscCopyString(PUiBrand->NDiagTool.ConnectivityTestURL, connectivityTestURL);
+						connectivityTestURL = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - connectivityTestURL Value is NULL\n", __FUNCTION__ ));
+					}
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - connectivityTestURL Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Support") != NULL)
+				{
+					support = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Support")->valuestring;
+
+					if (support != NULL) 
+					{
+						PUiBrand->WifiPersonal.Support = FALSE;
+						if ( strcmp(support,"true") == 0)
+						{
+							PUiBrand->WifiPersonal.Support = TRUE;
+							support = NULL;
+						}
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - support Value is NULL\n", __FUNCTION__ ));
+					}
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - support Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.PartnerHelpLink") != NULL)
+				{
+					partnerHelpLink = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.PartnerHelpLink")->valuestring;
+
+					if (partnerHelpLink != NULL) 
+					{
+						AnscCopyString(PUiBrand->WifiPersonal.PartnerHelpLink, partnerHelpLink);
+						partnerHelpLink = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - partnerHelpLink Value is NULL\n", __FUNCTION__ ));
+					}
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - partnerHelpLink Object is NULL\n", __FUNCTION__ ));
+				}
+				
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.SMSsupport") != NULL)
+				{
+					smsSupport = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.SMSsupport")->valuestring;
+
+					if (smsSupport != NULL) 
+					{
+						PUiBrand->WifiPersonal.SMSsupport = FALSE;
+						if ( strcmp(smsSupport,"true") == 0)
+						{
+							PUiBrand->WifiPersonal.SMSsupport = TRUE;
+							smsSupport = NULL;
+						}
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - smsSupport Value is NULL\n", __FUNCTION__ ));
+					}
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - smsSupport Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MyAccountAppSupport") != NULL)
+				{
+					myAccountAppSupport = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MyAccountAppSupport")->valuestring;	
+
+					if (myAccountAppSupport != NULL) 
+					{
+						PUiBrand->WifiPersonal.MyAccountAppSupport = FALSE;
+						if ( strcmp(myAccountAppSupport,"true") == 0)
+						{
+							PUiBrand->WifiPersonal.MyAccountAppSupport = TRUE;
+							myAccountAppSupport = NULL;
+						}
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - MyAccountAppSupport Value is NULL\n", __FUNCTION__ ));
+					}
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - MyAccountAppSupport Object is NULL\n", __FUNCTION__ ));
+				}
+				
+			}
+			
+			else
+			{
+				CcspTraceWarning(("%s - PARTNER ID OBJECT Value is NULL\n", __FUNCTION__ ));
+			}
+		
+
+}
+
+ANSC_STATUS UpdateJsonParam
+	(
+		char*                       pKey,
+		char*			PartnerId,
+		char*			pValue
+    )
+{
+	cJSON *partnerObj = NULL;
+	cJSON *json = NULL;
+	FILE *fileRead = NULL;
+	char * cJsonOut = NULL;
+	char* data = NULL;
+	int len ;
+	 int configUpdateStatus = -1;
+	 fileRead = fopen( PARTNERS_INFO_FILE, "r" );
+	 if( fileRead == NULL ) 
+	 {
+		 CcspTraceWarning(("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ ));
+		 return ANSC_STATUS_FAILURE;
+	 }
+	 
+	 fseek( fileRead, 0, SEEK_END );
+	 len = ftell( fileRead );
+	 fseek( fileRead, 0, SEEK_SET );
+	 data = ( char* )malloc( len + 1 );
+	 if (data != NULL) 
+	 {
+	 	fread( data, 1, len, fileRead );
+	 } 
+	 else 
+	 {
+		 CcspTraceWarning(("%s-%d : Memory allocation failed \n", __FUNCTION__, __LINE__));
+		 fclose( fileRead );
+		 return ANSC_STATUS_FAILURE;
+	 }
+	 
+	 fclose( fileRead );
+	  if( data != NULL ) 
+	 {
+		 json = cJSON_Parse( data );
+		 if( !json ) 
+		 {
+			 CcspTraceWarning((  "%s-%d : json file parser error : [%s]\n", cJSON_GetErrorPtr() ,__FUNCTION__,__LINE__));
+			 free(data);
+			 return ANSC_STATUS_FAILURE;
+		 } 
+		 else
+		 {
+		 	partnerObj = cJSON_GetObjectItem( json, PartnerId );
+			if ( NULL != partnerObj)
+			{
+				if (NULL != cJSON_GetObjectItem( partnerObj, pKey) )
+				{
+					cJSON_ReplaceItemInObject(partnerObj, pKey, cJSON_CreateString(pValue));
+					cJsonOut = cJSON_Print(json);
+					CcspTraceWarning(( "Updated json content is %s\n", cJsonOut));
+					configUpdateStatus = writeToJson(cJsonOut);
+					 if ( !configUpdateStatus)
+					 {
+						 CcspTraceWarning(( "Updated Value for %s partner\n",PartnerId));
+						 CcspTraceWarning(( "Param:%s - Value:%s\n",pKey,pValue));
+					 }
+					 else
+				 	{
+						 CcspTraceWarning(( "Failed to update value for %s partner\n",PartnerId));
+						 CcspTraceWarning(( "Param:%s\n",pKey));
+			 			 cJSON_Delete(json);
+						 return ANSC_STATUS_FAILURE;						
+				 	}
+				}
+				else
+			 	{
+			 		CcspTraceWarning(("%s - OBJECT  Value is NULL %s\n", pKey,__FUNCTION__ ));
+			 		cJSON_Delete(json);
+			 		return ANSC_STATUS_FAILURE;
+			 	}
+			
+			}
+			else
+			{
+			 	CcspTraceWarning(("%s - PARTNER ID OBJECT Value is NULL\n", __FUNCTION__ ));
+			 	cJSON_Delete(json);
+			 	return ANSC_STATUS_FAILURE;
+			 }
+			cJSON_Delete(json);
+		 }
+	  }
+	 return ANSC_STATUS_SUCCESS;
+}
+
+static int writeToJson(char *data)
+{
+    FILE *fp;
+    fp = fopen(PARTNERS_INFO_FILE, "w");
+    if (fp == NULL) 
+    {
+        CcspTraceWarning(("%s : %d Failed to open file %s\n", __FUNCTION__,__LINE__,PARTNERS_INFO_FILE));
+        return -1;
+    }
+    
+    fwrite(data, strlen(data), 1, fp);
+    fclose(fp);
+    return 0;
+}
 void CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong)
 {
         char buf[8] = { 0 };

@@ -1604,7 +1604,7 @@ void restoreAllDBs()
 	system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
 	//Need to remove the encrypted shared keys
 	system("rm -f /nvram/.keys/*");
-
+	system("rm -f /nvram/partners_defaults.json");
         //Need to remove the custom maintenance window
         system("rm -f /nvram/.FirmwareUpgradeEndTime");
         system("rm -f /nvram/.FirmwareUpgradeStartTime");
