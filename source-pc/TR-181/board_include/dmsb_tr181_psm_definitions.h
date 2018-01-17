@@ -247,7 +247,7 @@
                             File Transfer
 **********************************************************************/
 #define  DMSB_TR181_PSM_ft_Root                  "dmsb.filetransfer."
-#define  DMSB_TR181_PSM_ft_ServerAddress         "Serveraddress"
+#define  DMSB_TR181_PSM_ft_Server                "Server"
 #define  DMSB_TR181_PSM_ft_Protocol              "Protocol"
 #define  DMSB_TR181_PSM_ft_FileName              "Filename"
 

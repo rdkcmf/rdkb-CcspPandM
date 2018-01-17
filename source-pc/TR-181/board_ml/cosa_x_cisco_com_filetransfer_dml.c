@@ -120,6 +120,13 @@ FileTransfer_GetParamUlongValue
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
 
     /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "Server", TRUE))
+    {
+        /* collect value */
+        *puLong = pCfg->Server;
+        return TRUE;
+    }
+
     if( AnscEqualString(ParamName, "Protocol", TRUE))
     {
         /* collect value */
@@ -203,12 +210,6 @@ FileTransfer_GetParamStringValue
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "ServerAddress", TRUE))
-    {
-        /* collect value */
-        AnscCopyString(pValue,  pCfg->ServerAddress);
-        return 0;
-    }
 
     if( AnscEqualString(ParamName, "FileName", TRUE))
     {
@@ -277,6 +278,13 @@ FileTransfer_SetParamUlongValue
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
 
     /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "Server", TRUE))
+    {
+        /* save update to backup */
+        pCfg->Server = uValue;
+        return TRUE;
+    }
+
     if( AnscEqualString(ParamName, "Protocol", TRUE))
     {
         /* save update to backup */
@@ -344,13 +352,6 @@ FileTransfer_SetParamStringValue
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "ServerAddress", TRUE))
-    {
-        /* save update to backup */
-        AnscCopyString(pCfg->ServerAddress, pString);
-        return TRUE;
-    }
-
     if( AnscEqualString(ParamName, "FileName", TRUE))
     {
         /* save update to backup */
@@ -416,11 +417,6 @@ FileTransfer_Validate
 {
     PCOSA_DATAMODEL_FILETRANSFER    pMyObject = (PCOSA_DATAMODEL_FILETRANSFER)g_pCosaBEManager->hFileTransfer;
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
-
-    if ( pCfg->ServerAddress != NULL && !AnscIsValidIpString(pCfg->ServerAddress) && !AnscIsValidIp6String(pCfg->ServerAddress) ) 
-    {
-        return FALSE;
-    }
 
     return TRUE;
 }

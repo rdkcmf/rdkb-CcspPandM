@@ -172,8 +172,9 @@ CosaFileTransferInitialize
 
     CosaDmlFileTransferInit  (NULL, NULL);
     CosaDmlFileTransferGetCfg(NULL, pCfg);
-    pCfg->Action      = COSA_DML_FILETRANSFER_PROTOCOL_TFTP;
-    pCfg->Protocol    = COSA_DML_FILETRANSFER_ACTION_Download;
+    pCfg->Server      = COSA_DML_FILETRANSFER_SERVER_TFTP1;
+    pCfg->Action      = COSA_DML_FILETRANSFER_ACTION_Download;
+    pCfg->Protocol    = COSA_DML_FILETRANSFER_PROTOCOL_TFTP;
     pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_Failed;
 
     return returnStatus;

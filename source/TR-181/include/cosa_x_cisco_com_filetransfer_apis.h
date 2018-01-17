@@ -46,6 +46,14 @@
 /***********************************
     Actual definition declaration
 ************************************/
+typedef  enum
+_COSA_DML_FILETRANSFER_SERVER
+{
+    COSA_DML_FILETRANSFER_SERVER_NONE,
+    COSA_DML_FILETRANSFER_SERVER_TFTP1,
+    COSA_DML_FILETRANSFER_SERVER_TFTP2
+}
+COSA_DML_FILETRANSFER_SERVER, *PCOSA_DML_FILETRANSFER_SERVER;
 
 typedef  enum
 _COSA_DML_FILETRANSFER_PROTOCOL
@@ -87,7 +95,7 @@ COSA_DML_FILETRANSFER_STATUS, *PCOSA_DML_FILETRANSFER_STATUS;
 typedef  struct
 _COSA_DML_FILETRANSFER_CFG
 {
-    UCHAR               ServerAddress[64];                                  
+    ULONG               Server;
     ULONG               Protocol;                                           
     UCHAR               FileName[128];                                      
     UCHAR               Username[128];                                      

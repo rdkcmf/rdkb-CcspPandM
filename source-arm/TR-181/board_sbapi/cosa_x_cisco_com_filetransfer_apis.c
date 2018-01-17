@@ -78,6 +78,21 @@
 #include "dmsb_tr181_psm_definitions.h"
 #include <curl/curl.h>
 
+/* Set up default tftp server table */
+typedef struct
+{
+    COSA_DML_FILETRANSFER_SERVER    mStatus;
+    char                  *mServer;
+} FILETRANSFER_SERVER_item;
+
+
+FILETRANSFER_SERVER_item FileTransfer_TFTPServers[] = {
+    {COSA_DML_FILETRANSFER_SERVER_NONE, ""},
+    {COSA_DML_FILETRANSFER_SERVER_TFTP1, "tftpwest01.comcast.net"},
+    {COSA_DML_FILETRANSFER_SERVER_TFTP2, "tftpwest02.comcast.net"}
+};
+
+
 ANSC_STATUS
 CosaDmlFileTransferInit
     (
@@ -111,7 +126,13 @@ FileTransferTask
         return ANSC_STATUS_FAILURE;
     }
 
-    _ansc_sprintf(URL, "tftp://%s/%s", pCfg->ServerAddress, pCfg->FileName);
+    if (pCfg->Server == COSA_DML_FILETRANSFER_SERVER_NONE)
+    {
+        AnscTraceWarning(("TFTP Server not set!\n"));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    _ansc_sprintf(URL, "tftp://%s/%s", FileTransfer_TFTPServers[pCfg->Server].mServer, pCfg->FileName);
     ret = curl_easy_setopt(curl, CURLOPT_URL, URL);
 
     _ansc_sprintf(Path, "%s%s", TRUE_STATIC_IP_CONFIG_PATH, pCfg->FileName);
@@ -158,16 +179,16 @@ CosaDmlFileTransferSetCfg
 
     /* Only support TFTP download for now */
 
-    if ( TRUE )     /* ServerAddress */
+    if ( TRUE )     /* Server */
     {
         _ansc_sprintf
             (
                 pParamPath,
-                DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_ServerAddress
+                DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_Server
             );
 
-        RecordType = ccsp_string;
-        AnscCopyString(RecordValue, pCfg->ServerAddress);
+        RecordType = ccsp_unsignedInt;
+        _ansc_sprintf(RecordValue, "%d", pCfg->Server);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -296,14 +317,14 @@ CosaDmlFileTransferGetCfg
 
     /* Fetch Cfg, we only support tftp download for now */
 
-    if ( TRUE )     /* ServerAddress */
+    if ( TRUE )     /* Server */
     {
         SlapInitVariable(&SlapValue);
 
         _ansc_sprintf
             (
                 pParamPath,
-                DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_ServerAddress
+                DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_Server
             );
 
         iReturnValue =
@@ -316,7 +337,7 @@ CosaDmlFileTransferGetCfg
                     &SlapValue
                 );
 
-        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_string))
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_unsignedInt))
         {
             AnscTraceWarning
                 ((
@@ -329,7 +350,7 @@ CosaDmlFileTransferGetCfg
         }
         else
         {
-            AnscCopyString(pCfg->ServerAddress, SlapValue.Variant.varString);
+            pCfg->Server, SlapValue.Variant.varUint32;
         }
 
         SlapCleanVariable(&SlapValue);

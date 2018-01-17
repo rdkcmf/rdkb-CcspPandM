@@ -87,7 +87,7 @@ COSA_DML_FILETRANSFER_STATUS, *PCOSA_DML_FILETRANSFER_STATUS;
 typedef  struct
 _COSA_DML_FILETRANSFER_CFG
 {
-    UCHAR               ServerAddress[64];                                  
+    ULONG               Server;
     ULONG               Protocol;                                           
     UCHAR               FileName[128];                                      
     UCHAR               Username[128];                                      

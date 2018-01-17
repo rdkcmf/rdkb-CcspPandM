@@ -14145,9 +14145,9 @@
 	  </functions>
 	  <parameters>
         <parameter>
-          <name>ServerAddress</name>
-          <type>string(64)</type>
-          <syntax>string</syntax>
+          <name>Server</name>
+          <type>string: TFTP1(1),TFTP2(2)</type>
+          <syntax>uint32/mapped</syntax>
           <writable>true</writable>
         </parameter>
 		<parameter>
