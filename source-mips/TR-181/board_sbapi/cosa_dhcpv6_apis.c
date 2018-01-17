@@ -3303,6 +3303,8 @@ void __cosa_dhcpsv6_refresh_config()
     char responseCode[10];
     ULONG  T1 = 0;
     ULONG  T2 = 0;
+	char buf[ 6 ];
+	int IsCaptivePortalMode = 0;
 
     if (!fp)
         goto EXIT;
@@ -3456,6 +3458,25 @@ OPTIONS:
             if ( Index3 >= sizeof(tagList)/sizeof(struct DHCP_TAG) )
                 continue;
 
+			// During captive portal no need to pass DNS
+			// Check the reponse code received from Web Service
+			if( ( responsefd = fopen( networkResponse, "r" ) ) != NULL ) 
+			{
+				if( fgets( responseCode, sizeof( responseCode ), responsefd ) != NULL )
+				{
+					iresCode = atoi( responseCode );
+				}
+			}
+			
+			syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
+			if( buf != NULL )
+			{
+				if ( ( strncmp( buf,"true",4 ) == 0 ) && iresCode == 204 )
+				{
+					 IsCaptivePortalMode = 1;
+				}
+			 }
+
             if ( sDhcpv6ServerPoolOption[Index][Index2].PassthroughClient[0] )
             {
                 /* this content get from v6 client directly. If there is problem, change to 
@@ -3476,28 +3497,7 @@ OPTIONS:
                 if ( g_recv_options[Index4].Tag == 23 )
                 { //dns
                    char dnsStr[256] = {0};
-				   char buf[ 6 ];
-				   int IsCaptivePortalMode = 0;
 				   
-				   // During captive portal no need to pass DNS
-				   // Check the reponse code received from Web Service
-				   if( ( responsefd = fopen( networkResponse, "r" ) ) != NULL ) 
-				   {
-					   if( fgets( responseCode, sizeof( responseCode ), responsefd ) != NULL )
-					   {
-						   iresCode = atoi( responseCode );
-					   }
-				   }
-				   
-				   syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
-				   if( buf != NULL )
-				   {
-					   if ( ( strncmp( buf,"true",4 ) == 0 ) && iresCode == 204 )
-					   {
-						   	IsCaptivePortalMode	= 1;
-					   }
-					}
-
 				   /* Static DNS Servers */
 				   if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled )
 				   {
@@ -3555,13 +3555,40 @@ OPTIONS:
                 /* We need to translate hex to normal string */
                 if ( sDhcpv6ServerPoolOption[Index][Index2].Tag == 23 )
                 { //dns
-                    if ( _ansc_strstr(sDhcpv6ServerPoolOption[Index][Index2].Value, ":") )
-                        pServerOption = sDhcpv6ServerPoolOption[Index][Index2].Value;
-                    else
-                        pServerOption = CosaDmlDhcpv6sGetAddressFromString(sDhcpv6ServerPoolOption[Index][Index2].Value);
-
-                    if ( pServerOption )
-                        fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
+					char dnsStr[256] = {0};
+					
+					/* Static DNS Servers */
+					if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled )
+					{
+					   memset( dnsStr, 0, sizeof( dnsStr ) );	 
+					   strcpy( dnsStr, sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
+					   CosaDmlDhcpv6s_format_DNSoption( dnsStr );
+					
+					   // Check device is in captive portal mode or not
+					   if( 1 == IsCaptivePortalMode )
+					   {
+						   fprintf(fp, "#	 option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+					   }
+					   else
+					   {
+						   fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+					   }
+					
+					   CcspTraceWarning(("%s %d - DNSServersEnabled:%d DNSServers:%s\n", __FUNCTION__, 
+																						 __LINE__,
+																						 sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled,
+																						 sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers ));
+					}
+					else
+					{
+						if ( _ansc_strstr(sDhcpv6ServerPoolOption[Index][Index2].Value, ":") )
+							pServerOption = sDhcpv6ServerPoolOption[Index][Index2].Value;
+						else
+							pServerOption = CosaDmlDhcpv6sGetAddressFromString(sDhcpv6ServerPoolOption[Index][Index2].Value);
+						
+						if ( pServerOption )
+							fprintf(fp, "	 option %s %s\n", tagList[Index3].cmdstring, pServerOption);
+					}
 
                 }
                 else if ( g_recv_options[Index4].Tag == 24 )
@@ -3585,13 +3612,13 @@ OPTIONS:
     
     fclose(fp);
 
-#ifndef _COSA_BCM_MIPS_
     /*RDKB-6780, CID-33149, free unused resources before return*/
     if(responsefd)
     {
         fclose(responsefd);
     }
 
+#ifndef _COSA_BCM_MIPS_
     /*we will copy the updated conf file at once*/
     if (rename(TMP_SERVER_CONF, SERVER_CONF_LOCATION))
         CcspTraceWarning(("%s rename failed %s\n", __FUNCTION__, strerror(errno)));
