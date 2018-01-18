@@ -24,7 +24,13 @@
 #include "cJSON.h"
 
 #define CONTENT_TYPE_JSON  "application/json"
-#define DEVICE_MAC         "Device.X_CISCO_COM_CableModem.MACAddress"
+
+#if defined(_COSA_BCM_MIPS_)
+#define DEVICE_MAC                   "Device.DPoE.Mac_address"
+#else
+#define DEVICE_MAC                   "Device.X_CISCO_COM_CableModem.MACAddress"
+#endif
+
 #define CLIENT_PORT_NUM     6670
 #define MAX_PARAMETERNAME_LEN    512
 #define DEVICE_PROPS_FILE  "/etc/device.properties"
