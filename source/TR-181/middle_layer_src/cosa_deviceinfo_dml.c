@@ -5853,7 +5853,7 @@ RPC_SetParamBoolValue
            return TRUE;
        } else {
            CcspTraceWarning(("Invalid request for parameter, no FW DL reboot wait in progress '%s'\n", ParamName));
-           return TRUE;
+           return FALSE;
        }
    } 
        /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
