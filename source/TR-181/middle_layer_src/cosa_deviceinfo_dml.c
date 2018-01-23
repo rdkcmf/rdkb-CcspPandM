@@ -734,6 +734,11 @@ DeviceInfo_SetParamBoolValue
             {
                 AnscTraceWarning(("syscfg_commit failed for AkerEnable\n"));
             }
+	    else
+	    {
+		/* Restart Firewall */
+		system("sysevent set firewall-restart");
+	    }	
         }
 
         return TRUE;
