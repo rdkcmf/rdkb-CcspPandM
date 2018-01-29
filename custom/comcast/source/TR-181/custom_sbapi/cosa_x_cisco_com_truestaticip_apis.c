@@ -904,13 +904,9 @@ CosaDmlTSIPApplyConfigFile
 
     AnscTraceWarning(("!!!!!!!!!! Creating thread to apply config !!!!!!!!!!\n"));
 
-    returnStatus = 
-        AnscSpawnTask
-            (
-                CosaDmlTSIPApplyConfigFileTask,
-                (ANSC_HANDLE)pMyObject,
-                "ConfigApplyTask"
-            );
+    pthread_t tConfig;
+    pthread_create(&tConfig, NULL, &CosaDmlTSIPApplyConfigFileTask, (ANSC_HANDLE) pMyObject);
+    pthread_setname_np(tConfig, "ConfigApplyTask");
 
     return returnStatus;
 }
