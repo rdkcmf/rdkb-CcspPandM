@@ -5023,23 +5023,23 @@ Xconf_SetParamBoolValue
             if(0 == system("pidof cbr_firmwareDwnld.sh"))  {
                            system ("kill -9 `pidof cbr_firmwareDwnld.sh `");
                        }
-                           status = system("/etc/cbr_firmwareDwnld.sh &");
+                           status = system("/etc/cbr_firmwareDwnld.sh cleanup &");
 #else
 			if(0 == system("pidof xb6_firmwareDwnld.sh"))  {
                            system ("kill -9 `pidof xb6_firmwareDwnld.sh `");
                        }
-                           status = system("/etc/xb6_firmwareDwnld.sh &");
+                           status = system("/etc/xb6_firmwareDwnld.sh cleanup &");
 #endif
 #elif defined(_COSA_BCM_MIPS_)
 			if(0 == system("pidof xf3_firmwareDwnld.sh"))  {
                            system ("kill -9 `pidof xf3_firmwareDwnld.sh `");
                        }
-                           status = system("/etc/xf3_firmwareDwnld.sh &");
+                           status = system("/etc/xf3_firmwareDwnld.sh cleanup &");
 #else
 			if(0 == system("pidof xb3_firmwareDwnld.sh"))  {
                            system ("kill -9 `pidof xb3_firmwareDwnld.sh `");
                        }
-                           status = system("/etc/xb3_firmwareDwnld.sh &");
+                           status = system("/etc/xb3_firmwareDwnld.sh cleanup &");
 #endif
 
                            if (0 == status)
