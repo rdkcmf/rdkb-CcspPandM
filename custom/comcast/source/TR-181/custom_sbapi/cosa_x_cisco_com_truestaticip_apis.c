@@ -906,7 +906,6 @@ CosaDmlTSIPApplyConfigFile
 
     pthread_t tConfig;
     pthread_create(&tConfig, NULL, &CosaDmlTSIPApplyConfigFileTask, (ANSC_HANDLE) pMyObject);
-    pthread_setname_np(tConfig, "ConfigApplyTask");
 
     return returnStatus;
 }
