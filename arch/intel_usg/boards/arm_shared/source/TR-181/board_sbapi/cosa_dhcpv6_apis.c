@@ -1726,6 +1726,10 @@ CosaDmlDhcpv6Init
     GETI_FROM_UTOPIA(DHCPV6S_NAME,    "", 0, "", 0, "servertype",   g_dhcpv6_server_type)
     GETI_FROM_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "poolnumber", uDhcpv6ServerPoolNum)
 
+    if (uDhcpv6ServerPoolNum > DHCPV6S_POOL_NUM) {
+        uDhcpv6ServerPoolNum = DHCPV6S_POOL_NUM;
+    }
+
     /*This logic code is used to change default behavior to stateful dhcpv6 server */
     Utopia_RawGet(&utctx,NULL, "router_statefuldhcpv6_DoOnce",value,sizeof(value));
     if ( value[0]!= '1'  && g_dhcpv6_server_type == 2 )
