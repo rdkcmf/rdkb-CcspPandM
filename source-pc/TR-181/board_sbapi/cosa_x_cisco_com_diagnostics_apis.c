@@ -134,7 +134,7 @@ static unsigned int _Level_str2num(char* str){
     return 0xFFFF;
 }
 
-inline int _month2i(char *m)
+static inline int _month2i(char *m)
 {
     if(0 == strncmp("Jan", m, 3))
         return 1;
@@ -164,7 +164,7 @@ inline int _month2i(char *m)
         return 0;
 }
 
-inline int date2i(char *date)
+static inline int date2i(char *date)
 {
     char mon[3];
     int day,h,m,s;
@@ -177,7 +177,7 @@ inline int date2i(char *date)
     return value;
 }
 
-inline int _day_cmp(char * miss, char *base)
+static inline int _day_cmp(char * miss, char *base)
 {
     int i_m = 0;
     int i_b = 0;
@@ -205,7 +205,7 @@ inline int _day_cmp(char * miss, char *base)
        return -1;
 }
 
-inline void _gen_year(char *miss,char **base)
+static inline void _gen_year(char *miss,char **base)
 {
     int time_status;
     int y;
@@ -230,7 +230,7 @@ inline void _gen_year(char *miss,char **base)
     }
 }
 
-inline void _gen_years(PCOSA_DML_DIAGNOSTICS_ENTRY p, char *date, int pos)
+static inline void _gen_years(PCOSA_DML_DIAGNOSTICS_ENTRY p, char *date, int pos)
 {
     int j = 0;
     char *base = date;
@@ -257,8 +257,8 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
     int len = 0;
     int year = 0;
     int year_miss = 0;
-        char *timestamp;
-        time_t now;
+	char *timestamp;
+	time_t now;
 
     while( (c = fgetc(fd)) != EOF){
         if( c == '\n')
@@ -335,9 +335,9 @@ CONTINUE:
         p = NULL;
     }
     if(year_miss == 1){
-       /* cannot find years from log, get local time */
-                time(&now);
-                timestamp = ctime(&now) + 4; /* skip day of week */
+       /* cannot find years from log, get local time */ 
+		time(&now);
+		timestamp = ctime(&now) + 4; /* skip day of week */
         _gen_years(p, timestamp, i - 1);
     }
     *info = p;

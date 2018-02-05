@@ -83,7 +83,7 @@ extern void* g_pDslhDmlAgent;
 
 #define NAME_DM_LEN  257
 
-typedef struct _Name_DM 
+typedef struct _Name_DM
 {
     char name[NAME_DM_LEN];
     char dm[NAME_DM_LEN];
@@ -98,12 +98,12 @@ Name_DM_t *g_pMoCAADList = NULL;
 int g_DHCPv4ListNum = 0;
 Name_DM_t *g_pDHCPv4List = NULL;
 
-inline int _mac_string_to_array(char *pStr, unsigned char array[6])
+static inline int _mac_string_to_array(char *pStr, unsigned char array[6])
 {
     int tmp[6],n,i;
-	if(pStr == NULL)
-		return -1;
-		
+    if(pStr == NULL)
+        return -1;
+
     memset(array,0,6);
     n = sscanf(pStr,"%02x:%02x:%02x:%02x:%02x:%02x",&tmp[0],&tmp[1],&tmp[2],&tmp[3],&tmp[4],&tmp[5]);
     if(n==6){
@@ -325,9 +325,9 @@ LmObjectHosts lmHosts = {
 #define STRSET_NULL_CHK(dest, src)  { if((dest) != NULL) AnscFreeMemory((dest)); \
                                             (dest) = (src);}
 
-char _g_atom_if_ip[4];
+static char _g_atom_if_ip[4];
 
-char * _CloneString
+static char * _CloneString
     (
     const char * src
     )
@@ -344,7 +344,7 @@ char * _CloneString
     return dest;
 }
 
-void _get_unwelcome_list()
+static void _get_unwelcome_list()
 {
    char *pStr = NULL;
    char ParaName[50];
@@ -660,7 +660,7 @@ Host_AddIPv6Address
     return pIPv6Address;
 }
 
-inline char* _get_host_mediaType(enum LM_MEDIA_TYPE m_type)
+static inline char* _get_host_mediaType(enum LM_MEDIA_TYPE m_type)
 {
     switch (m_type){
         case LM_MEDIA_TYPE_MOCA:
@@ -673,7 +673,7 @@ inline char* _get_host_mediaType(enum LM_MEDIA_TYPE m_type)
     }
 }
 
-inline char* _get_addr_source(enum LM_ADDR_SOURCE source )
+static inline char* _get_addr_source(enum LM_ADDR_SOURCE source )
 {
     switch (source){
         case LM_ADDRESS_SOURCE_DHCP:
@@ -688,7 +688,19 @@ inline char* _get_addr_source(enum LM_ADDR_SOURCE source )
     }
 }
 
-inline void _get_host_ipaddress(LM_host_t *pSrcHost, PLmObjectHost pHost)
+static void _get_dmbyname(int num, Name_DM_t *list, char** dm, char* name)
+{
+    int i;
+
+    for(i = 0; i < num; i++){
+        if(NULL != strcasestr(list[i].name, name)){
+            STRNCPY_NULL_CHK((*dm), list[i].dm);
+            break;
+        }
+    }
+}
+
+static inline void _get_host_ipaddress(LM_host_t *pSrcHost, PLmObjectHost pHost)
 {
     int i;    
     LM_ip_addr_t *pIp;
@@ -728,7 +740,8 @@ inline void _get_host_ipaddress(LM_host_t *pSrcHost, PLmObjectHost pHost)
         Host_AddIPv6Address(pHost, 1, str);
     }
 }
-void _init_DM_List(int *num, Name_DM_t **pList, char *path, char *name)
+
+static void _init_DM_List(int *num, Name_DM_t **pList, char *path, char *name)
 {
     int i;
     char dm[200];
@@ -767,19 +780,7 @@ void _init_DM_List(int *num, Name_DM_t **pList, char *path, char *name)
     }
 }
 
-void _get_dmbyname(int num, Name_DM_t *list, char** dm, char* name)
-{
-    int i;
-
-    for(i = 0; i < num; i++){
-        if(NULL != strcasestr(list[i].name, name)){
-            STRNCPY_NULL_CHK((*dm), list[i].dm);
-            break;
-        }
-    }
-}
-
-inline void _get_host_info(LM_host_t *pDestHost, PLmObjectHost pHost)
+static inline void _get_host_info(LM_host_t *pDestHost, PLmObjectHost pHost)
 {
         pHost->bBoolParaValue[LM_HOST_ActiveId]= pDestHost->online;
         
@@ -816,7 +817,8 @@ inline void _get_host_info(LM_host_t *pDestHost, PLmObjectHost pHost)
         _get_host_ipaddress(pDestHost, pHost);
         
 }
-int _get_PSM()
+
+static int _get_PSM()
 {
 #if defined (CONFIG_TI_BBU) || defined (CONFIG_TI_BBU_TI)
     int  powerState = 0;

@@ -1965,7 +1965,7 @@ int _Check_PT_parameter(PCOSA_DML_NAT_PTRIGGER pPortTrigger)
 }
 
 /* IP is type of ANSC_IPV4_ADDRESS, but ANSC_IPV4_ADDRESS is defind as union <anonymous> we cannot use it as parameter */  
-inline void _sent_syslog_pm_sb(char *opt, UCHAR protocol, USHORT external, USHORT external_end, USHORT internal, UCHAR ip[4], BOOLEAN active)
+static inline void _sent_syslog_pm_sb(char *opt, UCHAR protocol, USHORT external, USHORT external_end, USHORT internal, UCHAR ip[4], BOOLEAN active)
 {
     char extPort[20], intPort[20];
     if(external_end == 0)
@@ -1984,7 +1984,7 @@ inline void _sent_syslog_pm_sb(char *opt, UCHAR protocol, USHORT external, USHOR
         (active==TRUE)?"Active":"Inactive");
 }
 
-inline void _sent_syslog_pt_sb(char *opt, UCHAR protocol, USHORT trigger_start, USHORT trigger_end, USHORT forward_start, USHORT forward_end, BOOLEAN active)
+static inline void _sent_syslog_pt_sb(char *opt, UCHAR protocol, USHORT trigger_start, USHORT trigger_end, USHORT forward_start, USHORT forward_end, BOOLEAN active)
 {
     syslog_systemlog("PortTriggering", LOG_NOTICE, "%s: %s TriggerPort(s) %d~%d TargetPort(s) %d~%d %s", opt,\
         (protocol==1)? "TCP": ((protocol == 2) ? "UDP" : "TCP/UDP"), \
@@ -1992,7 +1992,7 @@ inline void _sent_syslog_pt_sb(char *opt, UCHAR protocol, USHORT trigger_start, 
         (active==TRUE)? "Active":"Inactive");
 }
 
-inline void _sent_syslog_pm_u(char *opt, protocol_t protocol, int external, int external_end, int internal, char *ip, boolean_t active)
+static inline void _sent_syslog_pm_u(char *opt, protocol_t protocol, int external, int external_end, int internal, char *ip, boolean_t active)
 {
     char extPort[20], intPort[20];
     if(external_end == 0)
@@ -2011,7 +2011,7 @@ inline void _sent_syslog_pm_u(char *opt, protocol_t protocol, int external, int 
         (active==TRUE)?" Active":" Inactive");
 
 }
-inline void _sent_syslog_pt_u(char *opt, protocol_t protocol, int trigger_start, int trigger_end, int forward_start, int forward_end, boolean_t active)
+static inline void _sent_syslog_pt_u(char *opt, protocol_t protocol, int trigger_start, int trigger_end, int forward_start, int forward_end, boolean_t active)
 {
     syslog_systemlog("PortTriggering", LOG_NOTICE, "%s: %s TriggerPort(s) %d~%d TargetPort(s) %d~%d %s", opt,\
         (protocol==1)? "TCP": ((protocol == 2) ? "UDP" : "TCP/UDP"), \
@@ -2024,7 +2024,7 @@ inline void _sent_syslog_pt_u(char *opt, protocol_t protocol, int trigger_start,
 #define RULE_PORTMAPPING_TYPE_HS 2
 #define RULE_PORTMAPPING_TYPE_PUBLICIP 3
 #define PORT_MAPPING_NORMAL_MAX_RULE_NUM 9
-inline int _CHECK_PORTMAPPING_RULE_TYPE(PCOSA_DML_NAT_PMAPPING pEntry){
+static inline int _CHECK_PORTMAPPING_RULE_TYPE(PCOSA_DML_NAT_PMAPPING pEntry){
     if(pEntry->PublicIP.Value != 0)
         return RULE_PORTMAPPING_TYPE_PUBLICIP;
     else if(pEntry->InternalPort == 0)
@@ -2033,7 +2033,7 @@ inline int _CHECK_PORTMAPPING_RULE_TYPE(PCOSA_DML_NAT_PMAPPING pEntry){
         return RULE_PORTMAPPING_TYPE_HS; 
 }
 
-inline int _CHECK_PORTMAPPING_RULE_TYPE_U_RANGE(portFwdRange_t *pEntry)
+static inline int _CHECK_PORTMAPPING_RULE_TYPE_U_RANGE(portFwdRange_t *pEntry)
 {
     if(pEntry->public_ip[0] != '\0' && 0 != strcmp(pEntry->public_ip, "0.0.0.0"))
         return RULE_PORTMAPPING_TYPE_PUBLICIP;
@@ -2043,7 +2043,7 @@ inline int _CHECK_PORTMAPPING_RULE_TYPE_U_RANGE(portFwdRange_t *pEntry)
         return RULE_PORTMAPPING_TYPE_HS; 
 }
 
-inline int _CHECK_PORTMAPPING_RULE_TYPE_UTOPAI_SINGLE(portFwdSingle_t *pEntry)
+static inline int _CHECK_PORTMAPPING_RULE_TYPE_UTOPAI_SINGLE(portFwdSingle_t *pEntry)
 {
     if(pEntry->internal_port == 0)
         return RULE_PORTMAPPING_TYPE_NORMAL;

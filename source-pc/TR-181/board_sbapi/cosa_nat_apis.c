@@ -263,7 +263,7 @@ CosaDmlNatGetLanIP
     return ANSC_STATUS_SUCCESS;
 }
 
-int _check_PF_range(PCOSA_DML_NAT_PMAPPING pPortMapping){
+static int _check_PF_range(PCOSA_DML_NAT_PMAPPING pPortMapping){
 	PCOSA_DML_NAT_PMAPPING pNatPMapping = NULL;
         char *param_value;
         ULONG numOfEntries = 0;
@@ -309,7 +309,7 @@ int _check_PF_range(PCOSA_DML_NAT_PMAPPING pPortMapping){
         return TRUE;
 }
 
-int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)//RDKB_EMULATOR 
+static int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)//RDKB_EMULATOR 
 {
        if( pPortMapping->PublicIP.Value == 0 &&
                         ((pPortMapping->ExternalPort == 0) ||
@@ -334,7 +334,7 @@ int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)//RDKB_EMULATOR
     return TRUE;
 }
 
-int _check_PT_range(PCOSA_DML_NAT_PTRIGGER pPortTrigger){
+static int _check_PT_range(PCOSA_DML_NAT_PTRIGGER pPortTrigger){
         PCOSA_DML_NAT_PTRIGGER pNatPTrigger = NULL;
         char *param_value;
         ULONG numOfEntries = 0;
@@ -386,7 +386,7 @@ int _check_PT_range(PCOSA_DML_NAT_PTRIGGER pPortTrigger){
         return TRUE;
 }
 
-BOOL _Check_PT_parameter(PCOSA_DML_NAT_PTRIGGER pPortTrigger)
+static BOOL _Check_PT_parameter(PCOSA_DML_NAT_PTRIGGER pPortTrigger)
 {
     // Check parameter setting
     if( (pPortTrigger->TriggerProtocol > 2 || pPortTrigger->TriggerProtocol < 0) ||
@@ -437,8 +437,8 @@ CosaDmlNatInit
         PFN_COSA_DML_NAT_GEN        pValueGenFn
     )
 {
-
     g_nat_pportmapping_callback = pValueGenFn;
+
     return ANSC_STATUS_SUCCESS;
 
 }
@@ -515,7 +515,6 @@ CosaDmlNatGet
             The pointer to the info of DMZ.
 
 **********************************************************************/
-
 ANSC_STATUS
 CosaDmlNatSet
     (
@@ -632,6 +631,7 @@ CosaDmlNatGetDmz
             The pointer to the info of DMZ.
 
 **********************************************************************/
+
 ANSC_STATUS
 CosaDmlNatSetDmz
     (
