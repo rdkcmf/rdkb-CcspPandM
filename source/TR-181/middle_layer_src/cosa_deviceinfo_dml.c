@@ -5751,6 +5751,20 @@ Syndication_GetParamStringValue
         CosaDmlDiGetSyndicationWifiUIBrandingTable(NULL, pValue,pulSize);
         return 0;
     }
+    if( AnscEqualString(ParamName, "PauseScreenFileLocation", TRUE))
+    {
+    	 /* collect value */
+	 if ( AnscSizeOfString(pMyObject->UiBrand.PauseScreenFileLocation) < *pulSize)
+	 {
+		 AnscCopyString( pValue, pMyObject->UiBrand.PauseScreenFileLocation);		
+		 return 0;
+	 }
+	 else
+	 {
+	 	 *pulSize = AnscSizeOfString(pMyObject->UiBrand.PauseScreenFileLocation)+1;
+		 return 1;
+	 }
+     }
 
     return -1;
 }
@@ -5796,7 +5810,8 @@ Syndication_SetParamStringValue
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     ANSC_STATUS 					retValue  = ANSC_STATUS_FAILURE;
-
+    char PartnerID[PARTNER_ID_LEN] = {0};
+    ULONG size = PARTNER_ID_LEN - 1;
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "TR69CertLocation", TRUE) )
     {
@@ -5820,6 +5835,20 @@ Syndication_SetParamStringValue
 		
 		return TRUE;
     }
+    if((ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size) ) && ( PartnerID[ 0 ] != '\0'))
+    {
+   	 /* check the parameter name and set the corresponding value */
+	 if( AnscEqualString(ParamName, "PauseScreenFileLocation", TRUE) )
+	{
+		if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation",PartnerID, pString))
+		{
+			memset( pMyObject->UiBrand.PauseScreenFileLocation, 0, sizeof( pMyObject->UiBrand.PauseScreenFileLocation ));
+			AnscCopyString( pMyObject->UiBrand.PauseScreenFileLocation, pString );
+			return TRUE;
+		}	
+	 }
+	  
+      }
 
     return FALSE;
 }

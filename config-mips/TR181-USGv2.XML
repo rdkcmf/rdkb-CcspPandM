@@ -760,6 +760,12 @@
 				<syntax>bool</syntax>
 				<writable>true</writable>
 			</parameter>
+           <parameter>
+                <name>PauseScreenFileLocation</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>true</writable>
+            </parameter>
         </parameters>
         <objects>
           <object>

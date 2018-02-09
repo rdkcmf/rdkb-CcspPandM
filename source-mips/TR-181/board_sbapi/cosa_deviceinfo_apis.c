@@ -2490,6 +2490,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 		char *DefaultLoginPassword = NULL;
 		char *DefaultLoginUsername = NULL;
 		char *UIMSOLogo = NULL;
+		char *PauseScreenFileLocation = NULL;		
 		
 		partnerObj = cJSON_GetObjectItem( json, partnerID );
 		if( partnerObj != NULL) 
@@ -2872,6 +2873,27 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				else
 				{
 					CcspTraceWarning(("%s - DefaultLocalIPv4SubnetRange Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation") != NULL )
+				{
+					PauseScreenFileLocation = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation")->valuestring; 
+
+					if (PauseScreenFileLocation != NULL) 
+					{
+						AnscCopyString(PUiBrand->PauseScreenFileLocation, PauseScreenFileLocation);
+						PauseScreenFileLocation = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - PauseScreenFileLocation Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - PauseScreenFileLocation Object is NULL\n", __FUNCTION__ ));
 				}
 				
 			}

@@ -19,8 +19,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername" : "admin" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword" : "" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP" : "10.0.0.1" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0" 
-
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_comcast.php"
    },
 
 
@@ -43,8 +43,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername" : "admin" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword" : "" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP" : "10.0.0.1" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0"
-
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php"
    },
 
 
@@ -67,7 +67,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername" : "admin" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword" : "" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP" : "10.0.0.1" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php"
    },
 
 
@@ -90,7 +91,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername" : "admin" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword" : "" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP" : "10.0.0.1" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php"
    }
 
 }
