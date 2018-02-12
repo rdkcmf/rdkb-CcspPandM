@@ -188,6 +188,7 @@ CosaDeviceInfoInitialize
 								    &pMyObject->SyndicationEnable );
 	CosaDeriveSyndicationPartnerID(pMyObject->PartnerID);
 	CosaDmlDiUiBrandingInit(&pMyObject->UiBrand);
+	CosaDmlDiWhixInit(&pMyObject->WHIX);
     return returnStatus;
 }
 

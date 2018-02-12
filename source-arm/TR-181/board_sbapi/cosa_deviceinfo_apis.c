@@ -138,6 +138,9 @@
 #define _ERROR_ "NOT SUPPORTED"
 #define _SSH_ERROR_ "NOT SET"
 
+#define DMSB_TR181_PSM_WHIX_LogInterval                                 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.LogInterval"
+#define DMSB_TR181_PSM_WHIX_NormalizedRssiList                "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.NormalizedRssiList"
+
 extern void* g_pDslhDmlAgent;
 
 static const int OK = 1 ;
@@ -2260,6 +2263,63 @@ CosaDmlDiUiBrandingInit
 	 }
 	 return ANSC_STATUS_SUCCESS;
  }
+
+
+ANSC_STATUS
+CosaDmlDiWhixInit
+  (
+	PCOSA_DATAMODEL_RDKB_WHIX PWhix
+  )
+ {
+    char val[256] = {0};
+
+    if (!PWhix)
+    {
+        CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    memset(PWhix, 0, sizeof(COSA_DATAMODEL_RDKB_WHIX));
+
+    if (PsmGet(DMSB_TR181_PSM_WHIX_LogInterval, val, sizeof(val)) != 0)
+    {
+            PWhix->LogInterval = 3600;
+            CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+    }
+    else
+    {
+        if (val[0] != '\0' )
+        {
+            PWhix->LogInterval = atoi(val);
+        }
+        else
+        {
+            PWhix->LogInterval = 3600;
+        }
+    }
+
+    if (PsmGet(DMSB_TR181_PSM_WHIX_NormalizedRssiList, val, sizeof(val)) != 0)
+    {
+            AnscCopyString(PWhix->NormalizedRssiList, "1,2");
+            CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+    }
+    else
+    {
+        if (val[0] != '\0' )
+        {
+            AnscCopyString(PWhix->NormalizedRssiList, val);
+        }
+        else
+        {
+            AnscCopyString(PWhix->NormalizedRssiList, "1,2");
+        }
+    }
+
+}
+
+
 
 void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand)
 {

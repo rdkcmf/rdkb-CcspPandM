@@ -2194,6 +2194,16 @@ CosaDmlDiSetSyndicationEnable
 }
 
 ANSC_STATUS
+CosaDmlDiWhixInit
+  (
+	PCOSA_DATAMODEL_RDKB_WHIX PWhix
+  )
+ {
+    return ANSC_STATUS_SUCCESS;
+}
+
+
+ANSC_STATUS
 CosaDmlDiGetSyndicationLocalUIBrandingTable
     (
         ANSC_HANDLE                 hContext,

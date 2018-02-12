@@ -1235,6 +1235,260 @@ DeviceInfo_Rollback
 
  APIs for Object:
 
+    DeviceInfo.X_RDKCENTRAL-COM_WHIX.{i}.
+
+    *  WHIX_SetParamIntValue
+    *  WHIX_SetParamStringValue
+    *  WHIX_GetParamIntValue
+    *  WHIX_GetParamStringValue
+***********************************************************************/
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        WHIX_SetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int                         iValue
+            );
+
+    description:
+
+        This function is called to set integer parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int                         iValue
+                The updated integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+    WHIX_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         iValue
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "LogInterval", TRUE))
+    {
+        char str[10];
+        int retPsmGet = CCSP_SUCCESS;
+
+        /* Updating the LogInterval  in PSM database  */
+        sprintf(str,"%d",iValue);
+        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.LogInterval", ccsp_string, str);
+        if (retPsmGet != CCSP_SUCCESS) {
+        CcspTraceError(("Set failed for LogInterval Support \n"));
+        return FALSE;
+        }
+        CcspTraceInfo(("Successfully set  LogInterval in PSM \n"));
+        /* save update to backup */
+        pMyObject->WHIX.LogInterval = iValue;
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        WHIX_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+WHIX_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "NormalizedRssiList", TRUE))
+    {
+        int retPsmGet = CCSP_SUCCESS;
+
+        /* Updating the NormalizedRssiList in PSM database  */
+        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.NormalizedRssiList", ccsp_string, pString);
+        if (retPsmGet != CCSP_SUCCESS) {
+        CcspTraceError(("Set failed for NormalizedRssiList Support \n"));
+        return FALSE;
+        }
+        CcspTraceInfo(("Successfully set  NormalizedRssiList in PSM \n"));
+        /* save update to backup */
+        AnscCopyString(pMyObject->WHIX.NormalizedRssiList, pString);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        WHIX_GetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int*                        pInt
+            );
+
+    description:
+
+        This function is called to retrieve integer parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int*                        pInt
+                The buffer of returned integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+WHIX_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    )
+{
+
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "LogInterval", TRUE))
+    {
+        *pInt =  pMyObject->WHIX.LogInterval;
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        WHIX_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     0 if succeeded;
+                1 if short of buffer size; (*pUlSize = required size)
+                -1 if not supported.
+
+**********************************************************************/
+
+
+ULONG
+WHIX_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    ULONG                           ReturnValue;
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "NormalizedRssiList", TRUE))
+    {
+        /* collect value */
+        AnscCopyString( pValue, pMyObject->WHIX.NormalizedRssiList);
+        *pulSize = AnscSizeOfString( pValue );
+        return 0;
+    }
+
+    return -1;
+}
+
+/***********************************************************************
+
+ APIs for Object:
+
     DeviceInfo.VendorConfigFile.{i}.
 
     *  VendorConfigFile_GetEntryCount

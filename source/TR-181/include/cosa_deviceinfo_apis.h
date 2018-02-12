@@ -179,6 +179,15 @@ _COSA_DATAMODEL_RDKB_UIBRANDING_CLASS_CONTENT
 COSA_DATAMODEL_RDKB_UIBRANDING, *PCOSA_DATAMODEL_RDKB_UIBRANDING;
 
 
+typedef  struct
+_COSA_DATAMODEL_RDKB_WHIX_CLASS_CONTENT
+{
+    INT                 LogInterval;
+    CHAR            NormalizedRssiList[256];
+}
+COSA_DATAMODEL_RDKB_WHIX, *PCOSA_DATAMODEL_RDKB_WHIX;
+
+
 /**********************************************************************
                 FUNCTION PROTOTYPES
 **********************************************************************/
@@ -495,6 +504,12 @@ ANSC_STATUS
 CosaDmlDiUiBrandingInit
   (
 	PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand
+  );
+
+ANSC_STATUS
+CosaDmlDiWhixInit
+  (
+	PCOSA_DATAMODEL_RDKB_WHIX   PWhix
   );
 
 void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand);

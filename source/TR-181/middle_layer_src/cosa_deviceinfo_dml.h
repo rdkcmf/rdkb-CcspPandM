@@ -183,6 +183,52 @@ DeviceInfo_Rollback
         ANSC_HANDLE                 hInsContext
     );
 
+
+
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_WHIX.{i}.
+
+    *  WHIX_SetParamIntValue
+    *  WHIX_SetParamStringValue
+    *  WHIX_GetParamIntValue
+    *  WHIX_GetParamStringValue
+***********************************************************************/
+BOOL
+    WHIX_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         iValue
+    );
+
+BOOL
+WHIX_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
+BOOL
+WHIX_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    );
+
+ULONG
+WHIX_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
 /***********************************************************************
 
  APIs for Object:
