@@ -1364,6 +1364,23 @@ WHIX_SetParamStringValue
         return TRUE;
     }
 
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "TxRxRateList", TRUE) )
+    {
+        int retPsmGet = CCSP_SUCCESS;
+
+        /* Updating the TxRxRateList  in PSM database  */
+        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.TxRxRateList", ccsp_string, pString);
+        if (retPsmGet != CCSP_SUCCESS) {
+        CcspTraceError(("Set failed for TxRxRateList Support \n"));
+        return FALSE;
+        }
+        CcspTraceInfo(("Successfully set  TxRxRateList in PSM \n"));
+        /* save update to backup */
+        AnscCopyString( pMyObject->WHIX.TxRxRateList, pString );
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -1478,6 +1495,15 @@ WHIX_GetParamStringValue
     {
         /* collect value */
         AnscCopyString( pValue, pMyObject->WHIX.NormalizedRssiList);
+        *pulSize = AnscSizeOfString( pValue );
+        return 0;
+    }
+
+
+    if( AnscEqualString(ParamName, "TxRxRateList", TRUE))
+    {
+        /* collect value */
+        AnscCopyString( pValue, pMyObject->WHIX.TxRxRateList);
         *pulSize = AnscSizeOfString( pValue );
         return 0;
     }

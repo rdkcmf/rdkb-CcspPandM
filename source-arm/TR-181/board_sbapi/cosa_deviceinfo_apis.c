@@ -140,6 +140,7 @@
 
 #define DMSB_TR181_PSM_WHIX_LogInterval                                 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.LogInterval"
 #define DMSB_TR181_PSM_WHIX_NormalizedRssiList                "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.NormalizedRssiList"
+#define DMSB_TR181_PSM_WHIX_TxRxRateList                              "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.TxRxRateList"
 
 extern void* g_pDslhDmlAgent;
 
@@ -2317,6 +2318,23 @@ CosaDmlDiWhixInit
         }
     }
 
+    if (PsmGet(DMSB_TR181_PSM_WHIX_TxRxRateList, val, sizeof(val)) != 0)
+    {
+            AnscCopyString(PWhix->TxRxRateList, "1,2");
+            CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+    }
+    else
+    {
+        if (val[0] != '\0' )
+        {
+            AnscCopyString(PWhix->TxRxRateList, val);
+        }
+        else
+        {
+            AnscCopyString(PWhix->TxRxRateList,"1,2");
+        }
+    }
 }
 
 
