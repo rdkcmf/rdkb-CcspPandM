@@ -1611,7 +1611,7 @@ void restoreAllDBs()
         //Need to remove the custom maintenance window
         system("rm -f /nvram/.FirmwareUpgradeEndTime");
         system("rm -f /nvram/.FirmwareUpgradeStartTime");
-
+		system( "touch /nvram/.apply_partner_defaults" );
 	// We have syscfg running on the ATOM side when mesh is running. We need to clear out the
     // syscfg.db on the ATOM side during factory reset.
 #if defined(_COSA_INTEL_USG_ARM_)
@@ -1670,10 +1670,6 @@ void restoreAllDBs()
             }
         }
     }
-#endif
-
-#if defined (_XB6_PRODUCT_REQ_)
-	system("rm -f /nvram/syscfg.db");
 #endif
 #if defined (_CBR_PRODUCT_REQ_)
 	system("rm -f /data/nvram");

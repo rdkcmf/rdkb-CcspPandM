@@ -721,6 +721,26 @@ Syndication_GetParamStringValue
     );
 
 ULONG
+RDKB_UIBranding_GetParamStringValue
+
+	(
+		ANSC_HANDLE 				hInsContext,
+		char*						ParamName,
+		char*						pValue,
+		ULONG*						pulSize
+	);
+
+BOOL
+RDKB_UIBranding_SetParamStringValue
+
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       		ParamName,
+        char*                       		pString
+    );
+
+ULONG
 Footer_GetParamStringValue
 	(
 		ANSC_HANDLE 				hInsContext,
@@ -811,4 +831,23 @@ WiFiPersonalization_SetParamStringValue
         char*                       pString
     );
 
+
+ULONG
+LocalUI_GetParamStringValue
+
+	(
+		ANSC_HANDLE 				hInsContext,
+		char*						ParamName,
+		char*						pValue,
+		ULONG*						pulSize
+	);
+BOOL
+LocalUI_SetParamStringValue
+
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
 #endif

@@ -1548,6 +1548,7 @@ void restoreAllDBs()
         //Need to remove the custom maintenance window
         system("rm -f /nvram/.FirmwareUpgradeEndTime");
         system("rm -f /nvram/.FirmwareUpgradeStartTime");
+		system( "touch /nvram/.apply_partner_defaults" );
         system("xf3_erase_nvram");
 	return;
 }

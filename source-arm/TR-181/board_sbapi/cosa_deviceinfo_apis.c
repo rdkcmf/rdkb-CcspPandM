@@ -123,7 +123,7 @@
 #elif _COSA_INTEL_USG_ARM_
 //#include "libplat_flash.h"
 #endif
-
+extern  ANSC_HANDLE             bus_handle;
  
 #include <utctx.h>
 #include <utctx_api.h>
@@ -2077,6 +2077,11 @@ ANSC_STATUS setPartnerId
 		char*                       pValue
     )
 {
+	pthread_t tid;
+	char* buff = (char*) malloc(strlen(pValue)+1);
+	memset(buff,0,strlen(pValue)+1);
+	strcpy(buff,pValue);
+	
 	if ((syscfg_set(NULL, "PartnerID", pValue) != 0)) 
 	{
         AnscTraceWarning(("setPartnerId : syscfg_set failed\n"));
@@ -2089,7 +2094,70 @@ ANSC_STATUS setPartnerId
 			AnscTraceWarning(("setPartnerId : syscfg_commit failed\n"));
 			return ANSC_STATUS_FAILURE;
 		}
+
+		//Change Handling
+		pthread_create(&tid, NULL, &CosaDmlDiPartnerIDChangeHandling, (void*) buff);
+	
 		return ANSC_STATUS_SUCCESS;
+	}
+}
+
+#define PARTNERID_FILE  "/nvram/.partner_ID"
+void CosaDmlDiPartnerIDChangeHandling( void* buff )
+{
+    CCSP_MESSAGE_BUS_INFO *bus_info 		  = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+	parameterValStruct_t param_val[ 1 ] 	  = { "Device.X_CISCO_COM_DeviceControl.FactoryReset", "Router,Wifi,VoIP,Dect,MoCA", ccsp_string };
+	char 				 pComponentName[ 64 ] = "eRT.com.cisco.spvtg.ccsp.pam";
+	char 				 pComponentPath[ 64 ] = "/com/cisco/spvtg/ccsp/pam";
+	char 				 PartnerID[64] = {0};
+	char				*faultParam 		  = NULL;
+	FILE 				*fp 				  = NULL;
+    int   				 ret             	  = 0;
+
+	pthread_detach(pthread_self());	
+	memset(PartnerID,0,sizeof(PartnerID));
+	if(buff)
+	{
+		strcpy(PartnerID,(char*)buff);
+		free(buff);		
+	}
+	// Create /nvram/.apply_partner_defaults file to apply partners default
+	system( "touch /nvram/.apply_partner_defaults" );
+	system( "syscfg set PartnerID_FR 1; syscfg commit" );
+	//Creating and Writing partner ID into /nvram/.partner_ID file
+	fp = fopen( PARTNERID_FILE, "w" );
+	
+	if ( fp != NULL ) 
+	{
+		fwrite( PartnerID, strlen( PartnerID ), 1, fp );
+		fclose( fp );
+		AnscTraceWarning(("%s: Partner ID %s is Written into %s File\n", __FUNCTION__, PartnerID, PARTNERID_FILE ));
+	}
+
+	/* Need to do factory reset the device here */
+    ret = CcspBaseIf_setParameterValues
+			(
+				bus_handle, 
+				pComponentName, 
+				pComponentPath,
+				0, 
+				0x0,   /* session id and write id */
+				&param_val, 
+                1, 
+				TRUE,   /* Commit  */
+				&faultParam
+			);	
+
+	if ( ( ret != CCSP_SUCCESS ) && \
+		 ( faultParam )
+		)
+	{
+	    AnscTraceWarning(("%s Failed to SetValue for param '%s'\n",__FUNCTION__,faultParam ) );
+	    bus_info->freefunc( faultParam );
+	} 
+	else
+	{
+		AnscTraceWarning(("%s: Device will reboot in some time\n", __FUNCTION__ ));
 	}
 }
 
@@ -2373,7 +2441,12 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 		char *partnerHelpLink = NULL;
 		char *smsSupport = NULL;
 		char *myAccountAppSupport = NULL;
-		
+	    char *DefaultLocalIPv4SubnetRange = NULL;
+		char *DefaultAdminIP = NULL; 
+		char *WifiMSOLogo = NULL;
+		char *DefaultLoginPassword = NULL;
+		char *DefaultLoginUsername = NULL;
+		char *UIMSOLogo = NULL;	
 		
 		partnerObj = cJSON_GetObjectItem( json, partnerID );
 		if( partnerObj != NULL) 
@@ -2631,6 +2704,131 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				else
 				{
 					CcspTraceWarning(("%s - MyAccountAppSupport Object is NULL\n", __FUNCTION__ ));
+				}
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.MSOLogo") != NULL )
+				{
+					UIMSOLogo = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.MSOLogo")->valuestring; 
+
+					if (UIMSOLogo != NULL) 
+					{
+						AnscCopyString(PUiBrand->LocalUI.MSOLogo, UIMSOLogo);
+						UIMSOLogo = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - UIMSOLogo Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - UIMSOLogo Object is NULL\n", __FUNCTION__ ));
+				}
+				
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername") != NULL )
+				{
+					DefaultLoginUsername = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername")->valuestring; 
+
+					if (DefaultLoginUsername != NULL) 
+					{
+						AnscCopyString(PUiBrand->LocalUI.DefaultLoginUsername, DefaultLoginUsername);
+						DefaultLoginUsername = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - DefaultLoginUsername Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - DefaultLoginUsername Object is NULL\n", __FUNCTION__ ));
+				}
+				
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword") != NULL )
+				{
+					DefaultLoginPassword = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword")->valuestring; 
+
+					if (DefaultLoginPassword != NULL) 
+					{
+						AnscCopyString(PUiBrand->LocalUI.DefaultLoginPassword, DefaultLoginPassword);
+						DefaultLoginPassword = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - DefaultLoginPassword Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - DefaultLoginPassword Object is NULL\n", __FUNCTION__ ));
+				}
+				
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MSOLogo") != NULL )
+				{
+					WifiMSOLogo = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MSOLogo")->valuestring; 
+
+					if (WifiMSOLogo != NULL) 
+					{
+						AnscCopyString(PUiBrand->WifiPersonal.MSOLogo, WifiMSOLogo);
+						WifiMSOLogo = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - WifiMSOLogo Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - WifiMSOLogo Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP") != NULL )
+				{
+					DefaultAdminIP = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP")->valuestring; 
+
+					if (DefaultAdminIP != NULL) 
+					{
+						AnscCopyString(PUiBrand->DefaultAdminIP, DefaultAdminIP);
+						DefaultAdminIP = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - DefaultAdminIP Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - DefaultAdminIP Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange") != NULL )
+				{
+					DefaultLocalIPv4SubnetRange = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange")->valuestring; 
+
+					if (DefaultLocalIPv4SubnetRange != NULL) 
+					{
+						AnscCopyString(PUiBrand->DefaultLocalIPv4SubnetRange, DefaultLocalIPv4SubnetRange);
+						DefaultLocalIPv4SubnetRange = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - DefaultLocalIPv4SubnetRange Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - DefaultLocalIPv4SubnetRange Object is NULL\n", __FUNCTION__ ));
 				}
 				
 			}
