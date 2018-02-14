@@ -116,6 +116,8 @@
 #define CONFIG_VENDOR_ID 0xA055DE
 #define PARTNERS_INFO_FILE		"/nvram/partners_defaults.json"
 
+#define DMSB_TR181_PSM_WHIX_TxRxRateList                              "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.TxRxRateList"
+
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
 
@@ -2199,7 +2201,33 @@ CosaDmlDiWhixInit
 	PCOSA_DATAMODEL_RDKB_WHIX PWhix
   )
  {
-    return ANSC_STATUS_SUCCESS;
+    char val[256] = {0};
+
+    if (!PWhix)
+    {
+        CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    memset(PWhix, 0, sizeof(COSA_DATAMODEL_RDKB_WHIX));
+
+    if (PsmGet(DMSB_TR181_PSM_WHIX_TxRxRateList, val, sizeof(val)) != 0)
+    {
+            AnscCopyString(PWhix->TxRxRateList, "1,2");
+            CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+    }
+    else
+    {
+        if (val[0] != '\0' )
+        {
+            AnscCopyString(PWhix->TxRxRateList, val);
+        }
+        else
+        {
+            AnscCopyString(PWhix->TxRxRateList,"1,2");
+        }
+    }
 }
 
 

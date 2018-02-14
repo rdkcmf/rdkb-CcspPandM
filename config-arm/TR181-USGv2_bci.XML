@@ -1617,6 +1617,37 @@
 
         </object>
 
+        <object>
+
+          <name>X_RDKCENTRAL-COM_WHIX</name>
+
+          <objectType>object</objectType>
+
+          <functions>
+
+            <func_SetParamStringValue>WHIX_SetParamStringValue</func_SetParamStringValue>
+
+            <func_GetParamStringValue>WHIX_GetParamStringValue</func_GetParamStringValue>
+
+          </functions>
+
+          <parameters>
+
+          <parameter>
+
+            <name>TxRxRateList</name>
+
+            <type>string</type>
+
+            <syntax>string</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+
+          </parameters>
+
+        </object>
       </objects>
 
     </object>
