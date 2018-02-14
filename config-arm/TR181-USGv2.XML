@@ -1844,6 +1844,18 @@
 
           <parameter>
 
+            <name>CliStatList</name>
+
+            <type>string</type>
+
+            <syntax>string</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+
+          <parameter>
+
             <name>TxRxRateList</name>
 
             <type>string</type>

@@ -184,6 +184,7 @@ _COSA_DATAMODEL_RDKB_WHIX_CLASS_CONTENT
 {
     INT                 LogInterval;
     CHAR            NormalizedRssiList[256];
+    CHAR            CliStatList[256];
     CHAR            TxRxRateList[256];
 }
 COSA_DATAMODEL_RDKB_WHIX, *PCOSA_DATAMODEL_RDKB_WHIX;

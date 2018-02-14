@@ -1365,6 +1365,23 @@ WHIX_SetParamStringValue
     }
 
     /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "CliStatList", TRUE) )
+    {
+        int retPsmGet = CCSP_SUCCESS;
+
+        /* Updating the CliStatList in PSM database  */
+        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.CliStatList", ccsp_string, pString);
+        if (retPsmGet != CCSP_SUCCESS) {
+        CcspTraceError(("Set failed for CliStatList Support \n"));
+        return FALSE;
+        }
+        CcspTraceInfo(("Successfully set  CliStatList in PSM \n"));
+        /* save update to backup */
+        AnscCopyString( pMyObject->WHIX.CliStatList, pString );
+        return TRUE;
+    }
+
+        /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "TxRxRateList", TRUE) )
     {
         int retPsmGet = CCSP_SUCCESS;
@@ -1499,6 +1516,13 @@ WHIX_GetParamStringValue
         return 0;
     }
 
+    if( AnscEqualString(ParamName, "CliStatList", TRUE))
+    {
+        /* collect value */
+        AnscCopyString( pValue, pMyObject->WHIX.CliStatList);
+        *pulSize = AnscSizeOfString( pValue );
+        return 0;
+    }
 
     if( AnscEqualString(ParamName, "TxRxRateList", TRUE))
     {
