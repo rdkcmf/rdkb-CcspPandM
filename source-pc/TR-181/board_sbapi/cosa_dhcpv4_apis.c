@@ -257,7 +257,7 @@ COSA_DML_DHCPS_POOL_FULL  g_dhcpv4_server_pool[]=
 					"\xc0\xa8\x00\x02"
 				} 
 			},
-			"cisco.com",
+			"local",
 			{
 				{
 					"\xc0\xa8\x00\x01"
@@ -315,7 +315,7 @@ COSA_DML_DHCPS_POOL_FULL  g_dhcpv4_server_pool[]=
 					"\xc0\xa8\x00\x02"
 				}
 			},
-			"cisco.com",
+			"local",
 			{
 				{
 					"\xc0\xa8\x00\x01"
