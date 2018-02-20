@@ -2420,10 +2420,15 @@ CosaDmlDhcpv6cGetEnabled
 #endif
 
     if ( fp != NULL){
-        if ( fgets(out, sizeof(out), fp) != NULL )
+        if ( fgets(out, sizeof(out), fp) != NULL ){
+#if defined (_COSA_BCM_ARM_)
+            if ( _ansc_strstr(out, "dibbler-client") )
+                bEnabled = TRUE;
+#else
             if ( _ansc_strstr(out, "erouter_dhcp6c") )
                 bEnabled = TRUE;
-          
+#endif
+       }
         pclose(fp);
     }
 
