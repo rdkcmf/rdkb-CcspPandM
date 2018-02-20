@@ -1541,6 +1541,7 @@ CosaDmlDcSetRebootDevice
             	fprintf(stderr, "Device is going to reboot in %d seconds\n", delay_time);
 		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
             	//system("(sleep 5 && reboot) &");
+            	CosaDmlDcSaveWiFiHealthStatusintoNVRAM( );
             	sleep (delay_time);
             	system("/fss/gw/rdklogger/backupLogs.sh &");
         	}
@@ -1549,6 +1550,7 @@ CosaDmlDcSetRebootDevice
                 fprintf(stderr, "Device is going to reboot in 5 seconds\n");
 		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
                 //system("(sleep 5 && reboot) &");
+				CosaDmlDcSaveWiFiHealthStatusintoNVRAM( );
 				sleep(5);
 				system("/fss/gw/rdklogger/backupLogs.sh &");
             }
@@ -1557,6 +1559,7 @@ CosaDmlDcSetRebootDevice
 	        fprintf(stderr, "Device is going to reboot now\n");
 			CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
 	         //system("reboot");
+ 			 CosaDmlDcSaveWiFiHealthStatusintoNVRAM( );
 	         system("/fss/gw/rdklogger/backupLogs.sh &");
 	    }
     }
@@ -3745,3 +3748,97 @@ BOOL is_mesh_enabled()
     }
 }
 
+void CosaDmlDcSaveWiFiHealthStatusintoNVRAM( void  )
+{
+	char acBoxType[ 16 ] = { 0 };
+
+	// Get BOX TYPE from device properties
+	if( 0 == CheckAndGetDevicePropertiesEntry( acBoxType, sizeof( acBoxType ),"BOX_TYPE" ) )
+	{
+		CcspTraceInfo(("%s - Box Type is %s \n",__FUNCTION__, acBoxType));
+
+		// If it is XB3 then we need to do RPC client operation to do further
+		// If it is non-XB3 then we need to do operation here itself
+		if( ( acBoxType[ 0 ] != '\0' ) && \
+			( 0 == strcmp( acBoxType, "XB3" ) )
+		  )
+		{
+			char acAtomArpingIP[ 64 ] = { 0 };
+			
+			if( 0 == CheckAndGetDevicePropertiesEntry( acAtomArpingIP, sizeof( acAtomArpingIP ),"ATOM_ARPING_IP" ) )
+			{
+				if ( acAtomArpingIP[ 0 ] != '\0' )
+				{
+					CcspTraceInfo(("%s Reported an ATOM IP of %s \n", __FUNCTION__, acAtomArpingIP));
+					
+					pid_t pid = fork( );
+				
+					if ( pid == -1 )
+					{
+						// error, failed to fork()
+					}
+					else if ( pid > 0 )
+					{
+						int status;
+						waitpid( pid, &status, 0 ); // wait here until the child completes
+					}
+					else
+					{
+						// we are the child
+						char *args[ ] = {"/usr/bin/rpcclient", acAtomArpingIP, "/bin/sh /usr/ccsp/wifi/wifivAPPercentage.sh", (char *) 0 };
+
+						CcspTraceInfo(("%s - Taking Backup of wifivAPPercentage\n",__FUNCTION__));
+						
+						execv( args[ 0 ], args );
+						_exit(EXIT_FAILURE);   // exec never returns
+					}
+				}
+			}
+		}
+		else
+		{
+			CcspTraceInfo(("%s - Taking Backup of wifivAPPercentage\n",__FUNCTION__));
+			system( "sh /usr/ccsp/wifi/wifivAPPercentage.sh" );
+		}
+	}
+}
+
+/* CheckAndGetDevicePropertiesEntry() */
+int CheckAndGetDevicePropertiesEntry( char *pOutput, int size, char *sDevicePropContent )
+{
+    FILE 	*fp1 		 = NULL;
+    char 	 buf[ 1024 ] = { 0 },
+	  		*urlPtr 	 = NULL;
+    int 	 ret		 = -1;
+
+    // Read the device.properties file 
+    fp1 = fopen( "/etc/device.properties", "r" );
+	
+    if ( NULL == fp1 ) 
+	{
+        CcspTraceError(("Error opening properties file! \n"));
+        return -1;
+    }
+
+    while ( fgets( buf, sizeof( buf ), fp1 ) != NULL ) 
+	{
+        // Look for Device Properties Passed Content
+        if ( strstr( buf, sDevicePropContent ) != NULL ) 
+		{
+            buf[strcspn( buf, "\r\n" )] = 0; // Strip off any carriage returns
+
+            // grab content from string(entry)
+            urlPtr = strstr( buf, "=" );
+            urlPtr++;
+			
+            strncpy( pOutput, urlPtr, size );
+			
+          ret=0;
+		  
+          break;
+        }
+    }
+
+    fclose( fp1 );
+    return ret;
+}

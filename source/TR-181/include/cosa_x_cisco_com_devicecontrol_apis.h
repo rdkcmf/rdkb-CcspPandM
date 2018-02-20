@@ -715,5 +715,6 @@ CosaDmlDcSetErouterEnabled
 
 ANSC_STATUS CosaDmlDcRebootWifi(ANSC_HANDLE   hContext);
 ANSC_STATUS CosaDmlDcRestartRouter();
-
+void CosaDmlDcSaveWiFiHealthStatusintoNVRAM( void  );
+int CheckAndGetDevicePropertiesEntry( char *pOutput, int size, char *sDevicePropContent );
 #endif
