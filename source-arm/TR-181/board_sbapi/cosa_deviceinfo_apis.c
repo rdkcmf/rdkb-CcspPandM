@@ -2354,8 +2354,8 @@ CosaDmlDiWhixInit
     if (PsmGet(DMSB_TR181_PSM_WHIX_LogInterval, val, sizeof(val)) != 0)
     {
             PWhix->LogInterval = 3600;
-            CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            return ANSC_STATUS_FAILURE;
+            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            //return ANSC_STATUS_FAILURE;
     }
     else
     {
@@ -2372,8 +2372,8 @@ CosaDmlDiWhixInit
     if (PsmGet(DMSB_TR181_PSM_WHIX_NormalizedRssiList, val, sizeof(val)) != 0)
     {
             AnscCopyString(PWhix->NormalizedRssiList, "1,2");
-            CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            return ANSC_STATUS_FAILURE;
+            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            //return ANSC_STATUS_FAILURE;
     }
     else
     {
@@ -2390,8 +2390,8 @@ CosaDmlDiWhixInit
     if (PsmGet(DMSB_TR181_PSM_WHIX_CliStatList, val, sizeof(val)) != 0)
     {
             AnscCopyString(PWhix->CliStatList,"");
-            CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            return ANSC_STATUS_FAILURE;
+            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            //return ANSC_STATUS_FAILURE;
     }
     else
     {
@@ -2408,8 +2408,8 @@ CosaDmlDiWhixInit
     if (PsmGet(DMSB_TR181_PSM_WHIX_TxRxRateList, val, sizeof(val)) != 0)
     {
             AnscCopyString(PWhix->TxRxRateList, "1,2");
-            CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            return ANSC_STATUS_FAILURE;
+            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            //return ANSC_STATUS_FAILURE;
     }
     else
     {
@@ -2422,6 +2422,7 @@ CosaDmlDiWhixInit
             AnscCopyString(PWhix->TxRxRateList,"1,2");
         }
     }
+    return ANSC_STATUS_SUCCESS;
 }
 
 
