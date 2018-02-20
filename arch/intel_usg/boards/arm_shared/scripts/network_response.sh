@@ -94,7 +94,7 @@ restartLanServices()
 # to get the corresponding configuration updated.
 REDIRECTION_FLAG=`syscfg get redirection_flag`
 echo_t "REDIRECTION_FLAG got is : $REDIRECTION_FLAG"
-if [ "$REDIRECTION_FLAG" = "true" ]
+if [ "$REDIRECTION_FLAG" = "true" ] || [ "$BOX_TYPE" = "TCCBR" ] || [ "$BOX_TYPE" = "CFG3" ]
 then
 	# gotResponse will be marked 1 when any of the required responses are available.
 	# We still have to depend on 204 response and response file /var/tmp/networkresponse.txt to minimize code changes
