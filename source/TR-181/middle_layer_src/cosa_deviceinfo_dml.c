@@ -7377,6 +7377,12 @@ ReverseSSH_GetParamStringValue
         return 0;
     }
 
+    if( AnscEqualString(ParamName, "xOpsReverseSshTrigger", TRUE))
+    {
+         AnscCopyString(pValue, "");
+        return 0;
+    }
+
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
     return -1;
 }
