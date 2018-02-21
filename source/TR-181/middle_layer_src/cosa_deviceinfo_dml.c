@@ -5619,7 +5619,7 @@ Xconf_SetParamBoolValue
 
     prototype:
 
-        BOOL
+        ULONG
         ReverseSSH_GetParamStringValue
             (
                 ANSC_HANDLE                 hInsContext,
@@ -5649,7 +5649,7 @@ Xconf_SetParamBoolValue
                 FALSE if failed
 
 **********************************************************************/
-BOOL
+ULONG
 ReverseSSH_GetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
@@ -5658,15 +5658,14 @@ ReverseSSH_GetParamStringValue
         ULONG*                      pulSize
     )
 {
-    BOOL bReturnValue = FALSE;
     char* activeStr = "ACTIVE";
     char* inActiveStr = "INACTIVE";
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "xOpsReverseSshArgs", TRUE))
     {
-        bReturnValue = getXOpsReverseSshArgs(NULL, pValue,pulSize);
-        return bReturnValue;
+        getXOpsReverseSshArgs(NULL, pValue,pulSize);
+        return 0;
     }
 
     if( AnscEqualString(ParamName, "xOpsReverseSshStatus", TRUE))
@@ -5678,12 +5677,17 @@ ReverseSSH_GetParamStringValue
             AnscCopyString(pValue, inActiveStr);
             *pulSize = AnscSizeOfString(pValue);
         }
-        bReturnValue = TRUE;
-        return bReturnValue;
+        return 0;
+    }
+
+    if( AnscEqualString(ParamName, "xOpsReverseSshTrigger", TRUE))
+    {
+         AnscCopyString(pValue, "");
+        return 0;
     }
 
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
-    return bReturnValue;
+    return -1;
 }
 
 

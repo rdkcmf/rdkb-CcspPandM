@@ -678,6 +678,36 @@ RPC_SetParamStringValue
 
  APIs for Object:
 
+    DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.ReverseSSH.
+
+    *  ReverseSSH_GetParamStringValue
+    *  ReverseSSH_SetParamStringValue
+    
+***********************************************************************/
+
+
+ULONG
+ReverseSSH_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    );
+
+
+    BOOL
+        ReverseSSH_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+/***********************************************************************
+
+ APIs for Object:
+
     DeviceInfo.X_RDKCENTRAL-COM_Syndication.
 
     *  Syndication_GetParamStringValue
