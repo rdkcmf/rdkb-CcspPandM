@@ -645,7 +645,7 @@ int secure_system_call_p( const char *cmd, char *argp[])
     char **env = NULL;
     if ((cmd == NULL)||(*argp == NULL))
     {
-        printf("bad input!!!\n");
+        CcspTraceInfo(("bad input!!!\n"));
         return -1;
     }
     cmd_check=(STRINGCMP(cmd,"/bin/sh") || STRINGCMP(cmd,"sh"));
@@ -656,7 +656,7 @@ int secure_system_call_p( const char *cmd, char *argp[])
             ( argp[count] && (STRINGCMP(argp[count],"-c")))
           )
           {
-                printf("Bad input, command rejected\n");
+                CcspTraceInfo(("Bad input, command rejected\n"));
                 return -1;
           }
           count++;
@@ -706,7 +706,7 @@ int secure_system_call_vp( const char *cmd, ...)
     va_list arguments;
     if (cmd == NULL)
     {
-        printf("bad input!!!\n");
+        CcspTraceInfo(("bad input!!!\n"));
         return -1;
     }
     arg[0]=cmd; //arg[0] contains name execuatble filename
@@ -715,7 +715,7 @@ int secure_system_call_vp( const char *cmd, ...)
     do{
         if(num_param >= MAX_PARAM+1)
         {
-            printf("Parameter list too large\n");
+            CcspTraceInfo(("Parameter list too large\n"));
             return -1;
         }
         else
