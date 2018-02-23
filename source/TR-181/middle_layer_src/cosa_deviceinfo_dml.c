@@ -4840,6 +4840,246 @@ TFTPConfigDownload_SetParamBoolValue
     prototype:
 
         BOOL
+        BLE_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+BLE_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    char buf[8];
+    if( AnscEqualString(ParamName, "Discovery", TRUE))
+    {
+        /* collect value */
+        syscfg_get( NULL, "BLEDiscovery", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        BLE_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+BLE_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Discovery", TRUE))
+    {
+        /* collect value */
+        if( bValue == TRUE)
+        {
+            syscfg_set(NULL, "BLEDiscovery", "true");
+            syscfg_commit();
+        }
+        else
+        {
+            syscfg_set(NULL, "BLEDiscovery", "false");
+            syscfg_commit();
+        }
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Tile_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue
+                The string value buffer;
+
+
+    return:     TRUE if succeeded;
+                FALSE if not supported.
+
+**********************************************************************/
+BOOL
+Tile_GetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pValue,
+ ULONG*                      pUlSize
+ )
+{
+    if( AnscEqualString(ParamName, "ReportingURL", TRUE))
+    {
+        /* collect value */
+        char buf[256]="";
+        memset(buf,0,sizeof(buf));
+        syscfg_get( NULL, "TileReportingURL", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            AnscCopyString(pValue, buf);
+            *pUlSize = AnscSizeOfString(pValue); 
+            return TRUE;
+        }
+        return FALSE;
+    }
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Tile_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value to be set;
+
+    return:     TRUE if succeeded.
+
+	**********************************************************************/
+BOOL
+Tile_SetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pString
+ )
+{
+    if( AnscEqualString(ParamName, "ReportingURL", TRUE))
+    {
+        if (syscfg_set(NULL, "TileReportingURL", pString) != 0)
+        {
+            CcspTraceError(("syscfg_set failed\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                CcspTraceError(("syscfg_commit failed\n"));
+            }
+            return TRUE;
+        }
+    }
+
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
         SSIDPSWDCTRL_GetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,

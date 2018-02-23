@@ -1064,8 +1064,7 @@
                                     <writable>true</writable>
                                 </parameter>
                             </parameters>
-                        </object>
-
+                        </object>                          
                         <object>
                             <name>SSIDPSWDCTRL</name>
                             <objectType>object</objectType>
@@ -1089,6 +1088,68 @@
                                 </parameter>
                             </parameters>
                         </object>
+               		<object>
+                        <name>BLE</name>
+
+                        <objectType>object</objectType>
+
+                        <functions>
+
+                                <func_GetParamBoolValue>BLE_GetParamBoolValue</func_GetParamBoolValue>
+
+                                <func_SetParamBoolValue>BLE_SetParamBoolValue</func_SetParamBoolValue>
+
+                        </functions>
+
+                        <parameters>
+
+                                <parameter>
+
+                                        <name>Discovery</name>
+
+                                        <type>boolean</type>
+
+                                        <syntax>bool</syntax>
+
+                                        <writable>true</writable>
+
+                                </parameter>
+
+                        </parameters>
+						
+			<objects>
+                               	<object>
+					<name>Tile</name>
+							
+					<objectType>object</objectType>
+							
+					<functions>
+						
+						<func_GetParamStringValue>Tile_GetParamStringValue</func_GetParamStringValue>
+							
+						<func_SetParamStringValue>Tile_SetParamStringValue</func_SetParamStringValue>
+							
+					</functions>
+							
+					<parameters>
+				
+						<parameter>
+						
+							<name>ReportingURL</name>
+							
+							<type>string</type>
+			
+							<syntax>string</syntax>
+					
+							<writable>true</writable>
+		
+						</parameter>
+
+					</parameters>
+				</object>
+
+			</objects>
+			</object>                
                     </objects>
                 </object>
             </objects>
