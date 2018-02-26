@@ -643,6 +643,8 @@ int secure_system_call_p( const char *cmd, char *argp[])
     int cmd_check;
     int count=0;
     char **env = NULL;
+
+    CcspTraceInfo(("%s,Command %s\n",__FUNCTION__,cmd));
     if ((cmd == NULL)||(*argp == NULL))
     {
         CcspTraceInfo(("bad input!!!\n"));
@@ -672,6 +674,7 @@ int secure_system_call_p( const char *cmd, char *argp[])
         printf("inside parent process \n");
     }
     else {
+	CcspTraceInfo(("%s,executing command %s\n",__FUNCTION__,cmd));
         if (execve(cmd, argp, env) == -1){ /* Handle error */
             printf("Failed to execve\n");
             return -1;
@@ -905,7 +908,7 @@ DdnsRestart(void)
 
 
                     argp[0] = "/fss/gw/usr/bin/ez-ipupdate";
-                    
+
                     argp[1] = "--interface=erouter0";
 
                     len = strlen("--cache-file=/var/ez-ipupdate.cache.") +strlen(g_DdnsService[i].ServiceName)+1;
@@ -944,7 +947,8 @@ DdnsRestart(void)
                        goto error;
                     }
                     
-                    len=strlen("--user=") + strlen(g_DdnsService[i].Username) + strlen(g_DdnsService[i].Password) + 1;
+                      /*add 1 byte len for ":"  for --user=%s:%s*/
+                    len=strlen("--user=") + strlen(g_DdnsService[i].Username) + strlen(g_DdnsService[i].Password) + 2;
                     if(argp[6] = malloc(len))
                     {
                         n=snprintf(argp[6], len, "--user=%s:%s",g_DdnsService[i].Username,g_DdnsService[i].Password);
@@ -969,6 +973,7 @@ DdnsRestart(void)
                             fprintf(stderr, "%s: fail to Write formatted output to sized buffer\n", __FUNCTION__);
                             goto error;
                         }
+                        CcspTraceInfo(("%s : DDnsService Domain : %s\n", __FUNCTION__,argp[7]));
                     }
                     else
                     {
