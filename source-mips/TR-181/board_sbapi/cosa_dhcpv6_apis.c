@@ -3669,15 +3669,23 @@ CosaDmlDhcpv6sEnable
         return ANSC_STATUS_FAILURE;
     SETI_INTO_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "serverenable", g_dhcpv6_server)
     Utopia_Free(&utctx,1);
+    #if defined(_BCI_FEATURE_REQ)
+    system("sysevent set zebra-restart");
+    #endif
 
     if ( bEnable )
     {
+       #if defined(_BCI_FEATURE_REQ)
+       CcspTraceInfo(("Enable DHCPv6. Starting Dibbler-Server and Zebra Process\n"));
+       #endif   
         /* We need enable server */
         CosaDmlDHCPv6sTriggerRestart(FALSE);
     }
     else if ( !bEnable  )
     {
-        /* we need disable server. */
+       #if defined(_BCI_FEATURE_REQ)
+       CcspTraceInfo(("Disable DHCPv6. Stopping Dibbler-Server and Zebra Process\n "));
+       #endif
         
        #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
         commonSyseventSet("dhcpv6_server-stop", "");
