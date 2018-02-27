@@ -6066,14 +6066,17 @@ Syndication_SetParamStringValue
     }
     if( AnscEqualString(ParamName, "PartnerId", TRUE) )
     {
-		retValue = setPartnerId( pString );
-		if( ANSC_STATUS_SUCCESS == retValue )
+		if ( (strcmp(pMyObject->PartnerID,pString) != 0 ) )
 		{
-			memset( pMyObject->PartnerID, 0, sizeof( pMyObject->PartnerID ));
-			AnscCopyString( pMyObject->PartnerID, pString );
-		}
+			retValue = setPartnerId( pString );
+			if( ANSC_STATUS_SUCCESS == retValue )
+			{
+				memset( pMyObject->PartnerID, 0, sizeof( pMyObject->PartnerID ));
+				AnscCopyString( pMyObject->PartnerID, pString );
+			}
 		
-		return TRUE;
+			return TRUE;
+		}
     }
     if((ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size) ) && ( PartnerID[ 0 ] != '\0'))
     {
@@ -6265,36 +6268,6 @@ RDKB_UIBranding_SetParamStringValue
         char*                       pString
     )
 {
-    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
-    PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
-
-	char PartnerID[PARTNER_ID_LEN] = {0};
-	ULONG size = PARTNER_ID_LEN - 1;
-	
-   if((ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size) ) && ( PartnerID[ 0 ] != '\0') )
-   {
-   	 /* check the parameter name and set the corresponding value */
-	    if( AnscEqualString(ParamName, "DefaultAdminIP", TRUE) )
-	    {
-			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP",PartnerID, pString))
-			{
-				memset( pBindObj->DefaultAdminIP, 0, sizeof( pBindObj->DefaultAdminIP));
-				AnscCopyString( pBindObj->DefaultAdminIP, pString );
-				return TRUE;
-			}			
-	    }
- 	 /* check the parameter name and set the corresponding value */
-	    if( AnscEqualString(ParamName, "DefaultLocalIPv4SubnetRange", TRUE) )
-	    {
-			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange",PartnerID, pString))
-			{
-				memset( pBindObj->DefaultLocalIPv4SubnetRange, 0, sizeof( pBindObj->DefaultLocalIPv4SubnetRange));
-				AnscCopyString( pBindObj->DefaultLocalIPv4SubnetRange, pString );
-				return TRUE;
-			}			
-	    }
-	  
-   }
     return FALSE;
 }
 
@@ -6361,6 +6334,50 @@ Footer_GetParamStringValue
 
 	}
 
+	if( AnscEqualString(ParamName, "PartnerText", TRUE))
+	{
+		if ( AnscSizeOfString(pBindObj->Footer.PartnerText) < *pulSize)
+       		{
+           		AnscCopyString( pValue, pBindObj->Footer.PartnerText);
+            		return 0;
+       		}
+       		else
+       		{
+           		*pulSize = AnscSizeOfString(pBindObj->Footer.PartnerText)+1;
+           		return 1;
+       		}
+
+	}
+
+	if( AnscEqualString(ParamName, "UserGuideText", TRUE))
+	{
+		if ( AnscSizeOfString(pBindObj->Footer.UserGuideText) < *pulSize)
+       		{
+           		AnscCopyString( pValue, pBindObj->Footer.UserGuideText);
+            		return 0;
+       		}
+       		else
+       		{
+           		*pulSize = AnscSizeOfString(pBindObj->Footer.UserGuideText)+1;
+           		return 1;
+       		}
+
+	}
+
+	if( AnscEqualString(ParamName, "CustomerCentralText", TRUE))
+	{
+		if ( AnscSizeOfString(pBindObj->Footer.CustomerCentralText) < *pulSize)
+       		{
+           		AnscCopyString( pValue, pBindObj->Footer.CustomerCentralText);
+            		return 0;
+       		}
+       		else
+       		{
+           		*pulSize = AnscSizeOfString(pBindObj->Footer.CustomerCentralText)+1;
+           		return 1;
+       		}
+
+	}
 	return -1;
 
 }
@@ -6415,6 +6432,40 @@ Footer_SetParamStringValue
 			}
 			
 	    }
+
+	if( AnscEqualString(ParamName, "PartnerText", TRUE) )
+	{
+		if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerText",PartnerID,pString))
+		{
+			memset( pBindObj->Footer.PartnerText, 0, sizeof( pBindObj->Footer.PartnerText ));
+			AnscCopyString( pBindObj->Footer.PartnerText, pString );
+			return TRUE;
+		}
+
+	}
+
+	if( AnscEqualString(ParamName, "UserGuideText", TRUE) )
+	{
+		if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideText",PartnerID,pString))
+		{
+			memset( pBindObj->Footer.UserGuideText, 0, sizeof( pBindObj->Footer.UserGuideText ));
+			AnscCopyString( pBindObj->Footer.UserGuideText, pString );
+			return TRUE;
+		}
+
+	}
+
+ 	if( AnscEqualString(ParamName, "CustomerCentralText", TRUE) )
+ 	{
+ 		if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralText",PartnerID,pString))
+ 		{
+ 			memset( pBindObj->Footer.CustomerCentralText, 0, sizeof( pBindObj->Footer.CustomerCentralText ));
+ 			AnscCopyString( pBindObj->Footer.CustomerCentralText, pString );
+ 			return TRUE;
+ 		}
+ 		
+ 	}
+
    }
    
     return FALSE;
@@ -6803,16 +6854,6 @@ WiFiPersonalization_SetParamStringValue
 				return TRUE;
 			}			
 	    }
-	    /* check the parameter name and set the corresponding value */
-	    if( AnscEqualString(ParamName, "MSOLogo", TRUE) )
-	    {
-			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MSOLogo",PartnerID, pString))
-			{
-				memset( pBindObj->WifiPersonal.MSOLogo, 0, sizeof( pBindObj->WifiPersonal.MSOLogo ));
-				AnscCopyString( pBindObj->WifiPersonal.MSOLogo, pString );
-				return TRUE;
-			}			
-	    }
 	  
    }
     return FALSE;
@@ -6894,47 +6935,7 @@ LocalUI_SetParamStringValue
         char*                       pString
     )
 {
-    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
-    PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
-
-	char PartnerID[PARTNER_ID_LEN] = {0};
-	ULONG size = PARTNER_ID_LEN - 1;
-	
-   if((ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size) ) && ( PartnerID[ 0 ] != '\0') )
-   {
-   	 /* check the parameter name and set the corresponding value */
-	    if( AnscEqualString(ParamName, "MSOLogo", TRUE) )
-	    {
-			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.MSOLogo",PartnerID, pString))
-			{
-				memset( pBindObj->LocalUI.MSOLogo, 0, sizeof( pBindObj->LocalUI.MSOLogo ));
-				AnscCopyString( pBindObj->LocalUI.MSOLogo, pString );
-				return TRUE;
-			}			
-	    }
- 	 /* check the parameter name and set the corresponding value */
-	    if( AnscEqualString(ParamName, "DefaultLoginUsername", TRUE) )
-	    {
-			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername",PartnerID, pString))
-			{
-				memset( pBindObj->LocalUI.DefaultLoginUsername, 0, sizeof( pBindObj->LocalUI.DefaultLoginUsername ));
-				AnscCopyString( pBindObj->LocalUI.DefaultLoginUsername, pString );
-				return TRUE;
-			}			
-	    }
-	  /* check the parameter name and set the corresponding value */
-	    if( AnscEqualString(ParamName, "DefaultLoginPassword", TRUE) )
-	    {
-			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword",PartnerID, pString))
-			{
-				memset( pBindObj->LocalUI.DefaultLoginPassword, 0, sizeof( pBindObj->LocalUI.DefaultLoginPassword ));
-				AnscCopyString( pBindObj->LocalUI.DefaultLoginPassword, pString );
-				return TRUE;
-			}			
-	    }
-	  
-   }
-    return FALSE;
+	return FALSE;
 }
 #ifndef _COSA_FOR_BCI_
 /***********************************************************************

@@ -2448,7 +2448,10 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 		char *DefaultLoginPassword = NULL;
 		char *DefaultLoginUsername = NULL;
 		char *UIMSOLogo = NULL;	
-	 	char *pauseScreenFileLocation = NULL;	
+	 	char *pauseScreenFileLocation = NULL;
+		char *partnerText = NULL;
+		char *userGuideText = NULL;
+		char *customerCentralText = NULL;
 		
 		partnerObj = cJSON_GetObjectItem( json, partnerID );
 		if( partnerObj != NULL) 
@@ -2515,7 +2518,69 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 					CcspTraceWarning(("%s - customerCentralLink Object is NULL\n", __FUNCTION__ ));
 				}
 				
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerText") != NULL )
+				{
+					partnerText = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerText")->valuestring; 
 
+					if (partnerText != NULL) 
+					{
+						AnscCopyString(PUiBrand->Footer.PartnerText, partnerText);
+						partnerText = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - partnerText Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - partnerText Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideText") != NULL )
+				{
+					userGuideText = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideText")->valuestring; 
+
+					if (userGuideText != NULL) 
+					{
+						AnscCopyString(PUiBrand->Footer.UserGuideText, userGuideText);
+						userGuideText = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - userGuideText Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - userGuideText Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralText") != NULL )
+				{
+					customerCentralText = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralText")->valuestring; 
+
+					if (customerCentralText != NULL) 
+					{
+						AnscCopyString(PUiBrand->Footer.CustomerCentralText, customerCentralText);
+						customerCentralText = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - customerCentralText Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - customerCentralText Object is NULL\n", __FUNCTION__ ));
+				}
+				
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOmenu") != NULL )
 				{
 					msoMenu = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOmenu")->valuestring;

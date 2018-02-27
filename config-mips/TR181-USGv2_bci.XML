@@ -769,13 +769,13 @@
 				<name>DefaultAdminIP</name>
 				<type>string</type>
 				<syntax>string</syntax>
-				<writable>true</writable>
+				<writable>false</writable>
 			</parameter>
 			<parameter>
 				<name>DefaultLocalIPv4SubnetRange</name>
 				<type>string</type>
 				<syntax>string</syntax>
-				<writable>true</writable>
+				<writable>false</writable>
 			</parameter>
 		</parameters>
         <objects>
@@ -801,6 +801,24 @@
 			</parameter>
 			<parameter>
 				<name>CustomerCentralLink</name>
+				<type>string</type>
+				<syntax>string</syntax>
+				<writable>true</writable>
+			</parameter>
+			<parameter>
+				<name>PartnerText</name>
+				<type>string</type>
+				<syntax>string</syntax>
+				<writable>true</writable>
+			</parameter>
+			<parameter>
+				<name>UserGuideText</name>
+				<type>string</type>
+				<syntax>string</syntax>
+				<writable>true</writable>
+			</parameter>
+			<parameter>
+				<name>CustomerCentralText</name>
 				<type>string</type>
 				<syntax>string</syntax>
 				<writable>true</writable>
@@ -898,7 +916,7 @@
                			<name>MSOLogo</name>
                 		<type>string</type>
                 		<syntax>string</syntax>
-                		<writable>true</writable>
+                		<writable>false</writable>
                 	</parameter>
 		</parameters>
   	  </object>
@@ -914,19 +932,19 @@
 				<name>MSOLogo</name>
 				<type>string</type>
 				<syntax>string</syntax>
-				<writable>true</writable>
+				<writable>false</writable>
 			</parameter>
 			<parameter>
 				<name>DefaultLoginUsername</name>
 				<type>string</type>
 				<syntax>string</syntax>
-				<writable>true</writable>
+				<writable>false</writable>
 			</parameter>
 			<parameter>
 				<name>DefaultLoginPassword</name>
 				<type>string</type>
 				<syntax>string</syntax>
-				<writable>true</writable>
+				<writable>false</writable>
 			</parameter>
 		</parameters>
   	  </object>

@@ -137,6 +137,9 @@ _COSA_DATAMODEL_RDKB_FOOTER_CLASS_CONTENT
 	CHAR 		PartnerLink[512];
 	CHAR 		UserGuideLink[512];
 	CHAR 		CustomerCentralLink[512];
+	CHAR		PartnerText[512];
+	CHAR		UserGuideText[512];
+	CHAR		CustomerCentralText[512];
 }
 COSA_DATAMODEL_RDKB_FOOTER, *PCOSA_DATAMODEL_RDKB_FOOTER;
 
