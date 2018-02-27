@@ -989,6 +989,10 @@ BOOL tagPermitted(int tag)
 #include "cosa_ip_apis.h"
 #include "cosa_common_util.h"
 
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+#include <netinet/in.h>
+#endif
+
 #define SYSCFG_FORMAT_DHCP6C "tr_dhcpv6c"
 #define CLIENT_DUID_FILE "/var/lib/dibbler/client-duid"
 #define SERVER_DUID_FILE "/var/lib/dibbler/server-duid"
@@ -1018,6 +1022,43 @@ enum {
     DHCPV6_SERVER_TYPE_STATEFUL  =1,
     DHCPV6_SERVER_TYPE_STATELESS
 };
+
+
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+#define MAX_LAN_IF_NUM              3
+
+/*erouter topology mode*/
+enum tp_mod {
+    TPMOD_UNKNOWN,
+    FAVOR_DEPTH,
+    FAVOR_WIDTH,
+};
+
+typedef struct pd_pool {
+    char start[INET6_ADDRSTRLEN];
+    char end[INET6_ADDRSTRLEN];
+    int  prefix_length;
+    int  pd_length;
+} pd_pool_t;
+
+typedef struct ia_info {
+    union {
+        char v6addr[INET6_ADDRSTRLEN];
+        char v6pref[INET6_ADDRSTRLEN];
+    } value;
+
+    char t1[32], t2[32], iaid[32], pretm[32], vldtm[32];
+    int len;
+} ia_pd_t;
+
+typedef struct ipv6_prefix {
+    char value[INET6_ADDRSTRLEN];
+    int  len;
+    //int  b_used;
+} ipv6_prefix_t;
+
+#endif
+
 
 #if 0
 
@@ -1562,6 +1603,10 @@ void unsetpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1In
 void getpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1Index, PCOSA_DML_DHCPSV6_POOL_FULL pEntry )
 {
     UtopiaContext utctx = {0};
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+    char *INVALID_IANAInterfacePrefixes = "Device.IP.Interface.4.IPv6Prefix.1.";
+    char *FIXED_IANAInterfacePrefixes   = "Device.IP.Interface.1.IPv6Prefix.1.";
+#endif
 
     if (!Utopia_Init(&utctx))
         return;
@@ -1595,6 +1640,17 @@ void getpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1Inde
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "Status", pEntry->Info.Status)
 #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAInterfacePrefixes", pEntry->Info.IANAPrefixes)
+    CcspTraceInfo(("%s table1Name: %s, table1Index: %d, get IANAInterfacePrefixes: %s\n", 
+                  __func__, table1Name, table1Index, pEntry->Info.IANAPrefixes));
+
+    if ( _ansc_strcmp(table1Name, "pool") == 0 && table1Index == 0 && 
+        _ansc_strcmp(pEntry->Info.IANAPrefixes, INVALID_IANAInterfacePrefixes) == 0)
+      {
+       CcspTraceInfo(("%s Fix invalid IANAInterfacePrefixes by setting it to new default: %s\n", __func__, FIXED_IANAInterfacePrefixes));
+       SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAInterfacePrefixes", FIXED_IANAInterfacePrefixes)
+       GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAInterfacePrefixes", pEntry->Info.IANAPrefixes)
+       CcspTraceInfo(("%s Try again to get IANAInterfacePrefixes: %s\n", __func__, pEntry->Info.IANAPrefixes));
+      }
 #else
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAPrefixes", pEntry->Info.IANAPrefixes)
 #endif
@@ -1685,7 +1741,7 @@ void _cosa_dhcpsv6_refresh_config();
 static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger);
 #define DHCPS6V_SERVER_RESTART_FIFO "/tmp/ccsp-dhcpv6-server-restart-fifo.txt"
 
-#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX)
 
 #else
 ANSC_STATUS
@@ -1856,7 +1912,7 @@ CosaDmlDhcpv6Init
     SETI_INTO_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "serverenable", g_dhcpv6_server)
     Utopia_Free(&utctx,1);
 
-#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX)
 
 #else
     /*register callback function to handle message from wan dchcp6 client */
@@ -2182,7 +2238,7 @@ static int _dibbler_client_operation(char * arg)
         CcspTraceInfo(("%s stop\n", __func__));
 #ifdef _COSA_BCM_MIPS_
         
-      #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+      #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX)
         commonSyseventSet("dhcpv6_client-stop", "");
       #else
         system("/etc/utopia/service.d/service_dhcpv6_client.sh disable");
@@ -2206,7 +2262,7 @@ static int _dibbler_client_operation(char * arg)
     {
         CcspTraceInfo(("%s start\n", __func__));
 #ifdef _COSA_BCM_MIPS_
-#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX)
       commonSyseventSet("dhcpv6_client-start", "");
 #else
       system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
@@ -3026,7 +3082,7 @@ static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger)
     char str[32] = "restart";
     
     DHCPVS_DEBUG_PRINT
-  #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+  #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX)
     commonSyseventSet("dhcpv6_server-restart", "");
   #else
   
@@ -3264,6 +3320,428 @@ int CosaDmlDHCPv6sGetDNS(char* Dns, char* output, int outputLen)
     return 0;
 }
 
+
+// adding new logics to handle pd-class
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+static int remove_single_quote (char *buf)
+{
+  int  mode;
+  int i = 0;
+  int j = 0;
+
+  while (buf[i] != '\0' && i < 255) {
+    if (buf[i] != '\'') {
+      buf[j++] = buf[i];
+    }
+    i++;
+  }
+  buf[j] = '\0';
+  return 0;
+}
+
+  
+static int get_ipv6_tpmode (int *tpmod)
+{
+  char buf[16] = { 0 };
+  char fixed_buf[16] = { 0 };
+  int  mode;
+  int i = 0;
+  int j = 0;
+
+  // sysevent_get(si6->sefd, si6->setok, "erouter_topology-mode", buf, sizeof(buf));
+  commonSyseventGet(COSA_DML_DHCPV6C_PREF_IAID_SYSEVENT_NAME, buf, sizeof(buf));
+  while (buf[i] != '\0') {
+    if (buf[i] != '\'') {
+	fixed_buf[j++] = buf[i];
+      }
+      i++;
+  }
+
+  mode = atoi(fixed_buf);
+
+  switch(mode) {
+  case 1:
+    *tpmod = FAVOR_DEPTH;
+    break;
+  case 2:
+    *tpmod = FAVOR_WIDTH;
+    break;
+  default:
+    CcspTraceInfo(("%s: unknown erouter topology mode, buf: %s\n", __FUNCTION__, buf));
+    *tpmod = TPMOD_UNKNOWN;
+    break;
+  }
+
+  return 0;
+}
+
+static int get_prefix_info(const char *prefix,  char *value, unsigned int val_len, unsigned int *prefix_len)
+{
+    int i;
+
+    i = strlen(prefix);
+ 
+    while((prefix[i-1] != '/') && (i > 0)) i--;
+
+    if (i == 0) {
+	CcspTraceError(("[%s] ERROR, there is not '/' in prefix:%s\n", __FUNCTION__, prefix));
+
+        return -1;
+    }
+
+    if (prefix_len != NULL)
+        *prefix_len = atoi(&prefix[i]);
+
+    if (value != NULL) {
+        memset(value, 0, val_len);
+        strncpy(value, prefix, i-1);
+    }
+
+    //fprintf(stderr, "[%s] prefix:%s length: %d.\n",__FUNCTION__, value != NULL ? value : "null", *prefix_len);
+    CcspTraceInfo(("[%s] output value: %s prefix_len: %d.\n", __FUNCTION__, value != NULL ? value : "null", *prefix_len));
+
+    return 0;
+}
+
+
+/* get the interfaces which need to assign /64 interface-prefix
+ * suppose we currently use syscfg "lan_pd_interfaces" to represent the interfaces need to prefix delegation
+ */
+static int get_active_lanif(unsigned int insts[], unsigned int *num)
+{
+    char active_insts[32] = {0};
+    char lan_pd_if[128] = {0};
+    char *p = NULL;
+    int i = 0;
+    char if_name[16] = {0};
+    char buf[64] = {0};
+
+    syscfg_get(NULL, "lan_pd_interfaces", lan_pd_if, sizeof(lan_pd_if));
+
+    if (lan_pd_if[0] == '\0') {
+        *num = 0;
+        return *num;
+    }
+
+    commonSyseventGet("multinet-instances", active_insts, sizeof(active_insts));
+
+    p = strtok(active_insts, " ");
+
+    while (p != NULL) {
+        snprintf(buf, sizeof(buf), "multinet_%s-name", p);
+	commonSyseventGet(buf, if_name, sizeof(if_name));
+
+        if (strstr(lan_pd_if, if_name)) { /*active interface and need prefix delegation*/
+            insts[i] = atoi(p);
+            i++;
+        }
+
+        p = strtok(NULL, " ");
+    }
+
+    *num = i;
+
+    return *num;
+}
+
+
+/*
+ * Break the prefix provisoned from wan to sub-prefixes based on favor width/depth and topology mode
+ */
+static int divide_ipv6_prefix()
+{
+    ipv6_prefix_t       mso_prefix;
+    ipv6_prefix_t       *sub_prefixes = NULL;
+    unsigned int        enabled_iface_num = 0; 
+    unsigned int        l2_insts[MAX_LAN_IF_NUM] = {0};
+    unsigned char       prefix[sizeof(struct in6_addr)];
+    unsigned char       buf[sizeof(struct in6_addr)];
+    int                 delta_bits = 0;
+    unsigned int        sub_prefix_num = 0;
+    unsigned int        iface_prefix_num = 0;
+    int                 i;
+    ipv6_prefix_t       *p_prefix = NULL;
+    int                 bit_boundary = 0;
+    unsigned long long  sub_prefix, tmp_prefix; //64 bits
+    char                iface_prefix[INET6_ADDRSTRLEN]; //for iface prefix str
+    char                evt_name[64];
+    char                evt_val[64];
+    char                iface_name[64];
+    int                 used_sub_prefix_num = 0; 
+    char                ipv6_prefix[64] = {0};
+    int                 tpmod;
+
+    commonSyseventSet("ipv6_prefix-divided", "");
+    commonSyseventGet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME, ipv6_prefix, sizeof(ipv6_prefix)); 
+
+    if (get_prefix_info(ipv6_prefix, mso_prefix.value, sizeof(mso_prefix.value), &mso_prefix.len) != 0) {
+      CcspTraceError(("[%s] ERROR return -1 (i.e. error due to get_prefix_info() return -1)\n", __FUNCTION__));
+      return -1;
+    }
+
+    if ((delta_bits = 64 - mso_prefix.len) < 0) {
+      CcspTraceError(("[%s] ERROR invalid prefix. mso_prefix.len: %d greater than 64, delta_bits: %d\n",  
+		      __FUNCTION__, mso_prefix.len, delta_bits));
+      return -1;
+    }
+
+    if (inet_pton(AF_INET6, mso_prefix.value, prefix) <= 0) {
+      CcspTraceError(("[%s] ERROR prefix inet_pton error!\n",  __FUNCTION__));
+      return -1;
+    }
+
+    get_active_lanif(l2_insts, &enabled_iface_num);
+    CcspTraceInfo(("[%s] got enabled_iface_num: %d, delta_bits: %d.\n", 
+		    __FUNCTION__, enabled_iface_num, delta_bits));
+
+    if (enabled_iface_num == 0) {
+      CcspTraceError(("[%s] ERROR no enabled lan interfaces. return -1\n", __FUNCTION__));
+      return -1;
+    }
+
+    if (enabled_iface_num > (1 << delta_bits)) {
+      CcspTraceError(("[%s] ERROR delta_bits: %d  is too small to address all of its interfaces.\n", 
+		      __FUNCTION__, delta_bits));
+      return -1;
+    }
+ 
+    //printf("mso_prefix.value %s \n",mso_prefix.value);
+    //	printf("mso_prefix.len %d \n",mso_prefix.len);
+    //	printf("si6->tpmod %d \n",tpmod);
+    get_ipv6_tpmode (&tpmod);
+    CcspTraceInfo(("[%s] got mso_prefix.value: %s, mso_prefix.len: %d, tpmod: %d\n", 
+		   __FUNCTION__, mso_prefix.value, mso_prefix.len, tpmod));
+
+    /* divide base on mso prefix len and topology mode
+     *  1) prefix len > 56 && topology mode = "favor depth", divide on 2 bit boundaries to 4 sub-prefixes.
+     *  2) prefix len > 56 && topology mode = "favor width", divide on 3 bit boundaries to 8 sub-prefixes.
+     *  3) prefix len <= 56 && topology mode = "favor depth", divide on 3 bit boundaries to 8 sub-prefixes.
+     *  4) prefix len <= 56 && topology mode = "favor width", divide on 4 bit boundaries to 16 sub-prefixes.
+     *  5) if prefix is to small to divide in the manner described, divided into as many /64 sub-prefixes as possible and log a message.
+     * */
+    /*get boundary*/
+    if (mso_prefix.len > 56) {
+        if (tpmod == FAVOR_DEPTH) {
+            bit_boundary = (delta_bits < 2) ? delta_bits : 2;
+        } else if (tpmod == FAVOR_WIDTH) {
+            bit_boundary = (delta_bits < 3) ? delta_bits : 3;
+        }
+    }
+    else {
+        if (tpmod == FAVOR_DEPTH) {
+            bit_boundary = (delta_bits < 3) ? delta_bits : 3;
+        } else if(tpmod == FAVOR_WIDTH) {
+            bit_boundary = (delta_bits < 4) ? delta_bits : 4;
+        }
+    }
+    
+    /*divide to sub-prefixes*/
+    sub_prefix_num = 1 << bit_boundary;
+    CcspTraceInfo(("[%s] set sub_prefix_num: %d by left shifting 1 with calculated bit_boundary: %d\n",  
+		   __FUNCTION__, sub_prefix_num, bit_boundary));
+
+    sub_prefixes = (ipv6_prefix_t *)calloc(sub_prefix_num, sizeof(ipv6_prefix_t));
+    if (sub_prefixes == NULL) {
+      CcspTraceError(("[%s] ERROR calloc mem for sub-prefixes failed.\n", __FUNCTION__));
+      return -1;
+    }
+
+    p_prefix = sub_prefixes;
+
+    memcpy((void *)&tmp_prefix, (void *)prefix, 8); // the first 64 bits of mso prefix value
+#ifdef _CBR_PRODUCT_REQ_
+	tmp_prefix = helper_ntoh64(&tmp_prefix); // The memcpy is copying in reverse order due to LEndianess
+#endif
+    tmp_prefix &= ((~0) << delta_bits);
+    for (i = 0; i < sub_prefix_num; i ++) {
+        sub_prefix = tmp_prefix | (i << (delta_bits - bit_boundary));
+        memset(buf, 0, sizeof(buf));
+#ifdef _CBR_PRODUCT_REQ_	
+		sub_prefix = helper_hton64(&sub_prefix);// The memcpy is copying in reverse order due to LEndianess
+#endif
+        memcpy((void *)buf, (void *)&sub_prefix, 8);
+        inet_ntop(AF_INET6, buf, p_prefix->value, INET6_ADDRSTRLEN);
+        p_prefix->len = mso_prefix.len + bit_boundary;
+        //p_prefix->b_used = 0;
+
+        fprintf(stderr, "sub-prefix:%s/%d\n", p_prefix->value, p_prefix->len);
+
+        p_prefix++;
+    }
+
+    /*break the first sub-prefix to interface prefix for lan interface*/
+    iface_prefix_num = (1 << delta_bits) / (sub_prefix_num); /*determine the iface prefix num for each sub-prefix*/
+   
+    p_prefix = sub_prefixes;
+    inet_pton(AF_INET6, p_prefix->value, prefix);
+    memcpy((void *)&tmp_prefix, (void *)prefix, 8); //the first 64 bits of the first sub-prefix
+#ifdef _CBR_PRODUCT_REQ_
+	tmp_prefix = helper_ntoh64(&tmp_prefix); // The memcpy is copying in reverse order due to LEndianess
+#endif
+    for (i = 0; i < enabled_iface_num; i++) {
+        //p_prefix->b_used = 1;
+        memset(buf, 0, sizeof(buf));
+#ifdef _CBR_PRODUCT_REQ_
+		tmp_prefix = helper_hton64(&tmp_prefix);// The memcpy is copying in reverse order due to LEndianess
+#endif		
+        memcpy((void *)buf, (void *)&tmp_prefix, 8);
+        inet_ntop(AF_INET6, buf, iface_prefix, INET6_ADDRSTRLEN);
+        strcat(iface_prefix, "/64");
+
+        /*set related sysevent*/
+        snprintf(evt_name, sizeof(evt_name), "multinet_%d-name", l2_insts[i]);
+	commonSyseventGet(evt_name, iface_name, sizeof(iface_name));
+        snprintf(evt_name, sizeof(evt_name), "ipv6_%s-prefix", iface_name);
+	commonSyseventSet(evt_name, iface_prefix);
+
+        CcspTraceInfo(("[%s] interface-prefix %s:%s\n", __FUNCTION__, iface_name, iface_prefix));
+
+        tmp_prefix++;
+    }
+
+    /*last set sub-prefix related sysevent*/
+    used_sub_prefix_num = enabled_iface_num / iface_prefix_num;
+
+    if ((enabled_iface_num % iface_prefix_num) != 0 ) {
+        used_sub_prefix_num += 1;
+	CcspTraceInfo(("[%s] added one to used_sub_prefix_num: %d\n",  
+		       __FUNCTION__, used_sub_prefix_num ));
+    }
+
+    if (used_sub_prefix_num < sub_prefix_num) {
+	commonSyseventSet("ipv6_subprefix-start", sub_prefixes[used_sub_prefix_num].value);
+	commonSyseventSet("ipv6_subprefix-end", sub_prefixes[sub_prefix_num-1].value);
+    } else {
+	commonSyseventSet("ipv6_subprefix-start", "");
+	commonSyseventSet("ipv6_subprefix-end", "");
+    }
+
+    CcspTraceInfo(("[%s] set ipv6_prefix-length to: %d from mso_prefix.len\n", __FUNCTION__, mso_prefix.len));
+    CcspTraceInfo(("[%s] set ipv6_pd-length to: %d mso_prefix.len: %d + bit_boundary: %d\n",  
+		   __FUNCTION__, mso_prefix.len, mso_prefix.len, bit_boundary));
+
+    snprintf(evt_val, sizeof(evt_val), "%d", mso_prefix.len);
+    commonSyseventSet("ipv6_prefix-length", evt_val);
+    snprintf(evt_val, sizeof(evt_val), "%d", mso_prefix.len + bit_boundary);
+    commonSyseventSet("ipv6_pd-length", evt_val);
+
+    commonSyseventSet("ipv6_prefix-divided", "ready");
+
+    if (sub_prefixes != NULL)
+        free(sub_prefixes);
+
+    return 0;
+}
+
+
+static int get_pd_pool(pd_pool_t *pool)
+{
+    char evt_val[256] = {0};
+
+    commonSyseventGet("ipv6_subprefix-start", evt_val, sizeof(evt_val));
+    CcspTraceInfo(("[%s] commonSyseventGet ipv6_subprefix-start: %s\n", __FUNCTION__, evt_val));
+    if (evt_val[0] != '\0') {
+      remove_single_quote(evt_val);
+      strcpy(pool->start, evt_val);
+      CcspTraceInfo(("[%s] pool->start: %d\n", __FUNCTION__, pool->start));
+    }
+    else  {
+      CcspTraceWarning(("[%s] sysevent_get for ipv6_subprefix-start is NULL\n",  __FUNCTION__));
+      return -1;
+    }
+
+    commonSyseventGet("ipv6_subprefix-end", evt_val, sizeof(evt_val));
+    CcspTraceInfo(("[%s] commonSyseventGet ipv6_subprefix-end: %s\n", __FUNCTION__, evt_val));
+    if (evt_val[0] != '\0') {
+      remove_single_quote(evt_val);
+      strcpy(pool->end, evt_val);
+      CcspTraceInfo(("[%s] pool->end: %d\n", __FUNCTION__, pool->end));
+    }
+    else {
+      CcspTraceWarning(("[%s] sysevent_get for ipv6_subprefix-end is NULL\n",  __FUNCTION__));
+      return -1;
+    }
+
+    commonSyseventGet("ipv6_prefix-length", evt_val, sizeof(evt_val));
+    CcspTraceInfo(("[%s] commonSyseventGet ipv6_prefix-length: %s\n", __FUNCTION__, evt_val));
+    if (evt_val[0] != '\0') {
+      remove_single_quote(evt_val);
+      pool->prefix_length = atoi(evt_val);
+      CcspTraceInfo(("[%s] pool->prefix_length : %d\n", __FUNCTION__, pool->prefix_length));
+    }
+    else {
+      CcspTraceWarning(("[%s] sysevent_get for ipv6_prefix-length is NULL\n",  __FUNCTION__));
+      return -1;
+    }
+
+    commonSyseventGet("ipv6_pd-length", evt_val, sizeof(evt_val));
+    CcspTraceInfo(("[%s] commonSyseventGet ipv6_pd-length: %s\n", __FUNCTION__, evt_val));
+    if (evt_val[0] != '\0') {
+      remove_single_quote(evt_val);
+      pool->pd_length = atoi(evt_val);
+      CcspTraceInfo(("[%s] pool->pd_length: %d\n", __FUNCTION__, pool->pd_length));
+
+    }
+    else {
+      CcspTraceWarning(("[%s] sysevent_get for ipv6_pd-length is NULL\n",  __FUNCTION__));
+      return -1;
+    }
+
+    return 0;
+}
+
+static int get_iapd_info(ia_pd_t *iapd)
+{
+    char evt_val[256] = {0};
+ 
+    if(iapd == NULL)
+      return -1;
+
+    commonSyseventGet(COSA_DML_DHCPV6C_PREF_T1_SYSEVENT_NAME, evt_val, sizeof(evt_val));
+    if(evt_val[0]!='\0')
+    {
+      if(!strcmp(evt_val,"'\\0'"))
+	strcpy(iapd->t1,"0");
+      else
+	strcpy(iapd->t1,strtok (evt_val,"'"));
+    }
+    CcspTraceInfo(("[%s] iapd->t1: %s\n", __FUNCTION__, iapd->t1));
+
+    commonSyseventGet(COSA_DML_DHCPV6C_PREF_T2_SYSEVENT_NAME, evt_val, sizeof(evt_val));
+    if(evt_val[0]!='\0')
+    {
+      if(!strcmp(evt_val,"'\\0'"))
+	strcpy(iapd->t2,"0");
+      else
+	strcpy(iapd->t2,strtok (evt_val,"'"));
+    }
+    CcspTraceInfo(("[%s] iapd->t2: %s\n", __FUNCTION__, iapd->t2));
+
+    commonSyseventGet(COSA_DML_DHCPV6C_PREF_PRETM_SYSEVENT_NAME, evt_val, sizeof(evt_val));
+    if(evt_val[0]!='\0')
+    {
+      if(!strcmp(evt_val,"'\\0'"))
+	strcpy(iapd->pretm,"0");
+      else
+	strcpy(iapd->pretm,strtok (evt_val,"'"));
+    }
+    CcspTraceInfo(("[%s] iapd->pretm: %s\n", __FUNCTION__, iapd->pretm));
+
+    if(evt_val[0]!='\0')
+    {
+      if(!strcmp(evt_val,"'\\0'"))
+	strcpy(iapd->vldtm,"0");
+      else
+	strcpy(iapd->vldtm,strtok (evt_val,"'"));
+    }
+    CcspTraceInfo(("[%s] iapd->vldtm: %s\n", __FUNCTION__, iapd->vldtm));
+
+    return 0;
+}
+
+#endif
+
+
 void __cosa_dhcpsv6_refresh_config()
 {
 #ifdef _COSA_BCM_MIPS_
@@ -3305,13 +3783,37 @@ void __cosa_dhcpsv6_refresh_config()
     char *networkResponse = "/var/tmp/networkresponse.txt";
     int iresCode = 0;
     char responseCode[10];
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+    pd_pool_t           pd_pool;
+    ia_pd_t             ia_pd;
+#endif
     ULONG  T1 = 0;
     ULONG  T2 = 0;
 	char buf[ 6 ];
 	int IsCaptivePortalMode = 0;
+    BOOL  bBadPrefixFormat = FALSE;
 
     if (!fp)
         goto EXIT;
+
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION)
+    /* handle logic:
+     *  1) divide the Operator-delegated prefix to sub-prefixes
+     *  2) further break the first of these sub-prefixes into /64 interface-prefixes for lan interface
+     *  3) assign IPv6 address from the corresponding interface-prefix for lan interfaces
+     *  4) the remaining sub-prefixes are delegated via DHCPv6 to directly downstream routers
+     *  5) Send RA, start DHCPv6 server
+     */
+
+    if (divide_ipv6_prefix() != 0) {
+      // CcspTraceError(("[%s] ERROR divide the operator-delegated prefix to sub-prefix error.\n",  __FUNCTION__));
+        fprintf(stderr, "divide the operator-delegated prefix to sub-prefix error.\n");
+        // sysevent_set(si6->sefd, si6->setok, "service_ipv6-status", "error", 0);
+	commonSyseventSet("service_ipv6-status", "error");
+        return -1;
+    }
+
+#endif
 
     /*Begin write configuration */
     fprintf(fp, "log-level 8\n");
@@ -3324,6 +3826,16 @@ void __cosa_dhcpsv6_refresh_config()
         /* We need get interface name according to Interface field*/
         if ( !sDhcpv6ServerPool[Index].Cfg.bEnabled )
             continue;
+
+       // Skip emit any invalid iface entry to the dibbler server.conf file 
+       if (sDhcpv6ServerPool[Index].Cfg.PrefixRangeBegin[0] == '\0'  && 
+           sDhcpv6ServerPool[Index].Cfg.PrefixRangeEnd[0] == '\0')
+         {
+           CcspTraceInfo(("%s Skip Index: %d, iface: %s, entry. Invalid PrefixRangeBegin: %s,  PrefixRangeEnd: %s, LeaseTime: %d\n", 
+                          __func__, Index, COSA_DML_DHCPV6_SERVER_IFNAME, sDhcpv6ServerPool[Index].Cfg.PrefixRangeBegin, 
+                          sDhcpv6ServerPool[Index].Cfg.PrefixRangeEnd, sDhcpv6ServerPool[Index].Cfg.LeaseTime));
+            continue;
+         }
 
         fprintf(fp, "iface %s {\n", COSA_DML_DHCPV6_SERVER_IFNAME);
 
@@ -3395,12 +3907,15 @@ void __cosa_dhcpsv6_refresh_config()
 
                     if ( i == 0 ){
                         CcspTraceWarning(("_cosa_dhcpsv6_refresh_config -- iana:%s is error\n", prefixValue));
+                       bBadPrefixFormat = TRUE;
                     }
 
                     if ( ( prefixValue[i-2] != ':' ) || ( prefixValue[i-3] != ':' ) ){
                         CcspTraceWarning(("_cosa_dhcpsv6_refresh_config -- iana:%s is error\n", prefixValue));
+                       bBadPrefixFormat = TRUE;
                     }
 
+#if 0
                     /* We just delete last '/' here */
                     prefixValue[i-1] = '\0';
 
@@ -3415,7 +3930,53 @@ void __cosa_dhcpsv6_refresh_config()
                     /* delete one last ':' becaues there are 4 parts in this prefix*/
                     if ( j == 3 )
                         prefixValue[_ansc_strlen(prefixValue)-1] = '\0';
+#endif
+                    if (bBadPrefixFormat == FALSE && i > 2)
+                     {
 
+                       /* Need to convert A....::/xx to W:X:Y:Z: where X, Y or Z could be zero */
+                       /* We just delete last ':/' here */
+                       int k;
+                       for ( k = 0; k < i; k++ )
+                       {
+                           if ( prefixValue[k] == ':' )
+                           {
+                               j++;
+                               if ( k && (k < (sizeof(prefixValue) - 6)) )
+                               {
+                                   if ( prefixValue[k+1] == ':' )
+                                   {
+                                       switch (j)
+                                       {
+                                           case 1:
+                                               // A:: -> A:0:0:0:
+                                               strcpy( &prefixValue[k+1], "0:0:0:" );
+                                           break;
+
+                                           case 2:
+                                               // A:B:: -> A:B:0:0:
+                                               strcpy( &prefixValue[k+1], "0:0:" );
+                                           break;
+
+                                           case 3:
+                                               // A:B:C:: -> A:B:C:0:
+                                               strcpy( &prefixValue[k+1], "0:" );
+                                           break;
+
+                                           case 4:
+                                               // A:B:C:D:: -> A:B:C:D:
+                                               prefixValue[k+1] = 0;
+                                           break;
+                                       }
+                                       break;
+                                   }
+                               }
+                           }
+                       }
+
+                       CcspTraceInfo(("%s Fixed prefixValue: %s\n", __func__, prefixValue));
+
+                     }
                 }
 
                 fprintf(fp, "       pool %s%s - %s%s\n", prefixValue, sDhcpv6ServerPool[Index].Cfg.PrefixRangeBegin, prefixValue, sDhcpv6ServerPool[Index].Cfg.PrefixRangeEnd );
@@ -3442,6 +4003,41 @@ void __cosa_dhcpsv6_refresh_config()
             }
 
             AnscFreeMemory(pTmp3);
+
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+	    CcspTraceInfo(("[%s]  %d - See if need to emit pd-class, sDhcpv6ServerPool[Index].Cfg.IAPDEnable: %d, Index: %d\n", 
+			   __FUNCTION__, __LINE__, sDhcpv6ServerPool[Index].Cfg.IAPDEnable, Index));
+
+	    if (sDhcpv6ServerPool[Index].Cfg.IAPDEnable) {
+	      /*pd pool*/
+
+	      if(get_pd_pool(&pd_pool) == 0) {
+
+		CcspTraceInfo(("[%s]  %d emit pd-class { pd-pool pd_pool.start: %s, pd_pool.prefix_length: %d\n", 
+			       __FUNCTION__, __LINE__, pd_pool.start, pd_pool.prefix_length));
+		CcspTraceInfo(("[%s]  %d emit            pd-length pd_pool.pd_length: %d\n", 
+			       __FUNCTION__, __LINE__, pd_pool.pd_length));
+
+                fprintf(fp, "   pd-class {\n");
+#if defined (_CBR_PRODUCT_REQ_) || defined (CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION)
+                fprintf(fp, "       pd-pool %s /%d\n", pd_pool.start, pd_pool.prefix_length);
+#else
+		fprintf(fp, "       pd-pool %s - %s /%d\n", pd_pool.start, pd_pool.end, pd_pool.prefix_length);
+#endif	
+                fprintf(fp, "       pd-length %d\n", pd_pool.pd_length);
+
+                if(get_iapd_info(&ia_pd) == 0) {
+		  fprintf(fp, "       T1 %s\n", ia_pd.t1);
+		  fprintf(fp, "       T2 %s\n", ia_pd.t2);
+		  fprintf(fp, "       prefered-lifetime %s\n", ia_pd.pretm);
+		  fprintf(fp, "       valid-lifetime %s\n", ia_pd.vldtm);
+                } 
+
+                fprintf(fp, "   }\n");
+	      }
+	    }
+#endif
+
         }
 
 OPTIONS:
@@ -3687,7 +4283,7 @@ CosaDmlDhcpv6sEnable
        CcspTraceInfo(("Disable DHCPv6. Stopping Dibbler-Server and Zebra Process\n "));
        #endif
         
-       #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
+       #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX)
         commonSyseventSet("dhcpv6_server-stop", "");
        #else
         _dibbler_server_operation("stop");
@@ -5392,7 +5988,13 @@ dhcpv6c_dbg_thrd(void * in)
                         if ( pref_len >= 64 )
                             sprintf(v6pref+strlen(v6pref), "/%d", pref_len);
                         else
+			{
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION)
+			    sprintf(v6pref+strlen(v6pref), "/%d", pref_len);
+#else
                             sprintf(v6pref+strlen(v6pref), "/%d", 64);
+#endif
+                        }
 
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME,       v6pref);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_IAID_SYSEVENT_NAME,  iapd_iaid);
