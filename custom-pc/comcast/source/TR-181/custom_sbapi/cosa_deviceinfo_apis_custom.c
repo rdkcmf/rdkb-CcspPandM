@@ -84,6 +84,7 @@
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>
+#include <unistd.h>
 #define _ERROR_ "NOT SUPPORTED"
 
 #define CAPTIVEPORTAL_EANBLE     "CaptivePortal_Enable"
@@ -539,6 +540,12 @@ CosaDmlDiSetXfinityWiFiEnable
         PsmSet(HOTSPOT_PSM_EANBLE, "1");
     else
         PsmSet(HOTSPOT_PSM_EANBLE, "0");
+
+    if (access("/var/tmp/xfinityready", F_OK) != 0)
+    {
+        system("print_uptime \"boot_to_xfinity_wifi_uptime\"");
+    }
+    system("touch /var/tmp/xfinityready");
 
     return ANSC_STATUS_SUCCESS;
 }
