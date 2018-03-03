@@ -30,6 +30,8 @@ gotResponse=0
 v4Count=0
 v6Count=0
 
+
+export PATH=$PATH:/fss/gw
 source /etc/utopia/service.d/log_capture_path.sh
 
 echo_t "Network Response: Checking erouter0 ip address"
@@ -137,7 +139,6 @@ then
 	#then
 	#	curl -sL -w '%{http_code}\n' --interface $WAN_INTERFACE $URL_2 --connect-timeout 10 -m 10 -o /dev/null > $RESPONSE_2 
 
-		export PATH=$PATH:/fss/gw
 		echo_t "Network Response: Running curl commands to check network access"
 
 		# If any of the service returned success code, mark device is activated	
