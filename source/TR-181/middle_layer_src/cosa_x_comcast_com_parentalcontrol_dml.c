@@ -445,6 +445,7 @@ PcBlkURL_AddEntry
 
     CosaSListPushEntryByInsNum((PSLIST_HEADER)&pParCtrl->BlkUrlList, pLinkObj);
     CosaPcReg_BlkUrlAddInfo((ANSC_HANDLE)pParCtrl, (ANSC_HANDLE)pLinkObj);
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[URL]:%lu\n", __FUNCTION__, __LINE__, *pInsNumber));
 
     *pInsNumber = pLinkObj->InstanceNumber;
 
@@ -464,6 +465,7 @@ PcBlkURL_DelEntry
 
     AnscTraceWarning(("%s...\n", __FUNCTION__));
 
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[URL]:%lu\n", __FUNCTION__, __LINE__, pLinkObj->InstanceNumber));
     if (CosaDmlBlkURL_DelEntry(pLinkObj->InstanceNumber) != ANSC_STATUS_SUCCESS)
         return -1;
 
@@ -810,7 +812,7 @@ PcTrustedUser_AddEntry
 
     CosaSListPushEntryByInsNum((PSLIST_HEADER)&pParCtrl->TrustedUserList, pLinkObj);
     CosaPcReg_TrustedUserAddInfo((ANSC_HANDLE)pParCtrl, (ANSC_HANDLE)pLinkObj);
-
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[TUSER]:%lu\n", __FUNCTION__, __LINE__, *pInsNumber));
     *pInsNumber = pLinkObj->InstanceNumber;
 
     return pLinkObj;
@@ -827,6 +829,7 @@ PcTrustedUser_DelEntry
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     COSA_DML_TRUSTEDUSER             *pTrustedUser    = (COSA_DML_TRUSTEDUSER*)pLinkObj->hContext;
 
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[TUSER]:%lu\n", __FUNCTION__, __LINE__, pLinkObj->InstanceNumber));
     if (CosaDmlTrustedUser_DelEntry(pLinkObj->InstanceNumber) != ANSC_STATUS_SUCCESS)
         return -1;
 
@@ -1106,6 +1109,7 @@ MSServ_AddEntry
 
     CosaSListPushEntryByInsNum((PSLIST_HEADER)&pParCtrl->MSServList, pLinkObj);
     CosaPcReg_MSServAddInfo((ANSC_HANDLE)pParCtrl, (ANSC_HANDLE)pLinkObj);
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MSSERV]:%lu\n", __FUNCTION__, __LINE__, *pInsNumber));
 
     *pInsNumber = pLinkObj->InstanceNumber;
 
@@ -1123,6 +1127,7 @@ MSServ_DelEntry
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     COSA_DML_MS_SERV             *pMSServ    = (COSA_DML_MS_SERV*)pLinkObj->hContext;
 
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MSSERV]:%lu\n", __FUNCTION__, __LINE__, pLinkObj->InstanceNumber));
     if (CosaDmlMSServ_DelEntry(pLinkObj->InstanceNumber) != ANSC_STATUS_SUCCESS)
         return -1;
 
@@ -1444,6 +1449,7 @@ MSTrustedUser_AddEntry
 
     CosaSListPushEntryByInsNum((PSLIST_HEADER)&pParCtrl->MSTrustedUserList, pLinkObj);
     CosaPcReg_MSTrustedUserAddInfo((ANSC_HANDLE)pParCtrl, (ANSC_HANDLE)pLinkObj);
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MSTUSER]:%lu\n", __FUNCTION__, __LINE__, *pInsNumber));
 
     *pInsNumber = pLinkObj->InstanceNumber;
 
@@ -1461,6 +1467,7 @@ MSTrustedUser_DelEntry
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     COSA_DML_MS_TRUSTEDUSER             *pMSTrustedUser    = (COSA_DML_MS_TRUSTEDUSER*)pLinkObj->hContext;
 
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MSTUSER]:%lu\n", __FUNCTION__, __LINE__, pLinkObj->InstanceNumber));
     if (CosaDmlMSTrustedUser_DelEntry(pLinkObj->InstanceNumber) != ANSC_STATUS_SUCCESS)
         return -1;
 
@@ -1744,6 +1751,7 @@ MDDev_AddEntry
 
     CosaSListPushEntryByInsNum((PSLIST_HEADER)&pParCtrl->MDDevList, pLinkObj);
     CosaPcReg_MDDevAddInfo((ANSC_HANDLE)pParCtrl, (ANSC_HANDLE)pLinkObj);
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MDDEV]:%lu\n", __FUNCTION__, __LINE__, *pInsNumber));
 
     *pInsNumber = pLinkObj->InstanceNumber;
 
@@ -1761,6 +1769,7 @@ MDDev_DelEntry
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     COSA_DML_MD_DEV             *pMDDev    = (COSA_DML_MD_DEV*)pLinkObj->hContext;
 
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MDDEV]:%lu\n", __FUNCTION__, __LINE__, pLinkObj->InstanceNumber));
     if (CosaDmlMDDev_DelEntry(pLinkObj->InstanceNumber) != ANSC_STATUS_SUCCESS)
         return -1;
 

@@ -1659,6 +1659,7 @@ CosaDmlBlkURL_GetEntryByIndex(ULONG index, COSA_DML_BLOCKEDURL *pEntry)
     _ansc_strncpy(pEntry->StartTime, blkurl.start_time, sizeof(pEntry->StartTime));
     _ansc_strncpy(pEntry->EndTime, blkurl.end_time, sizeof(pEntry->EndTime));
     _ansc_strncpy(pEntry->BlockDays, blkurl.block_days, sizeof(pEntry->BlockDays));
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[URL]:%lu,%s\n", __FUNCTION__, __LINE__, pEntry->InstanceNumber,pEntry->Site));
     if(pEntry->StartTime != NULL)
         pEntry->StartTimeFlg = TRUE;
     if(pEntry->EndTime != NULL)
@@ -1756,6 +1757,7 @@ CosaDmlBlkURL_AddEntry(COSA_DML_BLOCKEDURL *pEntry)
 #endif
     rc = Utopia_AddBlkURL(&ctx, &blkurl);
     Utopia_GetNumberOfBlkURL(&ctx, &g_NrBlkURL);
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[URL]:%lu,%s\n", __FUNCTION__, __LINE__, pEntry->InstanceNumber,pEntry->Site));
 
     Utopia_Free(&ctx, !rc);
     
@@ -1954,6 +1956,7 @@ CosaDmlTrustedUser_GetEntryByIndex(ULONG index, COSA_DML_TRUSTEDUSER *pEntry)
     _ansc_strncpy(pEntry->HostDescription, trusted_user.host_descp, sizeof(pEntry->HostDescription));
     _ansc_strncpy(pEntry->IPAddress, trusted_user.ipaddr, sizeof(pEntry->IPAddress));
 
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[TUSER]:%lu,%s\n", __FUNCTION__, __LINE__, pEntry->InstanceNumber, pEntry->IPAddress));
     Utopia_Free(&ctx, 0);
     
     return ANSC_STATUS_SUCCESS;
@@ -1998,6 +2001,7 @@ CosaDmlTrustedUser_AddEntry(COSA_DML_TRUSTEDUSER *pEntry)
 
     rc = Utopia_AddTrustedUser(&ctx, &trusted_user);
     Utopia_GetNumberOfTrustedUser(&ctx, &g_NrTrustedUser);
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[TUSER]:%lu,%s\n", __FUNCTION__, __LINE__, pEntry->InstanceNumber,pEntry->IPAddress));
 
     Utopia_Free(&ctx, !rc);
     
@@ -2405,6 +2409,7 @@ CosaDmlMSServ_GetEntryByIndex(ULONG index, COSA_DML_MS_SERV *pEntry)
     else
         pEntry->Protocol = PROTO_BOTH;
 
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MSSERV]:%lu,%s\n", __FUNCTION__, __LINE__,pEntry->InstanceNumber,pEntry->Description));
     Utopia_Free(&ctx, 0);
     
     return ANSC_STATUS_SUCCESS;
@@ -2466,6 +2471,7 @@ CosaDmlMSServ_AddEntry(COSA_DML_MS_SERV *pEntry)
 
     rc = Utopia_AddMSServ(&ctx, &ms_serv);
     Utopia_GetNumberOfMSServ(&ctx, &g_NrMSServs);
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MSSERV]:%lu,%s\n", __FUNCTION__, __LINE__, pEntry->InstanceNumber,pEntry->Description));
 
     Utopia_Free(&ctx, !rc);
     
@@ -2626,6 +2632,7 @@ CosaDmlMSTrustedUser_GetEntryByIndex(ULONG index, COSA_DML_MS_TRUSTEDUSER *pEntr
     _ansc_strncpy(pEntry->Alias, ms_trusteduser.alias, sizeof(pEntry->Alias));
     _ansc_strncpy(pEntry->HostDescription, ms_trusteduser.host_descp, sizeof(pEntry->HostDescription));
     _ansc_strncpy(pEntry->IPAddress, ms_trusteduser.ipaddr, sizeof(pEntry->IPAddress));
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MSTUSER]:%lu,%s\n", __FUNCTION__, __LINE__,pEntry->InstanceNumber,pEntry->IPAddress));
 
     Utopia_Free(&ctx, 0);
     
@@ -2670,6 +2677,7 @@ CosaDmlMSTrustedUser_AddEntry(COSA_DML_MS_TRUSTEDUSER *pEntry)
 
     rc = Utopia_AddMSTrustedUser(&ctx, &ms_trusteduser);
     Utopia_GetNumberOfMSTrustedUser(&ctx, &g_NrMSTrustedUsers);
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MSTUSER]:%lu,%s\n", __FUNCTION__, __LINE__, pEntry->InstanceNumber,pEntry->IPAddress));
 
     Utopia_Free(&ctx, !rc);
     
@@ -3047,7 +3055,8 @@ CosaDmlMDDev_GetEntryByIndex(ULONG index, COSA_DML_MD_DEV *pEntry)
 {
     UtopiaContext ctx;
     md_dev_t md_dev;
-    int i;
+    int i,j,size;
+    char mac_addr[12];
 
     if (index >= g_NrMDDevs || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -3065,6 +3074,17 @@ CosaDmlMDDev_GetEntryByIndex(ULONG index, COSA_DML_MD_DEV *pEntry)
     
     _ansc_strncpy(pEntry->BlockDays, md_dev.block_days, sizeof(pEntry->BlockDays));
     _ansc_strncpy(pEntry->MACAddress, md_dev.macaddr, sizeof(pEntry->MACAddress));
+    j = 0;
+    size = strlen(pEntry->MACAddress);
+    for (i = 0; i < size; i++) {
+        if (pEntry->MACAddress[i] != ':'){
+            char ch1 = pEntry->MACAddress[i];
+            mac_addr[j] = ch1;
+            j++;
+        }
+    }
+    mac_addr[j] = '\0';
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MDDEV]:%lu,%s\n", __FUNCTION__, __LINE__,pEntry->InstanceNumber,mac_addr));
 
     Utopia_Free(&ctx, 0);
     
@@ -3093,7 +3113,8 @@ CosaDmlMDDev_SetValues(ULONG index, ULONG ins, const char *alias)
 ANSC_STATUS
 CosaDmlMDDev_AddEntry(COSA_DML_MD_DEV *pEntry)
 {
-    int rc = -1;
+    int rc = -1,i,j,size;
+    char mac_addr[12];
     UtopiaContext ctx;
     md_dev_t md_dev;
     
@@ -3113,6 +3134,17 @@ CosaDmlMDDev_AddEntry(COSA_DML_MD_DEV *pEntry)
 
     rc = Utopia_AddMDDev(&ctx, &md_dev);
     Utopia_GetNumberOfMDDev(&ctx, &g_NrMDDevs);
+    j = 0;
+    size = strlen(pEntry->MACAddress);
+    for (i = 0; i < size; i++) {
+        if (pEntry->MACAddress[i] != ':'){
+            char ch1 = pEntry->MACAddress[i];
+            mac_addr[j] = ch1;
+            j++;
+        }
+    }
+    mac_addr[j] = '\0';
+    AnscTraceWarning(("%s-%d RDKB_PCONTROL[MDDEV]:%lu,%s\n", __FUNCTION__, __LINE__, pEntry->InstanceNumber,mac_addr));
 
     Utopia_Free(&ctx, !rc);
     
