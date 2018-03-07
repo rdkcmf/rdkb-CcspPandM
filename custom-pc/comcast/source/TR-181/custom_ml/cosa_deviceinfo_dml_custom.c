@@ -352,12 +352,6 @@ DeviceInfo_SetParamBoolValue_Custom
     {
 	if ( bValue == TRUE )
 	{
-	   if ( pMyObject->bWiFiConfigued == TRUE )
-		{
-			printf("Already set to TRUE, do nothing\n");
-		}
-	   else
-		{
 		CcspTraceWarning(("CaptivePortal:Wi-Fi SSID and Passphrase are not configured,setting ConfigureWiFi to true ...\n"));
 		CcspTraceWarning(("RDKB_GW_MODE:Setting RDKB GW to CaptivePortal  ...\n"));
 		printf("Wi-Fi SSID and Passphrase are not configured,setting ConfigureWiFi to true ...\n");
@@ -366,18 +360,11 @@ DeviceInfo_SetParamBoolValue_Custom
 			printf("%s calling redirect_url.sh script to start redirection\n",__FUNCTION__);
 			system("source /etc/redirect_url.sh &");
 
-		}
 		return TRUE;
 	 }
 	
          else if  ( bValue == FALSE )
 	 {
-                if ( pMyObject->bWiFiConfigued == FALSE )
-		{
-			printf("Already set to FALSE, do nothing\n");
-		}
-		else
-		{
 		CcspTraceWarning(("CaptivePortal:Wi-Fi SSID and Passphrase are configured,setting ConfigureWiFi to false ...\n"));
 		CcspTraceWarning(("RDKB_GW_MODE:Setting RDKB GW to Online  ...\n"));
 		printf("Wi-Fi SSID and Passphrase are configured,setting ConfigureWiFi to false ...\n");
@@ -385,7 +372,6 @@ DeviceInfo_SetParamBoolValue_Custom
 			pMyObject->bWiFiConfigued = bValue;
 			printf("%s calling revert_redirect.sh script to remove the redirection changes\n",__FUNCTION__);
 			system("source /etc/revert_redirect.sh &");
-		}
 	    return TRUE;
 	 }	
 	return FALSE;
