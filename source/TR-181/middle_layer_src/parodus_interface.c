@@ -1,4 +1,4 @@
-/*
+/*)
  * If not stated otherwise in this file or this component's Licenses.txt file the
  * following copyright and licenses apply:
  *
@@ -34,23 +34,20 @@
 #define CLIENT_PORT_NUM     6670
 #define MAX_PARAMETERNAME_LEN    512
 #define DEVICE_PROPS_FILE  "/etc/device.properties"
-#define URL_SIZE           64
 
 void* connect_parodus();
 static void getDeviceMac();
 static void macToLower(char macValue[]);
-static void get_parodus_url(char *url);
+static void get_parodus_url(char **url);
 void initparodusTask();
 void Send_Notification_Task(char* value);
 void* sendNotification(void* buff);
 
 static char deviceMAC[32]={'\0'};
-char client_url[URL_SIZE] = {'\0'};
-char parodus_url[URL_SIZE] = {'\0'};
 libpd_instance_t pam_instance;
 extern ANSC_HANDLE bus_handle;
 
-static void get_parodus_url(char *url)
+static void get_parodus_url(char **url)
 {
     FILE *fp = fopen(DEVICE_PROPS_FILE, "r");
 
@@ -60,8 +57,8 @@ static void get_parodus_url(char *url)
             char *value = NULL;
             if( value = strstr(str, "PARODUS_URL=") ) {
                 value = value + strlen("PARODUS_URL=");
-                strncpy(url, value, (strlen(str) - strlen("PARODUS_URL="))+1);
-                CcspTraceDebug(("parodus url is %s\n", url));
+                *url = strdup(value);
+                CcspTraceDebug(("parodus url is %s\n", *url));
             }
         }
     } else {
@@ -69,11 +66,11 @@ static void get_parodus_url(char *url)
     }
     fclose(fp);
 
-    if( 0 == url[0] ) {
-        CcspTraceError(("parodus url is not present in device.properties file:%s\n", url));
+    if( NULL == *url ) {
+        CcspTraceError(("parodus url is not present in device.properties file\n"));
     }
 
-    CcspTraceDebug(("parodus url formed is %s\n", url));
+    CcspTraceDebug(("parodus url formed is %s\n", *url));
 }
 
 static void getDeviceMac()
@@ -161,13 +158,14 @@ void* connect_parodus()
     int max_retry_sleep;
     int c =2;   //Retry Backoff count shall start at c=2 & calculate 2^c - 1.
     int retval=-1;
+    char *parodus_url = NULL;
     
     pthread_detach(pthread_self());
     
     max_retry_sleep = (int) pow(2, backoff_max_time) -1;
     CcspTraceInfo(("max_retry_sleep is %d\n", max_retry_sleep ));
     
-    get_parodus_url(parodus_url);
+    get_parodus_url(&parodus_url);
     CcspTraceDebug(("parodus_url is %s\n", parodus_url ));
     
     libpd_cfg_t cfg = { .service_name = "pam",
@@ -178,7 +176,7 @@ void* connect_parodus()
                       };
                       
     CcspTraceInfo(("Configurations => service_name : %s parodus_url : %s client_url : %s\n", cfg.service_name, cfg.parodus_url, cfg.client_url ));
-    
+
     while(1)
     {
         if(backoffRetryTime < max_retry_sleep)
@@ -198,13 +196,13 @@ void* connect_parodus()
         else
         {
             CcspTraceError(("Init for parodus (url %s) failed: '%s'\n", parodus_url, libparodus_strerror(ret)));
-            if( '\0' == parodus_url[0] ) {
-                get_parodus_url(parodus_url);
+            if( NULL == parodus_url ) {
+                get_parodus_url(&parodus_url);
                 cfg.parodus_url = parodus_url;
             }
             sleep(backoffRetryTime);
             c++;
-         
+
 	    if(backoffRetryTime == max_retry_sleep)
 	    {
 		c = 2;
@@ -248,53 +246,61 @@ void* sendNotification(void* pValue)
 
     bootTime = CosaDmlDiGetBootTime(NULL);
 
-    cJSON_AddStringToObject(notifyPayload,"device_id", source);
-    cJSON_AddStringToObject(notifyPayload,"status", "reboot-pending");
-    cJSON_AddNumberToObject(notifyPayload,"delay", atoi(buff));
-    cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
-    stringifiedNotifyPayload = cJSON_PrintUnformatted(notifyPayload);
-    CcspTraceInfo(("Notification payload %s\n",stringifiedNotifyPayload));
+    if(notifyPayload != NULL)
+    {
+        cJSON_AddStringToObject(notifyPayload,"device_id", source);
+        cJSON_AddStringToObject(notifyPayload,"status", "reboot-pending");
+        cJSON_AddNumberToObject(notifyPayload,"delay", atoi(buff));
+        cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
+        stringifiedNotifyPayload = cJSON_PrintUnformatted(notifyPayload);
+        CcspTraceInfo(("Notification payload %s\n",stringifiedNotifyPayload));
+        cJSON_Delete(notifyPayload);
+    }
     
     notif_wrp_msg = (wrp_msg_t *)malloc(sizeof(wrp_msg_t));
     memset(notif_wrp_msg, 0, sizeof(wrp_msg_t));
-
-    notif_wrp_msg ->msg_type = WRP_MSG_TYPE__EVENT;
-    notif_wrp_msg ->u.event.source = strdup(source);
-    CcspTraceDebug(("source: %s\n",notif_wrp_msg ->u.event.source));
-
-    snprintf(dest,sizeof(dest),"event:device-status/mac:%s/reboot-pending/%d/%s",deviceMAC,bootTime, buff);
-    notif_wrp_msg ->u.event.dest = strdup(dest);
-    CcspTraceDebug(("destination: %s\n", notif_wrp_msg ->u.event.dest));
-    notif_wrp_msg->u.event.content_type = strdup(CONTENT_TYPE_JSON);
-    CcspTraceDebug(("content_type is %s\n",notif_wrp_msg->u.event.content_type));
-    notif_wrp_msg ->u.event.payload = (void *) stringifiedNotifyPayload;
-    notif_wrp_msg ->u.event.payload_size = strlen(stringifiedNotifyPayload);
-
-    while(retry_count<=3)
+    if(notif_wrp_msg != NULL)
     {
-        backoffRetryTime = (int) pow(2, c) -1;	
+        notif_wrp_msg ->msg_type = WRP_MSG_TYPE__EVENT;
+        notif_wrp_msg ->u.event.source = strdup(source);
+        CcspTraceDebug(("source: %s\n",notif_wrp_msg ->u.event.source));
 
-        sendStatus = libparodus_send(pam_instance, notif_wrp_msg );
-
-        if(sendStatus == 0)
+        snprintf(dest,sizeof(dest),"event:device-status/mac:%s/reboot-pending/%d/%s",deviceMAC,bootTime, buff);
+        notif_wrp_msg ->u.event.dest = strdup(dest);
+        CcspTraceDebug(("destination: %s\n", notif_wrp_msg ->u.event.dest));
+        notif_wrp_msg->u.event.content_type = strdup(CONTENT_TYPE_JSON);
+        CcspTraceDebug(("content_type is %s\n",notif_wrp_msg->u.event.content_type));
+        if(stringifiedNotifyPayload != NULL)
         {
-            retry_count = 0;
-            CcspTraceInfo(("Notification successfully sent to parodus\n"));
-            break;
+            notif_wrp_msg ->u.event.payload = (void *) stringifiedNotifyPayload;
+            notif_wrp_msg ->u.event.payload_size = strlen(stringifiedNotifyPayload);
         }
-        else
+
+        while(retry_count<=3)
         {
-            CcspTraceError(("Failed to send Notification: '%s', retrying ....\n",libparodus_strerror(sendStatus)));
-            CcspTraceDebug(("sendNotification backoffRetryTime %d seconds\n", backoffRetryTime));
-            sleep(backoffRetryTime);
-            c++;
-            retry_count++;
-         }
+            backoffRetryTime = (int) pow(2, c) -1;
+
+            sendStatus = libparodus_send(pam_instance, notif_wrp_msg );
+
+            if(sendStatus == 0)
+            {
+                retry_count = 0;
+                CcspTraceInfo(("Notification successfully sent to parodus\n"));
+                break;
+            }
+            else
+            {
+                CcspTraceError(("Failed to send Notification: '%s', retrying ....\n",libparodus_strerror(sendStatus)));
+                CcspTraceDebug(("sendNotification backoffRetryTime %d seconds\n", backoffRetryTime));
+                sleep(backoffRetryTime);
+                c++;
+                retry_count++;
+             }
+       }
+       CcspTraceDebug(("sendStatus is %d\n",sendStatus));
+       wrp_free_struct (notif_wrp_msg );
    }
-   CcspTraceDebug(("sendStatus is %d\n",sendStatus));
-   wrp_free_struct (notif_wrp_msg );
    //free(stringifiedNotifyPayload);
-   cJSON_Delete(notifyPayload);
 }
 
 void initparodusTask()
