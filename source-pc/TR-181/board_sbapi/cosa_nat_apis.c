@@ -309,7 +309,7 @@ static int _check_PF_range(PCOSA_DML_NAT_PMAPPING pPortMapping){
         return TRUE;
 }
 
-static int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)//RDKB_EMULATOR 
+int _Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping)//RDKB_EMULATOR 
 {
        if( pPortMapping->PublicIP.Value == 0 &&
                         ((pPortMapping->ExternalPort == 0) ||
@@ -386,7 +386,7 @@ static int _check_PT_range(PCOSA_DML_NAT_PTRIGGER pPortTrigger){
         return TRUE;
 }
 
-static BOOL _Check_PT_parameter(PCOSA_DML_NAT_PTRIGGER pPortTrigger)
+BOOL _Check_PT_parameter(PCOSA_DML_NAT_PTRIGGER pPortTrigger)
 {
     // Check parameter setting
     if( (pPortTrigger->TriggerProtocol > 2 || pPortTrigger->TriggerProtocol < 0) ||
