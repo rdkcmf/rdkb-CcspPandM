@@ -5469,6 +5469,38 @@ Pool_GetParamUlongValue
     return FALSE;
 }
 
+
+BOOL validateNFixDomainName(char *DomainName, int len)
+{
+  int i = 0;
+  BOOL valid = TRUE;
+  
+  while (i < len && valid)
+  {
+    if ((DomainName[i] >= 'A' && DomainName[i] <= 'z') || 
+	(DomainName[0] >= '0' && DomainName[i] <= '9') || 
+	DomainName[i] == '-')
+      i++;
+    else
+    {
+      if (DomainName[i] == 0)
+	break;
+      else
+	valid = FALSE;
+    }
+  }
+  
+  if (valid == FALSE || i == len)
+  {
+    if (valid == FALSE)
+      DomainName[0] = 0;
+    else
+      DomainName[i-1] = 0;
+  }
+  return valid;
+}
+
+
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -5525,7 +5557,8 @@ Pool_GetParamStringValue
     ULONG                           n                 = 0;
     PUCHAR                          pString           = NULL;
     COSA_DML_DHCPS_POOL_CFG tmpCfg;
-    
+    BOOL bValidDomainName;
+
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
@@ -5740,8 +5773,16 @@ Pool_GetParamStringValue
             tmpCfg.InstanceNumber = pPool->Cfg.InstanceNumber;
             CosaDmlDhcpsGetPoolCfg(NULL,&tmpCfg);
             snprintf(pValue,sizeof(tmpCfg.DomainName),"%s", tmpCfg.DomainName);
-        }else
-	        snprintf(pValue,sizeof(pPool->Cfg.DomainName),"%s", pPool->Cfg.DomainName);
+        }else {
+	  CcspTraceWarning(("%s: pPool->Cfg.DomainName: %s  0x%1x 0x%1x 0x%1x 0x%1x, sizeof: %d\n", 
+			    __FUNCTION__, pPool->Cfg.DomainName, (signed) (pPool->Cfg.DomainName[0]), 
+			    (signed) (pPool->Cfg.DomainName[1]), (signed) (pPool->Cfg.DomainName[2]), 
+			    (signed) (pPool->Cfg.DomainName[3]), sizeof(pPool->Cfg.DomainName)));
+	  bValidDomainName = validateNFixDomainName(pPool->Cfg.DomainName, sizeof(pPool->Cfg.DomainName));
+	  snprintf(pValue,sizeof(pPool->Cfg.DomainName),"%s", pPool->Cfg.DomainName);
+	  CcspTraceWarning(("%s: DomainName: %s, InstanceNumber: %d, bValidDomainName: %d\n", 
+			    __FUNCTION__, pValue, pPool->Cfg.InstanceNumber, bValidDomainName));
+	}
         return 0;
     }
 
