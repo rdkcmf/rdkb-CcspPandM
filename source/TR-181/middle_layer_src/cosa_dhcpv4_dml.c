@@ -5477,9 +5477,11 @@ BOOL validateNFixDomainName(char *DomainName, int len)
   
   while (i < len && valid)
   {
-    if ((DomainName[i] >= 'A' && DomainName[i] <= 'z') || 
+    if ((DomainName[i] >= 'a' && DomainName[i] <= 'z') || 
+	(DomainName[i] >= 'A' && DomainName[i] <= 'Z') || 
 	(DomainName[0] >= '0' && DomainName[i] <= '9') || 
-	DomainName[i] == '-')
+	DomainName[i] == '.' || DomainName[i] == '-' ||
+	DomainName[i] == '_')
       i++;
     else
     {
