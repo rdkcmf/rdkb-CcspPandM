@@ -250,6 +250,7 @@ COSA_DATAMODEL_DHCPV4,  *PCOSA_DATAMODEL_DHCPV4;
     (pPool)->Cfg.VendorClassIDMode            = FALSE;                                 \
     (pPool)->Cfg.UserClassIDExclude           = FALSE;                                 \
     (pPool)->Cfg.ChaddrExclude                = FALSE;                                 \
+    (pPool)->Cfg.DomainName[0]                = 0;                                     \
     (pPool)->Cfg.LeaseTime                    = 86400;                                 \
     (pPool)->Info.Status                      = COSA_DML_DHCP_STATUS_Disabled;         \
     (pPool)->Cfg.bAllowDelete                 = TRUE;                                  \
