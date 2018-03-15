@@ -359,17 +359,15 @@ CosaDmlDiGetCMTSMac
         ULONG*                      pulSize
     )
 {
-  #ifdef _COSA_INTEL_XB3_ARM_
-   if ( platform_hal_getCMTSMac(pValue) != RETURN_OK)
+   if ( platform_hal_getCMTSMac(pValue) != RETURN_OK){
+        CcspTraceWarning(("Unable to fetch the CMTS MAC \n"));
         return ANSC_STATUS_FAILURE;
+        }
     else {
             *pulSize = AnscSizeOfString(pValue); 
             return ANSC_STATUS_SUCCESS;
 
          }
-   #else
-     return ANSC_STATUS_FAILURE;
-   #endif
 }
 /*Changes for 6560-end*/
 
