@@ -3460,7 +3460,7 @@ int CheckAndGetDevicePropertiesEntry( char *pOutput, int size, char *sDeviceProp
     // Read the device.properties file 
     fp1 = fopen( "/etc/device.properties", "r" );
 	
-    if ( NULL == NULL ) 
+    if ( NULL == fp1 ) 
 	{
         CcspTraceError(("Error opening properties file! \n"));
         return -1;
