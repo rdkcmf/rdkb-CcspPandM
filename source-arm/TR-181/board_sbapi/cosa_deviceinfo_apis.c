@@ -2302,7 +2302,7 @@ CosaDmlDiUiBrandingInit
 		 json = cJSON_Parse( data );
 		 if( !json ) 
 		 {
-			 CcspTraceWarning((  "%s-%d : json file parser error : [%s]\n", cJSON_GetErrorPtr() ,__FUNCTION__,__LINE__));
+			 CcspTraceWarning((  "%s-%s : json file parser error : [%d]\n", cJSON_GetErrorPtr() ,__FUNCTION__,__LINE__));
 			 free(data);
 			 return ANSC_STATUS_FAILURE;
 		 } 
@@ -2450,6 +2450,8 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 		char *partnerText = NULL;
 		char *userGuideText = NULL;
 		char *customerCentralText = NULL;
+		char *wifiTitle = NULL;
+		char *wifiWelcomeMessage = NULL;
 		
 		partnerObj = cJSON_GetObjectItem( json, partnerID );
 		if( partnerObj != NULL) 
@@ -2854,6 +2856,48 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 					CcspTraceWarning(("%s - WifiMSOLogo Object is NULL\n", __FUNCTION__ ));
 				}
 
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Title") != NULL )
+				{
+					wifiTitle = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Title")->valuestring; 
+
+					if (wifiTitle != NULL) 
+					{
+						AnscCopyString(PUiBrand->WifiPersonal.Title, wifiTitle);
+						wifiTitle = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - wifiTitle Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - wifiTitle Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.WelcomeMessage") != NULL )
+				{
+					wifiWelcomeMessage = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.WelcomeMessage")->valuestring; 
+
+					if (wifiWelcomeMessage != NULL) 
+					{
+						AnscCopyString(PUiBrand->WifiPersonal.WelcomeMessage, wifiWelcomeMessage);
+						wifiWelcomeMessage = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - wifiWelcomeMessage Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - wifiWelcomeMessage Object is NULL\n", __FUNCTION__ ));
+				}
+				
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP") != NULL )
 				{
 					DefaultAdminIP = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP")->valuestring; 

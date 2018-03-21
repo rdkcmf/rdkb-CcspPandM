@@ -6827,6 +6827,34 @@ WiFiPersonalization_GetParamStringValue
        		}
 
         } 
+	if( AnscEqualString(ParamName, "Title", TRUE))
+        {
+		if ( AnscSizeOfString(pBindObj->WifiPersonal.Title) < *pulSize)
+       		{
+           		AnscCopyString( pValue, pBindObj->WifiPersonal.Title);		
+            		return 0;
+       		}
+       		else
+       		{
+           		*pulSize = AnscSizeOfString(pBindObj->WifiPersonal.Title)+1;
+           		return 1;
+       		}
+
+        } 
+	if( AnscEqualString(ParamName, "WelcomeMessage", TRUE))
+        {
+		if ( AnscSizeOfString(pBindObj->WifiPersonal.WelcomeMessage) < *pulSize)
+       		{
+           		AnscCopyString( pValue, pBindObj->WifiPersonal.WelcomeMessage);		
+            		return 0;
+       		}
+       		else
+       		{
+           		*pulSize = AnscSizeOfString(pBindObj->WifiPersonal.WelcomeMessage)+1;
+           		return 1;
+       		}
+
+        } 
 	 return -1;
 }
 
