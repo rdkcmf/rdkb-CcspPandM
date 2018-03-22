@@ -153,7 +153,7 @@ CosaDmlDiGetCMMacAddress
         PULONG                      pulSize
     )
 {
-#ifndef _XF3_PRODUCT_REQ_
+#ifndef _ENABLE_EPON_SUPPORT_ 
 	return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.MACAddress", pValue, pulSize);
 #else
 	return Local_CosaDmlGetParamValueByPathName("Device.DPoE.Mac_address",pValue, pulSize);
@@ -257,11 +257,19 @@ CosaDmlDiGetCMIPAddress
     )
 {
     ANSC_STATUS retStatus;
+#ifndef _ENABLE_EPON_SUPPORT_
     retStatus = Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.IPv6Address", pValue, pulSize);
     if(!(*pulSize))
         return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.IPAddress", pValue, pulSize);
 
     return retStatus;
+#else
+    if ( pValue )
+    {
+        strcpy(pValue, "0.0.0.0");
+    }
+    return ANSC_STATUS_SUCCESS;
+#endif
 }
 
 #endif
