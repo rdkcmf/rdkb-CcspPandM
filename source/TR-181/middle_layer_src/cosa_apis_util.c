@@ -1518,7 +1518,7 @@ typedef struct v6sample {
            unsigned int devIndex;
            unsigned int flags;
            unsigned int scopeofipv6;
-           char prefix_v6[40];
+           char prefix_v6[41];
 }ifv6Details;
 
 int getIpv6Scope(int scope_v6)
