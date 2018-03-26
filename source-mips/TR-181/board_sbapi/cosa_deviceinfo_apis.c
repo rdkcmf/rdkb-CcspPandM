@@ -145,6 +145,11 @@
 #define _END_TIME_3AM_ "10800"
 #define _SSH_ERROR_ "NOT SET"
 
+#define DMSB_TR181_PSM_WHIX_LogInterval                                 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.LogInterval"
+#define DMSB_TR181_PSM_WHIX_NormalizedRssiList                "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.NormalizedRssiList"
+#define DMSB_TR181_PSM_WHIX_CliStatList                                    "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.CliStatList"
+#define DMSB_TR181_PSM_WHIX_TxRxRateList                              "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.TxRxRateList"
+
 extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
 
@@ -300,6 +305,23 @@ void strip_line (char *str)
     str[len-1] = 0;    
 }
 
+static int
+PsmGet(const char *param, char *value, int size)
+{
+    char *val = NULL;
+
+    if (PSM_Get_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent),
+                (char *)param, NULL, &val) != CCSP_SUCCESS)
+        return -1;
+    
+    if(val) {
+        snprintf(value, size, "%s", val);
+        ((CCSP_MESSAGE_BUS_INFO *)g_MessageBusHandle)->freefunc(val);
+    }
+    else return -1;
+
+    return 0;
+}
 
 /**
  * Form dropbear equivalent options from input arguments accepted by TR-69/181
@@ -393,24 +415,6 @@ static char* getHostLogin(char *tempStr) {
                 free(hostIp);
 
         return hostLogin;
-}
-
-static int
-PsmGet(const char *param, char *value, int size)
-{
-    char *val = NULL;
-
-    if (PSM_Get_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent),
-                (char *)param, NULL, &val) != CCSP_SUCCESS)
-        return -1;
-    
-    if(val) {
-        snprintf(value, size, "%s", val);
-        ((CCSP_MESSAGE_BUS_INFO *)g_MessageBusHandle)->freefunc(val);
-    }
-    else return -1;
-
-    return 0;
 }
 
 ANSC_STATUS
@@ -2268,96 +2272,6 @@ CosaDmlDiSetSyndicationEnable
 }
 
 ANSC_STATUS
-CosaDmlDiWhixInit
-  (
-	PCOSA_DATAMODEL_RDKB_WHIX PWhix
-  )
- {
-    char val[256] = {0};
-
-    if (!PWhix)
-    {
-        CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
-        return ANSC_STATUS_FAILURE;
-    }
-
-    memset(PWhix, 0, sizeof(COSA_DATAMODEL_RDKB_WHIX));
-
-    if (PsmGet(DMSB_TR181_PSM_WHIX_LogInterval, val, sizeof(val)) != 0)
-    {
-            PWhix->LogInterval = 3600;
-            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            //return ANSC_STATUS_FAILURE;
-    }
-    else
-    {
-        if (val[0] != '\0' )
-        {
-            PWhix->LogInterval = atoi(val);
-        }
-        else
-        {
-            PWhix->LogInterval = 3600;
-        }
-    }
-
-    if (PsmGet(DMSB_TR181_PSM_WHIX_NormalizedRssiList, val, sizeof(val)) != 0)
-    {
-            AnscCopyString(PWhix->NormalizedRssiList, "1,2");
-            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            //return ANSC_STATUS_FAILURE;
-    }
-    else
-    {
-        if (val[0] != '\0' )
-        {
-            AnscCopyString(PWhix->NormalizedRssiList, val);
-        }
-        else
-        {
-            AnscCopyString(PWhix->NormalizedRssiList, "1,2");
-        }
-    }
-
-    if (PsmGet(DMSB_TR181_PSM_WHIX_CliStatList, val, sizeof(val)) != 0)
-    {
-            AnscCopyString(PWhix->CliStatList,"");
-            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            //return ANSC_STATUS_FAILURE;
-    }
-    else
-    {
-        if (val[0] != '\0' )
-        {
-            AnscCopyString(PWhix->CliStatList, val);
-        }
-        else
-        {
-            AnscCopyString(PWhix->CliStatList,"");
-        }
-    }
-    if (PsmGet(DMSB_TR181_PSM_WHIX_TxRxRateList, val, sizeof(val)) != 0)
-    {
-            AnscCopyString(PWhix->TxRxRateList, "1,2");
-            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            //return ANSC_STATUS_FAILURE;
-    }
-    else
-    {
-        if (val[0] != '\0' )
-        {
-            AnscCopyString(PWhix->TxRxRateList, val);
-        }
-        else
-        {
-            AnscCopyString(PWhix->TxRxRateList,"1,2");
-        }
-    }
-    return ANSC_STATUS_SUCCESS;
-}
-
-
-ANSC_STATUS
 CosaDmlDiGetSyndicationLocalUIBrandingTable
     (
         ANSC_HANDLE                 hContext,
@@ -2468,6 +2382,99 @@ CosaDmlDiUiBrandingInit
 	 }
 	 return ANSC_STATUS_SUCCESS;
  }
+
+
+ANSC_STATUS
+CosaDmlDiWhixInit
+  (
+	PCOSA_DATAMODEL_RDKB_WHIX PWhix
+  )
+ {
+    char val[256] = {0};
+
+    if (!PWhix)
+    {
+        CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    memset(PWhix, 0, sizeof(COSA_DATAMODEL_RDKB_WHIX));
+
+    if (PsmGet(DMSB_TR181_PSM_WHIX_LogInterval, val, sizeof(val)) != 0)
+    {
+            PWhix->LogInterval = 3600;
+            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            //return ANSC_STATUS_FAILURE;
+    }
+    else
+    {
+        if (val[0] != '\0' )
+        {
+            PWhix->LogInterval = atoi(val);
+        }
+        else
+        {
+            PWhix->LogInterval = 3600;
+        }
+    }
+
+    if (PsmGet(DMSB_TR181_PSM_WHIX_NormalizedRssiList, val, sizeof(val)) != 0)
+    {
+            AnscCopyString(PWhix->NormalizedRssiList, "1,2");
+            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            //return ANSC_STATUS_FAILURE;
+    }
+    else
+    {
+        if (val[0] != '\0' )
+        {
+            AnscCopyString(PWhix->NormalizedRssiList, val);
+        }
+        else
+        {
+            AnscCopyString(PWhix->NormalizedRssiList, "1,2");
+        }
+    }
+
+    if (PsmGet(DMSB_TR181_PSM_WHIX_CliStatList, val, sizeof(val)) != 0)
+    {
+            AnscCopyString(PWhix->CliStatList,"");
+            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            //return ANSC_STATUS_FAILURE;
+    }
+    else
+    {
+        if (val[0] != '\0' )
+        {
+            AnscCopyString(PWhix->CliStatList, val);
+        }
+        else
+        {
+            AnscCopyString(PWhix->CliStatList,"");
+        }
+    }
+
+    if (PsmGet(DMSB_TR181_PSM_WHIX_TxRxRateList, val, sizeof(val)) != 0)
+    {
+            AnscCopyString(PWhix->TxRxRateList, "1,2");
+            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
+            //return ANSC_STATUS_FAILURE;
+    }
+    else
+    {
+        if (val[0] != '\0' )
+        {
+            AnscCopyString(PWhix->TxRxRateList, val);
+        }
+        else
+        {
+            AnscCopyString(PWhix->TxRxRateList,"1,2");
+        }
+    }
+    return ANSC_STATUS_SUCCESS;
+}
+
+
 
 void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand)
 {
