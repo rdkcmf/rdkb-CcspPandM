@@ -197,6 +197,22 @@ CosaDmlIpIfMlanGetNumberOfV4Addrs
     );
 
 ANSC_STATUS
+CosaDmlIpIfMlanGetIPv4Addr
+    (
+        ULONG                       ulIpIfInstanceNumber,
+        PCOSA_DML_IP_V4ADDR         pEntry
+    );
+
+
+ANSC_STATUS
+CosaDmlIpIfMlanGetSubnetMask
+    (
+        ULONG                       ulIpIfInstanceNumber,
+        PCOSA_DML_IP_V4ADDR         pEntry
+    );
+
+
+ANSC_STATUS
 CosaDmlIpIfMlanGetV4Addr
     (
         ANSC_HANDLE                 hContext,

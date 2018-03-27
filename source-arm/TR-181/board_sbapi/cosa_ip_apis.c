@@ -343,6 +343,10 @@ static int _is_bridge_mode(){
 }
 #endif
 
+int CosaGetUsgIfNum() {
+    return COSA_USG_IF_NUM;
+}
+
 ANSC_STATUS
 CosaDmlIpInit
     (
