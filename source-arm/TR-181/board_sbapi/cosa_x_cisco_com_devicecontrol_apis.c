@@ -384,7 +384,8 @@ WebServRestart(const WebServConf_t *conf)
         return -1;
     }
 #endif
-    if (vsystem("/bin/sh /etc/webgui.sh") != 0) {
+    CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
+    if (v_secure_system("/bin/sh /etc/webgui.sh") != 0) {
         fprintf(stderr, "%s: fail to restart lighttpd\n", __FUNCTION__);
         return -1;
     }
@@ -1080,7 +1081,8 @@ CosaDmlDcSetWanNameServer
 	
     Utopia_Free(&utctx, 1);
     
-    if (vsystem("/bin/sh /etc/utopia/service.d/set_resolv_conf.sh") != 0) {
+    CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
+    if (v_secure_system("/bin/sh /etc/utopia/service.d/set_resolv_conf.sh") != 0) {
         fprintf(stderr, "%s: fail to set resolv.conf\n", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
     }
@@ -1107,7 +1109,8 @@ CosaDmlDcSetHostName
 	
     Utopia_Free(&utctx,1);
 
-    if (vsystem("/bin/sh /etc/utopia/service.d/set_hostname.sh") != 0) {
+    CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
+    if (v_secure_system("/bin/sh /etc/utopia/service.d/set_hostname.sh") != 0) {
         fprintf(stderr, "%s: fail to set resolv.conf\n", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
     }
@@ -1144,7 +1147,8 @@ CosaDmlDcSetDomainName
 	
     Utopia_Free(&utctx,1);
 
-    if (vsystem("/bin/sh /etc/utopia/service.d/set_wandomain.sh") != 0) {
+    CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
+    if (v_secure_system("/bin/sh /etc/utopia/service.d/set_wandomain.sh") != 0) {
         fprintf(stderr, "%s: fail to set wan domain name\n", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
     }
@@ -2110,12 +2114,13 @@ CosaDmlDcSetEnableStaticNameServer
     //get nameservers by DHCP if static nameservers not enabled on GUI
     if(!bFlag)
         commonSyseventSet("wan-restart", "");
-    else
-        if (vsystem("/bin/sh /etc/utopia/service.d/set_resolv_conf.sh") != 0) {
+    else{
+        CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
+        if (v_secure_system("/bin/sh /etc/utopia/service.d/set_resolv_conf.sh") != 0) {
             fprintf(stderr, "%s: fail to set resolv.conf\n", __FUNCTION__);
             return ANSC_STATUS_FAILURE;
         }
-
+    }
     Utopia_Free(&ctx, 1);
 
     return ANSC_STATUS_SUCCESS;

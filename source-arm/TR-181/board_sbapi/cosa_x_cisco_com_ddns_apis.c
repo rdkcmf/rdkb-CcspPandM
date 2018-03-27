@@ -614,124 +614,6 @@ CosaDmlDdnsGetInfo
 }
 #elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_)
 
-#define STRINGCMP(sent,word) (strcmp(sent, word) == 0)
-#define MAX_PARAM  1024
-
-/**********************************************************************
-    prototype:
-        int secure_system_call_p( const char *cmd, char *argp[]);
-
-    Description:
-
-        Implementation of secure system call which takes parameters as
-        array.
-
-    Arguments:    const char *                 cmd
-                  command to be executed.
-
-                  char *                       argp[]
-                  list of parameters to be passed to command
-                  argp[0] : must be the command to be executed (cmd)
-                  argp[n] : last parameter must be NULL
-
-    Return:       The status of the operation. -1:Failure, 1:Success
-**********************************************************************/
-int secure_system_call_p( const char *cmd, char *argp[])
-{
-    pid_t pid;
-    int status;
-    int cmd_check;
-    int count=0;
-    char **env = NULL;
-
-    CcspTraceInfo(("%s,Command %s\n",__FUNCTION__,cmd));
-    if ((cmd == NULL)||(*argp == NULL))
-    {
-        CcspTraceInfo(("bad input!!!\n"));
-        return -1;
-    }
-    cmd_check=(STRINGCMP(cmd,"/bin/sh") || STRINGCMP(cmd,"sh"));
-    while(argp[count])
-    {
-        /* ... Sanitize arguments ...if command is /bin/sh or sh */
-        if( cmd_check &&
-            ( argp[count] && (STRINGCMP(argp[count],"-c")))
-          )
-          {
-                CcspTraceInfo(("Bad input, command rejected\n"));
-                return -1;
-          }
-          count++;
-    }
-
-    pid = fork();
-    if (pid == -1){ /* Handle error */
-        printf(" Failed to fork!!!\n");
-        return -1;
-    }
-    else if (pid != 0) {
-        printf(" inside parent process\n");
-    }
-    else {
-	CcspTraceInfo(("%s,executing command %s\n",__FUNCTION__,cmd));
-        if (execve(cmd, argp, env) == -1){ /* Handle error */
-            printf("Failed to execve\n");
-            return -1;
-        }
-    }
-    return 1;
-}
-
-/**********************************************************************
-    prototype:
-        int secure_system_call_vp( const char *cmd, ...);
-
-    Description:
-
-        Implementation of secure system call which takes variable
-        parameters.
-
-    Arguments:    const char *                 cmd
-                  command to be executed.
-
-                  ...
-                  variable number of arguments (char *)
-                  Last argument must be NULL
-
-    Return:       The status of the operation. -1:Failure, 1:Success
-**********************************************************************/
-int secure_system_call_vp( const char *cmd, ...)
-{
-    int status;
-    char * arg[MAX_PARAM+1];
-    char *temp_arg=NULL;
-    int num_param=0;
-    va_list arguments;
-    if (cmd == NULL)
-    {
-        CcspTraceInfo(("bad input!!!\n"));
-        return -1;
-    }
-    arg[0]=cmd; //arg[0] contains name execuatble filename
-    /*count number of incoming parameters*/
-    va_start(arguments,cmd);
-    do{
-        if(num_param >= MAX_PARAM+1)
-        {
-            CcspTraceInfo(("Parameter list too large\n"));
-            return -1;
-        }
-        else
-        {
-            num_param++;
-            temp_arg = arg[num_param] = va_arg(arguments, char*);
-        }
-    }while(temp_arg);
-    va_end(arguments);
-
-    status = secure_system_call_p(cmd,arg);
-    return status;
-}
 
 static int saveID(char* Namespace, char* ServiceName, ULONG ulInstanceNumber,char* pAlias) {
     UtopiaContext utctx;
@@ -854,12 +736,11 @@ DdnsRestart(void)
     ULONG   i = 0;
     char    cmd[512] = {0};
     int n;
-
+    
     if (vsystem("killall -9 ez-ipupdate") != 0)
     {
         fprintf(stderr, "%s: fail to killall ez-ipupdate\n", __FUNCTION__);
     }
-
     if ( g_bEnabled )
     {
         for (i=0;i<g_DdnsServiceNum;i++)
@@ -979,6 +860,8 @@ DdnsRestart(void)
                         goto error;
                     }
                     argp[8] = NULL; //array must be NULL terminated
+                    
+                     CcspTraceInfo(("fnuction secure call: DDnsService Domain : %s\n", __FUNCTION__));
 
                     if(-1 == secure_system_call_p(argp[0],argp))
 					{

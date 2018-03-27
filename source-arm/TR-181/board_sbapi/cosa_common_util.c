@@ -364,8 +364,9 @@ static void
 EvtDispterWanIpAddrsCallback(char *ip_addrs)
 {
 #ifdef DUAL_CORE_XB3
+    CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
     CcspTraceInfo(("EvtDispterWanIpAddrsCallback - erouter0 IP = %s\n",ip_addrs));
-    vsystem("/usr/ccsp/pam/erouter0_ip_sync.sh %s &",ip_addrs);
+    v_secure_system("/usr/ccsp/pam/erouter0_ip_sync.sh %s &",ip_addrs);
 #endif
 
      if (strcmp(ip_addrs,"0.0.0.0") != 0 ) {
