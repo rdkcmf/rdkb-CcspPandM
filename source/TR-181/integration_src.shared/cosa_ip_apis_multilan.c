@@ -1453,6 +1453,111 @@ CosaDmlIpIfMlanGetNumberOfV4Addrs
     return  1;
 }
 
+ANSC_STATUS
+CosaDmlIpIfMlanGetIPv4Addr
+    (
+        ULONG                       ulIpIfInstanceNumber,
+        PCOSA_DML_IP_V4ADDR         pEntry
+    )
+{
+    int                             iReturnValue    = CCSP_SUCCESS;
+    char                            pParamPath[64]  = {0};
+    unsigned int                    RecordType      = 0;
+    SLAP_VARIABLE                   SlapValue       = {0};
+
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    /*
+     *  Retrieve the IPv4Addr
+     */
+    if ( ulIpIfInstanceNumber )
+    {
+        SlapInitVariable(&SlapValue);
+
+        _ansc_sprintf
+            (
+                pParamPath,
+                DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4Addr,
+                ulIpIfInstanceNumber
+            );
+
+        iReturnValue =
+            PSM_Get_Record_Value
+                (
+                    g_MessageBusHandle,
+                    g_SubsystemPrefix,
+                    pParamPath,
+                    &RecordType,
+                    &SlapValue
+                );
+
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_string))
+        {
+            AnscTraceWarning(("%s -- failed to retrieve 'V4Addr' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
+        }
+        else
+        {
+            pEntry->IPAddress.Value = _ansc_inet_addr(SlapValue.Variant.varString);
+        }
+
+        SlapCleanVariable(&SlapValue);
+    }
+
+    return  ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlIpIfMlanGetSubnetMask
+    (
+        ULONG                       ulIpIfInstanceNumber,
+        PCOSA_DML_IP_V4ADDR         pEntry
+    )
+{
+    int                             iReturnValue    = CCSP_SUCCESS;
+    char                            pParamPath[64]  = {0};
+    unsigned int                    RecordType      = 0;
+    SLAP_VARIABLE                   SlapValue       = {0};
+
+    AnscTraceFlow(("%s...\n", __FUNCTION__));
+
+    /*
+     *  Retrieve the Subnet Mask
+     */
+    if ( ulIpIfInstanceNumber )
+    {
+        SlapInitVariable(&SlapValue);
+
+        _ansc_sprintf
+            (
+                pParamPath,
+                DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4SubnetMask,
+                ulIpIfInstanceNumber
+            );
+
+        iReturnValue =
+            PSM_Get_Record_Value
+                (
+                    g_MessageBusHandle,
+                    g_SubsystemPrefix,
+                    pParamPath,
+                    &RecordType,
+                    &SlapValue
+                );
+
+        if ( (iReturnValue != CCSP_SUCCESS) || (RecordType != ccsp_string))
+        {
+            AnscTraceWarning(("%s -- failed to retrieve 'V4SubnetMask' parameter, error code %d, type %d\n", __FUNCTION__, iReturnValue, RecordType));
+        }
+        else
+        {
+            pEntry->SubnetMask.Value = _ansc_inet_addr(SlapValue.Variant.varString);
+        }
+
+        SlapCleanVariable(&SlapValue);
+    }
+
+    return  ANSC_STATUS_SUCCESS;
+}
 
 ANSC_STATUS
 CosaDmlIpIfMlanGetV4Addr

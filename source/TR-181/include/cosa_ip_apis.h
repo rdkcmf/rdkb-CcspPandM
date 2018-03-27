@@ -407,6 +407,7 @@ COSA_PRI_IP_IF_FULL, *PCOSA_PRI_IP_IF_FULL;
 /*************************************
     The actual function declaration 
 **************************************/
+int CosaGetUsgIfNum();
 
 ANSC_STATUS
 CosaDmlIpInit

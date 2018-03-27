@@ -78,6 +78,7 @@
 /*#include "cosa_diagnostic_apis.h"*/
 #include "plugin_main_apis.h"
 #include "cosa_ip_apis.h"
+#include "cosa_ip_apis_multilan.h"
 #include "cosa_ip_dml.h"
 #include "cosa_ip_internal.h"
 
@@ -2316,6 +2317,7 @@ IPv4Address_GetParamUlongValue
     {
         if (pIPv4Addr->AddressingType == COSA_DML_IP_ADDR_TYPE_Static)
         {
+	    CosaDmlIpIfMlanGetIPv4Addr(pIPInterface->Cfg.InstanceNumber, pIPv4Addr);
             *puLong = pIPv4Addr->IPAddress.Value;
         }
         else
@@ -2336,6 +2338,7 @@ IPv4Address_GetParamUlongValue
         //}
         if (pIPv4Addr->AddressingType == COSA_DML_IP_ADDR_TYPE_Static)
         {
+	    CosaDmlIpIfMlanGetSubnetMask(pIPInterface->Cfg.InstanceNumber, pIPv4Addr);
             *puLong = pIPv4Addr->SubnetMask.Value;
         }
         else
