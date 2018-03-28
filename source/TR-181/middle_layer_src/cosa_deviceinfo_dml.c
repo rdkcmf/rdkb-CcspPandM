@@ -4959,7 +4959,7 @@ BLE_SetParamBoolValue
 
     prototype:
 
-        BOOL
+        ULONG
         Tile_GetParamStringValue
             (
                 ANSC_HANDLE                 hInsContext,
@@ -4982,11 +4982,11 @@ BLE_SetParamBoolValue
                 The string value buffer;
 
 
-    return:     TRUE if succeeded;
-                FALSE if not supported.
+    return:     0 if succeeded;
+                -1 if not supported.
 
 **********************************************************************/
-BOOL
+ULONG
 Tile_GetParamStringValue
 (
  ANSC_HANDLE                 hInsContext,
@@ -5006,12 +5006,11 @@ Tile_GetParamStringValue
         {
             AnscCopyString(pValue, buf);
             *pUlSize = AnscSizeOfString(pValue); 
-            return TRUE;
+            return 0;
         }
-        return FALSE;
     }
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
-    return FALSE;
+    return -1;
 }
 
 /**********************************************************************
