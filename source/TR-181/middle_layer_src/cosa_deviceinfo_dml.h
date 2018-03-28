@@ -189,15 +189,15 @@ DeviceInfo_Rollback
 
  APIs for Object:
 
-    DeviceInfo.X_RDKCENTRAL-COM_WHIX.{i}.
+    DeviceInfo.X_RDKCENTRAL-COM_WIFI_TELEMETRY.{i}.
 
-    *  WHIX_SetParamIntValue
-    *  WHIX_SetParamStringValue
-    *  WHIX_GetParamIntValue
-    *  WHIX_GetParamStringValue
+    *  WiFi_Telemetry_SetParamIntValue
+    *  WiFi_Telemetry_SetParamStringValue
+    *  WiFi_Telemetry_GetParamIntValue
+    *  WiFi_Telemetry_GetParamStringValue
 ***********************************************************************/
 BOOL
-    WHIX_SetParamIntValue
+WiFi_Telemetry_SetParamIntValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -205,7 +205,7 @@ BOOL
     );
 
 BOOL
-WHIX_SetParamStringValue
+WiFi_Telemetry_SetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -213,7 +213,7 @@ WHIX_SetParamStringValue
     );
 
 BOOL
-WHIX_GetParamIntValue
+WiFi_Telemetry_GetParamIntValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -221,7 +221,7 @@ WHIX_GetParamIntValue
     );
 
 ULONG
-WHIX_GetParamStringValue
+WiFi_Telemetry_GetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,

@@ -1235,12 +1235,12 @@ DeviceInfo_Rollback
 
  APIs for Object:
 
-    DeviceInfo.X_RDKCENTRAL-COM_WHIX.{i}.
+    DeviceInfo.X_RDKCENTRAL-COM_WIFI_TELEMETRY.{i}.
 
-    *  WHIX_SetParamIntValue
-    *  WHIX_SetParamStringValue
-    *  WHIX_GetParamIntValue
-    *  WHIX_GetParamStringValue
+    *  WiFi_Telemetry_SetParamIntValue
+    *  WiFi_Telemetry_SetParamStringValue
+    *  WiFi_Telemetry_GetParamIntValue
+    *  WiFi_Telemetry_GetParamStringValue
 ***********************************************************************/
 
 /**********************************************************************
@@ -1250,7 +1250,7 @@ DeviceInfo_Rollback
     prototype:
 
         BOOL
-        WHIX_SetParamIntValue
+        WiFi_Telemetry_SetParamIntValue
             (
                 ANSC_HANDLE                 hInsContext,
                 char*                       ParamName,
@@ -1275,7 +1275,7 @@ DeviceInfo_Rollback
 **********************************************************************/
 
 BOOL
-    WHIX_SetParamIntValue
+WiFi_Telemetry_SetParamIntValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -1299,7 +1299,7 @@ BOOL
         }
         CcspTraceInfo(("Successfully set  LogInterval in PSM \n"));
         /* save update to backup */
-        pMyObject->WHIX.LogInterval = iValue;
+        pMyObject->WiFi_Telemetry.LogInterval = iValue;
         return TRUE;
     }
 
@@ -1313,7 +1313,7 @@ BOOL
     prototype:
 
         BOOL
-        WHIX_SetParamStringValue
+        WiFi_Telemetry_SetParamStringValue
             (
                 ANSC_HANDLE                 hInsContext,
                 char*                       ParamName,
@@ -1338,7 +1338,7 @@ BOOL
 **********************************************************************/
 
 BOOL
-WHIX_SetParamStringValue
+WiFi_Telemetry_SetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -1360,7 +1360,7 @@ WHIX_SetParamStringValue
         }
         CcspTraceInfo(("Successfully set  NormalizedRssiList in PSM \n"));
         /* save update to backup */
-        AnscCopyString(pMyObject->WHIX.NormalizedRssiList, pString);
+        AnscCopyString(pMyObject->WiFi_Telemetry.NormalizedRssiList, pString);
         return TRUE;
     }
 
@@ -1377,7 +1377,7 @@ WHIX_SetParamStringValue
         }
         CcspTraceInfo(("Successfully set  CliStatList in PSM \n"));
         /* save update to backup */
-        AnscCopyString( pMyObject->WHIX.CliStatList, pString );
+        AnscCopyString( pMyObject->WiFi_Telemetry.CliStatList, pString );
         return TRUE;
     }
 
@@ -1394,7 +1394,7 @@ WHIX_SetParamStringValue
         }
         CcspTraceInfo(("Successfully set  TxRxRateList in PSM \n"));
         /* save update to backup */
-        AnscCopyString( pMyObject->WHIX.TxRxRateList, pString );
+        AnscCopyString( pMyObject->WiFi_Telemetry.TxRxRateList, pString );
         return TRUE;
     }
 
@@ -1408,7 +1408,7 @@ WHIX_SetParamStringValue
     prototype:
 
         BOOL
-        WHIX_GetParamIntValue
+        WiFi_Telemetry_GetParamIntValue
             (
                 ANSC_HANDLE                 hInsContext,
                 char*                       ParamName,
@@ -1433,7 +1433,7 @@ WHIX_SetParamStringValue
 **********************************************************************/
 
 BOOL
-WHIX_GetParamIntValue
+WiFi_Telemetry_GetParamIntValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -1446,7 +1446,7 @@ WHIX_GetParamIntValue
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "LogInterval", TRUE))
     {
-        *pInt =  pMyObject->WHIX.LogInterval;
+        *pInt =  pMyObject->WiFi_Telemetry.LogInterval;
         return TRUE;
     }
 
@@ -1461,7 +1461,7 @@ WHIX_GetParamIntValue
     prototype:
 
         ULONG
-        WHIX_GetParamStringValue
+        WiFi_Telemetry_GetParamStringValue
             (
                 ANSC_HANDLE                 hInsContext,
                 char*                       ParamName,
@@ -1495,7 +1495,7 @@ WHIX_GetParamIntValue
 
 
 ULONG
-WHIX_GetParamStringValue
+WiFi_Telemetry_GetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -1511,7 +1511,7 @@ WHIX_GetParamStringValue
     if( AnscEqualString(ParamName, "NormalizedRssiList", TRUE))
     {
         /* collect value */
-        AnscCopyString( pValue, pMyObject->WHIX.NormalizedRssiList);
+        AnscCopyString( pValue, pMyObject->WiFi_Telemetry.NormalizedRssiList);
         *pulSize = AnscSizeOfString( pValue );
         return 0;
     }
@@ -1519,7 +1519,7 @@ WHIX_GetParamStringValue
     if( AnscEqualString(ParamName, "CliStatList", TRUE))
     {
         /* collect value */
-        AnscCopyString( pValue, pMyObject->WHIX.CliStatList);
+        AnscCopyString( pValue, pMyObject->WiFi_Telemetry.CliStatList);
         *pulSize = AnscSizeOfString( pValue );
         return 0;
     }
@@ -1527,7 +1527,7 @@ WHIX_GetParamStringValue
     if( AnscEqualString(ParamName, "TxRxRateList", TRUE))
     {
         /* collect value */
-        AnscCopyString( pValue, pMyObject->WHIX.TxRxRateList);
+        AnscCopyString( pValue, pMyObject->WiFi_Telemetry.TxRxRateList);
         *pulSize = AnscSizeOfString( pValue );
         return 0;
     }

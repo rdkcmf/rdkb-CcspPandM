@@ -2334,90 +2334,82 @@ CosaDmlDiUiBrandingInit
 
 
 ANSC_STATUS
-CosaDmlDiWhixInit
+CosaDmlDiWiFiTelemetryInit
   (
-	PCOSA_DATAMODEL_RDKB_WHIX PWhix
+	PCOSA_DATAMODEL_RDKB_WIFI_TELEMETRY PWiFi_Telemetry
   )
  {
     char val[256] = {0};
 
-    if (!PWhix)
+    if (!PWiFi_Telemetry)
     {
         CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
         return ANSC_STATUS_FAILURE;
     }
 
-    memset(PWhix, 0, sizeof(COSA_DATAMODEL_RDKB_WHIX));
+    memset(PWiFi_Telemetry, 0, sizeof(COSA_DATAMODEL_RDKB_WIFI_TELEMETRY));
 
     if (PsmGet(DMSB_TR181_PSM_WHIX_LogInterval, val, sizeof(val)) != 0)
     {
-            PWhix->LogInterval = 3600;
-            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            //return ANSC_STATUS_FAILURE;
+            PWiFi_Telemetry->LogInterval = 3600;
     }
     else
     {
         if (val[0] != '\0' )
         {
-            PWhix->LogInterval = atoi(val);
+            PWiFi_Telemetry->LogInterval = atoi(val);
         }
         else
         {
-            PWhix->LogInterval = 3600;
+            PWiFi_Telemetry->LogInterval = 3600;
         }
     }
 
     if (PsmGet(DMSB_TR181_PSM_WHIX_NormalizedRssiList, val, sizeof(val)) != 0)
     {
-            AnscCopyString(PWhix->NormalizedRssiList, "1,2");
-            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            //return ANSC_STATUS_FAILURE;
+            AnscCopyString(PWiFi_Telemetry->NormalizedRssiList, "1,2");
     }
     else
     {
         if (val[0] != '\0' )
         {
-            AnscCopyString(PWhix->NormalizedRssiList, val);
+            AnscCopyString(PWiFi_Telemetry->NormalizedRssiList, val);
         }
         else
         {
-            AnscCopyString(PWhix->NormalizedRssiList, "1,2");
+            AnscCopyString(PWiFi_Telemetry->NormalizedRssiList, "1,2");
         }
     }
 
     if (PsmGet(DMSB_TR181_PSM_WHIX_CliStatList, val, sizeof(val)) != 0)
     {
-            AnscCopyString(PWhix->CliStatList,"");
-            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            //return ANSC_STATUS_FAILURE;
+            AnscCopyString(PWiFi_Telemetry->CliStatList,"");
     }
     else
     {
         if (val[0] != '\0' )
         {
-            AnscCopyString(PWhix->CliStatList, val);
+            AnscCopyString(PWiFi_Telemetry->CliStatList, val);
         }
         else
         {
-            AnscCopyString(PWhix->CliStatList,"");
+            AnscCopyString(PWiFi_Telemetry->CliStatList,"");
         }
     }
 
     if (PsmGet(DMSB_TR181_PSM_WHIX_TxRxRateList, val, sizeof(val)) != 0)
     {
-            AnscCopyString(PWhix->TxRxRateList, "1,2");
-            //CcspTraceError(("Failed Get for '%s' \n", __FUNCTION__));
-            //return ANSC_STATUS_FAILURE;
+            AnscCopyString(PWiFi_Telemetry->TxRxRateList, "1,2");
     }
     else
     {
         if (val[0] != '\0' )
         {
-            AnscCopyString(PWhix->TxRxRateList, val);
+            AnscCopyString(PWiFi_Telemetry->TxRxRateList, val);
         }
         else
         {
-            AnscCopyString(PWhix->TxRxRateList,"1,2");
+            AnscCopyString(PWiFi_Telemetry->TxRxRateList,"1,2");
         }
     }
     return ANSC_STATUS_SUCCESS;

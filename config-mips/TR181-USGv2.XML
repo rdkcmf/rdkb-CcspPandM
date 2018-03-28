@@ -1868,19 +1868,18 @@
 
         <object>
 
-          <name>X_RDKCENTRAL-COM_WHIX</name>
+          <name>X_RDKCENTRAL-COM_WIFI_TELEMETRY</name>
 
           <objectType>object</objectType>
 
           <functions>
+            <func_SetParamIntValue>WiFi_Telemetry_SetParamIntValue</func_SetParamIntValue>
 
-            <func_SetParamIntValue>WHIX_SetParamIntValue</func_SetParamIntValue>
+            <func_SetParamStringValue>WiFi_Telemetry_SetParamStringValue</func_SetParamStringValue>
 
-            <func_SetParamStringValue>WHIX_SetParamStringValue</func_SetParamStringValue>
+			<func_GetParamIntValue>WiFi_Telemetry_GetParamIntValue</func_GetParamIntValue>
 
-            <func_GetParamIntValue>WHIX_GetParamIntValue</func_GetParamIntValue>
-
-            <func_GetParamStringValue>WHIX_GetParamStringValue</func_GetParamStringValue>
+            <func_GetParamStringValue>WiFi_Telemetry_GetParamStringValue</func_GetParamStringValue>
 
           </functions>
 

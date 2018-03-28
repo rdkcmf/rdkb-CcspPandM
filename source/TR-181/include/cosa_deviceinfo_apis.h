@@ -198,14 +198,14 @@ COSA_DATAMODEL_RDKB_UIBRANDING, *PCOSA_DATAMODEL_RDKB_UIBRANDING;
 
 
 typedef  struct
-_COSA_DATAMODEL_RDKB_WHIX_CLASS_CONTENT
+_COSA_DATAMODEL_RDKB_WIFI_TELEMETRY_CLASS_CONTENT
 {
     INT                 LogInterval;
     CHAR            NormalizedRssiList[256];
     CHAR            CliStatList[256];
     CHAR            TxRxRateList[256];
 }
-COSA_DATAMODEL_RDKB_WHIX, *PCOSA_DATAMODEL_RDKB_WHIX;
+COSA_DATAMODEL_RDKB_WIFI_TELEMETRY, *PCOSA_DATAMODEL_RDKB_WIFI_TELEMETRY;
 
 
 /**********************************************************************
@@ -529,9 +529,9 @@ CosaDmlDiUiBrandingInit
   );
 
 ANSC_STATUS
-CosaDmlDiWhixInit
+CosaDmlDiWiFiTelemetryInit
   (
-	PCOSA_DATAMODEL_RDKB_WHIX   PWhix
+	PCOSA_DATAMODEL_RDKB_WIFI_TELEMETRY PWiFi_Telemetry
   );
 
 void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand);

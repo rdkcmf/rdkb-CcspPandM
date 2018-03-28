@@ -1785,19 +1785,58 @@
 
         <object>
 
-          <name>X_RDKCENTRAL-COM_WHIX</name>
+          <name>X_RDKCENTRAL-COM_WIFI_TELEMETRY</name>
 
           <objectType>object</objectType>
 
           <functions>
+            <func_SetParamIntValue>WiFi_Telemetry_SetParamIntValue</func_SetParamIntValue>
 
-            <func_SetParamStringValue>WHIX_SetParamStringValue</func_SetParamStringValue>
+            <func_SetParamStringValue>WiFi_Telemetry_SetParamStringValue</func_SetParamStringValue>
 
-            <func_GetParamStringValue>WHIX_GetParamStringValue</func_GetParamStringValue>
+	    <func_GetParamIntValue>WiFi_Telemetry_GetParamIntValue</func_GetParamIntValue>
+
+            <func_GetParamStringValue>WiFi_Telemetry_GetParamStringValue</func_GetParamStringValue>
 
           </functions>
 
           <parameters>
+
+          <parameter>
+
+            <name>LogInterval</name>
+
+            <type>int[300:3600]</type>
+
+            <syntax>int</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+
+          <parameter>
+
+            <name>NormalizedRssiList</name>
+
+            <type>string</type>
+
+            <syntax>string</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+
+          <parameter>
+
+            <name>CliStatList</name>
+
+            <type>string</type>
+
+            <syntax>string</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
 
           <parameter>
 
