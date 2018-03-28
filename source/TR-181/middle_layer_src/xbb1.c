@@ -184,18 +184,12 @@ XBB1_GetParamIntValue(ANSC_HANDLE h, char* name, int* val)
   XBB1_COPY_PARAM(int, "lowTempThreshold", xbbConfig.lowTempThreshold);
   XBB1_COPY_PARAM(int, "highTempThreshold", xbbConfig.highTempThreshold);
 
-  if (XBB1_StringEquals("alarmNumberOfEntries", name))
-  {
-    xbbUpdateAlarms();
-  }
-
   if (XBB1_StringEquals("discover", name))
   {
     *val = 0;
     return TRUE;
   }
 
-  XBB1_COPY_PARAM(int, "alarmNumberOfEntries", numAlarms);
 
   return FALSE;
 }
@@ -268,6 +262,13 @@ XBB1_GetParamUlongValue(ANSC_HANDLE h, char* name, ULONG* val)
 
   XBB1_COPY_PARAM(ULONG, "lowTempDwellTripPointSeconds", xbbConfig.lowTempDwellTripPointSeconds);
   XBB1_COPY_PARAM(ULONG, "highTempDwellTripPointSeconds", xbbConfig.highTempDwellTripPointSeconds);
+
+  if (XBB1_StringEquals("alarmNumberOfEntries", name))
+  {
+    xbbUpdateAlarms();
+    *val = numAlarms;
+    XBB1_COPY_PARAM(int, "alarmNumberOfEntries", numAlarms);
+  }
 
   return FALSE;
 }

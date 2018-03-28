@@ -318,11 +318,13 @@ DeviceInfo_GetParamUlongValue
 	/* Required for xPC sync */
 	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureDocsicPollTime", TRUE))
     {
+     #ifndef _COSA_BCM_MIPS_
         /* collect value */
 	   FILE *fp;
 	   char buff[30];
 	   int retValue;
 	   memset(buff,0,sizeof(buff));
+           *puLong = 0;
    	   fp = fopen("/nvram/docsispolltime.txt", "r");
 	   if(!fp)
 	   {
@@ -336,7 +338,10 @@ DeviceInfo_GetParamUlongValue
           	 *puLong = atoi(buff);
            }
 
-	   fclose(fp);	
+	   fclose(fp);
+	 #else
+	   *puLong = 0;
+	 #endif
            return TRUE;
     }
     
@@ -5317,9 +5322,10 @@ Feature_GetParamBoolValue
     )
 {
     /* check the parameter name and return the corresponding value */
-#if defined(MOCA_HOME_ISOLATION)
+
     if( AnscEqualString(ParamName, "HomeNetworkIsolation", TRUE))
     {
+#if defined(MOCA_HOME_ISOLATION)
         /* collect value */
 
     char *strValue = NULL;
@@ -5333,11 +5339,12 @@ Feature_GetParamBoolValue
     }
     else
         *pBool = FALSE;
-
+#else        
+        *pBool = FALSE;
+#endif
      return TRUE;   
     }
 
-#endif
     if( AnscEqualString(ParamName, "CodebigSupport", TRUE))
     {
          char value[8];
@@ -7125,7 +7132,7 @@ Xconf_SetParamBoolValue
         BOOL                        bValue
     )
 {
-    int status;
+    int status = 0;
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "xconfCheckNow", TRUE))
     {
@@ -7189,7 +7196,7 @@ Xconf_SetParamBoolValue
 
     prototype:
 
-        BOOL
+        ULONG
         ReverseSSH_GetParamStringValue
             (
                 ANSC_HANDLE                 hInsContext,
@@ -7215,11 +7222,12 @@ Xconf_SetParamBoolValue
                 Usually size of 1023 will be used.
                 If it's not big enough, put required size here and return 1;
 
-    return:     TRUE if succeeded;
-                FALSE if failed
+    return:     0 if succeeded;
+                1 if short of buffer size; (*pUlSize = required size)
+                -1 if not supported.
 
 **********************************************************************/
-BOOL
+ULONG
 ReverseSSH_GetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
@@ -7228,15 +7236,14 @@ ReverseSSH_GetParamStringValue
         ULONG*                      pulSize
     )
 {
-    BOOL bReturnValue = FALSE;
     char* activeStr = "ACTIVE";
     char* inActiveStr = "INACTIVE";
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "xOpsReverseSshArgs", TRUE))
     {
-        bReturnValue = getXOpsReverseSshArgs(NULL, pValue,pulSize);
-        return bReturnValue;
+        getXOpsReverseSshArgs(NULL, pValue,pulSize);
+        return 0;
     }
 
     if( AnscEqualString(ParamName, "xOpsReverseSshStatus", TRUE))
@@ -7248,12 +7255,11 @@ ReverseSSH_GetParamStringValue
             AnscCopyString(pValue, inActiveStr);
             *pulSize = AnscSizeOfString(pValue);
         }
-        bReturnValue = TRUE;
-        return bReturnValue;
+        return 0;
     }
 
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
-    return bReturnValue;
+    return -1;
 }
 
 
@@ -9973,7 +9979,7 @@ BLE_SetParamBoolValue
 
     prototype:
 
-        BOOL
+        ULONG
         Tile_GetParamStringValue
             (
                 ANSC_HANDLE                 hInsContext,
@@ -9996,11 +10002,11 @@ BLE_SetParamBoolValue
                 The string value buffer;
 
 
-    return:     TRUE if succeeded;
-                FALSE if not supported.
+    return:     0 if succeeded;
+                -1 if not supported.
 
 **********************************************************************/
-BOOL
+ULONG
 Tile_GetParamStringValue
 (
  ANSC_HANDLE                 hInsContext,
@@ -10020,12 +10026,11 @@ Tile_GetParamStringValue
         {
             AnscCopyString(pValue, buf);
             *pUlSize = AnscSizeOfString(pValue); 
-            return TRUE;
+            return 0;
         }
-        return FALSE;
     }
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
-    return FALSE;
+    return -1;
 }
 
 /**********************************************************************

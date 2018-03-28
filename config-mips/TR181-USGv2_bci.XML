@@ -678,22 +678,8 @@
           <syntax>bool</syntax>
           <writable>true</writable>
         </parameter>
-		
-        <parameter>
-          <name>X_RDKCENTRAL-COM_LoggerEnable</name>
-          <type>boolean</type>
-          <syntax>bool</syntax>
-          <writable>true</writable>
-        </parameter>
-		
-		<parameter>
-          <name>X_RDKCENTRAL-COM_LogLevel</name>
-          <type>unsignedInt</type>
-          <syntax>uint32</syntax>
-		  <writable>true</writable>
-        </parameter>
 
-		<parameter>
+	<parameter>
           <name>X_COMCAST-COM_rdkbPlatformCapable</name>
           <type>boolean</type>
           <syntax>bool</syntax>
