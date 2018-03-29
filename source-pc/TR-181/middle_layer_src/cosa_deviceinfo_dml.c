@@ -313,9 +313,7 @@ DeviceInfo_GetParamUlongValue
     if( AnscEqualString(ParamName, "BootTime", TRUE))
     {
         /* collect value */
-#if 0//LNT_EMU
        	*puLong = CosaDmlDiGetBootTime(NULL);
-#endif
         return TRUE;
     }
     
