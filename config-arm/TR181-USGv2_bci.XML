@@ -426,6 +426,17 @@
 		  <writable>true</writable>
                                                  
         </parameter>
+<!-- End of modification -->
+<!--Parameter added for CMTS MAC-->
+        <parameter>
+    
+          <name>X_RDKCENTRAL-COM_CMTS_MAC</name>
+                   
+          <type>string(64)</type>
+                                  
+          <syntax>string</syntax>
+                                                 
+        </parameter> 
 <!-- End of modification -->		
         <parameter>
     
