@@ -1612,6 +1612,24 @@ WiFi_Telemetry_SetParamStringValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "SNRList", TRUE))
+    {
+        int retPsmSet = CCSP_SUCCESS;
+    
+        retPsmSet = PSM_Set_Record_Value2( bus_handle, g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WIFI_TELEMETRY.SNRList", ccsp_string, pString );
+
+        if (retPsmSet != CCSP_SUCCESS )
+        {
+            CcspTraceInfo(("Failed to set SNRList in PSM"));
+            return FALSE;
+        }
+        
+        CcspTraceInfo(("Successfully set SNRList in PSM \n"));
+    
+        AnscCopyString( pMyObject->WiFi_Telemetry.SNRList, pString );
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -1746,6 +1764,15 @@ WiFi_Telemetry_GetParamStringValue
         *pulSize = AnscSizeOfString( pValue );
         return 0;
     }
+
+    if( AnscEqualString(ParamName, "SNRList", TRUE))
+    {
+        /* collect value */
+        AnscCopyString( pValue, pMyObject->WiFi_Telemetry.SNRList);
+        *pulSize = AnscSizeOfString( pValue );
+        return 0;
+    }
+
 
     return -1;
 }
