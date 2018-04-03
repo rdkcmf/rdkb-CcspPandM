@@ -142,6 +142,7 @@ extern  ANSC_HANDLE             bus_handle;
 #define DMSB_TR181_PSM_WHIX_NormalizedRssiList                "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.NormalizedRssiList"
 #define DMSB_TR181_PSM_WHIX_CliStatList                                    "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.CliStatList"
 #define DMSB_TR181_PSM_WHIX_TxRxRateList                              "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.TxRxRateList"
+#define DMSB_TR181_PSM_WIFI_TELEMETRY_SNRList                 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WIFI_TELEMETRY.SNRList"
 
 extern void* g_pDslhDmlAgent;
 
@@ -2412,6 +2413,23 @@ CosaDmlDiWiFiTelemetryInit
             AnscCopyString(PWiFi_Telemetry->TxRxRateList,"1,2");
         }
     }
+
+    if (PsmGet(DMSB_TR181_PSM_WIFI_TELEMETRY_SNRList, val, sizeof(val)) != 0)
+    {
+            AnscCopyString(PWiFi_Telemetry->SNRList, "1,2");
+    }
+    else
+    {
+        if (val[0] != '\0' )
+        {
+            AnscCopyString(PWiFi_Telemetry->SNRList, val);
+        }
+        else
+        {
+            AnscCopyString(PWiFi_Telemetry->SNRList,"1,2");
+        }
+    }
+
     return ANSC_STATUS_SUCCESS;
 }
 

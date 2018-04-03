@@ -204,6 +204,7 @@ _COSA_DATAMODEL_RDKB_WIFI_TELEMETRY_CLASS_CONTENT
     CHAR            NormalizedRssiList[256];
     CHAR            CliStatList[256];
     CHAR            TxRxRateList[256];
+    CHAR            SNRList[256];
 }
 COSA_DATAMODEL_RDKB_WIFI_TELEMETRY, *PCOSA_DATAMODEL_RDKB_WIFI_TELEMETRY;
 

@@ -1945,6 +1945,18 @@
 
           </parameter>
 
+          <parameter>
+
+            <name>SNRList</name>
+
+            <type>string</type>
+
+            <syntax>string</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+
           </parameters>
 
         </object>
