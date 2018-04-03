@@ -729,6 +729,22 @@
 
       <objects>
         <object>
+          <name>X_RDKCENTRAL-COM_DeviceFingerPrint</name>
+          <objectType>object</objectType>
+          <functions>
+            <func_GetParamBoolValue>DeviceFingerPrint_GetParamBoolValue</func_GetParamBoolValue>
+            <func_SetParamBoolValue>DeviceFingerPrint_SetParamBoolValue</func_SetParamBoolValue>
+          </functions>
+          <parameters>
+            <parameter>
+              <name>Enable</name>
+              <type>boolean</type>
+              <syntax>bool</syntax>
+              <writable>true</writable>
+            </parameter>
+          </parameters>
+        </object>
+        <object>
         <name>X_RDKCENTRAL-COM_Syndication</name>
         <objectType>object</objectType>
         <functions>

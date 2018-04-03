@@ -118,6 +118,7 @@
 #if  CFG_USE_Common_Util
 #include "cosa_common_util.h"
 #endif
+#include "cosa_dev_fingerprint_internal.h"
 static void CheckAndSetRebootReason();
 /*PCOSA_DIAG_PLUGIN_INFO             g_pCosaDiagPluginInfo;*/
 COSAGetParamValueByPathNameProc    g_GetParamValueByPathNameProc;
@@ -347,6 +348,10 @@ CosaBackEndManagerInitialize
     pMyObject->hTSIP          = (ANSC_HANDLE)CosaTSIPCreate();
     AnscTraceWarning(("  CosaTSIPCreate done!\n"));
 #endif
+    
+    pMyObject->hDeviceFingerprint          = (ANSC_HANDLE)CosaDeviceFingerprintCreate();
+    AnscTraceWarning(("  CosaDeviceFingerprintCreate done!\n"));
+
 
 #if CFG_USE_Event_Displatch
 
