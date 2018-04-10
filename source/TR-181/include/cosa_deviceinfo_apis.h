@@ -207,6 +207,17 @@ _COSA_DATAMODEL_RDKB_WIFI_TELEMETRY_CLASS_CONTENT
 }
 COSA_DATAMODEL_RDKB_WIFI_TELEMETRY, *PCOSA_DATAMODEL_RDKB_WIFI_TELEMETRY;
 
+typedef  struct
+_COSA_DATAMODEL_RDKB_UNIQUE_TELEMETRY_ID_CLASS_CONTENT
+{
+    BOOL		Enable;
+    CHAR            	TagString[256];
+    INT                 TimingInterval;
+
+}
+COSA_DATAMODEL_RDKB_UNIQUE_TELEMETRY_ID, *PCOSA_DATAMODEL_RDKB_UNIQUE_TELEMETRY_ID;
+
+
 
 /**********************************************************************
                 FUNCTION PROTOTYPES
@@ -533,6 +544,16 @@ CosaDmlDiWiFiTelemetryInit
   (
 	PCOSA_DATAMODEL_RDKB_WIFI_TELEMETRY PWiFi_Telemetry
   );
+
+ANSC_STATUS
+CosaDmlDiUniqueTelemetryIdInit
+  (
+	PCOSA_DATAMODEL_RDKB_UNIQUE_TELEMETRY_ID PUniqueTelemetryId
+  );
+
+void ConvertTime(int time, char day[], char hour[], char mins[]);
+
+void UniqueTelemetryCronJob(enable, timeInterval, tagString);
 
 void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand);
 

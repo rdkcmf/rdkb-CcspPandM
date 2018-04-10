@@ -1383,8 +1383,71 @@
 				</object>
 
 			</objects>
-		</object>                
-				</objects>           
+		</object>
+
+<object>
+                        <name>UniqueTelemetryId</name>
+
+                        <objectType>object</objectType>
+
+                        <functions>
+
+                                <func_GetParamBoolValue>UniqueTelemetryId_GetParamBoolValue</func_GetParamBoolValue>
+
+				<func_GetParamStringValue>UniqueTelemetryId_GetParamStringValue</func_GetParamStringValue>
+
+				<func_GetParamIntValue>UniqueTelemetryId_GetParamIntValue</func_GetParamIntValue>
+
+                                <func_SetParamBoolValue>UniqueTelemetryId_SetParamBoolValue</func_SetParamBoolValue>
+
+				<func_SetParamStringValue>UniqueTelemetryId_SetParamStringValue</func_SetParamStringValue>
+
+				<func_SetParamIntValue>UniqueTelemetryId_SetParamIntValue</func_SetParamIntValue>
+
+                        </functions>
+
+                        <parameters>
+                                <parameter>
+
+                                        <name>Enable</name>
+
+                                        <type>boolean</type>
+
+                                        <syntax>bool</syntax>
+
+                                        <writable>true</writable>
+
+                                </parameter>
+				
+				<parameter>
+
+					<name>TagString</name>
+
+					<type>string</type>
+
+					<syntax>string</syntax>
+
+					<writable>true</writable>
+
+				</parameter>
+
+				<parameter>
+
+					<name>TimingInterval</name>
+
+					<type>int</type>
+
+					<syntax>int</syntax>
+
+					<writable>true</writable>
+
+				</parameter>
+
+                        </parameters>
+
+                </object>                
+		</objects>     
+      
 		</object>
 		</objects>
 		</object>

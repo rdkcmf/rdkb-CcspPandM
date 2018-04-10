@@ -2466,7 +2466,94 @@ CosaDmlDiWiFiTelemetryInit
     return ANSC_STATUS_SUCCESS;
 }
 
+ANSC_STATUS
+CosaDmlDiUniqueTelemetryIdInit
+  (
+        PCOSA_DATAMODEL_RDKB_UNIQUE_TELEMETRY_ID PUniqueTelemetryId
+  )
+{
+    char buf[256] = {0};
 
+    PUniqueTelemetryId->Enable = FALSE;
+    memset(PUniqueTelemetryId->TagString, 0, sizeof(PUniqueTelemetryId->TagString));
+    PUniqueTelemetryId->TimingInterval = 0;
+
+    if (syscfg_get(NULL, "unique_telemetry_enable", buf, sizeof(buf)) == 0)
+    {
+        if (buf != NULL)
+        {
+            PUniqueTelemetryId->Enable = (strcmp(buf,"true") ? FALSE : TRUE);
+        }
+    }
+
+    memset(buf, 0, sizeof(buf));
+
+    if (syscfg_get(NULL, "unique_telemetry_tag", buf,  sizeof(buf) ) == 0)
+    {
+        if (buf != NULL)
+        {
+            AnscCopyString(PUniqueTelemetryId->TagString, buf);
+        }
+    }
+
+    memset(buf, 0, sizeof(buf));
+
+    if (syscfg_get( NULL, "unique_telemetry_interval", buf, sizeof(buf)) == 0)
+    {
+        if (buf != NULL)
+        {
+            PUniqueTelemetryId->TimingInterval =  atoi(buf);
+        }
+    }
+ 
+    return ANSC_STATUS_SUCCESS;
+}
+
+// Convert time interval(in miniutes) to days, hours and minutes.
+void ConvertTime(int time, char day[], char hour[], char mins[]) {
+        int d = 0, h = 0, m = 0;
+
+        d = (time / (60*24));
+        h = ((time % (60*24)) / 60);
+        m = ((time % (60*24)) % 60);
+
+        if(d > 0) {
+                sprintf(day, "*/%d", d);
+                sprintf(hour, "%d", h);
+                sprintf(mins, "%d", m);
+        }
+        else if(h > 0) {
+                sprintf(day, "*");
+                sprintf(hour, "*/%d", h);
+                sprintf(mins, "%d", m);
+
+        }
+        else {
+                sprintf(day, "*");
+                sprintf(hour, "*");
+                sprintf(mins, "*/%d", m);
+        }
+
+}
+
+//Handle UniqueTelemetry Cron Job
+void UniqueTelemetryCronJob(enable, timeInterval, tagString) {
+        char command[256] = {0};
+        char day[5] = {0}, hour[5]={0}, mins[5] = {0};
+
+        if(enable) {       //Add unique_telemetry_id Cron job to job list
+            if( timeInterval != 0 && strlen(tagString) > 0) {
+                ConvertTime(timeInterval, day, hour, mins);      // Convert time interval
+
+                system("crontab -l | grep -v '/usr/ccsp/pam/unique_telemetry_id.sh'  | crontab -");     //Remove unique_telemetry_id Cron job if already exists
+                sprintf(command, "(crontab -l ; echo \"%s %s %s * * /usr/ccsp/pam/unique_telemetry_id.sh\") | crontab -", mins, hour, day);
+                system(command);
+            }
+        }
+        else {          //Remove unique_telemetry_id Cron job from job list
+            system("crontab -l | grep -v '/usr/ccsp/pam/unique_telemetry_id.sh'  | crontab -");
+        }
+}
 
 void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand)
 {

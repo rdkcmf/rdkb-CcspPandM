@@ -229,6 +229,73 @@ WiFi_Telemetry_GetParamStringValue
         ULONG*                      pUlSize
     );
 
+
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.UniqueTelemetryId.
+
+    *  UniqueTelemetryId_GetParamBoolValue
+    *  UniqueTelemetryId_GetParamStringValue
+    *  UniqueTelemetryId_GetParamIntValue
+    *  UniqueTelemetryId_SetParamBoolValue
+    *  UniqueTelemetryId_SetParamStringValue
+    *  UniqueTelemetryId_SetParamIntValue
+***********************************************************************/
+BOOL
+UniqueTelemetryId_GetParamBoolValue
+	(
+		ANSC_HANDLE 				hInsContext,
+		char*						ParamName,
+		BOOL*						pBool
+	);
+
+ULONG
+UniqueTelemetryId_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+BOOL
+UniqueTelemetryId_GetParamIntValue
+	(
+		ANSC_HANDLE 				hInsContext,
+		char*						ParamName,
+		int*						pInt
+	);
+
+
+BOOL
+UniqueTelemetryId_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+BOOL
+UniqueTelemetryId_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       strValue
+    );
+
+
+BOOL
+UniqueTelemetryId_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         value
+    );
+
+
+
 /***********************************************************************
 
  APIs for Object:
