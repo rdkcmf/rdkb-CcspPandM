@@ -105,7 +105,7 @@
 #define DEVICE_PROPERTIES    "/etc/device.properties"
 #define PARTNERS_INFO_FILE		"/nvram/partners_defaults.json"
 
-#ifdef _PLATFORM_RASPBERRYPI_
+#if defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_IPQ_)
 #include "ccsp_vendor.h"
 #endif
 
@@ -113,7 +113,7 @@
 
 // this file is in integration_src.intel_usg_arm directory
 
-#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_)
+#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _PLATFORM_IPQ_)
 
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass

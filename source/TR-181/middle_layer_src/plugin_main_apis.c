@@ -310,6 +310,7 @@ CosaBackEndManagerInitialize
     AnscTraceWarning(("  CosaDiagnosticsCreate done!\n"));
     pMyObject->hTime          = (ANSC_HANDLE)CosaTimeCreate();
     AnscTraceWarning(("  CosaTimeCreate done!\n"));
+#if !defined(_PLATFORM_IPQ_)
     //pMyObject->hMoCA          = (ANSC_HANDLE)CosaMoCACreate();
     AnscTraceWarning(("  CosaMoCACreate done!\n"));
     pMyObject->hUpnp          = (ANSC_HANDLE)CosaUpnpCreate();
@@ -317,12 +318,13 @@ CosaBackEndManagerInitialize
 
     pMyObject->hParentalControl = (ANSC_HANDLE)TR181_ParentalControlCreate();
     AnscTraceWarning(("  CosaParentalControlCreate done - hParentalControl = 0x%X!\n", pMyObject->hParentalControl));
+#endif
     pMyObject->hRLog          = (ANSC_HANDLE)CosaRLogCreate();
     AnscTraceWarning(("  CosaRLogCreate done!\n"));
 
 
 
-
+#if !defined(HOTSPOT_DISABLE)
 //#ifdef CONFIG_CISCO_HOTSPOT
 	
     pMyObject->hGRE           = (ANSC_HANDLE)CosaGreCreate();
@@ -338,7 +340,7 @@ CosaBackEndManagerInitialize
     AnscTraceWarning(("  CosaHotspotCreate done!\n"));
 	
 //#endif
-
+#endif
 #if CONFIG_CISCO_FILE_TRANSFER
     pMyObject->hFileTransfer  = (ANSC_HANDLE)CosaFileTransferCreate();
     AnscTraceWarning(("  CosaFileTransferCreate done!\n"));

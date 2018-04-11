@@ -37,6 +37,7 @@
  *  Where is the file header section? Taking shortcut?...
  */
 
+#if !defined(HOTSPOT_DISABLE)
 #include "dml_tr181_custom_cfg.h"
 
 //#ifdef CONFIG_CISCO_HOTSPOT
@@ -119,3 +120,4 @@ CosaGreRemove
     return ANSC_STATUS_SUCCESS;
 }
 //#endif
+#endif
