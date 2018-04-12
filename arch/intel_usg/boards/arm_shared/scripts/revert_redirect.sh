@@ -116,7 +116,7 @@ do
 		   if [ $v4Count -lt 3 ]
 		   then
 		      echo_t "Revert Redirect: Executing command for ipv4"
-		      curl -4 -v --cacert /nvram/cacert.pem --interface erouter0 --data "SSID_1=$SSID_1&Password_1=$Password_1&Mobile_Number=$Mobile_Number&SSID_2=$SSID_2&Password_2=$Password_2&CM_MAC=$CM_MAC&CM_IP=$CM_IP" $Server_URL
+		      curl -4 -v --cacert /etc/cacert.pem --interface erouter0 --data "SSID_1=$SSID_1&Password_1=$Password_1&Mobile_Number=$Mobile_Number&SSID_2=$SSID_2&Password_2=$Password_2&CM_MAC=$CM_MAC&CM_IP=$CM_IP" $Server_URL
 		      response=`echo $?`
 		      v4Count=`expr $v4Count + 1`
 		   else
@@ -131,7 +131,7 @@ do
 		      if [ $v6Count -lt 3 ]
 		      then
 		         echo_t "Revert Redirect: Executing command for ipv6"
-			curl -6 -v --cacert /nvram/cacert.pem --interface erouter0 --data "SSID_1=$SSID_1&Password_1=$Password_1&Mobile_Number=$Mobile_Number&SSID_2=$SSID_2&Password_2=$Password_2&CM_MAC=$CM_MAC&CM_IP=$CM_IP" $Server_URL
+			curl -6 -v --cacert /etc/cacert.pem --interface erouter0 --data "SSID_1=$SSID_1&Password_1=$Password_1&Mobile_Number=$Mobile_Number&SSID_2=$SSID_2&Password_2=$Password_2&CM_MAC=$CM_MAC&CM_IP=$CM_IP" $Server_URL
 			response=`echo $?`
 		         v6Count=`expr $v6Count + 1`
 		      else
