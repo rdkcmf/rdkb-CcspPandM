@@ -1525,6 +1525,9 @@ CosaDmlDhcpcGetInfo
 	dhcpv4c_get_ert_dns_svrs(&ad);
 	for(i=0; i<ad.number;i++)
 		pInfo->DNSServers[i].Value = ad.addrs[i];
+#if defined (_COSA_BCM_ARM_)
+	pInfo->NumDnsServers = ad.number;
+#endif
 	dhcpv4c_get_ert_remain_lease_time(&pInfo->LeaseTimeRemaining);
 	dhcpv4c_get_ert_dhcp_svr(&pInfo->DHCPServer);
    
