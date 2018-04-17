@@ -1683,6 +1683,11 @@ void restoreAllDBs()
 	/* Clear cable modem's dynamic nonvol settings */
 	system("rm -f /mnt/cmnonvol/cm_dyn.bin");
 #endif
+#if defined (_XB6_PRODUCT_REQ_)
+        CcspTraceWarning(("FactoryReset:%s in thread  Restoring moca to factory defaults  ...\n",__FUNCTION__));
+        system("rm -f /nvram/moca.conf.default"); //TCXB6-1028
+        system("rm -f /nvram/*.moca0"); //TCXB6-1028
+#endif
 	system("restoreAllDBs"); //Perform factory reset on other components
 	return;
 }
@@ -1779,6 +1784,47 @@ CosaDmlDcSetFactoryReset
 	   	CcspTraceError(("FactoryReset:%s BAD parameter passed to factory defaults parameter ...\n",__FUNCTION__));
 		return ANSC_STATUS_BAD_PARAMETER;
 	    }
+#if defined (_XB6_PRODUCT_REQ_)
+                {
+                        unsigned int dbValue = 0;
+                        FILE *pdbFile = NULL;
+                        char buf[128]={0};
+                        #define FACTORY_RESET_COUNT_FILE "/nvram/.factory_reset_count"
+
+                        pdbFile = fopen(FACTORY_RESET_COUNT_FILE, "r");
+                        if(pdbFile != NULL){
+                           fread(buf,sizeof(buf),1,pdbFile);
+                           fclose(pdbFile);
+                           dbValue = atoi(buf);
+                        }
+                        dbValue++;
+                        pdbFile = fopen(FACTORY_RESET_COUNT_FILE, "w+");
+                        if(pdbFile != NULL){
+                                fprintf(pdbFile,"%d\n",dbValue);
+                                fclose(pdbFile);
+                        }
+                }
+                if(factory_reset_mask & FR_ROUTER){
+                        unsigned int dbValue = 0;
+                        FILE *pdbFile = NULL;
+                        char buf[128]={0};
+                        #define ROUTER_RESET_COUNT_FILE "/nvram/.router_reset_count"
+
+                        pdbFile = fopen(ROUTER_RESET_COUNT_FILE, "r");
+                        if(pdbFile != NULL){
+                           fread(buf,sizeof(buf),1,pdbFile);
+                           fclose(pdbFile);
+                           dbValue = atoi(buf);
+                        }
+                        dbValue++;
+                        pdbFile = fopen(ROUTER_RESET_COUNT_FILE, "w+");
+                        if(pdbFile != NULL){
+                                fprintf(pdbFile,"%d\n",dbValue);
+                                fclose(pdbFile);
+                        }
+                }
+
+#endif
 
     if (factory_reset_mask & FR_FW) {
         int rc = -1;
