@@ -1408,7 +1408,7 @@ CosaDmlDcSetRebootDevice
 {
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
     int router, wifi, voip, dect, moca, all, delay;
-    int delay_time = 0;
+    int delay_time = 0, restorereboot = 0;
 
     router = wifi = voip = dect = moca = all = delay = 0;
     if (strstr(pValue, "Router") != NULL) {
@@ -1434,6 +1434,9 @@ CosaDmlDcSetRebootDevice
     }
     if (strstr(pValue, "delay=") != NULL) {
         delay_time = atoi(strstr(pValue, "delay=") + strlen("delay="));
+    }
+    if (strstr(pValue, "RestoreReboot") != NULL) {
+        restorereboot = 1;
     }
 
     if (router && wifi && voip && dect && moca) {
@@ -1464,9 +1467,14 @@ CosaDmlDcSetRebootDevice
 			}
 			pclose(fp);
 		}
+		/* restorereboot : This variable is used to make all the reboot related activity except for 
+				           nvram syscfg.db update for Restore configuration and reboot use case */
+		if(!restorereboot)
+		{
 		if (syscfg_commit() != 0) 
 		{
 			CcspTraceWarning(("syscfg_commit failed\n"));
+		}
 		}
 		
 		CcspTraceWarning(("REBOOT_COUNT : %d Time : %s  \n",rebootcount,buffer));
@@ -3032,7 +3040,11 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
  {"Device.WiFi.SSID.2.Enable", enableStr, ccsp_boolean}};
  
  parameterValStruct_t valCommit[] = { 
+#ifdef _XF3_PRODUCT_REQ_
+ {"Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, {"Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, {"Device.WiFi.X_CISCO_COM_ResetRadios", "true", ccsp_boolean} };
+#else
  {"Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, {"Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean} };
+#endif
  
             //Run the full bridge radio disable params only on router and full bridge transitions
             if (!pNotify->flag || pNotify->flag != 3) {
@@ -3083,7 +3095,11 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
                                 ppComponents[0]->dbusPath,
                                 0, 0x0,   /* session id and write id */
                                 valCommit, 
+#ifdef _XF3_PRODUCT_REQ_
+                                sizeof(valCommit)/sizeof(*valCommit), 
+#else
                                 2, 
+#endif
                                 TRUE,   /* no commit */
                                 &faultParam
                         );      
@@ -3181,11 +3197,21 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         else
         {
             syslog_systemlog("Local Network", LOG_NOTICE, "Status change: Bridge mode");
+#ifdef _XF3_PRODUCT_REQ_
+            bEnable = 3;
+        }
+        
+        char buf[7] = {0};
+        snprintf(buf,sizeof(buf),"%d",bEnable);
+        openCommonSyseventConnection();
+        sysevent_set(commonSyseventFd, commonSyseventToken, "bridge_mode",buf,0);
+        configBridgeMode(bEnable);
+#else
             bEnable = 1;
         }
         
         //configBridgeMode(bEnable);
-        
+#endif        
         ret = ANSC_STATUS_SUCCESS;
     }
     return ret;
@@ -3312,9 +3338,15 @@ static void configBridgeMode(int bEnable) {
 //         varstruct.parameterName = brpdm;
 //         varstruct.parameterValue = enableStr;
 //         varstruct.type = ccsp_boolean;
+#ifdef _XF3_PRODUCT_REQ_
+        g_SetParamValueBool(brpdm, (bEnable>0?true:false));
+
+//        vsystem("/bin/sh /etc/webgui.sh");
+#else
         g_SetParamValueBool(brpdm, bEnable);
 
         vsystem("/bin/sh /etc/webgui.sh");
+#endif
 
         if (ppComponents == NULL && initWifiComp()) {
             syslog_systemlog("Local Network", LOG_NOTICE, "Bridge mode transition: Failed to acquire wifi component.");

@@ -3498,9 +3498,15 @@ AddRouteEntryToKernel(void *arg)
     
     for (index = 0; index < Config_Num; index++) {
         if (Router_Alias[index].Enabled) { // add route entry to kernel when initialize
+#if defined (_COSA_BCM_MIPS_)
+			snprintf(cmd_buf, sizeof(cmd_buf), "ip route add %s/%d via %s ", 
+                    sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)), 
+                    sroute[index].gateway);
+#else
             snprintf(cmd_buf, sizeof(cmd_buf), "ip route add %s/%d via %s table erouter metric %d", 
                     sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)), 
                     sroute[index].gateway, sroute[index].metric);
+#endif
             if (system(cmd_buf) != 0)
             {
                 Router_Alias[index].Enabled = FALSE;
@@ -3867,6 +3873,16 @@ CosaDmlRoutingAddV4Entry
     CcspTraceWarning(("---CosaDmlRoutingAddV4Entry gateway is %s\n", sroute[Num_V4Entry-1].gateway));
     CcspTraceWarning(("---CosaDmlRoutingAddV4Entry name is %s\n", sroute[Num_V4Entry-1].name));
 
+#if defined (_COSA_BCM_MIPS_)
+	 /* add new route entry */
+    snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s ", 
+			pEntry->DestIPAddress.Dot[0],
+            pEntry->DestIPAddress.Dot[1],
+            pEntry->DestIPAddress.Dot[2],
+            pEntry->DestIPAddress.Dot[3],
+			Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
+			inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)));
+#else
     /* add new route entry */
     metric = (pEntry->ForwardingMetric)?pEntry->ForwardingMetric+1:pEntry->ForwardingMetric;
     snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s table erouter metric %d ", 
@@ -3877,6 +3893,7 @@ CosaDmlRoutingAddV4Entry
 			Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
 			inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)),
 			metric);
+#endif
 
     if(AnscSizeOfString(pEntry->Interface))
     {
@@ -4003,8 +4020,13 @@ CosaDmlRoutingDelV4Entry
 
         /* delete the previous one */
         uindex = Router_Alias[index].Index;
+#if defined (_COSA_BCM_MIPS_)
+		snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip, 
+			Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
+#else
     	snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s table erouter metric %d ", sroute[uindex].dest_lan_ip, 
 			Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric);
+#endif
 
     	if(AnscSizeOfString(sroute[uindex].dest_intf))
     	{
@@ -4138,8 +4160,13 @@ CosaDmlRoutingSetV4Entry
 
         /* First delete the previous one */
         uindex = Router_Alias[index].Index;
+#if defined (_COSA_BCM_MIPS_)
+		snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip, 
+			Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
+#else
     	snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s table erouter metric %d ", sroute[uindex].dest_lan_ip, 
 			Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric);
+#endif
 
     	if(AnscSizeOfString(sroute[uindex].dest_intf))
     	{
@@ -4180,6 +4207,15 @@ CosaDmlRoutingSetV4Entry
                 );
         strncpy(sroute[uindex].dest_intf, pEntry->Interface, 9);
 
+#if defined (_COSA_BCM_MIPS_)
+		snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s ", 
+                 pEntry->DestIPAddress.Dot[0],
+                 pEntry->DestIPAddress.Dot[1],
+                 pEntry->DestIPAddress.Dot[2],
+                 pEntry->DestIPAddress.Dot[3],
+                 Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
+                 inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)));
+#else
         metric = (pEntry->ForwardingMetric)?pEntry->ForwardingMetric+1:pEntry->ForwardingMetric;
         snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s table erouter metric %d ", 
                  pEntry->DestIPAddress.Dot[0],
@@ -4189,6 +4225,7 @@ CosaDmlRoutingSetV4Entry
                  Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
                  inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)),
                  metric);
+#endif
 
         if(AnscSizeOfString(pEntry->Interface))
         {

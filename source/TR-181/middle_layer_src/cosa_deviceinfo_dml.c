@@ -636,7 +636,11 @@ DeviceInfo_GetParamStringValue
 	/*Changes for RDKB-6560*/
    	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CMTS_MAC", TRUE))
     		{
+#if defined(_ENABLE_EPON_SUPPORT_)
+	// Do nothing
+#else
 		    CosaDmlDiGetCMTSMac(NULL, pValue,pulSize);
+#endif
         	    return 0;
     		}
 	/*Changes for RDKB-6560 end*/

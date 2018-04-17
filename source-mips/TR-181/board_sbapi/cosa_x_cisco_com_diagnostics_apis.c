@@ -357,8 +357,9 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
         // Jan  1 00:00:00
         //in R1.6 year will append in time string,like 
         // Jan  1 00:00:00 2014   
-        memcpy(p[i].Time, line, LOG_TIME_SIZE);
-        p[i].Time[LOG_TIME_SIZE] = '\0';
+        memcpy(p[i].Time, line, LOG_TIME_SIZE_WO_Y);
+        p[i].Time[LOG_TIME_SIZE_WO_Y] = '\0';
+#if !defined(_COSA_BCM_MIPS_)	
         /* If time format < R1.6 */
         year = atoi(p[i].Time + LOG_TIME_SIZE-5);
         if(0 == year){
@@ -372,6 +373,7 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
                 year_miss = 0;
             }
         }
+#endif
 
         //Get Level
         if(NULL != (tmp = strstr(line, user))){

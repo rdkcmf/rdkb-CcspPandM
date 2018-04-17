@@ -2432,10 +2432,17 @@ CosaDmlDhcpv6cGetEnabled
     BOOL bEnabled = FALSE;
     char out[256] = {0};
 
+#ifdef _XF3_PRODUCT_REQ_
+    FILE *fp = popen("/usr/sbin/dibbler-client status |grep  client", "r");
+    if ( fp != NULL){
+        if ( fgets(out, sizeof(out), fp) != NULL )
+       	   if ( strstr(out, "RUNNING,") )         
+#else
     FILE *fp = popen("ps |grep -i ti_dhcp6c | grep erouter0 | grep -v grep", "r");
     if ( fp != NULL){
         if ( fgets(out, sizeof(out), fp) != NULL )
             if ( _ansc_strstr(out, "erouter_dhcp6c") )
+#endif
                 bEnabled = TRUE;
           
         pclose(fp);

@@ -572,7 +572,11 @@ CosaDmlDiGetProductClass
         return ANSC_STATUS_SUCCESS;
     }
 */
+#if defined(_XF3_PRODUCT_REQ_)
+    AnscCopyString(pValue, "XF3");
+#else
     AnscCopyString(pValue, "XB3");
+#endif
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
@@ -978,12 +982,16 @@ CosaDmlDiGetHardware_MemUsed
         PULONG                      pulSize
     )
 {
-//    if ( platform_hal_GetHardware_MemUsed(pValue) != RETURN_OK )
-//        return ANSC_STATUS_FAILURE;
-//    else {
-//        *pulSize = AnscSizeOfString(pValue); 
+#if defined(_XF3_PRODUCT_REQ_)
+    if ( platform_hal_GetHardware_MemUsed(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue); 
         return ANSC_STATUS_SUCCESS;
-//    }
+    }
+#else
+        return ANSC_STATUS_SUCCESS;
+#endif
 }
 
 ANSC_STATUS
@@ -994,12 +1002,16 @@ CosaDmlDiGetHardware_MemFree
         PULONG                      pulSize
     )
 {
-//    if ( platform_hal_GetHardware_MemFree(pValue) != RETURN_OK )
-//        return ANSC_STATUS_FAILURE;
-//    else {
-//        *pulSize = AnscSizeOfString(pValue);
+#if defined(_XF3_PRODUCT_REQ_)
+    if ( platform_hal_GetHardware_MemFree(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
- //   }
+    }
+#else
+        return ANSC_STATUS_SUCCESS;
+#endif
 }
 
 ANSC_STATUS
@@ -1569,7 +1581,11 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
     	else
         return tmp;
 #else
+    #if defined(_XF3_PRODUCT_REQ_)
+         return si.freeram*si.mem_unit/(1024*1024);
+    #else
          return si.freeram*si.mem_unit/(1024);
+    #endif
 #endif
      }
 
@@ -1580,6 +1596,11 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
 	if ( platform_hal_GetUsedMemorySize(&tmp) != RETURN_OK )
         return 0;
     	else 
+        return tmp;
+#else
+        if ( platform_hal_GetUsedMemorySize(&tmp) != RETURN_OK )
+        return 0;
+        else
         return tmp;
 #endif
      }
@@ -1686,7 +1707,9 @@ CosaDmlDiGetFactoryResetCount
     )
 {
 
-//	platform_hal_GetFactoryResetCount(pValue);
+#if defined(_XF3_PRODUCT_REQ_)
+    platform_hal_GetFactoryResetCount(pValue);
+#endif
     return ANSC_STATUS_SUCCESS;
 }
 

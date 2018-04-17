@@ -145,7 +145,11 @@ CosaUtilGetIfAddr
         if (!ioctl(fd, SIOCGIFADDR, &ifr))
            memcpy(&ip4_addr.Value, ifr.ifr_ifru.ifru_addr.sa_data + 2,4);
         else {
+#ifdef _XF3_PRODUCT_REQ_
+           /* CcspTraceWarning(("CosaUtilGetIfAddr IOCTL failure\n"));  Disable since it spams console when fiber is disconnected */
+#else
            CcspTraceWarning(("CosaUtilGetIfAddr IOCTL failure\n"));
+#endif
            CcspTraceWarning(("Cannot get ipv4 address of netdev:%s\n",netdev));
         }
         close(fd);
