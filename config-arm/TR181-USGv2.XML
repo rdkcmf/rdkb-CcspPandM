@@ -1227,8 +1227,9 @@
 					<writable>true</writable>
 
 				</parameter>
-
+                          
 			</parameters>
+                
 			            <objects>               
                       <object>
                             <name>CodeBigFirst</name>
@@ -1247,6 +1248,38 @@
                                 </parameter>
                             </parameters>
                         </object>
+
+		<object>
+                                  
+			<name>EncryptCloudUpload</name>
+                                  
+			<objectType>object</objectType>
+                                 
+			<functions>
+
+				<func_GetParamBoolValue>EncryptCloudUpload_GetParamBoolValue</func_GetParamBoolValue>
+
+				<func_SetParamBoolValue>EncryptCloudUpload_SetParamBoolValue</func_SetParamBoolValue>
+
+			</functions>
+                                  
+			<parameters>
+
+				<parameter>
+     
+					<name>Enable</name>
+            
+					<type>boolean</type>
+                        
+					<syntax>bool</syntax>
+
+					<writable>true</writable>
+
+				</parameter>
+
+			</parameters>   
+
+		</object>
               	<object>
                         <name>SSIDPSWDCTRL</name>
 
