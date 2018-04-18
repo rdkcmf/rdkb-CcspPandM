@@ -1459,7 +1459,65 @@
 
                         </parameters>
 
-                </object>                  
+                </object>
+              	<object>
+                        <name>IPv6subPrefix</name>
+
+                        <objectType>object</objectType>
+
+                        <functions>
+
+                                <func_GetParamBoolValue>IPv6subPrefix_GetParamBoolValue</func_GetParamBoolValue>
+
+                                <func_SetParamBoolValue>IPv6subPrefix_SetParamBoolValue</func_SetParamBoolValue>
+
+                        </functions>
+
+                        <parameters>
+                                <parameter>
+
+                                        <name>Enable</name>
+
+                                        <type>boolean</type>
+
+                                        <syntax>bool</syntax>
+
+                                        <writable>true</writable>
+
+                                </parameter>
+
+                        </parameters>
+
+  		</object>
+              	<object>
+                        <name>IPv6onLnF</name>
+
+                        <objectType>object</objectType>
+
+                        <functions>
+
+                                <func_GetParamBoolValue>IPv6onLnF_GetParamBoolValue</func_GetParamBoolValue>
+
+                                <func_SetParamBoolValue>IPv6onLnF_SetParamBoolValue</func_SetParamBoolValue>
+
+                        </functions>
+
+                        <parameters>
+                                <parameter>
+
+                                        <name>Enable</name>
+
+                                        <type>boolean</type>
+
+                                        <syntax>bool</syntax>
+
+                                        <writable>true</writable>
+
+                                </parameter>
+
+                        </parameters>
+
+  		</object>
                 <object>
                         <name>BLE</name>
 

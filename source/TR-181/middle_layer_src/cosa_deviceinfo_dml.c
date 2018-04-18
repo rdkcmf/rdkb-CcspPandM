@@ -5015,36 +5015,6 @@ Feature_GetParamBoolValue
     return FALSE;
 }
 
-/**********************************************************************
-
-    caller:     owner of this object
-
-    prototype:
-
-        BOOL
-        EncryptCloudUpload_GetParamBoolValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                BOOL*                       pBool
-            );
-
-    description:
-
-        This function is called to retrieve Boolean parameter value;
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                BOOL*                       pBool
-                The buffer of returned boolean value;
-
-    return:     TRUE if succeeded.
-
-**********************************************************************/
 BOOL
 SyndicationFlowControl_GetParamBoolValue
 
@@ -5104,6 +5074,37 @@ SyndicationFlowControl_GetParamStringValue
     }
     return -1;
 }
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        EncryptCloudUpload_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
 BOOL
 EncryptCloudUpload_GetParamBoolValue
 
@@ -6471,7 +6472,301 @@ AllowOpenPorts_SetParamBoolValue
         }
     return FALSE;
 }
+/**********************************************************************  
 
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        IPv6subPrefix_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+IPv6subPrefix_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+            /* collect value */
+            char buf[8];
+            syscfg_get( NULL, "IPv6subPrefix", buf, sizeof(buf));
+
+            if( buf != NULL )
+            {
+                if (strcmp(buf, "true") == 0)
+                    *pBool = TRUE;
+                else
+                    *pBool = FALSE;
+            }
+            return TRUE;
+        }
+
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        IPv6subPrefix_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+IPv6subPrefix_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+        if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+            /* collect value */
+            syscfg_set(NULL, "IPv6subPrefix", (bValue == TRUE ? "true": "false"));
+            syscfg_commit();
+            return TRUE;
+        }
+    return FALSE;
+}
+
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        IPv6onLnF_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+IPv6onLnF_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+            /* collect value */
+            char buf[128];
+	    char Inf_name[32];
+	
+	    syscfg_get( NULL, "iot_ifname", Inf_name, sizeof(Inf_name));
+	    if( Inf_name != NULL )
+            {
+ 
+            
+            syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
+
+		    if( buf != NULL )
+		    {
+		        if (strstr(buf, Inf_name))
+		            *pBool = TRUE;
+		        else
+		            *pBool = FALSE;
+		    }
+		    return TRUE;
+	    }
+        }
+
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        IPv6onLnF_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+IPv6onLnF_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+char *token = NULL;char *pt;
+        if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+     	    char buf[128], OutBuff[128];
+	    char Inf_name[32];
+	    BOOL bFound = FALSE;
+	
+	    syscfg_get( NULL, "iot_ifname", Inf_name, sizeof(Inf_name));
+	    if( Inf_name != NULL )
+            {
+ 
+            
+            syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
+
+		    if( buf != NULL )
+		    {
+		        if (strstr(buf, Inf_name))
+		            bFound = TRUE;
+		        else
+		            bFound = FALSE;
+
+			
+			    if(bValue)
+				{
+					if(bFound == FALSE)
+					{
+					// interface is not present in the list, we need to add interface to enable IPv6 PD
+
+							strcpy(OutBuff,buf);
+							strcat(OutBuff,Inf_name);
+							strcat(OutBuff,",");
+							syscfg_set(NULL, "IPv6_Interface",OutBuff);
+            						syscfg_commit();
+
+					}
+				}
+				else
+				{
+				
+					if(bFound == TRUE)
+					{
+					// interface is present in the list, we need to remove interface to disable IPv6 PD
+						pt = buf;
+						   while(token = strtok_r(pt, ",", &pt)) {
+							if(strncmp(Inf_name,token,strlen(Inf_name)))
+							{
+								strcat(OutBuff,token);
+								strcat(OutBuff,",");
+							}
+
+						   }
+					
+						syscfg_set(NULL, "IPv6_Interface",OutBuff);
+            					syscfg_commit();
+					}
+				}
+		    }
+		    else
+			{
+				if(bValue)
+				{
+				strcat(OutBuff,Inf_name);
+				strcat(OutBuff,",");
+				syscfg_set(NULL, "IPv6_Interface",OutBuff);
+            			syscfg_commit();
+				}
+			}
+		    return TRUE;
+	    }
+
+            return TRUE;
+        }
+    return FALSE;
+}
 /**********************************************************************
 
     caller:     owner of this object

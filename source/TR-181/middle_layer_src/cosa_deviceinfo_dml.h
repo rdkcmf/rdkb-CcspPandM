@@ -972,17 +972,38 @@ LocalUI_SetParamStringValue
         char*                       ParamName,
         char*                       pString
     );
-/***********************************************************************
+BOOL
+IPv6subPrefix_GetParamBoolValue
 
- APIs for Object:
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+BOOL
+IPv6subPrefix_SetParamBoolValue
 
-    DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl
-    *  SyndicationFlowControl_GetParamBoolValue
-    *  SyndicationFlowControl_SetParamBoolValue
-    *  SyndicationFlowControl_GetParamStringValue
-    *  SyndicationFlowControl_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+BOOL
+IPv6onLnF_GetParamBoolValue
 
-***********************************************************************/
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+BOOL
+IPv6onLnF_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
 BOOL
 LocalUI_GetParamBoolValue
 
@@ -1016,6 +1037,7 @@ HelpTip_SetParamStringValue
         char*                       ParamName,
         char*                       pString
     );
+
 /***********************************************************************
 
  APIs for Object:

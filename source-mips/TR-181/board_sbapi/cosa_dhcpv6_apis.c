@@ -5828,6 +5828,42 @@ void CosaDmlDhcpv6sRebootServer()
 
     return;
 }
+/*int calcPrefixNumber(int prefixLen, int req_prefixLen)
+{
+int delta = 0;
+int numOfSubnets = 2;
+if(req_prefixLen > prefixLen)
+{
+	delta = req_prefixLen - prefixLen;
+	printf("<<< delta  = %d >>>\n",delta);
+	numOfSubnets = numOfSubnets << (delta-1);
+	
+}
+else
+{
+	numOfSubnets = 1;
+}
+printf("<<<  numOfSubnets = %d >>>\n",numOfSubnets); 
+return numOfSubnets;
+}*/
+int GenIPv6Prefix(char *ifName,char *GlobalPref, char *pref)
+{
+int len = 0;
+static int interface_num = 4; // Reserving first 4 /64s for dhcp configurations
+	if(ifName == NULL)
+	return 0;
+	
+	len = strlen(GlobalPref);
+	strcpy(pref,GlobalPref);
+	pref[len-6] = pref[len-6]+interface_num;
+	if(pref[len-6] > '9')
+	pref[len-6] = pref[len-6]+39; // for ASCII a,b,c,d,e,f
+        strcpy(pref+(strlen(pref)-2),"64"); // /64
+	CcspTraceInfo(("%s: pref %s\n", __func__, pref));
+	interface_num++;
+return 1;
+	
+}
 /* This thread is added to handle the LnF interface IPv6 rule, because LnF is coming up late in XB6 devices. 
 This thread can be generic to handle the operations depending on the interfaces. Other interface and their events can be register here later based on requirement */
 static int sysevent_fd_1;
@@ -5886,7 +5922,7 @@ dhcpv6c_dbg_thrd(void * in)
     int i;
     char * p = NULL;
     char globalIP2[128] = {0};
-
+    char out[128] = {0};
     //When PaM restart, this is to get previous addr.
     commonSyseventGet("lan_ipaddr_v6", globalIP2, sizeof(globalIP2));
     if ( globalIP2[0] )
@@ -6054,7 +6090,59 @@ dhcpv6c_dbg_thrd(void * in)
                             sprintf(v6pref+strlen(v6pref), "/%d", 64);
 #endif
                         }
-
+		char cmd[100];
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_CBR_PRODUCT_REQ_)
+#else
+			char out1[100]; 
+			char *token = NULL;char *pt;
+			char s[2] = ",";	
+			if(pref_len < 64)
+			{
+			sprintf(cmd, "syscfg get IPv6subPrefix");
+			_get_shell_output(cmd, out, sizeof(out));
+			if(!strncmp(out,"true",strlen(out)))
+				{
+				memset(out,0,sizeof(out));
+				memset(cmd,0,sizeof(cmd));
+				sprintf(cmd, "syscfg get IPv6_Interface");
+      				_get_shell_output(cmd, out, sizeof(out));
+				pt = out;
+				while((token = strtok_r(pt, ",", &pt)))
+				 {
+			 
+					if(GenIPv6Prefix(token,v6pref,out1))
+					{
+						char tbuff[100];
+						memset(cmd,0,sizeof(cmd));
+						_ansc_sprintf(cmd, "%s%s",token,"_ipaddr_v6");
+						commonSyseventSet(cmd, out1);
+						memset(cmd,0,sizeof(cmd));
+						memset(tbuff,0,sizeof(tbuff));
+						sprintf(cmd,"sysctl net.ipv6.conf.%s.autoconf",token);
+						_get_shell_output(cmd, tbuff, sizeof(tbuff));
+						if(tbuff[strlen(tbuff)-1] == '0')
+						{
+							memset(cmd,0,sizeof(cmd));
+							sprintf(cmd,"sysctl -w net.ipv6.conf.%s.autoconf=1",token);
+							system(cmd);
+							memset(cmd,0,sizeof(cmd));
+							sprintf(cmd,"ifconfig %s down;ifconfig %s up",token,token);
+							system(cmd);
+						}
+						memset(cmd,0,sizeof(cmd));
+						sprintf(cmd, "ip -6 route add %s dev %s", out1, token);
+                        			system(cmd);
+						memset(cmd,0,sizeof(cmd));
+						sprintf(cmd, "ip -6 rule add iif %s lookup erouter",token);
+						system(cmd);
+						memset(out1,0,sizeof(out1));
+					}
+				} 
+					memset(out,0,sizeof(out));
+					pthread_create(&InfEvtHandle_tid, NULL, InterfaceEventHandler_thrd, NULL);  
+				}
+			}
+#endif
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME,       v6pref);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_IAID_SYSEVENT_NAME,  iapd_iaid);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_T1_SYSEVENT_NAME,    iapd_t1);
@@ -6074,7 +6162,6 @@ dhcpv6c_dbg_thrd(void * in)
 
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
-                        char cmd[100];
                         sprintf(cmd, "ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
                         system(cmd);
 
@@ -6126,7 +6213,11 @@ dhcpv6c_dbg_thrd(void * in)
                 {
                     /*todo*/
                 }
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_CBR_PRODUCT_REQ_)
 
+#else
+			    system("sysevent set zebra-restart");
+#endif
                 if (pString)
                     AnscFreeMemory(pString);                    
             }
