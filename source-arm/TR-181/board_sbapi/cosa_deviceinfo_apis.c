@@ -144,6 +144,10 @@ extern  ANSC_HANDLE             bus_handle;
 #define DMSB_TR181_PSM_WHIX_TxRxRateList                              "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.TxRxRateList"
 #define DMSB_TR181_PSM_WIFI_TELEMETRY_SNRList                 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WIFI_TELEMETRY.SNRList"
 
+#ifdef CISCO_XB3_PLATFORM_CHANGES
+#define CONFIG_VENDOR_NAME "Cisco"
+#endif
+
 extern void* g_pDslhDmlAgent;
 
 static const int OK = 1 ;
