@@ -25,7 +25,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword" : "" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP" : "10.0.0.1" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_comcast.php"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_comcast.php" ,
+      "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "USI"
    },
 
 
@@ -54,7 +55,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword" : "password" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP" : "192.168.0.1" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php" ,
+      "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "USI"
    },
 
 
@@ -83,7 +85,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword" : "password" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP" : "10.0.0.1" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php" ,
+      "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "CAI"
    },
 
 
@@ -112,7 +115,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword" : "password" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP" : "10.0.0.1" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php" ,
+      "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "CAI"
    }
 
 }
