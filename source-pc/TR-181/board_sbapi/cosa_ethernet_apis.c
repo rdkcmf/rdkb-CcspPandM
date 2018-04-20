@@ -218,6 +218,7 @@ CosaDmlEthPortSetCfg
     if ( !pCfg )
         return ANSC_STATUS_FAILURE;
 
+    CcspHalSetInterfaceEnableDetails(pCfg->InstanceNumber,pCfg->bEnabled);
     if (pCfg->InstanceNumber == 1)
     {
         AnscCopyMemory(&g_EthPortFull1.Cfg, pCfg, sizeof(COSA_DML_ETH_PORT_CFG));
@@ -244,14 +245,7 @@ CosaDmlEthPortGetCfg
     if (!pCfg)
         return ANSC_STATUS_FAILURE;
 
-    if(CcspHalGetInterfaceEnableDetails(pCfg->InstanceNumber))
-        {
-                pCfg->bEnabled = true;
-        }
-        else
-        {
-                pCfg->bEnabled = false;
-        }
+       CcspHalGetInterfaceEnableDetails(pCfg->InstanceNumber,&pCfg->bEnabled);
 
 #if 0//RDKB-EMULATOR
     if (pCfg->InstanceNumber == 1)
