@@ -1286,7 +1286,7 @@
 
 					<name>TagString</name>
 
-					<type>string</type>
+					<type>string(255)</type>
 
 					<syntax>string</syntax>
 

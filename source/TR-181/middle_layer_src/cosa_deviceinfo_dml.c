@@ -1687,8 +1687,18 @@ UniqueTelemetryId_GetParamStringValue
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "TagString", TRUE))
     {
-        AnscCopyString( pValue, pMyObject->UniqueTelemetryId.TagString);
-        *pUlSize = AnscSizeOfString( pValue );
+		if ( AnscSizeOfString( pMyObject->UniqueTelemetryId.TagString ) < *pUlSize )
+   		{
+       		AnscCopyString( pValue, pMyObject->UniqueTelemetryId.TagString );		
+        	return 0;
+   		}
+   		else
+   		{
+       		*pUlSize = AnscSizeOfString( pMyObject->UniqueTelemetryId.TagString ) + 1;
+       		return 1;
+   		}
+
+        AnscCopyString( pValue, pMyObject->UniqueTelemetryId.TagString );
         return 0;
     }
 
