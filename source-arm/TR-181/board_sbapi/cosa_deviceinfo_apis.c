@@ -2412,10 +2412,10 @@ CosaDmlDiWiFiTelemetryInit
         {
             AnscCopyString(PWiFi_Telemetry->TxRxRateList, val);
         }
-        else
-        {
-            AnscCopyString(PWiFi_Telemetry->TxRxRateList,"1,2");
-        }
+        //else
+        //{
+        //    AnscCopyString(PWiFi_Telemetry->TxRxRateList,"1,2");
+        //}
     }
 
     if (PsmGet(DMSB_TR181_PSM_WIFI_TELEMETRY_SNRList, val, sizeof(val)) != 0)
