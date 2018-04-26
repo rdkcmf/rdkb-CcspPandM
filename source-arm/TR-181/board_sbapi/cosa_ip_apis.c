@@ -91,6 +91,7 @@ extern void* g_pDslhDmlAgent;
 #include "cosa_drg_common.h"
 
 #define MAX_IPIF_NUM  20
+
 /*this is the real backend buffers, the PCOSA_DATAMODEL_IP structure only stores stuff from WebGui or ACS, we use this buffer to track param changes..*/
 COSA_PRI_IP_IF_FULL  g_ipif_be_bufs[MAX_IPIF_NUM];
 
@@ -1328,6 +1329,28 @@ CosaDmlIPGetIPv6Addresses
     if (!p_ipif || !p_num)
         return NULL;
 
+#if !defined(IPV6_MULTILAN)
+    for (i=0; i<g_ipif_num; i++)
+        if (!strncmp(g_ipif_names[i], p_ipif->Info.Name, sizeof(p_ipif->Info.Name)))
+            break;
+
+    if (i == g_ipif_num)
+        return NULL;
+    
+    IPIF_getEntry_for_Ipv6Addr(p_ipif, i);
+
+    *p_num = g_ipif_be_bufs[i].ulNumOfV6Addr;
+    
+    if (*p_num)
+    {
+        p_dml_addr = (PCOSA_DML_IP_V6ADDR)AnscAllocateMemory(*p_num * sizeof(COSA_DML_IP_V6ADDR));
+    
+        if (!p_dml_addr)
+            return NULL;
+        
+        AnscCopyMemory(p_dml_addr, g_ipif_be_bufs[i].V6AddrList, *p_num*sizeof(COSA_DML_IP_V6ADDR));
+    }
+#else
     if (p_ipif->Cfg.InstanceNumber >= COSA_USG_IF_NUM) {
         /*current only support one global ipv6 addr for multilan*/
         *p_num = 1;
@@ -1370,6 +1393,7 @@ CosaDmlIPGetIPv6Addresses
             AnscCopyMemory(p_dml_addr, g_ipif_be_bufs[i].V6AddrList, *p_num*sizeof(COSA_DML_IP_V6ADDR));
         }
     }
+#endif
     return p_dml_addr;
 }
 
@@ -3597,13 +3621,15 @@ CosaDmlIPGetIPv6Prefixes
         PULONG                      p_num
     )
 {
+#if defined(IPV6_MULTILAN)
     ULONG i = 0;
     PCOSA_DML_IP_V6PREFIX p_dml_pref = NULL;
+#endif
 
     /*RDKB-6840, CID-33130, null check before use*/
     if (!p_ipif || !p_num)
         return NULL;
-
+#if defined(IPV6_MULTILAN)
     if ( p_ipif->Cfg.InstanceNumber >= COSA_USG_IF_NUM )
     {
         *p_num = 1; /*current only support only one prefix for multinet*/
@@ -3627,8 +3653,19 @@ CosaDmlIPGetIPv6Prefixes
         if (p_ipif->ulNextIPV6PreInsNum <= p_dml_pref->InstanceNumber)
             p_ipif->ulNextIPV6PreInsNum = p_dml_pref->InstanceNumber + 1;
     }
+#else
+    if ( p_ipif->Cfg.InstanceNumber > COSA_USG_IF_NUM )
+    {
+        /*return  CosaDmlIpIfMlanGetIPv6Prefixes(hContext, ulIpIfInstanceNumber, pEntry);*/
+        return  NULL;
+    }
+#endif
     else
     {
+#if !defined(IPV6_MULTILAN)
+        ULONG i = 0;
+        PCOSA_DML_IP_V6PREFIX p_dml_pref = NULL;
+#endif
         AnscTraceFlow(("%s...\n", __FUNCTION__));
 
         for (i=0; i<g_ipif_num; i++)
@@ -3651,8 +3688,13 @@ CosaDmlIPGetIPv6Prefixes
             
             AnscCopyMemory(p_dml_pref, g_ipif_be_bufs[i].V6PreList, *p_num*sizeof(COSA_DML_IP_V6PREFIX));
         }
-    }
+#if !defined(IPV6_MULTILAN)
     return p_dml_pref;
+#endif
+    }
+#if defined(IPV6_MULTILAN)
+    return p_dml_pref;
+#endif
 }
 
 #endif

@@ -457,6 +457,7 @@ CosaDmlIpIfMlanLoadPsm
             SlapCleanVariable(&SlapValue);
         }
 
+#if defined(IPV6_MULTILAN)
         if ( TRUE )     /* IPv6Enable */
         {
             SlapInitVariable(&SlapValue);
@@ -496,6 +497,7 @@ CosaDmlIpIfMlanLoadPsm
 
             SlapCleanVariable(&SlapValue);
         }
+#endif
 
         if ( TRUE )     /* EthLink */
         {
@@ -885,6 +887,7 @@ CosaDmlIpIfMlanSavePsm
         }
     }
 
+#if defined(IPV6_MULTILAN)
     if ( TRUE )     /* IPv6Enable */
     {
         _ansc_sprintf
@@ -920,6 +923,7 @@ CosaDmlIpIfMlanSavePsm
                 ));
         }
     }
+#endif
 
     if ( TRUE )     /* EthLink */
     {
@@ -1301,7 +1305,9 @@ CosaDmlIpIfMlanSetCfg
 
         TR181_Mlan_Sysevent_Resync(pIpIf->Cfg.InstanceNumber);
 
+#if defined(IPV6_MULTILAN)
         commonSyseventSet("ipv6-restart", "");
+#endif
 
         /* Update the name -- just copy LinkName to Name field */
         _ansc_strcpy(pIpIf->Info.Name, pCfg->LinkName);
@@ -1966,6 +1972,7 @@ CosaDmlIpIfMlanGetV6Addr2
         PCOSA_DML_IP_V6ADDR         pEntry         
     )
 {
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) || defined(IPV6_MULTILAN)
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
@@ -2076,7 +2083,13 @@ CosaDmlIpIfMlanGetV6Addr2
 
     }
     return  ANSC_STATUS_SUCCESS;
-        
+#else
+    /*
+     *  No IPv6 support for Multi-LAN at the moment
+     *  It should not have got here at all!
+     */
+    return  ANSC_STATUS_UNAPPLICABLE;    
+#endif        
 }
 
 
@@ -2136,6 +2149,7 @@ CosaDmlIpIfMlanGetV6Prefix2
         PCOSA_DML_IP_V6PREFIX       pEntry         
     )
 {
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) || defined(IPV6_MULTILAN)
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
@@ -2249,7 +2263,13 @@ CosaDmlIpIfMlanGetV6Prefix2
     }
 
     return  ANSC_STATUS_SUCCESS; 
-
+#else
+    /*
+     *  No IPv6 support for Multi-LAN at the moment
+     *  It should not have got here at all!
+     */
+    return  ANSC_STATUS_UNAPPLICABLE;    
+#endif
 }
 
 /*

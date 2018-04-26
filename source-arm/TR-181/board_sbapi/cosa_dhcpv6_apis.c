@@ -1001,7 +1001,11 @@ BOOL tagPermitted(int tag)
 /* Server global variable  Begin*/
 
 
+#if defined(IPV6_MULTILAN)
 #define DHCPV6S_POOL_NUM               64  /* this pool means interface. We just supported such number interfaces. Each interface can include many pools*/
+#else
+#define DHCPV6S_POOL_NUM               1  /* this pool means interface. We just supported such number interfaces. Each interface can include many pools*/
+#endif
 #define DHCPV6S_POOL_OPTION_NUM        16 /* each interface supports this number options */
 #define CMD_BUFF_SIZE                  256
 #define DHCPV6S_NAME                   "dhcpv6s"
@@ -4011,13 +4015,16 @@ CosaDmlDhcpv6sAddPool
 {
     UtopiaContext utctx = {0};
     ULONG         Index = 0;
+#if defined(IPV6_MULTILAN)
     UCHAR         param_val[CMD_BUFF_SIZE] = {0};
+#endif
 
     if ( uDhcpv6ServerPoolNum >= DHCPV6S_POOL_NUM )
         return ANSC_STATUS_NOT_SUPPORTED;
 
     Index = uDhcpv6ServerPoolNum;
     
+#if defined(IPV6_MULTILAN)
     if(!commonSyseventGet(COSA_DML_DHCPV6C_PREF_PRETM_SYSEVENT_NAME, param_val, sizeof(param_val)))
     {
         if(param_val[0] != '\0')
@@ -4028,6 +4035,7 @@ CosaDmlDhcpv6sAddPool
     {
         snprintf(pEntry->Info.IANAPrefixes, sizeof(pEntry->Info.IANAPrefixes), "%s%s", pEntry->Cfg.Interface, "IPv6Prefix.1.");
     }
+#endif
 
     sDhcpv6ServerPool[Index] = *pEntry;
     sDhcpv6ServerPool[Index].Info.Status = COSA_DML_DHCP_STATUS_Enabled; /* We set this to be enabled all time */
@@ -4069,11 +4077,13 @@ CosaDmlDhcpv6sDelPool
             break;
     }
 
+#if defined(IPV6_MULTILAN)
     for ( Index2 = Index+1; (Index2 < uDhcpv6ServerPoolNum) && (Index2 < DHCPV6S_POOL_NUM); Index2++ )
     {
         setpool_into_utopia(DHCPV6S_NAME, "pool", Index2-1, &sDhcpv6ServerPool[Index2]);
         sDhcpv6ServerPool[Index2-1] =  sDhcpv6ServerPool[Index2];
     }
+#endif
 
     /* unset last one in utopia  RDKB-6780, CID-33220, limiting upper bounday*/
     if (uDhcpv6ServerPoolNum == 0)
@@ -4316,10 +4326,12 @@ CosaDmlDhcpv6sSetPoolCfg
         Index = DHCPV6S_POOL_NUM - 1;
     }
 
+#if defined(IPV6_MULTILAN)
     if(pCfg->Interface[0] != '\0')
     {
         snprintf(sDhcpv6ServerPool[Index].Info.IANAPrefixes, sizeof(sDhcpv6ServerPool[Index].Info.IANAPrefixes), "%s%s", pCfg->Interface, "IPv6Prefix.1.");
     }
+#endif
 
     /* We do this synchronization here*/
     if ( ( _ansc_strlen(sDhcpv6ServerPool[Index].Cfg.IANAManualPrefixes) > 0 ) && 
@@ -5182,12 +5194,25 @@ CosaDmlDhcpv6sDelOption
                 }
             }
 
+#if defined(IPV6_MULTILAN)
             for( Index2++; Index2  < uDhcpv6ServerPoolOptionNum[Index]; Index2++ )
             {
                 setpooloption_into_utopia(DHCPV6S_NAME,"pool",Index,"option",Index2-1,&sDhcpv6ServerPoolOption[Index][Index2]);
                 sDhcpv6ServerPoolOption[Index][Index2-1] =  sDhcpv6ServerPoolOption[Index][Index2];
             }
             unsetpooloption_from_utopia(DHCPV6S_NAME,"pool",Index,"option",Index2-1);
+
+            uDhcpv6ServerPoolOptionNum[Index] = (0 >(uDhcpv6ServerPoolOptionNum[Index]-1)? 0: (uDhcpv6ServerPoolOptionNum[Index]-1) );
+#else
+            unsetpooloption_from_utopia(DHCPV6S_NAME,"pool",Index,"option",Index2);
+            
+            for( Index2++; Index2  < uDhcpv6ServerPoolOptionNum[Index]; Index2++ )
+            {
+                sDhcpv6ServerPoolOption[Index][Index2-1] =  sDhcpv6ServerPoolOption[Index][Index2];
+            }
+
+            uDhcpv6ServerPoolOptionNum[Index]--;
+#endif
 
             uDhcpv6ServerPoolOptionNum[Index] = (0 >(uDhcpv6ServerPoolOptionNum[Index]-1)? 0: (uDhcpv6ServerPoolOptionNum[Index]-1) );
             if (!Utopia_Init(&utctx))
@@ -5393,9 +5418,9 @@ void CosaDmlDhcpv6sRebootServer()
     if (!g_dhcpv6_server_prefix_ready || !g_lan_ready)
         return;
 
+#if defined(IPV6_MULTILAN)
     commonSyseventSet("dhcpv6s-restart", "");
-
-#ifdef _MULTILAN_DISABLE_
+#else
     if (g_dhcpv6s_restart_count) {
         g_dhcpv6s_restart_count=0;
 
@@ -5599,6 +5624,7 @@ dhcpv6c_dbg_thrd(void * in)
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_PRETM_SYSEVENT_NAME, iapd_pretm);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_VLDTM_SYSEVENT_NAME, iapd_vldtm);
 
+#if defined(IPV6_MULTILAN)
                         for ( idx=0; idx<uDhcpv6ServerPoolNum; idx++)
                         {
                               if(sDhcpv6ServerPool[idx].Cfg.LeaseTime != atoi(iapd_pretm))
@@ -5607,6 +5633,7 @@ dhcpv6c_dbg_thrd(void * in)
                                   setpool_into_utopia(DHCPV6S_NAME, "pool", idx, &sDhcpv6ServerPool[idx]);
                               }
                         }
+#endif
 
                         if(pString)
                         {
@@ -5618,14 +5645,16 @@ dhcpv6c_dbg_thrd(void * in)
 
                         g_COSARepopulateTable(g_pDslhDmlAgent, "Device.DHCPv6.Server.Pool.1.Option.");
 
+#if defined(IPV6_MULTILAN)
                         g_dhcpv6_server_prefix_ready = TRUE;
 
                         commonSyseventSet("ipv6-restart", "1");
+#endif
 
 /* Service IPv6 will assign IP address and prefix allocation,
    for all lan interfaces.
 */
-#ifdef _MULTILAN_DISABLE_
+#if !defined(IPV6_MULTILAN)
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
                         char cmd[100];
@@ -5637,6 +5666,7 @@ dhcpv6c_dbg_thrd(void * in)
                          */
                         sprintf(cmd, "sysevent set ipv6_prefix %s \n",v6pref);
                         system(cmd);
+                        g_dhcpv6_server_prefix_ready = TRUE;
                         CcspTraceWarning(("!run cmd1:%s", cmd));
 
                         CosaDmlDHCPv6sTriggerRestart(FALSE);

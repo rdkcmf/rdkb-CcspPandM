@@ -1011,7 +1011,11 @@ Interface2_GetParamBoolValue
     if( AnscEqualString(ParamName, "IPv6Enable", TRUE))
     {
         /* collect value */
+#if defined(IPV6_MULTILAN)
         *pBool = pIPInterface->Cfg.bIPv6Enabled;
+#else
+        *pBool = TRUE;
+#endif
         return TRUE;
     }
 
@@ -1432,8 +1436,12 @@ Interface2_SetParamBoolValue
     if( AnscEqualString(ParamName, "IPv6Enable", TRUE))
     {
         /* save update to backup */
+#if defined(IPV6_MULTILAN)
         pIPInterface ->Cfg.bIPv6Enabled = bValue;
         return TRUE;
+#else
+        return FALSE; 
+#endif
     }
 
     if( AnscEqualString(ParamName, "ULAEnable", TRUE))
