@@ -3014,6 +3014,55 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				{
 					CcspTraceWarning(("%s - DefaultLoginPassword Object is NULL\n", __FUNCTION__ ));
 				}
+
+		
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.MSOLogoTitle") != NULL )
+				{
+					char *MSOLogoTitle = NULL;
+					MSOLogoTitle = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.MSOLogoTitle")->valuestring; 
+
+					if (MSOLogoTitle != NULL) 
+					{
+						AnscCopyString(PUiBrand->LocalUI.MSOLogoTitle, MSOLogoTitle);
+						MSOLogoTitle = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - MSOLogoTitle Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - MSOLogoTitle Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.HomeNetworkControl") != NULL )
+				{
+					char *HomeNetworkControl = NULL;
+					HomeNetworkControl = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.HomeNetworkControl")->valuestring; 
+
+					if (HomeNetworkControl != NULL) 
+					{
+						PUiBrand->LocalUI.HomeNetworkControl = FALSE;
+						if ( strcmp(HomeNetworkControl,"true") == 0)
+						{
+							PUiBrand->LocalUI.HomeNetworkControl= TRUE;
+							HomeNetworkControl = NULL;
+						}
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - HomeNetworkControl Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - HomeNetworkControl Object is NULL\n", __FUNCTION__ ));
+				}
 				
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MSOLogo") != NULL )
 				{
@@ -3153,6 +3202,28 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				else
 				{
 					CcspTraceWarning(("%s - PauseScreenFileLocation Object is NULL\n", __FUNCTION__ ));
+				}
+
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.HelpTip.NetworkName") != NULL )
+				{
+					char *NetworkName = NULL;
+					NetworkName = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.HelpTip.NetworkName")->valuestring; 
+
+					if (NetworkName != NULL) 
+					{
+						AnscCopyString(PUiBrand->HelpTip.NetworkName, NetworkName);
+						NetworkName = NULL;
+					}	
+					else
+					{
+						CcspTraceWarning(("%s - NetworkName Value is NULL\n", __FUNCTION__ ));
+					}
+					
+				}
+
+				else
+				{
+					CcspTraceWarning(("%s - NetworkName Object is NULL\n", __FUNCTION__ ));
 				}
 				
 			}

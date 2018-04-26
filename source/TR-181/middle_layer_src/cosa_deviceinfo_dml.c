@@ -7958,6 +7958,20 @@ LocalUI_GetParamStringValue
        		}
 
         } 
+	if( AnscEqualString(ParamName, "MSOLogoTitle", TRUE))
+        {
+		if ( AnscSizeOfString(pBindObj->LocalUI.MSOLogoTitle) < *pulSize)
+       		{
+           		AnscCopyString( pValue, pBindObj->LocalUI.MSOLogoTitle);		
+            		return 0;
+       		}
+       		else
+       		{
+           		*pulSize = AnscSizeOfString(pBindObj->LocalUI.MSOLogoTitle)+1;
+           		return 1;
+       		}
+
+        } 
 	 return -1;
 }
 
@@ -7973,6 +7987,100 @@ LocalUI_SetParamStringValue
 {
 	return FALSE;
 }
+
+/***********************************************************************
+APIs for Object:
+	DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.
+	  *  MaintenanceWindow_GetParamBoolValue
+	  
+***********************************************************************/
+
+BOOL
+LocalUI_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+	PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+	PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
+
+        if( AnscEqualString(ParamName, "HomeNetworkControl", TRUE))
+        {
+		 /* collect value */
+		*pBool = pBindObj->LocalUI.HomeNetworkControl;
+		return TRUE;
+        }    
+    return FALSE;
+}
+
+BOOL
+LocalUI_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+	return FALSE;
+}
+
+/***********************************************************************
+APIs for Object:
+	DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.HelpTip.
+	  *  MaintenanceWindow_GetParamBoolValue
+	  
+***********************************************************************/
+
+ULONG
+HelpTip_GetParamStringValue
+
+	(
+		ANSC_HANDLE 				hInsContext,
+		char*						ParamName,
+		char*						pValue,
+		ULONG*						pulSize
+	)
+{
+
+	PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+	PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
+	
+	 if( AnscEqualString(ParamName, "NetworkName", TRUE))
+        {
+		if ( AnscSizeOfString(pBindObj->HelpTip.NetworkName) < *pulSize)
+       		{
+           		AnscCopyString( pValue, pBindObj->HelpTip.NetworkName);		
+            		return 0;
+       		}
+       		else
+       		{
+           		*pulSize = AnscSizeOfString(pBindObj->HelpTip.NetworkName)+1;
+           		return 1;
+       		}
+
+        } 
+
+	 return -1;
+}
+
+BOOL
+HelpTip_SetParamStringValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+	return FALSE;
+}
+
+
 #ifndef _COSA_FOR_BCI_
 /***********************************************************************
 

@@ -984,6 +984,50 @@ LocalUI_SetParamStringValue
 
 ***********************************************************************/
 BOOL
+LocalUI_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+BOOL
+LocalUI_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+ULONG
+HelpTip_GetParamStringValue
+
+	(
+		ANSC_HANDLE 				hInsContext,
+		char*						ParamName,
+		char*						pValue,
+		ULONG*						pulSize
+	);
+BOOL
+HelpTip_SetParamStringValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl
+    *  SyndicationFlowControl_GetParamBoolValue
+    *  SyndicationFlowControl_SetParamBoolValue
+    *  SyndicationFlowControl_GetParamStringValue
+    *  SyndicationFlowControl_SetParamStringValue
+
+***********************************************************************/
+BOOL
 SyndicationFlowControl_GetParamBoolValue
 
     (

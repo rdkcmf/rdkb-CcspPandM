@@ -992,6 +992,8 @@
        		<functions>
 			<func_GetParamStringValue>LocalUI_GetParamStringValue</func_GetParamStringValue> 
 			<func_SetParamStringValue>LocalUI_SetParamStringValue</func_SetParamStringValue>
+			<func_GetParamBoolValue>LocalUI_GetParamBoolValue</func_GetParamBoolValue>
+			<func_SetParamBoolValue>LocalUI_SetParamBoolValue</func_SetParamBoolValue>
        		</functions>
   		<parameters>
 			<parameter>
@@ -1011,6 +1013,34 @@
 				<type>string</type>
 				<syntax>string</syntax>
 				<writable>false</writable>
+			</parameter>
+			<parameter>
+				<name>HomeNetworkControl</name>
+				<type>boolean</type>
+				<syntax>bool</syntax>
+				<writable>false</writable>
+			</parameter>
+			<parameter>
+				<name>MSOLogoTitle</name>
+				<type>string</type>
+				<syntax>string</syntax>
+				<writable>flase</writable>
+			</parameter>
+		</parameters>
+  	  </object>
+	  <object>
+		<name>HelpTip</name>
+       		<objectType>object</objectType>
+       		<functions>
+				<func_GetParamStringValue>HelpTip_GetParamStringValue</func_GetParamStringValue> 
+				<func_SetParamStringValue>HelpTip_SetParamStringValue</func_SetParamStringValue>
+       		</functions>
+  		<parameters>
+			<parameter>
+				<name>NetworkName</name>
+				<type>string</type>
+				<syntax>string</syntax>
+				<writable>flase</writable>
 			</parameter>
 		</parameters>
   	  </object>
