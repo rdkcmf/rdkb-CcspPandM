@@ -3056,7 +3056,7 @@ CosaDmlMDDev_GetEntryByIndex(ULONG index, COSA_DML_MD_DEV *pEntry)
     UtopiaContext ctx;
     md_dev_t md_dev;
     int i,j,size;
-    char mac_addr[12];
+    char mac_addr[64];
 
     if (index >= g_NrMDDevs || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -3114,7 +3114,7 @@ ANSC_STATUS
 CosaDmlMDDev_AddEntry(COSA_DML_MD_DEV *pEntry)
 {
     int rc = -1,i,j,size;
-    char mac_addr[12];
+    char mac_addr[64];
     UtopiaContext ctx;
     md_dev_t md_dev;
     
