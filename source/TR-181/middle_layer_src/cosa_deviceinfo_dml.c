@@ -4789,6 +4789,121 @@ Logging_GetParamStringValue
     return -1;
 }
 
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_RFC.Control
+
+    *  Control_GetParamIntValue
+    *  Control_SetParamIntValue
+***********************************************************************/
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Control_GetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int*                        pInt
+            );
+
+    description:
+
+        This function is called to retrieve integer parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int*                        pInt
+                The buffer of returned integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Control_GetParamIntValue
+    (
+	ANSC_HANDLE 		hInsContext,
+	char*			ParamName,
+	int*			pInt
+    )
+{
+	PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+	/* check the parameter name and return the corresponding value */
+	if( AnscEqualString(ParamName, "RetrieveNow", TRUE))
+	{
+		*pInt =  0;
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Control_SetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int                         iValue
+            );
+
+    description:
+
+        This function is called to set integer parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int                         iValue
+                The updated integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Control_SetParamIntValue
+    (
+	ANSC_HANDLE 		hInsContext,
+	char*			ParamName,
+	int 			iValue
+    )
+{
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "RetrieveNow", TRUE))
+    {
+	if( iValue == 1 )
+	{
+		AnscTraceWarning((" Run RFC dcmrfc.service\n"));
+		system("sh /lib/rdk/dcmrfc.service &");
+	}
+
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 /**********************************************************************  
 
     caller:     owner of this object 

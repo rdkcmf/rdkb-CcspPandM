@@ -229,6 +229,31 @@ WiFi_Telemetry_GetParamStringValue
         ULONG*                      pUlSize
     );
 
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_RFC.Control
+
+    *  Control_GetParamIntValue
+    *  Control_SetParamIntValue
+***********************************************************************/
+BOOL
+Control_GetParamIntValue
+    (
+        ANSC_HANDLE 		hInsContext,
+        char*			ParamName,
+        int*			pInt
+    );
+
+BOOL
+Control_SetParamIntValue
+    (
+        ANSC_HANDLE 		hInsContext,
+        char*			ParamName,
+        int 			iValue
+    );
+
 
 /***********************************************************************
 

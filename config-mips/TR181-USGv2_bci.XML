@@ -1090,6 +1090,25 @@
             <parameters></parameters>
 
             <objects>
+
+                <object>
+                    <name>Control</name>
+                    <objectType>object</objectType>
+                    <functions>
+                        <func_GetParamIntValue>Control_GetParamIntValue</func_GetParamIntValue>
+                        <func_SetParamIntValue>Control_SetParamIntValue</func_SetParamIntValue>
+                    </functions>
+
+                    <parameters>
+                        <parameter>
+                            <name>RetrieveNow</name>
+                            <type>int</type>
+                            <syntax>int</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                    </parameters>
+                </object>
+
                 <object>
                     <name>Feature</name>
                     <objectType>object</objectType>
