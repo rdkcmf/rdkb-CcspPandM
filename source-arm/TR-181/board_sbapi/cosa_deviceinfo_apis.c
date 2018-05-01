@@ -2388,7 +2388,7 @@ CosaDmlDiWiFiTelemetryInit
 
     if (PsmGet(DMSB_TR181_PSM_WHIX_CliStatList, val, sizeof(val)) != 0)
     {
-            AnscCopyString(PWiFi_Telemetry->CliStatList,"");
+            AnscCopyString(PWiFi_Telemetry->CliStatList,"1,2");
     }
     else
     {
@@ -2398,13 +2398,13 @@ CosaDmlDiWiFiTelemetryInit
         }
         else
         {
-            AnscCopyString(PWiFi_Telemetry->CliStatList,"");
+            AnscCopyString(PWiFi_Telemetry->CliStatList,"1,2");
         }
     }
 
     if (PsmGet(DMSB_TR181_PSM_WHIX_TxRxRateList, val, sizeof(val)) != 0)
     {
-            AnscCopyString(PWiFi_Telemetry->TxRxRateList, "1,2");
+            AnscCopyString(PWiFi_Telemetry->TxRxRateList, "");
     }
     else
     {
@@ -2412,10 +2412,6 @@ CosaDmlDiWiFiTelemetryInit
         {
             AnscCopyString(PWiFi_Telemetry->TxRxRateList, val);
         }
-        //else
-        //{
-        //    AnscCopyString(PWiFi_Telemetry->TxRxRateList,"1,2");
-        //}
     }
 
     if (PsmGet(DMSB_TR181_PSM_WIFI_TELEMETRY_SNRList, val, sizeof(val)) != 0)
