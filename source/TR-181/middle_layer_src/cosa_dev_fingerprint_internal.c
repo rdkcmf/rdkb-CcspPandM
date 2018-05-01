@@ -39,10 +39,10 @@
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 
-static char *g_DeviceFingerPrintEnabled = "eRT.com.cisco.spvtg.ccsp.advsecurity.Device.DeviceInfo.X_RDKCENTRAL-COM_DeviceFingerPrint.Enable";
+static char *g_DeviceFingerPrintEnabled = "Advsecurity_DeviceFingerPrint";
 
-ANSC_STATUS CosaGetNVRamULONG(char* setting, ULONG *value);
-ANSC_STATUS CosaSetNVRamULONG(char* setting, ULONG value);
+ANSC_STATUS CosaGetSysCfgUlong(char* setting, ULONG *value);
+ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value);
 
 ANSC_HANDLE
 CosaDeviceFingerprintCreate
@@ -51,8 +51,8 @@ CosaDeviceFingerprintCreate
     )
 {
     PCOSA_DATAMODEL_FPAGENT       pMyObject    = (PCOSA_DATAMODEL_FPAGENT)NULL;
-    ULONG                   psmValue = 0;
-    int                     retPsmGet  = CCSP_SUCCESS;
+    ULONG                   syscfgValue = 0;
+    int                     retGet  = CCSP_SUCCESS;
 
     /*
      * We create object by first allocating memory for holding the variables and member functions.
@@ -65,20 +65,21 @@ CosaDeviceFingerprintCreate
         return  (ANSC_HANDLE)NULL;
     }
 
-    retPsmGet = CosaGetNVRamULONG(g_DeviceFingerPrintEnabled, &psmValue);
-    if(!psmValue)
+    retGet = CosaGetSysCfgUlong(g_DeviceFingerPrintEnabled, &syscfgValue);
+#ifndef DUAL_CORE_XB3
+    if(!syscfgValue)
     {
-        fprintf(stderr,"\nDevice_Finger_Printing_enabled:false\n");
-        fprintf(stderr,"\nADV_SECURITY_SAFE_BROWSING_DISABLE\n");
-        fprintf(stderr,"\nADV_SECURITY_SOFTFLOWD_DISABLE\n");
-#ifdef _XB6_PRODUCT_REQ_
         system("/usr/ccsp/advsec/print_console_xb6.sh \"Device_Finger_Printing_enabled:false\" &");
         system("/usr/ccsp/advsec/print_console_xb6.sh \"ADV_SECURITY_SAFE_BROWSING_DISABLE\" &");
         system("/usr/ccsp/advsec/print_console_xb6.sh \"ADV_SECURITY_SOFTFLOWD_DISABLE\" &");
-#endif //_XB6_PRODUCT_REQ_
     }
+    else
+    {
+        system("touch /tmp/advsec_initialized_sysd");
+    }
+#endif //DUAL_CORE_XB3_
 
-    pMyObject->bEnable = psmValue; 
+    pMyObject->bEnable = syscfgValue;
 
     return  (ANSC_HANDLE)pMyObject;
 }
@@ -99,35 +100,44 @@ CosaDeviceFingerprintRemove
     return returnStatus;
 }
 
-ANSC_STATUS CosaGetNVRamULONG(char* setting, ULONG* value)
+ANSC_STATUS CosaGetSysCfgUlong(char* setting, ULONG* value)
 {
-    char *strValue = NULL;
-    int retPsmGet = CCSP_SUCCESS;
+    char buf[32];
 
-    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, setting, NULL, &strValue);
-    if (retPsmGet == CCSP_SUCCESS) {
-        *value = _ansc_atoi(strValue);
-        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+    memset(buf,sizeof(buf),0);
+    if(ANSC_STATUS_SUCCESS != syscfg_get( NULL, setting, buf, sizeof(buf)))
+    {
+        AnscTraceWarning(("syscfg_get failed\n"));
     }
-    return retPsmGet;
+    else
+    {
+        *value = atoi(buf);
+    }
+    return CCSP_SUCCESS;
 }
 
-ANSC_STATUS CosaSetNVRamULONG(char* setting, ULONG value)
+ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value)
 {
-    int retPsmSet = CCSP_SUCCESS;
-    char psmValue[32] = {};
+    int ret = CCSP_SUCCESS;
+    char buf[32];
 
-    sprintf(psmValue,"%d",value);
-    retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, setting, ccsp_string, psmValue);
-    if (retPsmSet != CCSP_SUCCESS)
-        {
-        CcspTraceInfo(("%s PSM_Set_Record_Value2 returned ERROR [%d] while setting [%s] Value [%d]\n",__FUNCTION__, retPsmSet, setting, value));
-        }
+    memset(buf,sizeof(buf),0);
+    sprintf(buf,"%d",value);
+    if(ANSC_STATUS_SUCCESS != syscfg_set( NULL, setting, buf, sizeof(buf)))
+    {
+        AnscTraceWarning(("syscfg_get failed\n"));
+        ret = CCSP_FAILURE;
+    }
     else
+    {
+        if (ANSC_STATUS_SUCCESS != syscfg_commit())
         {
-        CcspTraceInfo(("%s PSM_Set_Record_Value2 returned SUCCESS[%d] while Setting [%s] Value [%d]\n",__FUNCTION__, retPsmSet, setting, value));
+            CcspTraceWarning(("syscfg_commit failed\n"));
+            ret = CCSP_FAILURE;
         }
-    return retPsmSet;
+    }
+
+    return ret;
 }
 
 ANSC_STATUS CosaAdvSecInit(ANSC_HANDLE hThisObject)
@@ -137,9 +147,7 @@ ANSC_STATUS CosaAdvSecInit(ANSC_HANDLE hThisObject)
 
     char cmd[128];
     memset(cmd, 0, sizeof(cmd));
-    /*We need to set this before the script since in XB6,
-      there is a check in ExecStartPre for PSM to be enabled */
-    CosaSetNVRamULONG(g_DeviceFingerPrintEnabled, 1);
+    CosaSetSysCfgUlong(g_DeviceFingerPrintEnabled, 1);
     AnscCopyString(cmd, "/usr/ccsp/pam/launch_adv_security.sh -enable &");
     returnStatus = WEXITSTATUS(system(cmd));
     if ( returnStatus == ANSC_STATUS_SUCCESS )
@@ -162,8 +170,8 @@ ANSC_STATUS CosaAdvSecDeInit(ANSC_HANDLE hThisObject)
 	{
         pMyObject->bEnable = FALSE;
 
-        //ignore nvram set failure
-        CosaSetNVRamULONG(g_DeviceFingerPrintEnabled, 0);
+        //ignore syscfg set failure
+        CosaSetSysCfgUlong(g_DeviceFingerPrintEnabled, 0);
         fprintf(stderr,"Device_Finger_Printing_enabled:false\n");
 	}
     return returnStatus;
