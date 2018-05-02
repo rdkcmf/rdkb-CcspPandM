@@ -70,7 +70,13 @@
 #include "dml_tr181_custom_cfg.h"
 #if defined (_XB6_PRODUCT_REQ_)
 #include "bt_hal.h"
-#endif 
+#endif
+
+#if defined (INTEL_PUMA7) //ARRISXB6-7328, ARRISXB6-7332
+#include "cm_hal.h"
+#include "cm_hal_oem.h"
+#endif
+
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 /***********************************************************************
@@ -986,6 +992,10 @@ DeviceInfo_SetParamStringValue
 	 else if (AnscEqualString(pString, "reboot_device", TRUE))
          {
                 CcspTraceInfo(("RDKB_REBOOT : RebootDevice triggered from GUI\n"));
+		 
+                #if defined (INTEL_PUMA7) //ARRISXB6-7328, ARRISXB6-7332
+                ARRIS_RESET_REASON("RDKB_REBOOT : RebootDevice triggered from GUI\n");
+                #endif
 
 		char buffer[8] = {0};
 		syscfg_get( NULL, "restore_reboot", buffer, sizeof(buffer));
@@ -1027,8 +1037,11 @@ DeviceInfo_SetParamStringValue
 	 }
          else if(AnscEqualString(pString, "factory_reset", TRUE))
          {
-                
-		CcspTraceInfo(("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n"));
+               CcspTraceInfo(("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n"));
+			 
+               #if defined (INTEL_PUMA7) //ARRISXB6-7328, ARRISXB6-7332
+               ARRIS_RESET_REASON("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n");
+               #endif
          }
 	 else if(AnscEqualString(pString, "captiveportal_failure", TRUE)) {
 

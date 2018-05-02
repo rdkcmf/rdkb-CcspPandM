@@ -1287,11 +1287,7 @@ Firewall1_GetParamUlongValue
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
     PCOSA_DML_FIREWALL_CFG2         pFirewallCfg    = &pCosaDMSecurity->FirewallConfig;
 
-    if(fwSync)
-    {
-        CosaDmlFirewallGetConfig2(NULL, pFirewallCfg);
-        fwSync = 0;
-    }
+    CosaDmlFirewallGetConfig2(NULL, pFirewallCfg); //ARRISXB6-1181 ARRISXB6-7324
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "FirewallLevel", TRUE))
