@@ -121,7 +121,6 @@ Local_CosaDmlGetParamValueByPathName
     )
 {
 
-printf(" *************** Local_CosaDmlGetParamValueByPathName ***** \n");
     ANSC_STATUS retval = ANSC_STATUS_FAILURE;
     parameterValStruct_t varStruct;
     char outdata[80];

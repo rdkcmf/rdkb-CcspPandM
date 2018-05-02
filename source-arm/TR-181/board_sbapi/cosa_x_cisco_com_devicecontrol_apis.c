@@ -1683,12 +1683,17 @@ void restoreAllDBs()
 	/* Clear cable modem's dynamic nonvol settings */
 	system("rm -f /mnt/cmnonvol/cm_dyn.bin");
 #endif
-#if defined (_XB6_PRODUCT_REQ_)
+#if defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
         CcspTraceWarning(("FactoryReset:%s in thread  Restoring moca to factory defaults  ...\n",__FUNCTION__));
         system("rm -f /nvram/moca.conf.default"); //TCXB6-1028
         system("rm -f /nvram/*.moca0"); //TCXB6-1028
 #endif
+#if defined (INTEL_PUMA7)
+	system("rm -f /nvram/etc/passwd"); //ARRISXB6-7330
+	system( "arris_rpc_client arm nvm_reset" ); //ARRISXB6-7323
+#else
 	system("restoreAllDBs"); //Perform factory reset on other components
+#endif
 	return;
 }
 
@@ -1784,7 +1789,7 @@ CosaDmlDcSetFactoryReset
 	   	CcspTraceError(("FactoryReset:%s BAD parameter passed to factory defaults parameter ...\n",__FUNCTION__));
 		return ANSC_STATUS_BAD_PARAMETER;
 	    }
-#if defined (_XB6_PRODUCT_REQ_)
+#if defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
                 {
                         unsigned int dbValue = 0;
                         FILE *pdbFile = NULL;
@@ -1863,6 +1868,11 @@ CosaDmlDcSetFactoryReset
        // system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
 	//	system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
 	//	system("restoreAllDBs"); //Perform factory reset on other components
+#if defined (INTEL_PUMA7)
+	CcspTraceWarning (("***** New API call to MOCA FactoryReset: Restoring MOCA to factory defaults  ...\n")); //ARRISXB6-7326
+	moca_SetEnableDefault();
+	moca_UpdateNvramEnabledData();
+#endif
 	pthread_t other;
         pthread_create(&other, NULL, &restoreAllDBs, NULL);
 	}
