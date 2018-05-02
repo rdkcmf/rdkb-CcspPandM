@@ -1139,7 +1139,27 @@
                             <writable>true</writable>
                         </parameter>
                     </parameters>
+
                     <objects>
+
+                       <!-- Enable command to verify if memswap is enabled for given device -->
+                       <object>
+                           <name>MEMSWAP</name>
+                           <objectType>object</objectType>
+                           <functions>
+                  	      <func_GetParamBoolValue>MEMSWAP_GetParamBoolValue</func_GetParamBoolValue>
+                  	      <func_SetParamBoolValue>MEMSWAP_SetParamBoolValue</func_SetParamBoolValue>
+                 	   </functions>
+                 	   <parameters>
+                          	<parameter>
+			  	    <name>Enable</name>
+			  	    <type>boolean</type>
+			  	    <syntax>bool</syntax>
+			  	    <writable>true</writable>
+		           	</parameter>
+			    </parameters>
+		        </object>
+
                         <object>
                             <name>CodeBigFirst</name>
                             <objectType>object</objectType>
@@ -14411,6 +14431,7 @@
             </object>
         </objects>
     </object>
+
 
   <!--  <object>
       <name>Hosts</name>
