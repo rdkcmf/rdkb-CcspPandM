@@ -3387,6 +3387,7 @@ void __cosa_dhcpsv6_refresh_config()
 
     /*Begin write configuration */
     fprintf(fp, "log-level 4\n");
+	fprintf(fp, "reconfigure-enabled 1\n"); //ARRISXB6-7319
 
     if ( g_dhcpv6_server_type != DHCPV6_SERVER_TYPE_STATEFUL )
         fprintf(fp, "stateless\n");
@@ -3778,6 +3779,14 @@ OPTIONS:
 #endif
                 }
             }
+			
+			/*RDKB-6780, CID-33149, free unused resources before return*/
+			//ARRISXB6-7321
+            if(responsefd != NULL)
+            {
+                fclose(responsefd);
+                responsefd = NULL;
+            }
 
         }     
 
@@ -3788,11 +3797,6 @@ OPTIONS:
     if(fp != NULL)
       fclose(fp);
 
-    /*RDKB-6780, CID-33149, free unused resources before return*/
-    if(responsefd != NULL)
-    {
-        fclose(responsefd);
-    }
 
 #ifndef _COSA_INTEL_USG_ARM_
     /*we will copy the updated conf file at once*/

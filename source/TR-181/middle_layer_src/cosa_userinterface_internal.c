@@ -247,6 +247,8 @@ CosaUserinterfaceInitialize
     /* Initialize middle layer */
 
     ulEntryCount = CosaDmlUIIPRangeGetNumberOfEntries(NULL);
+	if (ulEntryCount == ANSC_STATUS_FAILURE) //ARRISXB6-7321
+        return ANSC_STATUS_FAILURE;
 
     for ( ulIndex = 0; ulIndex < ulEntryCount; ulIndex++ )
     {
