@@ -196,7 +196,7 @@ CosaDmlDiGetRouterIPAddress
     )
 {
 	unsigned int UIntIP = (unsigned int)CosaUtilGetIfAddr("erouter0");
-#ifdef INTEL_PUMA7
+#if defined (_XB6_PRODUCT_REQ_) ||  defined (_COSA_BCM_ARM_)
 	sprintf(pValue, "%d.%d.%d.%d",(UIntIP & 0xff),((UIntIP >> 8) & 0xff),((UIntIP >> 16) & 0xff),(UIntIP >> 24));
 #else
 	sprintf(pValue, "%d.%d.%d.%d", (UIntIP >> 24),((UIntIP >> 16) & 0xff),((UIntIP >> 8) & 0xff),(UIntIP & 0xff));
