@@ -117,6 +117,35 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php" ,
       "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "CAI"
+   },
+
+"videotron" : {
+
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink" : "https://www.videotron.ca",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideLink" : "https://www.videotron.com/client/residential/Customer-Centre",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralLink" : "http://support.videotron.com/residential/internet",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerText" : "Videotron.ca",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideText" : "User Guide",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralText" : "My Account",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOmenu" : "Videotron Network",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOinfo" : "View technical information related to your Videotron network connection.",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusTitle" : "Videotron Network",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusInfo" : "View and manage the settings for you local IP, Wi-Fi, MoCA and Videotron networks.",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.NetworkDiagnosticTools.ConnectivityTestURL" : "www.videotron.ca",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Support" : "true",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.PartnerHelpLink": "https://www.videotron.ca",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.SMSsupport" : "false",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MyAccountAppSupport" : "false",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MSOLogo" : "captiveportal_videotron_logo.png" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Title" : "Videotron Smart Internet",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.WelcomeMessage" : "Welcome to Videotron Internet",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.MSOLogo" : "logo_videotron.png" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername" : "admin" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword" : "password" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP" : "10.0.0.1" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange" : "255.255.255.0" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php" ,
+      "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "CAI"
    }
 
 }
