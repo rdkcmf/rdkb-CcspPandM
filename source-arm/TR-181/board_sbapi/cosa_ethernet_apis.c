@@ -199,9 +199,18 @@ EthIntControlFuncs swFuncs = {
 };
 
 int g_PortIDs[]={
-#if defined(_CBR_PRODUCT_REQ_) || defined(INTEL_PUMA7)
-	CCSP_HAL_ETHSW_EthPort1,
+#if defined(_CBR_PRODUCT_REQ_)
+    CCSP_HAL_ETHSW_EthPort1,
     CCSP_HAL_ETHSW_EthPort2,
+    CCSP_HAL_ETHSW_EthPort3,
+    CCSP_HAL_ETHSW_EthPort4,
+    CCSP_HAL_ETHSW_EthPort5,
+    CCSP_HAL_ETHSW_EthPort6,
+    CCSP_HAL_ETHSW_EthPort7,
+    CCSP_HAL_ETHSW_EthPort8
+#elif defined(INTEL_PUMA7) //ARRISXB6-7331
+    CCSP_HAL_ETHSW_EthPort2,
+    CCSP_HAL_ETHSW_EthPort1,
     CCSP_HAL_ETHSW_EthPort3,
     CCSP_HAL_ETHSW_EthPort4,
     CCSP_HAL_ETHSW_EthPort5,
