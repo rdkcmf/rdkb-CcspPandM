@@ -2892,39 +2892,52 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername") != NULL )
 				{
-					DefaultLoginUsername = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername")->valuestring; 
-
-					if (DefaultLoginUsername != NULL) 
+					//Check whether this is comcast partner or not
+					if( 0 == strcmp( "comcast", partnerID ) )
 					{
-						AnscCopyString(PUiBrand->LocalUI.DefaultLoginUsername, DefaultLoginUsername);
-						DefaultLoginUsername = NULL;
-					}	
+						syscfg_get(NULL, "user_name_3", PUiBrand->LocalUI.DefaultLoginUsername, sizeof(PUiBrand->LocalUI.DefaultLoginUsername));
+					}
 					else
 					{
-						CcspTraceWarning(("%s - DefaultLoginUsername Value is NULL\n", __FUNCTION__ ));
+						DefaultLoginUsername = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername")->valuestring; 
+						
+						if (DefaultLoginUsername != NULL) 
+						{
+							AnscCopyString(PUiBrand->LocalUI.DefaultLoginUsername, DefaultLoginUsername);
+							DefaultLoginUsername = NULL;
+						}	
+						else
+						{
+							CcspTraceWarning(("%s - DefaultLoginUsername Value is NULL\n", __FUNCTION__ ));
+						}
 					}
-					
 				}
-
 				else
 				{
 					CcspTraceWarning(("%s - DefaultLoginUsername Object is NULL\n", __FUNCTION__ ));
 				}
-				
+
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword") != NULL )
 				{
-					DefaultLoginPassword = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword")->valuestring; 
-
-					if (DefaultLoginPassword != NULL) 
+					//Check whether this is comcast partner or not
+					if( 0 == strcmp( "comcast", partnerID ) )
 					{
-						AnscCopyString(PUiBrand->LocalUI.DefaultLoginPassword, DefaultLoginPassword);
-						DefaultLoginPassword = NULL;
-					}	
+						syscfg_get(NULL, "user_password_3", PUiBrand->LocalUI.DefaultLoginPassword, sizeof(PUiBrand->LocalUI.DefaultLoginPassword));
+					}
 					else
 					{
-						CcspTraceWarning(("%s - DefaultLoginPassword Value is NULL\n", __FUNCTION__ ));
+						DefaultLoginPassword = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword")->valuestring; 
+						
+						if (DefaultLoginPassword != NULL) 
+						{
+							AnscCopyString(PUiBrand->LocalUI.DefaultLoginPassword, DefaultLoginPassword);
+							DefaultLoginPassword = NULL;
+						}	
+						else
+						{
+							CcspTraceWarning(("%s - DefaultLoginPassword Value is NULL\n", __FUNCTION__ ));
+						}
 					}
-					
 				}
 
 				else
@@ -2997,18 +3010,25 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP") != NULL )
 				{
-					DefaultAdminIP = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP")->valuestring; 
-
-					if (DefaultAdminIP != NULL) 
+					//Check whether this is comcast partner or not
+					if( 0 == strcmp( "comcast", partnerID ) )
 					{
-						AnscCopyString(PUiBrand->DefaultAdminIP, DefaultAdminIP);
-						DefaultAdminIP = NULL;
-					}	
+						syscfg_get(NULL, "lan_ipaddr", PUiBrand->DefaultAdminIP, sizeof(PUiBrand->DefaultAdminIP));
+					}
 					else
 					{
-						CcspTraceWarning(("%s - DefaultAdminIP Value is NULL\n", __FUNCTION__ ));
+						DefaultAdminIP = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP")->valuestring; 
+						
+						if (DefaultAdminIP != NULL) 
+						{
+							AnscCopyString(PUiBrand->DefaultAdminIP, DefaultAdminIP);
+							DefaultAdminIP = NULL;
+						}	
+						else
+						{
+							CcspTraceWarning(("%s - DefaultAdminIP Value is NULL\n", __FUNCTION__ ));
+						}
 					}
-					
 				}
 
 				else
@@ -3018,18 +3038,25 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange") != NULL )
 				{
-					DefaultLocalIPv4SubnetRange = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange")->valuestring; 
-
-					if (DefaultLocalIPv4SubnetRange != NULL) 
+					//Check whether this is comcast partner or not
+					if( 0 == strcmp( "comcast", partnerID ) )
 					{
-						AnscCopyString(PUiBrand->DefaultLocalIPv4SubnetRange, DefaultLocalIPv4SubnetRange);
-						DefaultLocalIPv4SubnetRange = NULL;
-					}	
+						syscfg_get(NULL, "lan_netmask", PUiBrand->DefaultLocalIPv4SubnetRange, sizeof(PUiBrand->DefaultLocalIPv4SubnetRange));
+					}
 					else
 					{
-						CcspTraceWarning(("%s - DefaultLocalIPv4SubnetRange Value is NULL\n", __FUNCTION__ ));
+						DefaultLocalIPv4SubnetRange = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange")->valuestring; 
+						
+						if (DefaultLocalIPv4SubnetRange != NULL) 
+						{
+							AnscCopyString(PUiBrand->DefaultLocalIPv4SubnetRange, DefaultLocalIPv4SubnetRange);
+							DefaultLocalIPv4SubnetRange = NULL;
+						}	
+						else
+						{
+							CcspTraceWarning(("%s - DefaultLocalIPv4SubnetRange Value is NULL\n", __FUNCTION__ ));
+						}
 					}
-					
 				}
 
 				else
