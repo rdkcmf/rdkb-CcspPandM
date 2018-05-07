@@ -477,6 +477,23 @@ int main(int argc, char* argv[])
     CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PandM Registering PCD exception handler... \n"));
     PCD_api_register_exception_handlers( argv[0], NULL );
 #endif
+#else
+    struct sigaction new_action, old_action;
+    // we want to ignore SIGCHLD so that there wont be zombies
+    new_action.sa_handler = SIG_IGN;
+    new_action.sa_flags   = 0;
+    sigemptyset (&new_action.sa_mask);
+    if (-1 == sigaction (SIGCHLD, NULL, &old_action)) {
+          printf("Problem getting original signal handler for SIGCHLD. Reason (%d) %s\n",
+                 errno, strerror(errno));
+    } else {
+       if (SIG_IGN != old_action.sa_handler) {
+         if (-1 == sigaction (SIGCHLD, &new_action, NULL)) {
+               printf("Problem setting signal handler for SIGCHLD. Reason (%d) %s\n",
+                      errno, strerror(errno));
+         }
+       }
+    }
 #endif
 
     cmd_dispatch('e');
