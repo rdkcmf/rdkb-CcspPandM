@@ -467,7 +467,7 @@ static int detect_process(char *process_name)
 
     sprintf(ps, "ps | grep -v grep | grep -c %s", process_name);
 
-    if ((ptr=popen(ps, "r"))!=NULL)
+    if ((ptr=v_secure_popen(ps))!=NULL)
     {
         while (fgets(buff,512,ptr)!=NULL)
         {
@@ -478,7 +478,7 @@ static int detect_process(char *process_name)
             }
         }
 
-        pclose(ptr);
+        v_secure_pclose(ptr);
     }
 
     return 0;
@@ -1347,13 +1347,13 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 			sprintf(buf, "date");
 			char buffer[50] = {0};
 			memset(buffer,0,sizeof(buffer));
-			fp = popen(buf, "r");
+			fp = v_secure_popen(buf);
 			if( fp != NULL) {         
 			while(fgets(buffer, sizeof(buffer), fp)!=NULL){
 				buffer[strlen(buffer) - 1] = '\0';
 				syscfg_set(NULL, "latest_wifi_reset_time", buffer);
 			}
-				pclose(fp);
+				v_secure_pclose(fp);
 			}
 
 			if (syscfg_commit() != 0) 
@@ -1516,13 +1516,13 @@ CosaDmlDcSetRebootDevice
 		sprintf(buf, "date");
 		char buffer[50] = {0};
 		memset(buffer,0,sizeof(buffer));
-        fp = popen(buf, "r");
+        fp = v_secure_popen(buf);
 		if( fp != NULL) {         
 		    while(fgets(buffer, sizeof(buffer), fp)!=NULL){
 			    buffer[strlen(buffer) - 1] = '\0';
 				syscfg_set(NULL, "latest_reboot_time", buffer);
 			}
-			pclose(fp);
+			v_secure_pclose(fp);
 		}
 
 		char tmp[7] = {0};

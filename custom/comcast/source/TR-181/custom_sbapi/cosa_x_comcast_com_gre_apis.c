@@ -483,12 +483,12 @@ CosaDml_GreIfGetConnectedRemoteEndpoint(ULONG idx, COSA_DML_GRE_IF *greIf)
 		return ANSC_STATUS_FAILURE;
 
 	snprintf(cmd, sizeof(cmd), "sysevent get %s",kHotspotfd_tunnelEP);       
-    if (((fp = popen(cmd,"r")) != NULL) && (fgets(line_buf, sizeof(line_buf), fp)))
+    if (((fp = v_secure_popen(cmd)) != NULL) && (fgets(line_buf, sizeof(line_buf), fp)))
     {
 		sprintf(greIf->ConnectedRemoteEndpoint,"%s",line_buf);
     }
 	if(fp)
-		pclose(fp);
+		v_secure_pclose(fp);
 
 	return ANSC_STATUS_SUCCESS;	
 }
