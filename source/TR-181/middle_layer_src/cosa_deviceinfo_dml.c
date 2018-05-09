@@ -72,7 +72,7 @@
 #include "bt_hal.h"
 #endif
 
-#if defined (INTEL_PUMA7) //ARRISXB6-7328, ARRISXB6-7332
+#if defined (_ARRIS_XB6_PRODUCT_REQ_) //ARRISXB6-7328, ARRISXB6-7332
 #include "cm_hal.h"
 #include "cm_hal_oem.h"
 #endif
@@ -1156,7 +1156,7 @@ DeviceInfo_SetParamStringValue
          {
                 CcspTraceInfo(("RDKB_REBOOT : RebootDevice triggered from GUI\n"));
 		 
-                #if defined (INTEL_PUMA7) //ARRISXB6-7328, ARRISXB6-7332
+                #if defined (_ARRIS_XB6_PRODUCT_REQ_) //ARRISXB6-7328, ARRISXB6-7332
                 ARRIS_RESET_REASON("RDKB_REBOOT : RebootDevice triggered from GUI\n");
                 #endif
 
@@ -1202,7 +1202,7 @@ DeviceInfo_SetParamStringValue
          {
                CcspTraceInfo(("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n"));
 			 
-               #if defined (INTEL_PUMA7) //ARRISXB6-7328, ARRISXB6-7332
+               #if defined (_ARRIS_XB6_PRODUCT_REQ_) //ARRISXB6-7328, ARRISXB6-7332
                ARRIS_RESET_REASON("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n");
                #endif
          }
