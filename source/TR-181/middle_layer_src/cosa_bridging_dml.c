@@ -516,7 +516,7 @@ Bridge_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pDmlBridge->Cfg.Alias, "cpe-Bridge%d", pCosaDMBridging->ulNextBridgeInstance);
+    _ansc_sprintf(pDmlBridge->Cfg.Alias, "cpe-MultiLAN-Bridge%d", pCosaDMBridging->ulNextBridgeInstance);
     _ansc_sprintf(pDmlBridge->Cfg.name, "Bridge%d", pCosaDMBridging->ulNextBridgeInstance);
     pDmlBridge->Cfg.Std = COSA_DML_BRG_STD_8021Q_2005;
     pDmlBridge->Cfg.bAllowDelete = TRUE;
