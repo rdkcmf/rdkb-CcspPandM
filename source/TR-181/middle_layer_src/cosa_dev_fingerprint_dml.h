@@ -48,5 +48,22 @@ DeviceFingerPrint_SetParamBoolValue
         BOOL                        bValue
     );
 
+ULONG
+DeviceFingerPrint_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+BOOL
+DeviceFingerPrint_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       strValue
+    );
+
 #endif //_COSA_DEVICE_FINGERPRINT_DML_H
 

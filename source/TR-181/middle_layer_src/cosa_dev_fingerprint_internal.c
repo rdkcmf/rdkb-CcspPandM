@@ -43,6 +43,8 @@ static char *g_DeviceFingerPrintEnabled = "Advsecurity_DeviceFingerPrint";
 
 ANSC_STATUS CosaGetSysCfgUlong(char* setting, ULONG *value);
 ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value);
+ANSC_STATUS CosaGetSysCfgString(char* setting, char *value, PULONG pulSize);
+ANSC_STATUS CosaSetSysCfgString(char* setting, char *pValue);
 
 ANSC_HANDLE
 CosaDeviceFingerprintCreate
@@ -125,7 +127,7 @@ ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value)
     sprintf(buf,"%d",value);
     if(ANSC_STATUS_SUCCESS != syscfg_set( NULL, setting, buf, sizeof(buf)))
     {
-        AnscTraceWarning(("syscfg_get failed\n"));
+        AnscTraceWarning(("syscfg_set failed\n"));
         ret = CCSP_FAILURE;
     }
     else
@@ -138,6 +140,44 @@ ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value)
     }
 
     return ret;
+}
+
+ANSC_STATUS CosaGetSysCfgString(char* setting, char* pValue, PULONG pulSize )
+{
+    char buf[1024];
+    memset(buf, 0, sizeof(buf));
+    if(ANSC_STATUS_SUCCESS == syscfg_get( NULL, setting, buf, sizeof(buf)))
+    {
+        if( buf != NULL )
+        {
+            strncpy(pValue ,buf,strlen(buf));
+            *pulSize = AnscSizeOfString(pValue);
+            return ANSC_STATUS_SUCCESS;
+        }
+        else
+            return ANSC_STATUS_FAILURE;
+    }
+    else
+            return ANSC_STATUS_FAILURE;
+}
+
+ANSC_STATUS CosaSetSysCfgString( char* setting, char* pValue )
+{
+        if ((syscfg_set(NULL, setting, pValue) != 0))
+        {
+            AnscTraceWarning(("syscfg_set failed\n"));
+            return ANSC_STATUS_FAILURE;
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                AnscTraceWarning(("setPartnerId : syscfg_commit failed\n"));
+                return ANSC_STATUS_FAILURE;
+            }
+
+            return ANSC_STATUS_SUCCESS;
+        }
 }
 
 ANSC_STATUS CosaAdvSecInit(ANSC_HANDLE hThisObject)
