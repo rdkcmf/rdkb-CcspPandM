@@ -177,6 +177,9 @@ static int totalticket = 0;
 extern int commonSyseventFd ;
 extern token_t commonSyseventToken;
 
+ANSC_STATUS set_mesh_disabled();
+BOOL is_mesh_enabled();
+
 #if 0
 void configWifi()
 {
@@ -3598,6 +3601,13 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         }
         
         //configBridgeMode(bEnable);
+
+        if(bridge_info.mode == BRIDGE_MODE_STATIC && is_mesh_enabled())
+        {
+            CcspTraceWarning(("Setting MESH to disabled as LanMode is changed to Bridge mode\n"));
+            pthread_t tid;
+            pthread_create(&tid,NULL,&set_mesh_disabled,NULL);
+        }
         
         ret = ANSC_STATUS_SUCCESS;
     }
@@ -3771,41 +3781,50 @@ CosaDmlDcSetErouterEnabled
 
 BOOL is_mesh_enabled()
 {
-    int ret = ANSC_STATUS_FAILURE;
-    parameterValStruct_t    **valStructs = NULL;
-    char dstComponent[64]="eRT.com.cisco.spvtg.ccsp.meshagent";
-    char dstPath[64]="/com/cisco/spvtg/ccsp/meshagent";
-    char *paramNames[]={"Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.Enable"};
-    int  valNum = 0;
+    char buf[10] = {0};
 
-    ret = CcspBaseIf_getParameterValues(
+    if(!syscfg_get(NULL, "mesh_enable", buf, sizeof(buf)))
+    {
+        if ((strcmp(buf,"true") == 0))
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+ANSC_STATUS set_mesh_disabled()
+{
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+    parameterValStruct_t   param_val[1];
+    char  component[256]  = "eRT.com.cisco.spvtg.ccsp.meshagent";
+    char  bus[256]        = "/com/cisco/spvtg/ccsp/meshagent";
+    char* faultParam      = NULL;
+    int   ret             = 0;
+
+    param_val[0].parameterName="Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.Enable";
+    param_val[0].parameterValue="false";
+    param_val[0].type = ccsp_boolean;
+
+    ret = CcspBaseIf_setParameterValues(
             bus_handle,
-            dstComponent,
-            dstPath,
-            paramNames,
+            component,
+            bus,
+            0,
+            0,
+            &param_val,
             1,
-            &valNum,
-            &valStructs);
+            TRUE,
+            &faultParam
+            );
 
-    if(CCSP_Message_Bus_OK != ret)
-    {
-         CcspTraceError(("%s CcspBaseIf_getParameterValues %s error %d\n", __FUNCTION__,paramNames[0],ret));
-         free_parameterValStruct_t(bus_handle, valNum, valStructs);
-         return FALSE;
+    if( ( ret != CCSP_SUCCESS ) && ( faultParam!=NULL )) {
+        CcspTraceError(("%s-%d Failed to set Mesh Enable to false\n",__FUNCTION__,__LINE__));
+        bus_info->freefunc( faultParam );
+        return ANSC_STATUS_FAILURE;
     }
+    return ANSC_STATUS_SUCCESS;
 
-    CcspTraceWarning(("valStructs[0]->parameterValue = %s\n",valStructs[0]->parameterValue));
-
-    if(strncmp("true", valStructs[0]->parameterValue,4)==0)
-    {
-         free_parameterValStruct_t(bus_handle, valNum, valStructs);
-         return TRUE;
-    }
-    else
-    {
-         free_parameterValStruct_t(bus_handle, valNum, valStructs);
-         return FALSE;
-    }
 }
 
 void CosaDmlDcSaveWiFiHealthStatusintoNVRAM( void  )
