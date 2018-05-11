@@ -129,7 +129,19 @@
 #define GRE_PARAM_ASSOBRS       GRE_OBJ_GREIF "%d.AssociatedBridges"
 #define GRE_PARAM_ASSOBRSWFP    GRE_OBJ_GREIF "%d.AssociatedBridgesWiFiPort"
 #define GRE_PARAM_GREIF         GRE_OBJ_GREIF "%d.GRENetworkInterface"
+#define LOCALINTERFACES_PRE_SECURE_SSID		"Device.WiFi.SSID.5.,Device.WiFi.SSID.6."
 
+/* when secure ssid is supported in mips products, use below flag instaed of above flag for handling race condition in bbhm readiness 
+replace LOCALINTERFACES_PRE_SECURE_SSID with LOCALINTERFACES_POST_SECURE_SSID in function hotspot_update_circuit_ids() */
+
+#define LOCALINTERFACES_POST_SECURE_SSID	"Device.WiFi.SSID.5.,Device.WiFi.SSID.6.,Device.WiFi.SSID.9.,Device.WiFi.SSID.10."
+
+#define HOTSPOT_INTERFACE_PRE_SECURE_SSID_LEN		39
+
+/* when all platforms support Secure SSID move replace HOTSPOT_INTERFACE_PRE_SECURE_SSID_LEN with HOTSPOT_INTERFACE_POST_SECURE_SSID_LEN
+in hotspot_update_circuit_ids() */
+
+#define HOTSPOT_INTERFACE_POST_SECURE_SSID_LEN		80
 static int sysevent_fd;
 static token_t sysevent_token;
 static hotspotfd_statistics_s *g_hsfdStat = NULL;
@@ -263,11 +275,13 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
     char outdata[80];
     char* save = NULL;
     char* curInt = NULL;
+    char* testcurInt = NULL;
     int nameSave = 0;
     int circuitSave = 0;
     int ssidInst = 0;
     int size;
     int inst;
+    int retry_count =0;
     parameterValStruct_t varStruct;
     varStruct.parameterName = paramname;
     varStruct.parameterValue = outdata;
@@ -276,9 +290,26 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
 //     }*/
     
     //snprintf(paramname, sizeof(paramname), 
-    GrePsmGetStr(GRE_PARAM_LOCALIFS, greinst, localinterfaces, sizeof(localinterfaces));
+    CcspTraceInfo(("entered%s\n","hotspot_update_circuit_ids"));
+    retval=GrePsmGetStr(GRE_PARAM_LOCALIFS, greinst, localinterfaces, sizeof(localinterfaces));
+    while(retval == -1 || strnlen(localinterfaces,sizeof(localinterfaces)) < HOTSPOT_INTERFACE_PRE_SECURE_SSID_LEN)
+    {
+        	CcspTraceError(("could not fetch proper hotspot interface name from psm\n"));
+    		sleep(1);
+        	retry_count++;
+    		retval=GrePsmGetStr(GRE_PARAM_LOCALIFS, greinst, localinterfaces, sizeof(localinterfaces));
+                if(retry_count >=5) break;
+    }
+    if(retval == -1 || strnlen(localinterfaces,sizeof(localinterfaces)) < HOTSPOT_INTERFACE_PRE_SECURE_SSID_LEN)
+    {	
+        CcspTraceError(("could not fetch hotspot interface name from psm after multiple attempts, setting it\n"));
+	strncpy(localinterfaces,LOCALINTERFACES_PRE_SECURE_SSID,sizeof(localinterfaces));
+    }
+    CcspTraceInfo(("localinterfaces %s\n", localinterfaces));
     
     curInt = strtok_r(localinterfaces, ",", &save);
+
+    CcspTraceInfo(("curInt %s\n", curInt));
     
     while (curInt) {
         circuitSave=0;
@@ -286,7 +317,8 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
         size = strlen(curInt);
         if (curInt[size -1] == '.')
             curInt[size - 1]='\0';
-        
+        testcurInt=strrchr(curInt,'.');
+        CcspTraceInfo(("testcurInt is %s\n",testcurInt));       
         inst = atoi(strrchr(curInt,'.')+1);
   
 		memset(paramname,0,sizeof(paramname));
@@ -295,11 +327,11 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
         size = sizeof(outdata);
         
         if (syscfg_get(NULL, "wan_physical_ifname", paramname, sizeof(paramname)) != 0) {
-            AnscTraceWarning(("fail to get wan_physical_ifname\n"));
+            AnscTraceError(("fail to get wan_physical_ifname\n"));
             snprintf(paramname, sizeof(paramname), "erouter0");
         }
         if (get_if_hwaddr(paramname, circuitid, sizeof(circuitid)) != 0) {
-            AnscTraceWarning(("fail to get HW Addr for %s\n", paramname));
+            AnscTraceError(("fail to get HW Addr for %s\n", paramname));
             snprintf(circuitid, sizeof(circuitid), "00:00:00:00:00:00");
         }
 
