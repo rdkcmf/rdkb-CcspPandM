@@ -2264,8 +2264,8 @@ static int _dibbler_client_operation(char * arg)
 int  CosaDmlStartDHCP6Client()
 {
     pthread_detach(pthread_self());
-#if defined(_COSA_INTEL_XB3_ARM_)
-    CcspTraceInfo(("Not restarting ti_dhcp6c for XB3 case\n"));
+#if defined(_COSA_INTEL_XB3_ARM_) || defined(_COSA_BCM_ARM_)
+    CcspTraceInfo(("Not restarting IPv6 client in PAM\n"));
 #else
     _dibbler_client_operation("restart");    
 #endif
