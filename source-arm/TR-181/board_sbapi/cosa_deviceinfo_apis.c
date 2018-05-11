@@ -2045,7 +2045,7 @@ ANSC_STATUS getFactoryPartnerId
         PULONG                      pulSize
 	)
 {
-#ifdef INTEL_PUMA7
+#if defined(_XB6_PRODUCT_REQ_)
 	if(ANSC_STATUS_SUCCESS == platform_hal_getFactoryPartnerId(pValue))
 	{
 		*pulSize = AnscSizeOfString(pValue);
