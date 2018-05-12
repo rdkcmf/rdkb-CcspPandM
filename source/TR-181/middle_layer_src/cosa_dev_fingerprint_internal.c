@@ -104,38 +104,37 @@ CosaDeviceFingerprintRemove
 
 ANSC_STATUS CosaGetSysCfgUlong(char* setting, ULONG* value)
 {
+    ANSC_STATUS 	ret = ANSC_STATUS_SUCCESS;
     char buf[32];
 
     memset(buf,sizeof(buf),0);
-    if(ANSC_STATUS_SUCCESS != syscfg_get( NULL, setting, buf, sizeof(buf)))
+    if(ANSC_STATUS_SUCCESS != (ret=syscfg_get( NULL, setting, buf, sizeof(buf))))
     {
-        AnscTraceWarning(("syscfg_get failed\n"));
+        CcspTraceWarning(("syscfg_get failed\n"));
     }
     else
     {
         *value = atoi(buf);
     }
-    return CCSP_SUCCESS;
+    return ret;
 }
 
 ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value)
 {
-    int ret = CCSP_SUCCESS;
+    ANSC_STATUS 	ret = ANSC_STATUS_SUCCESS;
     char buf[32];
 
     memset(buf,sizeof(buf),0);
     sprintf(buf,"%d",value);
-    if(ANSC_STATUS_SUCCESS != syscfg_set( NULL, setting, buf, sizeof(buf)))
+    if(ANSC_STATUS_SUCCESS != (ret=syscfg_set( NULL, setting, buf, sizeof(buf))))
     {
-        AnscTraceWarning(("syscfg_set failed\n"));
-        ret = CCSP_FAILURE;
+        CcspTraceWarning(("syscfg_set failed\n"));
     }
     else
     {
-        if (ANSC_STATUS_SUCCESS != syscfg_commit())
+        if (ANSC_STATUS_SUCCESS != (ret=syscfg_commit()))
         {
             CcspTraceWarning(("syscfg_commit failed\n"));
-            ret = CCSP_FAILURE;
         }
     }
 
@@ -182,38 +181,39 @@ ANSC_STATUS CosaSetSysCfgString( char* setting, char* pValue )
 
 ANSC_STATUS CosaAdvSecInit(ANSC_HANDLE hThisObject)
 {
-    ANSC_STATUS  returnStatus = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_FPAGENT            pMyObject    = (PCOSA_DATAMODEL_FPAGENT)hThisObject;
-
+    ANSC_STATUS  		returnStatus = ANSC_STATUS_SUCCESS;
+    PCOSA_DATAMODEL_FPAGENT	pMyObject    = (PCOSA_DATAMODEL_FPAGENT)hThisObject;
     char cmd[128];
+
     memset(cmd, 0, sizeof(cmd));
-    CosaSetSysCfgUlong(g_DeviceFingerPrintEnabled, 1);
-    AnscCopyString(cmd, "/usr/ccsp/pam/launch_adv_security.sh -enable &");
-    returnStatus = WEXITSTATUS(system(cmd));
+
+    returnStatus = CosaSetSysCfgUlong(g_DeviceFingerPrintEnabled, 1);
     if ( returnStatus == ANSC_STATUS_SUCCESS )
-	{
+    {
+        AnscCopyString(cmd, "/usr/ccsp/pam/launch_adv_security.sh -enable &");
+        system(cmd);
         pMyObject->bEnable = TRUE;
         fprintf(stderr,"Device_Finger_Printing_enabled:true\n");
-	}
+    }
     return returnStatus;
 }
 
 ANSC_STATUS CosaAdvSecDeInit(ANSC_HANDLE hThisObject)
 {
-    ANSC_STATUS  returnStatus = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_FPAGENT            pMyObject    = (PCOSA_DATAMODEL_FPAGENT)hThisObject;
+    ANSC_STATUS			returnStatus = ANSC_STATUS_SUCCESS;
+    PCOSA_DATAMODEL_FPAGENT	pMyObject    = (PCOSA_DATAMODEL_FPAGENT)hThisObject;
     char cmd[128];
-    memset(cmd, 0, sizeof(cmd));
-    AnscCopyString(cmd, "/usr/ccsp/pam/launch_adv_security.sh -disable &");
-    returnStatus = WEXITSTATUS(system(cmd));
-    if ( returnStatus == ANSC_STATUS_SUCCESS )
-	{
-        pMyObject->bEnable = FALSE;
 
-        //ignore syscfg set failure
-        CosaSetSysCfgUlong(g_DeviceFingerPrintEnabled, 0);
+    memset(cmd, 0, sizeof(cmd));
+
+    returnStatus = CosaSetSysCfgUlong(g_DeviceFingerPrintEnabled, 0);
+    if ( returnStatus == ANSC_STATUS_SUCCESS )
+    {
+        AnscCopyString(cmd, "/usr/ccsp/pam/launch_adv_security.sh -disable &");
+        system(cmd);
+        pMyObject->bEnable = FALSE;
         fprintf(stderr,"Device_Finger_Printing_enabled:false\n");
-	}
+    }
     return returnStatus;
 }
 
