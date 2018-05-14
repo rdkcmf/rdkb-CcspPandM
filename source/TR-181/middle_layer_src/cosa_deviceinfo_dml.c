@@ -7376,7 +7376,7 @@ Syndication_SetParamStringValue
     {
 		if ( (strcmp(pMyObject->PartnerID,pString) != 0 ) )
 		{
-			retValue = setPartnerId( pString );
+			retValue = setTempPartnerId( pString );
 			if( ANSC_STATUS_SUCCESS == retValue )
 			{
 			   ULONG    size = 0;
@@ -7388,11 +7388,8 @@ Syndication_SetParamStringValue
 			    CcspTraceInfo(("[SET-PARTNERID] Current_PartnerID:%s\n", pMyObject->PartnerID ));
 			    CcspTraceInfo(("[SET-PARTNERID] Overriding_PartnerID:%s\n", pString ));
 								
-				memset( pMyObject->PartnerID, 0, sizeof( pMyObject->PartnerID ));
-				AnscCopyString( pMyObject->PartnerID, pString );
+				return TRUE;
 			}
-		
-			return TRUE;
 		}
     }
     if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
@@ -7518,6 +7515,81 @@ Syndication_SetParamBoolValue
 		}
 
        return TRUE;
+    }
+
+    return FALSE;
+}
+
+/***********************************************************************
+APIs for Object:
+	Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_Control.
+	  *  MaintenanceWindow_GetParamBoolValue
+	  *  MaintenanceWindow_SetParamBoolValue
+
+***********************************************************************/
+
+BOOL
+RDKB_Control_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+	PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+	PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
+
+	if( AnscEqualString(ParamName, "ActivatePartnerId", TRUE))
+	{
+		return TRUE;
+	}
+
+	if( AnscEqualString(ParamName, "ClearPartnerId", TRUE))
+	{
+		return TRUE;
+	}
+
+    return FALSE;
+}
+
+BOOL
+RDKB_Control_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
+
+    char *value = ( bValue ==TRUE ) ?  "true" : "false";
+    pthread_t tid ; 
+   ANSC_STATUS 				   retValue  = ANSC_STATUS_FAILURE;
+
+   if( AnscEqualString(ParamName, "ActivatePartnerId", TRUE) )
+    {
+	if ( bValue )
+	{
+		retValue = activatePartnerId ( ) ;
+		if( ANSC_STATUS_SUCCESS == retValue )
+		{
+			return TRUE;
+		}
+	}
+    }
+
+    if( AnscEqualString(ParamName, "ClearPartnerId", TRUE) )
+    {
+	if ( bValue )
+	{
+		CcspTraceWarning(("%s: Clearing PartnerId and device going Factory Reset  \n", __FUNCTION__));
+		system( "rm -rf  /nvram/.partner_ID" );
+		pthread_create ( &tid, NULL, &CosaDmlDiPartnerIDChangeHandling, NULL );
+		return TRUE;
+	}
     }
 
     return FALSE;

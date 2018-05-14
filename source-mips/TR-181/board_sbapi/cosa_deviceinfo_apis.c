@@ -2147,10 +2147,7 @@ ANSC_STATUS setPartnerId
 		char*                       pValue
     )
 {
-	pthread_t tid;
-	char* buff = (char*) malloc(strlen(pValue)+1);
-	memset(buff,0,strlen(pValue)+1);
-	strcpy(buff,pValue);
+
 	if ((syscfg_set(NULL, "PartnerID", pValue) != 0)) 
 	{
         AnscTraceWarning(("setPartnerId : syscfg_set failed\n"));
@@ -2164,46 +2161,64 @@ ANSC_STATUS setPartnerId
 			return ANSC_STATUS_FAILURE;
 		}
 
-		//Change Handling
-		pthread_create(&tid, NULL, &CosaDmlDiPartnerIDChangeHandling, (void*) buff);
-	
 		return ANSC_STATUS_SUCCESS;
 	}
 }
 
 #define PARTNERID_FILE  "/nvram/.partner_ID"
+
+ANSC_STATUS activatePartnerId
+	(
+		char*                       pValue
+    )
+{
+	pthread_t tid;
+
+	if ( access( PARTNERID_FILE , F_OK ) == 0 )	 
+	{
+		pthread_create(&tid, NULL, &CosaDmlDiPartnerIDChangeHandling, NULL);
+		return ANSC_STATUS_SUCCESS;
+	}
+	AnscTraceWarning(("%s: Partner ID set %s File not exist, so cannot activate partnerID  \n", __FUNCTION__,PARTNERID_FILE));
+	return ANSC_STATUS_FAILURE;	
+
+}
+
+ANSC_STATUS setTempPartnerId
+	(
+		char*                       pValue
+    )
+{
+	FILE		*fp	 =  NULL;
+
+	fp = fopen( PARTNERID_FILE, "w" );
+
+	if ( fp != NULL ) 
+	{
+		fwrite( pValue, strlen( pValue ), 1, fp );
+		fclose( fp );
+		AnscTraceWarning(("%s: Partner ID %s is Written into %s File\n", __FUNCTION__, pValue, PARTNERID_FILE ));
+		return ANSC_STATUS_SUCCESS;
+	}
+	return ANSC_STATUS_FAILURE;
+	
+}
+
 void CosaDmlDiPartnerIDChangeHandling( void* buff )
 {
 	CCSP_MESSAGE_BUS_INFO *bus_info 		  = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 	parameterValStruct_t param_val[ 1 ] 	  = { "Device.X_CISCO_COM_DeviceControl.FactoryReset", "Router,Wifi,VoIP,Dect,MoCA", ccsp_string };
 	char				 pComponentName[ 64 ] = "eRT.com.cisco.spvtg.ccsp.pam";
 	char				 pComponentPath[ 64 ] = "/com/cisco/spvtg/ccsp/pam";
-	char 			PartnerID[64]={0};
 	char				*faultParam 		  = NULL;
-	FILE				*fp 				  = NULL;
 	int 				 ret				  = 0;
 
 	
 	pthread_detach(pthread_self());	
-	memset(PartnerID,0,sizeof(PartnerID));
-	if(buff)
-	{
-		strcpy(PartnerID,(char*)buff);
-		free(buff);		
-	}
 	
 	// Create /nvram/.apply_partner_defaults file to apply partners default
 	system( "touch /nvram/.apply_partner_defaults" );
 	system( "syscfg set PartnerID_FR 1; syscfg commit" );
-	//Creating and Writing partner ID into /nvram/.partner_ID file
-	fp = fopen( PARTNERID_FILE, "w" );
-	
-	if ( fp != NULL ) 
-	{
-		fwrite( PartnerID, strlen( PartnerID ), 1, fp );
-		fclose( fp );
-		AnscTraceWarning(("%s: Partner ID %s is Written into %s File\n", __FUNCTION__, PartnerID, PARTNERID_FILE ));
-	}
 
 	/* Need to do factory reset the device here */
 	ret = CcspBaseIf_setParameterValues

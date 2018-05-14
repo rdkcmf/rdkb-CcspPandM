@@ -836,6 +836,28 @@
             </parameter>
         </parameters>
 	<objects>
+	<object>
+		<name>RDKB_Control</name>
+		<objectType>object</objectType>
+		<functions>
+			<func_GetParamBoolValue>RDKB_Control_GetParamBoolValue</func_GetParamBoolValue> 
+			<func_SetParamBoolValue>RDKB_Control_SetParamBoolValue</func_SetParamBoolValue>
+		</functions>
+		<parameters>
+			<parameter>
+				<name>ActivatePartnerId</name>
+				<type>boolean</type>
+				<syntax>bool</syntax>
+				<writable>true</writable>
+			</parameter>
+			<parameter>
+				<name>ClearPartnerId</name>
+				<type>boolean</type>
+				<syntax>bool</syntax>
+				<writable>true</writable>
+			</parameter>
+		</parameters>
+	</object>
           <object>
 		<name>RDKB_UIBranding</name>
           	<objectType>object</objectType>
