@@ -1251,6 +1251,22 @@
 			</object>
 
                         <object>
+                        <name>DNSStrictOrder</name>
+                        <objectType>object</objectType>
+                        <functions>
+                                <func_GetParamBoolValue>DNSSTRICTORDER_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>DNSSTRICTORDER_SetParamBoolValue</func_SetParamBoolValue>
+                        </functions>
+                        <parameters>
+                                <parameter>
+                                        <name>Enable</name>
+                                        <type>boolean</type>
+                                        <syntax>bool</syntax>
+                                        <writable>true</writable>
+                                </parameter>
+                         </parameters>
+                </object>
+                        <object>
                             <name>SSIDPSWDCTRL</name>
                             <objectType>object</objectType>
                             <functions>

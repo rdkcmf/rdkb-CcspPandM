@@ -5130,6 +5130,62 @@ MEMSWAP_GetParamBoolValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        DNSSTRICTORDER_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+DNSSTRICTORDER_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char value[8];
+        syscfg_get(NULL,"DNSStrictOrder",value, sizeof(value));
+        if( value != NULL )
+        {
+             if (strcmp(value, "true") == 0)
+                 *pBool = TRUE;
+             else
+                 *pBool = FALSE;
+        } 
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -5373,6 +5429,60 @@ MEMSWAP_SetParamBoolValue
        }
        CcspTraceInfo(("Successfully set ContainerSupport \n"));
        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        DNSSTRICTORDER_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+DNSSTRICTORDER_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        if ( bValue == TRUE)
+        {
+            syscfg_set(NULL, "DNSStrictOrder", "true");
+        }
+        else
+        {
+            syscfg_set(NULL, "DNSStrictOrder", "false");
+        }
+        syscfg_commit();
+        return TRUE;
     }
     return FALSE;
 }
