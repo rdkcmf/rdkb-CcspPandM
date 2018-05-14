@@ -235,15 +235,15 @@ WiFi_Telemetry_GetParamStringValue
 
     DeviceInfo.X_RDKCENTRAL-COM_RFC.Control
 
-    *  Control_GetParamIntValue
-    *  Control_SetParamIntValue
+    *  Control_GetParamUlongValue
+    *  Control_SetParamUlongValue
 ***********************************************************************/
 BOOL
-Control_GetParamIntValue
+Control_GetParamUlongValue
     (
         ANSC_HANDLE 		hInsContext,
         char*			ParamName,
-        int*			pInt
+        ULONG*			pValue
     );
 
 BOOL
@@ -251,7 +251,7 @@ Control_SetParamIntValue
     (
         ANSC_HANDLE 		hInsContext,
         char*			ParamName,
-        int 			iValue
+        ULONG 			ulValue
     );
 
 

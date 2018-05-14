@@ -4795,8 +4795,8 @@ Logging_GetParamStringValue
 
     DeviceInfo.X_RDKCENTRAL-COM_RFC.Control
 
-    *  Control_GetParamIntValue
-    *  Control_SetParamIntValue
+    *  Control_GetParamUlongValue
+    *  Control_SetParamUlongValue
 ***********************************************************************/
 
 
@@ -4811,7 +4811,7 @@ Logging_GetParamStringValue
             (
                 ANSC_HANDLE                 hInsContext,
                 char*                       ParamName,
-                int*                        pInt
+                ULONG*                        pUlValue
             );
 
     description:
@@ -4824,18 +4824,18 @@ Logging_GetParamStringValue
                 char*                       ParamName,
                 The parameter name;
 
-                int*                        pInt
-                The buffer of returned integer value;
+                ULONG*                        pUlValue
+                The buffer of returned unsigned integer value;
 
     return:     TRUE if succeeded.
 
 **********************************************************************/
 BOOL
-Control_GetParamIntValue
+Control_GetParamUlongValue
     (
 	ANSC_HANDLE 		hInsContext,
 	char*			ParamName,
-	int*			pInt
+	ULONG*			pUlValue
     )
 {
 	PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
@@ -4843,7 +4843,7 @@ Control_GetParamIntValue
 	/* check the parameter name and return the corresponding value */
 	if( AnscEqualString(ParamName, "RetrieveNow", TRUE))
 	{
-		*pInt =  0;
+		*pUlValue =  0;
 		return TRUE;
 	}
 
@@ -4858,11 +4858,11 @@ Control_GetParamIntValue
     prototype:
 
         BOOL
-        Control_SetParamIntValue
+        Control_SetParamUlongValue
             (
                 ANSC_HANDLE                 hInsContext,
                 char*                       ParamName,
-                int                         iValue
+                ULONG                         ulValue
             );
 
     description:
@@ -4875,24 +4875,24 @@ Control_GetParamIntValue
                 char*                       ParamName,
                 The parameter name;
 
-                int                         iValue
-                The updated integer value;
+                ULONG                         ulValue
+                The updated unsigned integer value;
 
     return:     TRUE if succeeded.
 
 **********************************************************************/
 BOOL
-Control_SetParamIntValue
+Control_SetParamUlongValue
     (
 	ANSC_HANDLE 		hInsContext,
 	char*			ParamName,
-	int 			iValue
+	ULONG 			ulValue
     )
 {
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "RetrieveNow", TRUE))
     {
-	if( iValue == 1 )
+	if( ulValue == 1 )
 	{
 		AnscTraceWarning((" Run RFC dcmrfc.service\n"));
 		system("sh /lib/rdk/dcmrfc.service &");

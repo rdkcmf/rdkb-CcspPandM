@@ -1151,15 +1151,15 @@
                     <name>Control</name>
                     <objectType>object</objectType>
                     <functions>
-                        <func_GetParamIntValue>Control_GetParamIntValue</func_GetParamIntValue>
-                        <func_SetParamIntValue>Control_SetParamIntValue</func_SetParamIntValue>
+                        <func_GetParamUlongValue>Control_GetParamUlongValue</func_GetParamUlongValue>
+                        <func_SetParamUlongValue>Control_SetParamUlongValue</func_SetParamUlongValue>
                     </functions>
 
                     <parameters>
                         <parameter>
                             <name>RetrieveNow</name>
-                            <type>int</type>
-                            <syntax>int</syntax>
+                            <type>unsignedInt</type>
+                            <syntax>uint32</syntax>
                             <writable>true</writable>
                         </parameter>
                     </parameters>
