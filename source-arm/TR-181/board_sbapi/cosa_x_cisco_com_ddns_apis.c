@@ -905,7 +905,7 @@ DdnsRestart(void)
                     char *argp[9] = {NULL};
                     int len=0;
 
-                    argp[0] = "/fss/gw/usr/bin/ez-ipupdate";
+                    argp[0] = "/usr/bin/ez-ipupdate";
 
                     argp[1] = "--interface=erouter0";
 
