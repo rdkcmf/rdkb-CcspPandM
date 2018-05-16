@@ -113,7 +113,7 @@
 
 // this file is in integration_src.intel_usg_arm directory
 
-#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _PLATFORM_IPQ_ || _COSA_BCM_MIPS_)
+#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _PLATFORM_IPQ_)
 
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
@@ -137,13 +137,6 @@ extern  ANSC_HANDLE             bus_handle;
  
 #define _ERROR_ "NOT SUPPORTED"
 #define _SSH_ERROR_ "NOT SET"
-
-#ifdef _COSA_BCM_MIPS_
-#define CONFIG_VENDOR_NAME "ARRIS Group, Inc."
-#define CONFIG_TI_GW_DESCRIPTION "DPoE 2.0 Fiber Modem Gateway Device"
-#define CONFIG_VENDOR_ID 0xA055DE
-#define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
-#endif
 
 #define DMSB_TR181_PSM_WHIX_LogInterval                                 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.LogInterval"
 #define DMSB_TR181_PSM_WHIX_NormalizedRssiList                "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.NormalizedRssiList"
