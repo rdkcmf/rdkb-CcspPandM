@@ -5046,6 +5046,65 @@ Feature_GetParamBoolValue
 
 **********************************************************************/
 BOOL
+SyndicationFlowControl_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL SyndicatonFlowControl = (PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL)&(pMyObject->SyndicatonFlowControl);
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        *pBool = SyndicatonFlowControl->Enable;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+ULONG
+SyndicationFlowControl_GetParamStringValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL SyndicatonFlowControl = (PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL)&(pMyObject->SyndicatonFlowControl);
+    if( AnscEqualString(ParamName, "InitialForwardedMark", TRUE))
+    {
+       if ( AnscSizeOfString(SyndicatonFlowControl->InitialForwardedMark) < *pUlSize)
+        {
+            AnscCopyString( pValue, SyndicatonFlowControl->InitialForwardedMark);
+            return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(SyndicatonFlowControl->InitialForwardedMark)+1;
+            return 1;
+        }
+    }
+    if( AnscEqualString(ParamName, "InitialOutputMark", TRUE))
+    {
+        if ( AnscSizeOfString(SyndicatonFlowControl->InitialOutputMark) < *pUlSize)
+        {
+            AnscCopyString( pValue, SyndicatonFlowControl->InitialOutputMark);
+            return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(SyndicatonFlowControl->InitialOutputMark)+1;
+            return 1;
+        }
+    }
+    return -1;
+}
+BOOL
 EncryptCloudUpload_GetParamBoolValue
 
     (
@@ -5324,6 +5383,56 @@ Feature_SetParamBoolValue
     return FALSE;
 }
 
+BOOL
+SyndicationFlowControl_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL SyndicatonFlowControl = (PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL)&(pMyObject->SyndicatonFlowControl);
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        if(CosaDmlDiSet_SyndicationFlowControl_Enable(bValue) == 0)
+        {
+            SyndicatonFlowControl->Enable =bValue;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+BOOL
+SyndicationFlowControl_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    CcspTraceWarning(("\nSyndicationFlowControl_SetParamStringValue\n"));
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL SyndicatonFlowControl = (PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL)&(pMyObject->SyndicatonFlowControl);
+    if( AnscEqualString(ParamName, "InitialForwardedMark", TRUE))
+    {
+        if(CosaDmlDiSet_SyndicationFlowControl_InitialForwardedMark(SyndicatonFlowControl->InitialForwardedMark)==0)
+        {
+            AnscCopyString(SyndicatonFlowControl->InitialForwardedMark, pString);
+            return TRUE;
+        }
+    }
+    if( AnscEqualString(ParamName, "InitialOutputMark", TRUE))
+    {
+        if(CosaDmlDiSet_SyndicationFlowControl_InitialOutputMark(SyndicatonFlowControl->InitialOutputMark)==0)
+        {
+            AnscCopyString(SyndicatonFlowControl->InitialOutputMark, pString);
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
 /**********************************************************************
 
     caller:     owner of this object

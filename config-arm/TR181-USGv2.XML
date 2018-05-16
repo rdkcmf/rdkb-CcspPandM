@@ -1023,7 +1023,7 @@
 				<name>MSOLogo</name>
 				<type>string</type>
 				<syntax>string</syntax>
-				<writable>flase</writable>
+				<writable>false</writable>
 			</parameter>
 			<parameter>
 				<name>DefaultLoginUsername</name>
@@ -1257,14 +1257,44 @@
                           
 			</parameters>
                 
-			            <objects>               
-                      <object>
-                            <name>CodeBigFirst</name>
-                            <objectType>object</objectType>
-                            <functions>
-                                <func_GetParamBoolValue>CodeBigFirst_GetParamBoolValue</func_GetParamBoolValue>
-                                <func_SetParamBoolValue>CodeBig_First_SetParamBoolValue</func_SetParamBoolValue>
-                            </functions>
+  <objects>
+      <object>
+        <name>SyndicationFlowControl</name>
+        <objectType>object</objectType>
+        <functions>
+          <func_GetParamBoolValue>SyndicationFlowControl_GetParamBoolValue</func_GetParamBoolValue>
+          <func_SetParamBoolValue>SyndicationFlowControl_SetParamBoolValue</func_SetParamBoolValue>
+          <func_GetParamStringValue>SyndicationFlowControl_GetParamStringValue</func_GetParamStringValue>
+          <func_SetParamStringValue>SyndicationFlowControl_SetParamStringValue</func_SetParamStringValue>
+        </functions>
+        <parameters>
+          <parameter>
+            <name>Enable</name>
+            <type>boolean</type>
+            <syntax>bool</syntax>
+            <writable>true</writable>
+          </parameter>
+          <parameter>
+            <name>InitialForwardedMark</name>
+            <type>string</type>
+            <syntax>string</syntax>
+            <writable>true</writable>
+          </parameter>
+          <parameter>
+            <name>InitialOutputMark</name>
+            <type>string</type>
+            <syntax>string</syntax>
+            <writable>true</writable>
+          </parameter>
+        </parameters>
+      </object>
+      <object>
+            <name>CodeBigFirst</name>
+            <objectType>object</objectType>
+            <functions>
+                <func_GetParamBoolValue>CodeBigFirst_GetParamBoolValue</func_GetParamBoolValue>
+                <func_SetParamBoolValue>CodeBig_First_SetParamBoolValue</func_SetParamBoolValue>
+            </functions>
 
                             <parameters>
                                 <parameter>

@@ -190,6 +190,7 @@ CosaDeviceInfoInitialize
 	CosaDmlDiUiBrandingInit(&pMyObject->UiBrand);
 	CosaDmlDiWiFiTelemetryInit(&pMyObject->WiFi_Telemetry);
 	CosaDmlDiUniqueTelemetryIdInit(&pMyObject->UniqueTelemetryId);
+    CosaDmlDiSyndicationFlowControlInit(&pMyObject->SyndicatonFlowControl);
     return returnStatus;
 }
 

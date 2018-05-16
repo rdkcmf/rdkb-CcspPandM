@@ -3571,3 +3571,94 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 
 	 return IsProceedFurther;
 }
+
+ANSC_STATUS
+CosaDmlDiSyndicationFlowControlInit
+  (
+    PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL pSyndicatonFlowControl
+  )
+{
+    char buf[64] = {0};
+    syscfg_get(NULL,"SyndicationFlowControlEnable",buf, sizeof(buf));
+    if( buf != NULL )
+    {
+        if (strcmp(buf, "true") == 0)
+        {
+            pSyndicatonFlowControl->Enable = TRUE;
+        }
+        else
+        {
+            pSyndicatonFlowControl->Enable = FALSE;
+        }
+    }
+    memset(pSyndicatonFlowControl->InitialForwardedMark, 0, sizeof(pSyndicatonFlowControl->InitialForwardedMark));
+    memset(pSyndicatonFlowControl->InitialOutputMark, 0, sizeof(pSyndicatonFlowControl->InitialOutputMark));
+    if (syscfg_get( NULL, "DSCP_InitialForwardedMark", buf, sizeof(buf)) == 0)
+    {
+        if (buf[0] != '\0')
+        {
+            AnscCopyString(pSyndicatonFlowControl->InitialForwardedMark, buf);
+        }
+    }
+    memset(buf, 0, sizeof(buf));
+    if (syscfg_get( NULL, "DSCP_InitialOutputMark", buf, sizeof(buf)) == 0)
+    {
+        if (buf[0] != '\0')
+        {
+            AnscCopyString(pSyndicatonFlowControl->InitialOutputMark, buf);
+        }
+    }
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiSet_SyndicationFlowControl_Enable
+  (
+    char bValue
+  )
+{
+    if(syscfg_set(NULL, "SyndicationFlowControlEnable", ((bValue == TRUE ) ? "true" : "false"))==0)
+    {
+        syscfg_commit();
+        system("sysevent set firewall-restart");
+        return ANSC_STATUS_SUCCESS;
+    }
+    else
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+}
+
+ANSC_STATUS
+CosaDmlDiSet_SyndicationFlowControl_InitialForwardedMark
+  (
+    char *pString
+  )
+{
+    if(syscfg_set(NULL, "DSCP_InitialForwardedMark", pString)==0)
+    {
+        syscfg_commit();
+        return ANSC_STATUS_SUCCESS;
+    }
+    else
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+}
+
+ANSC_STATUS
+CosaDmlDiSet_SyndicationFlowControl_InitialOutputMark
+  (
+    char *pString
+  )
+{
+    if(syscfg_set(NULL, "DSCP_InitialOutputMark", pString)==0)
+    {
+        syscfg_commit();
+        return ANSC_STATUS_SUCCESS;
+    }
+    else
+    {
+       return ANSC_STATUS_FAILURE;
+    }
+}
