@@ -5828,7 +5828,56 @@ void CosaDmlDhcpv6sRebootServer()
 
     return;
 }
+/* This thread is added to handle the LnF interface IPv6 rule, because LnF is coming up late in XB6 devices. 
+This thread can be generic to handle the operations depending on the interfaces. Other interface and their events can be register here later based on requirement */
+static int sysevent_fd_1;
+static token_t sysevent_token_1;
+static pthread_t InfEvtHandle_tid;
+static void *InterfaceEventHandler_thrd(void *data)
+{
+    async_id_t interface_asyncid;
+    CcspTraceWarning(("%s started\n",__FUNCTION__));
+    sysevent_fd_1 = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "Interface_evt_handler", &sysevent_token_1);
 
+    sysevent_set_options(sysevent_fd_1, sysevent_token_1, "multinet_6-status", TUPLE_FLAG_EVENT);
+    sysevent_setnotification(sysevent_fd_1, sysevent_token_1, "multinet_6-status",  &interface_asyncid);
+    while(1)
+	{
+         async_id_t getnotification_asyncid;
+         int err;
+         unsigned char name[25], val[42],buf[128],cmd[128];
+         int namelen = sizeof(name);
+         int vallen  = sizeof(val);
+		err = sysevent_getnotification(sysevent_fd_1, sysevent_token_1, name, &namelen,  val, &vallen, &getnotification_asyncid);
+
+        	if (err)
+        	{
+           		CcspTraceWarning(("sysevent_getnotification failed with error: %d %s\n", err,__FUNCTION__));
+           		CcspTraceWarning(("sysevent_getnotification failed name: %s val : %s\n", name,val));
+        	}
+        	else
+        	{
+
+           		CcspTraceWarning(("%s Recieved notification event  %s\n",__FUNCTION__,name));
+			if(strcmp(name,"multinet_6-status") == 0)
+			{
+				if(strcmp(val, "ready") == 0)
+				{
+    					commonSyseventGet("br106_ipaddr_v6", buf, sizeof(buf));
+                                        memset(cmd,0,sizeof(cmd));
+                                        _ansc_sprintf(cmd, "ip -6 route add %s dev br106",buf);
+					system(cmd);
+                                        memset(cmd,0,sizeof(cmd));
+                                        sprintf(cmd, "ip -6 rule add iif br106 lookup erouter");
+                                        system(cmd);
+				}
+
+			}	
+	
+		}
+	}
+
+}
 static void * 
 dhcpv6c_dbg_thrd(void * in)
 {
