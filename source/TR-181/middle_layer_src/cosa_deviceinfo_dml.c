@@ -7379,6 +7379,15 @@ Syndication_SetParamStringValue
 			retValue = setPartnerId( pString );
 			if( ANSC_STATUS_SUCCESS == retValue )
 			{
+			   ULONG    size = 0;
+				//Get the Factory PartnerID
+			    memset(PartnerID, 0, sizeof(PartnerID));
+			    getFactoryPartnerId(PartnerID, &size);
+			
+			    CcspTraceInfo(("[SET-PARTNERID] Factory_Partner_ID:%s\n", ( PartnerID[ 0 ] != '\0' ) ? PartnerID : "NULL" ));
+			    CcspTraceInfo(("[SET-PARTNERID] Current_PartnerID:%s\n", pMyObject->PartnerID ));
+			    CcspTraceInfo(("[SET-PARTNERID] Overriding_PartnerID:%s\n", pString ));
+								
 				memset( pMyObject->PartnerID, 0, sizeof( pMyObject->PartnerID ));
 				AnscCopyString( pMyObject->PartnerID, pString );
 			}
