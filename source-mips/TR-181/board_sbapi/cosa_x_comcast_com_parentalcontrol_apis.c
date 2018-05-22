@@ -1258,6 +1258,305 @@ CosaDmlBlkURL_GetNumberOfEntries(void)
     return g_NrBlkURL;
 }
 
+#ifdef UTC_ENABLE
+int dIndx[250];
+int blkIns[250];
+int dCnt = 0;
+void ResetInsBuf()
+{
+	memset(dIndx,0,250);
+	memset(blkIns,0,250);
+	dCnt = 0;
+}
+int SetDelIndex(int ind,int ins)
+{
+	dIndx[dCnt] = ind;
+	blkIns[dCnt] = ins;
+	dCnt++;
+	AnscTraceWarning(("<<< %s -- set Del index %d ...\n", __FUNCTION__,ind));
+    return 0;
+}
+int ChkDelIndex(int ind)
+{
+	int cnt = 0;
+	if(ind == 0)
+	{
+		return 0;
+	}
+	for(cnt =0; cnt < 250; cnt++)
+	{
+	if(dIndx[cnt] == ind)
+	{
+		AnscTraceWarning(("<<< %s -- chk Del index %d ...\n", __FUNCTION__,ind));
+		return 1;
+	}
+	}
+	return 0;
+}
+int isAlwaysBlock(char *days, char *sTime, char *eTime)
+{
+	if(!strcmp(days,"Mon,Tue,Wed,Thu,Fri,Sat,Sun"))
+	{
+		AnscTraceWarning(("<<< %s -- All day are set ...\n", __FUNCTION__));
+		if((!strcmp(sTime,"00:00")) && (!strcmp(eTime,"23:59")))
+		{
+			AnscTraceWarning(("<<< %s -- Always block ...\n", __FUNCTION__));
+			return 1;
+		}
+	}
+	return 0;
+}
+int delBlkUrl()
+{
+	int i = 0;
+	int rc = -1;
+	UtopiaContext ctx;
+	Utopia_Init(&ctx);
+	for(i = 0;i<dCnt;i++)
+	{
+		AnscTraceWarning(("<<< %s delete ins_num  %d ...\n", __FUNCTION__,blkIns[i]));
+        rc = Utopia_DelBlkURL(&ctx, blkIns[i]);
+	}
+	Utopia_GetNumberOfBlkURL(&ctx, &g_NrBlkURL);
+	Utopia_Free(&ctx, !rc);
+	return 0;
+}
+ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
+{
+    UtopiaContext ctx;
+    blkurl_t blkurl,tmp;
+    ULONG index =0;
+	ULONG TIndex =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+    char eTime_block_days[64];
+	int sRet = 0,eRet = 0, nCount = 0;
+    AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+	nCount = g_NrBlkURL;
+    ResetInsBuf();
+	AnscTraceWarning(("<<< %s --  g_NrBlkURL %d ...\n", __FUNCTION__,g_NrBlkURL));
+
+for(index = 0;index < nCount; index++)
+    {
+	 Utopia_Init(&ctx);
+     AnscTraceWarning(("<<< %s -- Call GetBlkURLByIndex %d ...\n", __FUNCTION__,index));
+	 if(ChkDelIndex(index))
+	 {
+		 Utopia_Free(&ctx, !rc);
+		 continue;
+	 }
+     Utopia_GetBlkURLByIndex(&ctx, index, &blkurl);
+	 if(blkurl.always_block)
+	 {
+		 AnscTraceWarning(("<<< %s --alwaysblock  %s ...\n", __FUNCTION__,blkurl.site));
+		 Utopia_Free(&ctx, !rc);
+		 continue;
+	 }
+	 for(TIndex = index+1;TIndex < nCount; TIndex++)
+	 {
+		 if(ChkDelIndex(TIndex))
+		  continue;
+	   AnscTraceWarning(("<<< %s --  TIndex %d ...\n", __FUNCTION__,TIndex));
+		 Utopia_GetBlkURLByIndex(&ctx, TIndex, &tmp);
+		 if(!strcmp(tmp.site,blkurl.site))
+		 {
+			 if(tmp.always_block == blkurl.always_block)
+			 {
+				AnscTraceWarning(("%s -- tmp.block_days = %s...\n", __FUNCTION__, tmp.block_days));
+
+				 if(strcmp(tmp.block_days,blkurl.block_days) || (!strcmp(blkurl.block_days,"Mon,Tue,Wed,Thu,Fri,Sat,Sun")))
+				 {
+					 if(strstr(tmp.start_time,"00:00"))
+					 {
+						 if(strstr(blkurl.end_time,"23:59"))
+						 {
+							 AnscTraceWarning(("<<< %s -- 1 del rule %s ...\n", __FUNCTION__,blkurl.site));
+							 strcpy(blkurl.end_time,tmp.end_time);
+							 SetDelIndex(TIndex,tmp.ins_num);
+							 Utopia_GetNumberOfBlkURL(&ctx, &g_NrBlkURL);
+						 }
+					 }
+					 else if(strstr(tmp.end_time,"23:59"))
+					 {
+						 if(strstr(blkurl.start_time,"00:00"))
+						 {
+							 AnscTraceWarning(("<<< %s -- 2 del rule %s ...\n", __FUNCTION__,blkurl.site));
+							 strcpy(blkurl.start_time,tmp.start_time);
+							 SetDelIndex(TIndex,tmp.ins_num);
+							 Utopia_GetNumberOfBlkURL(&ctx, &g_NrBlkURL);
+						 }
+					 }
+				 }
+				 else
+				 {
+					 AnscTraceWarning(("%s -- continue tmp.block_days = %s...\n", __FUNCTION__, tmp.block_days));
+					 continue;
+				 }
+			 }
+		 }
+	 }
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+     if(ChkDelIndex(TIndex) == 0)
+	 {
+		 AnscTraceWarning(("%s -- blkurl.alias = %s...\n", __FUNCTION__, blkurl.alias));
+		 AnscTraceWarning(("%s -- blkurl.site = %s...\n", __FUNCTION__, blkurl.site));
+		 AnscTraceWarning(("%s -- blkurl.start_time = %s...\n", __FUNCTION__, blkurl.start_time));
+		 AnscTraceWarning(("%s -- blkurl.end_time = %s...\n", __FUNCTION__, blkurl.end_time));
+
+		 strcpy(start_time, blkurl.start_time);
+		 strcpy(end_time, blkurl.end_time);
+		 sRet = ConvUTCToLocal(start_time, blkurl.start_time);
+		 eRet = ConvUTCToLocal(end_time, blkurl.end_time);
+		 memset(eTime_block_days,0,64);
+		 split_BlockDays(sRet,eRet,blkurl.block_days,eTime_block_days);
+		 AnscTraceWarning(("%s -- Converted blkurl.start_time = %s...\n", __FUNCTION__, blkurl.start_time));
+		 AnscTraceWarning(("%s -- Converted blkurl.end_time = %s...\n", __FUNCTION__, blkurl.end_time));
+		 AnscTraceWarning(("%s -- Converted blkurl.block_days = %s...\n", __FUNCTION__, blkurl.block_days));
+
+		 rc = Utopia_SetBlkURLByIndex(&ctx, index, &blkurl);
+	 }
+	 else
+	 {
+		AnscTraceWarning(("%s --else nCount = %d index = %d...\n", __FUNCTION__, nCount,index));
+	 }
+     Utopia_Free(&ctx, !rc);
+     if (rc != 0)
+	 {
+	    AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+	 }
+
+   }
+   delBlkUrl();
+ return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS CosaDmlBlkURL_Migration()
+{
+    UtopiaContext ctx;
+    blkurl_t blkurl;
+    ULONG index =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+    char rb_end_time[25];
+	int sRet = 0,eRet = 0, ret = 0;
+	int                             InsNum                 = 0;
+	char eTime_block_days[64];
+AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+for(index = 0;index < g_NrBlkURL; index++)
+    {
+     AnscTraceWarning(("<<< %s -- index %d ...\n", __FUNCTION__,index));
+
+    if (index >= g_NrBlkURL || !Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+     Utopia_GetBlkURLByIndex(&ctx, index, &blkurl);
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+
+     AnscTraceWarning(("%s -- blkurl.alias = %s...\n", __FUNCTION__, blkurl.alias));
+     AnscTraceWarning(("%s -- blkurl.site = %s...\n", __FUNCTION__, blkurl.site));
+     AnscTraceWarning(("%s -- blkurl.start_time = %s...\n", __FUNCTION__, blkurl.start_time));
+     AnscTraceWarning(("%s -- blkurl.end_time = %s...\n", __FUNCTION__, blkurl.end_time));
+
+     if(isAlwaysBlock(blkurl.block_days,blkurl.start_time,blkurl.end_time))
+	 {
+		 blkurl.always_block = TRUE;
+		rc = Utopia_SetBlkURLByIndex(&ctx, index, &blkurl);
+        if (rc != 0)
+	    {
+	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           return ANSC_STATUS_FAILURE;
+	    }
+		Utopia_Free(&ctx, !rc);
+		continue;
+	 }
+	 if(blkurl.always_block == TRUE)
+	 {
+		 AnscTraceWarning(("<<< %s --alwaysblock  %s ...\n", __FUNCTION__,blkurl.site));
+		 Utopia_Free(&ctx, !rc);
+		 continue;
+	 }
+     strcpy(start_time, blkurl.start_time);
+     strcpy(end_time, blkurl.end_time);
+     sRet = ConvLocalToUTC(start_time, blkurl.start_time);
+     eRet = ConvLocalToUTC(end_time, blkurl.end_time);
+     AnscTraceWarning(("%s -- Converted blkurl.start_time = %s sRet = %d ...\n", __FUNCTION__, blkurl.start_time,sRet));
+     AnscTraceWarning(("%s -- Converted blkurl.end_time = %s eRet = %d ...\n", __FUNCTION__, blkurl.end_time,eRet));
+	 if(!strcmp(blkurl.end_time,"00:00"))
+	 {
+		 AnscTraceWarning(("%s -- inside if blkurl.end_time = %s eRet = %d ...\n", __FUNCTION__, blkurl.end_time,eRet));
+		 strcpy(blkurl.end_time,"23:59");
+		rc = Utopia_SetBlkURLByIndex(&ctx, index, &blkurl);
+        if (rc != 0)
+	    {
+	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           return ANSC_STATUS_FAILURE;
+	    }
+		Utopia_Free(&ctx, !rc);
+		continue;
+	 }
+     memset(eTime_block_days,0,64);
+	 if(split_BlockDays(sRet,eRet,blkurl.block_days,eTime_block_days))
+	 {
+		 AnscTraceWarning(("%s -- Day change required, split the rule  ...\n", __FUNCTION__));
+		 AnscTraceWarning(("%s -- Converted block_days for first rule = %s  ...\n", __FUNCTION__, blkurl.block_days));
+		 AnscTraceWarning(("%s -- Converted block_days for Second rule = %s ...\n", __FUNCTION__,eTime_block_days));
+		 // split rule timings
+		 memset(rb_end_time,0,25);
+		 strcpy(rb_end_time,blkurl.end_time);
+		 memset(blkurl.end_time,0,64);
+		 strcpy(blkurl.end_time,"23:59");
+		 AnscTraceWarning(("%d -- Converted blkurl.end_time = %s ...\n", __LINE__,blkurl.end_time));
+		 rc = Utopia_SetBlkURLByIndex(&ctx, index, &blkurl);
+		 if (rc != 0)
+			{
+			    AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+				return ANSC_STATUS_FAILURE;
+			}
+			memset(blkurl.end_time,0,64);
+		    strcpy(blkurl.end_time,rb_end_time);
+            AnscTraceWarning(("%d -- Converted blkurl.end_time = %s ...\n", __LINE__,blkurl.end_time));
+		    strcpy(blkurl.start_time,"00:00");
+		    AnscTraceWarning(("%d -- Converted blkurl.start_time = %s ...\n", __LINE__,blkurl.start_time));
+		    strcpy(blkurl.block_days,eTime_block_days);
+		    AnscTraceWarning(("%d -- Converted eTime_block_days = %s ...\n", __LINE__,eTime_block_days));
+		    AnscTraceWarning(("%d -- Converted blkurl.block_days = %s ...\n", __LINE__,blkurl.block_days));
+
+		blkurl.ins_num = InsNum;
+		rc = Utopia_AddBlkURL(&ctx,&blkurl);
+			if (rc != 0)
+			{
+			   AnscTraceWarning(("%s -- Utopia_AddBlkURL failed...\n",__FUNCTION__));
+			   return ANSC_STATUS_FAILURE;
+			}
+	 }else
+	 {
+        rc = Utopia_SetBlkURLByIndex(&ctx, index, &blkurl);
+        if (rc != 0)
+	    {
+	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           return ANSC_STATUS_FAILURE;
+	    }
+	 }
+    AnscTraceWarning(("%s -- Converted Success ...\n", __FUNCTION__));
+    Utopia_Free(&ctx, !rc);
+    }
+ if(g_NrBlkURL)
+	{
+	   Utopia_Init(&ctx);
+       rc = Utopia_GetNumberOfBlkURL(&ctx, &g_NrBlkURL);
+	   AnscTraceWarning(("%s -- Converted g_NrBlkURL = %d ...\n", __FUNCTION__,g_NrBlkURL));
+       Utopia_Free(&ctx, !rc);
+       if (rc != 0)
+           return ANSC_STATUS_FAILURE;
+	}
+ return ANSC_STATUS_SUCCESS;
+}
+#endif
 ANSC_STATUS
 CosaDmlBlkURL_GetEntryByIndex(ULONG index, COSA_DML_BLOCKEDURL *pEntry)
 {
@@ -1748,7 +2047,247 @@ CosaDmlMSServ_GetNumberOfEntries(void)
 
     return g_NrMSServs;
 }
+#ifdef UTC_ENABLE
+int delMSServ()
+{
+	int i = 0;
+	int rc = -1;
+	UtopiaContext ctx;
+	Utopia_Init(&ctx);
+	for(i = 0;i<dCnt;i++)
+	{
+        AnscTraceWarning(("<<< %s delete ins_num  %d ...\n", __FUNCTION__,blkIns[i]));
+        rc = Utopia_DelMSServ(&ctx, blkIns[i]);
+	}
+	Utopia_GetNumberOfMSServ(&ctx, &g_NrMSServs);
+	Utopia_Free(&ctx, !rc);
+    return 0;
+}
 
+ANSC_STATUS CosaDmlMSServ_RollbackUTCtoLocal()
+{
+    UtopiaContext ctx;
+    ms_serv_t ms_serv,tmp;
+    ULONG index =0;
+	ULONG TIndex =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+	char eTime_block_days[64];
+	int sRet = 0,eRet = 0,nCount = 0;;
+	nCount = g_NrMSServs;
+    ResetInsBuf();
+AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+for(index = 0;index < g_NrMSServs; index++)
+    {
+     Utopia_Init(&ctx);
+
+     AnscTraceWarning(("<<< %s -- Call Utopia_GetMSServByIndex %d ...\n", __FUNCTION__,index));
+	 if(ChkDelIndex(index))
+	 {
+		 Utopia_Free(&ctx, !rc);
+		 continue;
+	 }
+     Utopia_GetMSServByIndex(&ctx, index, &ms_serv);
+	 if(ms_serv.always_block)
+	 {
+		 Utopia_Free(&ctx, !rc);
+		 continue;
+	 }
+	 for(TIndex = index+1;TIndex <g_NrMSServs; TIndex++)
+	 {
+		 if(ChkDelIndex(TIndex))
+		  continue;
+		 Utopia_GetMSServByIndex(&ctx, TIndex, &tmp);
+		 if(!strcmp(tmp.descp,ms_serv.descp))
+		 {
+			 if(!strcmp(tmp.protocol,ms_serv.protocol))
+			 {
+				 if(tmp.always_block == ms_serv.always_block)
+				 {
+					if(strcmp(tmp.block_days,ms_serv.block_days) || (!strcmp(ms_serv.block_days,"Mon,Tue,Wed,Thu,Fri,Sat,Sun")))
+					 {
+						 if(strstr(tmp.start_time,"00:00"))
+						 {
+							 if(strstr(ms_serv.end_time,"23:59"))
+							 {
+								 AnscTraceWarning(("<<< %s -- copy end time and del rule %d ...\n", __FUNCTION__,TIndex));
+								 strcpy(ms_serv.end_time,tmp.end_time);
+								 SetDelIndex(TIndex,tmp.ins_num);
+								 Utopia_GetNumberOfMSServ(&ctx, &g_NrMSServs);
+							 }
+						 }
+						 else if(strstr(tmp.end_time,"23:59"))
+						 {
+							 if(strstr(ms_serv.start_time,"00:00"))
+							 {
+								 AnscTraceWarning(("<<< %s -- copy start time and del rule %d ...\n", __FUNCTION__,TIndex));
+								 strcpy(ms_serv.start_time,tmp.start_time);
+								 SetDelIndex(TIndex,tmp.ins_num);
+								 Utopia_GetNumberOfMSServ(&ctx, &g_NrMSServs);
+							 }
+						 }
+					 }
+					 else
+					 {
+						 continue;
+					 }
+				 }
+		     }
+		 }
+	 }
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+     if(ChkDelIndex(TIndex) == 0)
+	 {
+		 AnscTraceWarning(("%s -- ms_serv.alias = %s...\n", __FUNCTION__, ms_serv.alias));
+		 AnscTraceWarning(("%s -- ms_serv.start_time = %s...\n", __FUNCTION__, ms_serv.start_time));
+		 AnscTraceWarning(("%s -- ms_serv.end_time = %s...\n", __FUNCTION__, ms_serv.end_time));
+
+		 strcpy(start_time, ms_serv.start_time);
+		 strcpy(end_time, ms_serv.end_time);
+		 sRet = ConvUTCToLocal(start_time, ms_serv.start_time);
+		 eRet = ConvUTCToLocal(end_time, ms_serv.end_time);
+		 memset(eTime_block_days,0,64);
+		 split_BlockDays(sRet,eRet,ms_serv.block_days,eTime_block_days);
+		 AnscTraceWarning(("%s -- Converted ms_serv.start_time = %s...\n", __FUNCTION__, ms_serv.start_time));
+		 AnscTraceWarning(("%s -- Converted ms_serv.end_time = %s...\n", __FUNCTION__, ms_serv.end_time));
+		 AnscTraceWarning(("%s -- Converted ms_serv.block_days = %s...\n", __FUNCTION__, ms_serv.block_days));
+
+		 rc = Utopia_SetMSServByIndex(&ctx, index, &ms_serv);
+	 }
+     Utopia_Free(&ctx, !rc);
+     if (rc != 0)
+	 {
+	    AnscTraceWarning(("%s -- Utopia_SetMSServByIndex failed...\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+	 }
+
+   }
+ delMSServ();
+ return ANSC_STATUS_SUCCESS;
+}
+ANSC_STATUS CosaDmlMSServ_Migration()
+{
+    UtopiaContext ctx;
+    ms_serv_t ms_serv;
+    ULONG index =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+	char rb_end_time[25];
+	int sRet = 0,eRet = 0, ret = 0;
+	int InsNum                 = 0;
+	char eTime_block_days[64];
+    AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+for(index = 0;index < g_NrMSServs; index++)
+    {
+     AnscTraceWarning(("<<< %s -- index %d ...\n", __FUNCTION__,index));
+
+    if (index >= g_NrMSServs || !Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+     Utopia_GetMSServByIndex(&ctx, index, &ms_serv);
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+     AnscTraceWarning(("%s -- ms_serv.alias = %s...\n", __FUNCTION__, ms_serv.alias));
+     AnscTraceWarning(("%s -- ms_serv.start_time = %s...\n", __FUNCTION__, ms_serv.start_time));
+     AnscTraceWarning(("%s -- ms_serv.end_time = %s...\n", __FUNCTION__, ms_serv.end_time));
+
+     if(isAlwaysBlock(ms_serv.block_days,ms_serv.start_time,ms_serv.end_time))
+	 {
+		 ms_serv.always_block = TRUE;
+		rc = Utopia_SetMSServByIndex(&ctx, index, &ms_serv);
+        if (rc != 0)
+	    {
+	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           return ANSC_STATUS_FAILURE;
+	    }
+		Utopia_Free(&ctx, !rc);
+		continue;
+	 }
+	 if(ms_serv.always_block == TRUE)
+	 {
+		 Utopia_Free(&ctx, !rc);
+		 continue;
+	 }
+     strcpy(start_time, ms_serv.start_time);
+     strcpy(end_time, ms_serv.end_time);
+     sRet = ConvLocalToUTC(start_time, ms_serv.start_time);
+     eRet = ConvLocalToUTC(end_time, ms_serv.end_time);
+     AnscTraceWarning(("%s -- Converted ms_serv.start_time = %s...\n", __FUNCTION__, ms_serv.start_time));
+     AnscTraceWarning(("%s -- Converted ms_serv.end_time = %s...\n", __FUNCTION__, ms_serv.end_time));
+	 if(!strcmp(ms_serv.end_time,"00:00"))
+	 {
+		 AnscTraceWarning(("%s -- inside if ms_serv.end_time = %s eRet = %d ...\n", __FUNCTION__, ms_serv.end_time,eRet));
+		 strcpy(ms_serv.end_time,"23:59");
+		rc = Utopia_SetMSServByIndex(&ctx, index, &ms_serv);
+        if (rc != 0)
+	    {
+	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           return ANSC_STATUS_FAILURE;
+	    }
+		Utopia_Free(&ctx, !rc);
+		continue;
+	 }
+     memset(eTime_block_days,0,64);
+	 if(split_BlockDays(sRet,eRet,ms_serv.block_days,eTime_block_days))
+	 {
+		 AnscTraceWarning(("%s -- Day change required, split the rule  ...\n", __FUNCTION__));
+		 AnscTraceWarning(("%s -- Converted block_days for first rule = %s  ...\n", __FUNCTION__, ms_serv.block_days));
+		 AnscTraceWarning(("%s -- Converted block_days for Second rule = %s ...\n", __FUNCTION__,eTime_block_days));
+		 // split rule timings
+		 memset(rb_end_time,0,25);
+		 strcpy(rb_end_time,ms_serv.end_time);
+		 memset(ms_serv.end_time,0,64);
+		 strcpy(ms_serv.end_time,"23:59");
+		 AnscTraceWarning(("%d -- Converted ms_serv.end_time = %s ...\n", __LINE__,ms_serv.end_time));
+		 rc = Utopia_SetMSServByIndex(&ctx, index, &ms_serv);
+		 if (rc != 0)
+			{
+			    AnscTraceWarning(("%s -- Utopia_SetMSServByIndex failed...\n",__FUNCTION__));
+				return ANSC_STATUS_FAILURE;
+			}
+			memset(ms_serv.end_time,0,64);
+		    strcpy(ms_serv.end_time,rb_end_time);
+            AnscTraceWarning(("%d -- Converted ms_serv.end_time = %s ...\n", __LINE__,ms_serv.end_time));
+		    strcpy(ms_serv.start_time,"00:00");
+		    AnscTraceWarning(("%d -- Converted ms_serv.start_time = %s ...\n", __LINE__,ms_serv.start_time));
+		    strcpy(ms_serv.block_days,eTime_block_days);
+		    AnscTraceWarning(("%d -- Converted eTime_block_days = %s ...\n", __LINE__,eTime_block_days));
+		    AnscTraceWarning(("%d -- Converted ms_serv.block_days = %s ...\n", __LINE__,ms_serv.block_days));
+
+		ms_serv.ins_num = InsNum;
+		rc = Utopia_AddMSServ(&ctx,&ms_serv);
+			if (rc != 0)
+			{
+			   AnscTraceWarning(("%s -- Utopia_AddMSServ failed...\n",__FUNCTION__));
+			   return ANSC_STATUS_FAILURE;
+			}
+	 }else
+	 {
+        rc = Utopia_SetMSServByIndex(&ctx, index, &ms_serv);
+        if (rc != 0)
+	    {
+	       AnscTraceWarning(("%s -- Utopia_SetMSServByIndex failed...\n",__FUNCTION__));
+           return ANSC_STATUS_FAILURE;
+	    }
+	 }
+    AnscTraceWarning(("%s -- Converted Success ...\n", __FUNCTION__));
+    Utopia_Free(&ctx, !rc);
+    }
+ if(g_NrMSServs)
+	{
+	   Utopia_Init(&ctx);
+       rc = Utopia_GetNumberOfBlkURL(&ctx, &g_NrMSServs);
+	   AnscTraceWarning(("%s -- Converted g_NrMSServs = %d ...\n", __FUNCTION__,g_NrMSServs));
+       Utopia_Free(&ctx, !rc);
+       if (rc != 0)
+           return ANSC_STATUS_FAILURE;
+	}
+ return ANSC_STATUS_SUCCESS;
+}
+#endif
 ANSC_STATUS
 CosaDmlMSServ_GetEntryByIndex(ULONG index, COSA_DML_MS_SERV *pEntry)
 {
@@ -2166,7 +2705,241 @@ CosaDmlMDDev_GetNumberOfEntries(void)
 
     return g_NrMDDevs;
 }
+#ifdef UTC_ENABLE
+int delMDDev()
+{
+	int i = 0;
+	int rc = -1;
+	UtopiaContext ctx;
+	Utopia_Init(&ctx);
+	for(i = 0;i<dCnt;i++)
+	{
+	   AnscTraceWarning(("<<< %s delete ins_num  %d ...\n", __FUNCTION__,blkIns[i]));
+        rc = Utopia_DelMDDev(&ctx, blkIns[i]);
+	}
+	Utopia_GetNumberOfMDDev(&ctx, &g_NrMDDevs);
+	Utopia_Free(&ctx, !rc);
+	return 0;
+}
+ANSC_STATUS CosaDmlMDDev_RollbackUTCtoLocal()
+{
+    UtopiaContext ctx;
+    md_dev_t md_dev,tmp;
+    ULONG index =0;
+	ULONG TIndex =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+	char eTime_block_days[64];
+	int sRet = 0,eRet = 0, nCount = 0;
+	nCount = g_NrMDDevs;
+    ResetInsBuf();
+	AnscTraceWarning(("<<< %s --  g_NrBlkURL %d ...\n", __FUNCTION__,g_NrBlkURL));
+    AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+for(index = 0;index < g_NrMDDevs; index++)
+    {
+	 Utopia_Init(&ctx);
+     AnscTraceWarning(("<<< %s -- Call Utopia_GetMDDevByIndex %d ...\n", __FUNCTION__,index));
+	 if(ChkDelIndex(index))
+	 {
+		 Utopia_Free(&ctx, !rc);
+		 continue;
+	 }
+     Utopia_GetMDDevByIndex(&ctx, index, &md_dev);
+	 if(md_dev.always)
+	 {
+		 Utopia_Free(&ctx, !rc);
+		 continue;
+	 }
+	 for(TIndex = index+1;TIndex <g_NrMDDevs; TIndex++)
+	 {
+		 if(ChkDelIndex(TIndex))
+		  continue;
+		 Utopia_GetMDDevByIndex(&ctx, TIndex, &tmp);
+		 if(!strcmp(tmp.macaddr,md_dev.macaddr))
+		 {
+			 if(!strcmp(tmp.descp,md_dev.descp))
+			 {
+				 if(tmp.always == md_dev.always)
+				 {
+					if(strcmp(tmp.block_days,md_dev.block_days) || (!strcmp(md_dev.block_days,"Mon,Tue,Wed,Thu,Fri,Sat,Sun")))
+					 {
+						 if(strstr(tmp.start_time,"00:00"))
+						 {
+							 if(strstr(md_dev.end_time,"23:59"))
+							 {
+								 AnscTraceWarning(("<<< %s -- copy end time and del rule %d ...\n", __FUNCTION__,TIndex));
+								 strcpy(md_dev.end_time,tmp.end_time);
+							     SetDelIndex(TIndex,tmp.ins_num);
+								 Utopia_GetNumberOfMDDev(&ctx, &g_NrMDDevs);
+							 }
+						 }
+						 else if(strstr(tmp.end_time,"23:59"))
+						 {
+							 if(strstr(md_dev.start_time,"00:00"))
+							 {
+								 AnscTraceWarning(("<<< %s -- copy start time and del rule %d ...\n", __FUNCTION__,TIndex));
+								 strcpy(md_dev.start_time,tmp.start_time);
+								 SetDelIndex(TIndex,tmp.ins_num);
+								 Utopia_GetNumberOfMDDev(&ctx, &g_NrMDDevs);
+							 }
+						 }
+					 }
+					 else
+					 {
+						 continue;
+					 }
+				 }
+			 }
+		 }
+	 }
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+     if(ChkDelIndex(TIndex) == 0)
+	 {
+		 AnscTraceWarning(("%s -- md_dev.alias = %s...\n", __FUNCTION__, md_dev.alias));
+		 AnscTraceWarning(("%s -- md_dev.start_time = %s...\n", __FUNCTION__, md_dev.start_time));
+		 AnscTraceWarning(("%s -- md_dev.end_time = %s...\n", __FUNCTION__, md_dev.end_time));
 
+		 strcpy(start_time, md_dev.start_time);
+		 strcpy(end_time, md_dev.end_time);
+		 sRet = ConvUTCToLocal(start_time, md_dev.start_time);
+		 eRet = ConvUTCToLocal(end_time, md_dev.end_time);
+		 memset(eTime_block_days,0,64);
+		 split_BlockDays(sRet,eRet,md_dev.block_days,eTime_block_days);
+		 AnscTraceWarning(("%s -- Converted md_dev.start_time = %s...\n", __FUNCTION__, md_dev.start_time));
+		 AnscTraceWarning(("%s -- Converted md_dev.end_time = %s...\n", __FUNCTION__, md_dev.end_time));
+		 rc = Utopia_SetMDDevByIndex(&ctx, index, &md_dev);
+	 }
+     Utopia_Free(&ctx, !rc);
+    if (rc != 0)
+	{
+	AnscTraceWarning(("%s -- Utopia_SetMDDevByIndex failed...\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+	}
+	}
+ delMDDev();
+ return ANSC_STATUS_SUCCESS;
+}
+ANSC_STATUS CosaDmlMDDev_Migration()
+{
+    UtopiaContext ctx;
+    md_dev_t md_dev;
+    ULONG index =0;
+    int rc = -1;
+    char start_time[25];
+    char end_time[25];
+	char rb_end_time[25];
+	int sRet = 0,eRet = 0, ret = 0;
+	int                             InsNum                 = 0;
+	char eTime_block_days[64];
+AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+for(index = 0;index < g_NrMDDevs; index++)
+{
+    if (index >= g_NrMDDevs || !Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+     Utopia_GetMDDevByIndex(&ctx, index, &md_dev);
+     memset(start_time,0,25);
+     memset(end_time,0,25);
+     AnscTraceWarning(("%s -- md_dev.alias = %s...\n", __FUNCTION__, md_dev.alias));
+     AnscTraceWarning(("%s -- md_dev.start_time = %s...\n", __FUNCTION__, md_dev.start_time));
+     AnscTraceWarning(("%s -- md_dev.end_time = %s...\n", __FUNCTION__, md_dev.end_time));
+
+	 if(isAlwaysBlock(md_dev.block_days,md_dev.start_time,md_dev.end_time))
+	 {
+		 md_dev.always = TRUE;
+		rc = Utopia_SetMDDevByIndex(&ctx, index, &md_dev);
+        if (rc != 0)
+	    {
+	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           return ANSC_STATUS_FAILURE;
+	    }
+		Utopia_Free(&ctx, !rc);
+		continue;
+	 }
+	 if(md_dev.always == TRUE)
+	 {
+		 Utopia_Free(&ctx, !rc);
+		 continue;
+	 }
+     strcpy(start_time, md_dev.start_time);
+     strcpy(end_time, md_dev.end_time);
+     sRet = ConvLocalToUTC(start_time, md_dev.start_time);
+     eRet = ConvLocalToUTC(end_time, md_dev.end_time);
+     AnscTraceWarning(("%s -- Converted md_dev.start_time = %s...\n", __FUNCTION__, md_dev.start_time));
+     AnscTraceWarning(("%s -- Converted md_dev.end_time = %s...\n", __FUNCTION__, md_dev.end_time));
+	 if(!strcmp(md_dev.end_time,"00:00"))
+	 {
+		 AnscTraceWarning(("%s -- inside if md_dev.end_time = %s eRet = %d ...\n", __FUNCTION__, md_dev.end_time,eRet));
+		 strcpy(md_dev.end_time,"23:59");
+		rc = Utopia_SetMDDevByIndex(&ctx, index, &md_dev);
+        if (rc != 0)
+	    {
+	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           return ANSC_STATUS_FAILURE;
+	    }
+		Utopia_Free(&ctx, !rc);
+		continue;
+	 }
+     memset(eTime_block_days,0,64);
+	 if(split_BlockDays(sRet,eRet,md_dev.block_days,eTime_block_days))
+	 {
+		 AnscTraceWarning(("%s -- Day change required, split the rule  ...\n", __FUNCTION__));
+		 AnscTraceWarning(("%s -- Converted block_days for first rule = %s  ...\n", __FUNCTION__, md_dev.block_days));
+		 AnscTraceWarning(("%s -- Converted block_days for Second rule = %s ...\n", __FUNCTION__,eTime_block_days));
+		 // split rule timings
+		 memset(rb_end_time,0,25);
+		 strcpy(rb_end_time,md_dev.end_time);
+		 memset(md_dev.end_time,0,64);
+		 strcpy(md_dev.end_time,"23:59");
+		 AnscTraceWarning(("%d -- Converted md_dev.end_time = %s ...\n", __LINE__,md_dev.end_time));
+		 rc = Utopia_SetMDDevByIndex(&ctx, index, &md_dev);
+		 if (rc != 0)
+			{
+			    AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+				return ANSC_STATUS_FAILURE;
+			}
+			memset(md_dev.end_time,0,64);
+		    strcpy(md_dev.end_time,rb_end_time);
+            AnscTraceWarning(("%d -- Converted md_dev.end_time = %s ...\n", __LINE__,md_dev.end_time));
+		    strcpy(md_dev.start_time,"00:00");
+		    AnscTraceWarning(("%d -- Converted md_dev.start_time = %s ...\n", __LINE__,md_dev.start_time));
+		    strcpy(md_dev.block_days,eTime_block_days);
+		    AnscTraceWarning(("%d -- Converted eTime_block_days = %s ...\n", __LINE__,eTime_block_days));
+		    AnscTraceWarning(("%d -- Converted md_dev.block_days = %s ...\n", __LINE__,md_dev.block_days));
+
+		md_dev.ins_num = InsNum;
+		rc = Utopia_AddMDDev(&ctx,&md_dev);
+			if (rc != 0)
+			{
+			   AnscTraceWarning(("%s -- Utopia_AddMDDev failed...\n",__FUNCTION__));
+			   return ANSC_STATUS_FAILURE;
+			}
+	 }else
+	 {
+        rc = Utopia_SetMDDevByIndex(&ctx, index, &md_dev);
+        if (rc != 0)
+	    {
+	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           return ANSC_STATUS_FAILURE;
+	    }
+	 }
+    AnscTraceWarning(("%s -- Converted Success ...\n", __FUNCTION__));
+    Utopia_Free(&ctx, !rc);
+    }
+ if(g_NrMDDevs)
+	{
+	   Utopia_Init(&ctx);
+       rc = Utopia_GetNumberOfMDDev(&ctx, &g_NrMDDevs);
+	   AnscTraceWarning(("%s -- Converted g_NrMDDevs = %d ...\n", __FUNCTION__,g_NrMDDevs));
+       Utopia_Free(&ctx, !rc);
+       if (rc != 0)
+           return ANSC_STATUS_FAILURE;
+	}
+ return ANSC_STATUS_SUCCESS;
+}
+#endif
 ANSC_STATUS
 CosaDmlMDDev_GetEntryByIndex(ULONG index, COSA_DML_MD_DEV *pEntry)
 {
