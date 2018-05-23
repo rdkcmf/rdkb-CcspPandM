@@ -6845,7 +6845,7 @@ Syndication_SetParamStringValue
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     ANSC_STATUS 					retValue  = ANSC_STATUS_FAILURE;
     char PartnerID[PARTNER_ID_LEN] = {0};
-    ULONG size = PARTNER_ID_LEN - 1;
+
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "TR69CertLocation", TRUE) )
     {
@@ -6872,7 +6872,7 @@ Syndication_SetParamStringValue
 			return TRUE;
 		}
     }
-    if((ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size) ) && ( PartnerID[ 0 ] != '\0'))
+    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
     {
    	 /* check the parameter name and set the corresponding value */
 	 if( AnscEqualString(ParamName, "PauseScreenFileLocation", TRUE) )
@@ -7190,9 +7190,8 @@ Footer_SetParamStringValue
     PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
 
 	char PartnerID[PARTNER_ID_LEN] = {0};
-	ULONG size = PARTNER_ID_LEN - 1;
 	
-   if((ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size) ) && (PartnerID[ 0 ] != '\0') )
+   if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
    {
    	 /* check the parameter name and set the corresponding value */
 	    if( AnscEqualString(ParamName, "PartnerLink", TRUE) )
@@ -7358,9 +7357,8 @@ Connection_SetParamStringValue
     PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
 
 	char PartnerID[PARTNER_ID_LEN] = {0};
-	ULONG size = PARTNER_ID_LEN - 1;
 	
-   if((ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size) ) && ( PartnerID[ 0 ] != '\0') )
+   if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
    {
    	 /* check the parameter name and set the corresponding value */
 	    if( AnscEqualString(ParamName, "MSOmenu", TRUE) )
@@ -7456,9 +7454,8 @@ NetworkDiagnosticTools_SetParamStringValue
     PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
 
 	char PartnerID[PARTNER_ID_LEN] = {0};
-	ULONG size = PARTNER_ID_LEN - 1;
 	
-   if((ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size) ) && ( PartnerID[ 0 ] != '\0'))
+   if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
    {
    	 /* check the parameter name and set the corresponding value */
 	    if( AnscEqualString(ParamName, "ConnectivityTestURL", TRUE) )
@@ -7532,11 +7529,10 @@ WiFiPersonalization_SetParamBoolValue
     PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
 
    char PartnerID[PARTNER_ID_LEN] = {0};
-   ULONG size = PARTNER_ID_LEN - 1;
    char *value = ( bValue ==TRUE ) ?  "true" : "false";
 
 
-   if((ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size) ) && ( PartnerID[ 0 ] != '\0'))
+   if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
    {
 	    if( AnscEqualString(ParamName, "Support", TRUE))
 	    {
@@ -7662,9 +7658,8 @@ WiFiPersonalization_SetParamStringValue
     PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
 
 	char PartnerID[PARTNER_ID_LEN] = {0};
-	ULONG size = PARTNER_ID_LEN - 1;
 	
-   if((ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size) ) && ( PartnerID[ 0 ] != '\0') )
+   if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
    {
    	 /* check the parameter name and set the corresponding value */
 	    if( AnscEqualString(ParamName, "PartnerHelpLink", TRUE) )

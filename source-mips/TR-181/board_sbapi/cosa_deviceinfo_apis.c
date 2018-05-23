@@ -2119,7 +2119,7 @@ ANSC_STATUS getFactoryPartnerId
 	return ANSC_STATUS_FAILURE;
 }
 
-ANSC_STATUS getPartnerId
+ANSC_STATUS fillCurrentPartnerId
 	(
 		char*                       pValue,
         PULONG                      pulSize
@@ -2240,7 +2240,7 @@ CosaDeriveSyndicationPartnerID(char *Partner_ID)
 	memset(PartnerID, 0, sizeof(PartnerID));
 	CcspTraceInfo(("%s \n",__FUNCTION__));
 // get if PartnerID is already available
-	if(ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size))
+	if(ANSC_STATUS_SUCCESS == fillCurrentPartnerId(PartnerID, &size))
 	{
 		// TODO: check PartnerID from Boot config file
 	}
@@ -2383,7 +2383,7 @@ CosaDmlDiUiBrandingInit
 		 } 
 		 else 
 		 {
-			 if(ANSC_STATUS_SUCCESS == getPartnerId(PartnerID, &size))
+			 if(ANSC_STATUS_SUCCESS == fillCurrentPartnerId(PartnerID, &size))
 			 {
 			 	if ( PartnerID[0] != '\0' )
 			 	{
