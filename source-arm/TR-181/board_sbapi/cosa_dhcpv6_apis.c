@@ -5627,7 +5627,14 @@ dhcpv6c_dbg_thrd(void * in)
 	else
 		continue;
 
-        CcspTraceInfo(("%s: get message %s\n", __func__, msg)); 
+        if (msg[0] != 0)
+        {
+            CcspTraceInfo(("%s: get message %s\n", __func__, msg));
+        } else {
+	    //Message is empty. Wait 5 sec before trying the select again.
+            sleep(5);
+            continue;
+        }
 
         if (!strncmp(msg, "dibbler-client", strlen("dibbler-client"))) 
         {
