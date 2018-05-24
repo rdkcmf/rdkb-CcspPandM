@@ -186,7 +186,7 @@ CosaDmlMldGetGroup
 }
 
 
-#elif ( defined _COSA_INTEL_USG_ARM_ )
+#elif ( defined _COSA_INTEL_USG_ARM_ || defined _COSA_BCM_MIPS_ )
 
 ANSC_STATUS
 CosaDmlMldInit
@@ -287,6 +287,7 @@ CosaDmlMldSetCfg
         _write_sysctl_file("/sys/class/net/brlan0/bridge/multicast_snooping", 0);
     }
 
+#if !defined (_COSA_BCM_MIPS_)
     if ( (pid_f = fopen("/var/run/ecmh.pid", "r")) != NULL )
     {
         if(fgets(buffer, 255,pid_f) != '\0')
@@ -324,6 +325,7 @@ CosaDmlMldSetCfg
             system(buffer);
         }
     }
+#endif
 
     return ANSC_STATUS_SUCCESS;
 }

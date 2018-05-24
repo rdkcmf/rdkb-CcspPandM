@@ -1347,7 +1347,7 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
     {
         AnscCopyString(pMyObject->FactoryReset, pString);
         pMyObject->bFactoryResetChanged = 1;
-
+     
         return TRUE;
     }
 

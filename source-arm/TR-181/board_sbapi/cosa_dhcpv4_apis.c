@@ -87,7 +87,7 @@
 
 #undef _COSA_SIM_
 
-#elif (defined _COSA_INTEL_USG_ARM_)
+#elif (defined _COSA_INTEL_USG_ARM_) || (defined  _COSA_BCM_MIPS_)
 
 #undef _COSA_SIM_
 
@@ -461,7 +461,7 @@ static void print_wifi_client(void)
 int usg_get_cpe_associated_ssid(void *arg)
 {
 	int i, j, amount,size;
-	char dm[128], outdata[32];
+	char dm[128], outdata[33];    // outdata also holds SSID
     char ssid[64]={0},mac[18];
     parameterValStruct_t varStruct;
     struct timespec tm;

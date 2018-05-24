@@ -542,7 +542,7 @@ CosaDmlNeighdiscIfBERemove
     return ANSC_STATUS_SUCCESS;
 }
 
-#elif  defined(_COSA_INTEL_USG_ARM_)
+#elif  defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_BCM_MIPS_)
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <ctype.h>

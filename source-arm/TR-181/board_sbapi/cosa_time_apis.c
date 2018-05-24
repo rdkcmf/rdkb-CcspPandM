@@ -146,7 +146,7 @@ CosaDmlTimeGetLocalTime
     return ANSC_STATUS_SUCCESS;
 }
 
-#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_)
+#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _COSA_BCM_MIPS_)
 
 #include <utctx.h>
 #include <utctx_api.h>
@@ -179,6 +179,186 @@ CosaDmlTimeGetLocalTime
 #define NELEMS(arr)             (sizeof(arr) / sizeof((arr)[0]))
 #endif
 
+ANSC_STATUS updateTimeZone(const char *timezone)
+{
+    if(timezone == NULL)
+        return ANSC_STATUS_FAILURE;
+
+    FILE *fp = NULL;
+    char zone[MAXBUF] = {0};
+
+    if ((fp = fopen("/etc/TZ", "w")) == NULL)
+    {
+        AnscTraceWarning(("%s: cannot open file /etc/TZ\n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    snprintf(zone, sizeof(zone), "%s\n", timezone);
+    if (fwrite(zone, strlen(zone), 1, fp) != 1)
+    {
+        AnscTraceWarning(("%s: fail to write\n", __FUNCTION__));
+        fclose(fp);
+        return ANSC_STATUS_FAILURE;
+    }
+    fclose(fp);
+    return ANSC_STATUS_SUCCESS;
+}
+
+#if defined (_COSA_BCM_MIPS_)
+/* The XF3 and CFG3 use the thin client version of ntpd called timesyncd. This version uses a
+ * config file at /etc/systemd/timesyncd.conf. If the enable option is set, we'll update the value
+ * in the conf file and restart the timesyncd service to pick up the changes.
+ */
+/* The /etc/systemd/timesyncd.conf file is mounted copy bind to /tmp/systemd-timesyncd.conf so
+ * we will need to edit the file there.
+ */
+const char timesyncConfFile[] = "/tmp/systemd-timesyncd.conf";
+const char updateTimesyncConf[] = "/usr/ccsp/updateTimesyncdConf.sh";
+
+/*
+ * Timesyncd uses "timedatectl status" to fetch whether or not we are synced.
+ *
+ * From the output of the above command, we are looking for one of these lines:
+ * "NTP synchronized: yes"
+ * "NTP synchronized: no"
+ */
+BOOL isTimeSynced()
+{
+     char buf[MAXBUF] = {0};
+     BOOL isSync = FALSE;
+
+     AnscTraceWarning(("%s: isTimeSynced.\n", __FUNCTION__));
+
+     FILE *fp = popen("timedatectl status", "r");
+
+     if ( fp != NULL){
+         while (fgets(buf, sizeof(buf), fp) != NULL)
+         {
+             if (strstr(buf, "NTP synchronized: yes") != NULL) {
+                 isSync = TRUE;
+                 break;
+             } else if (strstr(buf, "NTP synchronized: no") != NULL) {
+                 break;
+             }
+         }
+
+         pclose(fp);
+     }
+
+     return isSync;
+}
+
+
+ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
+{
+    FILE *fp;
+    char buf[MAXBUF]= {0};
+    char server[MAXBUF] = {0};
+    int  i = 0;
+
+    AnscTraceWarning(("%s: Start Function...\n", __FUNCTION__));
+    if (pTimeCfg->bEnabled)
+        snprintf(buf, sizeof(buf), "1");
+    else
+        snprintf(buf, sizeof(buf), "0");
+
+    /*update time zone*/
+    if(ANSC_STATUS_SUCCESS != updateTimeZone(pTimeCfg->LocalTimeZone))
+    {
+        AnscTraceWarning(("%s: Fail to update time zone!\n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    /* Timesynd supports multiple NTP Servers, so we'll build up a list */
+    if (pTimeCfg->bEnabled)
+    {
+        for (i=0;i<=5;i++) {
+            switch (i) {
+            case 1:
+                if (pTimeCfg->NTPServer1 && strlen(pTimeCfg->NTPServer1) > 0)
+                {
+                    if (server[0] != NULL) {
+                        strcat(server, " "); // add spacer
+                    }
+                    strcat(server, pTimeCfg->NTPServer1);
+                }
+                break;
+            case 2:
+                if (pTimeCfg->NTPServer2 && strlen(pTimeCfg->NTPServer2) > 0)
+                {
+                    if (server[0] != NULL) {
+                        strcat(server, " "); // add spacer
+                    }
+                    strcat(server, pTimeCfg->NTPServer2);
+                }
+                break;
+            case 3:
+                if (pTimeCfg->NTPServer3 && strlen(pTimeCfg->NTPServer3) > 0)
+                {
+                    if (server[0] != NULL) {
+                        strcat(server, " "); // add spacer
+                    }
+                    strcat(server, pTimeCfg->NTPServer3);
+                }
+                break;
+            case 4:
+                if (pTimeCfg->NTPServer4 && strlen(pTimeCfg->NTPServer4) > 0)
+                {
+                    if (server[0] != NULL) {
+                        strcat(server, " "); // add spacer
+                    }
+                    strcat(server, pTimeCfg->NTPServer4);
+                }
+                break;
+            case 5:
+                if (pTimeCfg->NTPServer5 && strlen(pTimeCfg->NTPServer5) > 0) {
+                    if (server[0] != NULL) {
+                        strcat(server, " "); // add spacer
+                    }
+                    strcat(server, pTimeCfg->NTPServer5);
+                }
+                break;
+            default:
+                break;
+            }
+        }
+
+        if (strlen(server) != 0)
+        {
+            /**
+             * Kill the old timesyncd process and unmount the timesyncd.conf file
+             */
+            AnscTraceWarning(("%s: stopping ntpclient \n", __FUNCTION__));
+            system("systemctl stop tmp-systemd-timesyncd.conf.service");
+            system("systemctl stop systemd-timesyncd");
+
+            // Copy the new server(s) into the temp config file
+            sprintf(buf, "sed -i '/^[#\s]*NTP=/s/.*/NTP=%s/' %s", server, timesyncConfFile);
+            system(buf);
+
+            // remount the modified timesyncd.conf file
+            system("systemctl start tmp-systemd-timesyncd.conf.service");
+            snprintf(buf, sizeof(buf), "sleep 2 && systemctl start systemd-timesyncd");
+
+            // Restart timesyncd
+            AnscTraceWarning(("%s: starting ntpclient with host %s,command:%s\n", __FUNCTION__, server, buf));
+            if (system(buf) != 0)
+            {
+                AnscTraceWarning(("%s: fail to execute ntpclient\n", __FUNCTION__));
+            }
+        }
+    } else {
+        if (access(updateTimesyncConf, F_OK) == 0)
+        {
+            AnscTraceWarning(("%s: Set NTP Server via default method\n", __FUNCTION__));
+            // Update the timesyncd.conf file using the default method
+            system(updateTimesyncConf);
+        }
+    }
+    return ANSC_STATUS_SUCCESS;
+}
+
+#else
 /* TURE means synced, FALSE means fail or un-synced */
 BOOL isTimeSynced()
 {
@@ -222,31 +402,6 @@ BOOL isTimeSynced()
      }
 
      return isSync;
-}
-
-ANSC_STATUS updateTimeZone(const char *timezone)
-{
-    if(timezone == NULL)
-        return ANSC_STATUS_FAILURE;
-
-    FILE *fp = NULL;
-    char zone[MAXBUF] = {0};
-
-    if ((fp = fopen("/etc/TZ", "w")) == NULL)
-    {
-        AnscTraceWarning(("%s: cannot open file /etc/TZ\n", __FUNCTION__));
-        return ANSC_STATUS_FAILURE;
-    }
-
-    snprintf(zone, sizeof(zone), "%s\n", timezone);
-    if (fwrite(zone, strlen(zone), 1, fp) != 1)
-    {
-        AnscTraceWarning(("%s: fail to write\n", __FUNCTION__));
-        fclose(fp);
-        return ANSC_STATUS_FAILURE;
-    }
-    fclose(fp);
-    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
@@ -373,7 +528,7 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
     }
     return ANSC_STATUS_SUCCESS;
 }
-
+#endif
 
 ANSC_STATUS
 CosaDmlTimeInit
@@ -624,6 +779,15 @@ CosaDmlTimeGetState
     return ANSC_STATUS_SUCCESS;
 }
 
+#ifdef _XF3_PRODUCT_REQ_
+ANSC_STATUS
+CosaDmlTimeGetTimeOffset
+    (
+       ANSC_HANDLE                 hContext,
+       char                       *pTimeOffset
+    );
+#endif
+
 ANSC_STATUS
 CosaDmlTimeGetLocalTime
     (
@@ -632,7 +796,7 @@ CosaDmlTimeGetLocalTime
     )
 {
     time_t t;
-#ifdef UTC_ENABLE
+#if defined(UTC_ENABLE) && !defined(_XF3_PRODUCT_REQ_)
 struct tm now_time, *pLcltime, temp;
    time(&t);
    t = t + getOffset();
@@ -640,7 +804,16 @@ struct tm now_time, *pLcltime, temp;
    pLcltime = &temp;
 #else
     struct tm *pLcltime;
+#ifdef _XF3_PRODUCT_REQ_
+    char timeOffset[256];
+    int offset;
     t = time(NULL);
+    CosaDmlTimeGetTimeOffset((ANSC_HANDLE)NULL, timeOffset);
+    offset = atoi(timeOffset);
+    t += (time_t)offset;
+#else
+    t = time(NULL);
+#endif
     pLcltime = localtime(&t);
 #endif
     _ansc_sprintf(pCurrLocalTime, "%.4u-%.2u-%.2u %.2u:%.2u:%.2u",

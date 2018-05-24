@@ -71,7 +71,7 @@
         08/30/2011    initial revision.
 
 **************************************************************************/
-#if (defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_))
+#if (defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_) || defined(_COSA_BCM_MIPS_))
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -111,7 +111,7 @@ struct ipv6rd_conf {
 
 static struct ipv6rd_conf *g_ipv6rd_conf;
 
-#if (defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_))
+#if (defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_) || defined(_COSA_BCM_MIPS_))
 /* 
  * define USE_SYSTEM to use system() function
  */
@@ -560,6 +560,16 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
     char cmd[MAX_LINE];
 #endif
 
+#if defined (_COSA_BCM_MIPS_)
+    /* if AddressSource is not specified, use wan0's ipv4 address (which is from ISP) */
+    snprintf(addrsource, sizeof(addrsource), "%s", ifconf->AddressSource);
+    if (addrsource[0] == '\0') {
+        if (ifname_to_ipaddr("erouter0", addrsource, sizeof(addrsource)) != 0) {
+            syslog(LOG_ERR, "%s: Local address can't determined", __FUNCTION__);
+            return -1;
+        }
+    }
+#else
     /* if AddressSource is not specified, use wan0's ipv4 address (which is from ISP) */
     snprintf(addrsource, sizeof(addrsource), "%s", ifconf->AddressSource);
     if (addrsource[0] == '\0') {
@@ -568,6 +578,7 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
             return -1;
         }
     }
+#endif
 
     /* create 6rd tunnel and set 6rd-prefix */
 #if defined(USE_SYSTEM)
@@ -919,8 +930,13 @@ CosaDml_IPv6rdGetEntry(
     // XXX: what's the defination of Tunnel(ed)Interface in Linux 6RD model ?
     snprintf(pEntry->TunnelInterface, 
             sizeof(pEntry->TunnelInterface), "%s", ifconf->Alias);
+#if defined (_COSA_BCM_MIPS_)
+    snprintf(pEntry->TunneledInterface,
+            sizeof(pEntry->TunneledInterface), "%s", "erouter0");
+#else
     snprintf(pEntry->TunneledInterface, 
             sizeof(pEntry->TunneledInterface), "%s", "wan0");
+#endif
 
     return ANSC_STATUS_SUCCESS;
 }

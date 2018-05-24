@@ -136,7 +136,7 @@ CosaDmlDiagnosticsGetEntry
 }
 
 
-#elif ( defined _COSA_INTEL_USG_ARM_ )
+#elif ( defined _COSA_INTEL_USG_ARM_ ) || ( defined _COSA_BCM_MIPS_ )
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -356,7 +356,8 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
         //In R1.3 ~ R1.5 Time format is like
         // Jan  1 00:00:00
         //in R1.6 year will append in time string,like 
-        // Jan  1 00:00:00 2014   
+        // Jan  1 00:00:00 2014
+#if !defined(_COSA_BCM_MIPS_)   
         memcpy(p[i].Time, line, LOG_TIME_SIZE);
         p[i].Time[LOG_TIME_SIZE] = '\0';
         /* If time format < R1.6 */
@@ -372,6 +373,10 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
                 year_miss = 0;
             }
         }
+#else
+        memcpy(p[i].Time, line, LOG_TIME_SIZE_WO_Y);
+        p[i].Time[LOG_TIME_SIZE_WO_Y] = '\0';
+#endif
 
         //Get Level
         if(NULL != (tmp = strstr(line, user))){

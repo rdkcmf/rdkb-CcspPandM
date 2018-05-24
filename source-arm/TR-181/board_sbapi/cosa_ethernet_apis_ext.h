@@ -72,7 +72,7 @@
 #define LAN_ETHERNET_MOCA   "nmoca0"
 #endif
 
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 #define WAN_ETHERNET_IFNAME "erouter0"
 #else
 #define WAN_ETHERNET_IFNAME "wan0"
@@ -125,7 +125,7 @@ int getSwitchStats(PSwitchPortID swID, PCOSA_DML_IF_STATS pStats);
 int getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDinfo);
 #endif
 
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 static int getIfCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg);
 static int setIfCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg);
 static int getIfStats(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_STATS pStats);

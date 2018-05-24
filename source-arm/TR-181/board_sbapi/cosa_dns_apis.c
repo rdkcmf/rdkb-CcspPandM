@@ -1499,10 +1499,16 @@ CosaDmlDnsClientAddServer
     g_dns_client_server[g_DnsClientServerNum].InstanceNumber  = pEntry->InstanceNumber;  
     g_dns_client_server[g_DnsClientServerNum].bEnabled        = pEntry->bEnabled = TRUE;        
     g_dns_client_server[g_DnsClientServerNum].Status          = pEntry->Status = COSA_DML_DNS_STATUS_Enabled;        
-    g_dns_client_server[g_DnsClientServerNum].Type            = pEntry->Type = COSA_DML_DNS_ADDR_SRC_Static; 
+    g_dns_client_server[g_DnsClientServerNum].Type            = pEntry->Type = COSA_DML_DNS_ADDR_SRC_Static;
+#if defined (_COSA_BCM_MIPS_)
+    AnscCopyString(g_dns_client_server[g_DnsClientServerNum].Interface, "erouter0" );
+    AnscCopyString(pEntry->Interface, "erouter0" );
+    AnscCopyString(g_wan_info.domainname, "erouter0" );
+#else 
     AnscCopyString(g_dns_client_server[g_DnsClientServerNum].Interface, "wan0" );
     AnscCopyString(pEntry->Interface, "wan0" );
     AnscCopyString(g_wan_info.domainname, "wan0" );
+#endif
     
     g_wan_info.wan_proto = STATIC;
         
@@ -2518,7 +2524,7 @@ CosaDmlDnsRelayGetServer
     return ANSC_STATUS_CANT_FIND;
 }
 
-#elif ( defined(_COSA_INTEL_USG_ARM_) )
+#elif ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_BCM_MIPS_) )
 
 #include <utctx_api.h>
 #include <utapi.h>

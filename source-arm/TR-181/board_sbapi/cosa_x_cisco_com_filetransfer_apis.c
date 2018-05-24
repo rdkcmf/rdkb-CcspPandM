@@ -447,7 +447,7 @@ CosaDmlFileTransferGetCfg
         }
         else
         {
-            pCfg->Server, SlapValue.Variant.varUint32;
+            pCfg->Server = SlapValue.Variant.varUint32;
         }
 
         SlapCleanVariable(&SlapValue);

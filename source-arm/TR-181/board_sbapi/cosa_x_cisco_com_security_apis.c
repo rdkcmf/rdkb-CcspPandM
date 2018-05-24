@@ -2280,7 +2280,7 @@ void CosaDmlIaRemove()
 {
 }
 
-#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_)
+#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _COSA_BCM_MIPS_)
 
 #include <utctx.h>
 #include <utctx_api.h>
@@ -2297,7 +2297,7 @@ iap_entry_t * g_iaps ;
 int safe_strcpy(char * dst, char * src, int dst_size);
 
 static void print_iap();
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 static int be_struct_2_middle_layer(iap_entry_t * p_in, PCOSA_DML_IA_POLICY p_out)
 {
     int i = 0;
@@ -2738,7 +2738,7 @@ CosaDmlIaGetNumberOfPolicies
         ANSC_HANDLE                 hContext
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     return g_iap_num;
 #endif
     return 0;
@@ -2784,7 +2784,7 @@ CosaDmlIaGetPolicy
         PCOSA_DML_IA_POLICY         pEntry
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 
     be_struct_2_middle_layer(&g_iaps[ulIndex], pEntry);
 
@@ -2839,7 +2839,7 @@ CosaDmlIaSetPolicyValues
         char*                       pAlias
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     BOOL  alias_changed = 0;
     UtopiaContext ctx ;
     iap_entry_t * p_iap = NULL;
@@ -2930,7 +2930,7 @@ CosaDmlIaGetPolicyByInsNum
     )
 {
     /*for rollback*/
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
 
     for (i=0; i<g_iap_num; i++)
@@ -2983,7 +2983,7 @@ CosaDmlIaAddPolicy
         PCOSA_DML_IA_POLICY         pEntry
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     iap_entry_t iap = {0};
     UtopiaContext ctx ;
     BOOL          alias_changed = 0;
@@ -3051,7 +3051,7 @@ CosaDmlIaDelPolicy
         ULONG                       ulInstanceNum
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     UtopiaContext ctx;
     ANSC_STATUS ret = ANSC_STATUS_FAILURE;
@@ -3122,7 +3122,7 @@ CosaDmlIaSetPolicy
         PCOSA_DML_IA_POLICY         pEntry
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     iap_entry_t * p_iap = NULL;
     int i = 0;
     UtopiaContext ctx ;    
@@ -3207,7 +3207,7 @@ CosaDmlIaSetPolicy
 
 **********************************************************************/
 
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 void  be_struct_2_ml_schedule(iap_entry_t * p_iap, PCOSA_DML_IA_POLICY_SCH pEntry)
 {
     if (!p_iap || !pEntry)
@@ -3266,7 +3266,7 @@ CosaDmlIaGetPolicySchedule
         PCOSA_DML_IA_POLICY_SCH     pEntry
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     iap_entry_t * p_iap = NULL;
     int i = 0;
 
@@ -3324,7 +3324,7 @@ CosaDmlIaSetPolicySchedule
         PCOSA_DML_IA_POLICY_SCH     pEntry
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int ret = 0;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;
@@ -3389,7 +3389,7 @@ CosaDmlIaPolicyGetNumberOfUrls
         ULONG                       ulPolicyInstanceNumber
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     iap_entry_t * p_iap = NULL;
     
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
@@ -3447,7 +3447,7 @@ CosaDmlIaPolicyGetUrl
         PCOSA_DML_IA_POLICY_URL     pUrl
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     char * p_url = NULL;
     iap_entry_t * p_iap = NULL;
@@ -3518,7 +3518,7 @@ CosaDmlIaPolicyGetUrlByInsNum
     )
 {
 /*for rollback*/
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     char * p_url = NULL;
     iap_entry_t * p_iap = NULL;
@@ -3604,7 +3604,7 @@ CosaDmlIaPolicySetUrlValues
 {
 /*for internal.c to adjust alias/instNum*/
     
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     /*the two instance number are all sane, no need to validate*/
     int i = 0;
     char * p_url = NULL;
@@ -3673,7 +3673,7 @@ CosaDmlIaPolicyAddUrl
         PCOSA_DML_IA_POLICY_URL     pUrl
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     char * p_url = NULL;
     iap_entry_t * p_iap = NULL;
@@ -3760,7 +3760,7 @@ CosaDmlIaPolicyDelUrl
         PCOSA_DML_IA_POLICY_URL     pUrl        /* Identified by InstanceNumber */
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
     char * p = NULL;
@@ -3855,7 +3855,7 @@ CosaDmlIaPolicySetUrl
         PCOSA_DML_IA_POLICY_URL     pUrl        /* Identified by InstanceNumber */
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
@@ -3934,7 +3934,7 @@ CosaDmlIaPolicyGetNumberOfKeywords
         ULONG                       ulPolicyInstanceNumber
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
@@ -3996,7 +3996,7 @@ CosaDmlIaPolicyGetKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
@@ -4072,7 +4072,7 @@ CosaDmlIaPolicyGetKeywordByInsNum
     )
 {
 /*for rollback*/
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
@@ -4159,7 +4159,7 @@ CosaDmlIaPolicySetKeywordValues
     )
 {
 /*for inernal.c to generate alias/instNum*/
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
@@ -4235,7 +4235,7 @@ CosaDmlIaPolicyAddKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
@@ -4325,7 +4325,7 @@ CosaDmlIaPolicyDelKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
     char * p = NULL;
@@ -4421,7 +4421,7 @@ CosaDmlIaPolicySetKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
     char * p = NULL;
@@ -4497,7 +4497,7 @@ CosaDmlIaPolicySetKeyword
     Return:       The number of the Access Policies.
 
 **********************************************************************/
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 BOOL isWellKnownService (const char *name)
 {
     int i = 0;
@@ -4598,7 +4598,7 @@ CosaDmlIaPolicyGetNumberOfApps
         ULONG                       ulPolicyInstanceNumber
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
     char * p = NULL;
@@ -4661,7 +4661,7 @@ CosaDmlIaPolicyGetApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
     char * p = NULL;
@@ -4727,7 +4727,7 @@ CosaDmlIaPolicyGetAppByInsNum
     )
 {
 /*for rollback*/
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
     char * p = NULL;
@@ -4806,7 +4806,7 @@ CosaDmlIaPolicySetAppValues
     )
 {
 /*for middle layer generated alias/instNum*/
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
     char * p = NULL;
@@ -4883,7 +4883,7 @@ CosaDmlIaPolicyAddApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
     char * p = NULL;
@@ -4970,7 +4970,7 @@ CosaDmlIaPolicyDelBlockedApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
     char * p = NULL;
@@ -5058,7 +5058,7 @@ CosaDmlIaPolicySetBlockedApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
     char * p = NULL;
@@ -5446,14 +5446,14 @@ CosaDmlIaGetALLLogEntries
 
 void CosaDmlIaRemove()
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     free_iap_entries(g_iaps, g_iap_num);    
 #endif
 }
 
 #endif
 
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
