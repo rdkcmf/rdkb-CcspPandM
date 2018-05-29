@@ -2014,7 +2014,30 @@ LanMngm_Validate
     /* check subnetmask */
     /* Subnet mask MUST accept ONLY the following IP addresses: */
     /* 255.255.255.0, 255.255.0.0, 255.0.0.0, 255.255.255.128, 255.255.255.252 */
-#if defined _XB6_PRODUCT_REQ_  || defined(_PLATFORM_RASPBERRYPI_)
+#if defined(_CBR_PRODUCT_REQ_) && defined(_BCI_FEATURE_REQ)
+    if(pLanMngm->LanSubnetMask.Value != 0x000000FF &&   //8
+       pLanMngm->LanSubnetMask.Value != 0x000080FF &&   //9
+       pLanMngm->LanSubnetMask.Value != 0x0000C0FF &&   //10
+       pLanMngm->LanSubnetMask.Value != 0x0000E0FF &&	 //11
+       pLanMngm->LanSubnetMask.Value != 0x0000F0FF &&	 //12
+       pLanMngm->LanSubnetMask.Value != 0x0000F8FF &&   //13
+       pLanMngm->LanSubnetMask.Value != 0x0000FCFF &&   //14
+       pLanMngm->LanSubnetMask.Value != 0x0000FEFF &&   //15
+       pLanMngm->LanSubnetMask.Value != 0x0000FFFF &&   //16
+       pLanMngm->LanSubnetMask.Value != 0x0080FFFF &&   //17
+       pLanMngm->LanSubnetMask.Value != 0x00C0FFFF &&   //18
+       pLanMngm->LanSubnetMask.Value != 0x00E0FFFF &&   //19
+       pLanMngm->LanSubnetMask.Value != 0x00F0FFFF &&   //20
+       pLanMngm->LanSubnetMask.Value != 0x00F8FFFF &&   //21
+       pLanMngm->LanSubnetMask.Value != 0x00FCFFFF &&   //22
+       pLanMngm->LanSubnetMask.Value != 0x00FEFFFF &&   //23
+       pLanMngm->LanSubnetMask.Value != 0x00FFFFFF &&   //24
+       pLanMngm->LanSubnetMask.Value != 0x80FFFFFF &&   //25
+       pLanMngm->LanSubnetMask.Value != 0xC0FFFFFF &&   //26
+       pLanMngm->LanSubnetMask.Value != 0xE0FFFFFF &&   //27
+       pLanMngm->LanSubnetMask.Value != 0xF0FFFFFF &&   //28
+       pLanMngm->LanSubnetMask.Value != 0xF8FFFFFF )   //29 
+#elif defined(_XB6_PRODUCT_REQ_) || defined(_PLATFORM_RASPBERRYPI_)
     if(pLanMngm->LanSubnetMask.Value != 0x00FFFFFF &&
        pLanMngm->LanSubnetMask.Value != 0x0000FFFF &&
        pLanMngm->LanSubnetMask.Value != 0x000000FF &&  
@@ -2071,12 +2094,13 @@ LanMngm_Validate
     }else if(pLanMngm->LanIPAddress.Dot[0] == 172 && pLanMngm->LanIPAddress.Dot[1] >= 16 && pLanMngm->LanIPAddress.Dot[1] <= 31){
         return TRUE;
     }
-#if defined _XB6_PRODUCT_REQ_  || defined(_PLATFORM_RASPBERRYPI_)
+
+#if defined(_XB6_PRODUCT_REQ_) || defined(_PLATFORM_RASPBERRYPI_) || (defined(_CBR_PRODUCT_REQ_) && defined(_BCI_FEATURE_REQ))
    else if((pLanMngm->LanIPAddress.Value & 0x0000FFFF) == 0x0000A8C0 )
 #else
    else if((pLanMngm->LanIPAddress.Value & 0xFFFF0000) == 0xC0A80000)
 #endif
-{
+    {
         return TRUE;
     }
 
