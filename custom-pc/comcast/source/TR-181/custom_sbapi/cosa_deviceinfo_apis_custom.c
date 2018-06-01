@@ -123,12 +123,14 @@ void GetInterfaceName(char interface_name[50],char conf_file[100])
         char path[256] = {0},output_string[256] = {0};
         int count = 0;
         char *interface;
-        if(strcmp(conf_file,"/etc/hostapd_5G.conf") == 0)
-                fp = popen("cat /etc/hostapd_5G.conf | grep -w interface","r");
-        else if(strcmp(conf_file,"/etc/hostapd_2.4G.conf") == 0)
-                fp = popen("cat /etc/hostapd_2.4G.conf | grep -w interface","r");
-        else if(strcmp(conf_file,"/etc/hostapd_xfinity_5G.conf") == 0)
-                fp = popen("cat /etc/hostapd_xfinity_5G.conf | grep -w interface","r");
+        if(strcmp(conf_file,"/nvram/hostapd1.conf") == 0)
+                fp = popen("cat /nvram/hostapd1.conf | grep -w interface","r");
+        else if(strcmp(conf_file,"/nvram/hostapd0.conf") == 0)
+                fp = popen("cat /nvram/hostapd0.conf | grep -w interface","r");
+        else if(strcmp(conf_file,"/nvram/hostapd5.conf") == 0)
+                fp = popen("cat /nvram/hostapd5.conf | grep -w interface","r");
+        else if(strcmp(conf_file,"/nvram/hostapd4.conf") == 0)
+                fp = popen("cat /nvram/hostapd4.conf | grep -w interface","r");
         if(fp == NULL)
         {
                 printf("Failed to run command in Function %s\n",__FUNCTION__);
@@ -159,7 +161,7 @@ void GetInterfaceName_virtualInterfaceName_2G(char interface_name[50])
         char path[256] = {0},output_string[256] = {0};
         int count = 0;
         char *interface;
-        fp = popen("cat /etc/hostapd_2.4G.conf | grep -w bss","r");
+        fp = popen("cat /nvram/hostapd0.conf | grep -w bss","r");
         if(fp == NULL)
         {
                 printf("Failed to run command in Function %s\n",__FUNCTION__);
@@ -185,6 +187,37 @@ void GetInterfaceName_virtualInterfaceName_2G(char interface_name[50])
  *  Return Values : None
  */
 
+int _syscmd(char *cmd, char *retBuf, int retBufSize)
+{
+    FILE *f;
+    char *ptr = retBuf;
+        int bufSize=retBufSize, bufbytes=0, readbytes=0;
+
+    if((f = popen(cmd, "r")) == NULL) {
+        printf("popen %s error\n", cmd);
+        return -1;
+    }
+
+    while(!feof(f))
+    {
+        *ptr = 0;
+                if(bufSize>=128) {
+                        bufbytes=128;
+                } else {
+                        bufbytes=bufSize-1;
+                }
+
+        fgets(ptr,bufbytes,f);
+                readbytes=strlen(ptr);
+        if( readbytes== 0)
+            break;
+        bufSize-=readbytes;
+        ptr += readbytes;
+    }
+    pclose(f);
+        retBuf[retBufSize-1]=0;
+    return 0;
+}
 
 void killXfinityWiFi()//LNT_EMU
 {
@@ -201,8 +234,14 @@ void killXfinityWiFi()//LNT_EMU
         system("iptables -F general_output");*/
 	char interface_name[512];
         char virtual_interface_name[512],buf[512];
-        GetInterfaceName(interface_name,"/etc/hostapd_xfinity_5G.conf");
-        GetInterfaceName_virtualInterfaceName_2G(virtual_interface_name);
+	char cmd[512] = {0};
+        GetInterfaceName(interface_name,"/nvram/hostapd5.conf");
+	sprintf(cmd,"%s","cat /nvram/hostapd0.conf | grep bss=");
+	_syscmd(cmd,buf,sizeof(buf));
+        if(buf[0] == '#')
+                GetInterfaceName(virtual_interface_name,"/nvram/hostapd4.conf");
+        else
+                GetInterfaceName_virtualInterfaceName_2G(virtual_interface_name);
 	system("killall CcspHotspot");
         system("killall hotspot_arpd");
         system("brctl delif brlan1 gretap0.100");
@@ -505,14 +544,14 @@ CosaDmlDiSetXfinityWiFiEnable
     if (TRUE == value)//LNT_EMU
     {
 	if (DmSetBool("Device.WiFi.SSID.5.Enable", value) != ANSC_STATUS_SUCCESS) {
-            fprintf(stderr, "%s: set WiFi.SSID.5 Disable error\n", __FUNCTION__);
+            fprintf(stderr, "%s: set WiFi.SSID.5 Enable error\n", __FUNCTION__);
         } else {
-            fprintf(stderr, "%s: set WiFi.SSID.5 Disable OK\n", __FUNCTION__);
+            fprintf(stderr, "%s: set WiFi.SSID.5 Enable OK\n", __FUNCTION__);
         }
 	if (DmSetBool("Device.WiFi.SSID.6.Enable", value) != ANSC_STATUS_SUCCESS) {
-            fprintf(stderr, "%s: set WiFi.SSID.6 Disable error\n", __FUNCTION__);
+            fprintf(stderr, "%s: set WiFi.SSID.6 Enable error\n", __FUNCTION__);
         } else {
-            fprintf(stderr, "%s: set WiFi.SSID.6 Disable OK\n", __FUNCTION__); //keerthu
+            fprintf(stderr, "%s: set WiFi.SSID.6 Enable OK\n", __FUNCTION__); //keerthu
         }
         system("/lib/rdk/handle_emu_gre.sh create");
     }
