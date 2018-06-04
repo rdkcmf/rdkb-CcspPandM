@@ -23,10 +23,13 @@ REVERTED_FLAG="/nvram/reverted"
 syscfg set redirection_flag true 
 syscfg commit
 DHCPDONE=`sysevent get captiveportaldhcp`
+SERVER6_CONF="/etc/dibbler/server.conf"
+MIGRATED_FLAG="/nvram/migratedfrom_nonrdkb"
+SERVER6_BKUP="/nvram/server_bkup.conf"
 
 # We need to restart DHCP restart and firewall only in case of WiFi factory restore.
 # /nvram/reverted will be created only when user changes WiFI and password
-if [ -e "$REVERTED_FLAG" ]
+if [ -e "$REVERTED_FLAG" ] || [ -e "$MIGRATED_FLAG" ]
 then
 	echo_t "Redirect URL : Removing reverted flag"
 	rm -f $REVERTED_FLAG
@@ -56,3 +59,23 @@ fi
 echo_t "Redirect URL : Restarting firewall"
 sysevent set firewall-restart
 
+echo_t "Redirect URL : Restarting dibblerServer"
+# Modify DNS server option in dibbler configuration
+if [ -e $SERVER6_CONF ]
+then
+    sed -e '/dns-server/s/^/#/g' -i $SERVER6_CONF 
+    cat $SERVER6_CONF
+else
+    echo_t "Redirect URL : No dibbler6 configuration available...."
+fi
+
+dibbler-server stop
+dibbler-server start
+
+if [ "$DEVICE_MODEL" = "TCHXB3" ]
+then
+   if [ -e "$MIGRATED_FLAG" ]
+   then
+      sysevent set zebra-restart
+   fi
+fi
