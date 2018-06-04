@@ -21,6 +21,7 @@
 source /etc/utopia/service.d/log_capture_path.sh
 
 SERVER6_CONF="/etc/dibbler/server.conf"
+SERVER6_BKUP="/tmp/server_bkup.conf"
 Uncommented_line=""
 REVERTED_FLAG="/nvram/reverted"
 WAN_INTERFACE="erouter0"
@@ -160,8 +161,12 @@ sleep 5
 #Modify DNS server option in dibbler configuration
 if [ -e $SERVER6_CONF ]
 then
-	sed -i "/\# *option dns\-server/s/.//" $SERVER6_CONF #ARRISXB6-7322
-	cat $SERVER6_CONF
+    Uncommented_line=`cat $SERVER6_CONF | grep dns-server | sed -e 's/#//g'`
+    sed "/dns-server/c \
+    \ \ \ \ $Uncommented_line"  $SERVER6_CONF > $SERVER6_BKUP
+    cp -f $SERVER6_BKUP $SERVER6_CONF
+    rm $SERVER6_BKUP
+    cat $SERVER6_CONF
 else
 	echo_t "No dibbler6 configuration available...."
 fi

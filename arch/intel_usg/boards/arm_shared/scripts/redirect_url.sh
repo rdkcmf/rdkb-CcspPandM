@@ -23,6 +23,7 @@ REVERTED_FLAG="/nvram/reverted"
 syscfg set redirection_flag true 
 syscfg commit
 DHCPDONE=`sysevent get captiveportaldhcp`
+SERVER6_CONF="/etc/dibbler/server.conf"
 
 # We need to restart DHCP restart and firewall only in case of WiFi factory restore.
 # /nvram/reverted will be created only when user changes WiFI and password
@@ -55,4 +56,17 @@ fi
 # WiFi factory restore/Factory restore.
 echo_t "Redirect URL : Restarting firewall"
 sysevent set firewall-restart
+
+echo_t "Redirect URL : Restarting dibblerServer"
+# Modify DNS server option in dibbler configuration
+if [ -e $SERVER6_CONF ]
+then
+    sed -e '/dns-server/s/^/#/g' -i $SERVER6_CONF 
+    cat $SERVER6_CONF
+else
+    echo_t "Redirect URL : No dibbler6 configuration available...."
+fi
+
+dibbler-server stop
+dibbler-server start
 
