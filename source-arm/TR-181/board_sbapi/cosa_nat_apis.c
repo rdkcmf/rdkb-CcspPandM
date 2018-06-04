@@ -1967,7 +1967,7 @@ int _Check_PT_parameter(PCOSA_DML_NAT_PTRIGGER pPortTrigger)
 /* IP is type of ANSC_IPV4_ADDRESS, but ANSC_IPV4_ADDRESS is defind as union <anonymous> we cannot use it as parameter */  
 static inline void _sent_syslog_pm_sb(char *opt, UCHAR protocol, USHORT external, USHORT external_end, USHORT internal, UCHAR ip[4], BOOLEAN active)
 {
-    char extPort[20], intPort[20];
+    char extPort[30], intPort[20];
     if(external_end == 0)
         sprintf(extPort, "ExternelPort %d", external);
     else
@@ -1994,7 +1994,7 @@ static inline void _sent_syslog_pt_sb(char *opt, UCHAR protocol, USHORT trigger_
 
 static inline void _sent_syslog_pm_u(char *opt, protocol_t protocol, int external, int external_end, int internal, char *ip, boolean_t active)
 {
-    char extPort[20], intPort[20];
+    char extPort[30], intPort[20];
     if(external_end == 0)
         sprintf(extPort, "ExternelPort %d", external);
     else
