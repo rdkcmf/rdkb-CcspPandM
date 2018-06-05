@@ -2206,7 +2206,7 @@ CosaDmlDhcpsSetPoolCfg
                 ||(tempCfg.LeaseTime!=pCfg->LeaseTime)){
                 snprintf(startIp,sizeof(startIp),"%d.%d.%d.%d",pCfg->MinAddress.Dot[0],pCfg->MinAddress.Dot[1],pCfg->MinAddress.Dot[2],pCfg->MinAddress.Dot[3]);
                 snprintf(endIp,sizeof(endIp),"%d.%d.%d.%d",pCfg->MaxAddress.Dot[0],pCfg->MaxAddress.Dot[1],pCfg->MaxAddress.Dot[2],pCfg->MaxAddress.Dot[3]);
-                syslog_systemlog("LAN DHCPv4 Server", LOG_NOTICE, "Configuraion change to: Start->%s End->%s Lease time->%d", startIp,endIp,pCfg->LeaseTime);
+                syslog_systemlog("LAN DHCPv4 Server", LOG_NOTICE, "Configuration change to: Start->%s End->%s Lease time->%d", startIp,endIp,pCfg->LeaseTime);
             }
             return ANSC_STATUS_SUCCESS;
         }
