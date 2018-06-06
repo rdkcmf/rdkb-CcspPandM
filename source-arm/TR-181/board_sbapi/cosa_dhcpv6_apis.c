@@ -1005,6 +1005,7 @@ BOOL tagPermitted(int tag)
 /* Server global variable  Begin*/
 
 #if defined (MULTILAN_FEATURE)
+#define IPV6_PREF_MAXLEN               128
 #define DHCPV6S_POOL_NUM               64  /* this pool means interface. We just supported such number interfaces. Each interface can include many pools*/
 #else
 #define DHCPV6S_POOL_NUM               1
@@ -1443,6 +1444,9 @@ static ULONG                               uDhcpv6ServerPoolNum                 
 static COSA_DML_DHCPSV6_POOL_FULL          sDhcpv6ServerPool[DHCPV6S_POOL_NUM]                   = {0};
 static ULONG                               uDhcpv6ServerPoolOptionNum[DHCPV6S_POOL_NUM]          = {0};
 static COSA_DML_DHCPSV6_POOL_OPTION        sDhcpv6ServerPoolOption[DHCPV6S_POOL_NUM][DHCPV6S_POOL_OPTION_NUM] = {{0}};
+#if defined(MULTILAN_FEATURE)
+static char v6addr_prev[IPV6_PREF_MAXLEN] = {0};
+#endif
 
 BOOL  g_dhcpv6_server      = TRUE;
 ULONG g_dhcpv6_server_type = DHCPV6_SERVER_TYPE_STATELESS;
@@ -6880,7 +6884,16 @@ dhcpv6c_dbg_thrd(void * in)
 #if defined (MULTILAN_FEATURE)
                         g_dhcpv6_server_prefix_ready = TRUE;
 
-                        commonSyseventSet("ipv6-restart", "1");
+                        if ((v6addr_prev[0] == '\0') || ( _ansc_strcmp(v6addr_prev, v6pref ) !=0))
+                        {
+                            _ansc_strncpy( v6addr_prev, v6pref, sizeof(v6pref));
+                            commonSyseventSet("ipv6-restart", "1");
+                        }
+                        else
+                        {
+                            commonSyseventSet("ipv6_addr-unset", "");
+                            commonSyseventSet("ipv6_addr-set", "");
+                        }
 #endif
 
 #ifdef MULTILAN_FEATURE
