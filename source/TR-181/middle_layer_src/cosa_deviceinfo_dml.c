@@ -596,7 +596,11 @@ DeviceInfo_GetParamStringValue
         
      if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootReason", TRUE))
     {
+#ifdef _CBR_PRODUCT_REQ_
+        char buf[256] = {'\0'};
+#else
         char buf[64] = {'\0'};
+#endif
         syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", buf, sizeof(buf));
     	if( buf != NULL )
     		{
