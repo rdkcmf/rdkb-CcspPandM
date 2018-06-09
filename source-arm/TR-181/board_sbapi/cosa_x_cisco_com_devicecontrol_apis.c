@@ -1988,6 +1988,10 @@ if ( strlen(buffer) == 0 )
 }
 pclose(fp);
 #endif
+#if defined(_PLATFORM_RASPBERRYPI_)
+		sleep(10);
+		system("reboot");
+#endif
 //            free_componentStruct_t(bus_handle, size, ppComponents);
             return  ANSC_STATUS_SUCCESS;
         
