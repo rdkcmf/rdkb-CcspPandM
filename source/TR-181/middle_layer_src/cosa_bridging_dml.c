@@ -1933,8 +1933,15 @@ Port_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_PORT_FULL         pPort            = (PCOSA_DML_BRG_PORT_FULL  )pCosaContext->hContext;
+    PCOSA_DML_BRG_FULL_ALL          pDmlBridge       = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hParentTable;
+    PSLIST_HEADER                   pListHead        = (PSLIST_HEADER            )&pDmlBridge->PortList;
+    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2    = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+    PSINGLE_LINK_ENTRY              pSLinkEntry      = (PSINGLE_LINK_ENTRY       )NULL;
+    PCOSA_DML_BRG_PORT_FULL         portList         = (PCOSA_DML_BRG_PORT_FULL  )NULL;
     PUCHAR                          pLowerLayer      = NULL;
-    
+    char lowerLayer[1024] = {0};
+    char path[64] = {0};
+      
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
@@ -2082,6 +2089,69 @@ Port_GetParamStringValue
         //$HL 4/16/2013
         //ToDO
         //LinkName has the whole path (wrong)
+
+     if (pPort->Cfg.bManagementPort == TRUE)
+      {
+            pSLinkEntry = AnscSListGetFirstEntry(pListHead);
+
+            if(!pSLinkEntry)
+                 return 0;
+            while ( pSLinkEntry ) {
+                pCosaContext2 = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+                pSLinkEntry   = AnscSListGetNextEntry(pSLinkEntry);
+
+                portList = (PCOSA_DML_BRG_PORT_FULL)pCosaContext2->hContext;
+                if ( !portList )
+                      return 0;
+
+                if((portList->Cfg.InstanceNumber == pPort->Cfg.InstanceNumber) || (portList->Cfg.bManagementPort == TRUE))
+                    continue;
+
+                switch (portList->Cfg.LinkType){
+                  case COSA_DML_BRG_LINK_TYPE_EthVlan:
+                  case COSA_DML_BRG_LINK_TYPE_Eth:
+                     sprintf(path, "%s", "Device.Ethernet.Interface.");
+                     break;
+                  case COSA_DML_BRG_LINK_TYPE_Moca:
+                     sprintf(path, "%s", "Device.MoCA.Interface.");
+                     break;
+                  case COSA_DML_BRG_LINK_TYPE_WiFiSsid:
+                     sprintf(path, "%s", "Device.WiFi.SSID.");
+                     break;
+                  case COSA_DML_BRG_LINK_TYPE_Bridge:
+                     sprintf(path, "%s", "Device.Bridging.Bridge.");
+                     break;
+                  case COSA_DML_BRG_LINK_TYPE_Gre: //$HL 07/15/2013
+                     sprintf(path, "%s", "Device.X_CISCO_COM_GRE.Interface.");
+                     break;
+                  case COSA_DML_BRG_LINK_TYPE_Usb:
+                  case COSA_DML_BRG_LINK_TYPE_Hpna:
+                 case COSA_DML_BRG_LINK_TYPE_HomePlug:
+                  case COSA_DML_BRG_LINK_TYPE_Upa:
+                  case COSA_DML_BRG_LINK_TYPE_NONE:
+                  default:
+                     break;
+                }
+
+                if (path){
+                    path[strlen(path)] = '\0';
+                    pLowerLayer = CosaUtilGetLowerLayers(path, portList->Cfg.LinkName);
+                
+                    if (pLowerLayer && strlen(pLowerLayer) != 0) {
+                        strcat(lowerLayer, pLowerLayer);
+                        strcat(lowerLayer, ",");
+                        AnscFreeMemory(pLowerLayer);
+                    }
+                }
+            }
+            if (lowerLayer){
+                lowerLayer[strlen(lowerLayer)-1] = '\0';
+                AnscCopyString(pValue, lowerLayer);
+            }
+            return 0;
+      }
+      else
+      {
         switch (pPort->Cfg.LinkType) {
             case COSA_DML_BRG_LINK_TYPE_EthVlan:
             case COSA_DML_BRG_LINK_TYPE_Eth:
@@ -2121,6 +2191,7 @@ Port_GetParamStringValue
                 pValue[0] ='\0';
                 break;
         }
+      }
         //AnscCopyString(pValue, pPort->Cfg.LinkName);
 #endif
         return 0;
