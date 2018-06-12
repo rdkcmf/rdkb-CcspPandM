@@ -31,7 +31,9 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_comcast.php" ,
       "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "USI",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af22"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af22",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/cacert.pem",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://acswg.g.comcast.net/cwmpWeb/DigestCPEMgt?target=/CPEMgt"
    },
 
 
@@ -66,7 +68,9 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php" ,
       "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "USI",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af32"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af32",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/cox/cacert.pem",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://rcapp-acs.east.cox.net"
    },
 
 
@@ -101,7 +105,9 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php" ,
       "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "CAI",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "cs3"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "cs3",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/rogers/cacert.pem",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://ecoacs.acs.net.rogers.com"
    },
 
 
@@ -136,7 +142,9 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php" ,
       "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "CAI",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af22"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af22",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/shaw/cacert.pem",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://acs-secure.shawcable.net/dps/TR069"
    },
 
 "videotron" : {
@@ -167,7 +175,9 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation" : "/usr/www/cmn/syndication/device_pause_screen/device_pause_screen_default.php" ,
       "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "CAI",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af22"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af22",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/cacert.pem",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://acswg.g.comcast.net/cwmpWeb/DigestCPEMgt?target=/CPEMgt"
    }
 
 }
