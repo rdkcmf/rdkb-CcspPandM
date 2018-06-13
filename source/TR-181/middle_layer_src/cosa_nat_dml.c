@@ -2256,10 +2256,11 @@ PortMapping_Validate
     PCOSA_DML_NAT_PMAPPING                   pPortMapping      = (PCOSA_DML_NAT_PMAPPING)pCxtLink->hContext;
     PCOSA_DML_NAT_PMAPPING                   pPortMapping2     = NULL;
     BOOL                                     bFound            = FALSE;
-    if( !_Check_PF_parameter(pPortMapping) ||
+    if( pPortMapping->bEnabled && (
+        !_Check_PF_parameter(pPortMapping) ||
         !CosaDmlChkDesp(pPortMapping->Description) ||
         !CosaDmlNatChkPortMappingMaxRuleNum(pPortMapping) ||
-        !CosaDmlNatChkEnableFlg(pPortMapping))
+        !CosaDmlNatChkEnableFlg(pPortMapping)))
     {
         CcspTraceWarning(("Parameter Error in %s \n", __FUNCTION__));
 
@@ -3287,6 +3288,10 @@ PortTrigger_Validate
     PCOSA_DML_NAT_PTRIGGER          pPortTrigger      = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
     PCOSA_DML_NAT_PTRIGGER          pPortTrigger2     = NULL;
     BOOL                            bFound            = FALSE;
+
+    /* Don't validate all fields here if entry is not enabled */
+    if( !pPortTrigger->bEnabled )
+        return TRUE;
 
     if( ! _Check_PT_parameter(pPortTrigger) || 
         (FALSE == CosaDmlNatChkPortRange(pPortTrigger->InstanceNumber, pPortTrigger->bEnabled, pPortTrigger->ForwardPortStart, pPortTrigger->ForwardPortEnd, pPortTrigger->ForwardProtocol, 1 )) ||
