@@ -80,6 +80,12 @@
 #include "plugin_main_apis.h"
 #include "dml_tr181_custom_cfg.h"
 
+#if defined (MULTILAN_FEATURE)
+#define MAX_QUERY 1024
+#define IP_INTERFACE_COUNT_DML "Device.IP.InterfaceNumberOfEntries"
+#define IP_INTERFACE_DML "Device.IP.Interface."
+#endif
+
 PFN_COSA_DML_NAT_GEN   g_nat_pportmapping_callback = NULL;
 
 extern void* g_pDslhDmlAgent;
@@ -2745,7 +2751,11 @@ CosaDmlNatAddPortMapping
         return ANSC_STATUS_FAILURE;
     }
 
+#if defined (MULTILAN_FEATURE)
+    if(pEntry->bEnabled && !_Check_PF_parameter(pEntry))
+#else
     if( !_Check_PF_parameter(pEntry))
+#endif
     {
         CcspTraceWarning(("Parameter Error in %s \n", __FUNCTION__));
         return ANSC_STATUS_FAILURE;
@@ -2952,7 +2962,11 @@ CosaDmlNatSetPortMapping
     }
     
     /* Check parameter */
+#if defined (MULTILAN_FEATURE)
+    if(pEntry->bEnabled && !_Check_PF_parameter(pEntry))
+#else
     if( !_Check_PF_parameter(pEntry))
+#endif
     {
         CcspTraceWarning(("Parameter Error in %s \n", __FUNCTION__));
         return ANSC_STATUS_FAILURE;
@@ -3227,6 +3241,93 @@ BOOL CosaDmlNatChkPortMappingIPV6Address(char* address)
 	return FALSE;	
 }
 
+#if defined (MULTILAN_FEATURE)
+/* Find an IPv4 LAN data object for which the given client IP is part of the same subnet */
+static BOOL _Find_IPv4_LAN_DML(ULONG client, ULONG *dml_ip_instance, ULONG *dml_address_instance)
+{
+    char name[MAX_QUERY] = {0};
+    char param_val[MAX_QUERY] = {0};
+    char ip_instance[MAX_QUERY] = {0};
+    char addr_instance[MAX_QUERY] = {0};
+    char ip_addr[MAX_QUERY] = {0};
+    char ip_netmask[MAX_QUERY] = {0};
+    int ip_interface_count = 0;
+    int ip_address_count = 0;
+    int i = 0;
+    int j = 0;
+    ULONG ip_inst_num = 0;
+    ULONG addr_inst_num = 0;
+    ULONG val_len = 0;
+    ULONG ipaddr = 0xffffffff, netmask = 0xffffffff;
+
+    char str[MAX_QUERY];
+    inet_ntop(AF_INET, &client, str, INET_ADDRSTRLEN);
+
+    ip_interface_count = g_GetParamValueUlong(g_pDslhDmlAgent, IP_INTERFACE_COUNT_DML);
+
+    for (i=0; i<ip_interface_count; i++)
+    {
+        /* Get the next IP interface instance */
+        ip_inst_num = g_GetInstanceNumberByIndex(g_pDslhDmlAgent, IP_INTERFACE_DML, i); 
+        if (ip_inst_num)
+        {
+            /* Get ethernet link object */
+            snprintf(ip_instance, sizeof(ip_instance), "%s%d", IP_INTERFACE_DML, ip_inst_num);
+            snprintf(name, sizeof(name), "%s.LowerLayers", ip_instance);
+            val_len = sizeof(param_val);
+            if ( (0 == g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len)) && _ansc_strstr(param_val, "Device.Ethernet.Link"))
+            {
+                /* See if lower layer is a bridge (all LANs are bridges currenctly) */
+                snprintf(name, sizeof(name), "%s.LowerLayers", param_val);
+                val_len = sizeof(param_val);
+                if ( (0 == g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len)) && _ansc_strstr(param_val, "Device.Bridging.Bridge"))
+                {
+                    /* Now iterate through each IPv4 address */
+                    snprintf(name, sizeof(name), "%s.IPv4AddressNumberOfEntries", ip_instance);
+                    ip_address_count = g_GetParamValueUlong(g_pDslhDmlAgent, name);
+                    for (j=0; j<ip_address_count; j++)
+                    {
+                        snprintf(name, sizeof(name), "%s.IPv4Address.", ip_instance); 
+                        addr_inst_num = g_GetInstanceNumberByIndex(g_pDslhDmlAgent, name, j);
+                        if (addr_inst_num)
+                        {
+                            snprintf(addr_instance, sizeof(addr_instance), "%s.IPv4Address.%d", ip_instance, addr_inst_num);
+                            /* Get IPv4 address and netmask */
+                            snprintf(name, sizeof(name), "%s.IPAddress", addr_instance);
+                            val_len = sizeof(ip_addr);
+                            if (g_GetParamValueString(g_pDslhDmlAgent, name, ip_addr, &val_len)) 
+                                continue; 
+                            snprintf(name, sizeof(name), "%s.SubnetMask", addr_instance);
+                            val_len = sizeof(ip_netmask);
+                            if (g_GetParamValueString(g_pDslhDmlAgent, name, ip_netmask, &val_len)) 
+                                continue; 
+                 
+
+                            if( inet_pton(AF_INET, ip_addr, &ipaddr) && inet_pton(AF_INET, ip_netmask, &netmask) )
+                            {
+                                /* Check if client address is part of this subnet, if so, return IP instance ID */
+                                if (IPv4Addr_IsSameNetwork(client, ipaddr, netmask))
+                                {
+                                    if(dml_ip_instance)
+                                        *dml_ip_instance = ip_inst_num;
+                                    if(dml_address_instance)
+                                        *dml_address_instance = addr_inst_num;
+                                    return TRUE;
+                                }
+                                else
+                                {
+                                }
+                            }           
+                        } 
+                    }
+                } 
+            }
+        } 
+    }
+    return FALSE;
+}
+#endif
+
 BOOL CosaDmlNatChkPortMappingClient(ULONG client)
 {
     UtopiaContext                   Ctx;
@@ -3269,7 +3370,11 @@ BOOL CosaDmlNatChkPortMappingClient(ULONG client)
         !IPv4Addr_IsBroadcast(client, ipaddr, netmask) &&
         !IPv4Addr_IsNetworkAddr(client, ipaddr, netmask) &&
         //zqiu
+#if defined (MULTILAN_FEATURE)
+	(_Find_IPv4_LAN_DML(client, NULL, NULL) || IPv4Addr_IsSameNetwork(client, ipaddr, netmask) || IPv4Addr_IsSameNetwork(client, 0xac100c00, 0xffffff00)))
+#else
 	(IPv4Addr_IsSameNetwork(client, ipaddr, netmask) || IPv4Addr_IsSameNetwork(client, 0xac100c00, 0xffffff00)))
+#endif
         ret =  TRUE; 
 #ifdef CONFIG_CISCO_HOME_SECURITY 
     else if(_Check_HS_PF_client(client) == TRUE)
