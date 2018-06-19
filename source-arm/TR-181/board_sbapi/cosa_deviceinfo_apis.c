@@ -1565,6 +1565,29 @@ CosaDmlDiGetProcessorSpeed
 
 #else
 
+#ifdef _COSA_INTEL_XB3_ARM_
+
+    fp = popen("cat /proc/avalanche/base_psp_version | grep -i \"Cpu Frequency\" | cut -d \":\" -f2 | awk '{$1=$1};1' | cut -d \" \" -f1", "r");
+    if (fp == NULL)
+    {
+        CcspTraceWarning(("Read CPU Info ERROR '%s'\n","ERROR"));
+        return ANSC_STATUS_FAILURE;
+    }
+    else
+    {
+        fgets(line, MAX_LINE_SIZE, fp);
+        fclose( fp );
+        fp = NULL;
+        // Remove line \n character from string
+        if (( pcur = strchr( line, '\n' )) != NULL )
+        {
+            *pcur = '\0';
+        }
+        AnscCopyString(pValue, line);
+    }
+
+#endif
+
 #ifdef SA_CUSTOM
     char buf[100]={0};
     char out_val[100]={0};
