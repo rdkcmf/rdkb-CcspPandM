@@ -380,6 +380,29 @@ CosaUsersBackendGetUserInfo
            {
              _ansc_strncpy(pCosaUser->HashedPassword,buff,sizeof(pCosaUser->HashedPassword));
            }
+           pCosaUser->LockOutRemainingTime = 0 ;
+           memset(buff,0,sizeof(buff));
+           syscfg_get( NULL, "PasswordLockoutAttempts", buff, sizeof(buff));
+           if( atoi ( buff ) != 10 )
+           {
+		memset(buff,0,sizeof(buff));
+		sprintf(buff, "%d", 10);
+		syscfg_set(NULL, "PasswordLockoutAttempts", buff) ;
+		syscfg_commit() ;
+           }
+
+           memset(buff,0,sizeof(buff));
+           syscfg_get( NULL, "NumOfFailedAttempts_2", buff, sizeof(buff));
+           if( buff[0] != '\0' )
+           {
+               pCosaUser->NumOfFailedAttempts = atoi(buff) ;
+           }
+           memset(buff,0,sizeof(buff));
+           syscfg_get( NULL, "PasswordLoginCounts_2", buff, sizeof(buff));
+           if( buff[0] != '\0' )
+           {
+               pCosaUser->LoginCounts = atoi(buff) ;
+           }
         }
 #endif
         pUserCxtLink = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory( sizeof(COSA_CONTEXT_LINK_OBJECT) );

@@ -98,6 +98,9 @@ struct _COSA_DML_USER
     char                            NumOfFailedAttempts;
     char                            X_RDKCENTRAL_COM_ComparePassword[32];
     char                            HashedPassword[128];
+    int			       				RemainingAttempts;
+    int			       				LoginCounts;
+    int								LockOutRemainingTime;
     /*
      * *  Extensions
      * */
