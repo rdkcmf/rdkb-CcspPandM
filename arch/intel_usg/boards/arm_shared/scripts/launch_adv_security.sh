@@ -10,13 +10,24 @@ if [ "$DEVICE_MODEL" = "TCHXB3" ]; then
 fi
 CCSP_ADVSEC_INITIALIZING=/tmp/ccsp_advsec_initializing
 CCSP_ADVSEC_INITIALIZED_SYSD=/tmp/advsec_initialized_sysd
+ADVSEC_AGENT_SHUTDOWN=/tmp/advsec_agent_shutdown
 
 launch_device_finger_print()
 {
 echo "Advanced Security Launch Status" $1
-
+bridge_mode=`syscfg get bridge_mode`
 if [ "$1" = "-enable" ]
 then
+    if [ "$bridge_mode" = "2" ]; then
+        echo "Advsec: Device is in Bridge Mode, do not launch agent!"
+        touch $ADVSEC_AGENT_SHUTDOWN
+        exit 0
+    else
+        if [ -f $ADVSEC_AGENT_SHUTDOWN ]; then
+            rm $ADVSEC_AGENT_SHUTDOWN
+        fi
+    fi
+
     if [ -f $CCSP_ADVSEC_INITIALIZING ]; then
         echo "Ccsp Advanced Security is already being initialized"
         exit 0
@@ -50,6 +61,13 @@ then
     fi
     if [ -f $CCSP_ADVSEC_INITIALIZING ]; then
         rm $CCSP_ADVSEC_INITIALIZING
+    fi
+    if [ "$bridge_mode" = "2" ]; then
+        touch $ADVSEC_AGENT_SHUTDOWN
+    else
+        if [ -f $ADVSEC_AGENT_SHUTDOWN ]; then
+            rm $ADVSEC_AGENT_SHUTDOWN
+        fi
     fi
 fi
 }

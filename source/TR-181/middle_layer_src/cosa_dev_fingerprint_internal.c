@@ -217,3 +217,10 @@ ANSC_STATUS CosaAdvSecDeInit(ANSC_HANDLE hThisObject)
     return returnStatus;
 }
 
+BOOL is_device_finger_printing_enabled()
+{
+    ULONG                   value = 0;
+
+    CosaGetSysCfgUlong(g_DeviceFingerPrintEnabled, &value);
+    return value;
+}
