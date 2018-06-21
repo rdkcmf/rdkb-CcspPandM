@@ -80,6 +80,16 @@
 
 extern void * g_pDslhDmlAgent;
 
+struct detail
+{
+    char word[ 256 ];
+};
+
+BOOL Service_IsDomainStringHaveRepeatedWord ( char* pStringDomain );
+
+int Service_CheckRepeatString( struct detail stDetailArray[], const char unit[], int count, int* pIsHaveRepeatedWord );
+
+
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -1482,6 +1492,65 @@ Service_SetParamStringValue
     return FALSE;
 }
 
+/* Service_IsDomainStringHaveRepeatedWord() */
+BOOL Service_IsDomainStringHaveRepeatedWord ( char* pStringDomain )
+{
+	struct detail stDetailArray[ 64 ] = { 0 };
+	char   		  acSubstring[ 256 ]  = { 0 };
+	int    		  i, j, count;
+
+	memset( &stDetailArray, 0, sizeof( stDetailArray  ) );
+	
+	for ( i = 0; i < strlen( pStringDomain ); i++ )
+    {
+        while ( ( i < strlen( pStringDomain ) ) && \
+			    ( pStringDomain[i] != ',' ) && \
+			    ( isalnum( pStringDomain[i] ) ) )
+        {
+            acSubstring[ j++ ] = pStringDomain[ i++ ];
+        }
+		
+        if ( j != 0 )
+        {
+			int IsHaveRepeatedWord = 0;
+
+            acSubstring[j] = '\0';
+            count = Service_CheckRepeatString( stDetailArray, acSubstring, count, &IsHaveRepeatedWord );
+            j = 0;
+
+			// Check if repeated
+			if( 1 == IsHaveRepeatedWord )
+			{
+				return TRUE;
+			}
+        }
+    }
+
+	return FALSE;
+}
+
+/* Service_CheckRepeatString() */
+int Service_CheckRepeatString( struct detail stDetailArray[], const char unit[], int count, int* pIsHaveRepeatedWord )
+{
+    int i;
+ 
+    for (i = 0; i < count; i++)
+    {
+        if ( strcmp(stDetailArray[i].word, unit) == 0)
+        {
+			/* If control reaches here, it means match found in struct */
+           *pIsHaveRepeatedWord  = 1;
+		   return count;
+        }
+    }
+
+    /* If control reaches here, it means no match found in struct */
+    strcpy( stDetailArray[count].word, unit );
+ 
+    /* count represents the number of fields updated in array stDetailArray */
+    return ( count + 1);
+}
+
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -1551,6 +1620,16 @@ Service_Validate
             return FALSE;
         }
     }
+
+	//Check whether Domain string contains repeated word or not
+	if( TRUE == Service_IsDomainStringHaveRepeatedWord( pDdnsService->Domain ) )
+	{
+		AnscCopyString(pReturnParamName, "Domain");
+		
+		*puLength = AnscSizeOfString("Domain");
+		 
+		return FALSE;
+	}
 
     if ( FALSE )
     {
