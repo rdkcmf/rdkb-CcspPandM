@@ -5,6 +5,7 @@
 PSM_DB=/nvram/bbhm_cur_cfg.xml
 ADVSEC_FP_RECORD="eRT.com.cisco.spvtg.ccsp.advsecurity.Device.DeviceInfo.X_RDKCENTRAL-COM_DeviceFingerPrint.Enable"
 ADVSEC_FP_SYSCFG=Advsecurity_DeviceFingerPrint
+ADVSEC_MIGRATE_SYSCFG=Advsecurity_MigrateToSysDB
 
 check_psm_setting()
 {
@@ -20,16 +21,13 @@ check_psm_setting()
 
 load_syscfg_setting()
 {
-	if [ "$( check_psm_setting )" = "true" ]; then
-		_res=`syscfg set $ADVSEC_FP_SYSCFG 1`
-		_res=`syscfg commit`
-	fi
-}
-
-reset_psm_setting()
-{
-	if [ "$( check_psm_setting )" = "true" ]; then
-		_res=`psmcli set eRT.com.cisco.spvtg.ccsp.advsecurity.Device.DeviceInfo.X_RDKCENTRAL-COM_DeviceFingerPrint.Enable 0`
+	_res=`syscfg get $ADVSEC_MIGRATE_SYSCFG`
+	if [ "$_res" != "1" ]; then
+		if [ "$( check_psm_setting )" = "true" ]; then
+			_res=`syscfg set $ADVSEC_FP_SYSCFG 1`
+			_res=`syscfg set $ADVSEC_MIGRATE_SYSCFG 1`
+			_res=`syscfg commit`
+		fi
 	fi
 }
 
