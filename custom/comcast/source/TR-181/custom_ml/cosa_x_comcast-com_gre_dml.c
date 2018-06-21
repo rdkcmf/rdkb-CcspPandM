@@ -80,6 +80,23 @@ ANSC_HANDLE GreTunnelIf_GetEntry( ANSC_HANDLE hInsContext, ULONG nIndex, ULONG* 
     *pInsNumber = pGre2->GreTu[0].GreTunnelIf[nIndex].InstanceNumber;
     return (ANSC_HANDLE)&pGre2->GreTu[0].GreTunnelIf[nIndex];
 }
+BOOL hotspot_thread()
+{
+    static BOOL running=0;
+    if(!running)
+    {
+      running=1;
+      CcspTraceError(("%s:hotspot_update_circuit_ids starting\n", __FUNCTION__));
+      hotspot_update_circuit_ids(1,1);
+    }
+    else
+    {
+        CcspTraceError(("%s: already hotspot_update_circuit_ids is running\n", __FUNCTION__));
+        return 0;
+    }
+    running=0;
+    return 1;
+}
 
 BOOL GreTunnel_GetParamBoolValue ( ANSC_HANDLE hInsContext, char*  ParamName, BOOL*  pBool) {
 	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
@@ -110,9 +127,21 @@ BOOL GreTunnel_GetParamBoolValue ( ANSC_HANDLE hInsContext, char*  ParamName, BO
     {
         *pBool = pGreTu->EnableCircuitID;
         if(pGreTu->EnableCircuitID) {
-		// update  circuit ids 
-		//TODO: hotspot_update_circuit_ids ?
-			hotspot_update_circuit_ids(1,1);
+            // update  circuit ids
+            //TODO: hotspot_update_circuit_ids ?
+            /* TCXB6-4418: CCSP Deadlock happening because of wifi getting started
+               Late in Technicolor. So the PAM is getting restarted with this DeadLock.
+               Now we want this as a separate thread and update circuit ids.
+               The 4418 is hardly reproduce however for the precautionary measure we
+               want to run this in thread */
+            pthread_t hs_thread;
+            int err = pthread_create(&hs_thread, NULL, hotspot_thread, NULL);
+            if(0 != err)
+            {
+                CcspTraceError(("%s: Error in creating hotspot_thread \n", __FUNCTION__));
+            }
+            else
+                pthread_detach(hs_thread);
 	    }
         return TRUE;
     }
