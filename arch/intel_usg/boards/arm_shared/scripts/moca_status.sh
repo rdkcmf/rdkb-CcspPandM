@@ -41,7 +41,7 @@ source /etc/utopia/service.d/log_capture_path.sh
         echo_t "MoCA is Disabled"
         fi
         
-    echo_t "Obtaining the MoCA CurrentOperFreq.."
+	echo_t "Obtaining the MoCA CurrentOperFreq.."
 	moca_freq=`dmcli eRT getv Device.MoCA.Interface.1.CurrentOperFreq | grep uint | awk '{print $5}'`
 	echo_t "MoCA_FREQ:$moca_freq"
 	
@@ -52,3 +52,11 @@ source /etc/utopia/service.d/log_capture_path.sh
 	echo_t "Obtaining the MoCA ChannelScanning.."
 	moca_scan=`dmcli eRT getv Device.MoCA.Interface.1.X_CISCO_COM_ChannelScanning | grep bool | awk '{print $5}'`
 	echo_t "MoCA_SCAN:$moca_scan"
+
+	echo_t "Obtaining the MoCA FreqCurrentMaskSetting.."
+	moca_freq_mask=`dmcli eRT getv Device.MoCA.Interface.1.FreqCurrentMaskSetting | grep string | awk '{print $5}'`
+	echo_t "MOCA_FREQ_MASK:$moca_freq_mask"
+
+	echo_t "Obtaining the MoCA PrivacyEnabled.."
+	moca_privacy=`dmcli eRT getv Device.MoCA.Interface.1.PrivacyEnabled | grep bool | awk '{print $5}'`
+	echo_t "MOCA_PRIVACY:$moca_privacy"
