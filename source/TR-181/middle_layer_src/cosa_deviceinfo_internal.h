@@ -103,7 +103,6 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
 	BOOL		bMultipleGW;					
 	ULONG		DeferFWDownloadReboot;
 	BOOL		AbortReboot;
-	BOOL		SyndicationEnable;	
 	CHAR 		TR69CertLocation[256];
 	CHAR 		PartnerID[64];
 

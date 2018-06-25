@@ -7395,8 +7395,10 @@ Syndication_GetParamStringValue
     if( AnscEqualString(ParamName, "TR69CertLocation", TRUE))
     {
         /* collect value */
-		AnscCopyString( pValue, pMyObject->TR69CertLocation );
-		*pulSize = AnscSizeOfString( pValue );		
+        CosaDmlDiGetSyndicationTR69CertLocation( hInsContext, pMyObject->TR69CertLocation );
+	AnscCopyString( pValue, pMyObject->TR69CertLocation );
+	*pulSize = AnscSizeOfString( pValue );
+
         return 0;
     }
     if( AnscEqualString(ParamName, "LocalUIBrandingTable", TRUE))
@@ -7564,12 +7566,6 @@ Syndication_GetParamBoolValue
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "enable", TRUE))
-    {
-       /* Collect Value */
-       *pBool = pMyObject->SyndicationEnable;
-        return TRUE;
-    }
 
     return FALSE;
 }
@@ -7614,20 +7610,6 @@ Syndication_SetParamBoolValue
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     ANSC_STATUS 					retValue  = ANSC_STATUS_FAILURE;
-
-    if( AnscEqualString(ParamName, "enable", TRUE))
-    {
-		if( bValue != pMyObject->SyndicationEnable )
-		{
-			retValue = CosaDmlDiSetSyndicationEnable( hInsContext, bValue ); 
-			if( ANSC_STATUS_SUCCESS == retValue )
-			{
-				pMyObject->SyndicationEnable = bValue;
-			}
-		}
-
-       return TRUE;
-    }
 
     return FALSE;
 }

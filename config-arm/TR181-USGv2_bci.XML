@@ -835,12 +835,6 @@
                 <syntax>string</syntax>
                 <writable>false</writable>
             </parameter>
-			<parameter>
-				<name>enable</name>
-				<type>boolean</type>
-				<syntax>bool</syntax>
-				<writable>true</writable>
-			</parameter>
 	    <parameter>
                 <name>PauseScreenFileLocation</name>
                 <type>string</type>
