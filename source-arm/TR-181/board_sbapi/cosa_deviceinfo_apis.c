@@ -102,6 +102,7 @@
 #include "cosa_deviceinfo_apis_custom.h"
 #include "dml_tr181_custom_cfg.h" 
 #include "cosa_x_cisco_com_devicecontrol_apis.h"
+#include "cosa_deviceinfo_internal.h"
 #define DEVICE_PROPERTIES    "/etc/device.properties"
 #define PARTNERS_INFO_FILE		"/nvram/partners_defaults.json"
 
@@ -2243,6 +2244,7 @@ CosaDmlDiGetSyndicationWifiUIBrandingTable
 ANSC_STATUS
 CosaDmlDiUiBrandingInit
   (
+	ANSC_HANDLE                 hContext,
 	PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand
   )
  {
@@ -2308,13 +2310,13 @@ CosaDmlDiUiBrandingInit
 			 {
 			 	if ( PartnerID[0] != '\0' )
 			 	{
-					FillPartnerIDValues(json, PartnerID, PUiBrand);
+					FillPartnerIDValues(json, PartnerID, PUiBrand, hContext);
 			 	}
 				else
 				{
 					CcspTraceWarning(( "Reading Deafult PartnerID Values \n" ));
 					strcpy(PartnerID, "comcast");
-					FillPartnerIDValues(json, PartnerID, PUiBrand);
+					FillPartnerIDValues(json, PartnerID, PUiBrand, hContext);
 				}
 			}
 	 		else{
@@ -2513,7 +2515,7 @@ void UniqueTelemetryCronJob(enable, timeInterval, tagString) {
         }
 }
 
-void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand)
+void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING PUiBrand, ANSC_HANDLE hContext)
 {
 		cJSON *partnerObj = NULL;
 		char *partnerLink = NULL;
@@ -2540,6 +2542,9 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 		char *customerCentralText = NULL;
 		char *wifiTitle = NULL;
 		char *wifiWelcomeMessage = NULL;
+		char buf[64] = {0};
+
+		PCOSA_DATAMODEL_DEVICEINFO pDeviceInfo = (PCOSA_DATAMODEL_DEVICEINFO)hContext;
 		
 		partnerObj = cJSON_GetObjectItem( json, partnerID );
 		if( partnerObj != NULL) 
@@ -3146,6 +3151,45 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				{
 					CcspTraceWarning(("%s - NetworkName Object is NULL\n", __FUNCTION__ ));
 				}
+
+				//if WANsideSSH_Enable param  is not available in syscfg
+				//then read it from partners_defaults.json
+				pDeviceInfo->bWANsideSSHEnable =  FALSE;
+				if (syscfg_get( NULL, "WANsideSSH_Enable", buf, sizeof(buf)) == 0)
+				{
+					pDeviceInfo->bWANsideSSHEnable = strcmp(buf, "true") == 0 ? TRUE : FALSE;
+				}
+				else if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable") != NULL )
+                                {
+                                        char *WANsideSSH_Enable = NULL;
+                                        WANsideSSH_Enable = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable")->valuestring;
+
+                                        if (WANsideSSH_Enable != NULL)
+                                        {
+						pDeviceInfo->bWANsideSSHEnable = strcmp(WANsideSSH_Enable, "true") == 0 ? TRUE : FALSE;
+						WANsideSSH_Enable = NULL;
+                                        }
+                                        else
+                                        {
+                                                CcspTraceWarning(("%s - WANsideSSH_Enable Value is NULL\n", __FUNCTION__ ));
+                                        }
+                                }
+                                else
+                                {
+                                        CcspTraceWarning(("%s - WANsideSSH_Enable Object is NULL\n", __FUNCTION__ ));
+                                }
+
+				if (pDeviceInfo->bWANsideSSHEnable ==  TRUE)
+				{
+					CcspTraceWarning(("%s - Enabling SSH on WAN side\n", __FUNCTION__ ));
+					system("sh /lib/rdk/wan_ssh.sh enable &");
+				}
+				else
+				{
+					CcspTraceWarning(("%s -Disabling SSH on WAN side\n", __FUNCTION__ ));
+					system("sh /lib/rdk/wan_ssh.sh disable &");
+				}
+
 			}
 			
 			else

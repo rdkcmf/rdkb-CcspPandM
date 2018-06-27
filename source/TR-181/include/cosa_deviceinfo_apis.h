@@ -541,6 +541,7 @@ BOOL CosaDmlDi_ValidateRebootDeviceParam(char *pValue);
 ANSC_STATUS
 CosaDmlDiUiBrandingInit
   (
+	ANSC_HANDLE                 hContext,
 	PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand
   );
 
@@ -560,7 +561,7 @@ void ConvertTime(int time, char day[], char hour[], char mins[]);
 
 void UniqueTelemetryCronJob(enable, timeInterval, tagString);
 
-void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand);
+void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING PUiBrand, ANSC_HANDLE hContext);
 
 ANSC_STATUS UpdateJsonParam
 	(

@@ -7646,6 +7646,76 @@ Syndication_SetParamBoolValue
 
 /***********************************************************************
 APIs for Object:
+        Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.
+          *  WANsideSSH_GetParamBoolValue
+          *  WANsideSSH_SetParamBoolValue
+
+***********************************************************************/
+
+BOOL
+WANsideSSH_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+	/* check the parameter name and return the corresponding value */
+        PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+
+        if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+		*pBool = pMyObject->bWANsideSSHEnable;
+                return TRUE;
+        }
+
+
+	return FALSE;
+}
+
+BOOL
+WANsideSSH_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+   PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+   if( AnscEqualString(ParamName, "Enable", TRUE) )
+   {
+	if (pMyObject->bWANsideSSHEnable == bValue)
+	{
+		CcspTraceInfo(("WANsideSSH is already %s\n", ( bValue ==TRUE ) ?  "Enabled" : "Disabled"));
+		return TRUE;
+	}
+
+	if(syscfg_set(NULL, "WANsideSSH_Enable", ((bValue == TRUE ) ? "true" : "false"))==0)
+	{
+		syscfg_commit();
+	}
+	else
+	{
+		return FALSE;
+	}
+
+	pMyObject->bWANsideSSHEnable = bValue;
+	if (bValue == TRUE)
+		system("sh /lib/rdk/wan_ssh.sh enable &");
+	else
+		system("sh /lib/rdk/wan_ssh.sh disable &");
+
+	return TRUE;
+
+   }
+   return FALSE;
+}
+
+/***********************************************************************
+APIs for Object:
 	Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_Control.
 	  *  MaintenanceWindow_GetParamBoolValue
 	  *  MaintenanceWindow_SetParamBoolValue

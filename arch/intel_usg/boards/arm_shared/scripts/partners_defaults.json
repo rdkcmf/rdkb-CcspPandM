@@ -33,7 +33,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af22",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/cacert.pem",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://acswg.g.comcast.net/cwmpWeb/DigestCPEMgt?target=/CPEMgt"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://acswg.g.comcast.net/cwmpWeb/DigestCPEMgt?target=/CPEMgt",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "false"
    },
 
 
@@ -70,7 +71,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af32",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/cox/cacert.pem",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://dukercapp-acs-v6.east.cox.net"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://dukercapp-acs-v6.east.cox.net",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "true"
    },
 
 
@@ -107,7 +109,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "cs3",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/rogers/cacert.pem",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://ecoacs.acs.net.rogers.com"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://ecoacs.acs.net.rogers.com",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "true"
    },
 
 
@@ -144,7 +147,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af22",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/shaw/cacert.pem",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://acs-secure.shawcable.net/dps/TR069"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://acs-secure.shawcable.net/dps/TR069",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "true"
    },
 
 "videotron" : {
@@ -177,7 +181,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af22",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/cacert.pem",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://acswg.g.comcast.net/cwmpWeb/DigestCPEMgt?target=/CPEMgt"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://acswg.g.comcast.net/cwmpWeb/DigestCPEMgt?target=/CPEMgt",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "true"
    },
    "unknown" : {
 
@@ -212,7 +217,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af22",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : ""
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "true"
    }
-
 }

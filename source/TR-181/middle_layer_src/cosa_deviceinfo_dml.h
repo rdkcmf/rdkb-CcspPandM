@@ -843,6 +843,22 @@ Syndication_GetParamStringValue
     );
 
 BOOL
+WANsideSSH_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+WANsideSSH_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+BOOL
 RDKB_Control_GetParamBoolValue
     (
         ANSC_HANDLE                 hInsContext,
