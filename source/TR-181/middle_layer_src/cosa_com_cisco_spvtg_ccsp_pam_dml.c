@@ -155,12 +155,17 @@ Pam_GetFirstIpInterfaceObjectName
     char*                           EnvIndex            = NULL;
     ULONG                           ulEnvIndex          = PAM_MAX_IP_INTERFACE_NUM;
 
+
+   CcspTraceInfo(("[%s] -- Enter \n", __FUNCTION__));
+
 #ifdef _COSA_SIM_
     // Hard coded, RTian 09/20/2013
     {
         if(bUpstream) {
             pulObjNameSize = sprintf(pIfObjName, "Device.IP.Interface.1.") + 1;
             //        else pulObjNameSize = sprintf(pIfObjName, "Device.IP.Interface.4.") + 1;
+	    CcspTraceInfo(("[%s] -- Exit, defined _COSA_SIM_ pulObjNameSize: %d from \n", __FUNCTION__, pulObjNameSize));
+
             return ANSC_STATUS_SUCCESS;
         }
     }
@@ -286,6 +291,7 @@ Pam_GetFirstIpInterfaceObjectName
         }
     }
 
+    CcspTraceInfo(("[%s] -- Exit returnStatus: %d\n", __FUNCTION__, returnStatus));
     return  returnStatus;
 }
 
@@ -497,9 +503,9 @@ Pam_GetParamStringValue
     char                            Buffer[128]         = {0};
     ULONG                           BufferSize          = 0;
 
-/*
-    CcspTraceInfo(("Pam_GetParamStringValue -- '%s'\n", ParamName));
-*/
+
+    CcspTraceInfo(("[%s] -- '%s', pValue addr: 0x%x, pulSize addr: 0x%x \n", __FUNCTION__, ParamName, pValue, pulSize));
+
 
     IpIfObjNameSize = sizeof(IpIfObjName) - 1;
     
@@ -541,11 +547,19 @@ Pam_GetParamStringValue
         return  0;
         */
 
+      //      CcspTraceInfo(("Pam_GetParamStringValue -- FirstDownstreamIpInterface case\n"));
+
         if ( ANSC_STATUS_SUCCESS == Pam_GetFirstIpInterfaceObjectName(FALSE, IpIfObjName, &IpIfObjNameSize) )
         {
+
+	  //	  CcspTraceInfo(("Pam_GetParamStringValue -- '%s' Pam_GetFirstIpInterfaceObjectName ret success\n", ParamName));
+	  CcspTraceInfo(("[%s] -- '%s' IpIfObjNameSize: %d, pulSize: %d\n", __FUNCTION__, ParamName, IpIfObjNameSize, *pulSize));
+
             if ( IpIfObjNameSize < *pulSize )
             {
                 AnscCopyString(pValue, IpIfObjName);
+
+		CcspTraceInfo(("[%s] -- pValue: %s\n", __FUNCTION__, *pValue));
                 *pulSize = IpIfObjNameSize;
                 return  0;
             }
@@ -556,7 +570,8 @@ Pam_GetParamStringValue
             }
         }
         else
-        {
+        { 
+	  CcspTraceInfo(("%s] -- '%s' Pam_GetFirstIpInterfaceObjectName ret failed\n", __FUNCTION__, ParamName));
             return  -1;
         }
     }
