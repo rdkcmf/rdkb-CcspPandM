@@ -559,7 +559,7 @@ Pam_GetParamStringValue
             {
                 AnscCopyString(pValue, IpIfObjName);
 
-		CcspTraceInfo(("[%s] -- pValue: %s\n", __FUNCTION__, *pValue));
+		CcspTraceInfo(("[%s] -- pValue: %s\n", __FUNCTION__, pValue));
                 *pulSize = IpIfObjNameSize;
                 return  0;
             }
@@ -571,7 +571,7 @@ Pam_GetParamStringValue
         }
         else
         { 
-	  CcspTraceInfo(("%s] -- '%s' Pam_GetFirstIpInterfaceObjectName ret failed\n", __FUNCTION__, ParamName));
+	  CcspTraceInfo(("[%s] -- '%s' Pam_GetFirstIpInterfaceObjectName ret failed\n", __FUNCTION__, ParamName));
             return  -1;
         }
     }
