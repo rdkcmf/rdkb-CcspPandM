@@ -72,7 +72,18 @@ then
 fi
 }
 
+enable_sysd_start()
+{
+    bridge_mode=`syscfg get bridge_mode`
+    if [ "$bridge_mode" != "2" ]; then
+        touch $CCSP_ADVSEC_INITIALIZED_SYSD
+    fi
+}
+
 if [ "$1" = "-enable" ] || [ "$1" = "-disable" ]
 then
     launch_device_finger_print $1
+elif [ "$1" = "-sysd" ]
+then
+    enable_sysd_start
 fi

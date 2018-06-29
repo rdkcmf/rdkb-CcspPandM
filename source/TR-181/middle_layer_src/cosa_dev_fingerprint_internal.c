@@ -77,7 +77,7 @@ CosaDeviceFingerprintCreate
     }
     else
     {
-        system("touch /tmp/advsec_initialized_sysd");
+        system("/usr/ccsp/pam/launch_adv_security.sh -sysd &");
     }
 #endif //DUAL_CORE_XB3_
 
