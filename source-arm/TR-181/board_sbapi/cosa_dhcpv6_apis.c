@@ -5725,9 +5725,11 @@ dhcpv6c_dbg_thrd(void * in)
 			char s[2] = ",";	
 			if(pref_len < 64)
 			{
+			    memset(out,0,sizeof(out));
+			    memset(cmd,0,sizeof(cmd));
 			    sprintf(cmd, "syscfg get IPv6subPrefix");
       				_get_shell_output(cmd, out, sizeof(out));
-			    if(!strncmp(out,"true",strlen(out)))
+			    if(!strcmp(out,"true"))
 				{
 				memset(out,0,sizeof(out));
 				memset(cmd,0,sizeof(cmd));
