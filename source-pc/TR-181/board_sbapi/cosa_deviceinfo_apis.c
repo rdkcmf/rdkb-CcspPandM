@@ -103,9 +103,11 @@
 
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
+#define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
 
 #define _ERROR_ "NOT SUPPORTED"
 #define _SSH_ERROR_ "NOT SET"
+#define PARTNER_ID_LEN 64
 
 extern void* g_pDslhDmlAgent;
 
@@ -1185,5 +1187,389 @@ CosaDmlDiGetBootTime
         else
                 return 0;
 
+}
+
+#define PARTNER_ID_LEN 64 
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationPartnerId
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+    ANSC_STATUS retVal = ANSC_STATUS_FAILURE;
+    char fileContent[256] = {0};
+    FILE *deviceFilePtr = NULL;
+    char *pPartnerId = NULL;
+    const char partnerStr[] = "PARTNER_ID";
+
+    if (!pValue || !pulSize || *pulSize >= PARTNER_ID_LEN)
+        return ANSC_STATUS_FAILURE;
+
+    strcpy(pValue, "comcast"); // Set the default to comcast in case the partner id is not set in props file
+    *pulSize = AnscSizeOfString(pValue);
+    retVal = ANSC_STATUS_SUCCESS;
+    return retVal;
+}
+
+#define DMSB_TR181_PSM_Syndication_Tr069CertLocation "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation"
+#define DMSB_TR181_PSM_Syndication_Enable                        "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.enable"
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationTR69CertLocation
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    )
+{
+        char val[ 256 ] = {0};
+
+        if ( PsmGet( DMSB_TR181_PSM_Syndication_Tr069CertLocation, val, sizeof( val ) ) != 0 )
+        {
+                pValue[ 0 ] = '\0';
+                printf("%s - Failed Get for '%s' \n", __FUNCTION__, DMSB_TR181_PSM_Syndication_Tr069CertLocation);
+                return ANSC_STATUS_FAILURE;
+        }
+        else
+        {
+                AnscCopyString( pValue, val );
+        }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiSetSyndicationTR69CertLocation
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    )
+{
+        int  retPsmSet = CCSP_SUCCESS;
+
+        retPsmSet = PSM_Set_Record_Value2( g_MessageBusHandle,
+                                                                           g_GetSubsystemPrefix(g_pDslhDmlAgent),
+                                                                           DMSB_TR181_PSM_Syndication_Tr069CertLocation,
+                                                                           ccsp_string,
+                                                                           pValue );
+        if ( retPsmSet != CCSP_SUCCESS )
+        {
+                printf("%s - Failed Set for '%s' \n", __FUNCTION__, DMSB_TR181_PSM_Syndication_Tr069CertLocation);
+                return ANSC_STATUS_FAILURE;
+        }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationEnable
+    (
+        ANSC_HANDLE                  hContext,
+                BOOL                                            *pbEnable
+    )
+{
+        char val[ 16 ] = {0};
+
+        if ( PsmGet( DMSB_TR181_PSM_Syndication_Enable, val, sizeof( val ) ) != 0 )
+        {
+                *pbEnable = 0;
+                printf("%s - Failed Get for '%s' \n", __FUNCTION__, DMSB_TR181_PSM_Syndication_Enable);
+                return ANSC_STATUS_FAILURE;
+        }
+        else
+        {
+                *pbEnable = ( strcmp ( val, "TRUE" ) ? 0 : 1 );
+        }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+
+ANSC_STATUS
+CosaDeriveSyndicationPartnerID(char *Partner_ID)
+{
+	char PartnerID[PARTNER_ID_LEN];
+	ULONG size = PARTNER_ID_LEN - 1;
+	memset(PartnerID, 0, sizeof(PartnerID));
+	// Check for PartnerID available in RDKB-build, if not then return default
+	if(ANSC_STATUS_FAILURE == CosaDmlDiGetSyndicationPartnerId(NULL,&PartnerID, &size))
+	{
+		printf("%s - Failed to get PartnerID available in build \n", __FUNCTION__ );
+	}
+	strncpy(Partner_ID,PartnerID,sizeof(PartnerID));
+	return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiSetSyndicationEnable
+    (
+        ANSC_HANDLE                  hContext,
+                BOOL                                             bEnable
+    )
+{
+        int  retPsmSet = CCSP_SUCCESS;
+
+        retPsmSet = PSM_Set_Record_Value2( g_MessageBusHandle,
+                                                                           g_GetSubsystemPrefix(g_pDslhDmlAgent),
+                                                                           DMSB_TR181_PSM_Syndication_Enable,
+                                                                           ccsp_string,
+                                                                           ( bEnable ) ? "TRUE"  : "FALSE" );
+        if ( retPsmSet != CCSP_SUCCESS )
+        {
+                printf("%s - Failed Set for '%s' \n", __FUNCTION__, DMSB_TR181_PSM_Syndication_Enable);
+                return ANSC_STATUS_FAILURE;
+        }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING        PUiBrand)
+{
+                cJSON *partnerObj = NULL;
+                char *partnerLink = NULL;
+                char *userGuideLink = NULL;
+                char *customerCentralLink = NULL;
+                char *msoMenu = NULL;
+                char *msoInfo = NULL;
+                char *statusTitle = NULL;
+                char *statusInfo = NULL;
+                char *connectivityTestURL = NULL;
+                char *support = NULL;
+                char *partnerHelpLink = NULL;
+                char *smsSupport = NULL;
+                char *myAccountAppSupport = NULL;
+            char *DefaultLocalIPv4SubnetRange = NULL;
+                char *DefaultAdminIP = NULL;
+                char *WifiMSOLogo = NULL;
+                char *DefaultLoginPassword = NULL;
+                char *DefaultLoginUsername = NULL;
+                char *UIMSOLogo = NULL;
+                char *pauseScreenFileLocation = NULL;
+                char *partnerText = NULL;
+                char *userGuideText = NULL;
+                char *customerCentralText = NULL;
+                char *wifiTitle = NULL;
+                char *wifiWelcomeMessage = NULL;
+
+                partnerObj = cJSON_GetObjectItem( json, partnerID );
+			 if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation") != NULL )
+                                {
+                                        pauseScreenFileLocation = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation")->valuestring;
+
+                                        if (pauseScreenFileLocation != NULL)
+                                        {
+                                                AnscCopyString(PUiBrand->PauseScreenFileLocation, pauseScreenFileLocation);
+                                                pauseScreenFileLocation = NULL;
+                                        }
+                                        else
+                                        {
+                                               printf("%s - PauseScreenFileLocation Value is NULL\n", __FUNCTION__ );
+                                        }
+
+                                }
+}
+
+ANSC_STATUS UpdateJsonParam
+        (
+                char*                       pKey,
+                char*                   PartnerId,
+                char*                   pValue
+    )
+{
+        cJSON *partnerObj = NULL;
+        cJSON *json = NULL;
+        FILE *fileRead = NULL;
+        char * cJsonOut = NULL;
+        char* data = NULL;
+         int len ;
+         int configUpdateStatus = -1;
+         fileRead = fopen( PARTNERS_INFO_FILE, "r" );
+         if( fileRead == NULL )
+         {
+                 printf("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ );
+                 return ANSC_STATUS_FAILURE;
+         }
+
+         fseek( fileRead, 0, SEEK_END );
+         len = ftell( fileRead );
+         fseek( fileRead, 0, SEEK_SET );
+         data = ( char* )malloc( len + 1 );
+         if (data != NULL)
+         {
+                fread( data, 1, len, fileRead );
+         }
+         else
+         {
+                 printf("%s-%d : Memory allocation failed \n", __FUNCTION__, __LINE__);
+                 fclose( fileRead );
+                 return ANSC_STATUS_FAILURE;
+         }
+
+         fclose( fileRead );
+          if( data != NULL )
+	  {
+                 json = cJSON_Parse( data );
+                 if( !json )
+                 {
+                         printf(  "%s-%d : json file parser error : [%s]\n", cJSON_GetErrorPtr() ,__FUNCTION__,__LINE__);
+                         free(data);
+                         return ANSC_STATUS_FAILURE;
+                 }
+                 else
+                 {
+                         partnerObj = cJSON_GetObjectItem( json, PartnerId );
+                         if ( NULL != partnerObj)
+                         {
+                                 if (NULL != cJSON_GetObjectItem( partnerObj, pKey) )
+                                 {
+                                         cJSON_ReplaceItemInObject(partnerObj, pKey, cJSON_CreateString(pValue));
+                                         cJsonOut = cJSON_Print(json);
+                                         printf( "Updated json content is %s\n", cJsonOut);
+                                         configUpdateStatus = writeToJson(cJsonOut);
+                                         if ( !configUpdateStatus)
+                                         {
+                                                 printf( "Updated Value for %s partner\n",PartnerId);
+                                                 printf( "Param:%s - Value:%s\n",pKey,pValue);
+                                         }
+                                         else
+                                        {
+                                                 printf( "Failed to update value for %s partner\n",PartnerId);
+                                                 printf( "Param:%s\n",pKey);
+                                                 cJSON_Delete(json);
+                                                 return ANSC_STATUS_FAILURE;
+                                        }
+                                 }
+                                else
+                                {
+                                        printf("%s - OBJECT  Value is NULL %s\n", pKey,__FUNCTION__ );
+                                        cJSON_Delete(json);
+                                        return ANSC_STATUS_FAILURE;
+                                }
+
+                         }
+                         else
+                         {
+                                printf("%s - PARTNER ID OBJECT Value is NULL\n", __FUNCTION__ );
+                                cJSON_Delete(json);
+                                return ANSC_STATUS_FAILURE;
+                         }
+                        cJSON_Delete(json);
+                 }
+          }
+         return ANSC_STATUS_SUCCESS;
+}
+
+static int writeToJson(char *data)
+{
+    FILE *fp;
+    fp = fopen(PARTNERS_INFO_FILE, "w");
+    if (fp == NULL)
+    {
+        printf("%s : %d Failed to open file %s\n", __FUNCTION__,__LINE__,PARTNERS_INFO_FILE);
+        return -1;
+    }
+
+    fwrite(data, strlen(data), 1, fp);
+    fclose(fp);
+    return 0;
+}
+				
+ANSC_STATUS
+CosaDmlDiUiBrandingInit
+  (
+        PCOSA_DATAMODEL_RDKB_UIBRANDING PUiBrand
+  )
+ {
+
+        char *data = NULL;
+        cJSON *json = NULL;
+        FILE *fileRead = NULL;
+        char PartnerID[PARTNER_ID_LEN] = {0};
+        char cmd[512] = {0};
+        ULONG size = PARTNER_ID_LEN - 1;
+        int len;
+
+        if (!PUiBrand)
+        {
+                printf("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ );
+                return ANSC_STATUS_FAILURE;
+        }
+
+        memset(PUiBrand, 0, sizeof(COSA_DATAMODEL_RDKB_UIBRANDING));
+        if (access(PARTNERS_INFO_FILE, F_OK) != 0)
+        {
+                snprintf(cmd, sizeof(cmd), "cp %s %s", "/etc/partners_defaults.json", PARTNERS_INFO_FILE);
+                printf("%s\n",cmd);
+                system(cmd);
+        }
+
+         fileRead = fopen( PARTNERS_INFO_FILE, "r" );
+         if( fileRead == NULL )
+         {
+                 printf("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ );
+                 return ANSC_STATUS_FAILURE;
+         }
+
+         fseek( fileRead, 0, SEEK_END );
+         len = ftell( fileRead );
+         fseek( fileRead, 0, SEEK_SET );
+         data = ( char* )malloc( len + 1 );
+         if (data != NULL)
+         {
+                fread( data, 1, len, fileRead );
+         }
+         else
+         {
+                 fclose( fileRead );
+                 return ANSC_STATUS_FAILURE;
+         }
+
+	 fclose( fileRead );
+
+         if( data != NULL )
+         {
+                 json = cJSON_Parse( data );
+                 if( !json )
+                 {
+                         printf(  "%s-%s : json file parser error : [%d]\n", cJSON_GetErrorPtr() ,__FUNCTION__,__LINE__);
+                         free(data);
+                         return ANSC_STATUS_FAILURE;
+                 }
+                 else
+                 {
+                                        printf( "Reading Deafult PartnerID Values \n" );
+                                        strcpy(PartnerID, "comcast");
+                                        FillPartnerIDValues(json, PartnerID, PUiBrand);
+                        cJSON_Delete(json);
+                }
+          free(data);
+          data = NULL;
+         }
+         return ANSC_STATUS_SUCCESS;
+ }
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationLocalUIBrandingTable
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiGetSyndicationWifiUIBrandingTable
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    ) 
+{
+    return ANSC_STATUS_SUCCESS;
 }
 

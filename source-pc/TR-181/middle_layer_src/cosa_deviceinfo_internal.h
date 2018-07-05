@@ -98,6 +98,13 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
 	CHAR 		EMS_MobileNo[64];
 /*change ends here*/
     BOOL		bxfinitywifiEnable;
+    BOOL            SyndicationEnable;
+        CHAR            TR69CertLocation[256];
+        CHAR            PartnerID[64];
+
+        COSA_DATAMODEL_RDKB_UIBRANDING                  UiBrand;
+        COSA_DATAMODEL_RDKB_WIFI_TELEMETRY              WiFi_Telemetry;
+        COSA_DATAMODEL_RDKB_UNIQUE_TELEMETRY_ID         UniqueTelemetryId;
 }
 COSA_DATAMODEL_DEVICEINFO, *PCOSA_DATAMODEL_DEVICEINFO;
 

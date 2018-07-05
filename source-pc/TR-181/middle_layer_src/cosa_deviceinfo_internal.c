@@ -76,7 +76,7 @@
 **************************************************************************/
 
 #include "cosa_deviceinfo_internal.h"
-
+#include "cosa_deviceinfo_apis.h"
 /**********************************************************************
 
     caller:     owner of the object
@@ -167,10 +167,19 @@ CosaDeviceInfoInitialize
     _ansc_memset(pMyObject->ProvisioningCode, 0, 64);
 
     CosaDmlDiInit(NULL, NULL);
-    #if 0//LNT_EMU
+    #if 1//LNT_EMU
     CosaDmlDiGetXfinityWiFiEnable(&pMyObject->bxfinitywifiEnable);
     printf("%s : bxfinitywifiEnable value is : %d\n",__FUNCTION__,pMyObject->bxfinitywifiEnable);
     #endif
+    //Get TR69CertLocation
+        CosaDmlDiGetSyndicationTR69CertLocation( (ANSC_HANDLE)pMyObject,
+                                                                                          pMyObject->TR69CertLocation );
+        //Get Syndication Enable
+        CosaDmlDiGetSyndicationEnable( (ANSC_HANDLE)pMyObject,
+                                                                    &pMyObject->SyndicationEnable );
+        CosaDeriveSyndicationPartnerID(pMyObject->PartnerID);
+        CosaDmlDiUiBrandingInit(&pMyObject->UiBrand);
+
 
     return returnStatus;
 }

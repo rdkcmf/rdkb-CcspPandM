@@ -4505,3 +4505,292 @@ ReverseSSH_SetParamStringValue
 }
 
 
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_Syndication.
+
+    *  MaintenanceWindow_GetParamStringValue
+***********************************************************************/
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        Syndication_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     0 if succeeded;
+                1 if short of buffer size; (*pUlSize = required size)
+                -1 if not supported.
+
+**********************************************************************/
+ULONG
+Syndication_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    if( AnscEqualString(ParamName, "PartnerId", TRUE))
+    {
+        /* collect value */
+        //CosaDmlDiGetSyndicationPartnerId(NULL, pValue,pulSize);
+        AnscCopyString( pValue, pMyObject->PartnerID);
+                *pulSize = AnscSizeOfString( pValue );
+        return 0;
+    }
+
+    if( AnscEqualString(ParamName, "TR69CertLocation", TRUE))
+    {
+        /* collect value */
+                AnscCopyString( pValue, pMyObject->TR69CertLocation );
+                *pulSize = AnscSizeOfString( pValue );
+        return 0;
+    }
+    if( AnscEqualString(ParamName, "LocalUIBrandingTable", TRUE))
+    {
+        /* collect value */
+        CosaDmlDiGetSyndicationLocalUIBrandingTable(NULL, pValue,pulSize);
+        return 0;
+    }
+    if( AnscEqualString(ParamName, "WifiUIBrandingTable", TRUE))
+    {
+        /* collect value */
+        CosaDmlDiGetSyndicationWifiUIBrandingTable(NULL, pValue,pulSize);
+        return 0;
+    }
+    if( AnscEqualString(ParamName, "PauseScreenFileLocation", TRUE))
+    {
+         /* collect value */
+         if ( AnscSizeOfString(pMyObject->UiBrand.PauseScreenFileLocation) < *pulSize)
+         {
+                 AnscCopyString( pValue, pMyObject->UiBrand.PauseScreenFileLocation);
+                 return 0;
+         }
+         else
+         {
+                 *pulSize = AnscSizeOfString(pMyObject->UiBrand.PauseScreenFileLocation)+1;
+                 return 1;
+         }
+     }
+
+    return -1;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Syndication_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded,
+                FALSE if failed.
+
+**********************************************************************/
+BOOL
+Syndication_SetParamStringValue
+	(
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    ANSC_STATUS                                         retValue  = ANSC_STATUS_FAILURE;
+    char PartnerID[PARTNER_ID_LEN] = {0};
+    ULONG size = PARTNER_ID_LEN - 1;
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "TR69CertLocation", TRUE) )
+    {
+                retValue = CosaDmlDiSetSyndicationTR69CertLocation( hInsContext, pString );
+                if( ANSC_STATUS_SUCCESS == retValue )
+                {
+                        memset( pMyObject->TR69CertLocation, 0, sizeof( pMyObject->TR69CertLocation ));
+                        AnscCopyString( pMyObject->TR69CertLocation, pString );
+                }
+
+                return TRUE;
+    }
+    if( AnscEqualString(ParamName, "PartnerId", TRUE) )
+    {
+                                memset( pMyObject->PartnerID, 0, sizeof( pMyObject->PartnerID ));
+                                AnscCopyString( pMyObject->PartnerID, pString );
+
+                        return TRUE;
+    }
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "PauseScreenFileLocation", TRUE) )
+    {
+	    if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation",PartnerID, pString))
+	    {
+		    memset( pMyObject->UiBrand.PauseScreenFileLocation, 0, sizeof( pMyObject->UiBrand.PauseScreenFileLocation ));
+		    AnscCopyString( pMyObject->UiBrand.PauseScreenFileLocation, pString );
+		    return TRUE;
+	    }
+    }
+
+
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Syndication_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Syndication_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "enable", TRUE))
+    {
+       /* Collect Value */
+       *pBool = pMyObject->SyndicationEnable;
+        return TRUE;
+    }
+
+    return FALSE;
+}
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+       Syndication_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Syndication_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    ANSC_STATUS                                         retValue  = ANSC_STATUS_FAILURE;
+
+    if( AnscEqualString(ParamName, "enable", TRUE))
+    {
+                if( bValue != pMyObject->SyndicationEnable )
+                {
+                        retValue = CosaDmlDiSetSyndicationEnable( hInsContext, bValue );
+                        if( ANSC_STATUS_SUCCESS == retValue )
+                        {
+                                pMyObject->SyndicationEnable = bValue;
+                        }
+                }
+
+       return TRUE;
+    }
+
+    return FALSE;
+}

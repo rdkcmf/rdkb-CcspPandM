@@ -79,6 +79,8 @@
 
 #include "cosa_deviceinfo_dml_custom.h"
 
+#define  PARTNER_ID_LEN  64
+
 /***********************************************************************
 
  APIs for Object:

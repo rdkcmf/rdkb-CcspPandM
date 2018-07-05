@@ -1369,7 +1369,7 @@ CosaDmlMSTrustedUser_SetConf(ULONG ins, COSA_DML_MS_TRUSTEDUSER *pEntry)
  * ManagedDevices.Device
  */
 
-#define  MAX_MDDEV_ENTRY      4
+#define  MAX_MDDEV_ENTRY      1024
 
 static int g_NrMDDevs   = 0;
 static int AllowAll = MD_TYPE_BLOCK;

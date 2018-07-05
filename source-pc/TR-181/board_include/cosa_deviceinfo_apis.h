@@ -73,6 +73,7 @@
 
 #include "../middle_layer_src/cosa_apis.h"
 #include "../middle_layer_src/plugin_main_apis.h"
+#include "cJSON.h"
 
 #if defined(_ANSC_LINUX)
     #include <sys/sysinfo.h>
@@ -114,6 +115,93 @@ _COSA_PROCESS_ENTRY
     ULONG                           State;
 }
 COSA_PROCESS_ENTRY, *PCOSA_PROCESS_ENTRY;
+
+typedef  struct
+_COSA_DATAMODEL_RDKB_FOOTER_CLASS_CONTENT
+{
+        CHAR            PartnerLink[512];
+        CHAR            UserGuideLink[512];
+        CHAR            CustomerCentralLink[512];
+        CHAR            PartnerText[512];
+        CHAR            UserGuideText[512];
+        CHAR            CustomerCentralText[512];
+}
+COSA_DATAMODEL_RDKB_FOOTER, *PCOSA_DATAMODEL_RDKB_FOOTER;
+
+typedef  struct
+_COSA_DATAMODEL_RDKB_CONNECTION_CLASS_CONTENT
+{
+        CHAR            MSOmenu[512];
+        CHAR            MSOinfo[512];
+        CHAR            StatusTitle[512];
+        CHAR            StatusInfo[512];
+}
+COSA_DATAMODEL_RDKB_CONNECTION, *PCOSA_DATAMODEL_RDKB_CONNECTION;
+
+typedef  struct
+_COSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS_CLASS_CONTENT
+{
+        CHAR            ConnectivityTestURL[512];
+}
+COSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS, *PCOSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS;
+
+typedef  struct
+_COSA_DATAMODEL_RDKB_WIFIPERSONALIZATION_CLASS_CONTENT
+{
+        BOOL                    Support;
+        CHAR                    PartnerHelpLink[512];
+        BOOL                    SMSsupport;
+        BOOL                    MyAccountAppSupport;
+        CHAR                    MSOLogo[512];
+        CHAR                    Title[512];
+        CHAR                    WelcomeMessage[512];
+}
+
+COSA_DATAMODEL_RDKB_WIFIPERSONALIZATION, *PCOSA_DATAMODEL_RDKB_WIFIPERSONALIZATION;
+typedef  struct
+_COSA_DATAMODEL_RDKB_LOCALUI_CLASS_CONTENT
+{
+        CHAR                    MSOLogo[512];
+        CHAR                    DefaultLoginUsername[512];
+        CHAR                    DefaultLoginPassword[512];
+}
+COSA_DATAMODEL_RDKB_LOCALUI, *PCOSA_DATAMODEL_RDKB_LOCALUI;
+typedef  struct
+_COSA_DATAMODEL_RDKB_UIBRANDING_CLASS_CONTENT
+{
+        COSA_DATAMODEL_RDKB_FOOTER                      Footer;
+        COSA_DATAMODEL_RDKB_CONNECTION                  Connection;
+        COSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS      NDiagTool;
+        COSA_DATAMODEL_RDKB_WIFIPERSONALIZATION         WifiPersonal;
+        COSA_DATAMODEL_RDKB_LOCALUI             LocalUI;
+        CHAR                    DefaultAdminIP[512];
+    CHAR                        DefaultLocalIPv4SubnetRange[512];
+    CHAR                        PauseScreenFileLocation[512];
+}
+COSA_DATAMODEL_RDKB_UIBRANDING, *PCOSA_DATAMODEL_RDKB_UIBRANDING;
+
+typedef  struct
+_COSA_DATAMODEL_RDKB_WIFI_TELEMETRY_CLASS_CONTENT
+{
+    INT                 LogInterval;
+    CHAR            NormalizedRssiList[256];
+    CHAR            CliStatList[256];
+    CHAR            TxRxRateList[256];
+    CHAR            SNRList[256];
+}
+COSA_DATAMODEL_RDKB_WIFI_TELEMETRY, *PCOSA_DATAMODEL_RDKB_WIFI_TELEMETRY;
+
+typedef  struct
+_COSA_DATAMODEL_RDKB_UNIQUE_TELEMETRY_ID_CLASS_CONTENT
+{
+    BOOL                Enable;
+    CHAR                TagString[256];
+    INT                 TimingInterval;
+
+}
+COSA_DATAMODEL_RDKB_UNIQUE_TELEMETRY_ID, *PCOSA_DATAMODEL_RDKB_UNIQUE_TELEMETRY_ID;
+
+
 
 #define  COSA_DATAMODEL_PROCESS_CLASS_CONTENT                                                   \
     /* duplication of the base object class content */                                      \
@@ -358,5 +446,6 @@ ANSC_STATUS getXOpsReverseSshArgs
 
 int isRevSshActive(void);
 
+static int writeToJson(char *data);
 
 #endif
