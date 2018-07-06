@@ -1839,6 +1839,7 @@ CosaDmlDhcpv6Init
 
     if (uDhcpv6ServerPoolNum > DHCPV6S_POOL_NUM) {
         uDhcpv6ServerPoolNum = DHCPV6S_POOL_NUM;
+        SETI_INTO_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "poolnumber", uDhcpv6ServerPoolNum)
     }
 
     /*This logic code is used to change default behavior to stateful dhcpv6 server */
