@@ -71,7 +71,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af32",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/cox/cacert.pem",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://dukercapp-acs-v6.east.cox.net",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://rcapp-acs.east.cox.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "true"
    },
 
