@@ -1368,6 +1368,12 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
         p_info->ProcessNumberOfEntries = i;
     }
 
+    if ( dir != NULL )
+    {
+       closedir(dir);
+       dir = NULL;
+    }
+
     return; 
 }
 

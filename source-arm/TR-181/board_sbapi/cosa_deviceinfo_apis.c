@@ -1339,6 +1339,12 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
         p_info->ProcessNumberOfEntries = i;
     }
 
+    if ( dir != NULL )
+    {
+       closedir(dir);
+       dir = NULL;
+    }
+
     return; 
 }
 
@@ -1625,6 +1631,8 @@ CosaDmlDiGetProcessorSpeed
         AnscCopyString(pValue, line);
     }
 
+    pclose(fp);
+    fp = NULL;
 #else
 
 #ifdef _COSA_INTEL_XB3_ARM_
@@ -1638,7 +1646,7 @@ CosaDmlDiGetProcessorSpeed
     else
     {
         fgets(line, MAX_LINE_SIZE, fp);
-        fclose( fp );
+        pclose( fp );
         fp = NULL;
         // Remove line \n character from string
         if (( pcur = strchr( line, '\n' )) != NULL )
@@ -1703,8 +1711,10 @@ CosaDmlDiGetProcessorSpeed
     }
 
 #endif
-
-    status = pclose(fp);
+    if(fp != NULL) {
+        status = pclose(fp);
+	fp = NULL;
+    }
     *pulSize = AnscSizeOfString(pValue);
     if(pValue[*pulSize-1] == '\n') pValue[--(*pulSize)] = '\0';
     return ANSC_STATUS_SUCCESS; 
