@@ -3179,6 +3179,55 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 					CcspTraceWarning(("%s - NetworkName Object is NULL\n", __FUNCTION__ ));
 				}
 
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark") != NULL )
+				{
+					char *InitialForwardedMark = NULL;
+					InitialForwardedMark = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark")->valuestring;
+					if (InitialForwardedMark != NULL)
+					{
+						syscfg_get( NULL, "DSCP_InitialForwardedMark", buf, sizeof(buf));
+						if (buf[0] == '\0')
+						{
+							syscfg_set(NULL, "DSCP_InitialForwardedMark", InitialForwardedMark);
+							syscfg_commit();
+                            CcspTraceWarning(("%s - InitialForwardedMark is %s\n", __FUNCTION__,InitialForwardedMark));
+							InitialForwardedMark = NULL;
+						}
+						else
+						{
+							CcspTraceWarning(("%s - InitialForwardedMark is NULL\n", __FUNCTION__ ));
+						}
+					}
+				}
+				else
+				{
+					CcspTraceWarning(("%s - InitialForwardedMark Object is NULL\n", __FUNCTION__ ));
+				}
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark") != NULL )
+				{
+					char *InitialOutputMark = NULL;
+					InitialOutputMark = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark")->valuestring;
+					if (InitialOutputMark != NULL)
+					{
+						syscfg_get( NULL, "DSCP_InitialOutputMark", buf, sizeof(buf));
+						if (buf[0] == '\0')
+						{
+							syscfg_set(NULL, "DSCP_InitialOutputMark", InitialOutputMark);
+							syscfg_commit();
+							CcspTraceWarning(("%s - InitialOutputMark is %s\n", __FUNCTION__,InitialOutputMark));
+							InitialOutputMark = NULL;
+						}
+						else
+						{
+							CcspTraceWarning(("%s - InitialOutputMark is NULL\n", __FUNCTION__ ));
+						}
+					}
+				}
+				else
+				{
+					CcspTraceWarning(("%s - InitialOutputMark Object is NULL\n", __FUNCTION__ ));
+				}
+
 				//if WANsideSSH_Enable param  is not available in syscfg
 				//then read it from partners_defaults.json
 				pDeviceInfo->bWANsideSSHEnable =  FALSE;
