@@ -159,7 +159,7 @@ void _get_shell_output(char * cmd, char * out, int len)
     char   buf[256];
     char * p;
 
-    fp = v_secure_popen(cmd);
+    fp = popen(cmd, "r");
 
     if (fp)
     {
@@ -170,7 +170,7 @@ void _get_shell_output(char * cmd, char * out, int len)
 
         strncpy(out, buf, len-1);
 
-        v_secure_pclose(fp);        
+        pclose(fp);        
     }
 
 }

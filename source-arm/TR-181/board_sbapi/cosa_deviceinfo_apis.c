@@ -1647,7 +1647,7 @@ CosaDmlDiGetProcessorSpeed
     fclose(fp1);
     sprintf(out2,"\"cat /proc/cpuinfo\"");
     sprintf(out1,"rpcclient %s %s",urlPtr,out2);
-    fp = v_secure_popen(out1);
+    fp = popen(out1, "r");
 #else
     fp = popen("cat /proc/cpuinfo", "r");
 #endif
@@ -1670,7 +1670,7 @@ CosaDmlDiGetProcessorSpeed
 
 #endif
 
-    fclose(fp);
+    status = pclose(fp);
     *pulSize = AnscSizeOfString(pValue);
     if(pValue[*pulSize-1] == '\n') pValue[--(*pulSize)] = '\0';
     return ANSC_STATUS_SUCCESS; 
@@ -3503,13 +3503,13 @@ void* RebootDevice_thread(void* buff)
 		sprintf(buf, "date");
 		char buffer[50] = {0};
 		memset(buffer,0,sizeof(buffer));
-        fp = v_secure_popen(buf);
+        fp = popen(buf, "r");
 		if( fp != NULL) {         
 		    while(fgets(buffer, sizeof(buffer), fp)!=NULL){
 			    buffer[strlen(buffer) - 1] = '\0';
 				syscfg_set(NULL, "latest_reboot_time", buffer);
 			}
-			fclose(fp);
+			pclose(fp);
 		}
 
 		char tmp[7] = {0};

@@ -537,12 +537,12 @@ CosaDmlGetCloudUIReachableStatus
 				  "curl --connect-timeout 10 --interface erouter0 --write-out %%{http_code} --silent --output /dev/null %s",
 				  pCloudPersonalizationURL);
 		
-		fp = popen( cmdBuff , "r");
+		fp = popen( cmdBuff, "r" );
 
 		if( NULL != fp )
 		{
 			fgets( retBuff, sizeof(retBuff), fp );
-			fclose(fp);
+			pclose(fp);
 			curlResponse = atoi(retBuff);
 
 			CcspTraceInfo(("URL[ %s ] curlResponse[ %d ]\n",

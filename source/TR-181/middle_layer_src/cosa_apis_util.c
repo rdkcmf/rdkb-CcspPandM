@@ -1436,7 +1436,7 @@ CosaUtilGetStaticRouteTable
                      sroute[i].dest_lan_ip,
                      NetmaskToNumber(sroute[i].netmask));
 
-            if (((fp2 = v_secure_popen(cmd)) != NULL) && (fgets(line_buf, sizeof(line_buf), fp2)))
+            if (((fp2 = popen(cmd,"r")) != NULL) && (fgets(line_buf, sizeof(line_buf), fp2)))
             {
                 pch = strtok(line_buf, " ");
 
@@ -1457,7 +1457,7 @@ CosaUtilGetStaticRouteTable
 
     if (fp2)
     {
-        v_secure_pclose(fp2);
+        fclose(fp2);
     }
     fclose(fp);
     

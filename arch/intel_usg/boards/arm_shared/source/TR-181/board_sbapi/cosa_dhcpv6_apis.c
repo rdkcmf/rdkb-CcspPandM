@@ -2320,6 +2320,7 @@ CosaDmlDhcpv6cGetEnabled
     char out[256] = {0};
 
     FILE *fp = popen("ps |grep -i ti_dhcp6c | grep erouter0 | grep -v grep", "r");
+
     if ( fp != NULL){
         if ( fgets(out, sizeof(out), fp) != NULL )
             if ( _ansc_strstr(out, "erouter_dhcp6c") )
@@ -4835,7 +4836,7 @@ int dhcpv6_assign_global_ip(char * prefix, char * intfName, char * ipAddr)
 
 
     /* prepare second part */
-    _ansc_sprintf(cmd, "ifconfig %s | grep HWaddr", intfName );
+    _ansc_sprintf(cmd, "ifconfig %s | grep HWaddr\n", intfName );
     _get_shell_output(cmd, out, sizeof(out));
     pMac =_ansc_strstr(out, "HWaddr");
     if ( pMac == NULL ){
