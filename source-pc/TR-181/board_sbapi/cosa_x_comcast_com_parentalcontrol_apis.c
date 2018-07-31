@@ -1424,6 +1424,11 @@ CosaDmlMngDevs_SetConf(COSA_DML_MANAGED_DEVS *conf)
 			do_parentalControl_Delrule_Devices();   //RDKB-EMULATOR
 		}		
 		do_parentalControl_Addrule_Devices();
+		if(conf->AllowAll)
+			system("iptables -t nat -D ParentalControl_Devices -p tcp -j prerouting_redirect");
+		else
+			system("iptables -t nat -A ParentalControl_Devices -p tcp -j prerouting_redirect");
+			
 		for( i=0; i < g_NrMDDevs; i++)
 		{
 
