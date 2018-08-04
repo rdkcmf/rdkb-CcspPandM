@@ -1352,6 +1352,12 @@
                             <writable>true</writable>
                         </parameter>
                         <parameter>
+                            <name>HomeNetworkIsolation</name>
+                            <type>boolean</type>
+                            <syntax>bool</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
                             <name>Xupnp</name>
                             <type>boolean</type>
                             <syntax>bool</syntax>

@@ -6912,7 +6912,12 @@ Feature_SetParamBoolValue
                 if(bValue)
                 {
                     CcspTraceInfo(("Apply changes for HomeNetworkIsolation \n"));
+#if defined(_COSA_BCM_MIPS_)
+                    system("sh /usr/ccsp/lan_handler.sh home_lan_isolation_enable &");
+                    sleep(2);
+#else
                     system("sysevent set multinet-restart 1");
+#endif
                     system("sh /usr/ccsp/moca/MoCA_isolation.sh &");
                     
                 }
@@ -6920,9 +6925,14 @@ Feature_SetParamBoolValue
                 {
 
                     CcspTraceInfo(("reverting changes for HomeNetworkIsolation \n"));
+#if defined(_COSA_BCM_MIPS_)
+                    system("sh /usr/ccsp/lan_handler.sh home_lan_isolation_disable &");
+                    system("rm /tmp/MoCABridge_up");
+#else
                     system("sysevent set multinet-down 9");
                     system("rm /tmp/MoCABridge_up");
                     system("sysevent set multinet-restart 1");
+#endif
                     system("killall MRD; killall smcroute;igmpproxy -c /tmp/igmpproxy.conf");
                 }
 	}
