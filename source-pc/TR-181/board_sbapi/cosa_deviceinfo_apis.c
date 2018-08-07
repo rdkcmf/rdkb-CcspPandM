@@ -250,6 +250,10 @@ CosaDmlDiGetFirmwareName
         PULONG                      pulSize
     )
 {
+    char Firmware_Name[256] = {0};
+    platform_hal_GetFirmwareName(Firmware_Name,0);//RDKB-EMU
+    AnscCopyString(pValue,Firmware_Name);
+    *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
 
