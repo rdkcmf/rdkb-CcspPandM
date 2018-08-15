@@ -5285,10 +5285,12 @@ Feature_SetParamBoolValue
        if(bValue == TRUE)
        {
           status = BLE_ENABLE;
+          CcspTraceInfo(("***BLE_ENABLED***\n"));
        }
        else
        {
           status = BLE_DISABLE;
+          CcspTraceInfo(("***BLE_DISABLED***\n"));
        }
        if( !ble_Enable(status))
        { 
