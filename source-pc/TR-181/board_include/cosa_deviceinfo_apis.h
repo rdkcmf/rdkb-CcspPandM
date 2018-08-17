@@ -164,6 +164,8 @@ _COSA_DATAMODEL_RDKB_LOCALUI_CLASS_CONTENT
         CHAR                    MSOLogo[512];
         CHAR                    DefaultLoginUsername[512];
         CHAR                    DefaultLoginPassword[512];
+	CHAR                    MSOLogoTitle[512];
+        BOOL                    HomeNetworkControl;
 }
 COSA_DATAMODEL_RDKB_LOCALUI, *PCOSA_DATAMODEL_RDKB_LOCALUI;
 typedef  struct

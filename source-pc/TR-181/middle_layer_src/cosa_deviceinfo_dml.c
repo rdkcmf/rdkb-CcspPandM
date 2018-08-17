@@ -4671,16 +4671,16 @@ Syndication_SetParamStringValue
 
                         return TRUE;
     }
-    /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "PauseScreenFileLocation", TRUE) )
-    {
-	    if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation",PartnerID, pString))
-	    {
-		    memset( pMyObject->UiBrand.PauseScreenFileLocation, 0, sizeof( pMyObject->UiBrand.PauseScreenFileLocation ));
-		    AnscCopyString( pMyObject->UiBrand.PauseScreenFileLocation, pString );
-		    return TRUE;
-	    }
-    }
+         /* check the parameter name and set the corresponding value */
+         if( AnscEqualString(ParamName, "PauseScreenFileLocation", TRUE) )
+        {
+                if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation",PartnerID, pString))
+                {
+                        memset( pMyObject->UiBrand.PauseScreenFileLocation, 0, sizeof( pMyObject->UiBrand.PauseScreenFileLocation ));
+                        AnscCopyString( pMyObject->UiBrand.PauseScreenFileLocation, pString );
+                        return TRUE;
+                }
+         }
 
 
     return FALSE;
@@ -4794,3 +4794,813 @@ Syndication_SetParamBoolValue
 
     return FALSE;
 }
+
+/***********************************************************************
+APIs for Object:
+        DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.
+          *  MaintenanceWindow_GetParamStringValue
+          
+***********************************************************************/
+
+ULONG
+RDKB_UIBranding_GetParamStringValue
+
+        (
+                ANSC_HANDLE                             hInsContext,
+                char*                                           ParamName,
+                char*                                           pValue,
+                ULONG*                                          pulSize
+        )
+{
+
+        PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+        PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
+
+         if( AnscEqualString(ParamName, "DefaultAdminIP", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->DefaultAdminIP) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->DefaultAdminIP);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->DefaultAdminIP)+1;
+                        return 1;
+                }
+
+        }
+        if( AnscEqualString(ParamName, "DefaultLocalIPv4SubnetRange", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->DefaultLocalIPv4SubnetRange) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->DefaultLocalIPv4SubnetRange);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->DefaultLocalIPv4SubnetRange)+1;
+			return 1;
+                }
+
+        }
+         return -1;
+}
+
+BOOL
+RDKB_UIBranding_SetParamStringValue
+
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    return FALSE;
+}
+
+/***********************************************************************
+APIs for Object:
+        DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.
+          *  MaintenanceWindow_GetParamStringValue
+          
+***********************************************************************/
+ULONG
+Footer_GetParamStringValue
+        (
+                ANSC_HANDLE                             hInsContext,
+                char*                                           ParamName,
+                char*                                           pValue,
+                ULONG*                                          pulSize
+        )
+{
+        PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+        PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
+
+        if( AnscEqualString(ParamName, "PartnerLink", TRUE))
+        {
+                /* collect value */
+                 if ( AnscSizeOfString(pBindObj->Footer.PartnerLink) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->Footer.PartnerLink);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->Footer.PartnerLink)+1;
+                        return 1;
+                }
+
+        }
+
+        if( AnscEqualString(ParamName, "UserGuideLink", TRUE))
+        {
+                 if ( AnscSizeOfString(pBindObj->Footer.UserGuideLink) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->Footer.UserGuideLink);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->Footer.UserGuideLink)+1;
+                        return 1;
+                }
+        }
+                if( AnscEqualString(ParamName, "CustomerCentralLink", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->Footer.CustomerCentralLink) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->Footer.CustomerCentralLink);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->Footer.CustomerCentralLink)+1;
+                        return 1;
+                }
+
+        }
+
+        if( AnscEqualString(ParamName, "PartnerText", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->Footer.PartnerText) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->Footer.PartnerText);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->Footer.PartnerText)+1;
+                        return 1;
+                }
+
+        }
+
+        if( AnscEqualString(ParamName, "UserGuideText", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->Footer.UserGuideText) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->Footer.UserGuideText);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->Footer.UserGuideText)+1;
+                        return 1;
+                }
+
+        }
+
+        if( AnscEqualString(ParamName, "CustomerCentralText", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->Footer.CustomerCentralText) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->Footer.CustomerCentralText);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->Footer.CustomerCentralText)+1;
+			 return 1;
+                }
+
+        }
+        return -1;
+
+}
+
+
+BOOL
+Footer_SetParamStringValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_UIBRANDING     pBindObj =      & pMyObject->UiBrand;
+
+        char PartnerID[PARTNER_ID_LEN] = {0};
+
+   if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
+   {
+         /* check the parameter name and set the corresponding value */
+            if( AnscEqualString(ParamName, "PartnerLink", TRUE) )
+            {
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink",PartnerID,pString))
+                        {
+                                memset( pBindObj->Footer.PartnerLink, 0, sizeof( pBindObj->Footer.PartnerLink ));
+                                AnscCopyString( pBindObj->Footer.PartnerLink, pString );
+				return TRUE;
+                        }
+
+            }
+            if( AnscEqualString(ParamName, "UserGuideLink", TRUE) )
+            {
+
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideLink",PartnerID,pString))
+                        {
+                                memset( pBindObj->Footer.UserGuideLink, 0, sizeof( pBindObj->Footer.UserGuideLink ));
+                                AnscCopyString(pBindObj->Footer.UserGuideLink, pString );
+                                return TRUE;
+                        }
+
+            }
+            if( AnscEqualString(ParamName, "CustomerCentralLink", TRUE) )
+            {
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralLink",PartnerID,pString))
+                        {
+                                memset( pBindObj->Footer.CustomerCentralLink, 0, sizeof( pBindObj->Footer.CustomerCentralLink ));
+                                AnscCopyString( pBindObj->Footer.CustomerCentralLink, pString );
+                                return TRUE;
+                        }
+
+            }
+
+        if( AnscEqualString(ParamName, "PartnerText", TRUE) )
+        {
+                if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerText",PartnerID,pString))
+                {
+                        memset( pBindObj->Footer.PartnerText, 0, sizeof( pBindObj->Footer.PartnerText ));
+                        AnscCopyString( pBindObj->Footer.PartnerText, pString );
+                        return TRUE;
+                }
+
+        }
+
+        if( AnscEqualString(ParamName, "UserGuideText", TRUE) )
+        {
+                if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideText",PartnerID,pString))
+                {
+                        memset( pBindObj->Footer.UserGuideText, 0, sizeof( pBindObj->Footer.UserGuideText ));
+                        AnscCopyString( pBindObj->Footer.UserGuideText, pString );
+                        return TRUE;
+                }
+
+        }
+
+        if( AnscEqualString(ParamName, "CustomerCentralText", TRUE) )
+        {
+                if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralText",PartnerID,pString))
+		                {
+                        memset( pBindObj->Footer.CustomerCentralText, 0, sizeof( pBindObj->Footer.CustomerCentralText ));
+                        AnscCopyString( pBindObj->Footer.CustomerCentralText, pString );
+                        return TRUE;
+                }
+
+        }
+
+   }
+
+    return FALSE;
+}
+
+/***********************************************************************
+APIs for Object:
+        DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.
+          *  MaintenanceWindow_GetParamStringValue
+          
+***********************************************************************/
+ULONG
+Connection_GetParamStringValue
+
+        (
+                ANSC_HANDLE                             hInsContext,
+                char*                                           ParamName,
+                char*                                           pValue,
+                ULONG*                                          pulSize
+        )
+{
+        PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+        PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
+
+        if( AnscEqualString(ParamName, "MSOmenu", TRUE))
+        {
+		                if ( AnscSizeOfString(pBindObj->Connection.MSOmenu) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->Connection.MSOmenu);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->Connection.MSOmenu)+1;
+                        return 1;
+                }
+        }
+
+        if( AnscEqualString(ParamName, "MSOinfo", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->Connection.MSOinfo) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->Connection.MSOinfo);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->Connection.MSOinfo)+1;
+                        return 1;
+                }
+
+        }
+
+        if( AnscEqualString(ParamName, "StatusTitle", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->Connection.StatusTitle) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->Connection.StatusTitle);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->Connection.StatusTitle)+1;
+                        return 1;
+                }
+        }
+
+        if( AnscEqualString(ParamName, "StatusInfo", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->Connection.StatusInfo) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->Connection.StatusInfo);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->Connection.StatusInfo)+1;
+                        return 1;
+                }
+        }
+
+        return -1;
+}
+
+BOOL
+Connection_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_UIBRANDING     pBindObj =      & pMyObject->UiBrand;
+
+        char PartnerID[PARTNER_ID_LEN] = {0};
+
+   if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
+   {
+         /* check the parameter name and set the corresponding value */
+            if( AnscEqualString(ParamName, "MSOmenu", TRUE) )
+            {
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOmenu",PartnerID,pString))
+                        {
+                                memset( pBindObj->Connection.MSOmenu, 0, sizeof( pBindObj->Connection.MSOmenu ));
+                                AnscCopyString( pBindObj->Connection.MSOmenu, pString );
+                                return TRUE;
+                        }
+            }
+            if( AnscEqualString(ParamName, "MSOinfo", TRUE) )
+            {
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOinfo",PartnerID,pString) )
+                        {
+                                memset( pBindObj->Connection.MSOinfo, 0, sizeof( pBindObj->Connection.MSOinfo ));
+                                AnscCopyString(pBindObj->Connection.MSOinfo, pString );
+                                return TRUE;
+                        }
+            }
+            if( AnscEqualString(ParamName, "StatusTitle", TRUE) )
+            {
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusTitle",PartnerID,pString) )
+                        {
+                                memset( pBindObj->Connection.StatusTitle, 0, sizeof( pBindObj->Connection.StatusTitle ));
+                                AnscCopyString( pBindObj->Connection.StatusTitle, pString );
+                                return TRUE;
+                        }
+
+            }
+            if( AnscEqualString(ParamName, "StatusInfo", TRUE) )
+            {
+
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusInfo",PartnerID,pString))
+                        {
+                                memset(pBindObj->Connection.StatusInfo, 0, sizeof( pBindObj->Connection.StatusInfo ));
+                                AnscCopyString( pBindObj->Connection.StatusInfo, pString );
+                                return TRUE;
+                        }
+
+            }
+   }
+    return FALSE;
+}
+
+/***********************************************************************
+APIs for Object:
+        DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.NetworkDiagnosticTools.
+          *  MaintenanceWindow_GetParamStringValue
+          
+***********************************************************************/
+ULONG
+NetworkDiagnosticTools_GetParamStringValue
+        (
+                ANSC_HANDLE                             hInsContext,
+                char*                                           ParamName,
+                char*                                           pValue,
+                ULONG*                                          pulSize
+        )
+{
+        PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+        PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
+
+        if( AnscEqualString(ParamName, "ConnectivityTestURL", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->NDiagTool.ConnectivityTestURL) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->NDiagTool.ConnectivityTestURL);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->NDiagTool.ConnectivityTestURL)+1;
+                        return 1;
+                }
+        }
+
+        return -1;
+
+}
+
+
+BOOL
+NetworkDiagnosticTools_SetParamStringValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_UIBRANDING     pBindObj =      & pMyObject->UiBrand;
+
+        char PartnerID[PARTNER_ID_LEN] = {0};
+
+   if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
+   {
+         /* check the parameter name and set the corresponding value */
+            if( AnscEqualString(ParamName, "ConnectivityTestURL", TRUE) )
+            {
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.NetworkDiagnosticTools.ConnectivityTestURL",PartnerID, pString))
+                        {
+                                memset( pBindObj->NDiagTool.ConnectivityTestURL, 0, sizeof( pBindObj->NDiagTool.ConnectivityTestURL ));
+                                AnscCopyString( pBindObj->NDiagTool.ConnectivityTestURL, pString );
+                                return TRUE;
+                        }
+            }
+
+   }
+    return FALSE;
+}
+
+/***********************************************************************
+APIs for Object:
+        DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.
+          *  MaintenanceWindow_GetParamStringValue
+          
+***********************************************************************/
+
+BOOL
+WiFiPersonalization_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+        PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+        PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
+
+        if( AnscEqualString(ParamName, "Support", TRUE))
+        {
+                 /* collect value */
+                *pBool = pBindObj->WifiPersonal.Support;
+                return TRUE;
+        }
+
+        if( AnscEqualString(ParamName, "SMSsupport", TRUE))
+        {
+                /* collect value */
+                *pBool = pBindObj->WifiPersonal.SMSsupport;
+                return TRUE;
+
+        }
+
+        if( AnscEqualString(ParamName, "MyAccountAppSupport", TRUE))
+        {
+                /* collect value */
+                *pBool = pBindObj->WifiPersonal.MyAccountAppSupport;
+                return TRUE;
+        }
+
+    return FALSE;
+}
+
+BOOL
+WiFiPersonalization_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_UIBRANDING     pBindObj =      & pMyObject->UiBrand;
+
+   char PartnerID[PARTNER_ID_LEN] = {0};
+   char *value = ( bValue ==TRUE ) ?  "true" : "false";
+
+
+   //if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
+   //{
+            if( AnscEqualString(ParamName, "Support", TRUE))
+            {
+
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Support",PartnerID, value ))
+                        {
+                                pBindObj->WifiPersonal.Support = bValue;
+                                return TRUE;
+                        }
+
+            }
+
+            if( AnscEqualString(ParamName, "SMSsupport", TRUE))
+            {
+
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.SMSsupport",PartnerID, value))
+                        {
+                                pBindObj->WifiPersonal.SMSsupport = bValue;
+                                return TRUE;
+                        }
+
+            }
+
+	     if( AnscEqualString(ParamName, "MyAccountAppSupport", TRUE))
+            {
+
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MyAccountAppSupport",PartnerID, value))
+                        {
+                                pBindObj->WifiPersonal.MyAccountAppSupport = bValue;
+                                return TRUE;
+                        }
+
+            }
+     //   }
+
+    return FALSE;
+}
+
+ULONG
+WiFiPersonalization_GetParamStringValue
+
+        (
+                ANSC_HANDLE                             hInsContext,
+                char*                                           ParamName,
+                char*                                           pValue,
+                ULONG*                                          pulSize
+        )
+{
+
+        PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+        PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
+
+         if( AnscEqualString(ParamName, "PartnerHelpLink", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->WifiPersonal.PartnerHelpLink) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->WifiPersonal.PartnerHelpLink);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->WifiPersonal.PartnerHelpLink)+1;
+                        return 1;
+                }
+
+        }
+        if( AnscEqualString(ParamName, "MSOLogo", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->WifiPersonal.MSOLogo) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->WifiPersonal.MSOLogo);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->WifiPersonal.MSOLogo)+1;
+                        return 1;
+                }
+
+        }
+        if( AnscEqualString(ParamName, "Title", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->WifiPersonal.Title) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->WifiPersonal.Title);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->WifiPersonal.Title)+1;
+                        return 1;
+                }
+
+        }
+	if( AnscEqualString(ParamName, "WelcomeMessage", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->WifiPersonal.WelcomeMessage) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->WifiPersonal.WelcomeMessage);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->WifiPersonal.WelcomeMessage)+1;
+                        return 1;
+                }
+
+        }
+         return -1;
+}
+
+BOOL
+WiFiPersonalization_SetParamStringValue
+
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_UIBRANDING     pBindObj =      & pMyObject->UiBrand;
+
+        char PartnerID[PARTNER_ID_LEN] = {0};
+
+//   if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
+  // {
+         /* check the parameter name and set the corresponding value */
+            if( AnscEqualString(ParamName, "PartnerHelpLink", TRUE) )
+            {
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.PartnerHelpLink",PartnerID, pString))
+                        {
+                                memset( pBindObj->WifiPersonal.PartnerHelpLink, 0, sizeof( pBindObj->WifiPersonal.PartnerHelpLink ));
+                                AnscCopyString( pBindObj->WifiPersonal.PartnerHelpLink, pString );
+                                return TRUE;
+                        }
+            }
+
+  // }
+    return FALSE;
+}
+
+/***********************************************************************
+APIs for Object:
+        DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.
+          *  MaintenanceWindow_GetParamStringValue
+          
+***********************************************************************/
+
+ULONG
+LocalUI_GetParamStringValue
+
+        (
+                ANSC_HANDLE                             hInsContext,
+                char*                                           ParamName,
+                char*                                           pValue,
+                ULONG*                                          pulSize
+        )
+{
+
+        PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+        PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
+
+         if( AnscEqualString(ParamName, "MSOLogo", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->LocalUI.MSOLogo) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->LocalUI.MSOLogo);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->LocalUI.MSOLogo)+1;
+                        return 1;
+                }
+
+        }
+        if( AnscEqualString(ParamName, "DefaultLoginUsername", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->LocalUI.DefaultLoginUsername) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->LocalUI.DefaultLoginUsername);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->LocalUI.DefaultLoginUsername)+1;
+                        return 1;
+                }
+
+        }
+	if( AnscEqualString(ParamName, "DefaultLoginPassword", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->LocalUI.DefaultLoginPassword) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->LocalUI.DefaultLoginPassword);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->LocalUI.DefaultLoginPassword)+1;
+                        return 1;
+                }
+
+        }
+        if( AnscEqualString(ParamName, "MSOLogoTitle", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->LocalUI.MSOLogoTitle) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->LocalUI.MSOLogoTitle);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->LocalUI.MSOLogoTitle)+1;
+                        return 1;
+                }
+
+        }
+         return -1;
+}
+
+BOOL
+LocalUI_SetParamStringValue
+
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+        return FALSE;
+}
+
+/***********************************************************************
+APIs for Object:
+        DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.
+          *  MaintenanceWindow_GetParamBoolValue
+          
+***********************************************************************/
+
+BOOL
+LocalUI_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+        PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+        PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
+
+        if( AnscEqualString(ParamName, "HomeNetworkControl", TRUE))
+        {
+                 /* collect value */
+                *pBool = pBindObj->LocalUI.HomeNetworkControl;
+                return TRUE;
+        }
+    return FALSE;
+}
+
+BOOL
+LocalUI_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+        return FALSE;
+}
+
+
+

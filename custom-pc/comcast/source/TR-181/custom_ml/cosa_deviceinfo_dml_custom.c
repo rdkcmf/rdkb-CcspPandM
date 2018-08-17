@@ -72,6 +72,9 @@
 #include "cosa_deviceinfo_dml.h"
 #include "cosa_deviceinfo_apis_custom.h"
 
+//For PSM Access
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -111,10 +114,16 @@ DeviceInfo_GetParamBoolValue_Custom
     )
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    char *param_value = NULL;
 
 #ifdef CONFIG_INTERNET2P0
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureWiFi", TRUE))
     {
+        PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_ConfigureWiFi", NULL, &param_value);
+	if(strcmp(param_value,"true") == 0)
+		pMyObject->bWiFiConfigued = TRUE;
+	else
+		pMyObject->bWiFiConfigued = FALSE;
        *pBool = pMyObject->bWiFiConfigued;
 	return TRUE;
     }

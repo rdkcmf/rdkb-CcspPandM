@@ -90,6 +90,10 @@
 
 extern void* g_pDslhDmlAgent;
 
+//For PSM Access
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
+
 static int
 PsmGet(const char *param, char *value, int size)
 {
@@ -589,23 +593,14 @@ CosaDmlGetCaptivePortalEnable
         BOOL *pValue
     )
 {
-	char buf[5];
-        syscfg_get( NULL, CAPTIVEPORTAL_EANBLE , buf, sizeof(buf));
+	char *param_value = NULL;
+	PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_CaptivePortalEnable", NULL, &param_value);
+	if(strcmp(param_value,"true") == 0)
+		*pValue = true;
+	else
+		*pValue = false;
 
-    	if( buf != NULL )
-    		{
-    		    if (strcmp(buf,"true") == 0)
-		    {
-			CcspTraceWarning(("CaptivePortal: Captive Portal switch is enabled...\n"));		
-    		       *pValue = true;
-		    }
-    		    else
-			{
-			CcspTraceWarning(("CaptivePortal: Captive Portal switch is disabled...\n"));		
-    		        *pValue = false;	
-			}
-    		}
-    return ANSC_STATUS_SUCCESS;
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -614,7 +609,6 @@ CosaDmlSetCaptivePortalEnable
         BOOL value
     )
 {
-
 	char buf[10];
 	char cmd[50];
 	memset(buf,0,sizeof(buf));
@@ -629,24 +623,9 @@ CosaDmlSetCaptivePortalEnable
 		CcspTraceWarning(("CaptivePortal: Disabling Captive Portal switch ...\n"));		
 		strcpy(buf,"false");
 	}
-	if (syscfg_set(NULL, CAPTIVEPORTAL_EANBLE , buf) != 0) {
-                     CcspTraceWarning(("syscfg_set failed to enable/disable captive portal\n"));
-		     return ANSC_STATUS_FAILURE;
-             } else {
+	PSM_Set_Record_Value2(bus_handle,g_Subsystem,"Device.DeviceInfo.X_RDKCENTRAL-COM_CaptivePortalEnable", ccsp_string,buf);
 
-                    if (syscfg_commit() != 0) {
-                            CcspTraceWarning(("syscfg_commit failed\n"));
-		     return ANSC_STATUS_FAILURE;
-                    }
-	  }
-
-    sprintf(cmd,"sh /etc/restart_services.sh %s",buf);
-    system(cmd);
-    /*commonSyseventSet("dhcp-server-restart", "");
-    commonSyseventSet("firewall-restart", "");
-    commonSyseventSet("zebra-restart", ""); */
-
-    return ANSC_STATUS_SUCCESS;
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS

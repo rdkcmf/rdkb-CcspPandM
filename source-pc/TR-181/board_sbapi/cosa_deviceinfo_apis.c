@@ -1332,48 +1332,552 @@ CosaDmlDiSetSyndicationEnable
 
 void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING        PUiBrand)
 {
-                cJSON *partnerObj = NULL;
-                char *partnerLink = NULL;
-                char *userGuideLink = NULL;
-                char *customerCentralLink = NULL;
-                char *msoMenu = NULL;
-                char *msoInfo = NULL;
-                char *statusTitle = NULL;
-                char *statusInfo = NULL;
-                char *connectivityTestURL = NULL;
-                char *support = NULL;
-                char *partnerHelpLink = NULL;
-                char *smsSupport = NULL;
-                char *myAccountAppSupport = NULL;
-            char *DefaultLocalIPv4SubnetRange = NULL;
-                char *DefaultAdminIP = NULL;
-                char *WifiMSOLogo = NULL;
-                char *DefaultLoginPassword = NULL;
-                char *DefaultLoginUsername = NULL;
-                char *UIMSOLogo = NULL;
-                char *pauseScreenFileLocation = NULL;
-                char *partnerText = NULL;
-                char *userGuideText = NULL;
-                char *customerCentralText = NULL;
-                char *wifiTitle = NULL;
-                char *wifiWelcomeMessage = NULL;
+	cJSON *partnerObj = NULL;
+	char *partnerLink = NULL;
+	char *userGuideLink = NULL;
+	char *customerCentralLink = NULL;
+	char *msoMenu = NULL;
+	char *msoInfo = NULL;
+	char *statusTitle = NULL;
+	char *statusInfo = NULL;
+	char *connectivityTestURL = NULL;
+	char *support = NULL;
+	char *partnerHelpLink = NULL;
+	char *smsSupport = NULL;
+	char *myAccountAppSupport = NULL;
+	char *DefaultLocalIPv4SubnetRange = NULL;
+	char *DefaultAdminIP = NULL;
+	char *WifiMSOLogo = NULL;
+	char *DefaultLoginPassword = NULL;
+	char *DefaultLoginUsername = NULL;
+	char *UIMSOLogo = NULL;
+	char *pauseScreenFileLocation = NULL;
+	char *partnerText = NULL;
+	char *userGuideText = NULL;
+	char *customerCentralText = NULL;
+	char *wifiTitle = NULL;
+	char *wifiWelcomeMessage = NULL;
 
-                partnerObj = cJSON_GetObjectItem( json, partnerID );
-			 if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation") != NULL )
-                                {
-                                        pauseScreenFileLocation = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation")->valuestring;
+	partnerObj = cJSON_GetObjectItem( json, partnerID );
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink") != NULL )
+	{
+		partnerLink = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink")->valuestring;
 
-                                        if (pauseScreenFileLocation != NULL)
-                                        {
-                                                AnscCopyString(PUiBrand->PauseScreenFileLocation, pauseScreenFileLocation);
-                                                pauseScreenFileLocation = NULL;
-                                        }
-                                        else
-                                        {
-                                               printf("%s - PauseScreenFileLocation Value is NULL\n", __FUNCTION__ );
-                                        }
+		if (partnerLink != NULL)
+		{
+			AnscCopyString(PUiBrand->Footer.PartnerLink, partnerLink);
+			partnerLink = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - partnerLink Value is NULL\n", __FUNCTION__ ));
+		}
 
-                                }
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - partnerLink Object is NULL\n", __FUNCTION__ ));
+	}
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideLink") != NULL)
+	{
+		userGuideLink = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideLink")->valuestring;
+
+		if (userGuideLink != NULL)
+		{
+			AnscCopyString(PUiBrand->Footer.UserGuideLink, userGuideLink);
+			userGuideLink = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - userGuideLink Value is NULL\n", __FUNCTION__ ));
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - userGuideLink Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralLink") != NULL)
+	{
+		customerCentralLink = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralLink")->valuestring;
+
+		if (customerCentralLink != NULL)
+		{
+			AnscCopyString(PUiBrand->Footer.CustomerCentralLink, customerCentralLink);
+			customerCentralLink = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - customerCentralLink Value is NULL\n", __FUNCTION__ ));
+		}
+
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - customerCentralLink Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerText") != NULL )
+	{
+		partnerText = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerText")->valuestring;
+
+		if (partnerText != NULL)
+		{
+			AnscCopyString(PUiBrand->Footer.PartnerText, partnerText);
+			partnerText = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - partnerText Value is NULL\n", __FUNCTION__ ));
+		}
+
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - partnerText Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideText") != NULL )
+	{
+		userGuideText = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideText")->valuestring;
+
+		if (userGuideText != NULL)
+		{
+			AnscCopyString(PUiBrand->Footer.UserGuideText, userGuideText);
+			userGuideText = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - userGuideText Value is NULL\n", __FUNCTION__ ));
+		}
+
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - userGuideText Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralText") != NULL )
+	{
+		customerCentralText = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralText")->valuestring;
+
+		if (customerCentralText != NULL)
+		{
+			AnscCopyString(PUiBrand->Footer.CustomerCentralText, customerCentralText);
+			customerCentralText = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - customerCentralText Value is NULL\n", __FUNCTION__ ));
+		}
+
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - customerCentralText Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOmenu") != NULL )
+	{
+		msoMenu = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOmenu")->valuestring;
+
+		if (msoMenu != NULL)
+		{
+			AnscCopyString(PUiBrand->Connection.MSOmenu, msoMenu);
+			msoMenu = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - msoMenu Value is NULL\n", __FUNCTION__ ));
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - msoMenu Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOinfo") != NULL)
+	{
+		msoInfo = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOinfo")->valuestring;
+
+		if (msoInfo != NULL)
+		{
+			AnscCopyString(PUiBrand->Connection.MSOinfo, msoInfo);
+			msoInfo = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - msoInfo Value is NULL\n", __FUNCTION__ ));
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - msoInfo Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusTitle") != NULL)
+	{
+		statusTitle = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusTitle")->valuestring;
+
+		if (statusTitle != NULL)
+		{
+			AnscCopyString(PUiBrand->Connection.StatusTitle, statusTitle);
+			statusTitle = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - statusTitle Value is NULL\n", __FUNCTION__ ));
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - statusTitle Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusInfo") != NULL)
+	{
+		statusInfo = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusInfo")->valuestring;
+
+		if (statusInfo != NULL)
+		{
+			AnscCopyString(PUiBrand->Connection.StatusInfo, statusInfo);
+			statusInfo = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - statusInfo Value is NULL\n", __FUNCTION__ ));
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - statusInfo Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.NetworkDiagnosticTools.ConnectivityTestURL") != NULL)
+	{
+		connectivityTestURL = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.NetworkDiagnosticTools.ConnectivityTestURL")->valuestring;
+
+		if (connectivityTestURL != NULL)
+		{
+			AnscCopyString(PUiBrand->NDiagTool.ConnectivityTestURL, connectivityTestURL);
+			connectivityTestURL = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - connectivityTestURL Value is NULL\n", __FUNCTION__ ));
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - connectivityTestURL Object is NULL\n", __FUNCTION__ ));
+	}
+
+
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation") != NULL )
+	{
+		pauseScreenFileLocation = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation")->valuestring;
+
+		if (pauseScreenFileLocation != NULL)
+		{
+			AnscCopyString(PUiBrand->PauseScreenFileLocation, pauseScreenFileLocation);
+			pauseScreenFileLocation = NULL;
+		}
+		else
+		{
+			printf("%s - PauseScreenFileLocation Value is NULL\n", __FUNCTION__ );
+		}
+
+	}
+	else
+	{
+		CcspTraceWarning(("%s - support Object is NULL\n", __FUNCTION__ ));
+	}
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Support") != NULL)
+	{
+		support = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Support")->valuestring;
+
+		if (support != NULL)
+		{
+			PUiBrand->WifiPersonal.Support = FALSE;
+			if ( strcmp(support,"true") == 0)
+			{
+				PUiBrand->WifiPersonal.Support = TRUE;
+				support = NULL;
+			}
+		}
+		else
+		{
+			CcspTraceWarning(("%s - support Value is NULL\n", __FUNCTION__ ));
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - support Object is NULL\n", __FUNCTION__ ));
+	}
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.PartnerHelpLink") != NULL)
+	{
+		partnerHelpLink = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.PartnerHelpLink")->valuestring;
+
+		if (partnerHelpLink != NULL)
+		{
+			AnscCopyString(PUiBrand->WifiPersonal.PartnerHelpLink, partnerHelpLink);
+			partnerHelpLink = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - partnerHelpLink Value is NULL\n", __FUNCTION__ ));
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - partnerHelpLink Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.SMSsupport") != NULL)
+	{
+		smsSupport = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.SMSsupport")->valuestring;
+
+		if (smsSupport != NULL)
+		{
+			PUiBrand->WifiPersonal.SMSsupport = FALSE;
+			if ( strcmp(smsSupport,"true") == 0)
+			{
+				PUiBrand->WifiPersonal.SMSsupport = TRUE;
+				smsSupport = NULL;
+			}
+		}
+		else
+		{
+			CcspTraceWarning(("%s - smsSupport Value is NULL\n", __FUNCTION__ ));
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - smsSupport Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MyAccountAppSupport") != NULL)
+	{
+		myAccountAppSupport = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MyAccountAppSupport")->valuestring;
+
+		if (myAccountAppSupport != NULL)
+		{
+			PUiBrand->WifiPersonal.MyAccountAppSupport = FALSE;
+			if ( strcmp(myAccountAppSupport,"true") == 0)
+			{
+				PUiBrand->WifiPersonal.MyAccountAppSupport = TRUE;
+				myAccountAppSupport = NULL;
+			}
+		}
+		else
+		{
+			CcspTraceWarning(("%s - MyAccountAppSupport Value is NULL\n", __FUNCTION__ ));
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - MyAccountAppSupport Object is NULL\n", __FUNCTION__ ));
+	}
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MSOLogo") != NULL )
+	{
+		WifiMSOLogo = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MSOLogo")->valuestring;
+
+		if (WifiMSOLogo != NULL)
+		{
+			AnscCopyString(PUiBrand->WifiPersonal.MSOLogo, WifiMSOLogo);
+			WifiMSOLogo = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - WifiMSOLogo Value is NULL\n", __FUNCTION__ ));
+		}
+
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - WifiMSOLogo Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Title") != NULL )
+	{
+		wifiTitle = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Title")->valuestring;
+
+		if (wifiTitle != NULL)
+		{
+			AnscCopyString(PUiBrand->WifiPersonal.Title, wifiTitle);
+			wifiTitle = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - wifiTitle Value is NULL\n", __FUNCTION__ ));
+		}
+
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - wifiTitle Object is NULL\n", __FUNCTION__ ));
+	}
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.WelcomeMessage") != NULL )
+	{
+		wifiWelcomeMessage = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.WelcomeMessage")->valuestring;
+
+		if (wifiWelcomeMessage != NULL)
+		{
+			AnscCopyString(PUiBrand->WifiPersonal.WelcomeMessage, wifiWelcomeMessage);
+			wifiWelcomeMessage = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - wifiWelcomeMessage Value is NULL\n", __FUNCTION__ ));
+		}
+
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - wifiWelcomeMessage Object is NULL\n", __FUNCTION__ ));
+	}
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.MSOLogo") != NULL )
+	{
+		UIMSOLogo = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.MSOLogo")->valuestring;
+
+		if (UIMSOLogo != NULL)
+		{
+			AnscCopyString(PUiBrand->LocalUI.MSOLogo, UIMSOLogo);
+			UIMSOLogo = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - UIMSOLogo Value is NULL\n", __FUNCTION__ ));
+		}
+
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - UIMSOLogo Object is NULL\n", __FUNCTION__ ));
+	}
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername") != NULL )
+	{
+		//Check whether this is comcast partner or not
+		if( 0 == strcmp( "comcast", partnerID ) )
+		{
+			syscfg_get(NULL, "user_name_3", PUiBrand->LocalUI.DefaultLoginUsername, sizeof(PUiBrand->LocalUI.DefaultLoginUsername));
+		}
+		else
+		{
+			DefaultLoginUsername = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginUsername")->valuestring;
+
+			if (DefaultLoginUsername != NULL)
+			{
+				AnscCopyString(PUiBrand->LocalUI.DefaultLoginUsername, DefaultLoginUsername);
+				DefaultLoginUsername = NULL;
+			}
+			else
+			{
+				CcspTraceWarning(("%s - DefaultLoginUsername Value is NULL\n", __FUNCTION__ ));
+			}
+		}
+	}
+	else
+	{
+		CcspTraceWarning(("%s - DefaultLoginUsername Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword") != NULL )
+	{
+		//Check whether this is comcast partner or not
+		if( 0 == strcmp( "comcast", partnerID ) )
+		{
+			syscfg_get(NULL, "user_password_3", PUiBrand->LocalUI.DefaultLoginPassword, sizeof(PUiBrand->LocalUI.DefaultLoginPassword));
+		}
+		else
+		{
+			DefaultLoginPassword = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword")->valuestring;
+
+			if (DefaultLoginPassword != NULL)
+			{
+				AnscCopyString(PUiBrand->LocalUI.DefaultLoginPassword, DefaultLoginPassword);
+				DefaultLoginPassword = NULL;
+			}
+			else
+			{
+				CcspTraceWarning(("%s - DefaultLoginPassword Value is NULL\n", __FUNCTION__ ));
+			}
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - DefaultLoginPassword Object is NULL\n", __FUNCTION__ ));
+	}
+
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.MSOLogoTitle") != NULL )
+	{
+		char *MSOLogoTitle = NULL;
+		MSOLogoTitle = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.MSOLogoTitle")->valuestring;
+
+		if (MSOLogoTitle != NULL)
+		{
+			AnscCopyString(PUiBrand->LocalUI.MSOLogoTitle, MSOLogoTitle);
+			MSOLogoTitle = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - MSOLogoTitle Value is NULL\n", __FUNCTION__ ));
+		}
+
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - MSOLogoTitle Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.HomeNetworkControl") != NULL )
+	{
+		char *HomeNetworkControl = NULL;
+		HomeNetworkControl = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.HomeNetworkControl")->valuestring;
+
+		if (HomeNetworkControl != NULL)
+		{
+			PUiBrand->LocalUI.HomeNetworkControl = FALSE;
+			if ( strcmp(HomeNetworkControl,"true") == 0)
+			{
+				PUiBrand->LocalUI.HomeNetworkControl= TRUE;
+				HomeNetworkControl = NULL;
+			}
+		}
+		else
+		{
+			CcspTraceWarning(("%s - HomeNetworkControl Value is NULL\n", __FUNCTION__ ));
+		}
+
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - HomeNetworkControl Object is NULL\n", __FUNCTION__ ));
+	}
 }
 
 ANSC_STATUS UpdateJsonParam
