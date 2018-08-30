@@ -162,17 +162,17 @@ COSA_DML_ETH_PORT_SINFO      g_EthIntSInfo[] =
         /* Upstream (WAN) ports */
         {DMSB_ETH_IF_NAME_DFT_WanRouting,   TRUE,   {0,0,0,0,0,0}},
         {DMSB_ETH_IF_NAME_DFT_WanBridging,  TRUE,   {0,0,0,0,0,0}},
+        {LAN_ETHERNET_SGMII0,               FALSE,  {0,0,0,0,0,0}},
+        {LAN_ETHERNET_SGMII1,               FALSE,  {0,0,0,0,0,0}},
+        {LAN_ETHERNET_RGMII2,               FALSE,  {0,0,0,0,0,0}},
+        {LAN_ETHERNET_RGMII3,               FALSE,  {0,0,0,0,0,0}},
+        {LAN_ETHERNET_MOCA,                 FALSE,  {0,0,0,0,0,0}},
         {SWITCH_PORT_2_NAME,                FALSE,  {0,0,0,0,0,0}},
         {SWITCH_PORT_3_NAME,                FALSE,  {0,0,0,0,0,0}},
         {SWITCH_PORT_4_NAME,                FALSE,  {0,0,0,0,0,0}},
         {SWITCH_PORT_5_NAME,                FALSE,  {0,0,0,0,0,0}},
         {SWITCH_PORT_6_NAME,                FALSE,  {0,0,0,0,0,0}},
-        {SWITCH_PORT_7_NAME,                FALSE,  {0,0,0,0,0,0}},
-        {LAN_ETHERNET_SGMII0,               FALSE,  {0,0,0,0,0,0}},
-        {LAN_ETHERNET_SGMII1,               FALSE,  {0,0,0,0,0,0}},
-        {LAN_ETHERNET_RGMII2,               FALSE,  {0,0,0,0,0,0}},
-        {LAN_ETHERNET_RGMII3,               FALSE,  {0,0,0,0,0,0}},
-        {LAN_ETHERNET_MOCA,                 FALSE,  {0,0,0,0,0,0}}
+        {SWITCH_PORT_7_NAME,                FALSE,  {0,0,0,0,0,0}}
 #endif
 #else
         /* Upstream (WAN) ports */
@@ -199,7 +199,7 @@ EthIntControlFuncs swFuncs = {
 
 int g_PortIDs[]={
 #if defined (MULTILAN_FEATURE)
-#if defined(_CBR_PRODUCT_REQ_) || defined(INTEL_PUMA7)
+#if defined(_CBR_PRODUCT_REQ_) || (defined(INTEL_PUMA7) && !defined (_ARRIS_XB6_PRODUCT_REQ_))
     CCSP_HAL_ETHSW_EthPort1,
     CCSP_HAL_ETHSW_EthPort2,
     CCSP_HAL_ETHSW_EthPort3,
@@ -208,7 +208,7 @@ int g_PortIDs[]={
     CCSP_HAL_ETHSW_EthPort6,
     CCSP_HAL_ETHSW_EthPort7,
     CCSP_HAL_ETHSW_EthPort8
-#elif defined(INTEL_PUMA7) //ARRISXB6-7331
+#elif defined(INTEL_PUMA7) && defined(_ARRIS_XB6_PRODUCT_REQ_) //ARRISXB6-7331
     CCSP_HAL_ETHSW_EthPort2,
     CCSP_HAL_ETHSW_EthPort1,
     CCSP_HAL_ETHSW_EthPort3,
@@ -224,7 +224,7 @@ int g_PortIDs[]={
     CCSP_HAL_ETHSW_EthPort4
 #endif
 #else
-#if defined(_CBR_PRODUCT_REQ_)
+#if defined(_CBR_PRODUCT_REQ_) || ( defined (INTEL_PUMA7) && !defined (_ARRIS_XB6_PRODUCT_REQ_))
     CCSP_HAL_ETHSW_EthPort1,
     CCSP_HAL_ETHSW_EthPort2,
     CCSP_HAL_ETHSW_EthPort3,
@@ -233,7 +233,7 @@ int g_PortIDs[]={
     CCSP_HAL_ETHSW_EthPort6,
     CCSP_HAL_ETHSW_EthPort7,
     CCSP_HAL_ETHSW_EthPort8
-#elif defined(INTEL_PUMA7) //ARRISXB6-7331
+#elif defined(INTEL_PUMA7) && defined(_ARRIS_XB6_PRODUCT_REQ_) //ARRISXB6-7331
     CCSP_HAL_ETHSW_EthPort2,
     CCSP_HAL_ETHSW_EthPort1,
     CCSP_HAL_ETHSW_EthPort3,
