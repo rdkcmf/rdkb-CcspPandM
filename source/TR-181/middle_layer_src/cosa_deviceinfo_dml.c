@@ -4781,6 +4781,252 @@ CodeBig_First_SetParamBoolValue
 }
 
 /**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        LONG
+        OAUTH_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     0 if succeeded;
+                1 if short of buffer size; (*pUlSize = required size)
+                -1 if not supported.
+
+**********************************************************************/
+static unsigned char OAUTHAuthMode[8] = "potd";
+
+static unsigned char OAUTHServerUrl[256] = "";
+
+static unsigned char OAUTHTokenEndpoint[256] = "";
+
+static unsigned char OAUTHClientId[16] = "";
+
+#define MAX_CS_LEN 32
+#define CS_CMD_FILE "/etc/mount-utils/getConfigFile.sh"
+#define CS_CMD "getConfigFile"
+#define CS_FILE_DIR "/tmp/.webui"
+#define CS_FILE_NAME "/tmp/.webui/rcdefal.lll"
+
+ULONG
+OAUTH_GetParamStringValue
+    (
+        ANSC_HANDLE        hInsContext,
+        char*              ParamName,
+        char*              pValue,
+        ULONG*             pUlSize
+    )
+{
+    FILE *fp = NULL;
+    LONG retval = 0;
+    int c, i;
+    int buflen, outlen;
+    char *bufptr = NULL;
+    char *tmpptr;
+    char *outptr = NULL;
+    char cmdbuf[256];
+
+    hInsContext = hInsContext;    // prevent compiler unused variable warning
+    if( AnscEqualString(ParamName, "AuthMode", TRUE) )
+    {
+        outptr = OAUTHAuthMode;
+    }
+    else if( AnscEqualString(ParamName, "ServerUrl", TRUE) == TRUE
+           && AnscEqualString(OAUTHAuthMode, "potd", TRUE) != TRUE )
+    {
+        outptr = OAUTHServerUrl;
+    }
+    else if( AnscEqualString(ParamName, "TokenEndpoint", TRUE) == TRUE
+           && AnscEqualString(OAUTHAuthMode, "potd", TRUE) != TRUE )
+    {
+        outptr = OAUTHTokenEndpoint;
+    }
+    else if( AnscEqualString(ParamName, "ClientId", TRUE) == TRUE
+           && AnscEqualString(OAUTHAuthMode, "potd", TRUE) != TRUE )
+    {
+        outptr = OAUTHClientId;
+    }
+    else if( AnscEqualString(ParamName, "ClientSecret", TRUE) == TRUE
+           && AnscEqualString(OAUTHAuthMode, "potd", TRUE) != TRUE )
+    {
+        buflen = MAX_CS_LEN; // see how much we need to allocate
+        bufptr = (unsigned char *)malloc( buflen + 1 ); // add 1 for NULL
+        if( bufptr )
+        {
+            mkdir( CS_FILE_DIR, S_IRWXU | S_IRWXG | S_IRWXO );    // we don't care about errors
+            *bufptr = 0;        // just NULL string
+            i = sizeof( cmdbuf );
+            snprintf( cmdbuf, i - 1, ". %s; %s %s", CS_CMD_FILE, CS_CMD, CS_FILE_NAME );
+            system( cmdbuf );
+            memset( cmdbuf, 0, i );
+            if( ( fp = fopen ( CS_FILE_NAME, "r" ) ) != NULL )
+            {
+                tmpptr = bufptr;
+                i = 0;
+                // exit on EOF or 0x0a
+                while( (c = fgetc( fp )) != EOF && c != 0x0a && i++ < buflen )
+                {
+                    *tmpptr++ = (char)c;
+                }
+                *tmpptr = 0;
+                fclose( fp );
+                outptr = bufptr;
+            }
+            else
+            {
+                CcspTraceWarning(("OAUTH: Unable to open %s for read/write\n", CS_FILE_NAME));
+            }
+            remove( CS_FILE_NAME );
+            outptr = bufptr;
+        }
+        else
+        {
+            retval = -1;
+        }
+    }
+    else
+    {
+        retval = -1;
+    }
+
+    if( retval == 0 && outptr != NULL )
+    {
+        outlen = strlen( outptr );
+        if( pValue && outlen < *pUlSize )
+        {
+            *pValue = 0;    // default to zero length output
+            AnscCopyString( pValue, outptr );
+        }
+        else
+        {
+            *pUlSize = outlen + 1;
+            retval = 1;
+        }
+    }
+    if( bufptr != NULL )
+    {
+        memset( bufptr, 0, buflen+1 );
+        free( bufptr );
+    }
+    return (ULONG)retval;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        OAUTH_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded,
+                FALSE if failed.
+
+**********************************************************************/
+BOOL
+OAUTH_SetParamStringValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    FILE *fp = NULL;
+    int inputlen;
+    int maxlen;
+    int buflen;
+    int i;
+    int c;
+    unsigned char *buf = NULL;
+    unsigned char *tmpptr;
+    char *inptr = NULL;
+    BOOL bRet = FALSE;
+
+    if( AnscEqualString(ParamName, "AuthMode", TRUE) )
+    {
+        maxlen = sizeof(OAUTHAuthMode);
+        inptr = OAUTHAuthMode;
+    }
+    else if( AnscEqualString(ParamName, "ServerUrl", TRUE) )
+    {
+        maxlen = sizeof(OAUTHServerUrl);
+        inptr = OAUTHServerUrl;
+    }
+    else if( AnscEqualString(ParamName, "TokenEndpoint", TRUE) )
+    {
+        maxlen = sizeof(OAUTHTokenEndpoint);
+        inptr = OAUTHTokenEndpoint;
+    }
+    else if( AnscEqualString(ParamName, "ClientId", TRUE) )
+    {
+        maxlen = sizeof(OAUTHClientId);
+        inptr = OAUTHClientId;
+    }
+    else if( AnscEqualString(ParamName, "ClientSecret", TRUE) )
+    {
+        // it's supported but do nothing
+        maxlen = 0;
+        inptr = NULL;
+    }
+    else
+    {
+        CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    }
+
+    if( inptr != NULL && pString != NULL && AnscSizeOfString( pString ) < maxlen )
+    {
+        AnscCopyString( inptr, pString );
+        bRet = TRUE;
+    }
+
+    return bRet;
+}
+
+/**********************************************************************
     caller:     owner of this object 
 
     prototype: 

@@ -1184,4 +1184,32 @@ MessageBusSource_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.OAUTH.
+    *  OAUTH_GetParamStringValue
+    *  OAUTH_SetParamStringValue
+
+***********************************************************************/
+ULONG
+OAUTH_GetParamStringValue
+
+    (
+        ANSC_HANDLE        hInsContext,
+        char*              ParamName,
+        char*              pValue,
+        ULONG*             pUlSize
+    );
+
+BOOL
+OAUTH_SetParamStringValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
 #endif

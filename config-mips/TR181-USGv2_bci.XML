@@ -1380,6 +1380,46 @@
                 </object>
 
 		<object>
+                        <name>OAUTH</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamStringValue>OAUTH_GetParamStringValue</func_GetParamStringValue>
+                                <func_SetParamStringValue>OAUTH_SetParamStringValue</func_SetParamStringValue>
+                            </functions>
+                            <parameters>
+                               <parameter>
+                                   <name>AuthMode</name>
+                                   <type>string(7)</type>
+                                   <syntax>string</syntax>
+                                   <writable>true</writable>
+                               </parameter>
+                               <parameter>
+                                   <name>ServerUrl</name>
+                                   <type>string(255)</type>
+                                   <syntax>string</syntax>
+                                   <writable>true</writable>
+                               </parameter>
+                               <parameter>
+                                   <name>TokenEndpoint</name>
+                                   <type>string(255)</type>
+                                   <syntax>string</syntax>
+                                   <writable>true</writable>
+                               </parameter>
+                               <parameter>
+                                   <name>ClientId</name>
+                                   <type>string(15)</type>
+                                   <syntax>string</syntax>
+                                   <writable>true</writable>
+                               </parameter>
+                               <parameter>
+                                   <name>ClientSecret</name>
+                                   <type>string(127)</type>
+                                   <syntax>string</syntax>
+                                   <writable>true</writable>
+                               </parameter>
+                            </parameters>
+                        </object>
+		<object>
                         <name>UniqueTelemetryId</name>
 
                         <objectType>object</objectType>
