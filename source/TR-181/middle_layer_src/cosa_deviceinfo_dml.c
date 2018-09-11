@@ -636,8 +636,12 @@ DeviceInfo_GetParamStringValue
 	/*Changes for RDKB-6560*/
    	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CMTS_MAC", TRUE))
     		{
+                    #if defined(_COSA_BCM_MIPS_)
+                    return -1;
+                    #else
 		    CosaDmlDiGetCMTSMac(NULL, pValue,pulSize);
         	    return 0;
+                    #endif
     		}
 	/*Changes for RDKB-6560 end*/
 	/*Changes for RDKB-5878*/

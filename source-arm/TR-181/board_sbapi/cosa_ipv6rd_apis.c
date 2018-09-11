@@ -64,7 +64,7 @@
         08/30/2011    initial revision.
 
 **************************************************************************/
-#if (defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_))
+#if (defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_) || defined(_COSA_BCM_MIPS_))
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -81,6 +81,12 @@
 #include "cosa_apis.h"
 #include "syscfg/syscfg.h"
 #include "cosa_ipv6rd_apis.h"
+
+#if defined(_COSA_BCM_MIPS_)
+#define INTERFACE "erouter0"
+#else
+#define INTERFACE "wan0"
+#endif
 
 #define MAX_LINE                1024
 
@@ -104,7 +110,7 @@ struct ipv6rd_conf {
 
 static struct ipv6rd_conf *g_ipv6rd_conf;
 
-#if (defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_))
+#if (defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_) || defined(_COSA_BCM_MIPS_))
 /* 
  * define USE_SYSTEM to use system() function
  */
@@ -556,11 +562,12 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
     /* if AddressSource is not specified, use wan0's ipv4 address (which is from ISP) */
     snprintf(addrsource, sizeof(addrsource), "%s", ifconf->AddressSource);
     if (addrsource[0] == '\0') {
-        if (ifname_to_ipaddr("wan0", addrsource, sizeof(addrsource)) != 0) {
+        if (ifname_to_ipaddr(INTERFACE, addrsource, sizeof(addrsource)) != 0) {
             syslog(LOG_ERR, "%s: Local address can't determined", __FUNCTION__);
             return -1;
         }
     }
+
 
     /* create 6rd tunnel and set 6rd-prefix */
 #if defined(USE_SYSTEM)
@@ -913,7 +920,7 @@ CosaDml_IPv6rdGetEntry(
     snprintf(pEntry->TunnelInterface, 
             sizeof(pEntry->TunnelInterface), "%s", ifconf->Alias);
     snprintf(pEntry->TunneledInterface, 
-            sizeof(pEntry->TunneledInterface), "%s", "wan0");
+            sizeof(pEntry->TunneledInterface), "%s",INTERFACE);
 
     return ANSC_STATUS_SUCCESS;
 }

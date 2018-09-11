@@ -93,7 +93,7 @@
 
 #ifdef _COSA_SIM_
 /*Removed code for simulator, because this is usg platform*/
-#elif  (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_)
+#elif  (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _COSA_BCM_MIPS_)
 
 #include "cosa_ethernet_apis_ext.h"
 #include "cosa_drg_common.h"
@@ -127,7 +127,7 @@ int _getMac(char* ifName, char* mac);
                         GLOBAL VARIABLES
 **************************************************************************/
 
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 
 #include "syscfg/syscfg.h"
 #include "ccsp_hal_ethsw.h" 
@@ -247,7 +247,7 @@ CosaDmlEthInit
 {
     ANSC_STATUS                     returnStatus;
 
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     UCHAR strResult[128]    = {0};
     UCHAR strMac[128]       = {0};
     ULONG i                 = 0;
@@ -345,7 +345,7 @@ CosaDmlEthPortGetEntry
         return ANSC_STATUS_FAILURE;
     }
 
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     if (ulIndex >= 0 && ulIndex < g_EthernetIntNum)
     {
         g_EthEntries[ulIndex].control->getCfg(g_EthEntries + ulIndex, &pEntry->Cfg);
@@ -1068,7 +1068,7 @@ int getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDinfo){
 
 #endif
 
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 int puma6_getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg)
 {
     CCSP_HAL_ETHSW_PORT         port        = *((PCCSP_HAL_ETHSW_PORT)eth->hwid);

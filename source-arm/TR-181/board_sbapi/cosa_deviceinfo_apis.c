@@ -107,7 +107,7 @@
 
 // this file is in integration_src.intel_usg_arm directory
 
-#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _PLATFORM_IPQ_)
+#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _PLATFORM_IPQ_ || _COSA_BCM_MIPS_)
 
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
@@ -130,7 +130,11 @@ extern  ANSC_HANDLE             bus_handle;
 #include "autoconf.h"     
  
 #define _ERROR_ "NOT SUPPORTED"
+#define _START_TIME_12AM_ "0"
+#define _END_TIME_3AM_ "10800"
 #define _SSH_ERROR_ "NOT SET"
+
+
 
 #define DMSB_TR181_PSM_WHIX_LogInterval                                 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.LogInterval"
 #define DMSB_TR181_PSM_WHIX_NormalizedRssiList                "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.NormalizedRssiList"
@@ -307,7 +311,7 @@ CosaDmlDiGetManufacturerOUI
     memset(strMaceMG,0,128);
 #ifdef _COSA_DRG_TPG_
     plat_GetFlashValue("macmgwan", strMaceMG);
-#elif _COSA_INTEL_USG_ARM_
+#elif (_COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_)
     //    SaPermanentDb_GetFactoryId(pValue);
     ProdDb_GetCmMacAddress(strMaceMG);
 #if 0
@@ -348,6 +352,7 @@ CosaDmlDiGetManufacturerOUI
         return ANSC_STATUS_SUCCESS;
 
 }
+#if !defined(_COSA_BCM_MIPS_)
 /*Changes for 6560*/
 ANSC_STATUS
 CosaDmlDiGetCMTSMac
@@ -368,6 +373,7 @@ CosaDmlDiGetCMTSMac
          }
 }
 /*Changes for 6560-end*/
+#endif
 
 ANSC_STATUS
 CosaDmlDiGetModelName
@@ -377,7 +383,7 @@ CosaDmlDiGetModelName
         ULONG*                      pulSize
     )
 {    
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 
     if ( platform_hal_GetModelName(pValue) != RETURN_OK)
         return ANSC_STATUS_FAILURE;
@@ -454,6 +460,10 @@ CosaDmlDiGetProductClass
 	{
 		 AnscCopyString(pValue, "XB6");
 	}
+#elif defined( _XF3_PRODUCT_REQ_)
+	{
+		AnscCopyString(pValue, "XF3");
+	}
 #else
 	{
 		AnscCopyString(pValue, "XB3");
@@ -478,7 +488,7 @@ CosaDmlDiGetSerialNumber
 #ifdef _COSA_DRG_TPG_
     plat_GetFlashValue("unitsn", unitsn);
     sprintf(pValue, "%c%c%c%c%c%c%c",unitsn[0],unitsn[1],unitsn[2],unitsn[3],unitsn[4],unitsn[5],unitsn[6]);
-#elif _COSA_INTEL_USG_ARM_
+#elif (_COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_)
 
     if (platform_hal_GetSerialNumber(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
@@ -496,7 +506,7 @@ CosaDmlDiGetHardwareVersion
     )
 {
 
-#ifdef _COSA_INTEL_USG_ARM_    
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_    
 
     if (platform_hal_GetHardwareVersion(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
@@ -581,7 +591,7 @@ CosaDmlDiGetProvisioningCode
 #ifdef _COSA_DRG_TPG_
     plat_GetFlashValue("unitsn", unitsn);
     sprintf(pValue, "%c%c%c%c%c%c%c",unitsn[0],unitsn[1],unitsn[2],unitsn[3],unitsn[4],unitsn[5],unitsn[6]);
-#elif _COSA_INTEL_USG_ARM_
+#elif (_COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_)
 
     if (platform_hal_GetSerialNumber(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
@@ -955,7 +965,43 @@ isValidInput
 }
 
 /* Maitenance window can be customized for bci routers */
+#if defined(_COSA_BCM_MIPS_)
+ANSC_STATUS
+CosaDmlDiGetFirmwareUpgradeStartTime
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    char value[25] = {0};
+    FILE *fp;
 
+    AnscCopyString(pValue, _START_TIME_12AM_);
+
+    fp = popen("cat /nvram/.FirmwareUpgradeStartTime", "r");
+    if (fp == NULL)
+    {
+        CcspTraceError(("ERROR '%s'\n","ERROR"));
+    }
+    else
+    {
+        while(fgets(value, 25, fp) != NULL)
+        {
+            AnscCopyString(pValue ,value);
+        }
+    }
+
+    if ( !value[0] )  // if file does not exist
+    {
+        CosaDmlDiSetFirmwareUpgradeStartTime( pValue );
+    }
+    pclose(fp);
+    *pulSize = AnscSizeOfString(pValue);
+    return ANSC_STATUS_SUCCESS;
+}
+
+#else
 ANSC_STATUS
 CosaDmlDiGetFirmwareUpgradeStartTime
     (
@@ -966,27 +1012,60 @@ CosaDmlDiGetFirmwareUpgradeStartTime
 {
     char value[25];
     FILE *fp;
-
     AnscCopyString(pValue, _ERROR_);
     memset(value,0,10);
-
     fp = popen("cat /nvram/.FirmwareUpgradeStartTime", "r");
     if (fp == NULL)
     {
         CcspTraceError(("ERROR '%s'\n","ERROR"));
         return ANSC_STATUS_FAILURE;
     }
-
     while(fgets(value, 25, fp) != NULL)
     {
         AnscCopyString(pValue ,value);
     }
-
     pclose(fp);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
+#endif
 
+#if defined(_COSA_BCM_MIPS_)
+ANSC_STATUS
+CosaDmlDiGetFirmwareUpgradeEndTime
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    char value[25] = {0};
+    FILE *fp;
+
+    AnscCopyString(pValue, _END_TIME_3AM_);
+
+    fp = popen("cat /nvram/.FirmwareUpgradeEndTime", "r");
+    if (fp == NULL)
+    {
+        CcspTraceError(("ERROR '%s'\n","ERROR"));
+    }
+    else
+    {
+        while(fgets(value, 25, fp) != NULL)
+        {
+            AnscCopyString(pValue ,value);
+        }
+    }
+
+    if ( !value[0] )  // if file does not exist
+    {
+        CosaDmlDiSetFirmwareUpgradeEndTime( pValue );
+    }
+    pclose(fp);
+    *pulSize = AnscSizeOfString(pValue);
+    return ANSC_STATUS_SUCCESS;
+}
+#else
 ANSC_STATUS
 CosaDmlDiGetFirmwareUpgradeEndTime
     (
@@ -997,27 +1076,23 @@ CosaDmlDiGetFirmwareUpgradeEndTime
 {
     char value[25];
     FILE *fp;
-
     AnscCopyString(pValue, _ERROR_);
     memset(value,0,10);
-
     fp = popen("cat /nvram/.FirmwareUpgradeEndTime", "r");
     if (fp == NULL)
     {
         CcspTraceError(("ERROR '%s'\n","ERROR"));
         return ANSC_STATUS_FAILURE;
     }
-
     while(fgets(value, 25, fp) != NULL)
     {
         AnscCopyString(pValue ,value);
     }
-
     pclose(fp);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
-
+#endif
 ANSC_STATUS
 CosaDmlDiSetFirmwareUpgradeStartTime (char* pString)
 {
@@ -1392,7 +1467,7 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
      }
      if( AnscEqualString(ParamName, "Total", TRUE))
      {
-#ifdef  _COSA_INTEL_USG_ARM_
+#if defined  _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 #if 0
          /* we want to get the real Physical memory size */
         FILE *fp;
@@ -1437,14 +1512,18 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
     	else
         return tmp;
 #else
+#if defined(_XF3_PRODUCT_REQ_)
+         return si.freeram*si.mem_unit/(1024*1024);
+    #else
          return si.freeram*si.mem_unit/(1024);
+#endif
 #endif
      }
 
 
      else if(AnscEqualString(ParamName, "Used", TRUE))
      {
-#ifdef _COSA_INTEL_USG_ARM_
+#if (defined _COSA_INTEL_USG_ARM_) || (defined  _COSA_BCM_MIPS_)
 	if ( platform_hal_GetUsedMemorySize(&tmp) != RETURN_OK )
         return 0;
     	else 

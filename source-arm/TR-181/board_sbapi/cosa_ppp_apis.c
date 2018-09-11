@@ -321,7 +321,7 @@ CosaPPPApiRemove(ANSC_HANDLE  hContext)
     return ANSC_STATUS_SUCCESS;
 }
 
-#elif ( defined _COSA_INTEL_USG_ARM_ )
+#elif ( defined _COSA_INTEL_USG_ARM_ ) || ( defined _COSA_BCM_MIPS_ )
 #include <utctx.h>
 #include <utctx_api.h>
 #include <utapi.h>
@@ -332,6 +332,12 @@ CosaPPPApiRemove(ANSC_HANDLE  hContext)
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <ctype.h>
+
+#if defined(_COSA_BCM_MIPS_)
+#define INTERFACE "erouter0"
+#else
+#define INTERFACE "wan0"
+#endif
 
 int safe_strcpy(char * dst, char * src, int dst_size);
 
@@ -398,7 +404,7 @@ CosaDmlPppInit
     )
 {
     _ansc_strcpy(g_ppp_info.ifname, "ppp0");
-    _ansc_strcpy(g_ppp_info.lower_ifname, "wan0");
+    _ansc_strcpy(g_ppp_info.lower_ifname,INTERFACE);
     _ansc_strcpy(g_ppp_info.ut_alias_name, "PPP_Interface_tr_alias");
 
     get_wan_proto(&g_ppp_info.last_wan_proto);
@@ -475,7 +481,11 @@ static int ml_cfg_2_be_struct(UtopiaContext * p_ctx, PCOSA_DML_PPP_IF_CFG p_in, 
                     CcspTraceWarning(("OK,  bridge service was stopped\n"));
                 }
 
+#if defined (_COSA_BCM_MIPS_)
+                system("ip link set erouter0 up");
+#else
                 system("ip link set wan0 up");
+#endif
                 commonSyseventSet("lan-start", "");
                 /*how strange, lan-start won't ifup lan0!!!*/
                 system("ip link set lan0 up");

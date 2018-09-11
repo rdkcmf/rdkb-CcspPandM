@@ -166,7 +166,7 @@ ANSC_STATUS lanSwBrPCtlRemoveFromVlan(PBRIDGE_PORT port, ULONG vlanId);
 
 #endif //_COSA_DRG_TPG_
 
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 //Linux interface functions and hwid structure
 typedef struct _linuxInterfaceID {
     char* ifname;

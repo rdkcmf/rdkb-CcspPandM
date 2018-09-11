@@ -71,7 +71,7 @@
 
 extern void* g_pDslhDmlAgent;
 
-#if ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_))
+#if ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_) || defined(_COSA_BCM_MIPS_))
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <ctype.h>
@@ -82,6 +82,12 @@ extern void* g_pDslhDmlAgent;
 #include "cosa_dhcpv6_apis.h"
 #include "cosa_ip_internal.h"
 #include "cosa_drg_common.h"
+
+#if defined(_COSA_BCM_MIPS_)
+#define INTERFACE "erouter0"
+#else
+#define INTERFACE "wan0"
+#endif
 
 #define MAX_IPIF_NUM  5
 /*this is the real backend buffers, the PCOSA_DATAMODEL_IP structure only stores stuff from WebGui or ACS, we use this buffer to track param changes..*/
@@ -124,7 +130,7 @@ IPIF_getEntry_for_Ipv6Pre
 
 BOOL CosaIpifGetSetSupported(char * pParamName)
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     char * not_supported_param_list[]= {"addentry", "delentry", /*"Enable",*/ "AutoIPEnable", \
         "Loopback", "ipv4addr_addentry", "ipv4addr_delentry", "Router", \
         "Anycast", "Status", "StaticType", "IPAddressStatus", "Prefix", "PrefixStatus", "PreferredLifetime", \
@@ -290,9 +296,14 @@ static int _is_in_linux_bridge(char * if_name, char * br_name)
                   The operation status..
 
 **********************************************************************/
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 
-#define COSA_USG_IF_NUM 4
+#ifdef _COSA_INTEL_USG_ARM_
+    #define COSA_USG_IF_NUM 4
+#endif
+#ifdef _COSA_BCM_MIPS_
+    #define COSA_USG_IF_NUM 3 // we only have 3 interfaces for XF3
+#endif
 
 typedef struct USG_IF_CFG
 {
@@ -305,7 +316,9 @@ typedef struct USG_IF_CFG
 USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
 {
     {"erouter0",    COSA_DML_LINK_TYPE_EthLink, TRUE},
+#ifdef _COSA_INTEL_USG_ARM_
     {"wan0",        COSA_DML_LINK_TYPE_DOCSIS,  TRUE},  /*DH  wan0 should never appear here -- CM extensions are for DOCSIS interfaces */
+#endif
     {"lo",          COSA_DML_LINK_TYPE_EthLink, FALSE}, /*DH  change the value of gDmsbIpIfLoopbackInstNum too, if "lo" is moved to a different location */
     /*
      *  Multi-LAN -- still have to keep primary LAN interface for IPv6 settings -- overlapping with MLAN configuration
@@ -337,7 +350,7 @@ CosaDmlIpInit
         PANSC_HANDLE                phContext
     )
 {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     ANSC_STATUS                     returnStatus;
     int i;
     for(i = 0; i < COSA_USG_IF_NUM; i++)
@@ -1463,7 +1476,7 @@ IPIF_getEntry_for_Ipv6Pre
             break;
 
 #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION        
-  #ifdef _COSA_INTEL_USG_ARM_
+  #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
         /* We just put this prefix into erouter0 && brlan0 entry */
         if ( ulIndex > 0 && ulIndex != 3)
             break;
@@ -2020,7 +2033,7 @@ CosaDmlIpIfSetCfg
 
             AnscCopyString(p_be_buf_cfg->Alias, pCfg->Alias);
         }
-    #ifdef _COSA_INTEL_USG_ARM_
+    #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
         if (pCfg->MaxMTUSize != p_be_buf_cfg->MaxMTUSize)
         {
             /*
@@ -2228,7 +2241,7 @@ CosaDmlIpIfReset
         {
             system("sysevent set lan-restart");
         }
-        else if (strstr((char *)g_ipif_names[ulInstanceNumber-1], "wan0"))
+        else if (strstr((char *)g_ipif_names[ulInstanceNumber-1],INTERFACE))
         {
             system("sysevent set wan-restart");        
         }
@@ -2475,7 +2488,7 @@ CosaDmlIpIfSetV4AddrValues
     }
     else
     {
-    #ifdef _COSA_INTEL_USG_ARM_
+    #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
         return ANSC_STATUS_FAILURE;
     #else
         /*this API will never be called*/

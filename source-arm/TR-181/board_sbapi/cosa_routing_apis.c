@@ -482,7 +482,7 @@ static void Utopia_Free(UtopiaContext * ctx, ULONG commit)
 
 #endif
 
-#elif ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_))
+#elif ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_) || defined(_COSA_BCM_MIPS_))
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2236,7 +2236,7 @@ CosaDmlRoutingGetRouteInfoIf
     return pEntry;
 }
 
-#elif ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_))
+#elif ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_) || defined(_COSA_BCM_MIPS_))
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2747,9 +2747,13 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 			entryCnt ++;
 		}
     }
-	v_secure_pclose(fp);
-	//Fix for issue RDKB-367 
+	pclose(fp);
+	//Fix for issue RDKB-367
+#if defined(_COSA_BCM_MIPS_)
+    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table main");
+#else 
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table erouter");
+#endif
     if ((fp = popen(cmd, "r")) == NULL)
         return -1;
 	
@@ -2946,10 +2950,15 @@ Route6_GetIfNames(char iflist[][IFNAME_SIZ], int *nlist)
 
         snprintf(iflist[0], IFNAME_SIZ, "%s", "erouter0");
         snprintf(iflist[1], IFNAME_SIZ, "%s", "brlan0");
+#if defined (_COSA_BCM_MIPS_)
+        snprintf(iflist[2], IFNAME_SIZ, "%s", "lo");
+        *nlist = 3;
+#else
         snprintf(iflist[2], IFNAME_SIZ, "%s", "wan0");
         snprintf(iflist[3], IFNAME_SIZ, "%s", "lo");
 
         *nlist = 4;
+#endif
 #if defined(USE_TR181_PATH)
     }
     else
@@ -3472,9 +3481,15 @@ AddRouteEntryToKernel(void *arg)
     
     for (index = 0; index < Config_Num; index++) {
         if (Router_Alias[index].Enabled) { // add route entry to kernel when initialize
-            snprintf(cmd_buf, sizeof(cmd_buf), "ip route add %s/%d via %s table erouter metric %d", 
+#if defined (_COSA_BCM_MIPS_)
+                    snprintf(cmd_buf, sizeof(cmd_buf), "ip route add %s/%d via %s ",
+                    sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)),
+                    sroute[index].gateway);
+#else
+     	            snprintf(cmd_buf, sizeof(cmd_buf), "ip route add %s/%d via %s table erouter metric %d", 
                     sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)), 
                     sroute[index].gateway, sroute[index].metric);
+#endif
             if (system(cmd_buf) != 0)
             {
                 Router_Alias[index].Enabled = FALSE;
@@ -3841,6 +3856,16 @@ CosaDmlRoutingAddV4Entry
     CcspTraceWarning(("---CosaDmlRoutingAddV4Entry gateway is %s\n", sroute[Num_V4Entry-1].gateway));
     CcspTraceWarning(("---CosaDmlRoutingAddV4Entry name is %s\n", sroute[Num_V4Entry-1].name));
 
+#if defined (_COSA_BCM_MIPS_)
+         /* add new route entry */
+    snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s ",
+                        pEntry->DestIPAddress.Dot[0],
+            pEntry->DestIPAddress.Dot[1],
+            pEntry->DestIPAddress.Dot[2],
+            pEntry->DestIPAddress.Dot[3],
+                        Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
+                        inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)));
+#else
     /* add new route entry */
     metric = (pEntry->ForwardingMetric)?pEntry->ForwardingMetric+1:pEntry->ForwardingMetric;
     snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s table erouter metric %d ", 
@@ -3851,6 +3876,7 @@ CosaDmlRoutingAddV4Entry
 			Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
 			inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)),
 			metric);
+#endif
 
     if(AnscSizeOfString(pEntry->Interface))
     {
@@ -3977,8 +4003,13 @@ CosaDmlRoutingDelV4Entry
 
         /* delete the previous one */
         uindex = Router_Alias[index].Index;
+#if defined (_COSA_BCM_MIPS_)
+                snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip,
+                        Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
+#else
     	snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s table erouter metric %d ", sroute[uindex].dest_lan_ip, 
 			Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric);
+#endif
 
     	if(AnscSizeOfString(sroute[uindex].dest_intf))
     	{
@@ -4112,8 +4143,13 @@ CosaDmlRoutingSetV4Entry
 
         /* First delete the previous one */
         uindex = Router_Alias[index].Index;
+#if defined (_COSA_BCM_MIPS_)
+                snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip,
+                        Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
+#else
     	snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s table erouter metric %d ", sroute[uindex].dest_lan_ip, 
 			Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric);
+#endif
 
     	if(AnscSizeOfString(sroute[uindex].dest_intf))
     	{
@@ -4153,6 +4189,15 @@ CosaDmlRoutingSetV4Entry
                 pEntry->GatewayIPAddress.Dot[3]
                 );
         strncpy(sroute[uindex].dest_intf, pEntry->Interface, 9);
+#if defined (_COSA_BCM_MIPS_)
+                snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s ",
+                 pEntry->DestIPAddress.Dot[0],
+                 pEntry->DestIPAddress.Dot[1],
+                 pEntry->DestIPAddress.Dot[2],
+                 pEntry->DestIPAddress.Dot[3],
+                 Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
+                 inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)));
+#else
 
         metric = (pEntry->ForwardingMetric)?pEntry->ForwardingMetric+1:pEntry->ForwardingMetric;
         snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s table erouter metric %d ", 
@@ -4163,6 +4208,7 @@ CosaDmlRoutingSetV4Entry
                  Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
                  inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)),
                  metric);
+#endif
 
         if(AnscSizeOfString(pEntry->Interface))
         {

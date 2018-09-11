@@ -1693,6 +1693,8 @@ void restoreAllDBs()
 #if defined (_ARRIS_XB6_PRODUCT_REQ_)
 	system("rm -f /nvram/etc/passwd"); //ARRISXB6-7330
 	system( "arris_rpc_client arm nvm_reset" ); //ARRISXB6-7323
+#elif defined(_COSA_BCM_MIPS_)
+        system("xf3_erase_nvram");
 #else
 	system("restoreAllDBs"); //Perform factory reset on other components
 #endif
@@ -3364,8 +3366,12 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
  {"Device.WiFi.SSID.1.Enable", acSetSSIDString, ccsp_boolean}, 
  {"Device.WiFi.SSID.2.Enable", acSetSSIDString, ccsp_boolean}};
  
- parameterValStruct_t valCommit[] = { 
+ parameterValStruct_t valCommit[] = {
+#ifdef _XF3_PRODUCT_REQ_
+ {"Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, {"Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, {"Device.WiFi.X_CISCO_COM_ResetRadios", "true", ccsp_boolean} };
+#else 
  {"Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, {"Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean} };
+#endif
  
     // All the cases Radio should get update since transition will happen during full - psedo - router
     ret = CcspBaseIf_setParameterValues
@@ -3405,8 +3411,12 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
                                 ppComponents[0]->componentName, 
                                 ppComponents[0]->dbusPath,
                                 0, 0x0,   /* session id and write id */
-                                valCommit, 
-                                2, 
+                                valCommit,
+#ifdef _XF3_PRODUCT_REQ_
+                                sizeof(valCommit)/sizeof(*valCommit),
+#else 
+                                2,
+#endif 
                                 TRUE,   /* no commit */
                                 &faultParam
                         );      
@@ -3702,8 +3712,19 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         else
         {
             syslog_systemlog("Local Network", LOG_NOTICE, "Status change: Bridge mode");
+#ifdef _XF3_PRODUCT_REQ_
+            bEnable = 3;
+        }
+
+        char buf[7] = {0};
+        snprintf(buf,sizeof(buf),"%d",bEnable);
+        openCommonSyseventConnection();
+        sysevent_set(commonSyseventFd, commonSyseventToken, "bridge_mode",buf,0);
+        configBridgeMode(bEnable);
+#else
             bEnable = 1;
         }
+#endif
         
         //configBridgeMode(bEnable);
 
@@ -3857,8 +3878,11 @@ static void configBridgeMode(int bEnable) {
 //         varstruct.parameterName = brpdm;
 //         varstruct.parameterValue = enableStr;
 //         varstruct.type = ccsp_boolean;
+#if (!defined _XF3_PRODUCT_REQ_)
         g_SetParamValueBool(brpdm, bEnable);
-
+#elif defined( _XF3_PRODUCT_REQ_)
+        g_SetParamValueBool(brpdm, (bEnable>0?true:false));
+#endif
         vsystem("/bin/sh /etc/webgui.sh &");
 
         if (ppComponents == NULL && initWifiComp()) {

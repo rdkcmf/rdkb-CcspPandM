@@ -913,6 +913,12 @@ CosaDmlDnsRelayGetServer
 #include <syscfg/syscfg.h>
 #define COSA_DNS_SYSCFG_NAMESPACE NULL
 
+#if defined(_COSA_BCM_MIPS_)
+#define INTERFACE "erouter0"
+#else
+#define INTERFACE "wan0"
+#endif
+
 BOOLEAN bReplyEnable = TRUE;
 BOOLEAN bClientEnable = TRUE;
 
@@ -1492,10 +1498,10 @@ CosaDmlDnsClientAddServer
     g_dns_client_server[g_DnsClientServerNum].InstanceNumber  = pEntry->InstanceNumber;  
     g_dns_client_server[g_DnsClientServerNum].bEnabled        = pEntry->bEnabled = TRUE;        
     g_dns_client_server[g_DnsClientServerNum].Status          = pEntry->Status = COSA_DML_DNS_STATUS_Enabled;        
-    g_dns_client_server[g_DnsClientServerNum].Type            = pEntry->Type = COSA_DML_DNS_ADDR_SRC_Static; 
-    AnscCopyString(g_dns_client_server[g_DnsClientServerNum].Interface, "wan0" );
-    AnscCopyString(pEntry->Interface, "wan0" );
-    AnscCopyString(g_wan_info.domainname, "wan0" );
+    g_dns_client_server[g_DnsClientServerNum].Type            = pEntry->Type = COSA_DML_DNS_ADDR_SRC_Static;
+    AnscCopyString(g_dns_client_server[g_DnsClientServerNum].Interface,INTERFACE );
+    AnscCopyString(pEntry->Interface,INTERFACE );
+    AnscCopyString(g_wan_info.domainname,INTERFACE );
     
     g_wan_info.wan_proto = STATIC;
         
@@ -2511,7 +2517,7 @@ CosaDmlDnsRelayGetServer
     return ANSC_STATUS_CANT_FIND;
 }
 
-#elif ( defined(_COSA_INTEL_USG_ARM_) )
+#elif ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_BCM_MIPS_) )
 
 #include <utctx_api.h>
 #include <utapi.h>
