@@ -1246,6 +1246,11 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
 
     if (AnscEqualString(ParamName, "HTTPPort", TRUE))
     {
+        if (IsPortInUse(uValue))
+        {
+            CcspTraceWarning(("Port already in use\n"));
+            return FALSE;
+        }
         pMyObject->HTTPPort = uValue;
         pMyObject->WebServerChanged = TRUE;
 
@@ -1254,6 +1259,11 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
 
     if (AnscEqualString(ParamName, "HTTPSPort", TRUE))
     {
+        if (IsPortInUse(uValue))
+        {
+            CcspTraceWarning(("Port already in use\n"));
+            return FALSE;
+        }
         pMyObject->HTTPSPort = uValue;
         pMyObject->WebServerChanged = TRUE;
 
@@ -1614,6 +1624,8 @@ X_CISCO_COM_DeviceControl_Rollback
     pMyObject->bResetChanged = 0;
     pMyObject->bFactoryResetChanged = 0;
     pMyObject->WebServerChanged = FALSE;
+    CosaDmlDcGetHTTPPort(NULL, &pMyObject->HTTPPort);
+    CosaDmlDcGetHTTPSPort(NULL, &pMyObject->HTTPSPort);
 
     return 0;
 }

@@ -3621,3 +3621,49 @@ int CheckAndGetDevicePropertiesEntry( char *pOutput, int size, char *sDeviceProp
     return ret;
 }
 
+BOOL IsPortInUse(unsigned int port)
+{
+    char path[sizeof("/proc/net/tcp6")] = {0};
+    FILE *f = NULL;
+    const char *fmt = "%*d: %64[0-9A-Fa-f]:%x %*x:%*x %*x "
+                      "%*x:%*x %*x:%*x %*x %*d %*d %llu";
+    char line[256], addr[68];
+    char *proto[2] = {"tcp","tcp6"};
+    unsigned int tmpPort;
+    long long uint64Inode;
+    int r,i;
+    WebServConf_t conf;
+
+    if (LoadWebServConf(&conf) == 0)
+    {
+        if ((port == conf.httpport) || (port == conf.httpsport))
+            return  FALSE;
+    }
+
+    for (i=0; i<2; i++)
+    {
+        sprintf(path,"/proc/net/%s",proto[i]);
+
+        f = fopen (path,"r");
+        if (f != NULL)
+        {
+            while (fgets(line, 256, f))
+            {
+                r = sscanf(line, fmt, addr, &tmpPort, &uint64Inode);
+                if (r != 3)
+                    continue;
+
+                if (tmpPort == port)
+                {
+                    fclose(f);
+                    return TRUE;
+                }
+            }
+            fclose(f);
+            f = NULL;
+        }
+    }
+
+    return FALSE;
+}
+
