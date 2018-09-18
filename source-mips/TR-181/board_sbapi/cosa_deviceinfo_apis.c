@@ -2517,7 +2517,8 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 		char *smsSupport = NULL;
 		char *myAccountAppSupport = NULL;
 		char *DefaultLocalIPv4SubnetRange = NULL;
-		char *DefaultAdminIP = NULL; 
+		char *DefaultAdminIP = NULL;
+		char *DefaultLanguage = NULL; 
 		char *WifiMSOLogo = NULL;
 		char *DefaultLoginPassword = NULL;
 		char *DefaultLoginUsername = NULL;
@@ -3037,6 +3038,62 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 					CcspTraceWarning(("%s - wifiWelcomeMessage Object is NULL\n", __FUNCTION__ ));
 				}
 
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange") != NULL )
+                                {
+                                        //Check whether this is comcast partner or not
+                                        if( 0 == strcmp( "comcast", partnerID ) )
+                                        {
+                                                syscfg_get(NULL, "lan_netmask", PUiBrand->DefaultLocalIPv4SubnetRange, sizeof(PUiBrand->DefaultLocalIPv4SubnetRange));
+                                        }
+                                        else
+                                        {
+                                                DefaultLocalIPv4SubnetRange = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange")->valuestring;
+
+                                                if (DefaultLocalIPv4SubnetRange != NULL)
+                                                {
+                                                        AnscCopyString(PUiBrand->DefaultLocalIPv4SubnetRange, DefaultLocalIPv4SubnetRange);
+                                                        DefaultLocalIPv4SubnetRange = NULL;
+                                                }
+                                                else
+                                                {
+                                                        CcspTraceWarning(("%s - DefaultLocalIPv4SubnetRange Value is NULL\n", __FUNCTION__ ));
+                                                }
+                                        }
+                                }
+
+                                else
+                                {
+                                        CcspTraceWarning(("%s - DefaultLocalIPv4SubnetRange Object is NULL\n", __FUNCTION__ ));
+                                }
+	
+				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLanguage") != NULL )
+                                {
+                                        //Check whether this is comcast partner or not
+                                        if( 0 == strcmp( "comcast", partnerID ) )
+                                        {
+                                                syscfg_get(NULL, "language", PUiBrand->DefaultLanguage, sizeof(PUiBrand->DefaultLanguage));
+                                        }
+                                        else
+                                        {
+                                                DefaultLanguage = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLanguage")->valuestring;
+
+                                                if (DefaultLanguage != NULL)
+                                                {
+                                                        AnscCopyString(PUiBrand->DefaultLanguage, DefaultLanguage);
+                                                        DefaultLanguage = NULL;
+                                                }
+                                                else
+                                                {
+                                                        CcspTraceWarning(("%s - DefaultLanguage Value is NULL\n", __FUNCTION__ ));
+                                                }
+                                        }
+                                }
+
+                                else
+                                {
+                                        CcspTraceWarning(("%s - DefaultLanguage Object is NULL\n", __FUNCTION__ ));
+                                }
+	
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP") != NULL )
 				{
 					//Check whether this is comcast partner or not
@@ -3063,34 +3120,6 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				else
 				{
 					CcspTraceWarning(("%s - DefaultAdminIP Object is NULL\n", __FUNCTION__ ));
-				}
-
-				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange") != NULL )
-				{
-					//Check whether this is comcast partner or not
-					if( 0 == strcmp( "comcast", partnerID ) )
-					{
-						syscfg_get(NULL, "lan_netmask", PUiBrand->DefaultLocalIPv4SubnetRange, sizeof(PUiBrand->DefaultLocalIPv4SubnetRange));
-					}
-					else
-					{
-						DefaultLocalIPv4SubnetRange = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange")->valuestring; 
-						
-						if (DefaultLocalIPv4SubnetRange != NULL) 
-						{
-							AnscCopyString(PUiBrand->DefaultLocalIPv4SubnetRange, DefaultLocalIPv4SubnetRange);
-							DefaultLocalIPv4SubnetRange = NULL;
-						}	
-						else
-						{
-							CcspTraceWarning(("%s - DefaultLocalIPv4SubnetRange Value is NULL\n", __FUNCTION__ ));
-						}
-					}
-				}
-
-				else
-				{
-					CcspTraceWarning(("%s - DefaultLocalIPv4SubnetRange Object is NULL\n", __FUNCTION__ ));
 				}
 
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation") != NULL )

@@ -7683,7 +7683,35 @@ RDKB_UIBranding_GetParamStringValue
 	PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 	PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
 	
-	 if( AnscEqualString(ParamName, "DefaultAdminIP", TRUE))
+	if( AnscEqualString(ParamName, "DefaultLocalIPv4SubnetRange", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->DefaultLocalIPv4SubnetRange) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->DefaultLocalIPv4SubnetRange);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->DefaultLocalIPv4SubnetRange)+1;
+                        return 1;
+                }
+
+        }
+	if( AnscEqualString(ParamName, "DefaultLanguage", TRUE))
+        {
+                if ( AnscSizeOfString(pBindObj->DefaultLanguage) < *pulSize)
+                {
+                        AnscCopyString( pValue, pBindObj->DefaultLanguage);
+                        return 0;
+                }
+                else
+                {
+                        *pulSize = AnscSizeOfString(pBindObj->DefaultLanguage)+1;
+                        return 1;
+                }
+
+        }
+	if( AnscEqualString(ParamName, "DefaultAdminIP", TRUE))
         {
 		if ( AnscSizeOfString(pBindObj->DefaultAdminIP) < *pulSize)
        		{
@@ -7697,20 +7725,7 @@ RDKB_UIBranding_GetParamStringValue
        		}
 
         } 
-	if( AnscEqualString(ParamName, "DefaultLocalIPv4SubnetRange", TRUE))
-        {
-		if ( AnscSizeOfString(pBindObj->DefaultLocalIPv4SubnetRange) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->DefaultLocalIPv4SubnetRange);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->DefaultLocalIPv4SubnetRange)+1;
-           		return 1;
-       		}
-
-        }
+	
 	 return -1;
 }
 
@@ -7725,7 +7740,27 @@ RDKB_UIBranding_SetParamStringValue
         char*                       pString
     )
 {
+	PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+        PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
+        char PartnerID[PARTNER_ID_LEN] = {0};
+
+   if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
+   {
+
+         if( AnscEqualString(ParamName, "DefaultLanguage", TRUE) )
+            {
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLanguage",PartnerID,pString))
+                        {
+                                memset( pBindObj->DefaultLanguage, 0, sizeof( pBindObj->DefaultLanguage ));
+                                AnscCopyString( pBindObj->DefaultLanguage, pString );
+                                return TRUE;
+                        }
+
+            }
+
     return FALSE;
+   }
+
 }
 
 /***********************************************************************

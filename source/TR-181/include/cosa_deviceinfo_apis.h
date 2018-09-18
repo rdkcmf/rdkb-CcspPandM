@@ -204,6 +204,7 @@ _COSA_DATAMODEL_RDKB_UIBRANDING_CLASS_CONTENT
     COSA_DATAMODEL_RDKB_CLOUDUI     CloudUI;
 	CHAR			DefaultAdminIP[512];
     CHAR			DefaultLocalIPv4SubnetRange[512];
+    CHAR                        DefaultLanguage[512];
     CHAR			PauseScreenFileLocation[512];
     BOOL			AllowEthernetWAN;
 }
