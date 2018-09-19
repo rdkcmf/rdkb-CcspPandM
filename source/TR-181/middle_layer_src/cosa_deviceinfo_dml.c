@@ -878,6 +878,169 @@ DeviceInfo_SetParamUlongValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        AccountInfo_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pulSize
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue
+                The buffer of returned string value;
+
+                ULONG*                      pulSize
+                The buffer of returned string size;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+#define ACCOUNT_ID_SIZE 32
+
+ULONG
+AccountInfo_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "AccountID", TRUE))
+    {
+        /* collect value */
+           char buff[ACCOUNT_ID_SIZE]={'\0'};
+
+           syscfg_get( NULL, "AccountID", buff, sizeof(buff));
+           if( buff != NULL )
+           {
+                AnscCopyString(pValue,  buff);
+                *pulSize = AnscSizeOfString( pValue );
+                return 0;
+           }
+           return -1;
+    }
+
+    return -1;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        AccountInfo_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+AccountInfo_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    BOOL bReturnValue = FALSE;
+    
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "AccountID", TRUE))
+    {
+        /* collect value */
+           char buff[ACCOUNT_ID_SIZE]={'\0'};
+           int idlen = strlen(pString)-1;
+           int i;
+
+           if ( idlen > ACCOUNT_ID_SIZE )
+           {
+                CcspTraceError(("%s Account ID size is too large %d characters..!! \n",__FUNCTION__, idlen));
+                bReturnValue = FALSE;
+           }
+           else
+           {
+                snprintf(buff,sizeof(buff),"%s",pString);
+
+                for(i=0; i<=idlen; ++i)
+                {
+                   if(isalnum(buff[i]) == 0 && buff[i] != '_' && buff[i] != '-')
+                   {
+                       CcspTraceError(("[%s] Account ID is not alphanumeric contains special characters...!!\n",__FUNCTION__));
+                       bReturnValue = FALSE;
+                       break;
+                   }
+                   else
+                   {
+                       bReturnValue = TRUE;
+                   }
+               }
+               if(bReturnValue == TRUE)
+               {
+                    CcspTraceInfo(("[%s] Account ID is alphanumeric...!!", __FUNCTION__));
+                    if (syscfg_set(NULL, "AccountID", pString) != 0)
+                    {
+                        CcspTraceError(("syscfg_set failed for AccountID \n", __FUNCTION__));
+                        bReturnValue = FALSE;
+                    }
+                    else
+                    {
+                        if (syscfg_commit() != 0)
+                        {
+                             CcspTraceError(("syscfg_commit failed for AccountID \n", __FUNCTION__));
+                             bReturnValue = FALSE;
+                        }
+                        bReturnValue = TRUE;
+                    }         
+                }
+           }
+    }
+    else
+    {
+           CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+           bReturnValue = FALSE;
+    }
+
+    return bReturnValue;
+}
+
 /**********************************************************************  
 
     caller:     owner of this object 
