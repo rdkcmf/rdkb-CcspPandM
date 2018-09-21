@@ -5702,7 +5702,18 @@ Feature_SetParamBoolValue
           CcspTraceInfo(("***BLE_DISABLED***\n"));
        }
        if( !ble_Enable(status))
-       { 
+       {
+          if (syscfg_set(NULL, "BLEEnabledOnBoot", status==BLE_ENABLE?"true":"false") != 0) 
+          {
+             AnscTraceWarning(("syscfg_set BLEEnabledOnBoot failed\n"));
+          }
+          else
+          {
+             if (syscfg_commit() != 0)
+             {
+                AnscTraceWarning(("syscfg_commit BLEEnabledOnBoot failed\n"));
+             }
+          }
           return TRUE;
        }
 #else
