@@ -8744,11 +8744,9 @@ RPC_SetParamUlongValue
     if( AnscEqualString(ParamName, "RebootPendingNotification", TRUE))
     {
         /* collect value */
-#ifdef PARODUS_ENABLE
         char buff[64] = {0};
         sprintf(buff,"%d",uValue);
 	Send_Notification_Task(buff);
-#endif
         return TRUE;
     }	       
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */

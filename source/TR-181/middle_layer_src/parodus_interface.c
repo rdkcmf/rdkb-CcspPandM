@@ -16,7 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-#ifdef PARODUS_ENABLE
 //#include "ssp_global.h"
 #include "ansc_platform.h"
 #include "ccsp_base_api.h"
@@ -478,5 +477,3 @@ void Send_Notification_Task(char* value)
 		CcspTraceInfo(("Notification thread created Successfully\n"));
 	}
 }
-
-#endif

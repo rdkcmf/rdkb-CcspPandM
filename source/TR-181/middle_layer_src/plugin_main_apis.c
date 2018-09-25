@@ -365,13 +365,10 @@ CosaBackEndManagerInitialize
     
     CheckAndSetRebootReason();
 
-#ifdef PARODUS_ENABLE
-
     printf("Calling PARODUS!\n");
     CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PARODUS call!\n")); 
     initparodusTask();
 
-#endif    
     return returnStatus;
 }
 
