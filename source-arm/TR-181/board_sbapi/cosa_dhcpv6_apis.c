@@ -76,6 +76,12 @@
 extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
+
+#if defined (INTEL_PUMA7)
+//Intel Proposed RDKB Generic Bug Fix from XB6 SDK
+#define NO_OF_RETRY 90  /*No of times the file will poll for TLV config file*/
+#endif
+
 #if defined _COSA_SIM_  || defined _COSA_DRG_TPG_
 
 COSA_DML_DHCPCV6_FULL  g_dhcpv6_client[] =
@@ -2240,6 +2246,9 @@ static int _dibbler_client_operation(char * arg)
 {
     char cmd[256] = {0};
     char out[256] = {0};
+#if defined (INTEL_PUMA7)
+    int watchdog = NO_OF_RETRY;
+#endif
 
     if (!strncmp(arg, "stop", 4))
     {
@@ -2270,6 +2279,26 @@ static int _dibbler_client_operation(char * arg)
         CcspTraceInfo(("%s start\n", __func__));
 
 #if defined(INTEL_PUMA7) || defined(_COSA_BCM_ARM_)
+
+#if defined(INTEL_PUMA7)
+        //Intel Proposed RDKB Generic Bug Fix from XB6 SDK      
+        /* Waiting for the TLV file to be parsed correctly so that the right erouter mode can be used in the code below.
+        For ANYWAN please extend the below code to support the case of TLV config file not being there. */
+      do{
+         sprintf(cmd, "sysevent get TLV202-status");
+         _get_shell_output(cmd, out, sizeof(out));
+         fprintf( stderr, "\n%s:%s(): Waiting for CcspGwProvApp to parse TLV config file\n", __FILE__, __FUNCTION__);
+         sleep(1);//sleep(1) is to avoid lots of trace msgs when there is latency
+         watchdog--;
+        }while((!strstr(out,"success")) && (watchdog != 0));
+
+        if(watchdog == 0)
+        {
+            //When 60s have passed and the file is still not configured by CcspGwprov module
+            fprintf(stderr, "\n%s()%s(): TLV data has not been initialized by CcspGwProvApp.Continuing with the previous configuration\n",__FILE__, __FUNCTION__);  
+        }
+#endif
+		
         sprintf(cmd, "syscfg get last_erouter_mode");
         _get_shell_output(cmd, out, sizeof(out));
 	/* TODO: To be fixed by Comcast
