@@ -1490,7 +1490,7 @@ BOOL Service_IsDomainStringHaveRepeatedWord ( char* pStringDomain )
 {
 	struct detail stDetailArray[ 64 ] = { 0 };
 	char   		  acSubstring[ 256 ]  = { 0 };
-	int    		  i, j, count;
+	int    		  i = 0, j= 0, count = 0;
 
 	memset( &stDetailArray, 0, sizeof( stDetailArray  ) );
 	
