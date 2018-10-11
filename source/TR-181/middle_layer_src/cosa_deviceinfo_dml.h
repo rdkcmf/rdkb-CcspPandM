@@ -789,6 +789,31 @@ RPC_SetParamStringValue
 
  APIs for Object:
 
+    DeviceInfo.X_RDKCENTRAL-COM_SwitchToUDHCPC.
+
+    *  SwitchToUDHCPC_GetParamBoolValue
+    *  SwitchToUDHCPC_SetParamBoolValue
+    
+***********************************************************************/
+BOOL
+SwitchToUDHCPC_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+SwitchToUDHCPC_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+/***********************************************************************
+
+ APIs for Object:
+
     DeviceInfo.X_RDKCENTRAL-COM_Syndication.
 
     *  Syndication_GetParamStringValue

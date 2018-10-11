@@ -789,6 +789,22 @@
           </parameters>
         </object>
         <object>
+          <name>X_RDKCENTRAL-COM_SwitchToUDHCPC</name>
+          <objectType>object</objectType>
+          <functions>
+            <func_GetParamBoolValue>SwitchToUDHCPC_GetParamBoolValue</func_GetParamBoolValue>
+            <func_SetParamBoolValue>SwitchToUDHCPC_SetParamBoolValue</func_SetParamBoolValue>
+          </functions>
+          <parameters>
+            <parameter>
+              <name>Enable</name>
+              <type>boolean</type>
+              <syntax>bool</syntax>
+              <writable>true</writable>
+            </parameter>
+          </parameters>
+        </object>
+        <object>
         <name>X_RDKCENTRAL-COM_Syndication</name>
         <objectType>object</objectType>
         <functions>
