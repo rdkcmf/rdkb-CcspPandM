@@ -816,6 +816,32 @@ RPC_SetParamStringValue
 
  APIs for Object:
 
+    DeviceInfo.X_RDKCENTRAL-COM_SwitchToDibbler.
+
+    *  SwitchToDibbler_GetParamBoolValue
+    *  SwitchToDibbler_SetParamBoolValue
+
+***********************************************************************/
+BOOL
+SwitchToDibbler_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+SwitchToDibbler_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
     DeviceInfo.X_RDKCENTRAL-COM_SwitchToUDHCPC.
 
     *  SwitchToUDHCPC_GetParamBoolValue

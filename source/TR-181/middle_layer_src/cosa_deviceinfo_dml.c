@@ -8062,6 +8062,209 @@ Logging_SetParamUlongValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        SwitchToDibbler_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+SwitchToDibbler_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+	/* This Get API is only for XB3,AXB6 devices */
+#if defined(_COSA_INTEL_XB3_ARM_) || defined(INTEL_PUMA7)
+    PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    BOOL                            bReturnValue;
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        char buf[8];
+        if( syscfg_get( NULL, "dibbler_client_enable", buf, sizeof(buf))==0)
+        {
+            if (strcmp(buf, "true") == 0)
+            {
+                *pBool = TRUE;
+            }
+            else
+            {
+                *pBool = FALSE;
+            }
+        }
+        else
+        {
+            CcspTraceWarning(("%s syscfg_get failed  for dibbler_client_enable\n",__FUNCTION__));
+            *pBool = FALSE;
+        }
+
+        return TRUE;
+    }
+#endif
+    return FALSE;
+}
+
+void dhcpSwitchThread(void* vptr_value)
+{
+        char command[64];
+        char *str = (char *) vptr_value;
+        pthread_detach(pthread_self());
+        snprintf(command,sizeof(command),"sh /etc/dhcpswitch.sh %s &",str);
+        system(command);
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        SwitchToDibbler_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+SwitchToDibbler_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+     /* This set API is only for XB3,AXB6 devices */
+#if defined(_COSA_INTEL_XB3_ARM_) || defined(INTEL_PUMA7)
+    PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8];
+        char event[8];
+        pthread_t tid;
+        char* operation = NULL;
+        int val;
+
+        /* collect previous flag value */
+       if( syscfg_get( NULL, "dibbler_client_enable", buf, sizeof(buf)) == 0)
+        {
+                val = strcmp(buf,"true")?0:1;
+                if (val != bValue)
+                {
+                        if (bValue)
+                        {
+                                commonSyseventGet("dhcpclient_v4", event, sizeof(event));
+                                if (atoi(event) == 1)
+                                {
+                                        commonSyseventSet("dhcpclient_v6", "1");
+                                        AnscTraceWarning(("dhcpclient_v4 event is enabled. So enabling dhcpclient_v6 event \n"));
+                                }
+                                else
+                                {
+                                        operation = "schedule_v6_cron";
+                                        AnscTraceWarning(("dhcpclient_v4 event is not enabled.scheduling cron \n"));
+                                        pthread_create(&tid, NULL, &dhcpSwitchThread, (void *)operation);
+                                }
+                        }
+                        else
+                        {
+                                operation = "clear_v6_cron";
+                                AnscTraceWarning(("dhcp client switching back to default \n"));
+                                pthread_create(&tid, NULL, &dhcpSwitchThread, (void *)operation);
+                        }
+                }
+                else if(!bValue)
+                {
+                        char v6event[8];
+                        commonSyseventGet("dhcpclient_v6", v6event, sizeof(v6event));
+                        if (atoi(v6event) == 1)
+                        {
+                                char v4event[8];
+                                commonSyseventGet("dhcpclient_v4", v4event, sizeof(v4event));
+                                if (atoi(v4event) ==1)
+                                {
+                                        commonSyseventSet("dhcpclient_v6", "0");
+                                        AnscTraceWarning(("dhcpclient_v6 is disabled\n"));
+                                }
+                                else
+                                {
+                                        commonSyseventSet("dhcpclient_v6", "0");
+                                        system("sed -i '/dhcpswitch.sh/d' /var/spool/cron/crontabs/root &");
+                                        AnscTraceWarning(("dhcpclient_v6 is disabled and scheduled cron removed\n"));
+                                }
+
+                        }
+                        else
+                        {
+                                AnscTraceWarning(("No set operation done since dibbler_client_enable flag already set to %d\n", bValue));
+                        }
+                }
+                else
+                {
+                        AnscTraceWarning(("No set operation done since dibbler_client_enable flag already set to %d\n", bValue));
+                }
+        }
+        else
+        {
+                AnscTraceWarning(("syscfg_get failed for diibler_client_enable\n"));
+                return FALSE;
+        }
+
+
+        return TRUE;
+    }
+#endif
+
+   return FALSE;
+
+}
+
 /***********************************************************************
 
  APIs for Object:
