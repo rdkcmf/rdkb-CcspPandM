@@ -2509,6 +2509,16 @@ CosaDmlDhcpv6cGetEnabled
 {
     BOOL bEnabled = FALSE;
     char out[256] = {0};
+    BOOL dibblerEnabled = FALSE;
+
+// For XB3, AXB6 if dibbler flag enabled, check dibbler-client process status
+#if defined(_COSA_INTEL_XB3_ARM_) || defined(INTEL_PUMA7)
+        char buf[8];
+        if(( syscfg_get( NULL, "dibbler_client_enable", buf, sizeof(buf))==0) && (strcmp(buf, "true") == 0))
+	{
+		dibblerEnabled = TRUE;
+	}
+#endif
 
 #if defined (_COSA_BCM_ARM_)
     FILE *fp = popen("ps |grep -i dibbler-client | grep -v grep", "r");
@@ -2517,7 +2527,12 @@ CosaDmlDhcpv6cGetEnabled
    FILE *fp = popen("/usr/sbin/dibbler-client status |grep  client", "r");
 
 #else
-    FILE *fp = popen("ps |grep -i ti_dhcp6c | grep erouter0 | grep -v grep", "r");
+	FILE *fp;
+	// For XB3, AXB6 if dibbler flag enabled, check dibbler-client process status
+	if(dibblerEnabled)
+		fp = popen("ps |grep -i dibbler-client | grep -v grep", "r");
+	else
+    		fp = popen("ps |grep -i ti_dhcp6c | grep erouter0 | grep -v grep", "r");
 #endif
 
     if ( fp != NULL){
@@ -2529,7 +2544,10 @@ CosaDmlDhcpv6cGetEnabled
             if ( strstr(out, "RUNNING,") )
                 bEnabled = TRUE;
 #else
-            if ( _ansc_strstr(out, "erouter_dhcp6c") )
+	// For XB3, AXB6 if dibbler flag enabled, check dibbler-client process status
+	if ( dibblerEnabled && _ansc_strstr(out, "dibbler-client") )
+                bEnabled = TRUE;
+        if ( _ansc_strstr(out, "erouter_dhcp6c") )
                 bEnabled = TRUE;
 #endif
        }
