@@ -1132,4 +1132,30 @@ SyndicationFlowControl_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Telemetry.MessageBusSource.Enable
+
+    *  MessageBusSource_GetParamBoolValue
+    *  MessageBusSource_SetParamBoolValue
+***********************************************************************/
+BOOL
+MessageBusSource_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+MessageBusSource_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
 #endif

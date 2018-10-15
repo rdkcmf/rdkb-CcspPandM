@@ -1389,6 +1389,30 @@
 
             </parameters>
             <objects>
+                        <object>
+                            <name>Telemetry</name>
+                            <objectType>object</objectType>
+                            <functions></functions>
+                            <parameters></parameters>
+                            <objects>
+                                <object>
+                                     <name>MessageBusSource</name>
+                                     <objectType>object</objectType>
+                                     <functions>
+                                         <func_GetParamBoolValue>MessageBusSource_GetParamBoolValue</func_GetParamBoolValue>
+                                         <func_SetParamBoolValue>MessageBusSource_SetParamBoolValue</func_SetParamBoolValue>
+                                     </functions>
+                                     <parameters>
+                                         <parameter>
+                                             <name>Enable</name>
+                                             <type>boolean</type>
+                                             <syntax>bool</syntax>
+                                             <writable>true</writable>
+                                         </parameter>
+                                     </parameters>
+                                </object>
+                            </objects>
+                        </object>
 				      <object>
         <name>SyndicationFlowControl</name>
         <objectType>object</objectType>
