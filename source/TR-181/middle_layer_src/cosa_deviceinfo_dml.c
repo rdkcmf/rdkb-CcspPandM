@@ -6437,6 +6437,114 @@ SNMP_SetParamBoolValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        SysCfg_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+SysCfg_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    if( AnscEqualString(ParamName, "UpdateNvram", TRUE))
+    {
+        char value[8];
+        syscfg_get(NULL,"UpdateNvram",value, sizeof(value));
+        if( value != NULL )
+        {
+             if (strcmp(value, "true") == 0)
+                 *pBool = TRUE;
+             else
+                 *pBool = FALSE;
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        SysCfg_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+SysCfg_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "UpdateNvram", TRUE))
+    {
+        if ( bValue == TRUE)
+        {
+            syscfg_set(NULL, "UpdateNvram", "true");
+        }
+        else
+        {
+            syscfg_set(NULL, "UpdateNvram", "false");
+        }
+        syscfg_commit();
+        return TRUE;
+    }
+    return FALSE;
+}
+
 /**********************************************************************  
 
     caller:     owner of this object
