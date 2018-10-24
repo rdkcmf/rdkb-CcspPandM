@@ -5916,6 +5916,20 @@ SNMP_GetParamBoolValue
         }
         return TRUE;
     }
+    if( AnscEqualString(ParamName, "RestartMaintenanceEnable", TRUE))
+    {
+        char value[8] = { 0 };
+        syscfg_get(NULL,"SNMP_RestartMaintenanceEnable",value, sizeof(value));
+        if( value[ 0] != '\0' )
+        {
+             if (strcmp(value, "true") == 0)
+                 *pBool = TRUE;
+             else
+                 *pBool = FALSE;
+        }
+        return TRUE;
+    }
+
     return FALSE;
 }
 /**********************************************************************
@@ -5982,6 +5996,20 @@ SNMP_SetParamBoolValue
         syscfg_commit();
         return TRUE;
     }
+    if( AnscEqualString(ParamName, "RestartMaintenanceEnable", TRUE))
+    {
+        if ( bValue == TRUE)
+        {
+            syscfg_set(NULL, "SNMP_RestartMaintenanceEnable", "true");
+        }
+        else
+        {
+            syscfg_set(NULL, "SNMP_RestartMaintenanceEnable", "false");
+        }
+        syscfg_commit();
+        return TRUE;
+    }
+
     return FALSE;
 }
 

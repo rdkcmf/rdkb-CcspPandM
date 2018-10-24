@@ -1579,6 +1579,17 @@
 					<writable>true</writable>
 
 				</parameter>
+				<parameter>
+		
+					<name>RestartMaintenanceEnable</name>
+	
+					<type>boolean</type>
+
+					<syntax>bool</syntax>
+
+					<writable>true</writable>
+
+				</parameter>
                          </parameters>
                 </object>
               	<object>
