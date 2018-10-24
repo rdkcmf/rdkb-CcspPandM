@@ -301,7 +301,7 @@ static int _is_in_linux_bridge(char * if_name, char * br_name)
 #ifdef _COSA_INTEL_USG_ARM_
     #define COSA_USG_IF_NUM 4
 #endif
-#ifdef _COSA_BCM_MIPS_
+#ifdef _COSA_BCM_MIPS_ || _PLATFORM_RASPBERRYPI_
     #define COSA_USG_IF_NUM 3 // we only have 3 interfaces for XF3
 #endif
 
@@ -317,7 +317,9 @@ USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
 {
     {"erouter0",    COSA_DML_LINK_TYPE_EthLink, TRUE},
 #ifdef _COSA_INTEL_USG_ARM_
+#ifndef _PLATFORM_RASPBERRYPI_
     {"wan0",        COSA_DML_LINK_TYPE_DOCSIS,  TRUE},  /*DH  wan0 should never appear here -- CM extensions are for DOCSIS interfaces */
+#endif
 #endif
     {"lo",          COSA_DML_LINK_TYPE_EthLink, FALSE}, /*DH  change the value of gDmsbIpIfLoopbackInstNum too, if "lo" is moved to a different location */
     /*
