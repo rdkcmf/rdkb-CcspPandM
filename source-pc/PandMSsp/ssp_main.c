@@ -373,7 +373,7 @@ int main(int argc, char* argv[])
     extern ANSC_HANDLE bus_handle;
 
 #ifdef FEATURE_SUPPORT_RDKLOG
-    RDK_LOGGER_INIT();
+    rdk_logger_init(DEBUG_INI_NAME);
 #endif
 
     /*
