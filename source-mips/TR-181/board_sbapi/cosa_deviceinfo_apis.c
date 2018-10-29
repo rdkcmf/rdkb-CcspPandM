@@ -3068,13 +3068,6 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 	
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLanguage") != NULL )
                                 {
-                                        //Check whether this is comcast partner or not
-                                        if( 0 == strcmp( "comcast", partnerID ) )
-                                        {
-                                                syscfg_get(NULL, "language", PUiBrand->DefaultLanguage, sizeof(PUiBrand->DefaultLanguage));
-                                        }
-                                        else
-                                        {
                                                 DefaultLanguage = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLanguage")->valuestring;
 
                                                 if (DefaultLanguage != NULL)
@@ -3086,7 +3079,6 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
                                                 {
                                                         CcspTraceWarning(("%s - DefaultLanguage Value is NULL\n", __FUNCTION__ ));
                                                 }
-                                        }
                                 }
 
                                 else
