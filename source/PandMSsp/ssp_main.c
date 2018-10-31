@@ -45,12 +45,14 @@
 #ifdef USE_PCD_API_EXCEPTION_HANDLING
 #include "pcdapi.h"
 #endif
-#ifdef ENABLE_SD_NOTIFY
-#include <systemd/sd-daemon.h>
-#endif
 
 #ifdef INCLUDE_BREAKPAD
 #include "breakpad_wrapper.h"
+#endif
+
+#ifdef _ANSC_LINUX
+#include <semaphore.h>
+#include <fcntl.h>
 #endif
 
 #define DEBUG_INI_NAME  "/etc/debug.ini"
@@ -64,6 +66,10 @@ PCCSP_CCD_INTERFACE             pPnmCcdIf               = (PCCSP_CCD_INTERFACE  
 PCCC_MBI_INTERFACE              pPnmMbiIf               = (PCCC_MBI_INTERFACE         )NULL;
 BOOL                            g_bActive               = FALSE;
 extern  ANSC_HANDLE                     bus_handle;
+
+#ifdef _ANSC_LINUX
+    sem_t *sem;
+#endif
 
 int  cmd_dispatch(int  command)
 {
@@ -229,6 +235,20 @@ static void _print_stack_backtrace(void)
 #if defined(_ANSC_LINUX)
 static void daemonize(void) {
 	int fd;
+	
+	/* initialize semaphores for shared processes */
+	sem = sem_open ("pSemPnm", O_CREAT | O_EXCL, 0644, 0);
+	if(SEM_FAILED == sem)
+	{
+	       AnscTrace("Failed to create semaphore %d - %s\n", errno, strerror(errno));
+	       _exit(1);
+	}
+	/* name of semaphore is "pSemPnm", semaphore is reached using this name */
+	sem_unlink ("pSemPnm");
+	/* unlink prevents the semaphore existing forever */
+	/* if a crash occurs during the execution         */
+	AnscTrace("Semaphore initialization Done!!\n");
+
 	switch (fork()) {
 	case 0:
 		break;
@@ -239,6 +259,8 @@ static void daemonize(void) {
 		exit(0);
 		break;
 	default:
+		sem_wait (sem);
+		sem_close (sem);
 		_exit(0);
 	}
 
@@ -502,15 +524,13 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-#ifdef ENABLE_SD_NOTIFY
-    sd_notifyf(0, "READY=1\n"
-              "STATUS=CcspPandMSsp is Successfully Initialized\n"
-              "MAINPID=%lu", (unsigned long) getpid());
-	
-    CcspTraceInfo(("RDKB_SYSTEM_BOOT_UP_LOG : P&M sd_notify Called\n"));
-#endif
-
     system("touch /tmp/pam_initialized");
+	
+    if ( bRunAsDaemon )
+    {
+       sem_post (sem);
+       sem_close(sem);
+    }
 
 #if defined(_COSA_INTEL_USG_ARM_) 
     {
