@@ -20,6 +20,11 @@
 
 source /etc/utopia/service.d/log_capture_path.sh
 
+if [ -f /etc/device.properties ]
+then
+    source /etc/device.properties
+fi
+
 SERVER6_CONF="/etc/dibbler/server.conf"
 SERVER6_BKUP="/nvram/server_bkup.conf"
 Uncommented_line=""
@@ -161,12 +166,17 @@ sleep 5
 #Modify DNS server option in dibbler configuration
 if [ -e $SERVER6_CONF ]
 then
+	if [ "$MODEL_NUM" = "TG3482G" ] || [ "$MODEL_NUM" = "INTEL_PUMA" ] ; then
+	#Intel Proposed RDKB Generic Bug Fix from XB6 SDK
+	sed -i "/\# *option dns\-server/s/.//" $SERVER6_CONF
+	else
 	Uncommented_line=`cat $SERVER6_CONF | grep dns-server | sed -e 's/.//'`
 	#cat $SERVER6_CONF | grep dns-server | sed -e 's/.//' > $SERVER6_BKUP
 	sed "/dns-server/c \
 	\ \ \ \ $Uncommented_line"  $SERVER6_CONF > $SERVER6_BKUP
 	cp -f $SERVER6_BKUP $SERVER6_CONF
 	rm $SERVER6_BKUP
+	fi
 	cat $SERVER6_CONF
 else
 	echo_t "No dibbler6 configuration available...."
