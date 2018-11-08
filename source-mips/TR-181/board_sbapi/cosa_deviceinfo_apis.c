@@ -111,10 +111,16 @@
 
 #elif (_COSA_BCM_MIPS_ || _COSA_DRG_TPG_)
 
+#ifdef _PLATFORM_CI20_
+#define CONFIG_VENDOR_NAME "Imagination Technologies"
+#define CONFIG_TI_GW_DESCRIPTION "MIPS Creator CI20"
+#define CONFIG_VENDOR_ID 0xD03110
+#else
 // These should really be part of the build parameters
 #define CONFIG_VENDOR_NAME "ARRIS Group, Inc."
 #define CONFIG_TI_GW_DESCRIPTION "DPoE 2.0 Fiber Modem Gateway Device"
 #define CONFIG_VENDOR_ID 0xA055DE
+#endif
 #define PARTNERS_INFO_FILE		"/nvram/partners_defaults.json"
 
 #define DMSB_TR181_PSM_WHIX_LogInterval                                 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.LogInterval"
@@ -1577,7 +1583,7 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
      }
      else if(AnscEqualString(ParamName, "Free", TRUE))
      {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined(_COSA_INTEL_USG_ARM_) || defined(_PLATFORM_CI20_)
 	if ( platform_hal_GetFreeMemorySize(&tmp) != RETURN_OK )
         return 0;
     	else
@@ -1594,7 +1600,7 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
 
      else if(AnscEqualString(ParamName, "Used", TRUE))
      {
-#ifdef _COSA_INTEL_USG_ARM_
+#if defined(_COSA_INTEL_USG_ARM_) || defined(_PLATFORM_CI20_)
 	if ( platform_hal_GetUsedMemorySize(&tmp) != RETURN_OK )
         return 0;
     	else 
