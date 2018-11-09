@@ -5843,18 +5843,41 @@ return numOfSubnets;
 int GenIPv6Prefix(char *ifName,char *GlobalPref, char *pref)
 {
 int len = 0;
+int index = 0;
+char cmd[100];
+char out[100];
 static int interface_num = 4; // Reserving first 4 /64s for dhcp configurations
 	if(ifName == NULL)
 	return 0;
 	
+	memset(cmd,0,sizeof(cmd));
+	memset(out,0,sizeof(out));
+	_ansc_sprintf(cmd, "%s%s",ifName,"_ipv6_index");
+	commonSyseventGet(cmd, out, sizeof(out));
+	if(strlen(out) != 0)
+	{
+		index = atoi(out);
+	}
+
 	len = strlen(GlobalPref);
 	strcpy(pref,GlobalPref);
-	pref[len-6] = pref[len-6]+interface_num;
+	if(index == 0)
+	{
+		pref[len-6] = pref[len-6]+interface_num;
+		memset(cmd,0,sizeof(cmd));
+		_ansc_sprintf(cmd, "%s%s",ifName,"_ipv6_index");
+		_ansc_sprintf(out, "%d",interface_num);
+		commonSyseventSet(cmd, out);
+		interface_num++;
+	}
+	else
+	{
+		pref[len-6] = pref[len-6]+index;
+	}
 	if(pref[len-6] > '9')
 	pref[len-6] = pref[len-6]+39; // for ASCII a,b,c,d,e,f
         strcpy(pref+(strlen(pref)-2),"64"); // /64
 	CcspTraceInfo(("%s: pref %s\n", __func__, pref));
-	interface_num++;
 return 1;
 	
 }
