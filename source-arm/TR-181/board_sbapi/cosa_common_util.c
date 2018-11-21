@@ -361,6 +361,11 @@ EvtDispterWanIpAddrsCallback(char *ip_addrs)
     CcspTraceInfo(("EvtDispterWanIpAddrsCallback - erouter0 IP = %s\n",ip_addrs));
     vsystem("/usr/ccsp/pam/erouter0_ip_sync.sh %s &",ip_addrs);
 #endif
+#if defined(_XB6_PRODUCT_REQ_)
+    CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
+    CcspTraceInfo(("EvtDispterWanIpAddrsCallback - erouter0 IP = %s\n",ip_addrs));
+    vsystem("/usr/sbin/sec_pushown.sh --ip4 \"%s\"", ip_addrs);
+#endif
     CcspTraceInfo(("%s Setting current_wan_ipaddr and restarting firewall %d \n", __FUNCTION__,__LINE__)); 
     sysevent_set(se_fd, token, "current_wan_ipaddr", ip_addrs, 0);
     sysevent_set(se_fd, token, "firewall-restart", NULL, 0);
