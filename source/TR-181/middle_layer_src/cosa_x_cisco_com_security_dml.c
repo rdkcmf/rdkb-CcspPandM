@@ -1703,9 +1703,6 @@ Firewall1_SetParamUlongValue
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
     BOOL                            pBridgeMode     = FALSE;
 
-    if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&pBridgeMode)) && (pBridgeMode == TRUE))
-        return FALSE;
-
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "FirewallLevel", TRUE))
     {
