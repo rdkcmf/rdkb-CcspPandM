@@ -867,8 +867,7 @@ IPIF_getEntry_for_Ipv6Addr
         {
             continue;
         }
-      /*RDKB-19644*/
-      #if 0
+
         if (Utopia_Init(&utctx))
         {
             need_write = 0;
@@ -884,7 +883,7 @@ IPIF_getEntry_for_Ipv6Addr
             }
             Utopia_Free(&utctx,need_write);                
         }
-      #endif
+
         p_dml_v6addr->bEnabled = TRUE;
         
         p_dml_v6addr->Status = COSA_DML_IP_ADDR_STATUS_Enabled;
