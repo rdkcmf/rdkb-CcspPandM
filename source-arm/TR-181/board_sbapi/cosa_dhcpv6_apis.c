@@ -1788,6 +1788,12 @@ int CosaDmlDhcpv6sRestartOnLanStarted(void * arg)
     CcspTraceWarning(("%s -- lan status is started. \n", __FUNCTION__));
     g_lan_ready = TRUE;
 
+#if defined(_CBR_PRODUCT_REQ_)
+    // TCCBR-3353: dibbler-server is failing because brlan's IP address is "tentative".
+    // Add a delay so the IP address has time to become "prefered".
+    sleep(2);
+#endif
+
     CosaDmlDHCPv6sTriggerRestart(TRUE);
 
     //the thread will start dibbler if need
