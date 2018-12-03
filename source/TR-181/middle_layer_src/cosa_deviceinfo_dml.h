@@ -313,7 +313,34 @@ UniqueTelemetryId_SetParamIntValue
     );
 
 
+/***********************************************************************
 
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.ManageableNotification.
+
+    *  ManageableNotification_GetParamBoolValue
+    *  ManageableNotification_SetParamBoolValue
+
+***********************************************************************/
+
+BOOL
+ManageableNotification_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+ManageableNotification_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
 /***********************************************************************
 
  APIs for Object:

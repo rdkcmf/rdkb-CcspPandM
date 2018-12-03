@@ -2115,6 +2115,125 @@ UniqueTelemetryId_SetParamIntValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        ManageableNotification_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+ManageableNotification_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    char buf[8];
+
+    /* check the parameter name and return the corresponding value */
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        syscfg_get( NULL, "ManageableNotificationEnabled", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        ManageableNotification_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+ManageableNotification_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        if( bValue == TRUE)
+        {
+            syscfg_set(NULL, "ManageableNotificationEnabled", "true");
+        }
+        else
+        {
+            syscfg_set(NULL, "ManageableNotificationEnabled", "false");
+        }
+        syscfg_commit();
+        return TRUE;
+    }
+
+    return FALSE;
+}
 
 
 /***********************************************************************
@@ -9556,7 +9675,7 @@ RPC_SetParamUlongValue
         /* collect value */
         char buff[64] = {0};
         sprintf(buff,"%d",uValue);
-	Send_Notification_Task(buff);
+	Send_Notification_Task(buff, NULL, NULL, "reboot-pending", NULL);
         return TRUE;
     }	       
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -9610,7 +9729,7 @@ RPC_GetParamStringValue
         ULONG*                      pulSize
     )
 {
-
+     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "RebootDevice", TRUE) )
     {
@@ -9619,7 +9738,23 @@ RPC_GetParamStringValue
         return 0;
     }
 
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    if( AnscEqualString(ParamName, "FirmwareDownloadStartedNotification", TRUE))
+    {
+	/* collect value */
+	AnscCopyString( pValue, pMyObject->FirmwareDownloadStartedNotification);
+	*pulSize = AnscSizeOfString( pValue );
+	return 0;
+    }
+
+    if( AnscEqualString(ParamName, "DeviceManageableNotification", TRUE))
+    {
+	/* collect value */
+	AnscCopyString( pValue, pMyObject->DeviceManageableNotification);
+	*pulSize = AnscSizeOfString( pValue );
+	return 0;
+    }
+
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
     return -1;
 }
 
@@ -9661,7 +9796,7 @@ RPC_SetParamStringValue
         char*                       pString
     )
 {
-
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     /* check the parameter name and set the corresponding value */
 
     if( AnscEqualString(ParamName, "RebootDevice", TRUE))
@@ -9674,8 +9809,58 @@ RPC_SetParamStringValue
 		}
     }
 
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
-    return FALSE;
+     if( AnscEqualString(ParamName, "FirmwareDownloadStartedNotification", TRUE))
+     {
+	char notifyEnable[64];
+        memset(notifyEnable, 0, sizeof(notifyEnable));
+
+        syscfg_get( NULL, "ManageableNotificationEnabled", notifyEnable, sizeof(notifyEnable));
+        if((notifyEnable[0] != '\0') && (strncmp(notifyEnable, "true", strlen("true")) == 0))
+        {
+		/* collect value */
+		char buff[64];
+		char *timeValue = NULL;
+
+		memset(buff, 0, sizeof(buff));
+		snprintf(buff,sizeof(buff),"%s",pString);
+		memset( pMyObject->FirmwareDownloadStartedNotification, 0, sizeof( pMyObject->FirmwareDownloadStartedNotification ));
+		AnscCopyString( pMyObject->FirmwareDownloadStartedNotification, pString );
+		timeValue = strdup(buff);
+		set_firmware_download_start_time(timeValue);
+		Send_Notification_Task(NULL, buff, NULL, "firmware-download-started", NULL);
+	}
+	else
+	{
+		CcspTraceWarning(("ManageableNotificationEnabled is false, firmware download start notification is not sent\n"));
+	}
+	return TRUE;
+     }
+
+     if( AnscEqualString(ParamName, "DeviceManageableNotification", TRUE))
+     {
+        char status[64];
+        memset(status, 0, sizeof(status));
+        syscfg_get( NULL, "ManageableNotificationEnabled", status, sizeof(status));
+        if((status[0] != '\0') && (strncmp(status, "true", strlen("true")) == 0))
+        {
+            /* collect value */
+            char buff[64];
+            memset(buff, 0, sizeof(buff));
+
+            snprintf(buff,sizeof(buff),"%s",pString);
+	    memset( pMyObject->DeviceManageableNotification, 0, sizeof( pMyObject->DeviceManageableNotification ));
+	    AnscCopyString( pMyObject->DeviceManageableNotification, pString );
+            Send_Notification_Task(NULL, NULL, NULL, "fully-manageable", buff);
+        }
+	else
+	{
+		CcspTraceWarning(("ManageableNotificationEnabled is false, device manage notification is not sent\n"));
+	}
+        return TRUE;
+     }
+
+     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+	 return FALSE;
 }
 /**********************************************************************  
 
@@ -9722,6 +9907,13 @@ RPC_GetParamBoolValue
         /*CcspTraceWarning(("supported parameter '%s'\n", ParamName));*/
         *pBool = pMyObject->AbortReboot;
         return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "FirmwareDownloadCompletedNotification", TRUE))
+    {
+	/*CcspTraceWarning(("supported parameter '%s'\n", ParamName));*/
+	*pBool = pMyObject->FirmwareDownloadCompletedNotification;
+	return TRUE;
     }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -9788,8 +9980,32 @@ RPC_SetParamBoolValue
            return FALSE;
        }
    } 
-       /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
-        return FALSE;
+
+	if( AnscEqualString(ParamName, "FirmwareDownloadCompletedNotification", TRUE))
+	{
+		char notifyEnable[64];
+		memset(notifyEnable, 0, sizeof(notifyEnable));
+
+		syscfg_get( NULL, "ManageableNotificationEnabled", notifyEnable, sizeof(notifyEnable));
+		if((notifyEnable[0] != '\0') && (strncmp(notifyEnable, "true", strlen("true")) == 0))
+		{
+			/* collect value */
+			char buff[8];
+
+			memset(buff, 0, sizeof(buff));
+			snprintf(buff, sizeof(buff), "%s", bValue ? "true" : "false");
+			pMyObject->FirmwareDownloadCompletedNotification = bValue;
+			char *start_time = get_firmware_download_start_time();
+			Send_Notification_Task(NULL, start_time, buff, "firmware-download-completed", NULL);
+		}
+		else
+		{
+			CcspTraceWarning(("ManageableNotificationEnabled is false, firmware download completed notfication is not sent\n"));
+		}
+		return TRUE;
+	}
+	/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+	return FALSE;
 }
 #endif
 

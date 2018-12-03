@@ -171,6 +171,11 @@ CosaDeviceInfoInitialize
 	CosaDmlDiGet_DeferFWDownloadReboot(&pMyObject->DeferFWDownloadReboot);
 #endif
         pMyObject->AbortReboot	= FALSE;
+	pMyObject->FirmwareDownloadCompletedNotification	= FALSE;
+	_ansc_memset(pMyObject->FirmwareDownloadStartedNotification, 0, 64);
+	_ansc_memset(pMyObject->DeviceManageableNotification, 0, 64);
+	AnscCopyString( pMyObject->FirmwareDownloadStartedNotification, "0" );
+	AnscCopyString( pMyObject->DeviceManageableNotification, "0" );
 
 	//Get TR69CertLocation
 	CosaDmlDiGetSyndicationTR69CertLocation( (ANSC_HANDLE)pMyObject,

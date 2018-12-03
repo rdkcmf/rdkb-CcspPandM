@@ -96,6 +96,9 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
 	BOOL		bMultipleGW;					
 	ULONG		DeferFWDownloadReboot;
 	BOOL		AbortReboot;
+	BOOL		FirmwareDownloadCompletedNotification;
+	CHAR 		FirmwareDownloadStartedNotification[64];
+	CHAR 		DeviceManageableNotification[64];
 	CHAR 		TR69CertLocation[256];
 	CHAR 		PartnerID[64];
 	BOOL		bWANsideSSHEnable;

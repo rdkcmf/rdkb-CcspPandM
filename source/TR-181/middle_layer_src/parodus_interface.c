@@ -38,20 +38,33 @@
 #define RDKB_ETHAGENT_COMPONENT_NAME                  "com.cisco.spvtg.ccsp.ethagent"
 #define RDKB_ETHAGENT_DBUS_PATH                       "/com/cisco/spvtg/ccsp/ethagent"
 
+typedef struct _notify_params
+{
+	char * delay;
+	char * time;
+	char * status;
+	char * download_status;
+	char * system_ready_time;
+} notify_params_t;
+
 void* connect_parodus();
 static void getDeviceMac();
 static void macToLower(char macValue[]);
 static void get_parodus_url(char **url);
 void initparodusTask();
-void Send_Notification_Task(char* value);
+void Send_Notification_Task(char* delay, char* startTime, char* download_status, char* status, char *system_ready_time);
 void* sendNotification(void* buff);
 static void waitForEthAgentComponentReady();
 static void checkComponentHealthStatus(char * compName, char * dbusPath, char *status, int *retStatus);
 static int check_ethernet_wan_status();
+char *get_firmware_download_start_time();
+void set_firmware_download_start_time(char *start_time);
+void free_notify_params_struct(notify_params_t *param);
 
 static char deviceMAC[32]={'\0'};
 libpd_instance_t pam_instance;
 extern ANSC_HANDLE bus_handle;
+static char *FW_download_start_time = "0";
 
 static void get_parodus_url(char **url)
 {
@@ -365,32 +378,72 @@ void* sendNotification(void* pValue)
     cJSON *notifyPayload = cJSON_CreateObject();
     char  * stringifiedNotifyPayload;
     unsigned long bootTime;
+    char lastRebootReason[64]={'\0'};
+    notify_params_t *msg;
+    char * temp = NULL;
 
-    char buff[64] = {0};
+
     char dest[512] = {'\0'};
     
     pthread_detach(pthread_self());
 
-    memset(buff,0,sizeof(buff));
     if(pValue)
     {
-	strcpy(buff,pValue);
-	free(pValue);		
+	msg = (notify_params_t *) pValue;
     }
-
     getDeviceMac();
-    CcspTraceDebug(("buf: %s \n",buff));
     CcspTraceDebug(("deviceMAC: %s\n",deviceMAC));
     snprintf(source, sizeof(source), "mac:%s", deviceMAC);
-
-    bootTime = CosaDmlDiGetBootTime(NULL);
 
     if(notifyPayload != NULL)
     {
         cJSON_AddStringToObject(notifyPayload,"device_id", source);
-        cJSON_AddStringToObject(notifyPayload,"status", "reboot-pending");
-        cJSON_AddNumberToObject(notifyPayload,"delay", atoi(buff));
-        cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
+	if(msg)
+	{
+		if(msg->status !=NULL)
+		{
+			cJSON_AddStringToObject(notifyPayload,"status", msg->status);
+		}
+		if(msg->time !=NULL)
+		{
+			cJSON_AddStringToObject(notifyPayload,"start-time", msg->time);
+		}
+		if(msg->download_status !=NULL)
+		{
+			if(strcmp(msg->download_status, "true") == 0)
+			{
+				cJSON_AddStringToObject(notifyPayload,"download-status", "success");
+			}
+			else
+			{
+				cJSON_AddStringToObject(notifyPayload,"download-status", "failure");
+			}
+		}
+
+		if ((msg->status !=NULL) && (strcmp(msg->status, "reboot-pending") == 0))
+		{
+			bootTime = CosaDmlDiGetBootTime(NULL);
+			cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
+			syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", lastRebootReason, sizeof(lastRebootReason));
+			CcspTraceDebug(("lastRebootReason is %s\n", lastRebootReason));
+
+			if(lastRebootReason !=NULL)
+			{
+				cJSON_AddStringToObject(notifyPayload,"reboot-reason", lastRebootReason);
+			}
+			if(msg->delay !=NULL)
+			{
+				cJSON_AddNumberToObject(notifyPayload,"delay", atoi(msg->delay));
+			}
+		}
+
+		if ((msg->status !=NULL) && (strcmp(msg->status, "fully-manageable") == 0) && (msg->system_ready_time != NULL))
+		{
+		    bootTime = CosaDmlDiGetBootTime(NULL);
+			cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
+			cJSON_AddNumberToObject(notifyPayload,"system-ready-time", atoi(msg->system_ready_time));
+		}
+	}
         stringifiedNotifyPayload = cJSON_PrintUnformatted(notifyPayload);
         CcspTraceInfo(("Notification payload %s\n",stringifiedNotifyPayload));
         cJSON_Delete(notifyPayload);
@@ -404,7 +457,36 @@ void* sendNotification(void* pValue)
         notif_wrp_msg ->u.event.source = strdup(source);
         CcspTraceDebug(("source: %s\n",notif_wrp_msg ->u.event.source));
 
-        snprintf(dest,sizeof(dest),"event:device-status/mac:%s/reboot-pending/%d/%s",deviceMAC,bootTime, buff);
+	if(msg)
+	{
+		if((msg->status != NULL) && (strlen(msg->status) != 0))
+		{
+			snprintf(dest,sizeof(dest),"event:device-status/mac:%s/%s",deviceMAC, msg->status);
+
+			/* add remaining fields based on status of each events.
+			   event:device-status/{device_id}/reboot-pending/{boot-time}/{delay} */
+			if (strcmp(msg->status, "reboot-pending") == 0)
+			{
+				temp = strdup(dest);
+
+				snprintf(dest,sizeof(dest),"%s/%lu/%ss",temp, bootTime, (((msg->delay != NULL) && (strlen(msg->delay) != 0)) ? msg->delay : "unknown"));
+				CcspTraceDebug(("dest framed for reboot-pending %s\n", dest));
+				free(temp);
+			}
+
+			if (strcmp(msg->status, "fully-manageable") == 0)
+			{
+			    temp = strdup(dest);
+			    snprintf(dest,sizeof(dest),"%s/%s",temp, (((msg->system_ready_time != NULL) && (strlen(msg->system_ready_time) != 0)) ? msg->system_ready_time : "0"));
+				CcspTraceDebug(("dest framed for fully-manageable %s\n", dest));
+				free(temp);
+			}
+		}
+		else
+		{
+			CcspTraceError(("Unable to frame dest as status field is empty\n"));
+		}
+	}
         notif_wrp_msg ->u.event.dest = strdup(dest);
         CcspTraceDebug(("destination: %s\n", notif_wrp_msg ->u.event.dest));
         notif_wrp_msg->u.event.content_type = strdup(CONTENT_TYPE_JSON);
@@ -438,6 +520,10 @@ void* sendNotification(void* pValue)
        }
        CcspTraceDebug(("sendStatus is %d\n",sendStatus));
        wrp_free_struct (notif_wrp_msg );
+        if(msg != NULL)
+        {
+	        free_notify_params_struct(msg);
+        }
    }
    //free(stringifiedNotifyPayload);
 }
@@ -458,22 +544,90 @@ void initparodusTask()
 	}
 }
 
-void Send_Notification_Task(char* value)
+void Send_Notification_Task(char* delay, char* startTime, char* download_status, char* status, char* system_ready_time)
 {
 	int err = 0;
 	pthread_t NotificationThreadId;
 
-	char* buff = (char*) malloc(strlen(value)+1);
-	memset(buff,0,strlen(value)+1);
-	strcpy(buff,value);
-	
-	err = pthread_create(&NotificationThreadId, NULL, sendNotification, buff);
-	if (err != 0) 
+	notify_params_t *args = NULL;
+
+	args = (notify_params_t *)malloc(sizeof(notify_params_t));
+	if(args != NULL)
 	{
-		CcspTraceError(("Error creating Notification thread :[%s]\n", strerror(err)));
+		memset(args, 0, sizeof(notify_params_t));
+
+		if(delay != NULL)
+		{
+			args->delay = strdup(delay);
+		}
+		if(startTime != NULL)
+		{
+			args->time = strdup(startTime);
+		}
+		if(download_status != NULL)
+		{
+			args->download_status = strdup(download_status);
+		}
+		if(status != NULL)
+		{
+			args->status = strdup(status);
+		}
+		if(system_ready_time != NULL)
+		{
+		    args->system_ready_time = strdup(system_ready_time);
+		}
+		err = pthread_create(&NotificationThreadId, NULL, sendNotification, (void *) args);
+		if (err != 0)
+		{
+			CcspTraceError(("Error creating Notification thread :[%s]\n", strerror(err)));
+		}
+		else
+		{
+			CcspTraceInfo(("Notification thread created Successfully\n"));
+		}
 	}
-	else
-	{
-		CcspTraceInfo(("Notification thread created Successfully\n"));
-	}
+}
+
+void set_firmware_download_start_time(char *start_time)
+{
+    FW_download_start_time = start_time;
+}
+
+char *get_firmware_download_start_time()
+{
+    return FW_download_start_time;
+}
+
+void free_notify_params_struct(notify_params_t *param)
+{
+    if(param != NULL)
+    {
+        if(param->delay != NULL)
+        {
+            free(param->delay);
+            param->delay = NULL;
+        }
+        if(param->time != NULL)
+        {
+            free(param->time);
+            param->time = NULL;
+        }
+        if(param->status != NULL)
+        {
+            free(param->status);
+            param->status = NULL;
+        }
+        if(param->download_status != NULL)
+        {
+            free(param->download_status);
+            param->download_status = NULL;
+        }
+        if(param->system_ready_time != NULL)
+        {
+            free(param->system_ready_time);
+            param->system_ready_time = NULL;
+        }
+        free(param);
+        param = NULL;
+    }
 }
