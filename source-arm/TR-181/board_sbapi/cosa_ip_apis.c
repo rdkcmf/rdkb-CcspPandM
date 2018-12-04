@@ -96,7 +96,7 @@ extern void* g_pDslhDmlAgent;
 /*this is the real backend buffers, the PCOSA_DATAMODEL_IP structure only stores stuff from WebGui or ACS, we use this buffer to track param changes..*/
 COSA_PRI_IP_IF_FULL  g_ipif_be_bufs[MAX_IPIF_NUM];
 
-#define SYSCFG_FORMAT_NORMAL_V6ADDR "tr_%s_v6addr_%s"
+#define SYSCFG_FORMAT_NORMAL_V6ADDR "tr_%s_v6addr"
 #define SYSCFG_FORMAT_NORMAL_V6PREFIX "tr_%s_v6pref_%s"
 
 #define SYSCFG_FORMAT_NAMESPACE_STATIC_V6ADDR "tr_%s_static_v6addr_%d"
@@ -890,11 +890,20 @@ IPIF_getEntry_for_Ipv6Addr
             continue;
         }
 
+       memset(buf, 0, 256);
+       memset(buf1, 0, 256);
+
+       if(!strncmp(p_v6addr->v6addr, "fe80", 4)){
+               _ansc_sprintf(buf, SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_link_inst_num", g_ipif_names[ulIndex]);
+               _ansc_sprintf(buf1, SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_link_alias", g_ipif_names[ulIndex]);
+       }else{
+               _ansc_sprintf(buf, SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_inst_num", g_ipif_names[ulIndex]);
+               _ansc_sprintf(buf1, SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_alias", g_ipif_names[ulIndex]);
+       }
+
         if (Utopia_Init(&utctx))
         {
             need_write = 0;
-            _ansc_sprintf(buf, SYSCFG_FORMAT_NORMAL_V6ADDR"_inst_num", g_ipif_names[ulIndex], p_v6addr->v6addr);
-            _ansc_sprintf(buf1, SYSCFG_FORMAT_NORMAL_V6ADDR"_alias", g_ipif_names[ulIndex], p_v6addr->v6addr);
             _load_v6_alias_instNum(&utctx, buf, buf1, &p_dml_v6addr->InstanceNumber, p_dml_v6addr->Alias, sizeof(p_dml_v6addr->Alias));
 
             if (!p_dml_v6addr->InstanceNumber)
