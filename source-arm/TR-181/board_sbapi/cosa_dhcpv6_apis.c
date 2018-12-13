@@ -2418,7 +2418,6 @@ CosaDmlDhcpv6cGetEnabled
     FILE *fp = popen("ps |grep -i dibbler-client | grep -v grep", "r");
 
 #else
-
     FILE *fp = popen("ps |grep -i ti_dhcp6c | grep erouter0 | grep -v grep", "r");
 #endif
 
@@ -3532,13 +3531,22 @@ OPTIONS:
 
             // During captive portal no need to pass DNS
             // Check the reponse code received from Web Service
+
+            iresCode = 0;
+
             if((responsefd = fopen(networkResponse, "r")) != NULL)
             {
                 if(fgets(responseCode, sizeof(responseCode), responsefd) != NULL)
                 {
                     iresCode = atoi(responseCode);
                 }
+
+                /* RDKB-6780, CID-33149, free unused resources before return */
+                //ARRISXB6-7321
+                fclose(responsefd);
+                responsefd = NULL;
             }
+
             // Get value of redirection_flag
             syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
             if( buf != NULL )
@@ -3778,7 +3786,6 @@ OPTIONS:
         }     
 
         fprintf(fp, "}\n");
-        
     }
     
     if(fp != NULL)
@@ -5389,6 +5396,7 @@ void CosaDmlDhcpv6sRebootServer()
          is_usg_in_bridge_mode(&isBridgeMode);
          if ( isBridgeMode )
             return;
+
         //make sure it's not in a bad status
         sprintf(cmd, "ps|grep %s|grep -v grep", SERVER_BIN);
         _get_shell_output(cmd, out, sizeof(out));
@@ -5397,6 +5405,7 @@ void CosaDmlDhcpv6sRebootServer()
             sprintf(cmd, "kill `pidof %s`", SERVER_BIN);
             system(cmd);
         }
+
         _dibbler_server_operation("start");
     } else{
         close(fd);
