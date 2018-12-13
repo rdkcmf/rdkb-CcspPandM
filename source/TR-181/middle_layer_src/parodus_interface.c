@@ -38,6 +38,8 @@
 #define RDKB_ETHAGENT_COMPONENT_NAME                  "com.cisco.spvtg.ccsp.ethagent"
 #define RDKB_ETHAGENT_DBUS_PATH                       "/com/cisco/spvtg/ccsp/ethagent"
 
+pthread_mutex_t device_mac_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 typedef struct _notify_params
 {
 	char * delay;
@@ -214,8 +216,10 @@ static int check_ethernet_wan_status()
 
 static void getDeviceMac()
 {
-    if(strlen(deviceMAC) == 0)
+    int retryCount = 0;
+    while(!strlen(deviceMAC))
     {
+	pthread_mutex_lock(&device_mac_mutex);
         int ret = -1, size =0, val_size =0,cnt =0;
         char compName[MAX_PARAMETERNAME_LEN/2] = { '\0' };
         char dbusPath[MAX_PARAMETERNAME_LEN/2] = { '\0' };
@@ -228,51 +232,81 @@ static void getDeviceMac()
         char deviceMACValue[32] = { '\0' };
         char isEthEnabled[64]={'\0'};
 
-        if(CCSP_SUCCESS == check_ethernet_wan_status() && sysevent_get(fd, token, "eth_wan_mac", deviceMACValue, sizeof(deviceMACValue)) == 0 && deviceMACValue[0] != '\0')
+	if (strlen(deviceMAC))
+	{
+	        pthread_mutex_unlock(&device_mac_mutex);
+	        break;
+	}
+
+	if(CCSP_SUCCESS == check_ethernet_wan_status() && sysevent_get(fd, token, "eth_wan_mac", deviceMACValue, sizeof(deviceMACValue)) == 0 && deviceMACValue[0] != '\0')
+	{
+	        macToLower(deviceMACValue);
+	        retryCount = 0;
+	}
+	else
+	{
+	        sprintf(dst_pathname_cr, "%s%s", "eRT.", CCSP_DBUS_INTERFACE_CR);
+	        ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle, dst_pathname_cr, DEVICE_MAC, "", &ppComponents, &size);
+	        if ( ret == CCSP_SUCCESS && size >= 1)
+	        {
+	                strncpy(compName, ppComponents[0]->componentName, sizeof(compName)-1);
+	                strncpy(dbusPath, ppComponents[0]->dbusPath, sizeof(compName)-1);
+	        }
+	        else
+	        {
+	                CcspTraceError(("Failed to get component for %s ret: %d\n",DEVICE_MAC,ret));
+	                retryCount++;
+	        }
+	        free_componentStruct_t(bus_handle, size, ppComponents);
+
+	        if(strlen(compName) != 0 && strlen(dbusPath) != 0)
+	        {
+	                ret = CcspBaseIf_getParameterValues(bus_handle,
+		                compName, dbusPath,
+		                getList,
+		                1, &val_size, &parameterval);
+
+	                if(ret == CCSP_SUCCESS)
+	                {
+	                    for (cnt = 0; cnt < val_size; cnt++)
+	                    {
+		                CcspTraceDebug(("parameterval[%d]->parameterName : %s\n",cnt,parameterval[cnt]->parameterName));
+		                CcspTraceDebug(("parameterval[%d]->parameterValue : %s\n",cnt,parameterval[cnt]->parameterValue));
+		                CcspTraceDebug(("parameterval[%d]->type :%d\n",cnt,parameterval[cnt]->type));
+	                    }
+	                    macToLower(parameterval[0]->parameterValue);
+                            retryCount = 0;
+                        }
+	                else
+	                {
+                                CcspTraceError(("Failed to get values for %s ret: %d\n",getList[0],ret));
+                                retryCount++;
+	                }
+	                free_parameterValStruct_t(bus_handle, val_size, parameterval);
+	        }
+	}
+
+        if(retryCount == 0)
         {
-            macToLower(deviceMACValue);
-            CcspTraceInfo(("deviceMAC is %s\n",deviceMAC));
+                CcspTraceInfo(("deviceMAC is %s\n",deviceMAC));
+          	pthread_mutex_unlock(&device_mac_mutex);
+                break;
         }
         else
         {
-
-            sprintf(dst_pathname_cr, "%s%s", "eRT.", CCSP_DBUS_INTERFACE_CR);
-            ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle, dst_pathname_cr, DEVICE_MAC, "", &ppComponents, &size);
-            if ( ret == CCSP_SUCCESS && size >= 1)
-            {
-                strncpy(compName, ppComponents[0]->componentName, sizeof(compName)-1);
-                strncpy(dbusPath, ppComponents[0]->dbusPath, sizeof(compName)-1);
-            }
-            else
-            {
-                CcspTraceError(("Failed to get component for %s ret: %d\n",DEVICE_MAC,ret));
-            }
-            free_componentStruct_t(bus_handle, size, ppComponents);
-
-            if(strlen(compName) != 0 && strlen(dbusPath) != 0)
-            {
-                ret = CcspBaseIf_getParameterValues(bus_handle,
-                        compName, dbusPath,
-                        getList,
-                        1, &val_size, &parameterval);
-
-                if(ret == CCSP_SUCCESS)
-                {
-                    for (cnt = 0; cnt < val_size; cnt++)
-                    {
-                        CcspTraceDebug(("parameterval[%d]->parameterName : %s\n",cnt,parameterval[cnt]->parameterName));
-                        CcspTraceDebug(("parameterval[%d]->parameterValue : %s\n",cnt,parameterval[cnt]->parameterValue));
-                        CcspTraceDebug(("parameterval[%d]->type :%d\n",cnt,parameterval[cnt]->type));
-                    }
-                    macToLower(parameterval[0]->parameterValue);  
-                }
-                else
-                {
-                    CcspTraceError(("Failed to get values for %s ret: %d\n",getList[0],ret));
-                }
-                free_parameterValStruct_t(bus_handle, val_size, parameterval);
-            }
-        }   
+                if(retryCount > 5 )
+		{
+			CcspTraceError(("Unable to get CM Mac after %d retry attempts..\n", retryCount));
+                  	pthread_mutex_unlock(&device_mac_mutex);
+			break;
+		}
+		else
+		{
+			CcspTraceError(("Failed to GetValue for MAC. Retrying...retryCount %d\n", retryCount));
+                  	pthread_mutex_unlock(&device_mac_mutex);
+                        sleep(10);
+		}
+        }
     }
 }
 
@@ -286,7 +320,7 @@ static void macToLower(char macValue[])
     token[i] = strtok(tmp, ":");
     if(token[i]!=NULL)
     {
-        strncat(deviceMAC, token[i],sizeof(deviceMAC)-1);
+        strncpy(deviceMAC, token[i],sizeof(deviceMAC)-1);
         deviceMAC[31]='\0';
         i++;
     }
