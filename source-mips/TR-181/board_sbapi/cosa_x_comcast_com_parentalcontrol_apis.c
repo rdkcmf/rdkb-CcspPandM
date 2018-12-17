@@ -1470,6 +1470,7 @@ for(index = 0;index < g_NrBlkURL; index++)
         if (rc != 0)
 	    {
 	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           Utopia_Free(&ctx, 0);
            return ANSC_STATUS_FAILURE;
 	    }
 		Utopia_Free(&ctx, !rc);
@@ -1495,6 +1496,7 @@ for(index = 0;index < g_NrBlkURL; index++)
         if (rc != 0)
 	    {
 	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           Utopia_Free(&ctx, 0);
            return ANSC_STATUS_FAILURE;
 	    }
 		Utopia_Free(&ctx, !rc);
@@ -1516,6 +1518,7 @@ for(index = 0;index < g_NrBlkURL; index++)
 		 if (rc != 0)
 			{
 			    AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+                Utopia_Free(&ctx, 0);
 				return ANSC_STATUS_FAILURE;
 			}
 			memset(blkurl.end_time,0,64);
@@ -1532,6 +1535,7 @@ for(index = 0;index < g_NrBlkURL; index++)
 			if (rc != 0)
 			{
 			   AnscTraceWarning(("%s -- Utopia_AddBlkURL failed...\n",__FUNCTION__));
+               Utopia_Free(&ctx, 0);
 			   return ANSC_STATUS_FAILURE;
 			}
 	 }else
@@ -1540,6 +1544,7 @@ for(index = 0;index < g_NrBlkURL; index++)
         if (rc != 0)
 	    {
 	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           Utopia_Free(&ctx, 0);
            return ANSC_STATUS_FAILURE;
 	    }
 	 }
@@ -2202,6 +2207,7 @@ for(index = 0;index < g_NrMSServs; index++)
         if (rc != 0)
 	    {
 	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           Utopia_Free(&ctx, 0);
            return ANSC_STATUS_FAILURE;
 	    }
 		Utopia_Free(&ctx, !rc);
@@ -2226,6 +2232,7 @@ for(index = 0;index < g_NrMSServs; index++)
         if (rc != 0)
 	    {
 	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           Utopia_Free(&ctx, 0);
            return ANSC_STATUS_FAILURE;
 	    }
 		Utopia_Free(&ctx, !rc);
@@ -2247,6 +2254,7 @@ for(index = 0;index < g_NrMSServs; index++)
 		 if (rc != 0)
 			{
 			    AnscTraceWarning(("%s -- Utopia_SetMSServByIndex failed...\n",__FUNCTION__));
+                Utopia_Free(&ctx, 0);
 				return ANSC_STATUS_FAILURE;
 			}
 			memset(ms_serv.end_time,0,64);
@@ -2263,6 +2271,8 @@ for(index = 0;index < g_NrMSServs; index++)
 			if (rc != 0)
 			{
 			   AnscTraceWarning(("%s -- Utopia_AddMSServ failed...\n",__FUNCTION__));
+
+               Utopia_Free(&ctx, 0);
 			   return ANSC_STATUS_FAILURE;
 			}
 	 }else
@@ -2271,6 +2281,7 @@ for(index = 0;index < g_NrMSServs; index++)
         if (rc != 0)
 	    {
 	       AnscTraceWarning(("%s -- Utopia_SetMSServByIndex failed...\n",__FUNCTION__));
+           Utopia_Free(&ctx, 0);
            return ANSC_STATUS_FAILURE;
 	    }
 	 }
@@ -2854,6 +2865,7 @@ for(index = 0;index < g_NrMDDevs; index++)
         if (rc != 0)
 	    {
 	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           Utopia_Free(&ctx, 0);
            return ANSC_STATUS_FAILURE;
 	    }
 		Utopia_Free(&ctx, !rc);
@@ -2878,6 +2890,7 @@ for(index = 0;index < g_NrMDDevs; index++)
         if (rc != 0)
 	    {
 	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           Utopia_Free(&ctx, 0);
            return ANSC_STATUS_FAILURE;
 	    }
 		Utopia_Free(&ctx, !rc);
@@ -2899,6 +2912,7 @@ for(index = 0;index < g_NrMDDevs; index++)
 		 if (rc != 0)
 			{
 			    AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+                Utopia_Free(&ctx, 0);
 				return ANSC_STATUS_FAILURE;
 			}
 			memset(md_dev.end_time,0,64);
@@ -2915,6 +2929,7 @@ for(index = 0;index < g_NrMDDevs; index++)
 			if (rc != 0)
 			{
 			   AnscTraceWarning(("%s -- Utopia_AddMDDev failed...\n",__FUNCTION__));
+               Utopia_Free(&ctx, 0);
 			   return ANSC_STATUS_FAILURE;
 			}
 	 }else
@@ -2923,6 +2938,7 @@ for(index = 0;index < g_NrMDDevs; index++)
         if (rc != 0)
 	    {
 	       AnscTraceWarning(("%s -- SetBlkURLByIndex failed...\n",__FUNCTION__));
+           Utopia_Free(&ctx, 0);
            return ANSC_STATUS_FAILURE;
 	    }
 	 }

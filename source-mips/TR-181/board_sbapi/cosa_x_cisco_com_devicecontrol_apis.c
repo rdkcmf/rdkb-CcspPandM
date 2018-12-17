@@ -1859,6 +1859,7 @@ CosaDmlDcSetEnableStaticNameServer
     else{
         CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
         if (vsystem("/bin/sh /etc/utopia/service.d/set_resolv_conf.sh") != 0) {
+            Utopia_Free(&ctx, 1);
             fprintf(stderr, "%s: fail to set resolv.conf\n", __FUNCTION__);
             return ANSC_STATUS_FAILURE;
         }
@@ -2954,9 +2955,9 @@ CosaDmlLanMngm_GetEntryByIndex(ULONG index, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         Utopia_GetLanMngmCount(&utctx, &num);
         if(index < num ){
             _Get_LanMngm_Setting(&utctx, index, pLanMngm);
-            Utopia_Free(&utctx, 0);
             ret = ANSC_STATUS_SUCCESS;
         }
+        Utopia_Free(&utctx, 0);
     }
     return ret;
 }

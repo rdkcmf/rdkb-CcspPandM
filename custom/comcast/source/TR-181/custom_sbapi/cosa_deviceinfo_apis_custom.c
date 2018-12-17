@@ -77,6 +77,8 @@
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>
+#include <pthread.h>
+
 #define _ERROR_ "NOT SUPPORTED"
 
 #define CAPTIVEPORTAL_EANBLE     "CaptivePortal_Enable"
@@ -327,37 +329,18 @@ CosaDmlDiGetXfinityWiFiEnable
     return ANSC_STATUS_SUCCESS;
 }
 
-ANSC_STATUS
-CosaDmlDiSetXfinityWiFiEnable
+
+void XfinityWifiThread
     (
-        BOOL value
+        void *arg
     )
 {
-#if 0
-    if (DmSetBool("Device.WiFi.SSID.5.Enable", value) != ANSC_STATUS_SUCCESS) {
-        AnscTraceError(("%s: set WiFi SSID Enable error\n", __FUNCTION__));
-    } else {
-        AnscTraceWarning(("%s: set WiFi SSID Enable OK\n", __FUNCTION__));
-    }
-
-    if (DmSetBool("Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", value) != ANSC_STATUS_SUCCESS) {
-        AnscTraceError(("%s: set WiFi ApplySetting error\n", __FUNCTION__));
-    } else {
-        AnscTraceWarning(("%s: set WiFi ApplySetting OK\n", __FUNCTION__));
-    }
-#endif
-	//zqiu>>
-    //if (g_SetParamValueBool("Device.X_COMCAST_COM_GRE.Interface.1.Enable", value) != ANSC_STATUS_SUCCESS) {
-    //    AnscTraceError(("%s: set WiFi ApplySetting error\n", __FUNCTION__));
-    //} else {
-    //    AnscTraceWarning(("%s: set WiFi ApplySetting OK\n", __FUNCTION__));
-    //}
-
-
-    //Only in Xfinitywifi Disable case SSIDs 5,6,9,10 should be disabled so that 
-    //Xfinitywifi SSIDs broadcast will be stopped.
-    //In enable case it is not required because user has to explicitly set SSIDs 5 and 6 or
-    //SSIDs 9 and 10 that will be used for broadcast.
+    BOOL *pvalue = (BOOL*)arg;
+    BOOL value = FALSE;
+    
+    if (!pvalue)
+        return;
+    value = *pvalue;
     if (FALSE == value)
     {
         //SSIDs 5 and 6 case
@@ -390,7 +373,8 @@ CosaDmlDiSetXfinityWiFiEnable
 	if (g_SetParamValueBool("Device.X_COMCAST-COM_GRE.Tunnel.1.Enable", value) != ANSC_STATUS_SUCCESS) {
 		fprintf(stderr, "%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable error\n", __FUNCTION__);
         AnscTraceError(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable error\n", __FUNCTION__));
-		return ANSC_STATUS_FAILURE;
+        AnscFreeMemory(pvalue);
+		return;
     } else {
         AnscTraceWarning(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable OK\n", __FUNCTION__));
     }
@@ -409,8 +393,38 @@ CosaDmlDiSetXfinityWiFiEnable
         PsmSet(HOTSPOT_PSM_EANBLE, "1");
     else
         PsmSet(HOTSPOT_PSM_EANBLE, "0");
+    
+    AnscFreeMemory(pvalue);
+    pvalue = NULL;
+}
 
-    return ANSC_STATUS_SUCCESS;
+ANSC_STATUS
+CosaDmlDiSetXfinityWiFiEnable
+    (
+        BOOL value
+    )
+{
+    pthread_t thread_xfinity_wifi = 0;
+    BOOL *pValue = NULL;
+
+    pValue =  AnscAllocateMemory(sizeof(BOOL*));    
+    if (pValue != NULL)
+    {
+        *pValue = value;
+        pthread_create
+            (
+             &thread_xfinity_wifi,
+             NULL,
+             XfinityWifiThread,
+             (void*)pValue
+            );
+        return ANSC_STATUS_SUCCESS;
+    }
+    else
+    {
+		return ANSC_STATUS_FAILURE;
+    }
+
 }
 #endif
 

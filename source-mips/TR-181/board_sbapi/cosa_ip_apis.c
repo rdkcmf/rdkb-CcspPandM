@@ -985,7 +985,10 @@ IPIF_getEntry_for_Ipv6Addr
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,namespace,"IPAddress",val,sizeof(val));
                 if (!val[0])
+                {
+                    Utopia_Free(&utctx,0);        
                     continue;
+                }
                 safe_strcpy(p_dml_v6addr->IP6Address, val, sizeof(p_dml_v6addr->IP6Address));
 
                 p_dml_v6addr->InstanceNumber = inst_num;
@@ -1629,7 +1632,10 @@ IPIF_getEntry_for_Ipv6Pre
             {
                 Utopia_RawGet(&utctx,namespace,"Prefix",val,sizeof(val));
                 if (!val[0])
+                {
+                    Utopia_Free(&utctx,0);        
                     continue;
+                }
                 safe_strcpy(p_dml_v6pre->Prefix, val, sizeof(p_dml_v6pre->Prefix));
             
                 memset(val, 0, sizeof(val));

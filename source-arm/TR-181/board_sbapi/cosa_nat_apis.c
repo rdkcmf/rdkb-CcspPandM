@@ -1606,6 +1606,7 @@ CosaDmlNatGetDmz
     {
         CcspTraceError(("CosaDmlNatGetDmz no memory!\n"));
 
+        Utopia_Free(&Ctx, 0);
         return ANSC_STATUS_FAILURE;
     }
 
@@ -1738,7 +1739,7 @@ CosaDmlNatSetDmz
     if ( !pDmz )
     {
         CcspTraceError(("CosaDmlNatGetDmz no memory!\n"));
-
+        Utopia_Free(&Ctx, 0);
         return ANSC_STATUS_RESOURCES;
     }
 
@@ -3317,6 +3318,7 @@ CosaDmlNatGetPortTrigger
     porttrigger.rule_id = InstanceNum;
     rc = Utopia_GetPortTriggerByRuleId(&Ctx, &porttrigger);
     if(rc != SUCCESS){
+        Utopia_Free(&Ctx, 0);
         return ANSC_STATUS_FAILURE;
     }
 

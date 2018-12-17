@@ -3568,6 +3568,7 @@ CosaDmlRoutingGetNumberOfV4Entries
 
         sroute = (StaticRoute *)malloc(sizeof(StaticRoute) * Num_V4Entry);
         if (NULL == sroute) {
+            Utopia_Free(&ctx,0);
             return ANSC_STATUS_FAILURE;
         }
         bzero(sroute, sizeof(StaticRoute) * Num_V4Entry);
@@ -3820,6 +3821,7 @@ CosaDmlRoutingAddV4Entry
 
     if(new_route == NULL)
     {
+        Utopia_Free(&ctx,0);
         Num_V4Entry--;
         return ANSC_STATUS_FAILURE;
     }
@@ -3971,10 +3973,6 @@ CosaDmlRoutingDelV4Entry
     int metric = 0;
     int uindex;
 
-    /* Initialize a Utopia Context */
-    if(!Utopia_Init(&ctx))
-        return ANSC_STATUS_FAILURE;
-    
     if (!pEntry)
     {
         return ANSC_STATUS_FAILURE;
@@ -3984,7 +3982,10 @@ CosaDmlRoutingDelV4Entry
         return ANSC_STATUS_FAILURE;
 
     CcspTraceWarning(("CosaDmlRoutingDelV4Entry entry, %d\n", pEntry->InstanceNumber));
-
+    /* Initialize a Utopia Context */
+    if(!Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+ 
     for(index = 0; index < Config_Num; index++)
     {
         if (pEntry->InstanceNumber != Router_Alias[index].InstanceNumber)
