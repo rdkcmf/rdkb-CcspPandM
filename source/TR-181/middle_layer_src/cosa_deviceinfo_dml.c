@@ -5179,7 +5179,7 @@ Iot_SetParamBoolValue
     prototype:
 
         BOOL
-        Control_GetParamIntValue
+        Control_GetParamUlongValue
             (
                 ANSC_HANDLE                 hInsContext,
                 char*                       ParamName,
@@ -5266,8 +5266,8 @@ Control_SetParamUlongValue
     {
 	if( ulValue == 1 )
 	{
-		AnscTraceWarning((" Run RFC dcmrfc.service\n"));
-		system("sh /lib/rdk/dcmrfc.service &");
+		AnscTraceWarning((" Run RFC rfc.service\n"));
+		system("sh /lib/rdk/rfc.service &");
 	}
 
         return TRUE;
