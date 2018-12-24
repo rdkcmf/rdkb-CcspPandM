@@ -1516,11 +1516,14 @@ CosaDmlDhcpcGetInfo
 	dhcpv4c_get_ert_gw(&pInfo->IPRouters[0].Value);
 	ad.number = 0;
 	dhcpv4c_get_ert_dns_svrs(&ad);
-	for(i=0; i<ad.number;i++)
-		pInfo->DNSServers[i].Value = ad.addrs[i];
-#if defined (_COSA_BCM_ARM_)
 	pInfo->NumDnsServers = ad.number;
-#endif
+    if (ad.number > COSA_DML_DHCP_MAX_ENTRIES)
+    {
+        CcspTraceError(("!!! Max DHCP Entry Overflow: %d",ad.number));
+	    pInfo->NumDnsServers = COSA_DML_DHCP_MAX_ENTRIES; // Fail safe
+    }
+	for(i=0; i< pInfo->NumDnsServers;i++)
+		pInfo->DNSServers[i].Value = ad.addrs[i];
 	dhcpv4c_get_ert_remain_lease_time(&pInfo->LeaseTimeRemaining);
 	dhcpv4c_get_ert_dhcp_svr(&pInfo->DHCPServer);
    
