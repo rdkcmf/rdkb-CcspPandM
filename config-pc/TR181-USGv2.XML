@@ -11863,6 +11863,12 @@
                         <syntax>bool</syntax>
                         <writable>true</writable>
                     </parameter>
+                    <parameter>
+                        <name>Xupnp</name>
+                        <type>boolean</type>
+                        <syntax>bool</syntax>
+                        <writable>true</writable>
+                    </parameter>
                 </parameters>
                 <objects>
                    <object>
