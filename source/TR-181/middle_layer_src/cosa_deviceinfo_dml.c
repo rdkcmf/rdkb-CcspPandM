@@ -6339,6 +6339,20 @@ Feature_GetParamBoolValue
 #endif
      }
 
+    if( AnscEqualString(ParamName, "Xupnp", TRUE))
+    {
+	 char value[8];
+         syscfg_get(NULL, "start_upnp_service", value, sizeof(value));
+	 if( value != NULL )
+         {
+             if (strcmp(value, "true") == 0)
+                 *pBool = TRUE;
+             else
+                 *pBool = FALSE;
+         }
+	 return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -6614,6 +6628,7 @@ Feature_SetParamBoolValue
         return TRUE;
     }
 
+
     if( AnscEqualString(ParamName, "ContainerSupport", TRUE))
     {
        char str[2];
@@ -6737,6 +6752,28 @@ Feature_SetParamBoolValue
 #else
        return FALSE;
 #endif
+    }
+    if( AnscEqualString(ParamName, "Xupnp", TRUE))
+    {
+       if ( bValue == TRUE)
+       {
+           if (syscfg_set(NULL, "start_upnp_service", "true") != 0)
+           {
+               AnscTraceWarning(("syscfg_set start_upnp_service:true failed\n"));
+           }
+       }
+       else
+       {
+           if (syscfg_set(NULL, "start_upnp_service", "false") != 0)
+           {
+               AnscTraceWarning(("syscfg_set start_upnp_service:false failed\n"));
+           }
+       }
+       if (syscfg_commit() != 0)
+       {
+           AnscTraceWarning(("syscfg_commit start_upnp_service failed\n"));
+       }
+       return TRUE;
     }
 
     return FALSE;
