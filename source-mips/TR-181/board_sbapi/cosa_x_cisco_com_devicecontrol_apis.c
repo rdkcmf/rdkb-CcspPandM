@@ -1677,7 +1677,8 @@ CosaDmlDcSetFactoryReset
 		pthread_t logs;
         pthread_create(&logs, NULL, &backuplogs, NULL);
 	//	system("/fss/gw/rdklogger/backupLogs.sh");
-	} else if (factory_reset_mask & FR_WIFI) {
+	}
+	if (factory_reset_mask & FR_WIFI) {
 		/*TODO: SEND EVENT TO WIFI PAM  Device.WiFi.X_CISCO_COM_FactoryReset*/
         int                         ret;
         char* faultParam = NULL;
@@ -1731,6 +1732,10 @@ if ( strlen(buffer) == 0 )
 
 }
 pclose(fp);
+#endif
+#if defined(_PLATFORM_CI20_)
+                sleep(10);
+                system("reboot");
 #endif
 //            free_componentStruct_t(bus_handle, size, ppComponents);
             return  ANSC_STATUS_SUCCESS;
