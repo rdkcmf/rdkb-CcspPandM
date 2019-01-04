@@ -729,6 +729,8 @@ user_hashandsavepwd
         {
           AnscCopyString(pEntry->HashedPassword,setHash);
           CcspTraceWarning(("%s, Hash value is saved to syscfg\n",__FUNCTION__));
+          syscfg_unset(NULL, "user_password_3");
+          syscfg_commit();
           return ANSC_STATUS_SUCCESS;
         }
      }
@@ -790,25 +792,9 @@ CosaDmlUserResetPassword
    }
    if(!strcmp(pEntry->Username,"admin"))
    {
-   user_hashandsavepwd(NULL,defPassword,pEntry);
-   CcspTraceWarning(("%s, Set default password to syscfg\n",__FUNCTION__));
-   if(syscfg_set(NULL, "user_password_3", defPassword) != 0)
-   {
-      AnscTraceWarning(("syscfg_set failed\n"));
-   }
-   else
-   {
-     if(syscfg_commit() != 0)
-     {
-       AnscTraceWarning(("syscfg_commit failed\n"));
-     }
-     else
-     {
-       AnscCopyString(pEntry->Password, defPassword);
-       CcspTraceWarning(("%s, Returning Success\n",__FUNCTION__));
-       return ANSC_STATUS_SUCCESS;
-     }
-   }
+      user_hashandsavepwd(NULL,defPassword,pEntry);
+      AnscCopyString(pEntry->Password, defPassword);
+      return ANSC_STATUS_SUCCESS;
    }
 #if defined(_COSA_FOR_BCI_)
    if(!strcmp(pEntry->Username,"cusadmin"))

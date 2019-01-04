@@ -362,6 +362,12 @@ CosaUsersBackendGetUserInfo
            if( buff[0] != '\0' && pCosaUser->HashedPassword[0]== '\0')
            {
              _ansc_strncpy(pCosaUser->HashedPassword,buff,sizeof(pCosaUser->HashedPassword));
+	     memset(buff, 0, sizeof(buff));
+	     syscfg_get( NULL, "user_password_3",buff, sizeof(buff));
+	     if( buff[0] != '\0' ){
+                 syscfg_unset(NULL, "user_password_3");
+                 syscfg_commit();
+	     }
            }
         }
 #if defined(_COSA_FOR_BCI_)
