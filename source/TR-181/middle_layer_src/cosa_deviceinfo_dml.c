@@ -5557,12 +5557,6 @@ static unsigned char OAUTHTokenEndpoint[256] = "";
 
 static unsigned char OAUTHClientId[16] = "";
 
-#define MAX_CS_LEN 32
-#define CS_CMD_FILE "/etc/mount-utils/getConfigFile.sh"
-#define CS_CMD "getConfigFile"
-#define CS_FILE_DIR "/tmp/.webui"
-#define CS_FILE_NAME "/tmp/.webui/rcdefal.lll"
-
 ULONG
 OAUTH_GetParamStringValue
     (
@@ -5572,14 +5566,9 @@ OAUTH_GetParamStringValue
         ULONG*             pUlSize
     )
 {
-    FILE *fp = NULL;
     LONG retval = 0;
-    int c, i;
-    int buflen, outlen;
-    char *bufptr = NULL;
-    char *tmpptr;
+    int outlen;
     char *outptr = NULL;
-    char cmdbuf[256];
 
     hInsContext = hInsContext;    // prevent compiler unused variable warning
     if( AnscEqualString(ParamName, "AuthMode", TRUE) )
@@ -5601,44 +5590,6 @@ OAUTH_GetParamStringValue
     {
         outptr = OAUTHClientId;
     }
-    else if( AnscEqualString(ParamName, "ClientSecret", TRUE) == TRUE
-           && AnscEqualString(OAUTHAuthMode, "potd", TRUE) != TRUE )
-    {
-        buflen = MAX_CS_LEN; // see how much we need to allocate
-        bufptr = (unsigned char *)malloc( buflen + 1 ); // add 1 for NULL
-        if( bufptr )
-        {
-            mkdir( CS_FILE_DIR, S_IRWXU | S_IRWXG | S_IRWXO );    // we don't care about errors
-            *bufptr = 0;        // just NULL string
-            i = sizeof( cmdbuf );
-            snprintf( cmdbuf, i - 1, ". %s; %s %s", CS_CMD_FILE, CS_CMD, CS_FILE_NAME );
-            system( cmdbuf );
-            memset( cmdbuf, 0, i );
-            if( ( fp = fopen ( CS_FILE_NAME, "r" ) ) != NULL )
-            {
-                tmpptr = bufptr;
-                i = 0;
-                // exit on EOF or 0x0a
-                while( (c = fgetc( fp )) != EOF && c != 0x0a && i++ < buflen )
-                {
-                    *tmpptr++ = (char)c;
-                }
-                *tmpptr = 0;
-                fclose( fp );
-                outptr = bufptr;
-            }
-            else
-            {
-                CcspTraceWarning(("OAUTH: Unable to open %s for read/write\n", CS_FILE_NAME));
-            }
-            remove( CS_FILE_NAME );
-            outptr = bufptr;
-        }
-        else
-        {
-            retval = -1;
-        }
-    }
     else
     {
         retval = -1;
@@ -5657,11 +5608,6 @@ OAUTH_GetParamStringValue
             *pUlSize = outlen + 1;
             retval = 1;
         }
-    }
-    if( bufptr != NULL )
-    {
-        memset( bufptr, 0, buflen+1 );
-        free( bufptr );
     }
     return (ULONG)retval;
 }
@@ -5706,14 +5652,7 @@ OAUTH_SetParamStringValue
         char*                       pString
     )
 {
-    FILE *fp = NULL;
-    int inputlen;
     int maxlen;
-    int buflen;
-    int i;
-    int c;
-    unsigned char *buf = NULL;
-    unsigned char *tmpptr;
     char *inptr = NULL;
     BOOL bRet = FALSE;
 
@@ -5736,12 +5675,6 @@ OAUTH_SetParamStringValue
     {
         maxlen = sizeof(OAUTHClientId);
         inptr = OAUTHClientId;
-    }
-    else if( AnscEqualString(ParamName, "ClientSecret", TRUE) )
-    {
-        // it's supported but do nothing
-        maxlen = 0;
-        inptr = NULL;
     }
     else
     {
