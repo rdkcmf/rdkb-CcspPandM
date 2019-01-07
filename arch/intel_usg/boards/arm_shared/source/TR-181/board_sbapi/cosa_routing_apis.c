@@ -2671,7 +2671,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
      * we use "ip -6 route" instead of "route -A inet6".
      */
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname);
-    if ((fp = v_secure_popen(cmd)) == NULL)
+    if ((fp = popen(cmd, "r")) == NULL)
         return -1;
 
     entryCnt = 0;
@@ -2714,14 +2714,14 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 
         entryCnt++;
     }
-	v_secure_pclose(fp);
+	pclose(fp);
 	//Fix for issue RDKB-367
 #ifdef _COSA_BCM_MIPS_ 
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table erouter");
 #else
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table 3");
 #endif
-    if ((fp = v_secure_popen(cmd)) == NULL)
+    if ((fp = popen(cmd, "r")) == NULL)
         return -1;
 	
     while (fgets(line, sizeof(line), fp) != NULL)
@@ -2762,7 +2762,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
         }
 	entryCnt++;
      }
-	v_secure_pclose(fp);
+	pclose(fp);
   //Fix ends
     *numInfo = entryCnt;
      

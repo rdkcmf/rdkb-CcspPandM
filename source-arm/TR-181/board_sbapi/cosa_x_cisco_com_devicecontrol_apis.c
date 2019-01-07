@@ -377,8 +377,8 @@ WebServRestart(const WebServConf_t *conf)
         return -1;
     }
 #endif
-    CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
-    if (v_secure_system("/bin/sh /etc/webgui.sh") != 0) {
+    CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
+    if (vsystem("/bin/sh /etc/webgui.sh") != 0) {
         fprintf(stderr, "%s: fail to restart lighttpd\n", __FUNCTION__);
         return -1;
     }
@@ -460,7 +460,7 @@ static int detect_process(char *process_name)
 
     sprintf(ps, "ps | grep -v grep | grep -c %s", process_name);
 
-    if ((ptr=v_secure_popen(ps))!=NULL)
+    if ((ptr=popen(ps, "r"))!=NULL)
     {
         while (fgets(buff,512,ptr)!=NULL)
         {
@@ -471,7 +471,7 @@ static int detect_process(char *process_name)
             }
         }
 
-        v_secure_pclose(ptr);
+        pclose(ptr);
     }
 
     return 0;
@@ -1074,8 +1074,8 @@ CosaDmlDcSetWanNameServer
 	
     Utopia_Free(&utctx, 1);
     
-    CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
-    if (v_secure_system("/bin/sh /etc/utopia/service.d/set_resolv_conf.sh") != 0) {
+    CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
+    if (vsystem("/bin/sh /etc/utopia/service.d/set_resolv_conf.sh") != 0) {
         fprintf(stderr, "%s: fail to set resolv.conf\n", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
     }
@@ -1102,8 +1102,8 @@ CosaDmlDcSetHostName
 	
     Utopia_Free(&utctx,1);
 
-    CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
-    if (v_secure_system("/bin/sh /etc/utopia/service.d/set_hostname.sh") != 0) {
+    CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
+    if (vsystem("/bin/sh /etc/utopia/service.d/set_hostname.sh") != 0) {
         fprintf(stderr, "%s: fail to set resolv.conf\n", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
     }
@@ -1140,8 +1140,8 @@ CosaDmlDcSetDomainName
 	
     Utopia_Free(&utctx,1);
 
-    CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
-    if (v_secure_system("/bin/sh /etc/utopia/service.d/set_wandomain.sh") != 0) {
+    CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
+    if (vsystem("/bin/sh /etc/utopia/service.d/set_wandomain.sh") != 0) {
         fprintf(stderr, "%s: fail to set wan domain name\n", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
     }
@@ -1340,13 +1340,13 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 			sprintf(buf, "date");
 			char buffer[50] = {0};
 			memset(buffer,0,sizeof(buffer));
-			fp = v_secure_popen(buf);
+			fp = popen(buf, "r");
 			if( fp != NULL) {         
 			while(fgets(buffer, sizeof(buffer), fp)!=NULL){
 				buffer[strlen(buffer) - 1] = '\0';
 				syscfg_set(NULL, "latest_wifi_reset_time", buffer);
 			}
-				v_secure_pclose(fp);
+				pclose(fp);
 			}
 
 			if (syscfg_commit() != 0) 
@@ -1509,13 +1509,13 @@ CosaDmlDcSetRebootDevice
 		sprintf(buf, "date");
 		char buffer[50] = {0};
 		memset(buffer,0,sizeof(buffer));
-        fp = v_secure_popen(buf);
+        fp = popen(buf, "r");
 		if( fp != NULL) {         
 		    while(fgets(buffer, sizeof(buffer), fp)!=NULL){
 			    buffer[strlen(buffer) - 1] = '\0';
 				syscfg_set(NULL, "latest_reboot_time", buffer);
 			}
-			v_secure_pclose(fp);
+			pclose(fp);
 		}
 
 		char tmp[7] = {0};
@@ -2111,8 +2111,8 @@ CosaDmlDcSetEnableStaticNameServer
     if(!bFlag)
         commonSyseventSet("wan-restart", "");
     else{
-        CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
-        if (v_secure_system("/bin/sh /etc/utopia/service.d/set_resolv_conf.sh") != 0) {
+        CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
+        if (vsystem("/bin/sh /etc/utopia/service.d/set_resolv_conf.sh") != 0) {
             fprintf(stderr, "%s: fail to set resolv.conf\n", __FUNCTION__);
             return ANSC_STATUS_FAILURE;
         }

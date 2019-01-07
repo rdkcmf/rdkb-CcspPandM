@@ -2684,7 +2684,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
      * we use "ip -6 route" instead of "route -A inet6".
      */
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname);
-    if ((fp = v_secure_popen(cmd)) == NULL)
+    if ((fp = popen(cmd, "r")) == NULL)
         return -1;
 
     entryCnt = g_numRtInfo6;

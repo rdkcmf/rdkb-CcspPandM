@@ -357,9 +357,9 @@ static void
 EvtDispterWanIpAddrsCallback(char *ip_addrs)
 {
 #ifdef DUAL_CORE_XB3
-    CcspTraceInfo(("%s v_secure_system %d \n", __FUNCTION__,__LINE__)); 
+    CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
     CcspTraceInfo(("EvtDispterWanIpAddrsCallback - erouter0 IP = %s\n",ip_addrs));
-    v_secure_system("/usr/ccsp/pam/erouter0_ip_sync.sh %s &",ip_addrs);
+    vsystem("/usr/ccsp/pam/erouter0_ip_sync.sh %s &",ip_addrs);
 #endif
     CcspTraceInfo(("%s Setting current_wan_ipaddr and restarting firewall %d \n", __FUNCTION__,__LINE__)); 
     sysevent_set(se_fd, token, "current_wan_ipaddr", ip_addrs, 0);
