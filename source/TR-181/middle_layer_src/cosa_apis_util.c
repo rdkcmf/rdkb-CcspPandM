@@ -1446,7 +1446,7 @@ CosaUtilGetStaticRouteTable
 
     if (fp2)
     {
-        fclose(fp2);
+        pclose(fp2);
     }
     fclose(fp);
     
