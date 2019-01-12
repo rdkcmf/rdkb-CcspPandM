@@ -415,151 +415,156 @@ void* sendNotification(void* pValue)
     char lastRebootReason[64]={'\0'};
     notify_params_t *msg;
     char * temp = NULL;
-
-
     char dest[512] = {'\0'};
     
     pthread_detach(pthread_self());
 
     if(pValue)
     {
-	msg = (notify_params_t *) pValue;
+		msg = (notify_params_t *) pValue;
     }
+
     getDeviceMac();
-    CcspTraceDebug(("deviceMAC: %s\n",deviceMAC));
-    snprintf(source, sizeof(source), "mac:%s", deviceMAC);
-
-    if(notifyPayload != NULL)
+    if(strlen(deviceMAC) == 0)
     {
-        cJSON_AddStringToObject(notifyPayload,"device_id", source);
-	if(msg)
-	{
-		if(msg->status !=NULL)
-		{
-			cJSON_AddStringToObject(notifyPayload,"status", msg->status);
-		}
-		if(msg->time !=NULL)
-		{
-			cJSON_AddStringToObject(notifyPayload,"start-time", msg->time);
-		}
-		if(msg->download_status !=NULL)
-		{
-			if(strcmp(msg->download_status, "true") == 0)
-			{
-				cJSON_AddStringToObject(notifyPayload,"download-status", "success");
-			}
-			else
-			{
-				cJSON_AddStringToObject(notifyPayload,"download-status", "failure");
-			}
-		}
-
-		if ((msg->status !=NULL) && (strcmp(msg->status, "reboot-pending") == 0))
-		{
-			bootTime = CosaDmlDiGetBootTime(NULL);
-			cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
-			syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", lastRebootReason, sizeof(lastRebootReason));
-			CcspTraceDebug(("lastRebootReason is %s\n", lastRebootReason));
-
-			if(lastRebootReason !=NULL)
-			{
-				cJSON_AddStringToObject(notifyPayload,"reboot-reason", lastRebootReason);
-			}
-			if(msg->delay !=NULL)
-			{
-				cJSON_AddNumberToObject(notifyPayload,"delay", atoi(msg->delay));
-			}
-		}
-
-		if ((msg->status !=NULL) && (strcmp(msg->status, "fully-manageable") == 0) && (msg->system_ready_time != NULL))
-		{
-		    bootTime = CosaDmlDiGetBootTime(NULL);
-			cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
-			cJSON_AddNumberToObject(notifyPayload,"system-ready-time", atoi(msg->system_ready_time));
-		}
-	}
-        stringifiedNotifyPayload = cJSON_PrintUnformatted(notifyPayload);
-        CcspTraceInfo(("Notification payload %s\n",stringifiedNotifyPayload));
-        cJSON_Delete(notifyPayload);
+		CcspTraceError(("deviceMAC is NULL, failed to send Notification\n"));
     }
-    
-    notif_wrp_msg = (wrp_msg_t *)malloc(sizeof(wrp_msg_t));
-    memset(notif_wrp_msg, 0, sizeof(wrp_msg_t));
-    if(notif_wrp_msg != NULL)
+    else
     {
-        notif_wrp_msg ->msg_type = WRP_MSG_TYPE__EVENT;
-        notif_wrp_msg ->u.event.source = strdup(source);
-        CcspTraceDebug(("source: %s\n",notif_wrp_msg ->u.event.source));
+		CcspTraceDebug(("deviceMAC: %s\n",deviceMAC));
+		snprintf(source, sizeof(source), "mac:%s", deviceMAC);
 
-	if(msg)
-	{
-		if((msg->status != NULL) && (strlen(msg->status) != 0))
+		if(notifyPayload != NULL)
 		{
-			snprintf(dest,sizeof(dest),"event:device-status/mac:%s/%s",deviceMAC, msg->status);
-
-			/* add remaining fields based on status of each events.
-			   event:device-status/{device_id}/reboot-pending/{boot-time}/{delay} */
-			if (strcmp(msg->status, "reboot-pending") == 0)
+			cJSON_AddStringToObject(notifyPayload,"device_id", source);
+			if(msg)
 			{
-				temp = strdup(dest);
+				if(msg->status !=NULL)
+				{
+					cJSON_AddStringToObject(notifyPayload,"status", msg->status);
+				}
+				if(msg->time !=NULL)
+				{
+					cJSON_AddStringToObject(notifyPayload,"start-time", msg->time);
+				}
+				if(msg->download_status !=NULL)
+				{
+					if(strcmp(msg->download_status, "true") == 0)
+					{
+						cJSON_AddStringToObject(notifyPayload,"download-status", "success");
+					}
+					else
+					{
+						cJSON_AddStringToObject(notifyPayload,"download-status", "failure");
+					}
+				}
 
-				snprintf(dest,sizeof(dest),"%s/%lu/%ss",temp, bootTime, (((msg->delay != NULL) && (strlen(msg->delay) != 0)) ? msg->delay : "unknown"));
-				CcspTraceDebug(("dest framed for reboot-pending %s\n", dest));
-				free(temp);
+				if ((msg->status !=NULL) && (strcmp(msg->status, "reboot-pending") == 0))
+				{
+					bootTime = CosaDmlDiGetBootTime(NULL);
+					cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
+					syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", lastRebootReason, sizeof(lastRebootReason));
+					CcspTraceDebug(("lastRebootReason is %s\n", lastRebootReason));
+
+					if(lastRebootReason !=NULL)
+					{
+						cJSON_AddStringToObject(notifyPayload,"reboot-reason", lastRebootReason);
+					}
+					if(msg->delay !=NULL)
+					{
+						cJSON_AddNumberToObject(notifyPayload,"delay", atoi(msg->delay));
+					}
+				}
+
+				if ((msg->status !=NULL) && (strcmp(msg->status, "fully-manageable") == 0) && (msg->system_ready_time != NULL))
+				{
+					bootTime = CosaDmlDiGetBootTime(NULL);
+					cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
+					cJSON_AddNumberToObject(notifyPayload,"system-ready-time", atoi(msg->system_ready_time));
+				}
+			}
+			stringifiedNotifyPayload = cJSON_PrintUnformatted(notifyPayload);
+			CcspTraceInfo(("Notification payload %s\n",stringifiedNotifyPayload));
+			cJSON_Delete(notifyPayload);
+		}
+
+		notif_wrp_msg = (wrp_msg_t *)malloc(sizeof(wrp_msg_t));
+		memset(notif_wrp_msg, 0, sizeof(wrp_msg_t));
+		if(notif_wrp_msg != NULL)
+		{
+			notif_wrp_msg ->msg_type = WRP_MSG_TYPE__EVENT;
+			notif_wrp_msg ->u.event.source = strdup(source);
+			CcspTraceDebug(("source: %s\n",notif_wrp_msg ->u.event.source));
+
+			if(msg)
+			{
+				if((msg->status != NULL) && (strlen(msg->status) != 0))
+				{
+					snprintf(dest,sizeof(dest),"event:device-status/mac:%s/%s",deviceMAC, msg->status);
+
+					/* add remaining fields based on status of each events.
+					   event:device-status/{device_id}/reboot-pending/{boot-time}/{delay} */
+					if (strcmp(msg->status, "reboot-pending") == 0)
+					{
+						temp = strdup(dest);
+
+						snprintf(dest,sizeof(dest),"%s/%lu/%ss",temp, bootTime, (((msg->delay != NULL) && (strlen(msg->delay) != 0)) ? msg->delay : "unknown"));
+						CcspTraceDebug(("dest framed for reboot-pending %s\n", dest));
+						free(temp);
+					}
+
+					if (strcmp(msg->status, "fully-manageable") == 0)
+					{
+						temp = strdup(dest);
+						snprintf(dest,sizeof(dest),"%s/%s",temp, (((msg->system_ready_time != NULL) && (strlen(msg->system_ready_time) != 0)) ? msg->system_ready_time : "0"));
+						CcspTraceDebug(("dest framed for fully-manageable %s\n", dest));
+						free(temp);
+					}
+				}
+				else
+				{
+					CcspTraceError(("Unable to frame dest as status field is empty\n"));
+				}
+			}
+			notif_wrp_msg ->u.event.dest = strdup(dest);
+			CcspTraceDebug(("destination: %s\n", notif_wrp_msg ->u.event.dest));
+			notif_wrp_msg->u.event.content_type = strdup(CONTENT_TYPE_JSON);
+			CcspTraceDebug(("content_type is %s\n",notif_wrp_msg->u.event.content_type));
+			if(stringifiedNotifyPayload != NULL)
+			{
+			    notif_wrp_msg ->u.event.payload = (void *) stringifiedNotifyPayload;
+			    notif_wrp_msg ->u.event.payload_size = strlen(stringifiedNotifyPayload);
 			}
 
-			if (strcmp(msg->status, "fully-manageable") == 0)
+			while(retry_count<=3)
 			{
-			    temp = strdup(dest);
-			    snprintf(dest,sizeof(dest),"%s/%s",temp, (((msg->system_ready_time != NULL) && (strlen(msg->system_ready_time) != 0)) ? msg->system_ready_time : "0"));
-				CcspTraceDebug(("dest framed for fully-manageable %s\n", dest));
-				free(temp);
+			    backoffRetryTime = (int) pow(2, c) -1;
+
+			    sendStatus = libparodus_send(pam_instance, notif_wrp_msg );
+
+			    if(sendStatus == 0)
+			    {
+			        retry_count = 0;
+			        CcspTraceInfo(("Notification successfully sent to parodus\n"));
+			        break;
+			    }
+			    else
+			    {
+			        CcspTraceError(("Failed to send Notification: '%s', retrying ....\n",libparodus_strerror(sendStatus)));
+			        CcspTraceDebug(("sendNotification backoffRetryTime %d seconds\n", backoffRetryTime));
+			        sleep(backoffRetryTime);
+			        c++;
+			        retry_count++;
+			     }
+		   }
+		   CcspTraceDebug(("sendStatus is %d\n",sendStatus));
+		   wrp_free_struct (notif_wrp_msg );
+			if(msg != NULL)
+			{
+				free_notify_params_struct(msg);
 			}
-		}
-		else
-		{
-			CcspTraceError(("Unable to frame dest as status field is empty\n"));
-		}
+	   }
 	}
-        notif_wrp_msg ->u.event.dest = strdup(dest);
-        CcspTraceDebug(("destination: %s\n", notif_wrp_msg ->u.event.dest));
-        notif_wrp_msg->u.event.content_type = strdup(CONTENT_TYPE_JSON);
-        CcspTraceDebug(("content_type is %s\n",notif_wrp_msg->u.event.content_type));
-        if(stringifiedNotifyPayload != NULL)
-        {
-            notif_wrp_msg ->u.event.payload = (void *) stringifiedNotifyPayload;
-            notif_wrp_msg ->u.event.payload_size = strlen(stringifiedNotifyPayload);
-        }
-
-        while(retry_count<=3)
-        {
-            backoffRetryTime = (int) pow(2, c) -1;
-
-            sendStatus = libparodus_send(pam_instance, notif_wrp_msg );
-
-            if(sendStatus == 0)
-            {
-                retry_count = 0;
-                CcspTraceInfo(("Notification successfully sent to parodus\n"));
-                break;
-            }
-            else
-            {
-                CcspTraceError(("Failed to send Notification: '%s', retrying ....\n",libparodus_strerror(sendStatus)));
-                CcspTraceDebug(("sendNotification backoffRetryTime %d seconds\n", backoffRetryTime));
-                sleep(backoffRetryTime);
-                c++;
-                retry_count++;
-             }
-       }
-       CcspTraceDebug(("sendStatus is %d\n",sendStatus));
-       wrp_free_struct (notif_wrp_msg );
-        if(msg != NULL)
-        {
-	        free_notify_params_struct(msg);
-        }
-   }
-   //free(stringifiedNotifyPayload);
 }
 
 void initparodusTask()
