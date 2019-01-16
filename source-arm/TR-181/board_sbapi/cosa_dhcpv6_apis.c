@@ -37,7 +37,7 @@
 
     module: cosa_dhcpv6_apis.c
 
-        For COSA Data Model Library Development
+        For COSA Data Model Library Development.
 
     -------------------------------------------------------------------
 
@@ -6578,6 +6578,11 @@ static void *InterfaceEventHandler_thrd(void *data)
                                         memset(cmd,0,sizeof(cmd));
                                         _ansc_sprintf(cmd, "ip -6 route add %s dev br106",buf);
 					system(cmd);
+					#ifdef _COSA_INTEL_XB3_ARM_
+                                        memset(cmd,0,sizeof(cmd));
+                                        _ansc_sprintf(cmd, "ip -6 route add %s dev br106 table erouter",buf);
+					system(cmd);
+					#endif
                                         memset(cmd,0,sizeof(cmd));
                                         sprintf(cmd, "ip -6 rule add iif br106 lookup erouter");
                                         system(cmd);
@@ -6614,6 +6619,11 @@ static void *InterfaceEventHandler_thrd(void *data)
 		                                memset(cmd,0,sizeof(cmd));
 		                                _ansc_sprintf(cmd, "ip -6 route add %s dev %s",buf,Inf_name);
 						system(cmd);
+						#ifdef _COSA_INTEL_XB3_ARM_
+		                                memset(cmd,0,sizeof(cmd));
+		                                _ansc_sprintf(cmd, "ip -6 route add %s dev %s table erouter",buf,Inf_name);
+						system(cmd);
+						#endif
 		                                memset(cmd,0,sizeof(cmd));
 		                                sprintf(cmd, "ip -6 rule add iif %s lookup erouter",Inf_name);
 		                                system(cmd);
@@ -6857,6 +6867,11 @@ dhcpv6c_dbg_thrd(void * in)
 						memset(cmd,0,sizeof(cmd));
 						sprintf(cmd, "ip -6 route add %s dev %s", out1, token);
                         			system(cmd);
+						#ifdef _COSA_INTEL_XB3_ARM_
+						memset(cmd,0,sizeof(cmd));
+						sprintf(cmd, "ip -6 route add %s dev %s table erouter", out1, token);
+                        			system(cmd);
+						#endif
 						memset(cmd,0,sizeof(cmd));
 						sprintf(cmd, "ip -6 rule add iif %s lookup erouter",token);
 						system(cmd);
@@ -6908,9 +6923,15 @@ dhcpv6c_dbg_thrd(void * in)
 #if !defined(INTEL_PUMA7) && !defined(_COSA_INTEL_XB3_ARM_)
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
+			memset(cmd,0,sizeof(cmd));
                         sprintf(cmd, "ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
                         system(cmd);
-
+			#ifdef _COSA_INTEL_XB3_ARM_
+			memset(cmd,0,sizeof(cmd));
+                        sprintf(cmd, "ip -6 route add %s dev %s table erouter", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
+                        system(cmd);
+			#endif
+			memset(cmd,0,sizeof(cmd));
                         /* we need save this for zebra to send RA 
                            ipv6_prefix           // xx:xx::/yy
                          */
@@ -6970,7 +6991,11 @@ dhcpv6c_dbg_thrd(void * in)
                         // delegated prefix need to route to LAN interface
                         sprintf(cmd, "ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
                         system(cmd);
-
+			#ifdef _COSA_INTEL_XB3_ARM_
+			memset(cmd,0,sizeof(cmd));
+                        sprintf(cmd, "ip -6 route add %s dev %s table erouter", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
+                        system(cmd);
+			#endif
                         /* we need save this for zebra to send RA 
                            ipv6_prefix           // xx:xx::/yy
                          */
