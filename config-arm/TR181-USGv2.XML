@@ -1932,7 +1932,35 @@
                         </parameters>
 
   		</object>
+                <object>
+                        <name>EvoStream_DirectConnect</name>
 
+                        <objectType>object</objectType>
+
+                        <functions>
+
+                                <func_GetParamBoolValue>EvoStream_DirectConnect_GetParamBoolValue</func_GetParamBoolValue>
+
+                                <func_SetParamBoolValue>EvoStream_DirectConnect_SetParamBoolValue</func_SetParamBoolValue>
+
+                        </functions>
+
+                        <parameters>
+                                <parameter>
+
+                                        <name>Enable</name>
+
+                                        <type>boolean</type>
+
+                                        <syntax>bool</syntax>
+
+                                        <writable>true</writable>
+
+                                </parameter>
+
+                        </parameters>
+
+                </object>
 		<object>
                         <name>TelemetryEndpoint</name>
                         <objectType>object</objectType>
