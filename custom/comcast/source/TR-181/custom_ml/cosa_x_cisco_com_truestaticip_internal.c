@@ -206,8 +206,10 @@ CosaTSIPInitialize
 
     CosaDmlTSIPLoadMappingFile((ANSC_HANDLE)pMyObject);
 
+#ifdef _COSA_FOR_BCI_
     /* Initialize Device.X_CISCO_COM_TrueStaticIP. */
     CosaDmlTSIPGetCfg(NULL, &pMyObject->TSIPCfg);
+#endif
 
     /* Initiation Device.X_CISCO_COM_TrueStaticIP.Subnet.{i} */
     AnscSListInitializeHeader(&pMyObject->SubnetList);

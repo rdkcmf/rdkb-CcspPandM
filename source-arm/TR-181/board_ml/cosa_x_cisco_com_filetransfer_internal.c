@@ -164,7 +164,11 @@ CosaFileTransferInitialize
     PCOSA_DML_FILETRANSFER_CFG      pCfg         = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
 
     CosaDmlFileTransferInit  (NULL, NULL);
+
+#ifdef _COSA_FOR_BCI_
     CosaDmlFileTransferGetCfg(NULL, pCfg);
+#endif
+
     pCfg->Action      = COSA_DML_FILETRANSFER_PROTOCOL_TFTP;
     pCfg->Protocol    = COSA_DML_FILETRANSFER_ACTION_Download;
     pMyObject->Status = COSA_DML_FILETRANSFER_STATUS_Failed;
