@@ -1791,8 +1791,9 @@
 					<functions>
 						
 						<func_GetParamStringValue>Tile_GetParamStringValue</func_GetParamStringValue>
-							
 						<func_SetParamStringValue>Tile_SetParamStringValue</func_SetParamStringValue>
+                                                <func_SetParamIntValue>Tile_SetParamIntValue</func_SetParamIntValue>        
+                                                <func_SetParamIntValue>Tile_SetParamIntValue</func_SetParamIntValue>
 							
 					</functions>
 							
@@ -1809,6 +1810,17 @@
 							<writable>true</writable>
 		
 						</parameter>
+                                                <parameter>
+
+                                                        <name>ReportingThrottligg</name>
+
+                                                        <type>unsignedInt</type>
+
+                                                        <syntax>uint32</syntax>
+
+                                                        <writable>true</writable>
+
+                                                </parameter>
 
 					</parameters>
 				</object>
@@ -2059,6 +2071,62 @@
 		</object>
 		</objects>
 		</object>
+
+<!-- BlueTooth begin-->
+<object>
+                        <name>X_RDKCENTRAL-COM_xBlueTooth</name>
+                        <objectType>object</objectType>
+                        <functions></functions>
+                        <parameters></parameters>
+                                <objects>
+                                           <object>
+
+                                                 <name>BLE</name>
+
+                                                 <objectType>object</objectType>
+                                                 <functions></functions>
+                                                 <parameters></parameters>
+                                                 <objects>
+                                                        <object>
+                                                                <name>Tile</name>
+
+                                                                <objectType>object</objectType>
+
+                                                                <functions></functions>
+                                                                <parameters></parameters>
+                                                                 <objects>
+                                                                         <object>
+                                                                                  <name>Ring</name>
+
+                                                                                   <objectType>object</objectType>
+
+                                                                                   <functions>
+                                                                                                        <func_GetParamStringValue>Ring_GetParamStringValue</func_GetParamStringValue>
+                                                                                                        <func_SetParamStringValue>Ring_SetParamStringValue</func_SetParamStringValue>
+
+                                                                                        </functions>
+
+                                                                                        <parameters>
+                                                                                                <parameter>
+
+                                                                                                        <name>Request</name>
+
+                                                                                                        <type>string</type>
+
+                                                                                                        <syntax>string</syntax>
+
+                                                                                                        <writable>true</writable>
+                                                                                                </parameter>
+
+                                                                                        </parameters>
+                                                                                </object>
+                                                                                </objects>
+                                                                                </object>
+                                                                                </objects>
+                                                                                </object>
+
+                                                                        </objects>
+</object>  <!--BlueTooth End-->
 
         <object>
 

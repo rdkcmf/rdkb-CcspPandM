@@ -10501,6 +10501,172 @@ Tile_SetParamStringValue
     return FALSE;
 }
 
+BOOL
+Tile_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         iValue
+    )
+{
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "ReportingThrottling", TRUE))
+    {
+       CcspTraceInfo(("Set Tile ReportingThrottling not handlled"));
+        return TRUE;
+    }
+
+   /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+BOOL
+Tile_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        iValue
+    )
+{
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "ReportingThrottling", TRUE))
+    {
+       CcspTraceInfo(("Get Tile ReportingThrottling not handlled"));
+       *iValue = 0;
+        return TRUE;
+    }
+
+   /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+BOOL
+Ring_GetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pValue,
+ ULONG*                      pUlSize
+ )
+{
+    CcspTraceWarning((" ring get Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+
+
+BOOL
+Ring_SetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pString
+ )
+{
+    char *ring_tileid= NULL;
+    char *rand_a = NULL;
+    char *session_token =  NULL;
+    char *cmd =  NULL;
+ if( AnscEqualString(ParamName, "Request", TRUE))
+    {
+        // char *strJson = "{\"tile_uuid\":\"b8e85e65d022498f\",\"rand_a\":\"AAAAAAAAAAAAAAAAAAA==\",\"session_token\":\"AAAAAA==\",\"code\":\"MEP_TOA_OPEN_CHANNEL\"}";
+         CcspTraceInfo(("***************************\n"));
+         CcspTraceInfo(("The Json string=%s\n",pString));
+         CcspTraceInfo(("***************************\n"));
+         cJSON *cjson = cJSON_Parse(pString);
+         if(cjson)
+         {
+             //cchar *ring_tileid = cJSON_GetObjectItem(cjson, "tile_uuid");
+             //first Red the code if its is MEP_TOA_OPEN_CHANNEL 
+             if ( cJSON_GetObjectItem( cjson, "code") != NULL )
+             {
+                   cmd = cJSON_GetObjectItem(cjson, "code")->valuestring;
+                   if(strcmp(cmd,"MEP_TOA_OPEN_CHANNEL") == 0)
+                  {
+                        if ( cJSON_GetObjectItem( cjson, "tile_uuid") != NULL )
+                        {
+                           ring_tileid = cJSON_GetObjectItem(cjson, "tile_uuid")->valuestring;
+                        }
+                        if ( cJSON_GetObjectItem( cjson, "rand_a") != NULL )
+                        {
+                            rand_a = cJSON_GetObjectItem(cjson, "rand_a")->valuestring;
+                        }
+                        if ( cJSON_GetObjectItem( cjson, "session_token") != NULL )
+                        {
+                            session_token = cJSON_GetObjectItem(cjson, "session_token")->valuestring;
+                        }
+                        CcspTraceInfo(("***************************\n"));
+                        CcspTraceInfo(("The Tile uuid =%s\n",ring_tileid));
+                        CcspTraceInfo(("The Rand A =%s\n",rand_a));
+                        CcspTraceInfo(("The Session Token =%s\n",session_token));
+                        CcspTraceInfo(("The Code =%s\n",cmd));
+                        CcspTraceInfo(("***************************\n"));
+                        //write that to syscfg db.
+                        if (syscfg_set(NULL, "RingTileId", ring_tileid) != 0)
+                        {
+                           CcspTraceInfo(("syscfg_set failed for RingTileId \n"));
+                        }
+                        else
+                        {
+                            if (syscfg_commit() != 0)
+                            {
+                               CcspTraceInfo(("syscfg_commit failed for RingTileId\n"));
+                            }
+                        }
+
+                        if (syscfg_set(NULL, "Rand_a", rand_a) != 0)
+                        {
+                           CcspTraceInfo(("syscfg_set failed for Rand_a\n"));
+                        }
+                        else
+                        {
+                            if (syscfg_commit() != 0)
+                            {
+                               CcspTraceInfo(("syscfg_commit failed Rand_a\n"));
+                            }
+                        }
+
+                        if (syscfg_set(NULL, "TileSession_Token", session_token) != 0)
+                        {
+                           CcspTraceInfo(("syscfg_set failed TileSession Token\n"));
+                        }
+                        else
+                        {
+                            if (syscfg_commit() != 0)
+                            {
+                               CcspTraceInfo(("syscfg_commit failed Tile Session Token\n"));
+                            }
+                        }
+
+                        if (syscfg_set(NULL, "RingCmd", cmd) != 0)
+                        {
+                            CcspTraceInfo(("syscfg_set failed for Ring command\n"));
+                        }
+                        else
+                        {
+                            if (syscfg_commit() != 0)
+                            {
+                                CcspTraceInfo(("syscfg_commit failed for Ring Command\n"));
+                            }
+                        }
+                        CcspTraceInfo(("***************************\n"));
+                        CcspTraceInfo(("ALL WELL\n"));
+                        cJSON_Delete(cjson);
+                        CcspTraceInfo(("*****Return*****\n"));
+                        return TRUE;
+                  }else
+                  {
+                      //the cmd is for ring TBD
+                  }
+
+             }
+
+         }
+    }
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+
+
 /**********************************************************************
 
     caller:     owner of this object
