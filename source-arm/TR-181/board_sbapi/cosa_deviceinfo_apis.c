@@ -3402,7 +3402,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 					system("sh /lib/rdk/wan_ssh.sh disable &");
 				}
 
-#if defined(_COSA_BCM_ARM_) && !defined(_CBR_PRODUCT_REQ_)
+#if defined(_COSA_BCM_ARM_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_)
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CMVoiceImageSelect") != NULL )
 				{
 					char *CMVoiceImg = NULL;
