@@ -1683,7 +1683,7 @@ void restoreAllDBs()
 #endif
 #if defined (_COSA_BCM_ARM_)
 	/* Clear cable modem's dynamic nonvol settings */
-	system("rm -f /mnt/cmnonvol/cm_dyn.bin");
+	system("latticecli -n \"set Cm.ResetNonvolNoReboot 1\"");
 #endif
 #if defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
         CcspTraceWarning(("FactoryReset:%s in thread  Restoring moca to factory defaults  ...\n",__FUNCTION__));
