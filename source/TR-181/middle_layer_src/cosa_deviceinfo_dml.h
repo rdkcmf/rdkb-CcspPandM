@@ -1296,4 +1296,23 @@ OAUTH_SetParamStringValue
         char*                       ParamName,
         char*                       pString
     );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_EthernetWAN.
+
+    *  EthernetWAN_GetParamStringValue
+
+***********************************************************************/
+
+ULONG
+EthernetWAN_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
 #endif
