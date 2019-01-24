@@ -7482,6 +7482,95 @@ ReverseSSH_SetParamStringValue
     return FALSE;
 }
 
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_EthernetWAN.
+
+    *  EthernetWAN_GetParamStringValue
+
+***********************************************************************/
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        EthernetWAN_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     TRUE if succeeded;
+                FALSE if failed
+
+**********************************************************************/
+
+ULONG
+EthernetWAN_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "CurrentOperationalMode", TRUE))
+    {
+        /* collect value */
+        char buf[32] = { 0 };
+		
+        if( ( 0 == syscfg_get( NULL, "eth_wan_enabled", buf, sizeof( buf ) ) ) && \
+			( '\0' != buf[ 0 ] )
+		   )
+        {
+			if( 0 == strcmp( buf, "true" ) )
+			{
+				AnscCopyString( pValue, "Ethernet");
+			}
+			else
+			{
+				AnscCopyString( pValue, "DOCSIS");
+			}
+        }
+        else
+        {
+            CcspTraceError(("%s syscfg_get failed for eth_wan_enabled. so giving default as DOCSIS\n",__FUNCTION__));
+			AnscCopyString( pValue, "DOCSIS");
+        }
+		
+        return 0;
+    }
+
+    return -1;
+}
+
 
 /* Maintenance window can be customized for bci routers */
 
