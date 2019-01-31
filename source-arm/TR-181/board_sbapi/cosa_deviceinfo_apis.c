@@ -1334,7 +1334,16 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
 
         }
     }
-        
+
+#if defined (INTEL_PUMA7)
+    //Intel Proposed RDKB Generic Bug Fix from XB6 SDK
+    if ( dir != NULL )
+    {
+        closedir(dir);
+        dir = NULL;
+    }
+#endif
+	
     if ( i != p_info->ProcessNumberOfEntries )
     {
         p_info->ProcessNumberOfEntries = i;
