@@ -10510,9 +10510,27 @@ Tile_SetParamIntValue
     )
 {
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "ReportingThrottling", TRUE))
+    CcspTraceInfo(("Tile SetparamInt value:ReportingThrottling"));
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "ReportingInterval", TRUE))
     {
-       CcspTraceInfo(("Set Tile ReportingThrottling not handlled"));
+        char buf[16]={0};
+
+        memset(buf,0,sizeof(buf));
+        sprintf(buf, "%d", iValue);
+
+        if (syscfg_set(NULL, "TileReportingInterval", buf) != 0)
+        {
+               CcspTraceInfo(("syscfg_set Reportin  failed\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                 CcspTraceInfo(("syscfg_commit ReportingThrottling failed\n"));
+            }
+        }
+
         return TRUE;
     }
 
@@ -10529,11 +10547,20 @@ Tile_GetParamIntValue
     )
 {
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "ReportingThrottling", TRUE))
+    CcspTraceInfo(("Tile GetParamInt Value Called\n"));
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "ReportingInterval", TRUE))
     {
-       CcspTraceInfo(("Get Tile ReportingThrottling not handlled"));
-       *iValue = 0;
-        return TRUE;
+         /* collect value */
+          char buf[10];
+
+          memset(buf,0,sizeof(buf));
+          syscfg_get( NULL, "TileReportingInterval", buf, sizeof(buf));
+          if( buf [0] != '\0' )
+          {
+                 *iValue= ( atoi(buf) );
+                  return TRUE;
+          }
     }
 
    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -10541,7 +10568,7 @@ Tile_GetParamIntValue
 }
 
 BOOL
-Ring_GetParamStringValue
+Cmd_GetParamStringValue
 (
  ANSC_HANDLE                 hInsContext,
  char*                       ParamName,
@@ -10601,7 +10628,7 @@ Ring_SetParamStringValue
                         CcspTraceInfo(("The Code =%s\n",cmd));
                         CcspTraceInfo(("***************************\n"));
                         //write that to syscfg db.
-                        if (syscfg_set(NULL, "RingTileId", ring_tileid) != 0)
+                        if (syscfg_set(NULL, "cmdTileId", ring_tileid) != 0)
                         {
                            CcspTraceInfo(("syscfg_set failed for RingTileId \n"));
                         }
@@ -10637,7 +10664,7 @@ Ring_SetParamStringValue
                             }
                         }
 
-                        if (syscfg_set(NULL, "RingCmd", cmd) != 0)
+                        if (syscfg_set(NULL, "cmdOpenChannel", cmd) != 0)
                         {
                             CcspTraceInfo(("syscfg_set failed for Ring command\n"));
                         }

@@ -1792,7 +1792,7 @@
 						
 						<func_GetParamStringValue>Tile_GetParamStringValue</func_GetParamStringValue>
 						<func_SetParamStringValue>Tile_SetParamStringValue</func_SetParamStringValue>
-                                                <func_SetParamIntValue>Tile_SetParamIntValue</func_SetParamIntValue>        
+                                                <func_GetParamIntValue>Tile_GetParamIntValue</func_GetParamIntValue>        
                                                 <func_SetParamIntValue>Tile_SetParamIntValue</func_SetParamIntValue>
 							
 					</functions>
@@ -1812,7 +1812,7 @@
 						</parameter>
                                                 <parameter>
 
-                                                        <name>ReportingThrottligg</name>
+                                                        <name>ReportingInterval</name>
 
                                                         <type>unsignedInt</type>
 
@@ -2096,13 +2096,13 @@
                                                                 <parameters></parameters>
                                                                  <objects>
                                                                          <object>
-                                                                                  <name>Ring</name>
+                                                                                  <name>Cmd</name>
 
                                                                                    <objectType>object</objectType>
 
                                                                                    <functions>
-                                                                                                        <func_GetParamStringValue>Ring_GetParamStringValue</func_GetParamStringValue>
-                                                                                                        <func_SetParamStringValue>Ring_SetParamStringValue</func_SetParamStringValue>
+                                                                                                        <func_GetParamStringValue>Cmd_GetParamStringValue</func_GetParamStringValue>
+                                                                                                        <func_SetParamStringValue>Cmd_SetParamStringValue</func_SetParamStringValue>
 
                                                                                         </functions>
 
