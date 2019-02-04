@@ -49,7 +49,6 @@ gotResponse=0
 v4Count=0
 v6Count=0
 
-
 export PATH=$PATH:/fss/gw
 source /etc/utopia/service.d/log_capture_path.sh
 
@@ -107,6 +106,10 @@ restartLanServices()
     dibbler-server start
 
     sysevent set firewall-restart
+    uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+    if [ -e "/usr/bin/onboarding_log" ]; then
+        /usr/bin/onboarding_log "RDKB_FIREWALL_RESTART:$uptime"
+    fi
 }
 
 
@@ -215,6 +218,10 @@ then
 			then
 				echo_t "Network Response: Got success response with URL1"
 				gotResponse=1
+			else
+				if [ -f "/etc/ONBOARD_LOGGING_ENABLE" ]; then
+					touch /tmp/backup_onboardlogs
+				fi
 			fi
 		fi	
 	
@@ -249,6 +256,9 @@ then
 				syscfg commit
 				uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
 				echo_t "Exit_Captive_Mode:$uptime"
+				if [ -e "/usr/bin/onboarding_log" ]; then
+					/usr/bin/onboarding_log "Exit_Captive_Mode:$uptime"
+				fi
 				echo_t "Network Response: Restart DHCP server"
 				sysevent set dhcp_server-stop
 				# Let's make sure dhcp server restarts properly
@@ -256,6 +266,10 @@ then
 				sysevent set dhcp_server-start
 				echo_t "Network Response: Restart Firewall"
 				sysevent set firewall-restart
+				uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+				if [ -e "/usr/bin/onboarding_log" ]; then
+					/usr/bin/onboarding_log "RDKB_FIREWALL_RESTART:$uptime"
+				fi
 				# We will flag that DHCP server is restarted after activation
 				# This event is checked in redirect_url.sh
 				echo_t "Network Response: Set sysevent to indicate dhcp started"
@@ -286,6 +300,9 @@ then
 				    syscfg commit
 				    uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
 				    echo_t "Enter_Captive_Mode:$uptime"
+				    if [ -e "/usr/bin/onboarding_log" ]; then
+				        /usr/bin/onboarding_log "Enter_Captive_Mode:$uptime"
+				    fi
 				    # Remove /var/tmp/networkresponse.txt file.
 				    # LAN services should not be in captive portal configuration. 
 				    # LAN services depend on 204 response to configure captive portal.
@@ -319,6 +336,31 @@ else
 		echo_t "Network Response: WiFi is already configured. Set reverted flag in nvram"	
 		touch $REVERT_FLAG
 	fi
+fi
+
+# to update device onboarding state.
+if [ -f "/etc/ONBOARD_LOGGING_ENABLE" ]; then
+    echo_t "Onboard logging is enabled"
+    NETWORKRESPONSEVALUE=`cat /var/tmp/networkresponse.txt`
+    unitActivated=`syscfg get unit_activated`
+    ATOM_RPC_IP=`cat /etc/device.properties | grep ATOM_ARPING_IP | cut -f 2 -d"="`
+    BOX_TYPE=`cat /etc/device.properties | grep BOX_TYPE | cut -f 2 -d"="`
+
+    if [ "$unitActivated" = "1" ] && [ "$NETWORKRESPONSEVALUE" = "204" ]
+    then
+        touch /nvram/.device_onboarded
+        if [ -e "/usr/bin/rpcclient" ] && [ "$BOX_TYPE" == "XB3" ]; then
+            rpcclient $ATOM_RPC_IP "/bin/touch /nvram/.device_onboarded"
+        fi
+    else
+        if [ -f "/nvram/.device_onboarded" ]
+        then
+            rm -rf /nvram/.device_onboarded
+            if [ -e "/usr/bin/rpcclient" ] && [ "$BOX_TYPE" == "XB3" ]; then
+                rpcclient $ATOM_RPC_IP "rm /nvram/.device_onboarded"
+            fi
+        fi
+    fi
 fi
 
 # In factory default condition, we should check if all LAN configurations are up.
@@ -371,6 +413,9 @@ then
                                  echo_t "Network Response : Setting ConfigureWiFi to true is success"
 				uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
 				 echo_t "Enter_WiFi_Personalization_captive_mode:$uptime"
+				 if [ -e "/usr/bin/onboarding_log" ]; then
+				   /usr/bin/onboarding_log "Enter_WiFi_Personalization_captive_mode:$uptime"
+				 fi
                                  touch /tmp/.configurewifidone
                               fi
                            fi

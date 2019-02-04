@@ -155,6 +155,9 @@ then
 				if [ "$rebootNeededforbrlan0" -eq 0 ]; then
 					echo_t "[RKDB_PLATFORM_ERROR] : brlan0 interface is not up" 
 					echo_t "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
+					if [ -e "/usr/bin/onboarding_log" ]; then
+					    /usr/bin/onboarding_log "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
+					fi
 					rebootNeededforbrlan0=1
 					rebootNeeded=1
 						/fss/gw/rdklogger/backupLogs.sh "true" ""
@@ -190,6 +193,9 @@ then
 								then
 									echo_t "rebootNeededforbrlan0"
 									echo_t "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
+									if [ -e "/usr/bin/onboarding_log" ];then
+									    /usr/bin/onboarding_log "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
+									fi
 									echo_t "Setting last reboot reason"
 									dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string brlan0_down
 									echo_t "SET succeeded"
@@ -198,6 +204,9 @@ then
 								then
 									echo_t "rebootNeededforbrlan1"
 									echo_t "RDKB_REBOOT : brlan1 interface is not up, rebooting the device."
+									if [ -e "/usr/bin/onboarding_log" ]; then
+									    /usr/bin/onboarding_log "RDKB_REBOOT : brlan1 interface is not up, rebooting the device."
+									fi
 									echo_t "Setting last reboot reason"
 									dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string brlan1_down
 									echo_t "SET succeeded"

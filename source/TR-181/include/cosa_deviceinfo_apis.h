@@ -67,7 +67,14 @@
 #include "cosa_apis.h"
 #include "plugin_main_apis.h"
 #include "cJSON.h"
+#ifdef FEATURE_SUPPORT_ONBOARD_LOGGING
+#include "cimplog.h"
 
+#define LOGGING_MODULE           "PAM"
+#define OnboardLog(...)          onboarding_log(LOGGING_MODULE, __VA_ARGS__)
+#else
+#define OnboardLog(...)
+#endif
 #if defined(_ANSC_LINUX)
     #include <sys/sysinfo.h>
 #endif

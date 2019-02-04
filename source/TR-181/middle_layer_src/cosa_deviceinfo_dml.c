@@ -68,6 +68,7 @@
 
 #include "cosa_deviceinfo_dml.h"
 #include "dml_tr181_custom_cfg.h"
+#include "cimplog.h"
 #if defined (_XB6_PRODUCT_REQ_)
 #include "bt_hal.h"
 #endif
@@ -233,6 +234,12 @@ DeviceInfo_GetParamBoolValue
             *pBool = FALSE;
         }
 
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_OnBoarding_DeleteLogs", TRUE))
+    {
+        *pBool = FALSE ;
         return TRUE;
     }
 
@@ -708,6 +715,19 @@ DeviceInfo_GetParamStringValue
 	}
 	/*Changes for RDKB-5878 end*/
 
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_OnBoarding_State", TRUE))
+    {
+        if(access("/nvram/.device_onboarded", F_OK) != -1)
+        {
+            AnscCopyString(pValue, "OnBoarded");
+        }
+        else
+        {
+            AnscCopyString(pValue, "NONE");
+        }
+        return 0;
+    }
+
     ReturnValue =
         DeviceInfo_GetParamStringValue_Custom
             (
@@ -810,6 +830,18 @@ DeviceInfo_SetParamBoolValue
 	    }	
         }
 
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_OnBoarding_DeleteLogs", TRUE))
+    {
+        if(bValue)
+        {
+            char cmd[128];
+            memset(cmd, 0, sizeof(cmd));
+            AnscCopyString(cmd, "sh /rdklogger/onboardLogUpload.sh delete &");
+            system(cmd);
+        }
         return TRUE;
     }
 
@@ -1479,6 +1511,7 @@ DeviceInfo_SetParamStringValue
 	 else if (AnscEqualString(pString, "reboot_device", TRUE))
          {
                 CcspTraceInfo(("RDKB_REBOOT : RebootDevice triggered from GUI\n"));
+                OnboardLog("RDKB_REBOOT : RebootDevice triggered from GUI\n");
 		 
                 #if defined (_ARRIS_XB6_PRODUCT_REQ_) //ARRISXB6-7328, ARRISXB6-7332
                 ARRIS_RESET_REASON("RDKB_REBOOT : RebootDevice triggered from GUI\n");
@@ -1525,6 +1558,7 @@ DeviceInfo_SetParamStringValue
          else if(AnscEqualString(pString, "factory_reset", TRUE))
          {
                CcspTraceInfo(("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n"));
+               OnboardLog("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n");
 			 
                #if defined (_ARRIS_XB6_PRODUCT_REQ_) //ARRISXB6-7328, ARRISXB6-7332
                ARRIS_RESET_REASON("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n");
@@ -1570,7 +1604,7 @@ DeviceInfo_SetParamStringValue
             int val = 1;
             char buf[8];
 		    snprintf(buf,sizeof(buf),"%d",val);     
-        
+		OnboardLog("Device reboot due to reason %s\n", pString);
                 if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", pString) != 0) 
 	            {
 			        AnscTraceWarning(("syscfg_set failed for Reason and counter \n"));

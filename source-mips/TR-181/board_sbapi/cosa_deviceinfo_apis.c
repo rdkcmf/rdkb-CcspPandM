@@ -1813,7 +1813,7 @@ int setUnknownRebootReason()
             int val = 0;
             char buf[8];
 		    snprintf(buf,sizeof(buf),"%d",val);     
-        
+		OnboardLog("Device reboot due to reason unknown\n");
                 if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", "unknown") != 0)) 
 	            {
 			        AnscTraceWarning(("syscfg_set failed\n"));
@@ -1839,6 +1839,7 @@ void setLastRebootReason(char* reason)
         char buf[8];
         snprintf(buf,sizeof(buf),"%d",val);
 
+	OnboardLog("Device reboot due to reason %s\n", reason);
         if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", reason) != 0)
         {
                 AnscTraceWarning(("syscfg_set failed for Reason\n"));

@@ -58,7 +58,10 @@ fi
 # WiFi factory restore/Factory restore.
 echo_t "Redirect URL : Restarting firewall"
 sysevent set firewall-restart
-
+if [ -e "/usr/bin/onboarding_log" ]; then
+    uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+    /usr/bin/onboarding_log "RDKB_FIREWALL_RESTART:$uptime"
+fi
 echo_t "Redirect URL : Restarting dibblerServer"
 # Modify DNS server option in dibbler configuration
 if [ -e $SERVER6_CONF ]
