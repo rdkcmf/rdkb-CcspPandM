@@ -374,6 +374,14 @@ if(id != 0)
     pMyObject->hAdvPC          = (ANSC_HANDLE)CosaAdvPCCreate();
     AnscTraceWarning(("  CosaAdvPCCreate done!\n"));
 
+#ifdef FEATURE_SUPPORT_ONBOARD_LOGGING
+    pMyObject->hXpc         = (ANSC_HANDLE)CosaXpcCreate();
+    AnscTraceWarning(("  CosaXpcCreate done!\n"));
+
+    pMyObject->hOnboardLogging         = (ANSC_HANDLE)CosaOnboardLoggingCreate();
+    AnscTraceWarning(("  CosaOnboardLoggingCreate done!\n"));
+#endif
+
 #if CFG_USE_Event_Displatch
 
     /*create a thread to handle the sysevent asynchronously after all of the dmls created

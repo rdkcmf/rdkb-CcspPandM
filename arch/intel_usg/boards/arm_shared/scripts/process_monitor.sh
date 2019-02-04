@@ -46,7 +46,9 @@ setRebootreason()
 {
 
         echo_t "Setting rebootReason to $1 and rebootCounter to $2"
-        
+        if [ -e "/usr/bin/onboarding_log" ]; then
+	    /usr/bin/onboarding_log "Device reboot due to reason $1"
+	fi
         syscfg set X_RDKCENTRAL-COM_LastRebootReason $1
         result=`echo $?`
         if [ "$result" != "0" ]
@@ -324,6 +326,9 @@ do
 		if [ "$rebootNeededforbrlan0" -eq 0 ]; then
 			echo_t "[RKDB_PLATFORM_ERROR] : brlan0 interface is not up" 
 			echo_t "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
+			if [ -e "/usr/bin/onboarding_log" ]; then
+			    /usr/bin/onboarding_log "RDKB_REBOOT : brlan0 interface is not up, rebooting the device."
+			fi
 			echo_t "Setting Last reboot reason"
 			dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string brlan0_down
 			echo_t "SET succeeded"
@@ -381,6 +386,9 @@ do
 					then
 						echo_t "rebootNeededforbrlan1"
 						echo_t "RDKB_REBOOT : brlan1 interface is not up, rebooting the device."
+						if [ -e "/usr/bin/onboarding_log" ]; then
+						    /usr/bin/onboarding_log "RDKB_REBOOT : brlan1 interface is not up, rebooting the device."
+						fi
 						echo_t "Setting last reboot reason"
 						dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string brlan1_down
 						echo_t "SET succeeded"

@@ -206,6 +206,8 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
     ANSC_HANDLE                  hRabid;                                                    \
     ANSC_HANDLE                  hAdvPC;                                                    \
     ANSC_HANDLE                  hLanMngm;                                                  \
+    ANSC_HANDLE                  hXpc;                                                    \
+    ANSC_HANDLE                  hOnboardLogging;                                                    \
     PCOSA_PLUGIN_INFO            hCosaPluginInfo;								   		
 
 typedef  struct

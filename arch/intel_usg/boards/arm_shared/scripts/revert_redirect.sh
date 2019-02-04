@@ -59,6 +59,9 @@ echo_t "Revert Redirect : Indicate revert rediretion is triggered"
 touch $REVERTED_FLAG
 uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
 echo_t "Exit_WiFi_Personalization_captive_mode:$uptime"
+if [ -e "/usr/bin/onboarding_log" ]; then
+    /usr/bin/onboarding_log "Exit_WiFi_Personalization_captive_mode:$uptime"
+fi
 echo_t "Revert Redirect : Reverting dns configuration changes and restarting DHCP servers"
 sysevent set dhcp_server-stop
 # Let's make sure dhcp server restarts properly

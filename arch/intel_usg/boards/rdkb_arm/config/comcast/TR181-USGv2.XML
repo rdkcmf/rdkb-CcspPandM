@@ -154,6 +154,29 @@
     </object>
 
     <object>
+        <name>X_RDKCENTRAL-COM_XPC</name>
+        <objectType>object</objectType>
+        <objects>
+            <object>
+                <name>SnmpOnboardReboot</name>
+                <objectType>object</objectType>
+                <functions>
+                    <func_GetParamBoolValue>SnmpOnboardReboot_GetParamBoolValue</func_GetParamBoolValue>
+                    <func_SetParamBoolValue>SnmpOnboardReboot_SetParamBoolValue</func_SetParamBoolValue>
+                </functions>
+                <parameters>
+                    <parameter>
+                        <name>Enable</name>
+                        <type>boolean</type>
+                        <syntax>bool</syntax>
+                        <writable>true</writable>
+                    </parameter>
+                </parameters>
+            </object>
+        </objects>
+    </object>
+
+    <object>
 
       <name>DeviceInfo</name>
 
@@ -633,6 +656,20 @@
           <type>unsignedInt</type>
           <syntax>uint32</syntax>
 	  <writable>true</writable>
+        </parameter>
+
+        <parameter>
+            <name>X_RDKCENTRAL-COM_OnBoarding_State</name>
+            <type>string(64)</type>
+            <syntax>string</syntax>
+            <writable>false</writable>
+        </parameter>
+
+        <parameter>
+            <name>X_RDKCENTRAL-COM_OnBoarding_DeleteLogs</name>
+            <type>boolean</type>
+            <syntax>bool</syntax>
+            <writable>true</writable>
         </parameter>
 	</parameters>
 
