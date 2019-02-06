@@ -30,6 +30,7 @@ CCSP_ADVSEC_INITIALIZING=/tmp/ccsp_advsec_initializing
 CCSP_ADVSEC_INITIALIZED_SYSD=/tmp/advsec_initialized_sysd
 ADVSEC_AGENT_SHUTDOWN=/tmp/advsec_agent_shutdown
 ADVSEC_CONFIG_PARAMS_PATH="/tmp/advsec_config_params"
+ADVSEC_INITIALIZING=/tmp/advsec_initializing
 
 launch_device_finger_print()
 {
@@ -76,7 +77,10 @@ elif [ "$1" = "-disable" ]
 then
     $RUNTIME_BIN_DIR/start_adv_security.sh -disable
     if [ "$BOX_TYPE" = "XB3" ]; then
-        killall CcspAdvSecuritySsp
+        PID=`pidof CcspAdvSecuritySsp`
+        if [ "$PID" != "" ]; then
+            killall CcspAdvSecuritySsp
+        fi
     else
         echo "Device_Finger_Printing_enabled:false"
 	rm $CCSP_ADVSEC_INITIALIZED_SYSD
@@ -108,10 +112,41 @@ enable_sysd_start()
     fi
 }
 
-if [ "$1" = "-enable" ] || [ "$1" = "-disable" ]
+advsec_rabid_setup()
+{
+    launch_device_finger_print "-disable"
+    device_fingerprint=`syscfg get Advsecurity_DeviceFingerPrint`
+    if [ "$1" = "-rabidOn" ] && [ "$device_fingerprint" != "1" ]
+    then
+        launch_device_finger_print "-enable"
+    else
+        if [ "$1" = "-rabidOn" ] || [ "$device_fingerprint" = "1" ]
+        then
+            touch $ADVSEC_INITIALIZING
+            #TODO: Fix this by removing firewall restart
+            sysevent set firewall-restart
+            sleep 20s
+            rm $ADVSEC_INITIALIZING
+            launch_device_finger_print "-enable"
+        fi
+    fi
+}
+
+if [ "$1" = "-start" ]
 then
-    launch_device_finger_print $1
+    launch_device_finger_print "-enable"
+elif [ "$1" = "-enable" ] || [ "$1" = "-disable" ]
+then
+    rabid_flag=`syscfg get Advsecurity_RabidEnable`
+    if [ "$rabid_flag" != "1" ]; then
+        launch_device_finger_print $1
+    else
+        advsec_rabid_setup "-rabidOn"
+    fi
 elif [ "$1" = "-sysd" ]
 then
     enable_sysd_start
+elif [ "$1" = "-rabidOn" ] || [ "$1" = "-rabidOff" ]
+then
+    advsec_rabid_setup $1
 fi

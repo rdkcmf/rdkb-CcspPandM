@@ -17,39 +17,15 @@
  * limitations under the License.
 */
 
-#ifndef  _COSA_DEV_FINGERPRINT_INTERNAL_H
-#define  _COSA_DEV_FINGERPRINT_INTERNAL_H
+#ifndef  _COSA_ADVSEC_UTILS_H
+#define  _COSA_ADVSEC_UTILS_H
 
 #include "ansc_platform.h"
 #include "ansc_string_util.h"
 
-typedef  struct
-_COSA_DATAMODEL_FPAGENT
-{
-    BOOL                        bEnable;
-    int         	iStatus;
-    int             iState;
-}
-COSA_DATAMODEL_FPAGENT,  *PCOSA_DATAMODEL_FPAGENT;
+ANSC_STATUS CosaGetSysCfgUlong(char* setting, ULONG *value);
+ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value);
+ANSC_STATUS CosaGetSysCfgString(char* setting, char *value, PULONG pulSize);
+ANSC_STATUS CosaSetSysCfgString(char* setting, char *pValue);
 
-/*
-    Standard function declaration 
-*/
-ANSC_HANDLE
-CosaDeviceFingerprintCreate
-    (
-        VOID
-    );
-
-ANSC_STATUS
-CosaDeviceFingerprintInitialize
-    (
-        ANSC_HANDLE                 hThisObject
-    );
-
-ANSC_STATUS
-CosaDeviceFingerprintRemove
-    (
-        ANSC_HANDLE                 hThisObject
-    );
-#endif 
+#endif //_COSA_ADVSEC_UTILS_H

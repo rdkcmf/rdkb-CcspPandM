@@ -202,6 +202,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
     ANSC_HANDLE                  hTSIP;                                                     \
     ANSC_HANDLE                  hFileTransfer;                                             \
     ANSC_HANDLE                  hDeviceFingerprint;                                        \
+    ANSC_HANDLE                  hRabid;                                                    \
     PCOSA_PLUGIN_INFO            hCosaPluginInfo;								   		
 
 typedef  struct
