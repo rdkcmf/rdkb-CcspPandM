@@ -348,6 +348,8 @@ CosaBackEndManagerInitialize
     pMyObject->hDeviceFingerprint          = (ANSC_HANDLE)CosaDeviceFingerprintCreate();
     AnscTraceWarning(("  CosaDeviceFingerprintCreate done!\n"));
 
+    pMyObject->hRabid          = (ANSC_HANDLE)CosaRabidCreate();
+    AnscTraceWarning(("  CosaRabidCreate done!\n"));
 
 #if CFG_USE_Event_Displatch
 

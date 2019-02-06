@@ -17,38 +17,38 @@
  * limitations under the License.
 */
 
-#ifndef  _COSA_DEV_FINGERPRINT_INTERNAL_H
-#define  _COSA_DEV_FINGERPRINT_INTERNAL_H
+#ifndef  _COSA_RABID_INTERNAL_H
+#define  _COSA_RABID_INTERNAL_H
 
 #include "ansc_platform.h"
 #include "ansc_string_util.h"
 
 typedef  struct
-_COSA_DATAMODEL_FPAGENT
+_COSA_DATAMODEL_RABID
 {
     BOOL                        bEnable;
     int         	iStatus;
     int             iState;
 }
-COSA_DATAMODEL_FPAGENT,  *PCOSA_DATAMODEL_FPAGENT;
+COSA_DATAMODEL_RABID,  *PCOSA_DATAMODEL_RABID;
 
 /*
     Standard function declaration 
 */
 ANSC_HANDLE
-CosaDeviceFingerprintCreate
+CosaRabidCreate
     (
         VOID
     );
 
 ANSC_STATUS
-CosaDeviceFingerprintInitialize
+CosaRabidInitialize
     (
         ANSC_HANDLE                 hThisObject
     );
 
 ANSC_STATUS
-CosaDeviceFingerprintRemove
+CosaRabidRemove
     (
         ANSC_HANDLE                 hThisObject
     );

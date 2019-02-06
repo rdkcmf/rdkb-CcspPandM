@@ -19,7 +19,7 @@
 
 /**************************************************************************
 
-    module: cosa_dev_fingerprint_internal.c
+    module: cosa_rabid_internal.c
 
         For COSA Data Model Library Development
 
@@ -31,30 +31,35 @@
 
 **************************************************************************/
 
-#include "cosa_dev_fingerprint_internal.h"
-#include "cosa_dev_fingerprint_dml.h"
+#include "cosa_rabid_internal.h"
+#include "cosa_rabid_dml.h"
 #include "ccsp_psm_helper.h"
 #include "cosa_advsec_utils.h"
 
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 
-static char *g_DeviceFingerPrintEnabled = "Advsecurity_DeviceFingerPrint";
+static char *g_RabidEnabled = "Advsecurity_RabidEnable";
+
+ANSC_STATUS CosaGetSysCfgUlong(char* setting, ULONG *value);
+ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value);
+ANSC_STATUS CosaGetSysCfgString(char* setting, char *value, PULONG pulSize);
+ANSC_STATUS CosaSetSysCfgString(char* setting, char *pValue);
 
 ANSC_HANDLE
-CosaDeviceFingerprintCreate
+CosaRabidCreate
     (
         VOID
     )
 {
-    PCOSA_DATAMODEL_FPAGENT       pMyObject    = (PCOSA_DATAMODEL_FPAGENT)NULL;
+    PCOSA_DATAMODEL_RABID       pMyObject    = (PCOSA_DATAMODEL_RABID)NULL;
     ULONG                   syscfgValue = 0;
     int                     retGet  = CCSP_SUCCESS;
 
     /*
      * We create object by first allocating memory for holding the variables and member functions.
      */
-    pMyObject = (PCOSA_DATAMODEL_FPAGENT)AnscAllocateMemory(sizeof(COSA_DATAMODEL_FPAGENT));
+    pMyObject = (PCOSA_DATAMODEL_RABID)AnscAllocateMemory(sizeof(COSA_DATAMODEL_RABID));
 
     if ( !pMyObject )
     {
@@ -62,19 +67,7 @@ CosaDeviceFingerprintCreate
         return  (ANSC_HANDLE)NULL;
     }
 
-    retGet = CosaGetSysCfgUlong(g_DeviceFingerPrintEnabled, &syscfgValue);
-#ifndef DUAL_CORE_XB3
-    if(!syscfgValue)
-    {
-        system("/usr/ccsp/advsec/print_console_xb6.sh \"Device_Finger_Printing_enabled:false\" &");
-        system("/usr/ccsp/advsec/print_console_xb6.sh \"ADV_SECURITY_SAFE_BROWSING_DISABLE\" &");
-        system("/usr/ccsp/advsec/print_console_xb6.sh \"ADV_SECURITY_SOFTFLOWD_DISABLE\" &");
-    }
-    else
-    {
-        system("/usr/ccsp/pam/launch_adv_security.sh -sysd &");
-    }
-#endif //DUAL_CORE_XB3_
+    retGet = CosaGetSysCfgUlong(g_RabidEnabled, &syscfgValue);
 
     pMyObject->bEnable = syscfgValue;
 
@@ -82,13 +75,13 @@ CosaDeviceFingerprintCreate
 }
 
 ANSC_STATUS
-CosaDeviceFingerprintRemove
+CosaRabidRemove
     (
         ANSC_HANDLE                 hThisObject
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_FPAGENT            pMyObject    = (PCOSA_DATAMODEL_FPAGENT)hThisObject;
+    PCOSA_DATAMODEL_RABID            pMyObject    = (PCOSA_DATAMODEL_RABID)hThisObject;
 
     /* Remove self */
     AnscFreeMemory((ANSC_HANDLE)pMyObject);
@@ -97,48 +90,39 @@ CosaDeviceFingerprintRemove
     return returnStatus;
 }
 
-ANSC_STATUS CosaAdvSecInit(ANSC_HANDLE hThisObject)
+ANSC_STATUS CosaRabidInit(ANSC_HANDLE hThisObject)
 {
-    ANSC_STATUS  		returnStatus = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_FPAGENT	pMyObject    = (PCOSA_DATAMODEL_FPAGENT)hThisObject;
+    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
+    PCOSA_DATAMODEL_RABID     pMyObject    = (PCOSA_DATAMODEL_RABID)hThisObject;
     char cmd[128];
 
     memset(cmd, 0, sizeof(cmd));
 
-    returnStatus = CosaSetSysCfgUlong(g_DeviceFingerPrintEnabled, 1);
+    returnStatus = CosaSetSysCfgUlong(g_RabidEnabled, 1);
     if ( returnStatus == ANSC_STATUS_SUCCESS )
     {
-        AnscCopyString(cmd, "/usr/ccsp/pam/launch_adv_security.sh -enable &");
+        AnscCopyString(cmd, "/usr/ccsp/pam/launch_adv_security.sh -rabidOn &");
         system(cmd);
         pMyObject->bEnable = TRUE;
-        fprintf(stderr,"Device_Finger_Printing_enabled:true\n");
     }
     return returnStatus;
 }
 
-ANSC_STATUS CosaAdvSecDeInit(ANSC_HANDLE hThisObject)
+ANSC_STATUS CosaRabidDeInit(ANSC_HANDLE hThisObject)
 {
-    ANSC_STATUS			returnStatus = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_FPAGENT	pMyObject    = (PCOSA_DATAMODEL_FPAGENT)hThisObject;
+    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
+    PCOSA_DATAMODEL_RABID     pMyObject    = (PCOSA_DATAMODEL_RABID)hThisObject;
     char cmd[128];
 
     memset(cmd, 0, sizeof(cmd));
 
-    returnStatus = CosaSetSysCfgUlong(g_DeviceFingerPrintEnabled, 0);
+    returnStatus = CosaSetSysCfgUlong(g_RabidEnabled, 0);
     if ( returnStatus == ANSC_STATUS_SUCCESS )
     {
-        AnscCopyString(cmd, "/usr/ccsp/pam/launch_adv_security.sh -disable &");
+        AnscCopyString(cmd, "/usr/ccsp/pam/launch_adv_security.sh -rabidOff &");
         system(cmd);
         pMyObject->bEnable = FALSE;
-        fprintf(stderr,"Device_Finger_Printing_enabled:false\n");
     }
     return returnStatus;
 }
 
-BOOL is_device_finger_printing_enabled()
-{
-    ULONG                   value = 0;
-
-    CosaGetSysCfgUlong(g_DeviceFingerPrintEnabled, &value);
-    return value;
-}
