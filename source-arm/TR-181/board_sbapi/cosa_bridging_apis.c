@@ -847,6 +847,9 @@ CosaDmlBrgGetEntry
     //CcspTraceInfo(("------In CosaDmlBrgGetEntry, name:%s, instanceNumber:%d,alias:%s\n", pBridge->hwid, pBridge->instanceNumber, pBridge->alias));
     pEntry->Cfg.bEnabled = pBridge->bEnabled;
     AnscCopyString(pEntry->Cfg.Alias, pBridge->alias);
+#if defined (MULTILAN_FEATURE)
+    AnscCopyString(pEntry->Cfg.name, pBridge->name);
+#endif
     pEntry->Cfg.InstanceNumber = pBridge->instanceNumber;
     pEntry->Cfg.Std = pBridge->standard;
     pEntry->Cfg.bAllowDelete = pBridge->bAllowDelete;
@@ -894,7 +897,12 @@ CosaDmlBrgSetValues
         ANSC_HANDLE                 hContext,
         ULONG                       ulIndex,
         ULONG                       ulInstanceNumber,
+#if defined (MULTILAN_FEATURE)
+        char*                       pAlias,
+        char*                       pName
+#else
         char*                       pAlias
+#endif
     )
 {
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
@@ -908,6 +916,9 @@ CosaDmlBrgSetValues
         return ANSC_STATUS_CANT_FIND;
     }
     AnscCopyString( pBridge->alias, pAlias);
+#if defined (MULTILAN_FEATURE)
+    AnscCopyString( pBridge->name, pName);
+#endif
     pBridge->instanceNumber = ulInstanceNumber;
     CcspTraceInfo(("------CosaDmlBrgSetValues, Alias:%s, instanceNum:%d...\n", pBridge->alias, pBridge->instanceNumber));
     //saveID(BRIDGE_ID_NAMESPACE, pBridge->hwid, ulInstanceNumber, pAlias);
@@ -992,6 +1003,9 @@ CosaDmlBrgAddEntry
     pBridge->bEnabled = pEntry->bEnabled;
     pBridge->standard = pEntry->Std;
     AnscCopyString(pBridge->alias, pEntry->Alias);
+#if defined (MULTILAN_FEATURE)
+    AnscCopyString(pBridge->name, pEntry->name);
+#endif
     pBridge->status = COSA_DML_BRG_STATUS_Disabled;
 
     //$HL 4/15/2013
@@ -1117,9 +1131,12 @@ CosaDmlBrgSetCfg
     if (pBridge == NULL) {
         return ANSC_STATUS_CANT_FIND;
     }
-
+    
     pBridge->standard = pCfg->Std;  //TODO: what impact should this have on the bridge? Maybe need another bridge function? Automatically set AFT to all? Set standard on all ports?
     AnscCopyString(pBridge->alias, pCfg->Alias);
+#if defined (MULTILAN_FEATURE)
+    AnscCopyString(pBridge->name, pCfg->name);
+#endif
     //saveID(BRIDGE_ID_NAMESPACE, pBridge->hwid, pBridge->instanceNumber, pBridge->alias);
     CcspTraceInfo(("------CosaDmlBrgSetCfg...,name:%s,instancenum:%d,alias:%s\n",pBridge->hwid,pBridge->instanceNumber,pBridge->alias));
     if (pBridge->bEnabled != pCfg->bEnabled)
@@ -1184,6 +1201,9 @@ CosaDmlBrgGetCfg
     }
 
     AnscCopyString(pCfg->Alias, pBridge->alias);
+#if defined (MULTILAN_FEATURE)
+    AnscCopyString(pCfg->name, pBridge->name);
+#endif
     pCfg->InstanceNumber = pBridge->instanceNumber;
     pCfg->Std = pBridge->standard;
     pCfg->bEnabled = pBridge->bEnabled;
@@ -2942,7 +2962,7 @@ static ANSC_STATUS _Psm_SetBr(ULONG instancenum,PBRIDGE pBridge)
 
     _ansc_sprintf(param_value,"%s",pBridge->name);
     _PSM_SET_BR(_PSM_BRIDGE_TML_NAME);
-
+    
     if (pBridge->bEnabled==TRUE)
     {
         _ansc_sprintf(param_value,"%s","TRUE");

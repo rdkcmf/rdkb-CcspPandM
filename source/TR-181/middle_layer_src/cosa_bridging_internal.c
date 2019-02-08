@@ -367,8 +367,14 @@ CosaBridgingInitialize
                 }
 
                 _ansc_sprintf(pDmlBridge->Cfg.Alias, "DmlBridge%d", pMyObject->ulNextBridgeInstance);
+#if defined (MULTILAN_FEATURE)
+                _ansc_sprintf(pDmlBridge->Cfg.name, "DmlBridge%d", pMyObject->ulNextBridgeInstance);
 
-                CosaDmlBrgSetValues(NULL, ulIndex, pDmlBridge->Cfg.InstanceNumber, pDmlBridge->Cfg.Alias);
+
+                CosaDmlBrgSetValues(NULL, ulIndex, pDmlBridge->Cfg.InstanceNumber, pDmlBridge->Cfg.Alias, pDmlBridge->Cfg.name);
+#else
+		CosaDmlBrgSetValues(NULL, ulIndex, pDmlBridge->Cfg.InstanceNumber, pDmlBridge->Cfg.Alias);
+#endif
             }
 
             pCosaContext->hContext     = (ANSC_HANDLE)pDmlBridge;

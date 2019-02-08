@@ -156,7 +156,9 @@ _COSA_DML_BRG_CFG
 {
     ULONG                           InstanceNumber;
     char                            Alias[COSA_DML_IF_NAME_LENGTH];
-
+#if defined (MULTILAN_FEATURE)
+    char                            name[COSA_DML_IF_NAME_LENGTH];
+#endif
     BOOLEAN                         bEnabled;
     BOOLEAN                         bAllowDelete;
     COSA_DML_BRG_STD                Std;
@@ -341,7 +343,12 @@ CosaDmlBrgSetValues
         ANSC_HANDLE                 hContext,
         ULONG                       ulIndex,
         ULONG                       ulInstanceNumber,
+#if defined (MULTILAN_FEATURE)
+        char*                       pAlias,
+        char*                       pName
+#else
         char*                       pAlias
+#endif
     );
 
 ANSC_STATUS
