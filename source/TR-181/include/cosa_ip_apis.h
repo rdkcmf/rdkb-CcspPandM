@@ -229,6 +229,9 @@ _COSA_DML_IP_IF_CFG
     ULONG                           WanTTL;
     ULONG                           ArpCacheTimeout;
     BOOLEAN                         UpnpIgdEnabled;
+#if defined (MULTILAN_FEATURE)
+    BOOLEAN                         bIPv6Enabled;
+#endif
 }
 COSA_DML_IP_IF_CFG,  *PCOSA_DML_IP_IF_CFG;
 
@@ -373,6 +376,9 @@ _COSA_DML_IP_V6PREFIX
 COSA_DML_IP_V6PREFIX, *PCOSA_DML_IP_V6PREFIX;
 
 #define MAX_IPV6_ENTRY_NUM   20
+#if defined (MULTILAN_FEATURE)
+#define MAX_IPV4_ENTRY_NUM   20
+#endif
 typedef  struct
 _COSA_PRI_IP_IF_FULL
 {
@@ -382,9 +388,13 @@ _COSA_PRI_IP_IF_FULL
     USHORT                        ulNumOfV4Addr;
     USHORT                        ulNumOfV6Addr;
     USHORT                        ulNumOfV6Pre;
+#if defined (MULTILAN_FEATURE)
+    COSA_DML_IP_V4ADDR            V4AddrList[MAX_IPV4_ENTRY_NUM];
+#else
     COSA_DML_IP_V4ADDR            V4AddrList[10];
-	COSA_DML_IP_V6ADDR            V6AddrList[MAX_IPV6_ENTRY_NUM];
-	COSA_DML_IP_V6PREFIX          V6PreList[MAX_IPV6_ENTRY_NUM];
+#endif
+    COSA_DML_IP_V6ADDR            V6AddrList[MAX_IPV6_ENTRY_NUM];
+    COSA_DML_IP_V6PREFIX          V6PreList[MAX_IPV6_ENTRY_NUM];
 }
 COSA_PRI_IP_IF_FULL, *PCOSA_PRI_IP_IF_FULL;
 

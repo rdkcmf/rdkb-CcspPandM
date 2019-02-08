@@ -687,8 +687,8 @@ Interface_GetParamStringValue
 			AnscCopyMemory(pEthernetPortFull->StaticInfo.MacAddress,strMac,6);
 		}
 	}
-#endif 	    
-
+#endif 	 
+#if defined(MULTILAN_FEATURE)   
 #if defined(INTEL_PUMA7)
 
         UCHAR strMac[128] = {0};
@@ -698,6 +698,7 @@ Interface_GetParamStringValue
                         AnscCopyMemory(pEthernetPortFull->StaticInfo.MacAddress,strMac,6);
                 }
         }
+#endif
 #endif
         _ansc_sprintf
             (
@@ -2204,9 +2205,12 @@ Link_SetParamStringValue
         ULONG                           ulIndex;
         UCHAR                           ucEntryParamName[256]       = {0};
         UCHAR                           ucEntryNameValue[256]       = {0};
-        int                             size;
+#if defined (MULTILAN_FEATURE)
+        ULONG                           ulEntryNameLen = 256;
+#else
+	int                             size;
         parameterValStruct_t            varStruct;
-
+#endif
         if ( _ansc_strlen(pString) == 0 )
         {
             pEntry->Cfg.LinkType    = COSA_DML_LINK_TYPE_LAST;
@@ -2225,8 +2229,11 @@ Link_SetParamStringValue
 
             /* Extract Instance Number */
             ulIndex = _ansc_strlen(pString) - 1;
-
-            while ( (ulIndex != 0) && (pString[ulIndex] != '.') )
+#if defined (MULTILAN_FEATURE)
+            while ( (ulIndex != 0) && (pString[ulIndex - 1] != '.') )
+#else
+	    while ( (ulIndex != 0) && (pString[ulIndex] != '.') )
+#endif
             {
                 ulIndex--;
             }
@@ -2242,12 +2249,16 @@ Link_SetParamStringValue
 
             /* Retrieve LinkName */
             _ansc_sprintf(ucEntryParamName, "%s.%s", pString, "Name");
-
-            varStruct.parameterName  = ucEntryParamName;
+#if defined (MULTILAN_FEATURE)
+            ulEntryNameLen = sizeof(ucEntryNameValue);
+            if ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen))
+#else
+	    varStruct.parameterName  = ucEntryParamName;
             varStruct.parameterValue = ucEntryNameValue;
 
             if ( ANSC_STATUS_SUCCESS == 
                     COSAGetParamValueByPathName(&varStruct, &size) )
+#endif
             {
                 AnscCopyString(pEntry->Cfg.LinkName, ucEntryNameValue);
             }

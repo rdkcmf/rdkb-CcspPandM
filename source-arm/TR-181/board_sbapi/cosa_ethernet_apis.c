@@ -153,9 +153,32 @@ COSA_DML_ETH_PORT_SINFO      g_EthIntSInfo[] =
         {SWITCH_PORT_6_NAME,                FALSE,  {0,0,0,0,0,0}},
         {SWITCH_PORT_7_NAME,                FALSE,  {0,0,0,0,0,0}},
 #endif
+#if defined (MULTILAN_FEATURE)
+#if !defined(INTEL_PUMA7)
         /* Upstream (WAN) ports */
         {DMSB_ETH_IF_NAME_DFT_WanRouting,   TRUE,   {0,0,0,0,0,0}},
         {DMSB_ETH_IF_NAME_DFT_WanBridging,  TRUE,   {0,0,0,0,0,0}}
+#else
+        /* Upstream (WAN) ports */
+        {DMSB_ETH_IF_NAME_DFT_WanRouting,   TRUE,   {0,0,0,0,0,0}},
+        {DMSB_ETH_IF_NAME_DFT_WanBridging,  TRUE,   {0,0,0,0,0,0}},
+        {SWITCH_PORT_2_NAME,                FALSE,  {0,0,0,0,0,0}},
+        {SWITCH_PORT_3_NAME,                FALSE,  {0,0,0,0,0,0}},
+        {SWITCH_PORT_4_NAME,                FALSE,  {0,0,0,0,0,0}},
+        {SWITCH_PORT_5_NAME,                FALSE,  {0,0,0,0,0,0}},
+        {SWITCH_PORT_6_NAME,                FALSE,  {0,0,0,0,0,0}},
+        {SWITCH_PORT_7_NAME,                FALSE,  {0,0,0,0,0,0}},
+        {LAN_ETHERNET_SGMII0,               FALSE,  {0,0,0,0,0,0}},
+        {LAN_ETHERNET_SGMII1,               FALSE,  {0,0,0,0,0,0}},
+        {LAN_ETHERNET_RGMII2,               FALSE,  {0,0,0,0,0,0}},
+        {LAN_ETHERNET_RGMII3,               FALSE,  {0,0,0,0,0,0}},
+        {LAN_ETHERNET_MOCA,                 FALSE,  {0,0,0,0,0,0}}
+#endif
+#else
+        /* Upstream (WAN) ports */
+        {DMSB_ETH_IF_NAME_DFT_WanRouting,   TRUE,   {0,0,0,0,0,0}},
+        {DMSB_ETH_IF_NAME_DFT_WanBridging,  TRUE,   {0,0,0,0,0,0}}
+#endif
     };
 
 static const ULONG g_EthernetIntNum = sizeof(g_EthIntSInfo)/sizeof(g_EthIntSInfo[0]);
@@ -175,6 +198,32 @@ EthIntControlFuncs swFuncs = {
 };
 
 int g_PortIDs[]={
+#if defined (MULTILAN_FEATURE)
+#if defined(_CBR_PRODUCT_REQ_) || defined(INTEL_PUMA7)
+    CCSP_HAL_ETHSW_EthPort1,
+    CCSP_HAL_ETHSW_EthPort2,
+    CCSP_HAL_ETHSW_EthPort3,
+    CCSP_HAL_ETHSW_EthPort4,
+    CCSP_HAL_ETHSW_EthPort5,
+    CCSP_HAL_ETHSW_EthPort6,
+    CCSP_HAL_ETHSW_EthPort7,
+    CCSP_HAL_ETHSW_EthPort8
+#elif defined(INTEL_PUMA7) //ARRISXB6-7331
+    CCSP_HAL_ETHSW_EthPort2,
+    CCSP_HAL_ETHSW_EthPort1,
+    CCSP_HAL_ETHSW_EthPort3,
+    CCSP_HAL_ETHSW_EthPort4,
+    CCSP_HAL_ETHSW_EthPort5,
+    CCSP_HAL_ETHSW_EthPort6,
+    CCSP_HAL_ETHSW_EthPort7,
+    CCSP_HAL_ETHSW_EthPort8
+#else
+    CCSP_HAL_ETHSW_EthPort1,
+    CCSP_HAL_ETHSW_EthPort2,
+    CCSP_HAL_ETHSW_EthPort3,
+    CCSP_HAL_ETHSW_EthPort4
+#endif
+#else
 #if defined(_CBR_PRODUCT_REQ_)
     CCSP_HAL_ETHSW_EthPort1,
     CCSP_HAL_ETHSW_EthPort2,
@@ -199,11 +248,53 @@ int g_PortIDs[]={
     CCSP_HAL_ETHSW_EthPort3,
     CCSP_HAL_ETHSW_EthPort4
 #endif
+#endif
 };
 
 CosaEthInterfaceInfo g_EthEntries[] = 
     {
-
+#if defined (MULTILAN_FEATURE)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(INTEL_PUMA7)
+        {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
+        {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
+        {g_EthIntSInfo + 2, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 3, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
+#elif defined(_CBR_PRODUCT_REQ_)
+        {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
+        {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
+        {g_EthIntSInfo + 2, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 2, {0}},
+        {g_EthIntSInfo + 3, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 3, {0}},
+        {g_EthIntSInfo + 4, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 4, {0}},
+        {g_EthIntSInfo + 5, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 5, {0}},
+        {g_EthIntSInfo + 6, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 6, {0}},
+        {g_EthIntSInfo + 7, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 7, {0}},
+        {g_EthIntSInfo + 8, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 9, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
+#elif defined(INTEL_PUMA7)
+        {g_EthIntSInfo + 0,  {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
+        {g_EthIntSInfo + 1,  {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
+        {g_EthIntSInfo + 2,  {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 3,  {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 4,  {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 5,  {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 6,  {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 7,  {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 8,  {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 9,  {'\0'}, 0, 0, &swFuncs, g_PortIDs + 2, {0}},
+        {g_EthIntSInfo + 10, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 3, {0}},
+        {g_EthIntSInfo + 11, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 4, {0}},
+        {g_EthIntSInfo + 12, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 5, {0}},
+        {g_EthIntSInfo + 13, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 6, {0}},
+        {g_EthIntSInfo + 14, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 7, {0}}
+#else
+        {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
+        {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
+        {g_EthIntSInfo + 2, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 2, {0}},
+        {g_EthIntSInfo + 3, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 3, {0}},
+        {g_EthIntSInfo + 4, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 5, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
+#endif
+#else
 #if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
         {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
         {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
@@ -228,7 +319,7 @@ CosaEthInterfaceInfo g_EthEntries[] =
         {g_EthIntSInfo + 4, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
         {g_EthIntSInfo + 5, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
 #endif
-
+#endif
     };
 
 #endif
@@ -278,30 +369,74 @@ CosaDmlEthInit
         AnscCopyMemory(g_EthIntSInfo[6].MacAddress, strMac, 6);
         AnscCopyMemory(g_EthIntSInfo[7].MacAddress, strMac, 6);
 #endif
+#if defined (MULTILAN_FEATURE)
+#if defined(INTEL_PUMA7)
+        AnscCopyMemory(g_EthIntSInfo[9].MacAddress, strMac, 6);
+        AnscCopyMemory(g_EthIntSInfo[10].MacAddress, strMac, 6);
+        AnscCopyMemory(g_EthIntSInfo[11].MacAddress, strMac, 6);
+        AnscCopyMemory(g_EthIntSInfo[12].MacAddress, strMac, 6);
+        AnscCopyMemory(g_EthIntSInfo[14].MacAddress, strMac, 6);
+        AnscCopyMemory(g_EthIntSInfo[13].MacAddress, strMac, 6);
+#endif
+#endif
     }
 
     if ( -1 != _getMac("erouter0", strMac) )
     {
-#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
+#if defined (MULTILAN_FEATURE)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) || defined(INTEL_PUMA7)
     	AnscCopyMemory(g_EthIntSInfo[2].MacAddress, strMac, 6);
 #elif defined(_CBR_PRODUCT_REQ_)
         AnscCopyMemory(g_EthIntSInfo[8].MacAddress, strMac, 6);
 #else
     	AnscCopyMemory(g_EthIntSInfo[4].MacAddress, strMac, 6);
 #endif
+#else
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
+        AnscCopyMemory(g_EthIntSInfo[2].MacAddress, strMac, 6);
+#elif defined(_CBR_PRODUCT_REQ_)
+        AnscCopyMemory(g_EthIntSInfo[8].MacAddress, strMac, 6);
+#else
+        AnscCopyMemory(g_EthIntSInfo[4].MacAddress, strMac, 6);
+#endif
+#endif
     }
 
     if ( -1 != _getMac("lbr0", strMac) )
     {
-#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
+#if defined (MULTILAN_FEATURE)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) || defined(INTEL_PUMA7)
     	 AnscCopyMemory(g_EthIntSInfo[3].MacAddress, strMac, 6);
 #elif defined(_CBR_PRODUCT_REQ_)
          AnscCopyMemory(g_EthIntSInfo[9].MacAddress, strMac, 6);
 #else
         AnscCopyMemory(g_EthIntSInfo[5].MacAddress, strMac, 6);
 #endif
+#else
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
+         AnscCopyMemory(g_EthIntSInfo[3].MacAddress, strMac, 6);
+#elif defined(_CBR_PRODUCT_REQ_)
+         AnscCopyMemory(g_EthIntSInfo[9].MacAddress, strMac, 6);
+#else
+        AnscCopyMemory(g_EthIntSInfo[5].MacAddress, strMac, 6);
+#endif
+#endif
     }
- 
+
+#if defined (MULTILAN_FEATURE)
+#if defined(INTEL_PUMA7)
+    if ( -1 != _getMac(g_EthIntSInfo[4].Name, strMac) )
+        AnscCopyMemory(g_EthIntSInfo[4].MacAddress, strMac, 6);
+    if ( -1 != _getMac(g_EthIntSInfo[5].Name, strMac) )
+        AnscCopyMemory(g_EthIntSInfo[5].MacAddress, strMac, 6);
+    if ( -1 != _getMac(g_EthIntSInfo[6].Name, strMac) )
+        AnscCopyMemory(g_EthIntSInfo[6].MacAddress, strMac, 6);
+    if ( -1 != _getMac(g_EthIntSInfo[7].Name, strMac) )
+        AnscCopyMemory(g_EthIntSInfo[7].MacAddress, strMac, 6);
+    if ( -1 != _getMac(g_EthIntSInfo[8].Name, strMac) )
+        AnscCopyMemory(g_EthIntSInfo[8].MacAddress, strMac, 6);
+#endif
+#endif
 #endif
 
     returnStatus = CosaDmlEthMlanInit(hDml, phContext);

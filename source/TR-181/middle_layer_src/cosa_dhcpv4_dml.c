@@ -6243,12 +6243,19 @@ Pool_SetParamStringValue
             // For other pools, keep full path in Interface.
             if(length < 256)
             {
+#if defined (MULTILAN_FEATURE)
+                AnscCopyString(pPool->Cfg.Interface, pString);
+#endif
                 // extra error checking
-                if(strstr(pPool->Cfg.Interface, "Device.IP.Interface."))
-                {
+#if defined (MULTILAN_FEATURE)
+                if(!strstr(pPool->Cfg.Interface, "Device.IP.Interface."))
+#else
+		if(strstr(pPool->Cfg.Interface, "Device.IP.Interface."))
+		{
                     AnscCopyString(pPool->Cfg.Interface, pString);
                 }
                 else
+#endif
                 {
                     AnscTraceFlow(("%s: interface path wrong %s\n", __FUNCTION__, pString));
                     return FALSE;

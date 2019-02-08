@@ -3941,10 +3941,10 @@ Pool1_AddEntry
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtLink          = NULL;
     PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = NULL;
     CHAR                              tmpBuff[64]       = {0};
-	
-	/* We just have one Pool. Not permit to add/delete. */
-	return NULL;
-	
+#ifndef MULTILAN_FEATURE
+        /* We just have one Pool. Not permit to add/delete. */
+        return NULL;
+#endif
 #if defined _COSA_DRG_CNS_  || defined _COSA_DRG_TPG_
     return NULL;
 #endif
@@ -4034,10 +4034,10 @@ Pool1_DelEntry
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)hInstance;
     PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = (PCOSA_DML_DHCPSV6_POOL_FULL)pCxtLink->hContext;
-
+#ifndef MULTILAN_FEATURE
 	/* We just have one Pool. Not permit to add/delete. */
 	return ANSC_STATUS_FAILURE;
-
+#endif
 #if defined _COSA_DRG_CNS_  || defined _COSA_DRG_TPG_
     return ANSC_STATUS_FAILURE;
 #endif
@@ -4420,13 +4420,15 @@ Pool1_GetParamStringValue
                         "Name",
                         pPool->Cfg.Interface /* When brlan0 works ,change to "brlan0"*/
                     );
+     #elif defined (MULTILAN_FEATURE)
+        pString = pPool->Cfg.Interface;
      #else
         pString = CosaUtilGetFullPathNameByKeyword
                     (
                         "Device.IP.Interface.",
                         "Name",
                         "brlan0" /* When brlan0 works ,change to "brlan0"*/
-                    );     
+                    );
      #endif
      
         if ( pString )
@@ -4434,17 +4436,25 @@ Pool1_GetParamStringValue
             if ( AnscSizeOfString(pString) < *pUlSize)
             {
                 AnscCopyString(pValue, pString);
-
+#if defined (MULTILAN_FEATURE)
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
                 AnscFreeMemory(pString);
-
+#endif
+#else
+                AnscFreeMemory(pString);
+#endif
                 return 0;
             }
             else
             {
                 *pUlSize = AnscSizeOfString(pString)+1;
-
+#if defined (MULTILAN_FEATURE)
+#ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
                 AnscFreeMemory(pString);
-                
+#endif
+#else
+                AnscFreeMemory(pString);
+#endif
                 return 1;
             }
         }
@@ -5007,8 +5017,11 @@ Pool1_SetParamStringValue
         /*not supported*/
         return FALSE;
 #endif
-        
+#if defined (MULTILAN_FEATURE)        
+        _ansc_snprintf(pPool->Cfg.Interface, sizeof(pPool->Cfg.Interface), "%s.", pString);
+#else
         AnscCopyString(pPool->Cfg.Interface, pString);
+#endif
 
         return TRUE;
     }
@@ -7312,10 +7325,10 @@ Option4_AddEntry
     PCOSA_DML_DHCPSV6_POOL_OPTION     pDhcpOption          = NULL;
     CHAR                              tmpBuff[64]          = {0};
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6              = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
-
+#ifndef MULTILAN_FEATURE
 	/* We just have two option:DNS, domain. Not permit to add/delete. */
 	return NULL;
-
+#endif
     /* We need ask from backend */
     pDhcpOption  = (PCOSA_DML_DHCPSV6_POOL_OPTION)AnscAllocateMemory( sizeof(COSA_DML_DHCPSV6_POOL_OPTION) );
     if ( !pDhcpOption )
@@ -7401,10 +7414,10 @@ Option4_DelEntry
     PCOSA_CONTEXT_LINK_OBJECT         pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_DHCPSV6_POOL_OPTION     pDhcpOption          = (PCOSA_DML_DHCPSV6_POOL_OPTION)pCxtLink->hContext;
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6              = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
-
+#ifndef MULTILAN_FEATURE
 	/* We just have two option:DNS, domain. Not permit to add/delete. */
 	return ANSC_STATUS_FAILURE;
-
+#endif
     if ( !pCxtLink->bNew )
     {
         returnStatus = CosaDmlDhcpv6sDelOption( NULL, pDhcpPool->Cfg.InstanceNumber, pDhcpOption->InstanceNumber );

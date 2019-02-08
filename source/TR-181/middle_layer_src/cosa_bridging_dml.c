@@ -508,8 +508,12 @@ Bridge_AddEntry
     {
         return NULL;
     }
-
+#if defined (MULTILAN_FEATURE)
+    _ansc_sprintf(pDmlBridge->Cfg.Alias, "cpe-Bridge%d", pCosaDMBridging->ulNextBridgeInstance);
+    _ansc_sprintf(pDmlBridge->Cfg.name, "Bridge%d", pCosaDMBridging->ulNextBridgeInstance);
+#else
     _ansc_sprintf(pDmlBridge->Cfg.Alias, "Bridge%d", pCosaDMBridging->ulNextBridgeInstance);
+#endif
     pDmlBridge->Cfg.Std = COSA_DML_BRG_STD_8021Q_2005;
     pDmlBridge->Cfg.bAllowDelete = TRUE;
     //$HL 12/2/2013
@@ -908,8 +912,15 @@ Bridge_GetParamStringValue
 
         return 0;
     }
+#if defined (MULTILAN_FEATURE)
+    else if( AnscEqualString(ParamName, "Name", TRUE) )
+    {
+        /* collect value */
+        AnscCopyString(pValue, pDmlBridge->Cfg.name);
 
-
+        return 0;
+    }
+#endif
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
@@ -1133,7 +1144,15 @@ Bridge_SetParamStringValue
 
         return TRUE;
     }
+#if defined (MULTILAN_FEATURE)
+    else if( AnscEqualString(ParamName, "Name", TRUE) )
+    {
+        /* save update to backup */
+        AnscCopyString(pDmlBridge->Cfg.name, pString);
 
+        return TRUE;
+    }
+#endif
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
