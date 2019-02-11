@@ -10582,7 +10582,7 @@ Cmd_GetParamStringValue
 
 
 BOOL
-Ring_SetParamStringValue
+Cmd_SetParamStringValue
 (
  ANSC_HANDLE                 hInsContext,
  char*                       ParamName,
