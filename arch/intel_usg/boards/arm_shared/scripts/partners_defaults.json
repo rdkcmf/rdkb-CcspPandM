@@ -87,9 +87,9 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "true",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CMVoiceImageSelect" : "pc20",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.AllowEthernetWAN" : "true" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname" : "" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname" : "Cox" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "Panoramic WiFi" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "wifi.cox.com",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "CHL"
    },
 
@@ -134,9 +134,9 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "true",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CMVoiceImageSelect" : "pc20genband",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.AllowEthernetWAN" : "true" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname" : "" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname" : "Rogers" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "Ignite WiFi" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "ignitewifi.rogers.com",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "RSHM"
    },
 
@@ -181,9 +181,9 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "true",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CMVoiceImageSelect" : "pc15mgcp",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.AllowEthernetWAN" : "false" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname" : "" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname" : "Shaw" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "BlueCurve Home" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "internet.shaw.ca",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "SHS"
    },
 
@@ -225,9 +225,9 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "true",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CMVoiceImageSelect" : "pc15mgcp",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.AllowEthernetWAN" : "false" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname" : "" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "" ,
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname" : "Videotron" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "Helix Fi" ,
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "helixfi.videotron.com",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "VLHS"
    },
    "unknown" : {
