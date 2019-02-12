@@ -3822,6 +3822,9 @@ void __cosa_dhcpsv6_refresh_config()
     /*Begin write configuration */
     fprintf(fp, "log-level 8\n");
 
+    //Intel Proposed RDKB Generic Bug Fix from XB6 SDK
+    fprintf(fp, "reconfigure-enabled 1\n");
+
     if ( g_dhcpv6_server_type != DHCPV6_SERVER_TYPE_STATEFUL )
         fprintf(fp, "stateless\n");
 
