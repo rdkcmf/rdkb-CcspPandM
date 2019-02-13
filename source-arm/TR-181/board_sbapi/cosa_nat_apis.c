@@ -3234,6 +3234,11 @@ BOOL CosaDmlNatChkPortMappingClient(ULONG client)
     ULONG ipaddr = 0xffffffff, netmask = 0xffffffff;
     BOOL ret;
 
+    dhcpServerInfo_t dhcp;
+    ULONG dhcpIPAddressStart  =0xffffffff, dhcpIPAddressEnd = 0xffffffff;
+
+    ULONG startIP, endIP, checkIP;
+
     /* Ipv4 client IP will be set as 255.255.255.255 if only need IPv6 portforwarding */
     if(client == 0xffffffff){
         return TRUE;
@@ -3244,12 +3249,23 @@ BOOL CosaDmlNatChkPortMappingClient(ULONG client)
         return FALSE;
     }
 
+    /*Convert dhcp start and end address from text to binary form*/
+    Utopia_GetDHCPServerSettings (&Ctx, &dhcp);
+    inet_pton(AF_INET, dhcp.DHCPIPAddressStart, &dhcpIPAddressStart);
+    inet_pton(AF_INET, dhcp.DHCPIPAddressEnd, &dhcpIPAddressEnd);
+
+    /*Convert unsigned integer hostlong from host byte order to network byte order*/
+    startIP = htonl(dhcpIPAddressStart);
+    endIP = htonl(dhcpIPAddressEnd);
+    checkIP = htonl(client);
+
     Utopia_GetLanSettings(&Ctx, &lan);
     Utopia_Free(&Ctx, 0);
     inet_pton(AF_INET, lan.ipaddr, &ipaddr);
     inet_pton(AF_INET, lan.netmask, &netmask);
 
     if((client != ipaddr) &&
+	(checkIP >= startIP && checkIP <= endIP) && //check that client(checkIP) is in DHCP range or not
         !IPv4Addr_IsBroadcast(client, ipaddr, netmask) &&
         !IPv4Addr_IsNetworkAddr(client, ipaddr, netmask) &&
         //zqiu
