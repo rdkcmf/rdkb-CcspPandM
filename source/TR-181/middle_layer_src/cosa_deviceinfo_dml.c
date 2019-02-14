@@ -79,6 +79,7 @@
 
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
+extern void* g_pDslhDmlAgent;
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -5558,6 +5559,23 @@ Feature_GetParamBoolValue
 
          return TRUE;
     }
+
+#if defined(_COSA_FOR_BCI_)
+    if( AnscEqualString(ParamName, "OneToOneNAT", TRUE))
+    {
+         char value[8];
+         syscfg_get(NULL,"one_to_one_nat",value, sizeof(value));
+         if( value != NULL )
+         {
+             if (strcmp(value, "true") == 0)
+                 *pBool = TRUE;
+             else
+                 *pBool = FALSE;
+         }
+         return TRUE;
+    }
+#endif
+
    if(AnscEqualString(ParamName, "BLERadio", TRUE))
     {
 #if defined(_XB6_PRODUCT_REQ_)   
@@ -5878,6 +5896,30 @@ Feature_SetParamBoolValue
        CcspTraceInfo(("Successfully set ContainerSupport \n"));
        return TRUE;
     }
+
+#if defined(_COSA_FOR_BCI_)
+    if( AnscEqualString(ParamName, "OneToOneNAT", TRUE))
+    {
+        BOOL bNatEnable = FALSE;
+        bNatEnable  = g_GetParamValueBool(g_pDslhDmlAgent, "Device.NAT.X_Comcast_com_EnableNATMapping");
+        if ( bValue != bNatEnable )
+        {
+            g_SetParamValueBool("Device.NAT.X_Comcast_com_EnableNATMapping", bValue);
+        }
+
+        if ( bValue == TRUE)
+        {
+            syscfg_set(NULL, "one_to_one_nat", "true");
+        }
+        else
+        {
+            syscfg_set(NULL, "one_to_one_nat", "false");
+        }
+        syscfg_commit();
+        return TRUE;
+    }
+#endif
+
     if( AnscEqualString(ParamName, "BLERadio", TRUE))
     {
 #if defined (_XB6_PRODUCT_REQ_)
