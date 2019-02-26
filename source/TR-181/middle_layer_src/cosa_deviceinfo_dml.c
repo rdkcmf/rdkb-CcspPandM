@@ -10593,13 +10593,20 @@ Cmd_SetParamStringValue
     char *rand_a = NULL;
     char *session_token =  NULL;
     char *cmd =  NULL;
+    char *cmdReady = NULL;
+    char *cmdPlay = NULL;
+    char *cmdReady_mask = NULL;
+    char *cmdPlay_mask = NULL;
+    int index;
  if( AnscEqualString(ParamName, "Request", TRUE))
     {
         // char *strJson = "{\"tile_uuid\":\"b8e85e65d022498f\",\"rand_a\":\"AAAAAAAAAAAAAAAAAAA==\",\"session_token\":\"AAAAAA==\",\"code\":\"MEP_TOA_OPEN_CHANNEL\"}";
+        char *strJson =  "{\"commands\":[{\"command\":\"ab==\",\"response_mask\":\"12\"},{\"command\":\"kl==\",\"response_mask\":\"78\"}],\"code\":\"MEP_TOA_SEND_COMMANDS\",\"disconnect_on_completion\":true}";
+
          CcspTraceInfo(("***************************\n"));
-         CcspTraceInfo(("The Json string=%s\n",pString));
+         CcspTraceInfo(("The Json string=%s\n",strJson));
          CcspTraceInfo(("***************************\n"));
-         cJSON *cjson = cJSON_Parse(pString);
+         cJSON *cjson = cJSON_Parse(strJson);
          if(cjson)
          {
              //cchar *ring_tileid = cJSON_GetObjectItem(cjson, "tile_uuid");
@@ -10642,7 +10649,7 @@ Cmd_SetParamStringValue
 
                         if (syscfg_set(NULL, "Rand_a", rand_a) != 0)
                         {
-                           CcspTraceInfo(("syscfg_set failed for Rand_a\n"));
+                             CcspTraceInfo(("syscfg_set failed for Rand_a\n"));
                         }
                         else
                         {
@@ -10676,13 +10683,146 @@ Cmd_SetParamStringValue
                             }
                         }
                         CcspTraceInfo(("***************************\n"));
+                        CcspTraceInfo(("Open channel case\n"));
+                        cJSON_Delete(cjson);
+                        CcspTraceInfo(("*****Return*****\n"));
+                        return TRUE;
+                  }else if(strcmp(cmd,"MEP_TOA_SEND_COMMANDS") == 0)
+                  {
+                      //Ring case
+                        CcspTraceInfo(("***************************\n"));
+                        CcspTraceInfo(("Open Ring  case\n"));
+                        cJSON *disconnect = cJSON_GetObjectItem( cjson, "disconnect_on_completion");
+                        if(cJSON_IsTrue(disconnect))
+                        {
+                               CcspTraceInfo(("Disconnect on completion set to true\n"));
+                               if (syscfg_set(NULL, "TileDisconnectOnCompletion", "true") != 0)
+                               {
+                                     CcspTraceInfo(("syscfg_set failed for  disconnect on completion \n"));
+                               }
+                               else
+                               {
+                                   if (syscfg_commit() != 0)
+                                   {
+                                           CcspTraceInfo(("syscfg_commit failed for disconnect on completion\n"));
+                                   }
+                                }
+                        }
+                        else
+                        {
+                               CcspTraceInfo(("Disconnect on completion set to false \n"));
+                               if (syscfg_set(NULL, "TileDisconnectOnCompletion", "false") != 0)
+                               {
+                                     CcspTraceInfo(("syscfg_set failed for  disconnect on completion \n"));
+                               }
+                               else
+                               {
+                                   if (syscfg_commit() != 0)
+                                   {
+                                           CcspTraceInfo(("syscfg_commit failed for disconnect on completion\n"));
+                                   }
+                               }
+                        }
+
+                        cJSON * array = cJSON_GetObjectItem(cjson, "commands");
+                        CcspTraceInfo(("The array length = %d\n",cJSON_GetArraySize(array)));
+                        for (index = 0; index < cJSON_GetArraySize(array); index++)
+                        {
+                            cJSON * subitem = cJSON_GetArrayItem(array, index);
+                            CcspTraceInfo(("***** ALL Looks Well**** \n"));
+                            if(subitem != NULL)
+                            {
+                                 CcspTraceInfo(("***** Sub Item all good**** \n"));
+                                if( cJSON_GetObjectItem( subitem, "command") != NULL )
+                                {
+                                     CcspTraceInfo(("***** Sub GetItem all good**** \n"));
+                                     if(index == 0)
+                                     {
+                                       CcspTraceInfo(("The Ring Cmd Ready:%s\n", cJSON_GetObjectItem(subitem, "command")->valuestring));
+                                       if (syscfg_set(NULL, "cmdReady",cJSON_GetObjectItem(subitem, "command")->valuestring) != 0)
+                                       {
+                                           CcspTraceInfo(("syscfg_set failed for cmdReady \n"));
+                                       }
+                                       else
+                                       {
+                                           if (syscfg_commit() != 0)
+                                           {
+                                               CcspTraceInfo(("syscfg_commit failed for cmdReady\n"));
+                                           }
+                                        }
+                                     }
+                                     else
+                                     {
+
+                                        CcspTraceInfo(("The Ring Cmd Play:%s\n", cJSON_GetObjectItem(subitem, "command")->valuestring));
+                                        if (syscfg_set(NULL, "cmdPlay",cJSON_GetObjectItem(subitem, "command")->valuestring) != 0)
+                                        {
+                                           CcspTraceInfo(("syscfg_set failed for cmdPlay \n"));
+                                        }
+                                        else
+                                        {
+                                           if (syscfg_commit() != 0)
+                                           {
+                                               CcspTraceInfo(("syscfg_commit failed for cmdPlay\n"));
+                                           }
+                                        }
+                                     }
+                                }
+ 
+                                if( cJSON_GetObjectItem( subitem, "response_mask") != NULL )
+                                {
+                                      if(index == 0 )
+                                      {
+                                           CcspTraceInfo(("The Ring Cmd Ready mask:%s\n", cJSON_GetObjectItem(subitem, "response_mask")->valuestring));
+                                           if (syscfg_set(NULL, "cmdReady_mask",cJSON_GetObjectItem(subitem, "response_mask")->valuestring) != 0)
+                                           {
+                                               CcspTraceInfo(("syscfg_set failed for cmdReady_mask \n"));
+                                           }
+                                           else
+                                           {
+                                              if (syscfg_commit() != 0)
+                                              {
+                                                 CcspTraceInfo(("syscfg_commit failed for cmdReady mask\n"));
+                                              }
+                                           }
+                                      }
+                                      else
+                                      {
+                                           CcspTraceInfo(("The Ring Cmd Play mask:%s\n", cJSON_GetObjectItem(subitem, "response_mask")->valuestring));
+                                           if (syscfg_set(NULL, "cmdPlay_mask",cJSON_GetObjectItem(subitem, "response_mask")->valuestring) != 0)
+                                           {
+                                               CcspTraceInfo(("syscfg_set failed for cmdPlay_mask \n"));
+                                           }
+                                           else
+                                           {
+                                              if (syscfg_commit() != 0)
+                                              {
+                                                 CcspTraceInfo(("syscfg_commit failed for cmdPlay mask\n"));
+                                              }
+                                           }
+                                      }
+                                }
+                            }//subitem != NULL
+
+                        }//end for loop
+                        CcspTraceInfo(("setting cmdCode \n"));
+                        if (syscfg_set(NULL, "cmdCode", cmd) != 0)
+                        {
+                            CcspTraceInfo(("syscfg_set failed for Ring command\n"));
+                        }
+                        else
+                        {
+                            if (syscfg_commit() != 0)
+                            {
+                                CcspTraceInfo(("syscfg_commit failed for Ring Command\n"));
+                            }
+                        }
+                        CcspTraceInfo(("***************************\n"));
                         CcspTraceInfo(("ALL WELL\n"));
                         cJSON_Delete(cjson);
                         CcspTraceInfo(("*****Return*****\n"));
                         return TRUE;
-                  }else
-                  {
-                      //the cmd is for ring TBD
+
                   }
 
              }
@@ -10692,6 +10832,10 @@ Cmd_SetParamStringValue
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
     return FALSE;
 }
+
+
+
+
 
 
 /**********************************************************************
