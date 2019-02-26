@@ -1701,10 +1701,82 @@ void restoreAllDBs()
 	return;
 }
 
-void backuplogs()
+void backuplogs(void *thread)
 {
+	void *ret;
+	int s;
+	if(thread != NULL)
+	{
+		pthread_t thread_id = (pthread_t) thread;
+		CcspTraceWarning(("FactoryReset:%s Wait for WiFi reset to complete\n",__FUNCTION__));
+		s = pthread_join(thread_id, &ret);
+		if (!s)
+			CcspTraceWarning(("FactoryReset:%s WiFi reset is now completed\n",__FUNCTION__));
+	}
 	pthread_detach(pthread_self());
 	system("/fss/gw/rdklogger/backupLogs.sh &");
+}
+
+void resetWiFi()
+{
+	CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+	/*TODO: SEND EVENT TO WIFI PAM  Device.WiFi.X_CISCO_COM_FactoryReset*/
+	int ret;
+	char* faultParam = NULL;
+
+	CcspTraceWarning(("FactoryReset:%s Restoring WiFi to factory defaults  ...\n",__FUNCTION__));     
+	if (ppComponents == NULL && initWifiComp())
+	{
+		CcspTraceError(("FactoryReset:%s Restoring WiFi to factory defaults returned error  ...\n",__FUNCTION__));     
+		return ANSC_STATUS_FAILURE;
+	}
+	parameterValStruct_t	val = { "Device.WiFi.X_CISCO_COM_FactoryReset", "true", ccsp_boolean};
+
+#if defined (_XB6_PRODUCT_REQ_)
+	/* In Reset Factory Settings, the system is rebooted  before WiFi gets reset.
+	* Add this line to indicate WiFi module to restore after boot up.
+	* This will be removed iff CCSP layer adds sufficient delay during reboot. */
+	system("echo 2 >/nvram/qtn_wifi_reset_indicator");
+#endif
+
+	ret = CcspBaseIf_setParameterValues
+		(
+			bus_handle, 
+			ppComponents[0]->componentName, 
+			ppComponents[0]->dbusPath,
+			0, 0x0,   /* session id and write id */
+			&val, 
+			1, 
+			TRUE,   /* no commit */
+			&faultParam
+		);	
+
+	if (ret != CCSP_SUCCESS && faultParam)
+	{
+		CcspTraceError(("FactoryReset:%s SettingX_CISCO_COM_FactoryReset returned error for param '%s'  ...\n",__FUNCTION__,faultParam));  
+		bus_info->freefunc(faultParam);
+	}
+#if defined (_XB6_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)
+	faultParam = NULL;
+	parameterValStruct_t val1 = { "Device.WiFi.X_CISCO_COM_FactoryResetRadioAndAp", "1,2;1,2", ccsp_string};
+	ret = CcspBaseIf_setParameterValues
+		(
+			bus_handle,
+			ppComponents[0]->componentName,
+			ppComponents[0]->dbusPath,
+			0, 0x0,   /* session id and write id */
+			&val1,
+			1,
+			TRUE,   /* no commit */
+			&faultParam
+		);
+
+	if (ret != CCSP_SUCCESS && faultParam)
+	{
+		CcspTraceError(("FactoryReset:%s Setting X_CISCO_COM_FactoryResetRadioAndAp returned error for param '%s'  ...\n",__FUNCTION__,faultParam));
+		bus_info->freefunc(faultParam);
+	}
+#endif
 }
 
 /*****************************************
@@ -1734,8 +1806,10 @@ CosaDmlDcSetFactoryReset
     char value[50];
 	int factory_reset_mask = 0;
 	UtopiaContext utctx = {0};
+	static pthread_t wifiThread;
+	int wifiThreadStarted=0;
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-	
+
 #if defined (_XB6_PRODUCT_REQ_)
 	int delay_time = 0;
 	int delay = 0;
@@ -1898,105 +1972,24 @@ CosaDmlDcSetFactoryReset
 		
 		Utopia_Free(&utctx,1);
 		//system("reboot");i
-		pthread_t logs;
-        pthread_create(&logs, NULL, &backuplogs, NULL);
-	//	system("/fss/gw/rdklogger/backupLogs.sh");
-	} 
+	}
 	if (factory_reset_mask & FR_WIFI) {
-		/*TODO: SEND EVENT TO WIFI PAM  Device.WiFi.X_CISCO_COM_FactoryReset*/
-        int                         ret;
-        char* faultParam = NULL;
-
-      	CcspTraceWarning(("FactoryReset:%s Restoring WiFi to factory defaults  ...\n",__FUNCTION__));     
-            if (ppComponents == NULL && initWifiComp())
-		{
-    		  	CcspTraceError(("FactoryReset:%s Restoring WiFi to factory defaults returned error  ...\n",__FUNCTION__));     
-			
-                	return ANSC_STATUS_FAILURE;
-            	}
-            parameterValStruct_t		val = { "Device.WiFi.X_CISCO_COM_FactoryReset", "true", ccsp_boolean};
-
-#if defined (_XB6_PRODUCT_REQ_)
-	    /* In Reset Factory Settings, the system is rebooted  before WiFi gets reset.
-	    * Add this line to indicate WiFi module to restore after boot up.
-	    * This will be removed iff CCSP layer adds sufficient delay during reboot. */
-	    system("echo 2 >/nvram/qtn_wifi_reset_indicator");
-#endif
-
-            ret = CcspBaseIf_setParameterValues
-				(
-					bus_handle, 
-					ppComponents[0]->componentName, 
-					ppComponents[0]->dbusPath,
-					0, 0x0,   /* session id and write id */
-					&val, 
-					1, 
-					TRUE,   /* no commit */
-					&faultParam
-				);	
-                
-                if (ret != CCSP_SUCCESS && faultParam)
-                {
-					CcspTraceError(("FactoryReset:%s SettingX_CISCO_COM_FactoryReset returned error for param '%s'  ...\n",__FUNCTION__,faultParam));  
-                    bus_info->freefunc(faultParam);
-                }
-#if defined (_XB6_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)
-            faultParam = NULL;
-            parameterValStruct_t val1 = { "Device.WiFi.X_CISCO_COM_FactoryResetRadioAndAp", "1,2;1,2", ccsp_string};
-            ret = CcspBaseIf_setParameterValues
-                                (
-                                        bus_handle,
-                                        ppComponents[0]->componentName,
-                                        ppComponents[0]->dbusPath,
-                                        0, 0x0,   /* session id and write id */
-                                        &val1,
-                                        1,
-                                        TRUE,   /* no commit */
-                                        &faultParam
-                                );
-
-             if (ret != CCSP_SUCCESS && faultParam)
-             {
-                    CcspTraceError(("FactoryReset:%s Setting X_CISCO_COM_FactoryResetRadioAndAp returned error for param '%s'  ...\n",__FUNCTION__,faultParam));
-                    bus_info->freefunc(faultParam);
-             }
-#endif
-#if 0
-		FILE *fp;
-		char command[30];
-
-		 memset(command,0,sizeof(command));
-		sprintf(command, "ls /tmp/*walledgarden*");
-		char buffer[50];
-		 memset(buffer,0,sizeof(buffer));
-                if(!(fp = popen(command, "r"))){
-                           exit(1);
-                    }
-	        while(fgets(buffer, sizeof(buffer), fp)!=NULL){
-		        buffer[strlen(buffer) - 1] = '\0';
-    }
-
-if ( strlen(buffer) == 0 )
-{
-		pthread_t captive;
-		pthread_create(&captive, NULL, &configWifi, NULL);
-
-}
-pclose(fp);
-#endif
-#if defined(_PLATFORM_RASPBERRYPI_)
-		sleep(10);
-		system("reboot");
-#endif
-//            free_componentStruct_t(bus_handle, size, ppComponents);
-            return  ANSC_STATUS_SUCCESS;
-        
-        //system("reboot");
-	} 
+           
+           if (!pthread_create(&wifiThread, NULL, &resetWiFi, NULL))
+		   wifiThreadStarted=1;
+	}
 	if (factory_reset_mask & FR_NONE){
-		
-	}	
 
+	}
+	// do backup logs 
+	if (factory_reset_mask & FR_ROUTER) {
+           pthread_t logs;
+	      if (wifiThreadStarted){
+		//if wifithread staretd, pass wifi thread id so backulogs thread waits for it to complete before starting backup
+		pthread_create(&logs, NULL, &backuplogs, (void*)wifiThread);
+	      }else
+		pthread_create(&logs, NULL, &backuplogs, NULL);
+	}
     return ANSC_STATUS_SUCCESS;
 }
 
