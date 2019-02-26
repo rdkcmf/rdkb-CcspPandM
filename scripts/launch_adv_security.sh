@@ -36,8 +36,12 @@ then
     if [ "$DEVICE_MODEL" = "TCHXB3" ]; then
     export PATH=$PATH:$RUNTIME_BIN_DIR
     export LD_LIBRARY_PATH=/lib:/usr/lib:$RUNTIME_LIB_PATH
-        cd $RUNTIME_BIN_DIR
-        ./CcspAdvSecuritySsp -subsys eRT. &
+        if [ -e $RUNTIME_BIN_DIR ]; then
+                cd $RUNTIME_BIN_DIR
+                ./CcspAdvSecuritySsp -subsys eRT. &
+        else
+                /usr/sbin/cujo_download.sh &
+        fi
     else
         if [ "$BOX_TYPE" = "XB3" ]; then
                 cd $RUNTIME_BIN_DIR
