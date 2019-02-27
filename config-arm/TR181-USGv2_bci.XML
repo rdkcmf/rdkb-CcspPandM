@@ -727,6 +727,12 @@
           <syntax>int</syntax>
           <writable>true</writable>
         </parameter>
+        <parameter>
+          <name>RouterName</name>
+          <type>string(16)</type>
+          <syntax>string</syntax>
+          <writable>true</writable>
+        </parameter>
 
         </parameters>
 

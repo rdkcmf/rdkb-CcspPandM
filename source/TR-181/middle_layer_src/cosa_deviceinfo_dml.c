@@ -637,6 +637,21 @@ DeviceInfo_GetParamStringValue
 		return 0;
     }
 
+	if( AnscEqualString(ParamName, "RouterName", TRUE))
+    {
+        char buf[16] = {'\0'};
+        syscfg_get( NULL, "router_name", buf, sizeof(buf));
+    	if( buf != NULL )
+    		{
+    		    AnscCopyString(pValue,  buf);
+    		}
+		else
+		{
+			AnscTraceWarning(("Error in syscfg_get for RouterName\n"));
+		}
+		return 0;
+    }
+
 	/* Changes for EMS end here */
 	/*Changes for RDKB-6560*/
    	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CMTS_MAC", TRUE))
@@ -1290,6 +1305,24 @@ DeviceInfo_SetParamStringValue
         AnscCopyString(pMyObject->EMS_MobileNo, pString);
         return TRUE;
 		
+    }
+
+    if( AnscEqualString(ParamName, "RouterName", TRUE))
+    {
+      if (syscfg_set(NULL, "router_name", pString) != 0)
+      {
+	AnscTraceWarning(("syscfg_set failed for RouterName\n"));
+      } 
+      else
+      {
+	if (syscfg_commit() != 0)
+	{
+	  AnscTraceWarning(("syscfg_commit failed for RouterName\n"));
+	}
+	CcspTraceWarning(("RouterName is changed, new RouterName: %s ...\n", pString));
+      }
+      return TRUE;
+
     }
 	
 /* Changes end here */
