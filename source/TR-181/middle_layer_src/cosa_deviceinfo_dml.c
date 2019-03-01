@@ -9249,6 +9249,139 @@ MaintenanceWindow_SetParamStringValue
     return bReturnValue;
 }
 
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.ForwardSSH
+
+    *  ForwardSSH_SetParamStringValue // Set args required for Forward SSH
+    *  ForwardSSH_GetParamStringValue // Get args set for Forward SSH
+
+***********************************************************************/
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        ForwardSSH_GetParamBoolValue
+            (
+                 ANSC_HANDLE                 hInsContext,
+                 char*                       ParamName,
+                 BOOL*                       pBool
+            )
+
+        description:
+
+                This function is called to retrieve Boolean parameter value; 
+
+        argument:   
+                ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+        return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+ForwardSSH_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    char buf[8]={0};
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        syscfg_get( NULL, "ForwardSSH", buf, sizeof(buf));
+	if( buf != NULL )
+        {
+            if (strcmp(buf,"true") == 0)
+            {
+                *pBool = TRUE;
+            }
+            else
+            {
+                *pBool = FALSE;
+            }
+        }
+        else
+        {
+            CcspTraceWarning(("%s syscfg_get failed  for ForwardSSH \n",__FUNCTION__));
+            *pBool = TRUE;
+        }
+        return TRUE;
+    }
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        ForwardSSH_SetParamBoolValue
+            (
+                 ANSC_HANDLE                 hInsContext,
+                 char*                       ParamName,
+                 BOOL*                       bValue
+            )
+
+        description:
+
+                This function is called to retrieve Boolean parameter value; 
+
+        argument:   
+                ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+        return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+ForwardSSH_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        if( bValue == TRUE)
+        {
+            syscfg_set(NULL, "ForwardSSH", "true");
+            syscfg_commit();
+        }
+        else
+        {
+            syscfg_set(NULL, "ForwardSSH", "false");
+            syscfg_commit();
+        }
+        return TRUE;
+    }
+
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
 
 /**********************************************************************  
 

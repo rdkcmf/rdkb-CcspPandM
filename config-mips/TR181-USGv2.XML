@@ -1221,6 +1221,22 @@
                 </parameter>
               </parameters>
             </object>
+            <object>
+              <name>ForwardSSH</name>
+              <objectType>object</objectType>
+              <functions>
+                <func_GetParamBoolValue>ForwardSSH_GetParamBoolValue</func_GetParamBoolValue>
+                <func_SetParamBoolValue>ForwardSSH_SetParamBoolValue</func_SetParamBoolValue>
+              </functions>
+              <parameters>
+                <parameter>
+                  <name>Enable</name>
+                  <type>boolean</type>
+                  <syntax>bool</syntax>
+                  <writable>true</writable>
+                </parameter>
+              </parameters>
+            </object>
                         <object>
               <name>RPC</name>
               <objectType>object</objectType>
