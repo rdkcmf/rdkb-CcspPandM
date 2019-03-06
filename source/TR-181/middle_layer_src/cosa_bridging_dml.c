@@ -2263,8 +2263,8 @@ Port_SetParamBoolValue
         printf("link name is %s %d\n", pPort->Cfg.LinkName, pPort->Cfg.PVID);		
 
     #if CFG_TR181_BRIDGE_ETH4_SYSCFG
-        /* we are setting ethernet port 4 to VLAN*/
-        if( !strcmp(pPort->Info.Name, SWITCH_PORT_3_NAME) &&  pPort->Cfg.PVID == pvid)
+        /* we are setting ethernet port 4(XB3) or 2(XB6) to VLAN*/
+        if( (!strcmp(pPort->Info.Name, SWITCH_PORT_3_NAME) || !strcmp(pPort->Info.Name, SWITCH_PORT_1_NAME)) &&  pPort->Cfg.PVID == pvid)
         {
             if( GET_CURRENT_WRITE_ENTITY() == DSLH_MPA_ACCESS_CONTROL_WEBUI
                 || GET_CURRENT_WRITE_ENTITY() == DSLH_MPA_ACCESS_CONTROL_SNMP ) 
