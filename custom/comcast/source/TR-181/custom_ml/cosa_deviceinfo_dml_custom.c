@@ -709,7 +709,22 @@ int SetXdnsConfig()
 #endif
 
 			if(gotdefault)
+			{
 				founddefault++;
+				if(founddefault==1)
+                                {
+					CcspTraceWarning(("Enabling primary XDNS: %s\n", confEntry));
+                                }
+				else if(founddefault==2)
+                                {
+					CcspTraceWarning(("Enabling secondary XDNS: %s\n", confEntry));
+                                }
+                          	else
+                                {
+                                	CcspTraceWarning(("Logging Invalid XDNS parameter: %s\n", confEntry));
+                                }
+
+			}
 
 			//copy validated entry to temp
 			printf("############ SetXdnsConfig() copy entry from dnsmasq_servers to temp: [%s]\n", confEntry);
@@ -721,8 +736,8 @@ int SetXdnsConfig()
 	fclose(fp2); fp2 = NULL;
 	fclose(fp1); fp1 = NULL;
 
-	// check if we found exactly ONE default dnsoverride entry,
-	if(founddefault == 1)
+	// check if we found exactly primary and secondary default dnsoverride entry,
+	if(founddefault >= 1)
 	{
 		fp1 = fopen(XDNS_RESOLV_CONF, "w");
 		if(fp1 == NULL)
@@ -770,10 +785,7 @@ int SetXdnsConfig()
 		//copy only dnsoverride entries (pruned) into nvram
 		if (strstr(confEntry, "dnsoverride"))
 		{
-			if(strstr(confEntry, "00:00:00:00:00:00"))
-				if(gotdefault) continue;
-				else gotdefault = 1;
-
+			
 			printf("############ SetXdnsConfig() copy to dnsmasq_servers: [%s]\n", confEntry);
 			fprintf(fp2, "%s", confEntry);
 		}
@@ -783,7 +795,7 @@ int SetXdnsConfig()
 	if(fp2) fclose(fp2); fp2 = NULL;
 	if(fp1) fclose(fp1); fp1 = NULL;
 
-	if(founddefault == 1)
+	if(founddefault >= 1)
 		return 1; //success
 	else
 		return 0; //error
@@ -853,7 +865,8 @@ int UnsetXdnsConfig()
 		printf("############ UnsetXdnsConfig() reading from bak and writing to resolv.conf[%s]\n", confEntry);
 		fprintf(fp1, "%s", confEntry);
 	}
-
+	
+  	CcspTraceWarning(("############ Disabled XDNS#######\n"));
 	fclose(fp3); fp3 = NULL;
 	fclose(fp1); fp1 = NULL;
 	return 1;
