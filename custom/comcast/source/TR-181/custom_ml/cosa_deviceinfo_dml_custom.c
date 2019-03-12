@@ -325,14 +325,7 @@ DeviceInfo_GetParamStringValue_Custom
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_MTA_MAC", TRUE))
 	{
-	        if( EthWANEnable )
-        	{
-			strcpy(pValue,"00:00:00:00:00:00");         		
-        	}
-		else
-		{
-	   		CosaDmlDiGetMTAMacAddress(NULL, pValue,pulSize);
-		}
+  	   CosaDmlDiGetMTAMacAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
 
@@ -377,14 +370,7 @@ DeviceInfo_GetParamStringValue_Custom
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_MTA_IP", TRUE))
 	{
-        	if( EthWANEnable )
-        	{
-			strcpy(pValue,"0.0.0.0");         		
-        	}
-		else
-		{
-	   		CosaDmlDiGetMTAIPAddress(NULL, pValue,pulSize);
-		}
+   	   CosaDmlDiGetMTAIPAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
 #endif

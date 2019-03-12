@@ -1767,6 +1767,21 @@
 		</object>
 
         <object>
+            <name>X_RDKCENTRAL-COM_EthernetWAN</name>
+            <objectType>object</objectType>
+            <functions>
+                <func_GetParamStringValue>EthernetWAN_GetParamStringValue</func_GetParamStringValue>
+            </functions>
+            <parameters>
+                <parameter>
+                    <name>CurrentOperationalMode</name>
+                    <type>string(32)</type>
+                    <syntax>string</syntax>
+                </parameter>
+            </parameters>
+         </object>
+
+        <object>
 
             <name>X_RDKCENTRAL-COM_MaintenanceWindow</name>
 
