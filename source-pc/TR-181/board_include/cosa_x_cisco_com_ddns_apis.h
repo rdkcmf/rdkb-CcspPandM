@@ -107,9 +107,9 @@ _COSA_DML_DDNS_SERVICE
     ULONG                           InstanceNumber;
     char                            Alias[64];
     char                            ServiceName[32];
-    char                            Username[64];
-    char                            Password[64];
-    char                            Domain[64];
+    char                            Username[65];
+    char                            Password[65];
+    char                            Domain[65];
     char                            AssociatedConnection[64];   /* IP interface name */
     COSA_DML_DDNS_STATE             ConnectionState;
     char                            Mail_exch[128];
