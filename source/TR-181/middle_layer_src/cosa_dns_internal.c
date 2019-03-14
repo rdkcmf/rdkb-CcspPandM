@@ -300,6 +300,7 @@ CosaDNSInitialize
 
     /* Initialize middle layer for Device.DNS.Client.Server.{i}.  */
 
+    /* local variable, tmp memory, need to free it in this routine */
     pDnsServer = CosaDmlDnsClientGetServers(NULL, (PULONG)&ulEntryCount);
     
     if ( !pDnsServer || (ulEntryCount ==0))
@@ -364,7 +365,10 @@ CosaDNSInitialize
                 );
             }
 
-            pCosaContext->hContext      = (ANSC_HANDLE)&pDnsServer[ulIndex];            
+            pCosaContext->hContext      =  (ANSC_HANDLE)AnscAllocateMemory(
+		    sizeof(pDnsServer[ulIndex]));
+            memcpy(pCosaContext->hContext, (ANSC_HANDLE)&pDnsServer[ulIndex],
+			sizeof(pDnsServer[ulIndex]));
             pCosaContext->hParentTable  = NULL;            
             pCosaContext->bNew          = FALSE;
 
@@ -374,6 +378,8 @@ CosaDNSInitialize
         /* Update refresh timestamp */
         pMyObject->PreVisitSrvTime = AnscGetTickInSeconds();        
     }
+
+    AnscFreeMemory(pDnsServer);
 
     /* Retrieve the next Instance Number for  Device.DNS.Relay.Forwarding.{i}. */
     if ( TRUE )
