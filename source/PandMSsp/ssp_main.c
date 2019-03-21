@@ -582,6 +582,15 @@ if(id != 0)
     }
 
     system("touch /tmp/pam_initialized");
+#if !defined(_COSA_INTEL_XB3_ARM_)
+    char buf[64] = {'\0'};
+    if(syscfg_get( NULL, "EnableTR69Binary", buf, sizeof(buf))==0)
+    {
+         if (strncmp(buf, "false", 5) == 0)
+             /*check this file during Tr069 service start*/
+             system("touch /tmp/disableTr069");
+    }
+#endif
 	
     if ( bRunAsDaemon )
     {
