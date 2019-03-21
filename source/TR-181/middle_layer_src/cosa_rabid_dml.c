@@ -76,7 +76,7 @@ RabidFramework_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
     PCOSA_DATAMODEL_RABID       pMyObject     = (PCOSA_DATAMODEL_RABID)g_pCosaBEManager->hRabid;
 
-#if defined(DUAL_CORE_XB3)
+#if !defined(_COSA_BCM_MIPS_)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         *pBool = pMyObject->bEnable;
@@ -132,7 +132,7 @@ RabidFramework_SetParamBoolValue
     PCOSA_DATAMODEL_RABID       pMyObject     = (PCOSA_DATAMODEL_RABID)g_pCosaBEManager->hRabid;
     ANSC_STATUS  returnStatus = ANSC_STATUS_SUCCESS;
 
-#if defined(DUAL_CORE_XB3)
+#if !defined(_COSA_BCM_MIPS_)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if(bValue == pMyObject->bEnable)
