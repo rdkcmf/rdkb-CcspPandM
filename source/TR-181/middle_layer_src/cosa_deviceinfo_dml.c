@@ -9055,6 +9055,219 @@ AllowOpenPorts_SetParamBoolValue
 }
 /**********************************************************************  
 
+//RBUS RFC :: Box will run in DBUS mode if this if disabled, RBUS mode if enabled
+
+/**********************************************************************
+
+   caller: owner of this object
+
+   prototype:
+
+       BOOL
+       RBUS_GetParamBoolValue
+           (
+               ANSC_HANDLE                 hInsContext,
+               char*                       ParamName,
+               BOOL*                       pBool
+           );
+
+   description:
+
+       This function is called to retrieve Boolean parameter value;
+
+   argument:   ANSC_HANDLE                 hInsContext,
+               The instance handle;
+
+               char*                       ParamName,
+               The parameter name;
+
+               BOOL*                       pBool
+               The buffer of returned boolean value;
+
+   return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+RBUS_GetParamBoolValue
+(
+ANSC_HANDLE                 hInsContext,
+char*                       ParamName,
+BOOL*                       pBool
+)
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE) )
+    {
+        FILE *file = NULL;  
+        if((file = fopen("/nvram/rbus","r"))!=NULL)
+        {
+            fclose(file);
+            *pBool = TRUE;
+        }
+        else
+            *pBool = FALSE;
+
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        RBUS_SetParamBoolValue
+        (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+        );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+RBUS_SetParamBoolValue
+(
+ANSC_HANDLE                 hInsContext,
+char*                       ParamName,
+BOOL                        bValue
+)
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        if (bValue == 0)
+        {
+            system("sh /usr/ccsp/rbusFlagSync.sh 0");
+            CcspTraceInfo(("Successfully set DBUS \n"));
+            return TRUE;
+        }
+        else if (bValue == 1)
+        {
+            system("sh /usr/ccsp/rbusFlagSync.sh 1");
+            CcspTraceInfo(("Successfully set RBUS \n"));
+            return TRUE;
+        }
+    }
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        RBUS_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value of rbus status;
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     0 if succeeded;
+                -1 if not supported.
+
+**********************************************************************/
+
+ULONG
+RBUS_GetParamStringValue
+(
+ANSC_HANDLE                 hInsContext,
+char*                       ParamName,
+char*                       pValue,
+ULONG*                      pUlSize
+)
+{
+        if( AnscEqualString(ParamName, "Status", TRUE) )
+        {
+            FILE *file1 = fopen("/nvram/rbus","r");
+            FILE *file2 = fopen("/nvram/rbus_on_pending","r");
+            FILE *file3 = fopen("/nvram/rbus_off_pending","r");
+            CcspTraceError((" Entered GET Block \n" ));
+            if(((file1)!=NULL) && ((file2)!=NULL))
+            {
+                AnscCopyString(pValue,"Current - rbus ; after next boot - rbus");
+                CcspTraceError((" Succeeded to GET\n" ));
+                *pUlSize = AnscSizeOfString( pValue );
+            }
+            else if(((file1)!=NULL) && ((file3)!=NULL))
+            {
+                AnscCopyString(pValue,"Current - rbus ; after next boot - dbus");
+                CcspTraceError((" succeeded to GET\n" ));
+                *pUlSize = AnscSizeOfString( pValue );
+            }
+            else if(((file1)==NULL) && ((file2)!=NULL))
+            {
+                AnscCopyString(pValue,"Current - dbus ; after next boot - rbus");
+                CcspTraceError((" succeeded to GET\n" ));
+                *pUlSize = AnscSizeOfString( pValue );
+            }
+            else if(((file1)==NULL) && ((file3)!=NULL))
+            {
+                AnscCopyString(pValue,"Current - dbus ; after next boot - dbus");
+                CcspTraceError((" succeeded to GET\n" ));
+                *pUlSize = AnscSizeOfString( pValue );
+            }
+            else if(((file1)==NULL) && ((file2)==NULL) && ((file3)==NULL))
+            {
+                AnscCopyString(pValue,"Current - dbus ; after next boot - dbus");
+                CcspTraceError((" succeeded to GET\n" ));
+                *pUlSize = AnscSizeOfString( pValue );
+            }
+            else if(((file1)!=NULL) && ((file2)==NULL) && ((file3)==NULL))
+            {
+                AnscCopyString(pValue,"Current - rbus ; after next boot - rbus");
+                CcspTraceError((" succeeded to GET\n" ));
+                *pUlSize = AnscSizeOfString( pValue );
+            }
+            if((file1)!=NULL)
+                fclose(file1);
+            if((file2)!=NULL)
+                fclose(file2);
+            if((file3)!=NULL)
+                fclose(file3);
+            return 0;
+        }
+        CcspTraceError((" failed to GET\n" ));
+        return -1;
+
+}
 
 /**********************************************************************
 
