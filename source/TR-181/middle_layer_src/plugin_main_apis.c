@@ -114,6 +114,11 @@
 #endif
 #include "cosa_dev_fingerprint_internal.h"
 static void CheckAndSetRebootReason();
+
+#if defined(_PLATFORM_RASPBERRYPI_)
+extern int sock;
+#endif
+
 /*PCOSA_DIAG_PLUGIN_INFO             g_pCosaDiagPluginInfo;*/
 COSAGetParamValueByPathNameProc    g_GetParamValueByPathNameProc;
 COSASetParamValueByPathNameProc    g_SetParamValueByPathNameProc;
@@ -225,7 +230,10 @@ CosaBackEndManagerInitialize
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_BACKEND_MANAGER_OBJECT  pMyObject    = (PCOSA_BACKEND_MANAGER_OBJECT)hThisObject;
-
+#if defined(_PLATFORM_RASPBERRYPI_)
+	int id=0;
+	id=getuid();
+#endif
 #ifdef _COSA_SIM_
         pMyObject->has_moca_slap  = 0;
 #endif
@@ -297,6 +305,16 @@ CosaBackEndManagerInitialize
 #else
    printf("**************** sysevent set pnm-status up \n");
    fflush(stdout);
+
+#if defined(_PLATFORM_RASPBERRYPI_)
+if(id != 0)
+{
+    char *lxcevt = "sysevent set pnm-status up";
+    printf("Sending  lxc event ............ \n");
+    send(sock , lxcevt , strlen(lxcevt) , 0 );
+}
+#endif
+
    system("sysevent set pnm-status up");
 #endif
 
