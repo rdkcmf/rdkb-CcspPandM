@@ -1897,9 +1897,10 @@ ANSC_STATUS UpdateJsonParam
          fseek( fileRead, 0, SEEK_END );
          len = ftell( fileRead );
          fseek( fileRead, 0, SEEK_SET );
-         data = ( char* )malloc( len + 1 );
+         data = ( char* )malloc( sizeof(char) * (len + 1) );
          if (data != NULL)
          {
+		memset( data, 0, ( sizeof(char) * (len + 1) ));
                 fread( data, 1, len, fileRead );
          }
          else
@@ -1910,12 +1911,18 @@ ANSC_STATUS UpdateJsonParam
          }
 
          fclose( fileRead );
-          if( data != NULL )
+
+	  if ( data == NULL )
+	  {
+		printf("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__);
+		return ANSC_STATUS_FAILURE;
+	  }
+          else if ( strlen(data) != 0)
 	  {
                  json = cJSON_Parse( data );
                  if( !json )
                  {
-                         printf(  "%s-%d : json file parser error : [%s]\n", cJSON_GetErrorPtr() ,__FUNCTION__,__LINE__);
+                         printf(  "%s : json file parser error : [%d]\n", __FUNCTION__,__LINE__);
                          free(data);
                          return ANSC_STATUS_FAILURE;
                  }
@@ -1960,6 +1967,11 @@ ANSC_STATUS UpdateJsonParam
                         cJSON_Delete(json);
                  }
           }
+	  else
+	  {
+		printf("PARTNERS_INFO_FILE %s is empty\n", PARTNERS_INFO_FILE);
+		return ANSC_STATUS_FAILURE;
+	  }
          return ANSC_STATUS_SUCCESS;
 }
 
@@ -2017,25 +2029,32 @@ CosaDmlDiUiBrandingInit
          fseek( fileRead, 0, SEEK_END );
          len = ftell( fileRead );
          fseek( fileRead, 0, SEEK_SET );
-         data = ( char* )malloc( len + 1 );
+         data = ( char* )malloc( sizeof(char) * (len + 1) );
          if (data != NULL)
          {
+		memset( data, 0, ( sizeof(char) * (len + 1) ));
                 fread( data, 1, len, fileRead );
          }
          else
          {
+		 printf("%s-%d : Memory allocation failed\n" , __FUNCTION__, __LINE__ );
                  fclose( fileRead );
                  return ANSC_STATUS_FAILURE;
          }
 
 	 fclose( fileRead );
 
-         if( data != NULL )
+	 if ( data == NULL )
+	 {
+		printf("%s-%d : fileRead failed\n" , __FUNCTION__, __LINE__ );
+		return ANSC_STATUS_FAILURE;
+	 }
+         else if ( strlen(data) != 0)
          {
                  json = cJSON_Parse( data );
                  if( !json )
                  {
-                         printf(  "%s-%s : json file parser error : [%d]\n", cJSON_GetErrorPtr() ,__FUNCTION__,__LINE__);
+                         printf(  "%s : json file parser error : [%d]\n", __FUNCTION__,__LINE__);
                          free(data);
                          return ANSC_STATUS_FAILURE;
                  }
@@ -2049,6 +2068,11 @@ CosaDmlDiUiBrandingInit
           free(data);
           data = NULL;
          }
+	 else
+	 {
+		printf("PARTNERS_INFO_FILE %s is empty\n", PARTNERS_INFO_FILE);
+		return ANSC_STATUS_FAILURE;
+	 }
          return ANSC_STATUS_SUCCESS;
  }
 
