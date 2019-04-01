@@ -6968,6 +6968,8 @@ dhcpv6c_dbg_thrd(void * in)
                         /*this is for tchxb6*/
                         CcspTraceWarning((" %s dhcpv6_assign_global_ip to brlan0 \n", __FUNCTION__));
                         ret = dhcpv6_assign_global_ip(v6pref, "brlan0", globalIP);
+#elif defined _COSA_BCM_MIPS_
+                        ret = dhcpv6_assign_global_ip(v6pref, COSA_DML_DHCPV6_SERVER_IFNAME, globalIP);
 #else
                         ret = dhcpv6_assign_global_ip(v6pref, "l2sd0", globalIP);
 #endif
