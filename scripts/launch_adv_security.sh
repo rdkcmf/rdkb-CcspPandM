@@ -29,6 +29,7 @@ fi
 CCSP_ADVSEC_INITIALIZING=/tmp/ccsp_advsec_initializing
 CCSP_ADVSEC_INITIALIZED_SYSD=/tmp/advsec_initialized_sysd
 ADVSEC_AGENT_SHUTDOWN=/tmp/advsec_agent_shutdown
+ADVSEC_CONFIG_PARAMS_PATH="/tmp/advsec_config_params"
 
 launch_device_finger_print()
 {
@@ -81,6 +82,11 @@ then
 	rm $CCSP_ADVSEC_INITIALIZED_SYSD
         systemctl stop CcspAdvSecuritySsp.service
     fi
+
+    if [ -d "${ADVSEC_CONFIG_PARAMS_PATH}" ]; then
+        rm -rf ${ADVSEC_CONFIG_PARAMS_PATH}
+    fi
+
     if [ -f $CCSP_ADVSEC_INITIALIZING ]; then
         rm $CCSP_ADVSEC_INITIALIZING
     fi
