@@ -63,7 +63,7 @@ CosaDeviceFingerprintCreate
     }
 
     retGet = CosaGetSysCfgUlong(g_DeviceFingerPrintEnabled, &syscfgValue);
-#ifndef DUAL_CORE_XB3
+#if !defined(DUAL_CORE_XB3) && !defined(_HUB4_PRODUCT_REQ_)
     if(!syscfgValue)
     {
         system("/usr/ccsp/advsec/print_console_xb6.sh \"Device_Finger_Printing_enabled:false\" &");

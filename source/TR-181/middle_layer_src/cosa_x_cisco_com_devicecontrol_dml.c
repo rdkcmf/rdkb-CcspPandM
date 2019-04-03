@@ -2020,7 +2020,7 @@ LanMngm_Validate
     /* check subnetmask */
     /* Subnet mask MUST accept ONLY the following IP addresses: */
     /* 255.255.255.0, 255.255.0.0, 255.0.0.0, 255.255.255.128, 255.255.255.252 */
-#if defined(_XB6_PRODUCT_REQ_)  || defined(_PLATFORM_RASPBERRYPI_)
+#if defined(_XB6_PRODUCT_REQ_)  || defined(_PLATFORM_RASPBERRYPI_) || defined (_HUB4_PRODUCT_REQ_)
     if(pLanMngm->LanSubnetMask.Value != 0x00FFFFFF &&
        pLanMngm->LanSubnetMask.Value != 0x0000FFFF &&
        pLanMngm->LanSubnetMask.Value != 0x000000FF &&  
@@ -2099,7 +2099,7 @@ LanMngm_Validate
     }else if(pLanMngm->LanIPAddress.Dot[0] == 172 && pLanMngm->LanIPAddress.Dot[1] >= 16 && pLanMngm->LanIPAddress.Dot[1] <= 31){
         return TRUE;
     }
-#if defined(_XB6_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_) || defined(_PLATFORM_RASPBERRYPI_)
+#if defined(_XB6_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_) || defined(_PLATFORM_RASPBERRYPI_) || defined (_HUB4_PRODUCT_REQ_)
     else if((pLanMngm->LanIPAddress.Value & 0x0000FFFF) == 0x0000A8C0)
 #else
    else if((pLanMngm->LanIPAddress.Value & 0xFFFF0000) == 0xC0A80000)
@@ -2138,7 +2138,7 @@ LanMngm_Commit
             CosaDmlLanMngm_GetConf(pLanMngm->InstanceNumber, pLanMngm);
             return -1;
         } 
-#if !defined(_COSA_BCM_MIPS_) 
+#if !defined(_COSA_BCM_MIPS_) && !defined(_ENABLE_DSL_SUPPORT_) 
         else {
 
 			char ip[64]={0};

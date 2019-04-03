@@ -180,7 +180,11 @@ CosaDmlDiGetMTAMacAddress
         PULONG                      pulSize
     )
 {
+#if !defined (_HUB4_PRODUCT_REQ_)
     return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_MTA.MACAddress", pValue, pulSize);
+#else
+    return ANSC_STATUS_FAILURE;
+#endif
 }
 
 /*X_COMCAST-COM_WAN_IP*/
@@ -240,7 +244,11 @@ CosaDmlDiGetMTAIPAddress
         PULONG                      pulSize
     )
 {
+#if !defined (_HUB4_PRODUCT_REQ_)
     return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_MTA.IPAddress", pValue, pulSize);
+#else
+    return ANSC_STATUS_FAILURE;
+#endif
 }
 
 /*X_COMCAST-COM_CM_IP*/

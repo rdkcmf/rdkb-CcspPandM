@@ -333,7 +333,7 @@ CosaPPPApiRemove(ANSC_HANDLE  hContext)
 #include <sys/ioctl.h>
 #include <ctype.h>
 
-#if defined(_COSA_BCM_MIPS_)
+#if defined(_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
 #define INTERFACE "erouter0"
 #else
 #define INTERFACE "wan0"
@@ -481,7 +481,7 @@ static int ml_cfg_2_be_struct(UtopiaContext * p_ctx, PCOSA_DML_PPP_IF_CFG p_in, 
                     CcspTraceWarning(("OK,  bridge service was stopped\n"));
                 }
 
-#if defined (_COSA_BCM_MIPS_)
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
                 system("ip link set erouter0 up");
 #else
                 system("ip link set wan0 up");

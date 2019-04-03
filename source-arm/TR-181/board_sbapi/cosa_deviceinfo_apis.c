@@ -357,7 +357,7 @@ CosaDmlDiGetManufacturerOUI
         return ANSC_STATUS_SUCCESS;
 
 }
-#if !defined(_COSA_BCM_MIPS_)
+#if !defined(_COSA_BCM_MIPS_) && !defined (_ENABLE_DSL_SUPPORT_)
 /*Changes for 6560*/
 ANSC_STATUS
 CosaDmlDiGetCMTSMac
@@ -469,6 +469,10 @@ CosaDmlDiGetProductClass
 	{
 		AnscCopyString(pValue, "XF3");
 	}
+#elif defined( _HUB4_PRODUCT_REQ_)
+        {
+                AnscCopyString(pValue, "HOMEHUB4");
+        }
 #else
 	{
 		AnscCopyString(pValue, "XB3");
@@ -2115,7 +2119,7 @@ ANSC_STATUS getFactoryPartnerId
         PULONG                      pulSize
 	)
 {
-#if defined(_XB6_PRODUCT_REQ_)
+#if defined(_XB6_PRODUCT_REQ_) || defined(_HUB4_PRODUCT_REQ_)
 	if(ANSC_STATUS_SUCCESS == platform_hal_getFactoryPartnerId(pValue))
 	{
 		*pulSize = AnscSizeOfString(pValue);
@@ -3457,7 +3461,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 					system("sh /lib/rdk/wan_ssh.sh disable &");
 				}
 
-#if defined(_COSA_BCM_ARM_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_)
+#if defined(_COSA_BCM_ARM_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_ENABLE_DSL_SUPPORT_)
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CMVoiceImageSelect") != NULL )
 				{
 					char *CMVoiceImg = NULL;

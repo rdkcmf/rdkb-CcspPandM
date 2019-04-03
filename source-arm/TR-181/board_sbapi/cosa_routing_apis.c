@@ -2752,7 +2752,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
     }
 	pclose(fp);
 	//Fix for issue RDKB-367
-#if defined(_COSA_BCM_MIPS_)
+#if defined(_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table main");
 #else 
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table erouter");
@@ -2953,7 +2953,7 @@ Route6_GetIfNames(char iflist[][IFNAME_SIZ], int *nlist)
 
         snprintf(iflist[0], IFNAME_SIZ, "%s", "erouter0");
         snprintf(iflist[1], IFNAME_SIZ, "%s", "brlan0");
-#if defined (_COSA_BCM_MIPS_)
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
         snprintf(iflist[2], IFNAME_SIZ, "%s", "lo");
         *nlist = 3;
 #else
@@ -3484,7 +3484,7 @@ AddRouteEntryToKernel(void *arg)
     
     for (index = 0; index < Config_Num; index++) {
         if (Router_Alias[index].Enabled) { // add route entry to kernel when initialize
-#if defined (_COSA_BCM_MIPS_)
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
                     snprintf(cmd_buf, sizeof(cmd_buf), "ip route add %s/%d via %s ",
                     sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)),
                     sroute[index].gateway);
@@ -3861,7 +3861,7 @@ CosaDmlRoutingAddV4Entry
     CcspTraceWarning(("---CosaDmlRoutingAddV4Entry gateway is %s\n", sroute[Num_V4Entry-1].gateway));
     CcspTraceWarning(("---CosaDmlRoutingAddV4Entry name is %s\n", sroute[Num_V4Entry-1].name));
 
-#if defined (_COSA_BCM_MIPS_)
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
          /* add new route entry */
     snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s ",
                         pEntry->DestIPAddress.Dot[0],
@@ -4007,7 +4007,7 @@ CosaDmlRoutingDelV4Entry
 
         /* delete the previous one */
         uindex = Router_Alias[index].Index;
-#if defined (_COSA_BCM_MIPS_)
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
                 snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip,
                         Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
 #else
@@ -4147,7 +4147,7 @@ CosaDmlRoutingSetV4Entry
 
         /* First delete the previous one */
         uindex = Router_Alias[index].Index;
-#if defined (_COSA_BCM_MIPS_)
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
                 snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip,
                         Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
 #else
@@ -4193,7 +4193,7 @@ CosaDmlRoutingSetV4Entry
                 pEntry->GatewayIPAddress.Dot[3]
                 );
         strncpy(sroute[uindex].dest_intf, pEntry->Interface, 9);
-#if defined (_COSA_BCM_MIPS_)
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
                 snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s ",
                  pEntry->DestIPAddress.Dot[0],
                  pEntry->DestIPAddress.Dot[1],

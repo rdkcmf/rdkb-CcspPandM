@@ -329,7 +329,7 @@ DeviceInfo_GetParamUlongValue
 	/* Required for xPC sync */
 	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureDocsicPollTime", TRUE))
     {
-     #ifndef _COSA_BCM_MIPS_
+     #if !defined(_COSA_BCM_MIPS_) && !defined(_ENABLE_DSL_SUPPORT_)
         /* collect value */
 	   FILE *fp;
 	   char buff[30];
@@ -668,7 +668,7 @@ DeviceInfo_GetParamStringValue
 	/*Changes for RDKB-6560*/
    	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CMTS_MAC", TRUE))
     		{
-                    #if defined(_COSA_BCM_MIPS_)
+                    #if defined(_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
                     return -1;
                     #else
 		    CosaDmlDiGetCMTSMac(NULL, pValue,pulSize);
@@ -8048,6 +8048,11 @@ Xconf_SetParamBoolValue
                            system ("kill -9 `pidof cbr_firmwareDwnld.sh `");
                        }
                            status = system("/etc/cbr_firmwareDwnld.sh &");
+#elif defined(_HUB4_PRODUCT_REQ_)
+                        if(0 == system("pidof Hub4_firmwareDwnld.sh"))  {
+                           system ("kill -9 `pidof Hub4_firmwareDwnld.sh `");
+                       }
+                           status = system("/etc/Hub4_firmwareDwnld.sh &");
 #else
 			if(0 == system("pidof xb6_firmwareDwnld.sh"))  {
                            system ("kill -9 `pidof xb6_firmwareDwnld.sh `");
