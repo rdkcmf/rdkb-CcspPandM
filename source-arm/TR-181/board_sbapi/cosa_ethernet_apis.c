@@ -401,7 +401,7 @@ CosaDmlEthInit
 #endif
 #endif
     }
-
+#if !defined(_HUB4_PRODUCT_REQ_)
     if ( -1 != _getMac("lbr0", strMac) )
     {
 #if defined (MULTILAN_FEATURE)
@@ -422,6 +422,7 @@ CosaDmlEthInit
 #endif
 #endif
     }
+#endif
 
 #if defined (MULTILAN_FEATURE)
 #if defined(INTEL_PUMA7)
@@ -437,7 +438,7 @@ CosaDmlEthInit
         AnscCopyMemory(g_EthIntSInfo[8].MacAddress, strMac, 6);
 #endif
 #endif
-#endif
+#endif 
 
     returnStatus = CosaDmlEthMlanInit(hDml, phContext);
 

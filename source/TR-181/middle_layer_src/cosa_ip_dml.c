@@ -2329,7 +2329,7 @@ IPv4Address_GetParamUlongValue
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "IPAddress", TRUE))
     {
-#ifndef _COSA_BCM_MIPS_
+#if !defined(_COSA_BCM_MIPS_) && !defined(_ENABLE_DSL_SUPPORT_)
         if (pIPv4Addr->AddressingType == COSA_DML_IP_ADDR_TYPE_Static && pIPInterface->Cfg.InstanceNumber >= CosaGetUsgIfNum())
         {
 	    CosaDmlIpIfMlanGetIPv4Addr(pIPInterface->Cfg.InstanceNumber, pIPv4Addr);
@@ -2352,7 +2352,7 @@ IPv4Address_GetParamUlongValue
         //{
         //    *puLong = 0; 
         //}
-#ifndef _COSA_BCM_MIPS_
+#if !defined(_COSA_BCM_MIPS_) && !defined(_ENABLE_DSL_SUPPORT_)
         if (pIPv4Addr->AddressingType == COSA_DML_IP_ADDR_TYPE_Static && pIPInterface->Cfg.InstanceNumber >= CosaGetUsgIfNum())
         {
 	    CosaDmlIpIfMlanGetSubnetMask(pIPInterface->Cfg.InstanceNumber, pIPv4Addr);

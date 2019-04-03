@@ -280,7 +280,7 @@ CosaDmlMldSetCfg
         _write_sysctl_file("/sys/class/net/brlan0/bridge/multicast_snooping", 0);
     }
 
-#if !defined (_COSA_BCM_MIPS_)
+#if !defined (_COSA_BCM_MIPS_) && !defined(_ENABLE_DSL_SUPPORT_)
     if ( (pid_f = fopen("/var/run/ecmh.pid", "r")) != NULL )
     {
         if(fgets(buffer, 255,pid_f) != '\0')

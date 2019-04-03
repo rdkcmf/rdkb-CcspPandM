@@ -1706,7 +1706,7 @@ void restoreAllDBs()
         system("rm -f /nvram/.FirmwareUpgradeEndTime");
         system("rm -f /nvram/.FirmwareUpgradeStartTime");
 #endif
-#if defined (_COSA_BCM_ARM_)
+#if defined (_COSA_BCM_ARM_) && !defined (_HUB4_PRODUCT_REQ_)
 	/* Clear cable modem's dynamic nonvol settings */
 	system("latticecli -n \"set Cm.ResetNonvolNoReboot 1\"");
 #endif
@@ -1720,6 +1720,8 @@ void restoreAllDBs()
 	system( "arris_rpc_client arm nvm_reset" ); //ARRISXB6-7323
 #elif defined(_COSA_BCM_MIPS_)
         system("xf3_erase_nvram");
+#elif defined(_HUB4_PRODUCT_REQ_)
+        system("/bin/sh /etc/sky/restore_settings.sh factory_reset");
 #else
 	system("restoreAllDBs"); //Perform factory reset on other components
 #endif
@@ -1835,18 +1837,15 @@ CosaDmlDcSetFactoryReset
 	static pthread_t wifiThread;
 	int wifiThreadStarted=0;
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-
 #if defined (_XB6_PRODUCT_REQ_)
 	int delay_time = 0;
 	int delay = 0;
 #endif
-
 	if (pValue == NULL || pValue[0] == '\0')
 		factory_reset_mask |= FR_NONE;
 	else {
 		strncpy(value, pValue, sizeof(value));
 		tok = strtok_r(value, ",", &sv);
-
 		while (tok) {
 			if (strcmp("Router", tok) == 0) {
 				factory_reset_mask |= FR_ROUTER;
@@ -1857,7 +1856,6 @@ CosaDmlDcSetFactoryReset
 			} else if(strcmp("VoIP", tok) == 0 || strcmp("Docsis", tok) == 0) {
 				factory_reset_mask |= FR_OTHER;
 			}
-
 			tok = strtok_r(NULL, ",", &sv);
 		}
 		
@@ -1887,19 +1885,17 @@ CosaDmlDcSetFactoryReset
 #endif
 		
 	}
-
 	if (!factory_reset_mask)
 	    {
 	   	CcspTraceError(("FactoryReset:%s BAD parameter passed to factory defaults parameter ...\n",__FUNCTION__));
 		return ANSC_STATUS_BAD_PARAMETER;
 	    }
-#if defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
+#if defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_) || defined (_HUB4_PRODUCT_REQ_)
                 {
                         unsigned int dbValue = 0;
                         FILE *pdbFile = NULL;
                         char buf[128]={0};
                         #define FACTORY_RESET_COUNT_FILE "/nvram/.factory_reset_count"
-
                         pdbFile = fopen(FACTORY_RESET_COUNT_FILE, "r");
                         if(pdbFile != NULL){
                            fread(buf,sizeof(buf),1,pdbFile);
@@ -1918,7 +1914,6 @@ CosaDmlDcSetFactoryReset
                         FILE *pdbFile = NULL;
                         char buf[128]={0};
                         #define ROUTER_RESET_COUNT_FILE "/nvram/.router_reset_count"
-
                         pdbFile = fopen(ROUTER_RESET_COUNT_FILE, "r");
                         if(pdbFile != NULL){
                            fread(buf,sizeof(buf),1,pdbFile);
@@ -1932,41 +1927,32 @@ CosaDmlDcSetFactoryReset
                                 fclose(pdbFile);
                         }
                 }
-
 #endif
-
     if (factory_reset_mask & FR_FW) {
         int rc = -1;
         UtopiaContext ctx;
         firewall_t fw;
    		CcspTraceWarning(("FactoryReset:%s Resetting Firewall to factory defaults ...\n",__FUNCTION__));
         fwSync = 1; //inform middle layer to get data from backend not cache
-
         if (!Utopia_Init(&ctx))
         {
             CcspTraceWarning(("X_CISCO_SECURITY: Error in initializing context!!! \n" ));
             return ANSC_STATUS_FAILURE;
         }
-
         fw.filter_ident = 0;
         fw.filter_multicast = 0;
         fw.filter_anon_req = 0;
         fw.filter_p2p_from_wan = 0;
         fw.filter_http_from_wan = 0;
-
         Utopia_Set(&ctx, UtopiaValue_Firewall_Level, "Low");
         fw.spi_protection = 1;
-
         rc = Utopia_SetFirewallSettings(&ctx, fw);
-
         Utopia_Free(&ctx, !rc);
-
         if(rc != 0)
             return ANSC_STATUS_FAILURE;
         else
             commonSyseventSet("firewall-restart", "");
     }
-
 	if (factory_reset_mask & FR_OTHER ) {
    	//	CcspTraceWarning(("FactoryReset:%s Restoring all the DBs to factory defaults  ...\n",__FUNCTION__));
        // system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
@@ -1980,7 +1966,6 @@ CosaDmlDcSetFactoryReset
 	pthread_t other;
         pthread_create(&other, NULL, &restoreAllDBs, NULL);
 	}
-
 	if (factory_reset_mask & FR_ROUTER) {
    		CcspTraceWarning(("FactoryReset:%s Restoring router to factory defaults  ...\n",__FUNCTION__));
 		tok = FACTORY_RESET_ROUTER_VALUE;
@@ -2027,7 +2012,6 @@ CosaDmlDcSetFactoryReset
                                 return -1;
                         }
                 }
-
 	}
 	if (factory_reset_mask & FR_WIFI) {
            
@@ -2035,7 +2019,6 @@ CosaDmlDcSetFactoryReset
 		   wifiThreadStarted=1;
 	}
 	if (factory_reset_mask & FR_NONE){
-
 	}
 	// do backup logs 
 	if (factory_reset_mask & FR_ROUTER) {
@@ -3520,7 +3503,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
     char str[IFNAME_SZ];    
     char *enableStr;
     napt_mode_t napt;
-#if !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) // MOCA is not present for TCCBR environment and RaspberryPi environment
+#if !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_HUB4_PRODUCT_REQ_) // MOCA is not present for TCCBR environment, HUB4 and RaspberryPi environment
 	parameterValStruct_t **valMoCAstatus;
 	char pMoCAComponentName[64]="eRT.com.cisco.spvtg.ccsp.moca";
 	char pComponentPath[64]="/com/cisco/spvtg/ccsp/moca";
@@ -3575,7 +3558,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 		}
 
         Utopia_SetBridgeSettings(&utctx,&bridge_info);
-#if !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) // MOCA is not present for TCCBR environment and RaspberryPi environment
+#if !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_HUB4_PRODUCT_REQ_) // MOCA is not present for TCCBR environment, HUB4 and RaspberryPi environment
 		ret = CcspBaseIf_getParameterValues(
 		    bus_handle,
 		    pMoCAComponentName,

@@ -82,7 +82,7 @@
 #include "syscfg/syscfg.h"
 #include "cosa_ipv6rd_apis.h"
 
-#if defined(_COSA_BCM_MIPS_)
+#if defined(_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
 #define INTERFACE "erouter0"
 #else
 #define INTERFACE "wan0"
