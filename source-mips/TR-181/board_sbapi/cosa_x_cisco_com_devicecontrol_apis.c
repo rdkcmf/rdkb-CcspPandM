@@ -509,11 +509,12 @@ CosaDmlDcInit
         /*start avahi two applications*/
         _CosaDmlDcStartZeroConfig();
     }
+	/*
     else
     {
-        /*stop avahi two applications*/
+        //stop avahi two applications
         _CosaDmlDcStopZeroConfig();
-    }
+    }*/
 
     platform_hal_DocsisParamsDBInit();
     syscfg_init();
@@ -1982,11 +1983,12 @@ CosaDmlDcSetEnableZeroConfig
             _CosaDmlDcStartZeroConfig();
 
         }
+		/*
         else
         {
-            /*stop avahi two applications*/
+            //stop avahi two applications
             _CosaDmlDcStopZeroConfig();
-        }
+        }*/
 
         g_EnableZeroConfig = bFlag;
     }
