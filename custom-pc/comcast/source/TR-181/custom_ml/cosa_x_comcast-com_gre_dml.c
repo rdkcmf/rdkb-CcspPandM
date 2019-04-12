@@ -174,8 +174,8 @@ BOOL GreTunnel_GetParamUlongValue ( ANSC_HANDLE hInsContext, char* ParamName, UL
 
     if (AnscEqualString(ParamName, "Status", TRUE))
     {
-        if (CosaDml_GreTunnelGetStatus(ins, (COSA_DML_GRE_STATUS *)pUlong) != ANSC_STATUS_SUCCESS)
-            return FALSE;
+	//REFPLTB-287 :: Return FALSE leads to dmcli uint32 to string map failure. Hence ANSC status check is discarded
+        CosaDml_GreTunnelGetStatus(ins, (COSA_DML_GRE_STATUS *)pUlong);
         return TRUE;
     }
     if (AnscEqualString(ParamName, "LastChange", TRUE))

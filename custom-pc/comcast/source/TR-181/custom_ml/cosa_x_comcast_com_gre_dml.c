@@ -125,11 +125,10 @@ GreIf_GetParamUlongValue
 {
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
     ULONG                           ins = pGreIf->InstanceNumber;
-
     if (AnscEqualString(ParamName, "Status", TRUE))
     {
-        if (CosaDml_GreIfGetStatus(ins, (COSA_DML_GRE_STATUS *)pUlong) != ANSC_STATUS_SUCCESS)
-            return FALSE;
+        //REFPLTB-286 :: Returning FALSE leads to uint32 to string mappin failure in dmcli. Hence ANSC status check discarded
+        CosaDml_GreIfGetStatus(ins, (COSA_DML_GRE_STATUS *)pUlong);
         return TRUE;
     }
     if (AnscEqualString(ParamName, "LastChange", TRUE))

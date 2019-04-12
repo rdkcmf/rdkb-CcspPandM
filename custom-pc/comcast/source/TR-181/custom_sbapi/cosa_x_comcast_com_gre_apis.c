@@ -565,6 +565,8 @@ CosaDml_GreIfGetStatus(ULONG ins, COSA_DML_GRE_STATUS *st)
     char greNetworkInterface[256];
     char tmpPath[256];
 
+    //REFPLTB-286 :: Default return value to be down
+    *st = COSA_DML_GRE_STATUS_DOWN;
     if (ins != 1 || !st)
         return ANSC_STATUS_FAILURE;
 
