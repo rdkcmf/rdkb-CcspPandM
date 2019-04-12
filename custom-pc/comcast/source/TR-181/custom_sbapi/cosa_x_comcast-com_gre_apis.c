@@ -434,7 +434,7 @@ CosaDml_GreTunnelInit(void)
 {
     int shmid;
     void *params = NULL;
-
+ 
     sysevent_fd = sysevent_open(
             "127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, 
             SE_VERSION, kHotspotfd_events, 
@@ -716,6 +716,10 @@ CosaDml_GreTunnelGetStatus(ULONG tuIns, COSA_DML_GRE_STATUS *st)
     ULONG size = sizeof(status);
     char greNetworkTunnel[256];
     char tmpPath[256];
+
+    //REFPLTB-287 :: Default value to be down
+    *st = COSA_DML_GRE_STATUS_DOWN;
+
     if (!st)
         return ANSC_STATUS_FAILURE;
 
