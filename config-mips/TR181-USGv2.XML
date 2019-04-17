@@ -1605,6 +1605,7 @@
                               </parameter>
                             </parameters>
                         </object>
+
 			<object>
                              <name>RDKFirmwareUpgrader</name>
                              <objectType>object</objectType>
