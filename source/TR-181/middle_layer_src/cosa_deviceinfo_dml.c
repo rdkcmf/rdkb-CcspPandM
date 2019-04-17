@@ -6528,6 +6528,65 @@ MEMSWAP_GetParamBoolValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        RDKFirmwareUpgrader_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+RDKFirmwareUpgrader_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+       /* Collect Value */
+       char *strValue = NULL;
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+
+
+        retPsmGet = PSM_Get_Record_Value2(bus_handle, g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.RDKFirmwareUpgrader.Enable", NULL, &strValue);
+        if (retPsmGet == CCSP_SUCCESS) {
+            *pBool = _ansc_atoi(strValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        }
+        else
+            *pBool = FALSE;
+
+         return TRUE;
+    }
+    return FALSE;
+}
+
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -6938,6 +6997,62 @@ MEMSWAP_SetParamBoolValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        RDKFirmwareUpgrader_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+RDKFirmwareUpgrader_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+
+       sprintf(str,"%d",bValue);
+       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.RDKFirmwareUpgrader.Enable", ccsp_string, str);
+       if (retPsmGet != CCSP_SUCCESS) {
+           CcspTraceError(("Set failed for RDKFirmwareUpgrader support \n"));
+           return ANSC_STATUS_FAILURE;
+       }
+       CcspTraceInfo(("Successfully set RDKFirmwareUpgrader support \n"));
+       return TRUE;
+    }
+    return FALSE;
+}
+
+/* CodeBigFirst config download can be enabled/disabled               */
 /**********************************************************************
 
     caller:     owner of this object
@@ -8310,9 +8425,34 @@ Xconf_SetParamBoolValue
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "xconfCheckNow", TRUE))
     {
-      		AnscTraceWarning(("Triggering firmware download check from TR181\n"));
-                if( TRUE == bValue )
-                {
+        AnscTraceWarning(("Triggering firmware download check from TR181\n"));
+        if( TRUE == bValue )
+        {
+            // static collection as we don't want upgrade path to be changed without a reboot
+            static BOOL rdkfwupgraderEnabledCollected = false;
+            static BOOL RDKFWUpgraderEnabled = false;
+
+            if (!rdkfwupgraderEnabledCollected) {
+                if (RDKFirmwareUpgrader_GetParamBoolValue(hInsContext,
+                                                          "Enable",
+                                                          &RDKFWUpgraderEnabled) ) {
+                    rdkfwupgraderEnabledCollected = true;
+                }
+            }
+
+	    // NOTE:: this might have an addional issue, rfc enabled but rdkfwupgrader was disabled at 
+            // build time. Do we need to take care of that like checking for presense /usr/bin/rdkfwupgrader
+	    // at runtime 
+            if (RDKFWUpgraderEnabled) {
+                // FIXME:: call RDKFWUpgrader's dbus api. As of now we are calling using
+                // dbus-send but we can bring in codegen generated proxy and call it using that.
+                // and get rid of these system calls. But this is supposed to stay for short term only
+                // not wasting time on this.
+                AnscTraceWarning(("Triggering firmware download check using RDKFirmwareUpgrader TR181\n"));
+                system("/lib/rdk/rdkfwupgrader_check_now.sh &");
+            } else {
+                // NOTE:: Firmwaresched.sh used to check for reboot pending before killing, this one doesn't
+                // leaving a note behind if it comes out to be a problem
 #if defined(INTEL_PUMA7) || defined(_COSA_BCM_ARM_)
 #ifdef _CBR_PRODUCT_REQ_
             if(0 == system("pidof cbr_firmwareDwnld.sh"))  {
@@ -8325,38 +8465,38 @@ Xconf_SetParamBoolValue
                        }
                            status = system("/etc/Hub4_firmwareDwnld.sh &");
 #else
-			if(0 == system("pidof xb6_firmwareDwnld.sh"))  {
-                           system ("kill -9 `pidof xb6_firmwareDwnld.sh `");
-                       }
-                           status = system("/etc/xb6_firmwareDwnld.sh &");
+                if(0 == system("pidof xb6_firmwareDwnld.sh"))  {
+                    system ("kill -9 `pidof xb6_firmwareDwnld.sh `");
+                }
+                status = system("/etc/xb6_firmwareDwnld.sh &");
 #endif
 #elif defined(_COSA_BCM_MIPS_)
-			if(0 == system("pidof xf3_firmwareDwnld.sh"))  {
-                           system ("kill -9 `pidof xf3_firmwareDwnld.sh `");
-                       }
-                           status = system("/etc/xf3_firmwareDwnld.sh &");
+                if(0 == system("pidof xf3_firmwareDwnld.sh"))  {
+                    system ("kill -9 `pidof xf3_firmwareDwnld.sh `");
+                }
+                status = system("/etc/xf3_firmwareDwnld.sh &");
 #else
-			if(0 == system("pidof xb3_firmwareDwnld.sh"))  {
-                           system ("kill -9 `pidof xb3_firmwareDwnld.sh `");
-                       }
-                           status = system("/etc/xb3_firmwareDwnld.sh &");
+                if(0 == system("pidof xb3_firmwareDwnld.sh"))  {
+                    system ("kill -9 `pidof xb3_firmwareDwnld.sh `");
+                }
+                status = system("/etc/xb3_firmwareDwnld.sh &");
 #endif
 
-                           if (0 == status)
-                           {
-                                 AnscTraceWarning(("xconf process started successfully\n"));
-                           }
-                           else
-                           {
-                                 AnscTraceWarning(("xconf process did not start successfully\n"));
-                           }
-
-                       return TRUE;
+                if (0 == status)
+                {
+                    AnscTraceWarning(("xconf process started successfully\n"));
                 }
-                
-     }
+                else
+                {
+                    AnscTraceWarning(("xconf process did not start successfully\n"));
+                }
+            }
+            return TRUE;
+        }
+    }
      return FALSE;
 }
+
 
 /***********************************************************************
 
@@ -11318,25 +11458,49 @@ RPC_SetParamBoolValue
 
    if( AnscEqualString(ParamName, "AbortReboot", TRUE))
    {
-       FILE *file = NULL;
-       FILE *Abortfile = NULL;
-       if (file = fopen("/tmp/.deferringreboot", "r")){
-           if (Abortfile = fopen("/tmp/AbortReboot", "r")){
-               fclose(Abortfile);
-               CcspTraceWarning(("Abort already done '%s'\n", ParamName));
-               return TRUE;
+       if( TRUE == bValue )
+       {
+           AnscTraceWarning(("Triggering abortReboot from TR181\n"));
+           // static collection as we don't want upgrade path to be changed without a reboot
+           static BOOL rdkfwupgraderEnabledCollected = false;
+           static BOOL RDKFWUpgraderEnabled = false;
+
+           if (!rdkfwupgraderEnabledCollected) {
+               if (RDKFirmwareUpgrader_GetParamBoolValue(hInsContext,
+                                                         "Enable",
+                                                         &RDKFWUpgraderEnabled) ) {
+                   rdkfwupgraderEnabledCollected = true;
+               }
            }
-           pMyObject->AbortReboot = bValue;
-           if(pMyObject->AbortReboot == TRUE)
-              system("touch /tmp/AbortReboot");
-           else
-              CcspTraceWarning(("Parameter '%s' set to false\n", ParamName));
-           fclose(file);
-           return TRUE;
-       } else {
-           CcspTraceWarning(("Invalid request for parameter, no FW DL reboot wait in progress '%s'\n", ParamName));
-           return FALSE;
+
+           // NOTE:: this might have an addional issue, rfc enabled but rdkfwupgrader was disabled at
+           // build time. Do we need to take care of that like checking for presense /usr/bin/rdkfwupgrader
+           // at runtime
+           if (RDKFWUpgraderEnabled) {
+               system("/lib/rdk/rdkfwupgrader_abort_reboot.sh &");
+               return TRUE; //always true, let the statemachine decide if there is a reboot operation pending or not.
+           } else {
+               FILE *file = NULL;
+               FILE *Abortfile = NULL;
+               if (file = fopen("/tmp/.deferringreboot", "r")){
+                   if (Abortfile = fopen("/tmp/AbortReboot", "r")){
+                       fclose(Abortfile);
+                       CcspTraceWarning(("Abort already done '%s'\n", ParamName));
+                       return TRUE;
+                   }
+                   pMyObject->AbortReboot = bValue;
+                   if(pMyObject->AbortReboot == TRUE)
+                       system("touch /tmp/AbortReboot");
+                   else
+                       CcspTraceWarning(("Parameter '%s' set to false\n", ParamName));
+                   fclose(file);
+               } else {
+                   CcspTraceWarning(("Invalid request for parameter, no FW DL reboot wait in progress '%s'\n", ParamName));
+                   return FALSE;
+               }
+           }
        }
+       return FALSE;
    } 
 
 	if( AnscEqualString(ParamName, "FirmwareDownloadCompletedNotification", TRUE))
