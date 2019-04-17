@@ -1674,8 +1674,37 @@ CosaDmlDcSetFactoryReset
 		
 		Utopia_Free(&utctx,1);
 		//system("reboot");i
+		//Set LastRebootReason before device bootup
+		CcspTraceWarning(("FactoryReset:%s Set LastRebootReason to factory-reset ...\n",__FUNCTION__));
+		if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", "factory-reset") != 0))
+		{
+                        AnscTraceWarning(("syscfg_set failed\n"));
+			return -1;
+		}
+		else
+		{
+                        if (syscfg_commit() != 0)
+			{
+				AnscTraceWarning(("syscfg_commit failed\n"));
+				return -1;
+			}
+		}
+
+		if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", "1") != 0))
+		{
+                        AnscTraceWarning(("syscfg_set failed\n"));
+			return -1;
+		}
+		else
+		{
+                        if (syscfg_commit() != 0)
+			{
+				AnscTraceWarning(("syscfg_commit failed\n"));
+				return -1;
+			}
+		}
 		pthread_t logs;
-        pthread_create(&logs, NULL, &backuplogs, NULL);
+		pthread_create(&logs, NULL, &backuplogs, NULL);
 	//	system("/fss/gw/rdklogger/backupLogs.sh");
 	}
 	if (factory_reset_mask & FR_WIFI) {
