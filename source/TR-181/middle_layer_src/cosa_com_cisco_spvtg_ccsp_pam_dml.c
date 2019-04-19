@@ -139,10 +139,10 @@ Pam_GetFirstIpInterfaceObjectName
     ULONG                           ulIndex             = 0;
     ULONG                           ulInstNum           = 0;
     ULONG                           ulLen               = 0;
-    char                            pObjName[256]       = {0};
-    char                            Buffer[128]         = {0};
+    char                            pObjName[PAM_MAX_IP_INTERFACE_NUM]       = {0};
+    char                            Buffer[PAM_MAX_IP_INTERFACE_NUM]         = {0};
     ULONG                           BufferSize          = 0;
-    char                            LowerLayers[256]    = {0};
+    char                            LowerLayers[PAM_MAX_IP_INTERFACE_NUM]    = {0};
     ULONG                           LowerLayersSize     = 0;
     BOOL                            bLowerLayerUpstream = FALSE;
     char*                           EnvIndex            = NULL;
