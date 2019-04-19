@@ -223,6 +223,13 @@ then
 			#superResponse=204
 			echo 204 > $RESPONSE
 			echo_t "Network Response: Got 204. Move on.."
+
+			#if [ "$BOX_TYPE" = "XB6" ]; then
+			#	white=0
+			#	solid=0
+			#	/usr/bin/SetLED $white $solid		#Set LED to Solid White
+			#fi
+
 			isUnitActivated=`syscfg get unit_activated`
 			if [ "$isUnitActivated" = "" ]
 			then
@@ -263,6 +270,14 @@ then
 			break;
 		else
 				echo_t "Network Response: Didnt recieve success response..should retry.."
+
+    			if [ "$BOX_TYPE" = "XB6" ]; then
+        			white=0
+        			blink=1
+					interval=1
+        			/usr/bin/SetLED $white $blink $interval     #Set LED to Blink White per second
+    			fi
+
 				unitActivated=`syscfg get unit_activated`
 				if [ "$unitActivated" != 0 ]
 				then
@@ -292,6 +307,12 @@ else
 	#Set syscfg parameter to indicate unit is activated
 	syscfg set unit_activated 1
 	syscfg commit
+
+    if [ "$BOX_TYPE" = "XB6" ]; then
+        white=0
+        solid=0
+        /usr/bin/SetLED $white $solid       #Set LED to Solid White
+    fi
 
 	if [ ! -e "$REVERT_FLAG" ]
 	then

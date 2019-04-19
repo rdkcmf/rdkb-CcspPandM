@@ -76,6 +76,10 @@
 #define XDNS_RESOLV_CONF "/etc/resolv.conf"
 #define XDNS_DNSMASQ_SERVERS_CONF "/nvram/dnsmasq_servers.conf"
 #define XDNS_DNSMASQ_SERVERS_BAK "/nvram/dnsmasq_servers.bak"
+#define WHITE	0
+#define SOLID	0
+#define BLINK	1
+
 
 
 /**********************************************************************  
@@ -433,6 +437,10 @@ DeviceInfo_SetParamBoolValue_Custom
 		printf("Wi-Fi SSID and Passphrase are not configured,setting ConfigureWiFi to true ...\n");
 		pMyObject->bWiFiConfigued = bValue;
 
+#if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_)
+		CosaDmlSetLED(WHITE, BLINK, 1);
+#endif
+
 		printf("%s calling redirect_url.sh script to start redirection\n",__FUNCTION__);
 		system("source /etc/redirect_url.sh &");
 		return TRUE;
@@ -440,6 +448,27 @@ DeviceInfo_SetParamBoolValue_Custom
 	
          else if  ( bValue == FALSE )
 	 {
+#if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_)
+	    FILE *responsefd=NULL;
+	    char *networkResponse = "/var/tmp/networkresponse.txt";
+	    int iresCode = 0;
+	    char responseCode[10];
+
+            if((responsefd = fopen(networkResponse, "r")) != NULL)
+            {
+                if(fgets(responseCode, sizeof(responseCode), responsefd) != NULL)
+                {
+                    iresCode = atoi(responseCode);
+                }
+
+                fclose(responsefd);
+                responsefd = NULL;
+            }
+	if(iresCode == 204)
+	{
+        	CosaDmlSetLED(WHITE, SOLID, 0);
+	}
+#endif
 
 		CcspTraceWarning(("CaptivePortal:Wi-Fi SSID and Passphrase are configured,setting ConfigureWiFi to false ...\n"));
 		CcspTraceWarning(("RDKB_GW_MODE:Setting RDKB GW to Online  ...\n"));
