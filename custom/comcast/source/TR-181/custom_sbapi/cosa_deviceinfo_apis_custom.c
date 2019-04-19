@@ -72,6 +72,7 @@
 
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
+#include "platform_hal.h"
  
 #include <utctx.h>
 #include <utctx_api.h>
@@ -575,3 +576,29 @@ CosaDmlGetCloudUIReachableStatus
 	
     return returnStatus;
 }
+
+#if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_)
+ANSC_STATUS
+CosaDmlSetLED
+    (
+    	int color,
+    	int state,
+    	int interval
+    )
+{
+    LEDMGMT_PARAMS ledMgmt;
+    memset(&ledMgmt, 0, sizeof(LEDMGMT_PARAMS));
+
+	ledMgmt.LedColor = color;
+	ledMgmt.State	 = state;
+	ledMgmt.Interval = interval;
+
+	if(RETURN_ERR == platform_hal_setLed(&ledMgmt)) {
+		CcspTraceWarning(("platform_hal_setLed failed\n"));
+		return ANSC_STATUS_FAILURE;
+	}
+
+    return ANSC_STATUS_SUCCESS;	
+}
+#endif
+

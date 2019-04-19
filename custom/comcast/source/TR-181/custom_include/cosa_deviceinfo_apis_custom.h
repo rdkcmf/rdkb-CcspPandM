@@ -174,4 +174,15 @@ CosaDmlGetCloudUIReachableStatus
 		CHAR *pCloudPersonalizationURL,
         BOOL *pValue
     );
+
+#if defined(INTEL_PUMA7) || defined(_COSA_BCM_ARM_)
+ANSC_STATUS
+CosaDmlSetLED
+		(
+			int color,
+			int state,
+			int interval
+		);
+#endif
+
 #endif
