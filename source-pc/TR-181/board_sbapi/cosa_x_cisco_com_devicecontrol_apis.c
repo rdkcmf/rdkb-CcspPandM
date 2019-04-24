@@ -1330,19 +1330,14 @@ WebServRestart(ULONG Port)
 	snprintf(buf, sizeof(buf), "sed -i 's/.*SERVER\\[\"socket\"\\] == \":.*/\\$SERVER\\[\"socket\"\\] == \":%d\"  { }/1' %s",Port,HTTPD_DEF_CONF);
         system(buf);
 
-	snprintf(buf, sizeof(buf), "sed -i '/utopia/d' /etc/webgui.sh");
-	system(buf);
-
         CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
-        if (vsystem("/bin/sh /etc/webgui.sh") != 0) {
+        if (vsystem("systemctl restart lighttpd") != 0) {
             fprintf(stderr, "%s: fail to restart lighttpd\n", __FUNCTION__);
             return -1;
         } 
-    system("sysevent set firewall-restart");
 
     return 0;
 }
-
 typedef struct WebServConf {
     ULONG       httpport;
     ULONG       httpsport;
