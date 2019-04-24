@@ -1289,6 +1289,11 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
 
     if (AnscEqualString(ParamName, "HTTPPort", TRUE))
     {
+	 if (IsPortInUse(uValue))
+        {
+            CcspTraceWarning(("Port already in use\n"));
+            return FALSE;
+        }
         pMyObject->HTTPPort = uValue;
         pMyObject->WebServerChanged = TRUE;
 
