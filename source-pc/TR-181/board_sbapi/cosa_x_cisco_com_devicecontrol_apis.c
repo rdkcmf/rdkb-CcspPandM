@@ -74,6 +74,8 @@
 #include "ccsp_hal_dhcpv4_emu_api.h" 
 #include "dmsb_tr181_psm_definitions.h"
 
+#define HTTPD_DEF_CONF  "/etc/lighttpd.conf"
+
 #if 1//LNT_EMU
 // for PSM access
 static char *PSM_LanMode = "dmsb.X_CISCO_COM_DeviceControl.LanManagementEntry.%d.LanMode";
@@ -1192,6 +1194,27 @@ CosaDmlDcGetHTTPSEnable
     return ANSC_STATUS_SUCCESS;
 }
 
+void _get_shell_output(char * cmd, char * out, int len)
+{
+    FILE * fp;
+    char   buf[256];
+    char * p;
+
+    fp = popen(cmd, "r");
+
+    if (fp)
+    {
+        fgets(buf, sizeof(buf), fp);
+
+        /*we need to remove the \n char in buf*/
+        if ((p = strchr(buf, '\n'))) *p = 0;
+
+        strncpy(out, buf, len-1);
+
+        pclose(fp);
+    }
+
+}
 ANSC_STATUS
 CosaDmlDcGetHTTPPort
     (
@@ -1199,8 +1222,16 @@ CosaDmlDcGetHTTPPort
         ULONG                       *pValue
     )
 {
-    *pValue = g_DevCtrl.httpPort;
-    return ANSC_STATUS_SUCCESS;
+	char out[128] = {0};
+	char cmd[100];
+	memset(out,0,sizeof(out));
+        memset(cmd,0,sizeof(cmd));
+        sprintf(cmd, "syscfg get mgmt_wan_httpport");
+        _get_shell_output(cmd, out, sizeof(out));
+
+    *pValue = atoi(out);
+    return ANSC_STATUS_SUCCESS; 
+
 }
 
 ANSC_STATUS
@@ -1292,12 +1323,45 @@ CosaDmlDcSetHTTPSPort
     return ANSC_STATUS_SUCCESS;
 }
 
+static int
+WebServRestart(ULONG Port)
+{
+	char buf[128];
+	snprintf(buf, sizeof(buf), "sed -i 's/.*SERVER\\[\"socket\"\\] == \":.*/\\$SERVER\\[\"socket\"\\] == \":%d\"  { }/1' %s",Port,HTTPD_DEF_CONF);
+        system(buf);
+
+        CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
+        if (vsystem("systemctl restart lighttpd") != 0) {
+            fprintf(stderr, "%s: fail to restart lighttpd\n", __FUNCTION__);
+            return -1;
+        } 
+
+    return 0;
+}
+typedef struct WebServConf {
+    ULONG       httpport;
+    ULONG       httpsport;
+} WebServConf_t;
+
 ANSC_STATUS
 CosaDmlDcSetWebServer(BOOL httpEn, BOOL httpsEn, ULONG httpPort, ULONG httpsPort)
 {
-    return ANSC_STATUS_SUCCESS;
-}
+	WebServConf_t conf;
 
+    /* do not support disable HTTP/HTTPS */
+        conf.httpport = httpPort;
+        conf.httpsport = httpsPort;
+
+	char cmd[50];
+	const char *sysCfghttpPort = "mgmt_wan_httpport";
+	snprintf(cmd, sizeof(cmd), "syscfg set mgmt_wan_httpport %ld",httpPort);
+	system(cmd);
+	system("syscfg commit");
+	WebServRestart(httpPort);
+
+    return ANSC_STATUS_SUCCESS;
+
+}
 ANSC_STATUS
 CosaDmlDcSetIGMPSnoopingEnable
     (
@@ -1796,3 +1860,46 @@ BOOL is_mesh_enabled()
          return FALSE;
     }
 }
+BOOL IsPortInUse(unsigned int port)
+{
+    char path[sizeof("/proc/net/tcp6")] = {0};
+    FILE *f = NULL;
+    const char *fmt = "%*d: %64[0-9A-Fa-f]:%x %*x:%*x %*x "
+                      "%*x:%*x %*x:%*x %*x %*d %*d %llu";
+    char line[256], addr[68];
+    char *proto[2] = {"tcp","tcp6"};
+    unsigned int tmpPort;
+    long long uint64Inode;
+    int r,i;
+    WebServConf_t conf;
+
+        if ((port == conf.httpport) || (port == conf.httpsport))
+            return  FALSE;
+
+    for (i=0; i<2; i++)
+    {
+        sprintf(path,"/proc/net/%s",proto[i]);
+
+        f = fopen (path,"r");
+        if (f != NULL)
+        {
+            while (fgets(line, 256, f))
+            {
+                r = sscanf(line, fmt, addr, &tmpPort, &uint64Inode);
+                if (r != 3)
+                    continue;
+
+                if (tmpPort == port)
+                {
+                    fclose(f);
+                    return TRUE;
+                }
+            }
+            fclose(f);
+            f = NULL;
+        }
+    }
+
+    return FALSE;
+}
+
