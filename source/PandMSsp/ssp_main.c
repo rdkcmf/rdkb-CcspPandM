@@ -337,10 +337,12 @@ void sig_handler(int sig)
 
     	signal(SIGALRM, sig_handler); /* reset it to this function */
     	CcspTraceInfo(("SIGALRM received!\n"));
+		#ifndef DISABLE_LOGAGENT
 		RDKLogEnable = GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
 		RDKLogLevel = (char)GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_LogLevel");
 		PAM_RDKLogLevel = GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_PAM_LogLevel");
 		PAM_RDKLogEnable = (char)GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_PAM_LoggerEnable");
+		#endif
 	}
     else {
     	/* get stack trace first */
@@ -503,10 +505,12 @@ int main(int argc, char* argv[])
 
     cmd_dispatch('e');
 
+	#ifndef DISABLE_LOGAGENT
 	RDKLogEnable = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
 	RDKLogLevel = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-X_RDKCENTRAL-COM_LogLevel");
 	PAM_RDKLogLevel = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PAM_LogLevel");
 	PAM_RDKLogEnable = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PAM_LoggerEnable");
+	#endif
     // printf("Calling Docsis\n");
 
     // ICC_init();
