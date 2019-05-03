@@ -247,6 +247,32 @@ Control_SetParamIntValue
         ULONG 			ulValue
     );
 
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Control.XconfSelector
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Control.XconfUrl
+
+    *  Control_GetParamStringValue
+    *  Control_SetParamStringValue
+***********************************************************************/
+ULONG
+Control_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );	
+
+BOOL
+Control_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
 
 /***********************************************************************
 
@@ -766,7 +792,7 @@ AccountInfo_GetParamStringValue
         char*                       pValue,
         ULONG*                      pUlSize
     );
-	
+
 /***********************************************************************
 
  APIs for Object:

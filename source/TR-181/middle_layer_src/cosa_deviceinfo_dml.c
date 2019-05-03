@@ -6187,6 +6187,207 @@ Control_SetParamUlongValue
     return FALSE;
 }
 
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        Control_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pulSize
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue
+                The buffer of returned string value;
+
+                ULONG*                      pulSize
+                The buffer of returned string size;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+#define XCONF_SELECTOR_SIZE 10
+#define XCONF_URL_SIZE 60
+
+ULONG
+Control_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    /* check the "XconfSelector" parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "XconfSelector", TRUE))
+    {
+        /* collect value */
+           char buff[XCONF_SELECTOR_SIZE]={'\0'};
+
+           syscfg_get( NULL, "XconfSelector", buff, sizeof(buff));
+           if( buff != NULL )
+           {
+                AnscCopyString(pValue,  buff);
+                *pulSize = AnscSizeOfString( pValue );
+                return 0;
+           }
+           return -1;
+    }
+
+    /* check the "XconfUrl" parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "XconfUrl", TRUE))
+    {
+        /* collect value */
+           char buff[XCONF_URL_SIZE]={'\0'};
+
+           syscfg_get( NULL, "XconfUrl", buff, sizeof(buff));
+           if( buff != NULL )
+           {
+                AnscCopyString(pValue,  buff);
+                *pulSize = AnscSizeOfString( pValue );
+                return 0;
+           }
+           return -1;
+    }
+
+    return -1;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Control_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Control_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    BOOL bReturnValue = FALSE;
+ 
+    /* check the "XconfSelector" parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "XconfSelector", TRUE))
+    {
+        /* collect value */
+           char buff[XCONF_SELECTOR_SIZE]={'\0'};
+           int idlen = strlen(pString)-1;
+           int i;
+
+           if ( idlen > XCONF_SELECTOR_SIZE )
+           {
+                CcspTraceError(("[%s] Invalid XconfSelector length ..!! \n",__FUNCTION__));
+                bReturnValue = FALSE;
+           }
+           else
+           {
+                if (syscfg_set(NULL, "XconfSelector", pString) != 0)
+                {
+                    CcspTraceError(("[%s] syscfg_set failed for XconfSelector \n",__FUNCTION__));
+                    bReturnValue = FALSE;
+                }
+                else
+                {
+                    if (syscfg_commit() != 0)
+                    {
+                         CcspTraceError(("[%s] syscfg_commit failed for XconfSelector \n",__FUNCTION__));
+                         bReturnValue = FALSE;
+                    }
+                    bReturnValue = TRUE;
+                    CcspTraceInfo(("[%s] XconfSelector value set as %s success..!!\n",__FUNCTION__,pString));
+                } 
+           }
+    }
+    else
+    {
+           CcspTraceWarning(("[%s] Unsupported parameter '%s'\n",__FUNCTION__,ParamName));
+           bReturnValue = FALSE;
+    }
+
+
+    /* check the "XconfUrl" parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "XconfUrl", TRUE))
+    {
+        /* collect value */
+           char buff[XCONF_URL_SIZE]={'\0'};
+           int idlen = strlen(pString)-1;
+           int i;
+
+           if ( idlen > XCONF_URL_SIZE )
+           {
+                CcspTraceError(("[%s] Invalid XconfUrl length ..!! \n",__FUNCTION__));
+                bReturnValue = FALSE;
+           }
+           else
+           {
+               if (syscfg_set(NULL, "XconfUrl", pString) != 0)
+                {
+                    CcspTraceError(("[%s] syscfg_set failed for XconfUrl \n",__FUNCTION__));
+                    bReturnValue = FALSE;
+                }
+                else
+                {
+                    if (syscfg_commit() != 0)
+                    {
+                         CcspTraceError(("[%s] syscfg_commit failed for XconfUrl \n",__FUNCTION__));
+                         bReturnValue = FALSE;
+                    }
+                    bReturnValue = TRUE;
+                    CcspTraceInfo(("[%s] XconfUrl value set as %s success..!!\n",__FUNCTION__,pString));
+                }
+           }
+    }
+    else
+    {
+           CcspTraceWarning(("[%s] Unsupported parameter '%s'\n",__FUNCTION__,ParamName));
+           bReturnValue = FALSE;
+    }
+
+    return bReturnValue;
+}
 /**********************************************************************  
 
     caller:     owner of this object 

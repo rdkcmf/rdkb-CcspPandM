@@ -1236,6 +1236,8 @@
                     <functions>
                         <func_GetParamUlongValue>Control_GetParamUlongValue</func_GetParamUlongValue>
                         <func_SetParamUlongValue>Control_SetParamUlongValue</func_SetParamUlongValue>
+                        <func_SetParamStringValue>Control_SetParamStringValue</func_SetParamStringValue>
+                        <func_GetParamStringValue>Control_GetParamStringValue</func_GetParamStringValue>
                     </functions>
 
                     <parameters>
@@ -1244,6 +1246,18 @@
                             <type>unsignedInt</type>
                             <syntax>uint32</syntax>
                             <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                           <name>XconfSelector</name>
+                           <type>string(255)</type>
+                           <syntax>string</syntax>
+                           <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                           <name>XconfUrl</name>
+                           <type>string(255)</type>
+                           <syntax>string</syntax>
+                           <writable>true</writable>
                         </parameter>
                     </parameters>
                 </object>
