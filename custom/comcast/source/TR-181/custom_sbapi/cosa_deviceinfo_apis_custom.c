@@ -121,6 +121,7 @@ Local_CosaDmlGetParamValueByPathName
     parameterValStruct_t varStruct;
     char outdata[80];
     int size = sizeof(outdata);
+    outdata[0] = '\0';
 
     varStruct.parameterName = pathName;
     varStruct.parameterValue = outdata;
