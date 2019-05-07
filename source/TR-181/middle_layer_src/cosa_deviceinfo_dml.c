@@ -6009,6 +6009,24 @@ Feature_GetParamBoolValue
          }
          return TRUE;
     }
+
+    if (AnscEqualString(ParamName, "EnableMultiProfileXDNS", TRUE))
+    {
+        char buf[5] = {0};
+        syscfg_get( NULL, "MultiProfileXDNS", buf, sizeof(buf));
+        if( buf != NULL )
+        {
+                if (strcmp(buf,"1") == 0)
+                {
+                        *pBool = TRUE;
+                        return TRUE;
+                }
+        }
+
+        *pBool = FALSE;
+
+        return TRUE;
+    }
 #endif
 
    if(AnscEqualString(ParamName, "BLERadio", TRUE))
@@ -6352,6 +6370,48 @@ Feature_SetParamBoolValue
         }
         syscfg_commit();
         return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "EnableMultiProfileXDNS", TRUE))
+    {
+        char buf[5] = {0};
+        syscfg_get( NULL, "X_RDKCENTRAL-COM_XDNS", buf, sizeof(buf));
+        if( buf != NULL && !strcmp(buf,"1") )
+        {
+                if(!setMultiProfileXdnsConfig(bValue))
+                        return FALSE;
+
+                char bval[2] = {0};
+                if( bValue == TRUE)
+                {
+                        bval[0] = '1';
+                }
+                else
+                {
+                        bval[0] = '0';
+                }
+
+                if (syscfg_set(NULL, "MultiProfileXDNS", bval) != 0)
+                {
+                        AnscTraceWarning(("[XDNS] syscfg_set MultiProfileXDNS failed!\n"));
+                }
+                else
+                {
+                        if (syscfg_commit() != 0)
+                        {
+                                AnscTraceWarning(("[XDNS] syscfg_commit MultiProfileXDNS failed!\n"));
+                        }
+                }
+
+        }
+        else
+        {
+                CcspTraceError(("XDNS Feature is not Enabled. so,EnableMultiProfileXDNS set operation to %d failed \n",bValue));
+                return FALSE;
+        }
+
+        return TRUE;
+
     }
 #endif
 

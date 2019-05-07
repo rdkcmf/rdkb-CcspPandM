@@ -673,6 +673,14 @@ int SetXdnsConfig()
 			continue;
 		}
 
+#if defined(_COSA_FOR_BCI_)
+
+            if ( strstr(confEntry, "XDNS_Multi_Profile"))
+                {
+                        continue;
+                }
+#endif
+
     	// write resolv.conf entries to temp file
 		printf("############ SetXdnsConfig() copy entry from resolv to temp: [%s]\n", confEntry);
         fprintf(fp3, "%s", confEntry);
@@ -690,6 +698,14 @@ int SetXdnsConfig()
 		int gotdefault = 0;
 
 		char *token = strtok(tempEntry, " \t\n\r");
+
+#if defined(_COSA_FOR_BCI_)
+                if(!strcmp(token, "XDNS_Multi_Profile"))
+                {
+                        fprintf(fp3, "%s", confEntry);
+                        continue;
+                }
+#endif
 
 		if(token && strcmp(token, "dnsoverride") == 0)
 		{
@@ -818,6 +834,16 @@ int SetXdnsConfig()
 			printf("############ SetXdnsConfig() copy to dnsmasq_servers: [%s]\n", confEntry);
 			fprintf(fp2, "%s", confEntry);
 		}
+
+#if defined(_COSA_FOR_BCI_)
+                if (strstr(confEntry, "XDNS_Multi_Profile"))
+                {
+
+                        printf("############ SetXdnsConfig() copy to dnsmasq_servers: [%s]\n", confEntry);
+                        fprintf(fp2, "%s", confEntry);
+                }
+#endif
+
 	}
 
 	if(fp3) fclose(fp3); fp3 = NULL;
@@ -864,6 +890,14 @@ int UnsetXdnsConfig()
 		{
 			continue; //skip
 		}
+
+#if defined(_COSA_FOR_BCI_)
+
+            if ( strstr(confEntry, "XDNS_Multi_Profile"))
+                {
+                        continue;
+                }
+#endif
 
 		printf("############ UnsetXdnsConfig() saving from resolv.conf to bak [%s]\n", confEntry);
 		fprintf(fp3, "%s", confEntry);
