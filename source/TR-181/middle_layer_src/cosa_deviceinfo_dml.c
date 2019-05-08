@@ -904,6 +904,259 @@ DeviceInfo_SetParamUlongValue
     return FALSE;
 }
 
+/**
+ *  RFC Features TelemetryEndpoint
+*/
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        TelemetryEndpoint_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+TelemetryEndpoint_GetParamBoolValue
+
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL*                       pBool
+ )
+{
+    char buf[8];
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        syscfg_get( NULL, "TelemetryEndpointEnabled", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        return TRUE;                }
+
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        TelemetryEndpoint_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+TelemetryEndpoint_SetParamBoolValue
+
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL                        bValue
+ )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+
+        char buf[8];
+        memset (buf, 0, sizeof(buf));
+
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+
+        if (syscfg_set(NULL, "TelemetryEndpointEnabled", buf) != 0)
+        {
+            CcspTraceError(("syscfg_set TelemetryEndpointEnabled failed\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                CcspTraceError(("syscfg_commit TelemetryEndpointEnabled failed\n"));
+            }
+            else
+            {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        TelemetryEndpoint_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue
+                The string value buffer;
+
+
+    return:     TRUE if succeeded;
+                FALSE if not supported.
+
+**********************************************************************/
+ULONG
+    TelemetryEndpoint_GetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pValue,
+ ULONG*                      pUlSize
+ )
+{
+
+    /* Required for xPC sync */
+    if( AnscEqualString(ParamName, "URL", TRUE))
+    {
+        /* collect value */
+        char buf[64];
+        syscfg_get( NULL, "TelemetryEndpointURL", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            AnscCopyString(pValue, buf);
+            return 0;
+        }
+        return -1;
+    }
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return -1;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        TelemetryEndpoint_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+	**********************************************************************/
+BOOL
+    TelemetryEndpoint_SetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pString
+ )
+{
+
+    /* Required for xPC sync */
+    if( AnscEqualString(ParamName, "URL", TRUE))
+    {
+        if (syscfg_set(NULL, "TelemetryEndpointURL", pString) != 0)
+        {
+            CcspTraceError(("syscfg_set failed\n"));
+
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                CcspTraceError(("syscfg_commit failed\n"));
+
+            }
+
+            return TRUE;
+        }
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
 /**********************************************************************
 
     caller:     owner of this object
