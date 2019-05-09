@@ -351,6 +351,9 @@ CosaBackEndManagerInitialize
     pMyObject->hRabid          = (ANSC_HANDLE)CosaRabidCreate();
     AnscTraceWarning(("  CosaRabidCreate done!\n"));
 
+    pMyObject->hAdvPC          = (ANSC_HANDLE)CosaAdvPCCreate();
+    AnscTraceWarning(("  CosaAdvPCCreate done!\n"));
+
 #if CFG_USE_Event_Displatch
 
     /*create a thread to handle the sysevent asynchronously after all of the dmls created
