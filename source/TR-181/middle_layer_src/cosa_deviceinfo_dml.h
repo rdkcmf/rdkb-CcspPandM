@@ -1161,6 +1161,22 @@ IPv6onXHS_SetParamBoolValue
         BOOL                        bValue
     );
 BOOL
+EvoStream_DirectConnect_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+BOOL
+EvoStream_DirectConnect_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+BOOL
 LocalUI_GetParamBoolValue
 
     (

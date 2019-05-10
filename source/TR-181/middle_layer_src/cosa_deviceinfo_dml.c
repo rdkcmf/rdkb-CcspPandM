@@ -7515,6 +7515,129 @@ char *token = NULL;char *pt;
         }
     return FALSE;
 }
+/**********************************************************************  
+
+    caller:     owner of this object
+
+    prototype: 
+
+        BOOL
+        EvoStream_DirectConnect_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+EvoStream_DirectConnect_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+            /* collect value */
+            char buf[8];
+            syscfg_get( NULL, "EvoStreamDirectConnect", buf, sizeof(buf));
+
+            if( buf != NULL )
+            {
+                if (strcmp(buf, "true") == 0)
+                    *pBool = TRUE;
+                else
+                    *pBool = FALSE;
+            }
+            return TRUE;
+        }
+
+    return FALSE;
+}
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        EvoStream_DirectConnect_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+EvoStream_DirectConnect_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+        if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+            /* collect value */
+            if(syscfg_set(NULL, "EvoStreamDirectConnect", (bValue == TRUE ? "true": "false")) != 0)
+		{
+			CcspTraceError(("EvoStreamDirectConnect :%d Failed to SET\n", bValue ));
+		}
+		else
+		{
+            	if(syscfg_commit() != 0)
+			{
+				CcspTraceError(("EvoStreamDirectConnect :%d Failed to Commit\n", bValue ));
+			}
+			else
+			{
+	    			CcspTraceInfo(("EvoStreamDirectConnect :%d Success\n", bValue ));
+	    			system("sysevent set firewall-restart");
+			}
+		}
+            return TRUE;
+        }
+    return FALSE;
+}
+
 /**********************************************************************
 
     caller:     owner of this object
