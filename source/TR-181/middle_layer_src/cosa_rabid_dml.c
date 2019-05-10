@@ -76,13 +76,11 @@ RabidFramework_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
     PCOSA_DATAMODEL_RABID       pMyObject     = (PCOSA_DATAMODEL_RABID)g_pCosaBEManager->hRabid;
 
-#if !defined(_COSA_BCM_MIPS_)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         *pBool = pMyObject->bEnable;
         return TRUE;
     }
-#endif
 
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
     return FALSE;
@@ -132,7 +130,6 @@ RabidFramework_SetParamBoolValue
     PCOSA_DATAMODEL_RABID       pMyObject     = (PCOSA_DATAMODEL_RABID)g_pCosaBEManager->hRabid;
     ANSC_STATUS  returnStatus = ANSC_STATUS_SUCCESS;
 
-#if !defined(_COSA_BCM_MIPS_)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if(bValue == pMyObject->bEnable)
@@ -150,7 +147,6 @@ RabidFramework_SetParamBoolValue
 
         return TRUE;
     }
-#endif
 
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
     return FALSE;
