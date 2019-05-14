@@ -1101,11 +1101,13 @@ ULONG
     {
         /* collect value */
         char buf[64];
+        memset(buf, 0 ,sizeof(buf));
         syscfg_get( NULL, "TelemetryEndpointURL", buf, sizeof(buf));
 
         if( buf != NULL )
         {
             AnscCopyString(pValue, buf);
+            *pUlSize = AnscSizeOfString( pValue );
             return 0;
         }
         return -1;
