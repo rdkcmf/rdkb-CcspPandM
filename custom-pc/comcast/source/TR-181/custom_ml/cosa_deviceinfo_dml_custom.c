@@ -262,7 +262,7 @@ DeviceInfo_GetParamStringValue_Custom
 #ifdef CONFIG_VENDOR_CUSTOMER_COMCAST
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_CM_MAC", TRUE))
 	{
-	   CosaDmlDiGetCMMacAddress(NULL, pValue,pulSize);
+	   CosaDmlDiGetRouterMacAddress(NULL, pValue,pulSize);//Emulator doesn't have support of cable modem
 	   return 0;
 	}
 
@@ -286,7 +286,7 @@ DeviceInfo_GetParamStringValue_Custom
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_CM_IP", TRUE))
 	{
-	   CosaDmlDiGetCMIPAddress(NULL, pValue,pulSize);
+	   CosaDmlDiGetRouterIPAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
 
