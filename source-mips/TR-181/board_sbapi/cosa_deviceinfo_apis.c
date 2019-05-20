@@ -3135,24 +3135,16 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 	
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP") != NULL )
 				{
-					//Check whether this is comcast partner or not
-					if( 0 == strcmp( "comcast", partnerID ) )
+					DefaultAdminIP = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP")->valuestring; 
+					
+					if (DefaultAdminIP != NULL) 
 					{
-						syscfg_get(NULL, "lan_ipaddr", PUiBrand->DefaultAdminIP, sizeof(PUiBrand->DefaultAdminIP));
-					}
+						AnscCopyString(PUiBrand->DefaultAdminIP, DefaultAdminIP);
+						DefaultAdminIP = NULL;
+					}	
 					else
 					{
-						DefaultAdminIP = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP")->valuestring; 
-						
-						if (DefaultAdminIP != NULL) 
-						{
-							AnscCopyString(PUiBrand->DefaultAdminIP, DefaultAdminIP);
-							DefaultAdminIP = NULL;
-						}	
-						else
-						{
-							CcspTraceWarning(("%s - DefaultAdminIP Value is NULL\n", __FUNCTION__ ));
-						}
+						CcspTraceWarning(("%s - DefaultAdminIP Value is NULL\n", __FUNCTION__ ));
 					}
 				}
 
