@@ -243,12 +243,12 @@ CosaDmlDiGetModelName
 #elif _COSA_DRG_TPG_
 
     UCHAR model[128];
-    char temp[2];
+    char temp[16];
 
     memset(model,0,128);
     plat_GetFlashValue("model", model);
     
-    sprintf(temp, "%x%x",model[0],model[1]);
+    snprintf(temp, sizeof(temp), "%x%x",model[0],model[1]);
     
     if((0 == strcmp(temp,"f4c"))||(0 == strcmp(temp,"3916")))
     {
