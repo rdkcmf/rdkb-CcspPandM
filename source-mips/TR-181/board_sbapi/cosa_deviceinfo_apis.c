@@ -953,12 +953,16 @@ CosaDmlDiGetHardware_MemUsed
         PULONG                      pulSize
     )
 {
-//    if ( platform_hal_GetHardware_MemUsed(pValue) != RETURN_OK )
-//        return ANSC_STATUS_FAILURE;
-//    else {
-//        *pulSize = AnscSizeOfString(pValue); 
+#if defined(_PLATFORM_CI20_)
+    if ( platform_hal_GetHardware_MemUsed(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
-//    }
+    }
+#else
+        return ANSC_STATUS_SUCCESS;
+#endif
 }
 
 ANSC_STATUS
@@ -969,12 +973,16 @@ CosaDmlDiGetHardware_MemFree
         PULONG                      pulSize
     )
 {
-//    if ( platform_hal_GetHardware_MemFree(pValue) != RETURN_OK )
-//        return ANSC_STATUS_FAILURE;
-//    else {
-//        *pulSize = AnscSizeOfString(pValue);
+#if defined(_PLATFORM_CI20_)
+    if ( platform_hal_GetHardware_MemFree(pValue) != RETURN_OK )
+        return ANSC_STATUS_FAILURE;
+    else {
+        *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
- //   }
+    }
+#else
+        return ANSC_STATUS_SUCCESS;
+#endif
 }
 
 ANSC_STATUS
