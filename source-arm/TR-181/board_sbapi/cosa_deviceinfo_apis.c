@@ -156,6 +156,10 @@ static const int OK = 1 ;
 static const int NOK = 0 ;
 static char reverseSSHArgs[255] = { "\0" };
 const char* sshCommand = "/lib/rdk/startTunnel.sh";
+#ifdef ENABLE_SHORTS
+const char *stunnelCommand = "/lib/rdk/startStunnel.sh";
+static char stunnelSSHArgs[255] = { "\0" };
+#endif
 const char* rsshPidFile = "/var/tmp/rssh.pid";
 
 void strip_line (char *str)
@@ -1933,43 +1937,90 @@ int setXOpsReverseSshArgs(char* pString) {
     char* tempStr;
     char* option;
     char* hostLogin = NULL;
+#ifdef ENABLE_SHORTS
+    char* value = NULL;
+
+    //For stunnel Path socat connection capability to loopback ips 127.0.0.1 and [::1] only
+    const char* localIP = "127.0.0.1";
+    char ip_version_number[4] = { "\0" };
+    char callbackport[8] = { "\0" };
+    char* host = NULL;
+#endif
 
     int inputMsgSize = strlen(pString);
+#ifdef ENABLE_SHORTS
+    // two paths to follow either reversessh or stunnel based on whether the input string contains type 
+    if(strncmp(pString,"type",4)) {
+#endif
+        hostLogin = getHostLogin(pString);
+        if (!hostLogin) {
+            AnscTraceWarning(("Warning !!! Target host for establishing reverse SSH tunnel is missing !!!\n"));
+            strcpy(reverseSSHArgs,"");
+            return 1;
+        }
 
-    hostLogin = getHostLogin(pString);
-    if (!hostLogin) {
-        AnscTraceWarning(("Warning !!! Target host for establishing reverse SSH tunnel is missing !!!\n"));
-        strcpy(reverseSSHArgs,"");
-        return 1;
-    }
+        strncpy(tempCopy, pString, inputMsgSize);
+        tempStr = (char*) strtok(tempCopy, ";");
+        if (NULL != tempStr) {
+            option = mapArgsToSSHOption(tempStr);
+            strcpy(reverseSSHArgs, option);
+        } else {
+            AnscTraceWarning(("No Match Found !!!!\n"));
+            printf("No Match Found !!!!\n");
+        }
 
-    strncpy(tempCopy, pString, inputMsgSize);
-    tempStr = (char*) strtok(tempCopy, ";");
-    if (NULL != tempStr) {
-        option = mapArgsToSSHOption(tempStr);
-        strcpy(reverseSSHArgs, option);
-    } else {
-        AnscTraceWarning(("No Match Found !!!!\n"));
-        printf("No Match Found !!!!\n");
-    }
-
-    if (option) {
-        free(option);
-    }
-
-    while ((tempStr = strtok(NULL, ";")) != NULL) {
-        option = mapArgsToSSHOption(tempStr);
-        if ( NULL != option) {
-            strcat(reverseSSHArgs, option);
+        if (option) {
             free(option);
         }
-    }
-    strcat(reverseSSHArgs, hostLogin);
-    if (hostLogin)
-        free(hostLogin);
 
+        while ((tempStr = strtok(NULL, ";")) != NULL) {
+            option = mapArgsToSSHOption(tempStr);
+            if ( NULL != option) {
+                strcat(reverseSSHArgs, option);
+                free(option);
+            }
+        }
+        strcat(reverseSSHArgs, hostLogin);
+        if (hostLogin)
+            free(hostLogin);
+#ifdef ENABLE_SHORTS
+    } else {
+        strncpy(tempCopy, pString, inputMsgSize);
+ 
+        memset(stunnelSSHArgs,'\0',sizeof(stunnelSSHArgs));
+        tempStr = (char*) strtok(tempCopy, ";");
+        while (NULL != tempStr) {
+            if(value = strstr(tempStr, "type=")) {
+                sprintf(ip_version_number, "%s",value + strlen("type="));
+            } else if (value = strstr(tempStr, "callbackport=")) {
+                sprintf(callbackport, "%s",value + strlen("callbackport="));
+            } else if(value = strstr(tempStr, "host=")) {
+                if(NULL == host) {
+                    host = (char*) calloc(strlen(value), sizeof(char));
+                }
+                sprintf(host, "%s",value + strlen("host="));
+            } else {
+                AnscTraceWarning(("SHORTS does not accept invalid property\n"));
+            }
+            tempStr = (char*) strtok(NULL, ";");
+        }
+        // for arguments for script in the form " ip_version_number localIP + remoteIP + remotePort"
+        if(host != NULL) {
+            sprintf(stunnelSSHArgs,"%s %s %s %s %s &",stunnelCommand, ip_version_number, localIP, host, callbackport);
+            if(host != NULL) {
+                free(host);
+                host = NULL;
+            }
+            AnscTraceWarning(("StunnelSSH Command =%s !!!\n",stunnelSSHArgs));
+            system(stunnelSSHArgs);
+        } else {
+            AnscTraceWarning(("Warning !!! Did not get all args to execute SHORTS path!!!\n"));
+        }
+    }
+#endif
     return ANSC_STATUS_SUCCESS;
 }
+
 
 ANSC_STATUS getXOpsReverseSshArgs
     (
