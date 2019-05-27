@@ -55,15 +55,6 @@
 #include <fcntl.h>
 #endif
 
-#if defined(_PLATFORM_RASPBERRYPI_)
-#include <stdio.h>
-#include <sys/socket.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <string.h>
-#define PORT 8081
-#endif
-
 #define DEBUG_INI_NAME  "/etc/debug.ini"
 
 PDSLH_CPE_CONTROLLER_OBJECT     pDslhCpeController      = NULL;
@@ -395,10 +386,6 @@ static int is_core_dump_opened(void)
 
 #endif
 
-#if defined(_PLATFORM_RASPBERRYPI_)
-int sock = 0;
-#endif
-
 int main(int argc, char* argv[])
 {
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
@@ -413,11 +400,6 @@ int main(int argc, char* argv[])
 
 #ifdef FEATURE_SUPPORT_RDKLOG
     RDK_LOGGER_INIT();
-#endif
-
-#if defined(_PLATFORM_RASPBERRYPI_)
-	int id=0;
-	id=getuid();
 #endif
 
     /*
@@ -438,40 +420,6 @@ int main(int argc, char* argv[])
     
     /* Set the global pComponentName */
     pComponentName = gpPnmStartCfg->ComponentName;
-
-//REFPLTV-5 : RDKB Container lxcclient code to send events from pandm to host
-#if defined(_PLATFORM_RASPBERRYPI_)
-if(id != 0)
-{
-    struct sockaddr_in address;
-    int valread;
-    struct sockaddr_in serv_addr;
-    char buffer[1024] = {0};
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    {
-        printf("\n Socket creation error \n");
-        return -1;
-    }
-    memset(&serv_addr, '0', sizeof(serv_addr));
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
-
-    // Convert IPv4 and IPv6 addresses from text to binary form 
-    if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)
-    {
-        printf("\nInvalid address/ Address not supported \n");
-        return -1;
-    }
-
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-    {
-        printf("\nConnection Failed \n");
-        return -1;
-    }
-}
-#endif
-
 
 #if defined(_DEBUG) && defined(_COSA_SIM_)
     AnscSetTraceLevel(CCSP_TRACE_LEVEL_INFO);

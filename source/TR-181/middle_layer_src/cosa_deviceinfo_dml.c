@@ -77,19 +77,9 @@
 #include "cm_hal_oem.h"
 #endif
 
-#if defined(_PLATFORM_RASPBERRYPI_)
-#include <unistd.h>
-#include <sys/types.h>
-#endif
-
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 extern void* g_pDslhDmlAgent;
-
-#if defined(_PLATFORM_RASPBERRYPI_)
-extern int sock;
-int id = 0;
-#endif
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -744,9 +734,6 @@ DeviceInfo_SetParamBoolValue
     )
 {
     BOOL                            bReturnValue;
-#if defined(_PLATFORM_RASPBERRYPI_)
-    id =getuid();    
-#endif
     
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "ClearResetCount", TRUE))
@@ -777,13 +764,6 @@ DeviceInfo_SetParamBoolValue
 	    {
 		/* Restart Firewall */
 		system("sysevent set firewall-restart");
-#if defined(_PLATFORM_RASPBERRYPI_)
-               if(id!=0)
-               {
-                       char *lxcevt = "sysevent set firewall-restart";
-                       send(sock , lxcevt , strlen(lxcevt) , 0 );
-               }
-#endif
 	    }	
         }
 
@@ -5734,9 +5714,6 @@ Iot_SetParamBoolValue
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ENABLEIOT", TRUE))
     {
         char buf[8];
-#if defined(_PLATFORM_RASPBERRYPI_)
-       id=getuid();
-#endif
         memset(buf, 0, sizeof(buf));
         snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
 
@@ -5755,24 +5732,10 @@ Iot_SetParamBoolValue
                 if(bValue){
                    AnscTraceWarning(("IOT_LOG : Raise IOT event up from DML\n"));
                    system("sysevent set iot_status up");
-#if defined(_PLATFORM_RASPBERRYPI_)
-               if(id!=0)
-               {
-                 char *lxcevt = "sysevent set iot_status up";
-                 send(sock , lxcevt , strlen(lxcevt) , 0 );
-               }
-#endif
-             }
+                }
                 else{
                    AnscTraceWarning(("IOT_LOG : Raise IOT event down from DML\n"));
                    system("sysevent set iot_status down");
-#if defined(_PLATFORM_RASPBERRYPI_)
-                if(id!=0)
-                 {
-                   char *lxcevt = "sysevent set iot_status down";
-                   send(sock , lxcevt , strlen(lxcevt) , 0 );
-                 }
-#endif
                 }
                 return TRUE;
             }
@@ -6932,13 +6895,6 @@ AllowOpenPorts_SetParamBoolValue
 
             // restart firewall
             system("sysevent set firewall-restart");
-#if defined(_PLATFORM_RASPBERRYPI_)
-      if(id!=0)
-       {
-		   char *lxcevt = "sysevent set firewall-restart";
-                   send(sock ,  lxcevt, strlen(lxcevt) , 0 );
-       }
-#endif
             return TRUE;
         }
     return FALSE;
