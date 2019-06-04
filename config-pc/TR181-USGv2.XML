@@ -12014,6 +12014,30 @@
             </object>
         </objects>
     </object>
+    <object>
+            <name>UPnP</name>
+                <objectType>object</objectType>
+                    <functions></functions>
+                        <parameters></parameters>
+                        <objects>
+                            <object>
+                                <name>Refactor</name>
+                                     <objectType>object</objectType>
+                                     <functions>
+                                         <func_GetParamBoolValue>UPnPRefactor_GetParamBoolValue</func_GetParamBoolValue>
+                                         <func_SetParamBoolValue>UPnPRefactor_SetParamBoolValue</func_SetParamBoolValue>
+                                     </functions>
+                                     <parameters>
+                                         <parameter>
+                                             <name>Enable</name>
+                                             <type>boolean</type>
+                                             <syntax>bool</syntax>
+                                             <writable>true</writable>
+                                         </parameter>
+                                     </parameters>
+                            </object>
+                        </objects>
+    </object>
 
     <object>
         <name>X_Comcast_com_ParentalControl</name>
