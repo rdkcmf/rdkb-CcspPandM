@@ -840,6 +840,8 @@ CosaDmlDcSetFactoryReset
 		system("/lib/rdk/restore-rules.sh");
 		system("sleep 5");
 		system("iptables -t nat -F && iptables -t mangle -F && iptables -F");
+		system("sleep 5");
+		PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason", ccsp_string,"factory-reset");
 		system("(sleep 5 && reboot) &");
 
 	}
