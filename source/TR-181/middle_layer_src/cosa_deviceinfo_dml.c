@@ -12502,3 +12502,134 @@ MessageBusSource_SetParamBoolValue
     }
   return FALSE;
 }
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        UPnPRefactor_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            )
+
+
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+
+**********************************************************************/
+
+BOOL
+UPnPRefactor_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+
+ if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char value[8] = {'\0'};
+        if( syscfg_get(NULL, "Refactor", value, sizeof(value)) == 0 )
+        {
+            if( value != NULL )
+            {
+                 if (strcmp(value, "true") == 0)
+                     *pBool = TRUE;
+                 else
+                     *pBool = FALSE;
+            }
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceError(("syscfg_get failed for UPnP Refactor\n"));
+        }
+    }
+  return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        UPnPRefactor_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            )
+
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+UPnPRefactor_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+
+  if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8] = {'\0'};
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+        if( syscfg_set(NULL, "Refactor", buf) != 0 )
+        {
+            CcspTraceError(("syscfg_set failed for UPnP Refactor \n"));
+        }
+        else
+        {
+            if( syscfg_commit() == 0 )
+            {
+                return TRUE;
+            }
+            else
+            {
+                 CcspTraceError(("syscfg_commit failed for UPnP Refactor \n"));
+            }
+        }
+
+    }
+  return FALSE;
+}
+
