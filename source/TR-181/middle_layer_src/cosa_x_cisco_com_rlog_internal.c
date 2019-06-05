@@ -55,6 +55,7 @@ CosaRLogCreate(void)
     if (pRLog->Initialize(pRLog) != ANSC_STATUS_SUCCESS)
     {
         AnscTraceError(("%s: Fail to init remote logging\n", __FUNCTION__));
+        AnscFreeMemory(pRLog);
         return (ANSC_HANDLE)NULL;
     }
 
