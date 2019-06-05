@@ -4083,3 +4083,128 @@ CosaDmlDiSet_SyndicationFlowControl_InitialOutputMark
        return ANSC_STATUS_FAILURE;
     }
 }
+
+#if defined(_COSA_FOR_BCI_)
+#define XDNS_RESOLV_CONF "/etc/resolv.conf"
+#define XDNS_DNSMASQ_SERVERS_BAK "/nvram/dnsmasq_servers.bak"
+#define XDNS_DNSMASQ_SERVERS_CONF "/nvram/dnsmasq_servers.conf"
+
+
+int setMultiProfileXdnsConfig(BOOL bValue)
+{
+
+        char confEntry[256] = {0};
+
+  
+        FILE *fp1 = NULL, *fp2 = NULL, *fp3 = NULL;
+
+        fp1 = fopen(XDNS_RESOLV_CONF, "r");
+        if(fp1 == NULL)
+        {
+                fprintf(stderr,"### XDNS : setMultiProfileXdnsConfig() - fopen(XDNS_RESOLV_CONF, 'r') Error !!\n");
+                return 0;
+        }
+
+        fp2 = fopen(XDNS_DNSMASQ_SERVERS_CONF ,"r");
+        if(fp2 == NULL)
+        {
+                fprintf(stderr,"### XDNS : setMultiProfileXdnsConfig() - fopen(XDNS_DNSMASQ_SERVERS_CONF, 'r') Error !!\n");
+                fclose(fp1);
+                fp1 = NULL;
+                return 0;
+        }
+
+        unlink(XDNS_DNSMASQ_SERVERS_BAK);
+
+        fp3 = fopen(XDNS_DNSMASQ_SERVERS_BAK ,"a");
+        if(fp3 == NULL)
+        {
+                fprintf(stderr,"### XDNS : setMultiProfileXdnsConfig() - fopen(XDNS_DNSMASQ_SERVERS_BAK, 'a') Error !!\n");
+                fclose(fp2);
+                fp2 = NULL;
+                fclose(fp1);
+                fp1 = NULL;
+                return 0;
+        }
+
+
+        //Get all entries (other than XDNS_Multi_Profile) from resolv.conf file//
+        while(fgets(confEntry, sizeof(confEntry), fp1) != NULL)
+        {
+                if ( strstr(confEntry, "XDNS_Multi_Profile"))
+                {
+                        continue;
+                }
+
+                fprintf(fp3, "%s", confEntry);
+        }
+
+        if(bValue)
+        {
+                fprintf(fp3, "XDNS_Multi_Profile Enabled\n");
+                CcspTraceWarning(("%s XDNS_Multi_Profile Feature Enabled\n", __FUNCTION__));
+        }
+        else
+        {
+                fprintf(fp3, "XDNS_Multi_Profile Disabled\n");
+                CcspTraceWarning(("%s XDNS_Multi_Profile Feature Disabled\n", __FUNCTION__));
+        }
+
+        fclose(fp3); 
+  	fp3 = NULL;
+        fclose(fp2); 
+  	fp2 = NULL;
+        fclose(fp1); 
+  	fp1 = NULL;
+
+        fp1 = fopen(XDNS_RESOLV_CONF, "w");
+        if(fp1 == NULL)
+        {
+                fprintf(stderr,"### XDNS : setMultiProfileXdnsConfig() - fopen(XDNS_RESOLV_CONF, 'w') Error !!\n");
+                return 0;
+        }
+
+        fp2 = fopen(XDNS_DNSMASQ_SERVERS_CONF,"w");
+        if(fp2 == NULL)
+        {
+                fprintf(stderr,"### XDNS : setMultiProfileXdnsConfig() - fopen(XDNS_DNSMASQ_SERVERS_CONF, 'w') Error !!\n");
+                if(fp1) fclose(fp1); fp1 = NULL;
+                return 0;
+        }
+
+        fp3 = fopen(XDNS_DNSMASQ_SERVERS_BAK ,"r");
+        if(fp3 == NULL)
+        {
+                fprintf(stderr,"### XDNS : setMultiProfileXdnsConfig() - fopen(XDNS_DNSMASQ_SERVERS_BAK, 'r') Error !!\n");
+                fclose(fp2); 
+          	fp2 = NULL;
+                if(fp1) fclose(fp1); fp1 = NULL;
+                return 0;
+        }
+
+        while(fgets(confEntry, sizeof(confEntry), fp3) != NULL)
+        {
+                //copy back entries to resolv.conf if default entry is found. else keep the old resolv.
+                if(fp1)
+                {
+                        fprintf(fp1, "%s", confEntry);
+                }
+
+                //copy only dnsoverride entries and Multi_profile into nvram
+                if (strstr(confEntry, "dnsoverride") || strstr(confEntry, "XDNS_Multi_Profile"))
+                {
+
+                        fprintf(fp2, "%s", confEntry);
+                }
+        }
+
+        if(fp3) fclose(fp3); fp3 = NULL;
+        if(fp2) fclose(fp2); fp2 = NULL;
+        if(fp1) fclose(fp1); fp1 = NULL;
+
+        return 1; //success
+
+
+}
+
+#endif
