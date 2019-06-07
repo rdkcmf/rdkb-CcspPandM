@@ -6792,7 +6792,43 @@ dhcpv6c_dbg_thrd(void * in)
 
                 if (!strncmp(action, "add", 3))
                 {
-                    CcspTraceInfo(("%s: add\n", __func__)); 
+                    CcspTraceInfo(("%s: add\n", __func__));
+
+	            static int sysevent_fd_mnet;
+        	    static token_t sysevent_token_mnet;
+		    sysevent_fd_mnet = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "Multinet Status", &sysevent_token_mnet);
+
+     		    unsigned char lan_multinet_state[10] = {0};
+                    sysevent_get(sysevent_fd_mnet, sysevent_token_mnet, "multinet_1-status", lan_multinet_state, sizeof(lan_multinet_state));
+		    if(strcmp(lan_multinet_state, "ready") != 0) 
+		    {
+                        CcspTraceWarning(("%s multinet_1-status is %s\n",__FUNCTION__,lan_multinet_state));
+
+			async_id_t lan_state_asyncid;
+			sysevent_set_options(sysevent_fd_mnet, sysevent_token_mnet, "multinet_1-status", TUPLE_FLAG_EVENT);
+			sysevent_setnotification(sysevent_fd_mnet, sysevent_token_mnet, "multinet_1-status",  &lan_state_asyncid);
+// Waiting until private lan interface is ready , so that we can assign global ipv6 address and also start dhcp server.
+			while (1)
+			{
+ 				async_id_t getnotification_asyncid;
+			        int err;
+			        unsigned char name[25]={0};
+
+				int namelen = sizeof(name);
+				int vallen  = sizeof(lan_multinet_state);
+				err = sysevent_getnotification(sysevent_fd_mnet, sysevent_token_mnet, name, &namelen,  lan_multinet_state, &vallen, &getnotification_asyncid);
+
+				if (!err)
+				{
+			       	    CcspTraceWarning(("%s Recieved notification event  %s, state %s\n",__FUNCTION__,name,lan_multinet_state));
+				    if(strcmp(lan_multinet_state, "ready") == 0)
+				    {
+					break;
+				    }
+			
+				}
+			  }
+		     }	
                     /*for now we only support one address, one prefix notify, if need multiple addr/prefix, must modify dibbler-client code*/
                     if (strncmp(v6addr, "::", 2) != 0) 
                     {
