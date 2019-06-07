@@ -74,6 +74,7 @@
 #if defined (_XB6_PRODUCT_REQ_)
 #include "bt_hal.h"
 #endif
+#include "secure_wrapper.h"
 
 #if defined (_ARRIS_XB6_PRODUCT_REQ_) //ARRISXB6-7328, ARRISXB6-7332
 #include "cm_hal_oem.h"
@@ -1475,9 +1476,7 @@ DeviceInfo_SetParamStringValue
 	       if (syscfg_commit() != 0) {
                     AnscTraceWarning(("syscfg_commit failed\n"));
                     }
-		char url[150];	
-		snprintf(url,sizeof(url),"/etc/whitelist.sh %s",wrapped_inputparam);
-		system(url);
+		v_secure_system("/etc/whitelist.sh %s",wrapped_inputparam);
 		AnscCopyString(pMyObject->WebURL, wrapped_inputparam);
 		CcspTraceWarning(("CaptivePortal:Cloud URL is changed, new URL is %s ...\n",pMyObject->WebURL));
              }
@@ -1605,9 +1604,7 @@ DeviceInfo_SetParamStringValue
 	       if (syscfg_commit() != 0) {
                     AnscTraceWarning(("syscfg_commit failed\n"));
                     }
-		char ems_url[150];	
-		snprintf(ems_url,sizeof(ems_url),"/etc/whitelist.sh %s",wrapped_inputparam);
-		system(ems_url);
+		v_secure_system("/etc/whitelist.sh %s",wrapped_inputparam);
 		AnscCopyString(pMyObject->EMS_ServerURL, wrapped_inputparam);
              }
 

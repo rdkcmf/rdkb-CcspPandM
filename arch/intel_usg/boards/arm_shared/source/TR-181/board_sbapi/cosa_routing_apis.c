@@ -69,6 +69,7 @@
 #include "cosa_routing_apis.h"
 #include "cosa_routing_internal.h"
 #include "dml_tr181_custom_cfg.h"
+#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -2670,8 +2671,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
      * because of "proto" (orig) info,
      * we use "ip -6 route" instead of "route -A inet6".
      */
-    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname);
-    if ((fp = popen(cmd, "r")) == NULL)
+    if ((fp = v_secure_popen("r", "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname)) == NULL)
         return -1;
 
     entryCnt = 0;
@@ -2714,7 +2714,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 
         entryCnt++;
     }
-	pclose(fp);
+    v_secure_pclose(fp);
 	//Fix for issue RDKB-367
 #ifdef _COSA_BCM_MIPS_ 
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table erouter");
@@ -2792,7 +2792,7 @@ Route6_Add(const char *prefix, const char *gw, const char *dev, int metric)
     if (metric != 0)
         n += snprintf(cmd + n, sizeof(cmd) - n, "metric %d ", metric);
 
-    if (system(cmd) != 0) 
+    if (v_secure_system("ip -6 route add %s dev %s ", prefix, dev) != 0) 
     {
         CcspTraceWarning(("%s: fail to add route\n", __FUNCTION__));
         return -1;
@@ -2825,7 +2825,7 @@ Route6_Del(const char *prefix, const char *gw, const char *dev)
     if (gw && strlen(gw))
         n += snprintf(cmd + n, sizeof(cmd) - n, "via %s ", gw);
 
-    if (system(cmd) != 0) 
+    if (v_secure_system("ip -6 route del %s ", prefix) != 0) 
     {
         CcspTraceWarning(("%s: fail to delete route\n", __FUNCTION__));
         return -1;
@@ -2861,7 +2861,7 @@ Route6_IsRouteExist(const char *prefix, const char *gw, const char *dev)
 	 * we use " | grep '^'" to ensure one line is showed to STDIN */
 	n += snprintf(cmd + n, sizeof(cmd) - n, " | grep '^' ");
 
-    if (system(cmd) != 0) 
+    if (v_secure_system("ip -6 route show %s ", prefix) != 0) 
     {
         return FALSE;
     }
@@ -3421,10 +3421,9 @@ AddRouteEntryToKernel(void *arg)
     
     for (index = 0; index < Config_Num; index++) {
         if (Router_Alias[index].Enabled) { // add route entry to kernel when initialize
-            snprintf(cmd_buf, sizeof(cmd_buf), "ip route add %s/%d via %s table erouter metric %d", 
-                    sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)), 
-                    sroute[index].gateway, sroute[index].metric);
-            if (system(cmd_buf) != 0)
+            if (v_secure_system("ip route add %s/%d via %s table erouter metric %d", 
+                sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)),
+                sroute[index].gateway, sroute[index].metric) != 0)
             {
                 Router_Alias[index].Enabled = FALSE;
             }
