@@ -69,6 +69,7 @@
 #include "cosa_routing_apis.h"
 #include "cosa_routing_internal.h"
 #include "dml_tr181_custom_cfg.h"
+#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -2686,8 +2687,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
      * because of "proto" (orig) info,
      * we use "ip -6 route" instead of "route -A inet6".
      */
-    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname);
-    if ((fp = popen(cmd, "r")) == NULL)
+    if ((fp = v_secure_popen("r", "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname)) == NULL)
         return -1;
 
     entryCnt = g_numRtInfo6;
@@ -2750,7 +2750,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 			entryCnt ++;
 		}
     }
-	pclose(fp);
+    v_secure_pclose(fp);
 	//Fix for issue RDKB-367
 #if defined(_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table main");
