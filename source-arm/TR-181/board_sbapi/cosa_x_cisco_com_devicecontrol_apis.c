@@ -341,6 +341,30 @@ SaveWebServConf(const WebServConf_t *conf)
     return 0;
 }
 
+#if defined(_PLATFORM_RASPBERRYPI_)
+static int
+DmSetBool(const char *param, BOOL value)
+{
+    parameterValStruct_t val[1];
+    char crname[256], *fault = NULL;
+    int err;
+
+    val[0].parameterName  = param;
+    val[0].parameterValue = (value ? "true" : "false");
+    val[0].type           = ccsp_boolean;
+
+    snprintf(crname, sizeof(crname), "%s%s", g_GetSubsystemPrefix(g_pDslhDmlAgent), CCSP_DBUS_INTERFACE_CR);
+
+    if ((err = CcspBaseIf_SetRemoteParameterValue(g_MessageBusHandle,
+                crname, param, g_GetSubsystemPrefix(g_pDslhDmlAgent), 0, 0xFFFF, val, 1, 1, &fault)) != CCSP_SUCCESS)
+
+    if (fault)
+        AnscFreeMemory(fault);
+
+    return (err == CCSP_SUCCESS) ? 0 : -1;
+}
+#endif
+
 static int 
 WebServRestart(const WebServConf_t *conf)
 {
@@ -3760,6 +3784,55 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         }
 #endif
         
+#if defined(_PLATFORM_RASPBERRYPI_)
+	char buf[7] = {0};
+	BOOL value;
+	snprintf(buf,sizeof(buf),"%ld",bridge_info.mode);
+	if ((syscfg_set(NULL, "bridge_mode", buf) != 0))
+                        {
+                            Utopia_Free(&utctx, 0);
+                            CcspTraceWarning(("syscfg_set failed\n"));
+                            return -1;
+                        }
+	if(bridge_info.mode == 0)
+	{
+		value = 1;
+		commonSyseventSet("bridge-stop", "");
+		commonSyseventSet("lan-start", "");
+		if (DmSetBool("Device.WiFi.SSID.1.Enable", value) != ANSC_STATUS_SUCCESS) {
+	            fprintf(stderr, "%s: set WiFi.SSID.1 Enable error\n", __FUNCTION__);
+        	} else {
+            	    fprintf(stderr, "%s: set WiFi.SSID.1 Enable OK\n", __FUNCTION__);
+       	        }
+		if (DmSetBool("Device.WiFi.SSID.2.Enable", value) != ANSC_STATUS_SUCCESS) {
+	            fprintf(stderr, "%s: set WiFi.SSID.2 Enable error\n", __FUNCTION__);
+        	} else {
+            	    fprintf(stderr, "%s: set WiFi.SSID.2 Enable OK\n", __FUNCTION__);
+       	        }
+	}
+	else if(bridge_info.mode == 2)
+	{
+		value = 0;
+		commonSyseventSet("bridge-start", "");
+		commonSyseventSet("lan-stop", "");
+		if (DmSetBool("Device.WiFi.SSID.1.Enable", value) != ANSC_STATUS_SUCCESS) {
+	            fprintf(stderr, "%s: set WiFi.SSID.1 Disable error\n", __FUNCTION__);
+        	} else {
+            	    fprintf(stderr, "%s: set WiFi.SSID.1 Disable OK\n", __FUNCTION__);
+       	        }
+		if (DmSetBool("Device.WiFi.SSID.2.Enable", value) != ANSC_STATUS_SUCCESS) {
+	            fprintf(stderr, "%s: set WiFi.SSID.2 Disable error\n", __FUNCTION__);
+        	} else {
+            	    fprintf(stderr, "%s: set WiFi.SSID.2 Disable OK\n", __FUNCTION__);
+       	        }
+	}
+	else
+	{
+		fprintf(stderr,"Running in different Modes \n");
+	}
+	sleep(1);
+	vsystem("/bin/sh /etc/webgui.sh &");
+#endif
         //configBridgeMode(bEnable);
 
         if( ( ( bridge_info.mode == BRIDGE_MODE_STATIC ) || \
