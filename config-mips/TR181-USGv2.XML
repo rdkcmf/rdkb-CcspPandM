@@ -984,7 +984,7 @@
 				<name>Support</name>
 				<type>boolean</type>
 				<syntax>bool</syntax>
-				<writable>true</writable>
+				<writable>false</writable>
                 	</parameter>
 			<parameter>
 				<name>PartnerHelpLink</name>
