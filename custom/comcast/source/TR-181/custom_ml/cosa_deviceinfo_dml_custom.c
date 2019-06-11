@@ -301,6 +301,7 @@ DeviceInfo_GetParamStringValue_Custom
             		CcspTraceInfo(("RDK_LOG_INFO, Ethernet WAN is enabled\n"));
 			EthWANEnable = 1;
 		}
+			
 #ifdef CONFIG_VENDOR_CUSTOMER_COMCAST
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_CM_MAC", TRUE))
 	{
@@ -329,7 +330,9 @@ DeviceInfo_GetParamStringValue_Custom
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_MTA_MAC", TRUE))
 	{
+#if !defined(_PLATFORM_RASPBERRYPI_)
   	   CosaDmlDiGetMTAMacAddress(NULL, pValue,pulSize);
+#endif
 	   return 0;
 	}
 
@@ -359,6 +362,7 @@ DeviceInfo_GetParamStringValue_Custom
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_WAN_IPv6", TRUE))
 	{
+#if !defined(_PLATFORM_RASPBERRYPI_)
 	   CosaDmlDiGetRouterIPv6Address(NULL, pValue,pulSize);
            #if defined(_COSA_FOR_BCI_)
            if (syscfg_set(NULL, "wanIPv6Address",pValue) != 0) {
@@ -369,12 +373,15 @@ DeviceInfo_GetParamStringValue_Custom
                }
            }
            #endif
+#endif
 	   return 0;
 	}
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_MTA_IP", TRUE))
 	{
+#if !defined(_PLATFORM_RASPBERRYPI_)
    	   CosaDmlDiGetMTAIPAddress(NULL, pValue,pulSize);
+#endif
 	   return 0;
 	}
 #endif
