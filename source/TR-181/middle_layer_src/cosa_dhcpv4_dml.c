@@ -6087,6 +6087,12 @@ Pool_SetParamUlongValue
         if( pPool->Cfg.InstanceNumber == 1 && 
             is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)))
             return(FALSE);
+
+	if (ntohl(uValue) == ntohl(pPool->Cfg.MaxAddress.Value)) {
+            CcspTraceError(("MinAddress equals MaxAddress 0x%08x\n", ntohl(uValue)));
+            return(FALSE);
+	}
+
         pPool->Cfg.MinAddress.Value  = uValue;
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MinAddress of DHCP Range Changed ...\n"));
         
@@ -6117,6 +6123,12 @@ Pool_SetParamUlongValue
             is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)) || 
             uValue < pPool->Cfg.MinAddress.Value)
             return(FALSE);
+
+        if (ntohl(uValue) == ntohl(pPool->Cfg.MinAddress.Value)) {
+            CcspTraceError(("MinAddress equals MaxAddress 0x%08x\n", ntohl(uValue)));
+            return(FALSE);
+	}
+
         pPool->Cfg.MaxAddress.Value  = uValue;
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MaxAddress of DHCP Range Changed ...\n"));
         
