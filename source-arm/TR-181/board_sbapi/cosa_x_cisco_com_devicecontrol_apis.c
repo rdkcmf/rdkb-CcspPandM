@@ -3914,10 +3914,10 @@ static void configBridgeMode(int bEnable) {
 //         varstruct.type = ccsp_boolean;
 #if (!defined _XF3_PRODUCT_REQ_)
         g_SetParamValueBool(brpdm, bEnable);
+        vsystem("/bin/sh /etc/webgui.sh &");
 #elif defined( _XF3_PRODUCT_REQ_)
         g_SetParamValueBool(brpdm, (bEnable>0?true:false));
 #endif
-        vsystem("/bin/sh /etc/webgui.sh &");
 
         if (ppComponents == NULL && initWifiComp()) {
             syslog_systemlog("Local Network", LOG_NOTICE, "Bridge mode transition: Failed to acquire wifi component.");
