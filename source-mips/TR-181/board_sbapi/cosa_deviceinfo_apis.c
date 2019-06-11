@@ -2811,6 +2811,13 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 							PUiBrand->WifiPersonal.Support = TRUE;
 							support = NULL;
 						}
+						else 
+						{
+							//to prevent traffic being redirected to lan ip
+							syscfg_set(NULL, "CaptivePortal_Enable", "false");
+							syscfg_commit();
+							CcspTraceWarning(("%s - CaptivePortal_Enable set to false %s\n", __FUNCTION__));
+						}
 					}	
 					else
 					{
