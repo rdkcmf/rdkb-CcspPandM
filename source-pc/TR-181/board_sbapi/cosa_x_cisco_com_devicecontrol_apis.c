@@ -81,6 +81,8 @@
 static char *PSM_LanMode = "dmsb.X_CISCO_COM_DeviceControl.LanManagementEntry.%d.LanMode";
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
+extern  BOOL g_httpPort;
+extern  BOOL g_httpsPort;
 // PSM access MACRO
 #define _PSM_WRITE_PARAM(_PARAM_NAME) { \
         _ansc_sprintf(param_name, _PARAM_NAME, instancenum); \
@@ -1231,9 +1233,18 @@ CosaDmlDcGetHTTPPort
         sprintf(cmd, "syscfg get mgmt_wan_httpport");
         _get_shell_output(cmd, out, sizeof(out));
 
-    *pValue = atoi(out);
-    return ANSC_STATUS_SUCCESS; 
+	if(strncmp(out,"ERROR",5) == 0)
+	{
+		/*During syscfg error scenario*/
+		*pValue=g_DevCtrl.httpPort;
+	}
+	else
+	{
+		/*Normal scenario*/
+		*pValue = atoi(out);
+	}
 
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -1243,8 +1254,23 @@ CosaDmlDcGetHTTPSPort
         ULONG                       *pValue
     )
 {
-    *pValue = g_DevCtrl.httpsPort;
-    return ANSC_STATUS_SUCCESS;
+	char out[128] = {0};
+	char cmd[100];
+	memset(out,0,sizeof(out));
+	memset(cmd,0,sizeof(cmd));
+	sprintf(cmd, "syscfg get mgmt_wan_httpsport");
+	_get_shell_output(cmd, out, sizeof(out));
+	if(strncmp(out,"ERROR",5) == 0)
+	{
+		/*During syscfg error scenario*/
+		*pValue = g_DevCtrl.httpsPort;
+	}
+	else
+	{
+		/*Normal scenario*/
+		*pValue = atoi(out);
+	}
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -1353,14 +1379,23 @@ CosaDmlDcSetWebServer(BOOL httpEn, BOOL httpsEn, ULONG httpPort, ULONG httpsPort
     /* do not support disable HTTP/HTTPS */
         conf.httpport = httpPort;
         conf.httpsport = httpsPort;
-
 	char cmd[50];
-	const char *sysCfghttpPort = "mgmt_wan_httpport";
-	snprintf(cmd, sizeof(cmd), "syscfg set mgmt_wan_httpport %ld",httpPort);
-	system(cmd);
-	system("syscfg commit");
-	WebServRestart(httpPort);
-
+	if(g_httpPort == TRUE)
+	{
+		snprintf(cmd, sizeof(cmd), "syscfg set mgmt_wan_httpport %ld",httpPort);
+		system(cmd);
+		system("syscfg commit");
+		WebServRestart(httpPort);
+		g_httpPort = FALSE;
+	}
+	else
+	{
+		snprintf(cmd, sizeof(cmd), "syscfg set mgmt_wan_httpsport %ld",httpsPort);
+		system(cmd);
+		system("syscfg commit");
+		WebServRestart(httpsPort);
+		g_httpsPort = FALSE;
+	}
     return ANSC_STATUS_SUCCESS;
 
 }
