@@ -2238,6 +2238,55 @@ ANSC_STATUS setTempPartnerId
 	
 }
 
+void CosaDmlPresenceEnable(BOOL enable)
+{
+    parameterValStruct_t notif_val[1];
+    char                 param_name[256] = "Device.Hosts.X_RDK_PresenceDetectEnable";
+    char                 component[256]  = "eRT.com.cisco.spvtg.ccsp.lmlite";
+    char                 bus[256]        = "/com/cisco/spvtg/ccsp/lmlite";
+    char*                faultParam      = NULL;
+    int                  ret             = 0; 
+    CCSP_MESSAGE_BUS_INFO *bus_info 		  = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+
+    notif_val[0].parameterName  = param_name;
+    if (enable)
+    {
+        notif_val[0].parameterValue = "true";
+    }
+    else
+    {
+        notif_val[0].parameterValue = "false";
+    }
+    notif_val[0].type           = ccsp_boolean;
+
+    ret = CcspBaseIf_setParameterValues( 
+            bus_handle,
+            component,
+            bus,
+            0,
+            0,
+            notif_val,
+            1,
+            TRUE,
+            &faultParam
+            );
+    if(ret != CCSP_SUCCESS)
+    {
+        if ( faultParam )
+        {
+	        AnscTraceWarning(("%s Failed to SetValue for param '%s'\n",__FUNCTION__,faultParam ) );
+            CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+            bus_info->freefunc(faultParam);
+        }
+
+    }
+    else
+    {
+		AnscTraceWarning(("%s: Presence enable sent to lmlite\n", __FUNCTION__ ));
+
+    }
+}
+
 void CosaDmlDiPartnerIDChangeHandling( void* buff )
 {
     CCSP_MESSAGE_BUS_INFO *bus_info 		  = (CCSP_MESSAGE_BUS_INFO *)bus_handle;

@@ -1532,6 +1532,22 @@
         </parameters>
       </object>
                <object>
+                    <name>PresenceDetect</name>
+                    <objectType>object</objectType>
+                    <functions>
+                        <func_GetParamBoolValue>PresenceDetect_GetParamBoolValue</func_GetParamBoolValue>
+                        <func_SetParamBoolValue>PresenceDetect_SetParamBoolValue</func_SetParamBoolValue>
+                    </functions>
+                    <parameters>
+                        <parameter>
+                            <name>Enable</name>
+                            <type>boolean</type>
+                            <syntax>bool</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                    </parameters>
+                </object>
+               <object>
                     <name>CodeBigFirst</name>
                     <objectType>object</objectType>
                     <functions>
