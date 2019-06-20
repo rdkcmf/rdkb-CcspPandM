@@ -431,7 +431,6 @@ DeviceInfo_SetParamBoolValue_Custom
 {
 
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
-
 #ifdef CONFIG_INTERNET2P0
 
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureWiFi", TRUE))
@@ -445,7 +444,8 @@ DeviceInfo_SetParamBoolValue_Custom
 		pMyObject->bWiFiConfigued = bValue;
 
 #if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_)
-		CosaDmlSetLED(WHITE, BLINK, 1);
+		if ( ANSC_STATUS_SUCCESS == CosaDmlSetLED(WHITE, BLINK, 1) )
+            		CcspTraceInfo(("Front LED Transition: WHITE LED will blink, Reason: CaptivePortal_MODE\n"));
 #endif
 
 		printf("%s calling redirect_url.sh script to start redirection\n",__FUNCTION__);
@@ -472,8 +472,9 @@ DeviceInfo_SetParamBoolValue_Custom
                 responsefd = NULL;
             }
 	if(iresCode == 204)
-	{
-        	CosaDmlSetLED(WHITE, SOLID, 0);
+	{	
+        	if ( ANSC_STATUS_SUCCESS == CosaDmlSetLED(WHITE, SOLID, 0) )
+            		CcspTraceInfo(("Front LED Transition: WHITE LED will be SOLID, Reason: Gateway_MODE\n"));
 	}
 #endif
 
