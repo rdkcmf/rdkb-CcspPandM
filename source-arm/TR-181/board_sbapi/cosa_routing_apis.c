@@ -1179,7 +1179,8 @@ CosaDmlRipIfGetCfg
         pEntry->SendRA                       = pConf->If1SendEnable;                           
         pEntry->X_CISCO_COM_ReceiveVersion   = pConf->If1ReceiveVersion;
         pEntry->X_CISCO_COM_SendVersion      = pConf->If1SendVersion;                          
-        pEntry->Status                       = ( pConf->Enable && pConf->If1Enable ) ? 2 : 1;                           
+	//Stauts will be based on either SendEnable or ReceiveEnable enabled.(TCCBR-2764)
+	pEntry->Status                       = (( pConf->Enable && pConf->If1Enable ) && ( pConf->If1ReceiveEnable == TRUE || pConf->If1SendEnable == TRUE )) ? 2 : 1;
         pEntry->X_CISCO_COM_Neighbor         = pConf->If1Neighbor;
 
         pEntry->X_CISCO_COM_AuthenticationType   = pConf->If1AuthenticateType;                      
@@ -1342,6 +1343,8 @@ CosaDmlRipIfSetCfg
         pConf->If1ReceiveEnable    = pEntry->AcceptRA;      
         pConf->If1Neighbor         = pEntry->X_CISCO_COM_Neighbor;
 
+	// Status should reflect on runtime itself instead of after reboot(TCCBR-2764)
+	pEntry->Status =( (pEntry->Enable) && (pEntry->SendRA == TRUE || pEntry->AcceptRA == TRUE)) ? 2 : 1;
         pConf->If1AuthenticateType = pEntry->X_CISCO_COM_AuthenticationType;                      
         pConf->If1KeyID            = pEntry->X_CISCO_COM_Md5KeyID;                           
         AnscCopyString(pConf->If1Md5KeyValue, pEntry->X_CISCO_COM_Md5KeyValue );
