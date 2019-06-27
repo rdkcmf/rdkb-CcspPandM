@@ -214,14 +214,15 @@ do
 	fi
 
 	# Checking snmp subagent PID
-	SNMP_PID=`pidof snmp_subagent`
-	if [ "$SNMP_PID" = "" ]; then
-		echo_t "RDKB_PROCESS_CRASHED : snmpsubagent_process is not running, restarting it"
-		cd snmp/
-		sh run_subagent.sh /var/tmp/cm_snmp_ma &
-		cd ..
+	if [ -f "/etc/SNMP_PA_ENABLE" ]; then
+		SNMP_PID=`pidof snmp_subagent`
+		if [ "$SNMP_PID" = "" ]; then
+			echo_t "RDKB_PROCESS_CRASHED : snmpsubagent_process is not running, restarting it"
+			cd snmp/
+			sh run_subagent.sh /var/tmp/cm_snmp_ma &
+			cd ..
+		fi
 	fi
-
 	# Checking Home Security's PID
 	HOMESEC_PID=`pidof CcspHomeSecurity`
 	if [ "$HOMESEC_PID" = "" ]; then
