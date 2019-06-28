@@ -1065,14 +1065,14 @@ ANSC_STATUS
 CosaDml_GreTunnelSetPrimaryEndpoints(ULONG tuIns, const char *pri)
 {
     char psmRec[MAX_GRE_PSM_REC + 1];
-    
+#if 0   /* sysevents not supported in emulator */
     if (pri && strlen(pri)) {
         if (sysevent_set(sysevent_fd, sysevent_token, kHotspotfd_primary, pri, 0) != 0) {
             AnscTraceError(("Fail to set sysevent: %s to %s\n", kHotspotfd_primary, pri));
             return ANSC_STATUS_FAILURE;
         }
     }
-
+#endif
     /* save to PSM */
     snprintf(psmRec, sizeof(psmRec), GRETU_PARAM_PRI_ENDPOINT, tuIns);
     if (GrePsmSet(psmRec, pri) != 0)
@@ -1097,14 +1097,14 @@ ANSC_STATUS
 CosaDml_GreTunnelSetSecondaryEndpoints(ULONG tuIns, const char *sec)
 {
 	char psmRec[MAX_GRE_PSM_REC + 1];
-
+#if 0   /* sysevents not supported in emulator */
 	if (sec && strlen(sec)) {
         if (sysevent_set(sysevent_fd, sysevent_token, khotspotfd_secondary, sec, 0) != 0) {
             AnscTraceError(("Fail to set sysevent: %s to %s\n", khotspotfd_secondary, sec));
             return ANSC_STATUS_FAILURE;
         }
     }
-	
+#endif
 	/* save to PSM */
     snprintf(psmRec, sizeof(psmRec), GRETU_PARAM_SEC_ENDPOINT, tuIns);
     if (GrePsmSet(psmRec, sec) != 0)
