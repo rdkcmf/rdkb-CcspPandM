@@ -75,7 +75,6 @@
 #endif
 
 #if defined (_ARRIS_XB6_PRODUCT_REQ_) //ARRISXB6-7328, ARRISXB6-7332
-#include "cm_hal.h"
 #include "cm_hal_oem.h"
 #endif
 
@@ -2638,6 +2637,753 @@ ManageableNotification_SetParamBoolValue
     prototype:
 
         BOOL
+        Snmpv3DHKickstart_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Snmpv3DHKickstart_GetParamBoolValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL*                       pBool
+ )
+{
+    PCOSA_DATAMODEL_DEVICEINFO     pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_KICKSTART      pKickstart = (PCOSA_DATAMODEL_KICKSTART)&pMyObject->Kickstart;
+    BOOL bRet = FALSE;
+    /* check the parameter name and return the corresponding value */
+
+    CcspTraceInfo(("Snmpv3DHKickstart_GetParamBoolValue: hInsContext = 0x%lx\n", (long unsigned)hInsContext));
+    CcspTraceInfo(("Snmpv3DHKickstart_GetParamBoolValue: pKickstart = 0x%lx\n", (long unsigned)pKickstart));
+
+
+    CcspTraceInfo(("Snmpv3DHKickstart_GetParamBoolValue: ParamName = %s\n", ParamName));
+
+    if( AnscEqualString(ParamName, "Enabled", TRUE))
+    {
+        if( pKickstart != NULL )
+        {
+            *pBool = pKickstart->Enabled;
+            bRet = TRUE;
+        }
+    }
+    else if( AnscEqualString(ParamName, "RFCUpdateDone", TRUE))
+    {
+        if( pKickstart != NULL )
+        {
+            *pBool = FALSE;     // always FALSE as it's just an indicator whaen set that RFC Post Process has completed
+            bRet = TRUE;
+        }
+    }
+
+    if( bRet == TRUE )
+    {
+        CcspTraceInfo(("Snmpv3DHKickstart_GetParamBoolValue: %s = %s\n", ParamName, *pBool == TRUE ? "TRUE" : "FALSE"));
+    }
+    else
+    {
+        CcspTraceInfo(("Snmpv3DHKickstart_GetParamBoolValue: FAILED Unknown parameter, %s\n", ParamName));
+    }
+    return bRet;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Snmpv3DHKickstart_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       bValue
+            );
+
+    description:
+
+        This function is called to set Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       bValue
+                The buffer with updated value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+//#define LOG_KICKSTART_VALUES
+
+static int hexstring2bin( UINT8* pOut, char *pIn, int numbytes );
+static int bin2hexstring( char *pOut, UINT8 *pIn, int numbytes );
+
+#ifdef LOG_KICKSTART_VALUES
+static void PrintBinStream( char *pName, UINT8* pBin, int len );
+#endif
+
+
+BOOL
+Snmpv3DHKickstart_SetParamBoolValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL                        bValue
+ )
+{
+    snmpv3_kickstart_table_t        Snmpv3_Kickstart_Table;
+    snmp_kickstart_row_t            Snmp_Kickstart_Row[MAX_KICKSTART_ROWS], *pSnmp_Kickstart_Row;
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_KICKSTART       pKickstart = (PCOSA_DATAMODEL_KICKSTART)&pMyObject->Kickstart;
+    PCOSA_DATAMODEL_KICKSTARTTABLE  pKickstartTable;
+    int i;
+    BOOL bRet = FALSE;
+
+    CcspTraceInfo(("Snmpv3DHKickstart_SetParamBoolValue: hInsContext = 0x%lx\n", (long unsigned)hInsContext));
+    CcspTraceInfo(("Snmpv3DHKickstart_SetParamBoolValue: pKickstart = 0x%lx\n", (long unsigned)pKickstart));
+    CcspTraceInfo(("Snmpv3DHKickstart_SetParamBoolValue: ParamName = %s, bValue = %d\n", ParamName, (int)bValue));
+
+    if( AnscEqualString( ParamName, "Enabled", TRUE ) )
+    {
+        if( pKickstart != NULL )
+        {
+            pKickstart->Enabled = bValue;
+            bRet = TRUE;
+        }
+    }
+    else if( AnscEqualString( ParamName, "RFCUpdateDone", TRUE ) )    // RFCUpdateDone comes from RFCPostProcess.sh
+    {
+        if( pKickstart != NULL )
+        {
+            if( bValue == TRUE && pKickstart->TableUpdated == TRUE )
+            {
+                CcspTraceInfo(("Snmpv3DHKickstart_SetParamBoolValue: Updating Snmpv3_Kickstart_Table\n"));
+                pKickstartTable = pKickstart->KickstartTable;
+                Snmpv3_Kickstart_Table.n_rows = pKickstart->KickstartTotal;
+                pSnmp_Kickstart_Row = Snmp_Kickstart_Row;
+                for( i=0; i < Snmpv3_Kickstart_Table.n_rows && i < MAX_KICKSTART_ROWS; i++ )
+                {
+                    pSnmp_Kickstart_Row->security_name.length = (USHORT)strlen( pKickstartTable->SecurityName );
+                    pSnmp_Kickstart_Row->security_name.buffer = (UINT8*)pKickstartTable->SecurityName;
+
+                    pSnmp_Kickstart_Row->security_number.length = (USHORT)pKickstartTable->SecurityNumberLen;
+                    pSnmp_Kickstart_Row->security_number.buffer = (UINT8*)pKickstartTable->SecurityNumber;
+
+                    Snmpv3_Kickstart_Table.kickstart_values[i] = pSnmp_Kickstart_Row;
+#ifdef LOG_KICKSTART_VALUES
+                    PrintBinStream( Snmpv3_Kickstart_Table.kickstart_values[i]->security_name.buffer,
+                                    Snmpv3_Kickstart_Table.kickstart_values[i]->security_number.buffer,
+                                    Snmpv3_Kickstart_Table.kickstart_values[i]->security_number.length );
+#endif
+                    ++pKickstartTable;
+                    ++pSnmp_Kickstart_Row;
+                }
+            }
+            bRet = TRUE;
+        }
+    }
+
+    if( bRet == TRUE )
+    {
+        CcspTraceInfo(("Snmpv3DHKickstart_SetParamBoolValue: successfully set %s = %s\n", ParamName, bValue == TRUE ? "TRUE" : "FALSE"));
+        if( pKickstart->TableUpdated == TRUE && pKickstart->Enabled == TRUE )
+        {
+            i = cm_hal_snmpv3_kickstart_initialize( &Snmpv3_Kickstart_Table );
+            CcspTraceError(("cm_hal_snmpv3_kickstart_initialize: return value = %d\n", i));
+            pKickstart->TableUpdated = FALSE;
+        }
+    }
+    else
+    {
+        CcspTraceError(("Snmpv3DHKickstart_SetParamBoolValue: FAILED Unknown Parameter, %s\n", ParamName));
+    }
+
+    return bRet;
+}
+
+static int hexstring2bin( UINT8 *pOut, char *pIn, int numbytes )
+{
+    int i, x;
+    uint8_t val;
+
+    for( i=0; i < numbytes; i++ )
+    {
+        for( x=0; x < 2; x++ )      // 2 nibbles per character
+        {
+            if( *pIn >= '0' && *pIn <= '9' )
+            {
+                val = *pIn - 0x30;
+            }
+            else if( *pIn >= 'a' && *pIn <= 'f' )
+            {
+                val = *pIn - 0x57;
+            }
+            else if( *pIn >= 'A' && *pIn <= 'F' )
+            {
+                val = *pIn - 0x37;
+            }
+            else
+            {
+                ++i;
+                return i;   // abort, invalid character
+            }
+
+            if( !x )
+            {
+                *pOut = val << 4;   // upper nibble
+            }
+            else
+            {
+                *pOut += val;       // lower nibble
+            }
+            ++pIn;
+        }
+        ++pOut;
+    }
+    return i;
+}
+
+static int bin2hexstring( char *pOut, UINT8 *pIn, int numbytes )
+{
+    int i, x;
+    uint8_t val[2], workval;
+
+    for( i=0; i < numbytes; i++ )
+    {
+        val[0] = *pIn >> 4;
+        val[1] = *pIn & 0x0f;
+        for( x=0; x < 2; x++ )      // 2 nibbles per character
+        {
+            workval = val[x];
+            if( workval >= 0x00 && workval <= 0x09 )
+            {
+                *pOut = workval + 0x30;
+            }
+            else if( workval >= 0x0a && workval <= 0x0f )
+            {
+                *pOut = workval + 0x57;
+            }
+            ++pOut;
+        }
+        ++pIn;
+    }
+
+    *(pOut + i) = 0;
+    return i;
+}
+
+#ifdef LOG_KICKSTART_VALUES
+static void PrintBinStream( char *pName, UINT8* pBin, int len )
+{
+    FILE *fp;
+    UINT8* pStart = pBin;
+    int i;
+
+    if( (fp=fopen( "/rdklogs/logs/KickstartLog.txt", "a" )) != NULL )
+    {
+        fprintf( fp, "Outputting name %s of %d bytes at address 0x%lx in (value is in hex)\n", pName, len, (unsigned long)pBin );
+        for( i=0; i < len; i++ )
+        {
+            fprintf( fp, "%02x", *pBin );
+            ++pBin;
+        }
+        fprintf( fp, "\n" );
+        fclose( fp );
+    }
+    else
+    {
+        CcspTraceError(("PrintBinStream: FAILED can't open output file\n"));
+    }
+
+    pBin = pStart;
+    if( (fp=fopen( "/rdklogs/logs/KickstartLog.bin", "a" )) != NULL )
+    {
+        for( i=0; i < len; i++ )
+        {
+            fprintf( fp, "%c", *pBin );
+            ++pBin;
+        }
+        fprintf( fp, "%c%c%c%c", 0xff, 0xff, 0xff, 0xff );
+        fclose( fp );
+    }
+    else
+    {
+        CcspTraceError(("PrintBinStream: FAILED can't open binary output file\n"));
+    }
+}
+#endif
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Snmpv3DHKickstart_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Snmpv3DHKickstart_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO     pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_KICKSTART      pKickstart = (PCOSA_DATAMODEL_KICKSTART)&pMyObject->Kickstart;
+    BOOL bRet = FALSE;
+
+    CcspTraceInfo(("Snmpv3DHKickstart_GetParamUlongValue: hInsContext = 0x%lx\n", (unsigned long)hInsContext));
+    CcspTraceInfo(("Snmpv3DHKickstart_GetParamUlongValue: ParamName = %s\n", ParamName));
+    if( pKickstart != NULL )
+    {
+        /* check the parameter name and return the corresponding value */
+        if( AnscEqualString(ParamName, "KickstartTotal", TRUE) )
+        {
+            *puLong = pKickstart->KickstartTotal;
+            CcspTraceInfo(("Snmpv3DHKickstart_GetParamUlongValue: KickstartTotal = %lu\n", (unsigned long)pKickstart->KickstartTotal));
+            bRet = TRUE;
+        }
+        else if( AnscEqualString(ParamName, "TableNumberOfEntries", TRUE) )
+        {
+            *puLong = pKickstart->KickstartTotal;
+            CcspTraceInfo(("Snmpv3DHKickstart_GetParamUlongValue: TableNumberOfEntries = %lu\n", (unsigned long)pKickstart->TableNumberOfEntries));
+            bRet = TRUE;
+        }
+        else
+        {
+            AnscTraceWarning(("Snmpv3DHKickstart_GetParamUlongValue: Unsupported parameter '%s'\n", ParamName));
+        }
+    }
+    
+    return bRet;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        Snmpv3DHKickstart_SetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG                       uValue
+            );
+
+    description:
+
+        This function is called to set ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG                       uValue
+                The updated ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Snmpv3DHKickstart_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO     pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_KICKSTART      pKickstart = (PCOSA_DATAMODEL_KICKSTART)&pMyObject->Kickstart;
+    BOOL bRet = FALSE;
+
+    CcspTraceInfo(("Snmpv3DHKickstart_SetParamUlongValue: hInsContext = 0x%lx\n", (unsigned long)hInsContext));
+    CcspTraceInfo(("Snmpv3DHKickstart_SetParamUlongValue: ParamName = %s, uValue = %ld\n", ParamName, uValue));
+    if( pKickstart != NULL )
+    {
+        /* check the parameter name and return the corresponding value */
+        if( AnscEqualString(ParamName, "KickstartTotal", TRUE) && uValue <= MAX_KICKSTART_ROWS )
+        {
+            pKickstart->KickstartTotal = uValue;
+            CcspTraceInfo(("Snmpv3DHKickstart_SetParamUlongValue: KickstartTotal = %lu\n", (unsigned long)pKickstart->KickstartTotal));
+            bRet = TRUE;
+        }
+        else
+        {
+            AnscTraceWarning(("Snmpv3DHKickstart_SetParamUlongValue: Unsupported parameter '%s'\n", ParamName));
+        }
+    }
+
+    return bRet;
+}
+
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Snmpv3DHKickstart.KickstartTable{i}.
+
+    *  KickstartTable_GetEntryCount
+    *  KickstartTable_GetEntry
+    *  KickstartTable_GetParamStringValue
+    *  KickstartTable_SetParamStringValue
+
+***********************************************************************/
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        KickstartTable_GetEntryCount
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to retrieve the count of the table.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The count of the table
+
+**********************************************************************/
+ULONG
+KickstartTable_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO     pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_KICKSTART      pKickstart = (PCOSA_DATAMODEL_KICKSTART)&pMyObject->Kickstart;
+    ULONG ulEntries = 0;
+
+    CcspTraceInfo(("KickstartTable_GetEntryCount: hInsContext = 0x%lx\n", (long unsigned)hInsContext));
+    CcspTraceInfo(("KickstartTable_GetEntryCount: pKickstart = 0x%lx\n", (long unsigned)pKickstart));
+
+    if( pKickstart )
+    {
+        pKickstart->TableNumberOfEntries = MAX_KICKSTART_ROWS;
+        CcspTraceInfo(("KickstartTable_GetEntryCount: TableNumberOfEntries = %d\n", pKickstart->TableNumberOfEntries));
+        ulEntries = pKickstart->TableNumberOfEntries;
+    }
+    CcspTraceInfo(("KickstartTable_GetEntryCount: ulEntries = %lu\n", ulEntries));
+    return ulEntries;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ANSC_HANDLE
+        KickstartTable_GetEntry
+            (
+                ANSC_HANDLE                 hInsContext,
+                ULONG                       nIndex,
+                ULONG*                      pInsNumber
+            );
+
+    description:
+
+        This function is called to retrieve the entry specified by the index.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                ULONG                       nIndex,
+                The index of this entry;
+
+                ULONG*                      pInsNumber
+                The output instance number;
+
+    return:     The handle to identify the entry
+
+**********************************************************************/
+ANSC_HANDLE
+KickstartTable_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO     pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_KICKSTART      pKickstart = (PCOSA_DATAMODEL_KICKSTART)&pMyObject->Kickstart;
+    PCOSA_DATAMODEL_KICKSTARTTABLE pKickstartTable = NULL;
+    ANSC_HANDLE hEntry = NULL;
+
+    *pInsNumber  = nIndex + 1;
+
+    CcspTraceInfo(("KickstartTable_GetEntry: hInsContext = 0x%lx\n", (long unsigned)hInsContext));
+    CcspTraceInfo(("KickstartTable_GetEntry: pKickstart = 0x%lx\n", (long unsigned)pKickstart));
+    CcspTraceInfo(("KickstartTable_GetEntry: nIndex = %lu, *pInsNumber = %lu\n", nIndex, *pInsNumber));
+    if( pKickstart )
+    {
+        CcspTraceInfo(("KickstartTable_GetEntry: TableNumberOfEntries = %lu\n", pKickstart->TableNumberOfEntries));
+        pKickstartTable = pKickstart->KickstartTable;
+        CcspTraceInfo(("KickstartTable_GetEntry: pKickstartTable = 0x%lx\n", (long unsigned)pKickstartTable));
+
+        if( pKickstartTable && nIndex < MAX_KICKSTART_ROWS )
+        {
+            hEntry = (ANSC_HANDLE)(pKickstartTable + nIndex);
+            CcspTraceInfo(("KickstartTable_GetEntry: returning 0x%lx\n", (long unsigned)hEntry));
+        }
+    }
+    return hEntry;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        LONG
+        KickstartTable_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     0 if succeeded;
+                1 if short of buffer size; (*pUlSize = required size)
+                -1 if not supported.
+
+**********************************************************************/
+LONG
+KickstartTable_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+    PCOSA_DATAMODEL_KICKSTARTTABLE  pKickstartTable = (PCOSA_DATAMODEL_KICKSTARTTABLE)hInsContext;
+    LONG lRet = -1;
+    char *pPtr = NULL;
+
+    CcspTraceInfo(("KickstartTable_GetParamStringValue: hInsContext = 0x%lx\n", (unsigned long)hInsContext));
+    CcspTraceInfo(("KickstartTable_GetParamStringValue: ParamName = %s, *pUlSize = %ld\n", ParamName, *pUlSize));
+
+    if( pKickstartTable != NULL )
+    {
+        /* check the parameter name and return the corresponding value */
+        if( AnscEqualString(ParamName, "SecurityName", TRUE) )
+        {
+            pPtr = pKickstartTable->SecurityName;
+            if( AnscSizeOfString( pPtr ) < *pUlSize)
+            {
+                if( pValue != NULL )
+                {
+                    snprintf( pValue, (size_t)*pUlSize, pPtr );
+                    lRet = 0;
+                }
+            }
+            else
+            {
+                *pUlSize = AnscSizeOfString( pPtr )+1;
+                lRet = 1;
+            }
+        }
+        if( AnscEqualString(ParamName, "SecurityNumber", TRUE) )
+        {
+            pPtr = pKickstartTable->SecurityNumber;
+            if( ((pKickstartTable->SecurityNumberLen*2) + 1) < *pUlSize)    // 2 output characters per input byte plus NULL terminator
+            {
+                if( pValue != NULL )
+                {
+                    bin2hexstring( pValue, pPtr, pKickstartTable->SecurityNumberLen );
+                    lRet = 0;
+                }
+            }
+            else
+            {
+                *pUlSize = pKickstartTable->SecurityNumberLen + 1;
+                lRet = 1;
+            }
+        }
+    }
+
+    if( lRet == -1 )
+    {
+        AnscTraceWarning(("KickstartTable_GetParamStringValue: Unsupported parameter '%s'\n", ParamName));
+    }
+    else if( lRet == 0 && pValue != NULL && ParamName != NULL )
+    {
+        CcspTraceError(("KickstartTable_GetParamStringValue: %s = %s\n", ParamName, pValue));
+    }
+    else
+    {
+        CcspTraceError(("KickstartTable_GetParamStringValue: %s, output is too small, need %lu bytes\n", ParamName, *pUlSize));
+    }
+
+    return lRet;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        KickstartTable_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+KickstartTable_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO     pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_KICKSTART      pKickstart = (PCOSA_DATAMODEL_KICKSTART)&pMyObject->Kickstart;
+    PCOSA_DATAMODEL_KICKSTARTTABLE  pKickstartTable = (PCOSA_DATAMODEL_KICKSTARTTABLE)hInsContext;
+    BOOL bRet = FALSE;
+
+
+    CcspTraceInfo(("KickstartTable_SetParamStringValue: ParamName = %s\n", ParamName));
+    
+    if( pKickstartTable != NULL )
+    {
+        /* check the parameter name and set the corresponding value */
+        if( AnscEqualString( ParamName, "SecurityName", TRUE ) )
+        {
+            if( pString != NULL && AnscSizeOfString( pString ) < (sizeof(pKickstartTable->SecurityName) - 1) )
+            {
+                snprintf( pKickstartTable->SecurityName, sizeof(pKickstartTable->SecurityName), pString );
+                bRet = TRUE;
+            }
+        }
+        else if( AnscEqualString( ParamName, "SecurityNumber", TRUE ) )
+        {
+            if( ( pString != NULL) && ((AnscSizeOfString( pString )/2) <= sizeof(pKickstartTable->SecurityNumber)) )
+            {
+                pKickstartTable->SecurityNumberLen = strlen( pString )/2;   // 2 nibbles per character
+                hexstring2bin( pKickstartTable->SecurityNumber, pString, pKickstartTable->SecurityNumberLen );
+                bRet = TRUE;
+            }
+        }
+        else
+        {
+            AnscTraceWarning(("KickstartTable_SetParamStringValue: Unsupported parameter '%s'\n", ParamName));
+        }
+    }
+
+    if( bRet == TRUE && pKickstart != NULL )
+    {
+        pKickstart->TableUpdated = TRUE;        // something changed so initialize kickstart when RFC post process complete
+    }
+
+    return bRet;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
         TR069support_GetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,
@@ -2661,7 +3407,6 @@ ManageableNotification_SetParamBoolValue
     return:     TRUE if succeeded.
 
 **********************************************************************/
-
 BOOL
 TR069support_GetParamBoolValue
     (
@@ -2722,7 +3467,6 @@ TR069support_GetParamBoolValue
     return:     TRUE if succeeded.
 
 **********************************************************************/
-
 BOOL
 TR069support_SetParamBoolValue
     (
@@ -2960,6 +3704,7 @@ MACsecRequired_SetParamBoolValue
 
     return FALSE;
 }
+
 
 
 /***********************************************************************

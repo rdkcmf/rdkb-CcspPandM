@@ -2367,7 +2367,69 @@ WAP_SetParamBoolValue
 		        </parameters>
                 </object>
 
-				<object>
+                                <object>
+                                    <name>Snmpv3DHKickstart</name>
+                                    <objectType>object</objectType>
+                                    <functions>
+                                        <func_GetParamBoolValue>Snmpv3DHKickstart_GetParamBoolValue</func_GetParamBoolValue>
+                                        <func_SetParamBoolValue>Snmpv3DHKickstart_SetParamBoolValue</func_SetParamBoolValue>
+                                        <func_GetParamUlongValue>Snmpv3DHKickstart_GetParamUlongValue</func_GetParamUlongValue>
+                                        <func_SetParamUlongValue>Snmpv3DHKickstart_SetParamUlongValue</func_SetParamUlongValue>
+                                    </functions>
+                                    <parameters>
+                                        <parameter>
+                                            <name>RFCUpdateDone</name>
+                                            <type>boolean</type>
+                                            <syntax>bool</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+                                        <parameter>
+                                            <name>Enabled</name>
+                                            <type>boolean</type>
+                                            <syntax>bool</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+                                        <parameter>
+                                            <name>KickstartTotal</name>
+                                            <type>unsignedInt</type>
+                                            <syntax>uint32</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+                                        <parameter>
+                                            <name>TableNumberOfEntries</name>
+                                            <type>unsignedInt</type>
+                                            <syntax>uint32</syntax>
+                                        </parameter>
+                                    </parameters>
+                                    <objects>
+                                        <object>
+                                            <name>Table</name>
+                                            <objectType>staticTable</objectType>
+                                            <maxInstance>5</maxInstance>
+                                            <functions>
+                                                <func_GetEntryCount>KickstartTable_GetEntryCount</func_GetEntryCount>
+                                                <func_GetEntry>KickstartTable_GetEntry</func_GetEntry>
+                                                <func_GetParamStringValue>KickstartTable_GetParamStringValue</func_GetParamStringValue>
+                                                <func_SetParamStringValue>KickstartTable_SetParamStringValue</func_SetParamStringValue>
+                                            </functions>
+                                            <parameters>
+                                                <parameter>
+                                                    <name>SecurityName</name>
+                                                    <type>string(64)</type>
+                                                    <syntax>string</syntax>
+                                                    <writable>true</writable>
+                                            </parameter>
+                                                <parameter>
+                                                    <name>SecurityNumber</name>
+                                                    <type>string(256)</type>
+                                                    <syntax>string</syntax>
+                                                    <writable>true</writable>
+                                                </parameter>
+                                            </parameters>
+                                        </object>
+                                    </objects>
+                                </object>
+                <object>
  				 <name>TR069support</name>
  				 <objectType>object</objectType>
  				 <functions>
