@@ -79,6 +79,11 @@
     #include <sys/sysinfo.h>
 #endif
 
+#include "cm_hal.h"
+
+#define MAX_SECURITYNUM_LEN         128
+#define MAX_SECURITYNAME_LEN        18      // includes room for NULL terminator
+
 /**********************************************************************
                 STRUCTURE AND CONSTANT DEFINITIONS
 **********************************************************************/
@@ -262,6 +267,32 @@ _COSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL_CLASS_CONTENT
     COSA_BOOTSTRAP_STR    InitialOutputMark;
 }
 COSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL, *PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL;
+
+
+typedef  struct
+    _COSA_DATAMODEL_KICKSTARTTABLE
+{
+    UINT    SecurityNumberLen;
+    uint8_t SecurityNumber[MAX_SECURITYNUM_LEN];
+    CHAR    SecurityName[MAX_SECURITYNAME_LEN];
+}
+COSA_DATAMODEL_KICKSTARTTABLE, *PCOSA_DATAMODEL_KICKSTARTTABLE;
+
+#define COSA_DATAMODEL_KICKSTART_CLASS_CONTENT                      \
+    /* duplication of the base object class content */              \
+    /* COSA_BASE_CONTENT */                                         \
+    BOOL                            TableUpdated;                   \
+    BOOL                            Enabled;                        \
+    UINT                            KickstartTotal;                 \
+    UINT                            TableNumberOfEntries;           \
+    COSA_DATAMODEL_KICKSTARTTABLE   KickstartTable[MAX_KICKSTART_ROWS];   
+
+typedef  struct
+    _COSA_DATAMODEL_KICKSTART
+{
+    COSA_DATAMODEL_KICKSTART_CLASS_CONTENT
+}
+COSA_DATAMODEL_KICKSTART,   *PCOSA_DATAMODEL_KICKSTART;
 
 /**********************************************************************
                 FUNCTION PROTOTYPES
