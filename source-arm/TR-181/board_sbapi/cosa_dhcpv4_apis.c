@@ -3411,7 +3411,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 	g_dhcpv4_server_client_count = size;
 	g_dhcpv4_server_client_content = pContentEntry2;
 	if(size == 0)/*No DHCP Clients*/
-		return(-1);       
+		goto ErrRet;
 #if 0 
 	gettimeofday(&tval, NULL);
 	tm = *localtime(&tval.tv_sec);
