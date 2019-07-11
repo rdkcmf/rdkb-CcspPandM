@@ -367,6 +367,104 @@ CosaIFStackEmptyTable
 
 /**********************************************************************
 
+      caller:     self
+
+      prototype:
+
+        int
+        CosaIFStackGetParamValueString
+            (
+                char *pParamName
+                char *pParamValue
+                ULONG *pValueSize
+            );
+
+
+    description:
+
+        This function retrieves the requested data model parameter
+        with type string from internal database or via dbus for
+        external parameters.
+
+    argument:   char *pParamName    DataModel Parameter Name
+                char *pParamValue   Output Value
+                ULONG *pValueSize   Size of pParamValue buffer
+
+    return:     operation status, 0 for success
+
+**********************************************************************/
+
+static int CosaIFStackGetParamValueString(char *pParamName, char *pParamValue, ULONG *pValueSize)
+{
+    int                   returnValue = 0;
+    parameterValStruct_t  varStruct;
+
+    /* Check if object is managed by an external component... if so we must use
+       COSAGetParamValueByPathName API to read its values */
+    if ( _ansc_strstr(pParamName, ".WiFi.") != NULL )
+    {
+        varStruct.parameterName = pParamName;
+        varStruct.parameterValue = pParamValue;
+        returnValue = COSAGetParamValueByPathName(g_MessageBusHandle, &varStruct, pValueSize);
+    }
+    else
+    {
+        returnValue = CosaGetParamValueString(pParamName, pParamValue, pValueSize);
+    }
+    return returnValue;
+}
+
+/**********************************************************************
+
+    caller:     self
+
+    prototype:
+
+        int
+        CosaIFStackGetParamValueULong
+            (
+                char *pParamName
+            );
+
+
+    description:
+
+        This function retrieves the requested data model parameter
+        with type ULONG/int from internal database or via dbus for
+        external parameters.
+
+    argument:   char *pParamName    DataModel Parameter Name
+
+    return:     Parameter value (ULONG)
+
+**********************************************************************/
+
+static ULONG CosaIFStackGetParamValueULong(char *pParamName)
+{
+    int                   returnValue = 0;
+    char                  paramValue[32];
+    ULONG                 paramSize = sizeof(paramValue);
+    ULONG                 paramValueULong;
+    parameterValStruct_t  varStruct;
+
+    /* Check if object is managed by an external component... if so we must use
+       COSAGetParamValueByPathName API to read its values */
+    if ( _ansc_strstr(pParamName, ".WiFi.") != NULL )
+    {
+        varStruct.parameterName = pParamName;
+        varStruct.parameterValue = paramValue;
+        returnValue = COSAGetParamValueByPathName(g_MessageBusHandle, &varStruct, &paramSize);
+        paramValueULong = returnValue == 0 ? atoi(paramValue) : 0;
+    }
+    else
+    {
+        paramValueULong =  CosaGetParamValueUlong(pParamName);
+    }
+    return paramValueULong;
+}
+
+/**********************************************************************
+
     caller:     self
 
     prototype:
@@ -464,7 +562,7 @@ CosaIFStackCreateAll
             /* To get like Device.Bridging.BridgeNumberOfEntries */
             _ansc_strcat(ucTableParam, "NumberOfEntries");  
  
-            ulNumOfParent =  CosaGetParamValueUlong(ucTableParam);  
+            ulNumOfParent =  CosaIFStackGetParamValueULong(ucTableParam);  
 
             /* To get like Device.Bridging.Bridge. */
             _ansc_sprintf(ucTableParam + ulLength, "."); 
@@ -502,7 +600,7 @@ CosaIFStackCreateAll
                 /* To get like Device.Bridging.Bridge.1.PortNumberOfEntries */
                 _ansc_strcat(pAllTable[i], "NumberOfEntries");  
                 
-                ulNumOfEntry = CosaGetParamValueUlong(pAllTable[i]);  
+                ulNumOfEntry = CosaIFStackGetParamValueULong(pAllTable[i]);  
 
                 /* To get like Device.Bridging.Bridge.1.Port. */
                 _ansc_sprintf(pAllTable[i] + ulLength, "."); 
@@ -512,12 +610,21 @@ CosaIFStackCreateAll
                  /* To get like Device.Ethernet.LinkNumberOfEntries */
                 _ansc_strcat(ucTableParam, "NumberOfEntries");        
                  
-                ulNumOfEntry =  CosaGetParamValueUlong(ucTableParam);  
+                ulNumOfEntry =  CosaIFStackGetParamValueULong(ucTableParam);  
             }
                        
             for ( k = 0 ; k < ulNumOfEntry; k++ )
             {
-                ulSubEntryInsNum = CosaGetInstanceNumberByIndex(pAllTable[i], k);
+                if ( _ansc_strstr(pAllTable[i], ".WiFi.") != NULL )
+                {
+                    /* We can't get WiFi index-to-instance since it's managed by an
+                       external component/process, so we derive it manually. */
+                    ulSubEntryInsNum = k + 1;
+                }
+                else
+                {
+                    ulSubEntryInsNum = CosaGetInstanceNumberByIndex(pAllTable[i], k);
+                }
 
                 if ( 0 == ulSubEntryInsNum )
                 {
@@ -543,7 +650,7 @@ CosaIFStackCreateAll
                               ".Alias");
 
                 ulEntryNameLen = sizeof(ucEntryNameValue);
-                returnValue = CosaGetParamValueString(ucEntryParamName,
+                returnValue = CosaIFStackGetParamValueString(ucEntryParamName,
                                                     ucEntryNameValue,
                                                     &ulEntryNameLen);
                 
@@ -566,7 +673,7 @@ CosaIFStackCreateAll
                               ".LowerLayers");
 
                 ulEntryNameLen = sizeof(ucEntryNameValue);
-                returnValue = CosaGetParamValueString(ucEntryParamName,
+                returnValue = CosaIFStackGetParamValueString(ucEntryParamName,
                                                     ucEntryNameValue,
                                                     &ulEntryNameLen);
                 
@@ -625,7 +732,7 @@ CosaIFStackCreateAll
                                           ".Alias");
                             
                             ulEntryNameLen = sizeof(ucEntryNameValue);
-                            returnValue = CosaGetParamValueString(ucEntryParamName,
+                            returnValue = CosaIFStackGetParamValueString(ucEntryParamName,
                                                                 ucEntryNameValue,
                                                                 &ulEntryNameLen);
                             
