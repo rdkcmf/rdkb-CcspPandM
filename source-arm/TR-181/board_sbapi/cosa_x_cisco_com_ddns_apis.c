@@ -1140,7 +1140,7 @@ CosaDmlDdnsSetConfig
 
     if (g_bEnabled == FALSE)
     {
-        if (vsystem("killall ez-ipupdate") != 0)
+        if (vsystem("killall -9 ez-ipupdate") != 0)
         {
             fprintf(stderr, "%s: fail to killall ez-ipupdate\n", __FUNCTION__);
         }
