@@ -70,7 +70,8 @@
 #include "cosa_drg_common.h"
 
 static int ifWanRestart = 0;
-
+BOOL g_httpPort               = FALSE;
+BOOL g_httpsPort              = FALSE;
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -1296,6 +1297,7 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
         }
         pMyObject->HTTPPort = uValue;
         pMyObject->WebServerChanged = TRUE;
+	g_httpPort = TRUE;
 
         return TRUE;
     }
@@ -1304,6 +1306,7 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
     {
         pMyObject->HTTPSPort = uValue;
         pMyObject->WebServerChanged = TRUE;
+	g_httpsPort = TRUE;
 
         return TRUE;
     }
