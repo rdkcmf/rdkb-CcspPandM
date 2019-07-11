@@ -602,9 +602,15 @@ CosaDmlNeighdiscGetEnabled
         BOOLEAN * pEnabled
     )
 {
-    *pEnabled = g_neighdisc_enabled;
+    char buf[10];
+    buf[0]='\0';
+    if(!syscfg_get(NULL, "neigh_disc_enable", buf, sizeof(buf))) {
+        *pEnabled = (atoi(buf) ? TRUE : FALSE);
+        return ANSC_STATUS_SUCCESS;
+    }
+    return ANSC_STATUS_FAILURE;
 
-    return 0;
+    
 }
 
 ULONG 
@@ -615,7 +621,12 @@ CosaDmlNeighdiscSetEnabled
 {
     g_neighdisc_enabled = bEnabled;
 
-    return 0;
+    if( syscfg_set(NULL, "neigh_disc_enable", bEnabled ? "1" : "0") == 0)
+    {
+        syscfg_commit();
+        return ANSC_STATUS_SUCCESS;
+    }
+    return ANSC_STATUS_FAILURE;
 }
 
 
@@ -729,7 +740,22 @@ CosaDmlNeighdiscIfGetEntry
     safe_strcpy(g_neighdisc_interface.Cfg.Alias, out, sizeof(g_neighdisc_interface.Cfg.Alias));
 
     /*we don't support writing to these variables*/
-    g_neighdisc_interface.Cfg.bEnabled   = TRUE;
+    memset(out, 0, sizeof(out));
+    Utopia_RawGet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_enable",out,sizeof(out));
+    if (!out[0])
+        g_neighdisc_interface.Cfg.bEnabled = TRUE;
+    else
+        g_neighdisc_interface.Cfg.bEnabled = atoi(out);
+
+    memset(out, 0, sizeof(out));
+    Utopia_RawGet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_interface",out,sizeof(out));
+    if (!out[0])
+    {
+        need_write = 1;
+        strcpy(out, "erouter0");
+        Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_interface",out);
+    }
+    safe_strcpy(g_neighdisc_interface.Cfg.Interface, out, sizeof(g_neighdisc_interface.Cfg.Interface));
     g_neighdisc_interface.Cfg.bNUDEnable = TRUE;
     g_neighdisc_interface.Cfg.bRSEnable  = TRUE;
 
@@ -918,7 +944,16 @@ CosaDmlNeighdiscIfSetCfg
     /*handle syscfg stuff*/
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
-    
+
+    if (pCfg->bEnabled != g_neighdisc_interface.Cfg.bEnabled)
+    {
+        sprintf(out, "%d", pCfg->bEnabled);
+        Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_enable",out);
+    }
+
+    if (!AnscEqualString(pCfg->Interface, g_neighdisc_interface.Cfg.Interface, TRUE))
+        Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_interface",pCfg->Interface);
+ 
     if (!AnscEqualString(pCfg->Alias, g_neighdisc_interface.Cfg.Alias, TRUE))
         Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_alias",pCfg->Alias);        
 
@@ -1040,9 +1075,11 @@ CosaDmlNeighdiscIfGetInfo
 {
     if ( g_neighdisc_interface.Cfg.InstanceNumber == ulInstanceNumber )
     {
+	#if 0
         /*we always enable it*/
         g_neighdisc_interface.Info.Status = COSA_DML_NEIGHDISC_IF_STATUS_Enabled;
-        
+        #endif
+	g_neighdisc_interface.Info.Status = (g_neighdisc_interface.Cfg.bEnabled ? COSA_DML_NEIGHDISC_IF_STATUS_Enabled : COSA_DML_NEIGHDISC_IF_STATUS_Disabled);
         AnscCopyMemory(pInfo, &g_neighdisc_interface.Info, sizeof(*pInfo));
         return ANSC_STATUS_SUCCESS;
     }
