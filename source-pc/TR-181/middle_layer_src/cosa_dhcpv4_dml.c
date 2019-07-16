@@ -7484,9 +7484,16 @@ StaticAddress_SetParamStringValue
     if( AnscEqualString(ParamName, "X_CISCO_COM_Comment", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pDhcpStaticAddress->Comment,pString);
-	PSM_Set_ReversedIP_RecordValues(pDhcpStaticAddress);//RDKB-EMULATOR
-        return TRUE;
+        if ( sizeof(pDhcpStaticAddress->Comment) > AnscSizeOfString(pString))
+        {
+            AnscCopyString(pDhcpStaticAddress->Comment,pString);
+            PSM_Set_ReversedIP_RecordValues(pDhcpStaticAddress);//RDKB-EMULATOR
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceWarning(("'%s' value should be less than (%d) charecters\n", ParamName, ( sizeof(pDhcpStaticAddress->Comment) - 1 )));
+        }
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */

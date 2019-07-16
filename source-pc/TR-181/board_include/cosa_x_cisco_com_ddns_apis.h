@@ -105,14 +105,14 @@ _COSA_DML_DDNS_SERVICE
 {
     BOOLEAN                         bEnabled;
     ULONG                           InstanceNumber;
-    char                            Alias[64];
+    char                            Alias[65];
     char                            ServiceName[32];
     char                            Username[65];
     char                            Password[65];
     char                            Domain[65];
-    char                            AssociatedConnection[64];   /* IP interface name */
+    char                            AssociatedConnection[257];   /* IP interface name */
     COSA_DML_DDNS_STATE             ConnectionState;
-    char                            Mail_exch[128];
+    char                            Mail_exch[129];
     BOOLEAN                         Backup_mx;
     BOOLEAN                         Wildcard;
 }
