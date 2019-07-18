@@ -62,6 +62,14 @@
 
 #include "cosa_firewall_apis.h"
 
+#define V4_BLOCKFRAGIPPKT   "v4_BlockFragIPPkts"
+#define V4_PORTSCANPROTECT  "v4_PortScanProtect"
+#define V4_IPFLOODDETECT    "v4_IPFloodDetect"
+
+#define V6_BLOCKFRAGIPPKT   "v6_BlockFragIPPkts"
+#define V6_PORTSCANPROTECT  "v6_PortScanProtect"
+#define V6_IPFLOODDETECT    "v6_IPFloodDetect"
+
 #ifdef _COSA_SIM_
 
 COSA_DML_FIREWALL_CFG g_FirewallConfig = 
@@ -296,6 +304,422 @@ CosaDmlFirewallSetConfig
         PCOSA_DML_FIREWALL_CFG      pCfg
     )
 {
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV4GetBlockFragIPPkts
+            (
+                BOOL                        *pValue
+            );
+
+    Description:
+
+        Backend implementation to get V4_BLOCKFRAGIPPKT value from syscfg
+
+    Arguments:    BOOL                     *pValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV4GetBlockFragIPPkts
+(
+    BOOL                        *pValue
+)
+{
+    char buf[64];
+    memset(buf, 0, sizeof(buf));
+    syscfg_get( NULL, V4_BLOCKFRAGIPPKT, buf, sizeof(buf));
+    *pValue = (strcmp(buf, "1") == 0);
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV4GetPortScanProtect
+            (
+                BOOL                        *pValue
+            );
+
+    Description:
+
+        Backend implementation to get V4_PORTSCANPROTECT value from syscfg
+
+    Arguments:    BOOL                     *pValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV4GetPortScanProtect
+(
+    BOOL                        *pValue
+)
+{
+    char buf[64];
+    memset(buf, 0, sizeof(buf));
+    syscfg_get( NULL, V4_PORTSCANPROTECT, buf, sizeof(buf));
+    *pValue = (strcmp(buf, "1") == 0);
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV4GetIPFloodDetect
+            (
+                BOOL                        *pValue
+            );
+
+    Description:
+
+        Backend implementation to get V4_IPFLOODDETECT value from syscfg
+
+    Arguments:    BOOL                     *pValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV4GetIPFloodDetect
+(
+   BOOL                        *pValue
+)
+{
+    char buf[64];
+    memset(buf, 0, sizeof(buf));
+    syscfg_get( NULL, V4_IPFLOODDETECT, buf, sizeof(buf));
+    *pValue = (strcmp(buf, "1") == 0);
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV4SetBlockFragIPPkts
+            (
+                BOOL                        *pValue
+            );
+
+    Description:
+
+        Backend implementation to set V4_BLOCKFRAGIPPKT value to syscfg
+
+    Arguments:    BOOL                     *pValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV4SetBlockFragIPPkts
+(
+    BOOL                        bValue
+)
+{
+    if( syscfg_set(NULL, V4_BLOCKFRAGIPPKT, bValue ? "1" : "0") == 0)
+    {
+        syscfg_commit();
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV4SetPortScanProtect
+            (
+                BOOL                        *pValue
+            );
+
+    Description:
+
+        Backend implementation to set V4_PORTSCANPROTECT value to syscfg
+
+    Arguments:    BOOL                     *pValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV4SetPortScanProtect
+(
+    BOOL                        bValue
+)
+{
+    if( syscfg_set(NULL, V4_PORTSCANPROTECT, bValue ? "1" : "0") == 0)
+    {
+        syscfg_commit();
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV4SetIPFloodDetect
+            (
+                BOOL                        bValue
+            );
+
+    Description:
+
+        Backend implementation to set V4_IPFLOODDETECT value to syscfg
+
+    Arguments:    BOOL                     bValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV4SetIPFloodDetect
+(
+    BOOL                        bValue
+)
+{
+    if( syscfg_set(NULL, V4_IPFLOODDETECT, bValue ? "1" : "0") == 0)
+    {
+        syscfg_commit();
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV6GetBlockFragIPPkts
+            (
+                BOOL                        *pValue
+            );
+
+    Description:
+
+        Backend implementation to get V6_BLOCKFRAGIPPKT value from syscfg
+
+    Arguments:    BOOL                     *pValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV6GetBlockFragIPPkts
+(
+    BOOL                        *pValue
+)
+{
+    char buf[64];
+    memset(buf, 0, sizeof(buf));
+    syscfg_get( NULL, V6_BLOCKFRAGIPPKT, buf, sizeof(buf));
+    *pValue = (strcmp(buf, "1") == 0);
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV6GetPortScanProtect
+            (
+                BOOL                        *pValue
+            );
+
+    Description:
+
+        Backend implementation to get V6_PORTSCANPROTECT value from syscfg
+
+    Arguments:    BOOL                     *pValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV6GetPortScanProtect
+(
+    BOOL                        *pValue
+)
+{
+    char buf[64];
+    memset(buf, 0, sizeof(buf));
+    syscfg_get( NULL, V6_PORTSCANPROTECT, buf, sizeof(buf));
+    *pValue = (strcmp(buf, "1") == 0);
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV6GetIPFloodDetect
+            (
+                BOOL                        *pValue
+            );
+
+    Description:
+
+        Backend implementation to get V6_IPFLOODDETECT value from syscfg
+
+    Arguments:    BOOL                     *pValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV6GetIPFloodDetect
+(
+    BOOL                        *pValue
+)
+{
+    char buf[64];
+    memset(buf, 0, sizeof(buf));
+    syscfg_get( NULL, V6_IPFLOODDETECT, buf, sizeof(buf));
+    *pValue = (strcmp(buf, "1") == 0);
+    return ANSC_STATUS_SUCCESS;
+
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV6SetBlockFragIPPkts
+            (
+                BOOL                       bValue
+            );
+
+    Description:
+
+        Backend implementation to set V6_BLOCKFRAGIPPKT value to syscfg
+
+    Arguments:    BOOL                     bValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV6SetBlockFragIPPkts
+(
+    BOOL                        bValue
+)
+{
+    if( syscfg_set(NULL, V6_BLOCKFRAGIPPKT, bValue ? "1" : "0") == 0)
+    {
+        syscfg_commit();
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV6SetPortScanProtect
+            (
+                BOOL                        bValue
+            );
+
+    Description:
+
+        Backend implementation to set V6_PORTSCANPROTECT value to syscfg
+
+    Arguments:    BOOL                     bValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV6SetPortScanProtect
+(
+    BOOL                        bValue
+)
+{
+    if( syscfg_set(NULL, V6_PORTSCANPROTECT, bValue ? "1" : "0") == 0)
+    {
+        syscfg_commit();
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     COSA DML
+
+    prototype:
+
+        ULONG
+        CosaDmlGatewayV6SetIPFloodDetect
+            (
+                BOOL                        bValue
+            );
+
+    Description:
+
+        Backend implementation to set V6_IPFLOODDETECT value to syscfg
+
+    Arguments:    BOOL                     bValue
+
+    Return:       The status of the operation.
+
+**********************************************************************/
+ULONG
+CosaDmlGatewayV6SetIPFloodDetect
+(
+    BOOL                        bValue
+)
+{
+    if( syscfg_set(NULL, V6_IPFLOODDETECT, bValue ? "1" : "0") == 0)
+    {
+        syscfg_commit();
+    }
+
     return ANSC_STATUS_SUCCESS;
 }
 
