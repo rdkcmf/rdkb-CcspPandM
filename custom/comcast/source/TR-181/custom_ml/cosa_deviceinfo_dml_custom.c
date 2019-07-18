@@ -444,8 +444,21 @@ DeviceInfo_SetParamBoolValue_Custom
 		pMyObject->bWiFiConfigued = bValue;
 
 #if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_)
-		if ( ANSC_STATUS_SUCCESS == CosaDmlSetLED(WHITE, BLINK, 1) )
-            		CcspTraceInfo(("Front LED Transition: WHITE LED will blink, Reason: CaptivePortal_MODE\n"));
+		char buf[5];
+		syscfg_get( NULL, "CaptivePortal_Enable" , buf, sizeof(buf));
+		if( buf != NULL )
+		{
+		    if (strcmp(buf,"true") == 0)
+		    {
+			if ( ANSC_STATUS_SUCCESS == CosaDmlSetLED(WHITE, BLINK, 1) )
+				CcspTraceInfo(("Front LED Transition: WHITE LED will blink, Reason: CaptivePortal_MODE\n"));
+		    }
+		    else
+		    {
+			if ( ANSC_STATUS_SUCCESS == CosaDmlSetLED(WHITE, SOLID, 0) )
+				CcspTraceInfo(("Front LED Transition: WHITE LED will be SOLID, Reason: ConfigureWiFi is TRUE, but CaptivePortal is disabled\n"));
+		    }
+		}
 #endif
 
 		printf("%s calling redirect_url.sh script to start redirection\n",__FUNCTION__);
