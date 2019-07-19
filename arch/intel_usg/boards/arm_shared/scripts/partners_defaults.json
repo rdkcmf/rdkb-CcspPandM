@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "3.0"
+      "version" : "4.0"
    },
 
    "comcast" : {
@@ -54,7 +54,12 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : ""   
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "",   
+      "Device.Time.NTPServer1" : "ntp.ccp.xcal.tv",
+      "Device.Time.NTPServer2" : "time1.google.com",
+      "Device.Time.NTPServer3" : "time2.google.com",
+      "Device.Time.NTPServer4" : "time3.google.com",
+      "Device.Time.NTPServer5" : ""
   },
 
    "sky-italia" : {
@@ -200,7 +205,12 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "" 
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "", 
+      "Device.Time.NTPServer1" : "cpentp.services.cox.net",
+      "Device.Time.NTPServer2" : "time1.google.com",
+      "Device.Time.NTPServer3" : "time2.google.com",
+      "Device.Time.NTPServer4" : "time3.google.com",
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
    },
 
 
@@ -253,7 +263,12 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "FFFFFFFF",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "FFFFFFFF" 
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "FFFFFFFF",
+      "Device.Time.NTPServer1" : "pool.ntp.net.rogers.com",
+      "Device.Time.NTPServer2" : "time1.google.com",
+      "Device.Time.NTPServer3" : "time2.google.com",
+      "Device.Time.NTPServer4" : "time3.google.com",
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
    },
 
 
@@ -306,8 +321,12 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "00000000",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "" 
-
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "", 
+      "Device.Time.NTPServer1" : "ntp.shawcable.net",
+      "Device.Time.NTPServer2" : "time1.google.com",
+      "Device.Time.NTPServer3" : "time2.google.com",
+      "Device.Time.NTPServer4" : "time3.google.com",
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
    },
 
 "videotron" : {
@@ -359,8 +378,12 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "00000000",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "" 
-
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "", 
+      "Device.Time.NTPServer1" : "vl-vi-ntp001.ip.videotron.ca",
+      "Device.Time.NTPServer2" : "vl-vi-ntp002.ip.videotron.ca",
+      "Device.Time.NTPServer3" : "vl-vi-ntp003.ip.videotron.ca",
+      "Device.Time.NTPServer4" : "time1.google.com",
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
    },
    "unknown" : {
 
@@ -410,7 +433,12 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "00000000",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "" 
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "",
+      "Device.Time.NTPServer1" : "ntp.ccp.xcal.tv",
+      "Device.Time.NTPServer2" : "time1.google.com",
+      "Device.Time.NTPServer3" : "time2.google.com",
+      "Device.Time.NTPServer4" : "time3.google.com",
+      "Device.Time.NTPServer5" : ""
    }
 
 }

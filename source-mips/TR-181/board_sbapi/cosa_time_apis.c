@@ -683,6 +683,22 @@ CosaDmlTimeGetCfg
           rc = 0;
        }
 
+        /* Fill NTP Server 4 from Syscfg */
+       if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,4)) == UT_SUCCESS)
+       {
+          AnscCopyString(pTimeCfg->NTPServer4,val);
+          _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
+          rc = 0;
+       }
+
+       /* Fill NTP Server 5 from Syscfg */
+       if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,5)) == UT_SUCCESS)
+       {
+          AnscCopyString(pTimeCfg->NTPServer5,val);
+          _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
+          rc = 0;
+       }
+
        /* Fill DaylightSaving Enabled or not from syscfg */
        pTimeCfg->bDaylightSaving = Utopia_Get_DeviceTime_DaylightEnable(&ctx);
 

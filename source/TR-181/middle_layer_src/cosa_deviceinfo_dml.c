@@ -2693,6 +2693,112 @@ TR069support_SetParamBoolValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        newNTP_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+newNTP_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    char buf[8];
+
+    /* check the parameter name and return the corresponding value */
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        syscfg_get( NULL, "new_ntp_enabled", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "false") == 0)
+                *pBool = FALSE;
+            else
+                *pBool = TRUE;
+        }
+        return TRUE;
+    }
+
+    return FALSE;
+}
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        newNTP_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+newNTP_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        if( ANSC_STATUS_SUCCESS != CosaDmlSetnewNTPEnable(bValue))
+	    return FALSE;
+        return TRUE;
+    }
+
+    return FALSE;
+}
 
 /***********************************************************************
 
