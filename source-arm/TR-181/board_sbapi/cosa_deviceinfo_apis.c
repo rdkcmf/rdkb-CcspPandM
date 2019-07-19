@@ -4095,6 +4095,149 @@ CosaDmlDiSet_SyndicationFlowControl_InitialOutputMark
     }
 }
 
+#define MAX_NTP_SERVER 5
+
+ANSC_STATUS
+ApplyNTPPartnerDefaults()
+{
+    FILE *fileRead = NULL;
+    char* data = NULL;
+    int len ;
+    cJSON *json = NULL;
+    cJSON *partnerObj = NULL;
+    char *objVal = NULL;
+    char PartnerID[PARTNER_ID_LEN] = {0};
+    fileRead = fopen( PARTNERS_INFO_FILE, "r" );
+    if( fileRead == NULL )
+    {
+        CcspTraceWarning(("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ ));
+        return ANSC_STATUS_FAILURE;
+    }
+    fseek( fileRead, 0, SEEK_END );
+    len = ftell( fileRead );
+    fseek( fileRead, 0, SEEK_SET );
+    data = ( char* )malloc( sizeof(char) * (len + 1) );
+    if (data != NULL)
+    {
+        memset( data, 0, ( sizeof(char) * (len + 1) ));
+        fread( data, 1, len, fileRead );
+    }
+    else
+    {
+        CcspTraceWarning(("%s-%d : Memory allocation failed \n", __FUNCTION__, __LINE__));
+        fclose( fileRead );
+        return ANSC_STATUS_FAILURE;
+    }
+
+    fclose( fileRead );
+    if ( data == NULL )
+    {
+          CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
+          return ANSC_STATUS_FAILURE;
+    }
+    else if ( strlen(data) != 0)
+    {
+         json = cJSON_Parse( data );
+         if( !json )
+         {
+             CcspTraceWarning((  "%s : json file parser error : [%d]\n", __FUNCTION__,__LINE__));
+             free(data);
+             return ANSC_STATUS_FAILURE;
+         }
+         else
+         {
+             if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
+             {
+                  partnerObj = cJSON_GetObjectItem( json, PartnerID );
+                  if ( NULL != partnerObj)
+                  {
+                       cJSON *objItem = NULL;
+                       int i, rc =0;
+                       char *key[]={"Device.Time.NTPServer1","Device.Time.NTPServer2","Device.Time.NTPServer3","Device.Time.NTPServer4","Device.Time.NTPServer5"};
+                       char *name[]={"ntp_server1","ntp_server2","ntp_server3","ntp_server4","ntp_server5"};
+
+                       for (i=0;i<MAX_NTP_SERVER;i++)
+                       {
+                            objItem = cJSON_GetObjectItem( partnerObj, key[i]);
+                            if ( objItem != NULL )
+                            {
+                                 objVal = objItem->valuestring;
+                                 objItem = NULL;
+                                 if ( objVal != NULL )
+                                 {
+                                      if ( syscfg_set(NULL,name[i],objVal) != 0)
+                                      {
+                                           CcspTraceWarning(("syscfg_set failed for %s\n",name[i]));
+                                      }
+                                      else
+                                      {
+                                          if ( syscfg_commit( ) != 0 )
+                                          {
+                                               CcspTraceWarning(("syscfg_commit failed for %s\n",name[i]));
+                                          }
+                                      }
+                                      objVal = NULL;
+                                 }
+                                 else
+                                 {
+                                      CcspTraceWarning(("%s - obj Value is NULL\n", __FUNCTION__ ));
+                                 }
+                            }
+                            else
+                            {
+                                 CcspTraceWarning(("%s - partnerLink Object is NULL\n", __FUNCTION__ ));
+                            }
+                      }
+                      cJSON_Delete(json);
+                      return ANSC_STATUS_SUCCESS;
+                 }
+             }
+             cJSON_Delete(json);
+         }
+    }
+    return ANSC_STATUS_FAILURE;
+}
+ANSC_STATUS
+CosaDmlSetnewNTPEnable(BOOL bValue)
+{
+     if( bValue == TRUE)
+     {
+         AnscTraceWarning(("Enabling newNTP from RFC \n"));
+         if( 0 != syscfg_set(NULL, "new_ntp_enabled", "true"))
+	 {
+             AnscTraceWarning(("syscfg_set failed for new_ntp_enabled\n"));
+             return ANSC_STATUS_FAILURE;
+         }
+         else if ( syscfg_commit( ) != 0 )
+         {
+             CcspTraceWarning(("syscfg_commit failed\n"));
+             return ANSC_STATUS_FAILURE;
+         } 
+         if( ANSC_STATUS_SUCCESS != ApplyNTPPartnerDefaults() )
+             return ANSC_STATUS_FAILURE;
+     }
+     else
+     {
+         AnscTraceWarning(("Disabling newNTP from RFC \n"));
+         if( 0 != syscfg_set(NULL, "new_ntp_enabled", "false"))
+         {
+             AnscTraceWarning(("syscfg_set failed for new_ntp_enabled\n"));
+             return ANSC_STATUS_FAILURE;
+         }
+         else if ( syscfg_commit( ) != 0 )
+         {
+             CcspTraceWarning(("syscfg_commit failed\n"));
+             return ANSC_STATUS_FAILURE;
+         }
+
+     }
+
+     commonSyseventSet("ntpd-restart", "");
+   
+     return ANSC_STATUS_SUCCESS;
+
+}
+
 #if defined(_COSA_FOR_BCI_)
 #define XDNS_RESOLV_CONF "/etc/resolv.conf"
 #define XDNS_DNSMASQ_SERVERS_BAK "/nvram/dnsmasq_servers.bak"

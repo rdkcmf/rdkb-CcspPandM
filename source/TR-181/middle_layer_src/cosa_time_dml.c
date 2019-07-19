@@ -348,6 +348,7 @@ Time_GetParamStringValue
 {
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
+    CosaDmlTimeGetCfg(NULL, &pMyObject->TimeCfg);
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "NTPServer1", TRUE))
     {
