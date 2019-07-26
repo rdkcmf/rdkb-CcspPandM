@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "2.0"
+      "version" : "3.0"
    },
 
    "comcast" : {
@@ -52,7 +52,7 @@
       "Device.ManagementServer.EnableCWMP" : "false",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : ""   
   },
@@ -198,7 +198,7 @@
       "Device.ManagementServer.EnableCWMP" : "true",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "" 
    },
@@ -251,7 +251,7 @@
       "Device.ManagementServer.EnableCWMP" : "true",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "1",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "FFFFFFFF" 
    },
@@ -304,7 +304,7 @@
       "Device.ManagementServer.EnableCWMP" : "true",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "00000000",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "" 
 
@@ -357,7 +357,7 @@
       "Device.ManagementServer.EnableCWMP" : "false",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "00000000",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "" 
 
@@ -408,7 +408,7 @@
       "Device.ManagementServer.EnableCWMP" : "false",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "00000000",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "" 
    }
