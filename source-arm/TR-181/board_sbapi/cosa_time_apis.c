@@ -586,6 +586,12 @@ CosaDmlTimeSetCfg
 
        /*Set NTP Server 3 to SysCfg */
        rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer3),3);
+
+        /*Set NTP Server 4 to SysCfg */
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer4),4);
+
+       /*Set NTP Server 5 to SysCfg */
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer5),5);
        
        /*Set NTP DaylightSaving Enabled or not to SysCfg */
        rc = Utopia_Set_DeviceTime_DaylightEnable(&ctx,pTimeCfg->bDaylightSaving);
