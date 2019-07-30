@@ -365,8 +365,7 @@ DmSetBool(const char *param, BOOL value)
 }
 #endif
 
-static int 
-WebServRestart(const WebServConf_t *conf)
+int WebServRestart( void *arg )
 {
 #if 0
     if (access(HTTPD_CONF, F_OK) != 0) {
@@ -401,6 +400,7 @@ WebServRestart(const WebServConf_t *conf)
         return -1;
     }
 #endif
+    pthread_detach(pthread_self());
     CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
     if (vsystem("/bin/sh /etc/webgui.sh") != 0) {
         fprintf(stderr, "%s: fail to restart lighttpd\n", __FUNCTION__);
@@ -2603,7 +2603,8 @@ ANSC_STATUS
 CosaDmlDcSetWebServer(BOOL httpEn, BOOL httpsEn, ULONG httpPort, ULONG httpsPort)
 {
     WebServConf_t conf;
-    
+    pthread_t tid;
+
     /* do not support disable HTTP/HTTPS */
     conf.httpport = httpPort;
     conf.httpsport = httpsPort;
@@ -2611,8 +2612,8 @@ CosaDmlDcSetWebServer(BOOL httpEn, BOOL httpsEn, ULONG httpPort, ULONG httpsPort
     if (SaveWebServConf(&conf) != 0)
         return ANSC_STATUS_FAILURE;
 
-    if (WebServRestart(&conf) != 0)
-        return ANSC_STATUS_FAILURE;
+    //Needs to start as thread to avoid PAM Hung issue
+    pthread_create( &tid, NULL, &WebServRestart, NULL);
 
     return ANSC_STATUS_SUCCESS;
 }
