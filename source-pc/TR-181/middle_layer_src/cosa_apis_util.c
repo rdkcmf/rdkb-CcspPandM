@@ -1442,7 +1442,6 @@ CosaUtilGetStaticRouteTable
 #define IPV6_ADDR_COMPATv4      0x0080U
 #define IPV6_ADDR_SCOPE_MASK    0x00f0U
 
-#if  !defined(_COSA_SIM_)
 
 /* function: is_usg_in_bridge_mode
    description: judge if USG is in bridge mode or not
@@ -1472,6 +1471,7 @@ ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode)
 
 }
 
+#if  !defined(_COSA_SIM_)
 /*caller must free(*pp_info)*/
 #define _PROCNET_IFINET6  "/proc/net/if_inet6"
 #define MAX_INET6_PROC_CHARS 200
@@ -1631,11 +1631,6 @@ int CosaUtilGetIpv6AddrInfo (char * ifname, ipv6_addr_info_t ** pp_info, int * p
 }
 
 #else
-ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode)
-{
-    *pBridgeMode = FALSE;
-    return ANSC_STATUS_SUCCESS;
-}
 
 int CosaUtilGetIpv6AddrInfo (char * ifname, ipv6_addr_info_t ** pp_info, int * p_num)
 {
