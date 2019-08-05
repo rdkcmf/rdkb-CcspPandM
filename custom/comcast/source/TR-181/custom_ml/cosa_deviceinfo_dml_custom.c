@@ -387,6 +387,14 @@ DeviceInfo_GetParamStringValue_Custom
 #endif
 	   return 0;
 	}
+
+	if( AnscEqualString(ParamName, "X_COMCAST-COM_MTA_IPV6", TRUE))
+	{
+#if !defined(_PLATFORM_RASPBERRYPI_)
+   	   CosaDmlDiGetMTAIPV6Address(NULL, pValue,pulSize);
+#endif
+	   return 0;
+	}
 #endif
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */

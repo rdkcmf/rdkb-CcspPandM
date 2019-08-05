@@ -403,6 +403,18 @@ CosaDmlDiGetMTAIPAddress
     return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_MTA.IPAddress", pValue, pulSize);
 }
 
+/*X_COMCAST-COM_MTA_IPV6*/
+ANSC_STATUS
+CosaDmlDiGetMTAIPV6Address
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+    return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_MTA_V6.IPV6Address", pValue, pulSize);
+}
+
 /*X_COMCAST-COM_CM_IP*/
 ANSC_STATUS
 CosaDmlDiGetCMIPAddress
