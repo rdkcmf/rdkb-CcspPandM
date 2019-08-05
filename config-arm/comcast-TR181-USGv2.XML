@@ -299,6 +299,16 @@
 
         <parameter>
     
+          <name>X_COMCAST-COM_MTA_IPV6</name>
+                   
+          <type>string(64)</type>
+                                  
+          <syntax>string</syntax>
+                                                 
+        </parameter> 
+
+        <parameter>
+    
           <name>X_CISCO_COM_BaseMacAddress</name>
                    
           <type>string(64)</type>

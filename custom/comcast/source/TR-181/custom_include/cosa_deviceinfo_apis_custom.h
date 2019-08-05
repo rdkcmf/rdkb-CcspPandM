@@ -148,6 +148,15 @@ CosaDmlDiGetMTAIPAddress
         PULONG                      pulSize
     );
 
+/*X_COMCAST-COM_MTA_IPV6*/
+ANSC_STATUS
+CosaDmlDiGetMTAIPV6Address
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    );
+
 #endif
 
 
