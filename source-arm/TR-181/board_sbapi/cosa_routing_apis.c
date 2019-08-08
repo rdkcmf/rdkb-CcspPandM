@@ -3297,6 +3297,14 @@ CosaDmlRoutingRouterSetCfg
     snprintf(buf, sizeof(buf), "%d", pCfg->bEnabled);
     rc = Utopia_RawSet(&ctx, NULL, "tr_routing_enabled", buf);
 
+    if( pCfg->bEnabled ) {
+        _write_sysctl_file("/proc/sys/net/ipv4/conf/erouter0/forwarding", 1);
+        _write_sysctl_file("/proc/sys/net/ipv6/conf/all/forwarding", 1);
+    } else {
+        _write_sysctl_file("/proc/sys/net/ipv4/conf/erouter0/forwarding", 0);
+        _write_sysctl_file("/proc/sys/net/ipv6/conf/all/forwarding", 0);
+    }
+
     /* Free Utopia Context */
     Utopia_Free(&ctx, 1);
 
@@ -3407,11 +3415,30 @@ CosaDmlRoutingRouterGetInfo
         PCOSA_DML_ROUTER_INFO       pInfo
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-    
-    pInfo->Status = COSA_DML_ROUTING_STATUS_Enabled;
+    char                            tmpBuf[8]   = {0};
+    int                             rc           = -1;
+    int                             bEnabled = 0;
+    UtopiaContext                   ctx;
 
-    return returnStatus;
+    if(!Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+    rc = Utopia_RawGet(&ctx, NULL, "tr_routing_enabled", tmpBuf, sizeof(tmpBuf));
+    if(1 == rc) {
+       bEnabled = atoi(tmpBuf);
+       if(bEnabled) {
+           pInfo->Status = COSA_DML_ROUTING_STATUS_Enabled;
+       } else {
+           pInfo->Status = COSA_DML_ROUTING_STATUS_Disabled;
+       }
+    }
+
+    Utopia_Free(&ctx,0);
+
+    if (rc != 1)
+       return ANSC_STATUS_FAILURE;
+    else
+       return ANSC_STATUS_SUCCESS;
 }
 
 /*
