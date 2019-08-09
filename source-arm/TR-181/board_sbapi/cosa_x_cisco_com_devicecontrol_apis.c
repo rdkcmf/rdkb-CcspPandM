@@ -1683,6 +1683,7 @@ void restoreAllDBs()
 	//Need to remove the encrypted shared keys
 	system("rm -f /nvram/.keys/*");
     system("rm -f /nvram/partners_defaults.json");
+    system("rm -f /nvram/bootstrap.json");
     system( "touch /nvram/.apply_partner_defaults" );
 
         //Need to remove the custom maintenance window

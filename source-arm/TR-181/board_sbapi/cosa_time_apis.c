@@ -71,6 +71,16 @@
 **************************************************************************/
 
 #include "cosa_time_apis.h"
+#include "cJSON.h"
+
+#define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
+#define BOOTSTRAP_INFO_FILE             "/nvram/bootstrap.json"
+
+ANSC_STATUS
+CosaNTPInitJournal
+    (
+        PCOSA_DML_TIME_CFG pTimeCfg
+    );
 
 #ifdef _COSA_SIM_
 
@@ -268,47 +278,47 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
         for (i=0;i<=5;i++) {
             switch (i) {
             case 1:
-                if (pTimeCfg->NTPServer1 && strlen(pTimeCfg->NTPServer1) > 0)
+                if (pTimeCfg->NTPServer1.ActiveValue && strlen(pTimeCfg->NTPServer1.ActiveValue) > 0)
                 {
                     if (server[0] != NULL) {
                         strcat(server, " "); // add spacer
                     }
-                    strcat(server, pTimeCfg->NTPServer1);
+                    strcat(server, pTimeCfg->NTPServer1.ActiveValue);
                 }
                 break;
             case 2:
-                if (pTimeCfg->NTPServer2 && strlen(pTimeCfg->NTPServer2) > 0)
+                if (pTimeCfg->NTPServer2.ActiveValue && strlen(pTimeCfg->NTPServer2.ActiveValue) > 0)
                 {
                     if (server[0] != NULL) {
                         strcat(server, " "); // add spacer
                     }
-                    strcat(server, pTimeCfg->NTPServer2);
+                    strcat(server, pTimeCfg->NTPServer2.ActiveValue);
                 }
                 break;
             case 3:
-                if (pTimeCfg->NTPServer3 && strlen(pTimeCfg->NTPServer3) > 0)
+                if (pTimeCfg->NTPServer3.ActiveValue && strlen(pTimeCfg->NTPServer3.ActiveValue) > 0)
                 {
                     if (server[0] != NULL) {
                         strcat(server, " "); // add spacer
                     }
-                    strcat(server, pTimeCfg->NTPServer3);
+                    strcat(server, pTimeCfg->NTPServer3.ActiveValue);
                 }
                 break;
             case 4:
-                if (pTimeCfg->NTPServer4 && strlen(pTimeCfg->NTPServer4) > 0)
+                if (pTimeCfg->NTPServer4.ActiveValue && strlen(pTimeCfg->NTPServer4.ActiveValue) > 0)
                 {
                     if (server[0] != NULL) {
                         strcat(server, " "); // add spacer
                     }
-                    strcat(server, pTimeCfg->NTPServer4);
+                    strcat(server, pTimeCfg->NTPServer4.ActiveValue);
                 }
                 break;
             case 5:
-                if (pTimeCfg->NTPServer5 && strlen(pTimeCfg->NTPServer5) > 0) {
+                if (pTimeCfg->NTPServer5.ActiveValue && strlen(pTimeCfg->NTPServer5.ActiveValue) > 0) {
                     if (server[0] != NULL) {
                         strcat(server, " "); // add spacer
                     }
-                    strcat(server, pTimeCfg->NTPServer5);
+                    strcat(server, pTimeCfg->NTPServer5.ActiveValue);
                 }
                 break;
             default:
@@ -439,22 +449,22 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
     /* XXX: ntpclient only support one NTP Server */
     if (pTimeCfg->bEnabled)
     {
-        if ( pTimeCfg->NTPServer1 && strlen(pTimeCfg->NTPServer1) > 0)
+        if ( pTimeCfg->NTPServer1.ActiveValue && strlen(pTimeCfg->NTPServer1.ActiveValue) > 0)
         {
-            server = pTimeCfg->NTPServer1;
+            server = pTimeCfg->NTPServer1.ActiveValue;
             //back_server = pTimeCfg->NTPServer2;
         }
-        else if (pTimeCfg->NTPServer2 && strlen(pTimeCfg->NTPServer2) > 0) {
-            server = pTimeCfg->NTPServer2;
+        else if (pTimeCfg->NTPServer2.ActiveValue && strlen(pTimeCfg->NTPServer2.ActiveValue) > 0) {
+            server = pTimeCfg->NTPServer2.ActiveValue;
         }
-        else if (pTimeCfg->NTPServer3 && strlen(pTimeCfg->NTPServer3) > 0) {
-            server = pTimeCfg->NTPServer3;
+        else if (pTimeCfg->NTPServer3.ActiveValue && strlen(pTimeCfg->NTPServer3.ActiveValue) > 0) {
+            server = pTimeCfg->NTPServer3.ActiveValue;
         }
-        else if (pTimeCfg->NTPServer4 && strlen(pTimeCfg->NTPServer4) > 0) {
-            server = pTimeCfg->NTPServer4;
+        else if (pTimeCfg->NTPServer4.ActiveValue && strlen(pTimeCfg->NTPServer4.ActiveValue) > 0) {
+            server = pTimeCfg->NTPServer4.ActiveValue;
         }
-        else if (pTimeCfg->NTPServer5 && strlen(pTimeCfg->NTPServer5) > 0) {
-            server = pTimeCfg->NTPServer5;
+        else if (pTimeCfg->NTPServer5.ActiveValue && strlen(pTimeCfg->NTPServer5.ActiveValue) > 0) {
+            server = pTimeCfg->NTPServer5.ActiveValue;
         }
         else
             server = NULL;
@@ -474,16 +484,16 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
             }
 
             for(i=1;i<=5;i++) {
-                if (i == 1 && pTimeCfg->NTPServer1 && strlen(pTimeCfg->NTPServer1) > 0) { 
-                    back_server = pTimeCfg->NTPServer1;
-                } else if(i == 2 && pTimeCfg->NTPServer2 && strlen(pTimeCfg->NTPServer2) > 0){
-                    back_server = pTimeCfg->NTPServer2;
-                } else if(i == 3 && pTimeCfg->NTPServer3 && strlen(pTimeCfg->NTPServer3) > 0){
-                    back_server = pTimeCfg->NTPServer3;
-                } else if(i == 4 && pTimeCfg->NTPServer4 && strlen(pTimeCfg->NTPServer4) > 0){
-                    back_server = pTimeCfg->NTPServer4;
-                } else if(i == 5 && pTimeCfg->NTPServer5 && strlen(pTimeCfg->NTPServer5) > 0){
-                    back_server = pTimeCfg->NTPServer5;
+                if (i == 1 && pTimeCfg->NTPServer1.ActiveValue && strlen(pTimeCfg->NTPServer1.ActiveValue) > 0) { 
+                    back_server = pTimeCfg->NTPServer1.ActiveValue;
+                } else if(i == 2 && pTimeCfg->NTPServer2.ActiveValue && strlen(pTimeCfg->NTPServer2.ActiveValue) > 0){
+                    back_server = pTimeCfg->NTPServer2.ActiveValue;
+                } else if(i == 3 && pTimeCfg->NTPServer3.ActiveValue && strlen(pTimeCfg->NTPServer3.ActiveValue) > 0){
+                    back_server = pTimeCfg->NTPServer3.ActiveValue;
+                } else if(i == 4 && pTimeCfg->NTPServer4.ActiveValue && strlen(pTimeCfg->NTPServer4.ActiveValue) > 0){
+                    back_server = pTimeCfg->NTPServer4.ActiveValue;
+                } else if(i == 5 && pTimeCfg->NTPServer5.ActiveValue && strlen(pTimeCfg->NTPServer5.ActiveValue) > 0){
+                    back_server = pTimeCfg->NTPServer5.ActiveValue;
                 } 
                 /* try the back up ntp server */
                 if (back_server && strcmp(back_server,server)!=0)
@@ -579,19 +589,19 @@ CosaDmlTimeSetCfg
        rc = Utopia_RawSet(&ctx, NULL, "ntp_cityindex", buf);
 
        /*Set NTP Server 1 to SysCfg */
-       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer1),1);
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer1.ActiveValue),1);
 
        /*Set NTP Server 2 to SysCfg */
-       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer2),2);
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer2.ActiveValue),2);
 
        /*Set NTP Server 3 to SysCfg */
-       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer3),3);
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer3.ActiveValue),3);
 
         /*Set NTP Server 4 to SysCfg */
-       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer4),4);
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer4.ActiveValue),4);
 
        /*Set NTP Server 5 to SysCfg */
-       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer5),5);
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer5.ActiveValue),5);
        
        /*Set NTP DaylightSaving Enabled or not to SysCfg */
        rc = Utopia_Set_DeviceTime_DaylightEnable(&ctx,pTimeCfg->bDaylightSaving);
@@ -700,7 +710,7 @@ CosaDmlTimeGetCfg
        /*Fill NTP Server 1 from SysCfg */
        if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,1)) == UT_SUCCESS)
        {
-          AnscCopyString(pTimeCfg->NTPServer1,val);
+          AnscCopyString(pTimeCfg->NTPServer1.ActiveValue,val);
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
@@ -708,7 +718,7 @@ CosaDmlTimeGetCfg
        /* Fill NTP Server 2 from Syscfg */
        if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,2)) == UT_SUCCESS)
        {
-          AnscCopyString(pTimeCfg->NTPServer2,val);
+          AnscCopyString(pTimeCfg->NTPServer2.ActiveValue,val);
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
@@ -716,7 +726,7 @@ CosaDmlTimeGetCfg
        /* Fill NTP Server 3 from Syscfg */
        if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,3)) == UT_SUCCESS)
        {
-          AnscCopyString(pTimeCfg->NTPServer3,val);
+          AnscCopyString(pTimeCfg->NTPServer3.ActiveValue,val);
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
@@ -724,7 +734,7 @@ CosaDmlTimeGetCfg
        /* Fill NTP Server 4 from Syscfg */
        if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,4)) == UT_SUCCESS)
        {
-          AnscCopyString(pTimeCfg->NTPServer4,val);
+          AnscCopyString(pTimeCfg->NTPServer4.ActiveValue,val);
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
@@ -732,7 +742,7 @@ CosaDmlTimeGetCfg
        /* Fill NTP Server 5 from Syscfg */
        if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,5)) == UT_SUCCESS)
        {
-          AnscCopyString(pTimeCfg->NTPServer5,val);
+          AnscCopyString(pTimeCfg->NTPServer5.ActiveValue,val);
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
@@ -748,6 +758,8 @@ CosaDmlTimeGetCfg
 
        /* Free Utopia Context */
        Utopia_Free(&ctx,0);
+
+       CosaNTPInitJournal(pTimeCfg);
      }
      
     utc_enabled = checkIfUTCEnabled(DEV_PROPERTIES_FILE);
@@ -853,7 +865,149 @@ CosaDmlTimeGetTimeOffset
 }
 
 
+#define PARTNER_ID_LEN 64
+void FillParamUpdateSourceNTP(cJSON *partnerObj, char *key, char *paramUpdateSource)
+{
+    cJSON *paramObj = cJSON_GetObjectItem( partnerObj, key);
+    if ( paramObj != NULL )
+    {
+        char *valuestr = NULL;
+        cJSON *paramObjVal = cJSON_GetObjectItem(paramObj, "UpdateSource");
+        if (paramObjVal)
+            valuestr = paramObjVal->valuestring;
+        if (valuestr != NULL)
+        {
+            AnscCopyString(paramUpdateSource, valuestr);
+            valuestr = NULL;
+        }
+        else
+        {
+            CcspTraceWarning(("%s - %s UpdateSource is NULL\n", __FUNCTION__, key ));
+        }
+    }
+    else
+    {
+        CcspTraceWarning(("%s - %s Object is NULL\n", __FUNCTION__, key ));
+    }
+}
 
+void FillPartnerIDNTPJournal
+    (
+        cJSON *json ,
+        char *partnerID ,
+        PCOSA_DML_TIME_CFG pTimeCfg
+    )
+{
+                cJSON *partnerObj = cJSON_GetObjectItem( json, partnerID );
+                if( partnerObj != NULL)
+                {
+                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer1", &pTimeCfg->NTPServer1.UpdateSource);
+                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer2", &pTimeCfg->NTPServer2.UpdateSource);
+                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer3", &pTimeCfg->NTPServer3.UpdateSource);
+                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer4", &pTimeCfg->NTPServer4.UpdateSource);
+                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer5", &pTimeCfg->NTPServer5.UpdateSource);
+                }
+                else
+                {
+                      CcspTraceWarning(("%s - PARTNER ID OBJECT Value is NULL\n", __FUNCTION__ ));
+                }
+}
 
+//Get the UpdateSource info from /nvram/bootstrap.json. This is needed to know for override precedence rules in set handlers
+ANSC_STATUS
+CosaNTPInitJournal
+    (
+        PCOSA_DML_TIME_CFG pTimeCfg
+    )
+{
+        char *data = NULL;
+        char buf[64] = {0};
+        cJSON *json = NULL;
+        FILE *fileRead = NULL;
+        char PartnerID[PARTNER_ID_LEN] = {0};
+        char cmd[512] = {0};
+        ULONG size = PARTNER_ID_LEN - 1;
+        int len;
+        if (!pTimeCfg)
+        {
+                CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
+                return ANSC_STATUS_FAILURE;
+        }
+
+        if (access(BOOTSTRAP_INFO_FILE, F_OK) != 0)
+        {
+                return ANSC_STATUS_FAILURE;
+        }
+
+         fileRead = fopen( BOOTSTRAP_INFO_FILE, "r" );
+         if( fileRead == NULL )
+         {
+                 CcspTraceWarning(("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ ));
+                 return ANSC_STATUS_FAILURE;
+         }
+
+         fseek( fileRead, 0, SEEK_END );
+         len = ftell( fileRead );
+         fseek( fileRead, 0, SEEK_SET );
+         data = ( char* )malloc( sizeof(char) * (len + 1) );
+         if (data != NULL)
+         {
+                memset( data, 0, ( sizeof(char) * (len + 1) ));
+                fread( data, 1, len, fileRead );
+         }
+         else
+         {
+                 CcspTraceWarning(("%s-%d : Memory allocation failed \n", __FUNCTION__, __LINE__));
+                 fclose( fileRead );
+                 return ANSC_STATUS_FAILURE;
+         }
+
+         fclose( fileRead );
+
+         if ( data == NULL )
+         {
+                CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
+                return ANSC_STATUS_FAILURE;
+         }
+         else if ( strlen(data) != 0)
+         {
+                 json = cJSON_Parse( data );
+                 if( !json )
+                 {
+                         CcspTraceWarning((  "%s : json file parser error : [%d]\n", __FUNCTION__,__LINE__));
+                         free(data);
+                         return ANSC_STATUS_FAILURE;
+                 }
+                 else
+                 {
+                         if(ANSC_STATUS_SUCCESS == fillCurrentPartnerId(PartnerID, &size))
+                         {
+                                if ( PartnerID[0] != '\0' )
+                                {
+                                        CcspTraceWarning(("%s : Partner = %s \n", __FUNCTION__, PartnerID));
+                                        FillPartnerIDNTPJournal(json, PartnerID, pTimeCfg);
+                                }
+                                else
+                                {
+                                        CcspTraceWarning(( "Reading Deafult PartnerID Values \n" ));
+                                        strcpy(PartnerID, "comcast");
+                                        FillPartnerIDNTPJournal(json, PartnerID, pTimeCfg);
+                                }
+                        }
+                        else{
+                                CcspTraceWarning(("Failed to get Partner ID\n"));
+                        }
+                        cJSON_Delete(json);
+                }
+                free(data);
+                data = NULL;
+         }
+         else
+         {
+                CcspTraceWarning(("BOOTSTRAP_INFO_FILE %s is empty\n", BOOTSTRAP_INFO_FILE));
+                return ANSC_STATUS_FAILURE;
+         }
+         return ANSC_STATUS_SUCCESS;
+}
 
 #endif

@@ -231,7 +231,9 @@ _COSA_DML_DHCPS_POOL_CFG
     BOOLEAN                         ChaddrExclude;
     BOOLEAN                         DNSServersEnabled;
     ANSC_IPV4_ADDRESS               MinAddress;
+    char                            MinAddressUpdateSource[16];
     ANSC_IPV4_ADDRESS               MaxAddress;
+    char                            MaxAddressUpdateSource[16];
     ANSC_IPV4_ADDRESS               ReservedAddresses[COSA_DML_DHCP_MAX_RESERVED_ADDRESSES];
     ANSC_IPV4_ADDRESS               SubnetMask;
     ANSC_IPV4_ADDRESS               DNSServers[COSA_DML_DHCP_MAX_ENTRIES];
@@ -889,5 +891,26 @@ CosaDmlDhcpsGetLeaseTimeDuration
         PCOSA_DML_DHCPSV4_CLIENT_IPADDRESS    pDhcpsClient
     );
 
+extern ANSC_STATUS UpdateJsonParamLegacy
+	(
+		char*                       pKey,
+		char*			PartnerId,
+		char*			pValue
+    );
+
+extern ANSC_STATUS UpdateJsonParam
+	(
+		char*           pKey,
+		char*			PartnerId,
+		char*			pValue,
+		char*                   pSource,
+		char*			pCurrentTime
+    );
+
+extern ANSC_STATUS fillCurrentPartnerId
+        (
+                char*                       pValue,
+        PULONG                      pulSize
+    );
 #endif
 

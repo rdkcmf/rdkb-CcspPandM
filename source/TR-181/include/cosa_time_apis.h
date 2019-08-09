@@ -83,14 +83,22 @@ _COSA_DML_TIME_STATUS
 COSA_DML_TIME_STATUS, *PCOSA_DML_TIME_STATUS;
 
 typedef  struct
+_COSA_BOOTSTRAP_STRING
+{
+    CHAR                    ActiveValue[64];
+    CHAR                    UpdateSource[16];
+}
+COSA_BOOTSTRAP_STRING;
+
+typedef  struct
 _COSA_DML_TIME_CFG
 {
     BOOLEAN                         bEnabled;
-    char                            NTPServer1[64];     /* Either a host name of IP address */
-    char                            NTPServer2[64];     /* Either a host name of IP address */
-    char                            NTPServer3[64];     /* Either a host name of IP address */
-    char                            NTPServer4[64];     /* Either a host name of IP address */
-    char                            NTPServer5[64];     /* Either a host name of IP address */
+    COSA_BOOTSTRAP_STRING                            NTPServer1;     /* Either a host name of IP address */
+    COSA_BOOTSTRAP_STRING                            NTPServer2;     /* Either a host name of IP address */
+    COSA_BOOTSTRAP_STRING                            NTPServer3;     /* Either a host name of IP address */
+    COSA_BOOTSTRAP_STRING                            NTPServer4;     /* Either a host name of IP address */
+    COSA_BOOTSTRAP_STRING                            NTPServer5;     /* Either a host name of IP address */
     char                            LocalTimeZone[256]; /* Local time zone definition, encoded in IEEE 1003.1 */
     BOOLEAN                         bDaylightSaving;
     LONG                            DaylightSavingOffset;
@@ -140,5 +148,33 @@ CosaDmlTimeGetLocalTime
        char                       *pCurrLocalTime
     );
 
+ANSC_STATUS
+CosaDmlTimeGetLocalTime
+    (
+       ANSC_HANDLE                 hContext,
+       char                       *pCurrLocalTime
+    );
+
+extern ANSC_STATUS UpdateJsonParamLegacy
+       (
+               char*                       pKey,
+               char*                   PartnerId,
+               char*                   pValue
+    );
+
+extern ANSC_STATUS UpdateJsonParam
+       (
+               char*           pKey,
+               char*                   PartnerId,
+               char*                   pValue,
+               char*                   pSource,
+               char*                   pCurrentTime
+    );
+
+extern ANSC_STATUS fillCurrentPartnerId
+        (
+                char*                       pValue,
+        PULONG                      pulSize
+    );
 
 #endif
