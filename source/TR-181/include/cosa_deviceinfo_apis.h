@@ -124,71 +124,87 @@ _COSA_DATAMODEL_PROCESS
 COSA_DATAMODEL_PROCSTATUS,  *PCOSA_DATAMODEL_PROCSTATUS;
 
 typedef  struct
+_COSA_BOOTSTRAP_STR
+{
+    CHAR                    ActiveValue[512];
+    CHAR		    UpdateSource[16];
+}
+COSA_BOOTSTRAP_STR;
+
+typedef  struct
+_COSA_BOOTSTRAP_BOOL
+{
+    BOOL                    ActiveValue;
+    CHAR		    UpdateSource[16];
+}
+COSA_BOOTSTRAP_BOOL;
+
+typedef  struct
 _COSA_DATAMODEL_RDKB_FOOTER_CLASS_CONTENT
 {
-	CHAR 		PartnerLink[512];
-	CHAR 		UserGuideLink[512];
-	CHAR 		CustomerCentralLink[512];
-	CHAR		PartnerText[512];
-	CHAR		UserGuideText[512];
-	CHAR		CustomerCentralText[512];
+	COSA_BOOTSTRAP_STR 		PartnerLink;
+	COSA_BOOTSTRAP_STR 		UserGuideLink;
+	COSA_BOOTSTRAP_STR 		CustomerCentralLink;
+	COSA_BOOTSTRAP_STR		PartnerText;
+	COSA_BOOTSTRAP_STR		UserGuideText;
+	COSA_BOOTSTRAP_STR		CustomerCentralText;
 }
 COSA_DATAMODEL_RDKB_FOOTER, *PCOSA_DATAMODEL_RDKB_FOOTER;
 
 typedef  struct
 _COSA_DATAMODEL_RDKB_CONNECTION_CLASS_CONTENT
 {
-	CHAR 		MSOmenu[512];
-	CHAR 		MSOinfo[512];
-	CHAR 		StatusTitle[512];
-	CHAR 		StatusInfo[512];
+	COSA_BOOTSTRAP_STR 		MSOmenu;
+	COSA_BOOTSTRAP_STR 		MSOinfo;
+	COSA_BOOTSTRAP_STR 		StatusTitle;
+	COSA_BOOTSTRAP_STR 		StatusInfo;
 }
 COSA_DATAMODEL_RDKB_CONNECTION, *PCOSA_DATAMODEL_RDKB_CONNECTION;
 
 typedef  struct
 _COSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS_CLASS_CONTENT
 {
-	CHAR 		ConnectivityTestURL[512];
+	COSA_BOOTSTRAP_STR 		ConnectivityTestURL;
 }
 COSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS, *PCOSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS;
 
 typedef  struct
 _COSA_DATAMODEL_RDKB_WIFIPERSONALIZATION_CLASS_CONTENT
 {
-	BOOL			Support;
-	CHAR			PartnerHelpLink[512];
-	BOOL			SMSsupport;
-	BOOL			MyAccountAppSupport;
-	CHAR			MSOLogo[512];
-	CHAR			Title[512];
-	CHAR			WelcomeMessage[512];
+	COSA_BOOTSTRAP_BOOL			Support;
+	COSA_BOOTSTRAP_STR			PartnerHelpLink;
+	COSA_BOOTSTRAP_BOOL			SMSsupport;
+	COSA_BOOTSTRAP_BOOL			MyAccountAppSupport;
+	COSA_BOOTSTRAP_STR			MSOLogo;
+	COSA_BOOTSTRAP_STR			Title;
+	COSA_BOOTSTRAP_STR			WelcomeMessage;
 }
 
 COSA_DATAMODEL_RDKB_WIFIPERSONALIZATION, *PCOSA_DATAMODEL_RDKB_WIFIPERSONALIZATION;
 typedef  struct
 _COSA_DATAMODEL_RDKB_LOCALUI_CLASS_CONTENT
 {
-	CHAR			MSOLogo[512];
-	CHAR			DefaultLoginUsername[512];
-	CHAR			DefaultLoginPassword[512];
-	CHAR			MSOLogoTitle[512];
-	BOOL			HomeNetworkControl;
+	COSA_BOOTSTRAP_STR			MSOLogo;
+	COSA_BOOTSTRAP_STR			DefaultLoginUsername;
+	COSA_BOOTSTRAP_STR			DefaultLoginPassword;
+	COSA_BOOTSTRAP_STR			MSOLogoTitle;
+	COSA_BOOTSTRAP_BOOL			HomeNetworkControl;
 }
 COSA_DATAMODEL_RDKB_LOCALUI, *PCOSA_DATAMODEL_RDKB_LOCALUI;
 
 typedef  struct
 _COSA_DATAMODEL_RDKB_HELPTIP_CLASS_CONTENT
 {
-	CHAR			NetworkName[512];
+	COSA_BOOTSTRAP_STR			NetworkName;
 }
 COSA_DATAMODEL_RDKB_HELPTIP, *PCOSA_DATAMODEL_RDKB_HELPTIP;
 
 typedef  struct
 _COSA_DATAMODEL_RDKB_CLOUDUI_CLASS_CONTENT
 {
-    CHAR            brandname[512];
-    CHAR            productname[512];
-    CHAR            link[512];
+    COSA_BOOTSTRAP_STR            brandname;
+    COSA_BOOTSTRAP_STR            productname;
+    COSA_BOOTSTRAP_STR            link;
 }
 COSA_DATAMODEL_RDKB_CLOUDUI, *PCOSA_DATAMODEL_RDKB_CLOUDUI;
 
@@ -199,14 +215,14 @@ _COSA_DATAMODEL_RDKB_UIBRANDING_CLASS_CONTENT
 	COSA_DATAMODEL_RDKB_CONNECTION			Connection;
 	COSA_DATAMODEL_RDKB_NETWORKDIAGNOSTICTOOLS	NDiagTool;
 	COSA_DATAMODEL_RDKB_WIFIPERSONALIZATION		WifiPersonal;
-	COSA_DATAMODEL_RDKB_LOCALUI		LocalUI;
-	COSA_DATAMODEL_RDKB_HELPTIP		HelpTip;
-    COSA_DATAMODEL_RDKB_CLOUDUI     CloudUI;
-	CHAR			DefaultAdminIP[512];
-    CHAR			DefaultLocalIPv4SubnetRange[512];
-    CHAR                        DefaultLanguage[512];
-    CHAR			PauseScreenFileLocation[512];
-    BOOL			AllowEthernetWAN;
+	COSA_DATAMODEL_RDKB_LOCALUI			LocalUI;
+	COSA_DATAMODEL_RDKB_HELPTIP			HelpTip;
+	COSA_DATAMODEL_RDKB_CLOUDUI			CloudUI;
+	COSA_BOOTSTRAP_STR				DefaultAdminIP;
+	COSA_BOOTSTRAP_STR				DefaultLocalIPv4SubnetRange;
+	COSA_BOOTSTRAP_STR                        	DefaultLanguage;
+	COSA_BOOTSTRAP_STR				PauseScreenFileLocation;
+	COSA_BOOTSTRAP_BOOL				AllowEthernetWAN;
 }
 COSA_DATAMODEL_RDKB_UIBRANDING, *PCOSA_DATAMODEL_RDKB_UIBRANDING;
 
@@ -234,9 +250,9 @@ COSA_DATAMODEL_RDKB_UNIQUE_TELEMETRY_ID, *PCOSA_DATAMODEL_RDKB_UNIQUE_TELEMETRY_
 typedef  struct
 _COSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL_CLASS_CONTENT
 {
-    BOOL    Enable;
-    CHAR    InitialForwardedMark[64];
-    CHAR    InitialOutputMark[64];
+    COSA_BOOTSTRAP_BOOL    Enable;
+    COSA_BOOTSTRAP_STR    InitialForwardedMark;
+    COSA_BOOTSTRAP_STR    InitialOutputMark;
 }
 COSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL, *PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL;
 
@@ -553,10 +569,12 @@ ANSC_STATUS UpdateJsonParam
 	(
 		char*           pKey,
 		char*			PartnerId,
-		char*			pValue
+		char*			pValue,
+		char*                   pSource,
+		char*			pCurrentTime
     );
 
-static int writeToJson(char *data);
+static int writeToJson(char *data, char *file);
 
 
 ANSC_STATUS

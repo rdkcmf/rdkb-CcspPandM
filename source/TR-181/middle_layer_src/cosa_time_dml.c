@@ -68,6 +68,35 @@
 
 #include "cosa_time_dml.h"
 
+#include "ccsp_base_api.h"
+#include "messagebus_interface_helper.h"
+
+extern ULONG g_currentBsUpdate;
+extern char * getRequestorString();
+extern char * getTime();
+
+#define BS_SOURCE_WEBPA_STR "webpa"
+#define BS_SOURCE_RFC_STR "rfc"
+#define  PARTNER_ID_LEN  64
+
+#define IS_UPDATE_ALLOWED_IN_DM(paramName, requestorStr) ({                                                                                                  \
+    if ( g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_firmware ||                                                                                     \
+         (g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_rfcUpdate && !AnscEqualString(requestorStr, BS_SOURCE_RFC_STR, TRUE)))                         \
+    {                                                                                                                                             \
+       CcspTraceWarning(("Do NOT allow override of param: %s bsUpdate = %d, requestor = %s\n", paramName, g_currentBsUpdate, requestorStr));      \
+       return FALSE;                                                                                                                              \
+    }                                                                                                                                             \
+})
+
+// If the requestor is RFC but the param was previously set by webpa, do not override it.
+#define IS_UPDATE_ALLOWED_IN_JSON(paramName, requestorStr, UpdateSource) ({                                                                                \
+   if (AnscEqualString(requestorStr, BS_SOURCE_RFC_STR, TRUE) && AnscEqualString(UpdateSource, BS_SOURCE_WEBPA_STR, TRUE))                         \
+   {                                                                                                                                               \
+      CcspTraceWarning(("Do NOT allow override of param: %s requestor = %d updateSource = %s\n", paramName, g_currentWriteEntity, UpdateSource));  \
+      return FALSE;                                                                                                                                \
+   }                                                                                                                                               \
+})
+
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -353,35 +382,35 @@ Time_GetParamStringValue
     if( AnscEqualString(ParamName, "NTPServer1", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer1);
+        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer1.ActiveValue);
         return 0;
     }
 
     if( AnscEqualString(ParamName, "NTPServer2", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer2);
+        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer2.ActiveValue);
         return 0;
     }
 
     if( AnscEqualString(ParamName, "NTPServer3", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer3);
+        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer3.ActiveValue);
         return 0;
     }
 
     if( AnscEqualString(ParamName, "NTPServer4", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer4);
+        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer4.ActiveValue);
         return 0;
     }
 
     if( AnscEqualString(ParamName, "NTPServer5", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer5);
+        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer5.ActiveValue);
         return 0;
     }
 
@@ -624,65 +653,93 @@ Time_SetParamStringValue
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
     ANSC_STATUS ret=ANSC_STATUS_FAILURE;
 
+    char * requestorStr = getRequestorString();
+    char * currentTime = getTime();
+
+    IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
+    char PartnerID[PARTNER_ID_LEN] = {0};
+    getPartnerId(PartnerID);
+
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "NTPServer1", TRUE))
     {
-		char wrapped_inputparam[64]={0};
-		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
+        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pMyObject->TimeCfg.NTPServer1.UpdateSource);
+	char wrapped_inputparam[64]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
 
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer1, wrapped_inputparam);
-    	CcspTraceWarning(("Service_NTP : Setting NTPServer as %s \n",pMyObject->TimeCfg.NTPServer1)); 
+        AnscCopyString(pMyObject->TimeCfg.NTPServer1.ActiveValue, wrapped_inputparam);
+    	CcspTraceWarning(("Service_NTP : Setting NTPServer as %s \n",pMyObject->TimeCfg.NTPServer1.ActiveValue)); 
+
+        AnscCopyString(pMyObject->TimeCfg.NTPServer1.UpdateSource, requestorStr);
+        if( (PartnerID[ 0 ] != '\0') )
+             UpdateJsonParam("Device.Time.NTPServer1",PartnerID, wrapped_inputparam, requestorStr, currentTime);
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "NTPServer2", TRUE))
     {
-		char wrapped_inputparam[64]={0};
-		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
+        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pMyObject->TimeCfg.NTPServer2.UpdateSource);
+	char wrapped_inputparam[64]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
 
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer2, wrapped_inputparam);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer2.ActiveValue, wrapped_inputparam);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer2.UpdateSource, requestorStr);
+        if( (PartnerID[ 0 ] != '\0') )
+             UpdateJsonParam("Device.Time.NTPServer2",PartnerID, wrapped_inputparam, requestorStr, currentTime);
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "NTPServer3", TRUE))
     {
-		char wrapped_inputparam[64]={0};
-		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
+        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pMyObject->TimeCfg.NTPServer3.UpdateSource);
+	char wrapped_inputparam[64]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
 
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer3, wrapped_inputparam);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer3.ActiveValue, wrapped_inputparam);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer3.UpdateSource, requestorStr);
+        if( (PartnerID[ 0 ] != '\0') )
+             UpdateJsonParam("Device.Time.NTPServer3",PartnerID, wrapped_inputparam, requestorStr, currentTime);
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "NTPServer4", TRUE))
     {
-		char wrapped_inputparam[64]={0};
-		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
+        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pMyObject->TimeCfg.NTPServer4.UpdateSource);
+	char wrapped_inputparam[64]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
 
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer4, wrapped_inputparam);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer4.ActiveValue, wrapped_inputparam);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer4.UpdateSource, requestorStr);
+        if( (PartnerID[ 0 ] != '\0') )
+             UpdateJsonParam("Device.Time.NTPServer4",PartnerID, wrapped_inputparam, requestorStr, currentTime);
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "NTPServer5", TRUE))
     {
-		char wrapped_inputparam[64]={0};
-		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
+        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pMyObject->TimeCfg.NTPServer5.UpdateSource);
+	char wrapped_inputparam[64]={0};
+	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
 
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer5, wrapped_inputparam);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer5.ActiveValue, wrapped_inputparam);
+        AnscCopyString(pMyObject->TimeCfg.NTPServer5.UpdateSource, requestorStr);
+        if( (PartnerID[ 0 ] != '\0') )
+             UpdateJsonParam("Device.Time.NTPServer5",PartnerID, wrapped_inputparam, requestorStr, currentTime);
         return TRUE;
     }
 

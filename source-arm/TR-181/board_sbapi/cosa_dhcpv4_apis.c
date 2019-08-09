@@ -114,6 +114,7 @@
 #include "dmsb_tr181_psm_definitions.h"
 
 #include "lm_api.h"
+#include "cJSON.h"
 
 #undef COSA_DML_DHCP_LEASES_FILE
 #undef COSA_DML_DHCP_OPTIONS_FILE
@@ -129,6 +130,9 @@
 // defind PSM paramaters
 #define PSM_ENABLE_STRING_TRUE  "TRUE"
 #define PSM_ENABLE_STRING_FALSE "FALSE"        
+
+#define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
+#define BOOTSTRAP_INFO_FILE             "/nvram/bootstrap.json"
 
 COSA_DML_DHCPC_FULL     CH_g_dhcpv4_client[COSA_DML_DHCP_MAX_ENTRIES]; 
 COSA_DML_DHCP_OPT       g_dhcpv4_client_sent[COSA_DML_DHCP_MAX_ENTRIES][COSA_DML_DHCP_MAX_OPT_ENTRIES];
@@ -224,6 +228,8 @@ extern char g_Subsystem[32];
 extern void mac_string_to_array(char *pStr, unsigned char array[6]);
 
 int sbapi_get_dhcpv4_active_number(int index, ULONG minAddress, ULONG maxAddress);
+
+ANSC_STATUS CosaDhcpInitJournal(PCOSA_DML_DHCPS_POOL_CFG  pPoolCfg);
 
 int find_arp_entry(char *ipaddr, char *ifname, unsigned char *pMac)
 {
@@ -1140,6 +1146,9 @@ static void getDHCPv4ServerPoolParametersFromPSM(ULONG instancenum, PCOSA_DML_DH
         _ansc_sscanf(param_value, "%d", &(pPoolCfg->X_CISCO_COM_TimeOffset));
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);   
     }
+
+    // Get the UpdateSource info from /nvram/bootstrap.json
+    CosaDhcpInitJournal(pPoolCfg);
     
     return;
 }
@@ -3789,6 +3798,150 @@ CosaDmlDhcpsSetX_COM_CISCO_Saddr
 #endif
     
     return ANSC_STATUS_SUCCESS;
+}
+
+
+
+#define PARTNER_ID_LEN 64
+void FillParamUpdateSource(cJSON *partnerObj, char *key, char *paramUpdateSource)
+{
+    cJSON *paramObj = cJSON_GetObjectItem( partnerObj, key);
+    if ( paramObj != NULL )
+    {
+        char *valuestr = NULL;
+        cJSON *paramObjVal = cJSON_GetObjectItem(paramObj, "UpdateSource");
+        if (paramObjVal)
+            valuestr = paramObjVal->valuestring;
+        if (valuestr != NULL)
+        {
+            AnscCopyString(paramUpdateSource, valuestr);
+            valuestr = NULL;
+        }
+        else
+        {
+            CcspTraceWarning(("%s - %s UpdateSource is NULL\n", __FUNCTION__, key ));
+        }
+    }
+    else
+    {
+        CcspTraceWarning(("%s - %s Object is NULL\n", __FUNCTION__, key ));
+    }
+}
+
+void FillPartnerIDJournal
+    (
+        cJSON *json ,
+        char *partnerID ,
+        PCOSA_DML_DHCPS_POOL_CFG  pPoolCfg
+    )
+{
+                cJSON *partnerObj = cJSON_GetObjectItem( json, partnerID );
+                if( partnerObj != NULL)
+                {
+                      FillParamUpdateSource(partnerObj, "Device.DHCPv4.Server.Pool.1.MinAddress", &pPoolCfg->MinAddressUpdateSource);
+                      FillParamUpdateSource(partnerObj, "Device.DHCPv4.Server.Pool.1.MaxAddress", &pPoolCfg->MaxAddressUpdateSource);
+                }
+                else
+                {
+                      CcspTraceWarning(("%s - PARTNER ID OBJECT Value is NULL\n", __FUNCTION__ ));
+                }
+}
+
+//Get the UpdateSource info from /nvram/bootstrap.json. This is needed to know for override precedence rules in set handlers
+ANSC_STATUS
+CosaDhcpInitJournal
+    (
+        PCOSA_DML_DHCPS_POOL_CFG  pPoolCfg
+    )
+{
+        char *data = NULL;
+        char buf[64] = {0};
+        cJSON *json = NULL;
+        FILE *fileRead = NULL;
+        char PartnerID[PARTNER_ID_LEN] = {0};
+        char cmd[512] = {0};
+        ULONG size = PARTNER_ID_LEN - 1;
+        int len;
+        if (!pPoolCfg)
+        {
+                CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
+                return ANSC_STATUS_FAILURE;
+        }
+
+        if (access(BOOTSTRAP_INFO_FILE, F_OK) != 0)
+        {
+                return ANSC_STATUS_FAILURE;
+        }
+
+         fileRead = fopen( BOOTSTRAP_INFO_FILE, "r" );
+         if( fileRead == NULL )
+         {
+                 CcspTraceWarning(("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ ));
+                 return ANSC_STATUS_FAILURE;
+         }
+
+         fseek( fileRead, 0, SEEK_END );
+         len = ftell( fileRead );
+         fseek( fileRead, 0, SEEK_SET );
+         data = ( char* )malloc( sizeof(char) * (len + 1) );
+         if (data != NULL)
+         {
+                memset( data, 0, ( sizeof(char) * (len + 1) ));
+                fread( data, 1, len, fileRead );
+         }
+         else
+         {
+                 CcspTraceWarning(("%s-%d : Memory allocation failed \n", __FUNCTION__, __LINE__));
+                 fclose( fileRead );
+                 return ANSC_STATUS_FAILURE;
+         }
+
+         fclose( fileRead );
+
+         if ( data == NULL )
+         {
+                CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
+                return ANSC_STATUS_FAILURE;
+         }
+         else if ( strlen(data) != 0)
+         {
+                 json = cJSON_Parse( data );
+                 if( !json )
+                 {
+                         CcspTraceWarning((  "%s : json file parser error : [%d]\n", __FUNCTION__,__LINE__));
+                         free(data);
+                         return ANSC_STATUS_FAILURE;
+                 }
+                 else
+                 {
+                         if(ANSC_STATUS_SUCCESS == fillCurrentPartnerId(PartnerID, &size))
+                         {
+                                if ( PartnerID[0] != '\0' )
+                                {
+                                        CcspTraceWarning(("%s : Partner = %s \n", __FUNCTION__, PartnerID));
+                                        FillPartnerIDJournal(json, PartnerID, pPoolCfg);
+                                }
+                                else
+                                {
+                                        CcspTraceWarning(( "Reading Deafult PartnerID Values \n" ));
+                                        strcpy(PartnerID, "comcast");
+                                        FillPartnerIDJournal(json, PartnerID, pPoolCfg);
+                                }
+                        }
+                        else{
+                                CcspTraceWarning(("Failed to get Partner ID\n"));
+                        }
+                        cJSON_Delete(json);
+                }
+                free(data);
+                data = NULL;
+         }
+         else
+         {
+                CcspTraceWarning(("BOOTSTRAP_INFO_FILE %s is empty\n", BOOTSTRAP_INFO_FILE));
+                return ANSC_STATUS_FAILURE;
+         }
+         return ANSC_STATUS_SUCCESS;
 }
 
 #endif

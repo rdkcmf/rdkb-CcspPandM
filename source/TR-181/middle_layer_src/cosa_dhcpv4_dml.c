@@ -72,7 +72,36 @@
 #include "cosa_dhcpv4_internal.h"
 #include "plugin_main_apis.h"
 
+#include "ccsp_base_api.h"
+#include "messagebus_interface_helper.h"
+
 extern void* g_pDslhDmlAgent;
+
+extern ULONG g_currentBsUpdate;
+extern char * getRequestorString();
+extern char * getTime();
+
+#define BS_SOURCE_WEBPA_STR "webpa"
+#define BS_SOURCE_RFC_STR "rfc"
+#define  PARTNER_ID_LEN  64
+
+#define IS_UPDATE_ALLOWED_IN_DM(paramName, requestorStr) ({                                                                                                  \
+    if ( g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_firmware ||                                                                                     \
+         (g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_rfcUpdate && !AnscEqualString(requestorStr, BS_SOURCE_RFC_STR, TRUE)))                         \
+    {                                                                                                                                             \
+       CcspTraceWarning(("Do NOT allow override of param: %s bsUpdate = %d, requestor = %s\n", paramName, g_currentBsUpdate, requestorStr));      \
+       return FALSE;                                                                                                                              \
+    }                                                                                                                                             \
+})
+
+// If the requestor is RFC but the param was previously set by webpa, do not override it.
+#define IS_UPDATE_ALLOWED_IN_JSON(paramName, requestorStr, UpdateSource) ({                                                                                \
+   if (AnscEqualString(requestorStr, BS_SOURCE_RFC_STR, TRUE) && AnscEqualString(UpdateSource, BS_SOURCE_WEBPA_STR, TRUE))                         \
+   {                                                                                                                                               \
+      CcspTraceWarning(("Do NOT allow override of param: %s requestor = %d updateSource = %s\n", paramName, g_currentWriteEntity, UpdateSource));  \
+      return FALSE;                                                                                                                                \
+   }                                                                                                                                               \
+})
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -6064,8 +6093,14 @@ Pool_SetParamUlongValue
         return TRUE;
     }
 
+    char * requestorStr = getRequestorString();
+    char * currentTime = getTime();
+
+    IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
+
     if( AnscEqualString(ParamName, "MinAddress", TRUE))
     {
+        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pPool->Cfg.MinAddressUpdateSource);
         /* save update to backup */
         poolCfg.InstanceNumber = pPool->Cfg.InstanceNumber;
         /* CosaDmlDhcpsGetPoolCfg(NULL, &poolCfg);*/
@@ -6095,12 +6130,22 @@ Pool_SetParamUlongValue
 
         pPool->Cfg.MinAddress.Value  = uValue;
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MinAddress of DHCP Range Changed ...\n"));
-        
+ 
+        memset( pPool->Cfg.MinAddressUpdateSource, 0, sizeof( pPool->Cfg.MinAddressUpdateSource ));
+        AnscCopyString( pPool->Cfg.MinAddressUpdateSource, requestorStr );
+
+        char buff[16] = {'\0'};
+        snprintf(buff,sizeof(buff),"%ld",uValue);
+        char PartnerID[PARTNER_ID_LEN] = {0};
+        if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
+             UpdateJsonParam("Device.DHCPv4.Server.Pool.1.MinAddress",PartnerID, buff, requestorStr, currentTime);
+
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "MaxAddress", TRUE))
     {
+        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pPool->Cfg.MaxAddressUpdateSource);
         /* save update to backup */
         poolCfg.InstanceNumber = pPool->Cfg.InstanceNumber;
         /* CosaDmlDhcpsGetPoolCfg(NULL, &poolCfg); */
@@ -6132,6 +6177,15 @@ Pool_SetParamUlongValue
         pPool->Cfg.MaxAddress.Value  = uValue;
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MaxAddress of DHCP Range Changed ...\n"));
         
+        memset( pPool->Cfg.MaxAddressUpdateSource, 0, sizeof( pPool->Cfg.MaxAddressUpdateSource ));
+        AnscCopyString( pPool->Cfg.MaxAddressUpdateSource, requestorStr );
+
+        char buff[16] = {'\0'};
+        snprintf(buff,sizeof(buff),"%ld",uValue);
+        char PartnerID[PARTNER_ID_LEN] = {0};
+        if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
+             UpdateJsonParam("Device.DHCPv4.Server.Pool.1.MaxAddress",PartnerID, buff, requestorStr, currentTime);
+
         return TRUE;
     }
 

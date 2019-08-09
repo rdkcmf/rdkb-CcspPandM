@@ -99,9 +99,9 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
 	BOOL		FirmwareDownloadCompletedNotification;
 	CHAR 		FirmwareDownloadStartedNotification[64];
 	CHAR 		DeviceManageableNotification[64];
-	CHAR 		TR69CertLocation[256];
+	COSA_BOOTSTRAP_STR 		TR69CertLocation;
 	CHAR 		PartnerID[64];
-	BOOL		bWANsideSSHEnable;
+	COSA_BOOTSTRAP_BOOL		bWANsideSSHEnable;
 
     COSA_DATAMODEL_RDKB_UIBRANDING	UiBrand;
     COSA_DATAMODEL_RDKB_WIFI_TELEMETRY    WiFi_Telemetry;
