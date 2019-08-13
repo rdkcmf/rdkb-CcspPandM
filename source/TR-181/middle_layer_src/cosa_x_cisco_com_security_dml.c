@@ -2206,7 +2206,11 @@ AccessPolicy_GetEntry
     if ( pSLinkEntry )
     {
         pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
-
+	if(pCosaContext == NULL)
+	{
+		CcspTraceWarning(("AccessPolicy_GetEntry - pCosaContext is NULL\n"));
+		return NULL;
+	}
         *pInsNumber = pCosaContext->InstanceNumber;
     }
 
