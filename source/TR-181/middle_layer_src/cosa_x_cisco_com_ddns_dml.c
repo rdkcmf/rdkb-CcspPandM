@@ -1435,50 +1435,93 @@ Service_SetParamStringValue
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "AssociatedConnection", TRUE))
     {
-        /* save update to backup */
-        AnscCopyString(pDdnsService->AssociatedConnection, pString);
-
-        return TRUE;
+        if ( sizeof(pDdnsService->AssociatedConnection) > AnscSizeOfString(pString))
+        {
+            /* save update to backup */
+            AnscCopyString(pDdnsService->AssociatedConnection, pString);
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceWarning(("'%s' value should be less than (%d) charecters\n", ParamName, sizeof(pDdnsService->AssociatedConnection) ));
+            return FALSE;
+        }
     }
 
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
-        /* save update to backup */
-        AnscCopyString(pDdnsService->Alias, pString);
+        if ( sizeof(pDdnsService->Alias) > AnscSizeOfString(pString))
+        {
+            /* save update to backup */
+            AnscCopyString(pDdnsService->Alias, pString);
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceWarning(("'%s' value should be less than (%d) charecters\n", ParamName, sizeof(pDdnsService->Alias) ));
+            return FALSE;
+        }
 
-        return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Domain", TRUE))
     {
-        /* save update to backup */
-        AnscCopyString(pDdnsService->Domain, pString);
-
-        return TRUE;
+        if ( sizeof(pDdnsService->Domain) > AnscSizeOfString(pString))
+        {
+            /* save update to backup */
+            AnscCopyString(pDdnsService->Domain, pString);
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceWarning(("'%s' value should be less than (%d) charecters\n", ParamName, sizeof(pDdnsService->Domain) ));
+            return FALSE;
+        }
     }
 
     if( AnscEqualString(ParamName, "Password", TRUE))
     {
-        /* save update to backup */
-        AnscCopyString(pDdnsService->Password, pString);
-
-        return TRUE;
+        if ( sizeof(pDdnsService->Password) > AnscSizeOfString(pString))
+        {
+            /* save update to backup */
+            AnscCopyString(pDdnsService->Password, pString);
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceWarning(("'%s' value should be less than (%d) charecters\n", ParamName, sizeof(pDdnsService->Password) ));
+            return FALSE;
+        }
     }
 
     if( AnscEqualString(ParamName, "Username", TRUE))
     {
-        /* save update to backup */
-        AnscCopyString(pDdnsService->Username, pString);
-
-        return TRUE;
+        if ( sizeof(pDdnsService->Username) > AnscSizeOfString(pString))
+        {
+            /* save update to backup */
+            AnscCopyString(pDdnsService->Username, pString);
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceWarning(("'%s' value should be less than (%d) charecters\n", ParamName, sizeof(pDdnsService->Username) ));
+            return FALSE;
+        }
     }
 
     if( AnscEqualString(ParamName, "MXHostName", TRUE))
     {
-        /* save update to backup */
-        AnscCopyString(pDdnsService->Mail_exch, pString);
-
-        return TRUE;
+        if ( sizeof(pDdnsService->Mail_exch) > AnscSizeOfString(pString))
+        {
+            /* save update to backup */
+            AnscCopyString(pDdnsService->Mail_exch, pString);
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceWarning(("'%s' value should be less than (%d) charecters\n", ParamName, sizeof(pDdnsService->Mail_exch) ));
+            return FALSE;
+        }
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
