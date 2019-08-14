@@ -172,4 +172,7 @@ CosaEthPortGetAssocDevices
   
     );
 
+void * EthWan_TelementryLogger_Thread(void *data);
+
+
 #endif

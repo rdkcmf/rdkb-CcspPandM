@@ -298,7 +298,6 @@ DeviceInfo_GetParamStringValue_Custom
 #endif
         	if( 0 == syscfg_get( NULL, "eth_wan_enabled", isEthEnabled, sizeof(isEthEnabled)) && (isEthEnabled[0] != '\0' && strncmp(isEthEnabled, "true", strlen("true")) == 0))
         	{
-            		CcspTraceInfo(("RDK_LOG_INFO, Ethernet WAN is enabled\n"));
 			EthWANEnable = 1;
 		}
 			
