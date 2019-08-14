@@ -273,7 +273,9 @@ CosaDmlDiGetBaseMacAddress
         PULONG                      pulSize
     )
 {
-    return ANSC_STATUS_SUCCESS;
+	 platform_hal_GetBaseMacAddress(pValue);
+        *pulSize = AnscSizeOfString(pValue);
+        return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
