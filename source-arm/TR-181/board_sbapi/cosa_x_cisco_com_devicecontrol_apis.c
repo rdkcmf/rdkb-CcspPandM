@@ -1715,6 +1715,9 @@ void restoreAllDBs()
         system("rm -f /nvram/moca.conf.default"); //TCXB6-1028
         system("rm -f /nvram/*.moca0"); //TCXB6-1028
 #endif
+#if defined (_XB6_PRODUCT_REQ_)
+        system("rm -f /nvram/mesh_enabled"); //RDKB-23900
+#endif
 #if defined (_ARRIS_XB6_PRODUCT_REQ_)
 	system("rm -f /nvram/etc/passwd"); //ARRISXB6-7330
 	system( "arris_rpc_client arm nvm_reset" ); //ARRISXB6-7323
