@@ -768,8 +768,15 @@ X_CISCO_COM_Security_SetParamStringValue
     if( AnscEqualString(ParamName, "EmailSendTo", TRUE))
     {
         /* collect value */
-        AnscCopyString(pSecurityCfg->EmailSendTo, pString);
-
+	if (AnscSizeOfString(pSecurityCfg->EmailSendTo) <= 64)
+	{
+        	AnscCopyString(pSecurityCfg->EmailSendTo, pString);
+	}
+	else
+	{
+		CcspTraceWarning(("Failed to set EmailSendTo. Size greater than 64!\n"));
+                return FALSE;
+	}
         return TRUE;
     }
 
