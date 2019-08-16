@@ -6813,15 +6813,20 @@ dhcpv6c_dbg_thrd(void * in)
                     if (strncmp(v6pref, "::", 2) != 0)
                     {
                         /*We just delegate longer and equal 64bits. Use zero to fill in the slot naturally. */
-                        //According to RFC 7608 and RFC 3769 , length of the IPV6 prefix may be anynumber from zero to 128.
-                        if( pref_len > 128 ) {
-                            pref_len =128;
-                        }
-                        else if (pref_len < 0) {
-                            pref_len = 0;
-                        }
+#if defined (MULTILAN_FEATURE)
                         sprintf(v6pref+strlen(v6pref), "/%d", pref_len);
-
+#else
+			if ( pref_len >= 64 )
+                            sprintf(v6pref+strlen(v6pref), "/%d", pref_len);
+                        else
+						{
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION)
+							sprintf(v6pref+strlen(v6pref), "/%d", pref_len);
+#else
+                            sprintf(v6pref+strlen(v6pref), "/%d", 64);
+#endif
+						}
+#endif
 	char cmd[100];
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_CBR_PRODUCT_REQ_)
 #else
