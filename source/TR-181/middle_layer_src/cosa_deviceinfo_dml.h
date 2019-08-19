@@ -1383,4 +1383,50 @@ EthernetWAN_GetParamStringValue
         char*                       pValue,
         ULONG*                      pUlSize
     );
+
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_EthernetWAN.
+
+    *  EthernetWAN_GetParamStringValue
+
+***********************************************************************/
+BOOL
+Telemetry_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+Telemetry_SetParamBoolValue 
+    (
+        ANSC_HANDLE hInsContext, 
+	char* ParamName, 
+	BOOL bValue
+    );
+
+
+ULONG
+Telemetry_GetParamStringValue 
+    (
+        ANSC_HANDLE hInsContext, 
+	char* ParamName, 
+	char* pValue,
+        ULONG* pUlSize
+    );
+
+BOOL
+Telemetry_SetParamStringValue 
+   (   
+        ANSC_HANDLE hInsContext, 
+	char* ParamName, 
+	char* pString
+   );
+
+    
 #endif

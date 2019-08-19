@@ -12884,3 +12884,244 @@ UPnPRefactor_SetParamBoolValue
   return FALSE;
 }
 
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        Telemetry_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            )
+
+
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Telemetry_GetParamBoolValue ( ANSC_HANDLE hInsContext, char* ParamName, BOOL* pBool) {
+
+    if( AnscEqualString(ParamName, "Enable", TRUE)) {
+        char value[8] = {'\0'};
+        if( syscfg_get(NULL, "T2Enable", value, sizeof(value)) == 0 ) {
+            if( value != NULL ) {
+                 if (strcmp(value, "true") == 0)
+                     *pBool = TRUE;
+                 else
+                     *pBool = FALSE;
+            }
+            return TRUE;
+        } else {
+            CcspTraceError(("syscfg_get failed for MessageBusSource\n"));
+        }
+    }
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        Telemetry_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            )
+
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Telemetry_SetParamBoolValue (ANSC_HANDLE hInsContext, char* ParamName, BOOL bValue) {
+
+    if (AnscEqualString(ParamName, "Enable", TRUE)) {
+        char buf[8] = { '\0' };
+        char versionBuf[8] = { '\0' };
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+        snprintf(versionBuf, sizeof(buf), "%s", bValue ? "2" : "1");
+        if (syscfg_set(NULL, "T2Enable", buf) != 0) {
+            CcspTraceError(("syscfg_set failed for Telemetry.Enable\n"));
+        } else {
+            if (syscfg_commit( ) == 0) {
+
+                if (syscfg_set(NULL, "T2Version", versionBuf) != 0) {
+                    CcspTraceError(("syscfg_set failed\n"));
+
+                } else {
+                    if (syscfg_commit( ) != 0) {
+                        CcspTraceError(("syscfg_commit failed\n"));
+                    }
+                    return TRUE;
+                }
+                return TRUE;
+            } else {
+                CcspTraceError(("syscfg_commit failed for Telemetry.Enable\n"));
+            }
+        }
+
+    }
+    return FALSE;
+}
+
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        TelemetryEndpoint_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue
+                The string value buffer;
+
+
+    return:     TRUE if succeeded;
+                FALSE if not supported.
+
+**********************************************************************/
+ULONG
+Telemetry_GetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* pValue,
+                               ULONG* pUlSize) {
+
+    /* Required for xPC sync */
+    if (AnscEqualString(ParamName, "ConfigURL", TRUE)) {
+        /* collect value */
+        char buf[128] = {'\0'};
+        syscfg_get(NULL, "T2ConfigURL", buf, sizeof(buf));
+
+        if (buf != NULL) {
+            AnscCopyString(pValue, buf);
+            return 0;
+        }
+        return -1;
+    }
+
+    if (AnscEqualString(ParamName, "Version", TRUE)) {
+        /* collect value */
+        char buf[5] = {'\0'};
+        syscfg_get(NULL, "T2Version", buf, sizeof(buf));
+
+        if (buf != NULL) {
+            AnscCopyString(pValue, buf);
+            return 0;
+        }
+        return -1;
+    }
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return -1;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Telemetry_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+        **********************************************************************/
+BOOL
+Telemetry_SetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* pString) {
+
+    if (AnscEqualString(ParamName, "ConfigURL", TRUE)) {
+        if (syscfg_set(NULL, "T2ConfigURL", pString) != 0) {
+            CcspTraceError(("syscfg_set failed\n"));
+
+        } else {
+            if (syscfg_commit( ) != 0) {
+                CcspTraceError(("syscfg_commit failed\n"));
+            }
+            return TRUE;
+        }
+    }
+
+    if (AnscEqualString(ParamName, "Version", TRUE)) {
+        if (syscfg_set(NULL, "T2Version", pString) != 0) {
+            CcspTraceError(("syscfg_set failed\n"));
+        } else {
+            if (syscfg_commit( ) != 0) {
+                CcspTraceError(("syscfg_commit failed\n"));
+            }
+            return TRUE;
+        }
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
