@@ -1536,8 +1536,32 @@
                         <object>
                             <name>Telemetry</name>
                             <objectType>object</objectType>
-                            <functions></functions>
-                            <parameters></parameters>
+                            <functions>
+                                <func_GetParamBoolValue>Telemetry_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>Telemetry_SetParamBoolValue</func_SetParamBoolValue>
+                                <func_GetParamStringValue>Telemetry_GetParamStringValue</func_GetParamStringValue>
+                                <func_SetParamStringValue>Telemetry_SetParamStringValue</func_SetParamStringValue>
+                            </functions>
+                            <parameters>
+                                <parameter>
+                                    <name>Enable</name>
+                                    <type>boolean</type>
+                                    <syntax>bool</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>ConfigURL</name>
+                                    <type>string</type>
+                                    <syntax>string</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>Version</name>
+                                    <type>string</type>
+                                    <syntax>string</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                            </parameters>
                             <objects>
                                 <object>
                                      <name>MessageBusSource</name>
