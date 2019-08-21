@@ -148,6 +148,9 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
 #define COSA_DATAMODEL_PARENTALCONTROL_OID                      34
 #define COSA_DATAMODEL_RLOG_OID                                 35
 #define COSA_DATAMODEL_MOCA_WIFI_EXTENDER_OID                   36
+#ifdef DSLITE_FEATURE_SUPPORT
+#define COSA_DATAMODEL_DSLITE_OID                              122
+#endif
 #ifdef CONFIG_CISCO_HOTSPOT
 #define COSA_DATAMODEL_GRE_OID                                  37 /* Hotspot GRE */
 #define COSA_DATAMODEL_CGRE_OID                                 38 /* Cisco GRE */
@@ -197,6 +200,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
     ANSC_HANDLE                  hRLog;                                                     \
     ANSC_HANDLE                  hMultiLan;                                                 \
     ANSC_HANDLE                  hGRE;                                                      \
+    ANSC_HANDLE                  hDslite;                        /* DSLite Handle*/         \
     ANSC_HANDLE                  hTGRE;                                                     \
     ANSC_HANDLE                  hCGRE;                                                     \
     ANSC_HANDLE                  hHotspot;                                                  \

@@ -102,6 +102,10 @@
 #include "cosa_ipv6rd_internal.h"
 #include "cosa_x_cisco_com_mld_internal.h"
 #include "cosa_x_cisco_com_multilan_apis.h"
+#ifdef DSLITE_FEATURE_SUPPORT
+#include "cosa_dslite_apis.h"
+#include "cosa_dslite_internal.h"
+#endif
 #if CONFIG_CISCO_TRUE_STATIC_IP
     #include "cosa_x_cisco_com_truestaticip_internal.h"
 #endif
@@ -286,6 +290,10 @@ CosaBackEndManagerInitialize
     AnscTraceWarning(("  CosaIPv6rdCreate done!\n"));
     pMyObject->hRA            = (ANSC_HANDLE)CosaRACreate();
     AnscTraceWarning(("  CosaRACreate done!\n"));
+#ifdef DSLITE_FEATURE_SUPPORT
+    pMyObject->hDslite         = (ANSC_HANDLE)CosaDsliteCreate();
+    AnscTraceWarning(("  CosaDsliteCreate done!\n"));
+#endif
     pMyObject->hNeighdisc     = (ANSC_HANDLE)CosaNeighdiscCreate();
     AnscTraceWarning(("  CosaNeighdiscCreate done!\n"));
     pMyObject->hMld           = (ANSC_HANDLE)CosaMldCreate();
@@ -576,6 +584,12 @@ CosaBackEndManagerRemove
         CosaRARemove((ANSC_HANDLE)pMyObject->hRA);
     }
 
+#ifdef DSLITE_FEATURE_SUPPORT
+    if ( pMyObject->hDslite )
+    {
+        CosaDsliteRemove((ANSC_HANDLE)pMyObject->hDslite);
+    }
+#endif
     if ( pMyObject->hNeighdisc )
     {
         CosaNeighdiscRemove((ANSC_HANDLE)pMyObject->hNeighdisc);
