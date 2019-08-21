@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 **********************************************************************/
-#ifdef DSLITE_FEATURE_SUPPORT
 #include "ansc_platform.h"
 #include "cosa_dslite_apis.h"
 #include "cosa_dslite_dml.h"
@@ -57,15 +56,24 @@ DSLite_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
+       BOOL bEnabled = FALSE; 
         /* collect value */
-        CosaDmlGetDsliteEnable(NULL, pBool);
-
+        CosaDmlGetDsliteEnable(NULL, &bEnabled);
+        if (TRUE == bEnabled) 
+        {
+            *pBool = TRUE;
+        }
+        else
+        {
+            *pBool = FALSE;
+        }
         return TRUE;
     }
-
+#endif
     return FALSE;
 }
 
@@ -77,6 +85,7 @@ DSLite_SetParamBoolValue
         BOOL                        bValue
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     int rc = -1;
     /* check the parameter name and set the corresponding value */
     if ( AnscEqualString(ParamName, "Enable", TRUE) )
@@ -84,9 +93,9 @@ DSLite_SetParamBoolValue
         /* save update to backup */
         CosaDmlSetDsliteEnable(NULL, (BOOLEAN)bValue);
         rc = vsystem(UPDATE_RESOLV_CMD);
-        return (rc == 0) ? TRUE : FALSE;
+        return TRUE;
     }
-
+#endif
     return FALSE;
 }
 
@@ -96,9 +105,13 @@ InterfaceSetting4_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_DATAMODEL_DSLITE pDslite = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
 
     return AnscSListQueryDepth( &pDslite->DsliteList );
+#else
+    return 0;
+#endif
 }
 
 ANSC_HANDLE
@@ -109,6 +122,7 @@ InterfaceSetting4_GetEntry
         ULONG*                      pInsNumber
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
     PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = NULL;
@@ -122,6 +136,9 @@ InterfaceSetting4_GetEntry
     }
 
     return pSListEntry;
+#else
+    return NULL;
+#endif
 }
 
 ANSC_HANDLE
@@ -131,6 +148,7 @@ InterfaceSetting4_AddEntry
         ULONG*                      pInsNumber
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = NULL;
     PCOSA_DML_DSLITE                pDsliteTunnel     = NULL;
@@ -178,6 +196,7 @@ EXIT1:
     AnscFreeMemory(pDsliteTunnel);
 
 EXIT2:
+#endif
 
     return NULL; /* return the handle */
 }
@@ -189,6 +208,7 @@ InterfaceSetting4_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
@@ -213,6 +233,9 @@ InterfaceSetting4_DelEntry
     }
 
     return returnStatus;
+#else
+    return ANSC_STATUS_SUCCESS;
+#endif
 }
 
 BOOL
@@ -223,6 +246,7 @@ InterfaceSetting4_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                 pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
 
@@ -254,6 +278,7 @@ InterfaceSetting4_GetParamBoolValue
         return TRUE;
     }
 
+#endif
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -267,6 +292,7 @@ InterfaceSetting4_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
 
@@ -305,17 +331,41 @@ InterfaceSetting4_GetParamStringValue
 
     if( AnscEqualString(ParamName, "EndpointName", TRUE))
     {
-        CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
-        /* collect value */
-        if ( AnscSizeOfString(pDsliteTunnel->addr_fqdn) < *pUlSize)
+        char endPointName[260] = {0};
+        char buf[8] = {0};
+
+        syscfg_get(NULL, "dslite_enable", buf, sizeof(buf));
+
+        if (!strncmp(buf,"1",1))
         {
-            AnscCopyString(pValue, pDsliteTunnel->addr_fqdn);
-            return 0;
+            CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
+            if (pDsliteTunnel->mode == 1)
+            {
+                commonSyseventGet("dslite_dhcpv6_endpointname", endPointName, sizeof(endPointName));
+            }
+            else
+            {
+                if ( AnscSizeOfString(pDsliteTunnel->addr_fqdn) < sizeof(endPointName))
+                {
+                    AnscCopyString(endPointName,pDsliteTunnel->addr_fqdn);
+                }
+            }
+            /* collect value */
+            if ( AnscSizeOfString(endPointName) < *pUlSize)
+            {
+                AnscCopyString(pValue, endPointName);
+                return 0;
+            }
+            else
+            {
+                *pUlSize = AnscSizeOfString(endPointName);
+                return 1;
+            }
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pDsliteTunnel->addr_fqdn)+1;
-            return 1;
+            AnscCopyString(pValue, "");
+            return 0;
         }
     }
 
@@ -367,6 +417,7 @@ InterfaceSetting4_GetParamStringValue
         }
     }
 
+#endif
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
@@ -379,15 +430,44 @@ InterfaceSetting4_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Status", TRUE))
     {
-        CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
+        char buf[8] = {0};
+        int status = 2; //status: Enabled(1), Disabled(2), Error(3)
+        syscfg_get(NULL, "dslite_enable", buf, sizeof(buf));
+
+        if (!strncmp(buf,"1",1))
+        {
+            char endPointName[260] = {0};
+
+            CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
+            if (pDsliteTunnel->mode == 1)
+            {
+                commonSyseventGet("dslite_dhcpv6_endpointname", endPointName, sizeof(endPointName));
+            }
+            else
+            {
+                if (AnscSizeOfString(pDsliteTunnel->addr_fqdn) < sizeof(endPointName))
+                {
+                    AnscCopyString(endPointName,pDsliteTunnel->addr_fqdn);
+                }
+            }
+            if (AnscSizeOfString(endPointName) > 0)
+            {
+                status = 1; // Enabled
+            }
+            else
+            {
+                status = 3; // Error
+            }
+        }
         /* collect value */
-        *puLong = pDsliteTunnel->status;
+        *puLong = status;
 
         return TRUE;
     }
@@ -427,7 +507,7 @@ InterfaceSetting4_GetParamUlongValue
 
         return TRUE;
     }
-
+#endif
     return FALSE;
 }
 
@@ -439,6 +519,7 @@ InterfaceSetting4_SetParamBoolValue
         BOOL                        bValue
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
 
@@ -464,7 +545,7 @@ InterfaceSetting4_SetParamBoolValue
 
         return TRUE;
     }
-
+#endif
     return FALSE;
 }
 
@@ -476,6 +557,7 @@ InterfaceSetting4_SetParamStringValue
         char*                       pString
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
 
@@ -509,6 +591,7 @@ InterfaceSetting4_SetParamStringValue
         AnscCopyString(pDsliteTunnel->addr_ipv6, pString);
         return TRUE;
     }
+#endif
 
     return FALSE;
 }
@@ -521,6 +604,7 @@ InterfaceSetting4_SetParamUlongValue
         ULONG                       uValue
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
 
@@ -544,7 +628,7 @@ InterfaceSetting4_SetParamUlongValue
         pDsliteTunnel->tcpmss   =  uValue;
         return TRUE;
     }
-
+#endif
     return FALSE;
 }
 
@@ -556,6 +640,7 @@ InterfaceSetting4_Validate
         ULONG*                      puLength
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
@@ -595,7 +680,7 @@ InterfaceSetting4_Validate
             return FALSE;
         }
     }
-
+#endif
     return TRUE;
 }
 
@@ -605,6 +690,7 @@ InterfaceSetting4_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
@@ -641,6 +727,9 @@ InterfaceSetting4_Commit
     AnscZeroMemory( pDslite->Alias, sizeof(pDslite->Alias) );
 
     return returnStatus;
+#else
+    return 0;
+#endif
 
 }
 
@@ -650,6 +739,7 @@ InterfaceSetting4_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+#ifdef DSLITE_FEATURE_SUPPORT
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
@@ -670,6 +760,9 @@ InterfaceSetting4_Rollback
     AnscZeroMemory( pDslite->Alias, sizeof(pDslite->Alias) );
 
     return returnStatus;
+#else
+    return 0;
+#endif
 
 }
-#endif
+

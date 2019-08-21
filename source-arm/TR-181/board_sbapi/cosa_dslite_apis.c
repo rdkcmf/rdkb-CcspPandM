@@ -33,17 +33,26 @@ ANSC_STATUS
 CosaDmlGetDsliteEnable
     (
         ANSC_HANDLE                 hContext,
-        BOOLEAN                     *bEnabled
+        BOOL                       *bEnabled
     )
 {
     int rc = -1;
     UtopiaContext ctx;
+    boolean_t enabled = FALSE;
 
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
-    rc = Utopia_GetDsliteEnable(&ctx, (boolean_t *)bEnabled);
+    rc = Utopia_GetDsliteEnable(&ctx, &enabled);
 
+    if (TRUE == enabled)
+    {
+        *bEnabled = TRUE;
+    }
+    else
+    {
+        *bEnabled = FALSE;
+    }
     /* Free Utopia Context */
     Utopia_Free(&ctx,!rc);
     return rc;
@@ -68,6 +77,7 @@ CosaDmlSetDsliteEnable
     {
         rc = Utopia_SetDsliteEnable(&ctx, bEnabled);
         Utopia_Free(&ctx,!rc);
+        commonSyseventSet("wan-restart", "");
         system("service_dslite restart &");
         return ANSC_STATUS_SUCCESS;
     }
