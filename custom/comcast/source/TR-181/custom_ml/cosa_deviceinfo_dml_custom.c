@@ -333,7 +333,7 @@ DeviceInfo_GetParamStringValue_Custom
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_MTA_MAC", TRUE))
 	{
-#if !defined(_PLATFORM_RASPBERRYPI_)
+#if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
   	   CosaDmlDiGetMTAMacAddress(NULL, pValue,pulSize);
 #endif
 	   return 0;
@@ -365,7 +365,7 @@ DeviceInfo_GetParamStringValue_Custom
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_WAN_IPv6", TRUE))
 	{
-#if !defined(_PLATFORM_RASPBERRYPI_)
+#if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
 	   CosaDmlDiGetRouterIPv6Address(NULL, pValue,pulSize);
            #if defined(_COSA_FOR_BCI_)
            if (syscfg_set(NULL, "wanIPv6Address",pValue) != 0) {
@@ -382,7 +382,7 @@ DeviceInfo_GetParamStringValue_Custom
 
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_MTA_IP", TRUE))
 	{
-#if !defined(_PLATFORM_RASPBERRYPI_)
+#if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
    	   CosaDmlDiGetMTAIPAddress(NULL, pValue,pulSize);
 #endif
 	   return 0;
