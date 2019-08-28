@@ -2206,8 +2206,18 @@
 <object>
                         <name>X_RDKCENTRAL-COM_xBlueTooth</name>
                         <objectType>object</objectType>
-                        <functions></functions>
-                        <parameters></parameters>
+                          <functions>
+                                <func_GetParamBoolValue>xBlueTooth_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>xBlueTooth_SetParamBoolValue</func_SetParamBoolValue>
+                          </functions>
+                          <parameters>
+                              <parameter>
+                                   <name>LimitBeaconDetection</name>
+                                   <type>boolean</type>
+                                   <syntax>bool</syntax>
+                                   <writable>true</writable>
+                                   </parameter>
+                              </parameters>
                                 <objects>
                                            <object>
 
@@ -2221,7 +2231,6 @@
                                                                 <name>Tile</name>
 
                                                                 <objectType>object</objectType>
-
                                                                 <functions></functions>
                                                                 <parameters></parameters>
                                                                  <objects>
