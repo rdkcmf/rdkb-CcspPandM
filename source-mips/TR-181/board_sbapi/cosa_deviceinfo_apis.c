@@ -1881,6 +1881,8 @@ int setXOpsReverseSshArgs(char* pString) {
     char ip_version_number[4] = { "\0" };
     char callbackport[8] = { "\0" };
     char* host = NULL;
+    int rows = 0;
+    int columns = 0;
 #endif
 
     int inputMsgSize = strlen(pString);
@@ -1923,7 +1925,6 @@ int setXOpsReverseSshArgs(char* pString) {
 #ifdef ENABLE_SHORTS
     } else {
         strncpy(tempCopy, pString, inputMsgSize);
- 
         memset(stunnelSSHArgs,'\0',sizeof(stunnelSSHArgs));
         tempStr = (char*) strtok(tempCopy, ";");
         while (NULL != tempStr) {
@@ -1936,14 +1937,19 @@ int setXOpsReverseSshArgs(char* pString) {
                     host = (char*) calloc(strlen(value), sizeof(char));
                 }
                 sprintf(host, "%s",value + strlen("host="));
+            } else if(value = strstr(tempStr, "rows=")) {
+                rows=atoi(value + strlen("rows="));
+            } else if(value = strstr(tempStr, "columns=")) {
+                columns=atoi(value + strlen("columns="));
             } else {
                 AnscTraceWarning(("SHORTS does not accept invalid property\n"));
             }
             tempStr = (char*) strtok(NULL, ";");
         }
-        // for arguments for script in the form " ip_version_number localIP + remoteIP + remotePort"
+        // for arguments for script in the form " ip_version_number + localIP + remoteIP + remotePort + remoteTerminalRows
+        //                                        + remoteTerminalColumns"
         if(host != NULL) {
-            sprintf(stunnelSSHArgs,"%s %s %s %s %s &",stunnelCommand, ip_version_number, localIP, host, callbackport);
+            sprintf(stunnelSSHArgs,"%s %s %s %s %s %d %d &",stunnelCommand, ip_version_number, localIP, host, callbackport, rows, columns);
             if(host != NULL) {
                 free(host);
                 host = NULL;
