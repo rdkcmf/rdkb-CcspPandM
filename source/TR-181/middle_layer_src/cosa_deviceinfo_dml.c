@@ -9860,6 +9860,135 @@ if( AnscEqualString(ParamName, "Enable", TRUE))
 
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        CDLDM_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pulSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue
+                The buffer of returned string value;
+
+                ULONG*                      pulSize
+                The buffer of returned string size;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+ULONG
+CDLDM_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "CDLModuleUrl", TRUE))
+    {
+        /* collect value */
+           char buff[255]={'\0'};
+
+           syscfg_get( NULL, "CDLModuleUrl", buff, sizeof(buff));
+           if( buff != NULL )
+           {
+                AnscCopyString(pValue,  buff);
+                *pulSize = AnscSizeOfString( pValue );
+                return 0;
+           }
+           return -1;
+    }
+
+    return -1;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        CDLDM_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+CDLDM_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    BOOL bReturnValue = FALSE;
+    
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "CDLModuleUrl", TRUE))
+    {
+           if (syscfg_set(NULL, "CDLModuleUrl", pString) != 0)
+           {
+                  CcspTraceError(("syscfg_set failed for CDLModuleUrl \n", __FUNCTION__));
+                  bReturnValue = FALSE;
+           }
+           else
+           {
+                  if (syscfg_commit() != 0)
+                  {
+                        CcspTraceError(("syscfg_commit failed for CDLModuleUrl \n", __FUNCTION__));
+                        bReturnValue = FALSE;
+                  }
+                  bReturnValue = TRUE;
+           }         
+    }
+    else
+    {
+           CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+           bReturnValue = FALSE;
+    }
+
+    return bReturnValue;
+}
+
 /***********************************************************************
 
  APIs for Object:
