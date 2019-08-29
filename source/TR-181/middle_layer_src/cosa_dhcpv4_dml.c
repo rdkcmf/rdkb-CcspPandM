@@ -754,9 +754,9 @@ Client_GetParamUlongValue
     if( AnscEqualString(ParamName, "IPAddress", TRUE))
     {
         /* collect value */
+        CosaDmlDhcpcGetInfo(NULL, pCxtLink->InstanceNumber, &pDhcpc->Info);
         if ( pDhcpc->Info.DHCPStatus == COSA_DML_DHCPC_STATUS_Bound )
         {
-            CosaDmlDhcpcGetInfo(NULL, pCxtLink->InstanceNumber, &pDhcpc->Info);
             *puLong = pDhcpc->Info.IPAddress.Value;
         }
         else
@@ -771,9 +771,9 @@ Client_GetParamUlongValue
     if( AnscEqualString(ParamName, "SubnetMask", TRUE))
     {
         /* collect value */
+        CosaDmlDhcpcGetInfo(NULL, pCxtLink->InstanceNumber, &pDhcpc->Info);
         if ( pDhcpc->Info.DHCPStatus == COSA_DML_DHCPC_STATUS_Bound )
         {
-            CosaDmlDhcpcGetInfo(NULL, pCxtLink->InstanceNumber, &pDhcpc->Info);
             *puLong = pDhcpc->Info.SubnetMask.Value;
         }
         else
