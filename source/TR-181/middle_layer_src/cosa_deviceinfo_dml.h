@@ -876,6 +876,32 @@ SwitchToDibbler_SetParamBoolValue
 
  APIs for Object:
 
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CDLDM.CDLModuleUrl
+
+    *  CDLDM_GetParamStringValue
+    *  CDLDM_SetParamStringValue
+***********************************************************************/
+BOOL
+CDLDM_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
+ULONG
+CDLDM_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
     DeviceInfo.X_RDKCENTRAL-COM_SwitchToUDHCPC.
 
     *  SwitchToUDHCPC_GetParamBoolValue
