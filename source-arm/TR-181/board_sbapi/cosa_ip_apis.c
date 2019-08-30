@@ -1299,6 +1299,7 @@ CosaDmlIPGetIPv6Addresses
     if (!p_ipif || !p_num)
         return NULL;
 
+#if defined (MULTILAN_FEATURE)
     if (p_ipif->Cfg.InstanceNumber > COSA_USG_IF_NUM) {
         /*current only support one global ipv6 addr for multilan*/
         *p_num = 1;
@@ -1309,7 +1310,9 @@ CosaDmlIPGetIPv6Addresses
 
         p_dml_addr->InstanceNumber = 1;
         CosaDmlIpIfMlanGetV6Addr2(NULL, p_ipif->Cfg.InstanceNumber, p_dml_addr);
-    } else {
+    } else
+#else
+    {
 
         for (i=0; i<g_ipif_num; i++)
             if (!strncmp(g_ipif_names[i], p_ipif->Info.Name, sizeof(p_ipif->Info.Name)))
@@ -1333,6 +1336,7 @@ CosaDmlIPGetIPv6Addresses
         }
 
     }
+#endif
     return p_dml_addr;
 }
 #else
