@@ -117,6 +117,21 @@
 /*
  *  DHCP Client
  */
+
+#ifdef _HUB4_PRODUCT_REQ_
+#define SYSEVENT_MAPT_CONFIG_FLAG "mapt_config_flag"
+#define SYSEVENT_MAPT_RATIO "mapt_ratio"
+#define SYSEVENT_MAPT_IPADDRESS "mapt_ip_address"
+#define SYSEVENT_MAPT_PSID_OFFSET "mapt_psid_offset"
+#define SYSEVENT_MAPT_PSID_VALUE "mapt_psid_value"
+#define SYSEVENT_MAPT_PSID_LENGTH "mapt_psid_length"
+#define SYSEVENT_MAPT_IPV6_ADDRESS "mapt_ipv6_address"
+#define SYSEVENT_MAP_EA_LEN "map_ea_length"
+#define SYSEVENT_MAP_TRANSPORT_MODE "map_transport_mode"
+#define SYSEVENT_MAP_IS_FMR "map_is_fmr"
+#define SYSEVENT_FIELD_IPV6_PREFIX        "ipv6_prefix"
+#endif
+
 typedef  struct
 _COSA_DML_DHCPCV6_SVR
 {
