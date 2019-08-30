@@ -155,6 +155,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
 #endif
 #define COSA_DATAMODEL_TSIP_OID                                 40
 #define COSA_DATAMODEL_FILETRANSFER_OID                         41
+#define COSA_DATAMODEL_LANMANAGEMENT_OID                        42
 
 
 /*
@@ -204,6 +205,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
     ANSC_HANDLE                  hDeviceFingerprint;                                        \
     ANSC_HANDLE                  hRabid;                                                    \
     ANSC_HANDLE                  hAdvPC;                                                    \
+    ANSC_HANDLE                  hLanMngm;                                                  \
     PCOSA_PLUGIN_INFO            hCosaPluginInfo;								   		
 
 typedef  struct
