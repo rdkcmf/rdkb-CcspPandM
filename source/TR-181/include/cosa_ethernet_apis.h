@@ -138,13 +138,6 @@ COSA_DML_ETH_PORT_SINFO,  *PCOSA_DML_ETH_PORT_SINFO;
  *  Dynamic portion of Ethernet port info
  */
 typedef  struct
-_COSA_DML_ASSOCDEV_INFO
-{
-    UCHAR                           MacAddress[MACADDR_SZ];
-}
-COSA_DML_ASSOCDEV_INFO, *PCOSA_DML_ASSOCDEV_INFO;
-
-typedef  struct
 _COSA_DML_ETH_PORT_DINFO
 {
     COSA_DML_IF_STATUS              Status;
@@ -162,7 +155,6 @@ _COSA_DML_ETH_PORT_FULL
     COSA_DML_ETH_PORT_CFG           Cfg;
     COSA_DML_ETH_PORT_SINFO         StaticInfo;
     COSA_DML_ETH_PORT_DINFO         DynamicInfo;
-    COSA_DML_ASSOCDEV_INFO     	    AssocClient[ETH_INTERFACE_MAX_ASSOC_DEVICES];
 }
 COSA_DML_ETH_PORT_FULL, *PCOSA_DML_ETH_PORT_FULL;
 
