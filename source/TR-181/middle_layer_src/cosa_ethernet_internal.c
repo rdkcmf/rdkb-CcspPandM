@@ -70,7 +70,12 @@
 
 #include "cosa_ethernet_internal.h"
 
+#define ONE_HR 60*60
+
+static void CosaEthWanTelementryLogger(void);
+
 extern void * g_pDslhDmlAgent;
+
 
 /**********************************************************************
 
@@ -387,7 +392,8 @@ CosaEthernetInitialize
     CosaEthLinkRegGetInfo((ANSC_HANDLE)pMyObject);
     
     CosaEthVlanTerminationRegGetInfo((ANSC_HANDLE)pMyObject);
-    
+
+    CosaEthWanTelementryLogger();
     return returnStatus;
 }
 
@@ -1270,4 +1276,39 @@ CosaEthVlanTerminationRegDelInfo
     }
 
     return ANSC_STATUS_SUCCESS;
+}
+
+void * EthWan_TelementryLogger_Thread(void *data)
+{
+    pthread_detach(pthread_self());
+
+    while (1)
+    {
+        CcspTraceInfo(("RDK_LOG_INFO , Ethernet WAN is enabled\n"));
+        sleep(ONE_HR);
+    }
+}
+
+
+static void CosaEthWanTelementryLogger(void)
+{
+    pthread_t ethwantelementrylogger_tid;
+    char isEthEnabled[64]={'\0'};
+    int res;
+
+    if(0 == syscfg_init())
+    {
+        if( 0 == syscfg_get( NULL, "eth_wan_enabled", isEthEnabled, sizeof(isEthEnabled)) && (isEthEnabled[0] != '\0' && strncmp(isEthEnabled, "true", strlen("true")) == 0))
+        {
+            res = pthread_create(&ethwantelementrylogger_tid, NULL, EthWan_TelementryLogger_Thread, NULL);
+            if (res != 0)
+            {
+                AnscTraceWarning(("CosaEthWanTelementryLogger Create EthWan_TelementryLogger_Thread error %d\n", res));
+            }
+            else
+            {
+                AnscTraceWarning(("CosaEthWanTelementryLogger EthWan_TelementryLogger_Thread Created\n"));
+            }
+        }
+    }
 }
