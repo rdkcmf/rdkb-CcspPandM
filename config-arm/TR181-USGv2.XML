@@ -152,6 +152,84 @@
       </parameters>
 
     </object>
+	
+    <object>
+
+     <name>X_RDKCENTRAL-COM_DeviceControl</name>
+ 
+     <objectType>object</objectType>
+ 
+      <objects>
+  
+       <object>
+   
+        <name>LanManagementEntry</name>
+   
+        <objectType>object</objectType>
+   
+        <functions>
+   
+         <func_GetParamBoolValue>LanManagement_GetParamBoolValue</func_GetParamBoolValue>
+	
+         <func_GetParamStringValue>LanManagement_GetParamStringValue</func_GetParamStringValue>
+	
+         <func_SetParamBoolValue>LanManagement_SetParamBoolValue</func_SetParamBoolValue>
+	
+         <func_SetParamStringValue>LanManagement_SetParamStringValue</func_SetParamStringValue>
+	
+         <func_Validate>LanManagement_Validate</func_Validate>
+	
+         <func_Commit>LanManagement_Commit</func_Commit>
+	
+         <func_Rollback>LanManagement_Rollback</func_Rollback>
+	
+        </functions>
+   
+        <parameters>
+   
+         <parameter>
+	
+          <name>LanIpv6Enable</name>
+	 
+          <type>boolean</type>
+	 
+          <syntax>bool</syntax>
+	 
+          <writable>true</writable>
+	 
+         </parameter>
+	
+         <parameter>
+	
+          <name>LanIpv6UlaEnable</name>
+	 
+          <type>boolean</type>
+	 
+          <syntax>bool</syntax>
+	 
+          <writable>true</writable>
+	 
+         </parameter>
+	
+         <parameter>
+	
+          <name>LanIpv6Ula</name>
+	 
+          <type>string(64)</type>
+	 
+          <syntax>string</syntax>
+	 
+          <writable>true</writable>
+	 
+         </parameter>
+	
+        </parameters>
+   
+      </object>
+  
+     </objects>
+ 
+    </object>	
 
     <object>
 

@@ -322,6 +322,8 @@ if(id != 0)
     AnscTraceWarning(("  CosaDiagnosticsCreate done!\n"));
     pMyObject->hTime          = (ANSC_HANDLE)CosaTimeCreate();
     AnscTraceWarning(("  CosaTimeCreate done!\n"));
+    pMyObject->hLanMngm          = (ANSC_HANDLE)CosaLanManagementCreate();
+    AnscTraceWarning(("  CosaLanManagementCreate done!\n"));
 #if !defined(_PLATFORM_IPQ_)
     //pMyObject->hMoCA          = (ANSC_HANDLE)CosaMoCACreate();
     AnscTraceWarning(("  CosaMoCACreate done!\n"));
@@ -452,6 +454,11 @@ CosaBackEndManagerRemove
     if ( pMyObject->hTime )
     {
         CosaTimeRemove((ANSC_HANDLE)pMyObject->hTime);
+    }
+
+    if ( pMyObject->hLanMngm )
+    {
+        CosaLanManagementRemove((ANSC_HANDLE)pMyObject->hLanMngm);
     }
 
     if ( pMyObject->hUserinterface )
