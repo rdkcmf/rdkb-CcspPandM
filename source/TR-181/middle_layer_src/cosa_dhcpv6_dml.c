@@ -3259,6 +3259,288 @@ ReceivedOption_GetParamStringValue
     return -1;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        dhcp6c_mapt_mape_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+dhcp6c_mapt_mape_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    char temp[32] = {0};
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "MapIsFMR", TRUE) )
+    {
+#ifdef _HUB4_PRODUCT_REQ_
+        commonSyseventGet(SYSEVENT_MAP_IS_FMR, temp, sizeof(temp));
+        if( AnscEqualString(temp, "TRUE", TRUE))
+            *pBool  = TRUE;
+        else
+            *pBool  = FALSE;
+#else
+        *pBool  = FALSE;
+#endif
+        return TRUE;
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        dhcp6c_mapt_mape_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+dhcp6c_mapt_mape_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    char temp[64] = {0};
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "MapEALen", TRUE) )
+    {
+#ifdef _HUB4_PRODUCT_REQ_
+        commonSyseventGet(SYSEVENT_MAP_EA_LEN, temp, sizeof(temp));
+        *puLong  = strtoul(temp, NULL, 10);
+#else
+        *puLong  = 0;
+#endif
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "MapPSIDOffset", TRUE) )
+    {
+#ifdef _HUB4_PRODUCT_REQ_
+        commonSyseventGet(SYSEVENT_MAPT_PSID_OFFSET, temp, sizeof(temp));
+        *puLong  = strtoul(temp, NULL, 10);
+#else
+        *puLong  = 0;
+#endif
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "MapPSIDLen", TRUE) )
+    {
+#ifdef _HUB4_PRODUCT_REQ_
+        commonSyseventGet(SYSEVENT_MAPT_PSID_LENGTH, temp, sizeof(temp));
+        *puLong  = strtoul(temp, NULL, 10);
+#else
+        *puLong  = 0;
+#endif
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "MapPSID", TRUE) )
+    {
+#ifdef _HUB4_PRODUCT_REQ_
+        commonSyseventGet(SYSEVENT_MAPT_PSID_VALUE, temp, sizeof(temp));
+        *puLong  = strtoul(temp, NULL, 10);
+#else
+        *puLong  = 0;
+#endif
+        return TRUE;
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        dhcp6c_mapt_mape_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     0 if succeeded;
+                1 if short of buffer size; (*pUlSize = required size)
+                -1 if not supported.
+
+**********************************************************************/
+ULONG
+dhcp6c_mapt_mape_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+    char temp[64] = {0};
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "MapTransportMode", TRUE) )
+    {
+#ifdef _HUB4_PRODUCT_REQ_
+        commonSyseventGet(SYSEVENT_MAP_TRANSPORT_MODE, temp, sizeof(temp));
+        if ( AnscSizeOfString(temp) < *pUlSize)
+        {
+            AnscCopyString(pValue, temp);
+            return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(temp)+1;
+            return 1;
+        }
+#else
+        AnscCopyString(pValue, "");
+        return 0;
+#endif
+    }
+
+    if( AnscEqualString(ParamName, "MapBRPrefix", TRUE) )
+    {
+#ifdef _HUB4_PRODUCT_REQ_
+        commonSyseventGet(SYSEVENT_FIELD_IPV6_PREFIX, temp, sizeof(temp));
+        if ( AnscSizeOfString(temp) < *pUlSize)
+        {
+            AnscCopyString(pValue, temp);
+            return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(temp)+1;
+            return 1;
+        }
+#else
+        AnscCopyString(pValue, "");
+        return 0;
+#endif
+    }
+
+    if( AnscEqualString(ParamName, "MapRuleIPv4Prefix", TRUE) )
+    {
+#ifdef _HUB4_PRODUCT_REQ_
+        commonSyseventGet(SYSEVENT_MAPT_IPADDRESS, temp, sizeof(temp));
+        if ( AnscSizeOfString(temp) < *pUlSize)
+        {
+            AnscCopyString(pValue, temp);
+            return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(temp)+1;
+            return 1;
+        }
+#else
+        AnscCopyString(pValue, "");
+        return 0;
+#endif
+    }
+
+    if( AnscEqualString(ParamName, "MapRuleIPv6Prefix", TRUE) )
+    {
+#ifdef _HUB4_PRODUCT_REQ_
+        commonSyseventGet(SYSEVENT_MAPT_IPV6_ADDRESS, temp, sizeof(temp));
+        if ( AnscSizeOfString(temp) < *pUlSize)
+        {
+            AnscCopyString(pValue, temp);
+            return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(temp)+1;
+            return 1;
+        }
+#else
+        AnscCopyString(pValue, "");
+        return 0;
+#endif
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return -1;
+}
+
 /***********************************************************************
 
  APIs for Object:
