@@ -1355,7 +1355,7 @@ CosaDmlIPGetIPv6Addresses
     if (!p_ipif || !p_num)
         return NULL;
 #if defined (MULTILAN_FEATURE)
-    if (p_ipif->Cfg.InstanceNumber >= COSA_USG_IF_NUM) {
+    if (p_ipif->Cfg.InstanceNumber > COSA_USG_IF_NUM) {
         /*current only support one global ipv6 addr for multilan*/
         *p_num = 1;
 #else
