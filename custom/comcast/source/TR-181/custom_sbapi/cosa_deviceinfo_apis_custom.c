@@ -155,6 +155,19 @@ CosaDmlDiGetCMMacAddress
 	return Local_CosaDmlGetParamValueByPathName("Device.DPoE.Mac_address",pValue, pulSize);
 #endif      
 }
+/*X_COMCAST-COM_EWAN_CMMAC*/
+ANSC_STATUS
+CosaDmlDiGetEwanCMMacAddress
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    )
+{
+     platform_hal_GetBaseMacAddress(pValue);
+    *pulSize = AnscSizeOfString(pValue);
+    return ANSC_STATUS_SUCCESS;
+}
 
 /*X_COMCAST-COM_WAN_MAC*/
 ANSC_STATUS

@@ -93,6 +93,16 @@ CosaDmlDiGetCMMacAddress
         PULONG                      pulSize
     );
 
+/*X_COMCAST-COM_EWAN_CMMAC*/
+ANSC_STATUS
+CosaDmlDiGetEwanCMMacAddress
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    );
+
+
 /*X_COMCAST-COM_WAN_IP*/
 ANSC_STATUS
 CosaDmlDiGetRouterMacAddress
