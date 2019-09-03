@@ -306,7 +306,7 @@ DeviceInfo_GetParamStringValue_Custom
 	{
 	        if( EthWANEnable )
         	{
-		   CosaDmlDiGetRouterMacAddress(NULL, pValue,pulSize);        		
+                   CosaDmlDiGetEwanCMMacAddress(NULL, pValue,pulSize);
         	}
 		else
 		{
