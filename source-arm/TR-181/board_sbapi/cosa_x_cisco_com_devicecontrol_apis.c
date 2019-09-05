@@ -3397,7 +3397,9 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
 #endif 
  {"Device.WiFi.Radio.1.Enable", acSetRadioString, ccsp_boolean}, 
  {"Device.WiFi.Radio.2.Enable", acSetRadioString, ccsp_boolean},
+#if !defined (_CBR_PRODUCT_REQ_) // CBR don't have XHS don't force here
  {"Device.WiFi.SSID.3.Enable", acSetRadioString, ccsp_boolean}
+#endif
 };
  
 // Pseudo bridge
