@@ -6591,6 +6591,9 @@ Feature_GetParamBoolValue
 
             return TRUE;
         }
+        else {
+            CcspTraceWarning(("%s: ble_GetStatus failed\n", __func__));
+	}
 #else
             *pBool = FALSE;
             return TRUE;
@@ -7065,6 +7068,9 @@ Feature_SetParamBoolValue
              }
           }
           return TRUE;
+       }
+       else {
+            CcspTraceWarning(("%s: ble_Enable failed\n", __func__));
        }
 #else
        return FALSE;
@@ -11978,6 +11984,7 @@ RPC_SetParamBoolValue
                FILE *Abortfile = NULL;
                if (file = fopen("/tmp/.deferringreboot", "r")){
                    if (Abortfile = fopen("/tmp/AbortReboot", "r")){
+                       fclose(file);
                        fclose(Abortfile);
                        CcspTraceWarning(("Abort already done '%s'\n", ParamName));
                        return TRUE;
@@ -12340,10 +12347,10 @@ xBlueTooth_GetParamBoolValue
 {
           if( AnscEqualString(ParamName, "LimitBeaconDetection", TRUE))
           {
-               char buf[8];
+               char buf[8] = {0};
                *pBool = FALSE;
                syscfg_get( NULL, "limit_beacon_detection", buf, sizeof(buf));
-               if( buf != NULL )
+               if( buf[0] != '\0' )
                {
                   if (!strncasecmp(buf, "true", 4))
                   {
