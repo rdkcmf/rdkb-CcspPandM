@@ -73,13 +73,11 @@ AdvancedParentalControl_GetParamBoolValue
 {
     /* check the parameter name and return the corresponding value */
     PCOSA_DATAMODEL_ADVPC       pMyObject     = (PCOSA_DATAMODEL_ADVPC)g_pCosaBEManager->hAdvPC;
-#if !defined (_XB7_PRODUCT_REQ_)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         *pBool = pMyObject->bEnable;
         return TRUE;
     }
-#endif
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
     return FALSE;
 }
@@ -128,7 +126,6 @@ AdvancedParentalControl_SetParamBoolValue
     PCOSA_DATAMODEL_ADVPC       pMyObject     = (PCOSA_DATAMODEL_ADVPC)g_pCosaBEManager->hAdvPC;
     ANSC_STATUS  returnStatus = ANSC_STATUS_SUCCESS;
 
-#if !defined (_XB7_PRODUCT_REQ_)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if(bValue == pMyObject->bEnable)
@@ -146,7 +143,6 @@ AdvancedParentalControl_SetParamBoolValue
 
         return TRUE;
     }
-#endif
 
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
     return FALSE;
