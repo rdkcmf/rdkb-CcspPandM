@@ -51,6 +51,19 @@ v6Count=0
 
 export PATH=$PATH:/fss/gw
 source /etc/utopia/service.d/log_capture_path.sh
+ATOM_RPC_IP=`cat /etc/device.properties | grep ATOM_ARPING_IP | cut -f 2 -d"="`
+BOX_TYPE=`cat /etc/device.properties | grep BOX_TYPE | cut -f 2 -d"="`
+
+if [ "$BOX_TYPE" = "XB3" ]; then
+	LAST_REBOOT_REASON=`syscfg get X_RDKCENTRAL-COM_LastRebootReason`
+	echo_t "Network Response: LastRebootReason is $LAST_REBOOT_REASON"
+	if [ "$LAST_REBOOT_REASON" = "factory-reset" ]
+	then
+	    echo_t "Network Response: Removing onboard files from ATOM on factory reset"
+		rpcclient $ATOM_RPC_IP "rm /nvram/.device_onboarded"
+		rpcclient $ATOM_RPC_IP "rm /nvram/DISABLE_ONBOARD_LOGGING"
+	fi
+fi
 
 echo_t "Network Response: Checking erouter0 ip address"
 
@@ -220,6 +233,7 @@ then
 				gotResponse=1
 			else
 				if [ -f "/etc/ONBOARD_LOGGING_ENABLE" ]; then
+				    echo_t "Network Response: Enabling onboard logs backup"
 					touch /tmp/backup_onboardlogs
 				fi
 			fi
@@ -340,19 +354,24 @@ fi
 
 # to update device onboarding state.
 if [ -f "/etc/ONBOARD_LOGGING_ENABLE" ]; then
-    echo_t "Onboard logging is enabled"
     NETWORKRESPONSEVALUE=`cat /var/tmp/networkresponse.txt`
     unitActivated=`syscfg get unit_activated`
-    ATOM_RPC_IP=`cat /etc/device.properties | grep ATOM_ARPING_IP | cut -f 2 -d"="`
-    BOX_TYPE=`cat /etc/device.properties | grep BOX_TYPE | cut -f 2 -d"="`
-
+    echo_t "Network Response: Updating device onboarding state"
     if [ "$unitActivated" = "1" ] && [ "$NETWORKRESPONSEVALUE" = "204" ]
     then
-        touch /nvram/.device_onboarded
-        if [ -e "/usr/bin/rpcclient" ] && [ "$BOX_TYPE" == "XB3" ]; then
-            rpcclient $ATOM_RPC_IP "/bin/touch /nvram/.device_onboarded"
-        fi
+        echo_t "Network Response: Device is detected as onboarded"
+		if [ -f "/nvram/.device_onboarded" ]
+		then
+			echo_t "Network Response: /nvram/.device_onboarded is already present"
+		else
+		    echo_t "Network Response: Creating /nvram/.device_onboarded file"
+		    touch /nvram/.device_onboarded
+		    if [ -e "/usr/bin/rpcclient" ] && [ "$BOX_TYPE" == "XB3" ]; then
+		        rpcclient $ATOM_RPC_IP "/bin/touch /nvram/.device_onboarded"
+		    fi
+		fi
     else
+        echo_t "Network Response: Device is detected as not onboarded"
         if [ -f "/nvram/.device_onboarded" ]
         then
             rm -rf /nvram/.device_onboarded
