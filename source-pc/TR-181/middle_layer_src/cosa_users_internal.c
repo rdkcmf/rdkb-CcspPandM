@@ -348,12 +348,27 @@ CosaUsersBackendGetUserInfo
         }
 
         USERS_USER_SET_DEFAULTVALUE(pCosaUser);
-        
+        pCosaUser->NumOfFailedAttempts=0;
         returnStatus = CosaDmlUserGetEntry(NULL, ulIndex, pCosaUser);
         if ( returnStatus != ANSC_STATUS_SUCCESS )
         {
             AnscFreeMemory(pCosaUser);
             break;
+        }
+        if (ulIndex == 2)
+        {
+           char buff[128]={'\0'};
+           _get_db_value( SYSCFG_FILE, buff, sizeof(buff), "hash_password_3");
+           if( buff[0] != '\0' && pCosaUser->HashedPassword[0]== '\0')
+           {
+             _ansc_strncpy(pCosaUser->HashedPassword,buff,sizeof(pCosaUser->HashedPassword));
+	     _set_db_value(SYSCFG_FILE,"hash_password_3",pCosaUser->HashedPassword);
+	     memset(buff, 0, sizeof(buff));
+	     _get_db_value( SYSCFG_FILE, buff, sizeof(buff), "user_password_3");
+	     if( buff[0] != '\0' ){
+                 _unset_db_value(SYSCFG_FILE, "user_password_3");
+	     }
+           }
         }
 
         pUserCxtLink = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory( sizeof(COSA_CONTEXT_LINK_OBJECT) );

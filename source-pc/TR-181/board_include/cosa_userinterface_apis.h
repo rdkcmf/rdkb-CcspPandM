@@ -70,7 +70,7 @@
 #define HTTP_INTERNAL_PORT            80
 #define HTTPS_INTERNAL_PORT           443
 #define SSH_INTERNAL_PORT             22
-
+#define SYSCFG_FILE		      "/nvram/syscfg.db"
 /**********************************************************************
                 STRUCTURE AND CONSTANT DEFINITIONS
 **********************************************************************/
@@ -112,6 +112,15 @@ _COSA_DML_RA_CFG
 
 typedef struct _COSA_DML_RA_CFG  COSA_DML_RA_CFG,  *PCOSA_DML_RA_CFG;
 
+typedef struct
+_COSA_DML_USERINTERFACE_CFG
+{
+    BOOLEAN                         bPasswordLockoutEnable;
+    BOOLEAN                         bHTTPSecurityHeaderEnable;
+    ULONG                           PasswordLockoutAttempts;
+    ULONG                           PasswordLockoutTime;
+}
+COSA_DML_USERINTERFACE_CFG,  *PCOSA_DML_USERINTERFACE_CFG;
 typedef  struct
 _COSA_DML_UI_IPRANGE_ENTRY
 {
@@ -148,6 +157,21 @@ CosaDmlRaGetCfg
         ANSC_HANDLE                 hContext,
         PCOSA_DML_RA_CFG            pCfg
     );
+
+ANSC_STATUS
+CosaDmlUserInterfaceSetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_USERINTERFACE_CFG            pCfg
+    );
+
+ANSC_STATUS
+CosaDmlUserInterfaceGetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_USERINTERFACE_CFG            pCfg
+    );
+
 
 ANSC_STATUS
 CosaDmlRaGetSupportedProtocols
