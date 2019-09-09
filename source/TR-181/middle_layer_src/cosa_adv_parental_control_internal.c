@@ -64,6 +64,7 @@ CosaAdvPCCreate
         return  (ANSC_HANDLE)NULL;
     }
 
+#if !defined (_XB7_PRODUCT_REQ_)
     if ((fd = fopen (ADV_PC_FILE_PATH, "r")) != NULL)
     {
         fclose(fd);
@@ -73,6 +74,9 @@ CosaAdvPCCreate
     {
         pMyObject->bEnable = TRUE;
     }
+#else
+    pMyObject->bEnable = FALSE;
+#endif
 
     return  (ANSC_HANDLE)pMyObject;
 }
