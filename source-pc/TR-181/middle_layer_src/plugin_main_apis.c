@@ -113,6 +113,11 @@
 #include "cosa_common_util.h"
 #endif
 
+//LNT_EMU - PSM ACCESS
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
+static void CheckAndSetRebootReason();
+
 /*PCOSA_DIAG_PLUGIN_INFO             g_pCosaDiagPluginInfo;*/
 COSAGetParamValueByPathNameProc    g_GetParamValueByPathNameProc;
 COSASetParamValueByPathNameProc    g_SetParamValueByPathNameProc;
@@ -348,9 +353,14 @@ CosaBackEndManagerInitialize
      */
     EvtDispterHandleEventAsync();
 #endif
-
+// Set Parameter values to default on Reboot. Emulator currently does not have support for setting additional default values on reboot.
+    _set_db_value(SYSCFG_FILE,"NumOfFailedAttempts","0");
+    _set_db_value(SYSCFG_FILE,"LockOutRemainingTime","0");
     printf("PandM DM initialization done!\n");
     CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PandM DM initialization done!\n"));
+    //Unknown Reboot Reason 
+    
+    CheckAndSetRebootReason();
     return returnStatus;
 }
 
@@ -581,4 +591,63 @@ CosaBackEndManagerRemove
     AnscFreeMemory((ANSC_HANDLE)pMyObject);
 
     return returnStatus;
+}
+
+static void CheckAndSetRebootReason()
+{
+  
+    int value = -1;
+    if(fopen("/var/tmp/lastrebootreason","r")==NULL)
+    {
+        char rebootReason[64] = "unknown";
+        char BOOT_TIME_LOG_FILE[32] = "/rdklogs/logs/BootTime.log";
+        FILE *fpBootLogFile = NULL;
+
+        CcspTraceWarning((" /var/tmp/lastrebootreason File doesn't exist --Create new file\n"));
+        system("touch /var/tmp/lastrebootreason");
+        //Check for Rebootcounter value--GET & SET
+        value = getRebootCounter();
+        if(value == -1)
+        {
+            CcspTraceWarning(("Error to GET Counter Value\n"));
+        }
+        else
+        {
+            value = value -1;
+            if(value<0)
+            {
+                //SET unknown as reason 
+                if(-1 == setUnknownRebootReason())
+                     CcspTraceWarning(("Error to SET unknown reboot reason \n"));
+            }
+            else
+            {
+                char *buf;
+		if(PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason", NULL, &buf) == CCSP_SUCCESS)
+                {
+                    AnscCopyString(rebootReason,buf);
+                }
+            }
+                // reset counter to 0 for both known and unknown reason
+                if(-1 == setRebootCounter())
+                    CcspTraceWarning(("Error to SET reboot counter \n"));
+
+        }
+
+        fpBootLogFile = fopen(BOOT_TIME_LOG_FILE, "a+");
+        if (NULL != fpBootLogFile)
+        {
+            fprintf(fpBootLogFile, "Received reboot_reason as:%s\n", rebootReason);
+            fclose(fpBootLogFile);
+        }
+        else
+        {
+            CcspTraceWarning(("Fail to open BootTime.log to write reboot reason \n"));
+        }
+           
+    }
+    else
+    {
+        CcspTraceWarning(("/var/tmp/lastrebootreason File exists\n"));
+    }
 }

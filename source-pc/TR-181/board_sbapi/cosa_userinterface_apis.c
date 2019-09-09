@@ -49,6 +49,8 @@
         *  CosaDmlRaInit
         *  CosaDmlRaSetCfg
         *  CosaDmlRaGetCfg
+	 *   CosaDmlUserInterfaceGetCfg
+	 * CosaDmlUserInterfaceSetCfg
         *  CosaDmlRaGetSupportedProtocols
     -------------------------------------------------------------------
 
@@ -243,6 +245,151 @@ CosaDmlRaGetCfg
     return ANSC_STATUS_SUCCESS;
 }
 
+int _get_db_value(char * cmd, char * out, int len, char * val)
+{
+
+        FILE * fp = NULL;
+        char   buf[512] = {0};
+        char * p = NULL;
+	char *ch;
+
+        fp = fopen(cmd, "r");
+
+        if (fp)
+        {
+                while(fgets(buf, sizeof(buf), fp) != NULL){
+			ch = strstr(buf,val);
+                        if(ch != NULL){
+                                p = strtok(buf,"=");
+                                p = strtok(NULL, "=");
+                                strncpy(out, p, len-1);
+				return 0;
+                        }
+                }
+		if (ch == NULL)
+			return 1;
+        }
+        fclose(fp);
+	return 1;
+}
+
+int _set_db_value(char *file_name,char *current_string,char *value)
+{
+
+        FILE *fp = NULL;
+        char path[1024] = {0},buf[512] = {0},updated_str[512]={0},cmd[512]={0};
+        int count = 0;
+        char *ch;
+        sprintf(cmd,"%s=%s",current_string,value);
+        fp = fopen(file_name,"r");
+        if(fp)
+        {
+                while(fgets(path,sizeof(path),fp) != NULL)
+                {
+                        ch=strstr(path,current_string);
+                        if(ch != NULL)
+                        {
+                                for(count=0;path[count]!='\n';count++)
+                                        updated_str[count] = path[count];
+                                updated_str[count]='\0';
+                                sprintf(buf,"sed -i \"s/%s/%s/g\" %s",updated_str,cmd,file_name);
+                                system(buf);
+                                return 0;
+                        }
+                }
+                if(ch == NULL)
+                {
+                        sprintf(buf,"sed -i '$ a %s' %s",cmd,file_name);
+                        system(buf);
+			return 0;
+                }
+        }
+        fclose(fp);
+        return 1;
+}
+
+ANSC_STATUS
+CosaDmlUserInterfaceGetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_USERINTERFACE_CFG            pCfg
+    )
+{
+	char buf1[512] = {0};
+	int count = 0,ch=0;
+
+        char buf[10];
+	memset(buf,0,sizeof(buf));
+        if ((_get_db_value( SYSCFG_FILE, buf, sizeof(buf), "PasswordLockoutEnable")) == 0){
+		if( buf != NULL )
+		{
+			for(count=0;buf[count] != '\n' ; count++)
+			{
+				buf1[count] = buf[count];
+			}
+			buf1[count] = '\0';
+			pCfg->bPasswordLockoutEnable = (strcmp(buf1,"true") ? FALSE : TRUE);
+		}
+	}
+	else{
+		pCfg->bPasswordLockoutEnable = FALSE;
+	}
+	memset(buf,0,sizeof(buf));
+        _get_db_value( SYSCFG_FILE, buf, sizeof(buf), "PasswordLockoutAttempts");
+
+        if( buf != NULL )
+       {
+			pCfg->PasswordLockoutAttempts=atoi(buf);
+       }
+
+	memset(buf,0,sizeof(buf));
+        _get_db_value( SYSCFG_FILE, buf, sizeof(buf), "PasswordLockoutTime");
+
+        if( buf != NULL )
+       {
+			pCfg->PasswordLockoutTime=atoi(buf);
+       }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlUserInterfaceSetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_USERINTERFACE_CFG            pCfg
+    )
+{
+char buf[10];
+int lockoutTime = 0;
+memset(buf,0,sizeof(buf));
+
+    if ( TRUE == pCfg->bPasswordLockoutEnable )
+    {
+	 if (_set_db_value(SYSCFG_FILE, "PasswordLockoutEnable", "true") != 0)
+		AnscTraceWarning(("%s : syscfg_set failed\n",__FUNCTION__));
+    }
+    else
+    {
+	 if (_set_db_value(SYSCFG_FILE, "PasswordLockoutEnable", "false") != 0)
+		AnscTraceWarning(("%s :PasswordLockoutEnable syscfg_set failed\n",__FUNCTION__));
+    }
+    sprintf(buf, "%d",  pCfg->PasswordLockoutAttempts);
+    if (_set_db_value(SYSCFG_FILE, "PasswordLockoutAttempts", buf) != 0)
+	AnscTraceWarning(("%s : PasswordLockoutAttempts syscfg_set failed\n",__FUNCTION__));
+
+    memset(buf,0,sizeof(buf));
+    sprintf(buf, "%d",  pCfg->PasswordLockoutTime);
+    if (_set_db_value(SYSCFG_FILE, "PasswordLockoutTime", buf) != 0)
+	AnscTraceWarning(("%s : PasswordLockoutTime syscfg_set failed\n",__FUNCTION__));
+
+    lockoutTime = atoi(buf) / 1000;
+    sprintf(buf, "%d",  lockoutTime);
+    if (_set_db_value(SYSCFG_FILE, "LockOutRemainingTime", buf) != 0)
+	AnscTraceWarning(("%s : LockOutRemainingTime syscfg_set failed\n",__FUNCTION__));
+
+    return ANSC_STATUS_SUCCESS;
+}
 
 ULONG
 CosaDmlUIIPRangeGetNumberOfEntries

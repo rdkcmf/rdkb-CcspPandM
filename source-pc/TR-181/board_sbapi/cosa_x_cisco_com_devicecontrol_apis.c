@@ -75,6 +75,7 @@
 #include "dmsb_tr181_psm_definitions.h"
 
 #define HTTPD_DEF_CONF  "/etc/lighttpd.conf"
+#define SYSCFG_FILE "/nvram/syscfg.db"
 
 #if 1//LNT_EMU
 // for PSM access
@@ -843,7 +844,14 @@ CosaDmlDcSetFactoryReset
 		system("sleep 5");
 		system("iptables -t nat -F && iptables -t mangle -F && iptables -F");
 		system("sleep 5");
-		PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason", ccsp_string,"factory-reset");
+		if (PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason", ccsp_string,"factory-reset") != CCSP_SUCCESS)
+		{
+			AnscTraceWarning(("%s Error writing factory-reset to LastRebootReason\n", __FUNCTION__));
+		}
+		if (_set_db_value(SYSCFG_FILE, "X_RDKCENTRAL-COM_LastRebootCounter", "1") != 0)
+        	{
+                	AnscTraceWarning(("syscfg_set failed for Counter\n"));
+        	}
 		system("(sleep 5 && reboot) &");
 
 	}

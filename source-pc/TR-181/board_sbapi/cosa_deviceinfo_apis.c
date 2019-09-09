@@ -90,6 +90,10 @@
 #include "cosa_deviceinfo_apis.h"
 #include <unistd.h>
 
+//LNT_EMU - PSM ACCESS
+extern ANSC_HANDLE bus_handle;
+extern char g_Subsystem[32];
+
 #ifdef _COSA_SIM_
 
 // this file is in integration_src.pc directory
@@ -102,6 +106,7 @@
 #define _SSH_ERROR_ "NOT SET"
 #define PARTNER_ID_LEN 64
 
+#define SYSCFG_FILE  "/nvram/syscfg.db"
 extern void* g_pDslhDmlAgent;
 
 static const int OK = 1 ;
@@ -1059,6 +1064,65 @@ isValidInput
 }
 
 #endif
+
+int getRebootCounter()
+{   
+        char buf[8];
+	_get_db_value(SYSCFG_FILE, buf, sizeof(buf), "X_RDKCENTRAL-COM_LastRebootCounter");
+	if( buf != NULL )
+    	{
+    		return atoi(buf);
+	}
+	else
+	{
+		AnscTraceWarning(("syscfg_get failed\n"));
+		return -1;
+	}
+}
+
+int setRebootCounter()
+{
+        int val = 0;
+        char buf[8];
+	snprintf(buf,sizeof(buf),"%d",val);     
+        
+        if ((_set_db_value(SYSCFG_FILE, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0)) 
+	{
+		AnscTraceWarning(("syscfg_set failed\n"));
+		return -1;
+	}
+	return 0;
+}
+
+int setUnknownRebootReason()
+{
+        int val = 0;
+        char buf[8];
+	snprintf(buf,sizeof(buf),"%d",val);     
+
+	if (PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason", ccsp_string,"unknown") != CCSP_SUCCESS)
+	{
+        	AnscTraceWarning(("%s Error writing unknown to LastRebootReason\n", __FUNCTION__ ));
+        }
+	return 0;
+}
+
+void setLastRebootReason(char* reason)
+{
+	int val = 1;
+	char buf[8];
+	snprintf(buf,sizeof(buf),"%d",val);
+
+	if (PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason", ccsp_string,reason) != CCSP_SUCCESS)
+	{
+		AnscTraceWarning(("%s Error writing %s to LastRebootReason\n", __FUNCTION__, reason));
+	}
+
+	if (_set_db_value(SYSCFG_FILE, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0)
+	{
+		AnscTraceWarning(("syscfg_set failed for Counter\n"));
+	}
+}
 
 int setXOpsReverseSshArgs(char* pString) {
 

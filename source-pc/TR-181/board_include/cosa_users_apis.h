@@ -67,6 +67,7 @@
 #include "../middle_layer_src/cosa_apis.h"
 #include "../middle_layer_src/cosa_users_dml.h"
 
+#define SYSCFG_FILE		      "/nvram/syscfg.db"
 
 typedef  enum
 _COSA_DML_USER_PERMISSION
@@ -87,6 +88,12 @@ struct _COSA_DML_USER
     char                            Username[64];
     char                            Password[64];
     char                            Language[16];
+    char                            NumOfFailedAttempts;
+    char                            X_RDKCENTRAL_COM_ComparePassword[32];
+    char                            HashedPassword[128];
+    int			       	    RemainingAttempts;
+    int			       	    LoginCounts;
+    int				    LockOutRemainingTime;
     /*
      * *  Extensions
      * */
@@ -156,13 +163,36 @@ CosaDmlUserGetCfg
         ANSC_HANDLE                 hContext,
         PCOSA_DML_USER              pEntry      /* Identified by InstanceNumber */
     );
+ANSC_STATUS
+user_validatepwd
+        (
+            ANSC_HANDLE                 hContext,
+            PCHAR                       pString,
+            PCOSA_DML_USER              pEntry,
+            char*                       hashpassword
+        );
 
+ANSC_STATUS
+hash_userPassword
+        (
+                PCHAR              pString,
+                char*              hashedpassword      /* Identified by InstanceNumber */
+        );
 
+ANSC_STATUS
+user_hashandsavepwd
+        (
+            ANSC_HANDLE                 hContext,
+            PCHAR                       pString,
+            PCOSA_DML_USER              pEntry
 
+        );
 
-
-
-
-
+ANSC_STATUS
+CosaDmlUserResetPassword
+      (
+          BOOL                        bValue,
+          PCOSA_DML_USER              pEntry
+      );
 
 #endif
