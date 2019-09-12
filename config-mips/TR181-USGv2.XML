@@ -3267,9 +3267,45 @@
 
           </parameter>
 
+	  <parameter>
+
+            <name>X_RDKCENTRAL-COM_AssociatedDeviceNumberOfEntries</name>
+
+            <type>unsignedInt</type>
+
+            <syntax>uint32</syntax>
+
+            <writable>false</writable>
+
+          </parameter>
+
           </parameters>
 
           <objects>
+
+		<object>
+              		<name>X_RDKCENTRAL-COM_AssociatedDevice</name>
+			<objectType>dynamicTable</objectType>
+			<maxInstance>256</maxInstance>
+
+			<functions>
+			      <func_GetEntryCount>AssociatedDevice1_GetEntryCount</func_GetEntryCount>
+			      <func_GetEntry>AssociatedDevice1_GetEntry</func_GetEntry>
+			      <func_IsUpdated>AssociatedDevice1_IsUpdated</func_IsUpdated>
+			      <func_Synchronize>AssociatedDevice1_Synchronize</func_Synchronize>
+			      <func_GetParamStringValue>AssociatedDevice1_GetParamStringValue</func_GetParamStringValue>
+	              </functions>
+
+        	      <parameters>
+	      		<parameter>
+			      <name>MACAddress</name>
+			      <type>string(1024)</type>
+			      <syntax>string</syntax>
+			      <writable>true</writable>
+		      </parameter>
+		</parameters>
+
+            </object>
 
             <object>
 

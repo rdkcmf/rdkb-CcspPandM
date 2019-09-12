@@ -589,7 +589,15 @@ Interface_GetParamUlongValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_AssociatedDeviceNumberOfEntries", TRUE))
+    {
+	ULONG total_eth_device = 0;
 
+	/* collect value */
+	CosaDmlEthPortGetNumofClientsinfo(&total_eth_device, pEthernetPortFull->Cfg.InstanceNumber);
+        *puLong = total_eth_device;
+	return TRUE;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -716,21 +724,22 @@ Interface_GetParamStringValue
     }
 
     if( AnscEqualString(ParamName, "X_CISCO_COM_AssociatedDevice", TRUE))
-    {
-        CosaDmlEthPortGetDinfo(NULL, pEthernetPortFull->Cfg.InstanceNumber, &pEthernetPortFull->DynamicInfo);
-        CosaEthPortGetAssocDevices(pEthernetPortFull->DynamicInfo.AssocDevices,assocDeviceMacList,pEthernetPortFull->DynamicInfo.AssocDevicesCount);
-        if(AnscSizeOfString(assocDeviceMacList) < *pUlSize) 
-        {
-            AnscCopyString(pValue,assocDeviceMacList);
-            *pUlSize = AnscSizeOfString(assocDeviceMacList);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(assocDeviceMacList);
-            return 1;
-        }
-    }
+	{
+		CosaDmlEthPortGetDinfo(NULL, pEthernetPortFull->Cfg.InstanceNumber, &pEthernetPortFull->DynamicInfo);
+		CosaEthPortGetAssocDevices(pEthernetPortFull->DynamicInfo.AssocDevices,assocDeviceMacList,pEthernetPortFull->DynamicInfo.AssocDevicesCount);
+
+		if(AnscSizeOfString(assocDeviceMacList) < *pUlSize) 
+		{
+			AnscCopyString(pValue,assocDeviceMacList);
+			*pUlSize = AnscSizeOfString(assocDeviceMacList);
+			return 0;
+		}
+		else
+		{
+			*pUlSize = AnscSizeOfString(assocDeviceMacList);
+			return 1;
+		}
+	}
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
@@ -836,7 +845,6 @@ Interface_SetParamIntValue
         pEthernetPortFull->Cfg.MaxBitRate = iValue;
         return TRUE;
     }
-
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -1087,6 +1095,227 @@ Interface_Rollback
     CosaDmlEthPortGetCfg(NULL, &pEthernetPortFull->Cfg);
 
     return 0;
+}
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Ethernet.Interface.{i}.X_RDKCENTRAL-COM_AssociatedDevice.{i}.
+
+    *  AssociatedDevice1_GetEntryCount
+    *  AssociatedDevice1_GetEntry
+    *  AssociatedDevice1_IsUpdated
+    *  AssociatedDevice1_Synchronize
+    *  AssociatedDevice1_GetParamStringValue
+***********************************************************************/
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+        AssociatedDevice_GetEntryCount
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to retrieve the count of the table.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The count of the table
+
+**********************************************************************/
+ULONG
+AssociatedDevice1_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+	PCOSA_DATAMODEL_ETHERNET        pMyObject     = (PCOSA_DATAMODEL_ETHERNET)g_pCosaBEManager->hEthernet;
+	PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
+	ULONG                           InterfaceIndex  = pEthernetPortFull->Cfg.InstanceNumber;
+	ULONG total_eth_device = 0;
+
+	CosaDmlEthPortGetNumofClientsinfo(&total_eth_device, InterfaceIndex);
+
+	return total_eth_device;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ANSC_HANDLE
+        AssociatedDevice1_GetEntry
+            (
+                ANSC_HANDLE                 hInsContext,
+                ULONG                       nIndex,
+                ULONG*                      pInsNumber
+            );
+
+    description:
+
+        This function is called to retrieve the entry specified by the index.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                ULONG                       nIndex,
+                The index of this entry;
+
+                ULONG*                      pInsNumber
+                The output instance number;
+
+    return:     The handle to identify the entry
+
+**********************************************************************/
+ANSC_HANDLE
+AssociatedDevice1_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    )
+{
+	PCOSA_DATAMODEL_ETHERNET        pMyObject     = (PCOSA_DATAMODEL_ETHERNET)g_pCosaBEManager->hEthernet;
+	PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
+	ULONG                           InterfaceIndex  = pEthernetPortFull->Cfg.InstanceNumber;
+	ULONG total_eth_device = 0;
+
+	CosaDmlEthPortGetNumofClientsinfo(&total_eth_device, InterfaceIndex); /* return the handle */
+	pMyObject->EthernetPortFullTable[InterfaceIndex - 1].DynamicInfo.AssocDevicesCount = total_eth_device;
+
+	*pInsNumber = nIndex + 1;
+	
+	return &pMyObject->EthernetPortFullTable[InterfaceIndex - 1].AssocClient[nIndex]; /* return the handle */
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        AssociatedDevice1_IsUpdated
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is checking whether the table is updated or not.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     TRUE or FALSE.
+
+**********************************************************************/
+BOOL
+AssociatedDevice1_IsUpdated
+    (
+     ANSC_HANDLE hInsContext
+    )
+{
+    return TRUE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        ULONG
+	AssociatedDevice1_Synchronize
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to synchronize the table.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+AssociatedDevice1_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+	PCOSA_DATAMODEL_ETHERNET        pMyObject     = (PCOSA_DATAMODEL_ETHERNET)g_pCosaBEManager->hEthernet;
+	PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
+	ULONG                           InterfaceIndex  = pEthernetPortFull->Cfg.InstanceNumber;
+	ANSC_STATUS                     ret                  = ANSC_STATUS_SUCCESS;
+
+	ret = CosaDmlEthPortGetClientMac(&pMyObject->EthernetPortFullTable[InterfaceIndex - 1], pMyObject->EthernetPortFullTable[InterfaceIndex - 1].DynamicInfo.AssocDevicesCount, InterfaceIndex);
+	
+	return ret;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        AssociatedDevice1_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+ULONG
+AssociatedDevice1_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+	PCOSA_DML_ASSOCDEV_INFO	     pAssocClient	= (PCOSA_DML_ASSOCDEV_INFO)hInsContext;
+
+	if( AnscEqualString(ParamName, "MACAddress", TRUE))
+	{
+		AnscCopyMemory(pValue, pAssocClient->MacAddress, 17);
+		return 0;
+	}
+
+	/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+	return -1;
 }
 
 /***********************************************************************
