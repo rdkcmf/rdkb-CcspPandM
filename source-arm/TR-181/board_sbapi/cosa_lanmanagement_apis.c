@@ -309,6 +309,12 @@ ANSC_STATUS CosaDmlLanManagement_SetLanIpv6Ula(char *lan_ula, int lan_ula_len) {
         ula[0]);
 
         strncpy(lan_ula, ula_address, lan_ula_len);
+
+       CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+       if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent),
+                       PSM_LANMANAGEMENTENTRY_LAN_ULA, NULL, lan_ula) ) {
+           return ANSC_STATUS_FAILURE;
+       }
     }
 
     memset(command, '\0', sizeof(command));
@@ -324,13 +330,6 @@ ANSC_STATUS CosaDmlLanManagement_SetLanIpv6Ula(char *lan_ula, int lan_ula_len) {
             ula_prefix[i] = ula_address[i];
     }
     strcat(ula_prefix, "::/64");
-
-    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-
-    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent),
-                       PSM_LANMANAGEMENTENTRY_LAN_ULA, NULL, lan_ula) ) {
-        return ANSC_STATUS_FAILURE;
-    }
 
     if(commonSyseventFd == -1) {
         openCommonSyseventConnection();
@@ -411,9 +410,7 @@ CosaDmlLanManagementInit
         AnscTraceWarning(("%s CosaDmlLanManagementGetCfg() failure \n", __FUNCTION__));
     }
 
-    if(strcmp(pLanMngmCfg->LanIpv6Ula, "undefined") == 0) {
-        CosaDmlLanManagement_SetLanIpv6Ula(pLanMngmCfg->LanIpv6Ula, sizeof(pLanMngmCfg->LanIpv6Ula));
-    }
+    CosaDmlLanManagement_SetLanIpv6Ula(pLanMngmCfg->LanIpv6Ula, sizeof(pLanMngmCfg->LanIpv6Ula));
 
     AnscCopyMemory(&g_LanMngmCfg, pLanMngmCfg, sizeof(COSA_DML_LANMANAGEMENT_CFG));
 
