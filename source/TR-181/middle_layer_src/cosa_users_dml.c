@@ -1008,7 +1008,7 @@ User_SetParamUlongValue
     	char buf[10];
  	int MaxFailureAttempts = 0;
 	int lockoutState=0;
-
+	pUser->NumOfFailedAttempts = uValue;
 	#if defined(_COSA_FOR_BCI_)
 		if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
 		{
