@@ -69,6 +69,7 @@
 #include "ansc_platform.h"
 #include "cosa_x_cisco_com_security_dml.h"
 #include "cosa_x_cisco_com_security_internal.h"
+#include "safe_str_lib.h"
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -729,87 +730,196 @@ X_CISCO_COM_Security_SetParamStringValue
         char*                       pString
     )
 {
+    errno_t                         rc              = -1;
+    int                             ind             = -1;
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
     PCOSA_DML_SECURITY_CFG          pSecurityCfg    = &pCosaDMSecurity->SecurityConfig;
 
+    if((pString == NULL) || (ParamName == NULL))
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, %s %s:%d\n",__FILE__,__FUNCTION__,__LINE__));
+        return FALSE;
+    }
+
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "FilterWebTraffic", TRUE))
+    if(!(rc = strcmp_s("FilterWebTraffic", strlen("FilterWebTraffic"), ParamName, &ind)))
     {
-        /* collect value */
-        AnscCopyString(pSecurityCfg->FilterWebTraffic, pString);
-
-        return TRUE;
-    }
-
-    if( AnscEqualString(ParamName, "TrafficDetect", TRUE))
-    {
-        /* collect value */
-        AnscCopyString(pSecurityCfg->TrafficDetect, pString);
-
-        return TRUE;
-    }
-
-    if( AnscEqualString(ParamName, "FilterLanTraffic", TRUE))
-    {
-        /* collect value */
-        AnscCopyString(pSecurityCfg->FilterLanTraffic, pString);
-
-        return TRUE;
-    }
-
-    if( AnscEqualString(ParamName, "AllowPassthrough", TRUE))
-    {
-        /* collect value */
-        AnscCopyString(pSecurityCfg->AllowPassthrough, pString);
-
-        return TRUE;
-    }
-
-    if( AnscEqualString(ParamName, "EmailSendTo", TRUE))
-    {
-        /* collect value */
-	if (AnscSizeOfString(pSecurityCfg->EmailSendTo) <= 64)
-	{
-        	AnscCopyString(pSecurityCfg->EmailSendTo, pString);
-	}
-	else
-	{
-		CcspTraceWarning(("Failed to set EmailSendTo. Size greater than 64!\n"));
+        if(!ind)
+        {
+            /* collect value */
+	    rc = STRCPY_S_NOCLOBBER(pSecurityCfg->FilterWebTraffic, sizeof(pSecurityCfg->FilterWebTraffic), pString);
+	    if(rc != EOK)
+            {
+                AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
                 return FALSE;
+            }
+	    return TRUE;
 	}
-        return TRUE;
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+        return FALSE;
     }
 
-    if( AnscEqualString(ParamName, "EmailServer", TRUE))
+    if(!(rc = strcmp_s("TrafficDetect", strlen("TrafficDetect"), ParamName, &ind)))
     {
-        /* collect value */
-        AnscCopyString(pSecurityCfg->EmailServer, pString);
-
-        return TRUE;
+        if(!ind)
+        {
+            /* collect value */
+	    rc = STRCPY_S_NOCLOBBER(pSecurityCfg->TrafficDetect, sizeof(pSecurityCfg->TrafficDetect), pString);
+	    if(rc != EOK)
+            {
+                AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+        return FALSE;
     }
 
-    if( AnscEqualString(ParamName, "EmailUserName", TRUE))
+    if(!(rc = strcmp_s("FilterLanTraffic", strlen("FilterLanTraffic"), ParamName, &ind)))
     {
-        /* collect value */
-        AnscCopyString(pSecurityCfg->EmailUserName, pString);
-
-        return TRUE;
+        if(!ind)
+        {
+            /* collect value */
+	    rc = STRCPY_S_NOCLOBBER(pSecurityCfg->FilterLanTraffic, sizeof(pSecurityCfg->FilterLanTraffic), pString);
+	    if(rc != EOK)
+            {
+                AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+        return FALSE;
     }
 
-    if( AnscEqualString(ParamName, "EmailPassword", TRUE))
+    if(!(rc = strcmp_s("AllowPassthrough", strlen("AllowPassthrough"), ParamName, &ind)))
     {
-        /* collect value */
-        AnscCopyString(pSecurityCfg->EmailPassword, pString);
-
-        return TRUE;
+        if(!ind)
+        {
+            /* collect value */
+	    rc = STRCPY_S_NOCLOBBER(pSecurityCfg->AllowPassthrough, sizeof(pSecurityCfg->AllowPassthrough), pString);
+	    if(rc != EOK)
+            {
+                AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+        return FALSE;
     }
 
-    if( AnscEqualString(ParamName, "EmailFromAddress", TRUE))
+    if(!(rc = strcmp_s("EmailSendTo", strlen("EmailSendTo"), ParamName, &ind)))
     {
-        /* collect value */
-        AnscCopyString(pSecurityCfg->EmailFromAddress, pString);
+        if(!ind)
+        {
+            /* collect value */
+            rc = STRCPY_S_NOCLOBBER(pSecurityCfg->EmailSendTo, sizeof(pSecurityCfg->EmailSendTo), pString);
+            if(rc != EOK)
+            {
+                AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+        return FALSE;
+    }
 
-        return TRUE;
+    if(!(rc = strcmp_s("EmailServer", strlen("EmailServer"), ParamName, &ind)))
+    {
+        if(!ind)
+        {
+            /* collect value */
+	    rc = STRCPY_S_NOCLOBBER(pSecurityCfg->EmailServer, sizeof(pSecurityCfg->EmailServer), pString);
+	    if(rc != EOK)
+            {
+                AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+        return FALSE;
+    }
+
+    if(!(rc = strcmp_s("EmailUserName", strlen("EmailUserName"), ParamName, &ind)))
+    {
+        if(!ind)
+        {
+            /* collect value */
+	    rc = STRCPY_S_NOCLOBBER(pSecurityCfg->EmailUserName, sizeof(pSecurityCfg->EmailUserName), pString);
+	    if(rc != EOK)
+            {
+                AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+        return FALSE;
+    }
+
+    if(!(rc = strcmp_s("EmailPassword", strlen("EmailPassword"), ParamName, &ind)))
+    {
+        if(!ind)
+        {
+            /* collect value */
+	    rc = STRCPY_S_NOCLOBBER(pSecurityCfg->EmailPassword, sizeof(pSecurityCfg->EmailPassword), pString);
+	    if(rc != EOK)
+            {
+                AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+        return FALSE;
+    }
+
+    if(!(rc = strcmp_s("EmailFromAddress", strlen("EmailFromAddress"), ParamName, &ind)))
+    {
+        if(!ind)
+        {
+            /* collect value */
+	    rc = STRCPY_S_NOCLOBBER(pSecurityCfg->EmailFromAddress, sizeof(pSecurityCfg->EmailFromAddress), pString);
+	    if(rc != EOK)
+            {
+                AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+        return FALSE;
     }
     
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */

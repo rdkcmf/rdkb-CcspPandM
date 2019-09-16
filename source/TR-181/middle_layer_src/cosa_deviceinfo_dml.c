@@ -70,6 +70,8 @@
 #include "cosa_deviceinfo_dml.h"
 #include "dml_tr181_custom_cfg.h"
 #include "cimplog.h"
+#include "safe_str_lib.h"
+
 #if defined (_XB6_PRODUCT_REQ_)
 #include "bt_hal.h"
 #endif
@@ -91,6 +93,7 @@ extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 extern void* g_pDslhDmlAgent;
 
+#define MAX_ALLOWABLE_STRING_LEN  256
 
 #define IS_UPDATE_ALLOWED_IN_DM(paramName, requestorStr) ({                                                                                                  \
     if ( g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_firmware ||                                                                                     \
@@ -11134,70 +11137,130 @@ Syndication_SetParamStringValue
     char * currentTime = getTime();
 
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
+    errno_t rc                     = -1;
+    int ind                        = -1;
+
+     if((pString == NULL) || (ParamName == NULL))
+     {
+         AnscTraceWarning(("RDK_LOG_WARN, %s %s:%d\n",__FILE__,__FUNCTION__,__LINE__));
+         return FALSE;
+     }
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "TR69CertLocation", TRUE) )
+    if ( !(rc = strcmp_s("TR69CertLocation", strlen("TR69CertLocation"), ParamName, &ind)) )
     {
+        if(!ind)
+        {
+        /* check the length of pString and restricting the maximum length to 256 as CosaDmlDiGetSyndicationTR69CertLocation reading only 256 bytes*/
+        /* the scope of this length check is particular to TR69CertLocation */
+                if(strlen(pString) >= MAX_ALLOWABLE_STRING_LEN)
+                {
+                    AnscTraceWarning(("Maximum Allowable string length is less than 256 bytes %s %d\n", __FUNCTION__, __LINE__));
+                    return FALSE;
+                }
+
                 IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pMyObject->TR69CertLocation.UpdateSource);
 
 		retValue = CosaDmlDiSetSyndicationTR69CertLocation( hInsContext, pString );
 		if( ANSC_STATUS_SUCCESS == retValue )
 		{
-			memset( pMyObject->TR69CertLocation.ActiveValue, 0, sizeof( pMyObject->TR69CertLocation.ActiveValue ));
-			AnscCopyString( pMyObject->TR69CertLocation.ActiveValue, pString );
-
-                        memset( pMyObject->TR69CertLocation.UpdateSource, 0, sizeof( pMyObject->TR69CertLocation.UpdateSource ));
-                        AnscCopyString( pMyObject->TR69CertLocation.UpdateSource, pString );
-
+                        rc = STRCPY_S_NOCLOBBER(pMyObject->TR69CertLocation.ActiveValue, sizeof(pMyObject->TR69CertLocation.ActiveValue), pString);
+                        if(rc != EOK)
+                        {
+                             AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                        } 
+                        rc = STRCPY_S_NOCLOBBER(pMyObject->TR69CertLocation.UpdateSource, sizeof(pMyObject->TR69CertLocation.UpdateSource), pString);
+                        if(rc != EOK)
+                        {
+                             AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                        }
                         getPartnerId(PartnerID);
                         if ( PartnerID[ 0 ] != '\0')
                             UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation",PartnerID, pString, requestorStr, currentTime);
 		}
-		
-		return TRUE;
+	        return TRUE;
+        }
     }
-    if( AnscEqualString(ParamName, "PartnerId", TRUE) )
+    else if(rc != EOK)
     {
-		if ( (strcmp(pMyObject->PartnerID,pString) != 0 ) )
+        AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+        return FALSE;
+    }
+
+    if ( !(rc = strcmp_s("PartnerId", strlen("PartnerId"), ParamName, &ind)) )
+    {
+        if(!(ind))
+        {
+                if ( !(rc = strcmp_s(pMyObject->PartnerID, sizeof(pMyObject->PartnerID), pString, &ind)) )
 		{
-			retValue = setTempPartnerId( pString );
-			if( ANSC_STATUS_SUCCESS == retValue )
-			{
-			   ULONG    size = 0;
+                        if(ind != 0)
+                        {
+			    retValue = setTempPartnerId( pString );
+			    if( ANSC_STATUS_SUCCESS == retValue )
+			    {
+			        ULONG    size = 0;
 				//Get the Factory PartnerID
-			    memset(PartnerID, 0, sizeof(PartnerID));
-			    getFactoryPartnerId(PartnerID, &size);
+			        memset(PartnerID, 0, sizeof(PartnerID));
+			        getFactoryPartnerId(PartnerID, &size);
 			
-			    CcspTraceInfo(("[SET-PARTNERID] Factory_Partner_ID:%s\n", ( PartnerID[ 0 ] != '\0' ) ? PartnerID : "NULL" ));
-			    CcspTraceInfo(("[SET-PARTNERID] Current_PartnerID:%s\n", pMyObject->PartnerID ));
-			    CcspTraceInfo(("[SET-PARTNERID] Overriding_PartnerID:%s\n", pString ));
+			        CcspTraceInfo(("[SET-PARTNERID] Factory_Partner_ID:%s\n", ( PartnerID[ 0 ] != '\0' ) ? PartnerID : "NULL" ));
+			        CcspTraceInfo(("[SET-PARTNERID] Current_PartnerID:%s\n", pMyObject->PartnerID ));
+			        CcspTraceInfo(("[SET-PARTNERID] Overriding_PartnerID:%s\n", pString ));
 								
 				return TRUE;
-			}
+			    }
+                        }
 		}
+                else if(rc != EOK)
+                {
+                     AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                     return FALSE;
+                }
+        }
     }
+    else if(rc != EOK)
+    {
+        AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+        return FALSE;
+    }
+
     if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
     {
-   	 /* check the parameter name and set the corresponding value */
-	 if( AnscEqualString(ParamName, "PauseScreenFileLocation", TRUE) )
+   	/* check the parameter name and set the corresponding value */
+        if ( !(rc = strcmp_s("PauseScreenFileLocation", strlen("PauseScreenFileLocation"), ParamName, &ind)) )
 	{
+            if(!(ind))
+            {
                 IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pMyObject->UiBrand.PauseScreenFileLocation.UpdateSource);
 
 		if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation",PartnerID, pString, requestorStr, currentTime))
 		{
-			memset( pMyObject->UiBrand.PauseScreenFileLocation.ActiveValue, 0, sizeof( pMyObject->UiBrand.PauseScreenFileLocation.ActiveValue ));
-			AnscCopyString( pMyObject->UiBrand.PauseScreenFileLocation.ActiveValue, pString );
+                        rc = STRCPY_S_NOCLOBBER(pMyObject->UiBrand.PauseScreenFileLocation.ActiveValue, sizeof(pMyObject->UiBrand.PauseScreenFileLocation.ActiveValue), pString);
+                        if(rc != EOK)
+                        {
+                             AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                             return FALSE;
+                        }
 
-                        memset( pMyObject->UiBrand.PauseScreenFileLocation.UpdateSource, 0, sizeof( pMyObject->UiBrand.PauseScreenFileLocation.UpdateSource ));
-                        AnscCopyString( pMyObject->UiBrand.PauseScreenFileLocation.UpdateSource, requestorStr );
-
+                        rc = STRCPY_S_NOCLOBBER(pMyObject->UiBrand.PauseScreenFileLocation.UpdateSource, sizeof(pMyObject->UiBrand.PauseScreenFileLocation.UpdateSource), requestorStr);
+                        if(rc != EOK)
+                        {
+                             AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                             return FALSE;
+                        }
 			return TRUE;
-		}	
-	 }
-	  
-      }
+		}
+            }
 
-    return FALSE;
+	}
+        else if(rc != EOK)
+        {
+            AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+            return FALSE;
+        }
+	  
+     }
+     return FALSE;
 }
 
 /**********************************************************************  
