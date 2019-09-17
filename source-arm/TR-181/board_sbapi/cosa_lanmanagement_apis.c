@@ -71,6 +71,7 @@
 #define PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE  "dmsb.lanmanagemententry.lanulaenable"
 #define PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE "dmsb.lanmanagemententry.lanipv6enable"
 #define PSM_LANMANAGEMENTENTRY_LAN_ULA  "dmsb.lanmanagemententry.lanula"
+#define PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX  "dmsb.lanmanagemententry.lanulaprefix"
 #define SYSEVENT_ULA_ADDRESS "ula_address"
 #define SYSEVENT_ULA_PREFIX "ula_prefix"
 #define SYSEVENT_IPV6_ENABLE "lan_ipv6_enable"
@@ -90,42 +91,6 @@ static int openCommonSyseventConnection() {
         commonSyseventFd = s_sysevent_connect(&commonSyseventToken);
     }
     return 0;
-}
-
-static int setLanIpv6ULA(char *ula_prefix) {
-
-    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA, NULL, ula_prefix) )
-    {
-        return ANSC_STATUS_FAILURE;
-    }
-
-    return ANSC_STATUS_SUCCESS;
-}
-
-
-static ANSC_STATUS setLanIpv6Enable(BOOLEAN ipv6_enable) {
-
-    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-
-    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE, NULL, ( ipv6_enable ) ? "TRUE"  : "FALSE"))
-    {
-        return ANSC_STATUS_FAILURE;
-    }
-
-    return ANSC_STATUS_SUCCESS;
-}
-
-static ANSC_STATUS setLanIpv6UlaEnable(BOOLEAN ula_enable) {
-
-    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-
-    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, "eRT.", PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE, NULL, ( ula_enable ) ? "TRUE"  : "FALSE"))
-    {
-        return ANSC_STATUS_FAILURE;
-    }
-
-    return ANSC_STATUS_SUCCESS;
 }
 
 static int iface_get_hwaddr(const char *ifname, char *mac, size_t size)
@@ -167,6 +132,88 @@ static int iface_get_hwaddr(const char *ifname, char *mac, size_t size)
     return 0;
 }
 
+int generate_ipv6_eui_address(char *eui, int eui_len) {
+    char macStr[32] = {0};
+    unsigned int mac[8] = {0};
+    char tmp[8] = {0};
+    int idx = 0;
+    int idj = 0;
+
+    if (iface_get_hwaddr(LAN_BRIDGE, macStr, sizeof(macStr)) != 0) {
+        fprintf(stderr, "get the mac of %s error!\n", LAN_BRIDGE);
+        return ANSC_STATUS_FAILURE;
+    }
+
+    while(macStr[idx] != '\0') {
+        tmp[0] = '\0';
+        strncpy(tmp, &macStr[idx], 2);
+        mac[idj] = strtol(tmp, NULL, 16);
+        idx+=3;
+        idj+=1;
+    }
+   
+    snprintf(eui, eui_len, "%02x%02x:%02x%02x:"
+        "%02x%02x:%02x%02x",
+        (mac[0] ^ 0x02),
+        mac[1],
+        mac[2],
+        0xff,
+        0xfe,
+        mac[3],
+        mac[4],
+        mac[5]);
+	
+    return ANSC_STATUS_SUCCESS;
+}
+
+static int setLanIpv6ULAPrefix(char *ula_prefix) {
+
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX, NULL, ula_prefix) )
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+static int setLanIpv6ULA(char *ula_prefix) {
+
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA, NULL, ula_prefix) )
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+
+static ANSC_STATUS setLanIpv6Enable(BOOLEAN ipv6_enable) {
+
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+
+    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE, NULL, ( ipv6_enable ) ? "TRUE"  : "FALSE"))
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+static ANSC_STATUS setLanIpv6UlaEnable(BOOLEAN ula_enable) {
+
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+
+    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, "eRT.", PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE, NULL, ( ula_enable ) ? "TRUE"  : "FALSE"))
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+
 ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Enable(BOOLEAN value) {
 
     if(commonSyseventFd == -1) {
@@ -199,33 +246,35 @@ ANSC_STATUS CosaDmlLanMngm_SetLanIpv6UlaEnable(BOOLEAN value) {
     return ANSC_STATUS_SUCCESS;
 }
 
-ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Ula(char *ula_address) {
+ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Ula(char *ula_prefix, char *ula) {
    
-    char ula_prefix[64] = {0};
+    char eui_address[64] = {0};
+    char lan_prefix[64]  = {0};
+    char lan_address[64] = {0};
+    char prev_lan_address[64] = {0};
+    char command[128] = {0};
     int count = 0;
     int i;
 
     if(commonSyseventFd == -1) {
         openCommonSyseventConnection();
     }
+    
+    generate_ipv6_eui_address(eui_address, sizeof(eui_address));
+    snprintf(lan_address, sizeof(lan_address), "%s:%s", ula_prefix, eui_address);
 
-    for(i=0; i<strlen(ula_address); i++ ) { 
-        if(ula_address[i] == ':') 
-            count++; 
-        if(count == 4) 
-            break; 
-        else 
-            ula_prefix[i] = ula_address[i]; 
-    } 
-    strcat(ula_prefix, "::/64");
+    strncpy(lan_prefix, ula_prefix, sizeof(lan_prefix));
+    strcat(lan_prefix, "::/64");
+    strncpy(ula, lan_address, sizeof(lan_address));
 
-    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, ula_address, 0);
-    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, ula_prefix, 0);
+    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, lan_address, 0);
+    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, lan_prefix, 0);
+
 
     return ANSC_STATUS_SUCCESS;
 }
 
-ANSC_STATUS CosaDmlLanManagement_SetLanIpv6Ula(char *lan_ula, int lan_ula_len) {
+ANSC_STATUS CosaDmlLanManagement_SetLanIpv6Ula(char *lan_prefix, int lan_prefix_len, char *lan_ula, int lan_ula_len) {
     unsigned int mac[8] = {0};
     char macStr[32] = {0};
     char serial_num[32] = {0};
@@ -234,71 +283,29 @@ ANSC_STATUS CosaDmlLanManagement_SetLanIpv6Ula(char *lan_ula, int lan_ula_len) {
     char tmp[8] = {0};
     int idx =0;
     int idj = 0;
-    unsigned char ula[64] = {0};
-    char ula_address[64] = {0};
-    char ula_prefix[64] = {0};
+    unsigned char ula[16] = {0};
+    char prefix[64] = {0};
+    char lan_eui[64] = {0};
     int count = 0;
     int i;
 
-    if(strncmp(lan_ula, "undefined", lan_ula_len) == 0) {
+    if(strncmp(lan_prefix, "undefined", lan_prefix_len) == 0) {
         if(platform_hal_GetSerialNumber(serial_num) != 0) {
             AnscTraceWarning(("%s platform_hal_GetSerialNumber failure \n", __FUNCTION__));
             return ANSC_STATUS_FAILURE;
         }
 
-        if (iface_get_hwaddr(LAN_BRIDGE, macStr, sizeof(macStr)) != 0) {
-            fprintf(stderr, "get the mac of %s error!\n", LAN_BRIDGE);
-            return ANSC_STATUS_FAILURE;
-        }
-
-        while(macStr[idx] != '\0') {
-            tmp[0] = '\0';
-            strncpy(tmp, &macStr[idx], 2);
-            mac[idj] = strtol(tmp, NULL, 16);
-            idx+=3;
-            idj+=1;
-        }
-
-        ula[15] = 0xfd;
-        ula[7] = mac[0] ^ 0x02;
-        ula[6] = mac[1];
-        ula[5] = mac[2];
-        ula[4] = 0xff;
-        ula[3] = 0xfe;
-        ula[2] = mac[3];
-        ula[1] = mac[4];
-        ula[0] = mac[5];
+        ula[7] = 0xfd;
 
         /* extract binary data from string */
         for (idx = 0; idx < 7; idx++) {
             tmp[0] = '\0';
             strncpy(tmp, &serial_num[ 0 + (idx * 2) ], 2);
-            ula[14 - idx] = strtol(tmp, NULL, 16);
+            ula[6 - idx] = strtol(tmp, NULL, 16);
         }
 
-        snprintf(ula_prefix, 64, "%02x%02x:%02x%02x:"
-           "%02x%02x:%02x%02x::/64",
-        ula[15],
-        ula[14],
-        ula[13],
-        ula[12],
-        ula[11],
-        ula[10],
-        ula[9],
-        ula[8]);
-
-		snprintf(ula_address, 64, "%02x%02x:%02x%02x:"
-           "%02x%02x:%02x%02x:"
-           "%02x%02x:%02x%02x:"
+        snprintf(lan_prefix, lan_prefix_len, "%02x%02x:%02x%02x:"
            "%02x%02x:%02x%02x",
-        ula[15],
-        ula[14],
-        ula[13],
-        ula[12],
-        ula[11],
-        ula[10],
-        ula[9],
-        ula[8],
         ula[7],
         ula[6],
         ula[5],
@@ -307,35 +314,29 @@ ANSC_STATUS CosaDmlLanManagement_SetLanIpv6Ula(char *lan_ula, int lan_ula_len) {
         ula[2],
         ula[1],
         ula[0]);
+   
+        generate_ipv6_eui_address(lan_eui, sizeof(lan_eui));
+        snprintf(lan_ula, lan_ula_len, "%s:%s", lan_prefix, lan_eui);
 
-        strncpy(lan_ula, ula_address, lan_ula_len);
-
-       CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-       if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent),
+        CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+        if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent),
+                       PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX, NULL, lan_prefix) ) {
+            return ANSC_STATUS_FAILURE;
+        }
+        if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent),
                        PSM_LANMANAGEMENTENTRY_LAN_ULA, NULL, lan_ula) ) {
-           return ANSC_STATUS_FAILURE;
-       }
+            return ANSC_STATUS_FAILURE;
+        }
     }
 
-    memset(command, '\0', sizeof(command));
-
-    strncpy(ula_address, lan_ula, sizeof(ula_address));
-    memset(ula_prefix, '\0', sizeof(ula_prefix));
-    for(i=0; i<strlen(ula_address); i++ ) {
-        if(ula_address[i] == ':')
-            count++;
-        if(count == 4)
-            break;
-        else
-            ula_prefix[i] = ula_address[i];
-    }
-    strcat(ula_prefix, "::/64");
+    strncpy(prefix, lan_prefix, sizeof(prefix));
+    strcat(prefix, "::/64");
 
     if(commonSyseventFd == -1) {
         openCommonSyseventConnection();
     }
-    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, ula_prefix, 0);
-    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, ula_address, 0);
+    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, prefix, 0);
+    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, lan_ula, 0);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -344,6 +345,7 @@ static ANSC_STATUS CosaDmlLanManagement_GetCfg(ANSC_HANDLE hContext, PCOSA_DML_L
     char *pIpv6_enable = NULL;
     char *pUla_enable  = NULL;
     char *pUla_prefix  = NULL;
+    char *pUla = NULL;
 
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
@@ -359,7 +361,14 @@ static ANSC_STATUS CosaDmlLanManagement_GetCfg(ANSC_HANDLE hContext, PCOSA_DML_L
         return ANSC_STATUS_FAILURE;
     }
 
-    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA, NULL, &pUla_prefix))
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA, NULL, &pUla))
+    {
+        if(pUla != NULL)
+            bus_info->freefunc(pUla);
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX, NULL, &pUla_prefix))
     {
         if(pUla_prefix != NULL)
             bus_info->freefunc(pUla_prefix);
@@ -390,8 +399,13 @@ static ANSC_STATUS CosaDmlLanManagement_GetCfg(ANSC_HANDLE hContext, PCOSA_DML_L
         bus_info->freefunc(pUla_enable);
 
     if(pUla_prefix != NULL) {
-        strncpy(pLanMngmCfg->LanIpv6Ula , pUla_prefix, 64);
+        strncpy(pLanMngmCfg->LanIpv6UlaPrefix , pUla_prefix, 64);
         bus_info->freefunc(pUla_prefix);
+    }
+
+    if(pUla != NULL) {
+        strncpy(pLanMngmCfg->LanIpv6Ula , pUla, 64);
+        bus_info->freefunc(pUla);
     }
 
     return ANSC_STATUS_SUCCESS;
@@ -410,7 +424,8 @@ CosaDmlLanManagementInit
         AnscTraceWarning(("%s CosaDmlLanManagementGetCfg() failure \n", __FUNCTION__));
     }
 
-    CosaDmlLanManagement_SetLanIpv6Ula(pLanMngmCfg->LanIpv6Ula, sizeof(pLanMngmCfg->LanIpv6Ula));
+    CosaDmlLanManagement_SetLanIpv6Ula(pLanMngmCfg->LanIpv6UlaPrefix, sizeof(pLanMngmCfg->LanIpv6UlaPrefix),
+                                       pLanMngmCfg->LanIpv6Ula, sizeof(pLanMngmCfg->LanIpv6Ula));
 
     AnscCopyMemory(&g_LanMngmCfg, pLanMngmCfg, sizeof(COSA_DML_LANMANAGEMENT_CFG));
 
@@ -428,13 +443,20 @@ CosaDmlLanManagementSetCfg
         return ANSC_STATUS_FAILURE;
     }
 
-    if(strcmp(g_LanMngmCfg.LanIpv6Ula, pLanMngmCfg->LanIpv6Ula) != 0) {
+    if(strcmp(g_LanMngmCfg.LanIpv6UlaPrefix, pLanMngmCfg->LanIpv6UlaPrefix) != 0) {
+        if(setLanIpv6ULAPrefix(pLanMngmCfg->LanIpv6UlaPrefix) != ANSC_STATUS_SUCCESS) {
+            AnscTraceWarning(("%s: setLanIpv6ULAPrefix() failure \n", __FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+        }
+
+        CosaDmlLanMngm_SetLanIpv6Ula(pLanMngmCfg->LanIpv6UlaPrefix, pLanMngmCfg->LanIpv6Ula);
+
         if(setLanIpv6ULA(pLanMngmCfg->LanIpv6Ula) != ANSC_STATUS_SUCCESS) {
             AnscTraceWarning(("%s: setLanIpv6ULA() failure \n", __FUNCTION__));
             return ANSC_STATUS_FAILURE;
         }
-        CosaDmlLanMngm_SetLanIpv6Ula(pLanMngmCfg->LanIpv6Ula);
     }
+
     if(g_LanMngmCfg.LanIpv6UlaEnable != pLanMngmCfg->LanIpv6UlaEnable) {
         if(setLanIpv6UlaEnable(pLanMngmCfg->LanIpv6UlaEnable) != ANSC_STATUS_SUCCESS) {
             AnscTraceWarning(("%s: LanIpv6UlaEnable() failure \n", __FUNCTION__));
@@ -451,6 +473,10 @@ CosaDmlLanManagementSetCfg
     }
 
     AnscCopyMemory(&g_LanMngmCfg, pLanMngmCfg, sizeof(COSA_DML_LANMANAGEMENT_CFG));
+
+    /* Restarts entire LAN services */
+    sysevent_set(commonSyseventFd, commonSyseventToken, "lan-stop",  NULL, 0);
+    sysevent_set(commonSyseventFd, commonSyseventToken, "lan-start", NULL, 0);
     system("gw_lan_refresh");
 
     return ANSC_STATUS_SUCCESS;
