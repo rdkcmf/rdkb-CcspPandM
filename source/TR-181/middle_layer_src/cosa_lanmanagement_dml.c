@@ -210,11 +210,28 @@ LanManagement_GetParamStringValue
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
 
     if( AnscEqualString(ParamName, "LanIpv6Ula", TRUE)) {
-        AnscCopyString(pValue, pMyObject->LanMngmCfg.LanIpv6Ula);
-        return TRUE;
+        if ( AnscSizeOfString(pMyObject->LanMngmCfg.LanIpv6Ula) < *pulSize) {
+            AnscCopyString(pValue, pMyObject->LanMngmCfg.LanIpv6Ula);
+            return 0;
+        }
+        else {
+            *pulSize = AnscSizeOfString(pMyObject->LanMngmCfg.LanIpv6Ula)+1;
+            return 1;
+        }
     }
 
-    return FALSE;
+    if( AnscEqualString(ParamName, "LanIpv6UlaPrefix", TRUE)) {
+        if ( AnscSizeOfString(pMyObject->LanMngmCfg.LanIpv6UlaPrefix) < *pulSize) {
+            AnscCopyString(pValue, pMyObject->LanMngmCfg.LanIpv6UlaPrefix);
+            return 0;
+        }
+        else {
+            *pulSize = AnscSizeOfString(pMyObject->LanMngmCfg.LanIpv6UlaPrefix)+1;
+            return 1;
+        }
+    }
+
+    return -1;
 }
 
 /**********************************************************************  
@@ -283,6 +300,11 @@ LanManagement_SetParamStringValue
 
     if( AnscEqualString(ParamName, "LanIpv6Ula", TRUE)) {
         AnscCopyString(pMyObject->LanMngmCfg.LanIpv6Ula, pString);
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "LanIpv6UlaPrefix", TRUE)) {
+        AnscCopyString(pMyObject->LanMngmCfg.LanIpv6UlaPrefix, pString);
         return TRUE;
     }
 
