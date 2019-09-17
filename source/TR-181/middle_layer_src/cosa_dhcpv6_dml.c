@@ -3480,7 +3480,7 @@ dhcp6c_mapt_mape_GetParamStringValue
     if( AnscEqualString(ParamName, "MapBRPrefix", TRUE) )
     {
 #ifdef _HUB4_PRODUCT_REQ_
-        commonSyseventGet(SYSEVENT_FIELD_IPV6_PREFIX, temp, sizeof(temp));
+        commonSyseventGet(SYSEVENT_MAP_BR_IPV6_PREFIX, temp, sizeof(temp));
         if ( AnscSizeOfString(temp) < *pUlSize)
         {
             AnscCopyString(pValue, temp);
@@ -3500,7 +3500,7 @@ dhcp6c_mapt_mape_GetParamStringValue
     if( AnscEqualString(ParamName, "MapRuleIPv4Prefix", TRUE) )
     {
 #ifdef _HUB4_PRODUCT_REQ_
-        commonSyseventGet(SYSEVENT_MAPT_IPADDRESS, temp, sizeof(temp));
+        commonSyseventGet(SYSEVENT_MAP_RULE_IPADDRESS, temp, sizeof(temp));
         if ( AnscSizeOfString(temp) < *pUlSize)
         {
             AnscCopyString(pValue, temp);
@@ -3520,7 +3520,7 @@ dhcp6c_mapt_mape_GetParamStringValue
     if( AnscEqualString(ParamName, "MapRuleIPv6Prefix", TRUE) )
     {
 #ifdef _HUB4_PRODUCT_REQ_
-        commonSyseventGet(SYSEVENT_MAPT_IPV6_ADDRESS, temp, sizeof(temp));
+        commonSyseventGet(SYSEVENT_MAP_RULE_IPV6_ADDRESS, temp, sizeof(temp));
         if ( AnscSizeOfString(temp) < *pUlSize)
         {
             AnscCopyString(pValue, temp);
