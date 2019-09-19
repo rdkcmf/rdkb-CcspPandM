@@ -1750,12 +1750,17 @@ void restoreAllDBs()
     }
 #endif
 
-#if defined (_CBR_PRODUCT_REQ_)
+#if defined (_CBR_PRODUCT_REQ_) || (defined (_XB7_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_))
 	system("rm -f /data/nvram /data/nvram_bak");
 	system("touch /tmp/wifi_factory_reset");
         /* Remove maintenance window data on factory reset */
         system("rm -f /nvram/.FirmwareUpgradeEndTime");
         system("rm -f /nvram/.FirmwareUpgradeStartTime");
+#endif
+#if defined (_XB7_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
+        system("rm -f /data/macaddress_all_updated");
+        system("rm -f /nvram/.bcmwifi*");
+        system("touch /nvram/brcm_wifi_factory_reset");
 #endif
 #if defined (_COSA_BCM_ARM_) && !defined (_HUB4_PRODUCT_REQ_)
 	/* Clear cable modem's dynamic nonvol settings */
@@ -4025,7 +4030,12 @@ static void configBridgeMode(int bEnable) {
 //         varstruct.parameterName = brpdm;
 //         varstruct.parameterValue = enableStr;
 //         varstruct.type = ccsp_boolean;
-#if (!defined _XF3_PRODUCT_REQ_)
+#if defined (_XB7_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
+        g_SetParamValueBool(brpdm, bEnable);
+        if (brmode[0] == '0') {
+            vsystem("/bin/sh /etc/webgui.sh &");
+        }
+#elif (!defined _XF3_PRODUCT_REQ_)
         g_SetParamValueBool(brpdm, bEnable);
         vsystem("/bin/sh /etc/webgui.sh &");
 #elif defined( _XF3_PRODUCT_REQ_)
