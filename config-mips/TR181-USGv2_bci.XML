@@ -3170,18 +3170,6 @@
 
           </parameter>
 
-	  <parameter>
-
-            <name>X_RDKCENTRAL-COM_AssociatedDeviceNumberOfEntries</name>
-
-            <type>unsignedInt</type>
-
-            <syntax>uint32</syntax>
-
-            <writable>false</writable>
-
-          </parameter>
-
           </parameters>
 
           <objects>
