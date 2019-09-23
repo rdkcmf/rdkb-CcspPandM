@@ -328,6 +328,13 @@ CosaDmlEthPortGetDinfo
     );
 
 ANSC_STATUS
+CosaDmlEthPortGetClientMac
+    (
+        PCOSA_DML_ETH_PORT_FULL pEthernetPortFull,
+        ULONG                   ulInstanceNumber
+    );
+
+ANSC_STATUS
 CosaDmlEthPortGetStats
     (
         ANSC_HANDLE                 hContext,

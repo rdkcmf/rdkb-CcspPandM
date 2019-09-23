@@ -589,16 +589,6 @@ Interface_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_AssociatedDeviceNumberOfEntries", TRUE))
-    {
-	ULONG total_eth_device = 0;
-
-	/* collect value */
-	CosaDmlEthPortGetNumofClientsinfo(&total_eth_device, pEthernetPortFull->Cfg.InstanceNumber);
-        *puLong = total_eth_device;
-	return TRUE;
-    }
-
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -1140,11 +1130,8 @@ AssociatedDevice1_GetEntryCount
 	PCOSA_DATAMODEL_ETHERNET        pMyObject     = (PCOSA_DATAMODEL_ETHERNET)g_pCosaBEManager->hEthernet;
 	PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
 	ULONG                           InterfaceIndex  = pEthernetPortFull->Cfg.InstanceNumber;
-	ULONG total_eth_device = 0;
 
-	CosaDmlEthPortGetNumofClientsinfo(&total_eth_device, InterfaceIndex);
-
-	return total_eth_device;
+	return pMyObject->EthernetPortFullTable[InterfaceIndex - 1].DynamicInfo.AssocDevicesCount;
 }
 
 /**********************************************************************  
@@ -1188,10 +1175,6 @@ AssociatedDevice1_GetEntry
 	PCOSA_DATAMODEL_ETHERNET        pMyObject     = (PCOSA_DATAMODEL_ETHERNET)g_pCosaBEManager->hEthernet;
 	PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
 	ULONG                           InterfaceIndex  = pEthernetPortFull->Cfg.InstanceNumber;
-	ULONG total_eth_device = 0;
-
-	CosaDmlEthPortGetNumofClientsinfo(&total_eth_device, InterfaceIndex); /* return the handle */
-	pMyObject->EthernetPortFullTable[InterfaceIndex - 1].DynamicInfo.AssocDevicesCount = total_eth_device;
 
 	*pInsNumber = nIndex + 1;
 	
@@ -1262,7 +1245,7 @@ AssociatedDevice1_Synchronize
 	ULONG                           InterfaceIndex  = pEthernetPortFull->Cfg.InstanceNumber;
 	ANSC_STATUS                     ret                  = ANSC_STATUS_SUCCESS;
 
-	ret = CosaDmlEthPortGetClientMac(&pMyObject->EthernetPortFullTable[InterfaceIndex - 1], pMyObject->EthernetPortFullTable[InterfaceIndex - 1].DynamicInfo.AssocDevicesCount, InterfaceIndex);
+	ret = CosaDmlEthPortGetClientMac(&pMyObject->EthernetPortFullTable[InterfaceIndex - 1], InterfaceIndex);
 	
 	return ret;
 }

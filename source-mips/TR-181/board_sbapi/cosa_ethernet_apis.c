@@ -209,32 +209,6 @@ static int ethGetClientsCount
     return count_client;
 }
 
-ANSC_STATUS
-CosaDmlEthPortGetNumofClientsinfo
-    (
-        ULONG			*pNumClients,
-	ULONG			ulInstanceNumber
-    )
-{
-	int ret = ANSC_STATUS_FAILURE;
-
-	ULONG total_eth_device = 0;
-	eth_device_t *output_struct = NULL;
-
-	ret = CcspHalExtSw_getAssociatedDevice(&total_eth_device, &output_struct);
-	if (ANSC_STATUS_SUCCESS != ret)
-	{
-		CcspTraceError(("%s CcspHalExtSw_getAssociatedDevice failed\n", __func__));
-		return ret;
-	}
-
-	*pNumClients = 0;
-
-	*pNumClients = ethGetClientsCount(ulInstanceNumber, total_eth_device, output_struct);
-
-	return ANSC_STATUS_SUCCESS;
-}
-
 static void ethGetClientMacDetails
     (
 	LONG PortId,
@@ -279,7 +253,6 @@ ANSC_STATUS
 CosaDmlEthPortGetClientMac
     (
 	PCOSA_DML_ETH_PORT_FULL pEthernetPortFull,
-        ULONG			ClientNum,
         ULONG			ulInstanceNumber
     )
 {
@@ -296,17 +269,38 @@ CosaDmlEthPortGetClientMac
 		return ret;
 	}
 
-	if (total_eth_device)
-	{
-		int i = 1;
-		for (i = 1; i <= ClientNum; i++) {
-		ethGetClientMacDetails(
-				ulInstanceNumber,
-				i,
-				total_eth_device,
-				output_struct,
-				pEthernetPortFull->AssocClient[i - 1].MacAddress);
-	}
+        if ( total_eth_device )
+        {
+           int i = 1;
+           ULONG ulNumClients = 0;
+
+           //Get the no of clients associated with port
+           ulNumClients = ethGetClientsCount(ulInstanceNumber, total_eth_device, output_struct);
+           pEthernetPortFull->DynamicInfo.AssocDevicesCount = 0;
+
+           if( ulNumClients  > 0 )
+           {
+               pEthernetPortFull->DynamicInfo.AssocDevicesCount = ulNumClients;
+
+               //Get Mac for associated clients
+               for ( i = 1; i <= ulNumClients; i++ )
+               {
+                    ethGetClientMacDetails(
+                                   ulInstanceNumber,
+                                   i,
+                                   total_eth_device,
+                                   output_struct,
+                                   pEthernetPortFull->AssocClient[i - 1].MacAddress);
+               }
+           }
+
+           //Release the allocated memory by HAL
+           if( NULL != output_struct )
+           {
+              free(output_struct);
+              output_struct = NULL;
+           }
+        }
 
 	return ANSC_STATUS_SUCCESS;
 }
