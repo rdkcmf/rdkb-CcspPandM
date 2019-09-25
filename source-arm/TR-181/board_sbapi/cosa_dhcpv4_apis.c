@@ -1526,7 +1526,7 @@ CosaDmlDhcpcGetInfo
 	ad.number = 0;
 	dhcpv4c_get_ert_dns_svrs(&ad);
 	pInfo->NumDnsServers = ad.number;
-    if (ad.number > COSA_DML_DHCP_MAX_ENTRIES)
+    if (pInfo->NumDnsServers > COSA_DML_DHCP_MAX_ENTRIES)
     {
         CcspTraceError(("!!! Max DHCP Entry Overflow: %d",ad.number));
 	    pInfo->NumDnsServers = COSA_DML_DHCP_MAX_ENTRIES; // Fail safe
