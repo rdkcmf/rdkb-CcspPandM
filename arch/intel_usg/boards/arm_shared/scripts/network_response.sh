@@ -232,7 +232,7 @@ then
 				echo_t "Network Response: Got success response with URL1"
 				gotResponse=1
 			else
-				if [ -f "/etc/ONBOARD_LOGGING_ENABLE" ]; then
+				if [ -f "/etc/ONBOARD_LOGGING_ENABLE" ] && [ ! -e "/nvram/.device_onboarded" ]; then
 				    echo_t "Network Response: Enabling onboard logs backup"
 					touch /tmp/backup_onboardlogs
 				fi
