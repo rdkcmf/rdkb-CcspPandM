@@ -235,7 +235,11 @@ CosaDmlDiGetRouterIPv6Address
 	CosaUtilGetIpv6AddrInfo("erouter0", &p_v6addr, &v6addr_num);
     for(i = 0; i < v6addr_num; i++ )
     {
+#if defined(_HUB4_PRODUCT_REQ_)
+        if((p_v6addr[i].scope == IPV6_ADDR_SCOPE_GLOBAL) && (strncmp(p_v6addr[i].v6addr, "fd", 2) != 0) && (strncmp(p_v6addr[i].v6addr, "fc", 2) != 0))
+#else
         if(p_v6addr[i].scope == IPV6_ADDR_SCOPE_GLOBAL)
+#endif
         {
 			l_iIpV6AddrLen = strlen(p_v6addr[i].v6addr);
 			strncpy(pValue, p_v6addr[i].v6addr, l_iIpV6AddrLen);
