@@ -982,7 +982,7 @@ isValidInput
 }
 
 /* Maitenance window can be customized for bci routers */
-#if defined(_COSA_BCM_MIPS_)
+#if defined(_COSA_BCM_MIPS_) || defined(_PLATFORM_RASPBERRYPI_)
 ANSC_STATUS
 CosaDmlDiGetFirmwareUpgradeStartTime
     (
@@ -1047,7 +1047,7 @@ CosaDmlDiGetFirmwareUpgradeStartTime
 }
 #endif
 
-#if defined(_COSA_BCM_MIPS_)
+#if defined(_COSA_BCM_MIPS_) || defined(_PLATFORM_RASPBERRYPI_)
 ANSC_STATUS
 CosaDmlDiGetFirmwareUpgradeEndTime
     (
