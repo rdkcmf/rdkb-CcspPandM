@@ -77,6 +77,12 @@ extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 
+#ifdef _HUB4_PRODUCT_REQ_
+#define SYSEVENT_FIELD_IPV6_PREFIXVLTIME  "ipv6_prefix_vldtime"
+#define SYSEVENT_FIELD_IPV6_PREFIXPLTIME  "ipv6_prefix_prdtime"
+#define SYSEVENT_FIELD_IPV6_ULA_ADDRESS   "ula_address"
+#endif
+
 #if defined (INTEL_PUMA7)
 //Intel Proposed RDKB Generic Bug Fix from XB6 SDK
 #define NO_OF_RETRY 90  /*No of times the file will poll for TLV config file*/
@@ -1837,7 +1843,11 @@ CosaDmlDhcpv6Init
 
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
-
+#ifdef _HUB4_PRODUCT_REQ_
+    /* Dibbler-init is called to set the pre-configuration for dibbler */
+    CcspTraceInfo(("%s dibbler-init.sh Called \n", __func__));
+    system("/etc/dibbler/dibbler-init.sh");
+#endif
     GETI_FROM_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "serverenable", g_dhcpv6_server)
 
     /*We need enable dhcpv6 for 1.5.1 and above by default*/
@@ -4186,7 +4196,60 @@ OPTIONS:
                         }
                     }
                 }
+#elif defined _HUB4_PRODUCT_REQ_
+                static int sysevent_fd_gs;
+                static token_t sysevent_token_gs;
+                if ((sysevent_fd_gs = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT,
+                    SE_VERSION, "SERVICE-IPV6", &sysevent_token_gs)) < 0) {
+                    fprintf(stderr, "%s: fail to open sysevent\n", __FUNCTION__);
+                    return -1;
+                }
+				/* Static DNS Servers */
+                if ( sDhcpv6ServerPoolOption[Index][Index2].Tag == 23 ) {
+                    char dnsServer[ 256 ] = { 0 };
+				    if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled ) {
+                       //CcspTraceWarning(("Cfg.X_RDKCENTRAL_COM_DNSServersEnabled is 1 \n"));
+					    memset( dnsServer, 0, sizeof( dnsServer ) );
+				   	    strcpy( dnsServer, sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
+					    CosaDmlDhcpv6s_format_DNSoption( dnsServer );
 
+					    // Check device is in captive portal mode or not
+					    if( 1 == isInCaptivePortal )
+					    {
+						  fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dnsServer);
+					    }
+					    else
+					    {
+						  fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dnsServer);
+					    }
+
+				    }
+                }
+                else if (sDhcpv6ServerPoolOption[Index][Index2].Tag == 24) {
+                    char domain_str[256] = {0};
+                    sysevent_get(sysevent_fd_gs, sysevent_token_gs, "ipv6_domain_name", domain_str, sizeof(domain_str));
+                    if (domain_str[0] != '\0') {
+                        if( isInCaptivePortal == TRUE )
+                        {
+                            fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, domain_str);
+                        }
+                        else
+                        {
+                            fprintf(fp, "     option %s %s\n", tagList[Index3].cmdstring, domain_str);
+                        }
+                    }
+                }
+                else if (sDhcpv6ServerPoolOption[Index][Index2].Tag == 17) {
+                    char vendor_spec[512] = {0};
+                    sysevent_get(sysevent_fd_gs, sysevent_token_gs, "vendor_spec", vendor_spec, sizeof(vendor_spec));
+                    if (vendor_spec[0] != '\0') {
+                        fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, vendor_spec);
+                    }
+                    else
+                    {
+                        CcspTraceWarning(("vendor_spec sysevent failed to get, so not updating vendor_spec information. \n"));
+                    }
+                }
 #else
                 for ( Index4 = 0; Index4 < g_recv_option_num; Index4++ )
                 {
@@ -4958,10 +5021,20 @@ CosaDmlDhcpv6sSetType
 
     Utopia_Free(&utctx,1);
 
+#ifdef _HUB4_PRODUCT_REQ_
+    /* Stateful address is not effecting for clients whenever pool range is changed.
+     * Added gw_lan_refresh to effect the stateful address to the clients according
+     * to the configured poll range.
+     */
+    system("gw_lan_refresh");
+#endif
     if ( g_dhcpv6_server && bApply )
     {
         /* We need enable server */
         CosaDmlDHCPv6sTriggerRestart(FALSE);
+#ifdef _HUB4_PRODUCT_REQ_
+        system("sysevent set zebra-restart");
+#endif
     }
 
     return ANSC_STATUS_SUCCESS;
@@ -5341,6 +5414,17 @@ CosaDmlDhcpv6sSetPoolCfg
 		{
 			bNeedZebraRestart = TRUE;
 		}
+#ifdef _HUB4_PRODUCT_REQ_
+        /* Stateful address is not effecting for clients whenever pool range is changed.
+         * Added gw_lan_refresh to effect the stateful address to the clients according
+         * to the configured poll range.
+         */
+        if ( ( 0 != strcmp( pCfg->PrefixRangeBegin, sDhcpv6ServerPool[Index].Cfg.PrefixRangeBegin ) ) || \
+             ( 0 != strcmp( pCfg->PrefixRangeEnd, sDhcpv6ServerPool[Index].Cfg.PrefixRangeEnd ) ) )
+        {
+            system("gw_lan_refresh");
+        }
+#endif
 
         sDhcpv6ServerPool[Index].Cfg = *pCfg;
     }
@@ -5355,6 +5439,17 @@ CosaDmlDhcpv6sSetPoolCfg
 		{
 			bNeedZebraRestart = TRUE;
 		}
+#ifdef _HUB4_PRODUCT_REQ_
+        /* Stateful address is not effecting for clients whenever pool range is changed.
+         * Added gw_lan_refresh to effect the stateful address to the clients according
+         * to the configured poll range.
+         */
+        if ( ( 0 != strcmp( pCfg->PrefixRangeBegin, sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.PrefixRangeBegin ) ) || \
+             ( 0 != strcmp( pCfg->PrefixRangeEnd, sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.PrefixRangeEnd ) ) )
+        {
+            system("gw_lan_refresh");
+        }
+#endif
 
         sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg = *pCfg;
         Index = DHCPV6S_POOL_NUM - 1;
@@ -6746,6 +6841,7 @@ dhcpv6c_dbg_thrd(void * in)
         {
             char v6addr[64] = {0};
             char v6pref[128] = {0};
+            char v6pref_addr[128] = {0};
             int pref_len = 0;
             
             char iana_t1[32]    = {0};
@@ -6768,7 +6864,11 @@ dhcpv6c_dbg_thrd(void * in)
             char globalIP[128] = {0};
             BOOL bRestartLan = FALSE;
             int  ret = 0;
-
+#ifdef _HUB4_PRODUCT_REQ_
+            char hub4_valid_lft[64] = {0};
+            char hub4_preferred_lft[64] = {0};
+            char ula_address[64] = {0};
+#endif
             /*the format is :
              add 2000::ba7a:1ed4:99ea:cd9f :: 0 t1
              action, address, prefix, pref_len 3600
@@ -7036,6 +7136,43 @@ dhcpv6c_dbg_thrd(void * in)
                         }
 #endif
 #else
+#ifdef _HUB4_PRODUCT_REQ_
+                        commonSyseventGet(SYSEVENT_FIELD_IPV6_PREFIXVLTIME,
+                                     hub4_valid_lft, sizeof(hub4_valid_lft));
+                        commonSyseventGet(SYSEVENT_FIELD_IPV6_PREFIXPLTIME,
+                                     hub4_preferred_lft, sizeof(hub4_preferred_lft));
+                        if ((hub4_valid_lft[0]=='\0') || (hub4_preferred_lft[0]=='\0')){
+                            strncpy(hub4_preferred_lft, "forever", sizeof(hub4_preferred_lft));
+                            strncpy(hub4_valid_lft, "forever", sizeof(hub4_valid_lft));
+                        }
+                        commonSyseventGet(SYSEVENT_FIELD_IPV6_ULA_ADDRESS,
+                                     ula_address, sizeof(ula_address));
+                        if(ula_address[0] != '\0') {
+                            sprintf(cmd, "ip -6 addr add %s/64 dev %s", ula_address, COSA_DML_DHCPV6_SERVER_IFNAME);
+                            system(cmd);
+                        }
+                        ret = dhcpv6_assign_global_ip(v6pref, COSA_DML_DHCPV6_SERVER_IFNAME, globalIP);
+                        if(ret != 0) {
+                            CcspTraceInfo(("Assign global ip error \n"));
+                        }
+                        else {
+                            commonSyseventSet("lan_ipaddr_v6", globalIP);
+                            sprintf(cmd, "ip -6 addr add %s/64 dev %s valid_lft %s preferred_lft %s",
+                                globalIP, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
+                            CcspTraceInfo(("Going to execute: %s \n", cmd));
+                            system(cmd);
+                        }
+                        if(strlen(v6pref) > 0) {
+                            strncpy(v6pref_addr, v6pref, (strlen(v6pref)-5));
+                            CcspTraceInfo(("Going to set ::1 address on brlan0 interface \n"));
+                            sprintf(cmd, "ip -6 addr add %s::1/64 dev %s valid_lft %s preferred_lft %s",
+                                v6pref_addr, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
+                            CcspTraceInfo(("Going to execute: %s \n", cmd));
+                            system(cmd);
+                        }
+                        // send an event to Sky-pro app manager that Global-prefix is set
+                        commonSyseventSet("lan_prefix_set", globalIP);
+#endif
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
                         sprintf(cmd, "ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
@@ -7048,8 +7185,13 @@ dhcpv6c_dbg_thrd(void * in)
                         /* we need save this for zebra to send RA 
                            ipv6_prefix           // xx:xx::/yy
                          */
+#ifndef _HUB4_PRODUCT_REQ_
                         sprintf(cmd, "sysevent set ipv6_prefix %s \n",v6pref);
                         system(cmd);
+#else
+                        sprintf(cmd, "sysevent set zebra-restart \n");
+                        system(cmd);
+#endif
                         g_dhcpv6_server_prefix_ready = TRUE;
                         CcspTraceWarning(("!run cmd1:%s", cmd));
 
