@@ -8279,6 +8279,9 @@ char *token = NULL;char *pt;
 	    char Inf_name[32];
 	    BOOL bFound = FALSE;
 	
+        memset(buf,0,sizeof(buf));
+        memset(OutBuff,0,sizeof(OutBuff));
+        memset(Inf_name,0,sizeof(Inf_name));
 	    syscfg_get( NULL, "iot_ifname", Inf_name, sizeof(Inf_name));
 	    if( Inf_name != NULL )
             {
@@ -8471,6 +8474,9 @@ char *token = NULL;char *pt;
             retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.2.Port.1.Name", NULL, &Inf_name);
             if (retPsmGet == CCSP_SUCCESS)
 				{		
+                    memset(buf,0,sizeof(buf));
+                    memset(OutBuff,0,sizeof(OutBuff));
+
 					if( Inf_name != NULL )
 						{
 			 

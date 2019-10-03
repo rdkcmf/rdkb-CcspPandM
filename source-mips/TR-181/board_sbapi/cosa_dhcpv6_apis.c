@@ -5843,6 +5843,31 @@ else
 printf("<<<  numOfSubnets = %d >>>\n",numOfSubnets); 
 return numOfSubnets;
 }*/
+#define POS_PREFIX_DELEGATION 7
+int CalcIPv6Prefix(char *GlobalPref, char *pref,int index)
+{
+    unsigned char buf[sizeof(struct in6_addr)];
+    int domain, s;
+    char str[INET6_ADDRSTRLEN];
+   domain = AF_INET6;
+   s = inet_pton(domain, GlobalPref, buf);
+    if (s <= 0) {
+        if (s == 0)
+            fprintf(stderr, "Not in presentation format");
+        else
+            perror("inet_pton");
+           return 0;
+    }
+   buf[POS_PREFIX_DELEGATION] = buf[POS_PREFIX_DELEGATION] + index;
+   if (inet_ntop(domain, buf, str, INET6_ADDRSTRLEN) == NULL) {
+        perror("inet_ntop");
+            return 0;
+    }
+    printf("%s\n", str);
+    strcpy(pref,str);
+    return 1;
+}
+
 int GenIPv6Prefix(char *ifName,char *GlobalPref, char *pref)
 {
 int len = 0;
@@ -5866,7 +5891,8 @@ static int interface_num = 4; // Reserving first 4 /64s for dhcp configurations
 	strcpy(pref,GlobalPref);
 	if(index == 0)
 	{
-		pref[len-6] = pref[len-6]+interface_num;
+		if(CalcIPv6Prefix(GlobalPref,pref,interface_num)== 0)
+		return 0;
 		memset(cmd,0,sizeof(cmd));
 		_ansc_sprintf(cmd, "%s%s",ifName,"_ipv6_index");
 		_ansc_sprintf(out, "%d",interface_num);
@@ -5875,12 +5901,11 @@ static int interface_num = 4; // Reserving first 4 /64s for dhcp configurations
 	}
 	else
 	{
-		pref[len-6] = pref[len-6]+index;
+		if(CalcIPv6Prefix(GlobalPref,pref,index)==0 )
+		return 0;
 	}
-	if(pref[len-6] > '9')
-	pref[len-6] = pref[len-6]+39; // for ASCII a,b,c,d,e,f
-        strcpy(pref+(strlen(pref)-2),"64"); // /64
-	CcspTraceInfo(("%s: pref %s\n", __func__, pref));
+	strcat(pref,"/64");
+        CcspTraceInfo(("%s: pref %s\n", __func__, pref));
 return 1;
 	
 }
@@ -6034,6 +6059,7 @@ dhcpv6c_dbg_thrd(void * in)
         {
             char v6addr[64] = {0};
             char v6pref[128] = {0};
+            char v6Tpref[128] = {0};
             int pref_len = 0;
             
             char iana_t1[32]    = {0};
@@ -6099,6 +6125,8 @@ dhcpv6c_dbg_thrd(void * in)
                     
                     if (strncmp(v6pref, "::", 2) != 0)
                     {
+			memset(v6Tpref,0,sizeof(v6Tpref));
+			strncpy(v6Tpref,v6pref,sizeof(v6Tpref));
                         /*We just delegate longer and equal 64bits. Use zero to fill in the slot naturally. */
                         if ( pref_len >= 64 )
                             sprintf(v6pref+strlen(v6pref), "/%d", pref_len);
@@ -6120,6 +6148,7 @@ dhcpv6c_dbg_thrd(void * in)
 			{
 			memset(out,0,sizeof(out));
 			memset(cmd,0,sizeof(cmd));
+			memset(out1,0,sizeof(out1));
 			sprintf(cmd, "syscfg get IPv6subPrefix");
 			_get_shell_output(cmd, out, sizeof(out));
 			if(!strcmp(out,"true"))
@@ -6132,7 +6161,7 @@ dhcpv6c_dbg_thrd(void * in)
 				while((token = strtok_r(pt, ",", &pt)))
 				 {
 			 
-					if(GenIPv6Prefix(token,v6pref,out1))
+					if(GenIPv6Prefix(token,v6Tpref,out1))
 					{
 						char tbuff[100];
 						memset(cmd,0,sizeof(cmd));
