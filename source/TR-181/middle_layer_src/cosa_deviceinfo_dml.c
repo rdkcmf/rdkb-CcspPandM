@@ -6826,21 +6826,20 @@ RDKFirmwareUpgrader_GetParamBoolValue
 {
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-       /* Collect Value */
-       char *strValue = NULL;
-       char str[2];
-       int retPsmGet = CCSP_SUCCESS;
+        char buf[8];
+        memset (buf, 0, sizeof(buf));
 
+        /* collect value */
+        syscfg_get( NULL, "RDKFirmwareUpgraderEnabled", buf, sizeof(buf));
 
-        retPsmGet = PSM_Get_Record_Value2(bus_handle, g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.RDKFirmwareUpgrader.Enable", NULL, &strValue);
-        if (retPsmGet == CCSP_SUCCESS) {
-            *pBool = _ansc_atoi(strValue);
-            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
         }
-        else
-            *pBool = FALSE;
-
-         return TRUE;
+        return TRUE;
     }
     return FALSE;
 }
@@ -7370,17 +7369,26 @@ RDKFirmwareUpgrader_SetParamBoolValue
 {
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-       char str[2];
-       int retPsmGet = CCSP_SUCCESS;
+        char buf[8];
+        memset (buf, 0, sizeof(buf));
 
-       sprintf(str,"%d",bValue);
-       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.RDKFirmwareUpgrader.Enable", ccsp_string, str);
-       if (retPsmGet != CCSP_SUCCESS) {
-           CcspTraceError(("Set failed for RDKFirmwareUpgrader support \n"));
-           return ANSC_STATUS_FAILURE;
-       }
-       CcspTraceInfo(("Successfully set RDKFirmwareUpgrader support \n"));
-       return TRUE;
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+
+        if (syscfg_set(NULL, "RDKFirmwareUpgraderEnabled", buf) != 0)
+        {
+            CcspTraceError(("syscfg_set RDKFirmwareUpgraderEnabled failed\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                CcspTraceError(("syscfg_commit RDKFirmwareUpgraderEnabled failed\n"));
+            }
+            else
+            {
+                return TRUE;
+            }
+        }
     }
     return FALSE;
 }
