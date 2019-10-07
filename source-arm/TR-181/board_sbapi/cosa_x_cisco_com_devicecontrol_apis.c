@@ -1554,9 +1554,59 @@ CosaDmlDcSetRebootDevice
 			}
 		}
 		else
-		{
-			CcspTraceWarning(("RebootDevice:Device is going to reboot to restore configuration \n"));
-		}
+        {
+#if defined (_CBR_PRODUCT_REQ_)
+//TCCBR-4087
+            int                         ret = -1;
+            int                         size = 0;
+            componentStruct_t **        ppComponents = NULL;
+            char*   faultParam = NULL;
+            extern char        g_Subsystem[32];
+            char   dst_pathname_cr[64]  =  {0};
+            CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+
+            sprintf(dst_pathname_cr, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+
+            ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
+                    dst_pathname_cr,
+                    "Device.WiFi.Radio.",
+                    g_Subsystem,        /* prefix */
+                    &ppComponents,
+                    &size);
+
+            if ( ret == CCSP_SUCCESS && size == 1)
+            {
+
+                parameterValStruct_t val[ ] = { { "Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean},
+			{ "Device.WiFi.Radio.1.X_CISCO_COM_ApplySettingSSID", "1", ccsp_int},
+			{ "Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean},
+			{ "Device.WiFi.Radio.2.X_CISCO_COM_ApplySettingSSID", "1", ccsp_int} };
+
+                ret = CcspBaseIf_setParameterValues
+                    (
+                     bus_handle,
+                     ppComponents[0]->componentName,
+                     ppComponents[0]->dbusPath,
+                     0, 0x0,  
+                     &val,
+                     2,
+                     TRUE,   
+                     &faultParam
+                    );
+
+
+
+                if (ret != CCSP_SUCCESS && faultParam)
+                {   
+                    AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
+                    bus_info->freefunc(faultParam);
+                }
+
+                free_componentStruct_t(bus_handle, size, ppComponents);
+                } /*TCCBR-4087*/
+#endif
+            CcspTraceWarning(("RebootDevice:Device is going to reboot to restore configuration \n"));
+        }
 		
 		CcspTraceWarning(("REBOOT_COUNT : %d Time : %s  \n",rebootcount,buffer));
 
