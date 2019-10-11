@@ -1460,6 +1460,7 @@ ULONG g_dhcpv6_server_type = DHCPV6_SERVER_TYPE_STATELESS;
 BOOL g_lan_ready = FALSE;
 BOOL g_dhcpv6_server_prefix_ready = FALSE;
 ULONG g_dhcpv6s_restart_count = 0;
+ULONG g_dhcpv6s_refresh_count = 0;
 
 #define DHCPV6S_SERVER_PID_FILE   "/var/lib/dibbler/server.pid"
 
@@ -6573,6 +6574,13 @@ void CosaDmlDhcpv6sRebootServer()
         close(fd);
     }
 #endif
+
+    // refresh lan if we were asked to
+    if (g_dhcpv6s_refresh_count) {
+        g_dhcpv6s_refresh_count = 0;
+        system("gw_lan_refresh");
+    }
+
     return;
 }
 /*int calcPrefixNumber(int prefixLen, int req_prefixLen)
@@ -7133,6 +7141,8 @@ dhcpv6c_dbg_thrd(void * in)
                         /*We need get a global ip addres */
                         ret = dhcpv6_assign_global_ip(v6pref, "l2sd0", globalIP);
 #endif
+                        CcspTraceWarning(("%s: globalIP %s globalIP2 %s\n", __func__,
+                            globalIP, globalIP2));
                         if ( _ansc_strcmp(globalIP, globalIP2 ) ){
                             bRestartLan = TRUE;
 
@@ -7150,6 +7160,8 @@ dhcpv6c_dbg_thrd(void * in)
 								else
                             		bRestartLan = FALSE;
 						}
+                        g_dhcpv6s_refresh_count = bRestartLan;
+                        CcspTraceWarning(("%s: bRestartLan %d\n", __func__, bRestartLan));
 
                         fprintf(stderr, "%s -- %d !!! ret:%d bRestartLan:%d %s %s \n", __FUNCTION__, __LINE__,ret,  bRestartLan,  globalIP, globalIP2);
 
@@ -7242,6 +7254,8 @@ dhcpv6c_dbg_thrd(void * in)
 #else
                         ret = dhcpv6_assign_global_ip(v6pref, "l2sd0", globalIP);
 #endif
+                        CcspTraceWarning(("%s: globalIP %s globalIP2 %s\n", __func__,
+                            globalIP, globalIP2));
                         if ( _ansc_strcmp(globalIP, globalIP2 ) ){
                             bRestartLan = TRUE;
 
@@ -7259,6 +7273,8 @@ dhcpv6c_dbg_thrd(void * in)
 								else
                             		bRestartLan = FALSE;
 						}
+                        g_dhcpv6s_refresh_count = bRestartLan;
+                        CcspTraceWarning(("%s: bRestartLan %d\n", __func__, bRestartLan));
 
                         fprintf(stderr, "%s -- %d !!! ret:%d bRestartLan:%d %s %s \n", __FUNCTION__, __LINE__,ret,  bRestartLan,  globalIP, globalIP2);
 
