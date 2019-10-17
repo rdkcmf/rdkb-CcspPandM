@@ -230,6 +230,24 @@ WiFi_Telemetry_GetParamStringValue
         ULONG*                      pUlSize
     );
 
+
+BOOL
+EasyConnect_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+EasyConnect_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+
 /***********************************************************************
 
  APIs for Object:
