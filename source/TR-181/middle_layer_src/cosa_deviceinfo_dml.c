@@ -6901,6 +6901,179 @@ MEMSWAP_GetParamBoolValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        RDKFirmwareUpgrader_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+RDKFirmwareUpgrader_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8];
+        memset (buf, 0, sizeof(buf));
+
+        /* collect value */
+        syscfg_get( NULL, "RDKFirmwareUpgraderEnabled", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        EasyConnect_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+EasyConnect_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+       /* Collect Value */
+       char *strValue = NULL;
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+
+
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.Enable", NULL, &strValue);
+        if (retPsmGet == CCSP_SUCCESS) {
+            *pBool = _ansc_atoi(strValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        }
+        else
+            *pBool = FALSE;
+
+         return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        EasyConnect_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+EasyConnect_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+
+       sprintf(str,"%d",bValue);
+       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.Enable", ccsp_string, str);
+       if (retPsmGet != CCSP_SUCCESS) {
+           CcspTraceError(("Set failed for EasyConnect support \n"));
+           return ANSC_STATUS_FAILURE;
+       }
+       CcspTraceInfo(("Successfully set EasyConnect support \n"));
+       return TRUE;
+    }
+    return FALSE;
+}
+
 /**********************************************************************  
 
     caller:     owner of this object 
