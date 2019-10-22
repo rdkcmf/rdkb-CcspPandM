@@ -1611,4 +1611,33 @@ EthernetWAN_MACsec_GetParamStringValue
         ULONG*                      pUlSize
     );
 
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CaptivePortalForNoCableRF.Enable
+
+    *  CaptivePortalForNoCableRF_GetParamBoolValue
+    *  CaptivePortalForNoCableRF_SetParamBoolValue
+***********************************************************************/
+BOOL
+CaptivePortalForNoCableRF_GetParamBoolValue
+
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+CaptivePortalForNoCableRF_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
 #endif

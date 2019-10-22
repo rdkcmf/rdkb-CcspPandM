@@ -27,30 +27,33 @@ SERVER6_CONF="/etc/dibbler/server.conf"
 MIGRATED_FLAG="/nvram/migratedfrom_nonrdkb"
 SERVER6_BKUP="/nvram/server_bkup.conf"
 
-# We need to restart DHCP restart and firewall only in case of WiFi factory restore.
-# /nvram/reverted will be created only when user changes WiFI and password
-if [ -e "$REVERTED_FLAG" ] || [ -e "$MIGRATED_FLAG" ]
+if [ "$1" != "rfcp" ]
 then
+   # We need to restart DHCP restart and firewall only in case of WiFi factory restore.
+   # /nvram/reverted will be created only when user changes WiFI and password
+   if [ -e "$REVERTED_FLAG" ] || [ -e "$MIGRATED_FLAG" ]
+   then
 	echo_t "Redirect URL : Removing reverted flag"
 	rm -f $REVERTED_FLAG
-fi
+   fi
 
-# We need not have to restart dnsmasq if this event is set
-# We have set this event immediately after activation while doing 
-# DHCP server restart in network_response.sh
-dhcp_activation=`sysevent get dhcp_after_activation`
-if [ "$dhcp_activation" != "flagged" ]
-then
-   echo_t "Redirect URL : Restarting dnsmasq daemon for redirection"
-   cat /var/dnsmasq.conf
-   sysevent set dhcp_server-stop
-   # Let's make sure dhcp server restarts properly
-   sleep 1
-   sysevent set dhcp_server-start
-else
-   # Set a different value so that we will restart DHCP server in case 
-   # of a WiFi factory reset
-   sysevent set dhcp_after_activation completed
+   # We need not have to restart dnsmasq if this event is set
+   # We have set this event immediately after activation while doing 
+   # DHCP server restart in network_response.sh
+   dhcp_activation=`sysevent get dhcp_after_activation`
+   if [ "$dhcp_activation" != "flagged" ]
+   then
+     echo_t "Redirect URL : Restarting dnsmasq daemon for redirection"
+     cat /var/dnsmasq.conf
+     sysevent set dhcp_server-stop
+     # Let's make sure dhcp server restarts properly
+     sleep 1
+     sysevent set dhcp_server-start
+   else
+     # Set a different value so that we will restart DHCP server in case 
+     # of a WiFi factory reset
+     sysevent set dhcp_after_activation completed
+   fi
 fi
 	
 # Restart Firewall. 
@@ -58,10 +61,23 @@ fi
 # WiFi factory restore/Factory restore.
 echo_t "Redirect URL : Restarting firewall"
 sysevent set firewall-restart
+
 if [ -e "/usr/bin/onboarding_log" ]; then
     uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
     /usr/bin/onboarding_log "RDKB_FIREWALL_RESTART:$uptime"
 fi
+
+if [ "$1" = "rfcp" ]
+then
+   echo_t "RF CP dnsmasq restart"
+   cat /var/dnsmasq.conf
+   sysevent set dhcp_server-stop
+   sleep 1
+   sysevent set dhcp_server-start
+
+   sysevent set zebra-restart
+fi
+
 echo_t "Redirect URL : Restarting dibblerServer"
 # Modify DNS server option in dibbler configuration
 if [ -e $SERVER6_CONF ]
@@ -74,11 +90,13 @@ fi
 
 dibbler-server stop
 dibbler-server start
-
-if [ "$DEVICE_MODEL" = "TCHXB3" ]
+if [ "$1" != "rfcp" ]
 then
-   if [ -e "$MIGRATED_FLAG" ]
-   then
-      sysevent set zebra-restart
-   fi
+  if [ "$DEVICE_MODEL" = "TCHXB3" ]
+  then
+     if [ -e "$MIGRATED_FLAG" ]
+     then
+        sysevent set zebra-restart
+     fi
+  fi
 fi

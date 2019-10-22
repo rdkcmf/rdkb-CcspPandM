@@ -23,6 +23,7 @@
 # we are not in DNS redirection mode.
 # Eg Command: curl -w '%{http_code}\n' http://clients3.google.com/generate_204 --connect-timeout 10 -m 10
 
+TRIGGER_STATE=$1
 WAN_INTERFACE="erouter0"
 REVERT_FLAG="/nvram/reverted"
 EROUTER_IP=""
@@ -54,6 +55,8 @@ source /etc/utopia/service.d/log_capture_path.sh
 ATOM_RPC_IP=`cat /etc/device.properties | grep ATOM_ARPING_IP | cut -f 2 -d"="`
 BOX_TYPE=`cat /etc/device.properties | grep BOX_TYPE | cut -f 2 -d"="`
 
+if [ "x$TRIGGER_STATE" != "xOnlyForNoRf" ]
+then
 if [ "$BOX_TYPE" = "XB3" ]; then
 	LAST_REBOOT_REASON=`syscfg get X_RDKCENTRAL-COM_LastRebootReason`
 	echo_t "Network Response: LastRebootReason is $LAST_REBOOT_REASON"
@@ -63,6 +66,131 @@ if [ "$BOX_TYPE" = "XB3" ]; then
 		rpcclient $ATOM_RPC_IP "rm /nvram/.device_onboarded"
 		rpcclient $ATOM_RPC_IP "rm /nvram/DISABLE_ONBOARD_LOGGING"
 	fi
+fi
+fi
+
+CAPTIVEPORTAL_ENABLED=`syscfg get CaptivePortal_Enable`
+echo_t "Network Response : CaptivePortal enabled val is $CAPTIVEPORTAL_ENABLED"
+
+# Function to check if RF CP should be shown
+# return true if RF CP should be shown
+# return false if RF CP shouldn't be shown
+checkForRFCP()
+{
+
+if [ "$1" = "" ]
+then 
+  # P&M up will make sure CM agent is up as well as
+  # RFC values are picked
+  echo_t "No RF CP: Check PAM initialized"
+  PAM_UP=0
+  while [ $PAM_UP -ne 1 ]
+  do
+    sleep 1
+    #Check if CcspPandMSsp is up
+    # PAM_PID=`pidof CcspPandMSsp`
+
+    if [ -f "/tmp/pam_initialized" ]
+    then
+         PAM_UP=1
+    fi
+  done
+  echo_t "RF CP: PAM is initialized" 
+  enableRFCaptivePortal=`syscfg get enableRFCaptivePortal`
+  if [ "$enableRFCaptivePortal" = "true" ]
+  then
+      ethWanEnabled=`syscfg get eth_wan_enabled`
+      if [ "$ethWanEnabled" = "true" ]
+      then
+          noRfCp=0
+      else
+        RF_SIGNAL_STATUS=`dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CableRfSignalStatus | grep value | cut -f3 -d : | cut -f2 -d" "`
+        if [ "$RF_SIGNAL_STATUS" = "false" ]
+        then
+           noRfCp=1
+        else
+           noRfCp=0
+        fi
+     fi
+  else
+     echo_t "INFO:network_Response.sh - RF captive portal is disabled"
+     noRfCp=0
+  fi
+  
+  if [ $noRfCp -eq 1 ]
+  then
+      syscfg set rf_captive_portal true
+      syscfg commit
+      echo "true"
+  else
+      syscfg set rf_captive_portal false
+      syscfg commit
+      echo "false"
+  fi
+elif [ "$1" = "recheck" ]
+then
+  # this argument is passed by the caller while in a loop 
+  # to check RF signal. Hence no need to do initial checks.
+  RF_SIGNAL_STATUS=`dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CableRfSignalStatus | grep value | cut -f3 -d : | cut -f2 -d" "`
+  if [ "$RF_SIGNAL_STATUS" = "false" ]
+  then
+      dbValue=`syscfg get rf_captive_portal`
+      if [ "$dbValue" = "false" ]
+      then
+          syscfg set rf_captive_portal true
+          syscfg commit
+      fi
+      echo "true"
+  else
+      dbValue=`syscfg get rf_captive_portal`
+      if [ "$dbValue" = "true" ]
+      then
+          syscfg set rf_captive_portal false
+          syscfg commit
+      fi
+      echo "false"
+  fi
+else
+   echo_t "Wrong arguement to checkForRFCP"
+fi
+}
+
+rfCpInterface()
+{
+  #sysevent set rfcp started
+  if [ "$CAPTIVEPORTAL_ENABLED" = "true" ]
+  then
+     shouldRedirect=`checkForRFCP`
+     if [ "$shouldRedirect" = "true" ]
+     then
+        echo_t "Restart events triggered for RF CP"
+        /etc/redirect_url.sh rfcp &
+        sleep 5
+        while [ "$shouldRedirect" != "false" ]
+        do
+           shouldRedirect=`checkForRFCP "recheck"`
+           sleep 5
+        done
+        echo_t "Restart events triggered to come out from RF CP"
+        /etc/revert_redirect.sh rfcp &
+     else
+        echo_t "Restart events triggered to come out from RF CP"
+        /etc/revert_redirect.sh rfcp &
+     fi 
+  else
+    syscfg set rf_captive_portal false
+    syscfg commit
+  fi
+  #sysevent set rfcp completed
+}
+
+if [ "$BOX_TYPE" = "XB3" ] || [ "$BOX_TYPE" = "XB6" ]
+then
+   rfCpInterface
+   if [ "x$TRIGGER_STATE" = "xOnlyForNoRf" ]
+   then
+        exit 0
+   fi
 fi
 
 echo_t "Network Response: Checking erouter0 ip address"
