@@ -6776,7 +6776,17 @@ dhcpv6c_dbg_thrd(void * in)
     //When PaM restart, this is to get previous addr.
     commonSyseventGet("lan_ipaddr_v6", globalIP2, sizeof(globalIP2));
     if ( globalIP2[0] )
-        CcspTraceWarning((stderr,"%s -- %d. It seems there is old value(%s)\n", globalIP2));
+        CcspTraceWarning((stderr,"%s  It seems there is old value(%s)\n", __FUNCTION__, globalIP2));
+
+    static int sysevent_fd_mnet;
+    static token_t sysevent_token_mnet;
+    sysevent_fd_mnet = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "Multinet Status", &sysevent_token_mnet);
+
+    unsigned char lan_multinet_state[10] = {0};
+
+    async_id_t lan_state_asyncid;
+    sysevent_set_options(sysevent_fd_mnet, sysevent_token_mnet, "multinet_1-status", TUPLE_FLAG_EVENT);
+    sysevent_setnotification(sysevent_fd_mnet, sysevent_token_mnet, "multinet_1-status",  &lan_state_asyncid);
 
     fd_set rfds;
     struct timeval tm;
@@ -6919,19 +6929,11 @@ dhcpv6c_dbg_thrd(void * in)
                 {
                     CcspTraceInfo(("%s: add\n", __func__));
 
-	            static int sysevent_fd_mnet;
-        	    static token_t sysevent_token_mnet;
-		    sysevent_fd_mnet = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "Multinet Status", &sysevent_token_mnet);
-
-     		    unsigned char lan_multinet_state[10] = {0};
                     sysevent_get(sysevent_fd_mnet, sysevent_token_mnet, "multinet_1-status", lan_multinet_state, sizeof(lan_multinet_state));
 		    if(strcmp(lan_multinet_state, "ready") != 0) 
 		    {
                         CcspTraceWarning(("%s multinet_1-status is %s\n",__FUNCTION__,lan_multinet_state));
 
-			async_id_t lan_state_asyncid;
-			sysevent_set_options(sysevent_fd_mnet, sysevent_token_mnet, "multinet_1-status", TUPLE_FLAG_EVENT);
-			sysevent_setnotification(sysevent_fd_mnet, sysevent_token_mnet, "multinet_1-status",  &lan_state_asyncid);
 // Waiting until private lan interface is ready , so that we can assign global ipv6 address and also start dhcp server.
 			while (1)
 			{
@@ -7005,6 +7007,8 @@ dhcpv6c_dbg_thrd(void * in)
       				_get_shell_output(cmd, out, sizeof(out));
 			    if(!strcmp(out,"true"))
 				{
+                                static int first = 0;
+
 				memset(out,0,sizeof(out));
 				memset(cmd,0,sizeof(cmd));
 				sprintf(cmd, "syscfg get IPv6_Interface");
@@ -7046,8 +7050,11 @@ dhcpv6c_dbg_thrd(void * in)
 						memset(out1,0,sizeof(out1));
 					}
 				} 
-					memset(out,0,sizeof(out));
-					pthread_create(&InfEvtHandle_tid, NULL, InterfaceEventHandler_thrd, NULL);  
+                                        memset(out,0,sizeof(out));
+                                        if(first == 0)
+                                        {       first = 1;
+                                                pthread_create(&InfEvtHandle_tid, NULL, InterfaceEventHandler_thrd, NULL);
+                                        }
 				}
 			}
 #endif
