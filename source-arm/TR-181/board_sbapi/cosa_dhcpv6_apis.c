@@ -3932,7 +3932,10 @@ void __cosa_dhcpsv6_refresh_config()
     char *networkResponse = "/var/tmp/networkresponse.txt";
     int iresCode = 0;
     char responseCode[10];
+    int inRfCaptivePortal=0,inWifiCp=0;
     char buf[20]={0};
+    char rfCpEnable[6] = {0};
+    char rfCpMode[6] = {0};
     ULONG  T1 = 0;
     ULONG  T2 = 0;
 
@@ -4120,7 +4123,7 @@ OPTIONS:
             {
                 if ((strncmp(buf,"true",4) == 0) && iresCode == 204)
                 {
-                        isInCaptivePortal = TRUE;
+                        inWifiCp = 1;
                         CcspTraceWarning((" _cosa_dhcpsv6_refresh_config -- Box is in captive portal mode \n"));
                 }
                 else
@@ -4129,6 +4132,31 @@ OPTIONS:
                         CcspTraceWarning((" _cosa_dhcpsv6_refresh_config -- Box is not in captive portal mode \n"));
                 }
             }
+#if defined (_COSA_INTEL_XB3_ARM_) || defined (_XB6_PRODUCT_REQ_)
+        syscfg_get(NULL, "enableRFCaptivePortal", rfCpEnable, sizeof(rfCpEnable));
+        if(rfCpEnable != NULL)
+        {
+          if (strncmp(rfCpEnable,"true",4) == 0)
+          {
+              syscfg_get(NULL, "rf_captive_portal", rfCpMode,sizeof(rfCpMode));
+              if(rfCpMode != NULL)
+              {
+                 if (strncmp(rfCpMode,"true",4) == 0)
+                 {
+                    inRfCaptivePortal = 1;
+                    CcspTraceWarning((" _cosa_dhcpsv6_refresh_config -- Box is in RF captive portal mode \n"));
+                 }
+              }
+          }
+        }
+        if((inWifiCp == 1) || (inRfCaptivePortal == 1))
+        {
+            isInCaptivePortal = TRUE;
+        }
+#else
+        if(inWifiCp == 1)
+           isInCaptivePortal = TRUE;
+#endif
 
             if ( sDhcpv6ServerPoolOption[Index][Index2].PassthroughClient[0] )
             {

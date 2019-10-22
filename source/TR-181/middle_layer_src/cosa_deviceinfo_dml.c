@@ -14642,3 +14642,125 @@ Telemetry_SetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* p
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        CaptivePortalForNoCableRF_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            )
+
+
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+CaptivePortalForNoCableRF_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+
+ if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+	 char value[8];
+	 syscfg_get(NULL,"enableRFCaptivePortal",value, sizeof(value));
+	 if( value != NULL )
+	 {
+		 if (strcmp(value, "true") == 0)
+			 *pBool = TRUE;
+		 else
+			 *pBool = FALSE;
+	 }
+	 return TRUE;
+
+    }
+  return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        CaptivePortalForNoCableRF_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            )
+
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+CaptivePortalForNoCableRF_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+
+  if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+	  if ( bValue == TRUE )
+	  {
+		  syscfg_set(NULL, "enableRFCaptivePortal", "true");
+	  }
+	  else
+	  {
+		  syscfg_set(NULL, "enableRFCaptivePortal", "false");
+	  }
+	  
+	  if ( syscfg_commit() != 0 )
+	  {
+		 AnscTraceWarning(("syscfg_commit enableRFCaptivePortal failed\n"));
+	  }
+	  
+	  return TRUE;
+    }
+  return FALSE;
+}
