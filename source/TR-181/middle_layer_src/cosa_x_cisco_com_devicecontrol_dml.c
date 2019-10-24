@@ -2154,10 +2154,6 @@ CcspTraceWarning( ("--------- LanMngm_Commit CosaDmlDcResetBr0 <<\n"));
 #endif
     }
 
-#ifdef _HUB4_PRODUCT_REQ_
-    commonSyseventSet("lan_prefix_clear", "");
-#endif
-
     return 0;
 }
 
