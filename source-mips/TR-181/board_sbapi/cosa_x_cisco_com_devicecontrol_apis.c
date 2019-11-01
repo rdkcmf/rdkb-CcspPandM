@@ -3307,14 +3307,21 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         Utopia_Free(&utctx, 1);
         pLanMngm->LanNetwork.Value = _CALC_NETWORK(pLanMngm->LanIPAddress.Value, pLanMngm->LanSubnetMask.Value);
         
-        /* If lan settings not change, skip refreshing wifi module */
-//         if(orgLanMngm.LanIPAddress.Value == pLanMngm->LanIPAddress.Value &&
-//            orgLanMngm.LanSubnetMask.Value == pLanMngm->LanSubnetMask.Value)
-//         {
-//             return ANSC_STATUS_SUCCESS;
-//         }
+         /* If lan settings are changed, restart the webgui.sh */
+         if(orgLanMngm.LanIPAddress.Value != pLanMngm->LanIPAddress.Value ||
+            orgLanMngm.LanSubnetMask.Value != pLanMngm->LanSubnetMask.Value)
+         {
+            char l_cSecWebUI_Enabled[8] = {0};
+            syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
+            if (!strncmp(l_cSecWebUI_Enabled, "true", 4)) {
+            #if defined (_XB6_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_)
+                vsystem("/bin/systemctl restart CcspWebUI.service");
+            #else
+                vsystem("/bin/sh /etc/webgui.sh &");
+            #endif
+            }
+         }
 
-        
         if (pLanMngm->LanMode == orgLanMngm.LanMode) {
             return ANSC_STATUS_SUCCESS;
         }
