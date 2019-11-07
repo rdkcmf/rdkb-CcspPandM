@@ -947,7 +947,11 @@ IPIF_getEntry_for_Ipv6Addr
                                p_v6addr, ulIndex);
         }
 	
+	#ifdef _HUB4_PRODUCT_REQ_
+	    if ( _ansc_strstr(g_ipif_names[ulIndex], "brlan0" )  ) {
+	#else
 	    if ( _ansc_strstr(g_ipif_names[ulIndex], "erouter0" )  ) {
+	#endif
 		if (!commonSyseventGet(COSA_DML_DHCPV6C_ADDR_PRETM_SYSEVENT_NAME, out, sizeof(out)) ) {
 			p_dml_v6addr->iana_pretm = atoi(out);
 		}
@@ -1523,8 +1527,16 @@ IPIF_getEntry_for_Ipv6Pre
         p_dml_v6pre->ChildPrefixBits[0] = 0;
 
         /*normally these 2 fields will be TRUE, I don't believe it's practical to set these fields to FALSE*/
+#ifdef SKY_IPV6
+        if (ra_index > -1)
+        {
+            p_dml_v6pre->bOnlink = p_ra[ra_index].onlink;
+            p_dml_v6pre->bAutonomous  = p_ra[ra_index].autoconf;
+        }
+#else
         p_dml_v6pre->bOnlink = p_ra[ra_index].onlink;
         p_dml_v6pre->bAutonomous  = p_ra[ra_index].autoconf;
+#endif
 
         _get_datetime_lfts((char *)p_dml_v6pre->PreferredLifetime, sizeof(p_dml_v6pre->PreferredLifetime),
                            (char *)p_dml_v6pre->ValidLifetime, sizeof(p_dml_v6pre->ValidLifetime),

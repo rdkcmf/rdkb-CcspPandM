@@ -2913,6 +2913,30 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 					{
 						syscfg_get(NULL, "user_password_3", PUiBrand->LocalUI.DefaultLoginPassword.ActiveValue, sizeof(PUiBrand->LocalUI.DefaultLoginPassword.ActiveValue));
 					}
+					else if (strstr( partnerID, "sky-" ) != NULL)
+					{
+						// For Sky, we need to pull the default login from the /tmp/serial.txt file.
+						FILE *fp = NULL;
+						char DefaultPassword[25] = {0};
+
+						fp = popen("grep 'WIFIPASSWORD' /tmp/serial.txt | cut -d '=' -f 2 | tr -d [:space:]", "r");
+						if (fp == NULL)
+						{
+							CcspTraceWarning(("%s - ERROR Grabbing the default password\n",__FUNCTION__));
+						} else {
+							fgets(DefaultPassword, sizeof(DefaultPassword), fp);
+							pclose(fp);
+						}
+
+						if (DefaultPassword[0] != NULL)
+						{
+							AnscCopyString(PUiBrand->LocalUI.DefaultLoginPassword.ActiveValue, DefaultPassword);
+						}
+						else
+						{
+							CcspTraceWarning(("%s - DefaultLoginPassword Value is NULL\n", __FUNCTION__ ));
+						}
+					}
 					else
 					{
 						FillParamString(partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.LocalUI.DefaultLoginPassword", &PUiBrand->LocalUI.DefaultLoginPassword);
