@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "4.0"
+      "version" : "5.0"
    },
 
    "comcast" : {
@@ -105,7 +105,18 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname" : "Sky" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "Sky WiFi" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "abbonamento.sky.it",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "XHS"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "XHS",
+      "Device.ManagementServer.EnableCWMP" : "false",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "FFFFFFFF",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "",
+      "Device.Time.NTPServer1" : "ntp1.isp.sky.com",
+      "Device.Time.NTPServer2" : "time1.google.com",
+      "Device.Time.NTPServer3" : "time2.google.com",
+      "Device.Time.NTPServer4" : "time3.google.com",
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
    },
 
 
@@ -152,7 +163,18 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname" : "Sky" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "Sky Wifi" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "www.sky.com",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "XHS"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "XHS",
+      "Device.ManagementServer.EnableCWMP" : "false",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "FFFFFFFF",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "",
+      "Device.Time.NTPServer1" : "ntp1.isp.sky.com",
+      "Device.Time.NTPServer2" : "time1.google.com",
+      "Device.Time.NTPServer3" : "time2.google.com",
+      "Device.Time.NTPServer4" : "time3.google.com",
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
    },
 
 
