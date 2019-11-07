@@ -232,7 +232,11 @@ CosaDmlDiGetRouterIPv6Address
 	ipv6_addr_info_t * p_v6addr = NULL;
     int  v6addr_num = 0, i, l_iIpV6AddrLen;
 
+#if defined(_HUB4_PRODUCT_REQ_)
+	CosaUtilGetIpv6AddrInfo("brlan0", &p_v6addr, &v6addr_num);
+#else
 	CosaUtilGetIpv6AddrInfo("erouter0", &p_v6addr, &v6addr_num);
+#endif
     for(i = 0; i < v6addr_num; i++ )
     {
 #if defined(_HUB4_PRODUCT_REQ_)

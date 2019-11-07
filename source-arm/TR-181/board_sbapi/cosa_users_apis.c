@@ -640,10 +640,12 @@ user_validatepwd
    {
      user_hashandsavepwd(hContext,pEntry->Password,pEntry);
    }
+#if !defined(_HUB4_PRODUCT_REQ_)
    if (!strcmp("password",pString))
    { 
      isDefault=1;
    }
+#endif
    hash_userPassword(pString,getHash); 
    CcspTraceWarning(("%s, Compare passwords\n",__FUNCTION__));
    

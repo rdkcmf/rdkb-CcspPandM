@@ -2017,6 +2017,45 @@ CosaDmlDcSetFactoryReset
        // system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
 	//	system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
 	//	system("restoreAllDBs"); //Perform factory reset on other components
+#if defined (_HUB4_PRODUCT_REQ_)
+	CcspTraceWarning(("[%s]:Restoring Voice to factory default ...\n",__FUNCTION__));
+	int ret = -1;
+	char* faultParam = NULL;
+	componentStruct_t **        ppVoiceComponent = NULL;
+	int                         size = 0;
+	parameterValStruct_t    val = { "Device.Services.VoiceService.1.X_RDK-Central_COM_VoiceProcessState", "FactoryDefault", ccsp_string};
+
+	sprintf(dst_pathname_cr, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+
+	ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
+	                                               dst_pathname_cr,
+	                                               "Device.Services.VoiceService.",
+	                                               g_Subsystem,
+	                                               &ppVoiceComponent,
+	                                               &size);
+
+	if ( ret == CCSP_SUCCESS && size == 1)
+	{
+	    ret = CcspBaseIf_setParameterValues
+		(
+			bus_handle,
+			ppVoiceComponent[0]->componentName,
+			ppVoiceComponent[0]->dbusPath,
+			0, 0x0,   /* session id and write id */
+			&val,
+			1,
+			TRUE,   /* no commit */
+			&faultParam
+		);
+
+	   if (ret != CCSP_SUCCESS && faultParam)
+	   {
+		CcspTraceError(("[%s]:Setting X_RDK-Central_COM_VoiceProcessState returned error '%s'  ...\n",__FUNCTION__,faultParam));
+		bus_info->freefunc(faultParam);
+	   }
+	}
+#endif
+
 #if defined (INTEL_PUMA7)
 	CcspTraceWarning (("***** New API call to MOCA FactoryReset: Restoring MOCA to factory defaults  ...\n")); //ARRISXB6-7326
 	moca_SetEnableDefault();
@@ -3859,6 +3898,17 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 //             return ANSC_STATUS_SUCCESS;
 //         }
 
+#ifdef _HUB4_PRODUCT_REQ_
+	/* If lan settings(gw-ip or subnet-mask) not change, skip refreshing lan_prefix */
+	if( (orgLanMngm.LanIPAddress.Value != pLanMngm->LanIPAddress.Value) ||
+	    (orgLanMngm.LanSubnetMask.Value != pLanMngm->LanSubnetMask.Value) )
+	{
+	    /* SKYH4-1780 : This will help to set Down state to
+	     * sysevent 'ipv6_connection_state' */
+	    CcspTraceInfo(("lan_prefix_clear is setting\n"));
+	    commonSyseventSet("lan_prefix_clear", "");
+	}
+#endif
         
         if (pLanMngm->LanMode == orgLanMngm.LanMode) {
             return ANSC_STATUS_SUCCESS;

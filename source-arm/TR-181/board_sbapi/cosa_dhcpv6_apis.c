@@ -1872,6 +1872,7 @@ CosaDmlDhcpv6Init
 		bIsChangesHappened = TRUE;
     }
 
+#ifndef _HUB4_PRODUCT_REQ_
     /*This logic code is used to change default behavior to stateful dhcpv6 server */
     Utopia_RawGet(&utctx,NULL, "router_statefuldhcpv6_DoOnce",value,sizeof(value));
     if ( value[0]!= '1'  && g_dhcpv6_server_type == 2 )
@@ -1883,7 +1884,8 @@ CosaDmlDhcpv6Init
 
         system("sysevent set zebra-restart");
     }
-    
+#endif
+
     if ( value[0]!= '1' )
     {
         Utopia_RawSet(&utctx,NULL,"router_statefuldhcpv6_DoOnce","1");
@@ -2535,7 +2537,11 @@ CosaDmlDhcpv6cGetEnabled
 	}
 #endif
 
-#if defined (_COSA_BCM_ARM_)
+#if defined (_HUB4_PRODUCT_REQ_)
+    // For HUB4, check dhcp6c process status
+    FILE *fp = popen("ps |grep -i dhcp6c | grep -v grep", "r");
+
+#elif defined (_COSA_BCM_ARM_)
     FILE *fp = popen("ps |grep -i dibbler-client | grep -v grep", "r");
 
 #elif defined (_XF3_PRODUCT_REQ_)
@@ -2552,7 +2558,10 @@ CosaDmlDhcpv6cGetEnabled
 
     if ( fp != NULL){
         if ( fgets(out, sizeof(out), fp) != NULL ){
-#if defined (_COSA_BCM_ARM_)
+#if defined (_HUB4_PRODUCT_REQ_)
+            if ( _ansc_strstr(out, "dhcp6c") )
+                bEnabled = TRUE;
+#elif defined (_COSA_BCM_ARM_)
             if ( _ansc_strstr(out, "dibbler-client") )
                 bEnabled = TRUE;
 #elif defined (_XF3_PRODUCT_REQ_)
