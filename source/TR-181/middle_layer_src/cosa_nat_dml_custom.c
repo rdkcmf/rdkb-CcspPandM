@@ -154,9 +154,11 @@ NAT_SetParamBoolValue_Custom
     PCOSA_DML_NAT                   pNat         = &pMyObject->Nat;
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
+    #endif
 
     if( AnscEqualString(ParamName, "X_Comcast_com_EnablePortMapping", TRUE))
     {

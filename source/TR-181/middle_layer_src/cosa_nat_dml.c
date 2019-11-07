@@ -421,9 +421,11 @@ NAT_SetParamUlongValue
     PCOSA_DML_NAT                   pNat         = &pMyObject->Nat;
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
+    #endif
 
     if( AnscEqualString(ParamName, "X_CISCO_COM_TCPTimeout", TRUE))
     {
@@ -1414,9 +1416,11 @@ PortMapping_AddEntry
     CHAR                                 tmpBuff[64]       = {0};
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return NULL;
+    #endif
     
 
     pNatPMapping = (PCOSA_DML_NAT_PMAPPING)AnscAllocateMemory(sizeof(COSA_DML_NAT_PMAPPING));
@@ -1496,10 +1500,11 @@ PortMapping_DelEntry
     PCOSA_DML_NAT_PMAPPING                   pNatPMapping      = (PCOSA_DML_NAT_PMAPPING)pPMappingCxtLink->hContext;
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return ANSC_STATUS_FAILURE;
-
+    #endif
 
     if ( pPMappingCxtLink->bNew )
     {
@@ -1933,9 +1938,11 @@ PortMapping_SetParamBoolValue
     PCOSA_DML_NAT_PMAPPING                    pNatPMapping  = (PCOSA_DML_NAT_PMAPPING)pCxtLink->hContext;
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
+    #endif
     
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
@@ -2046,9 +2053,11 @@ PortMapping_SetParamUlongValue
     ANSC_STATUS                               returnStatus  = ANSC_STATUS_SUCCESS;
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
+    #endif
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "LeaseDuration", TRUE))
@@ -2168,9 +2177,11 @@ PortMapping_SetParamStringValue
 
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
+    #endif
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -2469,9 +2480,11 @@ NatPortTrigger_SetParamBoolValue
 {
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
+    #endif
 
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -2636,9 +2649,11 @@ PortTrigger_AddEntry
     PSINGLE_LINK_ENTRY                   pSListEntry       = NULL;
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return NULL;
+    #endif
 
     pNatPTrigger = (PCOSA_DML_NAT_PTRIGGER)AnscAllocateMemory(sizeof(COSA_DML_NAT_PTRIGGER));
 
@@ -2715,10 +2730,12 @@ PortTrigger_DelEntry
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger      = (PCOSA_DML_NAT_PTRIGGER)pPTriggerCxtLink->hContext;
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return ANSC_STATUS_FAILURE;
-
+    #endif
+ 
     if ( pPTriggerCxtLink->bNew )
     {
         /* Set bNew to FALSE to indicate this node is not going to save to SysRegistry */
@@ -3048,9 +3065,11 @@ PortTrigger_SetParamBoolValue
 
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
+    #endif
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
@@ -3108,9 +3127,11 @@ PortTrigger_SetParamUlongValue
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger  = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
+    #endif
 
     /* check the parameter name and set the corresponding value */
 #if 1
@@ -3215,9 +3236,11 @@ PortTrigger_SetParamStringValue
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger  = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
     BOOL                                      bridgeMode;
 
+    #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
+    #endif
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
