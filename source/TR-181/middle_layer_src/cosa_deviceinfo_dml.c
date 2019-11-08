@@ -8040,10 +8040,12 @@ SysCfg_SetParamBoolValue
         if ( bValue == TRUE)
         {
             syscfg_set(NULL, "UpdateNvram", "true");
+            system("touch /nvram/syscfg.db");
         }
         else
         {
             syscfg_set(NULL, "UpdateNvram", "false");
+            system("rm -f /nvram/syscfg.db");
         }
         syscfg_commit();
         return TRUE;
