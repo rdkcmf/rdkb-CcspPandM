@@ -1326,6 +1326,22 @@
                               </parameter>
                             </parameters>
                         </object>
+                        <object>
+                            <name>PrivacyProtection</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>PrivacyProtection_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>PrivacyProtection_SetParamBoolValue</func_SetParamBoolValue>
+                            </functions>
+                            <parameters>
+                              <parameter>
+                                <name>Enable</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                              </parameter>
+                            </parameters>
+                        </object>
                        <object>
                             <name>SNMP</name>
                             <objectType>object</objectType>

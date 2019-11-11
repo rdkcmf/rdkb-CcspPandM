@@ -374,6 +374,8 @@ if(id != 0)
     pMyObject->hAdvPC          = (ANSC_HANDLE)CosaAdvPCCreate();
     AnscTraceWarning(("  CosaAdvPCCreate done!\n"));
 
+    pMyObject->hPrivacyProtection         = (ANSC_HANDLE)CosaPrivacyProtectionCreate();
+    AnscTraceWarning(("  CosaPrivacyProtectionCreate done!\n"));
 #ifdef FEATURE_SUPPORT_ONBOARD_LOGGING
     pMyObject->hXpc         = (ANSC_HANDLE)CosaXpcCreate();
     AnscTraceWarning(("  CosaXpcCreate done!\n"));

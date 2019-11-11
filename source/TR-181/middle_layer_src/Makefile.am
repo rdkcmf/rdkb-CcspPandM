@@ -47,3 +47,4 @@ if XBB1_SUPPORTED
 libCcspPandM_middle_layer_src_la_LDFLAGS += -lxbb
 libCcspPandM_middle_layer_src_la_SOURCES += xbb1.c
 endif
+libCcspPandM_middle_layer_src_la_SOURCES += cosa_privacy_protection_dml.c cosa_privacy_protection_internal.c
