@@ -66,6 +66,7 @@
 
 **************************************************************************/
 
+#include <string.h>
 #include "cosa_deviceinfo_dml.h"
 #include "dml_tr181_custom_cfg.h"
 #include "cimplog.h"
@@ -5937,20 +5938,11 @@ PresenceDetect_SetParamBoolValue
                 ULONG*                      pUlSize
                 The buffer of length of string value;
                 Usually size of 1023 will be used.
-                If it's not big enough, put required size here and return 1;
 
     return:     0 if succeeded;
-                1 if short of buffer size; (*pUlSize = required size)
                 -1 if not supported.
 
 **********************************************************************/
-static unsigned char OAUTHAuthMode[8] = "potd";
-
-static unsigned char OAUTHServerUrl[256] = "";
-
-static unsigned char OAUTHTokenEndpoint[256] = "";
-
-static unsigned char OAUTHClientId[16] = "";
 
 ULONG
 OAUTH_GetParamStringValue
@@ -5961,49 +5953,53 @@ OAUTH_GetParamStringValue
         ULONG*             pUlSize
     )
 {
-    LONG retval = 0;
-    int outlen;
-    char *outptr = NULL;
+    LONG retval = -1;
+    size_t i;
+    char buf[20];
+    BOOL bAuthModeCheck = FALSE;
 
     hInsContext = hInsContext;    // prevent compiler unused variable warning
     if( AnscEqualString(ParamName, "AuthMode", TRUE) )
     {
-        outptr = OAUTHAuthMode;
+        retval = 0;
+        bAuthModeCheck = TRUE;
     }
-    else if( AnscEqualString(ParamName, "ServerUrl", TRUE) == TRUE
-           && AnscEqualString(OAUTHAuthMode, "potd", TRUE) != TRUE )
+    else if( AnscEqualString(ParamName, "ServerUrl", TRUE) == TRUE )
     {
-        outptr = OAUTHServerUrl;
+        retval = 0;
     }
-    else if( AnscEqualString(ParamName, "TokenEndpoint", TRUE) == TRUE
-           && AnscEqualString(OAUTHAuthMode, "potd", TRUE) != TRUE )
+    else if( AnscEqualString(ParamName, "TokenEndpoint", TRUE) == TRUE )
     {
-        outptr = OAUTHTokenEndpoint;
+        retval = 0;
     }
-    else if( AnscEqualString(ParamName, "ClientId", TRUE) == TRUE
-           && AnscEqualString(OAUTHAuthMode, "potd", TRUE) != TRUE )
+    else if( AnscEqualString(ParamName, "ClientId", TRUE) == TRUE )
     {
-        outptr = OAUTHClientId;
+        retval = 0;
     }
     else
     {
-        retval = -1;
+        CcspTraceError(("[%s] Unrecognized param name %s\n", __FUNCTION__, ParamName));
     }
 
-    if( retval == 0 && outptr != NULL )
+    if( retval == 0 && pValue != NULL )
     {
-        outlen = strlen( outptr );
-        if( pValue && outlen < *pUlSize )
+        snprintf( buf, sizeof(buf), "OAUTH%s", ParamName );  // buf should contain "OAUTH" plus ParamName
+        if( (retval=syscfg_get( NULL, buf, pValue, *pUlSize )) != 0 )    // syscfg_get checks for NULL values also
         {
-            *pValue = 0;    // default to zero length output
-            AnscCopyString( pValue, outptr );
-        }
-        else
-        {
-            *pUlSize = outlen + 1;
-            retval = 1;
+            CcspTraceError(("[%s] syscfg_get failed for %s\n", __FUNCTION__, buf));
+            // if we're looking for the AuthMode but failed to find it, let's default to potd
+            // we don't need to worry about the other values in this case
+            if( bAuthModeCheck == TRUE )
+            {
+                snprintf( pValue, *pUlSize, "potd" );
+            }
+            else if( *pUlSize > 0 )
+            {
+                *pValue = 0;    // no value to return, just an empty string
+            }
         }
     }
+
     return (ULONG)retval;
 }
 
@@ -6047,39 +6043,51 @@ OAUTH_SetParamStringValue
         char*                       pString
     )
 {
-    int maxlen;
-    char *inptr = NULL;
+    size_t i;
+    char buf[20];
     BOOL bRet = FALSE;
+    BOOL bParamNameGood = FALSE;
 
     if( AnscEqualString(ParamName, "AuthMode", TRUE) )
     {
-        maxlen = sizeof(OAUTHAuthMode);
-        inptr = OAUTHAuthMode;
+        bParamNameGood = TRUE;
     }
     else if( AnscEqualString(ParamName, "ServerUrl", TRUE) )
     {
-        maxlen = sizeof(OAUTHServerUrl);
-        inptr = OAUTHServerUrl;
+        bParamNameGood = TRUE;
     }
     else if( AnscEqualString(ParamName, "TokenEndpoint", TRUE) )
     {
-        maxlen = sizeof(OAUTHTokenEndpoint);
-        inptr = OAUTHTokenEndpoint;
+        bParamNameGood = TRUE;
     }
     else if( AnscEqualString(ParamName, "ClientId", TRUE) )
     {
-        maxlen = sizeof(OAUTHClientId);
-        inptr = OAUTHClientId;
+        bParamNameGood = TRUE;
     }
     else
     {
         CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
     }
 
-    if( inptr != NULL && pString != NULL && AnscSizeOfString( pString ) < maxlen )
+    if( bParamNameGood == TRUE )
     {
-        AnscCopyString( inptr, pString );
-        bRet = TRUE;
+        snprintf( buf, sizeof(buf), "OAUTH%s", ParamName );  // buf should contain "OAUTH" plus ParamName
+        if( syscfg_set( NULL, buf, pString ) != 0 )
+        {
+            CcspTraceError(("[%s] syscfg_set failed for %s\n", __FUNCTION__, buf));
+        }
+        else
+        {
+            if( syscfg_commit() != 0 )
+            {
+                CcspTraceError(("[%s] syscfg_commit failed for %s\n", __FUNCTION__, buf));
+            }
+            else
+            {
+                bRet = TRUE;
+                CcspTraceInfo(("[%s] %s value set as %s success..!!\n", __FUNCTION__, buf, pString));
+            }
+        }
     }
 
     return bRet;
