@@ -205,6 +205,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
     ANSC_HANDLE                  hDeviceFingerprint;                                        \
     ANSC_HANDLE                  hRabid;                                                    \
     ANSC_HANDLE                  hAdvPC;                                                    \
+    ANSC_HANDLE                  hPrivacyProtection;                                        \
     ANSC_HANDLE                  hLanMngm;                                                  \
     ANSC_HANDLE                  hXpc;                                                    \
     ANSC_HANDLE                  hOnboardLogging;                                                    \
