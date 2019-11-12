@@ -175,9 +175,14 @@ COSA_DML_ETH_PORT_SINFO      g_EthIntSInfo[] =
         {SWITCH_PORT_7_NAME,                FALSE,  {0,0,0,0,0,0}}
 #endif
 #else
+#if defined(_HUB4_PRODUCT_REQ_)
+        /* Upstream (WAN) ports */
+        {DMSB_ETH_IF_NAME_DFT_WanRouting,   TRUE,   {0,0,0,0,0,0}}
+#else        
         /* Upstream (WAN) ports */
         {DMSB_ETH_IF_NAME_DFT_WanRouting,   TRUE,   {0,0,0,0,0,0}},
         {DMSB_ETH_IF_NAME_DFT_WanBridging,  TRUE,   {0,0,0,0,0,0}}
+#endif /* _HUB4_PRODUCT_REQ_ */        
 #endif
     };
 
