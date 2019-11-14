@@ -2857,6 +2857,110 @@ newNTP_SetParamBoolValue
     return FALSE;
 }
 
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        MACsecRequired_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+MACsecRequired_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+#ifdef _MACSEC_SUPPORT_
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        if ( RETURN_ERR == platform_hal_GetMACsecEnable( 3, pBool )) {
+            return FALSE;
+        }
+        return TRUE;
+    }
+#endif
+
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        MACsecRequired_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+MACsecRequired_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+#ifdef _MACSEC_SUPPORT_
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        if ( RETURN_ERR == platform_hal_SetMACsecEnable( 3, bValue )) {
+            return FALSE;
+        }
+        return TRUE;
+    }
+#endif
+
+    return FALSE;
+}
+
+
 /***********************************************************************
 
  APIs for Object:
@@ -9111,6 +9215,81 @@ EthernetWAN_GetParamStringValue
     }
 
     return -1;
+}
+
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_EthernetWAN.MACsec.OperationalStatus
+
+    *  EthernetWAN_MACsec_GetParamStringValue
+
+***********************************************************************/
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        EthernetWAN_MACsec_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pUlSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue,
+                The string value buffer;
+
+                ULONG*                      pUlSize
+                The buffer of length of string value;
+                Usually size of 1023 will be used.
+                If it's not big enough, put required size here and return 1;
+
+    return:     0 if succeeded;
+                1 if short of buffer size; (*pUlSize = required size)
+                -1 if not supported.
+
+**********************************************************************/
+
+ULONG
+EthernetWAN_MACsec_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+    /* check the parameter name and return the corresponding value */
+#ifdef _MACSEC_SUPPORT_
+    if( AnscEqualString(ParamName, "OperationalStatus", TRUE))
+    {
+        BOOL flag;
+
+        if ( RETURN_OK == platform_hal_GetMACsecOperationalStatus( 3, &flag )) {
+           AnscCopyString(pValue,  (TRUE == flag) ? "Enabled" : "Disabled" );
+           *pUlSize = AnscSizeOfString( pValue );
+
+           return 0;
+        }
+    }
+#endif //_MACSEC_SUPPORT_
 }
 
 
