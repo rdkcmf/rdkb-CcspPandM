@@ -2057,6 +2057,22 @@ CosaDmlDcSetFactoryReset
 				return -1;
 			}
 		}
+
+#ifdef _MACSEC_SUPPORT_
+                //TCXB7-1453
+                char partnerId[20];
+                if(!syscfg_get(NULL, "PartnerID", partnerId, sizeof(partnerId))) {
+                        if (strcmp( "comcast", partnerId ) == 0 ) {
+                                CcspTraceInfo(("MACsec enabled by factory reset\n"));
+                                platform_hal_SetMACsecEnable( 3, true );
+                        }
+                        else {
+                                CcspTraceInfo(("MACsec disabled by factory reset\n"));
+                                platform_hal_SetMACsecEnable( 3, false );
+                        }
+                }
+#endif //_MACSEC_SUPPORT_
+
 		system("touch /nvram/factory_reset");
                 if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", "1") != 0))
                 {

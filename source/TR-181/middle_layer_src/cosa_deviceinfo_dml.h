@@ -1419,15 +1419,6 @@ EthernetWAN_GetParamStringValue
     );
 
 
-/***********************************************************************
-
- APIs for Object:
-
-    Device.DeviceInfo.X_RDKCENTRAL-COM_EthernetWAN.
-
-    *  EthernetWAN_GetParamStringValue
-
-***********************************************************************/
 BOOL
 Telemetry_GetParamBoolValue
     (
@@ -1463,4 +1454,52 @@ Telemetry_SetParamStringValue
    );
 
     
+/**********************************************************************
+
+APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MACsecRequired.Enable
+
+    *  MACsecRequired_GetParamBoolValue
+    *  MACsecRequired_SetParamBoolValue
+
+
+**********************************************************************/
+
+BOOL
+MACsecRequired_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+MACsecRequired_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+
+/**********************************************************************
+
+APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_EthernetWAN.MACsec
+
+    *  EthernetWAN_MACsec_GetParamStringValue
+
+**********************************************************************/
+
+ULONG
+EthernetWAN_MACsec_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
 #endif

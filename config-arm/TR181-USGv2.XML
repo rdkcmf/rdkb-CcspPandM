@@ -1523,82 +1523,47 @@
                     </parameters>
                 </object>
 
-	      <object>
-			<name>Feature</name>
-
-			<objectType>object</objectType>
-
-			<functions>
-
-				<func_GetParamBoolValue>Feature_GetParamBoolValue</func_GetParamBoolValue>
-
-				<func_SetParamBoolValue>Feature_SetParamBoolValue</func_SetParamBoolValue>
-
+                    <object>
+                        <name>Feature</name>
+                        <objectType>object</objectType>
+                        <functions>
+                            <func_GetParamBoolValue>Feature_GetParamBoolValue</func_GetParamBoolValue>
+                            <func_SetParamBoolValue>Feature_SetParamBoolValue</func_SetParamBoolValue>
                         </functions>
-
-			<parameters>
-
-				<parameter>
-
-					<name>HomeNetworkIsolation</name>
-
-					<type>boolean</type>
-
-					<syntax>bool</syntax>
-
-					<writable>true</writable>
-
-				</parameter>
-
-				<parameter>
-
-					<name>ContainerSupport</name>
-
-					<type>boolean</type>
-
-					<syntax>bool</syntax>
-
-					<writable>true</writable>
-
-				</parameter>
-
-				<parameter>
-
-					<name>CodebigSupport</name>
-
-					<type>boolean</type>
-
-					<syntax>bool</syntax>
-
-					<writable>true</writable>
-
-				</parameter>
-                                <parameter>
-
-                                      <name>BLERadio</name>
-
-                                      <type>boolean</type>
-
-                                      <syntax>bool</syntax>
-
-                                      <writable>true</writable>
-
-                                </parameter>
-				<parameter>
-
-					<name>Xupnp</name>
-
-					<type>boolean</type>
-
-					<syntax>bool</syntax>
-
-					<writable>true</writable>
-
-				</parameter>
-
-            </parameters>
-            <objects>
-			<object>
+                        <parameters>
+                            <parameter>
+                                <name>HomeNetworkIsolation</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>ContainerSupport</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>CodebigSupport</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>BLERadio</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>Xupnp</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                        </parameters>
+                    <objects>
+                        <object>
                             <name>OnboardingLogging</name>
                             <objectType>object</objectType>
                             <functions>
@@ -1613,7 +1578,7 @@
                                 <writable>true</writable>
                               </parameter>
                             </parameters>
-                    	</object>
+                        </object>
                         <object>
                             <name>Telemetry</name>
                             <objectType>object</objectType>
@@ -2436,9 +2401,23 @@
                                         </parameter>
                                   </parameters>
                                  </object>
-          
+                        <object>
+                            <name>MACsecRequired</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>MACsecRequired_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>MACsecRequired_SetParamBoolValue</func_SetParamBoolValue>
+                            </functions>
+                            <parameters>
+                                <parameter>
+                                    <name>Enable</name>
+                                    <type>boolean</type>
+                                    <syntax>bool</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                            </parameters>
+                        </object>
                 </objects>
-
 		</object>
 		</objects>
 		</object>
@@ -2455,6 +2434,22 @@
                     <syntax>string</syntax>
                 </parameter>
             </parameters>
+            <objects>
+               <object>
+                  <name>MACsec</name>
+                  <objectType>object</objectType>
+                  <functions> 
+                     <func_GetParamStringValue>EthernetWAN_MACsec_GetParamStringValue</func_GetParamStringValue>
+                  </functions>
+                  <parameters>
+                     <parameter>
+                        <name>OperationalStatus</name>
+                        <type>string(32)</type>
+                        <syntax>string</syntax>
+                     </parameter>
+                  </parameters>
+               </object>
+            </objects>
          </object>
 
 <!-- BlueTooth begin-->
