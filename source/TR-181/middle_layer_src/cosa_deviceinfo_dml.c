@@ -7100,6 +7100,16 @@ Feature_SetParamBoolValue
            {
                AnscTraceWarning(("syscfg_set start_upnp_service:false failed\n"));
            }
+           system("if [ -f /lib/rdk/start-upnp-service ] ; \
+                   then \
+                            `/lib/rdk/start-upnp-service stop`; \
+                            `killall xcal-device`; \
+                            `killall xdiscovery`; \
+                   else \
+                         `systemctl stop xcal-device`; \
+                         `systemctl stop xupnp`; \
+                   fi ");
+           system("ifconfig brlan0:0 down");
        }
        if (syscfg_commit() != 0)
        {
