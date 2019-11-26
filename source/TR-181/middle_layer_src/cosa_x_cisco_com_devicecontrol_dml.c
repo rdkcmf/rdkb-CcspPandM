@@ -568,6 +568,13 @@ X_CISCO_COM_DeviceControl_GetParamUlongValue
         return TRUE;
     }
 
+    if (AnscEqualString(ParamName, "ReinitMacThreshold", TRUE))
+    {
+	*puLong = pMyObject->ReinitMacThreshold;
+
+        return TRUE;
+    }
+
     if (AnscEqualString(ParamName, "WebUITimeout", TRUE))
     {
         if (CosaDmlDcGetWebUITimeout(NULL, puLong) != ANSC_STATUS_SUCCESS)
@@ -1266,6 +1273,17 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
         }
         pMyObject->HTTPSPort = uValue;
         pMyObject->WebServerChanged = TRUE;
+
+        return TRUE;
+    }
+
+    if (AnscEqualString(ParamName, "ReinitMacThreshold", TRUE))
+    {
+	retStatus = CosaDmlDcSetReinitMacThreshold(NULL, uValue);
+	if (retStatus != ANSC_STATUS_SUCCESS)
+        {    return FALSE;	}
+	else
+	{	pMyObject->ReinitMacThreshold = uValue;	}
 
         return TRUE;
     }

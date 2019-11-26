@@ -282,7 +282,7 @@ CosaDeviceControlInitialize
 
     CosaDmlDcGetHTTPPort ((ANSC_HANDLE)pMyObject, &pMyObject->HTTPPort );
     CosaDmlDcGetHTTPSPort((ANSC_HANDLE)pMyObject, &pMyObject->HTTPSPort);
-
+    CosaDmlDcGetReinitMacThreshold((ANSC_HANDLE)pMyObject, &pMyObject->ReinitMacThreshold);
     //CosaDmlDcGetGuestPassword(NULL, pMyObject->GuestPassword);
     //pMyObject->NoOfGuests = CosaDmlDcGetNoOfGuests();
 

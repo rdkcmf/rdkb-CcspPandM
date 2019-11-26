@@ -2675,6 +2675,53 @@ CosaDmlDcGetHTTPSPort
 }
 
 ANSC_STATUS
+CosaDmlDcSetReinitMacThreshold
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       value
+    )
+{
+    char buf[5];
+    memset(buf,0,sizeof(buf));
+    sprintf(buf,"%d",value);
+	
+    if((syscfg_set( NULL, "rdkbReinitMacThreshold", buf)) != 0 )
+    {
+    	AnscTraceWarning(("setrdkbReinitMacThreshold : syscfg_set failed\n"));
+        return ANSC_STATUS_FAILURE;
+    }
+    else
+    {
+        if (syscfg_commit() != 0)
+        {
+            AnscTraceWarning(("setrdkbReinitMacThreshold : syscfg_commit failed\n"));
+            return ANSC_STATUS_FAILURE;
+        }
+        return ANSC_STATUS_SUCCESS;
+    }
+}
+
+ANSC_STATUS
+CosaDmlDcGetReinitMacThreshold
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       *pValue
+    )
+{
+    char buf[5];
+    if( (syscfg_get( NULL, "rdkbReinitMacThreshold", buf, sizeof(buf))) == 0 )
+    {
+    	*pValue = atoi(buf);
+    }
+    else
+    {
+    	*pValue = 5;
+    	CosaDmlDcSetReinitMacThreshold(hContext, pValue);
+    }
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
 CosaDmlDcSetWebServer(BOOL httpEn, BOOL httpsEn, ULONG httpPort, ULONG httpsPort)
 {
     WebServConf_t conf;

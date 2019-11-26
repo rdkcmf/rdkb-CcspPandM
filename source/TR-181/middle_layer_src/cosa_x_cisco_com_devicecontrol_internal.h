@@ -158,6 +158,7 @@ COSA_DML_MultiHomedMode, *PCOSA_DML_MultiHomedMode;
     BOOL                                    HTTPSEnable;                     \
     ULONG                                   HTTPPort;                     \
     ULONG                                   HTTPSPort;                     \
+    ULONG                                   ReinitMacThreshold;                     \
     BOOL                                    WebServerChanged;               \
     ULONG                                   IGMPSnoopingEnable;                     \
     ULONG                                   WebUITimeout;                     \
