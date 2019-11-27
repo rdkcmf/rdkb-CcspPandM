@@ -143,7 +143,7 @@ COSA_DML_ETH_PORT_SINFO      g_EthIntSInfo[] =
         /* Downstream (LAN) ports */
         {SWITCH_PORT_0_NAME,                FALSE,  {0,0,0,0,0,0}},
         {SWITCH_PORT_1_NAME,                FALSE,  {0,0,0,0,0,0}},
-#if !defined(_XB6_PRODUCT_REQ_) || defined(_CBR_PRODUCT_REQ_)
+#if !defined(_XB6_PRODUCT_REQ_) || defined(_CBR_PRODUCT_REQ_) || defined(_XB7_PRODUCT_REQ_)
         {SWITCH_PORT_2_NAME,                FALSE,  {0,0,0,0,0,0}},
         {SWITCH_PORT_3_NAME,                FALSE,  {0,0,0,0,0,0}},
 #endif
@@ -259,7 +259,7 @@ int g_PortIDs[]={
 CosaEthInterfaceInfo g_EthEntries[] = 
     {
 #if defined (MULTILAN_FEATURE)
-#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(INTEL_PUMA7)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(INTEL_PUMA7) && !defined(_XB7_PRODUCT_REQ_)
         {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
         {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
         {g_EthIntSInfo + 2, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
@@ -300,7 +300,7 @@ CosaEthInterfaceInfo g_EthEntries[] =
         {g_EthIntSInfo + 5, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
 #endif
 #else
-#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
         {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
         {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
         {g_EthIntSInfo + 2, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
@@ -364,7 +364,7 @@ CosaDmlEthInit
     {
         AnscCopyMemory(g_EthIntSInfo[0].MacAddress, strMac, 6);
         AnscCopyMemory(g_EthIntSInfo[1].MacAddress, strMac, 6);
-#if !defined(_XB6_PRODUCT_REQ_) || defined(_CBR_PRODUCT_REQ_)
+#if !defined(_XB6_PRODUCT_REQ_) || defined(_CBR_PRODUCT_REQ_) || defined(_XB7_PRODUCT_REQ_)
         AnscCopyMemory(g_EthIntSInfo[2].MacAddress, strMac, 6);
         AnscCopyMemory(g_EthIntSInfo[3].MacAddress, strMac, 6);
 #endif
@@ -389,7 +389,7 @@ CosaDmlEthInit
     if ( -1 != _getMac("erouter0", strMac) )
     {
 #if defined (MULTILAN_FEATURE)
-#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) || defined(INTEL_PUMA7)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) || defined(INTEL_PUMA7) 
     	AnscCopyMemory(g_EthIntSInfo[2].MacAddress, strMac, 6);
 #elif defined(_CBR_PRODUCT_REQ_)
         AnscCopyMemory(g_EthIntSInfo[8].MacAddress, strMac, 6);
@@ -397,7 +397,7 @@ CosaDmlEthInit
     	AnscCopyMemory(g_EthIntSInfo[4].MacAddress, strMac, 6);
 #endif
 #else
-#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
         AnscCopyMemory(g_EthIntSInfo[2].MacAddress, strMac, 6);
 #elif defined(_CBR_PRODUCT_REQ_)
         AnscCopyMemory(g_EthIntSInfo[8].MacAddress, strMac, 6);
@@ -410,7 +410,7 @@ CosaDmlEthInit
     if ( -1 != _getMac("lbr0", strMac) )
     {
 #if defined (MULTILAN_FEATURE)
-#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) || defined(INTEL_PUMA7)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) || defined(INTEL_PUMA7)
     	 AnscCopyMemory(g_EthIntSInfo[3].MacAddress, strMac, 6);
 #elif defined(_CBR_PRODUCT_REQ_)
          AnscCopyMemory(g_EthIntSInfo[9].MacAddress, strMac, 6);
@@ -418,7 +418,7 @@ CosaDmlEthInit
         AnscCopyMemory(g_EthIntSInfo[5].MacAddress, strMac, 6);
 #endif
 #else
-#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
          AnscCopyMemory(g_EthIntSInfo[3].MacAddress, strMac, 6);
 #elif defined(_CBR_PRODUCT_REQ_)
          AnscCopyMemory(g_EthIntSInfo[9].MacAddress, strMac, 6);
@@ -1389,6 +1389,18 @@ int puma6_getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg)
                 pcfg->MaxBitRate = 1000;
                 break;
             }
+#ifdef _2_5G_ETHERNET_SUPPORT_
+            case CCSP_HAL_ETHSW_LINK_2_5Gbps:
+            {
+                pcfg->MaxBitRate = 2500;
+                break;
+            }
+            case CCSP_HAL_ETHSW_LINK_5Gbps:
+            {
+                pcfg->MaxBitRate = 5000;
+                break;
+            }
+#endif // _2_5G_ETHERNET_SUPPORT_
             case CCSP_HAL_ETHSW_LINK_10Gbps:
             {
                 pcfg->MaxBitRate = 10000;
@@ -1507,6 +1519,18 @@ int puma6_getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDi
                 pDinfo->CurrentBitRate = 1000;
                 break;
             }
+#ifdef _2_5G_ETHERNET_SUPPORT_
+            case CCSP_HAL_ETHSW_LINK_2_5Gbps:
+            {
+                pDinfo->CurrentBitRate = 2500;
+                break;
+            }
+            case CCSP_HAL_ETHSW_LINK_5Gbps:
+            {
+                pDinfo->CurrentBitRate = 5000;
+                break;
+            }
+#endif // _2_5G_ETHERNET_SUPPORT_
             case CCSP_HAL_ETHSW_LINK_10Gbps:
             {
                 pDinfo->CurrentBitRate = 10000;
