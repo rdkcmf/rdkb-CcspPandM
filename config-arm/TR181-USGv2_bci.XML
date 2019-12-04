@@ -11900,21 +11900,21 @@
         
         <parameter>
           <name>RebootDevice</name>
-          <type>string</type>
+          <type>string(255)</type>
           <syntax>string</syntax>
           <writable>true</writable>
         </parameter>
         
         <parameter>
           <name>FactoryReset</name>
-          <type>string</type>
+          <type>string(255)</type>
           <syntax>string</syntax>
           <writable>true</writable>
         </parameter>
         
         <parameter>
           <name>UserChangedFlags</name>
-          <type>string</type>
+          <type>string(63)</type>
           <syntax>string</syntax>
           <writable>true</writable>
         </parameter>
@@ -11927,14 +11927,14 @@
         
         <parameter>
           <name>DeviceConfigIgnore</name>
-          <type>string</type>
+          <type>string(31)</type>
           <syntax>string</syntax>
           <writable>true</writable>
         </parameter>
         
         <parameter>
           <name>SNMPEnable</name>
-          <type>string</type>
+          <type>string(31)</type>
           <syntax>string</syntax>
           <writable>true</writable>
         </parameter>
@@ -12060,13 +12060,13 @@
         </parameter>
         <parameter>
             <name>HostName</name>
-            <type>string</type>
+            <type>string(255)</type>
             <syntax>string</syntax>
             <writable>true</writable>
         </parameter>
         <parameter>
             <name>DomainName</name>
-            <type>string</type>
+            <type>string(255)</type>
             <syntax>string</syntax>
             <writable>true</writable>
         </parameter>
