@@ -40,6 +40,7 @@ extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 
 static char *g_RabidEnabled = "Advsecurity_RabidEnable";
+static char *g_RabidMemoryLimit = "Advsecurity_RabidMemoryLimit";
 
 ANSC_STATUS CosaGetSysCfgUlong(char* setting, ULONG *value);
 ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value);
@@ -54,6 +55,7 @@ CosaRabidCreate
 {
     PCOSA_DATAMODEL_RABID       pMyObject    = (PCOSA_DATAMODEL_RABID)NULL;
     ULONG                   syscfgValue = 0;
+    ULONG                   uSyscfgValue = 0;
     int                     retGet  = CCSP_SUCCESS;
 
     /*
@@ -70,6 +72,10 @@ CosaRabidCreate
     retGet = CosaGetSysCfgUlong(g_RabidEnabled, &syscfgValue);
 
     pMyObject->bEnable = syscfgValue;
+
+    retGet = CosaGetSysCfgUlong(g_RabidMemoryLimit, &uSyscfgValue);
+
+    pMyObject->uMemoryLimit = uSyscfgValue;
 
     return  (ANSC_HANDLE)pMyObject;
 }
@@ -122,6 +128,19 @@ ANSC_STATUS CosaRabidDeInit(ANSC_HANDLE hThisObject)
         AnscCopyString(cmd, "/usr/ccsp/pam/launch_adv_security.sh -rabidOff &");
         system(cmd);
         pMyObject->bEnable = FALSE;
+    }
+    return returnStatus;
+}
+
+ANSC_STATUS CosaRabidSetMemoryLimit(ANSC_HANDLE hThisObject, ULONG uValue)
+{
+    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
+    PCOSA_DATAMODEL_RABID     pMyObject    = (PCOSA_DATAMODEL_RABID)hThisObject;
+
+    returnStatus = CosaSetSysCfgUlong(g_RabidMemoryLimit, uValue);
+    if ( returnStatus == ANSC_STATUS_SUCCESS )
+    {
+        pMyObject->uMemoryLimit = uValue;
     }
     return returnStatus;
 }

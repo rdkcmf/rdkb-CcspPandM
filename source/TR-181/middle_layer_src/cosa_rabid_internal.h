@@ -27,6 +27,7 @@ typedef  struct
 _COSA_DATAMODEL_RABID
 {
     BOOL                        bEnable;
+    ULONG                       uMemoryLimit;
     int         	iStatus;
     int             iState;
 }

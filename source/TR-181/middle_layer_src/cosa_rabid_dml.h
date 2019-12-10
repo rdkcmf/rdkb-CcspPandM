@@ -30,6 +30,8 @@
 
     *  RabidFramework_GetParamBoolValue
     *  RabidFramework_SetParamBoolValue
+    *  RabidFramework_GetParamUlongValue
+    *  RabidFramework_SetParamUlongValue
 
 ***********************************************************************/
 ANSC_STATUS
@@ -42,6 +44,13 @@ CosaRabidDeInit
     (
         ANSC_HANDLE hThisObject
     );
+ANSC_STATUS
+CosaRabidSetMemoryLimit
+    (
+        ANSC_HANDLE hThisObject,
+        ULONG       uValue
+    );
+
 BOOL
 RabidFramework_GetParamBoolValue
     (
@@ -57,6 +66,20 @@ RabidFramework_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+BOOL
+RabidFramework_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      pUlong
+    );
 
+BOOL
+RabidFramework_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    );
 #endif //_COSA_RABID_DML_H
 
