@@ -1485,25 +1485,7 @@
                               </parameter>
                             </parameters>
                         </object>
-
-			<object>
-                             <name>RDKFirmwareUpgrader</name>
-                             <objectType>object</objectType>
-                             <functions>
-                                <func_GetParamBoolValue>RDKFirmwareUpgrader_GetParamBoolValue</func_GetParamBoolValue>
-                                <func_SetParamBoolValue>RDKFirmwareUpgrader_SetParamBoolValue</func_SetParamBoolValue>
-                             </functions>
-                             <parameters>
-                               <parameter>
-                                    <name>Enable</name>
-                                    <type>boolean</type>
-                                    <syntax>bool</syntax>
-                                    <writable>true</writable>
-                                </parameter>
-                             </parameters>
-                        </object>
-
-                        <object>
+						<object>
                           <name>SyndicationFlowControl</name>
                           <objectType>object</objectType>
                           <functions>
