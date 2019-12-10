@@ -7449,6 +7449,63 @@ Control_GetParamStringValue
     prototype:
 
         BOOL
+        Feature_GetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int*                        pint
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int*                       pint
+                The buffer of returned integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Feature_GetParamIntValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*	                    pint
+    )
+{
+   /* check the parameter name and return the corresponding value */
+    CcspTraceInfo(("Feature_GetParamIntValue: RDKLowQueueRebootThreshold\n"));
+
+    if( AnscEqualString(ParamName, "RDKLowQueueRebootThreshold", TRUE))
+    {
+         /* collect value */
+         char buf[10];
+         syscfg_get( NULL, "low_queue_reboot_threshold", buf, sizeof(buf));
+         if( buf [0] != '\0' )
+         {
+             *pint= ( atoi(buf) );
+             return TRUE;
+         }
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
         Control_SetParamStringValue
             (
                 ANSC_HANDLE                 hInsContext,
@@ -8080,6 +8137,69 @@ ActiveMeasurements_RFC_SetParamBoolValue
        }
        CcspTraceInfo(("Successfully set Active Measurement RFC enable \n"));
        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Feature_SetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int                         bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int                        bValue
+                The updated int value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Feature_SetParamIntValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         bValue
+    )
+{
+    /* check the parameter name and set the corresponding value */
+    CcspTraceInfo(("Feature_SetParamIntValue: RDKLowQueueRebootThreshold"));
+
+    if( AnscEqualString(ParamName, "RDKLowQueueRebootThreshold", TRUE))
+    {
+        char buf[8]={0};
+        snprintf(buf, sizeof(buf), "%d", bValue);
+
+        if (syscfg_set(NULL, "low_queue_reboot_threshold", buf) != 0)
+        {
+               CcspTraceInfo(("syscfg_set low_queue_reboot_threshold failed\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                 CcspTraceInfo(("syscfg_commit low_queue_reboot_threshold failed\n"));
+            }
+        }
+	return TRUE;
     }
     return FALSE;
 }

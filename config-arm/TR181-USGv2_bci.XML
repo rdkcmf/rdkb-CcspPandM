@@ -1293,6 +1293,8 @@
                     <functions>
                         <func_GetParamBoolValue>Feature_GetParamBoolValue</func_GetParamBoolValue>
                         <func_SetParamBoolValue>Feature_SetParamBoolValue</func_SetParamBoolValue>
+			<func_GetParamIntValue>Feature_GetParamIntValue</func_GetParamIntValue>
+                        <func_SetParamIntValue>Feature_SetParamIntValue</func_SetParamIntValue>
                     </functions>
 
                     <parameters>
@@ -1324,6 +1326,12 @@
                             <name>Xupnp</name>
                             <type>boolean</type>
                             <syntax>bool</syntax>
+			    <writable>true</writable>
+			</parameter>
+			<parameter>
+                            <name>RDKLowQueueRebootThreshold</name>
+                            <type>int</type>
+                            <syntax>int</syntax>
                             <writable>true</writable>
                         </parameter>
                     </parameters>
