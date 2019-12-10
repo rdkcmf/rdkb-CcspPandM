@@ -23,6 +23,8 @@
 #include "syslog.h"
 #include "ccsp_trace.h"
 
+#define MIN_RABID_MEMORY_LIMIT 5
+
 static char *g_RabidEnable = "Advsecurity_RabidEnable";
 
 /***********************************************************************
@@ -33,6 +35,8 @@ static char *g_RabidEnable = "Advsecurity_RabidEnable";
 
     *  RabidFramework_GetParamBoolValue
     *  RabidFramework_SetParamBoolValue
+    *  RabidFramework_GetParamUlongValue
+    *  RabidFramework_SetParamUlongValue
 
 ***********************************************************************/
 /**********************************************************************  
@@ -138,6 +142,123 @@ RabidFramework_SetParamBoolValue
                 returnStatus = CosaRabidInit(pMyObject);
         else
                 returnStatus = CosaRabidDeInit(pMyObject);
+
+        if ( returnStatus != ANSC_STATUS_SUCCESS )
+        {
+            CcspTraceInfo(("%s EXIT Error\n", __FUNCTION__));
+            return  returnStatus;
+        }
+
+        return TRUE;
+    }
+
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        RabidFramework_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      pUlong
+            );
+
+    description:
+
+        This function is called to retrieve unsigned long parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                       pUlong
+                The buffer of returned unsigned long value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+RabidFramework_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      pUlong
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    PCOSA_DATAMODEL_RABID       pMyObject     = (PCOSA_DATAMODEL_RABID)g_pCosaBEManager->hRabid;
+
+    if( AnscEqualString(ParamName, "MemoryLimit", TRUE))
+    {
+        *pUlong = pMyObject->uMemoryLimit;
+        return TRUE;
+    }
+
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        RabidFramework_SetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG                       uValue
+            );
+
+    description:
+
+        This function is called to set unsigned long parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG                        uValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+RabidFramework_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    )
+{
+
+    /* check the parameter name and return the corresponding value */
+    PCOSA_DATAMODEL_RABID       pMyObject     = (PCOSA_DATAMODEL_RABID)g_pCosaBEManager->hRabid;
+    ANSC_STATUS  returnStatus = ANSC_STATUS_SUCCESS;
+
+    if( AnscEqualString(ParamName, "MemoryLimit", TRUE))
+    {
+        if(uValue == pMyObject->uMemoryLimit)
+                return TRUE;
+
+        if (uValue <= MIN_RABID_MEMORY_LIMIT)
+                return FALSE;
+
+        returnStatus = CosaRabidSetMemoryLimit(pMyObject, uValue);
 
         if ( returnStatus != ANSC_STATUS_SUCCESS )
         {
