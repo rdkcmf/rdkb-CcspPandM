@@ -1741,8 +1741,11 @@ void restoreAllDBs()
             else
             {
                 // we are the child
-
+#ifdef ARRIS_XB3_PLATFORM_CHANGES
+                char *args[] = {"/fss/gw/usr/bin/rpcclient", urlPtr, "/bin/rm -f /nvram/syscfg.db /nvram/.keys/vyinerkyo.wyr", (char *) 0 };
+#else
                 char *args[] = {"/fss/gw/usr/bin/rpcclient", urlPtr, "/bin/rm -f /nvram/syscfg.db", (char *) 0 };
+#endif
                 execv(args[0], args);
                 _exit(EXIT_FAILURE);   // exec never returns
             }

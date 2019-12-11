@@ -1934,6 +1934,12 @@
                                 <syntax>bool</syntax>
                                 <writable>true</writable>
                         </parameter>
+                        <parameter>
+                                <name>EnableAPISecurity</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                        </parameter>
                         </parameters>
                 </object>
                 <object>
