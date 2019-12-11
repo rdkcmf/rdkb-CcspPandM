@@ -7883,6 +7883,26 @@ EasyConnect_GetParamBoolValue
 
          return TRUE;
     }
+
+    if( AnscEqualString(ParamName, "EnableAPISecurity", TRUE))
+    {
+       /* Collect Value */
+       char *strValue = NULL;
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+
+
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.EnableAPISecurity", NULL, &strValue);
+        if (retPsmGet == CCSP_SUCCESS) {
+            *pBool = _ansc_atoi(strValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        }
+        else
+            *pBool = FALSE;
+
+         return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -7938,6 +7958,22 @@ EasyConnect_SetParamBoolValue
        CcspTraceInfo(("Successfully set EasyConnect support \n"));
        return TRUE;
     }
+
+    if( AnscEqualString(ParamName, "EnableAPISecurity", TRUE))
+    {
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+
+       sprintf(str,"%d",bValue);
+       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.EnableAPISecurity", ccsp_string, str);
+       if (retPsmGet != CCSP_SUCCESS) {
+           CcspTraceError(("Set failed for EasyConnect APISecurity support \n"));
+           return ANSC_STATUS_FAILURE;
+       }
+       CcspTraceInfo(("Successfully set EasyConnect APISecurity support \n"));
+       return TRUE;
+    }
+
     return FALSE;
 }
 
