@@ -166,6 +166,40 @@ int generate_ipv6_eui_address(char *eui, int eui_len) {
     return ANSC_STATUS_SUCCESS;
 }
 
+static int generateIpv6LanPrefix(char *lanPrefix, int lanPrefixLen) {
+    char serial_num[64] = {0};
+    char tmp[8] = {0};
+    int idx =0;
+    unsigned char ula[16] = {0};
+
+    if(platform_hal_GetSerialNumber(serial_num) != 0) {
+        AnscTraceWarning(("%s platform_hal_GetSerialNumber failure \n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    ula[7] = 0xfd;
+
+    /* extract binary data from string */
+    for (idx = 0; idx < 7; idx++) {
+        tmp[0] = '\0';
+        strncpy(tmp, &serial_num[ 0 + (idx * 2) ], 2);
+        ula[6 - idx] = strtol(tmp, NULL, 16);
+    }
+
+    snprintf(lanPrefix, lanPrefixLen, "%02x%02x:%02x%02x:"
+       "%02x%02x:%02x%02x",
+        ula[7],
+        ula[6],
+        ula[5],
+        ula[4],
+        ula[3],
+        ula[2],
+        ula[1],
+        ula[0]);
+
+    return ANSC_STATUS_SUCCESS;
+}
+
 static int setLanIpv6ULAPrefix(char *ula_prefix) {
 
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
@@ -251,71 +285,58 @@ ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Ula(char *ula_prefix, char *ula) {
     char eui_address[64] = {0};
     char lan_prefix[64]  = {0};
     char lan_address[64] = {0};
-    char prev_lan_address[64] = {0};
-    char command[128] = {0};
-    int count = 0;
-    int i;
+    char generated_lan_prefix[64]  = {0};
 
     if(commonSyseventFd == -1) {
         openCommonSyseventConnection();
     }
-    
-    generate_ipv6_eui_address(eui_address, sizeof(eui_address));
-    snprintf(lan_address, sizeof(lan_address), "%s:%s", ula_prefix, eui_address);
 
-    strncpy(lan_prefix, ula_prefix, sizeof(lan_prefix));
+    if( generate_ipv6_eui_address(eui_address, sizeof(eui_address)) != 0 )
+    {
+        AnscTraceWarning(("%s generate_ipv6_eui_address failure \n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if(strlen(ula_prefix) == 0)
+    {
+        if (generateIpv6LanPrefix(generated_lan_prefix, sizeof(generated_lan_prefix)) != 0)
+        {
+            AnscTraceWarning(("%s generateIpv6LanPrefix failure \n", __FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+        }
+        snprintf(lan_address, sizeof(lan_address), "%s:%s", generated_lan_prefix, eui_address);
+        strncpy(lan_prefix, generated_lan_prefix, sizeof(lan_prefix));
+        strncpy(ula_prefix, generated_lan_prefix, strlen(generated_lan_prefix));
+    }
+    else
+    {
+         snprintf(lan_address, sizeof(lan_address), "%s:%s", ula_prefix, eui_address);
+         strncpy(lan_prefix, ula_prefix, sizeof(lan_prefix));
+    }
     strcat(lan_prefix, "::/64");
     strncpy(ula, lan_address, sizeof(lan_address));
 
     sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, lan_address, 0);
     sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, lan_prefix, 0);
 
-
     return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS CosaDmlLanManagement_SetLanIpv6Ula(char *lan_prefix, int lan_prefix_len, char *lan_ula, int lan_ula_len) {
-    unsigned int mac[8] = {0};
-    char macStr[32] = {0};
-    char serial_num[32] = {0};
-    char command[1024] = {0};
-    FILE *pf = NULL;
-    char tmp[8] = {0};
-    int idx =0;
-    int idj = 0;
-    unsigned char ula[16] = {0};
     char prefix[64] = {0};
     char lan_eui[64] = {0};
-    int count = 0;
-    int i;
 
     if(strncmp(lan_prefix, "undefined", lan_prefix_len) == 0) {
-        if(platform_hal_GetSerialNumber(serial_num) != 0) {
-            AnscTraceWarning(("%s platform_hal_GetSerialNumber failure \n", __FUNCTION__));
+        if (generateIpv6LanPrefix(lan_prefix, lan_prefix_len) != 0)
+        {
+            AnscTraceWarning(("%s generateIpv6LanPrefix failure \n", __FUNCTION__));
             return ANSC_STATUS_FAILURE;
         }
-
-        ula[7] = 0xfd;
-
-        /* extract binary data from string */
-        for (idx = 0; idx < 7; idx++) {
-            tmp[0] = '\0';
-            strncpy(tmp, &serial_num[ 0 + (idx * 2) ], 2);
-            ula[6 - idx] = strtol(tmp, NULL, 16);
+        if (generate_ipv6_eui_address(lan_eui, sizeof(lan_eui)) != 0) 
+        {
+            AnscTraceWarning(("%s generate_ipv6_eui_address failure \n", __FUNCTION__));
+            return ANSC_STATUS_FAILURE;
         }
-
-        snprintf(lan_prefix, lan_prefix_len, "%02x%02x:%02x%02x:"
-           "%02x%02x:%02x%02x",
-        ula[7],
-        ula[6],
-        ula[5],
-        ula[4],
-        ula[3],
-        ula[2],
-        ula[1],
-        ula[0]);
-   
-        generate_ipv6_eui_address(lan_eui, sizeof(lan_eui));
         snprintf(lan_ula, lan_ula_len, "%s:%s", lan_prefix, lan_eui);
 
         CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
