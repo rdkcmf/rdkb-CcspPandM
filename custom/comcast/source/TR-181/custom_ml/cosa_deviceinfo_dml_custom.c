@@ -873,6 +873,10 @@ int SetXdnsConfig()
 	if(fp3) fclose(fp3); fp3 = NULL;
 	if(fp2) fclose(fp2); fp2 = NULL;
 	if(fp1) fclose(fp1); fp1 = NULL;
+  
+	/*change in resolv.conf. so, restarting dnsmasq*/
+	commonSyseventSet("dhcp_server-stop", "");
+	commonSyseventSet("dhcp_server-start", "");
 
 	if(founddefault >= 1)
 		return 1; //success
@@ -953,9 +957,14 @@ int UnsetXdnsConfig()
 		fprintf(fp1, "%s", confEntry);
 	}
 	
+
+
   	CcspTraceWarning(("############ Disabled XDNS#######\n"));
 	fclose(fp3); fp3 = NULL;
 	fclose(fp1); fp1 = NULL;
+          /*change in resolv.conf. so, restarting dnsmasq*/
+        commonSyseventSet("dhcp_server-stop", "");
+        commonSyseventSet("dhcp_server-start", "");
 	return 1;
 }
 
