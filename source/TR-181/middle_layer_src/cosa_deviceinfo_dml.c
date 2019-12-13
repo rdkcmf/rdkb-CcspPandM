@@ -11133,6 +11133,13 @@ Syndication_SetParamStringValue
     {
         if(!(ind))
         {
+#if defined (_RDK_REF_PLATFORM_)
+		ind = 0;
+		if ( !(rc = strcmp_s("comcast",strlen("comcast"),pString,strlen(pString),&ind) ) ) //Compare if input string is comcast
+		{
+			if( ind != 0 )//if input partner ID string is comcast,you wont enter this 'if' loop
+			{
+#endif
                 if ( !(rc = strcmp_s(pMyObject->PartnerID, sizeof(pMyObject->PartnerID), pString, &ind)) )
 		{
                         if(ind != 0)
@@ -11153,6 +11160,10 @@ Syndication_SetParamStringValue
 			    }
                         }
 		}
+#if defined (_RDK_REF_PLATFORM_)
+			}
+		}
+#endif
                 else if(rc != EOK)
                 {
                      AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
