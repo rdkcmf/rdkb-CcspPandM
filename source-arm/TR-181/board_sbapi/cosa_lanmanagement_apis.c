@@ -439,6 +439,8 @@ CosaDmlLanManagementSetCfg
         PCOSA_DML_LANMANAGEMENT_CFG pLanMngmCfg
     )
 {
+    BOOLEAN isUlaPrefixChanged = FALSE;
+
     if (pLanMngmCfg == NULL) {
         return ANSC_STATUS_FAILURE;
     }
@@ -455,6 +457,7 @@ CosaDmlLanManagementSetCfg
             AnscTraceWarning(("%s: setLanIpv6ULA() failure \n", __FUNCTION__));
             return ANSC_STATUS_FAILURE;
         }
+        isUlaPrefixChanged = TRUE;
     }
 
     if(g_LanMngmCfg.LanIpv6UlaEnable != pLanMngmCfg->LanIpv6UlaEnable) {
@@ -463,6 +466,10 @@ CosaDmlLanManagementSetCfg
             return ANSC_STATUS_FAILURE;
         }
         CosaDmlLanMngm_SetLanIpv6UlaEnable(pLanMngmCfg->LanIpv6UlaEnable);
+        if(!pLanMngmCfg->LanIpv6UlaEnable)
+        {
+            system("killall zebra");
+        }
     }
     if(g_LanMngmCfg.LanIpv6Enable != pLanMngmCfg->LanIpv6Enable) {
         if(setLanIpv6Enable(pLanMngmCfg->LanIpv6Enable) != ANSC_STATUS_SUCCESS) {
@@ -477,6 +484,10 @@ CosaDmlLanManagementSetCfg
     /* Restarts entire LAN services */
     sysevent_set(commonSyseventFd, commonSyseventToken, "lan-stop",  NULL, 0);
     sysevent_set(commonSyseventFd, commonSyseventToken, "lan-start", NULL, 0);
+    if (isUlaPrefixChanged && pLanMngmCfg->LanIpv6UlaEnable)
+    {
+        system("killall zebra; sysevent set zebra-restart");
+    }
     system("gw_lan_refresh");
 
     return ANSC_STATUS_SUCCESS;
