@@ -393,6 +393,97 @@ ManageableNotification_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Snmpv3DHKickstart.KickstartTable{i}.
+
+    *  Snmpv3DHKickstart_GetParamBoolValue
+    *  Snmpv3DHKickstart_SetParamBoolValue
+    *  Snmpv3DHKickstart_GetParamUlongValue
+    *  Snmpv3DHKickstart_SetParamUlongValue
+
+***********************************************************************/
+BOOL
+Snmpv3DHKickstart_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+Snmpv3DHKickstart_SetParamBoolValue
+
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL                        bValue
+ );
+
+BOOL
+Snmpv3DHKickstart_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    );
+
+BOOL
+Snmpv3DHKickstart_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Snmpv3DHKickstart.KickstartTable{i}.
+
+    *  KickstartTable_GetEntryCount
+    *  KickstartTable_GetEntry
+    *  KickstartTable_GetParamStringValue
+    *  KickstartTable_SetParamStringValue
+
+***********************************************************************/
+
+ULONG
+KickstartTable_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ANSC_HANDLE
+KickstartTable_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    );
+
+LONG
+KickstartTable_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+BOOL
+KickstartTable_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
 /***********************************************************************
 
  APIs for Object:
