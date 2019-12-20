@@ -439,7 +439,7 @@ CosaDmlLanManagementSetCfg
         PCOSA_DML_LANMANAGEMENT_CFG pLanMngmCfg
     )
 {
-    BOOLEAN isUlaPrefixChanged = FALSE;
+    BOOLEAN isUlaPrefixChanged = FALSE, isIpv6UlaEnableChanged = FALSE, isIpv6EnableChanged = FALSE;
 
     if (pLanMngmCfg == NULL) {
         return ANSC_STATUS_FAILURE;
@@ -470,6 +470,7 @@ CosaDmlLanManagementSetCfg
         {
             system("killall zebra");
         }
+        isIpv6UlaEnableChanged = TRUE;
     }
     if(g_LanMngmCfg.LanIpv6Enable != pLanMngmCfg->LanIpv6Enable) {
         if(setLanIpv6Enable(pLanMngmCfg->LanIpv6Enable) != ANSC_STATUS_SUCCESS) {
@@ -477,13 +478,18 @@ CosaDmlLanManagementSetCfg
             return ANSC_STATUS_FAILURE;
         }
         CosaDmlLanMngm_SetLanIpv6Enable(pLanMngmCfg->LanIpv6Enable);
+        isIpv6EnableChanged = TRUE;
     }
 
     AnscCopyMemory(&g_LanMngmCfg, pLanMngmCfg, sizeof(COSA_DML_LANMANAGEMENT_CFG));
 
     /* Restarts entire LAN services */
-    sysevent_set(commonSyseventFd, commonSyseventToken, "lan-stop",  NULL, 0);
-    sysevent_set(commonSyseventFd, commonSyseventToken, "lan-start", NULL, 0);
+    if( ( TRUE == isUlaPrefixChanged ) || ( TRUE == isIpv6UlaEnableChanged ) || ( TRUE == isIpv6EnableChanged ) )
+    {
+       sysevent_set(commonSyseventFd, commonSyseventToken, "lan-stop",  NULL, 0);
+       sysevent_set(commonSyseventFd, commonSyseventToken, "lan-start", NULL, 0);
+    }
+
     if (isUlaPrefixChanged && pLanMngmCfg->LanIpv6UlaEnable)
     {
         system("killall zebra; sysevent set zebra-restart");
