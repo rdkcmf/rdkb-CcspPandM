@@ -7656,64 +7656,6 @@ MEMSWAP_GetParamBoolValue
     prototype:
 
         BOOL
-        RDKFirmwareUpgrader_GetParamBoolValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                BOOL*                       pBool
-            );
-
-    description:
-
-        This function is called to retrieve Boolean parameter value;
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                BOOL*                       pBool
-                The buffer of returned boolean value;
-
-    return:     TRUE if succeeded.
-
-**********************************************************************/
-BOOL
-RDKFirmwareUpgrader_GetParamBoolValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        BOOL*                       pBool
-    )
-{
-    if( AnscEqualString(ParamName, "Enable", TRUE))
-    {
-        char buf[8];
-        memset (buf, 0, sizeof(buf));
-
-        /* collect value */
-        syscfg_get( NULL, "RDKFirmwareUpgraderEnabled", buf, sizeof(buf));
-
-        if( buf != NULL )
-        {
-            if (strcmp(buf, "true") == 0)
-                *pBool = TRUE;
-            else
-                *pBool = FALSE;
-        }
-        return TRUE;
-    }
-    return FALSE;
-}
-
-/**********************************************************************
-
-    caller:     owner of this object
-
-    prototype:
-
-        BOOL
         EasyConnect_GetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,
