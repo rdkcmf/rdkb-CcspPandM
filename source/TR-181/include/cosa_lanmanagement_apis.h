@@ -100,4 +100,8 @@ CosaDmlLanManagementGetCfg
         PCOSA_DML_LANMANAGEMENT_CFG          pTimeCfg
     );
 
+#ifdef _HUB4_PRODUCT_REQ_
+ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Ula(char *ula_prefix, char *ula);
+#endif
+
 #endif

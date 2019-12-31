@@ -65,6 +65,17 @@
 #include <utapi.h>
 #include "cosa_common_util.h"
 #include "cosa_apis_util.h"
+#ifdef _HUB4_PRODUCT_REQ_
+#include "cosa_lanmanagement_apis.h"
+
+#define PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE  "dmsb.lanmanagemententry.lanulaenable"
+#define PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE "dmsb.lanmanagemententry.lanipv6enable"
+#define PSM_LANMANAGEMENTENTRY_LAN_ULA  "dmsb.lanmanagemententry.lanula"
+#define PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX  "dmsb.lanmanagemententry.lanulaprefix"
+
+extern ANSC_HANDLE bus_handle;
+extern void* g_pDslhDmlAgent;
+#endif
 
 /**
  * common callback function dispatcher for event
@@ -347,11 +358,20 @@ EvtDispterCallFuncByEvent
 
 static int se_fd = 0; 
 static token_t token;
+#ifdef _HUB4_PRODUCT_REQ_
+static async_id_t async_id[4];
+#else
 static async_id_t async_id[3];
+#endif
 static short server_port;
 static char  server_ip[19];
+#ifdef _HUB4_PRODUCT_REQ_
 enum {EVENT_ERROR=-1, EVENT_OK, EVENT_TIMEOUT, EVENT_HANDLE_EXIT, EVENT_LAN_STARTED=0x10, EVENT_LAN_STOPPED, 
+        EVENT_WAN_STARTED=0x20, EVENT_WAN_STOPPED,EVENT_WAN_IPV4_RECD=0x30, EVENT_VALID_ULA_ADDRESS=0x40};
+#else
+enum {EVENT_ERROR=-1, EVENT_OK, EVENT_TIMEOUT, EVENT_HANDLE_EXIT, EVENT_LAN_STARTED=0x10, EVENT_LAN_STOPPED,
         EVENT_WAN_STARTED=0x20, EVENT_WAN_STOPPED,EVENT_WAN_IPV4_RECD=0x30};
+#endif
 
 static void
 EvtDispterWanIpAddrsCallback(char *ip_addrs)
@@ -414,7 +434,14 @@ EvtDispterEventInits(void)
     if (rc) {
        return(EVENT_ERROR);
     }
-    
+#ifdef _HUB4_PRODUCT_REQ_
+	//register valid_ula_address event
+    sysevent_set_options(se_fd, token, "valid_ula_address", TUPLE_FLAG_EVENT);
+    rc = sysevent_setnotification(se_fd, token, "valid_ula_address", &async_id[3]);
+    if (rc) {
+       return(EVENT_ERROR);
+    }
+#endif
     return(EVENT_OK);
 }
 
@@ -479,6 +506,15 @@ EvtDispterEventListen(void)
                 EvtDispterWanIpAddrsCallback(value_str);
                 ret = EVENT_WAN_IPV4_RECD;
             }
+#ifdef _HUB4_PRODUCT_REQ_
+            else if(!strcmp(name_str, "valid_ula_address"))
+            {
+                if (!strncmp(value_str, "false", 5))
+                {
+                    ret = EVENT_VALID_ULA_ADDRESS;
+                }
+            }
+#endif
         } else {
             CcspTraceWarning(("Received msg that is not a SE_MSG_NOTIFICATION (%d)\n", msg_type));
         }
@@ -498,6 +534,9 @@ EvtDispterEventClose(void)
     sysevent_rmnotification(se_fd, token, async_id[0]);
     sysevent_rmnotification(se_fd, token, async_id[1]);
     sysevent_rmnotification(se_fd, token, async_id[2]);
+#ifdef _HUB4_PRODUCT_REQ_
+    sysevent_rmnotification(se_fd, token, async_id[3]);
+#endif
 
     /* close this session with syseventd */
     sysevent_close(se_fd, token);
@@ -575,6 +614,11 @@ EvtDispterEventHandler(void *arg)
                 break;
             case EVENT_WAN_IPV4_RECD:
                 break;
+#ifdef _HUB4_PRODUCT_REQ_
+            case EVENT_VALID_ULA_ADDRESS:
+                ValidUlaHandleEventAsync();
+                break;
+#endif
             default :
                 CcspTraceWarning(("The received event status is not expected!\n"));
                 break;
@@ -607,3 +651,81 @@ EvtDispterHandleEventAsync(void)
     }
 }
 
+#ifdef _HUB4_PRODUCT_REQ_
+void* RegenerateUla(void *arg)
+{
+    char *pIpv6_enable = NULL;
+    char *pUla_enable  = NULL;
+    char *pUla_prefix  = NULL;
+    char *pUla = NULL;
+
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+    pthread_detach(pthread_self());
+
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE, NULL, &pIpv6_enable))
+    {
+        bus_info->freefunc(pIpv6_enable);
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE, NULL, &pUla_enable))
+    {
+        bus_info->freefunc(pUla_enable);
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA, NULL, &pUla))
+    {
+        if(pUla != NULL)
+            bus_info->freefunc(pUla);
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX, NULL, &pUla_prefix))
+    {
+        if(pUla_prefix != NULL)
+            bus_info->freefunc(pUla_prefix);
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if ((strncmp(pIpv6_enable, "TRUE", 4 ) == 0) && (strncmp(pUla_enable, "TRUE", 4 ) == 0))
+    {
+        if(ANSC_STATUS_SUCCESS == CosaDmlLanMngm_SetLanIpv6Ula(pUla_prefix, pUla))
+        {
+	    sysevent_set(se_fd, token, "valid_ula_address", "true", 0);
+        }
+    }
+    else
+    {
+        system("killall zebra");
+    }
+
+    if(pIpv6_enable != NULL)
+        bus_info->freefunc(pIpv6_enable);
+
+    if(pUla_enable != NULL)
+        bus_info->freefunc(pUla_enable);
+
+    if(pUla_prefix != NULL)
+        bus_info->freefunc(pUla_prefix);
+
+    if(pUla != NULL)
+        bus_info->freefunc(pUla);
+}
+
+/*
+ * Create a thread to handle the sysevent asynchronously
+ */
+void
+ValidUlaHandleEventAsync(void)
+{
+    int err;
+    pthread_t event_handle_thread;
+
+    err = pthread_create(&event_handle_thread, NULL, RegenerateUla, NULL);
+    if(0 != err)
+    {
+        CcspTraceError(("%s: create the event handle thread error!\n", __FUNCTION__));
+    }
+}
+#endif
