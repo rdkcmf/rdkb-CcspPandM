@@ -310,15 +310,23 @@ ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Ula(char *ula_prefix, char *ula) {
     }
     else
     {
-         snprintf(lan_address, sizeof(lan_address), "%s:%s", ula_prefix, eui_address);
-         strncpy(lan_prefix, ula_prefix, sizeof(lan_prefix));
+        snprintf(lan_address, sizeof(lan_address), "%s:%s", ula_prefix, eui_address);
+        strncpy(lan_prefix, ula_prefix, sizeof(lan_prefix));
     }
-    strcat(lan_prefix, "::/64");
-    strncpy(ula, lan_address, sizeof(lan_address));
-
-    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, lan_address, 0);
-    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, lan_prefix, 0);
-
+    if ((IsValid_ULAAddress(lan_address) == 1))
+    {
+        strncpy(lan_prefix, ula_prefix, sizeof(lan_prefix));
+        strcat(lan_prefix, "::/64");
+        strncpy(ula, lan_address, sizeof(lan_address));
+        sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, lan_address, 0);
+        sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, lan_prefix, 0);
+    }
+    else
+    {
+        sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, "", 0);
+        sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, "", 0);
+        return ANSC_STATUS_FAILURE;
+    }
     return ANSC_STATUS_SUCCESS;
 }
 
