@@ -11135,7 +11135,7 @@ Syndication_SetParamStringValue
         {
 #if defined (_RDK_REF_PLATFORM_)
 		ind = 0;
-		if ( !(rc = strcmp_s("comcast",strlen("comcast"),pString,strlen(pString),&ind) ) ) //Compare if input string is comcast
+		if ( !(rc = strcmp_s("comcast", strlen("comcast"), pString, &ind) ) ) //Compare if input string is comcast
 		{
 			if( ind != 0 )//if input partner ID string is comcast,you wont enter this 'if' loop
 			{
