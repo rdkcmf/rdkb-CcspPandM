@@ -1836,10 +1836,9 @@ CosaDmlBrgPortGetStats
     )
 {
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    CcspTraceInfo(("------CosaDmlBrgPortGetStats...\n"));
-    AnscTraceFlow(("<HL> %s\n",__FUNCTION__));
     PBRIDGE pBridge = getBridge(ulBrgInstanceNumber);
     if (pBridge == NULL) {
+        CcspTraceInfo(("< %s > <pBridge == NULL>\n",__FUNCTION__));
         return ANSC_STATUS_CANT_FIND;
     }
     CcspTraceInfo(("------CosaDmlBrgPortGetStats, Bridge:%s...\n", pBridge->hwid));
@@ -2227,7 +2226,6 @@ PBRIDGE getBridge(ULONG instanceNumber)
 PBRIDGE_PORT getBPort(PBRIDGE pBridge, ULONG ulInstanceNumber)
 {
     PBRIDGE_PORT curPort = (PBRIDGE_PORT) AnscSListGetFirstEntry(&pBridge->portList);
-    AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
     while (curPort != NULL) {
         if (curPort->instanceNumber == ulInstanceNumber) {
 
@@ -3623,7 +3621,6 @@ ANSC_STATUS lanBrPCtlGetStats(PBRIDGE_PORT port, PCOSA_DML_IF_STATS stats) {
     OSStats osstats;
     ULONG   retVal = 0; 
 
-    CcspTraceInfo(("------lanBrPCtlGetStats...\n"));
     _ansc_memset(&osstats, 0, sizeof (osstats));
 
     retVal = getOSStats((char*)port->name, &osstats);
