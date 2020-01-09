@@ -6655,6 +6655,134 @@ PresenceDetect_SetParamBoolValue
     return FALSE;
 }
 
+/* LostandFoundInternet can be blocked/allowed */
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        LostandFoundInternet_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+LostandFoundInternet_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    char buf[8];
+
+    /* check the parameter name and return the corresponding value */
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        syscfg_get( NULL, "BlockLostandFoundInternet", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+/* BlockLostandFoundInternet can be enabled/disabled to allow internet to lnf clients */
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        LostandFoundInternet_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+LostandFoundInternet_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        if( bValue == TRUE)
+        {
+            syscfg_set(NULL, "BlockLostandFoundInternet", "true");
+        }
+        else
+        {
+            syscfg_set(NULL, "BlockLostandFoundInternet", "false");
+        }
+        if (syscfg_commit() != 0)
+        {
+             AnscTraceWarning(("syscfg_commit failed for block lnf internet update\n"));
+             return FALSE;
+        }
+	    system("sysevent set firewall-restart");
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
 /**********************************************************************
 
     caller:     owner of this object
