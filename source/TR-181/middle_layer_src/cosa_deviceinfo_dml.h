@@ -1640,4 +1640,33 @@ CaptivePortalForNoCableRF_SetParamBoolValue
         BOOL                        bValue
     );
 
+
+/**********************************************************************
+
+APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.BlockLostandFoundInternet.Enable
+
+    *  BlockLostandFoundInternet_GetParamBoolValue
+    *  BlockLostandFoundInternet_SetParamBoolValue
+
+
+**********************************************************************/
+
+BOOL
+BlockLostandFoundInternet_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+BlockLostandFoundInternet_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
 #endif
