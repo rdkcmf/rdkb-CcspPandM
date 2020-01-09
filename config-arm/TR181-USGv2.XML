@@ -11873,7 +11873,7 @@
 
             <name>FirewallLevelV6</name>
 
-            <type>string: Default(1),Medium(2),Low(3),Custom(4),None(5)</type>
+            <type>string: Default(1),Custom(4)</type>
 
             <syntax>uint32/mapped</syntax>
 
