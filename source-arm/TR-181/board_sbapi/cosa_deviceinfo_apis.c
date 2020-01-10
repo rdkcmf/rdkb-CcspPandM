@@ -825,20 +825,26 @@ CosaDmlDiGetFirmwareBuildTime
 {
     FILE *fp;
     char line[512];
+    char* value_token;
 
-    if ((fp = fopen("/etc/versions", "rb")) == NULL)
+    if ((fp = fopen("/version.txt", "rb")) == NULL)
         return ANSC_STATUS_FAILURE;
 
     while (fgets(line, sizeof(line), fp) != NULL)
     {
-        if (strncmp(line, "FSSTAMP", strlen("FSSTAMP")) != 0)
-            continue;
-
-        snprintf(pValue, pulSize, "%s", line);
-        *pulSize = AnscSizeOfString(pValue);
-        if(pValue[*pulSize-1] == '\n') pValue[--(*pulSize)] = '\0';
-        fclose(fp);
-        return ANSC_STATUS_SUCCESS;
+        if (strstr(line, "BUILD_TIME="))
+	{
+		value_token = strtok(line, "\"");
+		if (value_token != NULL) 
+		{
+			value_token = strtok(NULL, "\""); 
+			snprintf(pValue, pulSize, "%s", value_token);
+			*pulSize = AnscSizeOfString(pValue);
+		
+			fclose(fp);
+			return ANSC_STATUS_SUCCESS;
+		}
+    	}
     }
 
     fclose(fp);
