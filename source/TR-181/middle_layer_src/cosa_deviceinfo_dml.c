@@ -95,6 +95,8 @@ extern void* g_pDslhDmlAgent;
 
 #define MAX_ALLOWABLE_STRING_LEN  256
 
+#define MAX_T2_VER_LEN 16
+
 #define IS_UPDATE_ALLOWED_IN_DM(paramName, requestorStr) ({                                                                                                  \
     if ( g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_firmware ||                                                                                     \
          (g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_rfcUpdate && !AnscEqualString(requestorStr, BS_SOURCE_RFC_STR, TRUE)))                         \
@@ -14848,7 +14850,7 @@ Telemetry_GetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* p
 
     if (AnscEqualString(ParamName, "Version", TRUE)) {
         /* collect value */
-        char buf[5] = {'\0'};
+        char buf[MAX_T2_VER_LEN] = {'\0'};
         syscfg_get(NULL, "T2Version", buf, sizeof(buf));
 
         if (buf != NULL) {
@@ -14906,14 +14908,19 @@ Telemetry_SetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* p
         }
     }
 
-    if (AnscEqualString(ParamName, "Version", TRUE)) {
-        if (syscfg_set(NULL, "T2Version", pString) != 0) {
-            CcspTraceError(("syscfg_set failed\n"));
-        } else {
-            if (syscfg_commit( ) != 0) {
-                CcspTraceError(("syscfg_commit failed\n"));
+    if(AnscEqualString(ParamName, "Version", TRUE)) {
+
+        if ((strncmp(pString, "2", MAX_T2_VER_LEN) == 0) || (strncmp(pString, "2.0.1", MAX_T2_VER_LEN) == 0)) {
+            if (syscfg_set(NULL, "T2Version", pString) != 0) {
+                CcspTraceError(("syscfg_set failed\n"));
+            } else {
+                if (syscfg_commit( ) != 0) {
+                    CcspTraceError(("syscfg_commit failed\n"));
+                }
+                return TRUE;
             }
-            return TRUE;
+        } else {
+            CcspTraceError(("Unsupported version value : %s \n", pString ));
         }
     }
 
