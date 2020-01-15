@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "5.1"
+      "version" : "5.2"
    },
 
    "comcast" : {
@@ -40,6 +40,10 @@
       "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" : "USI",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark" : "cs0" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark" : "af22",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.OAUTH.AuthMode" : "mixed",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.OAUTH.ServerUrl" : "https://websec-oic.cable.comcast.com/as/authorization.oauth2",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.OAUTH.TokenEndpoint" : "https://websec-oic.cable.comcast.com/as/token.oauth2",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.OAUTH.ClientId" : "rdk_sso",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" : "/etc/cacert.pem",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69ACSConnectURL" : "https://acswg.g.comcast.net/cwmpWeb/DigestCPEMgt?target=/CPEMgt",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.WANsideSSH.Enable" : "false",
