@@ -8807,6 +8807,229 @@ SSIDPSWDCTRL_SetParamBoolValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        AutoExcluded_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+AutoExcluded_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8];
+        memset (buf, 0, sizeof(buf));
+
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+
+        if (syscfg_set(NULL, "AutoExcludedEnabled", buf) != 0)
+        {
+            CcspTraceError(("syscfg_set AutoExcluded failed\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                CcspTraceError(("syscfg_commit AutoExcluded failed\n"));
+            }
+            else
+            {
+                CcspTraceInfo(("syscfg_commit AutoExcluded.Enable success new value '%s'\n", buf));
+                return TRUE;
+            }
+        }
+    }
+    CcspTraceWarning(("Unsupported parameter AutoExcluded.'%s'\n", ParamName));
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        AutoExcluded_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+AutoExcluded_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8];
+        memset (buf, 0, sizeof(buf));
+
+        /* collect value */
+        syscfg_get( NULL, "AutoExcludedEnabled", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        return TRUE;
+    }
+    CcspTraceWarning(("Unsupported parameter AutoExcluded.'%s'\n", ParamName));
+    return FALSE;
+}
+
+/**********************************************************************
+    caller:     owner of this object
+    prototype:
+        BOOL
+        AutoExcluded_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue
+            );
+    description:
+        This function is called to retrieve string parameter value;
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+                char*                       ParamName,
+                The parameter name;
+                char*                       pValue
+                The string value buffer;
+    return:     TRUE if succeeded;
+                FALSE if not supported.
+**********************************************************************/
+ULONG
+AutoExcluded_GetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pValue,
+ ULONG*                      pUlSize
+)
+{
+    /* Required for xPC sync */
+    if( AnscEqualString(ParamName, "XconfUrl", TRUE))
+    {
+        /* collect value */
+        char buf[64];
+        memset(buf, 0 ,sizeof(buf));
+        syscfg_get( NULL, "AutoExcludedURL", buf, sizeof(buf));
+        if( buf != NULL )
+        {
+            AnscCopyString(pValue, buf);
+            *pUlSize = AnscSizeOfString( pValue );
+            return 0;
+        }
+        return -1;
+    }
+    CcspTraceWarning(("Unsupported parameter AutoExcluded.'%s'\n", ParamName));
+    return -1;
+}
+
+/**********************************************************************
+    caller:     owner of this object
+    prototype:
+        BOOL
+        AutoExcluded_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+    description:
+        This function is called to set BOOL parameter value;
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+                char*                       ParamName,
+                The parameter name;
+                BOOL                        bValue
+                The updated BOOL value;
+    return:     TRUE if succeeded.
+**********************************************************************/
+BOOL
+    AutoExcluded_SetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pString
+)
+{
+    /* Required for xPC sync */
+    if( AnscEqualString(ParamName, "XconfUrl", TRUE))
+    {
+        if (syscfg_set(NULL, "AutoExcludedURL", pString) != 0)
+        {
+            CcspTraceError(("syscfg_set failed\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                CcspTraceError(("syscfg_commit failed\n"));
+            }
+            CcspTraceInfo(("syscfg_commit AutoExcluded.XconfUrl success new value '%s'\n", pString));
+            return TRUE;
+        }
+    }
+    CcspTraceWarning(("Unsupported parameter AutoExcluded.'%s'\n", ParamName));
+    return FALSE;
+}
+
 /**********************************************************************  
 
     caller:     owner of this object 

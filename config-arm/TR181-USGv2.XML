@@ -2110,6 +2110,39 @@
                     </parameters>
                 </object>
 
+                        <object>
+                            <name>FWUpdate</name>
+                            <objectType>object</objectType>
+                            <functions></functions>
+                            <parameters></parameters>
+                            <objects>
+                                <object>
+                                     <name>AutoExcluded</name>
+                                     <objectType>object</objectType>
+                                     <functions>
+                                         <func_GetParamBoolValue>AutoExcluded_GetParamBoolValue</func_GetParamBoolValue>
+                                         <func_SetParamBoolValue>AutoExcluded_SetParamBoolValue</func_SetParamBoolValue>
+                                         <func_GetParamStringValue>AutoExcluded_GetParamStringValue</func_GetParamStringValue>
+                                         <func_SetParamStringValue>AutoExcluded_SetParamStringValue</func_SetParamStringValue>
+                                     </functions>
+                                     <parameters>
+                                         <parameter>
+                                             <name>Enable</name>
+                                             <type>boolean</type>
+                                             <syntax>bool</syntax>
+                                             <writable>true</writable>
+                                         </parameter>
+                                         <parameter>
+                                             <name>XconfUrl</name>
+                                             <type>string</type>
+                                             <syntax>string</syntax>
+                                             <writable>true</writable>
+                                         </parameter>
+                                     </parameters>
+                                </object>
+                            </objects>
+                        </object>
+
               	<object>
                         <name>PeriodicFWCheck</name>
                         <objectType>object</objectType>
