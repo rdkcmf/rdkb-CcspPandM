@@ -498,5 +498,13 @@ CosaDmlEthVlanTerminationGetStats
         ULONG                       ulInstanceNumber,
         PCOSA_DML_ETH_STATS         pStats
     );
+#ifdef _HUB4_PRODUCT_REQ_
+ANSC_STATUS
+CosaDmlEthLinkGetWanUpDownTime
+    (
+        char* pcWanUpDownTime,
+	int nTimeLength
+    );
+#endif
 #endif
 
