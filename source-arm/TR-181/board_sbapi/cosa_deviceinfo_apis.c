@@ -3968,7 +3968,7 @@ ApplyNTPPartnerDefaults()
     cJSON *partnerObj = NULL;
     char *objVal = NULL;
     char PartnerID[PARTNER_ID_LEN] = {0};
-    fileRead = fopen( PARTNERS_INFO_FILE, "r" );
+    fileRead = fopen( BOOTSTRAP_INFO_FILE , "r" );
     if( fileRead == NULL )
     {
         CcspTraceWarning(("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ ));
