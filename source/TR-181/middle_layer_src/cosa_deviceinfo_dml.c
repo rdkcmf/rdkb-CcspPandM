@@ -10787,7 +10787,6 @@ WANLinkHeal_GetParamBoolValue
             )
 
 
-
     description:
 
         This function is called to retrieve Boolean parameter value;
@@ -10836,120 +10835,6 @@ WANLinkHeal_SetParamBoolValue
      }
  return FALSE;
 }
-/**********************************************************************
-
-    caller:     owner of this object
-
-    prototype:
-
-        BOOL
-        SysCfg_GetParamBoolValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                BOOL*                       pBool
-            );
-
-    description:
-
-        This function is called to retrieve Boolean parameter value;
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                BOOL*                       pBool
-                The buffer of returned boolean value;
-
-    return:     TRUE if succeeded.
-
-**********************************************************************/
-BOOL
-SysCfg_GetParamBoolValue
-
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        BOOL*                       pBool
-    )
-{
-    UNREFERENCED_PARAMETER(hInsContext);
-    if( AnscEqualString(ParamName, "UpdateNvram", TRUE))
-    {
-        char value[8];
-        syscfg_get(NULL,"UpdateNvram",value, sizeof(value));
-        if( value != NULL )
-        {
-             if (strcmp(value, "true") == 0)
-                 *pBool = TRUE;
-             else
-                 *pBool = FALSE;
-        }
-        return TRUE;
-    }
-    return FALSE;
-}
-/**********************************************************************
-
-    caller:     owner of this object
-
-    prototype:
-
-        BOOL
-        SysCfg_SetParamBoolValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                BOOL                        bValue
-            );
-
-    description:
-
-        This function is called to set BOOL parameter value;
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                BOOL                        bValue
-                The updated BOOL value;
-
-    return:     TRUE if succeeded.
-
-**********************************************************************/
-BOOL
-SysCfg_SetParamBoolValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        BOOL                        bValue
-    )
-{
-    if (IsBoolSame(hInsContext, ParamName, bValue, SysCfg_GetParamBoolValue))
-        return TRUE;
-
-    if( AnscEqualString(ParamName, "UpdateNvram", TRUE))
-    {
-        if ( bValue == TRUE)
-        {
-            syscfg_set(NULL, "UpdateNvram", "true");
-            v_secure_system("touch /nvram/syscfg.db");
-        }
-        else
-        {
-            syscfg_set(NULL, "UpdateNvram", "false");
-            v_secure_system("rm -f /nvram/syscfg.db");
-        }
-        syscfg_commit();
-        return TRUE;
-    }
-    return FALSE;
-}
-
 /**********************************************************************  
 
     caller:     owner of this object
