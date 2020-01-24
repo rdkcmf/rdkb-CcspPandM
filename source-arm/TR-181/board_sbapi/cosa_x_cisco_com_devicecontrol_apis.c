@@ -3605,6 +3605,7 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
                 {
                     AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
                     bus_info->freefunc(faultParam);
+                    faultParam = NULL;
                 }  
         
         ret = CcspBaseIf_setParameterValues
@@ -3627,6 +3628,7 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
         {
             AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
             bus_info->freefunc(faultParam);
+            faultParam = NULL;
         } 
 
 	// All the cases Radio should get update since transition will happen during full - psedo - router
@@ -3649,6 +3651,7 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
                 {
                     AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
                     bus_info->freefunc(faultParam);
+                    faultParam = NULL;
                 }
         }
 
