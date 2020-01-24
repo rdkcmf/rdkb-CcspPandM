@@ -69,6 +69,12 @@
 #include "dml_tr181_custom_cfg.h"
 #include "cosa_ethernet_dml.h"
 
+#ifdef _HUB4_PRODUCT_REQ_
+#include <sys/sysinfo.h>
+#define WAN_INTERFACE_LEN 8
+#define BUFLEN_16 16
+#endif
+
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -2025,12 +2031,19 @@ Link_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+#ifdef _HUB4_PRODUCT_REQ_
+    struct sysinfo info            = {0};
+    char cWanUpDownTime[BUFLEN_16] = {0};
+    ULONG ulWanUpDownTime          = 0;
+    ULONG ulCurrentTime            = 0;
+    ULONG ulNameBufSize            = 0;
+#endif
     PCOSA_DATAMODEL_ETHERNET        pMyObject               = (PCOSA_DATAMODEL_ETHERNET )g_pCosaBEManager->hEthernet;
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ETH_LINK_FULL         pEntry                  = (PCOSA_DML_ETH_LINK_FULL)pContextLinkObject->hContext;
 
     CosaDmlEthLinkGetDinfo(pMyObject->hSbContext, pEntry->Cfg.InstanceNumber, &pEntry->DynamicInfo);
-    
+ 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Status", TRUE))
     {
@@ -2041,6 +2054,34 @@ Link_GetParamUlongValue
 
     if( AnscEqualString(ParamName, "LastChange", TRUE))
     {
+#ifdef _HUB4_PRODUCT_REQ_
+        if ( _ansc_strlen(pEntry->StaticInfo.Name) == 0 )
+        {
+            ulNameBufSize = sizeof(pEntry->StaticInfo.Name);
+            CosaUtilGetLowerLayerName
+                    (
+                        pEntry->Cfg.LinkType,
+                        pEntry->Cfg.LinkInstNum,
+                        pEntry->StaticInfo.Name,
+                        &ulNameBufSize
+                    );
+        }
+	/* Check for a wan interface */
+        if (!strncmp(pEntry->StaticInfo.Name, "erouter0", WAN_INTERFACE_LEN))
+        {
+            /* Get the wan Up/Down time in seconds */
+            if(0 == CosaDmlEthLinkGetWanUpDownTime(cWanUpDownTime, BUFLEN_16))
+            {
+                ulWanUpDownTime = atol(cWanUpDownTime);
+                sysinfo(&info);
+                /*Get the current time in seconds*/
+                ulCurrentTime = info.uptime;
+                /* collect value */
+                *puLong = ulCurrentTime - ulWanUpDownTime;
+                return TRUE;	
+            }
+        }
+#endif
         /* collect value */
         *puLong = AnscGetTimeIntervalInSeconds(pEntry->DynamicInfo.LastChange, AnscGetTickInSeconds());
         return TRUE;
