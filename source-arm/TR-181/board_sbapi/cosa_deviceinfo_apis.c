@@ -2191,12 +2191,14 @@ ANSC_STATUS getFactoryPartnerId
 	{
 		*pulSize = AnscSizeOfString(pValue);
 		CcspTraceInfo(("%s - %s\n",__FUNCTION__,pValue));
-		return ANSC_STATUS_SUCCESS;
-		 
+		return ANSC_STATUS_SUCCESS; 
+	}
+	else
+	{
+		//TCCBR-4426 - getFactoryPartnerId is only implemented for XB6/HUB4 Products as of now.
+		CcspTraceError(("%s - Failed Get factoryPartnerId \n", __FUNCTION__));
 	}
 #endif
-
-	CcspTraceError(("%s - Failed Get factoryPartnerId \n", __FUNCTION__));
 	return ANSC_STATUS_FAILURE;
 }
 
