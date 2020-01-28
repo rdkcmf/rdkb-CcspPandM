@@ -1325,6 +1325,12 @@
                                 <syntax>bool</syntax>
                                 <writable>true</writable>
                               </parameter>
+                              <parameter>
+                                <name>MemoryLimit</name>
+                                <type>unsignedInt</type>
+                                <syntax>uint32</syntax>
+                                <writable>true</writable>
+                              </parameter>
                             </parameters>
                         </object>
                         <object>
@@ -1339,12 +1345,6 @@
                                 <name>Enable</name>
                                 <type>boolean</type>
                                 <syntax>bool</syntax>
-                                <writable>true</writable>
-                              </parameter>
-                              <parameter>
-                                <name>MemoryLimit</name>
-                                <type>unsignedInt</type>
-                                <syntax>uint32</syntax>
                                 <writable>true</writable>
                               </parameter>
                             </parameters>
