@@ -70,7 +70,6 @@
 #include "cosa_deviceinfo_dml.h"
 #include "dml_tr181_custom_cfg.h"
 #include "cimplog.h"
-#include "safe_str_lib.h"
 
 #if defined (_XB6_PRODUCT_REQ_)
 #include "bt_hal.h"

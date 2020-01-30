@@ -103,6 +103,25 @@
 #endif
 
 
+#ifndef SAFEC_DUMMY_API
+#include "safe_str_lib.h"
+#endif
+
+#ifdef SAFEC_DUMMY_API
+typedef int errno_t;
+#define EOK 0
+
+#define STRCPY_S_NOCLOBBER(dst,max,src) EOK; \
+  if(src && (strlen(src) <= max)) strcpy(dst, src);
+
+#define strcpy_s(dst,max,src) EOK; \
+ strcpy(dst,src);
+
+errno_t strcmp_s(const char *,int,const char *,int *);
+#endif
+
+
+
 /**********************************************************************
                 STRUCTURE AND CONSTANT DEFINITIONS
 **********************************************************************/
