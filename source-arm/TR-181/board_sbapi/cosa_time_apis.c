@@ -654,14 +654,12 @@ int checkIfUTCEnabled(const char *fname)
        char temp[32]={0};
        char *str="UTC_ENABLE=true";
        if((fp = fopen(fname, "r")) == NULL) {
-
-		printf("dev proprties file is not available\n");
+		
                 return 1;
        }
 
         while(fgets(temp, 32, fp) != NULL) {
                 if((strstr(temp, str)) != NULL) {
-			printf("UTC is enabled****************\n");
 			fclose(fp);
 			return 0;
                 }
@@ -671,7 +669,6 @@ int checkIfUTCEnabled(const char *fname)
                 fclose(fp);
         }
 
-			printf("UTC is not enabled *************\n");
         return 1;
 
 }
@@ -766,13 +763,11 @@ CosaDmlTimeGetCfg
      if (0 == utc_enabled)
      {
         CcspTraceWarning(("%s: UTC Enable file exists\n", __FUNCTION__));
-        printf("%s: UTC Enable file exists\n", __FUNCTION__);
         pTimeCfg->bUTCEnabled = TRUE;
       }
     else
       {
         CcspTraceWarning(("%s: UTC Enable file not exists\n", __FUNCTION__));
-        printf("%s: UTC Enable file not exists\n", __FUNCTION__);
 	 pTimeCfg->bUTCEnabled = FALSE;
        }
 
