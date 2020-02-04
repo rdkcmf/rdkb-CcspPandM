@@ -83,7 +83,9 @@
 #if defined (MULTILAN_FEATURE)
 #define MAX_QUERY 1024
 #define IP_INTERFACE_COUNT_DML "Device.IP.InterfaceNumberOfEntries"
+#define DHCPV4_SERVER_POOL_COUNT_DML "Device.DHCPv4.Server.PoolNumberOfEntries"
 #define IP_INTERFACE_DML "Device.IP.Interface."
+#define DHCPV4_SERVER_POOL_DML "Device.DHCPv4.Server.Pool."
 #endif
 
 PFN_COSA_DML_NAT_GEN   g_nat_pportmapping_callback = NULL;
@@ -3306,7 +3308,9 @@ static BOOL _Find_IPv4_LAN_DML(ULONG client, ULONG *dml_ip_instance, ULONG *dml_
                             if( inet_pton(AF_INET, ip_addr, &ipaddr) && inet_pton(AF_INET, ip_netmask, &netmask) )
                             {
                                 /* Check if client address is part of this subnet, if so, return IP instance ID */
-                                if (IPv4Addr_IsSameNetwork(client, ipaddr, netmask))
+                                if (IPv4Addr_IsSameNetwork(client, ipaddr, netmask)&&
+                                   !IPv4Addr_IsBroadcast(client, ipaddr, netmask) &&
+                                   !IPv4Addr_IsNetworkAddr(client, ipaddr, netmask))
                                 {
                                     if(dml_ip_instance)
                                         *dml_ip_instance = ip_inst_num;
@@ -3326,24 +3330,95 @@ static BOOL _Find_IPv4_LAN_DML(ULONG client, ULONG *dml_ip_instance, ULONG *dml_
     }
     return FALSE;
 }
+
+/* Validate client ip address */
+static BOOL validateClientIPAddress(ULONG client_ip_address)
+{
+    char pool_instance[MAX_QUERY] = {0};
+    char ip_instance[MAX_QUERY] = {0};
+    char param_val[MAX_QUERY] = {0};
+    char name[MAX_QUERY] = {0};
+    ULONG val_len = 0;
+    ULONG i = 0;
+    ULONG dhcp_server_pool_count = 0;
+    ULONG pool_inst_num = 0;
+    ULONG dml_ip_inst_num = 0;
+    ULONG dhcp_ip_address_start = 0xffffffff;
+    ULONG dhcp_ip_address_end = 0xffffffff;
+
+    /* Find the IP instance */
+    if(_Find_IPv4_LAN_DML(client_ip_address, &dml_ip_inst_num, NULL) && dml_ip_inst_num)
+    {
+        snprintf(ip_instance, sizeof(ip_instance), "%s%d", IP_INTERFACE_DML, dml_ip_inst_num);
+
+        /* Check dhcp range */
+        dhcp_server_pool_count = g_GetParamValueUlong(g_pDslhDmlAgent, DHCPV4_SERVER_POOL_COUNT_DML);
+        for(i = 0; i < dhcp_server_pool_count; i++)
+        {
+            pool_inst_num = g_GetInstanceNumberByIndex(g_pDslhDmlAgent, DHCPV4_SERVER_POOL_DML, i);
+
+            if(pool_inst_num)
+            {
+                 snprintf(pool_instance, sizeof(pool_instance), "%s%d", DHCPV4_SERVER_POOL_DML, pool_inst_num);
+                 snprintf(name, sizeof(name), "%s.Interface", pool_instance);
+                 val_len = sizeof(param_val);
+                if((0 == g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len)) && _ansc_strstr(param_val, ip_instance))
+                {
+                    snprintf(&name, sizeof(name), "%s.Enable", pool_instance);
+                    if(g_GetParamValueBool(g_pDslhDmlAgent, name))
+                    {
+                        snprintf(name, sizeof(name), "%s.MinAddress", pool_instance);
+                        val_len = sizeof(param_val);
+                        if(g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len))
+                            continue;
+
+                        inet_pton(AF_INET, param_val, &dhcp_ip_address_end);
+                        dhcp_ip_address_start = htonl(dhcp_ip_address_end);
+
+                        snprintf(name, sizeof(name), "%s.MaxAddress", pool_instance);
+                        val_len = sizeof(param_val);
+                        if(g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len))
+                            continue;
+
+                        inet_pton(AF_INET, param_val, &dhcp_ip_address_end);
+                        dhcp_ip_address_end = htonl(dhcp_ip_address_end);
+
+                        client_ip_address = htonl(client_ip_address);
+                        if(client_ip_address >= dhcp_ip_address_start && client_ip_address <= dhcp_ip_address_end)
+                        {
+                            return TRUE;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return FALSE;
+}
 #endif
 
 BOOL CosaDmlNatChkPortMappingClient(ULONG client)
 {
+#if !defined (MULTILAN_FEATURE)
     UtopiaContext                   Ctx;
     lanSetting_t lan;
     ULONG ipaddr = 0xffffffff, netmask = 0xffffffff;
-    BOOL ret;
 
     dhcpServerInfo_t dhcp;
     ULONG dhcpIPAddressStart  =0xffffffff, dhcpIPAddressEnd = 0xffffffff;
 
     ULONG startIP, endIP, checkIP;
+#endif
+
+    BOOL ret;
 
     /* Ipv4 client IP will be set as 255.255.255.255 if only need IPv6 portforwarding */
     if(client == 0xffffffff){
         return TRUE;
     }
+
+#if !defined (MULTILAN_FEATURE)
     if (!Utopia_Init(&Ctx))
     {
         CcspTraceWarning(("%s Error initializing context\n", __FUNCTION__));
@@ -3369,11 +3444,9 @@ BOOL CosaDmlNatChkPortMappingClient(ULONG client)
 	(checkIP >= startIP && checkIP <= endIP) && //check that client(checkIP) is in DHCP range or not
         !IPv4Addr_IsBroadcast(client, ipaddr, netmask) &&
         !IPv4Addr_IsNetworkAddr(client, ipaddr, netmask) &&
-        //zqiu
-#if defined (MULTILAN_FEATURE)
-	(_Find_IPv4_LAN_DML(client, NULL, NULL) || IPv4Addr_IsSameNetwork(client, ipaddr, netmask) || IPv4Addr_IsSameNetwork(client, 0xac100c00, 0xffffff00)))
+        (IPv4Addr_IsSameNetwork(client, ipaddr, netmask) || IPv4Addr_IsSameNetwork(client, 0xac100c00, 0xffffff00)))
 #else
-	(IPv4Addr_IsSameNetwork(client, ipaddr, netmask) || IPv4Addr_IsSameNetwork(client, 0xac100c00, 0xffffff00)))
+	if(validateClientIPAddress(client))
 #endif
         ret =  TRUE; 
 #ifdef CONFIG_CISCO_HOME_SECURITY 
