@@ -7267,8 +7267,8 @@ Control_SetParamUlongValue
     return:     TRUE if succeeded.
 
 **********************************************************************/
-#define XCONF_SELECTOR_SIZE 10
-#define XCONF_URL_SIZE 60
+#define XCONF_SELECTOR_SIZE 64
+#define XCONF_URL_SIZE 512
 
 ULONG
 Control_GetParamStringValue
@@ -7386,15 +7386,8 @@ Control_SetParamStringValue
                 } 
            }
     }
-    else
-    {
-           CcspTraceWarning(("[%s] Unsupported parameter '%s'\n",__FUNCTION__,ParamName));
-           bReturnValue = FALSE;
-    }
-
-
     /* check the "XconfUrl" parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "XconfUrl", TRUE))
+    else if( AnscEqualString(ParamName, "XconfUrl", TRUE))
     {
         /* collect value */
            char buff[XCONF_URL_SIZE]={'\0'};
