@@ -6733,6 +6733,11 @@ static void *InterfaceEventHandler_thrd(void *data)
         	{
            		CcspTraceWarning(("sysevent_getnotification failed with error: %d %s\n", err,__FUNCTION__));
            		CcspTraceWarning(("sysevent_getnotification failed name: %s val : %s\n", name,val));
+			if ( 0 != system("pidof syseventd")) {
+
+           			CcspTraceWarning(("%s syseventd not running ,breaking the receive notification loop \n",__FUNCTION__));
+				break;
+			}	
         	}
         	else
         	{
