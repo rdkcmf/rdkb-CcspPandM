@@ -517,6 +517,11 @@ EvtDispterEventListen(void)
 #endif
         } else {
             CcspTraceWarning(("Received msg that is not a SE_MSG_NOTIFICATION (%d)\n", msg_type));
+	    if ( 0 != system("pidof syseventd")) {
+
+           	CcspTraceWarning(("%s syseventd not running ,breaking the receive notification loop \n",__FUNCTION__));
+		ret = EVENT_HANDLE_EXIT;
+	    }
         }
     } else {
         CcspTraceError(("%s: Received no event retval=%d\n", __FUNCTION__, retval));
