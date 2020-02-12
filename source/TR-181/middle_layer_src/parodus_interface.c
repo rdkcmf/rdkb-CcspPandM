@@ -61,6 +61,10 @@ static int check_ethernet_wan_status();
 char *get_firmware_download_start_time();
 void set_firmware_download_start_time(char *start_time);
 void free_notify_params_struct(notify_params_t *param);
+int readFromFile(char *filename, char **data, int *len);
+int writeToFile(char *filename, char *data, int len);
+void getCurrentTime(struct timespec *timer);
+long timeValDiff(struct timespec *starttime, struct timespec *finishtime);
 
 static char deviceMAC[32]={'\0'};
 libpd_instance_t pam_instance;
@@ -641,4 +645,65 @@ void free_notify_params_struct(notify_params_t *param)
         free(param);
         param = NULL;
     }
+}
+
+int readFromFile(char *filename, char **data, int *len)
+{
+	FILE *fp;
+	int ch_count = 0;
+	fp = fopen(filename, "r");
+	if (fp == NULL)
+	{
+		printf("Failed to open file %s\n", filename);
+		return 0;
+	}
+	fseek(fp, 0, SEEK_END);
+	ch_count = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+	*data = (char *) malloc(sizeof(char) * (ch_count + 1));
+	
+	fread(*data, 1, ch_count,fp);
+        //fgets(*data,400,fp);
+        printf("........data is %s len%lu\n", *data, strlen(*data));
+	*len = ch_count;
+	(*data)[ch_count] ='\0';
+        printf("character count is %d\n",ch_count);
+        printf("data is %s len %lu\n", *data, strlen(*data));
+	fclose(fp);
+	return 1;
+}
+
+int writeToFile(char *filename, char *data, int len)
+{
+	FILE *fp;
+	fp = fopen(filename , "w+");
+	if (fp == NULL)
+	{
+		CcspTraceInfo(("Failed to open file %s\n", filename ));
+		return 0;
+	}
+	if(data !=NULL)
+	{
+		fwrite(data, len, 1, fp);
+		fclose(fp);
+		return 1;
+	}
+	else
+	{
+		CcspTraceInfo(("WriteToFile failed, Data is NULL\n"));
+		return 0;
+	}
+}
+
+void getCurrentTime(struct timespec *timer)
+{
+	clock_gettime(CLOCK_REALTIME, timer);
+}
+
+long timeValDiff(struct timespec *starttime, struct timespec *finishtime)
+{
+	long msec;
+	msec=(finishtime->tv_sec-starttime->tv_sec)*1000;
+	msec+=(finishtime->tv_nsec-starttime->tv_nsec)/1000000;
+	return msec;
 }

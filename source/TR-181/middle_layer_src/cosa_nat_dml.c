@@ -72,7 +72,11 @@
 #include "cosa_nat_apis.h"
 #include "plugin_main_apis.h"
 #include "cosa_nat_internal.h"
-
+#include "msgpack.h"
+#include "webcfgparam.h"
+#include "helpers.h"
+#include "portmappingdoc.h"
+#include "ccsp_trace.h"
 #include "dml_tr181_custom_cfg.h"
 
 #if     CFG_USE_CCSP_SYSLOG
@@ -1090,7 +1094,7 @@ X_CISCO_COM_DMZ_Rollback
     *  PortMapping_SetParamBoolValue
     *  PortMapping_SetParamIntValue
     *  PortMapping_SetParamUlongValue
-    *  PortMapping_SetParamStringValue
+    *  PortMapping_SetParamStringValue    
     *  PortMapping_Validate
     *  PortMapping_Commit
     *  PortMapping_Rollback
@@ -1811,6 +1815,8 @@ PortMapping_GetParamStringValue
     PUCHAR                                    pString       = NULL;
 
     /* check the parameter name and return the corresponding value */
+    
+
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
@@ -1965,6 +1971,240 @@ PortMapping_SetParamBoolValue
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
+
+/******************** PoC APIs ************************************/
+#define PORTMAP_CACHE_SIZE 1024
+#define BLOCK_SIZE 32
+#define SinglePortForwardCount
+#define ALIAS_PRE_SPF "spf_"
+#define ALIAS_PRE_PFR "pfr_"
+#define ALIAS_POS_PROTO "::protocol"
+#define ALIAS_POS_NAME "::name"
+#define ALIAS_POS_EXT_PORT "::external_port"
+#define ALIAS_POS_IP "::to_ip"
+#define ALIAS_POS_ENABLE "::enabled"
+#define ALIAS_SPF "SinglePortForward_"
+
+#define ALIAS_PFR "PortRangeForward_"
+#define ALIAS_PFR_INT_RANGE "::internal_port_range_size"
+#define ALIAS_PFR_PUBLIC_IP "::public_ip"
+#define ALIAS_POS_EXT_PORT_RANGE "::external_port_range"
+
+
+#define ALIAS_POS_IPV6 "::to_ipv6"
+#define ALIAS_POS_INT_PORT "::internal_port"
+#define ALIAS_POS_PREV_STATE "::prev_rule_enabled_state"
+
+typedef struct {
+    char cmd[BLOCK_SIZE];       
+    char val[BLOCK_SIZE];
+} t_cache;
+
+t_cache pf_cache[PORTMAP_CACHE_SIZE]; 
+int pf_cache_size = 0;
+
+void clear_cache(t_cache *tmp_pf_cache)
+{
+    int i = 0;
+    for(i = 0; i < PORTMAP_CACHE_SIZE; i++)
+    {
+        memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
+        memset(tmp_pf_cache[i].val,0,BLOCK_SIZE);
+
+    }
+
+}
+
+
+
+void print_cache(t_cache *tmp_pf_cache)
+{
+    int i = 0;
+    for(i = 0;i <pf_cache_size ; i++)
+    {
+        printf("pf_cache[%d].cmd - %s\n",i,tmp_pf_cache[i].cmd);
+        printf("pf_cache[%d].val - %s\n",i,tmp_pf_cache[i].val);
+    }
+
+}
+#if 1
+/*int syscfg_set(void *p, char *cmd, char)
+{
+    
+}*/
+void clear_cache_DB(t_cache *tmp_pf_cache)
+{
+    int i = 0;
+    for(i = 0; i < pf_cache_size; i++)
+    {
+
+        if (syscfg_unset(NULL, tmp_pf_cache[i].cmd) != 0)
+        {
+               printf("syscfg_set failed for %s %s\n",tmp_pf_cache[i].cmd,tmp_pf_cache[i].val);
+               //break;
+        }
+        memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
+        memset(tmp_pf_cache[i].val,0,BLOCK_SIZE);
+        if (syscfg_commit() != 0)
+        {
+            printf("syscfg_commit failed apply_cache_ToDB\n");
+        } 
+
+    }
+    system("sysevent set firewall-restart");
+
+}
+void apply_cache_ToDB(t_cache *tmp_pf_cache)
+{
+    int i = 0;
+    for(i = 0;i <pf_cache_size ; i++)
+    {
+        //printf("pf_cache[%d].cmd - %s\n",i,tmp_pf_cache[i].cmd);
+        //printf("pf_cache[%d].val - %s\n",i,tmp_pf_cache[i].val);
+
+        if (syscfg_set(NULL, tmp_pf_cache[i].cmd, tmp_pf_cache[i].val) != 0)
+        {
+               printf("syscfg_set failed for %s %s\n",tmp_pf_cache[i].cmd,tmp_pf_cache[i].val);
+              // break;
+        }
+    }
+    if (syscfg_commit() != 0)
+    {
+        printf("syscfg_commit failed apply_cache_ToDB\n");
+    }
+    system("sysevent set firewall-restart");
+}
+#endif
+#if 0
+void fill_portmap_entry(int count)
+{
+    int i = 0;
+    rpm = (portmappingdoc_t *)malloc(sizeof(portmappingdoc_t));
+    rpm->entries = (portdoc_t *)malloc(sizeof(portdoc_t)*count);
+    rpm->entries_count = count;
+    for(i = 0; i < count; i++ )
+    {
+        rpm->entries[i].internal_client = malloc(sizeof(char)*16);
+        memset(rpm->entries[i].internal_client,0,16);
+        strcpy(rpm->entries[i].internal_client,"192.168.0.21");
+
+        rpm->entries[i].enable = malloc(sizeof(char)*16);
+        memset(rpm->entries[i].enable,0,16);
+        strcpy(rpm->entries[i].enable,"1");
+
+        rpm->entries[i].external_port_end_range = malloc(sizeof(char)*16);
+        memset(rpm->entries[i].external_port_end_range,0,16);
+        if(i%2 == 1)
+        strcpy(rpm->entries[i].external_port_end_range,"5670");
+        else
+            strcpy(rpm->entries[i].external_port_end_range,"5666");
+
+
+        rpm->entries[i].protocol = malloc(sizeof(char)*16);
+        memset(rpm->entries[i].protocol,0,16);
+        strcpy(rpm->entries[i].protocol,"both");
+
+        rpm->entries[i].description = malloc(sizeof(char)*16);
+        memset(rpm->entries[i].description,0,16);
+        strcpy(rpm->entries[i].description,"test");
+
+        rpm->entries[i].external_port = malloc(sizeof(char)*16);
+        memset(rpm->entries[i].external_port,0,16);
+        strcpy(rpm->entries[i].external_port,"5666");
+    }
+}
+
+void print_portmap_entry()
+{
+    int i = 0;
+    printf("entries %d\n",rpm->entries_count);
+
+    for(i = 0; i < rpm->entries_count; i++ )
+    {
+        printf("rpm->entries[%d].internal_client= %s\n",i,rpm->entries[i].internal_client);
+        printf("rpm->entries[%d].enable= %s\n",i,rpm->entries[i].enable);
+        printf("rpm->entries[%d].external_port_end_range= %s\n",i,rpm->entries[i].external_port_end_range);
+        printf("rpm->entries[%d].protocol= %s\n",i,rpm->entries[i].protocol);
+        printf("rpm->entries[%d].description= %s\n",i,rpm->entries[i].description);
+        printf("rpm->entries[%d].external_port= %s\n",i,rpm->entries[i].external_port);
+
+    }
+}
+
+#endif
+
+void set_portmap_conf(portmappingdoc_t *rpm)
+{
+    int i = 0; int count = 0; int j = 0;
+    int spf_count = 0;
+    int pfr_count = 0;
+    char cmd[64];
+    char val[64];
+    char alias_pre[8];
+    printf("Port map entries %d\n",rpm->entries_count);
+    //printf("SinglePortForwardCount = %d\n", rpm->entries_count);
+    //count = rpm->entries_count + 1;
+    for(i = 1,j =0; i < rpm->entries_count+1; i++, j++ )
+    {
+        memset(alias_pre,0,8);
+        if(strcmp(rpm->entries[j].external_port,rpm->entries[j].external_port_end_range) == 0)
+        {
+            spf_count++;
+            snprintf(pf_cache[count].cmd,BLOCK_SIZE,ALIAS_SPF"%d",spf_count);
+            strcpy(alias_pre,ALIAS_PRE_SPF);
+            snprintf(pf_cache[count++].val,BLOCK_SIZE,"%s%d",alias_pre,i);
+            snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_EXT_PORT,alias_pre,i);
+            snprintf(pf_cache[count++].val,BLOCK_SIZE,"%s",rpm->entries[j].external_port);
+
+        }
+        else
+        {
+            pfr_count++;
+            snprintf(pf_cache[count].cmd,BLOCK_SIZE,ALIAS_PFR"%d",pfr_count);
+            strcpy(alias_pre,ALIAS_PRE_PFR);
+            snprintf(pf_cache[count++].val,BLOCK_SIZE,"%s%d",alias_pre,i);
+            snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_EXT_PORT_RANGE,alias_pre,i);
+            snprintf(pf_cache[count++].val,BLOCK_SIZE,"%s %s",rpm->entries[j].external_port,rpm->entries[j].external_port_end_range);
+            snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_PFR_PUBLIC_IP,alias_pre,i);
+            snprintf(pf_cache[count++].val,BLOCK_SIZE,"%s","0.0.0.0");
+            snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_PFR_INT_RANGE,alias_pre,i);
+            snprintf(pf_cache[count++].val,BLOCK_SIZE,"%s","0");
+        }
+
+        snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_IP,alias_pre,i);
+        snprintf(pf_cache[count++].val,BLOCK_SIZE,"%s",rpm->entries[j].internal_client);
+        snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_NAME,alias_pre,i);
+        snprintf(pf_cache[count++].val,BLOCK_SIZE,"%s",rpm->entries[j].description);
+        snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_ENABLE,alias_pre,i);
+        snprintf(pf_cache[count++].val,BLOCK_SIZE,"%s",rpm->entries[j].enable);
+        snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_PROTO,alias_pre,i);
+        snprintf(pf_cache[count++].val,BLOCK_SIZE,"%s",rpm->entries[j].protocol);
+        snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_INT_PORT,alias_pre,i);
+        snprintf(pf_cache[count++].val,BLOCK_SIZE,"0");
+        snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_IPV6,alias_pre,i);
+        snprintf(pf_cache[count++].val,BLOCK_SIZE,"x");
+        snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_PREV_STATE,alias_pre,i);
+        snprintf(pf_cache[count++].val,BLOCK_SIZE,"1");
+
+    }
+        printf("SinglePortForwardCount = %d\n", spf_count);
+        printf("PortRangeForwardCount = %d\n", pfr_count);
+        snprintf(pf_cache[count].cmd,BLOCK_SIZE,"SinglePortForwardCount");
+        snprintf(pf_cache[count++].val,BLOCK_SIZE,"%d",spf_count);
+        snprintf(pf_cache[count].cmd,BLOCK_SIZE,"PortRangeForwardCount");
+        snprintf(pf_cache[count++].val,BLOCK_SIZE,"%d",pfr_count);
+        pf_cache_size =  count;
+
+}
+#if 0 //TO-DO to handle migration or reboot case
+void prepare_portmapCacheFromDB(t_cache tmp_pf_cache)
+{
+
+    syscfg_get( NULL, "SinglePortForwardCount", tmp_pf_cache[i].cmd, BLOCK_SIZE);
+
+
+}
+#endif
 
 /**********************************************************************
 
@@ -2184,6 +2424,7 @@ PortMapping_SetParamStringValue
     #endif
 
     /* check the parameter name and set the corresponding value */
+
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
@@ -2499,6 +2740,164 @@ NatPortTrigger_SetParamBoolValue
     return FALSE;
 }
 
+
+ULONG
+X_RDK_PortMapping_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+	if( AnscEqualString(ParamName, "Data", TRUE))
+	{
+		CcspTraceWarning(("Data Get Not supported\n"));
+		return 0;
+	}
+	
+	CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+	return -1;
+}
+
+/**********************************************************************
+caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        X_RDK_PortMapping_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+X_RDK_PortMapping_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "Data", TRUE))
+     {
+	char * decodeMsg =NULL;
+	int decodeMsgSize =0;
+	int size =0;
+	int i=0;       
+
+	struct timespec start,end,*startPtr,*endPtr;
+        startPtr = &start;
+        endPtr = &end;
+
+	msgpack_zone mempool;
+	msgpack_object deserialized;
+	msgpack_unpack_return unpack_ret;
+
+       	getCurrentTime(startPtr);
+	decodeMsgSize = b64_get_decoded_buffer_size(strlen(pString));
+
+	decodeMsg = (char *) malloc(sizeof(char) * decodeMsgSize);
+
+	size = b64_decode( pString, strlen(pString), decodeMsg );
+	CcspTraceWarning(("base64 decoded data contains %d bytes\n",size));
+
+	getCurrentTime(endPtr);
+        CcspTraceWarning(("Base64 decode Elapsed time : %ld ms\n", timeValDiff(startPtr, endPtr)));
+	
+	msgpack_zone_init(&mempool, 2048);
+	unpack_ret = msgpack_unpack(decodeMsg, size, NULL, &mempool, &deserialized);
+
+	switch(unpack_ret)
+	{
+		case MSGPACK_UNPACK_SUCCESS:
+			CcspTraceWarning(("MSGPACK_UNPACK_SUCCESS :%d\n",unpack_ret));
+		break;
+		case MSGPACK_UNPACK_EXTRA_BYTES:
+			CcspTraceWarning(("MSGPACK_UNPACK_EXTRA_BYTES :%d\n",unpack_ret));
+		break;
+		case MSGPACK_UNPACK_CONTINUE:
+			CcspTraceWarning(("MSGPACK_UNPACK_CONTINUE :%d\n",unpack_ret));
+		break;
+		case MSGPACK_UNPACK_PARSE_ERROR:
+			CcspTraceWarning(("MSGPACK_UNPACK_PARSE_ERROR :%d\n",unpack_ret));
+		break;
+		case MSGPACK_UNPACK_NOMEM_ERROR:
+			CcspTraceWarning(("MSGPACK_UNPACK_NOMEM_ERROR :%d\n",unpack_ret));
+		break;
+		default:
+			CcspTraceWarning(("Message Pack decode failed with error: %d\n", unpack_ret));
+	}
+
+	msgpack_zone_destroy(&mempool);
+	//End of msgpack decoding
+	
+	if(unpack_ret == MSGPACK_UNPACK_SUCCESS)
+	{	
+		portmappingdoc_t *rpm;
+        	static int first = 0;
+		rpm = portmappingdoc_convert( decodeMsg, size+1 );
+
+		if (NULL !=rpm)
+		{
+		/* Intialixing cache first time */
+            if(first == 0)
+            {
+                clear_cache(pf_cache);
+                first = 1;
+            }
+			CcspTraceWarning(("rpm->entries_count is %ld\n", rpm->entries_count));
+			CcspTraceWarning(("rpm->subdoc_name is %s\n", rpm->subdoc_name));
+			CcspTraceWarning(("rpm->version is %lu\n", (unsigned long)rpm->version));
+			CcspTraceWarning(("rpm->transaction_id is %d\n", rpm->transaction_id));
+			CcspTraceWarning(("Portmap configuration received\n"));
+			clear_cache_DB(pf_cache);
+			set_portmap_conf(rpm);
+			apply_cache_ToDB(pf_cache);
+            		CcspTraceWarning(("Portmap configuration applied\n"));
+						
+
+			for(i = 0; i < (int)rpm->entries_count ; i++)
+			{
+				CcspTraceWarning(("rpm->entries[%d].InternalClient %s\n", i, rpm->entries[i].internal_client));
+				CcspTraceWarning(("rpm->entries[%d].ExternalPortEndRange %s\n" , i, rpm->entries[i].external_port_end_range));
+				CcspTraceWarning(("rpm->entries[%d].Enable %s\n", i, rpm->entries[i].enable?"true":"false"));
+				CcspTraceWarning(("rpm->entries[%d].Protocol %s\n", i, rpm->entries[i].protocol));
+				CcspTraceWarning(("rpm->entries[%d].Description %s\n", i, rpm->entries[i].description));
+				CcspTraceWarning(("rpm->entries[%d].external_port %s\n", i, rpm->entries[i].external_port));
+			}
+			portmappingdoc_destroy( rpm );
+		}
+	}
+	else
+	{
+		CcspTraceWarning(("Corrupted portMapping value\n"));
+		return FALSE;
+	}
+        return TRUE;
+     }    
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
 /***********************************************************************
 
  APIs for Object:
