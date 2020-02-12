@@ -122,6 +122,34 @@ NAT_SetParamBoolValue
 
  APIs for Object:
 
+    NAT.X_RDK_PortMapping.
+
+    *  X_RDK_PortMapping_GetParamStringValue
+    *  X_RDK_PortMapping_SetParamStringValue
+
+***********************************************************************/
+
+ULONG
+X_RDK_PortMapping_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+BOOL
+X_RDK_PortMapping_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
     NAT.X_CISCO_COM_DMZ.
 
     *  X_CISCO_COM_DMZ_GetParamBoolValue

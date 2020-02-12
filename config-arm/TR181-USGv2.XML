@@ -8716,7 +8716,7 @@
 
           <parameter>
 
-            <name>Enable</name>
+           <name>Enable</name>
 
             <type>boolean</type>
 
@@ -8898,7 +8898,33 @@
 
         </object>
 
-		<object>
+	<object>
+
+	  <name>X_RDK_PortMapping</name>
+
+	  <objectType>object</objectType>
+
+	  <functions>
+	    <func_GetParamStringValue>X_RDK_PortMapping_GetParamStringValue</func_GetParamStringValue>
+	    <func_SetParamStringValue>X_RDK_PortMapping_SetParamStringValue</func_SetParamStringValue>
+
+	  </functions>
+	  <parameters>
+	  <parameter>
+
+		<name>Data</name>
+
+            	<type>string</type>
+
+            	<syntax>string</syntax>
+
+            	<writable>true</writable>
+
+	  </parameter>
+	</parameters>
+	</object>
+
+	<object>
 
            <name>X_CISCO_COM_PortTriggers</name>
 
