@@ -420,8 +420,11 @@ void XfinityWifiThread
         AnscTraceWarning(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Interface.2.Enable OK\n", __FUNCTION__));
     }
 	//zqiu<<
-    if (value)
+    if (value) {
         PsmSet(HOTSPOT_PSM_EANBLE, "1");
+        //Update circuit ID here
+        hotspot_update_circuit_ids(1,1); 
+    }
     else
         PsmSet(HOTSPOT_PSM_EANBLE, "0");
     

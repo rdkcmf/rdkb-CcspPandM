@@ -135,6 +135,8 @@ replace LOCALINTERFACES_PRE_SECURE_SSID with LOCALINTERFACES_POST_SECURE_SSID in
 in hotspot_update_circuit_ids() */
 
 #define HOTSPOT_INTERFACE_POST_SECURE_SSID_LEN		80
+pthread_mutex_t circuitid_lock = PTHREAD_MUTEX_INITIALIZER;
+
 static int sysevent_fd;
 static token_t sysevent_token;
 static hotspotfd_statistics_s *g_hsfdStat = NULL;
@@ -284,6 +286,10 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
     
     //snprintf(paramname, sizeof(paramname), 
     CcspTraceInfo(("entered%s\n","hotspot_update_circuit_ids"));
+    if (pthread_mutex_trylock(&circuitid_lock) != 0) {
+     CcspTraceInfo(("%s is already running, skip duplicate update\n", __FUNCTION__));
+     return circuitSave;
+    }
     retval=GrePsmGetStr(GRE_PARAM_LOCALIFS, greinst, localinterfaces, sizeof(localinterfaces));
     while(retval == -1 || strnlen(localinterfaces,sizeof(localinterfaces)) < HOTSPOT_INTERFACE_PRE_SECURE_SSID_LEN)
     {
@@ -343,8 +349,10 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
         size = sizeof(outdata);
         snprintf(paramname, sizeof(paramname),"%s.%s", curInt, "SSID");
         retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
-        if ( retval != ANSC_STATUS_SUCCESS)
+        if ( retval != ANSC_STATUS_SUCCESS) {
+            pthread_mutex_unlock(&circuitid_lock);
             return -1;
+        }
 
 		if(!(strcmp(varStruct.parameterValue,""))){
 			  snprintf(paramname, sizeof(paramname), "eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.SSID.%d.SSID",inst);
@@ -362,8 +370,10 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
         size = sizeof(outdata);
         snprintf(paramname, sizeof(paramname), "Device.WiFi.AccessPoint.%d.Security.ModeEnabled", inst);
         retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
-        if ( retval != ANSC_STATUS_SUCCESS)
+        if ( retval != ANSC_STATUS_SUCCESS) {
+            pthread_mutex_unlock(&circuitid_lock);
             return -1;
+        }
         if(strcmp("None", varStruct.parameterValue)) {
             snprintf(circuitid + circuitSave, sizeof(circuitid) - circuitSave, "s");
         } else {
@@ -383,7 +393,7 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
         
         curInt = strtok_r(NULL, ",", &save);
     }
-    
+    pthread_mutex_unlock(&circuitid_lock);
     return queuestart;
     ////get_wifi_param(dm, buf);
     //get local interfaces
