@@ -6134,8 +6134,10 @@ Pool_SetParamUlongValue
         memset( pPool->Cfg.MinAddressUpdateSource, 0, sizeof( pPool->Cfg.MinAddressUpdateSource ));
         AnscCopyString( pPool->Cfg.MinAddressUpdateSource, requestorStr );
 
-        char buff[16] = {'\0'};
-        snprintf(buff,sizeof(buff),"%ld",uValue);
+        /*char buff[16] = {'\0'};
+        snprintf(buff,sizeof(buff),"%ld",uValue);*/
+        char buff[INET_ADDRSTRLEN] = {'\0'};
+        inet_ntop(AF_INET, &(pPool->Cfg.MinAddress.Value) , buff, INET_ADDRSTRLEN); //convert IP address to string format
         char PartnerID[PARTNER_ID_LEN] = {0};
         if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
              UpdateJsonParam("Device.DHCPv4.Server.Pool.1.MinAddress",PartnerID, buff, requestorStr, currentTime);
@@ -6180,8 +6182,10 @@ Pool_SetParamUlongValue
         memset( pPool->Cfg.MaxAddressUpdateSource, 0, sizeof( pPool->Cfg.MaxAddressUpdateSource ));
         AnscCopyString( pPool->Cfg.MaxAddressUpdateSource, requestorStr );
 
-        char buff[16] = {'\0'};
-        snprintf(buff,sizeof(buff),"%ld",uValue);
+        /*char buff[16] = {'\0'};
+        snprintf(buff,sizeof(buff),"%ld",uValue);*/
+	char buff[INET_ADDRSTRLEN] = {'\0'};
+        inet_ntop(AF_INET, &(pPool->Cfg.MaxAddress.Value) , buff, INET_ADDRSTRLEN);
         char PartnerID[PARTNER_ID_LEN] = {0};
         if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
              UpdateJsonParam("Device.DHCPv4.Server.Pool.1.MaxAddress",PartnerID, buff, requestorStr, currentTime);
