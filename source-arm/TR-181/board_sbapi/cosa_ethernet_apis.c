@@ -91,6 +91,10 @@
 #include "cosa_ethernet_apis.h"
 #include "cosa_ethernet_apis_multilan.h"
 
+#ifdef _HUB4_PRODUCT_REQ_
+#include "sysevent/sysevent.h"
+#endif
+
 #ifdef _COSA_SIM_
 /*Removed code for simulator, because this is usg platform*/
 #elif  (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _COSA_BCM_MIPS_)
@@ -1199,6 +1203,29 @@ CosaDmlEthVlanTerminationGetStats
     return ANSC_STATUS_SUCCESS;
 }
 
+#ifdef _HUB4_PRODUCT_REQ_
+ANSC_STATUS
+CosaDmlEthLinkGetWanUpDownTime(char* pcWanUpDownTime, int nTimeLength)
+{
+    int ret 			  = 0;
+    static int sysevent_fd 	  = -1;
+    static token_t sysevent_token = 0;
+    if (0 > sysevent_fd)
+    {
+        if ((sysevent_fd = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "wan_up_down_time", &sysevent_token)) < 0)
+        {
+            fprintf(stderr, "%s: fail to open sysevent\n", __FUNCTION__);
+            return -1;
+        }
+    }
+    /*Get the time in ticks at which the Last Wan Up/Down happened*/
+    if(sysevent_get(sysevent_fd, sysevent_token, "last_wan_up_down_time", pcWanUpDownTime, nTimeLength) != 0)
+    {
+	ret = -1;
+    }
+return ret;
+}
+#endif
 
 /**********************************************************************
                         HELPER ROUTINES
