@@ -114,6 +114,9 @@
 #include "ccsp_vendor.h"
 #endif
 
+// TELEMETRY 2.0 //RDKB-26620
+#include <telemetry_busmessage_sender.h>
+
 #ifdef _COSA_SIM_
 
 // this file is in integration_src.intel_usg_arm directory
@@ -2275,8 +2278,10 @@ ANSC_STATUS getFactoryPartnerId
 	{
 		//TCCBR-4426 - getFactoryPartnerId is only implemented for XB6/HUB4 Products as of now.
 		CcspTraceError(("%s - Failed Get factoryPartnerId \n", __FUNCTION__));
+        	t2_event_d("SYS_INFO_fail_partnerId", 1);
 	}
 #endif
+
 	return ANSC_STATUS_FAILURE;
 }
 
@@ -2495,7 +2500,10 @@ CosaDeriveSyndicationPartnerID(char *Partner_ID)
 		if(ANSC_STATUS_SUCCESS == getFactoryPartnerId(PartnerID,&size))
 			{
 				if(ANSC_STATUS_FAILURE == setPartnerId(PartnerID))
+					{
 					CcspTraceError(("%s - Failed Set for PartnerID \n", __FUNCTION__ ));
+				 	t2_event_d("SYS_ERROR_factory_partner_set_failed", 1);
+					}
 			}
 		else
 			{
@@ -2508,7 +2516,10 @@ CosaDeriveSyndicationPartnerID(char *Partner_ID)
 			 else
 			 	{
 			 		if(ANSC_STATUS_FAILURE == setPartnerId(PartnerID))
+						{
 						CcspTraceError(("%s - Failed Set for PartnerID \n", __FUNCTION__ ));
+						t2_event_d("SYS_ERROR_factory_partner_set_failed", 1);
+						}
 			 	}
 			}
 	}
@@ -3277,6 +3288,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				if (pDeviceInfo->bWANsideSSHEnable.ActiveValue ==  TRUE)
 				{
 					CcspTraceWarning(("%s - Enabling SSH on WAN side\n", __FUNCTION__ ));
+                                        t2_event_d("SYS_INFO_WANSSH_enabled", 1);
 					system("sh /lib/rdk/wan_ssh.sh enable &");
 				}
 				else
@@ -3302,6 +3314,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 						if (platform_hal_getFactoryCmVariant(platform_info) != RETURN_OK)
 						{
 							CcspTraceError(("%s Unable to fetch CM Variant from platform\n", __FUNCTION__));
+							  t2_event_d("SYS_ERROR_CMVariant_fetch_failed", 1);
 						}
 						CcspTraceInfo(("%s CM variant returned by platform: %s\n", __FUNCTION__, platform_info));
 						if (strcmp(CMVoiceImg, platform_info) != 0)
@@ -3315,6 +3328,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 							else
 							{
 								CcspTraceError(("%s Unable to set CM Variant %s\n", __FUNCTION__, CMVoiceImg));
+								  t2_event_d("SYS_ERROR_CMVariant_set_failed", 1);
 							}
 						}
 					}

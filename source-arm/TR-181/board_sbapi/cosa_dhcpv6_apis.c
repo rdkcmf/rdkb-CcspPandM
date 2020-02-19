@@ -73,6 +73,9 @@
 #include "plugin_main_apis.h"
 #include "autoconf.h"
 
+// TELEMETRY 2.0 //RDKB-26620
+#include <telemetry_busmessage_sender.h>
+
 extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
@@ -6917,6 +6920,8 @@ dhcpv6c_dbg_thrd(void * in)
         if (msg[0] != 0)
         {
             CcspTraceInfo(("%s: get message %s\n", __func__, msg));
+	    t2_event_d("SYS_INFO_dhcpv6c_log", 1);
+		
         } else {
 	    //Message is empty. Wait 5 sec before trying the select again.
             sleep(5);

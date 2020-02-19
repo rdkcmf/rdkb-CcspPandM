@@ -73,6 +73,9 @@
 #include "plugin_main_apis.h"
 #include "autoconf.h"
 
+// TELEMETRY 2.0 //RDKB-26620
+#include <telemetry_busmessage_sender.h>
+
 extern void* g_pDslhDmlAgent;
 
 #if defined _COSA_SIM_  || defined _COSA_DRG_TPG_
@@ -5020,6 +5023,9 @@ dhcpv6c_dbg_thrd(void * in)
 		continue;
 
         CcspTraceInfo(("%s: get message %s\n", __func__, msg)); 
+
+	t2_event_d("SYS_INFO_dhcpv6c_log", 1);
+	
 
         if (!strncmp(msg, "dibbler-client", strlen("dibbler-client"))) 
         {

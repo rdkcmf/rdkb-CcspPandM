@@ -70,6 +70,9 @@
 #include "cosa_routing_internal.h"
 #include "dml_tr181_custom_cfg.h"
 
+// TELEMETRY 2.0 //RDKB-26620
+#include <telemetry_busmessage_sender.h>
+
 extern void* g_pDslhDmlAgent;
 
 #if ( defined(_COSA_SIM_))
@@ -619,6 +622,7 @@ static int CosaRipdOperation(char * arg)
         {
             sprintf(cmd, "%s -d -f %s -u root -g root -i %s &", COSA_RIPD_BIN, COSA_RIPD_CUR_CONF, RIPD_PID_FILE);
             AnscTraceWarning(("CosaRipdOperation -- run cmd:%s\n", cmd));
+            t2_event_d("SYS_INFO_enableRIP", 1);
             system(cmd);
         }
     }
