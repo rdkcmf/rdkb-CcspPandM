@@ -172,16 +172,20 @@ RLog_Restart(PCOSA_DML_RLOG conf)
     level = RLog_GetLevel();
     if (conf->Enable && strlen(conf->Host) > 0)
     {
-        CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
+        CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
+        #if !defined(INTEL_PUMA7) 
         if (conf->Port == 0 || conf->Port > 65535)
             err = v_secure_system("syslogd -l %d -R %s -L", level, conf->Host);
         else
             err = v_secure_system("syslogd -l %d -R %s:%lu -L", level, conf->Host, conf->Port);
+        #endif
     }
     else
-    {
-        CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
+    {       
+        CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
+        #if !defined(INTEL_PUMA7)
         err = vsystem("syslogd -l %d", level);
+        #endif
     }
 
     if (err != 0)
