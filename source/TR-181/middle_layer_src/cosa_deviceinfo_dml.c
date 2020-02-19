@@ -8510,6 +8510,127 @@ DNSSTRICTORDER_SetParamBoolValue
     prototype:
 
         BOOL
+        ShortsDL_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+ShortsDL_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8];
+        memset (buf, 0, sizeof(buf));
+
+        /* collect value */
+        syscfg_get( NULL, "ShortsDL", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        ShortsDL_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+ShortsDL_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8];
+        memset (buf, 0, sizeof(buf));
+
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+
+        if (syscfg_set(NULL, "ShortsDL", buf) != 0)
+        {
+            CcspTraceError(("syscfg_set ShortsDLEnabled failed\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                CcspTraceError(("syscfg_commit ShortsDLEnabled failed\n"));
+            }
+            else
+            {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
         SSIDPSWDCTRL_GetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,
