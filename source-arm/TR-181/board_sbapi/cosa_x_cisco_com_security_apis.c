@@ -61,6 +61,7 @@
 **************************************************************************/
 
 #include "cosa_x_cisco_com_security_apis.h"
+#include "secure_wrapper.h"
 
 #ifdef _COSA_SIM_
 
@@ -5519,8 +5520,7 @@ static int ssmtp_send(const char *msgFilePath, const char *subject, const char *
 
     strncpy(attachmentPathCopy, attachmentPath, sizeof(attachmentPathCopy));
 
-    snprintf(buf, sizeof(buf), "(((cat %s; echo 'Subject: %s'; echo; echo; uuencode %s %s) | ssmtp %s) && rm %s) &", msgFilePath, subject, attachmentPath, basename(attachmentPathCopy), recipient, attachmentPath);
-    system(buf);
+    v_secure_system( "(((cat %s; echo 'Subject: %s'; echo; echo; uuencode %s %s) | ssmtp %s) && rm %s) &", msgFilePath, subject, attachmentPath, basename(attachmentPathCopy), recipient, attachmentPath);
 
     fclose(fp); /*RDKB-6847, CID-33064, free unused resources before exit*/
 
