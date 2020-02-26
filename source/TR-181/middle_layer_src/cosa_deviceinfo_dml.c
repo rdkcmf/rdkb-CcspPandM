@@ -88,9 +88,11 @@
 #include "messagebus_interface_helper.h"
 
 extern ULONG g_currentBsUpdate;
+extern char g_currentParamFullName[512];
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 extern void* g_pDslhDmlAgent;
+static bool g_clearDB = false;
 
 #define MAX_ALLOWABLE_STRING_LEN  256
 
@@ -1086,6 +1088,9 @@ TelemetryEndpoint_SetParamBoolValue
  BOOL                        bValue
  )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, Telemetry_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 
@@ -1213,6 +1218,8 @@ BOOL
  char*                       pString
  )
 {
+    if (IsStringSame(hInsContext, ParamName, pString, Telemetry_GetParamStringValue))
+        return TRUE;
 
     /* Required for xPC sync */
     if( AnscEqualString(ParamName, "URL", TRUE))
@@ -1342,6 +1349,9 @@ AccountInfo_SetParamStringValue
 {
     BOOL bReturnValue = FALSE;
     
+    if (IsStringSame(hInsContext, ParamName, pString, AccountInfo_GetParamStringValue))
+        return TRUE;
+
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "AccountID", TRUE))
     {
@@ -2347,6 +2357,9 @@ UniqueTelemetryId_SetParamBoolValue
     PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     char buf[8] = {0};
 
+    if (IsBoolSame(hInsContext, ParamName, bValue, UniqueTelemetryId_GetParamBoolValue))
+        return TRUE;
+
     if (AnscEqualString(ParamName, "Enable", TRUE))
     {
         if(bValue)
@@ -2419,6 +2432,9 @@ UniqueTelemetryId_SetParamStringValue
 {
     PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
+    if (IsStringSame(hInsContext, ParamName, strValue, UniqueTelemetryId_GetParamStringValue))
+        return TRUE;
+
     if (AnscEqualString(ParamName, "TagString", TRUE))
     {
 
@@ -2484,6 +2500,9 @@ UniqueTelemetryId_SetParamIntValue
 {
     PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     char buf[16]={0};
+
+    if (IsIntSame(hInsContext, ParamName, value, UniqueTelemetryId_GetParamIntValue))
+        return TRUE;
 
     if (AnscEqualString(ParamName, "TimingInterval", TRUE))
     {
@@ -2615,6 +2634,9 @@ ManageableNotification_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, ManageableNotification_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
@@ -2759,6 +2781,9 @@ Snmpv3DHKickstart_SetParamBoolValue
  BOOL                        bValue
  )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, Snmpv3DHKickstart_GetParamBoolValue))
+        return TRUE;
+
     snmpv3_kickstart_table_t        Snmpv3_Kickstart_Table;
     snmp_kickstart_row_t            Snmp_Kickstart_Row[MAX_KICKSTART_ROWS], *pSnmp_Kickstart_Row;
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
@@ -3047,12 +3072,16 @@ Snmpv3DHKickstart_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    if (IsUlongSame(hInsContext, ParamName, uValue, Snmpv3DHKickstart_GetParamUlongValue))
+        return TRUE;
+
     PCOSA_DATAMODEL_DEVICEINFO     pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     PCOSA_DATAMODEL_KICKSTART      pKickstart = (PCOSA_DATAMODEL_KICKSTART)&pMyObject->Kickstart;
     BOOL bRet = FALSE;
 
     CcspTraceInfo(("Snmpv3DHKickstart_SetParamUlongValue: hInsContext = 0x%lx\n", (unsigned long)hInsContext));
     CcspTraceInfo(("Snmpv3DHKickstart_SetParamUlongValue: ParamName = %s, uValue = %ld\n", ParamName, uValue));
+
     if( pKickstart != NULL )
     {
         /* check the parameter name and return the corresponding value */
@@ -3339,6 +3368,9 @@ KickstartTable_SetParamStringValue
         char*                       pString
     )
 {
+    if (IsStringSame(hInsContext, ParamName, pString, KickstartTable_GetParamStringValue))
+        return TRUE;
+
     PCOSA_DATAMODEL_DEVICEINFO     pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     PCOSA_DATAMODEL_KICKSTART      pKickstart = (PCOSA_DATAMODEL_KICKSTART)&pMyObject->Kickstart;
     PCOSA_DATAMODEL_KICKSTARTTABLE  pKickstartTable = (PCOSA_DATAMODEL_KICKSTARTTABLE)hInsContext;
@@ -3346,7 +3378,7 @@ KickstartTable_SetParamStringValue
 
 
     CcspTraceInfo(("KickstartTable_SetParamStringValue: ParamName = %s\n", ParamName));
-    
+
     if( pKickstartTable != NULL )
     {
         /* check the parameter name and set the corresponding value */
@@ -3479,6 +3511,9 @@ TR069support_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, TR069support_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
@@ -3596,6 +3631,9 @@ newNTP_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, newNTP_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if( ANSC_STATUS_SUCCESS != CosaDmlSetnewNTPEnable(bValue))
@@ -3696,6 +3734,9 @@ MACsecRequired_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, MACsecRequired_GetParamBoolValue))
+        return TRUE;
+
 #ifdef _MACSEC_SUPPORT_
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -6510,6 +6551,9 @@ CodeBig_First_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, CodeBigFirst_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
@@ -6633,6 +6677,9 @@ PresenceDetect_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, PresenceDetect_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
@@ -6857,7 +6904,6 @@ OAUTH_GetParamStringValue
     {
         CcspTraceError(("[%s] Unrecognized param name %s\n", __FUNCTION__, ParamName));
     }
-
     if( retval == 0 && pValue != NULL )
     {
         snprintf( buf, sizeof(buf), "OAUTH%s", ParamName );  // buf should contain "OAUTH" plus ParamName
@@ -6876,7 +6922,6 @@ OAUTH_GetParamStringValue
             }
         }
     }
-
     return (ULONG)retval;
 }
 
@@ -6924,6 +6969,9 @@ OAUTH_SetParamStringValue
     char buf[20];
     BOOL bRet = FALSE;
     BOOL bParamNameGood = FALSE;
+
+    if (IsStringSame(hInsContext, ParamName, pString, OAUTH_GetParamStringValue))
+        return TRUE;
 
     if( AnscEqualString(ParamName, "AuthMode", TRUE) )
     {
@@ -7218,6 +7266,9 @@ Control_SetParamUlongValue
 	ULONG 			ulValue
     )
 {
+    if (IsUlongSame(hInsContext, ParamName, ulValue, Control_GetParamUlongValue))
+        return TRUE;
+
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "RetrieveNow", TRUE))
     {
@@ -7233,6 +7284,61 @@ Control_SetParamUlongValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Control_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Control_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    CcspTraceWarning(("g_currentParamFullName = %s\n", g_currentParamFullName));
+    if( AnscEqualString(ParamName, "ClearDB", TRUE))
+    {
+        g_clearDB = true;
+        StartRfcProcessing();
+        return TRUE;
+    }
+    else if( AnscEqualString(ParamName, "ClearDBEnd", TRUE))
+    {
+        PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+        g_clearDB = false;
+        EndRfcProcessing(&pMyObject->pRfcStore);
+        return TRUE;
+    }
+
+    return FALSE;
+}
 
 /**********************************************************************
 
@@ -7354,7 +7460,10 @@ Control_SetParamStringValue
     )
 {
     BOOL bReturnValue = FALSE;
- 
+
+    if (IsStringSame(hInsContext, ParamName, pString, Control_GetParamStringValue))
+        return TRUE;
+
     /* check the "XconfSelector" parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "XconfSelector", TRUE))
     {
@@ -7711,6 +7820,7 @@ SyndicationFlowControl_GetParamStringValue
     }
     return -1;
 }
+
 /**********************************************************************
 
     caller:     owner of this object
@@ -7945,6 +8055,9 @@ EasyConnect_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, EasyConnect_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
        char str[2];
@@ -8017,6 +8130,9 @@ Feature_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, Feature_GetParamBoolValue))
+        return TRUE;
+
 #if defined(MOCA_HOME_ISOLATION)
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "HomeNetworkIsolation", TRUE))
@@ -8415,6 +8531,9 @@ EncryptCloudUpload_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, EncryptCloudUpload_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if ( bValue == TRUE)
@@ -8469,6 +8588,9 @@ MEMSWAP_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, MEMSWAP_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
        char str[2];
@@ -8524,6 +8646,9 @@ DNSSTRICTORDER_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, DNSSTRICTORDER_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if ( bValue == TRUE)
@@ -8774,6 +8899,9 @@ SSIDPSWDCTRL_SetParamBoolValue
  BOOL                        bValue
  )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, SSIDPSWDCTRL_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "SnmpEnable", TRUE))
     {
         /* collect value */
@@ -9131,6 +9259,9 @@ PeriodicFWCheck_SetParamBoolValue
         BOOL                        bValue
     )
 {
+	    if (IsBoolSame(hInsContext, ParamName, bValue, PeriodicFWCheck_GetParamBoolValue))
+	        return TRUE;
+
  	    if( AnscEqualString(ParamName, "Enable", TRUE))
 		{
 			/* collect value */
@@ -9254,6 +9385,9 @@ AllowOpenPorts_SetParamBoolValue
         BOOL                        bValue
     )
 {
+        if (IsBoolSame(hInsContext, ParamName, bValue, AllowOpenPorts_GetParamBoolValue))
+            return TRUE;
+
         if( AnscEqualString(ParamName, "Enable", TRUE))
         {
             /* collect value */
@@ -9374,6 +9508,9 @@ char*                       ParamName,
 BOOL                        bValue
 )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, RBUS_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if (bValue == 0)
@@ -9611,6 +9748,9 @@ SNMP_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, SNMP_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "V3Support", TRUE))
     {
         if ( bValue == TRUE)
@@ -9868,6 +10008,9 @@ SysCfg_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, SysCfg_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "UpdateNvram", TRUE))
     {
         if ( bValue == TRUE)
@@ -9987,6 +10130,9 @@ IPv6subPrefix_SetParamBoolValue
         BOOL                        bValue
     )
 {
+        if (IsBoolSame(hInsContext, ParamName, bValue, IPv6subPrefix_GetParamBoolValue))
+            return TRUE;
+
         if( AnscEqualString(ParamName, "Enable", TRUE))
         {
             /* collect value */
@@ -10168,6 +10314,8 @@ WiFiInterworking_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, WiFiInterworking_GetParamBoolValue))
+        return TRUE;
 
  #if defined(_COSA_INTEL_XB3_ARM_)
     if( AnscEqualString(ParamName, "Enable", TRUE))
@@ -10227,7 +10375,11 @@ IPv6onLnF_SetParamBoolValue
         BOOL                        bValue
     )
 {
-char *token = NULL;char *pt;
+        char *token = NULL;char *pt;
+
+        if (IsBoolSame(hInsContext, ParamName, bValue, IPv6onLnF_GetParamBoolValue))
+            return TRUE;
+
         if( AnscEqualString(ParamName, "Enable", TRUE))
         {
      	    char buf[128], OutBuff[128];
@@ -10418,7 +10570,11 @@ IPv6onXHS_SetParamBoolValue
         BOOL                        bValue
     )
 {
-char *token = NULL;char *pt;
+ char *token = NULL;char *pt;
+
+ if (IsBoolSame(hInsContext, ParamName, bValue, IPv6onXHS_GetParamBoolValue))
+        return TRUE;
+
  if( AnscEqualString(ParamName, "Enable", TRUE))
         {
      	    char buf[128], OutBuff[128];
@@ -10599,6 +10755,9 @@ EvoStream_DirectConnect_SetParamBoolValue
         BOOL                        bValue
     )
 {
+        if (IsBoolSame(hInsContext, ParamName, bValue, EvoStream_DirectConnect_GetParamBoolValue))
+            return TRUE;
+
         if( AnscEqualString(ParamName, "Enable", TRUE))
         {
             /* collect value */
@@ -11940,7 +12099,10 @@ CDLDM_SetParamStringValue
     )
 {
     BOOL bReturnValue = FALSE;
-    
+
+    if (IsStringSame(hInsContext, ParamName, pString, CDLDM_GetParamStringValue))
+        return TRUE;
+
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "CDLModuleUrl", TRUE))
     {
@@ -14438,6 +14600,9 @@ BLE_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    if (IsBoolSame(hInsContext, ParamName, bValue, BLE_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Discovery", TRUE))
     {
         /* collect value */
@@ -15083,6 +15248,8 @@ MessageBusSource_SetParamBoolValue
         BOOL                        bValue
     )
 {
+  if (IsBoolSame(hInsContext, ParamName, bValue, MessageBusSource_GetParamBoolValue))
+        return TRUE;
 
   if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -15213,6 +15380,8 @@ UPnPRefactor_SetParamBoolValue
         BOOL                        bValue
     )
 {
+  if (IsBoolSame(hInsContext, ParamName, bValue, UPnPRefactor_GetParamBoolValue))
+        return TRUE;
 
   if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -15324,6 +15493,8 @@ Telemetry_GetParamBoolValue ( ANSC_HANDLE hInsContext, char* ParamName, BOOL* pB
 
 BOOL
 Telemetry_SetParamBoolValue (ANSC_HANDLE hInsContext, char* ParamName, BOOL bValue) {
+    if (IsBoolSame(hInsContext, ParamName, bValue, Telemetry_GetParamBoolValue))
+        return TRUE;
 
     if (AnscEqualString(ParamName, "Enable", TRUE)) {
         char buf[8] = { '\0' };
@@ -15452,6 +15623,9 @@ Telemetry_GetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* p
         **********************************************************************/
 BOOL
 Telemetry_SetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* pString) {
+
+    if (IsStringSame(hInsContext, ParamName, pString, Telemetry_GetParamStringValue))
+        return TRUE;
 
     if (AnscEqualString(ParamName, "ConfigURL", TRUE)) {
         if (syscfg_set(NULL, "T2ConfigURL", pString) != 0) {
@@ -16159,3 +16333,340 @@ NonRootSupport_SetParamBoolValue
   return FALSE;
 }
 
+// Generic RFC get handlers
+char *
+Generic_GetParamJsonValue()
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    CcspTraceWarning(("g_currentParamFullName = %s\n", g_currentParamFullName));
+    if (pMyObject->pRfcStore)
+    {
+        cJSON *valueObj = cJSON_GetObjectItem(pMyObject->pRfcStore, g_currentParamFullName);
+        if (valueObj)
+        {
+            cJSON *value = cJSON_GetObjectItem(valueObj, "Value");
+            if (value)
+                return value->valuestring;
+        }
+        CcspTraceWarning(("Param %s not available in RFC store\n", g_currentParamFullName));
+    }
+    else
+        CcspTraceWarning(("RFC store not present to retrieve %s\n", g_currentParamFullName));
+
+    // If value is not present in RFC override store, find it in RFC defaults json.
+    if (pMyObject->pRfcDefaults)
+    {
+        cJSON *value = cJSON_GetObjectItem(pMyObject->pRfcDefaults, g_currentParamFullName);
+        if (value)
+        {
+            return value->valuestring;
+        }
+        CcspTraceWarning(("Param %s not available in RFC defaults\n", g_currentParamFullName));
+    }
+    else
+        CcspTraceWarning(("RFC defaults not present to retrieve %s\n", g_currentParamFullName));
+
+    return NULL;
+}
+
+BOOL StartsWith(const char *a, const char *b)
+{
+   if(strncmp(a, b, strlen(b)) == 0) return 1;
+   return 0;
+}
+
+ULONG
+Generic_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+    if ( !pValue )
+    {
+        CcspTraceWarning(("pValue is NULL in Generic_GetParamStringValue\n"));
+        return -1;
+    }
+
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    if (pMyObject->pRfcStore == NULL)
+    {
+        //Get value from previous handlers as this is the first time RFC store is being built
+        // These checks can be removed once the feature is 100% deployed and will not rollback.
+        ULONG status = 0;
+        if ( StartsWith(g_currentParamFullName, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.BLE.Tile.") )
+        {
+            status = Tile_GetParamStringValue(hInsContext, ParamName, pValue, pUlSize);
+        }
+        if ( status == 0)
+        {
+            return 0;
+        }
+    }
+
+    char *strValue = Generic_GetParamJsonValue();
+    if (strValue)
+    {
+        AnscCopyString( pValue, strValue );
+        if ( pUlSize )
+            *pUlSize = AnscSizeOfString( pValue );
+        CcspTraceWarning(("param = %s, value = %s\n", ParamName, pValue));
+        return 0;
+    }
+
+    return -1;
+}
+
+BOOL
+Generic_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    char *value = Generic_GetParamJsonValue();
+    if( value != NULL )
+    {
+        if (strcmp(value, "true") == 0)
+            *pBool = TRUE;
+        else
+            *pBool = FALSE;
+
+        return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL
+Generic_GetParamUlongValue
+    (
+        ANSC_HANDLE             hInsContext,
+        char*                   ParamName,
+        ULONG*                  pValue
+    )
+{
+    char *value = Generic_GetParamJsonValue();
+    if( value != NULL )
+    {
+        *pValue = atoi(value);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL
+Generic_GetParamIntValue
+        (
+                ANSC_HANDLE                             hInsContext,
+                char*                                           ParamName,
+                int*                                            pInt
+        )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    if (pMyObject->pRfcStore == NULL)
+    {
+        //Get value from previous handlers as this is the first time RFC store is being built
+        // These checks can be removed once the feature is 100% deployed and will not rollback.
+        int status = 0;
+        if ( StartsWith(g_currentParamFullName, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.BLE.Tile.") )
+        {
+            status = Tile_GetParamIntValue(hInsContext, ParamName, pInt);
+        }
+        if ( status == 0)
+        {
+            return 0;
+        }
+    }
+
+    char *value = Generic_GetParamJsonValue();
+    if( value != NULL )
+    {
+        *pInt = atoi(value);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+// Generic RFC set handlers
+
+BOOL IsBoolSame(ANSC_HANDLE hInsContext,char* ParamName, BOOL bValue, GETBOOL_FUNC_PTR getBoolFunc)
+{
+    Generic_SetParamBoolValue(hInsContext, ParamName, bValue);
+    BOOL prevValue = false;
+    getBoolFunc( hInsContext, ParamName, &prevValue );
+    if (prevValue == bValue)
+    {
+        CcspTraceWarning(("%s values are same...\n", __FUNCTION__));
+        return TRUE;
+    }
+    CcspTraceWarning(("%s values are different...\n", __FUNCTION__));
+    return FALSE;
+}
+
+BOOL IsStringSame(ANSC_HANDLE hInsContext,char* ParamName, char* pValue, GETSTRING_FUNC_PTR getStringFunc)
+{
+    Generic_SetParamStringValue(hInsContext, ParamName, pValue);
+    char prevValue[1024];
+    ULONG size = 1024;
+    getStringFunc( hInsContext, ParamName, &prevValue, &size );
+    if ( strcmp(prevValue, pValue) == 0 )
+    {
+        CcspTraceWarning(("%s values are same...\n", __FUNCTION__));
+        return TRUE;
+    }
+    CcspTraceWarning(("%s values are different...\n", __FUNCTION__));
+    return FALSE;
+}
+
+BOOL IsUlongSame(ANSC_HANDLE hInsContext,char* ParamName, ULONG ulValue, GETULONG_FUNC_PTR getUlongFunc)
+{
+    Generic_SetParamUlongValue(hInsContext, ParamName, ulValue);
+    ULONG prevValue = 0;
+    getUlongFunc( hInsContext, ParamName, &prevValue );
+    if (prevValue == ulValue)
+    {
+        CcspTraceWarning(("%s values are same...\n", __FUNCTION__));
+        return TRUE;
+    }
+    CcspTraceWarning(("%s values are different...\n", __FUNCTION__));
+    return FALSE;
+}
+
+BOOL IsIntSame(ANSC_HANDLE hInsContext,char* ParamName, int value, GETINT_FUNC_PTR getIntFunc)
+{
+    Generic_SetParamIntValue(hInsContext, ParamName, value);
+    int prevValue = 0;
+    getIntFunc( hInsContext, ParamName, &prevValue );
+    if (prevValue == value)
+    {
+        CcspTraceWarning(("%s values are same...\n", __FUNCTION__));
+        return TRUE;
+    }
+    CcspTraceWarning(("%s values are different...\n", __FUNCTION__));
+    return FALSE;
+}
+
+BOOL
+Generic_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       strValue
+    )
+{
+   AnscTraceWarning(("Generic_SetParamStringValue: param = %s, value = %s\n", ParamName, strValue));
+   PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+   char   prevValue[512];
+   ULONG  UlSize;
+   ULONG status;
+
+   // Call parameter specific handling if required for any new parameter below...
+   if ( StartsWith(g_currentParamFullName, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.BLE.Tile.") )
+   {
+      status = Tile_GetParamStringValue(hInsContext, ParamName, prevValue, &UlSize);
+      if (strcmp(strValue, prevValue) != 0)
+      {
+          AnscTraceWarning(("calling Tile_SetParamStringValue...\n"));
+          Tile_SetParamStringValue(hInsContext, ParamName, strValue);
+      }
+      else
+          AnscTraceWarning(("values are same...do not call the param specific set handler\n"));
+   }
+
+    char * requestorStr = getRequestorString();
+    char * currentTime = getTime();
+   ProcessRfcSet(&pMyObject->pRfcStore, g_clearDB, g_currentParamFullName, strValue, requestorStr, currentTime);
+   return TRUE;
+}
+
+BOOL
+Generic_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+   AnscTraceWarning(("Generic_SetParamBoolValue: param = %s\n", ParamName));
+   PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+   char * requestorStr = getRequestorString();
+   char * currentTime = getTime();
+
+   if ( bValue == TRUE)
+      ProcessRfcSet(&pMyObject->pRfcStore, g_clearDB, g_currentParamFullName, "true", requestorStr, currentTime);
+   else
+      ProcessRfcSet(&pMyObject->pRfcStore, g_clearDB, g_currentParamFullName, "false", requestorStr, currentTime);
+   return TRUE;
+}
+
+BOOL
+Generic_SetParamUlongValue
+    (
+        ANSC_HANDLE             hInsContext,
+        char*                   ParamName,
+        ULONG                   ulValue
+    )
+{
+    char buf[64]={0};
+
+    memset(buf,0,sizeof(buf));
+    sprintf(buf, "%d", ulValue);
+
+   AnscTraceWarning(("Generic_SetParamIntValue: param = %s\n", ParamName));
+   PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+   char * requestorStr = getRequestorString();
+   char * currentTime = getTime();
+   ProcessRfcSet(&pMyObject->pRfcStore, g_clearDB, g_currentParamFullName, buf, requestorStr, currentTime);
+   return TRUE;
+}
+
+BOOL
+Generic_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         value
+    )
+{
+    char buf[16]={0};
+
+    memset(buf,0,sizeof(buf));
+    sprintf(buf, "%d", value);
+
+    AnscTraceWarning(("Generic_SetParamIntValue: param = %s\n", ParamName));
+
+   int prevValue;
+   ULONG status;
+
+   // Call parameter specific handling if required for any new parameter below...
+   if ( StartsWith(g_currentParamFullName, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.BLE.Tile.") )
+   {
+      status = Tile_GetParamIntValue(hInsContext, ParamName, &prevValue);
+      if ( prevValue != value)
+      {
+          AnscTraceWarning(("calling Tile_SetParamIntValue...\n"));
+          Tile_SetParamIntValue(hInsContext, ParamName, value);
+      }
+      else
+          AnscTraceWarning(("values are same...do not call the param specific set handler\n"));
+   }
+
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    char * requestorStr = getRequestorString();
+    char * currentTime = getTime();
+    ProcessRfcSet(&pMyObject->pRfcStore, g_clearDB, g_currentParamFullName, buf, requestorStr, currentTime);
+
+    if ( StartsWith(g_currentParamFullName, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.BLE.Tile.") )
+       Tile_SetParamIntValue(hInsContext, ParamName, value);
+
+    return TRUE;
+}

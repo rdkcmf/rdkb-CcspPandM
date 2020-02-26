@@ -127,6 +127,9 @@ OnboardingLogging_SetParamBoolValue
     PCOSA_DATAMODEL_ONBOARDLOGGING       pMyObject     = (PCOSA_DATAMODEL_ONBOARDLOGGING)g_pCosaBEManager->hOnboardLogging;
     ANSC_STATUS  returnStatus = ANSC_STATUS_SUCCESS;
 
+    if (IsBoolSame(hInsContext, ParamName, bValue, OnboardingLogging_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if(bValue == pMyObject->bEnable)
