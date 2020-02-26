@@ -1499,6 +1499,7 @@
                         <func_SetParamUlongValue>Control_SetParamUlongValue</func_SetParamUlongValue>
                 	<func_SetParamStringValue>Control_SetParamStringValue</func_SetParamStringValue>
 	                <func_GetParamStringValue>Control_GetParamStringValue</func_GetParamStringValue>
+                        <func_SetParamBoolValue>Control_SetParamBoolValue</func_SetParamBoolValue>
                     </functions>
 
                     <parameters>
@@ -1519,6 +1520,18 @@
                             <type>string(255)</type>
                             <syntax>string</syntax>
                             <writable>true</writable>
+                         </parameter>
+                         <parameter>
+                             <name>ClearDB</name>
+                             <type>boolean</type>
+                             <syntax>bool</syntax>
+                             <writable>true</writable>
+                         </parameter>
+                         <parameter>
+                             <name>ClearDBEnd</name>
+                             <type>boolean</type>
+                             <syntax>bool</syntax>
+                             <writable>true</writable>
                          </parameter>
                     </parameters>
                 </object>
@@ -2247,11 +2260,10 @@
 							
 					<functions>
 						
-						<func_GetParamStringValue>Tile_GetParamStringValue</func_GetParamStringValue>
-							
-						<func_SetParamStringValue>Tile_SetParamStringValue</func_SetParamStringValue>
-                                                <func_GetParamIntValue>Tile_GetParamIntValue</func_GetParamIntValue>        
-                                                <func_SetParamIntValue>Tile_SetParamIntValue</func_SetParamIntValue>
+						<func_GetParamStringValue>Generic_GetParamStringValue</func_GetParamStringValue>
+						<func_SetParamStringValue>Generic_SetParamStringValue</func_SetParamStringValue>
+                                                <func_GetParamUlongValue>Generic_GetParamUlongValue</func_GetParamUlongValue>
+                                                <func_SetParamUlongValue>Generic_SetParamUlongValue</func_SetParamUlongValue>
 							
 					</functions>
 							

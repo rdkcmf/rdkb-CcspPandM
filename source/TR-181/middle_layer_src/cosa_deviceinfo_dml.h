@@ -252,6 +252,99 @@ EasyConnect_SetParamBoolValue
 
  APIs for Object:
 
+    DeviceInfo.X_RDKCENTRAL-COM_RFC.
+
+    *  Generic_GetParamUlongValue
+    *  Generic_SetParamUlongValue
+    *  Generic_GetParamBoolValue
+    *  Generic_GetParamStringValue
+    *  Generic_GetParamIntValue
+    *  Generic_SetParamBoolValue
+    *  Generic_SetParamStringValue
+    *  Generic_SetParamIntValue
+***********************************************************************/
+BOOL
+Generic_GetParamUlongValue
+    (
+        ANSC_HANDLE             hInsContext,
+        char*                   ParamName,
+        ULONG*                  pValue
+    );
+
+BOOL
+Generic_GetParamBoolValue
+        (
+                ANSC_HANDLE                             hInsContext,
+                char*                                           ParamName,
+                BOOL*                                           pBool
+        );
+
+ULONG
+Generic_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+BOOL
+Generic_GetParamIntValue
+        (
+                ANSC_HANDLE                             hInsContext,
+                char*                                           ParamName,
+                int*                                            pInt
+        );
+
+BOOL
+Generic_SetParamUlongValue
+    (
+        ANSC_HANDLE             hInsContext,
+        char*                   ParamName,
+        ULONG                   ulValue
+    );
+
+BOOL
+Generic_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+BOOL
+Generic_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       strValue
+    );
+
+
+BOOL
+Generic_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         value
+    );
+
+
+typedef BOOL (*GETBOOL_FUNC_PTR)(ANSC_HANDLE, char*, BOOL*);
+BOOL IsBoolSame(ANSC_HANDLE hInsContext,char* ParamName, BOOL bValue, GETBOOL_FUNC_PTR getBoolFunc);
+typedef ULONG (*GETSTRING_FUNC_PTR)(ANSC_HANDLE, char*, char*, ULONG*);
+BOOL IsStringSame(ANSC_HANDLE hInsContext,char* ParamName, char* pValue, GETSTRING_FUNC_PTR getStringFunc);
+typedef BOOL (*GETULONG_FUNC_PTR)(ANSC_HANDLE, char*, ULONG*);
+BOOL IsUlongSame(ANSC_HANDLE hInsContext,char* ParamName, ULONG ulValue, GETULONG_FUNC_PTR getUlongFunc);
+typedef BOOL (*GETINT_FUNC_PTR)(ANSC_HANDLE, char*, int*);
+BOOL IsIntSame(ANSC_HANDLE hInsContext,char* ParamName, int value, GETINT_FUNC_PTR getIntFunc);
+
+
+
+/***********************************************************************
+
+ APIs for Object:
+
     DeviceInfo.X_RDKCENTRAL-COM_RFC.Control
 
     *  Control_GetParamUlongValue

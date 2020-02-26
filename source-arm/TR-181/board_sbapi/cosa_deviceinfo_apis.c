@@ -99,6 +99,8 @@
 #define DEVICE_PROPERTIES    "/etc/device.properties"
 #define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
 #define BOOTSTRAP_INFO_FILE		"/nvram/bootstrap.json"
+#define RFC_DEFAULTS_FILE       "/etc/rfcDefaults.json"
+#define RFC_STORE_FILE       "/opt/secure/RFC/tr181store.json"
 
 #if defined(_PLATFORM_IPQ_)
 #include "ccsp_vendor.h"
@@ -3397,6 +3399,7 @@ ANSC_STATUS UpdateJsonParamLegacy
 					 cJsonOut = cJSON_Print(json);
 					 CcspTraceWarning(( "Updated json content is %s\n", cJsonOut));
 					 configUpdateStatus = writeToJson(cJsonOut, PARTNERS_INFO_FILE);
+                                         free(cJsonOut);
 					 if ( !configUpdateStatus)
 					 {
 						 CcspTraceWarning(( "Updated Value for %s partner\n",PartnerId));
@@ -3504,6 +3507,7 @@ ANSC_STATUS UpdateJsonParam
 					 cJsonOut = cJSON_Print(json);
 					 CcspTraceWarning(( "Updated json content is %s\n", cJsonOut));
 					 configUpdateStatus = writeToJson(cJsonOut, BOOTSTRAP_INFO_FILE);
+                                         free(cJsonOut);
 					 if ( !configUpdateStatus)
 					 {
                                          	 CcspTraceWarning(( "Bootstrap config update: %s, %s, %s, %s \n", pKey, pValue, PartnerId, pSource));
@@ -4024,6 +4028,164 @@ CosaDmlDiSet_SyndicationFlowControl_InitialOutputMark
     {
        return ANSC_STATUS_FAILURE;
     }
+}
+
+
+// Init RFC json objects
+ANSC_STATUS
+RfcJsonInit
+  (
+    cJSON **pJsonObj, char *jsonFileName
+  )
+{
+    FILE *fileRead = NULL;
+    char* data = NULL;
+    int len ;
+
+    if (access(jsonFileName, F_OK) != 0)
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
+    fileRead = fopen( jsonFileName, "r" );
+    if( fileRead == NULL )
+    {
+       CcspTraceWarning(("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ ));
+       return ANSC_STATUS_FAILURE;
+    }
+
+    fseek( fileRead, 0, SEEK_END );
+    len = ftell( fileRead );
+    fseek( fileRead, 0, SEEK_SET );
+    data = ( char* )malloc( sizeof(char) * (len + 1) );
+    if (data != NULL)
+    {
+        memset( data, 0, ( sizeof(char) * (len + 1) ));
+        fread( data, 1, len, fileRead );
+    }
+    else
+    {
+        CcspTraceWarning(("%s-%d : Memory allocation failed \n", __FUNCTION__, __LINE__));
+        fclose( fileRead );
+        return ANSC_STATUS_FAILURE;
+    }
+
+    fclose( fileRead );
+
+    if ( data == NULL )
+    {
+         CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
+         return ANSC_STATUS_FAILURE;
+    }
+    else if ( strlen(data) != 0)
+    {
+        *pJsonObj = cJSON_Parse( data );
+        if( !*pJsonObj )
+        {
+            CcspTraceWarning((  "%s : json file parser error : [%d]\n", __FUNCTION__,__LINE__));
+            free(data);
+            return ANSC_STATUS_FAILURE;
+        }
+        else
+        {
+            CcspTraceWarning(("%s-%d : json file parser  success \n", __FUNCTION__, __LINE__));
+        }
+    }
+    free(data);
+    data = NULL;
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDiRfcDefaultsInit
+  (
+    cJSON **pRfcDefaults
+  )
+{
+   return RfcJsonInit(pRfcDefaults, RFC_DEFAULTS_FILE);
+}
+
+ANSC_STATUS
+CosaDmlDiRfcStoreInit
+  (
+    cJSON **pRfcStore
+  )
+{
+   return RfcJsonInit(pRfcStore, RFC_STORE_FILE);
+}
+
+static cJSON *rfcNewJson;
+ANSC_STATUS
+StartRfcProcessing()
+{
+   CcspTraceWarning((  "%s \n", __FUNCTION__ ));
+   rfcNewJson = cJSON_CreateObject();
+   return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+ProcessRfcSet(cJSON **pRfcStore, BOOL clearDB, char *paramFullName, char *value, char *pSource, char *pCurrentTime)
+{
+   CcspTraceWarning((  "%s : paramFullName=%s, value=%s, clearDB=%d\n", __FUNCTION__, paramFullName, value, clearDB));
+
+   cJSON *paramObj = cJSON_CreateObject();
+   cJSON_AddItemToObject(paramObj, "Value", cJSON_CreateString(value));
+   cJSON_AddItemToObject(paramObj, "UpdateTime", cJSON_CreateString(pCurrentTime));
+   cJSON_AddItemToObject(paramObj, "UpdateSource", cJSON_CreateString(pSource));
+   if (clearDB == false)
+   {
+      if ( *pRfcStore == NULL)
+      {
+         CcspTraceWarning((  "%s : pRfcStore is NULL : [%d]\n", __FUNCTION__,__LINE__));
+         *pRfcStore = cJSON_CreateObject();
+      }
+      cJSON *obj = cJSON_GetObjectItem(*pRfcStore, paramFullName);
+      if (obj)
+         cJSON_ReplaceItemInObject(*pRfcStore, paramFullName, paramObj);
+      else
+         cJSON_AddItemToObject(*pRfcStore, paramFullName, paramObj);
+
+      char *cJsonOut = cJSON_Print(*pRfcStore);
+      //CcspTraceWarning((  "%s : cJsonOut=%s\n", __FUNCTION__,cJsonOut));
+      writeToJson(cJsonOut, RFC_STORE_FILE);
+      free(cJsonOut);
+   }
+   else
+   {
+      cJSON_AddItemToObject(rfcNewJson, paramFullName, paramObj);
+   }
+   return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+EndRfcProcessing(cJSON **pRfcStore)
+{
+   CcspTraceWarning((  "%s \n", __FUNCTION__ ));
+
+   cJSON *current_element = NULL;
+   cJSON_ArrayForEach(current_element, *pRfcStore)
+   {
+      cJSON *updateSourceObj = cJSON_GetObjectItem(current_element, "UpdateSource");
+      if ( updateSourceObj && strcmp(updateSourceObj->valuestring, "webpa") == 0)
+      {
+         char *current_key = current_element->string;
+         CcspTraceWarning((  "%s: Found a previously webpa set param: %s \n", __FUNCTION__, current_key ));
+         // If previously set webpa param is not present in the new RFC config, add it to new RFC config.
+         if ( NULL == cJSON_GetObjectItem(rfcNewJson, current_key))
+         {
+            CcspTraceWarning((  "%s: Add the previously set webpa param to current json \n", __FUNCTION__ ));
+            cJSON_AddItemToObject(rfcNewJson, current_key, cJSON_Duplicate(current_element, 1));
+         }
+      }
+   }
+
+   char *cJsonOut = cJSON_Print(rfcNewJson);
+   writeToJson(cJsonOut, RFC_STORE_FILE);
+   free(cJsonOut);
+   cJSON_Delete(*pRfcStore);
+   *pRfcStore = rfcNewJson;
+   rfcNewJson = NULL;
+   return ANSC_STATUS_SUCCESS;
 }
 
 #define MAX_NTP_SERVER 5

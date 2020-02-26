@@ -126,6 +126,9 @@ AdvancedParentalControl_SetParamBoolValue
     PCOSA_DATAMODEL_ADVPC       pMyObject     = (PCOSA_DATAMODEL_ADVPC)g_pCosaBEManager->hAdvPC;
     ANSC_STATUS  returnStatus = ANSC_STATUS_SUCCESS;
 
+    if (IsBoolSame(hInsContext, ParamName, bValue, AdvancedParentalControl_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if(bValue == pMyObject->bEnable)

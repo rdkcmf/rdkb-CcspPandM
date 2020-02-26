@@ -126,6 +126,9 @@ PrivacyProtection_SetParamBoolValue
     PCOSA_DATAMODEL_PRIVACYPROTECTION       pMyObject     = (PCOSA_DATAMODEL_PRIVACYPROTECTION)g_pCosaBEManager->hPrivacyProtection;
     ANSC_STATUS  returnStatus = ANSC_STATUS_SUCCESS;
 
+    if (IsBoolSame(hInsContext, ParamName, bValue, PrivacyProtection_GetParamBoolValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if(bValue == pMyObject->bEnable)

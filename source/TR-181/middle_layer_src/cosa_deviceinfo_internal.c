@@ -185,6 +185,8 @@ CosaDeviceInfoInitialize
 	CosaDmlDiWiFiTelemetryInit(&pMyObject->WiFi_Telemetry);
 	CosaDmlDiUniqueTelemetryIdInit(&pMyObject->UniqueTelemetryId);
     CosaDmlDiSyndicationFlowControlInit(&pMyObject->SyndicatonFlowControl);
+    CosaDmlDiRfcDefaultsInit(&pMyObject->pRfcDefaults);
+    CosaDmlDiRfcStoreInit(&pMyObject->pRfcStore);
     return returnStatus;
 }
 
@@ -222,7 +224,8 @@ CosaDeviceInfoRemove
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject    = (PCOSA_DATAMODEL_DEVICEINFO)hThisObject;
 
     /* Remove necessary resounce */
-
+    cJSON_Delete(pMyObject->pRfcDefaults);
+    cJSON_Delete(pMyObject->pRfcStore);
 
     /* Remove self */
     AnscFreeMemory((ANSC_HANDLE)pMyObject);

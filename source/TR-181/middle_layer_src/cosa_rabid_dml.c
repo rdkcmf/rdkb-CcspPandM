@@ -142,6 +142,9 @@ RabidFramework_SetParamUlongValue
     PCOSA_DATAMODEL_RABID       pMyObject     = (PCOSA_DATAMODEL_RABID)g_pCosaBEManager->hRabid;
     ANSC_STATUS  returnStatus = ANSC_STATUS_SUCCESS;
 
+    if (IsUlongSame(hInsContext, ParamName, uValue, RabidFramework_GetParamUlongValue))
+        return TRUE;
+
     if( AnscEqualString(ParamName, "MemoryLimit", TRUE))
     {
         if(uValue == pMyObject->uMemoryLimit)
@@ -200,4 +203,3 @@ RabidFramework_SetParamUlongValue
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
     return FALSE;
 }
-
