@@ -2673,8 +2673,7 @@
                                 </parameter>
                             </parameters>
                         </object>
-          
-               <object>
+                <object>
                         <name>SecureWebUI</name>
                         <objectType>object</objectType>
                         <functions>
@@ -2708,6 +2707,22 @@
                                 <functions>
                                         <func_GetParamBoolValue>mTlsDCMUpload_GetParamBoolValue</func_GetParamBoolValue>
                                         <func_SetParamBoolValue>mTlsDCMUpload_SetParamBoolValue</func_SetParamBoolValue>
+                                </functions>
+                                <parameters>
+                                <parameter>
+                                        <name>Enable</name>
+                                        <type>boolean</type>
+                                        <syntax>bool</syntax>
+                                        <writable>true</writable>
+                                </parameter>
+                                </parameters>
+                        </object>
+                        <object>
+                                <name>mTlsLogUpload</name>
+                                <objectType>object</objectType>
+                                <functions>
+                                        <func_GetParamBoolValue>mTlsLogUpload_GetParamBoolValue</func_GetParamBoolValue>
+                                        <func_SetParamBoolValue>mTlsLogUpload_SetParamBoolValue</func_SetParamBoolValue>
                                 </functions>
                                 <parameters>
                                 <parameter>
