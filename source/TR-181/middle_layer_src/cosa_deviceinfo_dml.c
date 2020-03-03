@@ -7880,7 +7880,7 @@ EasyConnect_GetParamBoolValue
             ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
         }
         else
-            *pBool = FALSE;
+            *pBool = TRUE;
 
          return TRUE;
     }
