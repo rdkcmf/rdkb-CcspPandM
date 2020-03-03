@@ -59,11 +59,11 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "",   
-      "Device.Time.NTPServer1" : "ntp.ccp.xcal.tv",
-      "Device.Time.NTPServer2" : "time1.google.com",
-      "Device.Time.NTPServer3" : "time2.google.com",
-      "Device.Time.NTPServer4" : "time3.google.com",
-      "Device.Time.NTPServer5" : ""
+      "Device.Time.NTPServer1" : "time.xfinity.com",
+      "Device.Time.NTPServer2" : "time1.xfinity.com",
+      "Device.Time.NTPServer3" : "time2.xfinity.com",
+      "Device.Time.NTPServer4" : "time3.xfinity.com",
+      "Device.Time.NTPServer5" : "time4.xfinity.com"
   },
 
  "RDKM" : {
