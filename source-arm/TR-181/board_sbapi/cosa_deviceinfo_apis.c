@@ -159,7 +159,7 @@ extern void* g_pDslhDmlAgent;
 
 static const int OK = 1 ;
 static const int NOK = 0 ;
-static char reverseSSHArgs[255] = { "\0" };
+static char reverseSSHArgs[256] = { "\0" };
 const char* sshCommand = "/lib/rdk/startTunnel.sh";
 #ifdef ENABLE_SHORTS
 const char *stunnelCommand = "/lib/rdk/startStunnel.sh";
@@ -200,6 +200,10 @@ static char* mapArgsToSSHOption(char *revSSHConfig) {
 
 	char* value = NULL;
 	char* option = NULL;
+
+    if (!revSSHConfig)
+        return NULL;
+
 	option = (char*) calloc(125, sizeof(char));
 
 	if (option) {
@@ -227,19 +231,29 @@ static char* mapArgsToSSHOption(char *revSSHConfig) {
  */
 static char* findUntilFirstDelimiter(char* input) {
 
-	char tempCopy[255] = { "\0" };
-	char *tempStr;
+	char tempCopy[256] = { "\0" };
+	char *tempStr = NULL;
 	char* option = NULL;
-	option = (char*) calloc(125, sizeof(char));
+    int inputMsgSize = 0;
 
-	int inputMsgSize = strlen(input);
-	strncpy(tempCopy, input, inputMsgSize);
-	tempStr = (char*) strtok(tempCopy, ";");
-	if (tempStr) {
-		sprintf(option, "%s", tempStr);
-	} else {
-		sprintf(option, "%s", input);
-	}
+    if (!input)
+        return NULL;
+
+	option = (char*) calloc(125, sizeof(char));
+	inputMsgSize = strlen(input);
+    if (sizeof(tempCopy) > inputMsgSize)
+    {
+        strncpy(tempCopy, input, inputMsgSize);
+        tempStr = (char*) strtok(tempCopy, ";");
+        if (option)
+        {
+            if (tempStr) {
+                sprintf(option, "%s", tempStr);
+            } else {
+                sprintf(option, "%s", input);
+            }
+        }
+    }
 	return option;
 }
 
@@ -248,27 +262,51 @@ static char* findUntilFirstDelimiter(char* input) {
  */
 static char* getHostLogin(char *tempStr) {
 	char* value = NULL;
+    char* temp = NULL;
 	char* hostIp = NULL;
 	char* user = NULL;
 	char* hostLogin = NULL;
+	int inputMsgSize = 0;
+	char tempCopy[256] = { "\0" };
 
-	int inputMsgSize = strlen(tempStr);
-	char tempCopy[255] = { "\0" };
-	strncpy(tempCopy, tempStr, inputMsgSize);
+    if (!tempStr)
+        return NULL;
+    inputMsgSize = strlen(tempStr);
+    if ( sizeof(tempCopy) > inputMsgSize)
+    {
+        strncpy(tempCopy, tempStr, inputMsgSize);
+    }
+    else
+    {
+        return NULL;
+    }
 
 	if ((value = strstr(tempStr, "host="))) {
 		hostIp = (char*) calloc(125, sizeof(char));
-		sprintf(hostIp, "%s", value + strlen("host="));
+		snprintf(hostIp, 125, "%s", value + strlen("host="));
 	}
 
 	if ((value = strstr(tempStr, "user="))) {
 		user = (char*) calloc(125, sizeof(char));
-		sprintf(user, "%s", value + strlen("user="));
+		snprintf(user, 125, "%s", value + strlen("user="));
 	}
 
-	if (user && hostIp) {
-		user = findUntilFirstDelimiter(user);
-		hostIp = findUntilFirstDelimiter(hostIp);
+	if (user && hostIp) 
+    {
+        temp = findUntilFirstDelimiter(user);
+        if (user)
+        {
+            free(user);
+            user = NULL;
+        }
+        user = temp;
+        temp = findUntilFirstDelimiter(hostIp);
+        if (hostIp)
+        {
+            free(hostIp);
+            hostIp = NULL;
+        }
+        hostIp = temp;
 
 		hostLogin = (char*) calloc(255, sizeof(char));
 		if (hostLogin) {
@@ -1949,10 +1987,12 @@ void setLastRebootReason(char* reason)
 
 int setXOpsReverseSshArgs(char* pString) {
 
-    char tempCopy[255] = { "\0" };
-    char* tempStr;
-    char* option;
+    char tempCopy[256] = { "\0" };
+    char* tempStr = NULL;
+    char* option = NULL;
     char* hostLogin = NULL;
+    int inputMsgSize = 0;
+    int hostloglen = 0;
 #ifdef ENABLE_SHORTS
     char* value = NULL;
 
@@ -1965,7 +2005,12 @@ int setXOpsReverseSshArgs(char* pString) {
     int columns = 0;
 #endif
 
-    int inputMsgSize = strlen(pString);
+    memset(reverseSSHArgs,0,sizeof(reverseSSHArgs));
+    if (!pString)
+    {
+        return 1;
+    }
+    inputMsgSize = strlen(pString);
 #ifdef ENABLE_SHORTS
     // two paths to follow either reversessh or stunnel based on whether the input string contains type 
     if(strncmp(pString,"type",4)) {
@@ -1977,11 +2022,28 @@ int setXOpsReverseSshArgs(char* pString) {
             return 1;
         }
 
-        strncpy(tempCopy, pString, inputMsgSize);
+        if (sizeof(tempCopy) > inputMsgSize)
+        {
+            strncpy(tempCopy, pString, inputMsgSize);
+        }
+        else
+        {
+            if (hostLogin)
+                free(hostLogin);
+            return 1;
+
+        }
         tempStr = (char*) strtok(tempCopy, ";");
         if (NULL != tempStr) {
             option = mapArgsToSSHOption(tempStr);
-            strcpy(reverseSSHArgs, option);
+            if (option)
+            {
+                int len = strlen(option);
+                if (sizeof(reverseSSHArgs) > len)
+                {
+                    strncpy(reverseSSHArgs, option,len);
+                }
+            }
         } else {
             AnscTraceWarning(("No Match Found !!!!\n"));
             printf("No Match Found !!!!\n");
@@ -1994,11 +2056,19 @@ int setXOpsReverseSshArgs(char* pString) {
         while ((tempStr = strtok(NULL, ";")) != NULL) {
             option = mapArgsToSSHOption(tempStr);
             if ( NULL != option) {
-                strcat(reverseSSHArgs, option);
+                int len = strlen(option);
+                if (sizeof(reverseSSHArgs) > (strlen(reverseSSHArgs) + len))
+                {
+                    strncat(reverseSSHArgs, option,len);
+                }
                 free(option);
             }
         }
-        strcat(reverseSSHArgs, hostLogin);
+        hostloglen = strlen(hostLogin);
+        if (sizeof(reverseSSHArgs) > (strlen(reverseSSHArgs) + hostloglen))
+        {
+            strncat(reverseSSHArgs, hostLogin,hostloglen);
+        }
         if (hostLogin)
             free(hostLogin);
 #ifdef ENABLE_SHORTS
