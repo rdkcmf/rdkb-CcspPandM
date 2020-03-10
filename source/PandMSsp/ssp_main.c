@@ -42,6 +42,7 @@
 #include "ssp_global.h"
 #include "stdlib.h"
 #include "ccsp_dm_api.h"
+#include <sys/sysinfo.h>
 #ifdef USE_PCD_API_EXCEPTION_HANDLING
 #include "pcdapi.h"
 #endif
@@ -65,6 +66,8 @@
 #endif
 
 #define DEBUG_INI_NAME  "/etc/debug.ini"
+#define PAM_CRASH_TIMEOUT 300  //seconds
+#define PAM_INIT_FILE "/tmp/pam_initialized"
 
 PDSLH_CPE_CONTROLLER_OBJECT     pDslhCpeController      = NULL;
 PCOMPONENT_COMMON_DM            g_pComponent_Common_Dm  = NULL;
@@ -75,6 +78,17 @@ PCCSP_CCD_INTERFACE             pPnmCcdIf               = (PCCSP_CCD_INTERFACE  
 PCCC_MBI_INTERFACE              pPnmMbiIf               = (PCCC_MBI_INTERFACE         )NULL;
 BOOL                            g_bActive               = FALSE;
 extern  ANSC_HANDLE                     bus_handle;
+
+//Debug variables
+time_t start_t, end_t;
+double diff_t;
+
+void get_uptime(long *uptime)
+{
+    struct sysinfo info;
+    sysinfo( &info );
+    *uptime= info.uptime;
+}
 
 #ifdef _ANSC_LINUX
     sem_t *sem;
@@ -243,7 +257,11 @@ static void _print_stack_backtrace(void)
 
 #if defined(_ANSC_LINUX)
 static void daemonize(void) {
-	int fd;
+	int fd,s;
+        pid_t   pid;
+        struct timespec max_wait;
+        int svalue = -1;
+        long uptime1=0, uptime2=0, diff=0;
 	
 	/* initialize semaphores for shared processes */
 	sem = sem_open ("pSemPnm", O_CREAT | O_EXCL, 0644, 0);
@@ -253,13 +271,20 @@ static void daemonize(void) {
 	       _exit(1);
 	}
 	/* name of semaphore is "pSemPnm", semaphore is reached using this name */
-	sem_unlink ("pSemPnm");
+        s = sem_unlink("pSemPnm");
+        if (s < 0)
+        {
+            CcspTraceInfo(("-------------------PAM_DBG: sem_unlink returns error %d - %s\n----------------", errno, strerror(errno)));
+            _exit(1);
+        }
 	/* unlink prevents the semaphore existing forever */
 	/* if a crash occurs during the execution         */
 	AnscTrace("Semaphore initialization Done!!\n");
 
-	switch (fork()) {
+        CcspTraceInfo(("PAM_DBG:---------------------daemonize calls fork------------------------\n"));
+	switch (pid = fork()) {
 	case 0:
+                CcspTraceInfo(("PAM_DBG:--------------child process begins---------------\n"));
 		break;
 	case -1:
 		// Error
@@ -268,8 +293,76 @@ static void daemonize(void) {
 		exit(0);
 		break;
 	default:
-		sem_wait (sem);
-		sem_close (sem);
+                CcspTraceInfo(("PAM_DBG:--------------waiting for child process to initialize------------\n"));
+                time(&start_t);
+                get_uptime(&uptime1);
+                CcspTraceInfo(("PAM_DBG:------------time before sem_timedwait hit %ld ---------------\n", uptime1));
+
+                clock_gettime(CLOCK_REALTIME, &max_wait);
+                max_wait.tv_sec += PAM_CRASH_TIMEOUT;
+
+                s = sem_getvalue(sem, &svalue);
+                if (s < 0)
+                {
+                    CcspTraceInfo(("PAM_DBG:-------------sem_getvalue returns error %d - %s, continuing-------------\n", errno, strerror(errno)));
+                }
+                CcspTraceInfo(("PAM_DBG:----------------sem_getvalue returns value = %d -------------\n", svalue));
+                while (1)
+                {
+                    s = sem_timedwait(sem, &max_wait);
+                    if (s < 0)
+                    {
+                        if (errno == EINTR)
+                        {
+                            CcspTraceInfo(("PAM_DBG:-------------- sem_timedwait: syscall interrupted, continuing---------------\n"));
+                            continue;
+                        }
+                        if (errno == ETIMEDOUT)
+                        {
+                            CcspTraceInfo(("PAM_DBG:-------------sem_timedwait TIMEOUT--------------\n"));
+                        }
+                        CcspTraceInfo(("PAM_DBG:-------------sem_timedwait returns error %d - %s, continuing\n-------------", errno, strerror(errno)));
+                    }
+                    else
+                    {
+                        CcspTraceInfo(("PAM_DBG:------------sem_timedwait success-------------\n"));
+                    }
+                    break;    // jump out of loop
+                }
+
+                /*time(&end_t);
+                diff_t = difftime(end_t, start_t);
+                CcspTraceInfo(("PAM_DBG:---------------sem_timedwait returns after (%lf) seconds ---------------------\n", diff_t));*/
+                get_uptime(&uptime2);
+                CcspTraceInfo(("PAM_DBG:---------------sem_timedwait returns after (%ld) seconds ---------------------\n", uptime2));
+                s = sem_close(sem);
+                if (s < 0)
+                {
+                    CcspTraceInfo(("PAM_DEBUG:---------------sem_close returns error %d - %s, continuing-------------\n", errno, strerror(errno)));
+                }
+
+                // difference time exceeds TIMEOUT, please kill the child pam process
+                diff = uptime2 - uptime1;
+                CcspTraceInfo(("PAM_DBG:------------diff time is %ld -------------\n", diff));
+                if(diff >= PAM_CRASH_TIMEOUT)
+                {
+                    CcspTraceInfo(("PAM_DBG:------------kill process after timeout, pid = %d -----------\n", pid));
+                    s = kill(pid, SIGKILL);
+                    if (s < 0)
+                    {
+                        CcspTraceInfo(("PAM_DBG: kill returns error %d - %s ---------------\n", errno, strerror(errno)));
+                    }
+                    else
+                    {
+                        CcspTraceInfo(("PAM_DBG:-------------kill success------------\n"));
+                    }
+                    CcspTraceInfo(("PAM_DBG:----------remove /tmp/pam_initialized---------\n"));
+                    s = unlink(PAM_INIT_FILE);
+                    if (s < 0)
+                    {
+                        CcspTraceInfo(("PAM_DBG:------------unlink returned %d - %s ------------\n", s, strerror(s)));
+                    }
+                }
 		_exit(0);
 	}
 
@@ -355,7 +448,7 @@ void sig_handler(int sig)
 	}
     else {
     	/* get stack trace first */
-    	_print_stack_backtrace();
+    	//_print_stack_backtrace();
     	CcspTraceInfo(("Signal %d received, exiting!\n", sig));
     	exit(0);
     }
@@ -410,6 +503,10 @@ int main(int argc, char* argv[])
     DmErr_t                         err;
     char                            *subSys            = NULL;
     extern ANSC_HANDLE bus_handle;
+    BOOL bDebugSlowChildProcess = FALSE;
+    FILE *fp;
+    int s, svalue = -1;
+    long uptime1=0, uptime2=0, diff=0;
 
 #ifdef FEATURE_SUPPORT_RDKLOG
     RDK_LOGGER_INIT();
@@ -488,6 +585,19 @@ if(id != 0)
         {
             bRunAsDaemon = FALSE;
         }
+        else if (strcmp(argv[idx], "-debugslowchildprocess") == 0)
+        {
+            bDebugSlowChildProcess = TRUE;
+            CcspTraceInfo(("PAM_DBG:-------bDebugSlowChildProcess hit-----------\n"));
+        }
+    }
+
+    // To identify slow child process
+    fp = fopen("/tmp/debugslowchildprocess", "r");
+    if (fp)
+    {
+        bDebugSlowChildProcess = TRUE;
+        fclose(fp);
     }
 
 #if  defined(_ANSC_WINDOWSNT)
@@ -506,7 +616,10 @@ if(id != 0)
     }
 #elif defined(_ANSC_LINUX)
     if ( bRunAsDaemon )
+    {
+        CcspTraceInfo(("PAM_DBG:------- daemonize call hit -----------\n"));
         daemonize();
+    }
 
     /*This is used for ccsp recovery manager */
     fd = fopen("/var/tmp/CcspPandMSsp.pid", "w+");
@@ -581,6 +694,7 @@ if(id != 0)
         exit(1);
     }
 
+    CcspTraceInfo(("PAM_DBG:----------------------touch /tmp/pam_initialized-------------------\n"));
     system("touch /tmp/pam_initialized");
 #if !defined(_COSA_INTEL_XB3_ARM_)
     char buf[64] = {'\0'};
@@ -594,8 +708,28 @@ if(id != 0)
 	
     if ( bRunAsDaemon )
     {
-       sem_post (sem);
-       sem_close(sem);
+       if (bDebugSlowChildProcess)
+       {
+           CcspTraceInfo(("PAM_DBG:-----------------waiting for 600 seconds to trigger parent to child this process-----------------\n"));
+           sleep(600);
+       }
+       s = sem_getvalue(sem, &svalue);
+       if (s < 0)
+       {
+           CcspTraceInfo(("PAM_DEBUG:------------sem_getvalue returns error %d - %s, continuing-------------\n", errno, strerror(errno)));
+       }
+       CcspTraceInfo(("PAM_DEBUG:------------sem_getvalue returns value = %d ------------\n", svalue));
+       CcspTraceInfo(("PAM_DBG:----------------Before calling sem_post--------------------\n"));
+       s = sem_post(sem);
+       if (s < 0)
+       {
+           CcspTraceInfo(("PAM_DEBUG:-------------sem_post returns error %d - %s, continuing-------------\n", errno, strerror(errno)));
+       }
+       s = sem_close(sem);
+       if (s < 0)
+       {
+           CcspTraceInfo(("PAM_DEBUG:---------------sem_close returns error %d - %s, continuing-------------\n", errno, strerror(errno)));
+       }
     }
 
 #if defined(_COSA_INTEL_USG_ARM_) 
@@ -635,21 +769,35 @@ if(id != 0)
 
         if (urlPtr != NULL && urlPtr[0] != 0 && strlen(urlPtr) > 0) {
             CcspTraceInfo(("Reported an ATOM IP of %s \n", urlPtr));
+            CcspTraceInfo(("PAM_DBG:-----------------main calls fork-----------------\n"));
             pid_t pid = fork();
 
             if (pid == -1)
             {
                 // error, failed to fork()
+                CcspTraceInfo(("PAM_DBG:------------------- fork failed,------------------ %s %s\n", __FILE__, __LINE__));
             }
             else if (pid > 0)
             {
                 int status;
+                CcspTraceInfo(("PAM_DBG:--------------- Before waitpid hit, process id is(%d) --------------------\n", pid));
+                //time(&start_t);
+                get_uptime(&uptime1);
+                CcspTraceInfo(("PAM_DBG:--------------- Before waitpid hit %ld -------------\n", uptime1));
                 waitpid(pid, &status, 0); // wait here until the child completes
+                get_uptime(&uptime2);
+                CcspTraceInfo(("PAM_DBG:--------------- After waitpid hit %ld -------------\n", uptime2));
+                /*time(&end_t);
+                diff_t = difftime(end_t, start_t);
+                CcspTraceInfo(("PAM_DBG:--------------- After waitpid hit(%lf) --------------------", diff_t));*/
+                diff = uptime2 - uptime1;
+                CcspTraceInfo(("PAM_DBG:--------------- Diff time in waitpid (%ld) --------------", diff));
             }
             else
             {
                 // we are the child
                 char *args[] = {"/fss/gw/usr/bin/rpcclient", urlPtr, "/bin/touch /tmp/pam_initialized", (char *) 0 };
+                CcspTraceInfo(("PAM_DBG:----------------------child process calls execv with args: 0=%s 1=%s 2=%s----------------\n", args[0], args[1], args[2]));
                 execv(args[0], args);
                 _exit(EXIT_FAILURE);   // exec never returns
             }
