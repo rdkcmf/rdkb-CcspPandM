@@ -664,13 +664,17 @@ void* RegenerateUla(void *arg)
 
     if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE, NULL, &pIpv6_enable))
     {
-        bus_info->freefunc(pIpv6_enable);
+    	if (pIpv6_enable != NULL) {
+           bus_info->freefunc(pIpv6_enable);
+    	}
         return ANSC_STATUS_FAILURE;
     }
 
     if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE, NULL, &pUla_enable))
     {
-        bus_info->freefunc(pUla_enable);
+    	if (pUla_enable != NULL) {
+           bus_info->freefunc(pUla_enable);
+    	}
         return ANSC_STATUS_FAILURE;
     }
 
