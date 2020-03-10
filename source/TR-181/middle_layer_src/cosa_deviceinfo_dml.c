@@ -10729,10 +10729,10 @@ Xconf_SetParamBoolValue
                        }
                            status = system("/etc/cbr_firmwareDwnld.sh &");
 #elif defined(_HUB4_PRODUCT_REQ_)
-                        if(0 == system("pidof Hub4_firmwareDwnld.sh"))  {
-                           system ("kill -9 `pidof Hub4_firmwareDwnld.sh `");
+                        if(0 == system("pidof hub4_firmwareDwnld.sh"))  {
+                           system ("kill -9 `pidof hub4_firmwareDwnld.sh `");
                        }
-                           status = system("/etc/Hub4_firmwareDwnld.sh &");
+                           status = system("/etc/hub4_firmwareDwnld.sh &");
 #else
 			if(0 == system("pidof xb6_firmwareDwnld.sh"))  {
                            system ("kill -9 `pidof xb6_firmwareDwnld.sh `");
