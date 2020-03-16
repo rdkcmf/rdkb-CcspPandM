@@ -23,6 +23,8 @@
 # we are not in DNS redirection mode.
 # Eg Command: curl -w '%{http_code}\n' http://clients3.google.com/generate_204 --connect-timeout 10 -m 10
 
+source /lib/rdk/t2Shared_api.sh
+
 TRIGGER_STATE=$1
 WAN_INTERFACE="erouter0"
 REVERT_FLAG="/nvram/reverted"
@@ -409,6 +411,7 @@ then
 				syscfg commit
 				uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
 				echo_t "Exit_Captive_Mode:$uptime"
+				t2ValNotify "btime_cpexit_split" $uptime
 				if [ -e "/usr/bin/onboarding_log" ]; then
 					/usr/bin/onboarding_log "Exit_Captive_Mode:$uptime"
 				fi
@@ -453,6 +456,7 @@ then
 				    syscfg commit
 				    uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
 				    echo_t "Enter_Captive_Mode:$uptime"
+				    t2ValNotify "btime_cpenter_split" $uptime
 				    if [ -e "/usr/bin/onboarding_log" ]; then
 				        /usr/bin/onboarding_log "Enter_Captive_Mode:$uptime"
 				    fi
@@ -571,6 +575,7 @@ then
                                  echo_t "Network Response : Setting ConfigureWiFi to true is success"
 				uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
 				 echo_t "Enter_WiFi_Personalization_captive_mode:$uptime"
+				 t2ValNotify "btime_wcpenter_split" $uptime
 				 if [ -e "/usr/bin/onboarding_log" ]; then
 				   /usr/bin/onboarding_log "Enter_WiFi_Personalization_captive_mode:$uptime"
 				 fi

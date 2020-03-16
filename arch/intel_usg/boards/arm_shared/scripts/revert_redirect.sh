@@ -18,6 +18,8 @@
 # limitations under the License.
 #####################################################################################
 
+source /lib/rdk/t2Shared_api.sh
+
 source /etc/utopia/service.d/log_capture_path.sh
 
 if [ -f /etc/device.properties ]
@@ -61,6 +63,7 @@ then
     touch $REVERTED_FLAG
     uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
     echo_t "Exit_WiFi_Personalization_captive_mode:$uptime"
+    t2ValNotify "btime_wcpexit_split" $uptime
     if [ -e "/usr/bin/onboarding_log" ]; then
         /usr/bin/onboarding_log "Exit_WiFi_Personalization_captive_mode:$uptime"
     fi
