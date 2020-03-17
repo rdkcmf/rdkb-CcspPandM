@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "5.2"
+      "version" : "5.3"
    },
 
    "comcast" : {
@@ -63,7 +63,8 @@
       "Device.Time.NTPServer2" : "time1.xfinity.com",
       "Device.Time.NTPServer3" : "time2.xfinity.com",
       "Device.Time.NTPServer4" : "time3.xfinity.com",
-      "Device.Time.NTPServer5" : "time4.xfinity.com"
+      "Device.Time.NTPServer5" : "time4.xfinity.com",
+      "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config"
   },
 
  "RDKM" : {
@@ -120,7 +121,8 @@
       "Device.Time.NTPServer2" : "time1.google.com",
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
-      "Device.Time.NTPServer5" : ""
+      "Device.Time.NTPServer5" : "",
+      "Device.X_RDK_WebConfig.URL" : ""
   },
 
    "sky-italia" : {
@@ -177,7 +179,8 @@
       "Device.Time.NTPServer2" : "time1.google.com",
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
-      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
+      "Device.X_RDK_WebConfig.URL" : ""
    },
 
 
@@ -235,7 +238,8 @@
       "Device.Time.NTPServer2" : "time1.google.com",
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
-      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
+      "Device.X_RDK_WebConfig.URL" : ""
    },
 
 
@@ -293,7 +297,8 @@
       "Device.Time.NTPServer2" : "time1.google.com",
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
-      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
+      "Device.X_RDK_WebConfig.URL" : ""
    },
 
 
@@ -351,7 +356,8 @@
       "Device.Time.NTPServer2" : "time1.google.com",
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
-      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
+      "Device.X_RDK_WebConfig.URL" : ""
    },
 
 
@@ -409,7 +415,8 @@
       "Device.Time.NTPServer2" : "time1.google.com",
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
-      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
+      "Device.X_RDK_WebConfig.URL" : ""
    },
 
 "videotron" : {
@@ -466,7 +473,8 @@
       "Device.Time.NTPServer2" : "vl-vi-ntp002.ip.videotron.ca",
       "Device.Time.NTPServer3" : "vl-vi-ntp003.ip.videotron.ca",
       "Device.Time.NTPServer4" : "time1.google.com",
-      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv"
+      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
+      "Device.X_RDK_WebConfig.URL" : ""
    },
 "axb3retail" : {
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink" : "http://www.surfboard.com",
@@ -521,7 +529,8 @@
       "Device.Time.NTPServer2" : "time1.google.com",
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
-      "Device.Time.NTPServer5" : ""
+      "Device.Time.NTPServer5" : "",
+      "Device.X_RDK_WebConfig.URL" : ""
   },
    "unknown" : {
 
@@ -576,7 +585,8 @@
       "Device.Time.NTPServer2" : "time1.google.com",
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
-      "Device.Time.NTPServer5" : ""
+      "Device.Time.NTPServer5" : "",
+      "Device.X_RDK_WebConfig.URL" : ""
    }
 
 }
