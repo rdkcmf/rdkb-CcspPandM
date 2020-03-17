@@ -50,6 +50,12 @@ CosaRabidSetMemoryLimit
         ANSC_HANDLE hThisObject,
         ULONG       uValue
     );
+ANSC_STATUS
+CosaRabidSetMacCacheSize
+    (
+        ANSC_HANDLE hThisObject,
+        ULONG       uValue
+    );
 
 BOOL
 RabidFramework_GetParamBoolValue
