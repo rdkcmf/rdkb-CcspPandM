@@ -1331,6 +1331,12 @@
                                 <syntax>uint32</syntax>
                                 <writable>true</writable>
                               </parameter>
+                              <parameter>
+                                <name>MacCacheSize</name>
+                                <type>unsignedInt</type>
+                                <syntax>uint32</syntax>
+                                <writable>true</writable>
+                              </parameter>
                             </parameters>
                         </object>
                         <object>

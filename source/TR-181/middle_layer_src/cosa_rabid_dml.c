@@ -24,6 +24,7 @@
 #include "ccsp_trace.h"
 
 #define MIN_RABID_MEMORY_LIMIT 5
+#define MAX_RABID_MACCACHE_SIZE 32768
 
 static char *g_RabidEnable = "Advsecurity_RabidEnable";
 
@@ -202,6 +203,11 @@ RabidFramework_GetParamUlongValue
         *pUlong = pMyObject->uMemoryLimit;
         return TRUE;
     }
+    if( AnscEqualString(ParamName, "MacCacheSize", TRUE))
+    {
+        *pUlong = pMyObject->uMacCacheSize;
+        return TRUE;
+    }
 
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
     return FALSE;
@@ -259,6 +265,24 @@ RabidFramework_SetParamUlongValue
                 return FALSE;
 
         returnStatus = CosaRabidSetMemoryLimit(pMyObject, uValue);
+
+        if ( returnStatus != ANSC_STATUS_SUCCESS )
+        {
+            CcspTraceInfo(("%s EXIT Error\n", __FUNCTION__));
+            return  returnStatus;
+        }
+
+        return TRUE;
+    }
+    if( AnscEqualString(ParamName, "MacCacheSize", TRUE))
+    {
+        if(uValue == pMyObject->uMacCacheSize)
+                return TRUE;
+
+        if (uValue > MAX_RABID_MACCACHE_SIZE)
+                return FALSE;
+
+        returnStatus = CosaRabidSetMacCacheSize(pMyObject, uValue);
 
         if ( returnStatus != ANSC_STATUS_SUCCESS )
         {

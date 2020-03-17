@@ -41,6 +41,7 @@ extern char g_Subsystem[32];
 
 static char *g_RabidEnabled = "Advsecurity_RabidEnable";
 static char *g_RabidMemoryLimit = "Advsecurity_RabidMemoryLimit";
+static char *g_RabidMacCacheSize = "Advsecurity_RabidMacCacheSize";
 
 ANSC_STATUS CosaGetSysCfgUlong(char* setting, ULONG *value);
 ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value);
@@ -56,7 +57,7 @@ CosaRabidCreate
     PCOSA_DATAMODEL_RABID       pMyObject    = (PCOSA_DATAMODEL_RABID)NULL;
     ULONG                   syscfgValue = 0;
     ULONG                   uSyscfgValue = 0;
-    int                     retGet  = CCSP_SUCCESS;
+    int                     retGet  = ANSC_STATUS_SUCCESS;
 
     /*
      * We create object by first allocating memory for holding the variables and member functions.
@@ -76,6 +77,11 @@ CosaRabidCreate
     retGet = CosaGetSysCfgUlong(g_RabidMemoryLimit, &uSyscfgValue);
 
     pMyObject->uMemoryLimit = uSyscfgValue;
+
+    uSyscfgValue = 0;
+    retGet = CosaGetSysCfgUlong(g_RabidMacCacheSize, &uSyscfgValue);
+    if( retGet == ANSC_STATUS_SUCCESS )
+        pMyObject->uMacCacheSize = uSyscfgValue;
 
     return  (ANSC_HANDLE)pMyObject;
 }
@@ -141,6 +147,19 @@ ANSC_STATUS CosaRabidSetMemoryLimit(ANSC_HANDLE hThisObject, ULONG uValue)
     if ( returnStatus == ANSC_STATUS_SUCCESS )
     {
         pMyObject->uMemoryLimit = uValue;
+    }
+    return returnStatus;
+}
+
+ANSC_STATUS CosaRabidSetMacCacheSize(ANSC_HANDLE hThisObject, ULONG uValue)
+{
+    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
+    PCOSA_DATAMODEL_RABID     pMyObject    = (PCOSA_DATAMODEL_RABID)hThisObject;
+
+    returnStatus = CosaSetSysCfgUlong(g_RabidMacCacheSize, uValue);
+    if ( returnStatus == ANSC_STATUS_SUCCESS )
+    {
+        pMyObject->uMacCacheSize = uValue;
     }
     return returnStatus;
 }
