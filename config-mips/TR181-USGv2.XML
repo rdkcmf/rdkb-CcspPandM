@@ -2108,7 +2108,28 @@
                                 </parameter>
                         </parameters>
                 </object>
-		
+                <object>
+                        <name>MTLS</name>
+                        <objectType>object</objectType>
+                        <objects>
+                        <object>
+                                 <name>mTlsDCMUpload</name>
+                                 <objectType>object</objectType>
+                                 <functions>
+                                        <func_GetParamBoolValue>mTlsDCMUpload_GetParamBoolValue</func_GetParamBoolValue>
+                                        <func_SetParamBoolValue>mTlsDCMUpload_SetParamBoolValue</func_SetParamBoolValue>
+                                 </functions>
+                                 <parameters>
+                                 <parameter>
+                                        <name>Enable</name>
+                                        <type>boolean</type>
+                                        <syntax>bool</syntax>
+                                        <writable>true</writable>
+                                 </parameter>
+                                 </parameters>
+                        </object>
+                        </objects>
+                        </object>
 		
 		</objects>
 		</object>
