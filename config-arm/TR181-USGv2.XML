@@ -1647,18 +1647,10 @@
                             <name>RabidFramework</name>
                             <objectType>object</objectType>
                             <functions>
-                                <func_GetParamBoolValue>RabidFramework_GetParamBoolValue</func_GetParamBoolValue>
-                                <func_SetParamBoolValue>RabidFramework_SetParamBoolValue</func_SetParamBoolValue>
                                 <func_GetParamUlongValue>RabidFramework_GetParamUlongValue</func_GetParamUlongValue>
                                 <func_SetParamUlongValue>RabidFramework_SetParamUlongValue</func_SetParamUlongValue>
                             </functions>
                             <parameters>
-                              <parameter>
-                                <name>Enable</name>
-                                <type>boolean</type>
-                                <syntax>bool</syntax>
-                                <writable>true</writable>
-                              </parameter>
                               <parameter>
                                 <name>MemoryLimit</name>
                                 <type>unsignedInt</type>
