@@ -28,22 +28,10 @@
 
     X_RDKCENTRAL-COM_RabidFramework.
 
-    *  RabidFramework_GetParamBoolValue
-    *  RabidFramework_SetParamBoolValue
     *  RabidFramework_GetParamUlongValue
     *  RabidFramework_SetParamUlongValue
 
 ***********************************************************************/
-ANSC_STATUS
-CosaRabidInit
-    (
-        ANSC_HANDLE hThisObject
-    );
-ANSC_STATUS
-CosaRabidDeInit
-    (
-        ANSC_HANDLE hThisObject
-    );
 ANSC_STATUS
 CosaRabidSetMemoryLimit
     (
@@ -57,21 +45,6 @@ CosaRabidSetMacCacheSize
         ULONG       uValue
     );
 
-BOOL
-RabidFramework_GetParamBoolValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        BOOL*                       pBool
-    );
-
-BOOL
-RabidFramework_SetParamBoolValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        BOOL                        bValue
-    );
 BOOL
 RabidFramework_GetParamUlongValue
     (

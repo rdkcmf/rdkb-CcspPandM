@@ -112,41 +112,13 @@ enable_sysd_start()
     fi
 }
 
-advsec_rabid_setup()
-{
-    launch_device_finger_print "-disable"
-    device_fingerprint=`syscfg get Advsecurity_DeviceFingerPrint`
-    if [ "$1" = "-rabidOn" ] && [ "$device_fingerprint" != "1" ]
-    then
-        launch_device_finger_print "-enable"
-    else
-        if [ "$1" = "-rabidOn" ] || [ "$device_fingerprint" = "1" ]
-        then
-            touch $ADVSEC_INITIALIZING
-            #TODO: Fix this by removing firewall restart
-            sysevent set firewall-restart
-            sleep 20s
-            rm $ADVSEC_INITIALIZING
-            launch_device_finger_print "-enable"
-        fi
-    fi
-}
-
 if [ "$1" = "-start" ]
 then
     launch_device_finger_print "-enable"
 elif [ "$1" = "-enable" ] || [ "$1" = "-disable" ]
 then
-    rabid_flag=`syscfg get Advsecurity_RabidEnable`
-    if [ "$rabid_flag" != "1" ]; then
-        launch_device_finger_print $1
-    else
-        advsec_rabid_setup "-rabidOn"
-    fi
+    launch_device_finger_print $1
 elif [ "$1" = "-sysd" ]
 then
     enable_sysd_start
-elif [ "$1" = "-rabidOn" ] || [ "$1" = "-rabidOff" ]
-then
-    advsec_rabid_setup $1
 fi
