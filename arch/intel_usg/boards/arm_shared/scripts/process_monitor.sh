@@ -22,6 +22,7 @@ export LD_LIBRARY_PATH=$PWD:.:$PWD/../../lib:$PWD/../../.:/lib:/usr/lib:$LD_LIBR
 export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
 
 source /fss/gw/etc/utopia/service.d/log_env_var.sh
+source /lib/rdk/t2Shared_api.sh
 
 SUBSYSLOCATION="/fss/gw/usr/ccsp"
 rebootNeeded=0
@@ -207,6 +208,7 @@ do
 	LM_PID=`pidof CcspLMLite`
 	if [ "$LM_PID" = "" ]; then
 		echo_t "RDKB_PROCESS_CRASHED : LanManager_process is not running, restarting it"
+        	t2CountNotify "SYS_SH_LM_restart"
 		#cd lm/
 		/usr/bin/CcspLMLite &
 		cd ..
@@ -217,6 +219,7 @@ do
 	SNMP_PID=`pidof snmp_subagent`
 	if [ "$SNMP_PID" = "" ]; then
 		echo_t "RDKB_PROCESS_CRASHED : snmpsubagent_process is not running, restarting it"
+		t2CountNotify "SYS_INFO_snmpsubagent_restart"
 		cd snmp/
 		sh run_subagent.sh /var/tmp/cm_snmp_ma &
 		cd ..
@@ -233,6 +236,7 @@ do
 	DROPBEAR_PID=`pidof dropbear`
 	if [ "$DROPBEAR_PID" = "" ]; then
 		echo_t "RDKB_PROCESS_CRASHED : dropbear_process is not running, restarting it"
+        	t2CountNotify "SYS_SH_DhcpArp_restart"
 		sh /etc/utopia/service.d/service_sshd.sh sshd-restart &
 	fi
 
@@ -253,12 +257,14 @@ do
    		DHCP_SNOOPERD_PID=`pidof dhcp_snooperd`
    		if [ "$DHCP_SNOOPERD_PID" = "" ]; then
 			echo_t "RDKB_PROCESS_CRASHED : DhcpSnooper_process is not running, restarting it"
+			t2CountNotify "SYS_SH_DhcpSnooper_restart"
         		dhcp_snooperd -q $BASEQUEUE -n 2 -e 1  > /dev/null &
    		fi 
 		DHCP_ARP_PID=`pidof hotspot_arpd`
    		if [ "$DHCP_ARP_PID" = "" ]; then
 			echo_t "RDKB_PROCESS_CRASHED : DhcpArp_process is not running, restarting it"
-        		hotspot_arpd -q 0  > /dev/null &
+        		t2CountNotify "SYS_SH_DhcpArp_restart"
+			hotspot_arpd -q 0  > /dev/null &
    		fi
 	fi
 
@@ -277,6 +283,7 @@ do
 		echo_t "ENABLEWEBPA is $ENABLEWEBPA"
 		if [ "$ENABLEWEBPA" = "true" ];then
 		echo_t "RDKB_PROCESS_CRASHED : WebPA_process is not running, trying to restart it"
+		t2CountNotify "SYS_SH_WebPA_restart"
 		#We'll set the reason only if webpa reconnect is not due to DNS resolve
 		syscfg get X_RDKCENTRAL-COM_LastReconnectReason | grep "Dns_Res_webpa_reconnect"
 		if [ $? != 0 ]; then
@@ -341,6 +348,7 @@ do
 	dmcli eRT getv Device.WiFi.SSID.2.Status | grep Up
 	if [ $? == 1 ]; then
 		echo_t "[RKDB_PLATFORM_ERROR] : 5G private SSID (ath1) is off, resetting WiFi now"
+		t2CountNotify "WIFI_SH_5G_wifi_reset"
 		dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
 	fi
 
@@ -369,6 +377,7 @@ do
 						echo_t "rebootNeededPSM"
 							echo_t "Setting last reboot reason"
 						    dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason string Psm_crash
+						    t2CountNotify "SYS_ERROR_PSMCrash_reboot"
 						    echo_t "SET succeeded"	
 			                	sh /etc/calc_random_time_to_reboot_dev.sh "PSM" &
 
