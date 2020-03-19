@@ -421,6 +421,12 @@ void sig_handler(int sig)
     else if ( sig == SIGUSR1 ) {
     	signal(SIGUSR1, sig_handler); /* reset it to this function */
     	CcspTraceInfo(("SIGUSR1 received!\n"));
+	#ifndef DISABLE_LOGAGENT
+		RDKLogEnable = GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
+		RDKLogLevel = (char)GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_LogLevel");
+		PAM_RDKLogLevel = GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_PAM_LogLevel");
+		PAM_RDKLogEnable = (char)GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_PAM_LoggerEnable");
+		#endif	
     }
     else if ( sig == SIGUSR2 ) {
     	CcspTraceInfo(("SIGUSR2 received!\n"));
@@ -448,12 +454,7 @@ void sig_handler(int sig)
 
     	signal(SIGALRM, sig_handler); /* reset it to this function */
     	CcspTraceInfo(("SIGALRM received!\n"));
-		#ifndef DISABLE_LOGAGENT
-		RDKLogEnable = GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
-		RDKLogLevel = (char)GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_LogLevel");
-		PAM_RDKLogLevel = GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_PAM_LogLevel");
-		PAM_RDKLogEnable = (char)GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_PAM_LoggerEnable");
-		#endif
+		
 	}
     else {
     	/* get stack trace first */
@@ -645,6 +646,7 @@ if(id != 0)
     }
 #ifdef INCLUDE_BREAKPAD
     breakpad_ExceptionHandler();
+    signal(SIGUSR1, sig_handler);
 #endif
 #ifndef INCLUDE_BREAKPAD
 
