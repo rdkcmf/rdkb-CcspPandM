@@ -1960,6 +1960,16 @@ LanMngm_SetParamUlongValue
 
     if (AnscEqualString(ParamName, "LanMode", TRUE))
     {
+	//RDKB-27656 : Bridge Mode must not set to true using WEBPA & dmcli in ETHWAN mode
+        char buf[16] = {0};
+        if (syscfg_get(NULL, "eth_wan_enabled", buf, sizeof(buf)) == 0)
+        {
+            if ( (buf != NULL) && (strcmp(buf,"true") == 0 )  )
+            {
+		CcspTraceWarning(("Bridge Mode not supported in Ethernet WAN mode\n"));
+		return FALSE;
+            }
+        }
         if(CosaGetParamValueBool("Device.X_RDKCENTRAL-COM_VideoService.Enabled") && uValuepUlong != 3)
         {
             CcspTraceWarning(("LanMode setting to Bridge is not supported when VideoService is ENABLED\n"));
