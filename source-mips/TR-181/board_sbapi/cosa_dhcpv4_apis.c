@@ -469,7 +469,7 @@ int usg_get_cpe_associated_ssid(void *arg)
     while(1){
 reopen:
         /* CID: 135361 Insecure file permissions - missing mode arg with O_CREAT*/
-        fd = open(WIFI_CLIENTS_MAC_FILE, O_CREAT|O_WRONLY|O_TRUNC, 0666);
+        fd = open(WIFI_CLIENTS_MAC_FILE, O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR | S_IWUSR);
         if (-1 == fd){
             sleep(1);
             goto reopen;

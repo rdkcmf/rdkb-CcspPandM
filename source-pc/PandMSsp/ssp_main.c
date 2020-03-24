@@ -39,6 +39,9 @@
 #endif
 #endif
 
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "ssp_global.h"
 #include "stdlib.h"
 #include "ccsp_dm_api.h"
@@ -206,7 +209,7 @@ static void _print_stack_backtrace(void)
          */
         count = backtrace( tracePtrs, 100 );
 
-        fd = open(path, O_RDWR | O_CREAT);
+        fd = open(path, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
         if (fd < 0)
         {
             fprintf(stderr, "failed to open backtrace file: %s", path);
