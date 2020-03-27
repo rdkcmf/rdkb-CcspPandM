@@ -1675,7 +1675,8 @@ CosaDmlNatGetDmz
         if (strlen(pDmz->dest_ipv6)){
             AnscCopyString(pDmlDmz->IPv6Host, pDmz->dest_ipv6);
         }else{
-            AnscCopyString(pDmlDmz->IPv6Host, "0.0.0.0.0.0.0.0");
+            //CISCOXB3-5927 : ip6 table is not getting restored
+            memset(pDmlDmz->IPv6Host ,0 ,sizeof(pDmlDmz->IPv6Host));
         }
 
         //AnscFreeMemory(pInternalIPStr);
