@@ -694,9 +694,20 @@ void* RegenerateUla(void *arg)
 
     if ((strncmp(pIpv6_enable, "TRUE", 4 ) == 0) && (strncmp(pUla_enable, "TRUE", 4 ) == 0))
     {
-        if(ANSC_STATUS_SUCCESS == CosaDmlLanMngm_SetLanIpv6Ula(pUla_prefix, pUla))
+        //Check whether NULL or not
+        if( ( NULL != pUla_prefix ) && ( NULL != pUla ) )
         {
-	    sysevent_set(se_fd, token, "valid_ula_address", "true", 0);
+            char   acTmpULAPrefix[64] = { 0 },
+                   acTmpULA[64]       = { 0 };
+
+            //Copy PSM buffer to local buffer to avoid memory overwrite in calling function
+            snprintf( acTmpULAPrefix, sizeof(acTmpULAPrefix), "%s", pUla_prefix );
+            snprintf( acTmpULA, sizeof(acTmpULA), "%s", pUla );
+
+            if( ANSC_STATUS_SUCCESS == CosaDmlLanMngm_SetLanIpv6Ula( acTmpULAPrefix, acTmpULA ) )
+            {
+               sysevent_set( se_fd, token, "valid_ula_address", "true", 0 );
+            }
         }
     }
     else
