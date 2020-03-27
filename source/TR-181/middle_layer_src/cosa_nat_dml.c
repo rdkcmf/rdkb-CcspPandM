@@ -829,7 +829,8 @@ X_CISCO_COM_DMZ_SetParamBoolValue
         pDmz->bEnabled     = bValue;
         if (bValue == FALSE) {
             AnscCopyString(pDmz->InternalIP, "0.0.0.0");  /* keep sync between webui and snmp */
-            AnscCopyString(pDmz->IPv6Host, "0:0:0:0:0:0:0:0");
+            //CISCOXB3-5927 : ip6 table is not getting restored
+            memset(pDmz->IPv6Host ,0 ,sizeof(pDmz->IPv6Host));
         }
     #if CFG_USE_CCSP_SYSLOG
         /* Bad practice to use platform dependent and will be rectified -- CCSP_TRACE should be used */
