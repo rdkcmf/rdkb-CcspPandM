@@ -28,6 +28,7 @@ _COSA_DATAMODEL_RABID
 {
     ULONG                       uMemoryLimit;
     ULONG                       uMacCacheSize;
+    ULONG                       uDNSCacheSize;
     int         	iStatus;
     int             iState;
 }

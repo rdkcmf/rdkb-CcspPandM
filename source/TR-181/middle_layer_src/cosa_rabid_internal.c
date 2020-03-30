@@ -41,6 +41,7 @@ extern char g_Subsystem[32];
 
 static char *g_RabidMemoryLimit = "Advsecurity_RabidMemoryLimit";
 static char *g_RabidMacCacheSize = "Advsecurity_RabidMacCacheSize";
+static char *g_RabidDNSCacheSize = "Advsecurity_RabidDNSCacheSize";
 
 ANSC_STATUS CosaGetSysCfgUlong(char* setting, ULONG *value);
 ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value);
@@ -77,6 +78,11 @@ CosaRabidCreate
     retGet = CosaGetSysCfgUlong(g_RabidMacCacheSize, &uSyscfgValue);
     if( retGet == ANSC_STATUS_SUCCESS )
         pMyObject->uMacCacheSize = uSyscfgValue;
+
+    uSyscfgValue = 0;
+    retGet = CosaGetSysCfgUlong(g_RabidDNSCacheSize, &uSyscfgValue);
+    if( retGet == ANSC_STATUS_SUCCESS )
+        pMyObject->uDNSCacheSize = uSyscfgValue;
 
     return  (ANSC_HANDLE)pMyObject;
 }
@@ -119,6 +125,19 @@ ANSC_STATUS CosaRabidSetMacCacheSize(ANSC_HANDLE hThisObject, ULONG uValue)
     if ( returnStatus == ANSC_STATUS_SUCCESS )
     {
         pMyObject->uMacCacheSize = uValue;
+    }
+    return returnStatus;
+}
+
+ANSC_STATUS CosaRabidSetDNSCacheSize(ANSC_HANDLE hThisObject, ULONG uValue)
+{
+    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
+    PCOSA_DATAMODEL_RABID     pMyObject    = (PCOSA_DATAMODEL_RABID)hThisObject;
+
+    returnStatus = CosaSetSysCfgUlong(g_RabidDNSCacheSize, uValue);
+    if ( returnStatus == ANSC_STATUS_SUCCESS )
+    {
+        pMyObject->uDNSCacheSize = uValue;
     }
     return returnStatus;
 }
