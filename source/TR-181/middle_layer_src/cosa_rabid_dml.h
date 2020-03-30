@@ -44,6 +44,12 @@ CosaRabidSetMacCacheSize
         ANSC_HANDLE hThisObject,
         ULONG       uValue
     );
+ANSC_STATUS
+CosaRabidSetDNSCacheSize
+    (
+        ANSC_HANDLE hThisObject,
+        ULONG       uValue
+    );
 
 BOOL
 RabidFramework_GetParamUlongValue
