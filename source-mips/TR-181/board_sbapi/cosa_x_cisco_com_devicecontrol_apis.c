@@ -1664,7 +1664,6 @@ CosaDmlDcSetFactoryReset
 			}
 		}
 
-		system("touch /nvram/factory_reset");
 		if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", "1") != 0))
 		{
                         AnscTraceWarning(("syscfg_set failed\n"));
