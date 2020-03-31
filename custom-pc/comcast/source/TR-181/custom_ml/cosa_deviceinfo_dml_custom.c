@@ -71,7 +71,7 @@
 #include "dml_tr181_custom_cfg.h" 
 #include "cosa_deviceinfo_dml.h"
 #include "cosa_deviceinfo_apis_custom.h"
-
+#define SYSCFG_FILE  "/nvram/syscfg.db"
 //For PSM Access
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
@@ -157,16 +157,6 @@ DeviceInfo_GetParamBoolValue_Custom
     }
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIEnable", TRUE))
     {
-       *pBool = pMyObject->bCloudEnable;
-	char buf[5];
-        syscfg_get( NULL, "cloud_enable_flag", buf, sizeof(buf));
-    	if( buf != NULL )
-    		{
-    		    if (strcmp(buf,"1") == 0)
-    		        pMyObject->bCloudEnable = TRUE;
-    		    else
-    		        pMyObject->bCloudEnable = FALSE;
-    		}
 	*pBool = pMyObject->bCloudEnable;
 	return TRUE;
     }
@@ -407,32 +397,25 @@ DeviceInfo_SetParamBoolValue_Custom
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUICapable", TRUE))
     {
        // We should not allow SET of Capable flag.
-#if 0 
+
 	  if( bValue == TRUE) {
 
-             if (syscfg_set(NULL, "cloud_capable_flag", "1") != 0) {
+             if (_set_db_value(SYSCFG_FILE, "cloud_capable_flag", "1") != 0) {
                      AnscTraceWarning(("syscfg_set failed\n"));
              } else {
-
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
 		    pMyObject->bCloudCapable = bValue;
              }
 
          } else {
 
-             if (syscfg_set(NULL, "cloud_capable_flag", "0") != 0) {
+             if (_set_db_value(SYSCFG_FILE, "cloud_capable_flag", "0") != 0) {
                      AnscTraceWarning(("syscfg_set failed\n"));
              }  else {
 
-                 if (syscfg_commit() != 0) {
-                     AnscTraceWarning(("syscfg_commit failed\n"));
-                 }
 		  pMyObject->bCloudCapable = bValue;
              }
          }
-#endif
+
 	return TRUE;
 
 
@@ -446,26 +429,20 @@ DeviceInfo_SetParamBoolValue_Custom
 
           if( bValue == TRUE) {
 
-             if (syscfg_set(NULL, "cloud_enable_flag", "1") != 0) {
+             if (_set_db_value(SYSCFG_FILE, "cloud_enable_flag", "1") != 0) {
                      AnscTraceWarning(("syscfg_set failed\n"));
              } else {
 
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
 			pMyObject->bCloudEnable = bValue;
 			CcspTraceWarning(("CaptivePortal:Enabling CloudUIEnable to start redirection to Cloud URL ...\n"));
              }
 
          } else {
 
-             if (syscfg_set(NULL, "cloud_enable_flag", "0") != 0) {
+             if (_set_db_value(SYSCFG_FILE, "cloud_enable_flag", "0") != 0) {
                      AnscTraceWarning(("syscfg_set failed\n"));
              }  else {
 
-                 if (syscfg_commit() != 0) {
-                     AnscTraceWarning(("syscfg_commit failed\n"));
-                 }
 			pMyObject->bCloudEnable = bValue;
 			CcspTraceWarning(("CaptivePortal:Disabling CloudUIEnable to stop redirection to Cloud URL ...\n"));
              }
