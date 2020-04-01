@@ -66,6 +66,9 @@
 #endif
 
 extern void* g_pDslhDmlAgent;
+#if defined(_INTEL_BUG_FIXES_)
+extern ANSC_HANDLE bus_handle;
+#endif
 
 struct hs_client {
     char                mac[18];
@@ -399,6 +402,18 @@ CosaDml_HsSsidAssoDevGetEntryByIndex(ULONG ssidIns, ULONG idx, COSA_DML_HOTSPOT_
     struct hs_ssid *hsssid;
     struct hs_client *cli;
 
+#if defined(_INTEL_BUG_FIXES_)
+    char curInt[256] = {0};
+    int inst;
+    int size;
+    int rssi = 0;
+    char paramname[60];
+    char outdata[80];
+    parameterValStruct_t varStruct;
+    varStruct.parameterName = paramname;
+    varStruct.parameterValue = outdata;
+#endif
+
     if (load_hs_ssid() != 0) {
         AnscTraceError(("fail to loa hotspot ssid info\n"));
         return ANSC_STATUS_FAILURE;
@@ -416,12 +431,33 @@ CosaDml_HsSsidAssoDevGetEntryByIndex(ULONG ssidIns, ULONG idx, COSA_DML_HOTSPOT_
     }
     cli = &hsssid->clis[idx];
 
+#if defined(_INTEL_BUG_FIXES_)
+    strncpy(curInt,hsssid->path,sizeof(curInt));
+    //Trim off the trailing dot if it exists
+    size = strnlen(curInt,sizeof(curInt));
+    if (curInt[size - 1] == '.')
+        curInt[size - 1] = '\0';
+    inst = atoi(strrchr(curInt,'.')+1);
+
+    size = sizeof(outdata);
+    snprintf(paramname, sizeof(paramname), "Device.WiFi.AccessPoint.%d.AssociatedDevice.%d.SignalStrength", inst, idx+1);
+    if (ANSC_STATUS_SUCCESS == COSAGetParamValueByPathName(bus_handle, &varStruct, &size)) {
+        rssi = atoi(varStruct.parameterValue);
+    } else {
+        rssi = cli->rssi;
+    }
+#endif
+
     entry->InstanceNumber = idx + 1;
     entry->SsidIns = ssidIns;
     snprintf(entry->Alias, sizeof(entry->Alias), "cpe-HsAssoDev-%d", idx + 1);
     snprintf(entry->MACAddress, sizeof(entry->MACAddress), "%s", cli->mac);
     snprintf(entry->Hostname, sizeof(entry->Hostname), "%s", cli->hostname);
+#if defined(_INTEL_BUG_FIXES_)
+    entry->RSSILevel = rssi;
+#else
     entry->RSSILevel = cli->rssi;
+#endif
     snprintf(entry->IPv4Address, sizeof(entry->IPv4Address), "%s", cli->v4addr);
     snprintf(entry->DHCPv4Status, sizeof(entry->DHCPv4Status), "%s", cli->dh4_status);
     snprintf(entry->IPv6Address, sizeof(entry->IPv6Address), "%s", cli->v6addr);
