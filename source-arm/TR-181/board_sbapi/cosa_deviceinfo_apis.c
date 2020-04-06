@@ -4331,6 +4331,31 @@ CosaDmlSetnewNTPEnable(BOOL bValue)
 
 }
 
+ANSC_STATUS 
+CosaDmlScheduleAutoReboot(int ConfiguredUpTime, BOOL bValue)
+{
+    int RebootDay = 0;
+    if( bValue )
+    {
+        if((1 > ConfiguredUpTime || ConfiguredUpTime > 30))
+        {
+            ConfiguredUpTime = 10;
+        }    
+        int DeviceUptime = CosaDmlDiGetUpTime(NULL)/(3600*24);
+        CcspTraceInfo(("%s Device uptime in days %d \n",__FUNCTION__, DeviceUptime ));
+        if( DeviceUptime < ConfiguredUpTime )
+        {
+            RebootDay = ConfiguredUpTime - DeviceUptime;
+            CcspTraceInfo(("%s Scheduling reboot after %d days \n",__FUNCTION__, RebootDay ));
+        }  
+    }
+    char AutoRebootRequest[150];
+	snprintf(AutoRebootRequest,sizeof(AutoRebootRequest),"sh /etc/ScheduleAutoReboot.sh %d %d&",RebootDay,bValue);
+    CcspTraceInfo(("%s Scheduling cron %s \n",__FUNCTION__, AutoRebootRequest ));
+    system(AutoRebootRequest);
+    return ANSC_STATUS_SUCCESS;    
+}
+
 #if defined(_COSA_FOR_BCI_)
 #define XDNS_RESOLV_CONF "/etc/resolv.conf"
 #define XDNS_DNSMASQ_SERVERS_BAK "/nvram/dnsmasq_servers.bak"

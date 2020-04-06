@@ -1885,10 +1885,34 @@
                                 </parameter>
                                 </parameters>
                         </object>
-                    </objects>
-                </object>
-            </objects>
-        </object>
+                        <object>
+                                <name>AutoReboot</name>
+                                <objectType>object</objectType>
+                                <functions>
+                                        <func_GetParamBoolValue>AutoReboot_GetParamBoolValue</func_GetParamBoolValue>
+                                        <func_SetParamBoolValue>AutoReboot_SetParamBoolValue</func_SetParamBoolValue>
+                                        <func_GetParamIntValue>AutoReboot_GetParamIntValue</func_GetParamIntValue>
+                                        <func_SetParamIntValue>AutoReboot_SetParamIntValue</func_SetParamIntValue>
+                                </functions>
+                                <parameters>
+                                <parameter>
+                                        <name>Enable</name>
+                                        <type>boolean</type>
+                                        <syntax>bool</syntax>
+                                        <writable>true</writable>
+                                </parameter>
+                                   <parameter>
+                                        <name>UpTime</name>
+                                        <type>int[1:30]</type>
+                                        <syntax>int</syntax>
+                                        <writable>true</writable>
+                                </parameter>
+                                </parameters>
+                        </object>
+                </objects>
+		</object>
+		</objects>
+		</object>
         <object>
             <name>X_RDKCENTRAL-COM_EthernetWAN</name>
             <objectType>object</objectType>
