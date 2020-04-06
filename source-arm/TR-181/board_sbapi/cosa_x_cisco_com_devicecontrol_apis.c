@@ -2925,7 +2925,7 @@ CosaDmlDcSetReinitMacThreshold
 
 #else
     UNREFERENCED_PARAMETER(hContext);
-    char buf[5];
+    char buf[12];
     errno_t safec_rc = -1;
     safec_rc = sprintf_s(buf, sizeof(buf), "%lu",value);
     if(safec_rc < EOK)
@@ -2965,7 +2965,8 @@ CosaDmlDcGetReinitMacThreshold
         return ANSC_STATUS_SUCCESS;
 
 #else
-    char buf[5];
+    char buf[12];
+
     if( (syscfg_get( NULL, "rdkbReinitMacThreshold", buf, sizeof(buf))) == 0 )
     {
     	*pValue = atoi(buf);
