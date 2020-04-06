@@ -16670,3 +16670,225 @@ Generic_SetParamIntValue
 
     return TRUE;
 }
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+       AutoReboot_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+AutoReboot_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{  
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        CcspTraceInfo(("[%s :] AutoReboot Getparam Enable value\n",__FUNCTION__));
+        *pBool = pMyObject->AutoReboot.Enable;
+        return TRUE;
+    }
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        AutoReboot_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to set Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       bValue
+                The buffer with updated value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+AutoReboot_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{   
+    if (IsBoolSame(hInsContext, ParamName, bValue, AutoReboot_GetParamBoolValue))
+        return TRUE;
+     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        CcspTraceInfo(("[%s:] AutoReboot Set param Enable value %d\n", __FUNCTION__, bValue));
+        pMyObject->AutoReboot.Enable = bValue;
+        CosaDmlScheduleAutoReboot( pMyObject->AutoReboot.UpTime, bValue );
+        return TRUE;
+    }
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        AutoReboot_SetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int                         iValue
+            );
+
+    description:
+
+        This function is called to set Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int                         iValue
+                The buffer with updated value
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+AutoReboot_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         iValue
+    )
+{
+    /* check the parameter name and set the corresponding value */    
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    if( AnscEqualString(ParamName, "UpTime", TRUE))
+    {
+        CcspTraceInfo(("[%s:] AutoReboot Set uptime \n", __FUNCTION__ ));
+        if((1 > iValue || iValue > 30))
+        {
+            CcspTraceWarning(("The value is not in the expected range. keeping the previous value \n"));
+            return TRUE;
+        }
+        if(pMyObject->AutoReboot.Enable )
+        {
+            if( pMyObject->AutoReboot.UpTime != iValue)
+            {
+                CosaDmlScheduleAutoReboot( iValue, true );
+            }
+        }
+        pMyObject->AutoReboot.UpTime = iValue;
+    
+        return TRUE;
+    }
+   /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        AutoReboot_GetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int*                        iValue
+            );
+
+    description:
+
+        This function is called to set Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int*                       iValue
+                The buffer of returned int value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+AutoReboot_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        iValue
+    )
+{
+    /* check the parameter name and set the corresponding value */   
+    const int DEFAULT_UPTIME = 10;
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    if( AnscEqualString(ParamName, "UpTime", TRUE))
+    {
+        *iValue = pMyObject->AutoReboot.UpTime;
+        if( (1 > *iValue || *iValue > 30) )
+        {
+            *iValue  = DEFAULT_UPTIME;
+            pMyObject->AutoReboot.UpTime=DEFAULT_UPTIME;  
+        }
+        return TRUE;
+    }
+   /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
+

@@ -152,6 +152,14 @@ _COSA_BOOTSTRAP_BOOL
 COSA_BOOTSTRAP_BOOL;
 
 typedef  struct
+COSA_AUTO_REBOOT
+{
+    BOOL            Enable;
+    INT	            UpTime;
+}
+COSA_AUTO_REBOOT;
+
+typedef  struct
 _COSA_DATAMODEL_RDKB_FOOTER_CLASS_CONTENT
 {
 	COSA_BOOTSTRAP_STR 		PartnerLink;

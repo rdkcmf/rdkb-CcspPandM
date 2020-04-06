@@ -110,6 +110,7 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
     COSA_DATAMODEL_KICKSTART                    Kickstart;
     cJSON *pRfcDefaults;
     cJSON *pRfcStore;
+    COSA_AUTO_REBOOT                            AutoReboot;
 }
 COSA_DATAMODEL_DEVICEINFO, *PCOSA_DATAMODEL_DEVICEINFO;
 
