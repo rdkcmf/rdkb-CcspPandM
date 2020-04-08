@@ -51,7 +51,6 @@ typedef struct _notify_params
 
 void* connect_parodus();
 static void getDeviceMac();
-static void macToLower(char macValue[]);
 static void get_parodus_url(char **url);
 void initparodusTask();
 void Send_Notification_Task(char* delay, char* startTime, char* download_status, char* status, char *system_ready_time);
@@ -240,7 +239,7 @@ static void getDeviceMac()
 
 	if(CCSP_SUCCESS == check_ethernet_wan_status() && sysevent_get(fd, token, "eth_wan_mac", deviceMACValue, sizeof(deviceMACValue)) == 0 && deviceMACValue[0] != '\0')
 	{
-	        macToLower(deviceMACValue);
+                AnscMacToLower(deviceMAC, deviceMACValue, sizeof(deviceMAC));
 	        retryCount = 0;
 	}
 	else
@@ -274,7 +273,7 @@ static void getDeviceMac()
 		                CcspTraceDebug(("parameterval[%d]->parameterValue : %s\n",cnt,parameterval[cnt]->parameterValue));
 		                CcspTraceDebug(("parameterval[%d]->type :%d\n",cnt,parameterval[cnt]->type));
 	                    }
-	                    macToLower(parameterval[0]->parameterValue);
+                            AnscMacToLower(deviceMAC, parameterval[0]->parameterValue, sizeof(deviceMAC));
                             retryCount = 0;
                         }
 	                else
@@ -307,33 +306,6 @@ static void getDeviceMac()
                         sleep(10);
 		}
         }
-    }
-}
-
-static void macToLower(char macValue[])
-{
-    int i = 0;
-    int j;
-    char *token[32]={'\0'};
-    char tmp[32]={'\0'};
-    strncpy(tmp, macValue,sizeof(tmp)-1);
-    token[i] = strtok(tmp, ":");
-    if(token[i]!=NULL)
-    {
-        strncpy(deviceMAC, token[i],sizeof(deviceMAC)-1);
-        deviceMAC[31]='\0';
-        i++;
-    }
-    while ((token[i] = strtok(NULL, ":")) != NULL) 
-    {
-        strncat(deviceMAC, token[i],sizeof(deviceMAC)-1);
-        deviceMAC[31]='\0';
-        i++;
-    }
-    deviceMAC[31]='\0';
-    for(j = 0; deviceMAC[j]; j++)
-    {
-        deviceMAC[j] = tolower(deviceMAC[j]);
     }
 }
 
