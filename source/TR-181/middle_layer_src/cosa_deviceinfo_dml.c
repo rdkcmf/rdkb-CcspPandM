@@ -9474,7 +9474,7 @@ BOOL*                       pBool
     if( AnscEqualString(ParamName, "Enable", TRUE) )
     {
         FILE *file = NULL;  
-        if((file = fopen("/nvram/rbus","r"))!=NULL)
+        if((file = fopen("/nvram/rbus_support","r"))!=NULL)
         {
             fclose(file);
             *pBool = TRUE;
@@ -9594,9 +9594,9 @@ ULONG*                      pUlSize
 {
         if( AnscEqualString(ParamName, "Status", TRUE) )
         {
-            FILE *file1 = fopen("/nvram/rbus","r");
-            FILE *file2 = fopen("/nvram/rbus_on_pending","r");
-            FILE *file3 = fopen("/nvram/rbus_off_pending","r");
+            FILE *file1 = fopen("/nvram/rbus_support","r");
+            FILE *file2 = fopen("/nvram/rbus_support_on_pending","r");
+            FILE *file3 = fopen("/nvram/rbus_support_off_pending","r");
             CcspTraceError((" Entered GET Block \n" ));
             if(((file1)!=NULL) && ((file2)!=NULL))
             {
