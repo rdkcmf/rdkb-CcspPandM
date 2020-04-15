@@ -37,6 +37,9 @@
 #include "cosa_advsec_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "sysevent/sysevent.h"
+#include "utapi/utapi.h"
+#include "utapi/utapi_util.h"
 
 #define ADV_PC_FILE_PATH "/tmp/adv_pc_rfc_disabled"
 
@@ -93,43 +96,56 @@ CosaAdvPCRemove
     return returnStatus;
 }
 
-ANSC_STATUS CosaAdvPCInit(ANSC_HANDLE hThisObject)
+ANSC_STATUS
+CosaAdvPCInit
+    (
+             ANSC_HANDLE                 hThisObject
+    )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_ADVPC     pMyObject    = (PCOSA_DATAMODEL_ADVPC)hThisObject;
-    char cmd[128];
-
-    memset(cmd, 0, sizeof(cmd));
-
-    if ( returnStatus == ANSC_STATUS_SUCCESS )
+    token_t  se_token;
+    int se_fd = -1;
+    remove (ADV_PC_FILE_PATH);
+    se_fd = s_sysevent_connect(&se_token);
+    if (0 > se_fd)
     {
-        remove(ADV_PC_FILE_PATH);
-        AnscCopyString(cmd, "sysevent set adv_parental_control 1");
-        system(cmd);
-        pMyObject->bEnable = TRUE;
+        CcspTraceWarning (("%s: Unable to register with sysevent daemon.", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
     }
-    return returnStatus;
+    if (sysevent_set (se_fd, se_token, "adv_parental_control", "1", 0))
+    {
+        CcspTraceWarning (("%s: sysevent_set failure.", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+    pMyObject->bEnable = TRUE;
+    return ANSC_STATUS_SUCCESS;
 }
 
-ANSC_STATUS CosaAdvPCDeInit(ANSC_HANDLE hThisObject)
+ANSC_STATUS
+CosaAdvPCDeInit
+    (
+             ANSC_HANDLE                 hThisObject
+    )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_ADVPC     pMyObject    = (PCOSA_DATAMODEL_ADVPC)hThisObject;
-    char cmd[128];
-    FILE                           *fd;
-
-    memset(cmd, 0, sizeof(cmd));
-
-    if ( returnStatus == ANSC_STATUS_SUCCESS )
+    token_t  se_token;
+    int se_fd = -1;
+    FILE                           *fd = NULL;
+    if ((fd = fopen (ADV_PC_FILE_PATH, "w+")) != NULL)
     {
-        if ((fd = fopen (ADV_PC_FILE_PATH, "w+")) != NULL)
-        {
-            fclose(fd);
-        }
-        AnscCopyString(cmd, "sysevent set adv_parental_control 0");
-        system(cmd);
-        pMyObject->bEnable = FALSE;
+        fclose (fd);
     }
-    return returnStatus;
+    se_fd = s_sysevent_connect(&se_token);
+    if (0 > se_fd)
+    {
+        CcspTraceWarning (("%s: Unable to register with sysevent daemon.", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+    if (sysevent_set (se_fd, se_token, "adv_parental_control", "0", 0))
+    {
+        CcspTraceWarning (("%s: sysevent_set failure.", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+    pMyObject->bEnable = FALSE;
+    return ANSC_STATUS_SUCCESS;
 }
-
