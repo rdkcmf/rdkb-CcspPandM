@@ -162,7 +162,7 @@ if [ "$1" != "rfcp" ]
                   fi
     done
                   echo_t "Revert Redirect : SMS Execution complete.."
-                 `dmcli eRT setv Device.DeviceInfo.X_COMCAST-COM_EMS_MobileNumber string 0000000000`
+                  dmcli eRT setv Device.DeviceInfo.X_COMCAST-COM_EMS_MobileNumber string 0000000000
     else
         echo_t "Revert Redirect : SMS option is not opted for.."
             echo_t "Mobile number:$Mobile_Number"
