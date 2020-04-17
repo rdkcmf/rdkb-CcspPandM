@@ -25,8 +25,6 @@ fi
 
 BINPATH="/usr/bin"
 
-source /lib/rdk/t2Shared_api.sh
-
 SELFHEAL_ENABLE=`syscfg get selfheal_enable`
 if [ "$SELFHEAL_ENABLE" == "false" ]
 then
@@ -68,7 +66,6 @@ then
 			SNMP_PID=`pidof snmp_subagent`
 			if [ "$SNMP_PID" == "" ]; then
 				echo_t "RDKB_PROCESS_CRASHED : snmpsubagent_process is not running, restarting it"
-				t2CountNotify "SYS_INFO_snmpsubagent_restart"
 				cd snmp/
 				sh run_subagent.sh $CCSP_SNMP_AGENT_COM &
 				cd ..
@@ -85,7 +82,6 @@ then
 			DROPBEAR_PID=`pidof dropbear`
 			if [ "$DROPBEAR_PID" == "" ]; then
 				echo_t "RDKB_PROCESS_CRASHED : dropbear_process is not running, restarting it"
-        			t2CountNotify "SYS_SH_DhcpArp_restart"
 				sh /etc/utopia/service.d/service_sshd.sh sshd-restart &
 			fi
 
@@ -103,7 +99,6 @@ then
 				echo_t "ENABLEWEBPA is $ENABLEWEBPA"
 				if [ "$ENABLEWEBPA" == "true" ];then
 				echo_t "RDKB_PROCESS_CRASHED : WebPA_process is not running, trying to restart it"
-				t2CountNotify "SYS_SH_WebPA_restart"
 				#We'll set the reason only if webpa reconnect is not due to DNS resolve
 				syscfg get X_RDKCENTRAL-COM_LastReconnectReason | grep "Dns_Res_webpa_reconnect"
 				if [ $? != 0 ]; then
@@ -172,7 +167,6 @@ then
 			dmcli eRT getv Device.WiFi.SSID.2.Status | grep Up
 			if [ $? == 1 ]; then
 				echo_t "[RKDB_PLATFORM_ERROR] : 5G private SSID (ath1) is off, resetting WiFi now"
-				t2CountNotify "WIFI_SH_5G_wifi_reset"
 				dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
 			fi
 
