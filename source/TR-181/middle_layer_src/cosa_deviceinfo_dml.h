@@ -1793,7 +1793,7 @@ APIs for Object:
 
 BOOL
 BlockLostandFoundInternet_GetParamBoolValue
-    (
+  (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
         BOOL*                       pBool
@@ -1805,6 +1805,51 @@ BlockLostandFoundInternet_SetParamBoolValue
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
         BOOL                        bValue
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CredDwnld.Enable
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CredDwnld.Use
+
+    *  CredDwnld_GetParamBoolValue
+    *  CredDwnld_SetParamBoolValue
+    *  CredDwnld_GetParamStringValue
+    *  CredDwnld_SetParamStringValue
+***********************************************************************/
+BOOL
+CredDwnld_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+CredDwnld_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+ULONG
+CredDwnld_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+BOOL
+CredDwnld_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
     );
 
 #endif
