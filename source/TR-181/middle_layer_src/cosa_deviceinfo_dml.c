@@ -67,6 +67,7 @@
 **************************************************************************/
 
 #include <string.h>
+#include <stdlib.h>
 #include "cosa_deviceinfo_dml.h"
 #include "dml_tr181_custom_cfg.h"
 #include "cimplog.h"
@@ -118,6 +119,24 @@ static BOOL g_clearDB = false;
       return FALSE;                                                                                                                                \
    }                                                                                                                                               \
 })
+
+#define DEVICE_PROPS_FILE  "/etc/device.properties"
+#define SYSTEMCTL_CMD "systemctl start lxydnld.service &"
+// CredDwnld_Use String is restricted to true/false
+#define MAX_USE_LEN 8
+// Box type will be XB3
+#define BOX_TYPE_LEN 5
+// ATOM IP length
+#define IP_LEN 20
+
+#if defined(_COSA_INTEL_XB3_ARM_)
+#if defined(_LXY_CXB3_ATOM_IP_)
+#define ATOM_IP "169.254.101.2"
+#elif defined(_LXY_AXB3_ATOM_IP_)
+#define ATOM_IP "192.168.254.254"
+#endif
+static const char *atomIp = ATOM_IP;
+#endif
 
 #if defined(_PLATFORM_RASPBERRYPI_)
 int sock;
@@ -11406,6 +11425,281 @@ MaintenanceWindow_SetParamStringValue
 
     return bReturnValue;
 }
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        CredDwnld_SetParamBoolValue
+            (
+                 ANSC_HANDLE                 hInsContext,
+                 char*                       ParamName,
+                 BOOL                        bValue
+            )
+
+        description:
+
+                This function is called to retrieve Boolean parameter value;
+
+        argument:
+                ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+        return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+CredDwnld_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        char buf[8];
+        memset(buf, 0, sizeof(buf));
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+        if(syscfg_set(NULL, "CredDwnld_Enable", buf) != 0 )
+        {
+            CcspTraceError(("syscfg_set failed\n"));
+            return FALSE;
+        }
+        else
+        {
+            if(syscfg_commit() != 0)
+            {
+                CcspTraceWarning(("syscfg_commit failed\n"));
+                return FALSE;
+            }
+        }
+
+#if defined(_COSA_INTEL_XB3_ARM_)
+        // To address muliple processor platforms
+        char rpcCmd[128];
+        snprintf(rpcCmd,sizeof(rpcCmd),"/usr/bin/rpcclient %s \"" SYSTEMCTL_CMD "\" &", atomIp );
+        system(rpcCmd);
+        return TRUE;
+#endif
+        system( SYSTEMCTL_CMD );
+        return TRUE;
+    }
+
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        CredDwnld_GetParamBoolValue
+            (
+                 ANSC_HANDLE                 hInsContext,
+                 char*                       ParamName,
+                 BOOL*                       pBool
+            )
+
+        description:
+
+                This function is called to retrieve Boolean parameter value;
+
+        argument:
+                ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+        return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+CredDwnld_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8]={0};
+        /* collect value */
+        if(syscfg_get(NULL, "CredDwnld_Enable", buf, sizeof(buf)) != 0 )
+        {
+            CcspTraceError(("syscfg_get failed\n"));
+            return FALSE;
+        }
+        else
+        {
+            if (strncmp(buf,"true",sizeof(buf)) == 0)
+            {
+                *pBool = TRUE;
+            }
+            else
+            {
+                *pBool = FALSE;
+            }
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        CredDwnld_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pulSize
+            );
+
+    description:
+
+        This function is called to retrieve string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue
+                The buffer of returned string value;
+
+                ULONG*                      pulSize
+                The buffer of returned string size;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+ULONG
+CredDwnld_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pulSize
+    )
+{
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "Use", TRUE))
+    {
+        char buf[MAX_USE_LEN];
+        memset(buf, 0, sizeof(buf));
+
+        /* collect value */
+        if( syscfg_get( NULL, "CredDwnld_Use", buf, sizeof(buf)) != 0)
+        {
+             CcspTraceError(("syscfg_get failed\n"));
+             return FALSE;
+        }
+        else
+        {
+            AnscCopyString(pValue, buf);
+            *pulSize = AnscSizeOfString(pValue);
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        CredDwnld_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+CredDwnld_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "Use", TRUE))
+    {
+        if (syscfg_set(NULL, "CredDwnld_Use", pString) != 0)
+        {
+            CcspTraceError(("syscfg_set failed\n"));
+            return FALSE;
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                CcspTraceError(("syscfg_commit failed\n"));
+                return FALSE;
+            }
+
+#if defined(_COSA_INTEL_XB3_ARM_)
+            // To address muliple processor platforms
+            char rpcCmd[128];
+            snprintf(rpcCmd,sizeof(rpcCmd),"/usr/bin/rpcclient %s \"" SYSTEMCTL_CMD "\" &", atomIp );
+            system(rpcCmd);
+            return TRUE;
+#endif
+            system( SYSTEMCTL_CMD );
+            return TRUE;
+        }
+    }
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+
+/***********************************************************************/
 
 /***********************************************************************
 

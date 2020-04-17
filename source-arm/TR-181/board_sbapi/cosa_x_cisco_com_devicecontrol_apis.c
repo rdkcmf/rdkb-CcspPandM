@@ -163,6 +163,7 @@ int fwSync = 0;
 #define HTTPD_CONF      "/var/lighttpd.conf"
 #define HTTPD_DEF_CONF  "/etc/lighttpd.conf"
 #define HTTPD_PID       "/var/run/lighttpd.pid"
+#define RM_L2_PATH "rm -rf /nvram/dl"
 
 static void configBridgeMode(int bEnable);
 static int curticket   = 1; /*The thread should be run with the ticket*/
@@ -1723,6 +1724,23 @@ void restoreAllDBs()
             }
         }
     }
+#endif
+
+        // Need to remove lxy database
+#if defined(_LXY_CXB3_ATOM_IP_)
+        #define ATOM_IP "169.254.101.2"
+        system("/usr/bin/rpcclient "ATOM_IP" \""RM_L2_PATH"\"");
+#endif
+#if defined(_LXY_AXB3_ATOM_IP_)
+        #define ATOM_IP "192.168.254.254"
+        system("/usr/bin/rpcclient "ATOM_IP" \""RM_L2_PATH"\"");
+#endif
+#if defined(_ARRIS_XB6_PRODUCT_REQ_)
+        #define PEER_INTERFACE_IP "192.168.254.253"
+        #define ID "/tmp/elxrretyt-lxy.swr"
+        system("/usr/bin/GetConfigFile "ID"");
+        system("ssh -i "ID" root@"PEER_INTERFACE_IP" "RM_L2_PATH"");
+        system("rm -f "ID"");
 #endif
 
 #if defined (_CBR_PRODUCT_REQ_) || (defined (_XB7_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_))
