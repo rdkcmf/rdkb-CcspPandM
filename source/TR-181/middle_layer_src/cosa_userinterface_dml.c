@@ -67,6 +67,7 @@
 **************************************************************************/
 
 #include "cosa_userinterface_dml.h"
+#include "ansc_string_util.h"
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -893,14 +894,20 @@ RemoteAccess_SetParamUlongValue
 
     if( AnscEqualString(ParamName, "StartIp", TRUE))
     {
-        pMyObject->RaCfg.StartIp.Value = uValue;
-        return TRUE;
+        if(uValue < pMyObject->RaCfg.EndIp.Value)
+        {
+            pMyObject->RaCfg.StartIp.Value = uValue;
+            return TRUE;
+        }
     }
 
     if( AnscEqualString(ParamName, "EndIp", TRUE))
     {
-        pMyObject->RaCfg.EndIp.Value = uValue;
-        return TRUE;
+        if(uValue > pMyObject->RaCfg.StartIp.Value)
+        {
+            pMyObject->RaCfg.EndIp.Value = uValue;
+            return TRUE;
+        }
     }
 
     if( AnscEqualString(ParamName, "HttpPort", TRUE))
@@ -960,6 +967,7 @@ RemoteAccess_SetParamUlongValue
     return:     TRUE if succeeded.
 
 **********************************************************************/
+
 BOOL
 RemoteAccess_SetParamStringValue
     (
@@ -970,18 +978,28 @@ RemoteAccess_SetParamStringValue
 {
     /* check the parameter name and set the corresponding value */
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
+    
+    /* check if pString doesn't hold null or whitespaces */
+    if(AnscValidStringCheck(pString) != TRUE)
+        return FALSE;
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     if( AnscEqualString(ParamName, "StartIpV6", TRUE))
     {
-        AnscCopyString(pMyObject->RaCfg.StartIpV6, pString);
-        return TRUE;
+        if(is_Ipv6_address(pString))
+        {
+            AnscCopyString(pMyObject->RaCfg.StartIpV6, pString);
+            return TRUE;
+        }
     }
 
     if( AnscEqualString(ParamName, "EndIpV6", TRUE))
     {
-        AnscCopyString(pMyObject->RaCfg.EndIpV6, pString);
-        return TRUE;
+        if(is_Ipv6_address(pString))
+        {
+            AnscCopyString(pMyObject->RaCfg.EndIpV6, pString);
+            return TRUE;
+        }
     }
 
     return FALSE;

@@ -36,6 +36,8 @@
 #include "cosa_x_comcast_com_parentalcontrol_dml.h"
 #include "dml_tr181_custom_cfg.h"
 #include "ccsp_trace.h"
+#include "ansc_string_util.h"
+
 
 BOOL
 ParentalControl_GetParamBoolValue
@@ -620,6 +622,67 @@ PcBlkURL_SetParamUlongValue(
     return FALSE;
 }
 
+BOOL ValidateTime(int hh , int mm)
+{
+    if((hh<0) || (hh>23))
+        return FALSE;
+    if((mm!=00) && (mm!=15) && (mm!=30) && (mm!=45))
+        return FALSE;
+    return TRUE;
+}
+
+BOOL is_valid_day(char *str)
+{
+    char *day[7]={"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
+    int i;
+    for(i=0;i<7;++i) 
+    {
+        if (!strcmp(str, day[i]))
+            return TRUE;
+    }
+        return FALSE;
+}
+
+BOOL is_url(char *buff)
+{
+    int i=0;
+    char *token=NULL;
+    char *delim=".";
+    char *str=NULL;
+    int len=_ansc_strlen(buff);
+    int count=0;
+
+    while(buff[i] != '\0')
+    {
+        //Allowing only integers, alphabets(lower and upper) and certain special characters
+        if(((buff[i] >= '-') && (buff[i] <= ':')) || ((buff[i]>='A') && (buff[i]<='Z')) || ((buff[i]>='a') && (buff[i]<='z')) || (buff[i]=='#') || (buff[i]=='@') || (buff[i]=='~'))
+            i++;
+        else
+            return FALSE;
+    }    
+    if((strncasecmp(buff,"http://",_ansc_strlen("http://"))!=0) && (strncasecmp(buff,"https://",_ansc_strlen("https://"))!=0))
+        return FALSE;
+
+    if(buff[len-1] == '.')
+        return FALSE;
+
+    str=(char*)malloc(sizeof(char)*len);
+    strcpy(str,buff);
+    token=strtok(str,delim);
+    while(token!=NULL)
+    {
+        count++;
+        token=strtok(NULL,delim);
+    }
+    if(count<2)
+    {
+        AnscFreeMemory(str);
+        return FALSE;
+    }
+    AnscFreeMemory(str);
+return TRUE;
+}
+
 BOOL
 PcBlkURL_SetParamStringValue
     (
@@ -631,7 +694,19 @@ PcBlkURL_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_BLOCKEDURL             *pBlkUrl    = (COSA_DML_BLOCKEDURL*)pLinkObj->hContext;
     BOOL                            pBridgeMode     = FALSE;
-
+    
+    #define BUFF_SIZE 2048
+    int i=0,HH=0,MM=0;
+    char dump;
+    char *delimiter=",";
+    char *token;
+    char *blockdays=NULL;
+    int len=0;
+    
+    /* check if strValue doesn't hold null or whitespaces */
+    if(AnscValidStringCheck(strValue) != TRUE)
+        return FALSE;
+        
     AnscTraceWarning(("%s -- param name = %s...\n", __FUNCTION__, ParamName));
 
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&pBridgeMode)) && (pBridgeMode == TRUE))
@@ -639,23 +714,62 @@ PcBlkURL_SetParamStringValue
 
     if (AnscEqualString(ParamName, "Site", TRUE))
     {
-        _ansc_snprintf(pBlkUrl->Site, sizeof(pBlkUrl->Site), "%s", strValue);
-        return TRUE;
+        len=_ansc_strlen(strValue);
+        if(len > BUFF_SIZE)
+            return FALSE;
+        if(is_url(strValue))
+        {
+            _ansc_snprintf(pBlkUrl->Site, sizeof(pBlkUrl->Site), "%s", strValue);
+            return TRUE;
+        }
     }
     if (AnscEqualString(ParamName, "StartTime", TRUE))
     {
-        _ansc_snprintf(pBlkUrl->StartTime, sizeof(pBlkUrl->StartTime), "%s", strValue);
-        pBlkUrl->StartTimeFlg = TRUE;
-        return TRUE;
+        if(_ansc_sscanf(strValue, "%d:%d %c", &HH,&MM,&dump)==2)
+        {
+            if(ValidateTime(HH,MM))
+            {
+                _ansc_snprintf(pBlkUrl->StartTime, sizeof(pBlkUrl->StartTime), "%s", strValue);
+                pBlkUrl->StartTimeFlg = TRUE;
+                return TRUE;
+            }
+        }
     }
     if (AnscEqualString(ParamName, "EndTime", TRUE))
     {
-        _ansc_snprintf(pBlkUrl->EndTime, sizeof(pBlkUrl->EndTime), "%s", strValue);
-        pBlkUrl->EndTimeFlg = TRUE;
-        return TRUE;
+        if(_ansc_sscanf(strValue, "%d:%d %c", &HH,&MM,&dump)==2)
+        {
+            if(((MM==59) && (HH<=23)) || (ValidateTime(HH,MM)))
+            {
+                _ansc_snprintf(pBlkUrl->EndTime, sizeof(pBlkUrl->EndTime), "%s", strValue);
+                pBlkUrl->EndTimeFlg = TRUE;
+                return TRUE;
+            }
+        }
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
+        blockdays=(char *) malloc(sizeof(char)*(_ansc_strlen(strValue)+1));
+        if(blockdays != NULL)
+        {
+            strcpy(blockdays, strValue);
+        }
+        token = strtok(blockdays, delimiter);
+        if(!token)
+        {
+            AnscFreeMemory(blockdays);
+            return FALSE;
+        }
+        while(token)
+        {
+            if(!is_valid_day(token))
+            {
+                AnscFreeMemory(blockdays);
+                return FALSE;
+            }
+            token = strtok(NULL, delimiter);
+        }
+        AnscFreeMemory(blockdays);
         _ansc_snprintf(pBlkUrl->BlockDays, sizeof(pBlkUrl->BlockDays), "%s", strValue);
         return TRUE;
     }
@@ -925,6 +1039,10 @@ PcTrustedUser_SetParamStringValue
     COSA_DML_TRUSTEDUSER             *pTrustedUser    = (COSA_DML_TRUSTEDUSER*)pLinkObj->hContext;
     BOOL                            pBridgeMode     = FALSE;
 
+    /* check if strValue doesn't hold null or  whitespaces */
+    if(AnscValidStringCheck(strValue) != TRUE)
+        return FALSE;
+        
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&pBridgeMode)) && (pBridgeMode == TRUE))
         return FALSE;
 
@@ -935,8 +1053,11 @@ PcTrustedUser_SetParamStringValue
     }
     if (AnscEqualString(ParamName, "IPAddress", TRUE))
     {
-        _ansc_snprintf(pTrustedUser->IPAddress, sizeof(pTrustedUser->IPAddress), "%s", strValue);
-        return TRUE;
+        if(is_IpAddress(strValue))
+        {
+            _ansc_snprintf(pTrustedUser->IPAddress, sizeof(pTrustedUser->IPAddress), "%s", strValue);
+            return TRUE;
+        }
     }
 
     return FALSE;
@@ -1262,26 +1383,84 @@ MSServ_SetParamStringValue
     COSA_DML_MS_SERV             *pMSServ    = (COSA_DML_MS_SERV*)pLinkObj->hContext;
     BOOL                            pBridgeMode     = FALSE;
 
+    int HH=0,MM=0;
+    char dump;
+    char *delimiter=",";
+    char *token;
+    char *blockdays=NULL;
+    int i=0;
+    
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&pBridgeMode)) && (pBridgeMode == TRUE))
         return FALSE;
 
     if (AnscEqualString(ParamName, "Description", TRUE))
     {
+        /* check if description doesn't hold certain spl charaters */
+        if((strValue == NULL) || (*strValue=='\0'))
+        {
+            return FALSE;
+        }
+        while(strValue[i] != '\0')
+        {
+            if ((strValue[i] == '<') || (strValue[i] == '>') || (strValue[i] == '&') || (strValue[i] == '\'') || (strValue[i] == '\"') || (strValue[i] == '|'))
+            {
+                return FALSE;
+            }
+            i++;
+        }
         _ansc_snprintf(pMSServ->Description, sizeof(pMSServ->Description), "%s", strValue);
         return TRUE;
     }
+
+    /* check if strValue doesn't hold null or whitespaces */
+    if(AnscValidStringCheck(strValue) != TRUE)
+        return FALSE;
+
     if (AnscEqualString(ParamName, "StartTime", TRUE))
     {
-        _ansc_snprintf(pMSServ->StartTime, sizeof(pMSServ->StartTime), "%s", strValue);
-        return TRUE;
+        if(_ansc_sscanf(strValue, "%d:%d %c", &HH,&MM,&dump)==2)
+        {
+            if(ValidateTime(HH,MM))
+            {
+                _ansc_snprintf(pMSServ->StartTime, sizeof(pMSServ->StartTime), "%s", strValue);
+                return TRUE;
+            }
+        }
     }
     if (AnscEqualString(ParamName, "EndTime", TRUE))
     {
-        _ansc_snprintf(pMSServ->EndTime, sizeof(pMSServ->EndTime), "%s", strValue);
-        return TRUE;
+        if(_ansc_sscanf(strValue, "%d:%d %c", &HH,&MM,&dump)==2)
+        {
+            if(((MM==59) && (HH<=23)) || (ValidateTime(HH,MM)))
+            {
+                _ansc_snprintf(pMSServ->EndTime, sizeof(pMSServ->EndTime), "%s", strValue);
+                return TRUE;
+            }
+        }
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
+        blockdays=(char *) malloc(sizeof(char)*(_ansc_strlen(strValue)+1));
+        if(blockdays != NULL)
+        {
+            strcpy(blockdays, strValue);
+        }
+        token = strtok(blockdays, delimiter);
+        if(!token)
+        {
+            AnscFreeMemory(blockdays);
+            return FALSE;
+        }
+        while(token)
+        {
+            if(!is_valid_day(token))
+            {
+                AnscFreeMemory(blockdays);
+                return FALSE;
+            }
+            token = strtok(NULL, delimiter);
+        }
+        AnscFreeMemory(blockdays);
         _ansc_snprintf(pMSServ->BlockDays, sizeof(pMSServ->BlockDays), "%s", strValue);
         return TRUE;
     }
@@ -1300,6 +1479,9 @@ MSServ_SetParamUlongValue(
     COSA_DML_MS_SERV             *pMSServ    = (COSA_DML_MS_SERV*)pLinkObj->hContext;
     BOOL                            pBridgeMode     = FALSE;
 
+    #define MAX_PORT 65535
+    #define MIN_PORT 1
+    
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&pBridgeMode)) && (pBridgeMode == TRUE))
         return FALSE;
 
@@ -1310,13 +1492,19 @@ MSServ_SetParamUlongValue(
     }
     if (AnscEqualString(ParamName, "StartPort", TRUE))
     {
-        pMSServ->StartPort = ulValue;
-        return TRUE;
+        if((ulValue >= MIN_PORT) && (ulValue <= MAX_PORT))
+        {
+            pMSServ->StartPort = ulValue;
+            return TRUE;
+        }
     }
     if (AnscEqualString(ParamName, "EndPort", TRUE))
     {
-        pMSServ->EndPort = ulValue;
-        return TRUE;
+        if((ulValue >= pMSServ->StartPort) && (ulValue <= MAX_PORT))
+        {
+            pMSServ->EndPort = ulValue;
+            return TRUE;
+        }
     }
 
     return FALSE;
@@ -1583,6 +1771,10 @@ MSTrustedUser_SetParamStringValue
 
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&pBridgeMode)) && (pBridgeMode == TRUE))
         return FALSE;
+    
+    /* check if strValue doesn't hold null or whitespaces */
+    if(AnscValidStringCheck(strValue) != TRUE)
+        return FALSE;
 
     if (AnscEqualString(ParamName, "HostDescription", TRUE))
     {
@@ -1591,10 +1783,12 @@ MSTrustedUser_SetParamStringValue
     }
     if (AnscEqualString(ParamName, "IPAddress", TRUE))
     {
-        _ansc_snprintf(pMSTrustedUser->IPAddress, sizeof(pMSTrustedUser->IPAddress), "%s", strValue);
-        return TRUE;
+        if(is_IpAddress(strValue))
+        {
+            _ansc_snprintf(pMSTrustedUser->IPAddress, sizeof(pMSTrustedUser->IPAddress), "%s", strValue);
+            return TRUE;
+        }
     }
-
     return FALSE;
 }
 
@@ -1901,33 +2095,104 @@ MDDev_SetParamStringValue
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&pBridgeMode)) && (pBridgeMode == TRUE))
         return FALSE;
 
+    UINT MacAddress[6] = {0};
+    int HH=0,MM=0;
+    char dump;
+    char *delimiter=",";
+    char *token;
+    char *blockdays=NULL;
+    int i=0;
+
     if (AnscEqualString(ParamName, "Description", TRUE))
     {
+        /* check if description doesn't hold certain spl charaters */
+        if((strValue == NULL) || (*strValue=='\0'))
+        {
+            return FALSE;
+        }
+        while(strValue[i] != '\0')
+        {
+            if ((strValue[i] == '<') || (strValue[i] == '>') || (strValue[i] == '&') || (strValue[i] == '\'') || (strValue[i] == '\"') || (strValue[i] == '|'))
+            {
+                return FALSE;
+            }
+            i++;
+        }
         _ansc_snprintf(pMDDev->Description, sizeof(pMDDev->Description), "%s", strValue);
         return TRUE;
     }
+
+     /* check if strValue doesn't hold null or whitespaces */
+    if(AnscValidStringCheck(strValue) != TRUE)
+        return FALSE;
+
     if (AnscEqualString(ParamName, "MACAddress", TRUE))
     {
-        _ansc_snprintf(pMDDev->MACAddress, sizeof(pMDDev->MACAddress), "%s", strValue);
-        return TRUE;
+        if((_ansc_strlen(strValue)) != 17)
+            return FALSE;
+        if(_ansc_sscanf(strValue, "%02X:%02X:%02X:%02X:%02X:%02X%c"
+                , &MacAddress[0]
+                , &MacAddress[1]
+                , &MacAddress[2]
+                , &MacAddress[3]
+                , &MacAddress[4]
+                , &MacAddress[5]
+                , &dump)==6)
+        {
+            _ansc_snprintf(pMDDev->MACAddress, sizeof(pMDDev->MACAddress), "%s", strValue);
+            return TRUE;
+        }
     }
     if (AnscEqualString(ParamName, "StartTime", TRUE))
     {
-        _ansc_snprintf(pMDDev->StartTime, sizeof(pMDDev->StartTime), "%s", strValue);
-        return TRUE;
+        if(_ansc_sscanf(strValue, "%d:%d %c", &HH,&MM,&dump)==2)
+        {  
+            if(ValidateTime(HH,MM))
+            {
+                _ansc_snprintf(pMDDev->StartTime, sizeof(pMDDev->StartTime), "%s", strValue);
+                return TRUE;
+            }
+        }
     }
     if (AnscEqualString(ParamName, "EndTime", TRUE))
     {
-        _ansc_snprintf(pMDDev->EndTime, sizeof(pMDDev->EndTime), "%s", strValue);
-        return TRUE;
+        if(_ansc_sscanf(strValue, "%d:%d %c", &HH,&MM,&dump)==2)
+        {
+            if(((MM==59) && (HH<=23)) || (ValidateTime(HH,MM)))
+            {
+                _ansc_snprintf(pMDDev->EndTime, sizeof(pMDDev->EndTime), "%s", strValue);
+                return TRUE;
+            }
+        }
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
+        blockdays=(char *) malloc(sizeof(char)*(_ansc_strlen(strValue)+1));
+        if(blockdays != NULL)
+        {
+            strcpy(blockdays, strValue);
+        }
+        token = strtok(blockdays, delimiter);
+        if(!token)
+        {
+            AnscFreeMemory(blockdays);
+            return FALSE;
+        }
+        while(token)
+        {
+            if(!is_valid_day(token))
+            {
+                AnscFreeMemory(blockdays);
+                return FALSE;
+            }
+            token = strtok(NULL, delimiter);
+        }
+        AnscFreeMemory(blockdays);
         _ansc_snprintf(pMDDev->BlockDays, sizeof(pMDDev->BlockDays), "%s", strValue);
         return TRUE;
     }
 
-    return FALSE;
+    return FALSE;    
 }
 
 BOOL
