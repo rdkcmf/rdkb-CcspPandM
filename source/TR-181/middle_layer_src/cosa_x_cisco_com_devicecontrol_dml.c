@@ -1114,7 +1114,9 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
 {
     PCOSA_DATAMODEL_DEVICECONTROL      pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     ANSC_STATUS                        retStatus = ANSC_STATUS_SUCCESS;
-
+    #define START_HTTPPORT 1025
+    #define END_HTTPPORT 65535
+    
     /* check the parameter name and set the corresponding value */
 
     CcspTraceWarning(("--------X_CISCO_COM_DeviceControl_SetParamUlongValue...\n"));
@@ -1259,10 +1261,12 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
             CcspTraceWarning(("Port already in use\n"));
             return FALSE;
         }
-        pMyObject->HTTPPort = uValue;
-        pMyObject->WebServerChanged = TRUE;
-
-        return TRUE;
+        if((uValue < pMyObject->HTTPSPort) && (uValue >= START_HTTPPORT) && (uValue <= END_HTTPPORT))
+        {
+            pMyObject->HTTPPort = uValue;
+            pMyObject->WebServerChanged = TRUE;
+            return TRUE;
+        }
     }
 
     if (AnscEqualString(ParamName, "HTTPSPort", TRUE))
@@ -1272,10 +1276,12 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
             CcspTraceWarning(("Port already in use\n"));
             return FALSE;
         }
-        pMyObject->HTTPSPort = uValue;
-        pMyObject->WebServerChanged = TRUE;
-
-        return TRUE;
+        if((uValue > pMyObject->HTTPPort) && (uValue <= END_HTTPPORT))
+        {
+            pMyObject->HTTPSPort = uValue;
+            pMyObject->WebServerChanged = TRUE;
+            return TRUE;
+        }
     }
 
     if (AnscEqualString(ParamName, "ReinitMacThreshold", TRUE))

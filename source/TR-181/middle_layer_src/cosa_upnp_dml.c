@@ -278,9 +278,7 @@ Device_GetParamUlongValue
     {
         /* collect value */
         CosaDmlUpnpDevGetAdvPeriod(NULL, &pMyObject->AdvertisementPeriod);
-        
         *puLong = pMyObject->AdvertisementPeriod;
-
         return TRUE;
     }
 
@@ -288,9 +286,7 @@ Device_GetParamUlongValue
     {
         /* collect value */
         CosaDmlUpnpDevGetTTL(NULL, &pMyObject->TTL);
-        
         *puLong = pMyObject->TTL;
-
         return TRUE;
     }
 
@@ -499,24 +495,34 @@ Device_SetParamUlongValue
     )
 {
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
+    #define MIN 1
+    #define TTL_MAX 99
+    #define AD_MAX 59940
+    #define SEC 60    //seconds conversion
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "X_CISCO_COM_IGD_AdvertisementPeriod", TRUE) )
     {
-        /* save update to backup */
-        pMyObject->AdvertisementPeriod = uValue;
-        CosaDmlUpnpDevSetAdvPeriod(NULL, pMyObject->AdvertisementPeriod);
-        
-        return TRUE;
+        if(uValue == 0)
+            return FALSE;
+        if(((uValue%SEC)==0) && (uValue<=AD_MAX))
+        {
+            /* save update to backup */
+            pMyObject->AdvertisementPeriod = uValue;
+            CosaDmlUpnpDevSetAdvPeriod(NULL, pMyObject->AdvertisementPeriod);
+            return TRUE;
+        }
     }
 
     if( AnscEqualString(ParamName, "X_CISCO_COM_IGD_TTL", TRUE) )
     {
-        /* save update to backup */
-        pMyObject->TTL = uValue;
-        CosaDmlUpnpDevSetTTL(NULL, pMyObject->TTL);
-        
-        return TRUE;
+        if((uValue >= MIN) && (uValue <= TTL_MAX))
+        {
+            /* save update to backup */
+            pMyObject->TTL = uValue;
+            CosaDmlUpnpDevSetTTL(NULL, pMyObject->TTL);
+            return TRUE;
+        }
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */

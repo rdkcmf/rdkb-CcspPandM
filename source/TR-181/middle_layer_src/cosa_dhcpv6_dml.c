@@ -70,7 +70,14 @@
 #include "plugin_main_apis.h"
 #include "cosa_dhcpv6_apis.h"
 #include "cosa_dhcpv6_internal.h"
+#include "ansc_string_util.h"
 
+#define MIN 60
+#define HOURS 3600
+#define DAYS 86400
+#define WEEKS 604800
+#define MINSECS 120
+#define MAXSECS 999
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -5154,10 +5161,25 @@ Pool1_SetParamIntValue
 
     if( AnscEqualString(ParamName, "LeaseTime", TRUE) )
     {
-        /* save update to backup */
-        pPool->Cfg.LeaseTime= iValue;
-
-        return TRUE;
+        /*  enter only valid values 
+            UNITS
+            seconds=iValue;(min-120 max-999)
+            minutes=iValue/60;
+            hours=iValue/3600;
+            days=iValue/86400;
+            weeks=iValue/604800;
+            forever=-1;
+        */
+        if((iValue%WEEKS==0)  ||
+            (iValue%DAYS==0)  ||
+            (iValue%HOURS==0) || 
+            (iValue%MIN==0)   ||
+            ((iValue>=MINSECS)&& (iValue<=999)) || 
+            (iValue==-1)){
+                /* save update to backup */
+                pPool->Cfg.LeaseTime= iValue;
+                return TRUE;
+	}
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5281,6 +5303,14 @@ Pool1_SetParamStringValue
     PCOSA_DML_DHCPSV6_POOL_FULL       pPool2            = NULL;
     BOOL                              bFound            = FALSE;
 
+    int a[4]={0};
+    char dump;
+    int ret=0;
+
+    /* check if pString doesn't hold null or whitespaces */
+    if(AnscValidStringCheck(pString) != TRUE)
+        return FALSE;
+
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
@@ -5373,20 +5403,38 @@ Pool1_SetParamStringValue
     
     if( AnscEqualString(ParamName, "PrefixRangeBegin", TRUE) )
     {
-        /* save update to backup */
-        AnscCopyString(pPool->Cfg.PrefixRangeBegin, pString);
-
-        return TRUE;
+        ret=strncmp(pString, pPool->Cfg.PrefixRangeEnd,_ansc_strlen(pString));
+        if(ret>0)
+            return FALSE;
+        if( sscanf(pString, "%x:%x:%x:%x %c", &a[0], &a[1], &a[2], &a[3], &dump) == 4
+            && a[0] <= 0xFFFF
+            && a[1] <= 0xFFFF
+            && a[2] <= 0xFFFF
+            && a[3] <= 0xFFFF )
+            {
+                /* save update to backup */
+                AnscCopyString(pPool->Cfg.PrefixRangeBegin, pString);
+                return TRUE;
+            }
     }
     
     if( AnscEqualString(ParamName, "PrefixRangeEnd", TRUE) )
     {
-        /* save update to backup */
-        AnscCopyString(pPool->Cfg.PrefixRangeEnd, pString);
-
-        return TRUE;
+        ret=strncmp(pPool->Cfg.PrefixRangeBegin, pString, _ansc_strlen(pPool->Cfg.PrefixRangeBegin));
+        if(ret>0)
+            return FALSE;
+        if( sscanf(pString, "%x:%x:%x:%x %c", &a[0], &a[1], &a[2], &a[3], &dump) == 4
+            && a[0] <= 0xFFFF
+            && a[1] <= 0xFFFF
+            && a[2] <= 0xFFFF
+            && a[3] <= 0xFFFF )
+            {
+                /* save update to backup */
+                AnscCopyString(pPool->Cfg.PrefixRangeEnd, pString);
+                return TRUE;
+            }
     }
-    
+        
     if( AnscEqualString(ParamName, "X_CISCO_StartAddress", TRUE) )
     {
         /* save update to backup */
