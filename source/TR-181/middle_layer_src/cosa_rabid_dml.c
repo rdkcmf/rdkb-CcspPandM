@@ -27,8 +27,6 @@
 #define MAX_RABID_MACCACHE_SIZE 32768
 #define MAX_RABID_DNSCACHE_SIZE 32768
 
-static char *g_RabidEnable = "Advsecurity_RabidEnable";
-
 /***********************************************************************
 
  APIs for Object:
