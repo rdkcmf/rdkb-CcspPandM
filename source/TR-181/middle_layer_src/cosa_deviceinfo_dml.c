@@ -16359,6 +16359,139 @@ Telemetry_SetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* p
 
     prototype:
         BOOL
+        MocaAccountIsolation_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            )
+
+
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+MocaAccountIsolation_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+	/*RDKB-28819 : TR-181 implementation
+	DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MocaAccountIsolation.Enable*/
+	if( AnscEqualString(ParamName, "Enable", TRUE))
+	{
+		char value[8];
+		syscfg_get(NULL,"enableMocaAccountIsolation",value, sizeof(value));
+		if( value != NULL )
+		{
+			if (strcmp(value, "true") == 0)
+			*pBool = TRUE;
+			else
+			*pBool = FALSE;
+		}
+                else
+                *pBool = FALSE;
+                
+		return TRUE;
+	}
+  CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+  return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        MocaAccountIsolation_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            )
+
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+MocaAccountIsolation_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+
+	/*RDKB-28819 : TR-181 implementation
+	DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MocaAccountIsolation.Enable*/
+	if( AnscEqualString(ParamName, "Enable", TRUE))
+	{
+		if ( bValue == TRUE )
+		{
+			syscfg_set(NULL, "enableMocaAccountIsolation", "true");
+                        CcspTraceWarning(("DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MocaAccountIsolation.Enable set to true\n"));
+		}
+		else
+		{
+			syscfg_set(NULL, "enableMocaAccountIsolation", "false");
+                        CcspTraceWarning(("DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MocaAccountIsolation.Enable set to false\n"));
+		}
+
+		if ( syscfg_commit() != 0 )
+		{
+			AnscTraceWarning(("syscfg_commit enableMocaAccountIsolation failed\n"));
+                        return FALSE;
+		}
+                else
+                system("sysevent set firewall-restart");
+                
+		return TRUE;
+	}
+  CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+  return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
         CaptivePortalForNoCableRF_GetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,
