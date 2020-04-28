@@ -1799,6 +1799,10 @@ void resetWiFi()
 	system("echo 2 >/nvram/qtn_wifi_reset_indicator");
 #endif
 
+#if defined (_INTEL_WAV_)
+	system("touch /nvram/wifi_reset_indicator");
+#endif
+
 	ret = CcspBaseIf_setParameterValues
 		(
 			bus_handle, 
@@ -2031,8 +2035,7 @@ CosaDmlDcSetFactoryReset
 
 #if defined (INTEL_PUMA7)
 	CcspTraceWarning (("***** New API call to MOCA FactoryReset: Restoring MOCA to factory defaults  ...\n")); //ARRISXB6-7326
-	moca_SetEnableDefault();
-	moca_UpdateNvramEnabledData();
+	moca_factoryReset();
 #endif
 	pthread_t other;
         pthread_create(&other, NULL, &restoreAllDBs, NULL);
