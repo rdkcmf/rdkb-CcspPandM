@@ -1831,6 +1831,21 @@ Firewall1_SetParamUlongValue
         }
         pCosaDMSecurity->FirewallConfig.FirewallLevel = uValue;
 
+	/*RDKB-28857 : Restore firewall settings does not restore check boxes in custom security */
+	if( pCosaDMSecurity->FirewallConfig.FirewallLevel == COSA_DML_FIREWALL_LEVEL_Low )
+	{
+		/*block_http*/
+		pCosaDMSecurity->FirewallConfig.FilterHTTP = false;
+		pCosaDMSecurity->FirewallConfig.FilterHTTPs = false;
+		/*block_icmp*/
+		pCosaDMSecurity->FirewallConfig.FilterAnonymousInternetRequests = false;
+		/*block_multicast*/
+		pCosaDMSecurity->FirewallConfig.FilterMulticast = false;
+		/*block_peer*/
+		pCosaDMSecurity->FirewallConfig.FilterP2P = false;
+		/*block_ident*/
+		pCosaDMSecurity->FirewallConfig.FilterIdent = false;
+	}
         return TRUE;
     }
 
@@ -1840,6 +1855,21 @@ Firewall1_SetParamUlongValue
         /* save update to backup */
         pCosaDMSecurity->FirewallConfig.FirewallLevelV6 = uValue;
 
+	/*RDKB-28857 : Restore firewall settings does not restore check boxes in custom security */
+	if( pCosaDMSecurity->FirewallConfig.FirewallLevelV6 == COSA_DML_FIREWALL_LEVEL_High )
+	{
+		/*block_http*/
+		pCosaDMSecurity->FirewallConfig.FilterHTTPV6 = false;
+		pCosaDMSecurity->FirewallConfig.FilterHTTPsV6 = false;
+		/*block_icmp*/
+		pCosaDMSecurity->FirewallConfig.FilterAnonymousInternetRequestsV6 = false;
+		/*block_multicast*/
+		pCosaDMSecurity->FirewallConfig.FilterMulticastV6 = false;
+		/*block_peer*/
+		pCosaDMSecurity->FirewallConfig.FilterP2PV6 = false;
+		/*block_ident*/
+		pCosaDMSecurity->FirewallConfig.FilterIdentV6 = false;
+	}
         return TRUE;
     }
 
