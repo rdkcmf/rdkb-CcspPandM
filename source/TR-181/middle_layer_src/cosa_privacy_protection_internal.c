@@ -37,7 +37,9 @@
 #include "cosa_advsec_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "sysevent/sysevent.h"
+#include "utapi/utapi.h"
+#include "utapi/utapi_util.h"
 #define PRIV_PROT_FILE_PATH "/tmp/adv_priv_prot_rfc_disabled"
 
 extern ANSC_HANDLE bus_handle;
@@ -102,7 +104,7 @@ CosaPrivacyProtectionRemove
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_PRIVACYPROTECTION            pMyObject    = (PCOSA_DATAMODEL_PRIVACYPROTECTION)hThisObject;
+    PCOSA_DATAMODEL_PRIVACYPROTECTION   pMyObject = (PCOSA_DATAMODEL_PRIVACYPROTECTION)hThisObject;
 
     /* Remove self */
     AnscFreeMemory((ANSC_HANDLE)pMyObject);
@@ -111,48 +113,70 @@ CosaPrivacyProtectionRemove
     return returnStatus;
 }
 
-ANSC_STATUS CosaPrivacyProtectionInit(ANSC_HANDLE hThisObject)
+ANSC_STATUS
+CosaPrivacyProtectionInit
+    (
+             ANSC_HANDLE                 hThisObject
+    )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_PRIVACYPROTECTION     pMyObject    = (PCOSA_DATAMODEL_PRIVACYPROTECTION)hThisObject;
-    char cmd[128];
-
-    memset(cmd, 0, sizeof(cmd));
-
-    returnStatus = CosaSetSysCfgUlong(g_PrivacyProtectionEnabled, 1);
-    if ( returnStatus == ANSC_STATUS_SUCCESS )
+    PCOSA_DATAMODEL_PRIVACYPROTECTION   pMyObject = (PCOSA_DATAMODEL_PRIVACYPROTECTION)hThisObject;
+    token_t  se_token;
+    int se_fd = -1;
+    if (CosaSetSysCfgUlong (g_PrivacyProtectionEnabled, 1))
     {
-        remove(PRIV_PROT_FILE_PATH);
-        AnscCopyString(cmd, "sysevent set privacy_protection 1");
-        system(cmd);
-        pMyObject->bEnable = TRUE;
-        CcspTraceWarning(("AdTrackerBlockingRFCEnable:TRUE\n"));
+        CcspTraceWarning (("%s: syscfg_set failure.", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
     }
-    return returnStatus;
+    remove (PRIV_PROT_FILE_PATH);
+    se_fd = s_sysevent_connect(&se_token);
+    if (0 > se_fd)
+    {
+        CcspTraceWarning (("%s: Unable to register with sysevent daemon.", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+    if (sysevent_set (se_fd, se_token, "privacy_protection", "1", 0))
+    {
+        CcspTraceWarning (("%s: sysevent_set failure.", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+    pMyObject->bEnable = TRUE;
+    CcspTraceWarning (("AdTrackerBlockingRFCEnable:TRUE\n"));
+    return ANSC_STATUS_SUCCESS;
 }
 
-ANSC_STATUS CosaPrivacyProtectionDeInit(ANSC_HANDLE hThisObject)
+ANSC_STATUS
+CosaPrivacyProtectionDeInit
+    (
+             ANSC_HANDLE                 hThisObject
+    )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_PRIVACYPROTECTION     pMyObject    = (PCOSA_DATAMODEL_PRIVACYPROTECTION)hThisObject;
-    char cmd[128];
-    FILE                           *fd;
-
-    memset(cmd, 0, sizeof(cmd));
-
-    returnStatus = CosaSetSysCfgUlong(g_PrivacyProtectionEnabled, 0);
-    if ( returnStatus == ANSC_STATUS_SUCCESS )
+    PCOSA_DATAMODEL_PRIVACYPROTECTION   pMyObject = (PCOSA_DATAMODEL_PRIVACYPROTECTION)hThisObject;
+    FILE                           *fd = NULL;
+    token_t  se_token;
+    int se_fd = -1;
+    if (CosaSetSysCfgUlong (g_PrivacyProtectionEnabled, 0))
     {
-        if ((fd = fopen (PRIV_PROT_FILE_PATH, "w+")) != NULL)
-        {
-            fclose(fd);
-        }
-
-        AnscCopyString(cmd, "sysevent set privacy_protection 0");
-        system(cmd);
-        pMyObject->bEnable = FALSE;
-        CcspTraceWarning(("AdTrackerBlockingRFCEnable:FALSE\n"));
+        CcspTraceWarning (("%s: syscfg_set failure.", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
     }
-    return returnStatus;
+    if ((fd = fopen (PRIV_PROT_FILE_PATH, "w+")) != NULL)
+    {
+        fclose (fd);
+    }
+    se_fd = s_sysevent_connect(&se_token);
+    if (0 > se_fd)
+    {
+        CcspTraceWarning (("%s: Unable to register with sysevent daemon.", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+    if (sysevent_set (se_fd, se_token, "privacy_protection", "0", 0))
+    {
+        CcspTraceWarning (("%s: sysevent_set failure.", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+    pMyObject->bEnable = FALSE;
+    CcspTraceWarning (("AdTrackerBlockingRFCEnable:FALSE\n"));
+    return ANSC_STATUS_SUCCESS;
 }
+
 
