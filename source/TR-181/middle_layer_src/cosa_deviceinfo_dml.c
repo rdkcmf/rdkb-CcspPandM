@@ -97,6 +97,7 @@ extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 extern void* g_pDslhDmlAgent;
 static BOOL g_clearDB = false;
+static int getValueFromDevicePropsFile(char *str, char **value);
 
 #define MAX_ALLOWABLE_STRING_LEN  256
 
@@ -16734,10 +16735,16 @@ NonRootSupport_SetParamBoolValue
  BOOL                        bValue
  )
 {
+  char buf[8] = {0};
+  char *boxType = NULL, *atomIp = NULL;
   if( AnscEqualString(ParamName, "Enable", TRUE))
   {
+     if(bValue)
+        strcpy(buf,"true");
+     else
+        strcpy(buf,"false");
      /* collect value */
-     if (syscfg_set(NULL, "NonRootSupport", (bValue==FALSE)?"false":"true") != 0) {
+     if (syscfg_set(NULL, "NonRootSupport", buf) != 0) {
           AnscTraceWarning(("syscfg_set failed\n"));
           return FALSE;
      }
@@ -16747,6 +16754,19 @@ NonRootSupport_SetParamBoolValue
               AnscTraceWarning(("syscfg_commit failed\n"));
               return FALSE;
           }
+          if(getValueFromDevicePropsFile("BOX_TYPE", &boxType) == 0)
+          {
+             if(strcmp(boxType, "XB3") == 0)
+             {
+                if(getValueFromDevicePropsFile("ATOM_ARPING_IP", &atomIp) == 0)
+                {
+                   char rpcCmd[128];
+                   sprintf(rpcCmd, "rpcclient %s \"syscfg set NonRootSupport \'%s\'; syscfg commit\"", atomIp, buf);
+                   system(rpcCmd);
+                }
+             }
+          }
+
           return TRUE;
      }
   }
@@ -17311,5 +17331,38 @@ AutoReboot_GetParamIntValue
     }
    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+}
+
+static int getValueFromDevicePropsFile(char *str, char **value)
+{
+    FILE *fp = fopen(DEVICE_PROPS_FILE, "r");
+    char         buf[ 1024 ] = { 0 };
+    char *tempStr = NULL;
+    if( NULL != fp )
+    {
+        while ( fgets( buf, sizeof( buf ), fp ) != NULL )
+        {
+            if ( strstr( buf, str ) != NULL )
+            {
+                buf[strcspn( buf, "\r\n" )] = 0; // Strip off any carriage returns
+                tempStr = strstr( buf, "=" );
+                tempStr++;
+                *value = tempStr;
+                fclose(fp);
+                return 0;
+            }
+        }
+        fclose(fp);
+        if( NULL == *value)
+        {
+            CcspTraceError(("%s is not present in device.properties file\n",str));
+            return -1;
+        }
+    }
+    else
+    {
+        CcspTraceError(("Failed to open file:%s\n", DEVICE_PROPS_FILE));
+        return -1;
+    }
 }
 
