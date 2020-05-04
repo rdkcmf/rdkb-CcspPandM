@@ -68,6 +68,8 @@
 #include "cosa_apis.h"
 #include "dslh_cpeco_interface.h"
 
+#include "cosa_webconfig_api.h"
+
 // include files needed by diagnostic
 /*
 #include "dslh_definitions_diagnostics.h"
