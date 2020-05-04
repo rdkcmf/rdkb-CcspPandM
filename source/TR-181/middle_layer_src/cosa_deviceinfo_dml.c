@@ -16913,8 +16913,136 @@ mTlsLogUpload_SetParamBoolValue
     return FALSE;
 }        
         
+/**
+ *  RFC Feature XHFW
+*/
+/**********************************************************************
 
- /**
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        XHFW_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+XHFW_GetParamBoolValue ( ANSC_HANDLE hInsContext, char* ParamName, BOOL* pBool)
+{
+#if defined(_XB6_PRODUCT_REQ_) || defined(_XB7_PRODUCT_REQ_)
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char value[8] = {'\0'};
+        if( syscfg_get(NULL, "XHFW_Enable", value, sizeof(value)) == 0 )
+        {
+            if( value != NULL )
+            {
+                 *pBool = (strcmp(value, "true") == 0) ? TRUE : FALSE;
+            }
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceError(("syscfg_get failed for XHFW.Enable\n"));
+        }
+    }
+#endif
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        XHFW_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+XHFW_SetParamBoolValue (ANSC_HANDLE hInsContext, char* ParamName, BOOL bValue)
+{
+    BOOL result = FALSE;
+
+#if defined(_XB6_PRODUCT_REQ_) || defined(_XB7_PRODUCT_REQ_)
+    if (AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8] = { '\0' };
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+        if (syscfg_set(NULL, "XHFW_Enable", buf) != 0)
+        {
+            CcspTraceError(("syscfg_set failed for XHFW.Enable\n"));
+        }
+        else
+        {
+            if (syscfg_commit( ) == 0)
+            {
+                result = TRUE;
+            }
+            else
+            {
+                CcspTraceError(("syscfg_commit failed for XHFW.Enable\n"));
+            }
+        }
+
+        if (bValue)
+        {
+            system("systemctl start zilker");
+        }
+        else
+        {
+            system("systemctl stop zilker");
+        }
+    }
+#endif
+
+    return result;
+}
+
+/**
  *  RFC Features NonRootSupport
 */
 /**********************************************************************
