@@ -73,7 +73,7 @@
 #include "plugin_main_apis.h"
 #include "poam_irepfo_interface.h"
 #include "sys_definitions.h"
-
+#include "cosa_webconfig_api.h"
 extern void * g_pDslhDmlAgent;
 
 /**********************************************************************
@@ -290,6 +290,13 @@ CosaNatInitialize
             was created. Moreover, we also need get delay-added entry and put them
             into our tree. */
     CosaNatRegGetNatInfo((ANSC_HANDLE)pMyObject);
+
+    /* Intialixing cache first time */
+
+    clear_pf_cache(pf_cache);
+    clear_pf_cache(pf_cache_bkup);
+
+    init_pf_cache(pf_cache);
 
 EXIT:
 

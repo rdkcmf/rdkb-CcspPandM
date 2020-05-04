@@ -37,7 +37,7 @@ endif
 
 lib_LTLIBRARIES=libtr181.la
 libtr181_la_SOURCES=
-libtr181_la_LDFLAGS= -lsecure_wrapper 
+libtr181_la_LDFLAGS= -lsecure_wrapper -lwebconfig_framework
 if CCSP_ARCH_ARM
 EXTRA_DEPENDENCIES= \
 	source-arm/TR-181/board_ml/libCcspPandM_board_ml.la \

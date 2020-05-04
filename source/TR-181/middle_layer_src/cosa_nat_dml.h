@@ -65,6 +65,11 @@
 #ifndef  _COSA_NAT_DML_H
 #define  _COSA_NAT_DML_H
 
+
+
+#include "webconfig_framework.h"
+#include "cosa_webconfig_api.h"
+
 /***********************************************************************
 
  APIs for Object:
@@ -497,4 +502,6 @@ NatPortTrigger_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+
+
 #endif

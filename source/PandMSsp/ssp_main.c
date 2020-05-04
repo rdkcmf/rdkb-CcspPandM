@@ -65,9 +65,14 @@
 #define PORT 8081
 #endif
 
+#include "webconfig_framework.h"
+
 #define DEBUG_INI_NAME  "/etc/debug.ini"
 #define PAM_CRASH_TIMEOUT 300  //seconds
 #define PAM_INIT_FILE "/tmp/pam_initialized"
+
+//  Existing pam_initialized is removed from systemd/selfheal . Created this file to determine if component is coming after crashed to sync values from server.
+#define PAM_INIT_FILE_BOOTUP "/tmp/pam_initialized_bootup"
 
 PDSLH_CPE_CONTROLLER_OBJECT     pDslhCpeController      = NULL;
 PCOMPONENT_COMMON_DM            g_pComponent_Common_Dm  = NULL;
@@ -93,6 +98,7 @@ void get_uptime(long *uptime)
 #ifdef _ANSC_LINUX
     sem_t *sem;
 #endif
+
 
 int  cmd_dispatch(int  command)
 {
@@ -492,6 +498,7 @@ static int is_core_dump_opened(void)
 extern int sock = 0;
 #endif
 
+
 int main(int argc, char* argv[])
 {
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
@@ -694,8 +701,12 @@ if(id != 0)
         exit(1);
     }
 
+    check_component_crash(PAM_INIT_FILE_BOOTUP);
+
     CcspTraceInfo(("PAM_DBG:----------------------touch /tmp/pam_initialized-------------------\n"));
-    system("touch /tmp/pam_initialized");
+    char init_files[128] = {0};
+    snprintf(init_files,sizeof(init_files),"touch %s ; touch %s",PAM_INIT_FILE ,PAM_INIT_FILE_BOOTUP);
+    system(init_files);
 #if !defined(_COSA_INTEL_XB3_ARM_)
     char buf[64] = {'\0'};
     if(syscfg_get( NULL, "EnableTR69Binary", buf, sizeof(buf))==0)

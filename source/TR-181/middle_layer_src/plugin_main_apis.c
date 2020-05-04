@@ -402,6 +402,13 @@ if(id != 0)
     EvtDispterHandleEventAsync();
 #endif
 
+    AnscTraceWarning(("  Initializing WebConfig Framework!\n"));
+ 
+    webConfigFrameworkInit();
+    
+    AnscTraceWarning(("  Initializing WebConfig Framework done!\n"));
+
+
     printf("PandM DM initialization done!\n");
     CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PandM DM initialization done!\n"));
     //Unknown Reboot Reason 
