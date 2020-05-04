@@ -769,38 +769,11 @@ if(id != 0)
 
         if (urlPtr != NULL && urlPtr[0] != 0 && strlen(urlPtr) > 0) {
             CcspTraceInfo(("Reported an ATOM IP of %s \n", urlPtr));
-            CcspTraceInfo(("PAM_DBG:-----------------main calls fork-----------------\n"));
-            pid_t pid = fork();
-
-            if (pid == -1)
-            {
-                // error, failed to fork()
-                CcspTraceInfo(("PAM_DBG:------------------- fork failed,------------------ %s %s\n", __FILE__, __LINE__));
-            }
-            else if (pid > 0)
-            {
-                int status;
-                CcspTraceInfo(("PAM_DBG:--------------- Before waitpid hit, process id is(%d) --------------------\n", pid));
-                //time(&start_t);
-                get_uptime(&uptime1);
-                CcspTraceInfo(("PAM_DBG:--------------- Before waitpid hit %ld -------------\n", uptime1));
-                waitpid(pid, &status, 0); // wait here until the child completes
-                get_uptime(&uptime2);
-                CcspTraceInfo(("PAM_DBG:--------------- After waitpid hit %ld -------------\n", uptime2));
-                /*time(&end_t);
-                diff_t = difftime(end_t, start_t);
-                CcspTraceInfo(("PAM_DBG:--------------- After waitpid hit(%lf) --------------------", diff_t));*/
-                diff = uptime2 - uptime1;
-                CcspTraceInfo(("PAM_DBG:--------------- Diff time in waitpid (%ld) --------------", diff));
-            }
-            else
-            {
-                // we are the child
-                char *args[] = {"/fss/gw/usr/bin/rpcclient", urlPtr, "/bin/touch /tmp/pam_initialized", (char *) 0 };
-                CcspTraceInfo(("PAM_DBG:----------------------child process calls execv with args: 0=%s 1=%s 2=%s----------------\n", args[0], args[1], args[2]));
-                execv(args[0], args);
-                _exit(EXIT_FAILURE);   // exec never returns
-            }
+            CcspTraceInfo(("PAM_DBG:-----------------touch pam_initialized in atom ----------------\n"));
+            char cCmd[128];
+            sprintf(cCmd, "/usr/bin/rpcclient %s \"/bin/touch /tmp/pam_initialized\"&", urlPtr);
+            system(cCmd);
+            CcspTraceInfo(("PAM_DBG:-----------------created pam_initialized in atom ----------------\n"));
         }
     }
 #endif
