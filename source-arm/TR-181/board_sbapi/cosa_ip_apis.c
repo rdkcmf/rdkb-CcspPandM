@@ -2204,7 +2204,13 @@ CosaDmlIpIfGetCfg
         PCOSA_DML_IP_IF_CFG         pCfg
     )
 {
-    if ( pCfg->InstanceNumber >= COSA_USG_IF_NUM )
+
+#if defined (_INTEL_MAX_MTU_PROPOSED_FEATURE_)
+    char buf[256]= {0};
+    UtopiaContext utctx;
+#endif
+
+if ( pCfg->InstanceNumber >= COSA_USG_IF_NUM )
     {
         return  CosaDmlIpIfMlanGetCfg(hContext, pCfg);
     }
@@ -2217,6 +2223,23 @@ CosaDmlIpIfGetCfg
         /*the reason we can safely use pIPInerface.Cfg.InstanceNumber to refer to real backend buffer is we can't add/del IP.Interface. table, the InstanceNumber is fixed*/
         AnscCopyMemory(pCfg, &g_ipif_be_bufs[pCfg->InstanceNumber-1].Cfg, sizeof(COSA_DML_IP_IF_CFG));
         
+#if defined (_INTEL_MAX_MTU_PROPOSED_FEATURE_)
+        if (strstr(pCfg->LinkName, "erouter0"))
+        {
+            Utopia_Init(&utctx);
+            Utopia_Get(&utctx, UtopiaValue_WAN_MTU, buf, sizeof(buf));
+            Utopia_Free(&utctx,1);
+            if (atoi(buf) > 0)
+            {
+                pCfg->MaxMTUSize = atoi(buf);
+            }
+        }
+        else
+        {
+            pCfg->MaxMTUSize = CosaUtilIoctlXXX(pCfg->LinkName, "mtu", NULL);
+        }
+#endif
+
         return returnStatus;
     }
 }

@@ -1132,6 +1132,10 @@ Interface2_GetParamUlongValue
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
     PCOSA_DML_IP_IF_INFO            p            = NULL;
 
+#if defined (_INTEL_MAX_MTU_PROPOSED_FEATURE_)
+    PCOSA_DATAMODEL_IP              pMyObject    = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP;
+#endif
+
     p = CosaDmlIpIfGetEntry2(NULL, pIPInterface->Cfg.InstanceNumber);
 
     /* check the parameter name and return the corresponding value */
@@ -1161,6 +1165,11 @@ Interface2_GetParamUlongValue
     {
         /* collect value */
         *puLong = pIPInterface->Cfg.MaxMTUSize;
+
+#if defined (_INTEL_MAX_MTU_PROPOSED_FEATURE_)
+        CosaDmlIpIfGetCfg (pMyObject->hSbContext, (PCOSA_DML_IP_IF_CFG)&pIPInterface->Cfg);
+#endif
+
         return TRUE;
     }
 
