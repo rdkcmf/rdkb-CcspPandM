@@ -641,3 +641,446 @@ Firewall_Rollback
     return 0;
 }
 
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        V4_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+V4_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
+
+        CosaDmlGatewayV4GetBlockFragIPPkts(pBool);
+        return TRUE;
+    }
+    else if (AnscEqualString(ParamName, "PortScanProtect", TRUE)) {
+
+      CosaDmlGatewayV4GetPortScanProtect(pBool);
+      return TRUE;
+    }
+    else if (AnscEqualString(ParamName, "IPFloodDetect", TRUE)) {
+
+      CosaDmlGatewayV4GetIPFloodDetect(pBool);
+      return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        V4_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+V4_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
+
+        CosaDmlGatewayV4SetBlockFragIPPkts(bValue);
+        return TRUE;
+    }
+    else if (AnscEqualString(ParamName, "PortScanProtect", TRUE)) {
+
+      CosaDmlGatewayV4SetPortScanProtect(bValue);
+      return TRUE;
+    }
+    else if (AnscEqualString(ParamName, "IPFloodDetect", TRUE)) {
+
+      CosaDmlGatewayV4SetIPFloodDetect(bValue);
+      return TRUE;
+    }
+
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        V4_Validate
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       pReturnParamName,
+                ULONG*                      puLength
+            );
+
+    description:
+
+        This function is called to finally commit all the update.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       pReturnParamName,
+                The buffer (128 bytes) of parameter name if there's a validation.
+
+                ULONG*                      puLength
+                The output length of the param name.
+
+    return:     TRUE if there's no validation.
+
+**********************************************************************/
+BOOL
+V4_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    )
+{
+   return TRUE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        V4_Commit
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to finally commit all the update.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+V4_Commit
+   (
+       ANSC_HANDLE                  hInsContext
+   )
+{
+	system("sysevent set firewall-restart");
+
+  return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        V4_Rollback
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to roll back the update whenever there's a
+        validation found.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+V4_Rollback
+   (
+       ANSC_HANDLE                  hInsContext
+   )
+{
+  return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        V6_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+V6_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
+
+        CosaDmlGatewayV6GetBlockFragIPPkts(pBool);
+        return TRUE;
+    }
+    else if (AnscEqualString(ParamName, "PortScanProtect", TRUE)) {
+
+      CosaDmlGatewayV6GetPortScanProtect(pBool);
+      return TRUE;
+    }
+    else if (AnscEqualString(ParamName, "IPFloodDetect", TRUE)) {
+
+      CosaDmlGatewayV6GetIPFloodDetect(pBool);
+      return TRUE;
+    }
+
+
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        V6_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+V6_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
+
+        CosaDmlGatewayV6SetBlockFragIPPkts(bValue);
+        return TRUE;
+    }
+    else if (AnscEqualString(ParamName, "PortScanProtect", TRUE)) {
+
+      CosaDmlGatewayV6SetPortScanProtect(bValue);
+      return TRUE;
+    }
+    else if (AnscEqualString(ParamName, "IPFloodDetect", TRUE)) {
+
+      CosaDmlGatewayV6SetIPFloodDetect(bValue);
+      return TRUE;
+    }
+
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        V6_Validate
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       pReturnParamName,
+                ULONG*                      puLength
+            );
+
+    description:
+
+        This function is called to finally commit all the update.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       pReturnParamName,
+                The buffer (128 bytes) of parameter name if there's a validation.
+
+                ULONG*                      puLength
+                The output length of the param name.
+
+    return:     TRUE if there's no validation.
+
+**********************************************************************/
+BOOL
+V6_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    )
+{
+   return TRUE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        V6_Commit
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to finally commit all the update.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+V6_Commit
+   (
+       ANSC_HANDLE                  hInsContext
+   )
+{
+		system("sysevent set firewall-restart");
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        V6_Rollback
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to roll back the update whenever there's a
+        validation found.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+V6_Rollback
+   (
+       ANSC_HANDLE                  hInsContext
+   )
+{
+	system("sysevent set firewall-restart");
+
+  return 0;
+}
+

@@ -169,4 +169,77 @@ Firewall_Rollback
         ANSC_HANDLE                 hInsContext
     );
 
+BOOL
+V4_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+V4_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bBool
+    );
+
+BOOL
+V4_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    );
+
+ULONG
+V4_Commit
+   (
+       ANSC_HANDLE                  hInsContext
+   );
+
+ULONG
+V4_Rollback
+   (
+       ANSC_HANDLE                  hInsContext
+   );
+
+BOOL
+V6_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+V6_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bBool
+    );
+
+BOOL
+V6_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    );
+
+ULONG
+V6_Commit
+   (
+       ANSC_HANDLE                  hInsContext
+   );
+
+ULONG
+V6_Rollback
+   (
+       ANSC_HANDLE                  hInsContext
+   );
+
+
 #endif

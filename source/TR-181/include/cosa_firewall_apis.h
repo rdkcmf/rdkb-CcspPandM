@@ -120,4 +120,75 @@ CosaDmlFirewallGetConfig
         PCOSA_DML_FIREWALL_CFG      pCfg
     );
 
+ULONG
+CosaDmlGatewayV4GetBlockFragIPPkts
+    (
+        BOOL *pBool
+    );
+
+ULONG
+CosaDmlGatewayV4GetPortScanProtect
+    (
+        BOOL *pBool
+    );
+
+ULONG
+CosaDmlGatewayV4GetIPFloodDetect
+    (
+        BOOL *pBool
+    );
+
+ULONG
+CosaDmlGatewayV4SetBlockFragIPPkts
+    (
+        BOOL bValue
+    );
+
+ULONG
+CosaDmlGatewayV4SetPortScanProtect
+    (
+        BOOL bValue
+    );
+
+ULONG
+CosaDmlGatewayV4SetIPFloodDetect
+    (
+        BOOL bValue
+    );
+
+ULONG
+CosaDmlGatewayV6GetBlockFragIPPkts
+    (
+        BOOL *pBool
+    );
+
+ULONG
+CosaDmlGatewayV6GetPortScanProtect
+    (
+        BOOL *pBool
+    );
+
+ULONG
+CosaDmlGatewayV6GetIPFloodDetect
+    (
+        BOOL *pBool
+    );
+
+ULONG
+CosaDmlGatewayV6SetBlockFragIPPkts
+    (
+        BOOL bValue
+    );
+
+ULONG
+CosaDmlGatewayV6SetPortScanProtect
+    (
+        BOOL bValue
+    );
+
+ULONG
+CosaDmlGatewayV6SetIPFloodDetect
+    (
+        BOOL bValue
+    );
 #endif

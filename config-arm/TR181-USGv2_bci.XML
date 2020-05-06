@@ -7334,6 +7334,146 @@
 
       </parameters>
 
+      <objects>
+
+        <object>
+
+          <name>X_RDKCENTRAL-COM_Security</name>
+
+          <objectType>object</objectType>
+
+          <objects>
+
+            <object>
+
+              <name>V4</name>
+
+              <objectType>object</objectType>
+
+              <functions>
+
+                <func_GetParamBoolValue>V4_GetParamBoolValue</func_GetParamBoolValue>
+
+                <func_SetParamBoolValue>V4_SetParamBoolValue</func_SetParamBoolValue>
+
+                <func_Validate>V4_Validate</func_Validate>
+
+                <func_Commit>V4_Commit</func_Commit>
+
+                <func_Rollback>V4_Rollback</func_Rollback>
+
+              </functions>
+
+              <parameters>
+
+                <parameter>
+
+                  <name>BlockFragIPPkts</name>
+
+                  <type>boolean</type>
+
+                  <syntax>bool</syntax>
+
+                  <writable>true</writable>
+
+                </parameter>
+
+                <parameter>
+
+                  <name>PortScanProtect</name>
+
+                  <type>boolean</type>
+
+                  <syntax>bool</syntax>
+
+                  <writable>true</writable>
+
+                </parameter>
+
+                <parameter>
+
+                  <name>IPFloodDetect</name>
+
+                  <type>boolean</type>
+
+                  <syntax>bool</syntax>
+
+                  <writable>true</writable>
+
+                </parameter>
+
+              </parameters>
+
+            </object>
+
+            <object>
+
+              <name>V6</name>
+
+              <objectType>object</objectType>
+
+              <functions>
+
+                <func_GetParamBoolValue>V6_GetParamBoolValue</func_GetParamBoolValue>
+
+                <func_SetParamBoolValue>V6_SetParamBoolValue</func_SetParamBoolValue>
+
+                <func_Validate>V6_Validate</func_Validate>
+
+                <func_Commit>V6_Commit</func_Commit>
+
+                <func_Rollback>V6_Rollback</func_Rollback>
+
+              </functions>
+
+              <parameters>
+
+                <parameter>
+
+                  <name>BlockFragIPPkts</name>
+
+                  <type>boolean</type>
+
+                  <syntax>bool</syntax>
+
+                  <writable>true</writable>
+
+                </parameter>
+
+                <parameter>
+
+                  <name>PortScanProtect</name>
+
+                  <type>boolean</type>
+
+                  <syntax>bool</syntax>
+
+                  <writable>true</writable>
+
+                </parameter>
+
+                <parameter>
+
+                  <name>IPFloodDetect</name>
+
+                  <type>boolean</type>
+
+                  <syntax>bool</syntax>
+
+                  <writable>true</writable>
+
+                </parameter>
+
+              </parameters>
+
+            </object>
+
+          </objects>
+
+        </object>
+
+      </objects>
+
     </object>
 
     <object>
