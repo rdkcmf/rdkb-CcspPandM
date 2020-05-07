@@ -762,12 +762,14 @@ CosaDmlTimeGetCfg
     utc_enabled = checkIfUTCEnabled(DEV_PROPERTIES_FILE);
      if (0 == utc_enabled)
      {
-        CcspTraceWarning(("%s: UTC Enable file exists\n", __FUNCTION__));
+       /*   CcspTraceWarning(("%s: UTC Enable file exists\n", __FUNCTION__));
+            printf("%s: UTC Enable file exists\n", __FUNCTION__);  */
         pTimeCfg->bUTCEnabled = TRUE;
       }
     else
       {
-        CcspTraceWarning(("%s: UTC Enable file not exists\n", __FUNCTION__));
+        /*  CcspTraceWarning(("%s: UTC Enable file not exists\n", __FUNCTION__));
+            printf("%s: UTC Enable file not exists\n", __FUNCTION__); */
 	 pTimeCfg->bUTCEnabled = FALSE;
        }
 
