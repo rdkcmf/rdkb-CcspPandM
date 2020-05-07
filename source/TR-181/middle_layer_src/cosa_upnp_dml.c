@@ -174,6 +174,7 @@ Device_GetParamBoolValue
     {
         /* collect value */
         *pBool = pMyObject->bUpnpDevEnable;
+        CcspTraceNotice(("UPnPEnable_split:Feature Switch UPnP Enable %d\n",*pBool));
         return TRUE;
     }
 
