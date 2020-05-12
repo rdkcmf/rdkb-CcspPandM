@@ -10521,7 +10521,7 @@ WiFiInterworking_GetParamBoolValue
     )
 {
 
- #if defined(_COSA_INTEL_XB3_ARM_) 
+#if defined(_COSA_INTEL_XB3_ARM_) || (defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_))
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 	/* Collect Value */
@@ -10584,7 +10584,7 @@ WiFiInterworking_SetParamBoolValue
     if (IsBoolSame(hInsContext, ParamName, bValue, WiFiInterworking_GetParamBoolValue))
         return TRUE;
 
- #if defined(_COSA_INTEL_XB3_ARM_)
+#if defined(_COSA_INTEL_XB3_ARM_) || (defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_))
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 	char str[2];
