@@ -600,6 +600,19 @@ DeviceInfo_SetParamBoolValue_Custom
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_EnableXDNS", TRUE))
     {   
     	char bval[2] = {0};
+        // Check if value is same as already SET one.
+        char buf[5] = {0};
+        syscfg_get( NULL, "X_RDKCENTRAL-COM_XDNS", buf, sizeof(buf));
+        if( buf != NULL )
+        {
+            if(((bValue == TRUE) && (strcmp(buf,"1") == 0)) || 
+               ((bValue == FALSE) && (strcmp(buf,"0") == 0)))
+            {
+               CcspTraceInfo(("X_RDKCENTRAL-COM_XDNS value is same in DB, just return\n"));
+               return TRUE;
+            }
+        }
+           
     	if( bValue == TRUE)
     	{
     		if(!SetXdnsConfig())
