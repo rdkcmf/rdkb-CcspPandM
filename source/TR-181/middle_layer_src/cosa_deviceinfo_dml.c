@@ -7500,21 +7500,30 @@ Control_SetParamStringValue
            }
            else
            {
-                if (syscfg_set(NULL, "XconfSelector", pString) != 0)
+                /*RDKB-28133 : any string is getting set to XconfSelector TR 181 apart from prod, ci, automation*/
+                if( (strcasecmp(pString, "prod") == 0) || (strcasecmp(pString, "ci") == 0) || (strcasecmp(pString, "automation") == 0) )
                 {
-                    CcspTraceError(("[%s] syscfg_set failed for XconfSelector \n",__FUNCTION__));
-                    bReturnValue = FALSE;
+                    if (syscfg_set(NULL, "XconfSelector", pString) != 0)
+                    {
+                        CcspTraceError(("[%s] syscfg_set failed for XconfSelector \n",__FUNCTION__));
+                        bReturnValue = FALSE;
+                    }
+                    else
+                    {
+                        if (syscfg_commit() != 0)
+                        {
+                             CcspTraceError(("[%s] syscfg_commit failed for XconfSelector \n",__FUNCTION__));
+                             bReturnValue = FALSE;
+                        }
+                        bReturnValue = TRUE;
+                        CcspTraceInfo(("[%s] XconfSelector value set as %s success..!!\n",__FUNCTION__,pString));
+                    }
                 }
                 else
                 {
-                    if (syscfg_commit() != 0)
-                    {
-                         CcspTraceError(("[%s] syscfg_commit failed for XconfSelector \n",__FUNCTION__));
-                         bReturnValue = FALSE;
-                    }
-                    bReturnValue = TRUE;
-                    CcspTraceInfo(("[%s] XconfSelector value set as %s success..!!\n",__FUNCTION__,pString));
-                } 
+                    CcspTraceInfo(("[%s] XconfSelector value should 'prod' , 'ci'  or 'automation' \n",__FUNCTION__));
+                    bReturnValue = FALSE;
+                }
            }
     }
     /* check the "XconfUrl" parameter name and set the corresponding value */
