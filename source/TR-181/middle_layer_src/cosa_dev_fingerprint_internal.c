@@ -66,9 +66,12 @@ CosaDeviceFingerprintCreate
 #if !defined(DUAL_CORE_XB3) && !defined(_HUB4_PRODUCT_REQ_)
     if(!syscfgValue)
     {
-        system("/usr/ccsp/advsec/print_console_xb6.sh \"Device_Finger_Printing_enabled:false\" &");
-        system("/usr/ccsp/advsec/print_console_xb6.sh \"ADV_SECURITY_SAFE_BROWSING_DISABLE\" &");
-        system("/usr/ccsp/advsec/print_console_xb6.sh \"ADV_SECURITY_SOFTFLOWD_DISABLE\" &");
+	if(access("/usr/ccsp/advsec/print_console_xb6.sh",F_OK) != -1)
+        {
+                system("/usr/ccsp/advsec/print_console_xb6.sh \"Device_Finger_Printing_enabled:false\" &");
+                system("/usr/ccsp/advsec/print_console_xb6.sh \"ADV_SECURITY_SAFE_BROWSING_DISABLE\" &");
+                system("/usr/ccsp/advsec/print_console_xb6.sh \"ADV_SECURITY_SOFTFLOWD_DISABLE\" &");
+        }
     }
     else
     {
