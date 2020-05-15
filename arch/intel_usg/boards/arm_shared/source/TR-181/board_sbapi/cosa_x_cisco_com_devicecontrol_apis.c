@@ -77,9 +77,6 @@
 #include <arpa/inet.h>
 #include "platform_hal.h"
 
-// TELEMETRY 2.0 //RDKB-26620
-#include <telemetry_busmessage_sender.h>
-
 extern void* g_pDslhDmlAgent;
 
 PCHAR g_avahi_daemon_conf[] =
@@ -1259,7 +1256,6 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 	fprintf(stderr, "WiFi is going to reboot\n");
 	pthread_detach(pthread_self());
 	CcspTraceWarning(("RebootDevice:WiFi is going to reboot now\n"));
-	t2_event_d("WIFI_ERROR_WifiReboot", 1);
 	int                         ret;
 	int                         size = 0;
 	componentStruct_t **        ppComponents = NULL;

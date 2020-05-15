@@ -87,8 +87,7 @@
 #include "ccsp_base_api.h"
 #include "messagebus_interface_helper.h"
 
-// TELEMETRY 2.0 //RDKB-26620
-#include <telemetry_busmessage_sender.h>
+#include <stdbool.h>
 
 extern ULONG g_currentBsUpdate;
 extern char g_currentParamFullName[512];
@@ -12398,9 +12397,7 @@ Syndication_SetParamStringValue
 			        CcspTraceInfo(("[SET-PARTNERID] Factory_Partner_ID:%s\n", ( PartnerID[ 0 ] != '\0' ) ? PartnerID : "NULL" ));
 			        CcspTraceInfo(("[SET-PARTNERID] Current_PartnerID:%s\n", pMyObject->PartnerID ));
 			        CcspTraceInfo(("[SET-PARTNERID] Overriding_PartnerID:%s\n", pString ));
-				t2_event_s("setfactorypartner_split", ( PartnerID[ 0 ] != '\0' ) ? PartnerID : "NULL" );
-				t2_event_s("setcurrentpartner_split", pMyObject->PartnerID );
-				t2_event_s("setoverridingPartner_split", pString );
+								
 				return TRUE;
 			    }
                         }

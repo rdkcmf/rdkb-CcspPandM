@@ -71,9 +71,6 @@
 #include "ccsp_base_api.h"
 #include "messagebus_interface_helper.h"
 
-// TELEMETRY 2.0 //RDKB-26620
-#include <telemetry_busmessage_sender.h>
-
 extern ULONG g_currentBsUpdate;
 extern char * getRequestorString();
 extern char * getTime();
@@ -487,8 +484,7 @@ Time_SetParamBoolValue
         pMyObject->TimeCfg.bEnabled = bValue;
         if ( pMyObject->TimeCfg.bEnabled )
 	{
-    		CcspTraceWarning(("Service_NTP : Enabling Network Time Sync \n"));
-                t2_event_d("NTP_enabled", 1);
+    		CcspTraceWarning(("Service_NTP : Enabling Network Time Sync \n")); 
 	}
 	else
 	{

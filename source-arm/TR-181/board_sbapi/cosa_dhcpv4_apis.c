@@ -73,8 +73,6 @@
 #include "plugin_main_apis.h"
 #include "dml_tr181_custom_cfg.h"
 
-// TELEMETRY 2.0 //RDKB-26620
-#include <telemetry_busmessage_sender.h>
 
 #if ( defined _COSA_SIM_ )
 
@@ -3206,7 +3204,6 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
     }
 
     AnscTraceFlow(("Opening COSA_DML_DHCP_LEASES_FILE in a read mode complete %s\n", __FUNCTION__));
-    t2_event_d("TEST_CosaDMLreadmode", 1);
 
     fpTmp = fopen(COSA_DML_DHCP_LEASES_FILE_TMP, "w");
     if (!fpTmp){
