@@ -23,9 +23,6 @@
 #include "cJSON.h"
 #include <sysevent/sysevent.h>
 
-// TELEMETRY 2.0 //RDKB-26620
-#include <telemetry_busmessage_sender.h>
-
 #define CONTENT_TYPE_JSON  "application/json"
 
 #if defined(_COSA_BCM_MIPS_)
@@ -171,7 +168,6 @@ static int check_ethernet_wan_status()
         if( 0 == syscfg_get( NULL, "eth_wan_enabled", isEthEnabled, sizeof(isEthEnabled)) && (isEthEnabled[0] != '\0' && strncmp(isEthEnabled, "true", strlen("true")) == 0))
         {
             CcspTraceInfo(("Ethernet WAN is enabled\n"));
-            t2_event_d("SYS_INFO_EthWanMode", 1);
             ret = CCSP_SUCCESS;
         }
     }
@@ -199,7 +195,6 @@ static int check_ethernet_wan_status()
                 if(parameterval[0]->parameterValue != NULL && strncmp(parameterval[0]->parameterValue, "true", strlen("true")) == 0)
                 {
                     CcspTraceInfo(("Ethernet WAN is enabled\n"));
-		    t2_event_d("SYS_INFO_EthWanMode", 1);
                     ret = CCSP_SUCCESS;
                 }
                 else

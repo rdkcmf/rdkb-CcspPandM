@@ -85,9 +85,6 @@
 #endif
 #include "ansc_platform.h"
 
-// TELEMETRY 2.0 //RDKB-26620
-#include <telemetry_busmessage_sender.h>
-
 //$HL 4/30/2013
 #include "ccsp_psm_helper.h"
 
@@ -143,10 +140,6 @@ CosaUtilGetIfAddr
         else {
            perror("CosaUtilGetIfAddr IOCTL failure.");
            CcspTraceWarning(("Cannot get ipv4 address of netdev:%s\n",netdev));
-           if(strncmp(netdev, "erouter0", strlen(netdev)) == 0)
-	   {
-	   	t2_event_d("RF_ERROR_erouter_ip_loss", 1);
-	   }
         }
         close(fd);
     }

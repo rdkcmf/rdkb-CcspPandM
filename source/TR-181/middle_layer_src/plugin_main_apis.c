@@ -113,9 +113,6 @@
     #include "cosa_x_cisco_com_filetransfer_internal.h"
 #endif
 
-// TELEMETRY 2.0 //RDKB-26620
-#include <telemetry_busmessage_sender.h>
-
 #if  CFG_USE_Common_Util
 #include "cosa_common_util.h"
 #endif
@@ -702,66 +699,6 @@ static void CheckAndSetRebootReason()
         if (NULL != fpBootLogFile)
         {
             fprintf(fpBootLogFile, "Received reboot_reason as:%s\n", rebootReason);
-		if(strncmp(rebootReason, "factory-reset", strlen(rebootReason)) == 0)
-           	{
-			t2_event_d("SYS_INFO_Factory_reset", 1);
-            	}
-		else if(strncmp(rebootReason, "kernel-panic", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_ERROR_KernelPanic_reboot", 1);
-		}
-		else if(strncmp(rebootReason,"Peer_down", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_ERROR_PeerDown_reboot", 1);
-		}
-		else if(strncmp(rebootReason, "thermal", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_ERROR_Thermal_reboot", 1);
-		}
-		else if(strncmp(rebootReason , "webpa-reboot", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_ERROR_WEBPA_reboot", 1);
-		}
-		else if(strncmp(rebootReason ,"brlan0_down", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_ERROR_brlan0_reboot", 1);
-		}
-		else if(strncmp(rebootReason , "brlan1_down", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_ERROR_brlan1_reboot", 1);
-		}
-		else if(strncmp(rebootReason , "CR_crash", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_ERROR_CR_crash", 1);
-		}
-		else if(strncmp(rebootReason , "gui-reboot", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_ERROR_gui_reboot", 1);
-		}
-		else if(strncmp(rebootReason , "Psm_crash", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_ERROR_PSM_crash", 1);
-		}
-		else if(strncmp(rebootReason , "snmp-reboot", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_ERROR_snmp_reboot", 1);
-		}
-		else if(strncmp(rebootReason ,"TR69_crash", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_ERROR_tr69_reboot", 1);
-		}
-		else if(strncmp(rebootReason , "Software_upgrade", strlen(rebootReason)) == 0)
-		{
-			t2_event_d("SYS_INFO_SW_upgrade_reboot", 1);
-		}
-		else if(strncmp(rebootReason , "pcie_mitigation", strlen(rebootReason)) == 0)
-                {
-                        t2_event_d("SYS_ERROR_PCIEmitigaion_reboot", 1);
-                }
-		else
-		{
-			t2_event_s("rdkb_rebootreason_split", rebootReason);	
-		}
             fclose(fpBootLogFile);
         }
         else
