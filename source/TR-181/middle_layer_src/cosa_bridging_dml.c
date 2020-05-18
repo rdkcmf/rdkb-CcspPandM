@@ -2111,9 +2111,11 @@ Port_GetParamStringValue
                   case COSA_DML_BRG_LINK_TYPE_Eth:
                      sprintf(path, "%s", "Device.Ethernet.Interface.");
                      break;
+                  #ifndef _CBR_PRODUCT_REQ_
                   case COSA_DML_BRG_LINK_TYPE_Moca:
                      sprintf(path, "%s", "Device.MoCA.Interface.");
                      break;
+                  #endif
                   case COSA_DML_BRG_LINK_TYPE_WiFiSsid:
                      sprintf(path, "%s", "Device.WiFi.SSID.");
                      break;
@@ -2158,12 +2160,14 @@ Port_GetParamStringValue
                 AnscCopyString(pValue, pLowerLayer);
                 AnscFreeMemory(pLowerLayer);
                 break;
+            #ifndef _CBR_PRODUCT_REQ_
             case COSA_DML_BRG_LINK_TYPE_Moca:
                 pLowerLayer = CosaUtilGetLowerLayers("Device.MoCA.Interface.", pPort->Cfg.LinkName);
                 //AnscTraceFlow(("<HL>%s moca lowerlayer=%s\n",__FUNCTION__,pLowerLayer ));
                 AnscCopyString(pValue, pLowerLayer);
                 AnscFreeMemory(pLowerLayer);
                 break;
+            #endif
             case COSA_DML_BRG_LINK_TYPE_WiFiSsid:
                 pLowerLayer = CosaUtilGetLowerLayers("Device.WiFi.SSID.", pPort->Cfg.LinkName);
                 //AnscTraceFlow(("<HL>%s wifi lowerlayer=%s\n",__FUNCTION__,pLowerLayer ));
