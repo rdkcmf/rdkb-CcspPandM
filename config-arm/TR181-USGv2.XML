@@ -2766,7 +2766,22 @@
                         </object>
                         </objects>
                         </object>
-
+                        <object>
+                                <name>NonRootSupport</name>
+                                <objectType>object</objectType>
+                                <functions>
+                                        <func_GetParamBoolValue>NonRootSupport_GetParamBoolValue</func_GetParamBoolValue>
+                                        <func_SetParamBoolValue>NonRootSupport_SetParamBoolValue</func_SetParamBoolValue>
+                                </functions>
+                                <parameters>
+                                <parameter>
+                                        <name>Enable</name>
+                                        <type>boolean</type>
+                                        <syntax>bool</syntax>
+                                        <writable>true</writable>
+                                </parameter>
+                                </parameters>
+                        </object>
                 </objects>
 		</object>
 		</objects>
