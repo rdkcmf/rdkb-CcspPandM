@@ -374,6 +374,7 @@ void XfinityWifiThread
     value = *pvalue;
     if (FALSE == value)
     {
+        PsmSet(HOTSPOT_PSM_EANBLE, "0");
         //SSIDs 5 and 6 case
         if (DmSetBool("Device.WiFi.SSID.5.Enable", value) != ANSC_STATUS_SUCCESS) {
             fprintf(stderr, "%s: set WiFi.SSID.5 Disable error\n", __FUNCTION__);
@@ -400,6 +401,10 @@ void XfinityWifiThread
             fprintf(stderr, "%s: set WiFi.SSID.10 Diable OK\n", __FUNCTION__);
         }
     }
+    else
+    {
+         PsmSet(HOTSPOT_PSM_EANBLE, "1");
+    }
 	
 	if (g_SetParamValueBool("Device.X_COMCAST-COM_GRE.Tunnel.1.Enable", value) != ANSC_STATUS_SUCCESS) {
 		fprintf(stderr, "%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable error\n", __FUNCTION__);
@@ -421,12 +426,9 @@ void XfinityWifiThread
     }
 	//zqiu<<
     if (value) {
-        PsmSet(HOTSPOT_PSM_EANBLE, "1");
-        //Update circuit ID here
+         //Update circuit ID here
         hotspot_update_circuit_ids(1,1); 
     }
-    else
-        PsmSet(HOTSPOT_PSM_EANBLE, "0");
     
     AnscFreeMemory(pvalue);
     pvalue = NULL;
