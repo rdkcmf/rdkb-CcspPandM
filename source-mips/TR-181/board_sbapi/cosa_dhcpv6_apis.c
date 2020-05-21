@@ -4100,6 +4100,13 @@ OPTIONS:
                 if ( Index4 >= g_recv_option_num )
                     continue;
 
+                char l_cSecWebUI_Enabled[8] = {0};
+                syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
+                if (!strncmp(l_cSecWebUI_Enabled, "true", 4)) {
+                  sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled = 1;
+                }
+
+
                 /* We need to translate hex to normal string */
                 if ( g_recv_options[Index4].Tag == 23 )
                 { //dns
