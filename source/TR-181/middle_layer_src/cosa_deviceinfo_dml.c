@@ -16492,18 +16492,63 @@ Cmd_GetParamStringValue
     return FALSE;
 }
 
+static int write_hashedID_to_file(const cJSON *cjson)
+{
+    int ret = FALSE;
+    char *hashed_id_buf = NULL;
+    int idx;
+    cJSON *item = cJSON_GetObjectItem(cjson, "hashed_ids");
+
+    CcspTraceInfo(("The whole hashed ID msg is:\n %s \n", cJSON_Print(item)));
+
+    if ( item != NULL )
+    {
+        ret = TRUE;
+        FILE *fp = fopen("/tmp/hashed_id", "w");
+
+        if(!fp)
+        {
+            CcspTraceError(("%s unable to create /tmp/hashed_id file \n",__FUNCTION__));
+            ret = FALSE;
+        }
+        else
+        {
+            for(idx=0; idx < cJSON_GetArraySize(item); idx++)
+            {
+                cJSON * subitem = cJSON_GetArrayItem(item, idx);
+                hashed_id_buf = subitem->valuestring;
+                if(hashed_id_buf == NULL)
+                {
+                    CcspTraceError(("Unable to get the hashed id. \n"));
+                    ret = FALSE;
+                    break;
+                }
+
+                fprintf(fp,"%s\n",hashed_id_buf);
+            }
+        }
+
+        if(ret != FALSE)
+        {
+            CcspTraceInfo(("Successfully write hashed ids to /tmp/hashed_id file. \n"));
+            fclose(fp);
+        }
+    }
+
+    return ret;
+}
 
 BOOL
 Cmd_SetParamStringValue
 (
- ANSC_HANDLE                 hInsContext,
- char*                       ParamName,
- char*                       pString
- )
+    ANSC_HANDLE                 hInsContext,
+    char*                       ParamName,
+    char*                       pString
+)
 {
     char *cmd =  NULL;
     int index;
- if( AnscEqualString(ParamName, "Request", TRUE))
+    if( AnscEqualString(ParamName, "Request", TRUE))
     {
 
          CcspTraceInfo(("***************************\n"));
@@ -16512,12 +16557,14 @@ Cmd_SetParamStringValue
          cJSON *cjson = cJSON_Parse(pString);
          if(cjson)
          {
-             //first Red the code if its is MEP_TOA_OPEN_CHANNEL 
+             //first Read the code if its is MEP_TOA_OPEN_CHANNEL 
              if ( cJSON_GetObjectItem( cjson, "code") != NULL )
              {
-                   cmd = cJSON_GetObjectItem(cjson, "code")->valuestring;
-                   if(strcmp(cmd,"MEP_TOA_OPEN_CHANNEL") == 0)
-                  {
+                 cmd = cJSON_GetObjectItem(cjson, "code")->valuestring;
+                 if(strcmp(cmd,"MEP_TOA_OPEN_CHANNEL") == 0)
+                 {
+                        if ( cJSON_GetObjectItem(cjson, "hashed_ids") != NULL )
+                            write_hashedID_to_file(cjson);
 
                         if ( cJSON_GetObjectItem( cjson, "tile_uuid") != NULL )
                         {
@@ -16613,7 +16660,7 @@ Cmd_SetParamStringValue
                                CcspTraceInfo(("Disconnect on completion set to true\n"));
                                if (syscfg_set(NULL, "TileDisconnectOnCompletion", "true") != 0)
                                {
-                                     CcspTraceInfo(("syscfg_set failed for  disconnect on completion \n"));
+                                     CcspTraceInfo(("syscfg_set failed for disconnect on completion \n"));
                                }
                                else
                                {
@@ -16628,7 +16675,7 @@ Cmd_SetParamStringValue
                                CcspTraceInfo(("Disconnect on completion set to false \n"));
                                if (syscfg_set(NULL, "TileDisconnectOnCompletion", "false") != 0)
                                {
-                                     CcspTraceInfo(("syscfg_set failed for  disconnect on completion \n"));
+                                     CcspTraceInfo(("syscfg_set failed for disconnect on completion \n"));
                                }
                                else
                                {
