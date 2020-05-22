@@ -100,6 +100,7 @@ extern char g_Subsystem[32];
 
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
+#define DEVICE_PROPERTIES    "/etc/device.properties"
 #define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
 
 #define _ERROR_ "NOT SUPPORTED"
@@ -1330,6 +1331,21 @@ CosaDmlDiGetSyndicationPartnerId
     strcpy(pValue, "comcast"); // Set the default to comcast in case the partner id is not set in props file
     *pulSize = AnscSizeOfString(pValue);
     retVal = ANSC_STATUS_SUCCESS;
+
+    deviceFilePtr = fopen( DEVICE_PROPERTIES, "r" );
+    if (deviceFilePtr)
+    {
+        while (fgets(fileContent, sizeof(fileContent), deviceFilePtr) != NULL)
+        {
+            if ((pPartnerId = strstr(fileContent, partnerStr)) != NULL)
+            {
+                AnscCopyString(pValue ,pPartnerId+sizeof(partnerStr));
+                *pulSize = AnscSizeOfString(pValue);
+                break;
+            }
+        }
+        fclose(deviceFilePtr);
+    }
     return retVal;
 }
 
@@ -1698,7 +1714,46 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 		CcspTraceWarning(("%s - connectivityTestURL Object is NULL\n", __FUNCTION__ ));
 	}
 
+	
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP") != NULL )
+	{
+		DefaultAdminIP = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP")->valuestring;
 
+		if (DefaultAdminIP != NULL)
+		{
+			AnscCopyString(PUiBrand->DefaultAdminIP,DefaultAdminIP);
+			DefaultAdminIP = NULL;
+		}
+		else
+		{
+			printf("%s - DefaultAdminIP Value is NULL\n", __FUNCTION__ );
+		}
+
+	}
+	else
+	{
+		CcspTraceWarning(("%s - DefaultAdminIP Object is NULL\n", __FUNCTION__ ));
+	}
+
+	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange") != NULL)
+	{
+		DefaultLocalIPv4SubnetRange = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange")->valuestring;
+
+		if (DefaultLocalIPv4SubnetRange != NULL)
+		{
+			AnscCopyString(PUiBrand->DefaultLocalIPv4SubnetRange, DefaultLocalIPv4SubnetRange);
+			DefaultLocalIPv4SubnetRange = NULL;
+		}
+		else
+		{
+			CcspTraceWarning(("%s - DefaultLocalIPv4SubnetRange Value is NULL\n", __FUNCTION__ ));
+		}
+	}
+
+	else
+	{
+		CcspTraceWarning(("%s - DefaultLocalIPv4SubnetRange Object is NULL\n", __FUNCTION__ ));
+	}
 
 	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation") != NULL )
 	{
@@ -1719,6 +1774,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 	{
 		CcspTraceWarning(("%s - support Object is NULL\n", __FUNCTION__ ));
 	}
+
 	if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Support") != NULL)
 	{
 		support = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Support")->valuestring;
@@ -2123,9 +2179,10 @@ CosaDmlDiUiBrandingInit
         cJSON *json = NULL;
         FILE *fileRead = NULL;
         char PartnerID[PARTNER_ID_LEN] = {0};
+        char Partner_ID[PARTNER_ID_LEN] = {0};
         char cmd[512] = {0};
         ULONG size = PARTNER_ID_LEN - 1;
-        int len;
+        int len,count = 0;
 
         if (!PUiBrand)
         {
@@ -2183,8 +2240,19 @@ CosaDmlDiUiBrandingInit
                  else
                  {
                                         printf( "Reading Deafult PartnerID Values \n" );
-                                        strcpy(PartnerID, "comcast");
-                                        FillPartnerIDValues(json, PartnerID, PUiBrand);
+                                        strcpy(Partner_ID, "RDKM");
+					if(ANSC_STATUS_FAILURE == CosaDmlDiGetSyndicationPartnerId(NULL,&PartnerID,&size))
+					{
+						printf("Failed to get PartnerID \n");
+					}
+					else
+					{
+						for(count=0;PartnerID[count]!='\n';count++)
+							Partner_ID[count] = PartnerID[count];
+						Partner_ID[count] = '\0';
+					}
+                                        printf( "Updated %s PartnerID Values \n",Partner_ID );
+                                        FillPartnerIDValues(json, Partner_ID, PUiBrand);
                         cJSON_Delete(json);
                 }
           free(data);
