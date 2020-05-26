@@ -15652,7 +15652,7 @@ SecureWebUI_GetParamBoolValue
 {
     char buf[8];
 
-    /* check the parameter name and return the corresponding value */
+	/* check the parameter name and return the corresponding value */
 
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -15829,7 +15829,7 @@ ULONG
 
     return:     TRUE if succeeded.
 
-    **********************************************************************/
+	**********************************************************************/
 BOOL
     SecureWebUI_SetParamStringValue
 (
