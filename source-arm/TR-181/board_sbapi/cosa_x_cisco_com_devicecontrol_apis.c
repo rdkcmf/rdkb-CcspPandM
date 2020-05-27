@@ -1810,7 +1810,7 @@ void resetWiFi()
 	}
 	parameterValStruct_t	val = { "Device.WiFi.X_CISCO_COM_FactoryReset", "true", ccsp_boolean};
 
-#if defined (_XB6_PRODUCT_REQ_)
+#if defined (_XB6_PRODUCT_REQ_) && !defined (_XB7_PRODUCT_REQ_)
 	/* In Reset Factory Settings, the system is rebooted  before WiFi gets reset.
 	* Add this line to indicate WiFi module to restore after boot up.
 	* This will be removed iff CCSP layer adds sufficient delay during reboot. */
