@@ -592,24 +592,39 @@ ANSC_STATUS
         char cmp[128] = {'\0'};
         char saltText[128] = {'\0'}, hashedmd[128] = {'\0'};
         int  iIndex = 0, Key_len = 0, salt_len = 0, hashedmd_len = 0;
+        #if (OPENSSL_VERSION_NUMBER < 0x10100000L)
         HMAC_CTX ctx;
+        #else
+        HMAC_CTX *pctx = HMAC_CTX_new();
+        #endif
 			
         _ansc_sprintf(saltText, "%s", SerialNumber);
 
         Key_len = strlen(pString);
 	
         salt_len = strlen(saltText);
+        #if (OPENSSL_VERSION_NUMBER < 0x10100000L)
         HMAC_CTX_init( &ctx);
         HMAC_Init(	 &ctx, pString,  Key_len, EVP_sha256());
         HMAC_Update( &ctx, (unsigned char *)saltText, salt_len);
         HMAC_Final(  &ctx, (unsigned char *)hashedmd, (unsigned int *)&hashedmd_len );
+        #else
+        HMAC_CTX_reset(pctx);
+        HMAC_Init(       pctx, pString,  Key_len, EVP_sha256());
+        HMAC_Update( pctx, (unsigned char *)saltText, salt_len);
+        HMAC_Final(  pctx, (unsigned char *)hashedmd, (unsigned int *)&hashedmd_len );
+        #endif
         convertTo = cmp;
         for (iIndex = 0; iIndex < hashedmd_len; iIndex++) 
         {
           sprintf(convertTo,"%02x", hashedmd[iIndex] & 0xff);
           convertTo += 2;
         }
+        #if (OPENSSL_VERSION_NUMBER < 0x10100000L)
         HMAC_CTX_cleanup( &ctx );
+        #else
+        HMAC_CTX_free( pctx );
+        #endif
         AnscCopyString(hashedpassword,cmp);
         CcspTraceWarning(("%s, Returning success\n",__FUNCTION__));	
         return ANSC_STATUS_SUCCESS ;
