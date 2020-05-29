@@ -1416,6 +1416,30 @@
                         </parameters>
                     </object>
                     <object>
+                            <name>CRL</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>EnableOCSPStapling_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>EnableOCSPStapling_SetParamBoolValue</func_SetParamBoolValue>
+                                <func_GetParamBoolValue>EnableOCSPCA_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>EnableOCSPCA_SetParamBoolValue</func_SetParamBoolValue>
+                            </functions>
+                            <parameters>
+                              <parameter>
+                                <name>Enable</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                              </parameter>
+                              <parameter>
+                                <name>DirectOCSP</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                                </parameter>
+                            </parameters>
+                      </object>
+                    <object>
                             <name>Telemetry</name>
                             <objectType>object</objectType>
                             <functions>
