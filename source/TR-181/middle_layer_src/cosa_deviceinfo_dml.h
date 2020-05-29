@@ -1867,5 +1867,29 @@ ActiveMeasurements_RFC_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+/***********************************************************************
 
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CRL.Enable
+
+    *  EnableOCSPStapling_GetParamBoolValue
+    *  EnableOCSPStapling_SetParamBoolValue
+***********************************************************************/
+BOOL
+EnableOCSPStapling_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+EnableOCSPStapling_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
 #endif

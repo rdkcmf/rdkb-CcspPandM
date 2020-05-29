@@ -17589,4 +17589,172 @@ AutoReboot_GetParamIntValue
     return FALSE;
 }
 
+/**
+ *  RFC Features OCSP
+*/
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        EnableOCSPStapling_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+EnableOCSPStapling_GetParamBoolValue
+
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL*                       pBool
+ )
+{
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8];
+        /* collect value */
+        syscfg_get( NULL, "EnableOCSPStapling", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        return TRUE;                }
+
+    if( AnscEqualString(ParamName, "DirectOCSP", TRUE))
+    {
+        char buf1[8];
+        /* collect value */
+        syscfg_get( NULL, "EnableOCSPCA", buf1, sizeof(buf1));
+
+        if( buf1 != NULL )
+        {
+            if (strcmp(buf1, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        return TRUE;                }
+
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        EnableOCSPStapling_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+EnableOCSPStapling_SetParamBoolValue
+
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL                        bValue
+ )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+
+        char buf[8];
+        memset (buf, 0, sizeof(buf));
+
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+
+        if (syscfg_set(NULL, "EnableOCSPStapling", buf) != 0)
+        {
+            CcspTraceError(("syscfg_set EnableOCSPStapling failed\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                CcspTraceError(("syscfg_commit EnableOCSPStapling failed\n"));
+            }
+            else
+            {
+                return TRUE;
+            }
+        }
+    }
+
+    if( AnscEqualString(ParamName, "DirectOCSP", TRUE))
+    {
+
+        char buf1[8];
+        memset (buf1, 0, sizeof(buf1));
+
+        snprintf(buf1, sizeof(buf1), "%s", bValue ? "true" : "false");
+
+        if (syscfg_set(NULL, "EnableOCSPCA", buf1) != 0)
+        {
+            CcspTraceError(("syscfg_set EnableOCSPCA failed\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                CcspTraceError(("syscfg_commit EnableOCSPCA failed\n"));
+            }
+            else
+            {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
