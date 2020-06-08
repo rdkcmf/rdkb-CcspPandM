@@ -382,6 +382,7 @@ CosaDmlMldGetGroup
     pid_t pid;
     char *pch;
     long count;
+    char *st = NULL;
 
     if (!pulCount || !pMldGroupArray)
     {
@@ -422,7 +423,8 @@ CosaDmlMldGetGroup
         
         while(fgets(buffer, 255,stat_f) != '\0')
         {
-            pch = strtok(buffer, " \t\r\n");
+			st = NULL;
+            pch = strtok_r(buffer, " \t\r\n", &st);
             if (pch == NULL)
             {
                 continue;
@@ -430,7 +432,7 @@ CosaDmlMldGetGroup
 
             if (strcmp(pch, "Group") == 0)
             {
-                pch = strtok(NULL, " \t\r\n");
+                pch = strtok_r(NULL, " \t\r\n", &st);
                 while(pch)
                 {
                     if (*pch != ':')
@@ -448,12 +450,12 @@ CosaDmlMldGetGroup
 
                         break;
                     }
-                    pch = strtok(NULL, " \t\r\n");
+                    pch = strtok_r(NULL, " \t\r\n", &st);
                 }
             }
             else if (strcmp(pch, "Interface:") == 0)
             {
-                pch =strtok(NULL, " \t\r\n");
+                pch =strtok_r(NULL, " \t\r\n", &st);
                 if (pch)
                 {
                     strcat(pMldGroupArray[count].Interfaces, pch);

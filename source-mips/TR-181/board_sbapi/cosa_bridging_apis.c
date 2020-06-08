@@ -2564,13 +2564,14 @@ static ANSC_STATUS _COSA_AddToken(char *token, char *pStr)
 {
     char *result = NULL;
     char buf[256]={0};
+    char *st = NULL;
     int find = 1;
     AnscCopyString(buf,pStr);
     if (AnscSizeOfString(buf)) 
     {
         AnscTraceFlow(("<HL> %s str=%s token=%s\n",__FUNCTION__,buf,token));
 
-        result = strtok(buf,DMSB_DELIM);
+        result = strtok_r(buf,DMSB_DELIM, &st);
         while( result != NULL ) 
         {
             if (!strcasecmp(result,token)) 
@@ -2578,7 +2579,7 @@ static ANSC_STATUS _COSA_AddToken(char *token, char *pStr)
                 AnscTraceFlow(("<HL>%s found token\n",__FUNCTION__ ));
                 return ANSC_STATUS_FAILURE;
             }
-            result = strtok(NULL,DMSB_DELIM);
+            result = strtok_r(NULL,DMSB_DELIM, &st);
         }
         AnscTraceFlow(("<HL> %s Str=%s not found:%s\n",__FUNCTION__,buf,token));
         strcat(pStr,DMSB_DELIM);
@@ -2592,13 +2593,14 @@ static ANSC_STATUS _COSA_DelToken(char *token, char *pStr)
 {
     char *result = NULL;
     char buf[256] = {0};
+    char *st = NULL;
     char *pBuf = &buf[0];
     int find = 0;
     if (pStr == NULL)
         return ANSC_STATUS_FAILURE;
     AnscTraceFlow(("<HL> %s str=%s token=%s\n",__FUNCTION__,pStr,token));
 
-    result = strtok( pStr, DMSB_DELIM);
+    result = strtok_r( pStr, DMSB_DELIM, &st);
     while( result != NULL ) 
     {
         if (!strcasecmp(result,token)) 
@@ -2611,7 +2613,7 @@ static ANSC_STATUS _COSA_DelToken(char *token, char *pStr)
             strcat(pBuf, DMSB_DELIM);
             strcat(pBuf,result);
         }
-        result = strtok(NULL, DMSB_DELIM);
+        result = strtok_r(NULL, DMSB_DELIM, &st);
     }
 
     if (find == 1) 

@@ -953,7 +953,8 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
 
     static ULONG                ProcessTimeStamp;
     ULONG                       ProcessNumber       = 0;
-    struct dirent               *entry;
+    struct dirent               entry;
+    struct dirent               *result = NULL;
     DIR                         *dir;
     FILE                        *fp;
     char*                       name;
@@ -965,6 +966,7 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
     ULONG                       utime;
     ULONG                       stime;
     char                        state[64];
+    int                         ret;
 
     dir = opendir("/proc");
         
@@ -976,14 +978,15 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
 
     for(;;)
     {
-        if ( (entry = readdir(dir)) == NULL )
+        ret = readdir_r(dir, &entry, &result);
+        if ( ret !=0 || result == NULL)
         {
             closedir(dir);
             dir = NULL;
             break;
         }
 
-        name = entry->d_name;
+        name = entry.d_name;
             
         if ( *name >= '0' && *name <= '9' )
         {
@@ -1011,15 +1014,15 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
         
     for(i = 0; i < ProcessNumber; )
     {
-        
-        if ( (entry = readdir(dir)) == NULL )
+        ret = readdir_r(dir, &entry, &result);
+        if ( ret !=0 || result == NULL)
         {
             closedir(dir);
             dir = NULL;
             break;
         }
 
-        name = entry->d_name;
+        name = entry.d_name;
             
         if ( *name >= '0' && *name <= '9' )
         {

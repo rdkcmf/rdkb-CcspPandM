@@ -421,7 +421,8 @@ CONTINUE:
 }
 
 static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user, size_t *bufsize){
-    struct dirent *ptr;
+    struct dirent ptr;
+    struct dirent *result = NULL;
     DIR *dir;
     FILE* fd;
     FILE* revfd;
@@ -435,12 +436,15 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
     if(dir == NULL)
         return 0;
 
-    while(( ptr = readdir(dir)) != NULL){
-        if(ptr->d_name[0] == '.')
+    while( readdir_r(dir, &ptr, &result) == 0){
+        if( result == NULL)
+            break;
+
+        if(ptr.d_name[0] == '.')
             continue;
 
         memset(str, 0, sizeof(str));
-        sprintf(str, "cat %s/%s >> %s", path,ptr->d_name,MERGED_LOG_FILE);
+        sprintf(str, "cat %s/%s >> %s", path,ptr.d_name,MERGED_LOG_FILE);
         system(str);
     }
 

@@ -252,16 +252,18 @@ int _get_db_value(char * cmd, char * out, int len, char * val)
         char   buf[512] = {0};
         char * p = NULL;
 	char *ch;
+        char *st = NULL;
 
         fp = fopen(cmd, "r");
 
         if (fp)
         {
                 while(fgets(buf, sizeof(buf), fp) != NULL){
+				st = NULL;
 			ch = strstr(buf,val);
                         if(ch != NULL){
-                                p = strtok(buf,"=");
-                                p = strtok(NULL, "=");
+                                p = strtok_r(buf,"=", &st);
+                                p = strtok_r(NULL, "=", &st);
                                 strncpy(out, p, len-1);
 				return 0;
                         }

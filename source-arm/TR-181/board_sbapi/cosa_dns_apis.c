@@ -990,7 +990,8 @@ CosaDmlDnsInit
     CHAR                count[64] = {'\0'};
     INT                 rc = -1;
     CHAR                key_buf[64] = {'\0'};
-        
+    char                *st = NULL;
+
     ulogf(ULOG_SYSTEM, UL_DHCP, "%s:g_DnsClientServerNum %d\n", __FUNCTION__, g_DnsClientServerNum);
     CcspTraceInfo(("CosaDmlDnsInit\n"));
     
@@ -1019,13 +1020,14 @@ CosaDmlDnsInit
 
     while ( fgets(line, sizeof(line), fp) )
     {         
+        st = NULL;
         memset(str_key, 0, sizeof(str_key));
         memset(str_val, 0, sizeof(str_val));
 
-        pToken = strtok( line, " ");
+        pToken = strtok_r( line, " ", &st);
         if(pToken) strncpy(str_key, pToken, sizeof(str_key)-1 );
     
-        pToken = strtok(NULL, " ");
+        pToken = strtok_r(NULL, " ", &st);
         if(pToken) strncpy(str_val, pToken, sizeof(str_val)-1 );
 
         if ( str_val[ _ansc_strlen(str_val) - 1 ] == '\n' )
@@ -1969,11 +1971,11 @@ CosaDmlDnsRelayGetServers
     CHAR          line[256];
     char          *pToken;
     FILE          *fp;
-
+    char          *st = NULL;
     if(!Utopia_Init(&pCtx))
     {
         CcspTraceWarning(("Device.DNS: Error in initializing context!!! \n" ));
-	return NULL;
+        return NULL;
     }
     Utopia_RawGet(&pCtx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_count", buf, sizeof(buf) );
     *pulCount = atoi(buf);
@@ -1985,16 +1987,16 @@ CosaDmlDnsRelayGetServers
     if(g_CountDhcp != 0)
     {
         memset(buf, 0, sizeof(buf));
-	Utopia_RawGet(&pCtx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_forwarding_dhcp_instance_1", buf, sizeof(buf) );
+        Utopia_RawGet(&pCtx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_forwarding_dhcp_instance_1", buf, sizeof(buf) );
 
         if (strlen(buf) == 0){
-           CcspTraceWarning((" buf len %d\n", strlen(buf)));
-           g_dns_relay_forwarding[0].InstanceNumber = 0;
+            CcspTraceWarning((" buf len %d\n", strlen(buf)));
+            g_dns_relay_forwarding[0].InstanceNumber = 0;
         }else{
-           g_dns_relay_forwarding[0].InstanceNumber = atoi(buf);
-	   memset(str_val, 0, sizeof(str_val));
-	   Utopia_RawGet(&pCtx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_forwarding_dhcp_alias_1", str_val, sizeof(str_val) );
-	   AnscCopyString(g_dns_relay_forwarding[0].Alias, str_val);
+            g_dns_relay_forwarding[0].InstanceNumber = atoi(buf);
+            memset(str_val, 0, sizeof(str_val));
+            Utopia_RawGet(&pCtx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_forwarding_dhcp_alias_1", str_val, sizeof(str_val) );
+            AnscCopyString(g_dns_relay_forwarding[0].Alias, str_val);
         }
         fp = fopen("/tmp/udhcp.log", "r");
         /*fp = fopen("/mnt/appdata0/udhcp.log", "r");*/	/*Used for Unit testing*/
@@ -2010,29 +2012,30 @@ CosaDmlDnsRelayGetServers
         }
         while ( fgets(line, sizeof(line), fp) )
         {
-        memset(str_key, 0, sizeof(str_key));
-        memset(str_val, 0, sizeof(str_val));
-        if(strstr(line, "interface"))
-        {
-            pToken = strtok( line, ":");
-            if(pToken) strncpy(str_key, pToken, sizeof(str_key)-1 );
-            pToken = strtok(NULL, ":");
-            if(pToken) strncpy(str_val, pToken+1, strlen(pToken)-1);
-            str_val[strlen(pToken)-1] = '\0';
-            AnscCopyString(g_dns_relay_forwarding[0].Interface, str_val);
-        }
-        else if(strstr(line, "dns server"))
-        {
-            pToken = strtok( line, ":");
-            if(pToken) strncpy(str_key, pToken, sizeof(str_key)-1 );
-            pToken = strtok(NULL, "\n");
-            if(pToken) strncpy(str_val, pToken+1, strlen(pToken)-1);
-            str_val[strlen(pToken)-1] = '\0';
-            g_dns_relay_forwarding[0].DNSServer.Value = inet_addr(str_val);
-            CcspTraceWarning(("\n DNS Server entry created as a result of DHCP : %s  \n", str_val));
-        }
-        else
-            continue;
+            st = NULL;
+            memset(str_key, 0, sizeof(str_key));
+            memset(str_val, 0, sizeof(str_val));
+            if(strstr(line, "interface"))
+            {
+                pToken = strtok_r( line, ":", &st);
+                if(pToken) strncpy(str_key, pToken, sizeof(str_key)-1 );
+                pToken = strtok_r(NULL, ":", &st);
+                if(pToken) strncpy(str_val, pToken+1, strlen(pToken)-1);
+                str_val[strlen(pToken)-1] = '\0';
+                AnscCopyString(g_dns_relay_forwarding[0].Interface, str_val);
+            }
+            else if(strstr(line, "dns server"))
+            {
+                pToken = strtok_r( line, ":", &st);
+                if(pToken) strncpy(str_key, pToken, sizeof(str_key)-1 );
+                pToken = strtok_r(NULL, "\n", &st);
+                if(pToken) strncpy(str_val, pToken+1, strlen(pToken)-1);
+                str_val[strlen(pToken)-1] = '\0';
+                g_dns_relay_forwarding[0].DNSServer.Value = inet_addr(str_val);
+                CcspTraceWarning(("\n DNS Server entry created as a result of DHCP : %s  \n", str_val));
+            }
+            else
+                continue;
         }
         rc = Utopia_Set_DeviceDnsRelayForwarding(&pCtx, g_CountDhcp, (void*)&g_dns_relay_forwarding[0]);
         if(rc != 0)
@@ -2050,7 +2053,7 @@ CosaDmlDnsRelayGetServers
     {
         *pulCount = 0;
         CcspTraceWarning(("Device.DNS: GetDeviceDnsRelay memory alloc fail!!! \n" ));
-	Utopia_Free(&pCtx, 0);
+        Utopia_Free(&pCtx, 0);
         return NULL;
     }
     AnscCopyMemory(ret_pForward, g_dns_relay_forwarding, ulSize);

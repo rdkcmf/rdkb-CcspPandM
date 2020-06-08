@@ -8539,10 +8539,10 @@ char * getTime()
 {
     time_t timer;
     static char buffer[50];
-    struct tm* tm_info;
+    struct tm tm_info = {0};
     time(&timer);
-    tm_info = localtime(&timer);
-    strftime(buffer, 50, "%Y-%m-%d %H:%M:%S ", tm_info);
+    localtime_r(&timer,&tm_info);
+    strftime(buffer, 50, "%Y-%m-%d %H:%M:%S ", &tm_info);
     return buffer;
 }
 
