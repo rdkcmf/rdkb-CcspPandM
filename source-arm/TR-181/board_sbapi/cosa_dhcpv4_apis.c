@@ -571,7 +571,7 @@ static ANSC_STATUS CosaDmlDhcpcScan()
     char            *tok;
     int             nmu_dns_server =  0;
     FILE            *fp = NULL;
-    
+    char            *st = NULL;
     PCOSA_DML_DHCPC_FULL  pEntry = NULL;
     
     ULOGF(ULOG_SYSTEM, UL_DHCP, "%s:\n", __FUNCTION__);
@@ -615,10 +615,11 @@ static ANSC_STATUS CosaDmlDhcpcScan()
             memset(str_key, 0, sizeof(str_key));
             memset(str_val, 0, sizeof(str_val));
 
-            tok = strtok( line, ":");
+            st = NULL;
+            tok = strtok_r( line, ":", &st);
             if(tok) strncpy(str_key, tok, sizeof(str_key)-1 );
 
-            tok = strtok(NULL, ":");
+            tok = strtok_r(NULL, ":", &st);
             while( tok && (tok[0] == ' ') ) tok++; /*RDKB-6750, CID-33384, CID-32954; null check before use*/
             if(tok) strncpy(str_val, tok, sizeof(str_val)-1 );
 
@@ -663,8 +664,8 @@ static ANSC_STATUS CosaDmlDhcpcScan()
             {
                 nmu_dns_server = 0;               
                 char *tok;
-                
-                tok = strtok( str_val, " ");
+                char *sub_st = NULL;
+                tok = strtok_r( str_val, " ", &sub_st);
                 if(tok) strncpy(dns[0], tok, sizeof(dns[0])-1 ); 
                 ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: DNS 0 %s\n", __FUNCTION__, dns[0]);
                 if( dns[0] ) 
@@ -674,7 +675,7 @@ static ANSC_STATUS CosaDmlDhcpcScan()
                 }
                 while( tok != NULL)
                 {
-                    tok = strtok(NULL, " ");
+                    tok = strtok_r(NULL, " ", &sub_st);
                     ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: DNS %d %s\n", __FUNCTION__, nmu_dns_server, tok);
                     if(tok) strncpy(dns[nmu_dns_server], tok, sizeof(dns[nmu_dns_server])-1 );
                     if (strlen(dns[nmu_dns_server]) > 1 )
@@ -3655,7 +3656,7 @@ CosaDmlDhcpsGetLeaseTimeDuration
         PCOSA_DML_DHCPSV4_CLIENT_IPADDRESS pDhcpsClient
     )
 {
-    struct tm *t;
+    struct tm t = {0};
     time_t current_time;
     time_t create_time;
     time_t duration_time;
@@ -3667,7 +3668,7 @@ CosaDmlDhcpsGetLeaseTimeDuration
     current_time = time(NULL);
 
     /*get lease create time*/
-    t = localtime(&current_time);
+    localtime_r(&current_time, &t);
     strncpy(time_buf, pDhcpsClient->X_CISCO_COM_LeaseTimeCreation, strlen(pDhcpsClient->X_CISCO_COM_LeaseTimeCreation));
     for (i = 0; i < strlen(time_buf); i++)
     {
@@ -3676,8 +3677,8 @@ CosaDmlDhcpsGetLeaseTimeDuration
         if('Z' == time_buf[i])
             time_buf[i] = '\0';
     }
-    strptime(time_buf, "%Y-%m-%d %H:%M:%S", t);
-    create_time = mktime(t);
+    strptime(time_buf, "%Y-%m-%d %H:%M:%S", &t);
+    create_time = mktime(&t);
     
     /*calc lease time duration (s)*/
     duration_time = current_time - create_time;

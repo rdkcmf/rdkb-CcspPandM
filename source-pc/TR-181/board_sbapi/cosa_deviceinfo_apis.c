@@ -177,11 +177,12 @@ static char* findUntilFirstDelimiter(char* input) {
         char tempCopy[255] = { "\0" };
         char *tempStr;
         char* option = NULL;
+        char *st = NULL;
         option = (char*) calloc(125, sizeof(char));
 
         int inputMsgSize = strlen(input);
         strncpy(tempCopy, input, inputMsgSize);
-        tempStr = (char*) strtok(tempCopy, ";");
+        tempStr = (char*) strtok_r(tempCopy, ";", &st);
         if (tempStr) {
                 sprintf(option, "%s", tempStr);
         } else {
@@ -705,7 +706,8 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
     {
         static ULONG                    ProcessTimeStamp;
         ULONG                           ProcessNumber       = 0;
-        struct dirent               *entry;
+        struct dirent               entry;
+        struct dirent               *result = NULL;
         DIR                         *dir;
         FILE                        *fp;
         char*                       name;
@@ -717,6 +719,7 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
         ULONG                       utime;
         ULONG                       stime;
         char                        state[64];
+        int                         ret;
 
         dir = opendir("/proc");
         
@@ -728,14 +731,15 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
 
         for(;;)
         {
-            if ( (entry = readdir(dir)) == NULL )
+            ret = readdir_r(dir, &entry, &result);
+            if( ret != 0 || result == NULL)
             {
                 closedir(dir);
                 dir = NULL;
                 break;
             }
 
-            name = entry->d_name;
+            name = entry.d_name;
             
             if ( *name >= '0' && *name <= '9' )
             {
@@ -763,15 +767,15 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
         
         for(i = 0; i < ProcessNumber; )
         {
-        
-            if ( (entry = readdir(dir)) == NULL )
+            ret = readdir_r(dir, &entry, &result);
+            if( ret != 0 || result == NULL)
             {
                 closedir(dir);
                 dir = NULL;
                 break;
             }
 
-            name = entry->d_name;
+            name = entry.d_name;
             
             if ( *name >= '0' && *name <= '9' )
             {
@@ -1131,6 +1135,7 @@ int setXOpsReverseSshArgs(char* pString) {
     char* tempStr;
     char* option;
     char* hostLogin = NULL;
+    char *st = NULL;
 #ifdef ENABLE_SHORTS
     char* value = NULL;
 
@@ -1156,7 +1161,7 @@ int setXOpsReverseSshArgs(char* pString) {
             return 1;
         }
         strncpy(tempCopy, pString, inputMsgSize);
-        tempStr = (char*) strtok(tempCopy, ";");
+        tempStr = (char*) strtok_r(tempCopy, ";", &st);
         if (NULL != tempStr) {
             option = mapArgsToSSHOption(tempStr);
             strcpy(reverseSSHArgs, option);
@@ -1169,7 +1174,7 @@ int setXOpsReverseSshArgs(char* pString) {
             free(option);
         }
 
-        while ((tempStr = strtok(NULL, ";")) != NULL) {
+        while ((tempStr = strtok_r(NULL, ";", &st)) != NULL) {
             option = mapArgsToSSHOption(tempStr);
             if ( NULL != option) {
                 strcat(reverseSSHArgs, option);
@@ -1183,7 +1188,7 @@ int setXOpsReverseSshArgs(char* pString) {
     } else {
         strncpy(tempCopy, pString, inputMsgSize);
         memset(stunnelSSHArgs,'\0',sizeof(stunnelSSHArgs));
-        tempStr = (char*) strtok(tempCopy, ";");
+        tempStr = (char*) strtok_r(tempCopy, ";", &st);
         while (NULL != tempStr) {
             if(value = strstr(tempStr, "type=")) {
                 sprintf(ip_version_number, "%s",value + strlen("type="));
@@ -1201,7 +1206,7 @@ int setXOpsReverseSshArgs(char* pString) {
             } else {
                 AnscTraceWarning(("SHORTS does not accept invalid property\n"));
             }
-            tempStr = (char*) strtok(NULL, ";");
+            tempStr = (char*) strtok_r(NULL, ";", &st);
         }
         // for arguments for script in the form " ip_version_number localIP + remoteIP + remotePort + remoteTerminalRows
         //                                        + remoteTerminalColumns"

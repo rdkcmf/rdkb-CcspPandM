@@ -983,7 +983,8 @@ CosaDmlDnsInit
     CHAR                count[64] = {'\0'};
     INT                 rc = -1;
     CHAR                key_buf[64] = {'\0'};
-        
+    char                *st = NULL;
+
     ulogf(ULOG_SYSTEM, UL_DHCP, "%s:g_DnsClientServerNum %d\n", __FUNCTION__, g_DnsClientServerNum);
     CcspTraceInfo(("CosaDmlDnsInit\n"));
     
@@ -1012,13 +1013,14 @@ CosaDmlDnsInit
 
     while ( fgets(line, sizeof(line), fp) )
     {         
+		st = NULL;
         memset(str_key, 0, sizeof(str_key));
         memset(str_val, 0, sizeof(str_val));
 
-        pToken = strtok( line, " ");
+        pToken = strtok_r( line, " ", &st);
         if(pToken) strncpy(str_key, pToken, sizeof(str_key)-1 );
     
-        pToken = strtok(NULL, " ");
+        pToken = strtok_r(NULL, " ", &st);
         if(pToken) strncpy(str_val, pToken, sizeof(str_val)-1 );
 
         if ( str_val[ _ansc_strlen(str_val) - 1 ] == '\n' )
@@ -1978,6 +1980,7 @@ CosaDmlDnsRelayGetServers
     CHAR          line[256];
     char          *pToken;
     FILE          *fp;
+    char          *st = NULL;
 
     if(!Utopia_Init(&pCtx))
     {
@@ -2019,22 +2022,23 @@ CosaDmlDnsRelayGetServers
         }
         while ( fgets(line, sizeof(line), fp) )
         {
+		st = NULL;
         memset(str_key, 0, sizeof(str_key));
         memset(str_val, 0, sizeof(str_val));
         if(strstr(line, "interface"))
         {
-            pToken = strtok( line, ":");
+            pToken = strtok_r( line, ":", &st);
             if(pToken) strncpy(str_key, pToken, sizeof(str_key)-1 );
-            pToken = strtok(NULL, ":");
+            pToken = strtok_r(NULL, ":", &st);
             if(pToken) strncpy(str_val, pToken+1, strlen(pToken)-1);
             str_val[strlen(pToken)-1] = '\0';
             AnscCopyString(g_dns_relay_forwarding[0].Interface, str_val);
         }
         else if(strstr(line, "dns server"))
         {
-            pToken = strtok( line, ":");
+            pToken = strtok_r( line, ":", &st);
             if(pToken) strncpy(str_key, pToken, sizeof(str_key)-1 );
-            pToken = strtok(NULL, "\n");
+            pToken = strtok_r(NULL, "\n", &st);
             if(pToken) strncpy(str_val, pToken+1, strlen(pToken)-1);
             str_val[strlen(pToken)-1] = '\0';
             g_dns_relay_forwarding[0].DNSServer.Value = inet_addr(str_val);

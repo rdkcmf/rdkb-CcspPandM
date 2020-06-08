@@ -559,7 +559,7 @@ static ANSC_STATUS CosaDmlDhcpcScan()
     char            *tok;
     int             nmu_dns_server =  0;
     FILE            *fp = NULL;
-    
+    char            *st = NULL;
     PCOSA_DML_DHCPC_FULL  pEntry = NULL;
     
     ULOGF(ULOG_SYSTEM, UL_DHCP, "%s:\n", __FUNCTION__);
@@ -597,16 +597,17 @@ static ANSC_STATUS CosaDmlDhcpcScan()
             ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: failed to open udhcpc log file\n", __FUNCTION__); 
             return ANSC_STATUS_FAILURE;
         }   
-        
+ 
         while ( fgets(line, sizeof(line), fp) )
-        {         
+        { 
+            st = NULL;
             memset(str_key, 0, sizeof(str_key));
             memset(str_val, 0, sizeof(str_val));
 
-            tok = strtok( line, ":");
+            tok = strtok_r( line, ":", &st);
             if(tok) strncpy(str_key, tok, sizeof(str_key)-1 );
 
-            tok = strtok(NULL, ":");
+            tok = strtok_r(NULL, ":", &st);
             while( tok && (tok[0] == ' ') ) tok++; /*RDKB-6750, CID-33384, CID-32954; null check before use*/
             if(tok) strncpy(str_val, tok, sizeof(str_val)-1 );
 
@@ -651,8 +652,9 @@ static ANSC_STATUS CosaDmlDhcpcScan()
             {
                 nmu_dns_server = 0;               
                 char *tok;
+                char *st_val = NULL;
                 
-                tok = strtok( str_val, " ");
+                tok = strtok_r( str_val, " ", &st_val);
                 if(tok) strncpy(dns[0], tok, sizeof(dns[0])-1 ); 
                 ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: DNS 0 %s\n", __FUNCTION__, dns[0]);
                 if( dns[0] ) 
@@ -662,7 +664,7 @@ static ANSC_STATUS CosaDmlDhcpcScan()
                 }
                 while( tok != NULL)
                 {
-                    tok = strtok(NULL, " ");
+                    tok = strtok_r(NULL, " ", &st_val);
                     ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: DNS %d %s\n", __FUNCTION__, nmu_dns_server, tok);
                     if(tok) strncpy(dns[nmu_dns_server], tok, sizeof(dns[nmu_dns_server])-1 );
                     if (strlen(dns[nmu_dns_server]) > 1 )

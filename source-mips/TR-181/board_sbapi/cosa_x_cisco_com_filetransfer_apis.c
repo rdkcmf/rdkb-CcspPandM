@@ -109,6 +109,7 @@ VerifyFileFormat (char* configFilePath)
     char configLine [MAX_LINE_SIZE];
     char* configField;
     char* Extension;
+    char* st = NULL;
     /* Reading reference file and populating array of refrence strings */
 
     refFile = fopen ( TRUE_STATIC_IP_CONFIG_REFERENCE_FILE, "r" );
@@ -143,7 +144,8 @@ VerifyFileFormat (char* configFilePath)
     {
         while (fgets (configLine, sizeof configLine, configFile) != NULL )
         {
-            configField = strtok (configLine, "  \t");
+			st = NULL;
+            configField = strtok_r (configLine, "  \t", &st);
             foundMatch = 0;
 
             for (i = 0; ((i < totalRefLines) && (foundMatch == 0)); i++)

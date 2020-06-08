@@ -1255,8 +1255,9 @@ ULONG NetmaskToNumber(char *netmask)
     ULONG val;
     ULONG i;
     ULONG count = 0;
+    char *st = NULL;
 
-    pch = strtok(netmask, ".");
+    pch = strtok_r(netmask, ".", &st);
     while (pch != NULL)
     {
         val = atoi(pch);
@@ -1268,7 +1269,7 @@ ULONG NetmaskToNumber(char *netmask)
             }
             val = val >> 1;
         }
-        pch = strtok(NULL,".");
+        pch = strtok_r(NULL,".", &st);
     }
     return count;
 }
@@ -1288,7 +1289,7 @@ CosaUtilGetStaticRouteTable
     char line_buf[512];
     int line_count;
     char *pch = NULL;
-
+    char *st = NULL;
     if (NULL == count || NULL == out_sroute) {
         return ANSC_STATUS_FAILURE;
     }
@@ -1404,17 +1405,18 @@ CosaUtilGetStaticRouteTable
 
             if (((fp2 = popen(cmd, "r")) != NULL) && (fgets(line_buf, sizeof(line_buf), fp2)))
             {
-                pch = strtok(line_buf, " ");
+				st = NULL;
+                pch = strtok_r(line_buf, " ", &st);
 
                 while(pch != NULL)
                 {
                     if (!strcmp(pch, "proto"))
                     {
-                        pch = strtok(NULL, " ");
+                        pch = strtok_r(NULL, " ", &st);
                         strcpy(sroute[i].origin, pch);
                         break;
                     }
-                    pch = strtok(NULL, " ");
+                    pch = strtok_r(NULL, " ", &st);
                 }
             }
         }

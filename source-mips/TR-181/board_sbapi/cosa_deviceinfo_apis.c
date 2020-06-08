@@ -338,11 +338,12 @@ static char* findUntilFirstDelimiter(char* input) {
         char tempCopy[255] = { "\0" };
         char *tempStr;
         char* option = NULL;
+        char *st = NULL;
         option = (char*) calloc(125, sizeof(char));
 
         int inputMsgSize = strlen(input);
         strncpy(tempCopy, input, inputMsgSize);
-        tempStr = (char*) strtok(tempCopy, ";");
+        tempStr = (char*) strtok_r(tempCopy, ";", &st);
         if (tempStr) {
                 sprintf(option, "%s", tempStr);
         } else {
@@ -1238,7 +1239,8 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
 
     static ULONG                ProcessTimeStamp;
     ULONG                       ProcessNumber       = 0;
-    struct dirent               *entry;
+    struct dirent               entry;
+    struct dirent               *result = NULL;
     DIR                         *dir;
     FILE                        *fp;
     char*                       name;
@@ -1250,6 +1252,7 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
     ULONG                       utime;
     ULONG                       stime;
     char                        state[64];
+    int                         ret;
 
     dir = opendir("/proc");
         
@@ -1261,14 +1264,15 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
 
     for(;;)
     {
-        if ( (entry = readdir(dir)) == NULL )
+        ret = readdir_r(dir, &entry, &result);
+        if (ret != 0 || result == NULL)
         {
             closedir(dir);
             dir = NULL;
             break;
         }
 
-        name = entry->d_name;
+        name = entry.d_name;
             
         if ( *name >= '0' && *name <= '9' )
         {
@@ -1296,15 +1300,15 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
         
     for(i = 0; i < ProcessNumber; )
     {
-        
-        if ( (entry = readdir(dir)) == NULL )
+        ret = readdir_r(dir, &entry, &result);
+        if (ret != 0 || result == NULL)
         {
             closedir(dir);
             dir = NULL;
             break;
         }
 
-        name = entry->d_name;
+        name = entry.d_name;
             
         if ( *name >= '0' && *name <= '9' )
         {
@@ -1883,6 +1887,7 @@ int setXOpsReverseSshArgs(char* pString) {
     char* host = NULL;
     int rows = 0;
     int columns = 0;
+    char *st = NULL;
 #endif
 
     int inputMsgSize = strlen(pString);
@@ -1899,7 +1904,7 @@ int setXOpsReverseSshArgs(char* pString) {
         }
 
         strncpy(tempCopy, pString, inputMsgSize);
-        tempStr = (char*) strtok(tempCopy, ";");
+        tempStr = (char*) strtok_r(tempCopy, ";", &st);
         if (NULL != tempStr) {
             option = mapArgsToSSHOption(tempStr);
             strcpy(reverseSSHArgs, option);
@@ -1912,7 +1917,7 @@ int setXOpsReverseSshArgs(char* pString) {
             free(option);
         }
 
-        while ((tempStr = strtok(NULL, ";")) != NULL) {
+        while ((tempStr = strtok_r(NULL, ";", &st)) != NULL) {
             option = mapArgsToSSHOption(tempStr);
             if ( NULL != option) {
                 strcat(reverseSSHArgs, option);
@@ -1926,7 +1931,7 @@ int setXOpsReverseSshArgs(char* pString) {
     } else {
         strncpy(tempCopy, pString, inputMsgSize);
         memset(stunnelSSHArgs,'\0',sizeof(stunnelSSHArgs));
-        tempStr = (char*) strtok(tempCopy, ";");
+        tempStr = (char*) strtok_r(tempCopy, ";", &st);
         while (NULL != tempStr) {
             if(value = strstr(tempStr, "type=")) {
                 sprintf(ip_version_number, "%s",value + strlen("type="));
@@ -1944,7 +1949,7 @@ int setXOpsReverseSshArgs(char* pString) {
             } else {
                 AnscTraceWarning(("SHORTS does not accept invalid property\n"));
             }
-            tempStr = (char*) strtok(NULL, ";");
+            tempStr = (char*) strtok_r(NULL, ";", &st);
         }
         // for arguments for script in the form " ip_version_number + localIP + remoteIP + remotePort + remoteTerminalRows
         //                                        + remoteTerminalColumns"
@@ -3700,6 +3705,7 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 		  IsActionValid 	= FALSE,
 		  IsSourceValid 	= FALSE,
 		  IsDelayValid		= FALSE;
+        char *st = NULL;
 	CcspTraceWarning(("%s %d - String :%s", __FUNCTION__, __LINE__, ( pValue != NULL ) ?  pValue : "NULL" ));
 	if (strcasestr(pValue, "delay=") != NULL) {
 		IsDelayValid = TRUE;
@@ -3753,8 +3759,8 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 			     *subStringForDummy  = NULL;
 
 			strcpy( tmpCharBuffer,	pValue );
-			subStringForDelay       = strtok( tmpCharBuffer, " " );
-			subStringForDummy   = strtok( NULL, " " );
+			subStringForDelay       = strtok_r( tmpCharBuffer, " ", &st );
+			subStringForDummy   = strtok_r( NULL, " ", &st );
 			if ( strcasestr(subStringForDelay, "delay=") != NULL )
 			{
 				if ( subStringForDummy != NULL )
@@ -3779,8 +3785,8 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 			     *subStringForDummy  = NULL;
 
 			strcpy( tmpCharBuffer,	pValue );
-			subStringForSource   = strtok( tmpCharBuffer, " " );
-			subStringForDummy   = strtok( NULL, " " );
+			subStringForSource   = strtok_r( tmpCharBuffer, " ", &st );
+			subStringForDummy   = strtok_r( NULL, " ", &st );
 			if ( strcasestr(subStringForSource, "source=") != NULL )
 			{
 				if ( subStringForDummy != NULL )
@@ -3805,13 +3811,13 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 				*subStringForSource 	 = NULL,
 				*subStringForDummy  = NULL;
 			strcpy( tmpCharBuffer,	pValue );
-			subStringForDelay   = strtok( tmpCharBuffer, " " );
+			subStringForDelay   = strtok_r( tmpCharBuffer, " ", &st );
 			if ( (strcasestr(subStringForDelay, "delay=") != NULL )  || (strcasestr(subStringForDelay, "source=") != NULL ) )
 			{
-				subStringForSource = strtok( NULL, " " );
+				subStringForSource = strtok_r( NULL, " ", &st );
 				if ( (strcasestr(subStringForSource, "delay=") != NULL )  || (strcasestr(subStringForSource, "source=") != NULL ) )
 				{
-					subStringForDummy   = strtok( NULL, " " );
+					subStringForDummy   = strtok_r( NULL, " ", &st );
 					if( subStringForDummy != NULL )
 					{
 						IsProceedFurther = FALSE;

@@ -3419,6 +3419,7 @@ static int get_active_lanif(unsigned int insts[], unsigned int *num)
     int i = 0;
     char if_name[16] = {0};
     char buf[64] = {0};
+    char *st = NULL;
 
     syscfg_get(NULL, "lan_pd_interfaces", lan_pd_if, sizeof(lan_pd_if));
 
@@ -3429,7 +3430,7 @@ static int get_active_lanif(unsigned int insts[], unsigned int *num)
 
     commonSyseventGet("multinet-instances", active_insts, sizeof(active_insts));
 
-    p = strtok(active_insts, " ");
+    p = strtok_r(active_insts, " ", &st);
 
     while (p != NULL) {
         snprintf(buf, sizeof(buf), "multinet_%s-name", p);
@@ -3440,7 +3441,7 @@ static int get_active_lanif(unsigned int insts[], unsigned int *num)
             i++;
         }
 
-        p = strtok(NULL, " ");
+        p = strtok_r(NULL, " ", &st);
     }
 
     *num = i;
@@ -3697,7 +3698,7 @@ static int get_pd_pool(pd_pool_t *pool)
 static int get_iapd_info(ia_pd_t *iapd)
 {
     char evt_val[256] = {0};
- 
+    char *st = NULL;
     if(iapd == NULL)
       return -1;
 
@@ -3707,36 +3708,39 @@ static int get_iapd_info(ia_pd_t *iapd)
       if(!strcmp(evt_val,"'\\0'"))
 	strcpy(iapd->t1,"0");
       else
-	strcpy(iapd->t1,strtok (evt_val,"'"));
+	strcpy(iapd->t1,strtok_r (evt_val,"'",&st));
     }
     CcspTraceInfo(("[%s] iapd->t1: %s\n", __FUNCTION__, iapd->t1));
 
     commonSyseventGet(COSA_DML_DHCPV6C_PREF_T2_SYSEVENT_NAME, evt_val, sizeof(evt_val));
+	st = NULL;
     if(evt_val[0]!='\0')
     {
       if(!strcmp(evt_val,"'\\0'"))
 	strcpy(iapd->t2,"0");
       else
-	strcpy(iapd->t2,strtok (evt_val,"'"));
+	strcpy(iapd->t2,strtok_r (evt_val,"'", &st));
     }
     CcspTraceInfo(("[%s] iapd->t2: %s\n", __FUNCTION__, iapd->t2));
 
     commonSyseventGet(COSA_DML_DHCPV6C_PREF_PRETM_SYSEVENT_NAME, evt_val, sizeof(evt_val));
+	st = NULL;
     if(evt_val[0]!='\0')
     {
       if(!strcmp(evt_val,"'\\0'"))
 	strcpy(iapd->pretm,"0");
       else
-	strcpy(iapd->pretm,strtok (evt_val,"'"));
+	strcpy(iapd->pretm,strtok_r (evt_val,"'", &st));
     }
     CcspTraceInfo(("[%s] iapd->pretm: %s\n", __FUNCTION__, iapd->pretm));
 
+	st = NULL;
     if(evt_val[0]!='\0')
     {
       if(!strcmp(evt_val,"'\\0'"))
 	strcpy(iapd->vldtm,"0");
       else
-	strcpy(iapd->vldtm,strtok (evt_val,"'"));
+	strcpy(iapd->vldtm,strtok_r (evt_val,"'", &st));
     }
     CcspTraceInfo(("[%s] iapd->vldtm: %s\n", __FUNCTION__, iapd->vldtm));
 

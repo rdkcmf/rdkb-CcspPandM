@@ -5192,7 +5192,8 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
 }
 
 static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
-    struct dirent *ptr;    
+    struct dirent ptr;    
+    struct dirent *result = NULL;    
     DIR *dir;
     PCOSA_DML_IA_LOG_ENTRY entry = NULL;
     char str[128];
@@ -5203,13 +5204,15 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
     if(dir == NULL)
         return NULL;
 
-    while(( ptr = readdir(dir)) != NULL){
-        if(ptr->d_name[0] == '.')
+    while( readdir_r(dir, &ptr, &result) == 0){
+        if(result == NULL)
+            break;
+        if(ptr.d_name[0] == '.')
             continue;
-        //sprintf(fName, "%s/%s", FIREWALL_LOG_DIR,ptr->d_name);
+        //sprintf(fName, "%s/%s", FIREWALL_LOG_DIR,ptr.d_name);
 
         memset(str, 0, sizeof(str));
-        sprintf(str, "cat %s/%s >> %s", FIREWALL_LOG_DIR,ptr->d_name,MERGED_FW_LOG_FILE);
+        sprintf(str, "cat %s/%s >> %s", FIREWALL_LOG_DIR,ptr.d_name,MERGED_FW_LOG_FILE);
         system(str);
     }
 
@@ -5225,11 +5228,11 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
 #define FW_LOG_TIME_OLD_FORMAT_LEN 15
         ULONG tmp = *count;
         char year[6];
-        struct tm *ptime;
+        struct tm ptime = {0};
         time_t t;
 
         t=time(NULL);
-        ptime=localtime(&t);
+        localtime_r(&t, &ptime);
         year[0] = '\0';
 #endif
         get_log_entry(SORT_FW_LOG_FILE, &entry, count);
@@ -5242,9 +5245,12 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
                     /* this is a temp log file, Get current year */
                     if(strstr(year, "9999") != NULL)
                     {
-                        sprintf(year, " %04d", ptime->tm_year + 1900); 
+                        sprintf(year, " %04d", ptime.tm_year + 1900); 
                     }else
-                        sprintf(year, " %c%c%c%c", ptr->d_name[0], ptr->d_name[1], ptr->d_name[2], ptr->d_name[3]);
+                        // below line would have caused crash earlier as ptr would have been NULL.
+                        // earlier ptr was pointer which would be NULL after the end of while readdir loop ends.
+                        // hence dereferencing a NULL pointer would cause crash.
+                        sprintf(year, " %c%c%c%c", ptr.d_name[0], ptr.d_name[1], ptr.d_name[2], ptr.d_name[3]);
                 }
                 strncat(entry[tmp].OccuranceTime, year, 5);
             }   
@@ -5567,15 +5573,15 @@ static int prepare_firewall_log(char *logFilePath)
 {
     char buf[MAX_LINE_LEN] = "";
     time_t curTime; 
-    struct tm *localTime; 
+    struct tm localTime = {0}; 
     char *logTypeName = "USGv2_Firewall_Logs";
 
     curTime=time(NULL); 
-    localTime = localtime(&curTime); 
+    localtime_r(&curTime, &localTime); 
     
     system("grep 'UTOPIA: FW' /var/log/kernel > /var/fwlog");
 
-    snprintf(logFilePath, MAX_PATH_LEN, "/var/%s_%d_%d_%d_%d_%d_%d.txt", logTypeName, localTime->tm_year+1900, localTime->tm_mon+1, localTime->tm_mday, localTime->tm_hour, localTime->tm_min, localTime->tm_sec); 
+    snprintf(logFilePath, MAX_PATH_LEN, "/var/%s_%d_%d_%d_%d_%d_%d.txt", logTypeName, localTime.tm_year+1900, localTime.tm_mon+1, localTime.tm_mday, localTime.tm_hour, localTime.tm_min, localTime.tm_sec); 
     
     //compress attachment if necessary
     //snprintf(buf, sizeof(buf), "tar cvf %s /var/fwlog", logFilePath);

@@ -3114,7 +3114,7 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
 }
 
 static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
-    struct dirent *ptr;
+    struct dirent ptr;
     PCOSA_DML_IA_LOG_ENTRY entry = NULL;
     char str[128];
 
@@ -3147,7 +3147,8 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
                     {
                         sprintf(year, " %04d", ptime->tm_year + 1900);
                     }else
-                        sprintf(year, " %c%c%c%c", ptr->d_name[0], ptr->d_name[1], ptr->d_name[2], ptr->d_name[3]);
+                        // below line would give garbage value as ptr is not set
+                        sprintf(year, " %c%c%c%c", ptr.d_name[0], ptr.d_name[1], ptr.d_name[2], ptr.d_name[3]);
                 }
                 strncat(entry[tmp].OccuranceTime, year, 5);
             }
