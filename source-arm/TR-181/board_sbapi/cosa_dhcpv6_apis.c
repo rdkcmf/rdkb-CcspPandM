@@ -1464,7 +1464,11 @@ BOOL g_dhcpv6_server_prefix_ready = FALSE;
 ULONG g_dhcpv6s_restart_count = 0;
 ULONG g_dhcpv6s_refresh_count = 0;
 
-#define DHCPV6S_SERVER_PID_FILE   "/var/lib/dibbler/server.pid"
+#if defined (_HUB4_PRODUCT_REQ_)
+    #define DHCPV6S_SERVER_PID_FILE   "/etc/dibbler/server.pid"
+#else
+    #define DHCPV6S_SERVER_PID_FILE   "/var/lib/dibbler/server.pid"
+#endif
 
 #define DHCPVS_DEBUG_PRINT \
 fprintf(stderr,"%s -- %d !!!!!!!!!!!!!!!!!!\n", __FUNCTION__, __LINE__);
@@ -3245,6 +3249,11 @@ static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger)
     return 0;
 }
 
+/*SKYH4-3227 : variable to check if process is started already*/
+#if defined (_HUB4_PRODUCT_REQ_)
+    BOOL  g_dhcpv6_server_started = FALSE;
+#endif
+
 /*
  *  DHCP Server
  */
@@ -3257,6 +3266,11 @@ static int _dibbler_server_operation(char * arg)
 
     if (!strncmp(arg, "stop", 4))
     {
+        /*stop the process only if it is started*/
+        #if defined (_HUB4_PRODUCT_REQ_)
+            if ( !g_dhcpv6_server_started )
+                goto EXIT;
+        #endif
         fd = open(DHCPV6S_SERVER_PID_FILE, O_RDONLY);
         if (fd >= 0) {
             fprintf(stderr, "%s -- %d stop\n", __FUNCTION__, __LINE__);
@@ -3289,6 +3303,10 @@ static int _dibbler_server_operation(char * arg)
         if (g_dhcpv6_server_prefix_ready && g_lan_ready)
         {
             fprintf(stderr, "%s -- %d start %d\n", __FUNCTION__, __LINE__, g_dhcpv6_server);
+
+            #if defined (_HUB4_PRODUCT_REQ_)
+                g_dhcpv6_server_started = TRUE;
+            #endif
 
             sprintf(cmd, "%s start", SERVER_BIN);
             system(cmd);
