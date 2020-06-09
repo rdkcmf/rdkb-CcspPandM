@@ -499,12 +499,14 @@ RemoteAccess_GetParamBoolValue
     if( AnscEqualString(ParamName, "HttpEnable", TRUE))
     {
         *pBool = pMyObject->RaCfg.HttpEnable;
+        CcspTraceNotice(("RA_HTTP_split:Feature Switch Remote Access HTTP %d\n",*pBool));
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "HttpsEnable", TRUE))
     {
         *pBool = pMyObject->RaCfg.HttpsEnable;
+        CcspTraceNotice(("RA_HTTPS_split :Feature Switch Remote Access HTTPS %d\n",*pBool));
         return TRUE;
     }
 

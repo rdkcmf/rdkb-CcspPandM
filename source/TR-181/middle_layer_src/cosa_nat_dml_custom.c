@@ -125,6 +125,7 @@ NAT_GetParamBoolValue_Custom
     if (AnscEqualString(ParamName, "X_Comcast_com_EnablePortMapping", TRUE))
     {
         *pBool = COSA_DML_NAT_CUSTOM_GET_ENABLEPORTMAPPING(pNat);
+        CcspTraceNotice(("PF_split:Feature Switch Port Forwarding %d\n",*pBool));
         return TRUE;
     }
     if (AnscEqualString(ParamName, "X_Comcast_com_EnableHSPortMapping", TRUE))

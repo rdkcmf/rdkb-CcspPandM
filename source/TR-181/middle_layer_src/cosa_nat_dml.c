@@ -635,7 +635,7 @@ X_CISCO_COM_DMZ_GetParamBoolValue
     {
         /* collect value */
         *pBool = pDmz->bEnabled;
-
+        CcspTraceNotice(("DMZ_split:Feature Switch DMZ %d\n", *pBool));
         return TRUE;
     }
 
@@ -2464,6 +2464,8 @@ NatPortTrigger_GetParamBoolValue
     {
         if (CosaDmlNatGetPortTriggerEnable(pBool) != ANSC_STATUS_SUCCESS)
             return FALSE;
+ 
+        CcspTraceNotice(("PT_split:Feature Switch Port Triggers %d\n", *pBool));
         return TRUE;
     }
 
