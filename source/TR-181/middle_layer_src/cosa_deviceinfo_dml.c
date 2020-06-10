@@ -10479,6 +10479,126 @@ WiFiInterworking_SetParamBoolValue
     prototype:
 
         BOOL
+        WiFiPasspoint_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+WiFiPasspoint_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+
+ #if defined(_COSA_INTEL_XB3_ARM_) 
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+	/* Collect Value */
+	char *strValue = NULL;
+	char str[2];
+	int retPsmGet = CCSP_SUCCESS;
+
+	retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WiFi-Passpoint.Enable", NULL, &strValue);
+	if (retPsmGet == CCSP_SUCCESS) {
+	    *pBool = _ansc_atoi(strValue);
+	    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+	}
+	else
+	    *pBool = FALSE;
+	return TRUE;
+    }
+
+    return FALSE;
+#endif
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        WiFiPasspoint_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+WiFiPasspoint_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+
+ #if defined(_COSA_INTEL_XB3_ARM_)
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+	char str[2];
+	int retPsmGet = CCSP_SUCCESS;
+
+	sprintf(str,"%d",bValue);
+	retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WiFi-Passpoint.Enable", ccsp_string, str);
+	if (retPsmGet != CCSP_SUCCESS) {
+	    CcspTraceError(("Set failed for WiFiPasspointSupport \n"));
+	    return ANSC_STATUS_FAILURE;
+	}
+	CcspTraceInfo(("Successfully set WiFiPasspointSupport \n"));
+	return TRUE;
+    }
+    return FALSE;
+#endif
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
         IPv6onLnF_SetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,
