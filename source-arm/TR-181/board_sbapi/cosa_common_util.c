@@ -429,7 +429,7 @@ EvtDispterEventInits(void)
     } 
 
 	//register ipv4_wan_ipaddr event
-    //sysevent_set_options(se_fd, token, "ipv4_wan_ipaddr", TUPLE_FLAG_EVENT);
+    sysevent_set_options(se_fd, token, "ipv4_wan_ipaddr", TUPLE_FLAG_EVENT);
     rc = sysevent_setnotification(se_fd, token, "ipv4_wan_ipaddr", &async_id[2]);
     if (rc) {
        return(EVENT_ERROR);
