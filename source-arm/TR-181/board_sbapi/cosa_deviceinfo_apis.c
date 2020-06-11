@@ -2965,9 +2965,21 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 					if ( strcmp(paramObjVal->valuestring, "true") != 0)
 					{
 						//to prevent traffic being redirected to lan ip
-						syscfg_set(NULL, "CaptivePortal_Enable", "false");
-						syscfg_commit();
-						CcspTraceWarning(("%s - CaptivePortal_Enable set to false %s\n", __FUNCTION__));
+						if(syscfg_set(NULL, "CaptivePortal_Enable", "false") == 0)
+                                                {
+						   if ( syscfg_commit() == 0)
+						   {
+							   CcspTraceWarning(("%s - CaptivePortal_Enable set to false\n", __FUNCTION__));
+						   }
+						   else
+						   {
+							   CcspTraceWarning(("syscfg_commit failed for CaptivePortal_Enable\n"));
+						   }
+					        }
+						else
+						{
+						    CcspTraceWarning(("syscfg_set failed for CaptivePortal_Enable\n"))
+						}
 					}
 					FillParamBool(partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Support", &PUiBrand->WifiPersonal.Support);
 				}
@@ -3075,9 +3087,21 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 						syscfg_get( NULL, "AllowEthernetWAN", buf, sizeof(buf));
 						if (buf[0] == '\0')
 						{
-							syscfg_set(NULL, "AllowEthernetWAN", AllowEthernetWAN);
-							syscfg_commit();
-							CcspTraceWarning(("%s - AllowEthernetWAN is %s\n", __FUNCTION__,AllowEthernetWAN));
+							if (syscfg_set(NULL, "AllowEthernetWAN", AllowEthernetWAN) == 0)
+							{
+							   if (syscfg_commit() == 0)
+							   {
+								CcspTraceWarning(("%s - AllowEthernetWAN is %s\n", __FUNCTION__,AllowEthernetWAN));
+							   }
+							   else
+							   {
+								CcspTraceWarning(("syscfg_commit failed for AllowEthernetWAN\n"));
+							   }
+							}
+                                                        else
+                                                        {
+                                                            CcspTraceWarning(("syscfg_set failed for AllowEthernetWAN\n"));
+                                                        }
 							AllowEthernetWAN = NULL;
 						}
 						else
@@ -3139,9 +3163,21 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 						syscfg_get( NULL, "DSCP_InitialForwardedMark", buf, sizeof(buf));
 						if (buf[0] == '\0')
 						{
-							syscfg_set(NULL, "DSCP_InitialForwardedMark", InitialForwardedMark);
-							syscfg_commit();
-							CcspTraceWarning(("%s - InitialForwardedMark is %s\n", __FUNCTION__,InitialForwardedMark));
+							if(syscfg_set(NULL, "DSCP_InitialForwardedMark", InitialForwardedMark) == 0)
+							{
+							    if(syscfg_commit() == 0)
+							    {
+								    CcspTraceWarning(("%s - InitialForwardedMark is %s\n", __FUNCTION__,InitialForwardedMark));
+							    }
+							    else
+							    {
+								    CcspTraceWarning(("syscfg_commit failed for InitialForwardedMark\n"));		 
+							    }
+							}
+							else
+							{
+							    CcspTraceWarning(("syscfg_set failed for InitialForwardedMark\n"));
+							}
 							InitialForwardedMark = NULL;
 						}
 						else
