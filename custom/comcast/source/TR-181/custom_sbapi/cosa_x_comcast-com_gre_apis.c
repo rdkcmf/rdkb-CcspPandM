@@ -108,7 +108,11 @@
 #define GRE_OBJ_GRETUIF           "dmsb.hotspot.tunnel.%lu.interface."
 #define GRETUIF_PARAM_ENABLE        GRE_OBJ_GRETUIF "%lu.Enable"
 #define GRETUIF_PARAM_LOCALIFS      GRE_OBJ_GRETUIF "%lu.LocalInterfaces"		//LocalInterfaces: Device.WiFi.SSID.5.,Device.WiFi.SSID.6.
+#if defined (_BWG_PRODUCT_REQ_)
+#define GRETUIF_PARAM_VLANID        GRE_OBJ_GRETUIF "%lu.XfinityNewVLANID"
+#else 
 #define GRETUIF_PARAM_VLANID        GRE_OBJ_GRETUIF "%lu.VLANID"					//VLANID: 102
+#endif
 #define GRETUIF_PARAM_ASSOBRS      	GRE_OBJ_GRETUIF "%lu.AssociatedBridges"		//AssociatedBridges: Device.Bridging.Bridge.3.,Device.Bridging.Bridge.4.
 #define GRETUIF_PARAM_ASSOBRSWFP   	GRE_OBJ_GRETUIF "%lu.AssociatedBridgesWiFiPort"	//AssociatedBridgesWiFiPort: Device.Bridging.Bridge.3.Port.2.,Device.Bridging.Bridge.4.Port.2.
 
