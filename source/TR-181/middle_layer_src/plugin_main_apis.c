@@ -116,7 +116,6 @@
 #if  CFG_USE_Common_Util
 #include "cosa_common_util.h"
 #endif
-#include "cosa_dev_fingerprint_internal.h"
 static void CheckAndSetRebootReason();
 
 #if defined(_PLATFORM_RASPBERRYPI_)
@@ -373,9 +372,6 @@ if(id != 0)
     AnscTraceWarning(("  CosaTSIPCreate done!\n"));
 #endif
     
-    pMyObject->hDeviceFingerprint          = (ANSC_HANDLE)CosaDeviceFingerprintCreate();
-    AnscTraceWarning(("  CosaDeviceFingerprintCreate done!\n"));
-
     pMyObject->hRabid          = (ANSC_HANDLE)CosaRabidCreate();
     AnscTraceWarning(("  CosaRabidCreate done!\n"));
 

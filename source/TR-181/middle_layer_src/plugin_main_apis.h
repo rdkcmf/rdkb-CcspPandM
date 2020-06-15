@@ -208,7 +208,6 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
     ANSC_HANDLE                  hHotspot;                                                  \
     ANSC_HANDLE                  hTSIP;                                                     \
     ANSC_HANDLE                  hFileTransfer;                                             \
-    ANSC_HANDLE                  hDeviceFingerprint;                                        \
     ANSC_HANDLE                  hRabid;                                                    \
     ANSC_HANDLE                  hAdvPC;                                                    \
     ANSC_HANDLE                  hPrivacyProtection;                                        \
