@@ -4028,20 +4028,6 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
             pthread_create(&tid,NULL,&set_mesh_disabled,NULL);
         }
 
-        if (is_device_finger_printing_enabled())
-        {
-            if(bridge_info.mode == BRIDGE_MODE_STATIC)
-            {
-                CcspTraceWarning(("Setting Device Finger Printing to disabled in Bridge mode\n"));
-                system("/usr/ccsp/pam/launch_adv_security.sh -disable &");
-            }
-            else if (bridge_info.mode == BRIDGE_MODE_OFF)
-            {
-                CcspTraceWarning(("Setting Device Finger Printing to enabled in Router mode\n"));
-                system("/usr/ccsp/pam/launch_adv_security.sh -enable &");
-            }
-        }
-
         ret = ANSC_STATUS_SUCCESS;
     }
     return ret;
