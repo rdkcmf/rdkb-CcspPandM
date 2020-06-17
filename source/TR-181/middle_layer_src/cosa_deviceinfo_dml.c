@@ -92,7 +92,7 @@ extern char g_currentParamFullName[512];
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 extern void* g_pDslhDmlAgent;
-static bool g_clearDB = false;
+static BOOL g_clearDB = false;
 
 #define MAX_ALLOWABLE_STRING_LEN  256
 
