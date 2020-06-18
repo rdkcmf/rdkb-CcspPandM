@@ -76,6 +76,7 @@
 extern ANSC_HANDLE bus_handle;
 extern void* g_pDslhDmlAgent;
 #endif
+#include "secure_wrapper.h"
 
 /**
  * common callback function dispatcher for event
@@ -379,7 +380,7 @@ EvtDispterWanIpAddrsCallback(char *ip_addrs)
 #ifdef DUAL_CORE_XB3
     CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
     CcspTraceInfo(("EvtDispterWanIpAddrsCallback - erouter0 IP = %s\n",ip_addrs));
-    vsystem("/usr/ccsp/pam/erouter0_ip_sync.sh %s &",ip_addrs);
+    v_secure_system("/usr/ccsp/pam/erouter0_ip_sync.sh %s &",ip_addrs);
 #endif
 #if defined(_XB6_PRODUCT_REQ_)
     CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));

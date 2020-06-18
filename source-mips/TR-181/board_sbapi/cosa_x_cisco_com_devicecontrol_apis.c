@@ -76,6 +76,7 @@
 #include "ccsp_dm_api.h"
 #include <arpa/inet.h>
 #include "platform_hal.h"
+#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -430,22 +431,18 @@ static int detect_process(char *process_name)
 {
     FILE *ptr;
     char buff[512];
-    char ps[128];
 
-    sprintf(ps, "ps | grep -v grep | grep -c %s", process_name);
-
-    if ((ptr=popen(ps, "r"))!=NULL)
+    if ((ptr=v_secure_popen("r", "ps | grep -v grep | grep -c %s", process_name))!=NULL)
     {
         while (fgets(buff,512,ptr)!=NULL)
         {
             if (atoi(buff)>=1)
             {
-                pclose(ptr);
+                v_secure_pclose(ptr);
                 return 1;
             }
         }
-
-        pclose(ptr);
+        v_secure_pclose(ptr);
     }
 
     return 0;

@@ -61,6 +61,7 @@
 **************************************************************************/
 
 #include "cosa_x_cisco_com_security_apis.h"
+#include "secure_wrapper.h"
 
 #ifdef _COSA_SIM_
 
@@ -5531,7 +5532,6 @@ static int ssmtp_send(const char *msgFilePath, const char *subject, const char *
 
 static int prepare_firewall_log(char *logFilePath)
 {
-    char buf[MAX_LINE_LEN] = "";
     time_t curTime; 
     struct tm *localTime; 
     char *logTypeName = "USGv2_Firewall_Logs";
@@ -5545,9 +5545,7 @@ static int prepare_firewall_log(char *logFilePath)
     
     //compress attachment if necessary
     //snprintf(buf, sizeof(buf), "tar cvf %s /var/fwlog", logFilePath);
-    snprintf(buf, sizeof(buf), "cp /var/fwlog %s && rm -rf /var/fwlog", logFilePath);
-
-    system(buf);
+    v_secure_system("cp /var/fwlog %s && rm -rf /var/fwlog", logFilePath);
     
     return 0;
 }

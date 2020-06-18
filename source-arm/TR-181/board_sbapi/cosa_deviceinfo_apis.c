@@ -136,7 +136,7 @@ extern  ANSC_HANDLE             bus_handle;
 #include <time.h>
 #include <utapi_util.h>
 #include <unistd.h>
-
+#include "secure_wrapper.h"
 #include "platform_hal.h"
 #include "autoconf.h"     
  
@@ -1761,8 +1761,7 @@ CosaDmlDiGetProcessorSpeed
     }
     fclose(fp1);
     sprintf(out2,"\"cat /proc/cpuinfo\"");
-    sprintf(out1,"rpcclient %s %s",urlPtr,out2);
-    fp = popen(out1, "r");
+    fp = v_secure_popen("r", "rpcclient %s %s",urlPtr,out2);
 #else
     fp = popen("cat /proc/cpuinfo", "r");
 #endif
@@ -1785,7 +1784,11 @@ CosaDmlDiGetProcessorSpeed
 
 #endif
     if(fp != NULL) {
+#ifdef SA_CUSTOM
+        status = v_secure_pclose(fp);
+#else
         status = pclose(fp);
+#endif
 	fp = NULL;
     }
     *pulSize = AnscSizeOfString(pValue);

@@ -82,6 +82,7 @@ extern void* g_pDslhDmlAgent;
 #include "cosa_dhcpv6_apis.h"
 #include "cosa_ip_internal.h"
 #include "cosa_drg_common.h"
+#include "secure_wrapper.h"
 
 #if defined(_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
 #define INTERFACE "erouter0"
@@ -2972,7 +2973,7 @@ static int _invoke_ip_cmd(char * cmd, PCOSA_DML_IP_V6ADDR p_old, PCOSA_DML_IP_V6
             sprintf(shell_cmd, "ip -6 addr add %s dev %s preferred_lft %d", buf, ifname, prefered_lft);
         }
 
-        system(shell_cmd);
+        v_secure_system("ip -6 addr add %s dev %s preferred_lft %d", buf, ifname, prefered_lft);
     }
     else if (!strcmp(cmd, "del"))
     {
@@ -2994,8 +2995,7 @@ static int _invoke_ip_cmd(char * cmd, PCOSA_DML_IP_V6ADDR p_old, PCOSA_DML_IP_V6
         inet_ntop(AF_INET6, &addr, buf, sizeof(buf));
         snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf),  "/%d", pref_len);
 
-        sprintf(shell_cmd, "ip -6 addr del %s dev %s", buf, ifname);
-        system(shell_cmd);
+        v_secure_system("ip -6 addr del %s dev %s", buf, ifname);
     }
     else if (!strcmp(cmd, "modify"))
     {
