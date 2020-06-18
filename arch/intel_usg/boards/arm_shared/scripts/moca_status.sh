@@ -24,24 +24,6 @@
 #source /fss/gw/etc/utopia/service.d/log_env_var.sh
 source /etc/utopia/service.d/log_capture_path.sh
 
-##TELEMETRY 2.0 SUPPORT ##RDKB-26620
-T2_MSG_CLIENT=/usr/bin/telemetry2_0_client
-
-t2ValNotify() {
-    if [ -f $T2_MSG_CLIENT ]; then
-        marker=$1
-        shift
-        $T2_MSG_CLIENT "$marker" "$*"
-    fi
-}
-
-t2CountNotify() {
-    if [ -f $T2_MSG_CLIENT ]; then
-        marker=$1
-        $T2_MSG_CLIENT  "$marker" "1"
-    fi
-}
-
 #loop=1
 
 #while [ $loop -eq 1 ]
@@ -55,10 +37,8 @@ t2CountNotify() {
 	moca_enable=`dmcli eRT getv Device.MoCA.Interface.1.Enable | grep bool | awk '{print $5}'`
 	if [ "$moca_enable" == "true" ];then 
         echo_t "MoCA is Enabled"
-	t2CountNotify "SYS_INFO_moca_enabled"
         else 
         echo_t "MoCA is Disabled"
-	t2CountNotify "moca_disabled"
         fi
         
 	echo_t "Obtaining the MoCA CurrentOperFreq.."

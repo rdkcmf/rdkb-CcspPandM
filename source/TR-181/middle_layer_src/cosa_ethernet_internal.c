@@ -70,9 +70,6 @@
 
 #include "cosa_ethernet_internal.h"
 
-// TELEMETRY 2.0 //RDKB-26620
-#include <telemetry_busmessage_sender.h>
-
 #define ONE_HR 60*60
 
 static void CosaEthWanTelementryLogger(void);
@@ -1288,7 +1285,6 @@ void * EthWan_TelementryLogger_Thread(void *data)
     while (1)
     {
         CcspTraceInfo(("RDK_LOG_INFO , Ethernet WAN is enabled\n"));
-	t2_event_d("SYS_INFO_EthWanMode", 1);
         sleep(ONE_HR);
     }
 }
