@@ -4174,12 +4174,16 @@ OPTIONS:
                 fprintf(stderr, "%s: fail to open sysevent\n", __FUNCTION__);
                 return -1;
                 }
+                char l_cSecWebUI_Enabled[8] = {0};
+                syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
+                if (!strncmp(l_cSecWebUI_Enabled, "true", 4)) {
+                  sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled = 1;
+                }
                 if ( sDhcpv6ServerPoolOption[Index][Index2].Tag == 23 )
                 {
                     char dns_str[256] = {0};
 
                     CcspTraceWarning(("_cosa_dhcpsv6_refresh_config -- Tag is 23 \n"));
-
 					/* Static DNS Servers */
 					if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled )
 					{
@@ -4926,7 +4930,6 @@ OPTIONS:
                 }
             }
         }
-
         fprintf(fp, "}\n");
     }
     if(fp != NULL)
