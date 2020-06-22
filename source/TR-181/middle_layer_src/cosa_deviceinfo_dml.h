@@ -1892,4 +1892,31 @@ EnableOCSPStapling_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.UseXPKI.Enable
+
+    *  UseXPKI_GetParamBoolValue
+    *  UseXPKI_SetParamBoolValue
+***********************************************************************/
+BOOL
+UseXPKI_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+UseXPKI_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
 #endif
