@@ -74,7 +74,11 @@
 
 #include "ccsp_base_api.h"
 #include "messagebus_interface_helper.h"
-
+#include "ansc_string_util.h"
+#include "msgpack.h"
+#include "macbinding_webconfig_param.h"
+#include "lan_webconfig_param.h"
+#include "cosa_dhcpv4_webconfig_apis.h"
 extern void* g_pDslhDmlAgent;
 
 extern ULONG g_currentBsUpdate;
@@ -84,6 +88,7 @@ extern char * getTime();
 #define BS_SOURCE_WEBPA_STR "webpa"
 #define BS_SOURCE_RFC_STR "rfc"
 #define  PARTNER_ID_LEN  64
+#define   COSA_DML_DHCPV4_STATICADDRESS_ACCESS_INTERVAL   10 /* seconds*/
 
 #define IS_UPDATE_ALLOWED_IN_DM(paramName, requestorStr) ({                                                                                                  \
     if ( g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_firmware ||                                                                                     \
@@ -102,6 +107,13 @@ extern char * getTime();
       return FALSE;                                                                                                                                \
    }                                                                                                                                               \
 })
+
+#define MIN 60
+#define HOURS 3600
+#define DAYS 86400
+#define WEEKS 604800
+#define MINSECS 120
+#define MAXSECS 999
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -3615,6 +3627,11 @@ Server_GetParamStringValue
     )
 {
     /* check the parameter name and return the corresponding value */
+    if(AnscEqualString(ParamName, "StaticClientsData", TRUE) || AnscEqualString(ParamName, "Lan", TRUE))
+    {
+        CcspTraceWarning(("Data Get Not supported\n"));
+        return 0;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
@@ -3805,6 +3822,185 @@ Server_SetParamStringValue
     )
 {
     /* check the parameter name and set the corresponding value */
+    if(AnscEqualString(ParamName, "StaticClientsData", TRUE))
+    {
+        char * decodeMsg =NULL;
+        int size =0;
+        int retval = 0;
+        msgpack_unpack_return unpack_ret = MSGPACK_UNPACK_SUCCESS;
+ 
+        retval = get_base64_decodedbuffer(pString, &decodeMsg, &size);
+        if (retval == 0)
+        {
+            unpack_ret = get_msgpack_unpack_status(decodeMsg,size);
+        }
+        else
+        {   
+            if (decodeMsg)
+            {
+                free(decodeMsg);
+                decodeMsg = NULL;
+            }
+            return FALSE;
+        }
+        if(unpack_ret == MSGPACK_UNPACK_SUCCESS)
+        {
+            macbindingdoc_t *pStaticClients = NULL;
+            pStaticClients = macbindingdoc_convert( decodeMsg, size+1 );
+
+           if (decodeMsg)
+            {
+                free(decodeMsg);
+                decodeMsg = NULL;
+            }
+            if (NULL != pStaticClients)
+            {
+                CcspTraceWarning(("pStaticClients->entries_count is %ld\n", pStaticClients->entries_count));
+                CcspTraceWarning(("pStaticClients->subdoc_name is %s\n", pStaticClients->subdoc_name));
+                CcspTraceWarning(("pStaticClients->version is %lu\n", (unsigned long)pStaticClients->version));
+                CcspTraceWarning(("pStaticClients->transaction_id is %d\n", pStaticClients->transaction_id));
+                CcspTraceWarning(("StaticClients configuration received\n"));
+
+                execData *execDataStaticClients = NULL ;
+
+                execDataStaticClients = (execData*) malloc (sizeof(execData));
+
+                if ( execDataStaticClients != NULL )
+                {
+
+                    memset(execDataStaticClients, 0, sizeof(execData));
+
+                    execDataStaticClients->txid = pStaticClients->transaction_id;
+                    execDataStaticClients->version = pStaticClients->version;
+                    execDataStaticClients->numOfEntries = pStaticClients->entries_count;
+
+                    strncpy(execDataStaticClients->subdoc_name,"macbinding",sizeof(execDataStaticClients->subdoc_name)-1);
+
+                    execDataStaticClients->user_data = (void*) pStaticClients ;
+                    execDataStaticClients->calcTimeout = NULL ;
+                    execDataStaticClients->executeBlobRequest = Process_StaticClients_WebConfigRequest;
+                    execDataStaticClients->rollbackFunc = rollback_StaticClients;
+                    execDataStaticClients->freeResources = FreeResources_StaticClients;
+                    PushBlobRequest(execDataStaticClients);
+
+                    CcspTraceWarning(("PushBlobRequest complete\n"));
+                }
+                else
+                {
+                    CcspTraceWarning(("execData memory allocation failed\n"));
+                    macbindingdoc_destroy(pStaticClients);
+                    return FALSE;
+
+                }
+
+            }
+            return TRUE;
+
+        }
+        else
+        {
+            if (decodeMsg)
+            {
+                free(decodeMsg);
+                decodeMsg = NULL;
+            }
+            CcspTraceWarning(("Corrupted StaticClientsData value\n"));
+            return FALSE;
+        }
+        return TRUE;
+
+    }
+
+    if (AnscEqualString(ParamName, "Lan", TRUE))
+    {
+        char * decodeMsg =NULL;
+        int size =0;
+        int retval = 0;
+        msgpack_unpack_return unpack_ret = MSGPACK_UNPACK_SUCCESS;
+ 
+        retval = get_base64_decodedbuffer(pString, &decodeMsg, &size);
+        if (retval == 0)
+        {
+            unpack_ret = get_msgpack_unpack_status(decodeMsg,size);
+        }
+        else
+        {   
+            if (decodeMsg)
+            {
+                free(decodeMsg);
+                decodeMsg = NULL;
+            }
+            return FALSE;
+        }
+        if(unpack_ret == MSGPACK_UNPACK_SUCCESS)
+        {
+            landoc_t *pLanInfo = NULL;
+            pLanInfo = landoc_convert( decodeMsg, size+1 );
+
+           if (decodeMsg)
+            {
+                free(decodeMsg);
+                decodeMsg = NULL;
+            }
+            if (NULL != pLanInfo)
+            {
+		        pLanInfo->entries_count = 1;// Assigned 1 by default.
+                CcspTraceWarning(("pLanInfo->entries_count is %ld\n", pLanInfo->entries_count));
+                CcspTraceWarning(("pLanInfo->subdoc_name is %s\n", pLanInfo->subdoc_name));
+                CcspTraceWarning(("pLanInfo->version is %lu\n", (unsigned long)pLanInfo->version));
+                CcspTraceWarning(("pLanInfo->transaction_id is %d\n", pLanInfo->transaction_id));
+                CcspTraceWarning(("Lan configuration received\n"));
+
+                execData *execDataLan = NULL;
+
+                execDataLan = (execData*) malloc (sizeof(execData));
+
+                if ( execDataLan != NULL )
+                {
+
+                    memset(execDataLan, 0, sizeof(execData));
+
+                    execDataLan->txid = pLanInfo->transaction_id;
+                    execDataLan->version = pLanInfo->version;
+                    execDataLan->numOfEntries = pLanInfo->entries_count;
+
+                    strncpy(execDataLan->subdoc_name,"lan",sizeof(execDataLan->subdoc_name)-1);
+
+                    execDataLan->user_data = (void*) pLanInfo ;
+                    execDataLan->calcTimeout = NULL ;
+                    execDataLan->executeBlobRequest = Process_Lan_WebConfigRequest;
+                    execDataLan->rollbackFunc = rollback_Lan;
+                    execDataLan->freeResources = FreeResources_Lan;
+                    PushBlobRequest(execDataLan);
+
+                    CcspTraceWarning(("PushBlobRequest complete\n"));
+                }
+                else
+                {
+                    CcspTraceWarning(("execData memory allocation failed\n"));
+                    landoc_destroy(pLanInfo);
+                    return FALSE;
+
+                }
+
+            }
+            return TRUE;
+
+        }
+        else
+        {
+            if (decodeMsg)
+            {
+                free(decodeMsg);
+                decodeMsg = NULL;
+            }
+            CcspTraceWarning(("Corrupted StaticClientsData value\n"));
+            return FALSE;
+        }
+        return TRUE;
+
+
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -5889,9 +6085,14 @@ Pool_SetParamBoolValue
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-        /* save update to backup */
+        if (Dhcpv4_Lan_MutexTryLock() != 0)
+        {
+            CcspTraceWarning(("%s not supported already macbinding blob update is inprogress \n",ParamName));
+            return FALSE;
+        }
+       /* save update to backup */
         pPool->Cfg.bEnabled   = bValue;
-        
+        Dhcpv4_Lan_MutexUnLock(); 
         return TRUE;
     }
 
@@ -5995,33 +6196,46 @@ Pool_SetParamIntValue
 	if(bridgeInd)
 		return(FALSE);
 
+    if (Dhcpv4_Lan_MutexTryLock() != 0)
+    {
+        CcspTraceWarning(("%s not supported already macbinding blob update is inprogress \n",ParamName));
+        return FALSE;
+    }
+
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "LeaseTime", TRUE))
     {
-    #ifndef CONFIG_CISCO_DHCPS_REMOVE_LEASE_LIMIT
-        /*DHCP Server doesn't accept lease time that is shorter than 120 seconds*/
-        if((iValue>0)&&(iValue<120))
-            return(FALSE);
-    #endif
-        /*-1 means infinite lease, we don't allow other invalid time*/
-        if((iValue!=-1)&&(iValue<=0))
-                return(FALSE);
-
-        /* save update to backup */
-        pPool->Cfg.LeaseTime  = iValue;
-        
-        return TRUE;
+        /*  enter only valid values 
+            UNITS:
+            seconds=iValue;(min-120 max-999)
+            minutes=iValue/60;
+            hours=iValue/3600;
+            days=iValue/86400;
+            weeks=iValue/604800;
+            forever=-1;
+        */
+        if((iValue%WEEKS==0)  ||
+            (iValue%DAYS==0)  ||
+            (iValue%HOURS==0) || 
+            (iValue%MIN==0)   ||
+            ((iValue>=MINSECS)&& (iValue<=MAXSECS)) || 
+            (iValue==-1)){
+                /* save update to backup */
+                pPool->Cfg.LeaseTime  = iValue;
+                Dhcpv4_Lan_MutexUnLock();
+                return TRUE;
+        }
     }
 
     if( AnscEqualString(ParamName, "X_CISCO_COM_TimeOffset", TRUE))
     {
         /* save update to backup */
         pPool->Cfg.X_CISCO_COM_TimeOffset  = iValue;
-        
+        Dhcpv4_Lan_MutexUnLock();
         return TRUE;
     }
 
-
+    Dhcpv4_Lan_MutexUnLock();
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -6127,6 +6341,11 @@ Pool_SetParamUlongValue
             CcspTraceError(("MinAddress equals MaxAddress 0x%08x\n", ntohl(uValue)));
             return(FALSE);
 	}
+        if (Dhcpv4_Lan_MutexTryLock() != 0)
+        {
+            CcspTraceWarning(("%s not supported already macbinding blob update is inprogress \n",ParamName));
+            return FALSE;
+        }
 
         pPool->Cfg.MinAddress.Value  = uValue;
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MinAddress of DHCP Range Changed ...\n"));
@@ -6142,6 +6361,7 @@ Pool_SetParamUlongValue
         if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
              UpdateJsonParam("Device.DHCPv4.Server.Pool.1.MinAddress",PartnerID, buff, requestorStr, currentTime);
 
+        Dhcpv4_Lan_MutexUnLock();
         return TRUE;
     }
 
@@ -6175,6 +6395,11 @@ Pool_SetParamUlongValue
             CcspTraceError(("MinAddress equals MaxAddress 0x%08x\n", ntohl(uValue)));
             return(FALSE);
 	}
+        if (Dhcpv4_Lan_MutexTryLock() != 0)
+        {
+            CcspTraceWarning(("%s not supported already macbinding blob update is inprogress \n",ParamName));
+            return FALSE;
+        }
 
         pPool->Cfg.MaxAddress.Value  = uValue;
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MaxAddress of DHCP Range Changed ...\n"));
@@ -6189,15 +6414,21 @@ Pool_SetParamUlongValue
         char PartnerID[PARTNER_ID_LEN] = {0};
         if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
              UpdateJsonParam("Device.DHCPv4.Server.Pool.1.MaxAddress",PartnerID, buff, requestorStr, currentTime);
-
+        Dhcpv4_Lan_MutexUnLock();
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "SubnetMask", TRUE))
     {
+        if (Dhcpv4_Lan_MutexTryLock() != 0)
+        {
+            CcspTraceWarning(("%s not supported already macbinding blob update is inprogress \n",ParamName));
+            return FALSE;
+        }
+
         /* save update to backup */
         pPool->Cfg.SubnetMask.Value  = uValue;
-        
+        Dhcpv4_Lan_MutexUnLock();        
         return TRUE;
     }
 
@@ -6415,8 +6646,17 @@ Pool_SetParamStringValue
 
     if( AnscEqualString(ParamName, "IPRouters", TRUE))
     {
+        BOOL ret = FALSE;
+        if (Dhcpv4_Lan_MutexTryLock() != 0)
+        {
+            CcspTraceWarning(("%s not supported already macbinding blob update is inprogress \n",ParamName));
+            return FALSE;
+        }
+
         /* save update to backup */
-        return CosaDmlSetIpaddr((PULONG)&pPool->Cfg.IPRouters[0].Value, pString, COSA_DML_DHCP_MAX_ENTRIES);
+        ret = CosaDmlSetIpaddr((PULONG)&pPool->Cfg.IPRouters[0].Value, pString, COSA_DML_DHCP_MAX_ENTRIES);
+        Dhcpv4_Lan_MutexUnLock();
+        return ret;
     }
 
 
@@ -6523,6 +6763,12 @@ Pool_Commit
         AnscTraceFlow(("%s: valid pool, pPool->Cfg.InstanceNumber = %d\n", __FUNCTION__, pPool->Cfg.InstanceNumber));
     }
 
+    if (Dhcpv4_Lan_MutexTryLock() != 0)
+    {
+        CcspTraceWarning(("%s not supported already macbinding blob update is inprogress \n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
     if ( pCxtLink->bNew )
     {
         AnscTraceFlow(("%s: new pool, add to SBAPI\n", __FUNCTION__));
@@ -6553,7 +6799,7 @@ Pool_Commit
     }
     
     AnscZeroMemory( pDhcpv4->AliasOfPool, sizeof(pDhcpv4->AliasOfPool) );
-
+    Dhcpv4_Lan_MutexUnLock();
     return returnStatus;
 }
 
@@ -6617,6 +6863,8 @@ Pool_Rollback
     *  StaticAddress_GetEntryCount
     *  StaticAddress_GetEntry
     *  StaticAddress_AddEntry
+    *  StaticAddress_IsUpdated
+    *  StaticAddress_Synchronize
     *  StaticAddress_DelEntry
     *  StaticAddress_GetParamBoolValue
     *  StaticAddress_GetParamIntValue
@@ -6719,7 +6967,104 @@ StaticAddress_GetEntry
     return pSListEntry;
 }
 
+/**********************************************************************
 
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        StaticAddress_IsUpdated
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is checking whether the table is updated or not.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     TRUE or FALSE.
+
+**********************************************************************/
+
+BOOL
+StaticAddress_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DATAMODEL_DHCPV4          pMyObject    = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
+    BOOL                            bIsUpdated   = TRUE;
+
+
+    /*
+        We can use one rough granularity interval to get whole table in case
+        that the updating is too frequent.
+        */
+    if ( ( AnscGetTickInSeconds() - pMyObject->PreviousVisitTime ) < COSA_DML_DHCPV4_STATICADDRESS_ACCESS_INTERVAL )
+    {
+        bIsUpdated  = FALSE;
+    }
+    else
+    {
+        pMyObject->PreviousVisitTime =  AnscGetTickInSeconds();
+        bIsUpdated  = TRUE;
+    }
+
+    return bIsUpdated;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        StaticAddress_Synchronize
+            (
+                ANSC_HANDLE                 hInsContext
+            );
+
+    description:
+
+        This function is called to synchronize the table.
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+    return:     The status of the operation.
+
+**********************************************************************/
+ULONG
+StaticAddress_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DATAMODEL_DHCPV4  pDhcpv4 = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
+    ANSC_STATUS returnStatus      = ANSC_STATUS_FAILURE;
+    int ret =0;
+    if (!pDhcpv4)
+    {
+        return returnStatus;
+    }
+    if (TRUE == pDhcpv4->syncStaticClientsTable)
+    {
+        ret = Dhcpv4_StaticClients_Synchronize();
+        pDhcpv4->syncStaticClientsTable = FALSE;
+        CcspTraceWarning((" %s return %d \n",__FUNCTION__,ret));
+    }
+    if (ret == 0)
+    {
+        returnStatus =  ANSC_STATUS_SUCCESS;
+    }
+    return returnStatus;
+}
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -6848,12 +7193,19 @@ StaticAddress_DelEntry
     PCOSA_DML_DHCPS_SADDR           pDhcpStaticAddress   = (PCOSA_DML_DHCPS_SADDR)pCxtLink->hContext;
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4              = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
 
+    if (Dhcpv4_StaticClients_MutexTryLock() != 0)
+    {
+        CcspTraceWarning(("%s not supported already macbinding blob update is inprogress \n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
     AnscTraceFlow(("%s: pool instance %d, addr instance %d\n", __FUNCTION__, pDhcsPool->Cfg.InstanceNumber, pDhcpStaticAddress->InstanceNumber));    
     if ( !pCxtLink->bNew )
     {
         returnStatus = CosaDmlDhcpsDelSaddr( NULL, pDhcsPool->Cfg.InstanceNumber, pDhcpStaticAddress->InstanceNumber );
         if ( returnStatus != ANSC_STATUS_SUCCESS )
         {
+            Dhcpv4_StaticClients_MutexUnLock();
             return returnStatus;
         }
     }
@@ -6865,7 +7217,7 @@ StaticAddress_DelEntry
         AnscFreeMemory(pCxtLink->hContext);
         AnscFreeMemory(pCxtLink);
     }
-    
+    Dhcpv4_StaticClients_MutexUnLock();
     return returnStatus;
         
 }
@@ -7380,6 +7732,10 @@ StaticAddress_SetParamStringValue
 	if(bridgeInd)
 		return(FALSE);
 
+    /* check if pString doesn't hold null or whitespaces */
+    if(AnscValidStringCheck(pString) != TRUE)
+        return FALSE;
+
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
@@ -7620,10 +7976,16 @@ StaticAddress_Commit
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtPoolLink         = (PCOSA_CONTEXT_POOL_LINK_OBJECT)pCxtLink->hParentTable;
     PCOSA_DML_DHCPS_POOL_FULL       pPool                = (PCOSA_DML_DHCPS_POOL_FULL)pCxtPoolLink->hContext;
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4              = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
+    if (Dhcpv4_StaticClients_MutexTryLock() != 0)
+    {
+        CcspTraceWarning(("%s not supported already macbinding blob update is inprogress \n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
 
     if ( pCxtLink->bNew ){
 	if(pDhcpStaticAddress->bEnabled==FALSE){
 		pDhcpStaticAddress->ActiveFlag = FALSE;
+        Dhcpv4_StaticClients_MutexUnLock();
 		return(ANSC_STATUS_SUCCESS);
 	}
         returnStatus = CosaDmlDhcpsAddSaddr(NULL, pPool->Cfg.InstanceNumber, pDhcpStaticAddress );
@@ -7647,6 +8009,7 @@ StaticAddress_Commit
 		}
 	}else{
 		if(pDhcpStaticAddress->bEnabled==FALSE){
+            Dhcpv4_StaticClients_MutexUnLock();
 			return(ANSC_STATUS_SUCCESS);
 		}else{/*Add this entry to backend*/
 			returnStatus = CosaDmlDhcpsAddSaddr(NULL, pPool->Cfg.InstanceNumber, pDhcpStaticAddress );
@@ -7657,6 +8020,7 @@ StaticAddress_Commit
     }
     
     AnscZeroMemory( pCxtPoolLink->AliasOfStaAddr, sizeof(pCxtPoolLink->AliasOfStaAddr) );
+    Dhcpv4_StaticClients_MutexUnLock();
     return returnStatus;
 }
 

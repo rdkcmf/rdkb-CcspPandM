@@ -74,6 +74,7 @@
 #include "poam_irepfo_interface.h"
 #include "sys_definitions.h"
 #include "cosa_webconfig_api.h"
+#include "cosa_nat_webconfig_apis.h"
 extern void * g_pDslhDmlAgent;
 
 /**********************************************************************
@@ -297,6 +298,11 @@ CosaNatInitialize
     clear_pf_cache(pf_cache_bkup);
 
     init_pf_cache(pf_cache);
+
+    clear_dmz_cache(dmz_cache);
+    clear_dmz_cache(dmz_cache_bkup);
+
+    init_dmz_cache(dmz_cache);
 
 EXIT:
 

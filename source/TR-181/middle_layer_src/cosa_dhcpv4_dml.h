@@ -906,6 +906,8 @@ Pool_Rollback
     *  StaticAddress_GetEntryCount
     *  StaticAddress_GetEntry
     *  StaticAddress_AddEntry
+    *  StaticAddress_IsUpdated
+    *  StaticAddress_Synchronize
     *  StaticAddress_DelEntry
     *  StaticAddress_GetParamBoolValue
     *  StaticAddress_GetParamIntValue
@@ -933,6 +935,19 @@ StaticAddress_GetEntry
         ULONG                       nIndex,
         ULONG*                      pInsNumber
     );
+
+BOOL
+StaticAddress_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
+StaticAddress_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
 
 ANSC_HANDLE
 StaticAddress_AddEntry

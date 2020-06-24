@@ -1,5 +1,8 @@
 /*
- * Copyright 2019 Comcast Cable Communications Management, LLC
+ * If not stated otherwise in this file or this component's Licenses.txt file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2015 RDK Management
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +24,75 @@ int pf_cache_size = 0;
 int pf_cache_size_bkup = 0;
 
 
+int  get_base64_decodedbuffer(char *pString, char **buffer, int *size)
+{
+    struct timespec start,end,*startPtr,*endPtr;
+    int decodeMsgSize = 0;
+    char *decodeMsg = NULL;
+    if (buffer == NULL || size == NULL || pString == NULL)
+        return -1;
 
+    startPtr = &start;
+    endPtr = &end;
+
+
+    getCurrentTime(startPtr);
+    decodeMsgSize = b64_get_decoded_buffer_size(strlen(pString));
+
+    decodeMsg = (char *) malloc(sizeof(char) * decodeMsgSize);
+
+    if (!decodeMsg)
+        return -1;
+
+    *size = b64_decode( pString, strlen(pString), decodeMsg );
+    CcspTraceWarning(("base64 decoded data contains %d bytes\n",size));
+
+    getCurrentTime(endPtr);
+    CcspTraceWarning(("Base64 decode Elapsed time : %ld ms\n", timeValDiff(startPtr, endPtr)));
+
+    *buffer = decodeMsg;
+    return 0;
+}
+
+msgpack_unpack_return get_msgpack_unpack_status(char *decodedbuf, int size)
+{
+
+    msgpack_zone mempool;
+    msgpack_object deserialized;
+    msgpack_unpack_return unpack_ret;
+
+    if (decodedbuf == NULL || !size)
+        return MSGPACK_UNPACK_NOMEM_ERROR;
+
+    msgpack_zone_init(&mempool, 2048);
+    unpack_ret = msgpack_unpack(decodedbuf, size, NULL, &mempool, &deserialized);
+
+    switch(unpack_ret)
+    {
+        case MSGPACK_UNPACK_SUCCESS:
+            CcspTraceWarning(("MSGPACK_UNPACK_SUCCESS :%d\n",unpack_ret));
+            break;
+        case MSGPACK_UNPACK_EXTRA_BYTES:
+            CcspTraceWarning(("MSGPACK_UNPACK_EXTRA_BYTES :%d\n",unpack_ret));
+            break;
+        case MSGPACK_UNPACK_CONTINUE:
+            CcspTraceWarning(("MSGPACK_UNPACK_CONTINUE :%d\n",unpack_ret));
+            break;
+        case MSGPACK_UNPACK_PARSE_ERROR:
+            CcspTraceWarning(("MSGPACK_UNPACK_PARSE_ERROR :%d\n",unpack_ret));
+            break;
+        case MSGPACK_UNPACK_NOMEM_ERROR:
+            CcspTraceWarning(("MSGPACK_UNPACK_NOMEM_ERROR :%d\n",unpack_ret));
+            break;
+        default:
+            CcspTraceWarning(("Message Pack decode failed with error: %d\n", unpack_ret));
+    }
+
+    msgpack_zone_destroy(&mempool);
+    //End of msgpack decoding
+
+    return unpack_ret;
+}
 int CheckIfIpIsValid( char *ipAddress )
 {
 
@@ -121,7 +192,7 @@ int setBlobVersion(char* subdoc,uint32_t version)
 
 void webConfigFrameworkInit()
 {
-	char *sub_docs[SUBDOC_COUNT+1]= {"portforwarding",(char *) 0 };
+	char *sub_docs[SUBDOC_COUNT+1]= {"portforwarding","wan","macbinding","lan",(char *) 0 };
     
     	blobRegInfo *blobData;
 
@@ -574,7 +645,7 @@ pErr Process_PF_WebConfigRequest(void *Data)
         	return execRetVal;
     	}
 
-    	memset(execRetVal,0,sizeof(execRetVal));
+    	memset(execRetVal,0,sizeof(Err));
 
     	execRetVal->ErrorCode = BLOB_EXEC_SUCCESS;
 
@@ -696,7 +767,7 @@ void freeResources_PortForwarding(void *arg)
     if ( rpm != NULL )
     {
         portmappingdoc_destroy( rpm );  
-
+        rpm = NULL;
     }
 
     if ( blob_exec_data != NULL )
