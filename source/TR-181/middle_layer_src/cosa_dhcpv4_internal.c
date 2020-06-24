@@ -179,6 +179,9 @@ CosaDhcpv4Initialize
     pMyObject->maxInstanceOfClient  = 0;
     pMyObject->maxInstanceOfPool    = 0;
     pMyObject->maxInstanceX_CISCO_COM_SAddr = 0;
+    pMyObject->PreviousVisitTime = 0;
+    pMyObject->syncStaticClientsTable = FALSE;
+
     AnscZeroMemory(pMyObject->AliasOfClient, sizeof(pMyObject->AliasOfClient));
     AnscZeroMemory(pMyObject->AliasOfPool, sizeof(pMyObject->AliasOfPool));
     AnscZeroMemory(pMyObject->AliasOfX_CISCO_COM_SAddr, sizeof(pMyObject->AliasOfX_CISCO_COM_SAddr));

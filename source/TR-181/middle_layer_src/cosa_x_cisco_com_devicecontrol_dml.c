@@ -68,6 +68,7 @@
 
 #include "cosa_x_cisco_com_devicecontrol_dml.h"
 #include "cosa_drg_common.h"
+#include "cosa_dhcpv4_webconfig_apis.h"
 
 static int ifWanRestart = 0;
 
@@ -1882,7 +1883,7 @@ LanMngm_SetParamBoolValue
     PCOSA_DML_LAN_MANAGEMENT        pLanMngm    = (PCOSA_DML_LAN_MANAGEMENT)pLinkObj->hContext;
     BOOL                                      bridgeMode;
     ULONG                                     deviceMode;
-    
+        
     if (CosaDmlDcGetDeviceMode(NULL, &deviceMode) != ANSC_STATUS_SUCCESS)
             return FALSE;
     
@@ -1892,8 +1893,7 @@ LanMngm_SetParamBoolValue
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
-
-
+    
     if (AnscEqualString(ParamName, "LanDhcpServer", TRUE))
     {
         pLanMngm->LanDhcpServer = bValue;
@@ -2004,14 +2004,28 @@ LanMngm_SetParamUlongValue
     }
     if (AnscEqualString(ParamName, "LanSubnetMask", TRUE))
     {
+        if (Dhcpv4_Lan_MutexTryLock() != 0)
+        {
+            CcspTraceWarning(("%s not supported if already lan blob update is inprogress\n",ParamName));
+            return FALSE; 
+        }
+
 		CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Setting new LanSubnetMask value  ...\n"));
         pLanMngm->LanSubnetMask.Value = uValuepUlong;
+        Dhcpv4_Lan_MutexUnLock();
         return TRUE;
     }
     if (AnscEqualString(ParamName, "LanIPAddress", TRUE))
     {
+        if (Dhcpv4_Lan_MutexTryLock() != 0)
+        {
+            CcspTraceWarning(("%s not supported if already lan blob update is inprogress\n",ParamName));
+            return FALSE; 
+        }
+
 		CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Setting new LanIPAddress value  ...\n"));
         pLanMngm->LanIPAddress.Value = uValuepUlong;
+        Dhcpv4_Lan_MutexUnLock();
         return TRUE;
     }
     if (AnscEqualString(ParamName, "LanTos", TRUE))
@@ -2151,11 +2165,20 @@ LanMngm_Commit
     PCOSA_DML_LAN_MANAGEMENT        pLanMngm    = (PCOSA_DML_LAN_MANAGEMENT)pLinkObj->hContext;
     PCOSA_DATAMODEL_DEVICECONTROL   pDevCtrl    = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
 
+    if (Dhcpv4_Lan_MutexTryLock() != 0)
+    {
+        CcspTraceWarning(("%s not supported if already lan blob update is inprogress\n",__FUNCTION__));
+        return -1; 
+    }
+
 
     if (pLinkObj->bNew)
     {
         if (CosaDmlLanMngm_AddEntry(pLanMngm) != ANSC_STATUS_SUCCESS)
+        {
+            Dhcpv4_Lan_MutexUnLock();
             return -1;
+        }
         CosaDevCtrlReg_DelLanMngmInfo((ANSC_HANDLE)pDevCtrl, (ANSC_HANDLE)pLinkObj);
         pLinkObj->bNew = FALSE;
     }
@@ -2164,6 +2187,7 @@ LanMngm_Commit
         if (CosaDmlLanMngm_SetConf(pLanMngm->InstanceNumber, pLanMngm) != ANSC_STATUS_SUCCESS)
         {
             CosaDmlLanMngm_GetConf(pLanMngm->InstanceNumber, pLanMngm);
+            Dhcpv4_Lan_MutexUnLock();
             return -1;
         } 
 #if !defined(_COSA_BCM_MIPS_) && !defined(_ENABLE_DSL_SUPPORT_) 
@@ -2181,7 +2205,7 @@ CcspTraceWarning( ("--------- LanMngm_Commit CosaDmlDcResetBr0 <<\n"));
 		}
 #endif
     }
-
+    Dhcpv4_Lan_MutexUnLock();
     return 0;
 }
 

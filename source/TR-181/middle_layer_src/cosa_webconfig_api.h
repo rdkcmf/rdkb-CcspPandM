@@ -1,5 +1,8 @@
 /*
- * Copyright 2019 Comcast Cable Communications Management, LLC
+ * If not stated otherwise in this file or this component's Licenses.txt file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2015 RDK Management
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +29,16 @@
 #include <ctype.h>
 #include "ansc_status.h"
 #include "portmappingdoc.h"
+#include "dmz_wan_doc.h"
 
+#include "msgpack.h"
 #include "webconfig_framework.h"
 
-#define SUBDOC_COUNT 1
+#define SUBDOC_COUNT 4
 
 #define PORTMAP_CACHE_SIZE 1024
+#define DMZ_CACHE_SIZE 2
+
 #define BLOCK_SIZE 32
 #define VAL_BLOCK_SIZE 129 // for ipv6 address 128 + 1 size is needed
 
@@ -71,6 +78,10 @@ t_cache pf_cache[PORTMAP_CACHE_SIZE];
 
 t_cache pf_cache_bkup[PORTMAP_CACHE_SIZE]; 
 
+t_cache dmz_cache[DMZ_CACHE_SIZE];
+t_cache dmz_cache_bkup[DMZ_CACHE_SIZE];
+
+
 uint32_t getBlobVersion(char* subdoc);
 int setBlobVersion(char* subdoc,uint32_t version);
 void webConfigFrameworkInit() ;
@@ -87,4 +98,7 @@ void init_pf_cache(t_cache *tmp_pf_cache);
 pErr Process_PF_WebConfigRequest(void *Data);
 int rollback_PortForwarding() ;
 void freeResources_PortForwarding(void *arg);
+int  get_base64_decodedbuffer(char *pString, char **buffer, int *size);
+msgpack_unpack_return get_msgpack_unpack_status(char *decodedbuf, int size);
+
 #endif

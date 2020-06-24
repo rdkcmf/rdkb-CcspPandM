@@ -697,6 +697,12 @@ X_CISCO_COM_DMZ_GetParamStringValue
     PCOSA_DML_NAT_DMZ               pDmz         = &pNat->Dmz;
 
     /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "Data", TRUE))
+    {
+        CcspTraceWarning(("Data Get Not supported\n"));
+        return 0;
+    }
+
     if( AnscEqualString(ParamName, "RemoteIPStart", TRUE))
     {
         /* collect value */
@@ -882,6 +888,129 @@ X_CISCO_COM_DMZ_SetParamStringValue
     ULONG                           dmzHost;
 
     /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "Data", TRUE))
+     {
+	char * decodeMsg =NULL;
+	int decodeMsgSize =0;
+	int size =0;
+	int i=0;
+
+	struct timespec start,end,*startPtr,*endPtr;
+        startPtr = &start;
+        endPtr = &end;
+
+	msgpack_zone mempool;
+	msgpack_object deserialized;
+	msgpack_unpack_return unpack_ret;
+
+	getCurrentTime(startPtr);
+	decodeMsgSize = b64_get_decoded_buffer_size(strlen(pString));
+	decodeMsg = (char *) malloc(sizeof(char) * decodeMsgSize);
+	if( NULL == decodeMsg)
+	{
+		CcspTraceWarning(("decodeMsg allocation failed\n"));
+		return FALSE;
+	}
+
+	size = b64_decode( pString, strlen(pString), decodeMsg );
+	CcspTraceWarning(("base64 decoded data contains %d bytes\n",size));
+
+	getCurrentTime(endPtr);
+        CcspTraceWarning(("Base64 decode Elapsed time : %ld ms\n", timeValDiff(startPtr, endPtr)));
+
+	msgpack_zone_init(&mempool, 2048);
+	unpack_ret = msgpack_unpack(decodeMsg, size, NULL, &mempool, &deserialized);
+
+	switch(unpack_ret)
+	{
+		case MSGPACK_UNPACK_SUCCESS:
+			CcspTraceWarning(("MSGPACK_UNPACK_SUCCESS :%d\n",unpack_ret));
+		break;
+		case MSGPACK_UNPACK_EXTRA_BYTES:
+			CcspTraceWarning(("MSGPACK_UNPACK_EXTRA_BYTES :%d\n",unpack_ret));
+		break;
+		case MSGPACK_UNPACK_CONTINUE:
+			CcspTraceWarning(("MSGPACK_UNPACK_CONTINUE :%d\n",unpack_ret));
+		break;
+		case MSGPACK_UNPACK_PARSE_ERROR:
+			CcspTraceWarning(("MSGPACK_UNPACK_PARSE_ERROR :%d\n",unpack_ret));
+		break;
+		case MSGPACK_UNPACK_NOMEM_ERROR:
+			CcspTraceWarning(("MSGPACK_UNPACK_NOMEM_ERROR :%d\n",unpack_ret));
+		break;
+		default:
+			CcspTraceWarning(("Message Pack decode failed with error: %d\n", unpack_ret));
+	}
+
+	msgpack_zone_destroy(&mempool);
+	//End of msgpack decoding
+
+	if(unpack_ret == MSGPACK_UNPACK_SUCCESS)
+	{
+		dmz_wandoc_t *rpm;
+		rpm = dmz_wandoc_convert( decodeMsg, size+1 );
+		if(decodeMsg != NULL)
+		{
+			free(decodeMsg);
+			decodeMsg = NULL;
+		}
+
+		if (NULL !=rpm)
+		{
+			CcspTraceWarning(("rpm->subdoc_name is %s\n", rpm->subdoc_name));
+			CcspTraceWarning(("rpm->version is %lu\n", (unsigned long)rpm->version));
+			CcspTraceWarning(("rpm->transaction_id is %d\n", rpm->transaction_id));
+			CcspTraceWarning(("DMZ/wan  configuration received\n"));
+
+			execData *execDataDmz = NULL ;
+
+			execDataDmz = (execData*) malloc (sizeof(execData));
+
+			if ( execDataDmz != NULL )
+			{
+
+				memset(execDataDmz, 0, sizeof(execData));
+
+				execDataDmz->txid = rpm->transaction_id;
+				execDataDmz->version = rpm->version;
+
+				strncpy(execDataDmz->subdoc_name,"wan",sizeof(execDataDmz->subdoc_name)-1);
+
+				execDataDmz->user_data = (void*) rpm ;
+				execDataDmz->calcTimeout = NULL ;
+				execDataDmz->executeBlobRequest = Process_DMZ_WebConfigRequest;
+				execDataDmz->rollbackFunc = rollback_dmz;
+				execDataDmz->freeResources = freeResources_dmz;
+				PushBlobRequest(execDataDmz);
+
+				CcspTraceWarning(("PushBlobRequest complete\n"));
+
+				return TRUE;
+			}
+			else
+			{
+				CcspTraceWarning(("execData memory allocation failed\n"));
+				dmz_wandoc_destroy( rpm );
+				return FALSE;
+			}
+
+		  }
+		return TRUE;
+	}
+	else
+	{
+		if(decodeMsg != NULL)
+		{
+			free(decodeMsg);
+			decodeMsg = NULL;
+		}
+		CcspTraceWarning(("Corrupted DMZ/wan  value\n"));
+		return FALSE;
+	}
+        return TRUE;
+    }
+
+
     if( AnscEqualString(ParamName, "RemoteIPStart", TRUE))
     {
         /* save update to backup */
@@ -2655,7 +2784,7 @@ X_RDK_PortMapping_SetParamStringValue
                 	if ( execDataPf != NULL )
                 	{
 
-                    		memset(execDataPf, 0, sizeof(execDataPf));
+                    		memset(execDataPf, 0, sizeof(execData));
 
                     		execDataPf->txid = rpm->transaction_id; 
                     		execDataPf->version = rpm->version; 
