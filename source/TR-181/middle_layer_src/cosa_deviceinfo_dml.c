@@ -14362,6 +14362,20 @@ WiFiPersonalization_GetParamStringValue
        		}
 
         } 
+	if( AnscEqualString(ParamName, "WelcomeMessage_fre", TRUE))
+        {
+		if ( AnscSizeOfString(pBindObj->WifiPersonal.WelcomeMessage_fre.ActiveValue) < *pulSize)
+       		{
+           		AnscCopyString( pValue, pBindObj->WifiPersonal.WelcomeMessage_fre.ActiveValue);		
+            		return 0;
+       		}
+       		else
+       		{
+           		*pulSize = AnscSizeOfString(pBindObj->WifiPersonal.WelcomeMessage_fre.ActiveValue)+1;
+           		return 1;
+       		}
+
+        } 
 	 return -1;
 }
 
