@@ -3560,13 +3560,13 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
  parameterValStruct_t val2[] = { 
  {"Device.WiFi.SSID.1.Enable", acSetSSIDString, ccsp_boolean}, 
  {"Device.WiFi.SSID.2.Enable", acSetSSIDString, ccsp_boolean}};
- 
- parameterValStruct_t valCommit[] = {
-#ifdef _XF3_PRODUCT_REQ_
- {"Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, {"Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, {"Device.WiFi.X_CISCO_COM_ResetRadios", "true", ccsp_boolean} };
-#else 
+
+parameterValStruct_t valCommit1[] = {
  {"Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, {"Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean} };
-#endif
+
+#ifdef _XF3_PRODUCT_REQ_
+ parameterValStruct_t valCommit2[] = { {"Device.WiFi.X_CISCO_COM_ResetRadios", "true", ccsp_boolean} };
+#endif 
  
     // All the cases Radio should get update since transition will happen during full - psedo - router
     ret = CcspBaseIf_setParameterValues
@@ -3601,22 +3601,37 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
                     faultParam = NULL;
                 }  
         
-        ret = CcspBaseIf_setParameterValues
+               
+      ret = CcspBaseIf_setParameterValues
                         (
-                                bus_handle, 
-                                ppComponents[0]->componentName, 
+                                bus_handle,
+                                ppComponents[0]->componentName,
                                 ppComponents[0]->dbusPath,
                                 0, 0x0,   /* session id and write id */
-                                valCommit,
-#ifdef _XF3_PRODUCT_REQ_
-                                sizeof(valCommit)/sizeof(*valCommit),
-#else 
+                                valCommit1,
                                 2,
-#endif 
                                 TRUE,   /* no commit */
                                 &faultParam
-                        );      
-                
+                        );
+                if (ret != CCSP_SUCCESS && faultParam)
+                {
+                    AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
+                    bus_info->freefunc(faultParam);
+                    faultParam = NULL;
+                }  
+  #ifdef _XF3_PRODUCT_REQ_
+      ret = CcspBaseIf_setParameterValues
+                        (
+                                bus_handle,
+                                ppComponents[0]->componentName,
+                                ppComponents[0]->dbusPath,
+                                0, 0x0,   /* session id and write id */
+                                valCommit2,
+                                1,
+                                TRUE,   /* no commit */
+                                &faultParam
+                        );
+ #endif
         if (ret != CCSP_SUCCESS && faultParam)
         {
             AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
