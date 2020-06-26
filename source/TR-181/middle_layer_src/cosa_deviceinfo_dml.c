@@ -7962,6 +7962,123 @@ DNSSTRICTORDER_GetParamBoolValue
     prototype:
 
         BOOL
+        ActiveMeasurements_RFC_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+ActiveMeasurements_RFC_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+       /* Collect Value */
+       char *strValue = NULL;
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+
+
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WifiClient.ActiveMeasurements.Enable", NULL, &strValue);
+        if (retPsmGet == CCSP_SUCCESS) {
+            *pBool = _ansc_atoi(strValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        }
+        else
+            *pBool = TRUE;
+
+         return TRUE;
+    }
+    return FALSE;
+}
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        ActiveMeasurements_RFC_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+ActiveMeasurements_RFC_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if (IsBoolSame(hInsContext, ParamName, bValue, ActiveMeasurements_RFC_GetParamBoolValue))
+        return TRUE;
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+
+       sprintf(str,"%d",bValue);
+       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WifiClient.ActiveMeasurements.Enable", ccsp_string, str);
+       if (retPsmGet != CCSP_SUCCESS) {
+           CcspTraceError(("Set failed for Active Measurement RFC enable \n"));
+           return ANSC_STATUS_FAILURE;
+       }
+       CcspTraceInfo(("Successfully set Active Measurement RFC enable \n"));
+       return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
         EasyConnect_GetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,
