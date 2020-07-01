@@ -82,7 +82,6 @@ extern void* g_pDslhDmlAgent;
 #include "cosa_dhcpv6_apis.h"
 #include "cosa_ip_internal.h"
 #include "cosa_drg_common.h"
-#include "secure_wrapper.h"
 
 #define MAX_IPIF_NUM  5
 /*this is the real backend buffers, the PCOSA_DATAMODEL_IP structure only stores stuff from WebGui or ACS, we use this buffer to track param changes..*/
@@ -2796,7 +2795,7 @@ static int _invoke_ip_cmd(char * cmd, PCOSA_DML_IP_V6ADDR p_old, PCOSA_DML_IP_V6
             sprintf(shell_cmd, "ip -6 addr add %s dev %s preferred_lft %d", buf, ifname, prefered_lft);
         }
 
-        v_secure_system("ip -6 addr add %s dev %s preferred_lft %d", buf, ifname, prefered_lft);
+        system(shell_cmd);
     }
     else if (!strcmp(cmd, "del"))
     {
@@ -2818,7 +2817,8 @@ static int _invoke_ip_cmd(char * cmd, PCOSA_DML_IP_V6ADDR p_old, PCOSA_DML_IP_V6
         inet_ntop(AF_INET6, &addr, buf, sizeof(buf));
         snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf),  "/%d", pref_len);
 
-        v_secure_system("ip -6 addr del %s dev %s", buf, ifname);
+        sprintf(shell_cmd, "ip -6 addr del %s dev %s", buf, ifname);
+        system(shell_cmd);
     }
     else if (!strcmp(cmd, "modify"))
     {

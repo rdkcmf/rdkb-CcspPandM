@@ -74,7 +74,6 @@
 #include "autoconf.h"
 
 
-#include "secure_wrapper.h"
 extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
@@ -6783,7 +6782,9 @@ static void *InterfaceEventHandler_thrd(void *data)
 						_get_shell_output(cmd, tbuff, sizeof(tbuff));
 						if(tbuff[strlen(tbuff)-1] == '0')
 						{
-                                                        v_secure_system("sysctl -w net.ipv6.conf.%s.autoconf=1",Inf_name);
+							memset(cmd,0,sizeof(cmd));
+							sprintf(cmd,"sysctl -w net.ipv6.conf.%s.autoconf=1",Inf_name);
+							system(cmd);
 							memset(cmd,0,sizeof(cmd));
 							sprintf(cmd,"ifconfig %s down;ifconfig %s up",Inf_name,Inf_name);
 							system(cmd);
@@ -6792,13 +6793,17 @@ static void *InterfaceEventHandler_thrd(void *data)
 		                                memset(cmd,0,sizeof(cmd));
 		                                _ansc_sprintf(cmd, "%s_ipaddr_v6",Inf_name);
 	    					commonSyseventGet(cmd, buf, sizeof(buf));
-                                                v_secure_system("ip -6 route add %s dev %s",buf,Inf_name);
+		                                memset(cmd,0,sizeof(cmd));
+		                                _ansc_sprintf(cmd, "ip -6 route add %s dev %s",buf,Inf_name);
+						system(cmd);
 						#ifdef _COSA_INTEL_XB3_ARM_
 		                                memset(cmd,0,sizeof(cmd));
 		                                _ansc_sprintf(cmd, "ip -6 route add %s dev %s table erouter",buf,Inf_name);
 						system(cmd);
 						#endif
-                                                v_secure_system("ip -6 rule add iif %s lookup erouter",Inf_name);
+		                                memset(cmd,0,sizeof(cmd));
+		                                sprintf(cmd, "ip -6 rule add iif %s lookup erouter",Inf_name);
+		                                system(cmd);
 						((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
 					}
 					else

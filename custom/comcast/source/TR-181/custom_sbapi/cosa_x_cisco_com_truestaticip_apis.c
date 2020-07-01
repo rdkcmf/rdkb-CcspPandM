@@ -79,7 +79,6 @@
 #include <utapi/utapi_util.h>
 #include <stdlib.h>
 #include "cosa_drg_common.h"
-#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -936,16 +935,47 @@ CosaDmlTSIPSetCfg
             char                        scriptCmd[128];
 
             /* IP Address */
-            v_secure_system("sysevent set ipv4-tsip_IPAddress %s", pCfg->IPAddress);
+            _ansc_sprintf
+                (
+                    scriptCmd,
+                    "sysevent set ipv4-tsip_IPAddress %s",
+                    pCfg->IPAddress
+                );
+
+            AnscTraceWarning(("!!!!!!!!!! scriptCmd: %s !!!!!!!!!!\n", scriptCmd));
+            system(scriptCmd);
 
             /* Subnet */
-            v_secure_system("sysevent set ipv4-tsip_Subnet %s", pCfg->SubnetMask);
+            _ansc_sprintf
+                (
+                    scriptCmd,
+                    "sysevent set ipv4-tsip_Subnet %s",
+                    pCfg->SubnetMask
+                );
+
+            AnscTraceWarning(("!!!!!!!!!! scriptCmd: %s !!!!!!!!!!\n", scriptCmd));
+            system(scriptCmd);
 
             /* Gateway */
-            v_secure_system("sysevent set ipv4-tsip_Gateway %s", pCfg->GatewayIPAddress);
+            _ansc_sprintf
+                (
+                    scriptCmd,
+                    "sysevent set ipv4-tsip_Gateway %s",
+                    pCfg->GatewayIPAddress
+                );
 
-            /* Enable */
-            v_secure_system("sysevent set ipv4-resync_tsip %d", pCfg->Enabled);
+            AnscTraceWarning(("!!!!!!!!!! scriptCmd: %s !!!!!!!!!!\n", scriptCmd));
+            system(scriptCmd);
+
+            _ansc_sprintf
+                (
+                    scriptCmd,
+                    "sysevent set ipv4-resync_tsip %d",
+                    pCfg->Enabled
+                );
+
+            AnscTraceWarning(("!!!!!!!!!! scriptCmd: %s !!!!!!!!!!\n", scriptCmd));
+            system(scriptCmd);
         }
 #endif
 
@@ -1948,17 +1978,50 @@ CosaDmlTSIPSubnetSetEntry
 
     if ( TRUE )
     {
+        char                        scriptCmd[128];
+
         /* Enable */
-        v_secure_system("sysevent set ipv4-tsip_asn_enable %d", pSubnetEntry->Enabled);
+        _ansc_sprintf
+            (
+                scriptCmd,
+                "sysevent set ipv4-tsip_asn_enable %d",
+                pSubnetEntry->Enabled
+            );
+
+        AnscTraceWarning(("!!!!!!!!!! scriptCmd: %s !!!!!!!!!!\n", scriptCmd));
+        system(scriptCmd);
 
         /* IP Address */
-        v_secure_system("sysevent set ipv4-tsip_asn_ipaddress %s", pSubnetEntry->IPAddress);
+        _ansc_sprintf
+            (
+                scriptCmd,
+                "sysevent set ipv4-tsip_asn_ipaddress %s",
+                pSubnetEntry->IPAddress
+            );
+
+        AnscTraceWarning(("!!!!!!!!!! scriptCmd: %s !!!!!!!!!!\n", scriptCmd));
+        system(scriptCmd);
 
         /* Subnet */
-        v_secure_system("sysevent set ipv4-tsip_asn_subnet %s", pSubnetEntry->SubnetMask);
+        _ansc_sprintf
+            (
+                scriptCmd,
+                "sysevent set ipv4-tsip_asn_subnet %s",
+                pSubnetEntry->SubnetMask
+            );
 
-        /* Instance */
-        v_secure_system("sysevent set ipv4-resync_tsip_asn %lu", pSubnetEntry->InstanceNumber);
+        AnscTraceWarning(("!!!!!!!!!! scriptCmd: %s !!!!!!!!!!\n", scriptCmd));
+        system(scriptCmd);
+
+        _ansc_sprintf
+            (
+                scriptCmd,
+                "sysevent set ipv4-resync_tsip_asn %d",
+                pSubnetEntry->InstanceNumber
+            );
+
+        AnscTraceWarning(("!!!!!!!!!! scriptCmd: %s !!!!!!!!!!\n", scriptCmd));
+        system(scriptCmd);
     }
             
 #endif

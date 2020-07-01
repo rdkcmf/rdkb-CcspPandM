@@ -98,7 +98,7 @@
 #include "cosa_ethernet_apis_ext.h"
 #include "cosa_drg_common.h"
 #include "ansc_string_util.h"
-#include "secure_wrapper.h"
+
 #include "ccsp_psm_helper.h"
 #include "dmsb_tr181_psm_definitions.h"
 
@@ -666,7 +666,8 @@ CosaDmlEthVlanTerminationAddEntry
         if (pEntry->Cfg.EthLinkName[0] && pEntry->Cfg.VLANID)
         {
             char cmd[256];
-            v_secure_system("vconfig add %s %u", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+            sprintf(cmd, "vconfig add %s %u", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+            system(cmd);
 
             if (pEntry->Cfg.bEnabled)
             {
@@ -708,8 +709,10 @@ CosaDmlEthVlanTerminationDelEntry
         {
             if (g_EthernetVlanTermination[i].Cfg.EthLinkName[0] && g_EthernetVlanTermination[i].Cfg.VLANID)
             {
-                v_secure_system("vconfig rem %s.%u", g_EthernetVlanTermination[i].Cfg.EthLinkName,
-                               g_EthernetVlanTermination[i].Cfg.VLANID);
+                char cmd[256];
+                sprintf(cmd, "vconfig rem %s.%u", g_EthernetVlanTermination[i].Cfg.EthLinkName,
+                                                  g_EthernetVlanTermination[i].Cfg.VLANID);
+                system(cmd);
             }
 
             for ( j = i; j < g_EthernetVlanTerminationNum; j++ )
@@ -812,19 +815,23 @@ CosaDmlEthVlanTerminationSetCfg
 
     if (pEntry)
     {
+        char cmd[256];
         char ifName[256];
         if (strcmp(pEntry->Cfg.EthLinkName, pCfg->EthLinkName) || pEntry->Cfg.VLANID != pCfg->VLANID)
         {
             if (pEntry->Cfg.EthLinkName[0] && pEntry->Cfg.VLANID)
             {
-                v_secure_system("vconfig rem %s.%u", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+                sprintf(cmd, "vconfig rem %s.%u", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+                system(cmd);
             }
             if (pCfg->EthLinkName[0] && pCfg->VLANID)
             {
-                v_secure_system("vconfig add %s %u", pCfg->EthLinkName, pCfg->VLANID);
+                sprintf(cmd, "vconfig add %s %u", pCfg->EthLinkName, pCfg->VLANID);
+                system(cmd);
                 if (pCfg->bEnabled)
                 {
-                    v_secure_system("ip link set %s.%u up", pCfg->EthLinkName, pCfg->VLANID);
+                    sprintf(cmd, "ip link set %s.%u up", pCfg->EthLinkName, pCfg->VLANID);
+                    system(cmd);
                 }
             }
             pEntry->DynamicInfo.LastChange = AnscGetTickInSeconds();
@@ -832,7 +839,8 @@ CosaDmlEthVlanTerminationSetCfg
         }
         else if (!pEntry->Cfg.bEnabled && pCfg->bEnabled)
         {
-            v_secure_system("ip link set %s.%u up", pCfg->EthLinkName, pCfg->VLANID);
+            sprintf(cmd, "ip link set %s.%u up", pCfg->EthLinkName, pCfg->VLANID);
+            system(cmd);
 
             pEntry->DynamicInfo.LastChange = AnscGetTickInSeconds();
 
@@ -841,7 +849,8 @@ CosaDmlEthVlanTerminationSetCfg
         }
         else if (pEntry->Cfg.bEnabled && !pCfg->bEnabled)
         {
-            v_secure_system("ip link set %s.%u down", pCfg->EthLinkName, pCfg->VLANID);
+            sprintf(cmd, "ip link set %s.%u down", pCfg->EthLinkName, pCfg->VLANID);
+            system(cmd);
 
             pEntry->DynamicInfo.LastChange = AnscGetTickInSeconds();
         }
