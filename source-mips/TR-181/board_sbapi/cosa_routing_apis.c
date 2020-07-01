@@ -69,7 +69,6 @@
 #include "cosa_routing_apis.h"
 #include "cosa_routing_internal.h"
 #include "dml_tr181_custom_cfg.h"
-#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -2684,8 +2683,10 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
      * because of "proto" (orig) info,
      * we use "ip -6 route" instead of "route -A inet6".
      */
-    CcspTraceInfo(("[%s:%d] Checking Interface: %s\n", __FUNCTION__,__LINE__, ifname));
-    if ((fp = v_secure_popen("r", "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname)) == NULL)
+    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname);
+	CcspTraceInfo(("[%s:%d] Checking Interface: %s\n", __FUNCTION__,__LINE__, ifname));
+
+    if ((fp = popen(cmd, "r")) == NULL)
         return -1;
 
     entryCnt = g_numRtInfo6;
@@ -2750,7 +2751,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 			CcspTraceInfo(("[%s:%d] entryCnt = %d \n",__FUNCTION__,__LINE__, entryCnt));
 		}
     }
-    v_secure_pclose(fp);
+	pclose(fp);
 	//Fix for issue RDKB-367 
 #if defined(_COSA_BCM_MIPS_)
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table main");
@@ -2853,7 +2854,7 @@ Route6_Add(const char *prefix, const char *gw, const char *dev, int metric)
     if (metric != 0)
         n += snprintf(cmd + n, sizeof(cmd) - n, "metric %d ", metric);
 
-    if (v_secure_system("ip -6 route add %s dev %s ", prefix, dev) != 0) 
+    if (system(cmd) != 0) 
     {
         CcspTraceWarning(("%s: fail to add route\n", __FUNCTION__));
         return -1;
@@ -2886,7 +2887,7 @@ Route6_Del(const char *prefix, const char *gw, const char *dev)
     if (gw && strlen(gw))
         n += snprintf(cmd + n, sizeof(cmd) - n, "via %s ", gw);
 
-    if (v_secure_system("ip -6 route del %s ", prefix) != 0) 
+    if (system(cmd) != 0) 
     {
         CcspTraceWarning(("%s: fail to delete route\n", __FUNCTION__));
         return -1;
@@ -2922,7 +2923,7 @@ Route6_IsRouteExist(const char *prefix, const char *gw, const char *dev)
 	 * we use " | grep '^'" to ensure one line is showed to STDIN */
 	n += snprintf(cmd + n, sizeof(cmd) - n, " | grep '^' ");
 
-    if (v_secure_system("ip -6 route show %s ", prefix) != 0) 
+    if (system(cmd) != 0) 
     {
         return FALSE;
     }

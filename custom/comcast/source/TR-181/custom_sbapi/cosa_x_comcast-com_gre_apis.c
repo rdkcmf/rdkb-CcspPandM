@@ -58,7 +58,7 @@
 #include "syscfg.h" 
 #include "hotspotfd.h"
 #include "dhcpsnooper.h"
-#include "secure_wrapper.h"
+
 #define GRETEST
 
 #if defined(GRETEST)
@@ -483,21 +483,23 @@ CosaDml_GreTunnelIfGetNumberOfEntries(ULONG tuIns)
 ANSC_STATUS
 CosaDml_GreTunnelGetConnectedRemoteEndpoint(ULONG tuIdx, COSA_DML_GRE_TUNNEL *greTu)
 {
-    char cmd[126] = {0};
-    char line_buf[126] = {0};
-    FILE *fp = NULL;
+	char cmd[126] = {0};
+	char line_buf[126] = {0};
+	FILE *fp = NULL;
 
-    if(!greTu)
-        return ANSC_STATUS_FAILURE;
+	if(!greTu)
+			return ANSC_STATUS_FAILURE;
 
-    if (((fp = v_secure_popen("r", "sysevent get %s",kHotspotfd_tunnelEP)) != NULL) && (fgets(line_buf, sizeof(line_buf), fp)))
+	snprintf(cmd, sizeof(cmd), "sysevent get %s",kHotspotfd_tunnelEP);       
+	
+    if (((fp = popen(cmd,"r")) != NULL) && (fgets(line_buf, sizeof(line_buf), fp)))
     {
         sprintf(greTu->ConnectedRemoteEndpoint,"%s",line_buf);
     }
-    if(fp)
-        v_secure_pclose(fp);
+	if(fp)
+		pclose(fp);
 
-    return ANSC_STATUS_SUCCESS;     
+	return ANSC_STATUS_SUCCESS;     
 }
 
 

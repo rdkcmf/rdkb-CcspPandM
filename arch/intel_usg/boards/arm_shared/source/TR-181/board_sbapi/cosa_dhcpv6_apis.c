@@ -72,7 +72,6 @@
 #include "cosa_dhcpv6_internal.h"
 #include "plugin_main_apis.h"
 #include "autoconf.h"
-#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -5116,7 +5115,9 @@ dhcpv6c_dbg_thrd(void * in)
 
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
-                        v_secure_system("ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
+                        char cmd[100];
+                        sprintf(cmd, "ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
+                        system(cmd);
 
                         /* we need save this for zebra to send RA 
                            ipv6_prefix           // xx:xx::/yy
