@@ -71,7 +71,7 @@
 #include "ccsp_psm_helper.h"
 #include "ansc_platform.h"
 #include "plugin_main_apis.h"
-#include "secure_wrapper.h"
+
 #include "hotspotfd.h"
 #include "dhcpsnooper.h"
 
@@ -485,20 +485,23 @@ CosaDml_GreIfGetNumberOfEntries(void)
 ANSC_STATUS
 CosaDml_GreIfGetConnectedRemoteEndpoint(ULONG idx, COSA_DML_GRE_IF *greIf)
 {
-    char line_buf[126] = {0};
-    FILE *fp = NULL;
 
-    if(!greIf)
-        return ANSC_STATUS_FAILURE;
+	char cmd[126] = {0};
+	char line_buf[126] = {0};
+	FILE *fp = NULL;
 
-    if (((fp = v_secure_popen("r", "sysevent get %s",kHotspotfd_tunnelEP)) != NULL) && (fgets(line_buf, sizeof(line_buf), fp)))
+	if(!greIf)
+		return ANSC_STATUS_FAILURE;
+
+	snprintf(cmd, sizeof(cmd), "sysevent get %s",kHotspotfd_tunnelEP);       
+    if (((fp = popen(cmd,"r")) != NULL) && (fgets(line_buf, sizeof(line_buf), fp)))
     {
-        sprintf(greIf->ConnectedRemoteEndpoint,"%s",line_buf);
+		sprintf(greIf->ConnectedRemoteEndpoint,"%s",line_buf);
     }
-    if(fp)
-        v_secure_pclose(fp);
+	if(fp)
+		pclose(fp);
 
-    return ANSC_STATUS_SUCCESS;	
+	return ANSC_STATUS_SUCCESS;	
 }
 
 ANSC_STATUS

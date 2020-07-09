@@ -38,7 +38,6 @@
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>
-#include "secure_wrapper.h"
 
 /* 
  * For USGv2 (_COSA_INTEL_USG_ARM_):
@@ -160,7 +159,7 @@ RLog_GetLevel(void)
 static int
 RLog_Restart(PCOSA_DML_RLOG conf)
 {
-    int err=-1, level;
+    int err, level;
 
 #if 0 /* no PID file in current version */
     if (access(SYSLOGD_PID_FILE, F_OK) == 0)
@@ -175,10 +174,10 @@ RLog_Restart(PCOSA_DML_RLOG conf)
         CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
         #if !defined(INTEL_PUMA7) 
         if (conf->Port == 0 || conf->Port > 65535)
-            err = v_secure_system("syslogd -l %d -R %s -L", level, conf->Host);
+            err = vsystem("syslogd -l %d -R %s -L", level, conf->Host);
         else
-            err = v_secure_system("syslogd -l %d -R %s:%lu -L", level, conf->Host, conf->Port);
-        #endif
+            err = vsystem("syslogd -l %d -R %s:%d -L", level, conf->Host, conf->Port);
+	#endif
     }
     else
     {       

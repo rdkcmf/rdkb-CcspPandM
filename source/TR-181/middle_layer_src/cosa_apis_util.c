@@ -84,7 +84,6 @@
 #include <sys/types.h>
 #endif
 #include "ansc_platform.h"
-#include "secure_wrapper.h"
 
 //$HL 4/30/2013
 #include "ccsp_psm_helper.h"
@@ -1422,9 +1421,11 @@ CosaUtilGetStaticRouteTable
 
         if (TRUE)
         {
-            if (((fp2 = v_secure_popen("r", "/sbin/ip route show %s/%d",
-                  sroute[i].dest_lan_ip,
-                  NetmaskToNumber(sroute[i].netmask))) != NULL) && (fgets(line_buf, sizeof(line_buf), fp2)))
+            snprintf(cmd, sizeof(cmd), "/sbin/ip route show %s/%d",
+                     sroute[i].dest_lan_ip,
+                     NetmaskToNumber(sroute[i].netmask));
+
+            if (((fp2 = popen(cmd,"r")) != NULL) && (fgets(line_buf, sizeof(line_buf), fp2)))
             {
                 pch = strtok(line_buf, " ");
 
@@ -1445,7 +1446,7 @@ CosaUtilGetStaticRouteTable
 
     if (fp2)
     {
-        v_secure_pclose(fp2);
+        pclose(fp2);
     }
     fclose(fp);
     

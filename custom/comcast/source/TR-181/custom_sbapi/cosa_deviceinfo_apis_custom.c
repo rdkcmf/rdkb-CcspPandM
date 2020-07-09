@@ -73,7 +73,7 @@
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
 #include "platform_hal.h"
-#include "secure_wrapper.h" 
+ 
 #include <utctx.h>
 #include <utctx_api.h>
 #include <utapi.h>
@@ -509,7 +509,9 @@ CosaDmlSetCaptivePortalEnable
 {
 
 	char buf[10];
+	char cmd[50];
 	memset(buf,0,sizeof(buf));
+	memset(cmd,0,sizeof(cmd));
 	if (value)
 	{
 		strcpy(buf,"true");
@@ -531,7 +533,8 @@ CosaDmlSetCaptivePortalEnable
                     }
 	  }
 
-    v_secure_system("sh /etc/restart_services.sh %s",buf);
+    sprintf(cmd,"sh /etc/restart_services.sh %s",buf);
+    system(cmd);
     /*commonSyseventSet("dhcp-server-restart", "");
     commonSyseventSet("firewall-restart", "");
     commonSyseventSet("zebra-restart", ""); */

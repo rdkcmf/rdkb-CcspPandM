@@ -72,7 +72,6 @@
 #include "cosa_dhcpv6_internal.h"
 #include "plugin_main_apis.h"
 #include "autoconf.h"
-#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -5953,7 +5952,9 @@ static void *InterfaceEventHandler_thrd(void *data)
 				if(strcmp(val, "ready") == 0)
 				{
     					commonSyseventGet("br106_ipaddr_v6", buf, sizeof(buf));
-					v_secure_system("ip -6 route add %s dev br106",buf);
+                                        memset(cmd,0,sizeof(cmd));
+                                        _ansc_sprintf(cmd, "ip -6 route add %s dev br106",buf);
+					system(cmd);
                                         memset(cmd,0,sizeof(cmd));
                                         sprintf(cmd, "ip -6 rule add iif br106 lookup erouter");
                                         system(cmd);
@@ -6179,13 +6180,19 @@ dhcpv6c_dbg_thrd(void * in)
 						_get_shell_output(cmd, tbuff, sizeof(tbuff));
 						if(tbuff[strlen(tbuff)-1] == '0')
 						{
-							v_secure_system("sysctl -w net.ipv6.conf.%s.autoconf=1",token);
+							memset(cmd,0,sizeof(cmd));
+							sprintf(cmd,"sysctl -w net.ipv6.conf.%s.autoconf=1",token);
+							system(cmd);
 							memset(cmd,0,sizeof(cmd));
 							sprintf(cmd,"ifconfig %s down;ifconfig %s up",token,token);
 							system(cmd);
 						}
-                        			v_secure_system("ip -6 route add %s dev %s", out1, token);
-						v_secure_system("ip -6 rule add iif %s lookup erouter",token);
+						memset(cmd,0,sizeof(cmd));
+						sprintf(cmd, "ip -6 route add %s dev %s", out1, token);
+                        			system(cmd);
+						memset(cmd,0,sizeof(cmd));
+						sprintf(cmd, "ip -6 rule add iif %s lookup erouter",token);
+						system(cmd);
 						memset(out1,0,sizeof(out1));
 					}
 				} 
@@ -6213,12 +6220,14 @@ dhcpv6c_dbg_thrd(void * in)
 
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
-                        v_secure_system("ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
+                        sprintf(cmd, "ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
+                        system(cmd);
 
                         /* we need save this for zebra to send RA 
                            ipv6_prefix           // xx:xx::/yy
                          */
-                        v_secure_system("sysevent set ipv6_prefix %s \n",v6pref);
+                        sprintf(cmd, "sysevent set ipv6_prefix %s \n",v6pref);
+                        system(cmd);
                         g_dhcpv6_server_prefix_ready = TRUE;
                         CcspTraceWarning(("!run cmd1:%s", cmd));
 

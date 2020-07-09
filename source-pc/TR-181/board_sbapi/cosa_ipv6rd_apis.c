@@ -77,7 +77,7 @@
 #include <arpa/inet.h>
 #include <linux/if.h>
 #include <linux/ip.h>
-#include "secure_wrapper.h"
+
 #include "cosa_apis.h"
 #include "syscfg/syscfg.h"
 #include "cosa_ipv6rd_apis.h"
@@ -579,12 +579,14 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
         snprintf(cmd, sizeof(cmd), "ip tunnel add %s mode sit local %s", 
                 ifconf->Alias, addrsource);
     }
-    if (v_secure_system("ip tunnel add %s mode sit local %s", ifconf->Alias, addrsource) != 0) {
+    if (system(cmd) != 0) {
         syslog(LOG_ERR, "%s: Fail to add tunnel: %s", __FUNCTION__, ifconf->Alias);
         return -1;
     }
 
-    if (v_secure_system("ip tunnel 6rd dev %s 6rd-prefix %s", ifconf->Alias, ifconf->SPIPv6Prefix) != 0) {
+    snprintf(cmd, sizeof(cmd), "ip tunnel 6rd dev %s 6rd-prefix %s", 
+            ifconf->Alias, ifconf->SPIPv6Prefix);
+    if (system(cmd) != 0) {
         syslog(LOG_ERR, "%s: Fail to set prefix for %s", __FUNCTION__, ifconf->Alias);
         return -1;
     }
@@ -631,12 +633,14 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
 
     /* add 6rd interface's address and set tunnel interface up */
 #if defined(USE_SYSTEM)
-    if (v_secure_system("ip addr add %s dev %s", buf, ifconf->Alias) != 0) {
+    snprintf(cmd, sizeof(cmd), "ip addr add %s dev %s", buf, ifconf->Alias);
+    if (system(cmd) != 0) {
         syslog(LOG_ERR, "%s: Fail to generate 6rd address", __FUNCTION__);
         return -1;
     }
 
-    if (v_secure_system("ip link set %s up", ifconf->Alias) != 0) {
+    snprintf(cmd, sizeof(cmd), "ip link set %s up", ifconf->Alias);
+    if (system(cmd) != 0) {
         syslog(LOG_ERR, "%s: Fail to set %s up", __FUNCTION__, ifconf->Alias);
         return -1;
     }
@@ -646,7 +650,8 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
     if (extract_first_addr(ifconf->BorderRelayIPv4Addr, buf, sizeof(buf)) == 0) {
 #if defined(USE_SYSTEM)
         //snprintf(cmd, sizeof(cmd), "ip route add ::/0 via ::%s dev %s", buf, ifconf->Alias);
-        if (v_secure_system("ip route add ::/0 dev %s", ifconf->Alias) != 0) {
+        snprintf(cmd, sizeof(cmd), "ip route add ::/0 dev %s", ifconf->Alias);
+        if (system(cmd) != 0) {
             syslog(LOG_ERR, "%s: Fail to set default route", __FUNCTION__, ifconf->Alias);
             return -1;
         }
@@ -656,7 +661,8 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
     /* if all traffic to some border relay delete direct route */
     if (ifconf->AllTrafficToBorderRelay) {
 #if defined(USE_SYSTEM)
-        v_secure_system("ip route del %s dev %s", ifconf->SPIPv6Prefix, ifconf->Alias);
+        snprintf(cmd, sizeof(cmd), "ip route del %s dev %s", ifconf->SPIPv6Prefix, ifconf->Alias);
+        system(cmd);
 #endif
         /* failure is acceptable */
     }
@@ -668,6 +674,9 @@ static int
 IPv6rd_TunnelDel(const COSA_DML_IPV6RD_IF *ifconf)
 {
     char braddr[16];
+#if defined(USE_SYSTEM)
+    char cmd[MAX_LINE];
+#endif
 
     /* if default IPv6 routing is to of this IF's Border Relay,
      * we also need to delete it. */
@@ -676,13 +685,15 @@ IPv6rd_TunnelDel(const COSA_DML_IPV6RD_IF *ifconf)
     }
 
 #if defined(USE_SYSTEM)
-    if (v_secure_system("ip link set %s down", ifconf->Alias) != 0)
+    snprintf(cmd, sizeof(cmd), "ip link set %s down", ifconf->Alias);
+    if (system(cmd) != 0)
         syslog(LOG_ERR, "%s: fail to set link down", __FUNCTION__);
 #endif
 
     /* delete tunnel interface and it's direct routing */
 #if defined(USE_SYSTEM)
-    if (v_secure_system("ip tunnel del %s", ifconf->Alias) != 0) {
+    snprintf(cmd, sizeof(cmd), "ip tunnel del %s", ifconf->Alias);
+    if (system(cmd) != 0) {
         syslog(LOG_ERR, "%s: fail to delete tunnel", __FUNCTION__);
         return -1;
     }
