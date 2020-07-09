@@ -98,6 +98,7 @@
 #include "cosa_deviceinfo_internal.h"
 #include "cosa_drg_common.h"
 #define DEVICE_PROPERTIES    "/etc/device.properties"
+#define MAX_PROCESS_NUMBER 200
 
 #ifdef _COSA_SIM_
 
@@ -1249,6 +1250,13 @@ static int read_proc_stat(char * line, char * p_cmd, char * p_state, int * p_siz
         else {
             strncpy(p_cmd, tmp1+1, tmp-tmp1-1);
             
+            if(strlen(p_cmd) == 0)
+            {
+                fprintf(stderr,"\n %s %d p_cmd length is 0 return ",__func__,__LINE__);
+                CcspTraceWarning(("\n %s %d p_cmd length is 0 return",__func__,__LINE__));
+                return -1;
+            }
+
             tmp += 2;
 
             if (sscanf(tmp, "%c %*d %*d %*d %*d %*d %*u %*lu \
@@ -1279,7 +1287,7 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
     PCOSA_PROCESS_ENTRY         p_proc = NULL;
 
     static ULONG                ProcessTimeStamp;
-    ULONG                       ProcessNumber       = 0;
+    ULONG                       ProcessNumber       = MAX_PROCESS_NUMBER;
     struct dirent               entry;
     struct dirent               *result = NULL;
     DIR                         *dir;
@@ -1382,6 +1390,8 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
                 CcspTraceWarning(("Failed to parse process %d information!\n", pid));
                 continue;
             }
+            i++;
+	    
             /*CcspTraceWarning((" Cmd:%s, size, priority, cputime %d:%d:%d \n", p_proc->Command, p_proc->Size, p_proc->Priority, p_proc->CPUTime));*/
             name = strchr(p_proc->Command, ')');
                 
@@ -1423,6 +1433,12 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
     {
         p_info->ProcessNumberOfEntries = i;
     }
+
+	
+    p_info->ProcessNumberOfEntries = i;
+
+    fprintf(stderr,"\n %s %d  ProcessNumberOfEntries:%lu",__func__,__LINE__,p_info->ProcessNumberOfEntries);
+    CcspTraceWarning(("\n %s %d  ProcessNumberOfEntries:%d\n",__func__,__LINE__,p_info->ProcessNumberOfEntries));
 
     if ( dir != NULL )
     {
