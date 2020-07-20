@@ -717,11 +717,15 @@ PcBlkURL_SetParamStringValue
         len=_ansc_strlen(strValue);
         if(len > BUFF_SIZE)
             return FALSE;
-        if(is_url(strValue))
+        if(is_url(strValue) || (pBlkUrl->BlockMethod == BLOCK_METHOD_KEYWORD))
         {
             _ansc_snprintf(pBlkUrl->Site, sizeof(pBlkUrl->Site), "%s", strValue);
             return TRUE;
         }
+	else
+	{
+	     AnscTraceWarning(("%s -- invalid url = %s\n", __FUNCTION__, strValue));
+	}
     }
     if (AnscEqualString(ParamName, "StartTime", TRUE))
     {
