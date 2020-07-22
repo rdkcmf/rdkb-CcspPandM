@@ -334,7 +334,7 @@ ANSC_STATUS CosaDmlLanManagement_SetLanIpv6Ula(char *lan_prefix, int lan_prefix_
     char prefix[64] = {0};
     char lan_eui[64] = {0};
 
-    if(strncmp(lan_prefix, "undefined", lan_prefix_len) == 0) {
+    if((strlen(lan_prefix) == 0) || (strncmp(lan_prefix, "undefined", lan_prefix_len) == 0)) {
         if (generateIpv6LanPrefix(lan_prefix, lan_prefix_len) != 0)
         {
             AnscTraceWarning(("%s generateIpv6LanPrefix failure \n", __FUNCTION__));
