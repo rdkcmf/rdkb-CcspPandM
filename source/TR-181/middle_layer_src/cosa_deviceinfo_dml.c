@@ -16849,6 +16849,144 @@ MessageBusSource_SetParamBoolValue
   return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        TR104_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            )
+
+
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+
+**********************************************************************/
+
+BOOL
+TR104_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+
+ if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+#ifdef MTA_TR104SUPPORT
+        char value[8] = {'\0'};
+        if( syscfg_get(NULL, "TR104Enable", value, sizeof(value)) == 0 )
+        {
+            if( value != NULL )
+            {
+                 if (strcmp(value, "true") == 0)
+                     *pBool = TRUE;
+                 else
+                     *pBool = FALSE;
+            }
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceError(("syscfg_get failed for TR104Enable\n"));
+        }
+#else
+        *pBool = FALSE;
+        CcspTraceWarning(("TR104 is not supported in this build\n"));
+        return TRUE;
+#endif
+    }
+  return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        TR104_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            )
+
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+TR104_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+  if (IsBoolSame(hInsContext, ParamName, bValue, TR104_GetParamBoolValue))
+        return TRUE;
+
+  if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+#ifdef MTA_TR104SUPPORT
+        char buf[8] = {'\0'};
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+        if( syscfg_set(NULL, "TR104Enable", buf) != 0 )
+        {
+            CcspTraceError(("syscfg_set failed for TR104Enable \n"));
+        }
+        else
+        {
+            if( syscfg_commit() == 0 )
+            {
+                return TRUE;
+            }
+            else
+            {
+                 CcspTraceError(("syscfg_commit failed for TR104Enable \n"));
+            }
+        }
+#else
+        return FALSE;
+#endif
+    }
+  return FALSE;
+}
 
 /**********************************************************************
 
