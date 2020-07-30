@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "5.5"
+      "version" : "5.6"
    },
 
    "comcast" : {
@@ -65,7 +65,8 @@
       "Device.Time.NTPServer3" : "time2.xfinity.com",
       "Device.Time.NTPServer4" : "time3.xfinity.com",
       "Device.Time.NTPServer5" : "time4.xfinity.com",
-      "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config"
+      "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
   },
 
  "RDKM" : {
@@ -124,7 +125,8 @@
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : ""
+      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
   },
 
    "sky-italia" : {
@@ -183,7 +185,8 @@
       "Device.Time.NTPServer3" : "time1.google.com",
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : ""
+      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
    },
 
 
@@ -243,7 +246,8 @@
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
       "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
-      "Device.X_RDK_WebConfig.URL" : ""
+      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
    },
 
 
@@ -303,7 +307,8 @@
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
       "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
-      "Device.X_RDK_WebConfig.URL" : ""
+      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true"
    },
 
 
@@ -363,7 +368,8 @@
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
       "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
-      "Device.X_RDK_WebConfig.URL" : ""
+      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true"
    },
 
 
@@ -423,7 +429,8 @@
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
       "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
-      "Device.X_RDK_WebConfig.URL" : ""
+      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
    },
 
 "videotron" : {
@@ -482,7 +489,8 @@
       "Device.Time.NTPServer3" : "vl-vi-ntp003.ip.videotron.ca",
       "Device.Time.NTPServer4" : "time1.google.com",
       "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
-      "Device.X_RDK_WebConfig.URL" : ""
+      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
    },
 "axb3retail" : {
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink" : "http://www.surfboard.com",
@@ -539,7 +547,8 @@
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : ""
+      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
   },
    "unknown" : {
 
@@ -596,7 +605,8 @@
       "Device.Time.NTPServer3" : "time2.google.com",
       "Device.Time.NTPServer4" : "time3.google.com",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : ""
+      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
    }
 
 }
