@@ -1668,7 +1668,7 @@ Interface2_SetParamStringValue
             {
                 pIPInterface->Cfg.LinkType    = COSA_DML_LINK_TYPE_LAST;
                 pIPInterface->Cfg.LinkInstNum = 0;
-                pIPInterface->Cfg.LinkName[0] = "\0";
+                pIPInterface->Cfg.LinkName[0] = '\0';
             }
             else
             {

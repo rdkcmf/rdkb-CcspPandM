@@ -2186,7 +2186,7 @@ Link_SetParamStringValue
         {
             pEntry->Cfg.LinkType    = COSA_DML_LINK_TYPE_LAST;
             pEntry->Cfg.LinkInstNum = 0;
-            pEntry->Cfg.LinkName[0] = "\0";
+            pEntry->Cfg.LinkName[0] = '\0';
         }
         else
         {
