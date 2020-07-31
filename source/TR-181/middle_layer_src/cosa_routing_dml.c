@@ -70,11 +70,11 @@
 #include "cosa_routing_apis.h"
 #include "plugin_main_apis.h"
 #include "cosa_routing_internal.h"
+#include "ansc_string_util.h"
 
 #define REFRESH_INTERVAL 120
 #define TIME_NO_NEGATIVE(x) ((long)(x) < 0 ? 0 : (x))
 static ULONG last_tick;
-
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -4558,7 +4558,9 @@ RIP_SetParamUlongValue
     PCOSA_DML_RIP_CFG               pCfg          = &(pMyObject->RIPCfg);
 
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
-
+    #define MIN 1
+    #define MAX 15
+    
     /* check the parameter name and set the corresponding value */
 
     if( AnscEqualString(ParamName, "X_CISCO_COM_UpdateInterval", TRUE) )
@@ -4571,8 +4573,11 @@ RIP_SetParamUlongValue
     if( AnscEqualString(ParamName, "X_CISCO_COM_DefaultMetric", TRUE) )
     {
         /* collect value */
-        pCfg->X_CISCO_COM_DefaultMetric  = uValue;
-        return TRUE;
+        if((uValue >= MIN) && (uValue <= MAX))
+        {
+            pCfg->X_CISCO_COM_DefaultMetric  = uValue;
+            return TRUE;
+        }
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5473,6 +5478,10 @@ InterfaceSetting_SetParamStringValue
     PCOSA_DML_RIP_IF_CFG           pRipIF         = (PCOSA_DML_RIP_IF_CFG)pCosaContext->hContext;
 
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
+
+    /* check if pString doesn't hold null or whitespaces */
+    if(AnscValidStringCheck(pString) != TRUE)
+        return FALSE;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
