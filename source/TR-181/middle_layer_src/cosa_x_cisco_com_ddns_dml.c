@@ -70,6 +70,7 @@
 #include "cosa_x_cisco_com_ddns_dml.h"
 #include "cosa_x_cisco_com_ddns_internal.h"
 #include "dml_tr181_custom_cfg.h"
+#include "ansc_string_util.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -1431,6 +1432,10 @@ Service_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
+
+    /* check if pString doesn't hold null or whitespaces */
+    if(AnscValidStringCheck(pString) != TRUE)
+        return FALSE;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "AssociatedConnection", TRUE))

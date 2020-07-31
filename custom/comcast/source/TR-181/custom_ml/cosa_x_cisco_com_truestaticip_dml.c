@@ -75,6 +75,7 @@
 #include "cosa_x_cisco_com_truestaticip_dml.h"
 #include "cosa_x_cisco_com_truestaticip_apis.h"
 #include "cosa_x_cisco_com_truestaticip_internal.h"
+#include "ansc_string_util.h"
 
 BOOL
 TrueStaticIP_GetParamBoolValue
@@ -191,22 +192,36 @@ TrueStaticIP_SetParamStringValue
 {
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
+    unsigned int mask = 0;
+
+    /* check if pString doesn't hold null or whitespaces */
+    if(AnscValidStringCheck(pString) != TRUE)
+        return FALSE;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "IPAddress", TRUE))
     {
-        /* save update to backup */
-        AnscCopyString(pTSIP->IPAddress, pString);
-        pTSIP->bIPInfoChanged = TRUE;
-        return TRUE;
+        if(is_IpAddress(pString))
+        {
+            /* save update to backup */
+            AnscCopyString(pTSIP->IPAddress, pString);
+            pTSIP->bIPInfoChanged = TRUE;
+            return TRUE;
+        }
     }
 
     if( AnscEqualString(ParamName, "SubnetMask", TRUE))
     {
-        /* save update to backup */
-        AnscCopyString(pTSIP->SubnetMask, pString);
-        pTSIP->bIPInfoChanged = TRUE;
-        return TRUE;
+        /* In binary representation, the value should be consecutive number of 1's and 0's
+           eg: 255.255.255.224*/
+        mask = ntohl(inet_addr(pString));
+        if(0==(mask & (~mask >> 1)))
+        {
+            /* save update to backup */
+            AnscCopyString(pTSIP->SubnetMask, pString);
+            pTSIP->bIPInfoChanged = TRUE;
+            return TRUE;
+        }
     }
 
     if( AnscEqualString(ParamName, "GatewayIPAddress", TRUE))
@@ -499,20 +514,32 @@ Subnet_SetParamStringValue
     )
 {
     PCOSA_DML_TSIP_SUBNET_ENTRY     pSubnet      = (PCOSA_DML_TSIP_SUBNET_ENTRY)hInsContext;
+    unsigned int mask = 0;
+
+    /* check if pString doesn't hold null or whitespaces */
+    if(AnscValidStringCheck(pString) != TRUE)
+        return FALSE;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "IPAddress", TRUE))
     {
-        /* save update to backup */
-         AnscCopyString(pSubnet->IPAddress, pString);
-        return TRUE;
+        if(is_IpAddress(pString))
+        {
+            /* save update to backup */
+            AnscCopyString(pSubnet->IPAddress, pString);
+            return TRUE;
+        }
     }
 
     if( AnscEqualString(ParamName, "SubnetMask", TRUE))
     {
-        /* save update to backup */
-         AnscCopyString(pSubnet->SubnetMask, pString);
-        return TRUE;
+        mask = ntohl(inet_addr(pString));
+        if(0==(mask & (~mask >> 1)))
+        {
+            /* save update to backup */
+            AnscCopyString(pSubnet->SubnetMask, pString);
+            return TRUE;
+        }
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
