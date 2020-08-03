@@ -666,7 +666,13 @@ BOOL is_url(char *buff)
     if(buff[len-1] == '.')
         return FALSE;
 
-    str=(char*)malloc(sizeof(char)*len);
+    //Needs to allocate memory for full length + NULL charecter
+    str=(char*)malloc(sizeof(char)*( len + 1 ));
+    if( NULL == str )
+    {
+        return FALSE;
+    }
+    memset(str, 0, sizeof(char)*( len + 1 ));
     strcpy(str,buff);
     token=strtok(str,delim);
     while(token!=NULL)
