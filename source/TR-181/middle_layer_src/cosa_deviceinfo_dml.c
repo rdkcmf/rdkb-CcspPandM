@@ -8405,18 +8405,19 @@ Feature_SetParamBoolValue
     if( AnscEqualString(ParamName, "HomeNetworkIsolation", TRUE))
     {
     char *strValue = NULL;
-    char str[2];
+    char str[2] = {0};
     int retPsmGet = CCSP_SUCCESS;
     BOOL getVal = 0;
 
-    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.HomeNetworkIsolation", NULL, &strValue);
+   /* retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.HomeNetworkIsolation", NULL, &strValue);
     if (retPsmGet == CCSP_SUCCESS) {
         getVal = _ansc_atoi(strValue);
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     }
 
-    if(getVal != bValue)
+   / if(getVal != bValue)*/
 	{
+            str[1] = '/0'; 
              sprintf(str,"%d",bValue);
              retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.HomeNetworkIsolation", ccsp_string, str);
              if (retPsmGet != CCSP_SUCCESS) {
@@ -8447,11 +8448,11 @@ Feature_SetParamBoolValue
                     system("rm /tmp/MoCABridge_up");
                     system("sysevent set multinet-restart 1");
 #endif
-                    system("killall MRD; killall smcroute;igmpproxy -c /tmp/igmpproxy.conf");
+                    system("killall MRD; killall smcroute;igmpproxy -c /tmp/igmpproxy.conf &");
                 }
 	}
-	else
-		CcspTraceInfo(("HomeNetworkIsolation is already %d \n",getVal));
+	//else
+	//	CcspTraceInfo(("HomeNetworkIsolation is already %d \n",getVal));
 	
     	return TRUE;
     }
