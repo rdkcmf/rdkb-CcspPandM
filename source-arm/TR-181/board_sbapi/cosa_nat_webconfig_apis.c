@@ -272,6 +272,11 @@ int set_dmz_conf(dmz_wandoc_t *rpm)
 			}
 			else
 			{
+				if (IPv4Addr_IsLoopback(dmzHost) || IPv4Addr_IsMulticast(dmzHost) || (dmzHost == 0xffffffff))
+				{
+					CcspTraceWarning((" ' %s 'dmz host not in local lan network  \n",__FUNCTION__));
+					return INVALID_DMZ_WAN_IP;
+				}
 				snprintf(dmz_cache[count].cmd,BLOCK_SIZE,"dmz_dst_ip_addr");
 				snprintf(dmz_cache[count++].val,VAL_BLOCK_SIZE,"%s",rpm->param[index].internal_ip);
 			}
