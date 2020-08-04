@@ -16373,7 +16373,7 @@ CaptivePortalForNoCableRF_GetParamBoolValue
         BOOL*                       pBool
     )
 {
-
+#if defined (_XB6_PRODUCT_REQ_)
  if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 	 char value[8];
@@ -16388,6 +16388,7 @@ CaptivePortalForNoCableRF_GetParamBoolValue
 	 return TRUE;
 
     }
+#endif
   return FALSE;
 }
 
@@ -16432,6 +16433,7 @@ CaptivePortalForNoCableRF_SetParamBoolValue
         BOOL                        bValue
     )
 {
+#if defined (_XB6_PRODUCT_REQ_)
 
   if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -16451,6 +16453,7 @@ CaptivePortalForNoCableRF_SetParamBoolValue
 	  
 	  return TRUE;
     }
+#endif
   return FALSE;
 }
 

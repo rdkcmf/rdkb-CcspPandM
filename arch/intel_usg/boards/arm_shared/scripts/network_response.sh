@@ -184,7 +184,7 @@ rfCpInterface()
   #sysevent set rfcp completed
 }
 
-if [ "$BOX_TYPE" = "XB3" ] || [ "$BOX_TYPE" = "XB6" ]
+if [ "$BOX_TYPE" = "XB6" ]
 then
    rfCpInterface
    if [ "x$TRIGGER_STATE" = "xOnlyForNoRf" ]
