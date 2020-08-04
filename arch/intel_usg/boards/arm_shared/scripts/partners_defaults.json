@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "5.4"
+      "version" : "5.5"
    },
 
    "comcast" : {
@@ -57,8 +57,8 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "FFFFFFFF",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "",   
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "FFFFFFFF",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "FFFFFFFF",   
       "Device.Time.NTPServer1" : "time.xfinity.com",
       "Device.Time.NTPServer2" : "time1.xfinity.com",
       "Device.Time.NTPServer3" : "time2.xfinity.com",
@@ -291,8 +291,8 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "FFFFFFFF",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "", 
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "FFFFFFFF",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "FFFFFFFF", 
       "Device.Time.NTPServer1" : "cpentp.services.cox.net",
       "Device.Time.NTPServer2" : "time1.google.com",
       "Device.Time.NTPServer3" : "time2.google.com",
@@ -348,8 +348,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "RSHM",
       "Device.ManagementServer.EnableCWMP" : "true",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "1",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "FFFFFFFF",
       "Device.Time.NTPServer1" : "pool.ntp.net.rogers.com",
@@ -409,8 +409,8 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "00000000",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "", 
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "00000000",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "00000000", 
       "Device.Time.NTPServer1" : "ntp.shawcable.net",
       "Device.Time.NTPServer2" : "time1.google.com",
       "Device.Time.NTPServer3" : "time2.google.com",
@@ -467,8 +467,8 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "00000000",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
-      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "", 
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "00000000",
+      "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "00000000", 
       "Device.Time.NTPServer1" : "vl-vi-ntp001.ip.videotron.ca",
       "Device.Time.NTPServer2" : "vl-vi-ntp002.ip.videotron.ca",
       "Device.Time.NTPServer3" : "vl-vi-ntp003.ip.videotron.ca",
