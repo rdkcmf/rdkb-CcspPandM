@@ -3342,11 +3342,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 		_ansc_snprintf(pEntry->Chaddr, 18, pMac);
 		if(pEntry->Active==TRUE)
 		{
-
-    			AnscTraceFlow(("Get CPE associate interface %s\n", __FUNCTION__));
 			usg_get_cpe_associate_interface(pMac,pEntry->X_CISCO_COM_Interface);
-
-    			AnscTraceFlow(("Geting CPE associate interface complete %s\n", __FUNCTION__));
 		}
 		snprintf(pEntry->X_CISCO_COM_HostName, 63, "%s", pHost);
 		mac_string_to_array(pMac,macArray);
