@@ -1966,6 +1966,7 @@ LanMngm_SetParamUlongValue
 
     if (AnscEqualString(ParamName, "LanMode", TRUE))
     {
+	#if !defined(_PLATFORM_RASPBERRYPI_)
 	//RDKB-27656 : Bridge Mode must not set to true using WEBPA & dmcli in ETHWAN mode
         char buf[16] = {0};
         if (syscfg_get(NULL, "eth_wan_enabled", buf, sizeof(buf)) == 0)
@@ -1981,6 +1982,7 @@ LanMngm_SetParamUlongValue
             CcspTraceWarning(("LanMode setting to Bridge is not supported when VideoService is ENABLED\n"));
             return FALSE;
         }
+	#endif
 	
         /*if((uValuepUlong == 2) && is_mesh_enabled())
         {
