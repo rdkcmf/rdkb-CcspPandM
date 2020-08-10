@@ -68,6 +68,7 @@ typedef struct Dhcpv4Cache
 }Dhcpv4_Cache_t;
 
 int CheckIpIsValid( char *ipAddress );
+BOOL CheckMacHasValidCharacter( char *pMac);
 char* ConvertErrCodeToErrMsg(int errCode);
 int Dhcpv4_StaticClients_Synchronize();
 pErr Process_StaticClients_WebConfigRequest(void *Data);
