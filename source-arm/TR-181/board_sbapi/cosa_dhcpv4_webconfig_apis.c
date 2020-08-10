@@ -128,9 +128,50 @@ int CheckStaticClientIpIsValid( char *ipAddress )
     return INVALID_IP;
 }
 
+BOOL CheckMacHasValidCharacter( char *pMac)
+{
+    int index = 0;
+    BOOL bvalid = FALSE;  
+    if (!pMac)
+        return FALSE;
+
+     if (pMac[0]) {
+        if(pMac[2] == ':')
+            if(pMac[5] == ':')
+                if(pMac[8] == ':')
+                    if(pMac[11] == ':')
+                        if(pMac[14] == ':')
+                            bvalid = TRUE;
+    }
+   
+    if (TRUE == bvalid)
+    {
+        for (index = 0; index <  MACADDR_SZ-1; ++index)
+        {
+            if ((pMac[index] >= 48 && pMac[index] <= 57) ||
+                    (pMac[index] >= 65 && pMac[index] <= 70) ||
+                    (pMac[index] >= 97 && pMac[index] <= 102) ||
+                    (2 == index || 5 == index || 8 == index || 11 == index || 14 == index))
+            {
+                continue;
+            }
+            else
+            {
+                return FALSE;
+            }
+
+        }
+    }
+    else
+    {
+        return FALSE;
+    }
+    return TRUE;
+}
 
 BOOL Validate_Mac(char * physAddress)
 {
+    BOOL bvalid = FALSE;
     if(!physAddress || \
             0 == strcmp(physAddress, "00:00:00:00:00:00"))
     {
@@ -142,16 +183,9 @@ BOOL Validate_Mac(char * physAddress)
          return FALSE;
     }
 
-    if (physAddress && physAddress[0]) {
-        if(physAddress[2] == ':')
-            if(physAddress[5] == ':')
-                if(physAddress[8] == ':')
-                    if(physAddress[11] == ':')
-                        if(physAddress[14] == ':')
-                            return TRUE;
-    }
-
-    return FALSE;
+    bvalid = CheckMacHasValidCharacter(physAddress);
+    
+    return bvalid;
 }
 
 int Dhcpv4_Reset_Cache()
