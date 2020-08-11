@@ -17591,12 +17591,15 @@ AutoReboot_SetParamBoolValue
         BOOL                        bValue
     )
 {   
-    if (IsBoolSame(hInsContext, ParamName, bValue, AutoReboot_GetParamBoolValue))
-        return TRUE;
-     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_DEVICEINFO  pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
+        if( pMyObject->AutoReboot.Enable == bValue)
+        {
+            CcspTraceInfo(("[%s:] AutoReboot Set current and previous values are same\n", __FUNCTION__ ));
+            return TRUE;
+        }
         CcspTraceInfo(("[%s:] AutoReboot Set param Enable value %d\n", __FUNCTION__, bValue));
         pMyObject->AutoReboot.Enable = bValue;
         CosaDmlScheduleAutoReboot( pMyObject->AutoReboot.UpTime, bValue );
