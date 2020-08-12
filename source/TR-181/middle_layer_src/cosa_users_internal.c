@@ -163,7 +163,36 @@ CosaUsersInitialize
     PCOSA_DATAMODEL_USERS           pMyObject         = (PCOSA_DATAMODEL_USERS)hThisObject;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoCOSA   = NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoUser   = NULL;
- 
+    
+    
+    #if defined(_HUB4_PRODUCT_REQ_) || defined(INTEL_PUMA7) && defined(_XB7_PRODUCT_REQ_)
+        //No need to remove any hardcoded passwords
+    #else
+        /* Remove hardcoded passwords*/
+        char buff[128]={'\0'};
+        syscfg_get( NULL, "user_password_1",buff, sizeof(buff));
+        if( buff[0] != '\0')
+        {
+            syscfg_unset(NULL, "user_password_1");
+            syscfg_commit();
+            memset(buff, 0, sizeof(buff));
+        }
+        syscfg_get( NULL, "user_password_2",buff, sizeof(buff));
+        if( buff[0] != '\0')
+        {
+            syscfg_unset(NULL, "user_password_2");
+            syscfg_commit();
+            memset(buff, 0, sizeof(buff));
+        }
+        syscfg_get( NULL, "user_password_3",buff, sizeof(buff));
+        if( buff[0] != '\0')
+        {
+            syscfg_unset(NULL, "user_password_3");
+            syscfg_commit();
+            memset(buff, 0, sizeof(buff));
+        }
+    #endif    
+
     /* We need call the initiation function of backend firstly */
     returnStatus = CosaDmlUserInit( NULL, NULL );
     if ( returnStatus != ANSC_STATUS_SUCCESS )
