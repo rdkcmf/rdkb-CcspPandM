@@ -4196,7 +4196,11 @@ ProcessRfcSet(cJSON **pRfcStore, BOOL clearDB, char *paramFullName, char *value,
    }
    else
    {
-      cJSON_AddItemToObject(rfcNewJson, paramFullName, paramObj);
+      cJSON *obj = cJSON_GetObjectItem(rfcNewJson, paramFullName);
+      if (obj)
+         cJSON_ReplaceItemInObject(rfcNewJson, paramFullName, paramObj);
+      else
+         cJSON_AddItemToObject(rfcNewJson, paramFullName, paramObj);
    }
    return ANSC_STATUS_SUCCESS;
 }
