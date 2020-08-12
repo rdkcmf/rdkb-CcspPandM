@@ -18140,3 +18140,163 @@ EnableOCSPStapling_SetParamBoolValue
     }
     return FALSE;
 }
+
+void copy_command_output(char * cmd, char * out, int len)
+{
+    FILE * fp;
+    char   buf[256];
+    char * p;
+    fp = popen(cmd, "r");
+    if (fp)
+    {
+        fgets(buf, sizeof(buf), fp);
+        /*we need to remove the \n char in buf*/
+        if ((p = strchr(buf, '\n'))) *p = 0;
+        strncpy(out, buf, len-1);
+        pclose(fp);
+    }
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+	BOOL
+	SelfHeal_GetParamUlongValue
+	    (
+		ANSC_HANDLE                 hInsContext,
+		char*                       ParamName,
+		ULONG*                      puLong
+	    );
+
+    description:
+
+	This function is called to retrieve ULONG parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+		The instance handle;
+
+		char*                       ParamName,
+		The parameter name;
+
+		ULONG*                      puLong
+		The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+SelfHeal_GetParamUlongValue
+(
+    ANSC_HANDLE                 hInsContext,
+    char*                       ParamName,
+    ULONG*                      puLong
+    )
+{
+    char buf[8] = {0};
+
+    if( AnscEqualString(ParamName, "AggressiveInterval", TRUE) )
+    {
+        syscfg_get( NULL, ParamName, buf, sizeof(buf));
+        if( 0 == strlen(buf) )
+            return FALSE;
+        *puLong = atol(buf);
+        return TRUE;
+    }
+    AnscTraceWarning(("%s is invalid argument!\n", ParamName));
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+	BOOL
+	SelfHeal_SetParamUlongValue
+	    (
+		ANSC_HANDLE                 hInsContext,
+		char*                       ParamName,
+		ULONG                       uValue
+	    );
+
+    description:
+
+	This function is called to set ULONG parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+		The instance handle;
+
+		char*                       ParamName,
+		The parameter name;
+
+		ULONG                       uValue
+		The updated ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+SelfHeal_SetParamUlongValue
+(
+    ANSC_HANDLE                 hInsContext,
+    char*                       ParamName,
+    ULONG                       uValue
+    )
+{
+    char buf[128]={0};
+
+    if (AnscEqualString(ParamName, "AggressiveInterval", TRUE))
+    {
+        if (uValue < 2) /* Minimum interval is 2 as per the aggressive selfheal US [RDKB-25546] */
+	{
+	    AnscTraceWarning(("Minimum interval is 2 for %s !\n", ParamName));
+	    return FALSE;
+	}
+	syscfg_get( NULL, "resource_monitor_interval", buf, sizeof(buf));
+        if( 0 == strlen(buf) )
+	{
+	    AnscTraceWarning(("syscfg_get returns NULL for resource_monitor_interval !\n"));
+	    return FALSE;
+	}
+	ULONG resource_monitor_interval = atol(buf);
+	if (uValue >= resource_monitor_interval)
+	{
+	    CcspTraceWarning(("AggressiveInterval should be lesser than resource_monitor_interval\n"));
+	    return FALSE;
+	}
+        snprintf(buf,sizeof(buf),"%lu",uValue);
+        if (syscfg_set(NULL, ParamName, buf) != 0)
+        {
+            AnscTraceWarning(("%s syscfg_set failed!\n", ParamName));
+            return FALSE;
+        }
+        if (syscfg_commit() != 0)
+        {
+            AnscTraceWarning(("%s syscfg_commit failed!\n", ParamName));
+            return FALSE;
+        }
+        char cmd[128];
+        memset(cmd, 0, sizeof(cmd));
+        memset(buf, 0, sizeof(buf));
+        sprintf(cmd, "pidof selfheal_aggressive.sh");
+        copy_command_output(cmd, buf, sizeof(buf));
+        buf[strlen(buf)] = '\0';
+        if (strcmp(buf, "") != 0) {
+          sprintf(cmd, "kill -9 %s", buf);
+          system(cmd);
+        }
+        AnscCopyString(cmd, "/usr/ccsp/tad/selfheal_aggressive.sh &");
+        system(cmd);
+    }
+    else
+    {
+        AnscTraceWarning(("%s is invalid argument!\n", ParamName));
+        return FALSE;
+    }
+    return TRUE;
+}

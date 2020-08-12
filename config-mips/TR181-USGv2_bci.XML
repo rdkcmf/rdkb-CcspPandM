@@ -1363,6 +1363,28 @@
                                 </object>
                             </objects>
                         </object>
+			<object>
+			  <name>SoftwareProcessManager</name>
+			  <objectType>object</objectType>
+			  <objects>
+			    <object>
+			      <name>SelfHeal</name>
+			      <objectType>object</objectType>
+			      <functions>
+				<func_GetParamUlongValue>SelfHeal_GetParamUlongValue</func_GetParamUlongValue>
+				<func_SetParamUlongValue>SelfHeal_SetParamUlongValue</func_SetParamUlongValue>
+			      </functions>
+			      <parameters>
+				<parameter>
+				  <name>AggressiveInterval</name>
+				  <type>unsignedInt</type>
+				  <syntax>uint32</syntax>
+				  <writable>true</writable>
+				</parameter>
+			      </parameters>
+			    </object>
+			  </objects>
+			</object>
                         <object>
                             <name>RabidFramework</name>
                             <objectType>object</objectType>
