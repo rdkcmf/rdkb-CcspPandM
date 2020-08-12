@@ -1179,7 +1179,7 @@ User_SetParamStringValue
 		unsigned int ret=0;
 		char resultBuffer[32]= {'\0'};
 		user_hashandsavepwd(NULL,pString,pUser);
-                AnscCopyString(pUser->Password, pString);
+                //AnscCopyString(pUser->Password, pString);
                 CcspTraceInfo(("WebUi admin password is changed\n"));
 	}
 #if defined(_COSA_FOR_BCI_)
@@ -1188,7 +1188,7 @@ User_SetParamStringValue
                 unsigned int ret=0;
                 char resultBuffer[32]= {'\0'};
                 user_hashandsavepwd(NULL,pString,pUser);
-                AnscCopyString(pUser->Password, pString);
+                //AnscCopyString(pUser->Password, pString);
                 CcspTraceInfo(("WebUi cusadmin password is changed\n"));
         }
 #endif
