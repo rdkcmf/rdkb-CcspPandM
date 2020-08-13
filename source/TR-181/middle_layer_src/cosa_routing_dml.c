@@ -3978,32 +3978,57 @@ IPv6Forwarding_SetParamStringValue
     ANSC_STATUS ret=ANSC_STATUS_FAILURE;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V6_ENTRY)pCosaContext->hContext;
+    errno_t                         rc             = -1;
+    int                             ind            = -1;
 
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    rc = strcmp_s("Alias", strlen("Alias"), ParamName , &ind);
+    ERR_CHK(rc);
+    if((ind == 0) && (rc == EOK))
     {
         /* save update to backup */
-        AnscCopyString(pRouterForward->Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pRouterForward->Alias, sizeof(pRouterForward->Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DestIPPrefix", TRUE))
+    rc = strcmp_s("DestIPPrefix", strlen("DestIPPrefix"), ParamName , &ind);
+    ERR_CHK(rc);
+    if((ind == 0) && (rc == EOK))
     {
         /* save update to backup */
-        AnscCopyString(pRouterForward->DestIPPrefix, pString);
+        rc = STRCPY_S_NOCLOBBER(pRouterForward->DestIPPrefix, sizeof(pRouterForward->DestIPPrefix), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "NextHop", TRUE))
+    rc = strcmp_s("NextHop", strlen("NextHop"), ParamName , &ind);
+    ERR_CHK(rc);
+    if((ind == 0) && (rc == EOK))
     {
         /* save update to backup */
-        AnscCopyString(pRouterForward->NextHop, pString);
+        rc = STRCPY_S_NOCLOBBER(pRouterForward->NextHop, sizeof(pRouterForward->NextHop), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }    
 
-    if( AnscEqualString(ParamName, "Interface", TRUE))
+    rc = strcmp_s("Interface", strlen("Interface"), ParamName , &ind);
+    ERR_CHK(rc);
+    if((ind == 0) && (rc == EOK))
     {
 		char wrapped_inputparam[64]={0};
 		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
@@ -4011,7 +4036,12 @@ IPv6Forwarding_SetParamStringValue
             return FALSE;
 
         /* save update to backup */
-        AnscCopyString(pRouterForward->Interface, wrapped_inputparam);
+        rc = STRCPY_S_NOCLOBBER(pRouterForward->Interface, sizeof(pRouterForward->Interface), wrapped_inputparam);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 

@@ -946,7 +946,13 @@ CosaDml_GreTunnelIfSetLocalInterfaces(ULONG tuIns, ULONG ins, const char *ifs)
         snprintf(dm, sizeof(dm), "%sLowerLayers", brwfp1);
         AnscTraceDebug(("set %s to %s\n", dm, if1));
         if (g_SetParamValueString(dm, if1) != ANSC_STATUS_SUCCESS)
+        {
             AnscTraceError(("Fail to set %s to %s\n", dm, if1));
+            free(ifsBuf);
+            free(brsBuf);
+            free(brswfpBuf);
+            return ANSC_STATUS_FAILURE;
+        }
 
         /* inform the scripts about the changing */
         sscanf(br1, GRE_DM_BR_TEMP, &brIns);
@@ -961,7 +967,13 @@ CosaDml_GreTunnelIfSetLocalInterfaces(ULONG tuIns, ULONG ins, const char *ifs)
         snprintf(dm, sizeof(dm), "%sLowerLayers", brwfp2);
         AnscTraceDebug(("set %s to %s\n", dm, if2));
         if (g_SetParamValueString(dm, if2) != ANSC_STATUS_SUCCESS)
+        {
             AnscTraceError(("Fail to set %s to %s\n", dm, if2));
+            free(ifsBuf);
+            free(brsBuf);
+            free(brswfpBuf);
+            return ANSC_STATUS_FAILURE;
+        }
 
         /* inform the scripts about the changing */
         sscanf(br2, GRE_DM_BR_TEMP, &brIns);

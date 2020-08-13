@@ -49,6 +49,7 @@
 #ifdef CONFIG_CISCO_HOTSPOT
 #include "cosa_x_comcast-com_gre_dml.h"
 #include "cosa_x_comcast-com_gre_internal.h"
+#include "safec_lib_common.h"
 
 ULONG GreTunnel_GetEntryCount (  ANSC_HANDLE hInsContext  ) {
     return CosaDml_GreTunnelGetNumberOfEntries();
@@ -486,24 +487,49 @@ BOOL GreTunnel_SetParamStringValue ( ANSC_HANDLE hInsContext, char*  ParamName, 
 
 BOOL GreTunnelIf_SetParamStringValue ( ANSC_HANDLE hInsContext, char*  ParamName, char*  strValue ) {
 	COSA_DML_GRE_TUNNEL_IF                 *pGreTuIf      = (COSA_DML_GRE_TUNNEL_IF *)hInsContext;
+    errno_t     rc =  -1;
+    int ind = -1;
 
-    if (AnscEqualString(ParamName, "LocalInterfaces", TRUE))
+    rc = strcmp_s("LocalInterfaces", strlen("LocalInterfaces"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        snprintf(pGreTuIf->LocalInterfaces, sizeof(pGreTuIf->LocalInterfaces), "%s", strValue);
-        pGreTuIf->ChangeFlag |= GRETUIF_CF_LOCALIF;
-        return TRUE;
+       rc = STRCPY_S_NOCLOBBER(pGreTuIf->LocalInterfaces,sizeof(pGreTuIf->LocalInterfaces), strValue);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       pGreTuIf->ChangeFlag |= GRETUIF_CF_LOCALIF;
+       return TRUE;
     }
-	if (AnscEqualString(ParamName, "AssociatedBridges", TRUE))
+
+    rc = strcmp_s("AssociatedBridges", strlen("AssociatedBridges"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        snprintf(pGreTuIf->AssociatedBridges, sizeof(pGreTuIf->AssociatedBridges), "%s", strValue);
-        pGreTuIf->ChangeFlag |= GRETUIF_CF_ASSOBR;
-        return TRUE;
+       rc = STRCPY_S_NOCLOBBER(pGreTuIf->AssociatedBridges,sizeof(pGreTuIf->AssociatedBridges), strValue);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       pGreTuIf->ChangeFlag |= GRETUIF_CF_ASSOBR;
+       return TRUE;
     }
-    if (AnscEqualString(ParamName, "AssociatedBridgesWiFiPort", TRUE))
+
+    rc = strcmp_s("AssociatedBridgesWiFiPort", strlen("AssociatedBridgesWiFiPort"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        snprintf(pGreTuIf->AssociatedBridgesWiFiPort, sizeof(pGreTuIf->AssociatedBridgesWiFiPort), "%s", strValue);
-        pGreTuIf->ChangeFlag |= GRETUIF_CF_ASSOBRWFP;
-        return TRUE;
+       rc = STRCPY_S_NOCLOBBER(pGreTuIf->AssociatedBridgesWiFiPort,sizeof(pGreTuIf->AssociatedBridgesWiFiPort), strValue);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       pGreTuIf->ChangeFlag |= GRETUIF_CF_ASSOBRWFP;
+       return TRUE;
     }
 	return FALSE;
 }
