@@ -74,6 +74,7 @@
 #include "cosa_ip_apis_multilan.h"
 #include "cosa_ip_dml.h"
 #include "cosa_ip_internal.h"
+#include "safec_lib_common.h"
 
 static ULONG last_tick;
 #define REFRESH_INTERVAL 120
@@ -3845,44 +3846,81 @@ IPv6Address_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V6ADDR             pIPv6Addr    = (PCOSA_DML_IP_V6ADDR)pCosaContext->hContext;
+    errno_t     rc =  -1;
+    int ind = -1;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    rc = strcmp_s("Alias", strlen("Alias"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-        AnscCopyString(pIPv6Addr->Alias, pString);
-        return TRUE;
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pIPv6Addr->Alias, sizeof(pIPv6Addr->Alias), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       return TRUE;
     }
 
     if (pIPv6Addr->Origin != COSA_DML_IP6_ORIGIN_Static)
         return FALSE;
     
-    if( AnscEqualString(ParamName, "IPAddress", TRUE))
+    rc = strcmp_s("IPAddress", strlen("IPAddress"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-        AnscCopyString(pIPv6Addr->IP6Address, pString);
-        return TRUE;
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pIPv6Addr->IP6Address, sizeof(pIPv6Addr->IP6Address), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Prefix", TRUE))
+    rc = strcmp_s("Prefix", strlen("Prefix"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-        AnscCopyString(pIPv6Addr->Prefix, pString);
-        return TRUE;
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pIPv6Addr->Prefix, sizeof(pIPv6Addr->Prefix), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PreferredLifetime", TRUE))
+    rc = strcmp_s("PreferredLifetime", strlen("PreferredLifetime"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-		AnscCopyString(pIPv6Addr->PreferredLifetime, pString);
-        return TRUE;
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pIPv6Addr->PreferredLifetime, sizeof(pIPv6Addr->PreferredLifetime), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ValidLifetime", TRUE))
+    rc = strcmp_s("ValidLifetime", strlen("ValidLifetime"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-		AnscCopyString(pIPv6Addr->ValidLifetime, pString);
-        return TRUE;
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pIPv6Addr->ValidLifetime, sizeof(pIPv6Addr->ValidLifetime), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       return TRUE;
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */

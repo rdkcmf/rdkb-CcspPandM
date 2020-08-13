@@ -42,6 +42,7 @@
 #ifdef CONFIG_CISCO_HOTSPOT
 #include "cosa_x_comcast_com_gre_dml.h"
 #include "cosa_x_comcast_com_gre_internal.h"
+#include "safec_lib_common.h"
 
 ULONG
 GreIf_GetEntryCount
@@ -363,40 +364,84 @@ GreIf_SetParamStringValue
     )
 {
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
+    errno_t     rc =  -1;
+    int ind = -1;
 
-    if (AnscEqualString(ParamName, "LocalInterfaces", TRUE))
+    rc = strcmp_s("LocalInterfaces", strlen("LocalInterfaces"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        snprintf(pGreIf->LocalInterfaces, sizeof(pGreIf->LocalInterfaces), "%s", strValue);
+        rc = STRCPY_S_NOCLOBBER(pGreIf->LocalInterfaces,sizeof(pGreIf->LocalInterfaces), strValue);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
         pGreIf->ChangeFlag |= GREIF_CF_LOCALIF;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpoints", TRUE))
+    rc = strcmp_s("RemoteEndpoints", strlen("RemoteEndpoints"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        snprintf(pGreIf->RemoteEndpoints, sizeof(pGreIf->RemoteEndpoints), "%s", strValue);
+        rc = STRCPY_S_NOCLOBBER(pGreIf->RemoteEndpoints,sizeof(pGreIf->RemoteEndpoints),strValue);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
         pGreIf->ChangeFlag |= GREIF_CF_RMEP;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeyIdentifier", TRUE))
+    rc = strcmp_s("KeyIdentifier", strlen("KeyIdentifier"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        snprintf(pGreIf->KeyIdentifier, sizeof(pGreIf->KeyIdentifier), "%s", strValue);
+        rc = STRCPY_S_NOCLOBBER(pGreIf->KeyIdentifier,sizeof(pGreIf->KeyIdentifier),strValue);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
         pGreIf->ChangeFlag |= GREIF_CF_KEYID;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "AssociatedBridges", TRUE))
+    rc = strcmp_s("AssociatedBridges", strlen("AssociatedBridges"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        snprintf(pGreIf->AssociatedBridges, sizeof(pGreIf->AssociatedBridges), "%s", strValue);
+        rc = STRCPY_S_NOCLOBBER(pGreIf->AssociatedBridges,sizeof(pGreIf->AssociatedBridges),strValue);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
         pGreIf->ChangeFlag |= GREIF_CF_ASSOBR;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "AssociatedBridgesWiFiPort", TRUE))
+    rc = strcmp_s("AssociatedBridgesWiFiPort", strlen("AssociatedBridgesWiFiPort"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        snprintf(pGreIf->AssociatedBridgesWiFiPort, sizeof(pGreIf->AssociatedBridgesWiFiPort), "%s", strValue);
+        rc = STRCPY_S_NOCLOBBER(pGreIf->AssociatedBridgesWiFiPort,sizeof(pGreIf->AssociatedBridgesWiFiPort),strValue);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
         pGreIf->ChangeFlag |= GREIF_CF_ASSOBRWFP;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "GRENetworkInterface", TRUE))
+    rc = strcmp_s("GRENetworkInterface", strlen("GRENetworkInterface"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        snprintf(pGreIf->GRENetworkInterface, sizeof(pGreIf->GRENetworkInterface), "%s", strValue);
+        rc = STRCPY_S_NOCLOBBER(pGreIf->GRENetworkInterface,sizeof(pGreIf->GRENetworkInterface),strValue);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
         pGreIf->ChangeFlag |= GREIF_CF_GREIF;
         return TRUE;
     }

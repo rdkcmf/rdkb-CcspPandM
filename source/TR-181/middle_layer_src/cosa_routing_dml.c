@@ -71,6 +71,7 @@
 #include "plugin_main_apis.h"
 #include "cosa_routing_internal.h"
 #include "ansc_string_util.h"
+#include "safec_lib_common.h"
 
 #define REFRESH_INTERVAL 120
 #define TIME_NO_NEGATIVE(x) ((long)(x) < 0 ? 0 : (x))
@@ -5475,7 +5476,9 @@ InterfaceSetting_SetParamStringValue
     )
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_RIP_IF_CFG           pRipIF         = (PCOSA_DML_RIP_IF_CFG)pCosaContext->hContext;
+    PCOSA_DML_RIP_IF_CFG            pRipIF         = (PCOSA_DML_RIP_IF_CFG)pCosaContext->hContext;
+    errno_t                         rc             = -1;
+    int                             ind            = -1;
 
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
@@ -5483,32 +5486,63 @@ InterfaceSetting_SetParamStringValue
     if(AnscValidStringCheck(pString) != TRUE)
         return FALSE;
 
+    if(ParamName == NULL)
+        return FALSE;
+
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    rc = strcmp_s("Alias", strlen("Alias"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
         /* save update to backup */
-        AnscCopyString(pRipIF->Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pRipIF->Alias, sizeof(pRipIF->Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_Md5KeyValue", TRUE))
+    rc = strcmp_s("X_CISCO_COM_Md5KeyValue", strlen("X_CISCO_COM_Md5KeyValue"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
         /* save update to backup */
-        AnscCopyString(pRipIF->X_CISCO_COM_Md5KeyValue, pString);
+        rc = STRCPY_S_NOCLOBBER(pRipIF->X_CISCO_COM_Md5KeyValue, sizeof(pRipIF->X_CISCO_COM_Md5KeyValue), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_SimplePassword", TRUE))
+    rc = strcmp_s("X_CISCO_COM_SimplePassword", strlen("X_CISCO_COM_SimplePassword"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
         /* save update to backup */
-        AnscCopyString(pRipIF->X_CISCO_COM_SimplePassword, pString);
+        rc = STRCPY_S_NOCLOBBER(pRipIF->X_CISCO_COM_SimplePassword, sizeof(pRipIF->X_CISCO_COM_SimplePassword), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Interface", TRUE))
+    rc = strcmp_s("Interface", strlen("Interface"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
         /* save update to backup */
-        AnscCopyString(pRipIF->Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pRipIF->Alias, sizeof(pRipIF->Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 

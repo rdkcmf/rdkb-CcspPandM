@@ -71,6 +71,7 @@
 #include "cosa_dhcpv6_apis.h"
 #include "cosa_dhcpv6_internal.h"
 #include "ansc_string_util.h"
+#include "safec_lib_common.h"
 
 #define MIN 60
 #define HOURS 3600
@@ -1194,28 +1195,51 @@ Client3_SetParamStringValue
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPCV6_FULL            pDhcpc            = (PCOSA_DML_DHCPCV6_FULL)pCxtLink->hContext;
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)pCxtLink->hParentTable;
+    errno_t rc = -1;
+    int ind    = -1;
         
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "RequestedOptions", TRUE) )
+    rc = strcmp_s("RequestedOptions", strlen("RequestedOptions"), ParamName , &ind);
+    ERR_CHK(rc);
+    if((ind == 0) && (rc == EOK))
     {
         /* save update to backup */
-        AnscCopyString(pDhcpc->Cfg.RequestedOptions, pString);
+        rc = STRCPY_S_NOCLOBBER(pDhcpc->Cfg.RequestedOptions, sizeof(pDhcpc->Cfg.RequestedOptions), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         return TRUE;
     }
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE) )
+    rc = strcmp_s("Alias", strlen("Alias"), ParamName , &ind);
+    ERR_CHK(rc);
+    if((ind == 0) && (rc == EOK))
     {
         /* save update to backup */
-        AnscCopyString(pDhcpv6->AliasOfClient, pDhcpc->Cfg.Alias);
+        rc = STRCPY_S_NOCLOBBER(pDhcpv6->AliasOfClient, sizeof(pDhcpv6->AliasOfClient), pDhcpc->Cfg.Alias);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
-        AnscCopyString(pDhcpc->Cfg.Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pDhcpc->Cfg.Alias, sizeof(pDhcpc->Cfg.Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Interface", TRUE) )
+    rc = strcmp_s("Interface", strlen("Interface"), ParamName , &ind);
+    ERR_CHK(rc);
+    if((ind == 0) && (rc == EOK))
     {
 #if defined _COSA_DRG_CNS_  || defined _COSA_DRG_TPG_
         /*not supported*/
@@ -1223,7 +1247,12 @@ Client3_SetParamStringValue
 #endif
 
         /* save update to backup */
-        AnscCopyString(pDhcpc->Cfg.Interface, pString);
+        rc = STRCPY_S_NOCLOBBER(pDhcpc->Cfg.Interface, sizeof(pDhcpc->Cfg.Interface), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         return TRUE;
     }
@@ -5328,101 +5357,179 @@ Pool1_SetParamStringValue
     int a[4]={0};
     char dump;
     int ret=0;
+    errno_t     rc =  -1;
+    int ind = -1;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE) )
+    rc = strcmp_s("Alias", strlen("Alias"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-        AnscCopyString(pDhcpv6->AliasOfPool, pPool->Cfg.Alias);
+       /* save update to backup */
+       rc = strcpy_s(pDhcpv6->AliasOfPool,sizeof(pDhcpv6->AliasOfPool), pPool->Cfg.Alias);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       rc = STRCPY_S_NOCLOBBER(pPool->Cfg.Alias,sizeof(pPool->Cfg.Alias), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
 
-        AnscCopyString(pPool->Cfg.Alias, pString);
-
-        return TRUE;
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Interface", TRUE) )
+    rc = strcmp_s("Interface", strlen("Interface"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
+       /* save update to backup */
 #if defined _COSA_DRG_CNS_  || defined _COSA_DRG_TPG_
-        /*not supported*/
-        return FALSE;
+       /*not supported*/
+       return FALSE;
 #endif
-#if defined (MULTILAN_FEATURE)        
-        _ansc_snprintf(pPool->Cfg.Interface, sizeof(pPool->Cfg.Interface), "%s.", pString);
+#if defined (MULTILAN_FEATURE) 
+       rc = sprintf_s(pPool->Cfg.Interface,sizeof(pPool->Cfg.Interface), "%s.", pString);
+       if(rc < EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
 #else
-        AnscCopyString(pPool->Cfg.Interface, pString);
+       rc = STRCPY_S_NOCLOBBER(pPool->Cfg.Interface,sizeof(pPool->Cfg.Interface), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
 #endif
-
-        return TRUE;
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DUID", TRUE) )
+    rc = strcmp_s("DUID", strlen("DUID"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-        AnscCopyString(pPool->Cfg.DUID, pString);
-
-        return TRUE;
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pPool->Cfg.DUID,sizeof(pPool->Cfg.DUID), pString);
+       if(rc != EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "VendorClassID", TRUE) )
+    rc = strcmp_s("VendorClassID", strlen("VendorClassID"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
+       /* save update to backup */
 #if defined _COSA_DRG_CNS_  || defined _COSA_DRG_TPG_
-        return FALSE;
+       return FALSE;
 #endif
-        AnscCopyString(pPool->Cfg.VendorClassID, pString);
-
-        return TRUE;
+       rc = STRCPY_S_NOCLOBBER(pPool->Cfg.VendorClassID,sizeof(pPool->Cfg.VendorClassID), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UserClassID", TRUE) )
+    rc = strcmp_s("UserClassID", strlen("UserClassID"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
+       /* save update to backup */
 #if defined _COSA_DRG_CNS_  || defined _COSA_DRG_TPG_
-        return FALSE;
+       return FALSE;
 #endif
-        AnscCopyString(pPool->Cfg.UserClassID, pString);
 
-        return TRUE;
+      rc = STRCPY_S_NOCLOBBER(pPool->Cfg.UserClassID,sizeof(pPool->Cfg.UserClassID), pString);
+      if(rc != EOK)
+      {
+        ERR_CHK(rc);
+        return FALSE;
+      }
+      return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "IANAManualPrefixes", TRUE) )
+    rc = strcmp_s("IANAManualPrefixes", strlen("IANAManualPrefixes"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-        AnscCopyString(pPool->Cfg.IANAManualPrefixes, pString);
-        AnscCopyMemory(pPool->Info.IANAPrefixes, pPool->Cfg.IANAManualPrefixes, sizeof(pPool->Cfg.IANAManualPrefixes) );
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pPool->Cfg.IANAManualPrefixes,sizeof(pPool->Cfg.IANAManualPrefixes), pString);
+       if(rc != EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
+       rc = memcpy_s(pPool->Info.IANAPrefixes, sizeof(pPool->Info.IANAPrefixes), pPool->Cfg.IANAManualPrefixes, sizeof(pPool->Cfg.IANAManualPrefixes));
+       if(rc != EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
 
-        return TRUE;
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "IAPDManualPrefixes", TRUE) )
+    rc = strcmp_s("IAPDManualPrefixes", strlen("IAPDManualPrefixes"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-        AnscCopyString(pPool->Cfg.IAPDManualPrefixes, pString);
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pPool->Cfg.IAPDManualPrefixes,sizeof(pPool->Cfg.IAPDManualPrefixes), pString);
+       if(rc != EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
 
-        return TRUE;
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "SourceAddress", TRUE) )
+    rc = strcmp_s("SourceAddress", strlen("SourceAddress"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-        AnscCopyString(pPool->Cfg.SourceAddress, pString);
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pPool->Cfg.SourceAddress,sizeof(pPool->Cfg.SourceAddress), pString);
+       if(rc != EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
 
-        return TRUE;
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "SourceAddressMask", TRUE) )
+    rc = strcmp_s("SourceAddressMask", strlen("SourceAddressMask"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-        AnscCopyString(pPool->Cfg.SourceAddressMask, pString);
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pPool->Cfg.SourceAddressMask,sizeof(pPool->Cfg.SourceAddressMask), pString);
+       if(rc != EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
 
-        return TRUE;
+       return TRUE;
     }
-    
-    if( AnscEqualString(ParamName, "PrefixRangeBegin", TRUE) )
+
+    rc = strcmp_s("PrefixRangeBegin", strlen("PrefixRangeBegin"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        ret=strncmp(pString, pPool->Cfg.PrefixRangeEnd,_ansc_strlen(pString));
-        if(ret>0)
+        ret = strcmp_s(pString, strlen(pString),pPool->Cfg.PrefixRangeEnd, &ind);
+        if(ind>0)
             return FALSE;
         if( sscanf(pString, "%x:%x:%x:%x %c", &a[0], &a[1], &a[2], &a[3], &dump) == 4
             && a[0] <= 0xFFFF
@@ -5430,16 +5537,24 @@ Pool1_SetParamStringValue
             && a[2] <= 0xFFFF
             && a[3] <= 0xFFFF )
             {
-                /* save update to backup */
-                AnscCopyString(pPool->Cfg.PrefixRangeBegin, pString);
-                return TRUE;
+               /* save update to backup */
+               rc = STRCPY_S_NOCLOBBER(pPool->Cfg.PrefixRangeBegin,sizeof(pPool->Cfg.PrefixRangeBegin), pString);
+               if(rc != EOK)
+               {
+                 ERR_CHK(rc);
+                 return FALSE;
+               }
+               return TRUE;
             }
+
     }
-    
-    if( AnscEqualString(ParamName, "PrefixRangeEnd", TRUE) )
+
+    rc = strcmp_s("PrefixRangeEnd", strlen("PrefixRangeEnd"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        ret=strncmp(pPool->Cfg.PrefixRangeBegin, pString, _ansc_strlen(pPool->Cfg.PrefixRangeBegin));
-        if(ret>0)
+        ret = strcmp_s(pPool->Cfg.PrefixRangeBegin, strlen(pPool->Cfg.PrefixRangeBegin),pString, &ind);
+        if(ind>0)
             return FALSE;
         if( sscanf(pString, "%x:%x:%x:%x %c", &a[0], &a[1], &a[2], &a[3], &dump) == 4
             && a[0] <= 0xFFFF
@@ -5447,30 +5562,50 @@ Pool1_SetParamStringValue
             && a[2] <= 0xFFFF
             && a[3] <= 0xFFFF )
             {
-                /* save update to backup */
-                AnscCopyString(pPool->Cfg.PrefixRangeEnd, pString);
-                return TRUE;
+               /* save update to backup */
+               rc = STRCPY_S_NOCLOBBER(pPool->Cfg.PrefixRangeEnd,sizeof(pPool->Cfg.PrefixRangeEnd), pString);
+               if(rc != EOK)
+               {
+                 ERR_CHK(rc);
+                 return FALSE;
+               }
+               return TRUE;
             }
+
     }
-        
-    if( AnscEqualString(ParamName, "X_CISCO_StartAddress", TRUE) )
+
+    rc = strcmp_s("X_CISCO_StartAddress", strlen("X_CISCO_StartAddress"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
         /* save update to backup */
-        AnscCopyString(pPool->Cfg.StartAddress, pString);
-
+        rc = STRCPY_S_NOCLOBBER(pPool->Cfg.StartAddress,sizeof(pPool->Cfg.StartAddress), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_DNSServers", TRUE) )
+    rc = strcmp_s("X_RDKCENTRAL-COM_DNSServers", strlen("X_RDKCENTRAL-COM_DNSServers"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
         /* save update to backup */
-        AnscCopyString(pPool->Cfg.X_RDKCENTRAL_COM_DNSServers, pString);
-
+        rc = STRCPY_S_NOCLOBBER(pPool->Cfg.X_RDKCENTRAL_COM_DNSServers,sizeof(pPool->Cfg.X_RDKCENTRAL_COM_DNSServers), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
+
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+
 }
 
 /**********************************************************************  
@@ -8242,38 +8377,66 @@ Option4_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT         pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPSV6_POOL_OPTION     pDhcpOption          = (PCOSA_DML_DHCPSV6_POOL_OPTION)pCxtLink->hContext;
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pPoolLink            = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)pCxtLink->hParentTable;
+    errno_t     rc =  -1;
+    int ind = -1;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE) )
+    rc = strcmp_s("Alias", strlen("Alias"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        AnscCopyString(pPoolLink->AliasOfOption, pDhcpOption->Alias);
+       /* save update to backup */
+       rc = strcpy_s(pPoolLink->AliasOfOption,sizeof(pPoolLink->AliasOfOption), pDhcpOption->Alias);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       rc = STRCPY_S_NOCLOBBER(pDhcpOption->Alias,sizeof(pDhcpOption->Alias), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
 
-        AnscCopyString(pDhcpOption->Alias, pString);
-
-        return TRUE;
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Value", TRUE) )
-    {
-        /* save update to backup */
-        AnscCopyString(pDhcpOption->Value,pString);
 
-        return TRUE;
+    rc = strcmp_s("Value", strlen("Value"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
+    {
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pDhcpOption->Value,sizeof(pDhcpOption->Value), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PassthroughClient", TRUE) )
+    rc = strcmp_s("PassthroughClient", strlen("PassthroughClient"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
 #if defined _COSA_DRG_CNS_  || defined _COSA_DRG_TPG_
-        /*not supported*/
-        return FALSE;
+       /*not supported*/
+       return FALSE;
 #endif
 
-        /* save update to backup */
-        AnscCopyString(pDhcpOption->PassthroughClient,pString);
+	   /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pDhcpOption->PassthroughClient,sizeof(pDhcpOption->PassthroughClient), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
 
-        return TRUE;
+       return TRUE;
     }
-
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;

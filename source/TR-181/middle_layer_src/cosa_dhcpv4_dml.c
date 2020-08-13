@@ -79,6 +79,8 @@
 #include "macbinding_webconfig_param.h"
 #include "lan_webconfig_param.h"
 #include "cosa_dhcpv4_webconfig_apis.h"
+#include "safec_lib_common.h"
+
 extern void* g_pDslhDmlAgent;
 
 extern ULONG g_currentBsUpdate;
@@ -8795,23 +8797,41 @@ Option1_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT         pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPSV4_OPTION          pDhcpOption          = (PCOSA_DML_DHCPSV4_OPTION)pCxtLink->hContext;
     PCOSA_CONTEXT_POOL_LINK_OBJECT    pPoolLink            = (PCOSA_CONTEXT_POOL_LINK_OBJECT)pCxtLink->hParentTable;
+    errno_t     rc =  -1;
+    int ind = -1;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE) )
+    rc = strcmp_s("Alias", strlen("Alias"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        AnscCopyString(pPoolLink->AliasOfOption, pDhcpOption->Alias);
-
-        AnscCopyString(pDhcpOption->Alias, pString);
-
-        return TRUE;
+       rc = strcpy_s(pPoolLink->AliasOfOption, sizeof(pPoolLink->AliasOfOption), pDhcpOption->Alias);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       rc = STRCPY_S_NOCLOBBER(pDhcpOption->Alias, sizeof(pDhcpOption->Alias), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Value", TRUE) )
+    rc = strcmp_s("Value", strlen("Value"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        /* save update to backup */
-        AnscCopyString(pDhcpOption->Value,pString);
-
-        return TRUE;
+       /* save update to backup */
+       rc = STRCPY_S_NOCLOBBER(pDhcpOption->Value, sizeof(pDhcpOption->Value), pString);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return FALSE;
+       }
+       return TRUE;
     }
 
 
