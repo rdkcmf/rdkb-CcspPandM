@@ -72,6 +72,8 @@
 #include "messagebus_interface_helper.h"
 #include "cosa_ethernet_apis_ext.h"
 #include "dml_tr181_custom_cfg.h"
+#include "safec_lib_common.h"
+
 
 #if defined _COSA_DRG_TPG_ || _COSA_DRG_CNS_
 #include "utctx/utctx_api.h"
@@ -1135,22 +1137,41 @@ Bridge_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
+    errno_t rc = -1;
+    int ind    = -1;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE) )
+    rc = strcmp_s("Alias", strlen("Alias"), ParamName , &ind);
+    ERR_CHK(rc);
+    if((ind == 0) && (rc == EOK))
     {
         /* save update to backup */
-        AnscCopyString(pDmlBridge->Cfg.Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pDmlBridge->Cfg.Alias, sizeof(pDmlBridge->Cfg.Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         return TRUE;
     }
 #if defined (MULTILAN_FEATURE)
-    else if( AnscEqualString(ParamName, "Name", TRUE) )
+    else
     {
-        /* save update to backup */
-        AnscCopyString(pDmlBridge->Cfg.name, pString);
+        rc = strcmp_s("Name", strlen("Name"), ParamName , &ind);
+        ERR_CHK(rc);
+        if((ind == 0) && (rc == EOK))
+        {
+            /* save update to backup */
+            rc = STRCPY_S_NOCLOBBER(pDmlBridge->Cfg.name, sizeof(pDmlBridge->Cfg.name), pString);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
 
-        return TRUE;
+            return TRUE;
+        }
     }
 #endif
 
@@ -2525,33 +2546,59 @@ Port_SetParamStringValue
     UCHAR                           ucEntryParamName[256] = {0};
     UCHAR                           ucEntryNameValue[256] = {0};
     parameterValStruct_t            varStruct;
+    errno_t rc = -1;
+    int ind    = -1;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE) )
+    rc = strcmp_s("Alias", strlen("Alias"), ParamName , &ind);
+    ERR_CHK(rc);
+    if((ind == 0) && (rc == EOK))
     {
         /* save update to backup */
-        AnscCopyString(pPort->Cfg.Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pPort->Cfg.Alias, sizeof(pPort->Cfg.Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE) )
+    rc = strcmp_s("LowerLayers", strlen("LowerLayers"), ParamName , &ind);
+    ERR_CHK(rc);
+    if((ind == 0) && (rc == EOK))
     {
         /* save update to backup */
 #ifdef _COSA_SIM_
-        _ansc_sprintf(ucEntryParamName, "%s%s", pString, "Name");
+        rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s%s", pString, "Name");
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
 
         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen ) ) &&
              ( AnscSizeOfString(ucEntryNameValue) != 0 ) )
         {
-            AnscCopyString(pPort->Cfg.LinkName, ucEntryNameValue);
+            rc = STRCPY_S_NOCLOBBER(pPort->Cfg.LinkName, sizeof(pPort->Cfg.LinkName), ucEntryNameValue);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
             
             return TRUE;
         }
 #else
         //$HL 4/16/2013
         //fixed the linkname and linktype issue
-        _ansc_sprintf(ucEntryParamName, "%s%s", pString, ".Name");
+        rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s%s", pString, ".Name");
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         if ( !pPort->Cfg.bManagementPort)
         {
             varStruct.parameterName = ucEntryParamName;
@@ -2568,11 +2615,20 @@ fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1\n");
                  if ( ret == 0 && AnscSizeOfString(ucEntryNameValue) != 0 ) {
                  
                     AnscTraceFlow(("<HL>%s 11 STRING LENGTH NOT ZERO \n",__func__));
-                    AnscCopyString(pPort->Cfg.LinkName, ucEntryNameValue);
+                    rc = STRCPY_S_NOCLOBBER(pPort->Cfg.LinkName, sizeof(pPort->Cfg.LinkName), ucEntryNameValue);
+                    if(rc != EOK)
+                    {
+                        ERR_CHK(rc);
+                        return FALSE;
+                    }
                     pPort->Cfg.LinkType = COSA_DML_BRG_LINK_TYPE_WiFiSsid;
-                    _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
-                    _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
-                    _ansc_sprintf(ucEntryParamName, "%s%s", pString, ".LowerLayers");
+
+                    rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s%s", pString, ".LowerLayers");
+                    if(rc < EOK)
+                    {
+                        ERR_CHK(rc);
+                        return FALSE;
+                    }
                   }  
             }
 
@@ -2585,18 +2641,32 @@ fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1\n");
                  if ( ret == 0 && AnscSizeOfString(ucEntryNameValue) != 0 ) {
 
                     AnscTraceFlow(("<HL>%s 11 STRING LENGTH NOT ZERO \n",__func__));
-                    AnscCopyString(pPort->Cfg.LinkName, ucEntryNameValue);
+                    rc = STRCPY_S_NOCLOBBER(pPort->Cfg.LinkName, sizeof(pPort->Cfg.LinkName), ucEntryNameValue);
+                    if(rc != EOK)
+                    {
+                        ERR_CHK(rc);
+                        return FALSE;
+                    }
                     pPort->Cfg.LinkType = COSA_DML_BRG_LINK_TYPE_Moca;
-                    _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
-                    _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
-                    _ansc_sprintf(ucEntryParamName, "%s%s", pString, ".LowerLayers");
+
+                    rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s%s", pString, ".LowerLayers");
+                    if(rc < EOK)
+                    {
+                        ERR_CHK(rc);
+                        return FALSE;
+                    }
                   }
 
             }   
             else if (( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen ) ) &&
                 ( AnscSizeOfString(ucEntryNameValue) != 0 ) )
             {
-                AnscCopyString(pPort->Cfg.LinkName, ucEntryNameValue);
+                rc = STRCPY_S_NOCLOBBER(pPort->Cfg.LinkName, sizeof(pPort->Cfg.LinkName), ucEntryNameValue);
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return FALSE;
+                }
                 if (_ansc_strstr(pString,"Ethernet"))
                 {
 
@@ -2618,9 +2688,13 @@ fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1\n");
                 pPort->Cfg.LinkType = COSA_DML_BRG_LINK_TYPE_NONE;
                 pPort->Cfg.LinkName[0]='\0';
             }
-            _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
-            _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
-            _ansc_sprintf(ucEntryParamName, "%s%s", pString, ".Upstream");
+
+            rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s%s", pString, ".Upstream");
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
         }            
         else
         {
@@ -2629,7 +2703,12 @@ fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 1\n");
             pPort->Cfg.bUpstream = FALSE;
         }
 
-        AnscCopyString(pPort->Info.Name,pPort->Cfg.LinkName);
+        rc = STRCPY_S_NOCLOBBER(pPort->Info.Name, sizeof(pPort->Info.Name), pPort->Cfg.LinkName);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         /* Do not spontaneously change the port mode -- from 1.6.2 commit c9992ba4 */
         //pPort->Cfg.mode = COSA_DML_BPORT_TAGGING;
@@ -2650,9 +2729,14 @@ fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2\n");
             
                 AnscTraceFlow(("<HL>%s 222 STRING LENGTH NOT ZERO \n",__func__));
                 AnscTraceFlow(("<HL>%s %s=%s\n", __func__,pString,ucEntryNameValue));
-                _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
-                _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryNameValue,".Upstream");
-                _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
+
+                rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s%s", ucEntryNameValue, ".Upstream");
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                    return FALSE;
+                }
+                ucEntryNameValue[0] = '\0';
 
                 if( 0 == (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen)) &&
                     ( AnscSizeOfString(ucEntryNameValue) != 0 ) )
@@ -2668,9 +2752,14 @@ fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 2\n");
                 !(COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen)) && ( AnscSizeOfString(ucEntryNameValue) != 0 ))
             {
                 AnscTraceFlow(("<HL>%s %s=%s\n", __FUNCTION__,pString,ucEntryNameValue));
-                _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
-                _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryNameValue,".Upstream");
-                _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
+
+                rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s%s", ucEntryNameValue, ".Upstream");
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                    return FALSE;
+                }
+                ucEntryNameValue[0] = '\0';
 
                 if( !(COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen)) &&
                     ( AnscSizeOfString(ucEntryNameValue) != 0 ) )

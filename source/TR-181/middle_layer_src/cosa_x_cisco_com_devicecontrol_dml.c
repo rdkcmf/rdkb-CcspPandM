@@ -69,6 +69,7 @@
 #include "cosa_x_cisco_com_devicecontrol_dml.h"
 #include "cosa_drg_common.h"
 #include "cosa_dhcpv4_webconfig_apis.h"
+#include "safec_lib_common.h"
 
 static int ifWanRestart = 0;
 
@@ -1366,28 +1367,54 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
 {
     PCOSA_DATAMODEL_DEVICECONTROL      pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     ANSC_STATUS                        retStatus = ANSC_STATUS_SUCCESS;
+    errno_t                            rc        = -1;
+    int                                ind       = -1;
+
+    if((ParamName == NULL) || (pString == NULL))
+        return FALSE;
 
     /* check the parameter name and set the corresponding value */
 
-    if( AnscEqualString(ParamName, "RebootDevice", TRUE))
+    rc = strcmp_s("RebootDevice", strlen("RebootDevice"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
-        AnscCopyString(pMyObject->RebootDevice, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->RebootDevice, sizeof(pMyObject->RebootDevice), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         pMyObject->bResetChanged = 1;
 
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "FactoryReset", TRUE))
+    rc = strcmp_s("FactoryReset", strlen("FactoryReset"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
-        AnscCopyString(pMyObject->FactoryReset, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->FactoryReset, sizeof(pMyObject->FactoryReset), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         pMyObject->bFactoryResetChanged = 1;
      
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UserChangedFlags", TRUE))
+    rc = strcmp_s("UserChangedFlags", strlen("UserChangedFlags"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
-        AnscCopyString(pMyObject->UserChangedFlags, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->UserChangedFlags, sizeof(pMyObject->UserChangedFlags), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         retStatus = CosaDmlDcSetUserChangedFlags(NULL, pMyObject->UserChangedFlags);
         if (retStatus != ANSC_STATUS_SUCCESS)
@@ -1396,9 +1423,16 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DeviceConfigIgnore", TRUE))
+    rc = strcmp_s("DeviceConfigIgnore", strlen("DeviceConfigIgnore"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
-        AnscCopyString(pMyObject->DeviceConfigIgnore, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->DeviceConfigIgnore, sizeof(pMyObject->DeviceConfigIgnore), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         retStatus = CosaDmlDcSetDeviceConfigIgnore(NULL, pMyObject->DeviceConfigIgnore);
         if (retStatus != ANSC_STATUS_SUCCESS)
@@ -1407,9 +1441,16 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "SNMPEnable", TRUE))
+    rc = strcmp_s("SNMPEnable", strlen("SNMPEnable"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
-        AnscCopyString(pMyObject->SNMPEnable, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->SNMPEnable, sizeof(pMyObject->SNMPEnable), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         retStatus = CosaDmlDcSetSNMPEnable(NULL, pMyObject->SNMPEnable);
         if (retStatus != ANSC_STATUS_SUCCESS)
@@ -1418,7 +1459,9 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UserOpComponents", TRUE))
+    rc = strcmp_s("UserOpComponents", strlen("UserOpComponents"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
         pMyObject->UserOpComponents = 0;
 
@@ -1428,9 +1471,16 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "HostName", TRUE))
+    rc = strcmp_s("HostName", strlen("HostName"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
-        AnscCopyString(pMyObject->HostName, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->HostName, sizeof(pMyObject->HostName), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         retStatus = CosaDmlDcSetHostName(NULL, pMyObject->HostName);
         if (retStatus != ANSC_STATUS_SUCCESS)
@@ -1439,9 +1489,16 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DomainName", TRUE))
+    rc = strcmp_s("DomainName", strlen("DomainName"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
-        AnscCopyString(pMyObject->DomainName, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->DomainName, sizeof(pMyObject->DomainName), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         retStatus = CosaDmlDcSetDomainName(NULL, pMyObject->DomainName);
         if (retStatus != ANSC_STATUS_SUCCESS)
@@ -1450,9 +1507,16 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "GuestPassword", TRUE))
+    rc = strcmp_s("GuestPassword", strlen("GuestPassword"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
-        AnscCopyString(pMyObject->GuestPassword, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->GuestPassword, sizeof(pMyObject->GuestPassword), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         retStatus = CosaDmlDcSetGuestPassword(NULL, pMyObject->GuestPassword);
         if (retStatus != ANSC_STATUS_SUCCESS)
@@ -1461,9 +1525,16 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ParentalControlPassword", TRUE))
+    rc = strcmp_s("ParentalControlPassword", strlen("ParentalControlPassword"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
-        AnscCopyString(pMyObject->ParentalControlPassword, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->ParentalControlPassword, sizeof(pMyObject->ParentalControlPassword), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         retStatus = CosaDmlDcSetParConPassword(NULL, pMyObject->ParentalControlPassword);
         if (retStatus != ANSC_STATUS_SUCCESS)
@@ -1472,9 +1543,16 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ParentalControlQuestion", TRUE))
+    rc = strcmp_s("ParentalControlQuestion", strlen("ParentalControlQuestion"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
-        AnscCopyString(pMyObject->ParentalControlQuestion, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->ParentalControlQuestion, sizeof(pMyObject->ParentalControlQuestion), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         retStatus = CosaDmlDcSetParConQuestion(NULL, pMyObject->ParentalControlQuestion);
         if (retStatus != ANSC_STATUS_SUCCESS)
@@ -1483,9 +1561,16 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ParentalControlAnswer", TRUE))
+    rc = strcmp_s("ParentalControlAnswer", strlen("ParentalControlAnswer"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
-        AnscCopyString(pMyObject->ParentalControlAnswer, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->ParentalControlAnswer, sizeof(pMyObject->ParentalControlAnswer), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         retStatus = CosaDmlDcSetParConAnswer(NULL, pMyObject->ParentalControlAnswer);
         if (retStatus != ANSC_STATUS_SUCCESS)

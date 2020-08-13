@@ -102,21 +102,45 @@ static BOOL g_clearDB = false;
 
 #define MAX_T2_VER_LEN 16
 
-#define IS_UPDATE_ALLOWED_IN_DM(paramName, requestorStr) ({                                                                                                  \
-    if ( g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_firmware ||                                                                                     \
-         (g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_rfcUpdate && !AnscEqualString(requestorStr, BS_SOURCE_RFC_STR, TRUE)))                         \
+#define IS_UPDATE_ALLOWED_IN_DM(paramName, requestorStr) ({                                                                                       \
+    int rc = -1;                                                                                                                                  \
+    int ind = -1;                                                                                                                                 \
+    int found = 0;                                                                                                                                \
+    if( g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_firmware )                                                                                       \
     {                                                                                                                                             \
-       CcspTraceWarning(("Do NOT allow override of param: %s bsUpdate = %d, requestor = %s\n", paramName, g_currentBsUpdate, requestorStr));      \
-       return FALSE;                                                                                                                              \
+         found = 1;                                                                                                                               \
+    }                                                                                                                                             \
+    else if(g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_rfcUpdate)                                                                                   \
+    {                                                                                                                                             \
+        rc = strcmp_s(BS_SOURCE_RFC_STR, strlen(BS_SOURCE_RFC_STR), requestorStr, &ind);                                                          \
+        ERR_CHK(rc);                                                                                                                              \
+        if((rc == EOK) && (ind))                                                                                                                  \
+        {                                                                                                                                         \
+            found = 1;                                                                                                                            \
+        }                                                                                                                                         \
+    }                                                                                                                                             \
+    if(found == 1)                                                                                                                                \
+    {                                                                                                                                             \
+        CcspTraceWarning(("Do NOT allow override of param: %s bsUpdate = %d, requestor = %s\n", paramName, g_currentBsUpdate, requestorStr));     \
+        return FALSE;                                                                                                                             \
     }                                                                                                                                             \
 })
 
 // If the requestor is RFC but the param was previously set by webpa, do not override it.
-#define IS_UPDATE_ALLOWED_IN_JSON(paramName, requestorStr, UpdateSource) ({                                                                                \
-   if (AnscEqualString(requestorStr, BS_SOURCE_RFC_STR, TRUE) && AnscEqualString(UpdateSource, BS_SOURCE_WEBPA_STR, TRUE))                         \
+#define IS_UPDATE_ALLOWED_IN_JSON(paramName, requestorStr, UpdateSource) ({                                                                        \
+   int rc = -1;                                                                                                                                    \
+   int ind = -1;                                                                                                                                   \
+   rc = strcmp_s(BS_SOURCE_RFC_STR, strlen(BS_SOURCE_RFC_STR), requestorStr, &ind);                                                                \
+   ERR_CHK(rc);                                                                                                                                    \
+   if((rc == EOK) && (!ind))                                                                                                                       \
    {                                                                                                                                               \
-      CcspTraceWarning(("Do NOT allow override of param: %s requestor = %d updateSource = %s\n", paramName, g_currentWriteEntity, UpdateSource));  \
-      return FALSE;                                                                                                                                \
+      rc = strcmp_s(BS_SOURCE_WEBPA_STR, strlen(BS_SOURCE_WEBPA_STR), UpdateSource, &ind);                                                         \
+      ERR_CHK(rc);                                                                                                                                 \
+      if((rc == EOK) && (!ind))                                                                                                                    \
+      {                                                                                                                                            \
+        CcspTraceWarning(("Do NOT allow override of param: %s requestor = %d updateSource = %s\n", paramName, g_currentWriteEntity, UpdateSource));  \
+        return FALSE;                                                                                                                              \
+      }                                                                                                                                            \
    }                                                                                                                                               \
 })
 
@@ -142,6 +166,58 @@ static const char *atomIp = ATOM_IP;
 int sock;
 int id = 0;
 #endif
+
+#define NUM_OF_DEVICEINFO_VALUES (sizeof(deviceinfo_set_table)/sizeof(deviceinfo_set_table[0]))
+
+enum  pString_val {
+    UIACCESS,
+    UISUCCESS,
+    UIFAILED,
+    REBOOTDEVICE,
+    FACTORYRESET,
+    CAPTIVEPORTALFAILURE
+};
+
+typedef struct {
+  char     *name;
+  enum  pString_val type;
+} DEVICEINFO_SET_VALUE;
+
+DEVICEINFO_SET_VALUE deviceinfo_set_table[] = {
+    { "ui_access",UIACCESS },
+    { "ui_success",UISUCCESS},
+    { "ui_failed", UIFAILED },
+    { "reboot_device", REBOOTDEVICE},
+    { "factory_reset",	FACTORYRESET },
+    {  "captiveportal_failure" , CAPTIVEPORTALFAILURE }
+};
+
+
+int get_deviceinfo_from_name(char *name, enum pString_val *type_ptr)
+{
+  int rc = -1;
+  int ind = -1;
+  int i = 0;
+  size_t strsize = 0;
+  if((name == NULL) || (type_ptr == NULL))
+     return 0;
+
+  strsize = strlen(name);
+
+  for (i = 0 ; i < NUM_OF_DEVICEINFO_VALUES ; ++i)
+  {
+      rc = strcmp_s(name, strsize, deviceinfo_set_table[i].name, &ind);
+      ERR_CHK(rc);
+      if((rc == EOK) && (!ind))
+      {
+          *type_ptr = deviceinfo_set_table[i].type;
+          return 1;
+      }
+  }
+  return 0;
+}
+
+
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -1479,79 +1555,140 @@ DeviceInfo_SetParamStringValue
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     ANSC_STATUS ret=ANSC_STATUS_FAILURE;
-    
+    errno_t rc =-1;
+    int ind =-1; 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "ProvisioningCode", TRUE))
+    rc = strcmp_s("ProvisioningCode", strlen("ProvisioningCode"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
         /* save update to backup */
-        AnscCopyString(pMyObject->ProvisioningCode, pString);
+         rc = STRCPY_S_NOCLOBBER(pMyObject->ProvisioningCode,sizeof(pMyObject->ProvisioningCode), pString);
+         if(rc != EOK)
+         {
+              ERR_CHK(rc);
+               return FALSE;
+          }
         return TRUE;
     }
 #ifdef CONFIG_INTERNET2P0
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL", TRUE))
+    rc = strcmp_s( "X_RDKCENTRAL-COM_CloudUIWebURL",strlen("X_RDKCENTRAL-COM_CloudUIWebURL"),ParamName,&ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
+
     {
-    char wrapped_inputparam[256]={0};
-	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
-	if(ANSC_STATUS_SUCCESS != ret)
+       
+      
+        char wrapped_inputparam[256]={0};
+	   ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
+	  if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
+         /* input string size check to avoid truncated data update on database  */   
+         if(sizeof(wrapped_inputparam ) < sizeof(pMyObject->WebURL))
+        {    
 	
-	if (syscfg_set(NULL, "redirection_url", wrapped_inputparam) != 0) {
+    	 if (syscfg_set(NULL, "redirection_url", wrapped_inputparam) != 0) {
              AnscTraceWarning(("syscfg_set failed\n"));
           } else {
 	       if (syscfg_commit() != 0) {
                     AnscTraceWarning(("syscfg_commit failed\n"));
                     }
-		char url[150];	
-		snprintf(url,sizeof(url),"/etc/whitelist.sh %s",wrapped_inputparam);
-		system(url);
-		AnscCopyString(pMyObject->WebURL, wrapped_inputparam);
+	    	char url[150];	
+		   rc = sprintf_s(url,sizeof(url),"/etc/whitelist.sh %s",wrapped_inputparam);
+                if(rc <  EOK)
+               {
+                 ERR_CHK(rc);
+                 return FALSE;
+               }
+
+		 system(url);
+		 rc =STRCPY_S_NOCLOBBER(pMyObject->WebURL,sizeof(pMyObject->WebURL), wrapped_inputparam);
+                if(rc != EOK)
+               {
+                 ERR_CHK(rc);
+                 return FALSE;
+               }
+
 		CcspTraceWarning(("CaptivePortal:Cloud URL is changed, new URL is %s ...\n",pMyObject->WebURL));
              }
 
-	return TRUE;
+	    return TRUE;
+       } 
+       
+       else
+       {
+           return FALSE;
+       }    
 
     }
 #endif
     /*Changes for 5878 start*/
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudPersonalizationURL", TRUE))
-    {
-		if (syscfg_set(NULL, "CloudPersonalizationURL", pString) != 0)
-		{
+    
+    if(pString == NULL)
+    return FALSE;
+    
+    rc = strcmp_s("X_RDKCENTRAL-COM_CloudPersonalizationURL",strlen( "X_RDKCENTRAL-COM_CloudPersonalizationURL"),ParamName,&ind);
+    ERR_CHK(rc);
+	if((!ind) && (rc == EOK))
+    {    
+        /* input string size check to avoid truncated data on database  */
+        if(strlen(pString) < sizeof(pMyObject->CloudPersonalizationURL))
+        {	
+		   if (syscfg_set(NULL, "CloudPersonalizationURL", pString) != 0)
+		  {
 	        AnscTraceWarning(("syscfg_set failed\n"));
-	    } 
-		else
-		{
+	      } 
+		 else
+		 {
 		    if (syscfg_commit() != 0)
 			{
 	        	AnscTraceWarning(("syscfg_commit failed\n"));
 	    	}
-			AnscCopyString(pMyObject->CloudPersonalizationURL, pString);
-			CcspTraceWarning(("CloudPersonalizationURL URL is changed, new URL is %s ...\n",pMyObject->CloudPersonalizationURL));
-	    }
+			rc = STRCPY_S_NOCLOBBER(pMyObject->CloudPersonalizationURL,sizeof(pMyObject->CloudPersonalizationURL), pString);
+                        if(rc != EOK)
+                        {
+                          ERR_CHK(rc);
+                          return FALSE;
+                        }
+			CcspTraceWarning(("CloudPersonalizationURL  URL is changed, new URL is %s ...\n",pMyObject->CloudPersonalizationURL));
+	     }
+         
 
-		return TRUE;
+	  	 return TRUE;
+        } 
+        else
+       {
+           return FALSE;
+       }
 
-	}
+ }
 	/*Changes for 5878 end*/
-   if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_UI_ACCESS", TRUE))
+   enum pString_val type;
+   rc = strcmp_s( "X_RDKCENTRAL-COM_UI_ACCESS",strlen("X_RDKCENTRAL-COM_UI_ACCESS"),ParamName, &ind);
+   ERR_CHK(rc);
+   if((!ind) && (rc == EOK))
+
    {
 
-         if (AnscEqualString(pString, "ui_access", TRUE))
-         {
+     /* helper function to make code more readable by removing multiple if else */
+     if(get_deviceinfo_from_name(pString, &type))  
+     {    
+           if (type == UIACCESS)
+           {
 		 CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_ACCESS\n"));
-         }
-         else if (AnscEqualString(pString, "ui_success", TRUE))
-         {
+           }
+           else if (type ==  UISUCCESS)
+           {
 		CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_SUCCESS\n"));
                 CcspTraceInfo(("WebUi admin login success\n"));
-         }
-         else if(AnscEqualString(pString, "ui_failed", TRUE))
-         {
+           }
+           else if(type == UIFAILED)
+           {
          	CcspTraceInfo(("Local UI Access : RDKB_LOCAL_UI_FAILED\n"));
                 CcspTraceInfo(("WebUi admin login failed\n"));
-         }
-	 else if (AnscEqualString(pString, "reboot_device", TRUE))
-         {
+           }
+	   else if(type == REBOOTDEVICE)
+           {
                 CcspTraceInfo(("RDKB_REBOOT : RebootDevice triggered from GUI\n"));
                 OnboardLog("RDKB_REBOOT : RebootDevice triggered from GUI\n");
 		 
@@ -1562,11 +1699,17 @@ DeviceInfo_SetParamStringValue
 		char buffer[8] = {0};
 		syscfg_get( NULL, "restore_reboot", buffer, sizeof(buffer));
 
-		if (strcmp(buffer, "true") != 0)
+		rc = strcmp_s( "true",strlen("true"),buffer,&ind);
+                ERR_CHK(rc);
+                if((rc == EOK) && (ind))
 		{
-			char buf[8];
-			snprintf(buf,sizeof(buf),"%d",1);
-
+			   char buf[8];
+			   rc = strcpy_s(buf,sizeof(buf),"1");
+			   if(rc !=  EOK)
+                           {
+                             ERR_CHK(rc);
+                             return FALSE;
+                           }
 			if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", "gui-reboot") != 0)
 			{
 				AnscTraceWarning(("RDKB_REBOOT : RebootDevice syscfg_set failed GUI\n"));
@@ -1597,7 +1740,7 @@ DeviceInfo_SetParamStringValue
 			CcspTraceInfo(("RDKB_REBOOT : RebootDevice to restore configuration\n"));
 		}
 	 }
-         else if(AnscEqualString(pString, "factory_reset", TRUE))
+         else if(type == FACTORYRESET)
          {
                CcspTraceInfo(("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n"));
                OnboardLog("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n");
@@ -1606,46 +1749,76 @@ DeviceInfo_SetParamStringValue
                ARRIS_RESET_REASON("RDKB_REBOOT : Reboot Device triggered through Factory reset from GUI\n");
                #endif
          }
-	 else if(AnscEqualString(pString, "captiveportal_failure", TRUE)) {
+	 else if(type == CAPTIVEPORTALFAILURE) {
 
 	 	CcspTraceInfo(("Local UI Access : Out of Captive Poratl, Captive Portal is disabled\n"));
 	 }
-         else
-         {
+      }
+      else
+      {
 	        CcspTraceInfo(("Local UI Access : Unsupported value\n"));
-         }
+      }
          return TRUE;
    }
 
    /* Changes for EMS */
-   if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_ServerURL", TRUE))
+    rc = strcmp_s("X_COMCAST-COM_EMS_ServerURL", strlen("X_COMCAST-COM_EMS_ServerURL"), ParamName,&ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
+   
     {
-    char wrapped_inputparam[256]={0};
-	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
-	if(ANSC_STATUS_SUCCESS != ret)
+       
+        char wrapped_inputparam[256]={0};
+	    ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
+	    if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
-	
-	if (syscfg_set(NULL, "ems_server_url", wrapped_inputparam) != 0) {
+	if(sizeof( wrapped_inputparam ) < sizeof(pMyObject->EMS_ServerURL) )
+       {
+	    if (syscfg_set(NULL, "ems_server_url", wrapped_inputparam) != 0) {
              AnscTraceWarning(("syscfg_set failed\n"));
           } else {
 	       if (syscfg_commit() != 0) {
                     AnscTraceWarning(("syscfg_commit failed\n"));
                     }
-		char ems_url[150];	
-		snprintf(ems_url,sizeof(ems_url),"/etc/whitelist.sh %s",wrapped_inputparam);
+		 char ems_url[150];	
+		 rc = sprintf_s(ems_url,sizeof(ems_url),"/etc/whitelist.sh %s",wrapped_inputparam);
+                if(rc < EOK)
+               {
+                   ERR_CHK(rc);
+                   return FALSE;
+               }
+
 		system(ems_url);
-		AnscCopyString(pMyObject->EMS_ServerURL, wrapped_inputparam);
+		rc = STRCPY_S_NOCLOBBER(pMyObject->EMS_ServerURL,sizeof(pMyObject->EMS_ServerURL), wrapped_inputparam);
+		if(rc != EOK)
+         {
+              ERR_CHK(rc);
+               return FALSE;
+         }
              }
 
 	return TRUE;
+      }
+      
+      else
+     {
+         return FALSE;
+     }
 
     }
     
-     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootReason", TRUE))
+    rc = strcmp_s("X_RDKCENTRAL-COM_LastRebootReason", strlen("X_RDKCENTRAL-COM_LastRebootReason"), ParamName,&ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
         {
-            int val = 1;
-            char buf[8];
-		    snprintf(buf,sizeof(buf),"%d",val);     
+              char buf[8];
+              rc = strcpy_s(buf,sizeof(buf),"1");
+	      if(rc !=  EOK)
+               {
+                 ERR_CHK(rc);
+                 return FALSE;
+               }
+   
 		OnboardLog("Device reboot due to reason %s\n", pString);
                 if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", pString) != 0) 
 	            {
@@ -1675,15 +1848,24 @@ DeviceInfo_SetParamStringValue
 				
         }
     
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))
+    rc = strcmp_s("X_COMCAST-COM_EMS_MobileNumber", strlen("X_COMCAST-COM_EMS_MobileNumber"), ParamName,&ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
         /* save update to backup */
-        AnscCopyString(pMyObject->EMS_MobileNo, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->EMS_MobileNo,sizeof(pMyObject->EMS_MobileNo), pString);
+	if(rc != EOK)
+         {
+              ERR_CHK(rc);
+              return FALSE;
+         }
         return TRUE;
 		
     }
 
-    if( AnscEqualString(ParamName, "RouterName", TRUE))
+    rc = strcmp_s("RouterName", strlen("RouterName"), ParamName,&ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
       if (syscfg_set(NULL, "router_name", pString) != 0)
       {
@@ -8727,22 +8909,40 @@ SyndicationFlowControl_SetParamStringValue
 
     char * requestorStr = getRequestorString();
     char * currentTime = getTime();
+    errno_t rc = -1;
+    int ind = -1;
+
+    if((ParamName == NULL) || (pString == NULL) || (requestorStr == NULL))
+        return FALSE;
 
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
 
     char PartnerID[PARTNER_ID_LEN] = {0};
     getPartnerId(PartnerID);
 
-    if( AnscEqualString(ParamName, "InitialForwardedMark", TRUE))
+    rc = strcmp_s("InitialForwardedMark", strlen("InitialForwardedMark"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
         IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, SyndicatonFlowControl->InitialForwardedMark.UpdateSource);
 
-        if(CosaDmlDiSet_SyndicationFlowControl_InitialForwardedMark(SyndicatonFlowControl->InitialForwardedMark)==0)
+        /* pString needs to be passed rather than SyndicatonFlowControl->InitialForwardedMark as the CosaDmlDiSet_SyndicationFlowControl_InitialForwardedMark accept character pointer as parameter */
+       /* Validation of pString length is necessary for buffer overflow issues while updating to Data Model*/
+        if((strlen(pString) < sizeof(SyndicatonFlowControl->InitialForwardedMark.ActiveValue)) && (CosaDmlDiSet_SyndicationFlowControl_InitialForwardedMark(pString) == 0))
         {
-            AnscCopyString(SyndicatonFlowControl->InitialForwardedMark.ActiveValue, pString);
+            rc = STRCPY_S_NOCLOBBER(SyndicatonFlowControl->InitialForwardedMark.ActiveValue, sizeof(SyndicatonFlowControl->InitialForwardedMark.ActiveValue), pString);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
 
-            memset( SyndicatonFlowControl->InitialForwardedMark.UpdateSource, 0, sizeof( SyndicatonFlowControl->InitialForwardedMark.UpdateSource ));
-            AnscCopyString( SyndicatonFlowControl->InitialForwardedMark.UpdateSource, requestorStr );
+            rc = STRCPY_S_NOCLOBBER(SyndicatonFlowControl->InitialForwardedMark.UpdateSource, sizeof(SyndicatonFlowControl->InitialForwardedMark.UpdateSource), requestorStr);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
 
             if (PartnerID[ 0 ] != '\0')
                 UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialForwardedMark",PartnerID, pString, requestorStr, currentTime);
@@ -8750,17 +8950,27 @@ SyndicationFlowControl_SetParamStringValue
             return TRUE;
         }
     }
-    if( AnscEqualString(ParamName, "InitialOutputMark", TRUE))
+    rc = strcmp_s("InitialOutputMark", strlen("InitialOutputMark"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
     {
         IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, SyndicatonFlowControl->InitialOutputMark.UpdateSource);
 
-        if(CosaDmlDiSet_SyndicationFlowControl_InitialOutputMark(SyndicatonFlowControl->InitialOutputMark)==0)
+        if((strlen(pString) < sizeof(SyndicatonFlowControl->InitialOutputMark.ActiveValue)) && (CosaDmlDiSet_SyndicationFlowControl_InitialOutputMark(pString)==0))
         {
-            AnscCopyString(SyndicatonFlowControl->InitialOutputMark.ActiveValue, pString);
+            rc = STRCPY_S_NOCLOBBER(SyndicatonFlowControl->InitialOutputMark.ActiveValue, sizeof(SyndicatonFlowControl->InitialOutputMark.ActiveValue), pString);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
 
-            memset( SyndicatonFlowControl->InitialOutputMark.UpdateSource, 0, sizeof( SyndicatonFlowControl->InitialOutputMark.UpdateSource ));
-            AnscCopyString( SyndicatonFlowControl->InitialOutputMark.UpdateSource, requestorStr );
-
+            rc = STRCPY_S_NOCLOBBER(SyndicatonFlowControl->InitialOutputMark.UpdateSource, sizeof(SyndicatonFlowControl->InitialOutputMark.UpdateSource), requestorStr);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             if (PartnerID[ 0 ] != '\0')
                 UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SyndicationFlowControl.InitialOutputMark",PartnerID, pString, requestorStr, currentTime);
 
@@ -13812,25 +14022,52 @@ RDKB_UIBranding_SetParamStringValue
         char PartnerID[PARTNER_ID_LEN] = {0};
         char * requestorStr = getRequestorString();
         char * currentTime = getTime();
+        errno_t rc = -1;
+        int ind = -1;
+
+        if((ParamName == NULL) || (pString == NULL))
+            return FALSE;
 
         IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
 
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
    {
 
-         if( AnscEqualString(ParamName, "DefaultLanguage", TRUE) )
+            rc = strcmp_s("DefaultLanguage", strlen("DefaultLanguage"), ParamName, &ind);
+            ERR_CHK(rc);
+            if((rc == EOK) && (!ind))
             {
-                        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->DefaultLanguage.UpdateSource);
+                IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->DefaultLanguage.UpdateSource);
 
+                /* Below condition is added to restrict the maximum pString length less than acceptable value for buffer overflow issues
+                 * UpdateJsonParam function doesn't have the maximum permissible string length validation check.
+                 */
+                if(strlen(pString) < sizeof(pBindObj->DefaultLanguage.ActiveValue))
+                {
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLanguage",PartnerID,pString, requestorStr, currentTime))
                         {
-                                memset( pBindObj->DefaultLanguage.ActiveValue, 0, sizeof( pBindObj->DefaultLanguage.ActiveValue ));
-                                AnscCopyString( pBindObj->DefaultLanguage.ActiveValue, pString );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->DefaultLanguage.ActiveValue, sizeof(pBindObj->DefaultLanguage.ActiveValue), pString);
+                                if(rc != EOK)
+                                {
+                                     ERR_CHK(rc);
+                                     return FALSE;
+                                }
 
-                                memset( pBindObj->DefaultLanguage.UpdateSource, 0, sizeof( pBindObj->DefaultLanguage.UpdateSource ));
-                                AnscCopyString( pBindObj->DefaultLanguage.UpdateSource, requestorStr );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->DefaultLanguage.UpdateSource, sizeof(pBindObj->DefaultLanguage.UpdateSource), requestorStr);
+                                if(rc != EOK)
+                                {
+                                     ERR_CHK(rc);
+                                     return FALSE;
+                                }
                                 return TRUE;
                         }
+                 }
+                 else
+                 {
+                     CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                     return FALSE;
+                 }
+
             }
 
     return FALSE;
@@ -13964,6 +14201,11 @@ Footer_SetParamStringValue
     char PartnerID[PARTNER_ID_LEN] = {0};
     char * requestorStr = getRequestorString();
     char * currentTime = getTime();
+    errno_t rc = -1;
+    int ind = -1;
+
+    if((ParamName == NULL) || (pString == NULL))
+        return FALSE;
 
     CcspTraceWarning(("%s: writeID=%d, bsUpdate=%d\n", __FUNCTION__, g_currentWriteEntity, g_currentBsUpdate));
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
@@ -13971,104 +14213,214 @@ Footer_SetParamStringValue
     if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
     {
    	 /* check the parameter name and set the corresponding value */
-	    if( AnscEqualString(ParamName, "PartnerLink", TRUE) )
+            rc = strcmp_s("PartnerLink", strlen("PartnerLink"), ParamName, &ind);
+            ERR_CHK(rc);
+            if((rc == EOK) && (!ind))
 	    {
-                        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.PartnerLink.UpdateSource);
+                IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.PartnerLink.UpdateSource);
 
+                /* Below condition is added to restrict the maximum pString length less than acceptable value for buffer overflow issues
+                 * UpdateJsonParam function doesn't have the maximum permissible string length validation check.
+                 */
+                if(strlen(pString) < sizeof(pBindObj->Footer.PartnerLink.ActiveValue))
+                {
 			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink",PartnerID,pString, requestorStr, currentTime))
 			{
-				memset( pBindObj->Footer.PartnerLink.ActiveValue, 0, sizeof( pBindObj->Footer.PartnerLink.ActiveValue ));
-				AnscCopyString( pBindObj->Footer.PartnerLink.ActiveValue, pString );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.PartnerLink.ActiveValue, sizeof(pBindObj->Footer.PartnerLink.ActiveValue), pString);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
-				memset( pBindObj->Footer.PartnerLink.UpdateSource, 0, sizeof( pBindObj->Footer.PartnerLink.UpdateSource ));
-                                AnscCopyString( pBindObj->Footer.PartnerLink.UpdateSource, requestorStr);
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.PartnerLink.UpdateSource, sizeof(pBindObj->Footer.PartnerLink.UpdateSource), requestorStr);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
 				return TRUE;
 			}
-
+                 }
+                 else
+                 {
+                      CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                      return FALSE;
+                 }
 	    }
-	    if( AnscEqualString(ParamName, "UserGuideLink", TRUE) )
+            rc = strcmp_s("UserGuideLink", strlen("UserGuideLink"), ParamName, &ind);
+            ERR_CHK(rc);
+            if((rc == EOK) && (!ind))
 	    {
-                        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.UserGuideLink.UpdateSource);
+                IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.UserGuideLink.UpdateSource);
 
+                if(strlen(pString) < sizeof(pBindObj->Footer.UserGuideLink.ActiveValue))
+                {
 			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideLink",PartnerID,pString, requestorStr, currentTime))
 			{
-				memset( pBindObj->Footer.UserGuideLink.ActiveValue, 0, sizeof( pBindObj->Footer.UserGuideLink.ActiveValue ));
-				AnscCopyString(pBindObj->Footer.UserGuideLink.ActiveValue, pString );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.UserGuideLink.ActiveValue, sizeof(pBindObj->Footer.UserGuideLink.ActiveValue), pString);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
-                                memset( pBindObj->Footer.UserGuideLink.UpdateSource, 0, sizeof( pBindObj->Footer.UserGuideLink.UpdateSource ));
-                                AnscCopyString( pBindObj->Footer.UserGuideLink.UpdateSource, requestorStr);
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.UserGuideLink.UpdateSource, sizeof(pBindObj->Footer.UserGuideLink.UpdateSource), requestorStr);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
 				return TRUE;
 			}
+                 }
+                 else
+                 {
+                      CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                      return FALSE;
+                 }
 
 	    }
-	    if( AnscEqualString(ParamName, "CustomerCentralLink", TRUE) )
+            rc = strcmp_s("CustomerCentralLink", strlen("CustomerCentralLink"), ParamName, &ind);
+            ERR_CHK(rc);
+            if((rc == EOK) && (!ind))
 	    {
-                        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.CustomerCentralLink.UpdateSource);
+                 IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.CustomerCentralLink.UpdateSource);
 
+                 if(strlen(pString) < sizeof(pBindObj->Footer.CustomerCentralLink.ActiveValue))
+                 {
 			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralLink",PartnerID,pString, requestorStr, currentTime))
 			{
-				memset( pBindObj->Footer.CustomerCentralLink.ActiveValue, 0, sizeof( pBindObj->Footer.CustomerCentralLink.ActiveValue ));
-				AnscCopyString( pBindObj->Footer.CustomerCentralLink.ActiveValue, pString );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.CustomerCentralLink.ActiveValue, sizeof(pBindObj->Footer.CustomerCentralLink.ActiveValue), pString);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
-                                memset( pBindObj->Footer.CustomerCentralLink.UpdateSource, 0, sizeof( pBindObj->Footer.CustomerCentralLink.UpdateSource ));
-                                AnscCopyString( pBindObj->Footer.CustomerCentralLink.UpdateSource, requestorStr);
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.CustomerCentralLink.UpdateSource, sizeof(pBindObj->Footer.CustomerCentralLink.UpdateSource), requestorStr);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
 				return TRUE;
 			}
+                 }
+                 else
+                 {
+                      CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                      return FALSE;
+                 }
 			
 	    }
 
-	if( AnscEqualString(ParamName, "PartnerText", TRUE) )
+        rc = strcmp_s("PartnerText", strlen("PartnerText"), ParamName, &ind);
+        ERR_CHK(rc);
+        if((rc == EOK) && (!ind))
 	{
-                IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.PartnerText.UpdateSource);
+              IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.PartnerText.UpdateSource);
 
-		if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerText",PartnerID,pString, requestorStr, currentTime))
-		{
-			memset( pBindObj->Footer.PartnerText.ActiveValue, 0, sizeof( pBindObj->Footer.PartnerText.ActiveValue ));
-			AnscCopyString( pBindObj->Footer.PartnerText.ActiveValue, pString );
+              if(strlen(pString) < sizeof(pBindObj->Footer.PartnerText.ActiveValue))
+              {
+		    if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerText",PartnerID,pString, requestorStr, currentTime))
+		    {
+                        rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.PartnerText.ActiveValue, sizeof(pBindObj->Footer.PartnerText.ActiveValue), pString);
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            return FALSE;
+                        }
 
 
-                        memset( pBindObj->Footer.PartnerText.UpdateSource, 0, sizeof( pBindObj->Footer.PartnerText.UpdateSource ));
-                        AnscCopyString( pBindObj->Footer.PartnerText.UpdateSource, requestorStr);
+                        rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.PartnerText.UpdateSource, sizeof(pBindObj->Footer.PartnerText.UpdateSource), requestorStr);
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            return FALSE;
+                        }
 
 			return TRUE;
-		}
+		    }
+              }
+              else
+              {
+                   CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                   return FALSE;
+              }
 
 	}
 
-	if( AnscEqualString(ParamName, "UserGuideText", TRUE) )
+        rc = strcmp_s("UserGuideText", strlen("UserGuideText"), ParamName, &ind);
+        ERR_CHK(rc);
+        if((rc == EOK) && (!ind))
 	{
-                IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.UserGuideText.UpdateSource);
+             IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.UserGuideText.UpdateSource);
 
-		if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideText",PartnerID,pString, requestorStr, currentTime))
-		{
-			memset( pBindObj->Footer.UserGuideText.ActiveValue, 0, sizeof( pBindObj->Footer.UserGuideText.ActiveValue ));
-			AnscCopyString( pBindObj->Footer.UserGuideText.ActiveValue, pString );
+             if(strlen(pString) < sizeof(pBindObj->Footer.UserGuideText.ActiveValue))
+             {
+	         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideText",PartnerID,pString, requestorStr, currentTime))
+		 {
+                        rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.UserGuideText.ActiveValue, sizeof(pBindObj->Footer.UserGuideText.ActiveValue), pString);
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            return FALSE;
+                        }
 
-                        memset( pBindObj->Footer.UserGuideText.UpdateSource, 0, sizeof( pBindObj->Footer.UserGuideText.UpdateSource ));
-                        AnscCopyString( pBindObj->Footer.UserGuideText.UpdateSource, requestorStr);
+                        rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.UserGuideText.UpdateSource, sizeof(pBindObj->Footer.UserGuideText.UpdateSource), requestorStr);
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            return FALSE;
+                        }
 
 			return TRUE;
 		}
+           }
+           else
+           {
+               CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+               return FALSE;
+           }
 
 	}
 
- 	if( AnscEqualString(ParamName, "CustomerCentralText", TRUE) )
+        rc = strcmp_s("CustomerCentralText", strlen("CustomerCentralText"), ParamName, &ind);
+        ERR_CHK(rc);
+        if((rc == EOK) && (!ind))
  	{
-                IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.CustomerCentralText.UpdateSource);
+            IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Footer.CustomerCentralText.UpdateSource);
 
- 		if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralText",PartnerID,pString, requestorStr, currentTime))
- 		{
- 			memset( pBindObj->Footer.CustomerCentralText.ActiveValue, 0, sizeof( pBindObj->Footer.CustomerCentralText.ActiveValue ));
- 			AnscCopyString( pBindObj->Footer.CustomerCentralText.ActiveValue, pString );
+            if(strlen(pString) < sizeof(pBindObj->Footer.CustomerCentralText.ActiveValue))
+            {
+                 if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralText",PartnerID,pString, requestorStr, currentTime))
+                 {
+                        rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.CustomerCentralText.ActiveValue, sizeof(pBindObj->Footer.CustomerCentralText.ActiveValue), pString);
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            return FALSE;
+                        }
 
-                        memset( pBindObj->Footer.CustomerCentralText.UpdateSource, 0, sizeof( pBindObj->Footer.CustomerCentralText.UpdateSource ));
-                        AnscCopyString( pBindObj->Footer.CustomerCentralText.UpdateSource, requestorStr);
+                        rc = STRCPY_S_NOCLOBBER(pBindObj->Footer.CustomerCentralText.UpdateSource, sizeof(pBindObj->Footer.CustomerCentralText.UpdateSource), requestorStr);
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            return FALSE;
+                        }
 
  			return TRUE;
- 		}
+                 }
+            }
+            else
+            {
+                CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                return FALSE;
+            }
  	}
    }
    
@@ -14170,72 +14522,152 @@ Connection_SetParamStringValue
     char PartnerID[PARTNER_ID_LEN] = {0};
     char * requestorStr = getRequestorString();
     char * currentTime = getTime();
+    errno_t rc = -1;
+    int ind = -1;
+
+    if((ParamName == NULL) || (pString == NULL))
+         return FALSE;
 
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
 
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
    {
    	 /* check the parameter name and set the corresponding value */
-	    if( AnscEqualString(ParamName, "MSOmenu", TRUE) )
+            rc = strcmp_s("MSOmenu", strlen("MSOmenu"), ParamName, &ind);
+            ERR_CHK(rc);
+            if((rc == EOK) && (!ind))
 	    {
-                        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Connection.MSOmenu.UpdateSource);
+                 IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Connection.MSOmenu.UpdateSource);
+                 /* Below condition is added to restrict the maximum pString length less than acceptable value for buffer overflow issues
+                  * UpdateJsonParam function doesn't have the maximum permissible string length validation check.
+                  */
+                 if(strlen(pString) < sizeof(pBindObj->Connection.MSOmenu.ActiveValue))
+                 {
 
 			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOmenu",PartnerID,pString, requestorStr, currentTime))
 			{
-				memset( pBindObj->Connection.MSOmenu.ActiveValue, 0, sizeof( pBindObj->Connection.MSOmenu.ActiveValue ));
-				AnscCopyString( pBindObj->Connection.MSOmenu.ActiveValue, pString );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Connection.MSOmenu.ActiveValue, sizeof(pBindObj->Connection.MSOmenu.ActiveValue), pString);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
-				memset( pBindObj->Connection.MSOmenu.UpdateSource, 0, sizeof( pBindObj->Connection.MSOmenu.UpdateSource ));
-                                AnscCopyString( pBindObj->Connection.MSOmenu.UpdateSource, requestorStr );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Connection.MSOmenu.UpdateSource, sizeof(pBindObj->Connection.MSOmenu.UpdateSource), requestorStr);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
 				return TRUE;
 			}
+                  }
+                  else
+                  {
+                      CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                      return FALSE;
+                  }
 	    }
-	    if( AnscEqualString(ParamName, "MSOinfo", TRUE) )
+            rc = strcmp_s("MSOinfo", strlen("MSOinfo"), ParamName, &ind);
+            ERR_CHK(rc);
+            if((rc == EOK) && (!ind))
 	    {
-                        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Connection.MSOinfo.UpdateSource);
+                 IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Connection.MSOinfo.UpdateSource);
 
+                 if(strlen(pString) < sizeof(pBindObj->Connection.MSOinfo.ActiveValue))
+                 {
 			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOinfo",PartnerID,pString, requestorStr, currentTime) )
 			{
-				memset( pBindObj->Connection.MSOinfo.ActiveValue, 0, sizeof( pBindObj->Connection.MSOinfo.ActiveValue ));
-				AnscCopyString(pBindObj->Connection.MSOinfo.ActiveValue, pString );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Connection.MSOinfo.ActiveValue, sizeof(pBindObj->Connection.MSOinfo.ActiveValue), pString);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
-                                memset( pBindObj->Connection.MSOinfo.UpdateSource, 0, sizeof( pBindObj->Connection.MSOinfo.UpdateSource ));
-                                AnscCopyString( pBindObj->Connection.MSOinfo.UpdateSource, requestorStr );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Connection.MSOinfo.UpdateSource, sizeof(pBindObj->Connection.MSOinfo.UpdateSource), requestorStr);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
 				return TRUE;
 			}
+                  }
+                  else
+                  {
+                      CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                      return FALSE;
+                  }
 	    }
-	    if( AnscEqualString(ParamName, "StatusTitle", TRUE) )
+            rc = strcmp_s("StatusTitle", strlen("StatusTitle"), ParamName, &ind);
+            ERR_CHK(rc);
+            if((rc == EOK) && (!ind))
 	    {
-                        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Connection.StatusTitle.UpdateSource);
+                  IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Connection.StatusTitle.UpdateSource);
 
+                  if(strlen(pString) < sizeof(pBindObj->Connection.StatusTitle.ActiveValue))
+                  {
 			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusTitle",PartnerID,pString, requestorStr, currentTime) )
 			{
-				memset( pBindObj->Connection.StatusTitle.ActiveValue, 0, sizeof( pBindObj->Connection.StatusTitle.ActiveValue ));
-				AnscCopyString( pBindObj->Connection.StatusTitle.ActiveValue, pString );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Connection.StatusTitle.ActiveValue, sizeof(pBindObj->Connection.StatusTitle.ActiveValue), pString);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
-                                memset( pBindObj->Connection.StatusTitle.UpdateSource, 0, sizeof( pBindObj->Connection.StatusTitle.UpdateSource ));
-                                AnscCopyString( pBindObj->Connection.StatusTitle.UpdateSource, requestorStr );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Connection.StatusTitle.UpdateSource, sizeof(pBindObj->Connection.StatusTitle.UpdateSource), requestorStr);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
 				return TRUE;
 			}
+                  }
+                  else
+                  {
+                      CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                      return FALSE;
+                  }
 			
 	    }
-	    if( AnscEqualString(ParamName, "StatusInfo", TRUE) )
+            rc = strcmp_s("StatusInfo", strlen("StatusInfo"), ParamName, &ind);
+            ERR_CHK(rc);
+            if((rc == EOK) && (!ind))
 	    {
-                        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Connection.StatusInfo.UpdateSource);
+                 IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->Connection.StatusInfo.UpdateSource);
 
+                 if(strlen(pString) < sizeof(pBindObj->Connection.StatusInfo.ActiveValue))
+                 {
 			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusInfo",PartnerID,pString, requestorStr, currentTime))
 			{
-				memset(pBindObj->Connection.StatusInfo.ActiveValue, 0, sizeof( pBindObj->Connection.StatusInfo.ActiveValue ));
-				AnscCopyString( pBindObj->Connection.StatusInfo.ActiveValue, pString );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Connection.StatusInfo.ActiveValue, sizeof(pBindObj->Connection.StatusInfo.ActiveValue), pString);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
-                                memset( pBindObj->Connection.StatusInfo.UpdateSource, 0, sizeof( pBindObj->Connection.StatusInfo.UpdateSource ));
-                                AnscCopyString( pBindObj->Connection.StatusInfo.UpdateSource, requestorStr );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->Connection.StatusInfo.UpdateSource, sizeof(pBindObj->Connection.StatusInfo.UpdateSource), requestorStr);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
 				return TRUE;
 			}
+                 }
+                 else
+                 {
+                     CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                     return FALSE;
+                 }
 	    }
    }
     return FALSE;
@@ -14293,26 +14725,52 @@ NetworkDiagnosticTools_SetParamStringValue
     char PartnerID[PARTNER_ID_LEN] = {0};
     char * requestorStr = getRequestorString();
     char * currentTime = getTime();
+    errno_t rc = -1;
+    int ind = -1;
+
+    if((ParamName == NULL) || (pString == NULL))
+        return FALSE;
 
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
 
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
    {
    	 /* check the parameter name and set the corresponding value */
-	    if( AnscEqualString(ParamName, "ConnectivityTestURL", TRUE) )
+            rc = strcmp_s("ConnectivityTestURL", strlen("ConnectivityTestURL"), ParamName, &ind);
+            ERR_CHK(rc);
+            if((rc == EOK) && (!ind))
 	    {
-                        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->NDiagTool.ConnectivityTestURL.UpdateSource);
+                 IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->NDiagTool.ConnectivityTestURL.UpdateSource);
 
+                 /* Below condition is added to restrict the maximum pString length less than acceptable value for buffer overflow issues
+                  * UpdateJsonParam function doesn't have the maximum permissible string length validation check.
+                  */
+                 if(strlen(pString) < sizeof(pBindObj->NDiagTool.ConnectivityTestURL.ActiveValue))
+                 {
 			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.NetworkDiagnosticTools.ConnectivityTestURL",PartnerID, pString, requestorStr, currentTime))
 			{
-				memset( pBindObj->NDiagTool.ConnectivityTestURL.ActiveValue, 0, sizeof( pBindObj->NDiagTool.ConnectivityTestURL.ActiveValue ));
-				AnscCopyString( pBindObj->NDiagTool.ConnectivityTestURL.ActiveValue, pString );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->NDiagTool.ConnectivityTestURL.ActiveValue, sizeof(pBindObj->NDiagTool.ConnectivityTestURL.ActiveValue), pString);
+                                if(rc != EOK)
+                                {
+                                     ERR_CHK(rc);
+                                     return FALSE;
+                                }
 
-                                memset( pBindObj->NDiagTool.ConnectivityTestURL.UpdateSource, 0, sizeof( pBindObj->NDiagTool.ConnectivityTestURL.UpdateSource ));
-                                AnscCopyString( pBindObj->NDiagTool.ConnectivityTestURL.UpdateSource, requestorStr );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->NDiagTool.ConnectivityTestURL.UpdateSource, sizeof(pBindObj->NDiagTool.ConnectivityTestURL.UpdateSource), requestorStr);
+                                 if(rc != EOK)
+                                {
+                                     ERR_CHK(rc);
+                                     return FALSE;
+                                }
 
 				return TRUE;
 			}	
+                 }
+                 else
+                 {
+                     CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                     return FALSE;
+                 }
 	    }
 	  
    }
@@ -14536,26 +14994,52 @@ WiFiPersonalization_SetParamStringValue
     char PartnerID[PARTNER_ID_LEN] = {0};
     char * requestorStr = getRequestorString();
     char * currentTime = getTime();
+    errno_t rc = -1;
+    int ind = -1;
+
+    if((ParamName == NULL) || (pString == NULL))
+        return FALSE;
 
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
 
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
    {
    	 /* check the parameter name and set the corresponding value */
-	    if( AnscEqualString(ParamName, "PartnerHelpLink", TRUE) )
+            rc = strcmp_s("PartnerHelpLink", strlen("PartnerHelpLink"), ParamName, &ind);
+            ERR_CHK(rc);
+            if((rc == EOK) && (!ind))
 	    {
-                        IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->WifiPersonal.PartnerHelpLink.UpdateSource);
+                 IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->WifiPersonal.PartnerHelpLink.UpdateSource);
 
+                 /* Below condition is added to restrict the maximum pString length less than acceptable value for buffer overflow issues
+                  * UpdateJsonParam function doesn't have the maximum permissible string length validation check.
+                  */
+                 if(strlen(pString) < sizeof(pBindObj->WifiPersonal.PartnerHelpLink.ActiveValue))
+                 {
 			if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.PartnerHelpLink",PartnerID, pString, requestorStr, currentTime))
 			{
-				memset( pBindObj->WifiPersonal.PartnerHelpLink.ActiveValue, 0, sizeof( pBindObj->WifiPersonal.PartnerHelpLink.ActiveValue ));
-				AnscCopyString( pBindObj->WifiPersonal.PartnerHelpLink.ActiveValue, pString );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->WifiPersonal.PartnerHelpLink.ActiveValue, sizeof(pBindObj->WifiPersonal.PartnerHelpLink.ActiveValue), pString);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
-                                memset( pBindObj->WifiPersonal.PartnerHelpLink.UpdateSource, 0, sizeof( pBindObj->WifiPersonal.PartnerHelpLink.UpdateSource ));
-                                AnscCopyString( pBindObj->WifiPersonal.PartnerHelpLink.UpdateSource, requestorStr );
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->WifiPersonal.PartnerHelpLink.UpdateSource, sizeof(pBindObj->WifiPersonal.PartnerHelpLink.UpdateSource), requestorStr);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 
 				return TRUE;
 			}			
+                  }
+                  else
+                  {
+                      CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                      return FALSE;
+                  }
 	    }
 	  
    }
@@ -14821,55 +15305,117 @@ CloudUI_SetParamStringValue
     char PartnerID[PARTNER_ID_LEN] = {0};
     char * requestorStr = getRequestorString();
     char * currentTime = getTime();
+    errno_t rc = -1;
+    int ind = -1;
+
+    if((ParamName == NULL) || (pString == NULL))
+        return FALSE;
 
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
 
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
    {
      /* check the parameter name and set the corresponding value */
-        if( AnscEqualString(ParamName, "brandname", TRUE) )
+        rc = strcmp_s("brandname", strlen("brandname"), ParamName, &ind);
+        ERR_CHK(rc);
+        if((rc == EOK) && (!ind))
         {
             IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->CloudUI.brandname.UpdateSource);
 
-            if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname",PartnerID, pString, requestorStr, currentTime))
+            /* Below condition is added to restrict the maximum pString length less than acceptable value for buffer overflow issues
+             * UpdateJsonParam function doesn't have the maximum permissible string length validation check.
+             */
+            if(strlen(pString) < sizeof(pBindObj->CloudUI.brandname.ActiveValue))
             {
-                memset( pBindObj->CloudUI.brandname.ActiveValue, 0, sizeof( pBindObj->CloudUI.brandname.ActiveValue ));
-                AnscCopyString( pBindObj->CloudUI.brandname.ActiveValue, pString );
+                if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.brandname",PartnerID, pString, requestorStr, currentTime))
+                {
+                    rc = STRCPY_S_NOCLOBBER(pBindObj->CloudUI.brandname.ActiveValue, sizeof(pBindObj->CloudUI.brandname.ActiveValue), pString);
+                    if(rc != EOK)
+                    {
+                        ERR_CHK(rc);
+                        return FALSE;
+                    }
 
-                memset( pBindObj->CloudUI.brandname.UpdateSource, 0, sizeof( pBindObj->CloudUI.brandname.UpdateSource ));
-                AnscCopyString( pBindObj->CloudUI.brandname.UpdateSource, requestorStr );
+                    rc = STRCPY_S_NOCLOBBER(pBindObj->CloudUI.brandname.UpdateSource, sizeof(pBindObj->CloudUI.brandname.UpdateSource), requestorStr);
+                    if(rc != EOK)
+                    {
+                        ERR_CHK(rc);
+                        return FALSE;
+                    }
 
-                return TRUE;
+                    return TRUE;
+                }
+            }
+            else
+            {
+                CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                return FALSE;
             }
         }
-        if( AnscEqualString(ParamName, "productname", TRUE) )
+        rc = strcmp_s("productname", strlen("productname"), ParamName, &ind);
+        ERR_CHK(rc);
+        if((rc == EOK) && (!ind))
         {
             IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->CloudUI.productname.UpdateSource);
 
-            if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname",PartnerID, pString, requestorStr, currentTime))
+            if(strlen(pString) < sizeof(pBindObj->CloudUI.productname.ActiveValue))
             {
-                memset( pBindObj->CloudUI.productname.ActiveValue, 0, sizeof( pBindObj->CloudUI.productname.ActiveValue ));
-                AnscCopyString( pBindObj->CloudUI.productname.ActiveValue, pString );
+                if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname",PartnerID, pString, requestorStr, currentTime))
+                {
+                    rc = STRCPY_S_NOCLOBBER(pBindObj->CloudUI.productname.ActiveValue, sizeof(pBindObj->CloudUI.productname.ActiveValue), pString);
+                    if(rc != EOK)
+                    {
+                        ERR_CHK(rc);
+                        return FALSE;
+                    }
 
-                memset( pBindObj->CloudUI.productname.UpdateSource, 0, sizeof( pBindObj->CloudUI.productname.UpdateSource ));
-                AnscCopyString( pBindObj->CloudUI.productname.UpdateSource, requestorStr );
+                    rc = STRCPY_S_NOCLOBBER(pBindObj->CloudUI.productname.UpdateSource, sizeof(pBindObj->CloudUI.productname.UpdateSource), requestorStr);
+                    if(rc != EOK)
+                    {
+                        ERR_CHK(rc);
+                        return FALSE;
+                    }
 
-                return TRUE;
+                    return TRUE;
+                }
+            }
+            else
+            {
+                CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                return FALSE;
             }
         }
-        if( AnscEqualString(ParamName, "link", TRUE) )
+        rc = strcmp_s("link", strlen("link"), ParamName, &ind);
+        ERR_CHK(rc);
+        if((rc == EOK) && (!ind))
         {
             IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->CloudUI.link.UpdateSource);
 
-            if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link",PartnerID, pString, requestorStr, currentTime))
+            if(strlen(pString) < sizeof(pBindObj->CloudUI.link.ActiveValue))
             {
-                memset( pBindObj->CloudUI.link.ActiveValue, 0, sizeof( pBindObj->CloudUI.link.ActiveValue ));
-                AnscCopyString( pBindObj->CloudUI.link.ActiveValue, pString );
+                if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link",PartnerID, pString, requestorStr, currentTime))
+                {
+                    rc = STRCPY_S_NOCLOBBER(pBindObj->CloudUI.link.ActiveValue, sizeof(pBindObj->CloudUI.link.ActiveValue), pString);
+                    if(rc != EOK)
+                    {
+                        ERR_CHK(rc);
+                        return FALSE;
+                    }
 
-                memset( pBindObj->CloudUI.link.UpdateSource, 0, sizeof( pBindObj->CloudUI.link.UpdateSource ));
-                AnscCopyString( pBindObj->CloudUI.link.UpdateSource, requestorStr );
+                    rc = STRCPY_S_NOCLOBBER(pBindObj->CloudUI.link.UpdateSource, sizeof(pBindObj->CloudUI.link.UpdateSource), requestorStr);
+                    if(rc != EOK)
+                    {
+                        ERR_CHK(rc);
+                        return FALSE;
+                    }
 
-                return TRUE;
+                    return TRUE;
+                 }
+            }
+            else
+            {
+                CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                return FALSE;
             }
         }
     }
@@ -15122,9 +15668,13 @@ RPC_SetParamStringValue
     )
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    errno_t rc =-1;
+    int ind =-1;
     /* check the parameter name and set the corresponding value */
 
-    if( AnscEqualString(ParamName, "RebootDevice", TRUE))
+    rc = strcmp_s("RebootDevice",strlen( "RebootDevice"),ParamName,&ind);
+    ERR_CHK(rc);
+     if((!ind) && (rc == EOK)) 
     {
       
         if( TRUE == CosaDmlDi_ValidateRebootDeviceParam( pString ) )
@@ -15134,48 +15684,75 @@ RPC_SetParamStringValue
 		}
     }
 
-     if( AnscEqualString(ParamName, "FirmwareDownloadStartedNotification", TRUE))
-     {
-	char notifyEnable[64];
-        memset(notifyEnable, 0, sizeof(notifyEnable));
-
-        syscfg_get( NULL, "ManageableNotificationEnabled", notifyEnable, sizeof(notifyEnable));
-        if((notifyEnable[0] != '\0') && (strncmp(notifyEnable, "true", strlen("true")) == 0))
+        rc =  strcmp_s("FirmwareDownloadStartedNotification", strlen("FirmwareDownloadStartedNotification"),ParamName, &ind);
+	ERR_CHK(rc);
+        if((!ind) && (rc == EOK)) 
         {
-		/* collect value */
-		char buff[64];
-		char *timeValue = NULL;
+	    char notifyEnable[64] = {0};
+        
 
-		memset(buff, 0, sizeof(buff));
-		snprintf(buff,sizeof(buff),"%s",pString);
-		memset( pMyObject->FirmwareDownloadStartedNotification, 0, sizeof( pMyObject->FirmwareDownloadStartedNotification ));
-		AnscCopyString( pMyObject->FirmwareDownloadStartedNotification, pString );
-		timeValue = strdup(buff);
-		set_firmware_download_start_time(timeValue);
-		Send_Notification_Task(NULL, buff, NULL, "firmware-download-started", NULL);
-	}
-	else
-	{
-		CcspTraceWarning(("ManageableNotificationEnabled is false, firmware download start notification is not sent\n"));
-	}
+             syscfg_get( NULL, "ManageableNotificationEnabled", notifyEnable, sizeof(notifyEnable));
+             if(notifyEnable[0] != '\0') 
+             {
+		  
+		  rc = strcmp_s("true", strlen("true"),notifyEnable,&ind);
+		  ERR_CHK(rc);
+                 if((!ind) && (rc == EOK))  
+		  {
+		     rc =  memset_s( pMyObject->FirmwareDownloadStartedNotification, sizeof( pMyObject->FirmwareDownloadStartedNotification ),0, sizeof( pMyObject->FirmwareDownloadStartedNotification ));
+		     ERR_CHK(rc);
+		     rc = STRCPY_S_NOCLOBBER( pMyObject->FirmwareDownloadStartedNotification,sizeof( pMyObject->FirmwareDownloadStartedNotification ), pString );
+		     if(rc != EOK)
+                    {
+	               ERR_CHK(rc);
+	               return FALSE;
+                    }
+		    
+		    set_firmware_download_start_time(strdup(pString));
+		    Send_Notification_Task(NULL,pString, NULL, "firmware-download-started", NULL);
+	         }
+                  
+                 else
+	        {
+		   CcspTraceWarning(("ManageableNotificationEnabled is false, firmware download start notification is not sent\n"));
+	        }
+	   }
+	   else
+	   {
+		   CcspTraceWarning(("ManageableNotificationEnabled is false, firmware download start notification is not sent\n"));
+	   }
 	return TRUE;
-     }
+      }
 
-     if( AnscEqualString(ParamName, "DeviceManageableNotification", TRUE))
-     {
-        char status[64];
-        memset(status, 0, sizeof(status));
-        syscfg_get( NULL, "ManageableNotificationEnabled", status, sizeof(status));
-        if((status[0] != '\0') && (strncmp(status, "true", strlen("true")) == 0))
-        {
-            /* collect value */
-            char buff[64];
-            memset(buff, 0, sizeof(buff));
-
-            snprintf(buff,sizeof(buff),"%s",pString);
-	    memset( pMyObject->DeviceManageableNotification, 0, sizeof( pMyObject->DeviceManageableNotification ));
-	    AnscCopyString( pMyObject->DeviceManageableNotification, pString );
-            Send_Notification_Task(NULL, NULL, NULL, "fully-manageable", buff);
+        rc = strcmp_s( "DeviceManageableNotification",strlen("DeviceManageableNotification"),ParamName, &ind);
+	ERR_CHK(rc);
+       if((!ind) && (rc == EOK)) 
+	 
+       {
+          char status[64] = {0};
+        
+          syscfg_get( NULL, "ManageableNotificationEnabled", status, sizeof(status));
+          if(status[0] != '\0') 
+          {
+		rc =strcmp_s("true", strlen("true"),status,&ind);
+		ERR_CHK(rc);
+                if((!ind) && (rc == EOK)) 
+		{
+                   
+		    rc = memset_s( pMyObject->DeviceManageableNotification,sizeof( pMyObject->DeviceManageableNotification ), 0,sizeof( pMyObject->DeviceManageableNotification ));
+		    ERR_CHK(rc);
+	            rc = STRCPY_S_NOCLOBBER( pMyObject->DeviceManageableNotification,sizeof( pMyObject->DeviceManageableNotification ) ,pString );
+	           if(rc != EOK)
+                  {
+                    ERR_CHK(rc);
+                    return FALSE;
+                  }
+                 Send_Notification_Task(NULL, NULL, NULL, "fully-manageable", pString);
+	      }	 
+              else
+	     {
+		CcspTraceWarning(("ManageableNotificationEnabled is false, device manage notification is not sent\n"));
+	     }
         }
 	else
 	{
@@ -18447,17 +19024,17 @@ EnableOCSPStapling_SetParamBoolValue
 void copy_command_output(char * cmd, char * out, int len)
 {
     FILE * fp;
-    char   buf[256];
     char * p;
     fp = popen(cmd, "r");
     if (fp)
     {
-        fgets(buf, sizeof(buf), fp);
-        /*we need to remove the \n char in buf*/
-        if ((p = strchr(buf, '\n'))) *p = 0;
-        strncpy(out, buf, len-1);
-        pclose(fp);
-    }
+       
+       fgets(out, len, fp);
+       // add terminating NULL char, remove newline char
+       out[len-1] = '\0';
+       if ((p = strchr(out, '\n'))) *p = 0;
+       pclose(fp);
+   }
 }
 
 
