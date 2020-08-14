@@ -5425,6 +5425,13 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
         return;
     }
 
+    /*
+       As long as the pointer to the line buffer and the variable holding its
+       size are not modified between calls to getline() there's no need to free
+       the line buffer after every call to getline() (the buffer will be reused
+       and automatically resized as required by getline()).
+    */
+
     /*coverity[deref_ptr_in_call]  RDKB-6847, CID-33205, annotation to ignore coverity error*/
     while(-1 != getline(&line, &len, fp)){
         /*CID: 57783 Dereference before null check*/
@@ -5437,11 +5444,13 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
         if(0 == anlz_line(line, *entry + *count))
             (*count)++;        
         /*coverity[check_after_deref] RDKB-6847, CID-33205*/
-        if(line){
-            free(line);
-            line = NULL;
-        }
     }
+
+    if (line){
+        free(line);
+        line = NULL;
+    }
+
     fclose(fp);
     if(*count == 0){
         AnscFreeMemory(*entry); /*RDKB-6847, CID-33423, free the allocated */
