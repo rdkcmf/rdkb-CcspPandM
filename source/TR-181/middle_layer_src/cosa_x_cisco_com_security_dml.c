@@ -69,15 +69,7 @@
 #include "ansc_platform.h"
 #include "cosa_x_cisco_com_security_dml.h"
 #include "cosa_x_cisco_com_security_internal.h"
-
-#ifdef SAFEC_DUMMY_API
-//adding strcmp_s definition
-errno_t strcmp_s(const char * d,int max ,const char * src,int *r)
-{
-  *r= strcmp(d,src);
-  return EOK;
-}
-#endif
+#include "safec_lib_common.h"
 
 /***********************************************************************
  IMPORTANT NOTE:
