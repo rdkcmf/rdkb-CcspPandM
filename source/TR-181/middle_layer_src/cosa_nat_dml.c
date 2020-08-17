@@ -77,6 +77,7 @@
 #include "portmappingdoc.h"
 #include "ccsp_trace.h"
 #include "dml_tr181_custom_cfg.h"
+#include "safec_lib_common.h"
 
 #if     CFG_USE_CCSP_SYSLOG
     #include <ccsp_syslog.h>
