@@ -5307,10 +5307,6 @@ Pool1_SetParamStringValue
     char dump;
     int ret=0;
 
-    /* check if pString doesn't hold null or whitespaces */
-    if(AnscValidStringCheck(pString) != TRUE)
-        return FALSE;
-
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
