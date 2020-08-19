@@ -1466,7 +1466,7 @@ ULONG g_dhcpv6s_refresh_count = 0;
 #if defined (_HUB4_PRODUCT_REQ_)
     #define DHCPV6S_SERVER_PID_FILE   "/etc/dibbler/server.pid"
 #else
-    #define DHCPV6S_SERVER_PID_FILE   "/var/lib/dibbler/server.pid"
+    #define DHCPV6S_SERVER_PID_FILE   "/tmp/dibbler/server.pid"
 #endif
 
 #define DHCPVS_DEBUG_PRINT \
@@ -3314,7 +3314,7 @@ static int _dibbler_server_operation(char * arg)
     else if (!strncmp(arg, "restart", 7))
     {
         _dibbler_server_operation("stop");
-        _dibbler_server_operation("start");
+	_dibbler_server_operation("start");
     }
 
 EXIT:
@@ -6627,10 +6627,11 @@ void CosaDmlDhcpv6sRebootServer()
         _get_shell_output(cmd, out, sizeof(out));
         if (strstr(out, SERVER_BIN))
         {
-            sprintf(cmd, "kill `pidof %s`", SERVER_BIN);
+            sprintf(cmd, "kill -15 `pidof %s`", SERVER_BIN);
             system(cmd);
+	    sleep(1);
         }
-
+	
         _dibbler_server_operation("start");
     } else{
         close(fd);
