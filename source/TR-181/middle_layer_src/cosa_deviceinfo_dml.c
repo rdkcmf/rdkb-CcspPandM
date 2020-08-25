@@ -679,6 +679,12 @@ DeviceInfo_GetParamStringValue
 		return 0;
         
     }
+
+    if( AnscEqualString(ParamName, "X_RDK_RDKProfileName", TRUE))
+    {
+            AnscCopyString(pValue, "RDKB");
+            return 0;
+    }
 	
 	/* Changes for EMS begins here */
 	
