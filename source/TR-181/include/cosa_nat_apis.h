@@ -67,6 +67,16 @@
 #include "cosa_apis.h"
 #include "cosa_nat_apis_custom.h"
 
+
+
+#define COSA_NAT_SYSCFG_NAMESPACE "CosaNAT"
+#define COSA_NAT_ID_SYSCFG_NAMESPACE COSA_NAT_SYSCFG_NAMESPACE"IDs"
+#define PORT_TRIGGER_ENABLED_KEY "port_trigger_enabled" 
+#define PORT_FORWARD_ENABLED_KEY "port_forward_enabled" 
+#define HS_PORT_FORWARD_ENABLED_KEY "port_hs_forward_enabled" 
+#define NAT_FORWARD_ENABLED_KEY "nat_forward_enabled" 
+
+
 /***********************************
     Actual definition declaration
 ************************************/

@@ -31,6 +31,7 @@
 #include "portmappingdoc.h"
 #include "dmz_wan_doc.h"
 
+#include "cosa_nat_apis.h"
 #include "msgpack.h"
 #include "webconfig_framework.h"
 
@@ -89,7 +90,7 @@ void webConfigFrameworkInit() ;
 void clear_pf_cache(t_cache *tmp_pf_cache);
 void print_pf_cache(t_cache *tmp_pf_cache);
 int clear_pf_cache_DB(t_cache *tmp_pf_cache);
-int apply_pf_cache_ToDB(t_cache *tmp_pf_cache, int cache_size);
+int apply_pf_cache_ToDB(t_cache *tmp_pf_cache, int cache_size,int pmapEnable);
 int set_portmap_conf(portmappingdoc_t *rpm);
 void backup_pf_cache(t_cache *tmp_pf_cache,t_cache *tmp_pf_cache_bkup,int cache_size);
 

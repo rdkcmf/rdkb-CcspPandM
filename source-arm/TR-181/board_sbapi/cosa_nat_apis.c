@@ -1049,12 +1049,6 @@ CosaDmlNatSetPortTrigger
 #include <utapi_util.h>
 #include <ccsp_syslog.h>
 
-#define COSA_NAT_SYSCFG_NAMESPACE "CosaNAT"
-#define COSA_NAT_ID_SYSCFG_NAMESPACE COSA_NAT_SYSCFG_NAMESPACE"IDs"
-#define PORT_TRIGGER_ENABLED_KEY "port_trigger_enabled" 
-#define PORT_FORWARD_ENABLED_KEY "port_forward_enabled" 
-#define HS_PORT_FORWARD_ENABLED_KEY "port_hs_forward_enabled" 
-#define NAT_FORWARD_ENABLED_KEY "nat_forward_enabled" 
 
 #define U_2_SB_PF_PROTOCOL(x)  ((x) == TCP ? 1 : ((x) == UDP ? 2 : 3) ) 
 #define SB_2_U_PF_PPOTOCOL(x)  ((x) == 1 ? TCP :((x) == 2 ? UDP : BOTH_TCP_UDP) )

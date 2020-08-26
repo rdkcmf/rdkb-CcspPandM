@@ -23,6 +23,8 @@
 int pf_cache_size = 0;
 int pf_cache_size_bkup = 0;
 
+char pf_param_name[128] = {0};
+int gpfEnable = 0;
 
 int  get_base64_decodedbuffer(char *pString, char **buffer, int *size)
 {
@@ -298,9 +300,18 @@ void backup_pf_cache(t_cache *tmp_pf_cache,t_cache *tmp_pf_cache_bkup,int cache_
 }
 
 /* API to apply port forwarding requests to DB */
-int apply_pf_cache_ToDB(t_cache *tmp_pf_cache, int cache_size)
+int apply_pf_cache_ToDB(t_cache *tmp_pf_cache, int cache_size,int pmapEnable)
 {
-	int i = 0;
+	    int i = 0;
+        if ( gpfEnable !=  pmapEnable )
+        {
+                if (syscfg_set(NULL,pf_param_name, (pmapEnable == 1) ? "1" : "0" ) != 0)
+                {
+                    CcspTraceError(("syscfg_set failed to set %s parameter\n",pf_param_name));
+                    return SYSCFG_FAILURE;
+                }    
+        }
+
     	for(i = 0;i <cache_size ; i++)
     	{
         	//printf("pf_cache[%d].cmd - %s\n",i,tmp_pf_cache[i].cmd);
@@ -529,6 +540,14 @@ void init_pf_cache(t_cache *tmp_pf_cache)
     	int pfr_count = 0;
     	char alias_pre[8];
 
+        char buf[8] = {0} ;
+        snprintf(pf_param_name,sizeof(pf_param_name),"%s::%s",COSA_NAT_SYSCFG_NAMESPACE,PORT_FORWARD_ENABLED_KEY);
+
+        if( 0 == syscfg_get( NULL, pf_param_name , buf, sizeof( buf ) ) &&  ( '\0' != buf[0] ) )
+        {
+                gpfEnable = atoi(buf);
+        }        
+
     	memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
     	memset(tmp_pf_cache[i].val,0,VAL_BLOCK_SIZE);
     	snprintf(tmp_pf_cache[i].cmd,BLOCK_SIZE,"SinglePortForwardCount");
@@ -637,7 +656,7 @@ pErr Process_PF_WebConfigRequest(void *Data)
 {
 
     	pErr execRetVal = NULL;
-
+        int lpfEnable = 0 ;
     	execRetVal = (pErr) malloc (sizeof(Err));
     	if (execRetVal == NULL )
     	{
@@ -706,8 +725,10 @@ pErr Process_PF_WebConfigRequest(void *Data)
 
             return execRetVal;
         }
-
-    	if ( SYSCFG_FAILURE == apply_pf_cache_ToDB(pf_cache,pf_cache_size) )
+        if ( rpm->entries_count > 0 )
+                lpfEnable = 1 ;
+        
+    	if ( SYSCFG_FAILURE == apply_pf_cache_ToDB(pf_cache,pf_cache_size, lpfEnable ) )
     	{
             	CcspTraceError(("Failed to apply Portmap configurartion\n"));
             	//portmappingdoc_destroy( rpm ); 
@@ -721,7 +742,7 @@ pErr Process_PF_WebConfigRequest(void *Data)
     	}	
 
      	CcspTraceWarning(("Portmap configurartion applied\n"));
-
+        gpfEnable = lpfEnable;
     	int i;                  
     	for(i = 0; i < (int)rpm->entries_count ; i++)
     	{
@@ -746,7 +767,7 @@ int rollback_PortForwarding()
     CcspTraceInfo((" Entering %s \n",__FUNCTION__));
 
     int ret = 0;
-    ret = apply_pf_cache_ToDB(pf_cache_bkup,pf_cache_size_bkup);
+    ret = apply_pf_cache_ToDB(pf_cache_bkup,pf_cache_size_bkup,  gpfEnable ) ;
 
     backup_pf_cache(pf_cache_bkup,pf_cache,pf_cache_size_bkup);
 
