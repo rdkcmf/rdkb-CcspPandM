@@ -77,7 +77,6 @@
 #include "cosa_nat_apis.h"        
 #include "cosa_nat_internal.h"
 
-
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -124,8 +123,24 @@ NAT_GetParamBoolValue_Custom
 
     if (AnscEqualString(ParamName, "X_Comcast_com_EnablePortMapping", TRUE))
     {
-        *pBool = COSA_DML_NAT_CUSTOM_GET_ENABLEPORTMAPPING(pNat);
-        return TRUE;
+        //*pBool = COSA_DML_NAT_CUSTOM_GET_ENABLEPORTMAPPING(pNat);
+        char buf[8] = {0} ;
+        char param_name[128] = {0};
+        snprintf(param_name,sizeof(param_name),"%s::%s",COSA_NAT_SYSCFG_NAMESPACE,PORT_FORWARD_ENABLED_KEY);
+        if( 0 == syscfg_get( NULL, param_name , buf, sizeof( buf ) ) &&  ( '\0' != buf[0] ) )
+        {
+            if(!strcmp(buf, "1"))
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+
+            return TRUE;
+
+        } 
+
+        CcspTraceError(("Failed to get/null value is returned from database '%s'\n", ParamName)); 
+
+        return FALSE;
     }
     if (AnscEqualString(ParamName, "X_Comcast_com_EnableHSPortMapping", TRUE))
     {

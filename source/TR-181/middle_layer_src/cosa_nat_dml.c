@@ -69,7 +69,6 @@
 #include "ansc_platform.h"
 #include "cosa_nat_dml.h"
 #include "cosa_nat_dml_custom.h"
-#include "cosa_nat_apis.h"
 #include "plugin_main_apis.h"
 #include "cosa_nat_internal.h"
 #include "msgpack.h"
