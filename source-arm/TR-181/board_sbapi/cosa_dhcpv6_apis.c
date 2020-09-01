@@ -67,6 +67,7 @@
  
 
 **************************************************************************/
+#include <stdint.h>
 #include "cosa_apis.h"
 #include "cosa_dhcpv6_apis.h"
 #include "cosa_dhcpv6_internal.h"
@@ -79,9 +80,19 @@ extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 
 #ifdef _HUB4_PRODUCT_REQ_
-#define SYSEVENT_FIELD_IPV6_PREFIXVLTIME  "ipv6_prefix_vldtime"
-#define SYSEVENT_FIELD_IPV6_PREFIXPLTIME  "ipv6_prefix_prdtime"
+#include "wan_manager_ipc_msg.h"
+#if defined SUCCESS
+#undef SUCCESS
+#endif
+#define SYSEVENT_FIELD_IPV6_DNS_SERVER    "wan6_ns"
 #define SYSEVENT_FIELD_IPV6_ULA_ADDRESS   "ula_address"
+
+/**
+ * @brief API to send dhcpv6 configuration data to RdkWanmanager over nanomsg socket
+ * @param Pointer to dhcpv6_data_t holds the IPv6 configurations
+ * @return 0 on success else returned -1
+ */
+static int send_dhcp_data_to_wanmanager (dhcpv6_data_t *dhcpv6_data); /* Send data to wanmanager using nanomsg. */
 #endif
 
 #if defined (INTEL_PUMA7)
@@ -6978,8 +6989,6 @@ dhcpv6c_dbg_thrd(void * in)
             BOOL bRestartLan = FALSE;
             int  ret = 0;
 #ifdef _HUB4_PRODUCT_REQ_
-            char hub4_valid_lft[64] = {0};
-            char hub4_preferred_lft[64] = {0};
             char ula_address[64] = {0};
 #endif
             /*the format is :
@@ -7243,13 +7252,9 @@ dhcpv6c_dbg_thrd(void * in)
 #endif
 #else
 #ifdef _HUB4_PRODUCT_REQ_
-                        commonSyseventGet(SYSEVENT_FIELD_IPV6_PREFIXVLTIME,
-                                     hub4_valid_lft, sizeof(hub4_valid_lft));
-                        commonSyseventGet(SYSEVENT_FIELD_IPV6_PREFIXPLTIME,
-                                     hub4_preferred_lft, sizeof(hub4_preferred_lft));
-                        if ((hub4_valid_lft[0]=='\0') || (hub4_preferred_lft[0]=='\0')){
-                            strncpy(hub4_preferred_lft, "forever", sizeof(hub4_preferred_lft));
-                            strncpy(hub4_valid_lft, "forever", sizeof(hub4_valid_lft));
+                        if ((iapd_vldtm[0]=='\0') || (iapd_pretm[0]=='\0')){
+                            strncpy(iapd_pretm, "forever", sizeof(iapd_pretm));
+                            strncpy(iapd_vldtm, "forever", sizeof(iapd_vldtm));
                         }
                         commonSyseventGet(SYSEVENT_FIELD_IPV6_ULA_ADDRESS,
                                      ula_address, sizeof(ula_address));
@@ -7264,7 +7269,7 @@ dhcpv6c_dbg_thrd(void * in)
                         else {
                             commonSyseventSet("lan_ipaddr_v6", globalIP);
                             sprintf(cmd, "ip -6 addr add %s/64 dev %s valid_lft %s preferred_lft %s",
-                                globalIP, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
+                                globalIP, COSA_DML_DHCPV6_SERVER_IFNAME, iapd_vldtm, iapd_pretm);
                             CcspTraceInfo(("Going to execute: %s \n", cmd));
                             system(cmd);
                         }
@@ -7272,12 +7277,44 @@ dhcpv6c_dbg_thrd(void * in)
                             strncpy(v6pref_addr, v6pref, (strlen(v6pref)-5));
                             CcspTraceInfo(("Going to set ::1 address on brlan0 interface \n"));
                             sprintf(cmd, "ip -6 addr add %s::1/64 dev %s valid_lft %s preferred_lft %s",
-                                v6pref_addr, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
+                                v6pref_addr, COSA_DML_DHCPV6_SERVER_IFNAME, iapd_vldtm, iapd_pretm);
                             CcspTraceInfo(("Going to execute: %s \n", cmd));
                             system(cmd);
                         }
                         // send an event to Sky-pro app manager that Global-prefix is set
-                        commonSyseventSet("lan_prefix_set", globalIP);
+                        commonSyseventSet("lan_prefix_set", globalIP); 
+                        /**
+                        * Send data to wanmanager.
+                        */
+                        int ipv6_wan_status = 0;
+                        char dns_server[256] = {'\0'};
+                        dhcpv6_data_t dhcpv6_data;
+                        memset(&dhcpv6_data, 0, sizeof(dhcpv6_data_t));
+
+                        if(strlen(v6pref) == 0) {
+                            dhcpv6_data.isExpired = TRUE;
+                        } else {
+                            dhcpv6_data.isExpired = FALSE;
+                            dhcpv6_data.prefixAssigned = TRUE;
+                            strncpy(dhcpv6_data.sitePrefix, v6pref, sizeof(dhcpv6_data.sitePrefix));
+                            strncpy(dhcpv6_data.pdIfAddress, "", sizeof(dhcpv6_data.pdIfAddress));
+                            /** DNS servers. **/
+                            commonSyseventGet(SYSEVENT_FIELD_IPV6_DNS_SERVER, dns_server, sizeof(dns_server));
+                            if (strlen(dns_server) != 0)
+                            {
+                                dhcpv6_data.dnsAssigned = TRUE;
+                                sscanf (dns_server, "%s %s", dhcpv6_data.nameserver, dhcpv6_data.nameserver1);
+                            }
+                            dhcpv6_data.prefixPltime = 3600;
+                            dhcpv6_data.prefixVltime = 3600;
+                            dhcpv6_data.maptAssigned = FALSE;
+                            dhcpv6_data.mapeAssigned = FALSE;
+                            dhcpv6_data.prefixCmd = 0;
+                        }
+
+                        if (send_dhcp_data_to_wanmanager(&dhcpv6_data) != ANSC_STATUS_SUCCESS) {
+                            CcspTraceError(("[%s-%d] Failed to send dhcpv6 data to wanmanager!!! \n", __FUNCTION__, __LINE__));
+                        }
 #endif
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
@@ -7392,4 +7429,68 @@ EXIT:
     return NULL;
 }
 
+#endif
+
+#ifdef _HUB4_PRODUCT_REQ_
+static int send_dhcp_data_to_wanmanager (dhcpv6_data_t *dhcpv6_data)
+{
+    int ret = ANSC_STATUS_SUCCESS;
+    if ( NULL == dhcpv6_data)
+    {
+        printf ("[%s-%d] Invalid argument \n", __FUNCTION__,__LINE__);
+        return ANSC_STATUS_FAILURE;
+    }
+
+    /*
+     * Init nanomsg socket.
+     */
+
+    int sock = -1;
+    int conn = -1;
+
+    sock = nn_socket(AF_SP, NN_PUSH);
+    if (sock < ANSC_STATUS_SUCCESS)
+    {
+        CcspTraceError(("[%s-%d] Failed to create the nanomsg socket \n", __FUNCTION__, __LINE__));
+        return ANSC_STATUS_INTERNAL_ERROR;
+    }
+
+    conn = nn_connect(sock, WAN_MANAGER_ADDR);
+    if (conn < ANSC_STATUS_SUCCESS)
+    {
+        CcspTraceError(("[%s-%d] Failed to connect to the wanmanager socket \n", __FUNCTION__, __LINE__));
+        nn_close (sock);
+        return ANSC_STATUS_INTERNAL_ERROR;
+    }
+
+    CcspTraceInfo(("[%s-%d] Established connection to wanmanager \n",__FUNCTION__, __LINE__));
+
+    msg_payload_t msg;
+    memset (&msg, 0, sizeof(msg_payload_t));
+
+    /**
+     * Copy dhcpv6 data.
+     */
+    msg.msg_type = DHCP6C_STATE_CHANGED;
+    memcpy(&msg.data.dhcpv6, dhcpv6_data, sizeof(dhcpv6_data_t));
+
+    /**
+     * Send data to wanmanager.
+     */
+    int bytes = 0;
+    int sz_msg = sizeof(msg_payload_t);
+
+
+    bytes = nn_send(sock, (char *) &msg, sz_msg, 0);
+    if (bytes < 0)
+    {
+        CcspTraceError(("[%s-%d] Failed to send data to wanmanager  error=[%d][%s] \n", __FUNCTION__, __LINE__,errno, strerror(errno)));
+        nn_close (sock);
+        return ANSC_STATUS_INTERNAL_ERROR;
+    }
+
+    CcspTraceInfo(("[%s-%d] Successfully send %d bytes over nano msg  \n", __FUNCTION__, __LINE__,bytes));
+    nn_close (sock);
+    return ret;
+}
 #endif
