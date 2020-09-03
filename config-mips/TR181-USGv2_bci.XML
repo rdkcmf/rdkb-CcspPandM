@@ -2377,6 +2377,14 @@
             <func_GetParamStringValue>X_RDKCENTRAL_COM_GetParamStringValue</func_GetParamStringValue>
 
           </functions>
+          <parameters>
+          <parameter>
+	  	<name>InternetStatus</name>
+		<type>boolean</type>
+		<syntax>bool</syntax>
+		<writable>false</writable>
+	  </parameter>  
+	  </parameters>
 
           	<objects>			
 					
