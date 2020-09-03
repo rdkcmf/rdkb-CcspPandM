@@ -4529,6 +4529,47 @@ CosaDmlScheduleAutoReboot(int ConfiguredUpTime, BOOL bValue)
     return ANSC_STATUS_SUCCESS;    
 }
 
+BOOL CosaDmlGetInternetStatus()
+{
+    char PingValue[64] = {0};
+    char WanValue[64] = {0}; 
+    commonSyseventGet("wan-status", WanValue, sizeof(WanValue));
+
+    BOOL bWanStatus = TRUE;
+    BOOL bPing = TRUE;
+    if (WanValue[0] != '\0' )
+    {
+        if( 0 != strcmp( "started", WanValue ))
+        {
+            bWanStatus = FALSE;
+            CcspTraceWarning(("CosaDmlGetInternetStatus wan status:%d\n", bWanStatus));
+        }
+    }
+
+    char partnerId[20];
+    if(!syscfg_get(NULL, "PartnerID", partnerId, sizeof(partnerId)))
+    {
+        if (strcmp( "comcast", partnerId ) == 0 )
+        {
+            commonSyseventGet("ping-status", PingValue, sizeof(PingValue));
+            if (PingValue[0] != '\0' )
+            {
+                if( 0 == strcmp( "missed", PingValue ))
+                {
+                    bPing = FALSE;
+                    CcspTraceWarning(("CosaDmlGetInternetStatus Ping status:%d\n", bPing));
+                }
+            }
+            return (( bWanStatus && bPing ) ? TRUE : FALSE );
+        }
+        else
+        {
+            return bWanStatus;
+        }
+    }
+  return TRUE;
+}
+
 #if defined(_COSA_FOR_BCI_)
 #define XDNS_RESOLV_CONF "/etc/resolv.conf"
 #define XDNS_DNSMASQ_SERVERS_BAK "/nvram/dnsmasq_servers.bak"

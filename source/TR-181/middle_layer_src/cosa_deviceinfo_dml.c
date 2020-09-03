@@ -5295,6 +5295,12 @@ X_RDKCENTRAL_COM_GetParamBoolValue
         *pBool = pMyObject->bMultipleGW;
         return TRUE;
     }
+
+    if( AnscEqualString(ParamName, "InternetStatus", TRUE))
+    {
+        *pBool = CosaDmlGetInternetStatus();
+        return TRUE;
+    }
 	
     return FALSE;
 }
