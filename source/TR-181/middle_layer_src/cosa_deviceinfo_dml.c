@@ -16279,7 +16279,145 @@ UPnPRefactor_SetParamBoolValue
                  CcspTraceError(("syscfg_commit failed for UPnP Refactor \n"));
             }
         }
+    }
+  return FALSE;
+}
 
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        HwHealthTestEnable_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            )
+
+
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+
+**********************************************************************/
+
+BOOL
+HwHealthTestEnable_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+
+ if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+#ifdef COLUMBO_HWTEST
+        char value[8] = {'\0'};
+        if( syscfg_get(NULL, "hwHealthTest", value, sizeof(value)) == 0 )
+        {
+            if( value != NULL )
+            {
+                 if (strncmp(value, "true", sizeof(value)) == 0)
+                     *pBool = TRUE;
+                 else
+                     *pBool = FALSE;
+            }
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceError(("syscfg_get failed for hwHealthTest Enable\n"));
+        }
+#else
+        *pBool = FALSE;
+#endif
+    }
+  return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        HwHealthTestEnable_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            )
+
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+HwHealthTestEnable_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+  if (IsBoolSame(hInsContext, ParamName, bValue, HwHealthTestEnable_GetParamBoolValue))
+        return TRUE;
+
+  if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+#ifdef COLUMBO_HWTEST
+        char buf[8] = {'\0'};
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+        if( syscfg_set(NULL, "hwHealthTest", buf) != 0 )
+        {
+            CcspTraceError(("syscfg_set failed for hwHealthTest Enable \n"));
+        }
+        else
+        {
+            if( syscfg_commit() == 0 )
+            {
+                return TRUE;
+            }
+            else
+            {
+                 CcspTraceError(("syscfg_commit failed for hwHealthTest Enable \n"));
+            }
+        }
+#else
+        return FALSE;
+#endif
     }
   return FALSE;
 }
