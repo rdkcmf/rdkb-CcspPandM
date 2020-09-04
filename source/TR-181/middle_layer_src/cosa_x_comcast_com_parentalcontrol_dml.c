@@ -1057,13 +1057,23 @@ PcTrustedUser_SetParamStringValue
     }
     if (AnscEqualString(ParamName, "IPAddress", TRUE))
     {
-        if(is_IpAddress(strValue))
+        if(pTrustedUser->IPAddressType == IPADDR_IPV4)
         {
-            _ansc_snprintf(pTrustedUser->IPAddress, sizeof(pTrustedUser->IPAddress), "%s", strValue);
-            return TRUE;
+            if(is_IpAddress(strValue))
+            {
+                _ansc_snprintf(pTrustedUser->IPAddress, sizeof(pTrustedUser->IPAddress), "%s", strValue);
+                return TRUE;
+            }
+        }
+        if(pTrustedUser->IPAddressType == IPADDR_IPV6)
+        {
+            if(is_Ipv6_address(strValue))
+            {
+                _ansc_snprintf(pTrustedUser->IPAddress, sizeof(pTrustedUser->IPAddress), "%s", strValue);
+                return TRUE;
+            }
         }
     }
-
     return FALSE;
 }
 
@@ -1787,10 +1797,21 @@ MSTrustedUser_SetParamStringValue
     }
     if (AnscEqualString(ParamName, "IPAddress", TRUE))
     {
-        if(is_IpAddress(strValue))
+        if(pMSTrustedUser->IPAddressType == IPADDR_IPV4)
         {
-            _ansc_snprintf(pMSTrustedUser->IPAddress, sizeof(pMSTrustedUser->IPAddress), "%s", strValue);
-            return TRUE;
+            if(is_IpAddress(strValue))
+            {
+                _ansc_snprintf(pMSTrustedUser->IPAddress, sizeof(pMSTrustedUser->IPAddress), "%s", strValue);
+                return TRUE;
+            }
+        }
+        if(pMSTrustedUser->IPAddressType == IPADDR_IPV6)
+        {
+            if(is_Ipv6_address(strValue))
+            {
+                _ansc_snprintf(pMSTrustedUser->IPAddress, sizeof(pMSTrustedUser->IPAddress), "%s", strValue);
+                return TRUE;
+            }
         }
     }
     return FALSE;
