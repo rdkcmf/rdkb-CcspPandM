@@ -178,7 +178,14 @@ CosaDmlDiGetRouterMacAddress
         PULONG                      pulSize
     )
 {
-    s_get_interface_mac("erouter0", pValue, 18);
+    char Wan_ifname[16]   = {0};
+
+    if (syscfg_get(NULL, "wan_physical_ifname", Wan_ifname, sizeof(Wan_ifname)) != 0) {
+         AnscTraceError(("fail to get wan_physical_ifname\n"));
+    }
+
+    s_get_interface_mac(Wan_ifname, pValue, 18);
+
     *pulSize = AnscSizeOfString(pValue);
 
     return ANSC_STATUS_SUCCESS;

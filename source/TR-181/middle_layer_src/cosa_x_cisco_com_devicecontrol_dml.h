@@ -89,6 +89,54 @@
 
 ***********************************************************************/
 BOOL
+XConf_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+ULONG
+XConf_GetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pValue,
+ ULONG*                      pUlSize
+ );
+
+BOOL
+XConf_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+BOOL
+XConf_SetParamStringValue
+   (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
+BOOL
+XConf_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    );
+
+ULONG
+XConf_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+BOOL
 X_CISCO_COM_DeviceControl_GetParamBoolValue
     (
         ANSC_HANDLE                 hInsContext,
@@ -371,4 +419,50 @@ WebAccessLevel_Rollback
         ANSC_HANDLE                 hInsContext
     );
 
+BOOL
+WebPA_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       bValue
+    );
+
+ULONG
+WebPA_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+BOOL
+WebPA_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                       bValue
+    );
+
+BOOL
+WebPA_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
+ULONG
+WebPA_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+BOOL
+WebPA_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    );
 #endif

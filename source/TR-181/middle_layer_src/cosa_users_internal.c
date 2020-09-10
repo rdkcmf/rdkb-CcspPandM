@@ -355,7 +355,7 @@ CosaUsersBackendGetUserInfo
             AnscFreeMemory(pCosaUser);
             break;
         }
-        if (ulIndex == 2)
+     /*   if (ulIndex == 2)
         {
            char buff[128]={'\0'};
            syscfg_get( NULL, "hash_password_3",buff, sizeof(buff));
@@ -403,7 +403,7 @@ CosaUsersBackendGetUserInfo
                pCosaUser->LoginCounts = atoi(buff) ;
            }
         }
-#endif
+#endif */
         pUserCxtLink = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory( sizeof(COSA_CONTEXT_LINK_OBJECT) );
         if ( !pUserCxtLink )
         {

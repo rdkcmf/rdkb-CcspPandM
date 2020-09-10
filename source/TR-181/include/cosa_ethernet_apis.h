@@ -66,7 +66,8 @@
 
 #include "cosa_apis.h"
 #include "plugin_main_apis.h"
-
+#include "poam_irepfo_interface.h"
+#include "sys_definitions.h"
 /**********************************************************************
                 STRUCTURE AND CONSTANT DEFINITIONS
 **********************************************************************/
@@ -75,6 +76,7 @@
 #define ETH_INTERFACE_MAX_ASSOC_DEVICES   256
 #define MAC_SZ  6 /* Mac address in Hex format */
 #define MACADDR_SZ 17 /* Expanded MAC address in 00:02:... format */
+#define C_TAG 33024
 
 typedef  enum
 _COSA_DML_ETH_DUPLEX_MODE
@@ -230,6 +232,7 @@ _COSA_DML_ETH_VLAN_TERMINATION_CFG
     char                            LowerLayers[COSA_DML_IF_NAME_LENGTH];
     char                            EthLinkName[COSA_DML_IF_NAME_LENGTH];   /* associated Ethernet Link */
     ULONG                           VLANID;
+    ULONG                           TPID;
 }
 COSA_DML_ETH_VLAN_TERMINATION_CFG,  *PCOSA_DML_ETH_VLAN_TERMINATION_CFG;
 

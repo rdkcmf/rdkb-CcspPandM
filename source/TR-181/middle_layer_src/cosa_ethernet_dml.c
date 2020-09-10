@@ -696,8 +696,14 @@ Interface_GetParamStringValue
 #if defined(INTEL_PUMA7)
 
         UCHAR strMac[128] = {0};
-        if(strcmp(pEthernetPortFull->StaticInfo.Name, "erouter0") == 0 ) {
-                if ( -1 != _getMac("erouter0", strMac) )
+        UCHAR Wan_ifname[16]   = {0};
+
+        if (syscfg_get(NULL, "wan_physical_ifname", Wan_ifname, sizeof(Wan_ifname)) != 0) {
+            AnscTraceError(("fail to get wan_physical_ifname\n"));
+        }
+
+        if(strcmp(pEthernetPortFull->StaticInfo.Name, Wan_ifname) == 0 ) {
+                if ( -1 != _getMac(Wan_ifname, strMac) )
                 {
                         AnscCopyMemory(pEthernetPortFull->StaticInfo.MacAddress,strMac,6);
                 }
@@ -3095,25 +3101,21 @@ VLANTermination_GetEntry
     PSINGLE_LINK_ENTRY              pSLinkEntry             = (PSINGLE_LINK_ENTRY       )NULL;
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)NULL;
 
-    pSLinkEntry = AnscSListGetEntryByIndex(&pMyObject->EthernetVlanTerminationList, nIndex);
-
+    pSLinkEntry = AnscQueueGetEntryByIndex(&pMyObject->EthernetVlanTerminationList, nIndex);
     if ( pSLinkEntry )
     {
         pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
 
         *pInsNumber = pCosaContext->InstanceNumber;
-
-        pEntry = pCosaContext->hContext;
     }
 
     return pCosaContext;
 }
+/**********************************************************************
 
-/**********************************************************************  
+    caller:     owner of this object
 
-    caller:     owner of this object 
-
-    prototype: 
+    prototype:
 
         ANSC_HANDLE
         VLANTermination_AddEntry
@@ -3148,22 +3150,16 @@ VLANTermination_AddEntry
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry             = (PSINGLE_LINK_ENTRY       )NULL;
 
-    pEntry = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)AnscAllocateMemory(sizeof(COSA_DML_ETH_VLAN_TERMINATION_FULL));
-    if (!pEntry)
+    pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
+    if (!pCosaContext)
     {
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->StaticInfo.Name, "cpe-vlan-termination%d", pMyObject->ulEthernetVlanTerminationNextInstance);
-    _ansc_sprintf(pEntry->Cfg.Alias, "cpe-vlan-termination%d", pMyObject->ulEthernetVlanTerminationNextInstance);
-
-    pEntry->DynamicInfo.Status = COSA_DML_IF_STATUS_NotPresent;
-
-    /* Update the cache */
-    pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
-    if (!pCosaContext)
+    pEntry = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)AnscAllocateMemory(sizeof(COSA_DML_ETH_VLAN_TERMINATION_FULL));
+    if (!pEntry)
     {
-        AnscFreeMemory(pEntry);
+        AnscFreeMemory(pCosaContext);
 
         return NULL;
     }
@@ -3172,10 +3168,18 @@ VLANTermination_AddEntry
 
     pMyObject->ulEthernetVlanTerminationNextInstance++;
 
-    if ( pMyObject->ulEthernetVlanTerminationNextInstance == 0 )
+    if ( pMyObject->ulEthernetVlanTerminationNextInstance <= 0 )
     {
         pMyObject->ulEthernetVlanTerminationNextInstance = 1;
+	pCosaContext->InstanceNumber = pEntry->Cfg.InstanceNumber = pMyObject->ulEthernetVlanTerminationNextInstance;
     }
+
+    _ansc_sprintf(pEntry->StaticInfo.Name, "cpe-vlan-termination%d", pEntry->Cfg.InstanceNumber);
+    _ansc_sprintf(pEntry->Cfg.Alias, "cpe-vlan-termination%d", pEntry->Cfg.InstanceNumber);
+
+    pEntry->DynamicInfo.Status = COSA_DML_IF_STATUS_NotPresent;
+    pEntry->Cfg.TPID = C_TAG;
+    pEntry->Cfg.EthLinkName[0] = '\0';
 
     pCosaContext->hContext        = (ANSC_HANDLE)pEntry;
     pCosaContext->hParentTable    = NULL;
@@ -3234,32 +3238,13 @@ VLANTermination_DelEntry
     CosaDmlEthVlanTerminationDelEntry(NULL, pEntry->Cfg.InstanceNumber);
 
     /* Update the cache */
-    if ( TRUE )
-    {
-        pSLinkEntry = AnscSListGetFirstEntry(&pMyObject->EthernetVlanTerminationList);
+    AnscSListPopEntryByLink(pListHead, &pCosaContext->Linkage); 
+    if(pCosaContext->bNew)
+          CosaEthVlanTerminationRegDelInfo((ANSC_HANDLE)pMyObject, (ANSC_HANDLE)pCosaContext);
 
-        while ( pSLinkEntry )
-        {
-            pCosaContext2 = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
-            pSLinkEntry   = AnscSListGetNextEntry(pSLinkEntry);
-
-            pNewEntry = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)pCosaContext2->hContext;
-
-            if ( pNewEntry && AnscEqualString(pNewEntry->Cfg.Alias, pEntry->Cfg.Alias, FALSE))
-            {
-                AnscSListPopEntryByLink(pListHead, &pCosaContext2->Linkage);
-
-                CosaEthVlanTerminationRegDelInfo((ANSC_HANDLE)pMyObject, (ANSC_HANDLE)pCosaContext2);
-
-                AnscFreeMemory(pNewEntry);
-                AnscFreeMemory(pCosaContext2);
-
-                break;
-            }
-        }
-    }
-        
-    return ANSC_STATUS_SUCCESS;
+    AnscFreeMemory(pEntry);
+    AnscFreeMemory(pCosaContext);
+    return 0;
 }
 
 /**********************************************************************  
@@ -3424,6 +3409,12 @@ VLANTermination_GetParamUlongValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "TPID", TRUE))
+    {
+        /* collect value */
+        *puLong = pEntry->Cfg.TPID;
+        return TRUE;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -3653,6 +3644,13 @@ VLANTermination_SetParamUlongValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "TPID", TRUE))
+    {
+        /* save update to backup */
+        pEntry->Cfg.TPID = uValue;
+        return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -3851,7 +3849,12 @@ VLANTermination_Commit
     }
     else
     {
-        CosaDmlEthVlanTerminationSetCfg(NULL, &pEntry->Cfg);
+        if(CosaDmlEthVlanTerminationSetCfg(NULL, &pEntry->Cfg)!= ANSC_STATUS_SUCCESS)
+        {
+            CosaDmlEthVlanTerminationGetCfg(NULL, &pEntry->Cfg);
+            return -1;
+        }
+
     }
     
     return 0;

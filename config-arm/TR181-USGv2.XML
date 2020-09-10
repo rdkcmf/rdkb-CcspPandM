@@ -525,7 +525,20 @@
                                   
           <syntax>string</syntax>
                                                  
-        </parameter> 
+        </parameter>
+        <!-- for CG-NAT RFC6598 -->
+        <parameter>
+
+                <name>X_DT_UseSharedCGNAddress</name>
+
+                <type>boolean</type>
+
+                <syntax>bool</syntax>
+
+                <writable>true</writable>
+
+        </parameter>
+
 <!-- Components added for EMS -->		
 		<parameter>
     
@@ -4127,7 +4140,6 @@
           <syntax>uint32</syntax>
 
         </parameter>
-<!--
         <parameter>
 
           <name>VLANTerminationNumberOfEntries</name>
@@ -4137,7 +4149,6 @@
           <syntax>uint32</syntax>
 
         </parameter>
--->
       </parameters>
 
       <objects>
@@ -4554,6 +4565,342 @@
 
         <object>
 
+                <name>VLANTermination</name>
+
+               <objectType>writableTable</objectType>
+
+               <maxInstance>128</maxInstance>
+
+               <functions>
+                        <func_GetEntryCount>VLANTermination_GetEntryCount</func_GetEntryCount>
+
+                        <func_GetEntry>VLANTermination_GetEntry</func_GetEntry>
+
+                        <func_AddEntry>VLANTermination_AddEntry</func_AddEntry>
+
+                        <func_DelEntry>VLANTermination_DelEntry</func_DelEntry>
+
+                        <func_GetParamBoolValue>VLANTermination_GetParamBoolValue</func_GetParamBoolValue>
+
+                        <func_GetParamIntValue>VLANTermination_GetParamIntValue</func_GetParamIntValue>
+
+                        <func_GetParamUlongValue>VLANTermination_GetParamUlongValue</func_GetParamUlongValue>
+
+                        <func_GetParamStringValue>VLANTermination_GetParamStringValue</func_GetParamStringValue>
+
+                        <func_SetParamBoolValue>VLANTermination_SetParamBoolValue</func_SetParamBoolValue>
+
+                        <func_SetParamIntValue>VLANTermination_SetParamIntValue</func_SetParamIntValue>
+
+                        <func_SetParamUlongValue>VLANTermination_SetParamUlongValue</func_SetParamUlongValue>
+
+                        <func_SetParamStringValue>VLANTermination_SetParamStringValue</func_SetParamStringValue>
+
+                        <func_Validate>VLANTermination_Validate</func_Validate>
+
+                        <func_Commit>VLANTermination_Commit</func_Commit>
+                        <func_Rollback>VLANTermination_Rollback</func_Rollback>
+
+               </functions>
+
+               <parameters>
+
+              <parameter>
+
+                       <name>Enable</name>
+
+                       <type>boolean</type>
+
+                       <syntax>bool</syntax>
+
+                       <writable>true</writable>
+
+               </parameter>
+
+               <parameter>
+
+                       <name>Status</name>
+
+                       <type>string: Up(1),Down(2),Unknown(3),Dormant(4),NotPresent(5),LowerLayerDown(6),Error(7)</type>
+
+                       <syntax>uint32/mapped</syntax>
+
+               </parameter>
+
+               <parameter>
+
+                       <name>Alias</name>
+
+                       <type>string(64)</type>
+
+                       <syntax>string</syntax>
+
+                       <writable>true</writable>
+               </parameter>
+
+               <parameter>
+
+                       <name>Name</name>
+
+                       <type>string(64)</type>
+
+                       <syntax>string</syntax>
+
+               </parameter>
+
+               <parameter>
+
+                       <name>LastChange</name>
+
+                       <type>unsignedInt</type>
+
+                       <syntax>uint32</syntax>
+
+               </parameter>
+
+               <parameter>
+
+                       <name>LowerLayers</name>
+
+                       <type>string(1024)</type>
+
+                       <syntax>string</syntax>
+
+                       <writable>true</writable>
+
+               </parameter>
+
+               <parameter>
+
+                       <name>VLANID</name>
+			 <type>unsignedInt[1:4094]</type>
+
+                       <syntax>uint32</syntax>
+
+                       <writable>true</writable>
+
+               </parameter>
+
+               <parameter>
+
+                       <name>TPID</name>
+
+                       <type>unsignedInt</type>
+
+                       <syntax>uint32</syntax>
+
+                       <writable>true</writable>
+
+               </parameter>
+
+               </parameters>
+
+              <objects>
+
+               <object>
+
+                       <name>Stats</name>
+
+                       <objectType>object</objectType>
+
+                       <functions>
+
+                               <func_GetParamBoolValue>VLANTermination_Stats_GetParamBoolValue</func_GetParamBoolValue>
+
+                               <func_GetParamUlongValue>VLANTermination_Stats_GetParamIntValue</func_GetParamUlongValue>
+
+                               <func_GetParamUlongValue>VLANTermination_Stats_GetParamUlongValue</func_GetParamUlongValue>
+                               <func_GetParamStringValue>VLANTermination_Stats_GetParamStringValue</func_GetParamStringValue>
+
+                       </functions>
+
+                       <parameters>
+
+                       <parameter>
+
+                               <name>BytesSent</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+
+                               <name>BytesReceived</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+
+                               <name>PacketsSent</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+
+                               <name>PacketsReceived</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+
+                               <name>ErrorsSent</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+
+                               <name>ErrorsReceived</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+                       </parameter>
+
+                       <parameter>
+
+                               <name>UnicastPacketsSent</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+
+                               <name>UnicastPacketsReceived</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+
+                               <name>DiscardPacketsSent</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+                       <parameter>
+
+                               <name>DiscardPacketsReceived</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+
+                               <name>MulticastPacketsSent</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+
+                               <name>MulticastPacketsReceived</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+                               <name>BroadcastPacketsSent</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+
+                               <name>BroadcastPacketsReceived</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       <parameter>
+
+                               <name>UnknownProtoPacketsReceived</name>
+
+                               <type>unsignedInt</type>
+
+                               <syntax>uint32</syntax>
+
+                               <notify>off</notify>
+
+                       </parameter>
+
+                       </parameters>
+
+               </object>
+              </objects>
+
+       </object>
+
+        <object>
+
           <name>Link</name>
 
           <objectType>writableTable</objectType>
@@ -4917,11 +5264,25 @@
         <func_GetParamUlongValue>PPP_GetParamUlongValue</func_GetParamUlongValue>
         
         <func_GetParamStringValue>PPP_GetParamStringValue</func_GetParamStringValue>
-        
+       
+	<func_SetParamStringValue>PPP_SetParamStringValue</func_SetParamStringValue>
+ 
       </functions>
       
       <parameters>
       
+       <parameter>
+
+           <name>WanProtocolConfiguration</name>
+
+           <type>string</type>
+
+           <syntax>string</syntax>
+
+           <writable>true</writable>
+
+        </parameter>
+
         <parameter>
             
           <name>SupportedNCPs</name>
@@ -5001,7 +5362,20 @@
             <writable>true</writable>
             
           </parameter>
-          
+
+          <parameter>
+            <name>Enable</name>
+            <type>boolean</type>
+            <syntax>bool</syntax>
+            <writable>true</writable>
+          </parameter>
+           <parameter>
+            <name>IPV6CPEnable</name>
+            <type>boolean</type>
+            <syntax>bool</syntax>
+            <writable>true</writable>
+          </parameter>         
+ 
           <parameter>
           
             <name>Status</name>
@@ -5184,7 +5558,7 @@
           
             <name>MaxMRUSize</name>
             
-            <type>unsignedInt[1:1540]</type>
+            <type>unsignedInt[1280:1500]</type>
             
             <syntax>uint32</syntax>
             
@@ -5311,7 +5685,31 @@
               </parameters>
               
             </object>
-            
+           
+            <object>
+              <name>IPv6CP</name>
+              <objectType>object</objectType>
+              <functions>
+                <func_GetParamStringValue>IPv6CP_GetParamStringValue</func_GetParamStringValue>
+                <func_SetParamStringValue>IPv6CP_SetParamStringValue</func_SetParamStringValue>
+                <func_Validate>IPv6CP_Validate</func_Validate>
+                <func_Commit>IPv6CP_Commit</func_Commit>
+                <func_Rollback>IPv6CP_Rollback</func_Rollback>
+              </functions>
+              <parameters>
+            <parameter>
+              <name>LocalInterfaceIdentifier</name>
+              <type>string</type>
+              <syntax>string</syntax>
+            </parameter>
+            <parameter>
+              <name>RemoteInterfaceIdentifier</name>
+              <type>string</type>
+              <syntax>string</syntax>
+            </parameter>
+              </parameters>
+             </object>
+ 
             <object>
             
               <name>IPCP</name>
@@ -8610,9 +9008,9 @@
 
             <name>InternalClient</name>
 
-            <type>string</type>
+            <type>string(256)</type>
 
-            <syntax>uint32/ip4_addr</syntax>
+            <syntax>string</syntax>
 
             <writable>true</writable>
 
@@ -10905,6 +11303,18 @@
       <name>Users</name>
 
       <objectType>object</objectType>
+      <functions>
+               <func_GetParamIntValue>Users_GetParamIntValue</func_GetParamIntValue>
+               <func_SetParamIntValue>Users_SetParamIntValue</func_SetParamIntValue>
+      </functions>
+      <parameters>
+               <parameter>
+                       <name>X_RDKCENTRAL-COM_TotalNumberOfLoginCounts</name>
+                       <type>int</type>
+                       <syntax>int</syntax>
+                       <writable>true</writable>
+               </parameter>
+      </parameters>
 
       <objects>
 
@@ -11418,6 +11828,7 @@
 
     </object>
 
+<!--
     <object>
 
       <name>X_CISCO_COM_DDNS</name>
@@ -11563,8 +11974,7 @@
 
             <name>ServiceName</name>
 
-         <!--   <type>string: DynDns.org(1),TZO.com(2),None(3)</type>   -->
-		 <type>string: DynDns.org(1),TZO.com(2),Changeip.com(3),Freedns.afraid.org(4),None(5)</type>
+            <type>string: DynDns.org(1),Easydns.com(2),Freedns.afraid.org(3),None(4)</type>
 
             <syntax>uint32/mapped</syntax>
 			
@@ -11629,6 +12039,217 @@
 
       </objects>
 
+    </object>
+-->
+    <object>
+
+      <name>DynamicDNS</name>
+      <objectType>object</objectType>
+      <functions>
+        <func_GetParamBoolValue>DynamicDNS_GetParamBoolValue</func_GetParamBoolValue>
+        <func_GetParamStringValue>DynamicDNS_GetParamStringValue</func_GetParamStringValue>
+        <func_SetParamBoolValue>DynamicDNS_SetParamBoolValue</func_SetParamBoolValue>
+        <func_Validate>DynamicDNS_Validate</func_Validate>
+        <func_Commit>DynamicDNS_Commit</func_Commit>
+        <func_Rollback>DynamicDNS_Rollback</func_Rollback>
+      </functions>
+      <parameters>
+        <parameter>
+            <name>X_RDKCENTRAL-COM_Enable</name>
+            <description>
+                Enables/disables DDNS.
+            </description>
+            <type>boolean</type>
+            <syntax>bool</syntax>
+            <writable>true</writable>
+        </parameter>
+        <parameter>
+            <name>SupportedServices</name>
+            <type>string(1024)</type>
+            <syntax>string</syntax>
+        </parameter>
+      </parameters>
+      <objects>
+        <object>
+          <name>Server</name>
+          <objectType>writableTable</objectType>
+          <maxInstance>128</maxInstance>
+          <functions>
+              <func_GetEntryCount>DDNSServer_GetEntryCount</func_GetEntryCount>
+              <func_GetEntry>DDNSServer_GetEntry</func_GetEntry>
+              <func_AddEntry>DDNSServer_AddEntry</func_AddEntry>
+              <func_DelEntry>DDNSServer_DelEntry</func_DelEntry>
+              <func_GetParamBoolValue>DDNSServer_GetParamBoolValue</func_GetParamBoolValue>
+              <func_GetParamUlongValue>DDNSServer_GetParamUlongValue</func_GetParamUlongValue>
+              <func_GetParamStringValue>DDNSServer_GetParamStringValue</func_GetParamStringValue>
+              <func_SetParamBoolValue>DDNSServer_SetParamBoolValue</func_SetParamBoolValue>
+              <func_SetParamStringValue>DDNSServer_SetParamStringValue</func_SetParamStringValue>
+              <func_SetParamUlongValue>DDNSServer_SetParamUlongValue</func_SetParamUlongValue>
+              <func_Validate>DDNSServer_Validate</func_Validate>
+              <func_Commit>DDNSServer_Commit</func_Commit>
+              <func_Rollback>DDNSServer_Rollback</func_Rollback>
+          </functions>
+          <parameters>
+            <parameter>
+              <name>Enable</name>
+              <type>boolean</type>
+              <syntax>bool</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>Name</name>
+              <type>string(64)</type>
+              <syntax>string</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>ServiceName</name>
+              <type>string(256)</type>
+              <syntax>string</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>ServerAddress</name>
+              <type>string(256)</type>
+              <syntax>string</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>SupportedProtocols</name>
+              <type>string(16)</type>
+              <syntax>string</syntax>
+            </parameter>
+            <parameter>
+              <name>Protocol</name>
+              <type>string(16)</type>
+              <syntax>string</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>CheckInterval</name>
+              <type>unsignedInt</type>
+              <syntax>uint32</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>RetryInterval</name>
+              <type>unsignedInt</type>
+              <syntax>uint32</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>MaxRetries</name>
+              <type>unsignedInt</type>
+              <syntax>uint32</syntax>
+              <writable>true</writable>
+            </parameter>
+          </parameters>
+        </object>
+        <object>
+          <name>Client</name>
+          <objectType>writableTable</objectType>
+          <functions>
+            <func_GetEntryCount>DDNSClient_GetEntryCount</func_GetEntryCount>
+            <func_GetEntry>DDNSClient_GetEntry</func_GetEntry>
+            <func_AddEntry>DDNSClient_AddEntry</func_AddEntry>
+            <func_DelEntry>DDNSClient_DelEntry</func_DelEntry>
+            <func_GetParamBoolValue>DDNSClient_GetParamBoolValue</func_GetParamBoolValue>
+            <func_GetParamUlongValue>DDNSClient_GetParamUlongValue</func_GetParamUlongValue>
+            <func_GetParamStringValue>DDNSClient_GetParamStringValue</func_GetParamStringValue>
+            <func_SetParamBoolValue>DDNSClient_SetParamBoolValue</func_SetParamBoolValue>
+            <func_SetParamStringValue>DDNSClient_SetParamStringValue</func_SetParamStringValue>
+            <func_Validate>DDNSClient_Validate</func_Validate>
+            <func_Commit>DDNSClient_Commit</func_Commit>
+            <func_Rollback>DDNSClient_Rollback</func_Rollback>
+          </functions>
+          <parameters>
+            <parameter>
+              <name>Enable</name>
+              <type>boolean</type>
+              <syntax>bool</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>Status</name>
+              <type>string: Connecting(1),Authenticating(2),Updated(3),Error_Misconfigured(4),Error(5),Disabled(6)</type>
+              <syntax>uint32/mapped</syntax>
+            </parameter>
+            <parameter>
+              <name>LastError</name>
+              <type>string: NO_ERROR(1),MISCONFIGURATION_ERROR(2),DNS_ERROR(3),CONNECTION_ERROR(4),AUTHENTICATION_ERROR(5),TIMEOUT_ERROR(6),PROTOCOL_ERROR(7)</type>
+              <syntax>uint32/mapped</syntax>
+            </parameter>
+            <parameter>
+              <name>Server</name>
+              <type>string(256)</type>
+              <syntax>string</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>Interface</name>
+              <type>string(256)</type>
+              <syntax>string</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>Username</name>
+              <type>string(256)</type>
+              <syntax>string</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>Password</name>
+              <type>string(256)</type>
+              <syntax>string</syntax>
+              <writable>true</writable>
+            </parameter>
+          </parameters>
+          <objects>
+            <object>
+              <name>Hostname</name>
+              <objectType>writableTable</objectType>
+              <functions>
+                <func_GetEntryCount>DDNSHostname_GetEntryCount</func_GetEntryCount>
+                <func_GetEntry>DDNSHostname_GetEntry</func_GetEntry>
+                <func_AddEntry>DDNSHostname_AddEntry</func_AddEntry>
+                <func_DelEntry>DDNSHostname_DelEntry</func_DelEntry>
+                <func_GetParamBoolValue>DDNSHostname_GetParamBoolValue</func_GetParamBoolValue>
+                <func_GetParamUlongValue>DDNSHostname_GetParamUlongValue</func_GetParamUlongValue>
+                <func_GetParamStringValue>DDNSHostname_GetParamStringValue</func_GetParamStringValue>
+                <func_SetParamBoolValue>DDNSHostname_SetParamBoolValue</func_SetParamBoolValue>
+                <func_SetParamStringValue>DDNSHostname_SetParamStringValue</func_SetParamStringValue>
+                <func_Validate>DDNSHostname_Validate</func_Validate>
+                <func_Commit>DDNSHostname_Commit</func_Commit>
+                <func_Rollback>DDNSHostname_Rollback</func_Rollback>
+              </functions>
+              <parameters>
+                <parameter>
+                  <name>Enable</name>
+                  <type>boolean</type>
+                  <syntax>bool</syntax>
+                  <writable>true</writable>
+                </parameter>
+                <parameter>
+                  <name>Status</name>
+                  <type>string: Registered(1),UpdateNeeded(2),Updating(3),Error(4),Disabled(5)</type>
+                  <syntax>uint32/mapped</syntax>
+                </parameter>
+                <parameter>
+                  <name>Name</name>
+                  <type>string(256)</type>
+                  <syntax>string</syntax>
+                  <writable>true</writable>
+                </parameter>
+                <parameter>
+                  <name>LastUpdate</name>
+                  <type>dateTime</type>
+                  <syntax>string</syntax>
+                </parameter>
+              </parameters>
+            </object>
+          </objects>
+        </object>
+      </objects>
     </object>
 
     <object>
@@ -11943,6 +12564,19 @@
 
           </parameter>
 
+        <parameter>
+
+            <name>SSLPassthrough</name>
+
+            <type>boolean</type>
+
+            <syntax>bool</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+
+
           <parameter>
 
             <name>FilterNATRedirection</name>
@@ -12067,7 +12701,7 @@
 
             <name>FirewallLevelV6</name>
 
-            <type>string: Default(1),Custom(4)</type>
+            <type>string: High(1),Medium(2),Low(3),Custom(4),None(5)</type>
 
             <syntax>uint32/mapped</syntax>
 
@@ -12149,6 +12783,18 @@
 
           <parameter>
 
+            <name>FilterRFC1918</name>
+
+            <type>boolean</type>
+
+            <syntax>bool</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+
+          <parameter>
+
             <name>FilterIdent</name>
 
             <type>boolean</type>
@@ -12162,6 +12808,30 @@
           <parameter>
 
             <name>FilterIdentV6</name>
+
+            <type>boolean</type>
+
+            <syntax>bool</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+
+          <parameter>
+
+            <name>WanPingEnable</name>
+
+            <type>boolean</type>
+
+            <syntax>bool</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+
+          <parameter>
+
+            <name>WanPingEnableV6</name>
 
             <type>boolean</type>
 
@@ -12971,6 +13641,13 @@
           <syntax>string</syntax>
           <writable>true</writable>
         </parameter>
+     
+        <parameter>
+           <name>X_CrashPortalURL</name>
+           <type>string</type>
+           <syntax>string</syntax>
+           <writable>true</writable>
+         </parameter>
         
         <parameter>
           <name>UserChangedFlags</name>
@@ -13193,8 +13870,66 @@
         </parameter>
 
       </parameters>
-      
+ 
       <objects>
+       <object>
+          <name>WebPA</name>
+          <objectType>object</objectType>
+          <functions>
+            <func_GetParamBoolValue>WebPA_GetParamBoolValue</func_GetParamBoolValue>
+            <func_SetParamBoolValue>WebPA_SetParamBoolValue</func_SetParamBoolValue>
+            <func_GetParamStringValue>WebPA_GetParamStringValue</func_GetParamStringValue>
+            <func_SetParamStringValue>WebPA_SetParamStringValue</func_SetParamStringValue>
+            <func_Validate>WebPA_Validate</func_Validate>
+            <func_Commit>WebPA_Commit</func_Commit>
+          </functions>
+          <parameters>
+            <parameter>
+              <name>Enable</name>
+              <type>boolean</type>
+              <syntax>bool</syntax>
+              <writable>true</writable>
+            </parameter>
+            <parameter>
+              <name>ServerURL</name>
+              <type>string(64)</type>
+              <syntax>string</syntax>
+              <writable>true</writable>
+            </parameter>
+          </parameters>
+         </object>
+        <object>
+         <name>XConf</name>
+         <objectType>object</objectType>
+         <functions>
+            <func_GetParamBoolValue>XConf_GetParamBoolValue</func_GetParamBoolValue>
+            <func_GetParamStringValue>XConf_GetParamStringValue</func_GetParamStringValue>
+            <func_SetParamBoolValue>XConf_SetParamBoolValue</func_SetParamBoolValue>
+            <func_SetParamStringValue>XConf_SetParamStringValue</func_SetParamStringValue>
+            <func_Validate>XConf_Validate</func_Validate>
+            <func_Commit>XConf_Commit</func_Commit>
+          </functions>
+          <parameters>
+            <parameter>
+               <name>Enable</name>
+               <type>boolean</type>
+               <syntax>bool</syntax>
+               <writable>true</writable>
+             </parameter>
+             <parameter>
+               <name>ServerURL</name>
+                <type>string(64)</type>
+               <syntax>string</syntax>
+               <writable>true</writable>
+             </parameter>
+             <parameter>
+               <name>xconfCheckNow</name>
+               <type>boolean</type>
+               <syntax>bool</syntax>
+               <writable>true</writable>
+             </parameter>
+          </parameters>
+        </object>
         
         <object>
             

@@ -86,6 +86,7 @@
     COSA_BASE_CONTENT                                                       \
     /* start of DeviceInfo object class content */                          \
     COSA_DML_ETH_PORT_FULL              EthernetPortFullTable[MAXINSTANCE]; \
+    COSA_DML_ETH_VLAN_TERMINATION_CFG   EthernetVLANList; 		    \
     SLIST_HEADER                        EthernetLinkList;                   \
     ULONG                               ulEthernetLinkNextInstance;         \
     SLIST_HEADER                        EthernetVlanTerminationList;        \

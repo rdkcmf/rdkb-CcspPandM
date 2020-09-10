@@ -532,7 +532,7 @@ VLANTermination_GetParamUlongValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
-        ULONG*                      pUlong
+        ULONG*                      pulong
     );
 
 ULONG
@@ -565,7 +565,7 @@ VLANTermination_SetParamUlongValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
-        ULONG                       uValuepUlong
+	ULONG                       uValue
     );
 
 BOOL
@@ -573,7 +573,7 @@ VLANTermination_SetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
-        char*                       strValue
+	char*                       pString
     );
 
 BOOL

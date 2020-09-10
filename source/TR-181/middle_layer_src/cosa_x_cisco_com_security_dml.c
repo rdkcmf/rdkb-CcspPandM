@@ -1139,6 +1139,14 @@ Firewall1_GetParamBoolValue
         return TRUE;
     }
 
+      if( AnscEqualString(ParamName, "SSLPassthrough", TRUE))
+    {
+        /* collect value */
+        *pBool = pFirewallCfg->SSLPassthrough;
+         return TRUE;
+     }
+
+
     if( AnscEqualString(ParamName, "FilterNATRedirection", TRUE))
     {
         /* collect value */
@@ -1319,6 +1327,14 @@ Firewall1_GetParamBoolValue
     {
         /* collect value */
         *pBool = pFirewallCfg->WanPingEnableV6;
+
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "FilterRFC1918", TRUE))
+    {
+        /* collect value */
+        *pBool = pFirewallCfg->FilterRFC1918;
 
         return TRUE;
     }
@@ -1556,6 +1572,14 @@ Firewall1_SetParamBoolValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "SSLPassthrough", TRUE))
+    {
+        /* save update to backup */
+        pCosaDMSecurity->FirewallConfig.SSLPassthrough = bValue;
+         return TRUE;
+     }
+
+
     if( AnscEqualString(ParamName, "FilterNATRedirection", TRUE))
     {
         /* save update to backup */
@@ -1739,6 +1763,15 @@ Firewall1_SetParamBoolValue
 
         return TRUE;
     }
+
+    if( AnscEqualString(ParamName, "FilterRFC1918", TRUE))
+    {
+        /* save update to backup */
+        pCosaDMSecurity->FirewallConfig.FilterRFC1918 = bValue;
+
+        return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }

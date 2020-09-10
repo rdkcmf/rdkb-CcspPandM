@@ -5,6 +5,23 @@
       "version" : "5.2"
    },
 
+   "telekom-hu" : {
+
+      "Vlan_NumOfIfs" : "4",
+      "Vlan_1_Name" : "Internet",
+      "Vlan_1_ID"   : "32",
+      "Vlan_1_ServiceType" : "pppoe",
+      "Vlan_2_Name" : "IPTV",
+      "Vlan_2_ID"   : "34",
+      "Vlan_2_ServiceType" : "dhcp",
+      "Vlan_3_Name" : "VoIP",
+      "Vlan_3_ID"   : "33",
+      "Vlan_3_ServiceType" : "dhcp",
+      "Vlan_4_Name" : "Management",
+      "Vlan_4_ID"   : "100",
+      "Vlan_4_ServiceType" : "dhcp"
+   },
+
    "comcast" : {
 
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink" : "http://www.xfinity.com",

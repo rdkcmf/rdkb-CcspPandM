@@ -3177,6 +3177,7 @@ IPv6Forwarding_AddEntry
         }
 
         pSubCosaContext->InstanceNumber = pEntry->InstanceNumber = pRouter->ulNextIPv6ForwardInsNum;
+        pEntry->Origin = 5;
         
         pRouter->ulNextIPv6ForwardInsNum++;
 
@@ -3249,7 +3250,10 @@ IPv6Forwarding_DelEntry
     PCOSA_DML_ROUTER_FULL2          pRouter         = (PCOSA_DML_ROUTER_FULL2        )pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext = (PCOSA_CONTEXT_LINK_OBJECT     )hInstance;
     PCOSA_DML_ROUTING_V6_ENTRY      pEntry          = (PCOSA_DML_ROUTING_V6_ENTRY    )pSubCosaContext->hContext;
-    
+
+    if (  pEntry->Origin != COSA_DML_ROUTING_IPV6_ORIGIN_Static )
+       return -1;
+
     CosaDmlRoutingDelV6Entry(NULL, pEntry);
 
     AnscSListPopEntryByLink((PSLIST_HEADER)&pRouter->IPv6ForwardList, &pSubCosaContext->Linkage);
@@ -3412,19 +3416,19 @@ IPv6Forwarding_Synchronize
         }
         
         /* We  need delete this one no matter whether it's not static*/
-        //if ( pEntry->Origin != COSA_DML_ROUTING_IPV6_ORIGIN_Static ){
+        if ( pEntry->Origin != COSA_DML_ROUTING_IPV6_ORIGIN_Static ){
+
             AnscSListPopEntryByLink(&pRouter->IPv6ForwardList, pSListEntry2);
 
             AnscFreeMemory( pCxtLink->hContext );
             AnscFreeMemory( pCxtLink );
-        //}
-
+        }
     }
 
     /* We add new entry into our link table */
     for ( i = 0; i < entryCount; i++ )
     {
-        if ( pulTmp[i] == 0 )
+        if ( pulTmp[i] == 0 && (pEntry->Origin != COSA_DML_ROUTING_IPV6_ORIGIN_Static) )
         {
             /* Add new one */
             pCxtLink             = AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
@@ -3725,8 +3729,15 @@ IPv6Forwarding_GetParamStringValue
     if( AnscEqualString(ParamName, "Interface", TRUE))
     {
         char                            * pString      = NULL;
+        char *token =NULL;
+        token= strtok(pRouterForward->Interface, "\'");
+        AnscCopyString(pRouterForward->Interface,token);
 
         /* collect value */
+        if ((strcmp(pRouterForward->Interface,"brlan0")!= 0) &&
+            (strcmp(pRouterForward->Interface,"erouter0")!= 0))
+        strcpy(pRouterForward->Interface,"erouter0");
+
         pString = CosaUtilGetFullPathNameByKeyword
             (
                 "Device.IP.Interface.",
@@ -4062,8 +4073,12 @@ IPv6Forwarding_Validate
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward  = (PCOSA_DML_ROUTING_V6_ENTRY       )pCosaContext->hContext;
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward2 = (PCOSA_DML_ROUTING_V6_ENTRY       )NULL;
     PSINGLE_LINK_ENTRY              pLink           = (PSINGLE_LINK_ENTRY               )NULL;
+    BOOL                            bFound          = FALSE;
 
     pLink = AnscSListGetFirstEntry(&pRouter->IPv6ForwardList);
+
+    if (  pRouterForward->Origin != COSA_DML_ROUTING_IPV6_ORIGIN_Static )
+    	return FALSE;
 
     while ( pLink )
     {
@@ -4072,17 +4087,33 @@ IPv6Forwarding_Validate
 
         pRouterForward2 = (PCOSA_DML_ROUTING_V6_ENTRY)pCosaContext2->hContext;
 
-        if ( pRouterForward2 &&
-            ((ULONG)pRouterForward2 != (ULONG)pRouterForward) &&
-             AnscEqualString(pRouterForward2->Alias, pRouterForward->Alias, TRUE))
-        {
-            AnscCopyString(pReturnParamName, "Alias");
-            *puLength = AnscSizeOfString("Alias");
+        if ( pRouterForward2 && ((ULONG)pRouterForward2 != (ULONG)pRouterForward))
+         {
+            if(AnscEqualString(pRouterForward2->Alias, pRouterForward->Alias, TRUE))
+            {
+                AnscCopyString(pReturnParamName, "Alias");
+               *puLength = AnscSizeOfString("Alias");
 
-            CcspTraceWarning(("IPv6Forwarding_Validate() failed.\n"));            
-            return FALSE;
+                CcspTraceWarning(("IPv6Forwarding_Validate() failed.\n"));
+                return FALSE;
+            }
+
+            char *token = NULL;
+            char *token2 = NULL;
+            token = strtok(pRouterForward->Interface,"\'");
+            token2 = strtok(pRouterForward2->Interface,"\'");
+        if(AnscEqualString(pRouterForward2->DestIPPrefix, pRouterForward->DestIPPrefix, TRUE) && (pRouterForward->Origin == COSA_DML_ROUTING_IPV6_ORIGIN_Static) && AnscEqualString(pRouterForward2->NextHop, pRouterForward->NextHop, TRUE) && AnscEqualString(token2,token, TRUE))
+          {
+                bFound = TRUE;
+                break;
+          }
         }
-    }
+   }
+
+  if(bFound)
+ {
+  return FALSE;
+ }
 
     return TRUE;
 }
@@ -4169,8 +4200,17 @@ IPv6Forwarding_Rollback
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V6_ENTRY)pCosaContext->hContext;
 
-    CosaDmlRoutingGetV6Entry2(NULL, pRouterForward);
-
+    if( !pCosaContext->bNew)
+    {
+      CosaDmlRoutingGetV6Entry2(NULL, pRouterForward);
+    }
+    else
+    {
+      pRouterForward->Enable = FALSE;
+      AnscCopyString(pRouterForward->DestIPPrefix," ");
+      AnscCopyString(pRouterForward->NextHop," ");
+      AnscCopyString(pRouterForward->Interface," ");
+    }
     return 0;
 }
 

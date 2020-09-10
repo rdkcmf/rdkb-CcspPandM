@@ -71,6 +71,7 @@
 #include "cosa_dhcpv4_apis.h"
 #include "cosa_dhcpv4_internal.h"
 #include "plugin_main_apis.h"
+#define MAC_LENGTH 17
 
 #include "ccsp_base_api.h"
 #include "messagebus_interface_helper.h"
@@ -5465,16 +5466,16 @@ Pool_GetParamUlongValue
     if( AnscEqualString(ParamName, "MinAddress", TRUE))
     {
         /* collect value */
-	*puLong  = pPool->Cfg.MinAddress.Value;
-
+        CosaDmlDhcpsGetPoolCfg(NULL,&poolTemp.Cfg);
+        *puLong  = poolTemp.Cfg.MinAddress.Value;
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "MaxAddress", TRUE))
     {
         /* collect value */
-	*puLong  = pPool->Cfg.MaxAddress.Value;
-
+        CosaDmlDhcpsGetPoolCfg(NULL,&poolTemp.Cfg);
+        *puLong  = poolTemp.Cfg.MaxAddress.Value;
         return TRUE;
     }
 
@@ -6123,11 +6124,6 @@ Pool_SetParamUlongValue
             is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)))
             return(FALSE);
 
-	if (ntohl(uValue) == ntohl(pPool->Cfg.MaxAddress.Value)) {
-            CcspTraceError(("MinAddress equals MaxAddress 0x%08x\n", ntohl(uValue)));
-            return(FALSE);
-	}
-
         pPool->Cfg.MinAddress.Value  = uValue;
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MinAddress of DHCP Range Changed ...\n"));
  
@@ -6167,14 +6163,8 @@ Pool_SetParamUlongValue
         mask = _ansc_inet_addr(strval);
 
         if( pPool->Cfg.InstanceNumber == 1 && 
-            is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)) || 
-            uValue < pPool->Cfg.MinAddress.Value)
+            is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)))
             return(FALSE);
-
-        if (ntohl(uValue) == ntohl(pPool->Cfg.MinAddress.Value)) {
-            CcspTraceError(("MinAddress equals MaxAddress 0x%08x\n", ntohl(uValue)));
-            return(FALSE);
-	}
 
         pPool->Cfg.MaxAddress.Value  = uValue;
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: MaxAddress of DHCP Range Changed ...\n"));
@@ -6474,6 +6464,13 @@ Pool_Validate
     int                             rc                = -1;
     int                             i                 = 0;
     ULONG                           minaddr, maxaddr, netmask, gateway;
+
+    if( pPool->Cfg.InstanceNumber == 1 &&
+        is_pool_invalid(hInsContext))
+    {
+        AnscTraceFlow(("%s: not valid pool\n", __FUNCTION__));
+        return FALSE;
+    }
 
     return TRUE;
 }
@@ -7392,6 +7389,8 @@ StaticAddress_SetParamStringValue
 
     if( AnscEqualString(ParamName, "Chaddr", TRUE))
     {
+         if (strlen(pString) > MAC_LENGTH)
+            return FALSE;
         /* save update to a temp array - This is required as sscanf puts a NULL character at the end which we dont have space for */
         rc = _ansc_sscanf
                 (
@@ -7507,6 +7506,50 @@ StaticAddress_Validate
     int                             rc                = -1;
     int                             i                 = 0;
     ULONG                           ipaddr, netmask, gateway;
+
+    char buf[64]={0}, hostCount[5]={0}, insNum[5]={0}, entry[64]={0};
+
+    syscfg_get(NULL, "dhcp_num_static_hosts", hostCount, sizeof(hostCount));
+
+    for (int host=1; host<=atoi(hostCount); host++)
+    {
+               snprintf(entry,sizeof(entry),"dhcp_static_host_%d", host);
+               if(syscfg_get(NULL, entry, buf, sizeof(buf)) == 0)
+               {
+                   snprintf(entry,sizeof(entry),"dhcp_static_host_insNum_%d", host);
+                   syscfg_get(NULL, entry, insNum, sizeof(insNum));
+                   if (pDhcpStaAddr->InstanceNumber != atoi(insNum))
+                   {
+                           char ip_addr_str[16]={0};
+                           UINT chAddr[7] = {0};
+                           _ansc_sscanf
+                                           (
+                                       buf,
+                                       "%x:%x:%x:%x:%x:%x,%s,",
+                                       chAddr,
+                                       chAddr+1,
+                                       chAddr+2,
+                                       chAddr+3,
+                                       chAddr+4,
+                                       chAddr+5,
+                                       ip_addr_str
+                                           );
+
+                           ip_addr_str[strlen(ip_addr_str)-1] = '\0';
+                           ipaddr = (ULONG)_ansc_inet_addr(ip_addr_str);
+                               if (pDhcpStaAddr->Yiaddr.Value == ipaddr)
+                                       return FALSE;
+
+                if (pDhcpStaAddr->Chaddr[0] == chAddr[0] &&
+                    pDhcpStaAddr->Chaddr[1] == chAddr[1] &&
+                    pDhcpStaAddr->Chaddr[2] == chAddr[2] &&
+                    pDhcpStaAddr->Chaddr[3] == chAddr[3] &&
+                    pDhcpStaAddr->Chaddr[4] == chAddr[4] &&
+                    pDhcpStaAddr->Chaddr[5] == chAddr[5])
+                                       return FALSE;
+                   }
+               }
+    }
 
 #if 0 /*removed by song*/
     /* Parent hasn't set, we don't permit child is set.*/
@@ -7697,7 +7740,7 @@ StaticAddress_Rollback
 
     if ( pCxtPoolLink->AliasOfStaAddr[0] )
         AnscCopyString( pDhcpStaAddr->Alias, pCxtPoolLink->AliasOfStaAddr );
-#if 0/*Removed by song*/
+
     if ( !pCxtLink->bNew )
     {
         CosaDmlDhcpsGetSaddrbyInsNum(NULL, pPool->Cfg.InstanceNumber, pDhcpStaAddr);
@@ -7708,7 +7751,7 @@ StaticAddress_Rollback
     }
 
     AnscZeroMemory( pCxtPoolLink->AliasOfStaAddr, sizeof(pCxtPoolLink->AliasOfStaAddr) );
-#endif    
+    
     return returnStatus;
 }
 

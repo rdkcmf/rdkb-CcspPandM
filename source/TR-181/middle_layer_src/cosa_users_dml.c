@@ -177,9 +177,132 @@ void RestoreFailedAttempts(PCOSA_DML_USER  pEntry)
  APIs for Object:
 
     Users.
-
+    * Users_GetParamIntValue
+    * Users_SetParamIntValue
 
 ***********************************************************************/
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Users_GetParamIntValue
+           (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int*                        pInt
+            );
+
+    description:
+
+        This function is called to retrieve integer parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int*                        pInt
+                The buffer of returned integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Users_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    )
+{
+
+        if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_TotalNumberOfLoginCounts", TRUE))
+        {
+                char buf[8];
+                memset(buf, 0, sizeof(buf));
+                syscfg_get(NULL, "X_RDKCENTRAL-COM_TotalNumberOfLoginCounts", buf, sizeof(buf));
+                if(buf != NULL)
+                {
+                        *pInt = atoi(buf);
+                }
+                else
+                {
+                        CcspTraceWarning(("%s syscfg get failed for X_RDKCENTRAL-COM_TotalNumberOfLoginCounts \n",__FUNCTION__));
+                }
+                return TRUE;
+        }
+
+        return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        Users_SetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int                         iValue
+            );
+
+    description:
+
+        This function is called to set integer parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int                         iValue
+                The updated integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+Users_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         iValue
+    )
+{
+        if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_TotalNumberOfLoginCounts", TRUE))
+        {
+
+                char buf[8];
+                memset(buf, 0, sizeof(buf));
+                snprintf(buf, sizeof(buf), "%d", iValue);
+                if (syscfg_set(NULL, "X_RDKCENTRAL-COM_TotalNumberOfLoginCounts", buf) != 0)
+                {
+                        CcspTraceWarning(("%s syscfg set failed for X_RDKCENTRAL-COM_TotalNumberOfLoginCounts\n",__FUNCTION__));
+                }
+                else
+                {
+                        if (syscfg_commit() != 0)
+                        {
+                                CcspTraceWarning(("%s syscfg commit failed for X_RDKCENTRAL-COM_TotalNumberOfLoginCounts\n",__FUNCTION__));
+                        }
+                }
+                return TRUE;
+        }
+
+        return FALSE;
+
+}
+
 /***********************************************************************
 
  APIs for Object:
@@ -563,6 +686,7 @@ User_GetParamIntValue
 				*pInt = ( atoi(buf) - (pUser->NumOfFailedAttempts) );
 				return TRUE;
 			}
+	 	 return TRUE;
 		}
 
 		if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LoginCounts", TRUE))
@@ -757,7 +881,8 @@ User_GetParamStringValue
         if ( AnscSizeOfString(pUser->Password) < *pUlSize)
         {
             ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
-            if( AnscEqualString(pUser->Username, "admin",TRUE) )
+             AnscCopyString(pValue,pUser->HashedPassword);
+       /*     if( AnscEqualString(pUser->Username, "admin",TRUE) )
             {
                AnscCopyString(pValue,pUser->HashedPassword);
                return 0;
@@ -779,7 +904,7 @@ User_GetParamStringValue
                {
                   CosaDmlUserGetCfg(NULL, pUser);
                }
-            }
+            }*/
             return 0;
         }
         else
@@ -1134,19 +1259,23 @@ User_SetParamStringValue
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Username", TRUE))
     {
-        return FALSE;    /* In USG, webgui username is not allowed to change */
-#if 0
+       if((pUser->InstanceNumber>3))
+       {
         AnscCopyString(pUsers->AliasOfUser, pUser->Username);
         AnscCopyString(pUser->Username, pString);
         
         return TRUE;
-#endif
+       }
+      else
+       {
+        return FALSE;
+       }
     }
 
     if( AnscEqualString(ParamName, "Password", TRUE)
         || AnscEqualString(ParamName, "X_CISCO_COM_Password", TRUE) )
     {
-	if( AnscEqualString(pUser->Username, "mso", TRUE) )
+     /*	if( AnscEqualString(pUser->Username, "mso", TRUE) )
 	{
 		unsigned int ret=0;
 
@@ -1184,19 +1313,18 @@ User_SetParamStringValue
 	}
 #if defined(_COSA_FOR_BCI_)
         else if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
-        {
+        {*/
                 unsigned int ret=0;
-                char resultBuffer[32]= {'\0'};
-                user_hashandsavepwd(NULL,pString,pUser);
-                AnscCopyString(pUser->Password, pString);
-                CcspTraceInfo(("WebUi cusadmin password is changed\n"));
-        }
-#endif
-	else
-	{
+                char var[128] = {0};
+                get_hash(NULL,pString,pUser,var);
+                AnscCopyString(pUser->Password,var);
+                CcspTraceInfo(("WebUi password is changed\n"));
+
+//     else
+//     {
         	/* save update to backup */
-       		 AnscCopyString(pUser->Password, pString);
-	}
+    //   		 AnscCopyString(pUser->Password, pString);
+    //	}
     #if CFG_USE_CCSP_SYSLOG
         /* Bad practice to use platform dependent and will be rectified -- CCSP_TRACE should be used */
         if( AnscEqualString(pUser->Username, "admin", TRUE) )
@@ -1213,8 +1341,10 @@ User_SetParamStringValue
 
        unsigned int ret=0;
        char resultBuffer[32]= {'\0'};
-       user_validatepwd(NULL,pString,pUser,resultBuffer);
+       ret=user_validatepwd(NULL,pString,pUser,resultBuffer);
        AnscCopyString(pUser->X_RDKCENTRAL_COM_ComparePassword, resultBuffer);
+       if ( ret != ANSC_STATUS_SUCCESS)
+       return FALSE;
        return TRUE;
     }
 

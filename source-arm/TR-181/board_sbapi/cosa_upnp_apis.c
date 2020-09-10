@@ -408,10 +408,12 @@ CosaDmlUpnpDevEnableIgd
     if ( bEnabled )
     {
         igd.enable = 1;
+         v_secure_system("sysevent set igd-start");
     }
     else
     {
         igd.enable = 0;
+        v_secure_system("sysevent set igd-stop");
     }
     UTOPIA_SETBOOL(&pCtx, UtopiaValue_Mgmt_IGDEnabled, igd.enable);
     //system("sysevent set igd-restart");

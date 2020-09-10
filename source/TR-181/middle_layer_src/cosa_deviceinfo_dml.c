@@ -247,6 +247,27 @@ DeviceInfo_GetParamBoolValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "X_DT_UseSharedCGNAddress", TRUE))
+    {
+        /* collect value */
+        char buf[8] = {0};
+        if( syscfg_get( NULL, "UseSharedCGNAddress", buf, sizeof(buf))== 0)
+        {
+            if(strcmp(buf,"true") == 0)
+                *pBool=TRUE;
+            else
+                *pBool=FALSE;
+        }
+        else
+        {
+            CcspTraceWarning(("%s syscfg_get failed  for UseSharedCGNAddress\n",__FUNCTION__));
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+
   bReturnValue =
         DeviceInfo_GetParamBoolValue_Custom
             (
@@ -845,6 +866,28 @@ DeviceInfo_SetParamBoolValue
             memset(cmd, 0, sizeof(cmd));
             AnscCopyString(cmd, "sh /rdklogger/onboardLogUpload.sh delete &");
             system(cmd);
+        }
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "X_DT_UseSharedCGNAddress", TRUE))
+    {
+        /* collect value */
+        char buf[8];
+        memset(buf, 0, sizeof(buf));
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+
+        if (syscfg_set(NULL, "UseSharedCGNAddress", buf) != 0)
+        {
+            AnscTraceWarning(("syscfg_set failed for UseSharedCGNAddress\n"));
+       }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                AnscTraceWarning(("syscfg_commit failed for UseSharedCGNAddress\n"));
+           }
+            system("sysevent set firewall-restart");  // Firewall restart done as SharedCGNAddress flag got changed
         }
         return TRUE;
     }

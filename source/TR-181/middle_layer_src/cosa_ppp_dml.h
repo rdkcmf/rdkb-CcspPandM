@@ -79,7 +79,7 @@
     *  PPP_GetParamIntValue
     *  PPP_GetParamUlongValue
     *  PPP_GetParamStringValue
-
+    *  PPP_SetParamStringValue
 ***********************************************************************/
 BOOL
 PPP_GetParamBoolValue
@@ -113,7 +113,13 @@ PPP_GetParamStringValue
         char*                       pValue,
         ULONG*                      pUlSize
     );
-
+BOOL
+PPP_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       strValue
+    );
 /***********************************************************************
 
  APIs for Object:
@@ -373,6 +379,14 @@ PPPoE_Rollback
     *  IPCP_Rollback
 
 ***********************************************************************/
+ULONG
+IPv6CP_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
 BOOL
 IPCP_GetParamBoolValue
     (

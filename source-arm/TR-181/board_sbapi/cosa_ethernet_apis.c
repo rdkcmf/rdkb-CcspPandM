@@ -87,7 +87,13 @@
         01/11/2011    initial revision.
 
 **************************************************************************/
-
+#include <utctx.h>
+#include <utctx_api.h>
+#include <utapi.h>
+#include <utapi_util.h>
+#include "syscfg/syscfg.h"
+#include "utapi_security.h"
+#include <time.h>
 #include "cosa_ethernet_apis.h"
 #include "cosa_ethernet_apis_multilan.h"
 
@@ -122,7 +128,7 @@ static int loadLinkID(char* ifName, char* pAlias, ULONG* ulInstanceNumber);
 COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr);
 static int setIfStatus(struct ifreq *pIfr);
 int _getMac(char* ifName, char* mac);
-
+static int VLANTermination_InsGetIndex(ULONG ins);
 /**************************************************************************
                         DATA STRUCTURE DEFINITIONS
 **************************************************************************/
@@ -271,7 +277,7 @@ CosaDmlEthInit
     UCHAR strMac[128]       = {0};
     ULONG i                 = 0;
     ULONG wanIndex          = -1;
-
+    UCHAR Wan_ifname[16]   = {0};
 #if !defined(_HUB4_PRODUCT_REQ_)
     ULONG lbrIndex          = -1;
 #endif
@@ -307,8 +313,11 @@ CosaDmlEthInit
 #endif
         }
     }
+    if (syscfg_get(NULL, "wan_physical_ifname", Wan_ifname, sizeof(Wan_ifname)) != 0) {
+            AnscTraceError(("fail to get wan_physical_ifname\n"));
+    }
 
-    if ( (-1 != _getMac("erouter0", strMac)) && wanIndex >= 0)
+    if ( (-1 != _getMac(Wan_ifname, strMac)) && wanIndex >= 0)
                 AnscCopyMemory(g_EthIntSInfo[wanIndex].MacAddress, strMac, 6);
 
 #if !defined(_HUB4_PRODUCT_REQ_)
@@ -685,7 +694,32 @@ CosaDmlEthPortGetStats
 
 COSA_DML_ETH_VLAN_TERMINATION_FULL  g_EthernetVlanTermination[MAXINSTANCE];
 
-ULONG                               g_EthernetVlanTerminationNum = 0;
+static int                               g_EthernetVlanTerminationNum = 0;
+
+static int
+VLANTermination_InsGetIndex(ULONG ins)
+{
+    int i = 0 , ins_num = 0 , ret = -1;
+    UtopiaContext ctx;
+
+    CosaDmlEthVlanTerminationGetNumberOfEntries(NULL);
+
+    if (!Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+    for (i = 0; i < g_EthernetVlanTerminationNum; i++)
+    {
+        Utopia_GetVLANTerminationInsNumByIndex(&ctx, i, &ins_num);
+        if (ins_num == ins) {
+            ret = i;
+            break;
+        }
+    }
+
+    Utopia_Free(&ctx, 0);
+
+    return ret;
+}
 
 ULONG
 CosaDmlEthVlanTerminationGetNumberOfEntries
@@ -693,6 +727,15 @@ CosaDmlEthVlanTerminationGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {
+    UtopiaContext ctx;
+
+    if(!Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+    Utopia_GetNumberOfVLANTermination(&ctx, &g_EthernetVlanTerminationNum);
+
+    Utopia_Free(&ctx, 0);
+
     return g_EthernetVlanTerminationNum;
 }
 
@@ -704,16 +747,63 @@ CosaDmlEthVlanTerminationGetEntry
         PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry
     )
 {
+    UtopiaContext ctx;
+    vlantermination_t  vt;
+
     if ( !pEntry )
         return ANSC_STATUS_FAILURE;
+
+    if (!Utopia_Init(&ctx))
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
 
     if ( ulIndex < g_EthernetVlanTerminationNum )
     {
         AnscCopyMemory(pEntry, &g_EthernetVlanTermination[ulIndex], sizeof(COSA_DML_ETH_VLAN_TERMINATION_FULL));
 
+	Utopia_GetVLANTerminationByIndex(&ctx, ulIndex, &vt);
+
+        pEntry->Cfg.InstanceNumber = vt.InstanceNumber;
+        pEntry->Cfg.VLANID = vt.VLANID;
+        pEntry->Cfg.TPID = vt.TPID;
+        pEntry->Cfg.bEnabled = (vt.Enable == true)? TRUE : FALSE;
+        _ansc_strncpy(pEntry->Cfg.Alias,    vt.Alias,    sizeof(pEntry->Cfg.Alias)-1);
+        _ansc_strncpy(pEntry->Cfg.LowerLayers,    vt.LowerLayer,    sizeof(pEntry->Cfg.LowerLayers)-1);
+        _ansc_strncpy(pEntry->Cfg.EthLinkName,    vt.EthLinkName,    sizeof(pEntry->Cfg.EthLinkName)-1);
+        _ansc_strncpy(pEntry->StaticInfo.Name,    vt.Name,    sizeof(pEntry->StaticInfo.Name)-1);
+
+        Utopia_Free(&ctx, 0);
+
+        if (pEntry->Cfg.EthLinkName[0] && pEntry->Cfg.VLANID)
+        {
+            char cmd[256];
+            sprintf(cmd, "vconfig add %s %u", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+             CcspTraceWarning(("vt_ cmd '%s'\n", cmd));
+            system(cmd);
+
+            if (pEntry->Cfg.bEnabled)
+            {
+                sprintf(cmd, "ip link set %s.%u up", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+                system(cmd);
+            }
+            else
+            {
+                pEntry->DynamicInfo.Status = COSA_DML_IF_STATUS_Down;
+            }
+            pEntry->DynamicInfo.LastChange = AnscGetTickInSeconds();
+        }
+        else
+        {
+            pEntry->DynamicInfo.Status = COSA_DML_IF_STATUS_NotPresent;
+        }
+
+
         char ifName[256];
         sprintf(ifName, "%s.%u", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
         pEntry->DynamicInfo.Status = getIfStatus(ifName, NULL);
+	getIfStats2(ifName, &pEntry->LastStats);
     }
     else
     {
@@ -732,7 +822,24 @@ CosaDmlEthVlanTerminationSetValues
         char*                       pAlias
     )
 {
-    return ANSC_STATUS_SUCCESS;
+    int rc = -1;
+    UtopiaContext ctx;
+
+    if (index >= g_EthernetVlanTerminationNum || !Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
+    rc = Utopia_SetVLANTerminationInsAndAliasByIndex(&ctx, ulIndex, ulInstanceNumber, pAlias);
+
+    Utopia_Free(&ctx, !rc);
+
+    if (rc != 0)
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+    else
+    {
+        return ANSC_STATUS_SUCCESS;
+    }
 }
 
 ANSC_STATUS
@@ -742,16 +849,45 @@ CosaDmlEthVlanTerminationAddEntry
         PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry
     )
 {
+
+    int rc = -1;
+    UtopiaContext ctx;
+    vlantermination_t  vt;
+
     if ( !pEntry )
     {
         return ANSC_STATUS_FAILURE;
     }
+
+    if (!Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
+
     
     if ( g_EthernetVlanTerminationNum < MAXINSTANCE )
     {
         AnscCopyMemory(&g_EthernetVlanTermination[g_EthernetVlanTerminationNum], pEntry, sizeof(COSA_DML_ETH_VLAN_TERMINATION_FULL));
         
-        g_EthernetVlanTerminationNum++;
+        vt.InstanceNumber = pEntry->Cfg.InstanceNumber;
+        vt.TPID = pEntry->Cfg.TPID;
+        vt.VLANID = pEntry->Cfg.VLANID;
+        vt.Enable = (pEntry->Cfg.bEnabled == FALSE)? false : true;
+        _ansc_strncpy(vt.Alias,    pEntry->Cfg.Alias,    sizeof(vt.Alias)-1);
+        _ansc_strncpy(vt.Name,    pEntry->StaticInfo.Name,    sizeof(vt.Name)-1);
+        _ansc_strncpy(vt.LowerLayer,    pEntry->Cfg.LowerLayers,    sizeof(vt.LowerLayer)-1);
+        _ansc_strncpy(vt.EthLinkName,   pEntry->Cfg.EthLinkName,    sizeof(vt.EthLinkName)-1);
+        rc = Utopia_AddVLANTermination(&ctx, &vt);
+        Utopia_GetNumberOfVLANTermination(&ctx, &g_EthernetVlanTerminationNum);
+
+        Utopia_Free(&ctx, !rc);
+
+        if (rc != 0)
+              return ANSC_STATUS_FAILURE;
+        else
+        {
+             commonSyseventSet("firewall-restart", "");
+              return ANSC_STATUS_SUCCESS;
+        }
+
 
         if (pEntry->Cfg.EthLinkName[0] && pEntry->Cfg.VLANID)
         {
@@ -793,6 +929,14 @@ CosaDmlEthVlanTerminationDelEntry
     ULONG                           i = 0;
     ULONG                           j = 0;
 
+    int rc = -1;
+    UtopiaContext ctx;
+
+    if (VLANTermination_InsGetIndex(ulInstanceNumber) == -1 || !Utopia_Init(&ctx))
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+
     for ( i = 0; i < g_EthernetVlanTerminationNum; i++ )
     {
         if ( g_EthernetVlanTermination[i].Cfg.InstanceNumber == ulInstanceNumber )
@@ -809,10 +953,19 @@ CosaDmlEthVlanTerminationDelEntry
             {
                 AnscCopyMemory(&g_EthernetVlanTermination[j], &g_EthernetVlanTermination[j+1], sizeof(COSA_DML_ETH_VLAN_TERMINATION_FULL));
             }
+            rc = Utopia_DelVLANTermination(&ctx, ulInstanceNumber);
+            Utopia_GetNumberOfVLANTermination(&ctx, &g_EthernetVlanTerminationNum);
 
-            g_EthernetVlanTerminationNum--;
+            Utopia_Free(&ctx, !rc);
 
-            return ANSC_STATUS_SUCCESS;
+            if (rc != 0)
+                  return ANSC_STATUS_FAILURE;
+            else
+            {
+                  commonSyseventSet("firewall-restart", "");
+                  return ANSC_STATUS_SUCCESS;
+            }
+
         }
     }
     
@@ -844,7 +997,7 @@ CosaDmlEthVlanTerminationValidateCfg
             UCHAR                           ucEntryParamName[256]       = {0};
             UCHAR                           ucEntryNameValue[256]       = {0};
 
-            _ansc_sprintf(ucEntryParamName, "%s%s", pCfg->LowerLayers, "Name");
+            _ansc_sprintf(ucEntryParamName, "%s.%s", pCfg->LowerLayers, "Name");
 
             if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
                  ( AnscSizeOfString(ucEntryNameValue) != 0                                        ) )
@@ -896,10 +1049,18 @@ CosaDmlEthVlanTerminationSetCfg
 {
     ULONG                           i = 0;
 
+    int index = 0 ;
+    UtopiaContext ctx;
+    vlantermination_t  vt;
+    int rc =  -1;
+
     if ( !pCfg )
     {
         return ANSC_STATUS_FAILURE;
     }
+
+    if ((index = VLANTermination_InsGetIndex(pCfg->InstanceNumber)) == -1 || !Utopia_Init(&ctx))
+    return ANSC_STATUS_FAILURE;
 
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry  = getVlanTermination(pCfg->InstanceNumber);
 
@@ -946,8 +1107,30 @@ CosaDmlEthVlanTerminationSetCfg
         }
 
         AnscCopyMemory(&pEntry->Cfg, pCfg, sizeof(COSA_DML_ETH_VLAN_TERMINATION_CFG));
+	
+	index = VLANTermination_InsGetIndex(pEntry->Cfg.InstanceNumber);
 
-        return ANSC_STATUS_SUCCESS;
+        vt.InstanceNumber = pEntry->Cfg.InstanceNumber;
+        vt.VLANID = pEntry->Cfg.VLANID;
+        vt.TPID = pEntry->Cfg.TPID;
+        vt.Enable = (pEntry->Cfg.bEnabled == FALSE)? false : true ;
+        _ansc_strncpy(vt.Alias,    pEntry->Cfg.Alias,    sizeof(vt.Alias));
+        _ansc_strncpy(vt.Name,    pEntry->StaticInfo.Name,    sizeof(vt.Name));
+        _ansc_strncpy(vt.LowerLayer,    pEntry->Cfg.LowerLayers,    sizeof(vt.LowerLayer));
+        _ansc_strncpy(vt.EthLinkName,   pEntry->Cfg.EthLinkName,    sizeof(vt.EthLinkName)-1);
+
+        rc = Utopia_SetVLANTerminationByIndex(&ctx, index, &vt);
+
+        Utopia_Free(&ctx, !rc);
+
+        if (rc != 0)
+            return ANSC_STATUS_FAILURE;
+        else
+        {
+             commonSyseventSet("firewall-restart", "");
+             return ANSC_STATUS_SUCCESS;
+        }
+
     }
 
     return ANSC_STATUS_CANT_FIND;
@@ -962,18 +1145,23 @@ CosaDmlEthVlanTerminationGetCfg
 {
     ULONG                           i = 0;
 
+   int index = 0;
+
     if ( !pCfg )
     {
         return ANSC_STATUS_FAILURE;
     }
+
+   if ((index = VLANTermination_InsGetIndex(pCfg->InstanceNumber)) == -1)
+      return ANSC_STATUS_FAILURE;
+
 
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry  = getVlanTermination(pCfg->InstanceNumber);
 
     if (pEntry)
     {
         AnscCopyMemory(pCfg, &pEntry->Cfg, sizeof(COSA_DML_ETH_VLAN_TERMINATION_CFG));
-
-        return ANSC_STATUS_SUCCESS;
+	return CosaDmlEthVlanTerminationGetEntry(NULL ,index, pEntry);
     }
 
     return ANSC_STATUS_CANT_FIND;

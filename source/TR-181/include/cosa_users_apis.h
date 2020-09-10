@@ -86,7 +86,7 @@ struct _COSA_DML_USER
 
     BOOLEAN                         RemoteAccessCapable;
     char                            Username[64];
-    char                            Password[64];
+    char                            Password[128];
     char                            Language[16];
     char                            NumOfFailedAttempts;
     char                            X_RDKCENTRAL_COM_ComparePassword[32];
@@ -189,6 +189,15 @@ user_hashandsavepwd
             PCHAR                       pString,
             PCOSA_DML_USER              pEntry
 
+        );
+
+ANSC_STATUS
+get_hash
+        (
+            ANSC_HANDLE                 hContext,
+            PCHAR                       pString,
+            PCOSA_DML_USER              pEntry,
+            char*                       hash
         );
 
 ANSC_STATUS

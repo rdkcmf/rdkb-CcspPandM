@@ -302,6 +302,7 @@ static int UtSetUlong(const char *path, ULONG val)
 }
 
 typedef struct WebServConf {
+    BOOLEAN     httpaccess;
     ULONG       httpport;
     ULONG       httpsport;
 } WebServConf_t;
@@ -314,6 +315,8 @@ LoadWebServConf(WebServConf_t *conf)
     if (UtGetUlong("mgmt_wan_httpport", &conf->httpport) != ANSC_STATUS_SUCCESS)
         return -1;
     if (UtGetUlong("mgmt_wan_httpsport", &conf->httpsport) != ANSC_STATUS_SUCCESS)
+        return -1;
+   if (UtGetBool("mgmt_wan_httpaccess", &conf->httpaccess) != ANSC_STATUS_SUCCESS)
         return -1;
 
 #if defined(CONFIG_CCSP_WAN_MGMT_PORT)
@@ -337,6 +340,9 @@ SaveWebServConf(const WebServConf_t *conf)
         return -1;
     if (UtSetUlong("mgmt_wan_httpsport", conf->httpsport) != ANSC_STATUS_SUCCESS)
         return -1;
+      if (UtSetBool("mgmt_wan_httpaccess", conf->httpaccess) != ANSC_STATUS_SUCCESS)
+        return -1;
+
 
     return 0;
 }
@@ -603,6 +609,106 @@ CosaDmlDcSetMultiHomedUIPageControl
 {
     return ANSC_STATUS_SUCCESS;
 }
+
+void
+restart
+   (
+         char*         value
+   )
+{
+    CcspTraceInfo(("Inside %s function \n",__FUNCTION__));
+
+    CcspTraceInfo(("Stopping dcm-log \n"));
+    v_secure_system("systemctl stop dcm-log");
+
+   if (strcmp(value, "TRUE") == 0 )
+    {
+       CcspTraceInfo(("Starting dcm-log \n"));
+       v_secure_system("systemctl start dcm-log");
+    }
+}
+
+ANSC_STATUS
+CosaDmlXConfGetConfig
+    (
+        ANSC_HANDLE                       hContext,
+        PCOSA_DML_DEVICECONTROL_XConf     pXConf
+    )
+{
+    CcspTraceInfo(("Inside %s function \n",__FUNCTION__));
+    char param[256];
+    UtopiaContext ctx = {0};
+    if ( !pXConf )
+        return ANSC_STATUS_FAILURE;
+   if (!Utopia_Init(&ctx))
+    {
+        CcspTraceWarning(("X_CISCO_DeviceControl: Error in initializing context!!! \n" ));
+        return ANSC_STATUS_FAILURE;
+    }
+    memset(param, 0, sizeof(param));
+    Utopia_RawGet(&ctx, NULL, "XConf_Enable", param, sizeof(param)-1);
+    if (param[0] =='1')
+   {
+        pXConf->Enable = TRUE;
+    }
+    else
+    {
+       pXConf->Enable = FALSE;
+    }
+    memset(param, 0, sizeof(param));
+    Utopia_RawGet(&ctx, NULL, "XConf_ServerURL", param, sizeof(param)-1);
+    AnscCopyString(pXConf->ServerURL, param );
+    Utopia_Free(&ctx, 0);
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlXConfSetConfig
+    (
+        ANSC_HANDLE                       hContext,
+        PCOSA_DML_DEVICECONTROL_XConf     pXConf
+    )
+{
+    CcspTraceInfo(("Inside %s function \n",__FUNCTION__));
+    COSA_DML_DEVICECONTROL_XConf       tempXConf;
+    UtopiaContext utctx = {0};
+    int flag = 0;
+    if ( !pXConf )
+        return ANSC_STATUS_FAILURE;
+    if (!Utopia_Init(&utctx))
+    {
+        CcspTraceWarning(("X_CISCO_SECURITY: Error in initializing context!!! \n" ));
+        return ANSC_STATUS_FAILURE;
+    }
+    CosaDmlXConfGetConfig(NULL, &tempXConf);
+    if( pXConf->Enable != tempXConf.Enable )
+    {
+       if( pXConf->Enable)
+               flag=1;
+        Utopia_RawSet(&utctx, NULL, "XConf_Enable", pXConf->Enable==TRUE?"1":"0" );
+    }
+    if( strcmp(pXConf->ServerURL , tempXConf.ServerURL) != 0)
+    {
+      flag = 1;
+       v_secure_system( "sed -i '/DCM_LOG_SERVER_URL/d ' /etc/dcm.properties ");
+       char buf[256] ={0};
+       snprintf(buf,sizeof(buf),"echo 'DCM_LOG_SERVER_URL=%s' >> /etc/dcm.properties",pXConf->ServerURL);
+       v_secure_system(buf);
+        Utopia_RawSet(&utctx, NULL, "XConf_ServerURL", pXConf->ServerURL);
+    }
+    if( flag == 1 &&  pXConf->Enable )
+    {
+       restart("TRUE");
+    }
+    else if( flag == 0 && !pXConf->Enable)
+    {
+       restart("FALSE");
+    }
+    Utopia_Free(&utctx, 1);
+    return ANSC_STATUS_SUCCESS;
+}
+
+
 
 ANSC_STATUS
 CosaDmlDcGetWanAddressMode
@@ -1234,6 +1340,42 @@ CosaDmlDcGetFactoryReset
     return ANSC_STATUS_SUCCESS;
 }
 
+/*Check if FactoryReset string is valid*/
+ANSC_STATUS
+CosaDmlDcCheckFactoryResetString
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    )
+{
+    if ((strcmp(pValue, "Router") != 0) && (strcmp(pValue, "VoIP") != 0) && (strcmp(pValue, "Firewall") != 0) && (strcmp(pValue, "Docsis") != 0)){
+        return ANSC_STATUS_FAILURE;
+     }
+     return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlDcGetX_CrashPortalURL
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    )
+{
+
+        char buf[256]={0};
+        if( syscfg_get( NULL, "X_CrashPortalURL", buf, sizeof(buf))== 0)
+        {
+          AnscCopyString(pValue, buf);
+          return ANSC_STATUS_SUCCESS;
+        }
+        else
+        {
+            CcspTraceWarning(("%s syscfg_get failed  for X_CrashPortalURL\n",__FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+        }
+
+}
+
 ANSC_STATUS
 CosaDmlDcGetUserChangedFlags
     (
@@ -1450,6 +1592,19 @@ ANSC_STATUS CosaDmlDcRestartRouter()
     } 
 #endif 
     return ANSC_STATUS_SUCCESS;      
+}
+
+ANSC_STATUS
+CosaDmlDcCheckRebootDeviceString
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    )
+{
+    if ((strcmp(pValue,"Router")!=0) && (strcmp(pValue,"VoIP")!=0) && (strcmp(pValue,"Dect")!=0) && (strcmp(pValue,"MoCA")!=0) && (strcmp(pValue,"Device")!=0) && (strcmp(pValue,"delay")!=0) && (strcmp(pValue,"delay=")!=0)){
+        return ANSC_STATUS_FAILURE;
+     }
+     return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -2122,6 +2277,31 @@ CosaDmlDcSetFactoryReset
 }
 
 ANSC_STATUS
+CosaDmlDcSetX_CrashPortalURL
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    )
+{
+        char buf[256]={0};
+        memset(buf, 0, sizeof(buf));
+        snprintf(buf, sizeof(buf), "%s", pValue);
+
+        if (syscfg_set(NULL, "X_CrashPortalURL", buf) != 0)
+        {
+            AnscTraceWarning(("syscfg_set failed for X_CrashPortalURL\n"));
+            return ANSC_STATUS_FAILURE;
+        }
+        else if (syscfg_commit() != 0)
+        {
+            AnscTraceWarning(("syscfg_commit failed for X_CrashPortalURL\n"));
+            return ANSC_STATUS_FAILURE;
+        }
+    return ANSC_STATUS_SUCCESS;
+}
+
+
+ANSC_STATUS
 CosaDmlDcSetUserChangedFlags
     (
         ANSC_HANDLE                 hContext,
@@ -2617,7 +2797,19 @@ CosaDmlDcSetSSHEnable
         snprintf(buf,sizeof(buf),"%d",flag);
         syscfg_set( NULL, "mgmt_wan_sshaccess", buf);
         syscfg_commit();
-        system("sysevent set firewall-restart");
+
+        if ((strcmp(buf, "0") ==0) && v_secure_system("/etc/utopia/service.d/service_sshd.sh sshd-stop") != 0) {
+            CcspTraceError(("%s : Fail to stop sshd after disabling SSHEnable data model.\n", __FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+        }
+        else {
+            if (v_secure_system("/etc/utopia/service.d/service_sshd.sh sshd-restart") != 0) {
+                CcspTraceError(("%s : Fail to restart sshd after enabling SSHEnable data model.\n", __FUNCTION__));
+                return ANSC_STATUS_FAILURE;
+            }
+        }
+
+        v_secure_system("sysevent set firewall-restart");
         if (platform_hal_SetSSHEnable(flag) == RETURN_ERR )
             return ANSC_STATUS_FAILURE;
     }   
@@ -2641,7 +2833,12 @@ CosaDmlDcGetHTTPEnable
         BOOLEAN                     *pValue
     )
 {
-    *pValue = TRUE;
+     WebServConf_t conf;
+
+    if (LoadWebServConf(&conf) != 0)
+        return ANSC_STATUS_FAILURE;
+
+    *pValue = conf.httpaccess;
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2744,8 +2941,10 @@ CosaDmlDcSetWebServer(BOOL httpEn, BOOL httpsEn, ULONG httpPort, ULONG httpsPort
     /* do not support disable HTTP/HTTPS */
     conf.httpport = httpPort;
     conf.httpsport = httpsPort;
+    conf.httpaccess = httpEn;
 
     if (SaveWebServConf(&conf) != 0)
+
         return ANSC_STATUS_FAILURE;
 
     //Needs to start as thread to avoid PAM Hung issue
@@ -4041,9 +4240,6 @@ CosaDmlDcGetWebUITimeout
     if (pValue == NULL)
         return ANSC_STATUS_FAILURE;
 
-    if (platform_hal_GetWebUITimeout(pValue) != RETURN_OK )
-        return ANSC_STATUS_FAILURE;
-    else
         return ANSC_STATUS_SUCCESS;
 }
 
@@ -4095,10 +4291,6 @@ CosaDmlDcGetWebAccessLevel
 {
     if (pValue == NULL)
         return ANSC_STATUS_FAILURE;
-
-    if (platform_hal_GetWebAccessLevel(userIndex, ifIndex, pValue) != RETURN_OK )
-        return ANSC_STATUS_FAILURE;
-    else
         return ANSC_STATUS_SUCCESS;
 }
 
@@ -4111,9 +4303,6 @@ CosaDmlDcSetWebAccessLevel
         ULONG                       value
     )
 {
-    if (platform_hal_SetWebAccessLevel(userIndex, ifIndex, value) != RETURN_OK )
-        return ANSC_STATUS_FAILURE;
-    else
         return ANSC_STATUS_SUCCESS;
 }
 
@@ -4370,4 +4559,69 @@ BOOL IsPortInUse(unsigned int port)
     }
 
     return FALSE;
+}
+
+ANSC_STATUS
+CosaDmlWebPAGetConfig2
+(
+    ANSC_HANDLE                 hContext,
+    PCOSA_DML_WEBPA_CFG2        pCfg
+)
+{
+    CcspTraceInfo(("Inside %s function \n",__FUNCTION__));
+    char     buf[256] = {0};
+    UtopiaContext ctx = {0};
+    if (!Utopia_Init(&ctx))
+    {
+        CcspTraceWarning(("X_CISCO_COM_DeviceControl: Error in initializing context!!! \n" ));
+        return ANSC_STATUS_FAILURE;
+    }
+    memset(buf, 0, sizeof(buf));
+    Utopia_RawGet(&ctx,NULL,"webpa_enable",buf,sizeof(buf)-1);
+    if ( buf[0] == '1' )
+        pCfg->Enable = TRUE;
+    else
+        pCfg->Enable = FALSE;
+
+    memset(buf, 0, sizeof(buf));
+    Utopia_RawGet(&ctx, NULL, "webpa_server_url", buf, sizeof(buf)-1);
+    AnscCopyString(pCfg->ServerURL, buf );
+    Utopia_Free(&ctx, 0);
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlWebPASetConfig2
+(
+    ANSC_HANDLE                 hContext,
+    PCOSA_DML_WEBPA_CFG2        pCfg
+)
+{
+    COSA_DML_WEBPA_CFG2   tempCfg;
+    CcspTraceInfo(("Inside %s function \n",__FUNCTION__));
+    int flag = 0;
+    UtopiaContext utctx={0};
+    if (!Utopia_Init(&utctx))
+    {
+        CcspTraceWarning(("X_CISCO_COM_DeviceControl: Error in initializing context!!! \n" ));
+        return ANSC_STATUS_FAILURE;
+    }
+    CosaDmlWebPAGetConfig2(NULL, &tempCfg);
+    if( pCfg->Enable != tempCfg.Enable )
+    {
+        flag = 1;
+        Utopia_RawSet(&utctx, NULL, "webpa_enable", pCfg->Enable==TRUE?"1":"0");
+    }
+    if(!( AnscEqualString(pCfg->ServerURL , tempCfg.ServerURL, TRUE)))
+    {
+        flag = 1;
+        Utopia_RawSet(&utctx, NULL, "webpa_server_url", pCfg->ServerURL);
+    }
+
+    if( flag == 1 && pCfg->Enable)
+         vsystem("/etc/utopia/service.d/service_parodus_start.sh start &");
+    else if(flag == 1 && !pCfg->Enable)
+         vsystem("/etc/utopia/service.d/service_parodus_start.sh stop &");  
+    Utopia_Free(&utctx,1);
+    return ANSC_STATUS_SUCCESS;
 }

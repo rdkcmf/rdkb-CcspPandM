@@ -631,10 +631,31 @@ user_validatepwd
    char val[32] = {'\0'};
    char getHash[128]= {'\0'};
    int isDefault=0;
-   if(!strcmp(pEntry->Username,"admin"))
-   {
+   char buf[4];
+   memset(buf, 0, sizeof(buf));
+   syscfg_get(NULL, "pwdFlag", buf, sizeof(buf));
 
-   syscfg_get( NULL, "hash_password_3",fromDB, sizeof(fromDB));
+   if ('\0' == pEntry->Password[0] || !strcmp(pEntry->Password," ") || !strcmp(buf,"0"))
+   {
+      if(!strcmp(pEntry->Username,"admin"))
+       {
+          hash_userPassword("password",getHash);
+          strcpy(pEntry->Password,getHash);
+          isDefault=1;
+       }
+      if(!strcmp(pEntry->Username,"cusadmin"))
+       {
+          hash_userPassword("WebUI",getHash);
+          strcpy(pEntry->Password,getHash);
+          isDefault=1;
+       }
+        if(!strcmp(pEntry->Username,"mso"))
+       {
+          hash_userPassword("W2402",getHash);
+          strcpy(pEntry->Password,getHash);
+          isDefault=1;
+       }
+   /*syscfg_get( NULL, "hash_password_3",fromDB, sizeof(fromDB));
 
    if(fromDB[0] == '\0')
    {
@@ -646,10 +667,13 @@ user_validatepwd
      isDefault=1;
    }
 #endif
+*/
+   }
+   memset(getHash, 0, sizeof(getHash));
    hash_userPassword(pString,getHash); 
    CcspTraceWarning(("%s, Compare passwords\n",__FUNCTION__));
    
-   if (strcmp(getHash, pEntry->HashedPassword) == 0)
+   if (strcmp(getHash, pEntry->Password) == 0)
    {
      if(isDefault == 1)
      {
@@ -663,11 +687,11 @@ user_validatepwd
    else
    {
      strcpy(val,"Invalid_PWD");
-
+     AnscCopyString(hashpassword,val);
+     return ANSC_STATUS_FAILURE;
    }
    AnscCopyString(hashpassword,val);
-   }
-#if defined(_COSA_FOR_BCI_)
+/* #if defined(_COSA_FOR_BCI_)
    if(!strcmp(pEntry->Username,"cusadmin"))
    {
 
@@ -702,7 +726,7 @@ user_validatepwd
    }
    AnscCopyString(hashpassword,val);
    }
-#endif
+#endif */
 
    CcspTraceWarning(("%s, Comparison result: %s\n",__FUNCTION__,hashpassword));
    return ANSC_STATUS_SUCCESS ;
@@ -776,6 +800,24 @@ user_hashandsavepwd
   CcspTraceWarning(("%s, Returning failure\n",__FUNCTION__));
   return ANSC_STATUS_FAILURE;
 
+}
+
+ANSC_STATUS
+get_hash
+        (
+            ANSC_HANDLE                 hContext,
+            PCHAR                       pString,
+            PCOSA_DML_USER              pEntry,
+            char*                       hash
+        )
+{
+  char setHash[128]= {'\0'};
+  CcspTraceWarning(("%s, Hash Password using the passed string\n",__FUNCTION__));
+
+  syscfg_set(NULL, "pwdFlag", "1");
+  hash_userPassword(pString,setHash);
+  strcpy(hash,setHash);
+  return TRUE;
 }
 
 ANSC_STATUS

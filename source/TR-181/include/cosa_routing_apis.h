@@ -326,7 +326,7 @@ COSA_PRI_ROUTER_FULL, *PCOSA_PRI_ROUTER_FULL;
 #define COSA_RIPD_TMP_CONF      "/etc/ripd_tmp.conf"
 #define COSA_RIPD_CUR_CONF      "/etc/ripd.conf"
 #define COSA_ZEBRA_TMP_CONF     "/etc/zebra_tmp.conf"
-#define COSA_ZEBRA_CUR_CONF     "/etc/zebra.conf"
+#define COSA_ZEBRA_CUR_CONF     "/tmp/zebra.conf"
 #endif
 
 #define COSA_ZEBRA_BIN          "zebra"

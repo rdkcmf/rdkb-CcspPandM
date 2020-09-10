@@ -156,7 +156,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
 #define COSA_DATAMODEL_TSIP_OID                                 40
 #define COSA_DATAMODEL_FILETRANSFER_OID                         41
 #define COSA_DATAMODEL_LANMANAGEMENT_OID                        42
-
+#define COSA_DATAMODEL_DYNDNS_OID                               43
 
 /*
  * This is the cosa datamodel backend manager which is used to manager all backend object
@@ -176,6 +176,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
     ANSC_HANDLE                  hMoCA;                                                     \
     ANSC_HANDLE                  hProcStatus;                                               \
     ANSC_HANDLE                  hDdns;                                                     \
+    ANSC_HANDLE                  hDynamicDns;                                               \
     ANSC_HANDLE                  hFirewall;                                                 \
     ANSC_HANDLE                  hSecurity;                                                 \
     ANSC_HANDLE                  hIP;                                                       \

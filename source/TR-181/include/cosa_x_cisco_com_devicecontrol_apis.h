@@ -130,6 +130,24 @@ _COSA_DML_LanNapt
     COSA_DML_LanNapt_StaticIP,
 }COSA_DML_LanNapt, *PCOSA_DML_LanNapt;
 
+typedef  struct
+_COSA_DML_DEVICECONTROL_XConf
+{
+
+    BOOLEAN                   Enable;
+    char                      ServerURL[256];
+}
+COSA_DML_DEVICECONTROL_XConf, *PCOSA_DML_DEVICECONTROL_XConf;
+
+
+typedef struct
+_COSA_DML_WEBPA_CFG2
+{
+    BOOLEAN                    Enable;
+    char                       ServerURL[256];
+}
+COSA_DML_WEBPA_CFG2, *PCOSA_DML_WEBPA_CFG2;
+
 typedef struct 
 _COSA_DML_LAN_MANAGEMENT
 {
@@ -166,6 +184,37 @@ COSA_NOTIFY_WIFI, *PCOSA_NOTIFY_WIFI;
 /**********************************************************************
                 FUNCTION PROTOTYPES
 **********************************************************************/
+ANSC_STATUS
+CosaDmlXConfGetConfig
+    (
+        ANSC_HANDLE                       hContext,
+        PCOSA_DML_DEVICECONTROL_XConf     pXConf
+    );
+ANSC_STATUS
+CosaDmlXConfSetConfig
+    (
+        ANSC_HANDLE                       hContext,
+        PCOSA_DML_DEVICECONTROL_XConf     pXConf
+  );
+void
+restart
+   (
+         char*         value
+   );
+
+ANSC_STATUS
+CosaDmlWebPAGetConfig2
+(
+    ANSC_HANDLE                 hContext,
+    PCOSA_DML_WEBPA_CFG2        pCfg
+);
+
+ANSC_STATUS
+CosaDmlWebPASetConfig2
+(
+    ANSC_HANDLE                 hContext,
+    PCOSA_DML_WEBPA_CFG2        pCfg
+);
 
 ANSC_STATUS
 CosaDmlDcInit
@@ -464,6 +513,20 @@ CosaDmlDcGetFactoryReset
     );
 
 ANSC_STATUS
+CosaDmlDcCheckFactoryResetString
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcGetX_CrashPortalURL
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+ANSC_STATUS
 CosaDmlDcGetUserChangedFlags
     (
         ANSC_HANDLE                 hContext,
@@ -495,6 +558,14 @@ CosaDmlDcSetDeviceConfigIgnore
     );
 
 ANSC_STATUS
+CosaDmlDcCheckRebootDeviceString
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+
+ANSC_STATUS
 CosaDmlDcSetRebootDevice
     (
         ANSC_HANDLE                 hContext,
@@ -507,6 +578,14 @@ CosaDmlDcGetFactoryReset
         ANSC_HANDLE                 hContext,
         char*                       pValue
     );
+
+ANSC_STATUS
+CosaDmlDcSetX_CrashPortalURL
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+     );
+
 
 ANSC_STATUS
 CosaDmlDcSetUserChangedFlags

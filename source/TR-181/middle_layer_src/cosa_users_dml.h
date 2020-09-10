@@ -73,8 +73,27 @@
 
     Users.
 
+    * Users_GetParamIntValue
+    * Users_SetParamIntValue
 
 ***********************************************************************/
+
+BOOL
+Users_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    );
+
+BOOL
+Users_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         iValue
+    );
+
 /***********************************************************************
 
  APIs for Object:

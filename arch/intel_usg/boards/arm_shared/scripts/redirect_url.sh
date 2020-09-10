@@ -20,6 +20,13 @@
 
 source /etc/utopia/service.d/log_capture_path.sh
 REVERTED_FLAG="/nvram/reverted"
+
+WAN_STATUS=`sysevent get wan-status`
+if [ "$WAN_STATUS" = "stopped" ]; then
+    touch /var/tmp/networkresponse.txt
+    echo 204 > /var/tmp/networkresponse.txt
+fi
+
 syscfg set redirection_flag true 
 syscfg commit
 DHCPDONE=`sysevent get captiveportaldhcp`
@@ -99,4 +106,12 @@ then
         sysevent set zebra-restart
      fi
   fi
+fi
+
+# restart lighttpd so that it should reflect above changes if wan-status is stopped.
+if [ "$WAN_STATUS" = "stopped" ]; then
+    killall lighttpd
+    /etc/webgui.sh
+    sleep 2
+    lighttpd -f /var/lighttpd.conf
 fi

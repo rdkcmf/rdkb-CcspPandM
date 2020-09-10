@@ -102,6 +102,8 @@
 #include "cosa_ipv6rd_internal.h"
 #include "cosa_x_cisco_com_mld_internal.h"
 #include "cosa_x_cisco_com_multilan_apis.h"
+#include "cosa_dynamicdns_apis.h"
+#include "cosa_dynamicdns_internal.h"
 #if CONFIG_CISCO_TRUE_STATIC_IP
     #include "cosa_x_cisco_com_truestaticip_internal.h"
 #endif
@@ -258,6 +260,8 @@ CosaBackEndManagerInitialize
     AnscTraceWarning(("  CosaUsersCreate done!\n"));
     pMyObject->hDdns          = (ANSC_HANDLE)CosaDdnsCreate();
     AnscTraceWarning(("  CosaDdnsCreate done!\n"));
+    pMyObject->hDynamicDns    = (ANSC_HANDLE)CosaDynamicDnsCreate();
+    AnscTraceWarning(("  CosaDynamicDnsCreate done!\n"));
     pMyObject->hFirewall      = (ANSC_HANDLE)CosaFirewallCreate();
     AnscTraceWarning(("  CosaFirewallCreate done!\n"));
     pMyObject->hSecurity      = (ANSC_HANDLE)CosaSecurityCreate();
@@ -509,6 +513,11 @@ CosaBackEndManagerRemove
     if ( pMyObject->hDdns )
     {
         CosaDdnsRemove((ANSC_HANDLE)pMyObject->hDdns);
+    }
+
+    if ( pMyObject->hDynamicDns )
+    {
+        CosaDynamicDnsRemove((ANSC_HANDLE)pMyObject->hDynamicDns);
     }
 
     if ( pMyObject->hFirewall )

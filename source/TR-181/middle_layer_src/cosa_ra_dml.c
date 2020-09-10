@@ -1115,7 +1115,7 @@ InterfaceSetting1_GetParamUlongValue
 
     if( AnscEqualString(ParamName, "MaxRtrAdvInterval", TRUE) )
     {
-        CosaDmlRaIfGetCfg (pRAInterface, (PCOSA_DML_RA_IF_CFG)&pRAInterface->Cfg);
+        // CosaDmlRaIfGetCfg (pRAInterface, (PCOSA_DML_RA_IF_CFG)&pRAInterface->Cfg);
 
         /* collect value */
         *puLong = pRAInterface->Cfg.MaxRtrAdvInterval;
@@ -1680,6 +1680,11 @@ InterfaceSetting1_Validate
             *puLength = AnscSizeOfString("Alias");
 
             CcspTraceWarning(("InterfaceSetting1_Validate() failed.\n"));
+            return FALSE;
+        }
+        if (!(pRAInterface2->Cfg.AdvLinkMTU == 0) && !(pRAInterface2->Cfg.AdvLinkMTU >= 1280))
+        {
+            CcspTraceWarning(("InterfaceSetting1_Validate() failed due to AdvLinkMTU value.\n"));
             return FALSE;
         }
     }

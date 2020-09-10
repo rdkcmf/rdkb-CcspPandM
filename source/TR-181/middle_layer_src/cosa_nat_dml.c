@@ -819,10 +819,6 @@ X_CISCO_COM_DMZ_SetParamBoolValue
     {
         /* save update to backup */
         pDmz->bEnabled     = bValue;
-        if (bValue == FALSE) {
-            AnscCopyString(pDmz->InternalIP, "0.0.0.0");  /* keep sync between webui and snmp */
-            AnscCopyString(pDmz->IPv6Host, "0:0:0:0:0:0:0:0");
-        }
     #if CFG_USE_CCSP_SYSLOG
         /* Bad practice to use platform dependent and will be rectified -- CCSP_TRACE should be used */
         syslog_systemlog("DMZ", LOG_NOTICE, "%s", (bValue==TRUE)?"Enabled":"Disabled");
@@ -906,6 +902,12 @@ X_CISCO_COM_DMZ_SetParamStringValue
             AnscCopyString(pDmz->InternalIP, "0.0.0.0");
         }
         else{
+             // return FALSE if address is not of "a.b.c.d" form
+           unsigned int d[4]={0};
+           char junk[16]={0};
+           int ret = sscanf(pString, "%3u.%3u.%3u.%3u%s", &d[0], &d[1], &d[2], &d[3], junk);
+           if (ret != 4 || junk[0])
+               return FALSE;
             dmzHost = (ULONG)_ansc_inet_addr(pString);
             if(FALSE == CosaDmlNatChkPortMappingClient(dmzHost)){
                 return FALSE;   /* dmz host not in local lan network */
@@ -1726,14 +1728,6 @@ PortMapping_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "InternalClient", TRUE))
-    {
-        /* collect value */
-        *puLong = pNatPMapping->InternalClient.Value;
-
-        return TRUE;
-    }
-
     if( AnscEqualString(ParamName, "RemoteHost", TRUE))
     {
         /* collect value */
@@ -1888,6 +1882,19 @@ PortMapping_GetParamStringValue
         else
         {
             *pUlSize = AnscSizeOfString(pNatPMapping->X_CISCO_COM_InternalClientV6)+1;
+            return 1;
+        }
+    }
+    if( AnscEqualString(ParamName, "InternalClient", TRUE))
+     {
+       if ( AnscSizeOfString(pNatPMapping->InternalClient) < *pUlSize)
+       {
+           AnscCopyString(pValue, pNatPMapping->InternalClient);
+           return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(pNatPMapping->InternalClient)+1;
             return 1;
         }
     }
@@ -2107,14 +2114,6 @@ PortMapping_SetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "InternalClient", TRUE))
-    {
-        /* save update to backup */
-        pNatPMapping->InternalClient.Value = uValue;
-
-        return TRUE;
-    }
-
     if( AnscEqualString(ParamName, "RemoteHost", TRUE))
     {
         /* save update to backup */
@@ -2217,6 +2216,13 @@ PortMapping_SetParamStringValue
 
         return TRUE;
     }
+
+    if( AnscEqualString(ParamName, "InternalClient", TRUE))
+    {
+         AnscCopyString( pNatPMapping->InternalClient, pString );
+        return TRUE;
+    }
+
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;

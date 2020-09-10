@@ -185,6 +185,8 @@ _COSA_DML_PPP_IF_CFG
     char                            Alias[COSA_DML_IF_NAME_LENGTH];
 
     BOOLEAN                         bEnabled;
+    BOOLEAN                         ipcpEnabled;
+    BOOLEAN                         ipv6cpEnabled;
     COSA_DML_PPP_LINK_TYPE          LinkType;       /* LinkType/LinkName constitutes LowerLayers */
     char                            LinkName[COSA_DML_IF_NAME_LENGTH];
     ULONG                           AutoDisconnectTime;
@@ -232,6 +234,11 @@ _COSA_DML_PPP_IF_INFO
     ANSC_IPV4_ADDRESS               LocalIPAddress;
     ANSC_IPV4_ADDRESS               RemoteIPAddress;
     ANSC_IPV4_ADDRESS               DNSServers[2];
+  /*
+   * IPv6CP
+   */
+    char LocalInterfaceIdentifier[64];
+    char RemoteInterfaceIdentifier[64];
 }
 COSA_DML_PPP_IF_INFO,  *PCOSA_DML_PPP_IF_INFO;
 
@@ -244,12 +251,55 @@ _COSA_DML_PPP_IF_FULL
 }
 COSA_DML_PPP_IF_FULL, *PCOSA_DML_PPP_IF_FULL;
 
+ULONG
+CosaDmlPpp_auto_disconnect_time
+(
+       ULONG var
+);
+
+ULONG
+CosaDmlPpp_idle_disconnect_time
+(
+       ULONG var
+);
+
+BOOL
+CosaDmlPPPEnable
+(
+       BOOL pppenable
+);
+
+BOOL
+CosaDmlIPv6CPEnable
+(
+       BOOL   ipvc6penable
+);
+
+BOOL
+CosaDmlIPCPEnable
+(
+       BOOL ipcpenable
+);
 
 ANSC_STATUS
 CosaDmlPppInit
     (
         ANSC_HANDLE                 hDml,
         PANSC_HANDLE                phContext
+    );
+
+ ANSC_STATUS
+CosaDmlPPPGetWanProtocolConfiguration
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pString
+    );
+
+ANSC_STATUS
+CosaDmlPPPSetWanProtocolConfiguration
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pString
     );
 
 ANSC_STATUS

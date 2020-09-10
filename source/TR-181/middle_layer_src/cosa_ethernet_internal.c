@@ -165,16 +165,21 @@ CosaEthernetInitialize
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoCOSA     = (PPOAM_IREP_FOLDER_OBJECT)NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoEthLink  = (PPOAM_IREP_FOLDER_OBJECT)NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoEthVlanTermination = (PPOAM_IREP_FOLDER_OBJECT)NULL;
+    PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry1         = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)NULL;
     PSLAP_VARIABLE                  pSlapVariable       = (PSLAP_VARIABLE          )NULL;
     PCOSA_DML_ETH_LINK_FULL         pEntry              = (PCOSA_DML_ETH_LINK_FULL )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext        = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext1       = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     ULONG                           ulEntryCount        = 0;
     ULONG                           ulIndex             = 0;
     ULONG                           ulNextInsNum        = 0;
+    ULONG                           ulEntryCount1       = 0;
+    ULONG                           ulIndex1            = 0;
+    ULONG                           ulNextInsNum1       = 0;
 
     /* Initiation all functions */
     CosaDmlEthInit(NULL, &pMyObject->hSbContext);
-    
+    CosaDmlEthVlanTerminationGetCfg(NULL,&pMyObject->EthernetVLANList); 
     _ansc_memset(pMyObject->EthernetPortFullTable, 0, sizeof(COSA_DML_ETH_PORT_FULL) * MAXINSTANCE);
 
     /* Initiation Device.Ethernet.Interface */
@@ -386,6 +391,78 @@ CosaEthernetInitialize
             CosaSListPushEntryByInsNum(&pMyObject->EthernetLinkList, pCosaContext);
         }
     }
+
+    ulEntryCount1 = CosaDmlEthVlanTerminationGetNumberOfEntries(pMyObject->hSbContext);
+
+    for ( ulIndex1 = 0; ulIndex1 < ulEntryCount1; ulIndex1++ )
+    {
+        pEntry1 = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)AnscAllocateMemory(sizeof(COSA_DML_ETH_VLAN_TERMINATION_FULL));
+
+        if ( !pEntry1 )
+        {
+            return ANSC_STATUS_FAILURE;
+        }
+
+        if (CosaDmlEthVlanTerminationGetEntry(NULL, ulIndex1, pEntry1)!= ANSC_STATUS_SUCCESS)
+        {
+            AnscFreeMemory(pEntry1);
+            return ANSC_STATUS_FAILURE;
+        }
+
+        if ( TRUE )
+        {
+            pCosaContext1 = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
+
+            if ( !pCosaContext1 )
+            {
+                AnscFreeMemory(pEntry1);
+
+                return ANSC_STATUS_FAILURE;
+            }
+
+            if ( pEntry1->Cfg.InstanceNumber != 0 )
+            {
+                if ( pMyObject->ulEthernetVlanTerminationNextInstance <= pEntry1->Cfg.InstanceNumber )
+                {
+                    pMyObject->ulEthernetVlanTerminationNextInstance = pEntry1->Cfg.InstanceNumber + 1;
+                    if ( pMyObject->ulEthernetVlanTerminationNextInstance == 0 )
+                    {
+                        pMyObject->ulEthernetVlanTerminationNextInstance = 1;
+                    }
+                }
+            }
+           else
+            {
+                pEntry1->Cfg.InstanceNumber = pMyObject->ulEthernetVlanTerminationNextInstance;
+
+                pMyObject->ulEthernetVlanTerminationNextInstance++;
+
+                if ( pMyObject->ulEthernetVlanTerminationNextInstance == 0 )
+                {
+                    pMyObject->ulEthernetVlanTerminationNextInstance = 1;
+                }
+
+                /* Generate Alias */
+                _ansc_sprintf(pEntry1->Cfg.Alias, "cpe-vlan-termination%d", pMyObject->ulEthernetVlanTerminationNextInstance);
+
+                CosaDmlEthVlanTerminationSetValues
+                (
+                    pMyObject->hSbContext,
+                    ulIndex1,
+                    pCosaContext1->InstanceNumber,
+                    pEntry1->Cfg.Alias
+                );
+            }
+
+            pCosaContext1->InstanceNumber=  pEntry1->Cfg.InstanceNumber;
+            pCosaContext1->hContext      = (ANSC_HANDLE)pEntry1;
+            pCosaContext1->hParentTable  = NULL;
+            pCosaContext1->bNew          = FALSE;
+
+            CosaSListPushEntryByInsNum(&pMyObject->EthernetVlanTerminationList, pCosaContext1);
+        }
+    }
+
 
     /* Load the newly added but not yet commited entries, if exist */
 

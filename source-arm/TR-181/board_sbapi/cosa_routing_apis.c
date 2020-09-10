@@ -2612,6 +2612,7 @@ static RouteInfo6_KeyParam_t result_arr[MAX_RTENTRY];
 
 /* XXX: we may use variable length array ? */
 static int          g_numRtInfo6;
+static int          g_numStaticRtInfo6;
 static RouteInfo6_t g_routeInfos6[MAX_RTENTRY];
 
 static ProtoOrigMap_t protoOrigMap[] = 
@@ -2704,8 +2705,8 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
         bzero(info6, sizeof(RouteInfo6_t));
 
         if (strcmp(prefix, "default") == 0)
-            //snprintf(info6->prefix, sizeof(info6->prefix), "::/0");
-			continue;
+            snprintf(info6->prefix, sizeof(info6->prefix), "::/0");
+		//	continue;
         else
             snprintf(info6->prefix, sizeof(info6->prefix), "%s", prefix);
 
@@ -2727,6 +2728,12 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
             
             /* skip unneeded keys. */
         }
+
+               if( (strcmp("kernel",info6->proto) == 0) || \
+                   (strcmp("static",info6->proto) == 0) || \
+                   (strcmp( "",info6->proto) == 0))
+                       continue;
+
 		bFound = FALSE;
 
 		for(i=0; i < g_numRtInfo6; i++)
@@ -2844,7 +2851,7 @@ Route6_Add(const char *prefix, const char *gw, const char *dev, int metric)
     }
 
 #if defined(USE_SYSTEM)
-    n = snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s ", prefix, dev);
+    n = snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s proto static ", prefix, dev);
     if (gw && strlen(gw))
         n += snprintf(cmd + n, sizeof(cmd) - n, "via %s ", gw);
     if (metric != 0)
@@ -3003,6 +3010,81 @@ Route6_GenerateName(const char *prefix, const char *gateway,
     return 0;
 }
 
+int
+Route6_Add_StaticRoute(void)
+{
+       char key[256];
+       int count = 0;
+       char  tmpBuf[64]= {0},prefix[512]={0},interface[512]={0},gateway[512]={0}, *token;
+       int rc = -1;
+       UtopiaContext ctx;
+       RouteInfo6_t *info6;
+       RouteAlias6_t *alias6;
+
+       if (!Utopia_Init(&ctx))
+               return -1;
+
+        rc=Utopia_RawGet(&ctx, NULL, "static_v6_count", tmpBuf, sizeof(tmpBuf));
+        if(1 == rc) {
+            count = atoi(tmpBuf);
+        }
+        rc = g_numRtInfo6;
+
+        for (int i=1;i<=count;i++){
+               info6 = &g_routeInfos6[rc];
+               alias6 = &info6->alias6;
+               bzero(info6, sizeof(RouteInfo6_t));
+               bzero(alias6, sizeof(RouteAlias6_t));
+               memset(tmpBuf,0,sizeof(tmpBuf));
+               snprintf(key, sizeof(key), "static_v6_%d_insnum", i);
+               if (!Utopia_RawGet(&ctx, NULL, key, tmpBuf, sizeof(tmpBuf)))
+               {
+                  goto EXIT1;
+               }
+               alias6->insNum = atoi(tmpBuf);
+               snprintf(key, sizeof(key), "static_v6_%s_prefix",tmpBuf );
+               if (!Utopia_RawGet(&ctx, NULL, key,info6->prefix,sizeof(info6->prefix)))
+               {
+                  goto EXIT1;
+               }
+               snprintf(key, sizeof(key), "static_v6_%s_interface",tmpBuf);
+               if (!Utopia_RawGet(&ctx, NULL, key, info6->interface, sizeof(info6->interface)))
+               {
+                  goto EXIT1;
+               }
+               snprintf(key, sizeof(key), "static_v6_%s_gateway", tmpBuf);
+               if (!Utopia_RawGet(&ctx, NULL, key, info6->gateway, sizeof(info6->gateway)))
+               {
+                  goto EXIT1;
+               }
+               token = strtok(info6->interface, "\'");
+               strcpy(info6->interface,token);
+               snprintf(key, sizeof(key), "static_v6_%s_enable", tmpBuf);
+               memset(tmpBuf,0,sizeof(tmpBuf));
+               if (!Utopia_RawGet(&ctx, NULL, key,tmpBuf ,sizeof(tmpBuf)))
+               {
+               	  goto EXIT1;
+               }
+               alias6->enabled =(atoi(tmpBuf) == 1 ? TRUE : FALSE);
+               strcpy(info6->proto,"static");
+               if ((g_numStaticRtInfo6 != count) && (atoi(tmpBuf)== 1))
+               {
+                      if (Route6_Add(prefix, gateway, interface, 0) != 0)
+                      {
+                        //Failed to Add route
+                        CcspTraceWarning(("%s: Route6_Add error\n", __FUNCTION__));
+                      }
+	       }
+               rc++;
+               g_numRtInfo6++;
+        }
+        Utopia_Free(&ctx, 1);
+        return 0;
+EXIT1:
+        Utopia_Free(&ctx, 0);
+        return -1;
+}
+
 static int 
 Route6_LoadRouteInfo(void)
 {
@@ -3137,6 +3219,69 @@ Route6_GetInfoByInsNum(int insNum, int *index)
     }
 
     return NULL;
+}
+
+static int
+Route6_Save_Staticparams(PCOSA_DML_ROUTING_V6_ENTRY  pEntry, int num)
+{
+       char key[256];
+       int count = 0;
+       char tmpBuf[64] = {0};
+       int rc = -1;
+       UtopiaContext ctx;
+
+       if (!Utopia_Init(&ctx))
+               return -1;
+
+        // new entry
+        if (num == 1){
+               rc=Utopia_RawGet(&ctx, NULL, "static_v6_count", tmpBuf, sizeof(tmpBuf));
+               if(1 == rc) {
+                       count = atoi(tmpBuf);
+               }
+               count++;
+               memset(tmpBuf,0,sizeof(tmpBuf));
+               snprintf(tmpBuf, sizeof(tmpBuf), "%d", count);
+               if (!Utopia_RawSet(&ctx, NULL, "static_v6_count",tmpBuf))
+               {
+                   goto EXIT1;
+               }
+               memset(tmpBuf,0,sizeof(tmpBuf));
+               snprintf(key, sizeof(key), "static_v6_%d_insnum", count);
+               snprintf(tmpBuf, sizeof(tmpBuf),"%d",pEntry->InstanceNumber);
+               if (!Utopia_RawSet(&ctx, NULL, key,tmpBuf))
+               {
+                   goto EXIT1;
+               }
+        }
+        memset(tmpBuf,0,sizeof(tmpBuf));
+        snprintf(key, sizeof(key), "static_v6_%d_enable",pEntry->InstanceNumber);
+        snprintf(tmpBuf, sizeof(tmpBuf),"%d",pEntry->Enable);
+        if (!Utopia_RawSet(&ctx, NULL, key,tmpBuf))
+        {
+            goto EXIT1;
+        }
+        snprintf(key, sizeof(key), "static_v6_%d_prefix",pEntry->InstanceNumber);
+        if (!Utopia_RawSet(&ctx, NULL, key,pEntry->DestIPPrefix))
+        {
+            goto EXIT1;
+        }
+        snprintf(key, sizeof(key), "static_v6_%d_interface", pEntry->InstanceNumber);
+        if (!Utopia_RawSet(&ctx, NULL, key, pEntry->Interface))
+        {
+	    goto EXIT1;
+        }
+        snprintf(key, sizeof(key), "static_v6_%d_gateway", pEntry->InstanceNumber);
+        if (!Utopia_RawSet(&ctx, NULL, key, pEntry->NextHop))
+        {
+            goto EXIT1;
+        }
+
+        Utopia_Free(&ctx, 1);
+        return 0;
+EXIT1:
+        Utopia_Free(&ctx, 0);
+        return -1;
 }
 
 static int
@@ -3453,6 +3598,7 @@ Router_Alias
     BOOL                            Used;
     char                            Alias[COSA_DML_IF_NAME_LENGTH];
     char                            Name[64];
+    char			    Dest_Intf[10];
 }
 Router_Alias[256];
 
@@ -3481,10 +3627,11 @@ AddRouteEntryToKernel(void *arg)
 {
     int     index;
     char    cmd_buf[80] = {0};
-    
+    char    buf[40] = {0};
+
     for (index = 0; index < Config_Num; index++) {
         if (Router_Alias[index].Enabled) { // add route entry to kernel when initialize
-#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_) || defined(_COSA_BCM_ARM_)
                     snprintf(cmd_buf, sizeof(cmd_buf), "ip route add %s/%d via %s ",
                     sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)),
                     sroute[index].gateway);
@@ -3493,6 +3640,16 @@ AddRouteEntryToKernel(void *arg)
                     sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)), 
                     sroute[index].gateway, sroute[index].metric);
 #endif
+	    if(sroute[index].metric >= 0)
+    	    {
+		sprintf(buf, "%s %d ", "metric", sroute[index].metric);
+		strncat(cmd_buf, buf, strlen(buf));
+   	    }
+            if(AnscSizeOfString(sroute[index].dest_intf))
+    	    {
+    		sprintf(buf, "%s %s ", "dev", sroute[index].dest_intf);
+       		strncat(cmd_buf, buf, strlen(buf));
+            }
             if (system(cmd_buf) != 0)
             {
                 Router_Alias[index].Enabled = FALSE;
@@ -3556,6 +3713,13 @@ CosaDmlRoutingGetNumberOfV4Entries
                     Router_Alias[r_count].Enabled = atoi(sys_buf);
                 }
 
+            	sprintf(cmd_buf, "tr_routing_v4entry_%d_interface", uIndex+1);
+            	returnStatus = Utopia_RawGet(&ctx, NULL, cmd_buf, sys_buf, sizeof(sys_buf));
+                if (returnStatus == 1)
+                {
+                    AnscCopyString(Router_Alias[r_count].Dest_Intf, sys_buf);
+                }
+
                 Router_Alias[r_count].Used    = TRUE;
 
                 r_count++;
@@ -3578,6 +3742,7 @@ CosaDmlRoutingGetNumberOfV4Entries
             sscanf(Router_Alias[index].Name, "%s %s %s %d", sroute[index].dest_lan_ip, sroute[index].netmask, sroute[index].gateway,
                    &(sroute[index].metric));
             Router_Alias[index].Index = index;
+            AnscCopyString(sroute[index].dest_intf,Router_Alias[index].Dest_Intf);
         }
 
         /*register callback functions for event "lan-status"*/
@@ -3753,6 +3918,9 @@ CosaDmlRoutingSetV4EntryValues
     snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_enabled", ulInstanceNumber);
     Utopia_RawSet(&ctx, NULL, cmd, "1");
 
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_interface", ulInstanceNumber );
+    Utopia_RawSet(&ctx, NULL, cmd,sroute[ulIndex].dest_intf);
+
     Utopia_Free(&ctx, 1);
 
     Router_Alias[Config_Num].Index          = ulIndex;
@@ -3861,7 +4029,7 @@ CosaDmlRoutingAddV4Entry
     CcspTraceWarning(("---CosaDmlRoutingAddV4Entry gateway is %s\n", sroute[Num_V4Entry-1].gateway));
     CcspTraceWarning(("---CosaDmlRoutingAddV4Entry name is %s\n", sroute[Num_V4Entry-1].name));
 
-#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_) || defined(_COSA_BCM_ARM_)
          /* add new route entry */
     snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s ",
                         pEntry->DestIPAddress.Dot[0],
@@ -3882,6 +4050,12 @@ CosaDmlRoutingAddV4Entry
 			inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)),
 			metric);
 #endif
+
+    if(pEntry->ForwardingMetric >= 0)
+    {
+        sprintf(buf, "%s %d ", "metric", pEntry->ForwardingMetric);
+        strncat(cmd, buf, strlen(buf));
+    }
 
     if(AnscSizeOfString(pEntry->Interface))
     {
@@ -3930,6 +4104,10 @@ CosaDmlRoutingAddV4Entry
     snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_enabled", pEntry->InstanceNumber);
     snprintf(buf, sizeof(buf), "%d", (returnStatus == ANSC_STATUS_SUCCESS)?1:0);
     rc = Utopia_RawSet(&ctx, NULL, cmd, buf);
+
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_interface",
+            pEntry->InstanceNumber );
+    rc = Utopia_RawSet(&ctx, NULL, cmd, pEntry->Interface);
 
     /* Free Utopia Context */
     Utopia_Free(&ctx,1);
@@ -4007,19 +4185,26 @@ CosaDmlRoutingDelV4Entry
 
         /* delete the previous one */
         uindex = Router_Alias[index].Index;
-#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_) || defined(_COSA_BCM_ARM_)
                 snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip,
                         Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
 #else
     	snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s table erouter metric %d ", sroute[uindex].dest_lan_ip, 
 			Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric);
 #endif
-
-    	if(AnscSizeOfString(sroute[uindex].dest_intf))
-    	{
-        	sprintf(buf, "%s %s ", "dev", sroute[uindex].dest_intf);
-            strncat(cmd, buf, strlen(buf));
+    	if(sroute[uindex].metric >= 0)
+   	{
+        	sprintf(buf, "%s %d ", "metric", sroute[uindex].metric);
+        	strncat(cmd, buf, strlen(buf));
     	}
+
+    	if(AnscSizeOfString(pEntry->Interface)) {
+    		if(AnscSizeOfString(sroute[uindex].dest_intf))
+    		{
+        		sprintf(buf, "%s %s ", "dev", sroute[uindex].dest_intf);
+            		strncat(cmd, buf, strlen(buf));
+    		}
+	}
 
     	if((err = system(cmd)) != 0) {
             CcspTraceWarning(("CosaDmlRoutingDelV4Entry delete failure, %s\n", strerror(errno)));
@@ -4038,6 +4223,10 @@ CosaDmlRoutingDelV4Entry
     snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_enabled", 
             pEntry->InstanceNumber);
     Utopia_RawSet(&ctx, NULL, cmd, NULL);
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_interface",
+            pEntry->InstanceNumber);
+    Utopia_RawSet(&ctx, NULL, cmd, NULL);
+
     CcspTraceWarning(("CosaDmlRoutingDelV4Entry unset tr_routing_v4entry_%d_alias \n", pEntry->InstanceNumber));
 
     Utopia_Free(&ctx, 1);
@@ -4122,6 +4311,9 @@ CosaDmlRoutingSetV4Entry
     snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_enabled", pEntry->InstanceNumber);
     snprintf(buf, sizeof(buf), "%d", (pEntry->Enable)?1:0);
     Utopia_RawSet(&ctx, NULL, cmd, buf);
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_interface",
+            pEntry->InstanceNumber );
+    Utopia_RawSet(&ctx, NULL, cmd, pEntry->Interface);
     Utopia_Free(&ctx, 1);
 
     for(index = 0; index < Config_Num; index++)
@@ -4147,13 +4339,19 @@ CosaDmlRoutingSetV4Entry
 
         /* First delete the previous one */
         uindex = Router_Alias[index].Index;
-#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_) || defined(_COSA_BCM_ARM_)
                 snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip,
                         Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
 #else
     	snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s table erouter metric %d ", sroute[uindex].dest_lan_ip, 
 			Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric);
 #endif
+
+    	if(sroute[uindex].metric >= 0)
+    	{
+        	sprintf(buf, "%s %d ", "metric", sroute[uindex].metric);
+       		strncat(cmd, buf, strlen(buf));
+    	}
 
     	if(AnscSizeOfString(sroute[uindex].dest_intf))
     	{
@@ -4193,7 +4391,8 @@ CosaDmlRoutingSetV4Entry
                 pEntry->GatewayIPAddress.Dot[3]
                 );
         strncpy(sroute[uindex].dest_intf, pEntry->Interface, 9);
-#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
+        sroute[uindex].metric=pEntry->ForwardingMetric;
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_) || defined(_COSA_BCM_ARM_)
                 snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s ",
                  pEntry->DestIPAddress.Dot[0],
                  pEntry->DestIPAddress.Dot[1],
@@ -4213,6 +4412,12 @@ CosaDmlRoutingSetV4Entry
                  inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)),
                  metric);
 #endif
+
+    	if(pEntry->ForwardingMetric >= 0)
+    	{
+        	sprintf(buf, "%s %d ", "metric", pEntry->ForwardingMetric);
+        	strncat(cmd, buf, strlen(buf));
+    	}
 
         if(AnscSizeOfString(pEntry->Interface))
         {
@@ -4269,7 +4474,8 @@ CosaDmlRoutingGetNumberOfV6Entries
      */
     if (Route6_LoadRouteInfo() != 0)
         return 0;
-	
+    Route6_Add_StaticRoute();
+
     return g_numRtInfo6;
 }
 
@@ -4342,6 +4548,8 @@ CosaDmlRoutingSetV6EntryValues
 {
     RouteInfo6_t *info6;
     RouteAlias6_t *alias6;
+    UtopiaContext ctx;
+    char key[256],tmpBuf[64];
 
 	/**
 	 * This function set RouteAlias6_t{} and PSM param **ONLY**.
@@ -4360,6 +4568,19 @@ CosaDmlRoutingSetV6EntryValues
     alias6->insNum = ulInstanceNumber;
     snprintf(alias6->alias, sizeof(alias6->alias), "%s", pAlias);
     alias6->enabled = TRUE;
+
+    if(strcmp(info6->proto, "static") == 0 ){
+       if (!Utopia_Init(&ctx))
+                return -1;
+       g_numStaticRtInfo6++;
+       snprintf(key, sizeof(key), "static_v6_%d_insnum", g_numStaticRtInfo6);
+       snprintf(tmpBuf, sizeof(tmpBuf), "%d",alias6->insNum);
+       if (!Utopia_RawSet(&ctx, NULL, key,tmpBuf))
+       {
+       		Utopia_Free(&ctx, 0);
+       }
+       Utopia_Free(&ctx, 1);
+     }
 
     /* PSM parameters */
 	if (Route6_SaveParams(alias6) != 0)
@@ -4391,6 +4612,8 @@ CosaDmlRoutingAddV6Entry
         return ANSC_STATUS_FAILURE;
     }
 
+    if ( Route6_Save_Staticparams(pEntry, 1)!= 0)
+               return ANSC_STATUS_FAILURE;
     /* for later use */
     info6 = &g_routeInfos6[g_numRtInfo6];
     alias6 = &info6->alias6;
@@ -4448,6 +4671,7 @@ CosaDmlRoutingAddV6Entry
 	
     /* all settings are successfully commited, now add counter */
     g_numRtInfo6++;;
+    g_numStaticRtInfo6++;
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -4486,6 +4710,23 @@ CosaDmlRoutingDelV6Entry
 
     snprintf(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_ENABLED);
     syscfg_unset(NULL, key);
+
+    snprintf(key, sizeof(key), "static_v6_%d_enable", alias6->insNum);
+    syscfg_unset(NULL, key);
+
+    snprintf(key, sizeof(key), "static_v6_%d_prefix", alias6->insNum);
+    syscfg_unset(NULL, key);
+
+    snprintf(key, sizeof(key), "static_v6_%d_interface", alias6->insNum);
+    syscfg_unset(NULL, key);
+
+    snprintf(key, sizeof(key), "static_v6_%d_gateway", alias6->insNum);
+    syscfg_unset(NULL, key);
+
+    g_numStaticRtInfo6--;
+    memset(key, 0, sizeof(key));
+    sprintf(key, "%d",g_numStaticRtInfo6);
+    syscfg_set(NULL, "static_v6_count", key);
 
     syscfg_commit();
 
@@ -4563,15 +4804,18 @@ CosaDmlRoutingSetV6Entry
     }
 
     /* RouteAlias6_t{} */
-    Route6_GenerateName(info6->prefix, info6->gateway, info6->interface,
+    /*Route6_GenerateName(info6->prefix, info6->gateway, info6->interface,
             alias6->name, sizeof(alias6->name));
     if (alias6->insNum != pEntry->InstanceNumber)
             CcspTraceWarning(("%s: instance num not match !!\n", __FUNCTION__));
-    snprintf(alias6->alias, sizeof(alias6->alias), "%s", pEntry->Alias);
+    snprintf(alias6->alias, sizeof(alias6->alias), "%s", pEntry->Alias); */
     alias6->enabled = pEntry->Enable;
 
     /* PSM params */
-	if (Route6_SaveParams(alias6) != 0)
+    if (Route6_SaveParams(info6) != 0)
+               return ANSC_STATUS_FAILURE;
+
+    if ( Route6_Save_Staticparams(info6,0)!= 0)
 		return ANSC_STATUS_FAILURE;
 
     return ANSC_STATUS_SUCCESS;

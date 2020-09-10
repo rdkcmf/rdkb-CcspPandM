@@ -92,6 +92,8 @@ CosaDmlRaInit
     return ANSC_STATUS_SUCCESS;
 }
 
+static int Ut_GetInt(UtopiaContext *ctx, const char *key, int *val);
+
 ANSC_STATUS
 CosaDmlRaSetCfg
     (
@@ -100,7 +102,8 @@ CosaDmlRaSetCfg
     )
 {
     UtopiaContext ctx;
-    char sVal[64];
+    char sVal[64] = {0};
+    int iVal = 0;
 
     if (!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -158,6 +161,8 @@ CosaDmlRaSetCfg
     else
         Utopia_RawSet(&ctx, NULL, "mgmt_wan_sshaccess", "0");
     */
+    if (!Ut_GetInt(&ctx, "mgmt_wan_sshport", &iVal))
+       fprintf(stderr, "%s: mgmt_wan_sshport error\n", __FUNCTION__);
 
     snprintf(sVal, sizeof(sVal), "%lu", pCfg->SSHPort);
     Utopia_RawSet(&ctx, NULL, "mgmt_wan_sshport", sVal);
@@ -183,6 +188,12 @@ CosaDmlRaSetCfg
     Utopia_RawSet(&ctx, NULL, "mgmt_wan_srcend_ipv6", pCfg->EndIpV6);
 
     Utopia_Free(&ctx, 1);
+
+    if (iVal != pCfg->SSHPort && system("/etc/utopia/service.d/service_sshd.sh sshd-restart") != 0)
+    {
+        fprintf(stderr, "%s: fail to restart sshd\n", __FUNCTION__);
+        return ANSC_STATUS_FAILURE;
+    }
 
     /*Restarting Firewall */
     if (system("sysevent set firewall-restart") != 0)

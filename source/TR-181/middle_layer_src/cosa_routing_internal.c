@@ -580,6 +580,7 @@ CosaRoutingInitialize
     /* Initialize middle layer for Device.Routing.Router.{i}.IPv6Forwarding.{i}. */
     ulSubEntryCount = CosaDmlRoutingGetNumberOfV6Entries(NULL);
 
+    pRouter->ulNextIPv6ForwardInsNum = 1;
     for ( ulSubIndex = 0; ulSubIndex < ulSubEntryCount; ulSubIndex++ )
     {
         pRouterIPv6Forward = (PCOSA_DML_ROUTING_V6_ENTRY)AnscAllocateMemory(sizeof(COSA_DML_ROUTING_V6_ENTRY));

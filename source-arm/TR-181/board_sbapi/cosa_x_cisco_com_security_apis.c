@@ -327,6 +327,7 @@ CosaDmlFirewallGetConfig2
 {
     pCfg->FirewallLevel                   = g_FirewallConfig2.FirewallLevel;
     pCfg->FilterAnonymousInternetRequests = g_FirewallConfig2.FilterAnonymousInternetRequests;
+    pCfg->FilterRFC1918                   = g_FirewallConfig2.FilterRFC1918;
     pCfg->FilterIDENT                     = g_FirewallConfig2.FilterIDENT;
     pCfg->FilterMulticast                 = g_FirewallConfig2.FilterMulticast;
     pCfg->FilterNATRedirection            = g_FirewallConfig2.FilterNATRedirection;
@@ -377,6 +378,7 @@ CosaDmlFirewallSetConfig2
 {
     g_FirewallConfig2.FirewallLevel                   = pCfg->FirewallLevel;
     g_FirewallConfig2.FilterAnonymousInternetRequests = pCfg->FilterAnonymousInternetRequests;
+    g_FirewallConfig2.FilterRFC1918                   = pCfg->FilterRFC1918;
     g_FirewallConfig2.FilterIDENT                     = pCfg->FilterIDENT;
     g_FirewallConfig2.FilterMulticast                 = pCfg->FilterMulticast;
     g_FirewallConfig2.FilterNATRedirection            = pCfg->FilterNATRedirection;
@@ -2534,6 +2536,7 @@ CosaDmlFirewallGetConfig2
     pCfg->FilterHTTP = (fw.filter_http_from_wan == true) ? TRUE : FALSE;
     pCfg->FilterHTTPs = (fw.filter_http_from_wan == true) ? TRUE : FALSE;
     pCfg->FilterAnonymousInternetRequests = (fw.filter_anon_req == true) ? TRUE : FALSE;
+    pCfg->FilterRFC1918 = (fw.filter_rfc1918_from_wan == true) ? TRUE : FALSE;
 
     pCfg->FilterIdentV6 = (fw.filter_ident_v6 == true) ? TRUE : FALSE;
     pCfg->FilterMulticastV6 = (fw.filter_multicast_v6 == true) ? TRUE : FALSE;
@@ -2548,6 +2551,11 @@ CosaDmlFirewallGetConfig2
     pCfg->SmartPktDectionEnableV6 = (fw.smart_pkt_dection_enable_v6 == true) ? TRUE : FALSE;
     pCfg->WanPingEnable = (fw.wan_ping_enable == true) ? TRUE : FALSE;
     pCfg->WanPingEnableV6 = (fw.wan_ping_enable_v6 == true) ? TRUE : FALSE;
+    pCfg->IPSecPassthrough = (fw.allow_ipsec_passthru == true) ? TRUE: FALSE;
+    pCfg->L2TPPassthrough =  (fw.allow_l2tp_passthru == true) ? TRUE: FALSE;
+    pCfg->PPTPPassthrough =  (fw.allow_pptp_passthru == true) ? TRUE: FALSE;
+    pCfg->SSLPassthrough =  (fw.allow_ssl_passthru == true) ? TRUE: FALSE;
+
 
     value[0] = '\0';
     Utopia_Get(&ctx, UtopiaValue_Firewall_Level, value, sizeof(value));
@@ -2634,6 +2642,7 @@ CosaDmlFirewallSetConfig2
     fw.filter_anon_req = (pCfg->FilterAnonymousInternetRequests == FALSE) ? 0 : 1;
     fw.filter_p2p_from_wan = (pCfg->FilterP2P == FALSE) ? 0 : 1;
     fw.filter_http_from_wan = (pCfg->FilterHTTP == FALSE) ? 0 : 1;
+    fw.filter_rfc1918_from_wan = (pCfg->FilterRFC1918 == FALSE) ? 0 : 1;
 
     fw.filter_ident_v6 = (pCfg->FilterIdentV6 == FALSE) ? 0 : 1;
     fw.filter_multicast_v6 = (pCfg->FilterMulticastV6 == FALSE) ? 0 : 1;
@@ -2647,6 +2656,11 @@ CosaDmlFirewallSetConfig2
     fw.smart_pkt_dection_enable_v6 = (pCfg->SmartPktDectionEnableV6 == FALSE) ? 0 : 1;
     fw.wan_ping_enable = (pCfg->WanPingEnable == FALSE) ? 0 : 1;
     fw.wan_ping_enable_v6 = (pCfg->WanPingEnableV6 == FALSE) ? 0 : 1;
+    fw.allow_ipsec_passthru = (pCfg->IPSecPassthrough == FALSE) ? 0 : 1;
+    fw.allow_l2tp_passthru = (pCfg->L2TPPassthrough == FALSE) ? 0 : 1;
+    fw.allow_pptp_passthru = (pCfg->PPTPPassthrough == FALSE) ? 0 : 1;
+    fw.allow_ssl_passthru = (pCfg->SSLPassthrough == FALSE) ? 0 : 1;
+
 
     switch(pCfg->FirewallLevel)
     {

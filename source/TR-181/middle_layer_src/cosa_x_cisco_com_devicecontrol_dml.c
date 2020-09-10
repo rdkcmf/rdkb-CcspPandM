@@ -65,9 +65,9 @@
         07/15/2011    initial revision.
 
 **************************************************************************/
-
 #include "cosa_x_cisco_com_devicecontrol_dml.h"
 #include "cosa_drg_common.h"
+#include "ansc_platform.h"
 
 static int ifWanRestart = 0;
 
@@ -123,6 +123,145 @@ static int ifWanRestart = 0;
     *  X_CISCO_COM_DeviceControl_Rollback
 
 ***********************************************************************/
+BOOL
+XConf_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    CcspTraceInfo(("Inside %s function \n",__FUNCTION__));
+
+    PCOSA_DATAMODEL_DEVICECONTROL   pMyObject    = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+    PCOSA_DML_DEVICECONTROL_XConf    pXConf       = &pMyObject->XConf;
+
+    if( AnscEqualString(ParamName, "xconfCheckNow", TRUE))
+    {
+       *pBool=FALSE;
+        return TRUE;
+    }
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+       *pBool = pXConf->Enable;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+ULONG
+XConf_GetParamStringValue
+    (
+       ANSC_HANDLE                 hInsContext,
+       char*                       ParamName,
+       char*                       pValue,
+       ULONG*                      pUlSize
+    )
+{
+    CcspTraceInfo(("Inside %s function \n",__FUNCTION__));
+
+    PCOSA_DATAMODEL_DEVICECONTROL   pMyObject    = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+    PCOSA_DML_DEVICECONTROL_XConf    pXConf       = &pMyObject->XConf;
+
+   if( AnscEqualString(ParamName, "ServerURL", TRUE))
+    {
+       AnscCopyString( pValue , pXConf->ServerURL );
+       return 0;
+    }
+    return -1;
+}
+
+BOOL
+XConf_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+   CcspTraceInfo(("Inside %s function \n",__FUNCTION__));
+
+    PCOSA_DATAMODEL_DEVICECONTROL   pMyObject    = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+    PCOSA_DML_DEVICECONTROL_XConf    pXConf       = &pMyObject->XConf;
+
+    if (AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        pXConf->Enable = bValue;
+        return TRUE;
+    }
+
+    int status = 0;
+
+    if( AnscEqualString(ParamName, "xconfCheckNow", TRUE))
+    {
+                AnscTraceWarning(("Triggering firmware download check from TR181\n"));
+               if( TRUE == bValue )
+       {
+                      //Need to confirm the functionality once the firmware is obtained
+                       return TRUE;
+                }
+     }
+ return FALSE;
+}
+
+BOOL
+XConf_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    CcspTraceInfo(("Inside %s function \n",__FUNCTION__));
+
+    PCOSA_DATAMODEL_DEVICECONTROL   pMyObject    = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+    PCOSA_DML_DEVICECONTROL_XConf    pXConf       = &pMyObject->XConf;
+
+    if (AnscEqualString(ParamName, "ServerURL", TRUE))
+    {
+      int rc=-1, rc2=-1, rc3=-1;
+        rc=IPv4_Url_Validate(pString);
+        rc2=IPv6_Url_Validate(pString);
+        rc3=Fqdn_Url_Validate(pString);
+        if(rc==0 || rc2==0 ||  rc3==0)
+        {
+         AnscCopyString( pXConf->ServerURL , pString );
+           return TRUE;
+        }
+        else
+        {
+         return FALSE;
+        }
+
+    }
+    return FALSE;
+}
+
+BOOL
+XConf_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    )
+{
+    return TRUE;
+}
+
+ULONG
+XConf_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DATAMODEL_DEVICECONTROL   pMyObject    = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+
+    return CosaDmlXConfSetConfig(NULL, &pMyObject->XConf);
+}
+
+
+
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -675,6 +814,15 @@ X_CISCO_COM_DeviceControl_GetParamStringValue
             return -1;
 
         return 0;
+    }
+
+    if( AnscEqualString(ParamName, "X_CrashPortalURL", TRUE))
+    {
+      /* collect value */
+      if (CosaDmlDcGetX_CrashPortalURL(NULL, pValue) != ANSC_STATUS_SUCCESS)
+          return -1;
+
+      return 0;
     }
 
     if( AnscEqualString(ParamName, "UserChangedFlags", TRUE) )
@@ -1372,6 +1520,25 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
         return TRUE;
     }
 
+   if( AnscEqualString(ParamName, "X_CrashPortalURL", TRUE))
+    {
+        int rc1=-1, rc2=-1, rc3=-1;
+        rc1=IPv4_Url_Validate(pString);
+        rc2=IPv6_Url_Validate(pString);
+        rc3=Fqdn_Url_Validate(pString);
+        if(rc1==0 || rc2==0 ||  rc3==0)
+          AnscCopyString(pMyObject->X_CrashPortalURL, pString);
+        else
+           return FALSE;
+
+        retStatus = CosaDmlDcSetX_CrashPortalURL(NULL, pMyObject->X_CrashPortalURL);
+        if (retStatus != ANSC_STATUS_SUCCESS)
+            return FALSE;
+
+        return TRUE;
+    }
+
+
     if( AnscEqualString(ParamName, "UserChangedFlags", TRUE))
     {
         AnscCopyString(pMyObject->UserChangedFlags, pString);
@@ -1524,6 +1691,7 @@ X_CISCO_COM_DeviceControl_Validate
     )
 {
     PCOSA_DATAMODEL_DEVICECONTROL      pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+    ANSC_STATUS                        retStatus = ANSC_STATUS_SUCCESS;
     if(pMyObject->WebServerChanged == TRUE)
     {
         if(pMyObject->HTTPSPort == pMyObject->HTTPPort || \
@@ -1532,7 +1700,21 @@ X_CISCO_COM_DeviceControl_Validate
             return FALSE;
             
     }
-    return TRUE;
+       if (pMyObject->bResetChanged  == 1){
+       retStatus =CosaDmlDcCheckRebootDeviceString(NULL, pMyObject->RebootDevice);
+        if (retStatus != ANSC_STATUS_SUCCESS){
+               CcspTraceInfo(("%s Entered string %s is not a valid one",__FUNCTION__,pMyObject->RebootDevice));
+               return FALSE;
+       }
+     }
+       if (pMyObject->bFactoryResetChanged = 1){
+       retStatus =CosaDmlDcCheckFactoryResetString(NULL, pMyObject->FactoryReset);
+        if (retStatus != ANSC_STATUS_SUCCESS){
+               CcspTraceInfo(("%s Entered string %s is not a valid one", __FUNCTION__, pMyObject->FactoryReset));
+               return FALSE;
+       }
+     }
+   return TRUE;
 }
 
 /**********************************************************************  
@@ -2048,12 +2230,14 @@ LanMngm_Validate
     /* check subnetmask */
     /* Subnet mask MUST accept ONLY the following IP addresses: */
     /* 255.255.255.0, 255.255.0.0, 255.0.0.0, 255.255.255.128, 255.255.255.252 */
+    /* 255.255.255.0, 255.255.0.0, 255.0.0.0, 255.255.255.128, 255.255.255.252, 255.240.0.0*/
 #if defined(_XB6_PRODUCT_REQ_)  || defined(_PLATFORM_RASPBERRYPI_) || defined (_HUB4_PRODUCT_REQ_) || defined(_PLATFORM_TURRIS_)
     if(pLanMngm->LanSubnetMask.Value != 0x00FFFFFF &&
        pLanMngm->LanSubnetMask.Value != 0x0000FFFF &&
        pLanMngm->LanSubnetMask.Value != 0x000000FF &&  
        pLanMngm->LanSubnetMask.Value != 0x80FFFFFF && 
-       pLanMngm->LanSubnetMask.Value != 0xFCFFFFFF )
+       pLanMngm->LanSubnetMask.Value != 0xFCFFFFFF &&
+       pLanMngm->LanSubnetMask.Value != 0x0000F0FF )
 #elif defined(_BCI_FEATURE_REQ)
 #ifdef _CBR_PRODUCT_REQ_
     if(pLanMngm->LanSubnetMask.Value != 0x000000FF &&   //8
@@ -2125,6 +2309,15 @@ LanMngm_Validate
     }else if(pLanMngm->LanIPAddress.Dot[0] == 10 ){
         return TRUE;
     }else if(pLanMngm->LanIPAddress.Dot[0] == 172 && pLanMngm->LanIPAddress.Dot[1] >= 16 && pLanMngm->LanIPAddress.Dot[1] <= 31){
+        if (pLanMngm->LanSubnetMask.Value != 0x00FFFFFF &&
+            pLanMngm->LanSubnetMask.Value != 0x0000FFFF &&
+            pLanMngm->LanSubnetMask.Value != 0x80FFFFFF &&
+            pLanMngm->LanSubnetMask.Value != 0xFCFFFFFF &&
+            pLanMngm->LanSubnetMask.Value != 0x0000F0FF )
+        {
+            CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Invalid Lan IP and subnet mask combination for a private network, reverting back to old value  ...\n"));
+            goto RET_ERR;
+        }
         return TRUE;
     }
 #if defined(_XB6_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_) || defined(_PLATFORM_RASPBERRYPI_) || defined (_HUB4_PRODUCT_REQ_) || defined(_PLATFORM_TURRIS_)
@@ -2132,9 +2325,17 @@ LanMngm_Validate
 #else
    else if((pLanMngm->LanIPAddress.Value & 0xFFFF0000) == 0xC0A80000)
 #endif
-{
+   {
+        if (pLanMngm->LanSubnetMask.Value != 0x00FFFFFF &&
+            pLanMngm->LanSubnetMask.Value != 0x0000FFFF &&
+            pLanMngm->LanSubnetMask.Value != 0x80FFFFFF &&
+            pLanMngm->LanSubnetMask.Value != 0xFCFFFFFF )
+        {
+            CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Invalid Lan IP and subnet mask combination for a private network, reverting back to old value  ...\n"));
+            goto RET_ERR;
+        }
         return TRUE;
-    }
+   }
 
 RET_ERR:
     CosaDmlLanMngm_GetConf(pLanMngm->InstanceNumber, pLanMngm);
@@ -2320,7 +2521,7 @@ WebAccessLevel_GetParamIntValue
 
         return TRUE;
     }
-	
+       return FALSE;
 }
 
 BOOL
@@ -2470,6 +2671,8 @@ WebAccessLevel_SetParamIntValue
 
         return TRUE;
     }
+
+      return FALSE;
 }
 
 BOOL
@@ -2525,4 +2728,109 @@ WebAccessLevel_Rollback
     return 0;
 }
 
+BOOL
+WebPA_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       bValue
+    )
+{
+    PCOSA_DATAMODEL_DEVICECONTROL   pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+    PCOSA_DML_WEBPA_CFG2 pWebPACfg = &pMyObject->WebPAConfig;
+  if( AnscEqualString(ParamName, "Enable", TRUE))
+     {
+        *bValue=pWebPACfg->Enable;
+        return TRUE;
+     }
+  return FALSE;
+}
+
+ULONG
+WebPA_GetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pValue,
+ ULONG*                      pUlSize
+ )
+{
+    PCOSA_DATAMODEL_DEVICECONTROL   pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+    PCOSA_DML_WEBPA_CFG2 pWebPACfg = &pMyObject->WebPAConfig;
+  if( AnscEqualString(ParamName, "ServerURL", TRUE))
+    {
+       AnscCopyString(pValue,pWebPACfg->ServerURL);
+       return 0;
+    }
+  return -1;
+}
+
+BOOL
+WebPA_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    PCOSA_DATAMODEL_DEVICECONTROL   pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+    PCOSA_DML_WEBPA_CFG2 pWebPACfg = &pMyObject->WebPAConfig;
+    if (AnscEqualString(ParamName, "Enable", TRUE))
+    {
+       pWebPACfg->Enable = bValue;
+        return TRUE;
+    }
+  return FALSE;
+}
+
+BOOL
+WebPA_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+  PCOSA_DATAMODEL_DEVICECONTROL   pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+  PCOSA_DML_WEBPA_CFG2 pWebPACfg = &pMyObject->WebPAConfig;
+  if (AnscEqualString(ParamName, "ServerURL", TRUE))
+    {
+       int rc=-1,rc2=-1,rc3=-1;
+       rc=IPv4_Url_Validate(pString);
+       rc2=IPv6_Url_Validate(pString);
+       rc3=Fqdn_Url_Validate(pString);
+       if(rc==0 || rc2==0 || rc3==0)
+        {
+          AnscCopyString(pWebPACfg->ServerURL,pString);
+          return TRUE;
+        }
+       else
+        {
+         return FALSE;
+        }
+    }
+  return FALSE;
+
+}
+
+BOOL
+WebPA_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    )
+{
+    return TRUE;
+}
+
+ULONG
+WebPA_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DATAMODEL_DEVICECONTROL        pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
+    return CosaDmlWebPASetConfig2(NULL, &pMyObject->WebPAConfig);
+}
 

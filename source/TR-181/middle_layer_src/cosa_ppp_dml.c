@@ -112,7 +112,7 @@
     *  PPP_GetParamIntValue
     *  PPP_GetParamUlongValue
     *  PPP_GetParamStringValue
-
+    *  PPP_SetParamStringValue
 ***********************************************************************/
 /**********************************************************************  
 
@@ -294,6 +294,18 @@ PPP_GetParamStringValue
     )
 {
     /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "WanProtocolConfiguration", TRUE))
+    {
+       char buf[6];
+       memset(buf, 0, sizeof(buf));
+
+       CosaDmlPPPGetWanProtocolConfiguration(NULL, buf);
+
+       AnscCopyString(pValue, buf);
+
+       return 0;
+    }
+
     if (AnscEqualString(ParamName, "SupportedNCPs", TRUE))
     {
         ULONG flag;
@@ -324,7 +336,7 @@ PPP_GetParamStringValue
 
         if (flag & COSA_DML_PPP_SUPPORTED_NCP_IPv6CP)
         {
-            AnscCatString(pValue, "IPv6CP,");
+            AnscCatString(pValue, "IPv6CP");
         }
 
         return 0;
@@ -334,6 +346,61 @@ PPP_GetParamStringValue
     return -1;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        PPP_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated string value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+PPP_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    )
+{
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "WanProtocolConfiguration", TRUE))
+    {
+       if( ANSC_STATUS_SUCCESS == CosaDmlPPPSetWanProtocolConfiguration(NULL, pString) )
+        {
+            /* TempFix: Reboot the RPI after changing the Wan Proto*/
+            char cmd_reboot[] = "sleep 5 && dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Device &";
+            system(cmd_reboot);
+           return TRUE;
+        }
+        else
+           return FALSE;
+    }
+
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
 /***********************************************************************
 
  APIs for Object:
@@ -651,11 +718,23 @@ Interface3_GetParamBoolValue
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
 
     /* check the parameter name and return the corresponding value */
+ if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+           /* collect value */
+           *pBool = pEntry->Cfg.bEnabled;
+           return TRUE;
+    }
+
     if( AnscEqualString(ParamName, "IPCPEnable", TRUE))
     {
         /* collect value */
-        *pBool = pEntry->Cfg.bEnabled;
+        *pBool = pEntry->Cfg.ipcpEnabled;
         return TRUE;
+    }
+ if( AnscEqualString(ParamName, "IPV6CPEnable", TRUE))
+    {
+           *pBool = pEntry->Cfg.ipv6cpEnabled;
+           return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Reset", TRUE))
@@ -836,6 +915,7 @@ Interface3_GetParamUlongValue
     if( AnscEqualString(ParamName, "MaxMRUSize", TRUE))
     {
         /* collect value */
+	CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
         *puLong = pEntry->Cfg.MaxMRUSize;
         return TRUE;
     }
@@ -875,7 +955,35 @@ Interface3_GetParamUlongValue
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
+ULONG
+IPv6CP_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+       PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+       PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
 
+       if( AnscEqualString(ParamName, "LocalInterfaceIdentifier", TRUE))
+       {
+               /* collect value */
+         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
+         _ansc_sprintf(pValue,"%s",pEntry->Info.LocalInterfaceIdentifier);
+       }
+       if( AnscEqualString(ParamName, "RemoteInterfaceIdentifier", TRUE))
+       {
+               /* collect value */
+         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
+         _ansc_sprintf(pValue,"%s",pEntry->Info.RemoteInterfaceIdentifier);
+       }
+
+
+       /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+       return -1;
+}
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -980,6 +1088,13 @@ Interface3_GetParamStringValue
     return -1;
 }
 
+/* Helper function to restart the pppoe client */
+static void Pppoe_Restart()
+{
+    system("/etc/utopia/service.d/service_wan/pppoe_config.sh");
+    sleep(3);
+    system("pppoe-stop; pppoe-start &");
+}
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -1022,12 +1137,29 @@ Interface3_SetParamBoolValue
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
 
     /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+       {
+               pEntry->Cfg.bEnabled = bValue;
+		if( bValue ) {
+                    Pppoe_Restart();
+                }
+                else {
+                    system("pppoe-stop");
+                }
+               return TRUE;
+       }
+
     if( AnscEqualString(ParamName, "IPCPEnable", TRUE))
     {
         /* save update to backup */
-        pEntry->Cfg.bEnabled = bValue;
+	pEntry->Cfg.ipcpEnabled = bValue;
         return TRUE;
     }
+    if( AnscEqualString(ParamName, "IPV6CPEnable", TRUE))
+       {
+               pEntry->Cfg.ipv6cpEnabled = bValue;
+               return TRUE;
+       }
 
     if( AnscEqualString(ParamName, "Reset", TRUE))
     {
@@ -1134,6 +1266,7 @@ Interface3_SetParamUlongValue
     {
         /* save update to backup */
         pEntry->Cfg.AutoDisconnectTime = uValue;
+	CosaDmlPpp_auto_disconnect_time(uValue);
         return TRUE;
     }
 

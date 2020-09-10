@@ -286,6 +286,10 @@ CosaDeviceControlInitialize
     //CosaDmlDcGetGuestPassword(NULL, pMyObject->GuestPassword);
     //pMyObject->NoOfGuests = CosaDmlDcGetNoOfGuests();
 
+    CosaDmlXConfGetConfig((ANSC_HANDLE)pMyObject, &pMyObject->XConf);
+
+    CosaDmlWebPAGetConfig2((ANSC_HANDLE)pMyObject, &pMyObject->WebPAConfig);
+
     return ANSC_STATUS_SUCCESS;
 }
 

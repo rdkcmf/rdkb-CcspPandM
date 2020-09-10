@@ -147,6 +147,7 @@ COSA_DML_MultiHomedMode, *PCOSA_DML_MultiHomedMode;
     UCHAR                                   RebootDevice[256];              \
     UCHAR                                   FactoryReset[256];               \
     UCHAR                                   UserChangedFlags[64];           \
+    char                                    X_CrashPortalURL[256];        \
     BOOL                                    TelnetEnable;                   \
     BOOL                                    ReinitCmMac;                       \
     BOOL                                    SSHEnable;                      \
@@ -176,7 +177,8 @@ COSA_DML_MultiHomedMode, *PCOSA_DML_MultiHomedMode;
     char                                   ParentalControlAnswer[33];               \
     BOOL                                   bXHSPortEnabled;              \
     BOOL                                   bXHSPortChanged;    \
-
+    COSA_DML_WEBPA_CFG2                    WebPAConfig;        \
+    COSA_DML_DEVICECONTROL_XConf           XConf;   \
 
 typedef  struct
 _COSA_DATAMODEL_DEVICECONTROL_CLASS_CONTENT

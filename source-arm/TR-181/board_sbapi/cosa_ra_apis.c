@@ -77,7 +77,7 @@
 #include "utctx/utctx_api.h"
 
 #define MAX_PREF        8       /* according to TR-181 */
-#define ZEBRA_CONF      "/etc/zebra.conf"
+#define ZEBRA_CONF      "/var/zebra.conf"
 
 #define RA_CONF_START   "# Based on prefix"
 #define RA_CONF_IF      "interface"
@@ -104,6 +104,7 @@ typedef struct ZebraRaConf_s {
     int             lifetime;
 	int             managedFlag;
 	int             otherFlag;
+        int             mtu;
     RtPrefer_t      preference;
 } ZebraRaConf_t;
 
@@ -148,7 +149,7 @@ static void trim_leading_space(char *line)
 }
 
 /*
- * # cat /etc/zebra.conf 
+ * # cat /var/zebra.conf
  * hostname zebra
  * password zebra
  * !enable password admin
@@ -228,10 +229,13 @@ static int ParseZebraRaConf(ZebraRaConf_t *conf)
         } else if (strstr(line, "ra-lifetime") != NULL) {
             if (sscanf(line, "ipv6 nd ra-lifetime %d", &conf->lifetime) != 1)
                 goto BAD_FORMAT;
-		} else if (strstr(line, "managed-config-flag") != NULL) {
-			conf->managedFlag = 1;
-		} else if (strstr(line, "other-config-flag") != NULL) {
-			conf->otherFlag = 1;
+        } else if (strstr(line, "managed-config-flag") != NULL) {
+           conf->managedFlag = 1;
+        } else if (strstr(line, "other-config-flag") != NULL) {
+            conf->otherFlag = 1;
+        } else if (strstr(line, "mtu") != NULL) {
+               if (sscanf(line, "ipv6 nd mtu %d", &conf->mtu) != 1)
+                  goto BAD_FORMAT;
         } else if (strstr(line, "router-preference") != NULL) {
             if (sscanf(line, "ipv6 nd router-preference %s", sVal[0]) != 1)
                 goto BAD_FORMAT;
@@ -281,7 +285,7 @@ static int LoadRaInterface(PCOSA_DML_RA_IF_FULL raif)
     raif->Cfg.bAdvOtherConfigFlag   = raConf.otherFlag;
     raif->Cfg.bAdvMobileAgentFlag   = FALSE;
     raif->Cfg.bAdvNDProxyFlag       = FALSE;
-    raif->Cfg.AdvLinkMTU            = 0;
+    raif->Cfg.AdvLinkMTU            = raConf.mtu;
     raif->Cfg.AdvReachableTime      = 0;
     raif->Cfg.AdvRetransTimer       = 0;
     raif->Cfg.AdvCurHopLimit        = 0;
@@ -335,12 +339,17 @@ CosaDmlRAGetEnabled
     )
 {
     COSA_DML_RA_IF_FULL raif;
+    char buf[5] = {0};
 
     if (!pEnabled)
         return ANSC_STATUS_FAILURE;
 
     if (LoadRaInterface(&raif) != 0)
         return ANSC_STATUS_FAILURE;
+
+    syscfg_get(NULL, "router_adv_enable", buf, sizeof(buf));
+    if(buf[0] == '0')
+        raif.Cfg.bEnabled = FALSE;
 
     *pEnabled = raif.Cfg.bEnabled;
     return ANSC_STATUS_SUCCESS;
@@ -353,8 +362,24 @@ CosaDmlRASetEnabled
         BOOLEAN  bEnabled
     )
 {
-    fprintf(stderr, "%s: NOT SUPPORTED FOR NOW!!\n", __FUNCTION__);
-    return ANSC_STATUS_FAILURE;
+    UtopiaContext utctx = {0};
+    char buf[5]={0};
+    if (Utopia_Init(&utctx))
+    {
+        buf[0]=bEnabled?'1':'0';
+        Utopia_RawSet(&utctx,NULL,"router_adv_enable",buf);
+        Utopia_Free(&utctx,1);
+    }
+    if(!bEnabled) {
+        CcspTraceInfo(("%s : Router Advertisement is disabled ; so killing zebra daemon\n",__FUNCTION__));
+        vsystem("/usr/bin/service_routed radv-stop");
+    }
+    else {
+        CcspTraceInfo(("%s : Spawning zebra daemon\n",__FUNCTION__));
+        vsystem("/usr/bin/service_routed radv-restart");
+    }
+
+    return ANSC_STATUS_SUCCESS;
 }
 
 ULONG
@@ -427,9 +452,12 @@ CosaDmlRaIfSetCfg
     )
 {
     UtopiaContext utctx = {0};
-    char out[8] = {0};
+    char out[16] = {0};
 	unsigned int  managedFlag = 0;
 	unsigned int  otherFlag   = 0;
+        unsigned int  advEnable   = 0;
+        unsigned int  mtu   = 0;
+        unsigned int pref = 0;
 	
     fprintf(stderr, "%s: Only support O/M flags. NOT SUPPORTED other flags FOR NOW!!\n", __FUNCTION__);
 	
@@ -444,8 +472,24 @@ CosaDmlRaIfSetCfg
 		if ( out[0] == '1' )
 			otherFlag = 1;
 
+                out[0] = 0;
+                Utopia_RawGet(&utctx,NULL,"router_adv_enable",out,sizeof(out));
+                if ( out[0] == '1' )
+                        advEnable = 1;
+                memset(out, 0, sizeof(out));
+                Utopia_RawGet(&utctx,NULL,"router_mtu",out,sizeof(out));
+                sscanf(out, "%d", &mtu);
+                memset(out, 0, sizeof(out));
+
+                Utopia_RawGet(&utctx,NULL,"router_preference",out,sizeof(out));
+                sscanf(out, "%d", &pref);
+                memset(out, 0, sizeof(out));
+
 		if ( ( !(pCfg->bAdvManagedFlag)     == !managedFlag ) && 
-			 ( !(pCfg->bAdvOtherConfigFlag) == !otherFlag   ) )
+                        ( !(pCfg->bAdvOtherConfigFlag) == !otherFlag ) &&
+                        ( (pCfg->AdvLinkMTU) == mtu   ) && ((pCfg->AdvPreferredRouterFlag) == pref) &&
+                          ( !(pCfg->bEnabled) == !advEnable))
+
                 {
                     Utopia_Free(&utctx,0);
                     return ANSC_STATUS_FAILURE;
@@ -453,13 +497,33 @@ CosaDmlRaIfSetCfg
 
 		out[0] = pCfg->bAdvManagedFlag?'1':'0';
 		Utopia_RawSet(&utctx,NULL,"router_managed_flag",out);
-		
+
+                out[0]= 0;
 		out[0] = pCfg->bAdvOtherConfigFlag?'1':'0';
 		Utopia_RawSet(&utctx,NULL,"router_other_flag",out);
 
+                out[0]= 0;
+                sprintf(out, "%d", pCfg->AdvLinkMTU);
+                Utopia_RawSet(&utctx,NULL,"router_mtu",out);
+                memset(out, 0, sizeof(out));
+
+                sprintf(out, "%d", pCfg->AdvPreferredRouterFlag);
+                Utopia_RawSet(&utctx,NULL,"router_preference",out);
+                memset(out, 0, sizeof(out));
+
+                out[0] = pCfg->bEnabled?'1':'0';
+                Utopia_RawSet(&utctx,NULL,"router_adv_enable",out);
+
 		Utopia_Free(&utctx,1);
 		
-		system("sysevent set zebra-restart");
+                if(out[0] == '1') {
+                    CcspTraceInfo(("%s : Spawning zebra daemon\n",__FUNCTION__));
+                    vsystem("/usr/bin/service_routed radv-restart");
+                }
+                else {
+                    CcspTraceInfo(("%s : Router Advertisement is disabled ; so killing zebra daemon\n",__FUNCTION__));
+                    vsystem("/usr/bin/service_routed radv-stop");
+                }
 		
 	    return ANSC_STATUS_SUCCESS;
 
@@ -476,6 +540,7 @@ CosaDmlRaIfGetCfg
     )
 {
     COSA_DML_RA_IF_FULL             raif;
+    char buf[5] = {0};
 
     if (!pCfg)
         return ANSC_STATUS_FAILURE;
@@ -483,7 +548,12 @@ CosaDmlRaIfGetCfg
     if (LoadRaInterface(&raif) != 0)
         return ANSC_STATUS_FAILURE;
 
+    syscfg_get(NULL, "router_adv_enable", buf, sizeof(buf));
+    if(buf[0] == '0')
+        raif.Cfg.bEnabled = FALSE;
+
     memcpy(pCfg, &raif.Cfg, sizeof(COSA_DML_RA_IF_CFG));
+
     return ANSC_STATUS_SUCCESS;
 }
 

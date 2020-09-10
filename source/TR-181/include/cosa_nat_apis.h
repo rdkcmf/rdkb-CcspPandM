@@ -131,7 +131,7 @@ _COSA_DML_NAT_PMAPPING
     USHORT                          ExternalPortEndRange;
     USHORT                          InternalPort;
     UCHAR                           Protocol;                           /* IP protocol number for TCP, UDP */
-    ANSC_IPV4_ADDRESS               InternalClient;
+    char                            InternalClient[256];
     char                            Description[256];
     char                            X_CISCO_COM_InternalClientV6[64];
     COSA_DML_NAT_PMAPPING_Origin    X_CISCO_COM_Origin;

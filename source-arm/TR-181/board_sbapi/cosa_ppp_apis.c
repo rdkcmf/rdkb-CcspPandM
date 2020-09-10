@@ -376,6 +376,9 @@ ULONG get_ppp_ip_addr(void)
     ULONG addr       = 0;
     wanProto_t proto = 0;
     char buf[128]    = {0};
+
+    char output[64] ={0};
+    syscfg_init();
     
     /*ppp0 ip address is valid with 3 conditions: ppp0 ip address, ppp_status is "up"; wan_proto is pppoe*/
     
@@ -391,9 +394,8 @@ ULONG get_ppp_ip_addr(void)
     else
         return 0;
 
-    return CosaUtilGetIfAddr("ppp0");
-
-    return 0;
+    syscfg_get(NULL, "wan_ifname", output, sizeof(output));
+    return CosaUtilGetIfAddr(output);
 }
 
 ANSC_STATUS
@@ -403,14 +405,82 @@ CosaDmlPppInit
         PANSC_HANDLE                phContext
     )
 {
-    _ansc_strcpy(g_ppp_info.ifname, "ppp0");
+      char output[64] ={0};
+    syscfg_init();
+    syscfg_get(NULL, "wan_ifname", output, sizeof(output));
+    _ansc_strcpy(g_ppp_info.ifname,output);
     _ansc_strcpy(g_ppp_info.lower_ifname,INTERFACE);
     _ansc_strcpy(g_ppp_info.ut_alias_name, "PPP_Interface_tr_alias");
 
     get_wan_proto(&g_ppp_info.last_wan_proto);
-
-    syscfg_init();
+    g_ppp_info.wan.wan_proto=g_ppp_info.last_wan_proto;
     return ANSC_STATUS_SUCCESS;
+}
+ANSC_STATUS
+CosaDmlPPPGetWanProtocolConfiguration
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pString
+    )
+{
+    char buf[16] = {0};
+    memset(buf, 0, sizeof(buf));
+
+    if(syscfg_get(NULL, "wan_proto", buf, sizeof(buf)) != 0)
+    {
+        CcspTraceWarning(("%s syscfg get failed for WanProtocolConfiguration\n",__FUNCTION__));
+    }
+    else
+    {
+       if(buf != NULL)
+       {
+               AnscCopyString(pString, buf);
+       }
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+ANSC_STATUS
+CosaDmlPPPSetWanProtocolConfiguration
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pString
+    )
+{
+    char wan_physical_ifname[16] = {0};
+
+    //ToDo: In future HAL layer API will be used to get the physical interface name.
+    if (!strcmp(pString, "pppoe")) {
+        strcpy(wan_physical_ifname, "eth0");
+    }
+    else if (!strcmp(pString, "dhcp")) {
+        strcpy(wan_physical_ifname, "erouter0");
+        // erase the contents of file by opening it with "w" mode.
+        fopen("/etc/resolv.dnsmasq", "w");
+    }
+    else {
+        CcspTraceWarning(("%s syscfg set failed for WanProtocolConfiguration due to invalid param value\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if(syscfg_set(NULL, "wan_proto", pString) != 0)
+    {
+        CcspTraceWarning(("%s syscfg set failed for WanProtocolConfiguration\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if(syscfg_set(NULL, "wan_physical_ifname", wan_physical_ifname) != 0)
+    {
+        CcspTraceWarning(("%s syscfg set failed for WanProtocolConfiguration\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if(syscfg_commit() != 0)
+    {
+        CcspTraceWarning(("%s syscfg commit failed for WanProtocolConfiguration\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+ return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -420,8 +490,20 @@ CosaDmlPPPGetSupportedNCPs
         PULONG                      puLong
     )
 {
-    *puLong = COSA_DML_PPP_SUPPORTED_NCP_IPCP;
-    return ANSC_STATUS_SUCCESS;
+    *puLong = COSA_DML_PPP_SUPPORTED_NCP_IPCP | COSA_DML_PPP_SUPPORTED_NCP_IPv6CP;
+
+	return ANSC_STATUS_SUCCESS;
+}
+ULONG
+CosaDmlPpp_auto_disconnect_time
+(
+       ULONG var
+)
+{
+       char buff[50];
+       sprintf(buff, "sleep %d && pppoe-stop &",var);
+       system(buff);
+       return 0;
 }
 
 ULONG
@@ -502,10 +584,16 @@ static int ml_cfg_2_be_struct(UtopiaContext * p_ctx, PCOSA_DML_PPP_IF_CFG p_in, 
     }
     
     p_ppp->max_idle_time = p_in->IdleDisconnectTime;
-    
-    safe_strcpy(p_ppp->username, p_in->Username, sizeof(p_ppp->username));    
-    safe_strcpy(p_ppp->password, p_in->Password, sizeof(p_ppp->password));    
-    
+    p_ppp->max_mru = p_in->MaxMRUSize;
+    p_ppp->ipcp = p_in->ipcpEnabled;
+    p_ppp->ipv6cp = p_in->ipv6cpEnabled;
+
+    /* TODO: dm is not updating the syscfg.db that's why this workaround added*/
+
+    safe_strcpy(p_ppp->username, p_in->Username, sizeof(p_ppp->username));
+    safe_strcpy(p_ppp->password, p_in->Password, sizeof(p_ppp->password));
+  
+
     if (p_in->ConnectionTrigger == COSA_DML_PPP_CONN_TRIGGER_OnDemand)
         p_ppp->conn_method = CONNECT_ON_DEMAND;
     else if (p_in->ConnectionTrigger == COSA_DML_PPP_CONN_TRIGGER_AlwaysOn)
@@ -513,8 +601,7 @@ static int ml_cfg_2_be_struct(UtopiaContext * p_ctx, PCOSA_DML_PPP_IF_CFG p_in, 
     /*backend don't support manual*/
     
     UTOPIA_SET(p_ctx, UtopiaValue_WAN_PPPoEAccessConcentratorName, p_in->ACName);    
-    safe_strcpy(p_ppp->service_name, p_in->ServiceName, sizeof(p_ppp->service_name));    
-
+    safe_strcpy(p_ppp->service_name, p_in->ServiceName, sizeof(p_ppp->service_name));
     return 0;
 }
 
@@ -548,7 +635,9 @@ static int be_struct_2_ml_cfg(UtopiaContext * p_ctx,  wanInfo_t * p_in, PCOSA_DM
     safe_strcpy(p_out->Password, p_ppp->password, sizeof(p_out->Password) );
     
     /*default*/
-    p_out->MaxMRUSize = 1492;
+    p_out->MaxMRUSize = p_ppp->max_mru;
+    p_out->ipcpEnabled = p_ppp->ipcp;
+    p_out->ipv6cpEnabled = p_ppp->ipv6cp;
 
     if (p_ppp->conn_method == CONNECT_ON_DEMAND)
         p_out->ConnectionTrigger = COSA_DML_PPP_CONN_TRIGGER_OnDemand;
@@ -569,6 +658,70 @@ static int be_struct_2_ml_cfg(UtopiaContext * p_ctx,  wanInfo_t * p_in, PCOSA_DM
 }
 
 #define LOG_FILE "/var/log/messages"
+static int get_remote_interface_identifier(char *local)
+{
+    FILE * fp;
+    char buf[1024] = {0};
+    char result[1024] = {0};
+ if (fp = fopen(LOG_FILE, "r+"))
+    {
+        while (fgets(buf, sizeof(buf)-1, fp))
+        {
+                if (strstr(buf, "remote LL address") )
+                {
+                    memset(result, 0, sizeof(result));
+                    memcpy(result, buf, sizeof(result)-1);
+                   break;
+                }
+            memset(buf, 0, sizeof(buf));
+        }
+        if (result[0])
+        {
+            char * p = strstr(result, "remote LL address");
+
+            if (p)
+            {
+                if(sscanf(p, "remote LL address %s", local) == 1)
+               ;
+            }
+        }
+        fclose(fp);
+    }
+return 0;
+}
+static int get_local_interface_identifier(char *local)
+{
+    FILE * fp;
+    char buf[1024] = {0};
+    char result[1024] = {0};
+ if (fp = fopen(LOG_FILE, "r+"))
+    {
+        while (fgets(buf, sizeof(buf)-1, fp))
+        {
+            {
+                if (strstr(buf, "local  LL address") )
+                {
+                    memset(result, 0, sizeof(result));
+                    memcpy(result, buf, sizeof(result)-1);
+                }
+            }
+            memset(buf, 0, sizeof(buf));
+        }
+        if (result[0])
+        {
+            char * p = strstr(result, "local  LL address");
+
+            if (p)
+            {
+                if(sscanf(p, "local  LL address %s", local) == 1)
+               ;
+            }
+        }
+        fclose(fp);
+    }
+return 0;
+}
+
 static int get_auth_proto(int * p_proto)
 {
     FILE * fp;
@@ -652,6 +805,32 @@ static int get_session_id(ULONG * p_id)
     return 0;
     
 }
+#define PPPOE_PROC_FILE "/proc/net/pppoe"
+static int get_session_id_from_proc_entry(ULONG * p_id)
+{
+    FILE * fp;
+    char buf[1024] = {0};
+
+    if (fp = fopen(PPPOE_PROC_FILE, "r+")) {
+
+        /* Skip first line of /proc/net/pppoe */
+        /* Id       Address              Device */
+        fgets(buf, sizeof(buf)-1, fp);
+
+        while (fgets(buf, sizeof(buf)-1, fp)) {
+            unsigned long id = 0L;
+
+           if(sscanf(buf, "%08X", &id) == 1) {
+               *p_id = ntohs(id);
+               CcspTraceInfo(("PPP Session ID: %08X, %d \n", id, *p_id));
+           }
+        }
+
+       fclose(fp);
+    }
+
+    return 0;
+}
 
 #define DNS_FILE "/var/run/ppp/resolv.conf"
 static void be_struct_2_ml_info(UtopiaContext * p_ctx, wanInfo_t * p_in, PCOSA_DML_PPP_IF_INFO p_out)
@@ -727,15 +906,20 @@ static void be_struct_2_ml_info(UtopiaContext * p_ctx, wanInfo_t * p_in, PCOSA_D
     p_out->AuthenticationProtocol = COSA_DML_PPP_AUTH_PAP;
     get_auth_proto(&p_out->AuthenticationProtocol);
 
-    p_out->CurrentMRUSize         = 1492;
 
     p_out->LCPEcho      = p_in->ppp.redial_period ? p_in->ppp.redial_period : 30;
     /*hardcoded by backend*/
     p_out->LCPEchoRetry = 1;
 
     p_out->SessionID    = 0;
-    get_session_id(&p_out->SessionID);
+#if 0 /* To read SessionID from proc/net/pppoe instead of /var/log/messages */
+     get_session_id(&p_out->SessionID);
+#else
+    get_session_id_from_proc_entry(&p_out->SessionID);
+#endif
 
+    get_local_interface_identifier(&p_out->LocalInterfaceIdentifier);
+    get_remote_interface_identifier(&p_out->RemoteInterfaceIdentifier);
     p_out->LocalIPAddress.Value = p_out->RemoteIPAddress.Value = 0;
     p_out->DNSServers[0].Value  = p_out->DNSServers[1].Value   = 0;
     
@@ -887,7 +1071,7 @@ CosaDmlPppIfSetCfg
         g_ppp_info.last_change = AnscGetTickInSeconds();
     }
 
-    ml_cfg_2_be_struct(&ctx, pCfg, p_wi);
+       ml_cfg_2_be_struct(&ctx, pCfg, p_wi);
     
 
 	rc = Utopia_SetWANSettings(&ctx, p_wi);

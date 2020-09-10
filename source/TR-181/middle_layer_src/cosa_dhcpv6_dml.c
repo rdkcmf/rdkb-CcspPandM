@@ -619,8 +619,7 @@ Client3_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE) )
     {
         /* collect value */
-        /**pBool   = pDhcpc->Cfg.bEnabled;*/
-        *pBool   =CosaDmlDhcpv6cGetEnabled(NULL);
+        *pBool   = pDhcpc->Cfg.bEnabled;
 
         return TRUE;
     }
