@@ -225,7 +225,7 @@ CosaDmlMldGetCfg
 
     if ( (pid_f = fopen("/var/run/ecmh.pid", "r")) != NULL )
     {
-        if(fgets(buffer, 255,pid_f) != '\0')
+        if(fgets(buffer, sizeof(buffer) ,pid_f) != NULL)
         {
             fclose(pid_f);
             sscanf( buffer, "%d", &pid);
@@ -278,7 +278,7 @@ CosaDmlMldSetCfg
 #if !defined (_COSA_BCM_MIPS_)
     if ( (pid_f = fopen("/var/run/ecmh.pid", "r")) != NULL )
     {
-        if(fgets(buffer, 255,pid_f) != '\0')
+        if(fgets(buffer, sizeof(buffer), pid_f) != NULL)
         {
             fclose(pid_f);
             pid_f = NULL;
@@ -335,7 +335,7 @@ CosaDmlMldGetInfo
 
     if ( (pid_f = fopen("/var/run/ecmh.pid", "r")) != NULL )
     {
-        if(fgets(buffer, 255,pid_f) != '\0')
+        if(fgets(buffer, sizeof(buffer), pid_f) != NULL)
         {
             fclose(pid_f);
             pid_f = NULL;
@@ -384,7 +384,7 @@ CosaDmlMldGetGroup
 
     if ( (pid_f = fopen("/var/run/ecmh.pid", "r")) != NULL )
     {
-        if(fgets(buffer, 255,pid_f) != '\0')
+        if(fgets(buffer, sizeof(buffer), pid_f) != NULL)
         {
             fclose(pid_f);
             pid_f = NULL;
@@ -412,9 +412,9 @@ CosaDmlMldGetGroup
 
     if ( (stat_f = fopen("/var/run/ecmh.dump", "r")) != NULL )
     {
-        fgets(buffer, 255, stat_f); /* Ignore the first line */
+        fgets(buffer, sizeof(buffer), stat_f); /* Ignore the first line */
         
-        while(fgets(buffer, 255,stat_f) != '\0')
+        while(fgets(buffer, sizeof(buffer), stat_f) != NULL)
         {
 			st = NULL;
             pch = strtok_r(buffer, " \t\r\n", &st);
