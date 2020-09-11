@@ -175,12 +175,11 @@
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4SecondaryDhcpServerOptions" : "FFFFFFFF",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6PrimaryDhcpServerOptions" : "",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv6SecondaryDhcpServerOptions" : "",
-      "Device.Time.NTPServer1" : "ntp1.isp.sky.com",
-      "Device.Time.NTPServer2" : "time1.google.com",
-      "Device.Time.NTPServer3" : "time2.google.com",
-      "Device.Time.NTPServer4" : "time3.google.com",
-      "Device.Time.NTPServer5" : "ntp.ccp.xcal.tv",
-      "Device.X_RDK_WebConfig.URL" : ""
+      "Device.Time.NTPServer1" : "ntp1.it.isp.sky",
+      "Device.Time.NTPServer2" : "ntp2.it.isp.sky",
+      "Device.Time.NTPServer3" : "time1.google.com",
+      "Device.Time.NTPServer4" : "",
+      "Device.Time.NTPServer5" : ""
    },
 
 

@@ -3571,6 +3571,7 @@ PortTrigger_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger  = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
     BOOL                                      bridgeMode;
+    errno_t                         rc            = -1;
 
     #ifndef MULTILAN_FEATURE
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
@@ -3596,9 +3597,13 @@ PortTrigger_SetParamStringValue
     }
     if( AnscEqualString(ParamName, "Description", TRUE))
     {
-        /* save update to backup */
-
-        AnscCopyString( pNatPTrigger->Description, pString );
+        /* Needs to copy required size of the parameter */
+        rc = strcpy_s(pNatPTrigger->Description, sizeof(pNatPTrigger->Description), pString);
+        if(rc != EOK)
+        {
+            CcspTraceWarning(("Error in copying to pNatPTrigger->Description rc - %d\n", rc));
+            return FALSE;
+        }
 
         return TRUE;
     }
