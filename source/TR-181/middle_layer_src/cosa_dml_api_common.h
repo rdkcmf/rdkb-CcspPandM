@@ -110,12 +110,14 @@
 #ifdef SAFEC_DUMMY_API
 typedef int errno_t;
 #define EOK 0
+#define ESNULLP          400        /* null ptr                    */
+#define ESLEMAX          403       /* length exceeds RSIZE_MAX    */
 
 #define STRCPY_S_NOCLOBBER(dst,max,src) EOK; \
   if(src && (strlen(src) <= max)) strcpy(dst, src);
 
-#define strcpy_s(dst,max,src) EOK; \
- strcpy(dst,src);
+#define strcpy_s(dst,max,src) (src)?((max > strlen(src))?EOK:ESLEMAX):ESNULLP; \
+ if((src) && (max > strlen(src))) strcpy(dst,src);
 
 errno_t strcmp_s(const char *,int,const char *,int *);
 #endif
