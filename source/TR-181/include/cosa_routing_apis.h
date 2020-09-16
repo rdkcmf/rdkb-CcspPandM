@@ -227,10 +227,15 @@ COSA_DML_RIP_IF_CFG, *PCOSA_DML_RIP_IF_CFG;
 
 #if CFG_TR181_ps_no_arg
 
-#define COSA_DML_CMD_PS           "ps |grep %s|grep -v grep "
+#define COSA_DML_CMD_PS           "busybox ps |grep %s|grep -v grep "
 
 #else
 
+/*
+   This version is currently only used when build for PC targets (ie where host
+   ps will be used and the busybox version is not available). Embedded targets
+   should define CFG_TR181_ps_no_arg and ensure that busybox ps is available.
+*/
 #define COSA_DML_CMD_PS           "ps -A|grep %s|grep -v grep "
 
 #endif

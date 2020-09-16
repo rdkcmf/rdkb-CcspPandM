@@ -165,7 +165,7 @@ RLog_Restart(PCOSA_DML_RLOG conf)
     if (access(SYSLOGD_PID_FILE, F_OK) == 0)
         vsystem("kill `cat %s`", SYSLOGD_PID_FILE);
 #else
-    vsystem("kill `ps | awk '/syslogd/ && !/awk/ {print $1}'`");
+    vsystem("kill `busybox ps | awk '/syslogd/ && !/awk/ {print $1}'`");
 #endif
 
     level = RLog_GetLevel();
@@ -202,7 +202,7 @@ CosaDmlRLog_Init(void)
         return ANSC_STATUS_FAILURE;
     }
 
-    if (!conf.Enable && vsystem("ps | grep syslogd | grep -v grep >/dev/null") == 0)
+    if (!conf.Enable && vsystem("busybox ps | grep syslogd | grep -v grep >/dev/null") == 0)
     {
         /* do not restart syslogd */
         RLOG_DBG("%s: Nothing need to do !\n", __FUNCTION__);
