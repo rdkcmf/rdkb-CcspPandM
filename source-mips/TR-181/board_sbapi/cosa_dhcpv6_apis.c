@@ -4302,7 +4302,7 @@ CosaDmlDhcpv6sGetState
     char out[256] = {0};
 
     /*
-    sprintf(cmd, "ps -A|grep %s", SERVER_BIN);
+    sprintf(cmd, "ps |grep %s|grep -v grep", SERVER_BIN);
     _get_shell_output(cmd, out, sizeof(out));
     if (strstr(out, SERVER_BIN))
     {
@@ -4786,7 +4786,7 @@ CosaDmlDhcpv6sGetPoolInfo
             break;
     }
 
-    fp = v_secure_popen("r", "ps -A|grep " SERVER_BIN " grep -v grep");
+    fp = v_secure_popen("r", "ps |grep " SERVER_BIN " |grep -v grep");
     _get_shell_output(fp, out, sizeof(out));
 
     if ( (strstr(out, SERVER_BIN)) && sDhcpv6ServerPool[Index].Cfg.bEnabled )

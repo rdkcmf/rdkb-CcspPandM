@@ -5462,7 +5462,7 @@ CosaDmlDhcpv6sGetState
     /*
     char cmd[256] = {0};
     char out[256] = {0};
-    sprintf(cmd, "ps -A|grep %s", SERVER_BIN);
+    sprintf(cmd, "ps |grep %s|grep -v grep", SERVER_BIN);
     _get_shell_output(cmd, out, sizeof(out));
     if (strstr(out, SERVER_BIN))
     {
@@ -6062,7 +6062,7 @@ CosaDmlDhcpv6sGetPoolInfo
         return ANSC_STATUS_FAILURE;
     }
 
-    fp = v_secure_popen("r","ps -A|grep %s", SERVER_BIN);
+    fp = v_secure_popen("r","ps |grep %s|grep -v grep", SERVER_BIN);
     _get_shell_output(fp, out, sizeof(out));
     if ( (strstr(out, SERVER_BIN)) && sDhcpv6ServerPool[Index].Cfg.bEnabled )
     {
