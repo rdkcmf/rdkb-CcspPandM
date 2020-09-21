@@ -96,6 +96,7 @@
 #include "dml_tr181_custom_cfg.h" 
 #include "cosa_x_cisco_com_devicecontrol_apis.h"
 #include "cosa_deviceinfo_internal.h"
+#include "cosa_drg_common.h"
 #define DEVICE_PROPERTIES    "/etc/device.properties"
 
 #ifdef _COSA_SIM_
@@ -3668,9 +3669,54 @@ void CosaDmlDiSet_RebootDevice(char* pValue)
 static void
 FirmwareDownloadAndFactoryReset()
 {
-    if( RETURN_ERR == cm_hal_FWupdateAndFactoryReset())
+    FILE *fp;
+    char URL[256]={0};
+    char Imagename[256]={0};
+    char line[512];
+    char *token;
+    char *val;
+
+    if((fp = fopen("/tmp/FactoryReset.txt", "r")) == NULL)
     {
-       CcspTraceWarning(("FirmwareDownloadAndFactoryReset Thread:FWupdateAndFactoryReset already in progress\n"));
+        CcspTraceInfo(( "/tmp/FactoryReset.txt doesnot exist go for snmp reboot .\n"));
+        if( RETURN_ERR == cm_hal_FWupdateAndFactoryReset( NULL, NULL ))
+        {
+            CcspTraceWarning(("FirmwareDownloadAndFactoryReset Thread:FWupdateAndFactoryReset already in progress\n"));
+        }
+        
+    }
+    else
+    {
+        while (fgets(line, sizeof(line), fp) != NULL)
+        {
+            token=strtok(line,"=");
+            if(token != NULL)
+            {
+                val = strtok(NULL, "=");
+                if( NULL != val )
+                {
+                    int new_line = strlen(val) -1;
+                    if (val[new_line] == '\n')
+                    val[new_line] = '\0';
+                    if(0 == strcmp(token,"Url"))
+                    {
+                        strcpy(URL,val);
+                    }
+                    else if(0 == strcmp(token,"Image"))
+                    {
+                        strcpy(Imagename,val);
+                    }
+                }
+            }
+        }
+        fclose(fp);
+        CcspTraceWarning(("%s: ImageName %s, url %s\n", __FUNCTION__, Imagename, URL));
+        if( RETURN_ERR == cm_hal_FWupdateAndFactoryReset( URL, Imagename))
+        {
+            CcspTraceWarning(("FirmwareDownloadAndFactoryReset Thread:cm_hal_FWupdateAndFactoryReset failed\n"));
+            commonSyseventSet("fw_update_inprogress", "false");
+            system("rm -rf /tmp/FactoryReset.txt");
+        }
     }
 
 }
@@ -3680,18 +3726,15 @@ CosaDmlDiSetFirmwareDownloadAndFactoryReset()
 {
     pthread_t tid;
     token_t  se_token;
-    int se_fd = s_sysevent_connect(&se_token);
     char evtValue[64] = {0};
-
-    sysevent_get(se_fd, se_token, "fw_update_inprogress", evtValue, sizeof(evtValue));
-
+    
+    commonSyseventGet("fw_update_inprogress", evtValue, sizeof(evtValue));
     if (0 == strncmp(evtValue, "true", strlen("true")))
     {
         CcspTraceWarning(("FirmwareDownloadAndFactoryReset already in progress\n"))
         return ANSC_STATUS_FAILURE;
     }
-    sysevent_set(se_fd, se_token,"fw_update_inprogress", "true",0);
-
+    commonSyseventSet("fw_update_inprogress", "true");
     CcspTraceWarning(("Calling FirmwareDownloadAndFactoryReset thread\n"));
     pthread_create(&tid, NULL, &FirmwareDownloadAndFactoryReset, NULL);
 
