@@ -5170,11 +5170,13 @@ Pool1_SetParamIntValue
             weeks=iValue/604800;
             forever=-1;
         */
+        if(iValue<MINSECS)
+            return FALSE;
         if((iValue%WEEKS==0)  ||
             (iValue%DAYS==0)  ||
-            (iValue%HOURS==0) || 
+            (iValue%HOURS==0) ||
             (iValue%MIN==0)   ||
-            ((iValue>=MINSECS)&& (iValue<=999)) || 
+            (iValue<=MAXSECS) ||
             (iValue==-1)){
                 /* save update to backup */
                 pPool->Cfg.LeaseTime= iValue;

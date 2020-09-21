@@ -696,12 +696,13 @@ PcBlkURL_SetParamStringValue
     BOOL                            pBridgeMode     = FALSE;
     
     #define BUFF_SIZE 2048
-    int i=0,HH=0,MM=0;
+    int i=0,HH=0,MM=0,count=0;
     char dump;
     char *delimiter=",";
     char *token;
     char *blockdays=NULL;
     int len=0;
+    char *arr[7];
     
     /* check if strValue doesn't hold null or whitespaces */
     if(AnscValidStringCheck(strValue) != TRUE)
@@ -753,13 +754,14 @@ PcBlkURL_SetParamStringValue
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
-        blockdays=(char *) malloc(sizeof(char)*(_ansc_strlen(strValue)+1));
+        len=_ansc_strlen(strValue);
+        blockdays=(char *) malloc(sizeof(char)*(len+1));
         if(blockdays != NULL)
         {
             strcpy(blockdays, strValue);
         }
         token = strtok(blockdays, delimiter);
-        if(!token)
+        if((!token) || (strValue[len-1]==','))
         {
             AnscFreeMemory(blockdays);
             return FALSE;
@@ -771,9 +773,26 @@ PcBlkURL_SetParamStringValue
                 AnscFreeMemory(blockdays);
                 return FALSE;
             }
+            for(i=0;i<count;i++)
+            {
+                if(strncmp(arr[i], token, _ansc_strlen(token)) == 0)
+                {
+                    for(i=0; i<count; i++) {
+                        AnscFreeMemory(arr[i]);
+                    }
+                    AnscFreeMemory(blockdays);
+                    return FALSE;
+                }
+            }
+            arr[count] = (char *) malloc(sizeof(char)*(_ansc_strlen(token)+1));
+            strncpy(arr[count], token, (_ansc_strlen(token)+1));
+            count++;
             token = strtok(NULL, delimiter);
-        }
+        }        
         AnscFreeMemory(blockdays);
+        for(i=0; i<count; i++) {
+            AnscFreeMemory(arr[i]);
+        }
         _ansc_snprintf(pBlkUrl->BlockDays, sizeof(pBlkUrl->BlockDays), "%s", strValue);
         return TRUE;
     }
@@ -1397,12 +1416,14 @@ MSServ_SetParamStringValue
     COSA_DML_MS_SERV             *pMSServ    = (COSA_DML_MS_SERV*)pLinkObj->hContext;
     BOOL                            pBridgeMode     = FALSE;
 
-    int HH=0,MM=0;
+    int HH=0,MM=0,i=0,count=0;
     char dump;
     char *delimiter=",";
     char *token;
     char *blockdays=NULL;
-    int i=0;
+    int len=0;
+    char *arr[7];
+    BOOL is_space=FALSE;
     
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&pBridgeMode)) && (pBridgeMode == TRUE))
         return FALSE;
@@ -1416,12 +1437,16 @@ MSServ_SetParamStringValue
         }
         while(strValue[i] != '\0')
         {
+            if(strValue[i] != ' ')		//check if non-space character is present
+                is_space=TRUE;
             if ((strValue[i] == '<') || (strValue[i] == '>') || (strValue[i] == '&') || (strValue[i] == '\'') || (strValue[i] == '\"') || (strValue[i] == '|'))
             {
                 return FALSE;
             }
             i++;
         }
+        if(is_space==FALSE)
+            return FALSE;		//returning FALSE as only space is present in Desc.
         _ansc_snprintf(pMSServ->Description, sizeof(pMSServ->Description), "%s", strValue);
         return TRUE;
     }
@@ -1454,13 +1479,14 @@ MSServ_SetParamStringValue
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
-        blockdays=(char *) malloc(sizeof(char)*(_ansc_strlen(strValue)+1));
+        len=_ansc_strlen(strValue);
+        blockdays=(char *) malloc(sizeof(char)*(len+1));
         if(blockdays != NULL)
         {
             strcpy(blockdays, strValue);
         }
         token = strtok(blockdays, delimiter);
-        if(!token)
+        if((!token) || (strValue[len-1]==','))
         {
             AnscFreeMemory(blockdays);
             return FALSE;
@@ -1472,9 +1498,26 @@ MSServ_SetParamStringValue
                 AnscFreeMemory(blockdays);
                 return FALSE;
             }
+            for(i=0;i<count;i++)
+            {
+                if(strncmp(arr[i], token, _ansc_strlen(token)) == 0)
+                {
+                    for(i=0; i<count; i++) {
+                        AnscFreeMemory(arr[i]);
+                    }
+                    AnscFreeMemory(blockdays);
+                    return FALSE;
+                }
+            }
+            arr[count] = (char *) malloc(sizeof(char)*(_ansc_strlen(token)+1));
+            strncpy(arr[count], token, (_ansc_strlen(token)+1));
+            count++;
             token = strtok(NULL, delimiter);
         }
         AnscFreeMemory(blockdays);
+        for(i=0; i<count; i++) {
+            AnscFreeMemory(arr[i]);
+        }
         _ansc_snprintf(pMSServ->BlockDays, sizeof(pMSServ->BlockDays), "%s", strValue);
         return TRUE;
     }
@@ -2121,12 +2164,14 @@ MDDev_SetParamStringValue
         return FALSE;
 
     UINT MacAddress[6] = {0};
-    int HH=0,MM=0;
+    int HH=0,MM=0,i=0,count=0;
     char dump;
     char *delimiter=",";
     char *token;
     char *blockdays=NULL;
-    int i=0;
+    int len=0;
+    char *arr[7];
+    BOOL is_space=TRUE;
 
     if (AnscEqualString(ParamName, "Description", TRUE))
     {
@@ -2137,12 +2182,16 @@ MDDev_SetParamStringValue
         }
         while(strValue[i] != '\0')
         {
+            if(strValue[i] != ' ')		//check if non-space character is present
+                is_space=FALSE;
             if ((strValue[i] == '<') || (strValue[i] == '>') || (strValue[i] == '&') || (strValue[i] == '\'') || (strValue[i] == '\"') || (strValue[i] == '|'))
             {
                 return FALSE;
             }
             i++;
         }
+        if(is_space==TRUE)
+            return FALSE;		//returning FALSE as only space is present in Desc.
         _ansc_snprintf(pMDDev->Description, sizeof(pMDDev->Description), "%s", strValue);
         return TRUE;
     }
@@ -2192,13 +2241,14 @@ MDDev_SetParamStringValue
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
-        blockdays=(char *) malloc(sizeof(char)*(_ansc_strlen(strValue)+1));
+        len=_ansc_strlen(strValue);
+        blockdays=(char *) malloc(sizeof(char)*(len+1));
         if(blockdays != NULL)
         {
             strcpy(blockdays, strValue);
         }
         token = strtok(blockdays, delimiter);
-        if(!token)
+        if((!token) || (strValue[len-1]==','))
         {
             AnscFreeMemory(blockdays);
             return FALSE;
@@ -2210,9 +2260,26 @@ MDDev_SetParamStringValue
                 AnscFreeMemory(blockdays);
                 return FALSE;
             }
+            for(i=0;i<count;i++)
+            {
+                if(strncmp(arr[i], token, _ansc_strlen(token)) == 0)
+                {
+                    for(i=0; i<count; i++) {
+                        AnscFreeMemory(arr[i]);
+                    }
+                    AnscFreeMemory(blockdays);
+                    return FALSE;
+                }
+            }
+            arr[count] = (char *) malloc(sizeof(char)*(_ansc_strlen(token)+1));
+            strncpy(arr[count], token, (_ansc_strlen(token)+1));
+            count++;
             token = strtok(NULL, delimiter);
-        }
+        }        
         AnscFreeMemory(blockdays);
+        for(i=0; i<count; i++) {
+            AnscFreeMemory(arr[i]);
+        }
         _ansc_snprintf(pMDDev->BlockDays, sizeof(pMDDev->BlockDays), "%s", strValue);
         return TRUE;
     }
