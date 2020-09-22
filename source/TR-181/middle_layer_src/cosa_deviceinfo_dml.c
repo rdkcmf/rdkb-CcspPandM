@@ -8639,6 +8639,128 @@ ActiveMeasurements_RFC_SetParamBoolValue
     prototype:
 
         BOOL
+        DLCaStore_RFC_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+DLCaStore_RFC_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8] = {0};
+        /* collect value */
+        if (syscfg_get( NULL, "DLCaStoreEnabled", buf, sizeof(buf)) == 0)
+        {
+            if (strncmp(buf, "true", sizeof(buf)) == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        else
+        {
+            CcspTraceError(("%s syscfg_get failed  for DLCaStoreEnable\n",__FUNCTION__));
+            *pBool = FALSE;
+        }
+
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        DLCaStore_RFC_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+DLCaStore_RFC_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if (IsBoolSame(hInsContext, ParamName, bValue, DLCaStore_RFC_GetParamBoolValue))
+        return TRUE;
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        if (syscfg_set(NULL, "DLCaStoreEnabled", (bValue==TRUE)?"true":"false") != 0)
+        {
+            CcspTraceError(("[%s] syscfg_set failed for DLCaStore\n",__FUNCTION__));
+            return FALSE;
+        }
+
+        if (syscfg_commit() != 0)
+        {
+             AnscTraceWarning(("syscfg_commit failed for DLCaStore param update\n"));
+             return FALSE;
+        }
+        return TRUE;
+    }
+    return FALSE;
+
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
         Feature_SetParamIntValue
             (
                 ANSC_HANDLE                 hInsContext,
