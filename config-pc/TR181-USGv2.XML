@@ -11947,6 +11947,22 @@
                         </parameter>
                       </parameters>
                   </object>
+                  <object>
+                      <name>DLCaStore</name>
+                      <objectType>object</objectType>
+                      <functions>
+                          <func_GetParamBoolValue>DLCaStore_RFC_GetParamBoolValue</func_GetParamBoolValue>
+                          <func_SetParamBoolValue>DLCaStore_RFC_SetParamBoolValue</func_SetParamBoolValue>
+                       </functions>
+                       <parameters>
+                           <parameter>
+                               <name>Enable</name>
+                               <type>boolean</type>
+                               <syntax>bool</syntax>
+                               <writable>true</writable>
+                           </parameter>
+                       </parameters>
+                  </object>
 		  <object>
                           <name>TelemetryEndpoint</name>
                           <objectType>object</objectType>

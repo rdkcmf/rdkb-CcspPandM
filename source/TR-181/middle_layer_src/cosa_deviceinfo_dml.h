@@ -1893,6 +1893,23 @@ ActiveMeasurements_RFC_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+
+BOOL
+DLCaStore_RFC_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+DLCaStore_RFC_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
 /***********************************************************************
 
  APIs for Object:
