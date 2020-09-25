@@ -293,7 +293,7 @@ HsAssoDev_GetParamIntValue
 {
     COSA_DML_HOTSPOT_ASSODEV        *assoDev = (COSA_DML_HOTSPOT_ASSODEV *)hInsContext;
 
-   // CosaDml_HsSsidAssoDevGetCfg(assoDev->SsidIns, assoDev->InstanceNumber, assoDev);
+    CosaDml_HsSsidAssoDevGetCfg(assoDev->SsidIns, assoDev->InstanceNumber, assoDev);
 
     if (AnscEqualString(ParamName, "RSSILevel", TRUE))
     {
