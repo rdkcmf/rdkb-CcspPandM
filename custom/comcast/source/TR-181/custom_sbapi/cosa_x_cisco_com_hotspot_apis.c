@@ -402,7 +402,7 @@ CosaDml_HsSsidAssoDevGetEntryByIndex(ULONG ssidIns, ULONG idx, COSA_DML_HOTSPOT_
     struct hs_ssid *hsssid;
     struct hs_client *cli;
 
-#if defined(_INTEL_BUG_FIXES_)
+#if defined(_INTEL_BUG_FIXES_) || defined(DUAL_CORE_XB3)
     char curInt[256] = {0};
     int inst;
     int size;
@@ -431,7 +431,7 @@ CosaDml_HsSsidAssoDevGetEntryByIndex(ULONG ssidIns, ULONG idx, COSA_DML_HOTSPOT_
     }
     cli = &hsssid->clis[idx];
 
-#if defined(_INTEL_BUG_FIXES_)
+#if defined(_INTEL_BUG_FIXES_) || defined(DUAL_CORE_XB3)
     strncpy(curInt,hsssid->path,sizeof(curInt));
     //Trim off the trailing dot if it exists
     size = strnlen(curInt,sizeof(curInt));
@@ -453,7 +453,7 @@ CosaDml_HsSsidAssoDevGetEntryByIndex(ULONG ssidIns, ULONG idx, COSA_DML_HOTSPOT_
     snprintf(entry->Alias, sizeof(entry->Alias), "cpe-HsAssoDev-%d", idx + 1);
     snprintf(entry->MACAddress, sizeof(entry->MACAddress), "%s", cli->mac);
     snprintf(entry->Hostname, sizeof(entry->Hostname), "%s", cli->hostname);
-#if defined(_INTEL_BUG_FIXES_)
+#if defined(_INTEL_BUG_FIXES_) || defined(DUAL_CORE_XB3)
     entry->RSSILevel = rssi;
 #else
     entry->RSSILevel = cli->rssi;
