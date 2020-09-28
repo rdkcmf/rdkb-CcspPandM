@@ -61,7 +61,7 @@
 
 **************************************************************************/
 
-
+#if !defined(DDNS_BROADBANDFORUM)
 #ifndef  _COSA_X_CISCO_COM_DDNS_DML_H
 #define  _COSA_X_CISCO_COM_DDNS_DML_H
 
@@ -305,4 +305,5 @@ Service_Rollback
         ANSC_HANDLE                 hInsContext
     );
 
+#endif
 #endif

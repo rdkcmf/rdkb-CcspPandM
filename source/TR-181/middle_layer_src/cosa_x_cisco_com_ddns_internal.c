@@ -66,7 +66,7 @@
         01/11/2011    initial revision.
 
 **************************************************************************/
-
+#if !defined(DDNS_BROADBANDFORUM)
 #include "cosa_x_cisco_com_ddns_internal.h"
 #include "cosa_x_cisco_com_security_apis.h"
 
@@ -843,3 +843,4 @@ CosaDdnsRegDelDdnsInfo
 
     return ANSC_STATUS_SUCCESS;
 }
+#endif
