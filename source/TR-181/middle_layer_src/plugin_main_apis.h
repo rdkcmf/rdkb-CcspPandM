@@ -133,7 +133,9 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
 #define COSA_DATAMODEL_USERINTERFACE_OID                        17
 #define COSA_DATAMODEL_USERS_OID                                18
 #define COSA_DATAMODEL_WIFI_OID                                 19
+#if !defined(DDNS_BROADBANDFORUM)
 #define COSA_DATAMODEL_DDNS_OID                                 20
+#endif
 #define COSA_DATAMODEL_SECURITY_OID                             21
 #define COSA_DATAMODEL_DIAG_OID                                 22
 #define COSA_DATAMODEL_BRIDGING_OID                             23
@@ -161,6 +163,9 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
 #define COSA_DATAMODEL_TSIP_OID                                 40
 #define COSA_DATAMODEL_FILETRANSFER_OID                         41
 #define COSA_DATAMODEL_LANMANAGEMENT_OID                        42
+#if defined(DDNS_BROADBANDFORUM)
+#define COSA_DATAMODEL_DYNDNS_OID                               43
+#endif
 
 
 /*
@@ -186,6 +191,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
     ANSC_HANDLE                  hIP;                                                       \
     ANSC_HANDLE                  hHosts;                                                    \
     ANSC_HANDLE                  hDNS;                                                      \
+    ANSC_HANDLE                  hDynamicDns;                                               \
     ANSC_HANDLE                  hRouting;                                                  \
     ANSC_HANDLE                  hBridging;                                                 \
     ANSC_HANDLE                  hUpnp;                                                     \

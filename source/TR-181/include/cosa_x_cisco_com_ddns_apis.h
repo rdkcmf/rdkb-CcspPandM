@@ -64,7 +64,7 @@
  * This file defines data types and methods as the middle layer between COSA DM library
  * and backend implementation.
  */
-
+#if !defined(DDNS_BROADBANDFORUM)
 #ifndef  _COSA_X_CISCO_COM_DDNS_APIS_H
 #define  _COSA_X_CISCO_COM_DDNS_APIS_H
 
@@ -203,4 +203,5 @@ CosaDmlDdnsGetInfo
         PCOSA_DML_DDNS_SERVICE      pInfo
 );
 
+#endif
 #endif

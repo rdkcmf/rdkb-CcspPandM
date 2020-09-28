@@ -59,7 +59,7 @@
         01/11/2011    initial revision.
 
 **************************************************************************/
-
+#if !defined(DDNS_BROADBANDFORUM)
 #ifndef  _COSA_X_CISCO_COM_DDNS_INTERNAL_H
 #define  _COSA_X_CISCO_COM_DDNS_INTERNAL_H
 
@@ -132,4 +132,5 @@ CosaDdnsRegDelDdnsInfo
         ANSC_HANDLE                 hCosaContext
     );
 
+#endif
 #endif
