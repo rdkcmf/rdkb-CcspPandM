@@ -59,7 +59,7 @@
         01/11/2011    initial revision.
 
 **************************************************************************/
-
+#if !defined(DDNS_BROADBANDFORUM)
 #include "cosa_x_cisco_com_ddns_apis.h"
 
 #if defined _COSA_INTEL_USG_ARM_ || defined _COSA_DRG_TPG_ ||_COSA_BCM_MIPS_
@@ -1736,4 +1736,5 @@ CosaDmlDdnsSetService
     return ANSC_STATUS_SUCCESS;
 }
 
+#endif
 #endif

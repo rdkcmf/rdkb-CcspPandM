@@ -76,7 +76,9 @@
 #include "cosa_users_apis.h"
 #include "cosa_deviceinfo_apis.h"
 #include "cosa_firewall_internal.h"
+#if !defined(DDNS_BROADBANDFORUM)
 #include "cosa_x_cisco_com_ddns_internal.h"
+#endif
 #include "cosa_x_cisco_com_security_internal.h"
 #include "cosa_ip_apis.h"
 #include "cosa_hosts_apis.h"
@@ -102,6 +104,10 @@
 #include "cosa_ipv6rd_internal.h"
 #include "cosa_x_cisco_com_mld_internal.h"
 #include "cosa_x_cisco_com_multilan_apis.h"
+#if defined(DDNS_BROADBANDFORUM)
+#include "cosa_dynamicdns_apis.h"
+#include "cosa_dynamicdns_internal.h"
+#endif
 #ifdef DSLITE_FEATURE_SUPPORT
 #include "cosa_dslite_apis.h"
 #include "cosa_dslite_internal.h"
@@ -259,8 +265,14 @@ CosaBackEndManagerInitialize
 
     pMyObject->hUsers         = (ANSC_HANDLE)CosaUsersCreate();
     AnscTraceWarning(("  CosaUsersCreate done!\n"));
+#if !defined(DDNS_BROADBANDFORUM)
     pMyObject->hDdns          = (ANSC_HANDLE)CosaDdnsCreate();
     AnscTraceWarning(("  CosaDdnsCreate done!\n"));
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   pMyObject->hDynamicDns    = (ANSC_HANDLE)CosaDynamicDnsCreate();
+    AnscTraceWarning(("  CosaDynamicDnsCreate done!\n"));
+#endif
     pMyObject->hFirewall      = (ANSC_HANDLE)CosaFirewallCreate();
     AnscTraceWarning(("  CosaFirewallCreate done!\n"));
     pMyObject->hSecurity      = (ANSC_HANDLE)CosaSecurityCreate();
@@ -516,11 +528,20 @@ CosaBackEndManagerRemove
     {
         COSADmlRemoveProcessInfo((ANSC_HANDLE)pMyObject->hProcStatus);
     }
-
+#if !defined(DDNS_BROADBANDFORUM)
     if ( pMyObject->hDdns )
     {
         CosaDdnsRemove((ANSC_HANDLE)pMyObject->hDdns);
     }
+#endif
+
+#if defined(DDNS_BROADBANDFORUM)
+
+    if ( pMyObject->hDynamicDns )
+    {
+        CosaDynamicDnsRemove((ANSC_HANDLE)pMyObject->hDynamicDns);
+    }
+#endif
 
     if ( pMyObject->hFirewall )
     {

@@ -174,6 +174,8 @@ X_CISCO_COM_DDNS_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_DATAMODEL_DDNS            pCosaDMDdns     = (PCOSA_DATAMODEL_DDNS)g_pCosaBEManager->hDdns;
     PCOSA_DML_DDNS_CFG              pDdnsCfg        = (PCOSA_DML_DDNS_CFG  )&pCosaDMDdns->DdnsConfig;
     COSA_DML_DDNS_CFG               DdnsCfg;
@@ -192,6 +194,10 @@ X_CISCO_COM_DDNS_GetParamBoolValue
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+    return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -233,9 +239,15 @@ X_CISCO_COM_DDNS_GetParamIntValue
     )
 {
     /* check the parameter name and return the corresponding value */
+#if !defined(DDNS_BROADBANDFORUM)
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return TRUE;
+#endif
+
 }
 
 /**********************************************************************  
@@ -277,9 +289,14 @@ X_CISCO_COM_DDNS_GetParamUlongValue
     )
 {
     /* check the parameter name and return the corresponding value */
+#if !defined(DDNS_BROADBANDFORUM)
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -330,9 +347,14 @@ X_CISCO_COM_DDNS_GetParamStringValue
     )
 {
     /* check the parameter name and return the corresponding value */
+#if !defined(DDNS_BROADBANDFORUM)
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+    return 0;
+#endif
 }
 
 /**********************************************************************  
@@ -373,6 +395,8 @@ X_CISCO_COM_DDNS_SetParamBoolValue
         BOOL                        bValue
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_DATAMODEL_DDNS            pCosaDMDdns = (PCOSA_DATAMODEL_DDNS)g_pCosaBEManager->hDdns;
     PCOSA_DML_DDNS_CFG              pDdnsCfg    = (PCOSA_DML_DDNS_CFG  )&pCosaDMDdns->DdnsConfig;
 
@@ -393,6 +417,10 @@ X_CISCO_COM_DDNS_SetParamBoolValue
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+    return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -433,10 +461,16 @@ X_CISCO_COM_DDNS_SetParamIntValue
         int                         iValue
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -477,10 +511,16 @@ X_CISCO_COM_DDNS_SetParamUlongValue
         ULONG                       uValue
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+    return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -521,10 +561,16 @@ X_CISCO_COM_DDNS_SetParamStringValue
         char*                       pString
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -596,6 +642,8 @@ X_CISCO_COM_DDNS_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_DATAMODEL_DDNS            pCosaDMDdns = (PCOSA_DATAMODEL_DDNS)g_pCosaBEManager->hDdns;
     PCOSA_DML_DDNS_CFG              pDdnsCfg    = (PCOSA_DML_DDNS_CFG  )&pCosaDMDdns->DdnsConfig;
 
@@ -607,6 +655,10 @@ X_CISCO_COM_DDNS_Commit
     }
 
     return CosaDmlDdnsSetConfig(NULL, pDdnsCfg);
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return 0;
+#endif
 }
 
 /**********************************************************************  
@@ -692,9 +744,16 @@ Service_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_DATAMODEL_DDNS            pCosaDMDdns  = (PCOSA_DATAMODEL_DDNS)g_pCosaBEManager->hDdns;
     
     return AnscSListQueryDepth(&pCosaDMDdns->ContextHead);
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+    return 0;
+#endif
+
 }
 
 /**********************************************************************  
@@ -735,6 +794,8 @@ Service_GetEntry
         ULONG*                      pInsNumber
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_DATAMODEL_DDNS            pCosaDMDdns  = (PCOSA_DATAMODEL_DDNS     )g_pCosaBEManager->hDdns;
     PSLIST_HEADER                   pListHead    = (PSLIST_HEADER            )&pCosaDMDdns->ContextHead;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -752,6 +813,10 @@ Service_GetEntry
     }
 
     return pCosaContext; /* return the handle */
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return 0;
+#endif
 }
 
 /**********************************************************************  
@@ -786,7 +851,10 @@ Service_AddEntry
         ANSC_HANDLE                 hInsContext,
         ULONG*                      pInsNumber
     )
+
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_DATAMODEL_DDNS            pCosaDMDdns  = (PCOSA_DATAMODEL_DDNS     )g_pCosaBEManager->hDdns;
     PSLIST_HEADER                   pListHead    = (PSLIST_HEADER            )&pCosaDMDdns->ContextHead;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -834,6 +902,10 @@ Service_AddEntry
     *pInsNumber = pCosaContext->InstanceNumber;
 
     return pCosaContext; /* return the handle */
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return 0;
+#endif
 }
 
 /**********************************************************************  
@@ -869,6 +941,8 @@ Service_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_DDNS_SERVICE          pDdnsService  = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
@@ -893,6 +967,10 @@ Service_DelEntry
     }
 
     return returnStatus;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return 0;
+#endif
 }
 
 
@@ -934,6 +1012,8 @@ Service_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
     COSA_DML_DDNS_SERVICE           DdnsService;
@@ -967,6 +1047,11 @@ Service_GetParamBoolValue
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return TRUE;
+#endif
+
 }
 
 /**********************************************************************  
@@ -1007,10 +1092,16 @@ Service_GetParamIntValue
         int*                        pInt
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+  return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -1051,6 +1142,8 @@ Service_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
     COSA_DML_DDNS_SERVICE           DdnsService;
@@ -1097,6 +1190,10 @@ Service_GetParamUlongValue
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -1146,6 +1243,8 @@ Service_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
     PUCHAR                          pLowerLayer      = NULL;
@@ -1206,6 +1305,10 @@ Service_GetParamStringValue
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+  return 0;
+#endif
 }
 
 /**********************************************************************  
@@ -1246,6 +1349,8 @@ Service_SetParamBoolValue
         BOOL                        bValue
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
 
@@ -1274,6 +1379,10 @@ Service_SetParamBoolValue
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+    return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -1314,10 +1423,16 @@ Service_SetParamIntValue
         int                         iValue
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -1358,6 +1473,8 @@ Service_SetParamUlongValue
         ULONG                       uValue
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     /* check the parameter name and set the corresponding value */
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
@@ -1390,6 +1507,10 @@ Service_SetParamUlongValue
     }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -1430,6 +1551,8 @@ Service_SetParamStringValue
         char*                       pString
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
 
@@ -1531,11 +1654,18 @@ Service_SetParamStringValue
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+    return TRUE;
+#endif
+
 }
 
 /* Service_IsDomainStringHaveRepeatedWord() */
 BOOL Service_IsDomainStringHaveRepeatedWord ( char* pStringDomain )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
 	struct detail stDetailArray[ 64 ] = { 0 };
 	char   		  acSubstring[ 256 ]  = { 0 };
 	int    		  i = 0, j= 0, count = 0;
@@ -1568,11 +1698,17 @@ BOOL Service_IsDomainStringHaveRepeatedWord ( char* pStringDomain )
     }
 
 	return FALSE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+       return TRUE;
+#endif
 }
 
 /* Service_CheckRepeatString() */
 int Service_CheckRepeatString( struct detail stDetailArray[], const char unit[], int count, int* pIsHaveRepeatedWord )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     int i;
  
     for (i = 0; i < count; i++)
@@ -1590,6 +1726,10 @@ int Service_CheckRepeatString( struct detail stDetailArray[], const char unit[],
  
     /* count represents the number of fields updated in array stDetailArray */
     return ( count + 1);
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+    return 0;
+#endif
 }
 
 /**********************************************************************  
@@ -1630,6 +1770,8 @@ Service_Validate
         ULONG*                      puLength
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_DATAMODEL_DDNS            pCosaDMDdns     = (PCOSA_DATAMODEL_DDNS     )g_pCosaBEManager->hDdns;
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pCosaDMDdns->ContextHead;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
@@ -1690,6 +1832,10 @@ Service_Validate
     }
 
     return TRUE;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return TRUE;
+#endif
 }
 
 /**********************************************************************  
@@ -1720,6 +1866,8 @@ Service_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DDNS            pCosaDMDdns  = (PCOSA_DATAMODEL_DDNS     )g_pCosaBEManager->hDdns;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
@@ -1742,6 +1890,10 @@ Service_Commit
     }
 
     return returnStatus;
+#endif
+#if defined(DDNS_BROADBANDFORUM)
+   return 0;
+#endif
 }
 
 /**********************************************************************  
@@ -1773,6 +1925,8 @@ Service_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+#if !defined(DDNS_BROADBANDFORUM)
+
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
 
@@ -1782,5 +1936,10 @@ Service_Rollback
                    pDdnsService->InstanceNumber, 
                    pDdnsService
                );
+
+#endif
+#if defined(DDNS_BROADBANDFORUM) 
+  return 0;
+#endif
 }
 
