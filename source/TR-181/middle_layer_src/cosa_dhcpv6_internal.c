@@ -174,11 +174,13 @@ CosaDhcpv6Initialize
     CosaDmlDhcpv6Init( NULL, NULL );
 
     /* Initiation all functions */
+#ifndef FEATURE_RDKB_WAN_MANAGER
     AnscSListInitializeHeader( &pMyObject->ClientList );
-    AnscSListInitializeHeader( &pMyObject->PoolList );
     pMyObject->maxInstanceOfClient  = 0;
-    pMyObject->maxInstanceOfPool    = 0;
     AnscZeroMemory(pMyObject->AliasOfClient, sizeof(pMyObject->AliasOfClient));
+#endif
+    AnscSListInitializeHeader( &pMyObject->PoolList );
+    pMyObject->maxInstanceOfPool    = 0;
     AnscZeroMemory(pMyObject->AliasOfPool, sizeof(pMyObject->AliasOfPool));
 
     /*We need to get Instance Info from cosa configuration*/
@@ -273,8 +275,9 @@ CosaDhcpv6Remove
     ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DHCPV6          pMyObject           = (PCOSA_DATAMODEL_DHCPV6)hThisObject;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoDhcpv6   = (PPOAM_IREP_FOLDER_OBJECT)pMyObject->hIrepFolderDhcpv6;
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCxtDhcpcLink       = NULL;
+#endif
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtPoolLink        = NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink            = NULL;
     PSINGLE_LINK_ENTRY              pSListEntry         = NULL;
@@ -283,7 +286,7 @@ CosaDhcpv6Remove
     ULONG                           Index               = 0;
     
     /* Remove necessary resource */
-    
+#ifndef FEATURE_RDKB_WAN_MANAGER
     pSListEntry         = AnscSListPopEntry(&pMyObject->ClientList);
     while( pSListEntry != NULL)
     {
@@ -306,7 +309,7 @@ CosaDhcpv6Remove
         AnscFreeMemory(pCxtDhcpcLink->hContext);
         AnscFreeMemory(pCxtDhcpcLink);
     }
-
+#endif
     pSListEntry         = AnscSListPopEntry(&pMyObject->PoolList);
     while( pSListEntry != NULL)
     {
@@ -383,35 +386,37 @@ CosaDhcpv6BackendGetDhcpv6Info
 {
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;    
     PCOSA_DATAMODEL_DHCPV6          pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)hThisObject;
-    
+#ifndef FEATURE_RDKB_WAN_MANAGER
     PCOSA_DML_DHCPCV6_FULL          pDhcpc            = NULL;    
     PCOSA_DML_DHCPCV6_SVR           pDhcpcServer      = NULL;
     PCOSA_DML_DHCPCV6_RECV          pDhcpcRecv        = NULL;    
     PCOSA_DML_DHCPCV6_SENT          pSentOption       = NULL;
-    
+#endif    
     PCOSA_DML_DHCPSV6_POOL_FULL     pPool             = NULL;
     PCOSA_DML_DHCPSV6_POOL_OPTION   pPoolOption       = NULL;
     PCOSA_DML_DHCPSV6_CLIENT        pPoolClient       = NULL;
     PCOSA_DML_DHCPSV6_CLIENT_IPV6ADDRESS   pPoolIPv6Address = NULL;
     PCOSA_DML_DHCPSV6_CLIENT_IPV6PREFIX    pPoolIPv6Prefix  =NULL;
     PCOSA_DML_DHCPSV6_CLIENT_OPTION        pPoolIPv6Option  =NULL;
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
     ULONG                           clientCount       = 0;
+#endif
     ULONG                           poolCount         = 0;
     ULONG                           count             = 0;
     ULONG                           count1            = 0;
     ULONG                           ulIndex           = 0;
     ULONG                           ulIndex2          = 0;
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pClientCxtLink    = NULL;    
-    PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pClientCxtLink2   = NULL;    
+    PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pClientCxtLink2   = NULL;
+#endif  
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pPoolCxtLink      = NULL;    
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pPoolCxtLink2     = NULL;    
     PCOSA_CONTEXT_LINK_OBJECT         pCxtLink          = NULL;
     PCOSA_CONTEXT_LINK_OBJECT         pCxtLink2         = NULL;
 
     BOOL                            bNeedSave         = FALSE;
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
     /* Get DHCPv6.Client.{i} */
     clientCount = CosaDmlDhcpv6cGetNumberOfEntries(NULL);
     for ( ulIndex = 0; ulIndex < clientCount; ulIndex++ )
@@ -655,7 +660,7 @@ CosaDhcpv6BackendGetDhcpv6Info
         }
         
     }
-
+#endif
     /*****************************************
 
                 Get DHCPv6.Server.Pool.{i} 
@@ -1003,17 +1008,21 @@ CosaDhcpv6RegGetDhcpv6Info
     PCOSA_DATAMODEL_DHCPV6          pMyObject         = (PCOSA_DATAMODEL_DHCPV6   )hThisObject;
     
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoDhcpv6 = (PPOAM_IREP_FOLDER_OBJECT )pMyObject->hIrepFolderDhcpv6;
+#ifndef FEATURE_RDKB_WAN_MANAGER
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoClient = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoSntOpt = (PPOAM_IREP_FOLDER_OBJECT )NULL;
+#endif
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoPool   = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoPoolOption       = (PPOAM_IREP_FOLDER_OBJECT )NULL;
-    
+#ifndef FEATURE_RDKB_WAN_MANAGER
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoEnumClient       = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoEnumSntOpt    = (PPOAM_IREP_FOLDER_OBJECT )NULL;
+#endif
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoEnumPool         = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoEnumPoolOption   = (PPOAM_IREP_FOLDER_OBJECT )NULL;
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCosaDhcpcContext = NULL;
+#endif
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCosaPoolContext = NULL;
     PCOSA_CONTEXT_LINK_OBJECT         pCosaSentOptionContext     = NULL;
     PCOSA_CONTEXT_LINK_OBJECT         pCosaPoolOptionContext     = NULL;
@@ -1025,14 +1034,17 @@ CosaDhcpv6RegGetDhcpv6Info
     ULONG                           ulIndex2          = 0;
     ULONG                           uInstanceNumber   = 0;
     BOOL                            bNew              = FALSE;
+#ifndef FEATURE_RDKB_WAN_MANAGER
     char*                           pAliasClient      = NULL;
     char*                           pAliasSentOption  = NULL;
+#endif
     char*                           pAliasPool        = NULL;
     char*                           pAliasPoolOption  = NULL;
     char*                           pFolderName       = NULL;
-    
+#ifndef FEATURE_RDKB_WAN_MANAGER
     PCOSA_DML_DHCPCV6_FULL          pDhcpv6Client     = NULL;
     PCOSA_DML_DHCPCV6_SENT          pDhcpv6SntOpt     = NULL;
+#endif
     PCOSA_DML_DHCPSV6_POOL_FULL     pDhcpv6Pool       = NULL;
     PCOSA_DML_DHCPSV6_POOL_OPTION      pDhcpv6PoolOption = NULL;
 
@@ -1075,7 +1087,7 @@ CosaDhcpv6RegGetDhcpv6Info
             </Dhcpv6>
       ****************************************************
       */
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
     /* Get Folder Client */ 
     pPoamIrepFoClient  = 
         (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoDhcpv6->GetFolder
@@ -1391,7 +1403,7 @@ ClientEnd:
 
     pPoamIrepFoClient->Remove((ANSC_HANDLE)pPoamIrepFoClient);
     pPoamIrepFoClient = NULL;
-
+#endif
     /*
             Begin process pool.{i}, and pool.{i}.option.{j}
         */
@@ -1714,9 +1726,10 @@ PoolEnd:
 
     
 EXIT3:
+#ifndef FEATURE_RDKB_WAN_MANAGER
     if(pDhcpv6Client)
         AnscFreeMemory(pDhcpv6Client);
-
+#endif
     if(pDhcpv6Pool )
         AnscFreeMemory(pDhcpv6Pool);
 
@@ -1724,24 +1737,24 @@ EXIT3:
         AnscFreeMemory(pDhcpv6PoolOption   );
         
 EXIT2:
-    
+#ifndef FEATURE_RDKB_WAN_MANAGER
     if(pAliasSentOption)
         AnscFreeMemory(pAliasSentOption);
     
     if(pAliasClient)
         AnscFreeMemory(pAliasClient);
-    
+#endif
     if(pAliasPool)
         AnscFreeMemory(pAliasPool);
     
     if(pAliasPoolOption)
         AnscFreeMemory(pAliasPoolOption);
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
     if(pDhcpv6SntOpt )
         AnscFreeMemory(pDhcpv6SntOpt);
-    
+#endif
 EXIT1:
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
     if ( pPoamIrepFoClient )
         pPoamIrepFoClient->Remove((ANSC_HANDLE)pPoamIrepFoClient);
 
@@ -1753,7 +1766,7 @@ EXIT1:
 
     if ( pPoamIrepFoEnumSntOpt)
         pPoamIrepFoEnumSntOpt->Remove((ANSC_HANDLE)pPoamIrepFoEnumSntOpt);
-    
+#endif
     if ( pPoamIrepFoPool)
         pPoamIrepFoPool->Remove((ANSC_HANDLE)pPoamIrepFoPool);
 
@@ -1804,20 +1817,24 @@ CosaDhcpv6RegSetDhcpv6Info
     PCOSA_DATAMODEL_DHCPV6          pMyObject         = (PCOSA_DATAMODEL_DHCPV6   )hThisObject;
     
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoDhcpv6 = (PPOAM_IREP_FOLDER_OBJECT )pMyObject->hIrepFolderDhcpv6;
+#ifndef FEATURE_RDKB_WAN_MANAGER
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoClient = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoSntOpt = (PPOAM_IREP_FOLDER_OBJECT )NULL;
+#endif
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoPool   = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoPoolOption      = (PPOAM_IREP_FOLDER_OBJECT )NULL;
-    
+#ifndef FEATURE_RDKB_WAN_MANAGER
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoEnumClient      = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoEnumSntOpt      = (PPOAM_IREP_FOLDER_OBJECT )NULL;
+#endif
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoEnumPool        = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoEnumPoolOption  = (PPOAM_IREP_FOLDER_OBJECT )NULL;
 
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry2      = (PSINGLE_LINK_ENTRY       )NULL;
-    
+#ifndef FEATURE_RDKB_WAN_MANAGER
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCosaDhcpcContext = NULL;
+#endif
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCosaPoolContext  = NULL;
     PCOSA_CONTEXT_LINK_OBJECT         pCosaSentOptionContext   = NULL;
     PCOSA_CONTEXT_LINK_OBJECT         pCosaPoolOptionContext   = NULL;
@@ -1828,15 +1845,18 @@ CosaDhcpv6RegSetDhcpv6Info
     ULONG                           ulEntryCount2     = 0;
     ULONG                           ulIndex2          = 0;
     ULONG                           uInstanceNumber   = 0;
+#ifndef FEATURE_RDKB_WAN_MANAGER
     char*                           pAliasClient      = NULL;
     char*                           pAliasSentOption  = NULL;
+#endif
     char*                           pAliasPool        = NULL;
     char*                           pAliasPoolOption  = NULL;
     char*                           pFolderName       = NULL;
     char                            FolderName[16]    = {0};
-    
+#ifndef FEATURE_RDKB_WAN_MANAGER
     PCOSA_DML_DHCPCV6_FULL          pDhcpv6Client     = NULL;
     PCOSA_DML_DHCPCV6_SENT          pDhcpv6SntOpt     = NULL;
+#endif
     PCOSA_DML_DHCPSV6_POOL_FULL     pDhcpv6Pool       = NULL;
     PCOSA_DML_DHCPSV6_POOL_OPTION      pDhcpv6PoolOption = NULL;
 
@@ -1897,7 +1917,7 @@ CosaDhcpv6RegSetDhcpv6Info
               </Dhcpv6>
         ****************************************************
       */
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
     /* Add DHCPv6.client.*/
     pPoamIrepFoClient =
         pPoamIrepFoDhcpv6->AddFolder
@@ -2144,7 +2164,7 @@ ClientEnd:
     pPoamIrepFoClient->Remove((ANSC_HANDLE)pPoamIrepFoClient);
     pPoamIrepFoClient = NULL;
 
-
+#endif
     /*
             begin process pool and option
         */
@@ -2407,7 +2427,7 @@ EXIT1:
         SlapFreeVariable(pSlapVariable);
         pSlapVariable = NULL;
     }
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
     if ( pPoamIrepFoClient )
         pPoamIrepFoClient->Remove((ANSC_HANDLE)pPoamIrepFoClient);
 
@@ -2419,7 +2439,7 @@ EXIT1:
 
     if ( pPoamIrepFoEnumSntOpt)
         pPoamIrepFoEnumSntOpt->Remove((ANSC_HANDLE)pPoamIrepFoEnumSntOpt);
-    
+#endif
     if ( pPoamIrepFoPool)
         pPoamIrepFoPool->Remove((ANSC_HANDLE)pPoamIrepFoPool);
 
@@ -2437,7 +2457,7 @@ EXIT1:
     return returnStatus;
 }
 
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
 /**********************************************************************
 
     caller:     owner of this object
@@ -2488,7 +2508,7 @@ CosaDhcpv6ClientHasDelayAddedChild
 
     return FALSE;
 }
-
+#endif
 /**********************************************************************
 
     caller:     owner of this object

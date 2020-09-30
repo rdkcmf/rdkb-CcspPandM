@@ -272,8 +272,10 @@ CosaBackEndManagerInitialize
     AnscTraceWarning(("  CosaBridgingCreate done!\n"));
     pMyObject->hInterfaceStack = (ANSC_HANDLE)CosaIFStackCreate();
     AnscTraceWarning(("  CosaIFStackCreate done!\n"));
+#ifndef FEATURE_RDKB_WAN_MANAGER
     pMyObject->hPPP           = (ANSC_HANDLE)CosaPPPCreate();
     AnscTraceWarning(("  CosaPPPCreate done!\n"));
+#endif
     pMyObject->hDhcpv6        = (ANSC_HANDLE)CosaDhcpv6Create();
     AnscTraceWarning(("  CosaDhcpv6Create done!\n"));
     pMyObject->hDeviceControl  = (ANSC_HANDLE)CosaDeviceControlCreate();
@@ -508,10 +510,12 @@ CosaBackEndManagerRemove
         CosaIFStackRemove((ANSC_HANDLE)pMyObject->hInterfaceStack);
     }
         
+#ifndef FEATURE_RDKB_WAN_MANAGER 
     if ( pMyObject->hPPP )
     {
         CosaPPPRemove((ANSC_HANDLE)pMyObject->hPPP);
     }
+#endif
         
     if ( pMyObject->hDeviceControl )
     {

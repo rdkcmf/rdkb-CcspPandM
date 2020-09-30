@@ -88,6 +88,56 @@
 //$HL 4/30/2013
 #include "ccsp_psm_helper.h"
 
+#ifdef FEATURE_RDKB_WAN_MANAGER
+#define VLAN_DBUS_PATH                     "/com/cisco/spvtg/ccsp/vlanmanager"
+#define VLAN_COMPONENT_NAME                "eRT.com.cisco.spvtg.ccsp.vlanmanager"
+#define VLAN_NOE_PARAM_NAME                "Device.X_RDK_Ethernet.VLANTerminationNumberOfEntries"
+#define VLAN_TABLE_NAME                    "Device.X_RDK_Ethernet.VLANTermination."
+
+extern ANSC_HANDLE bus_handle;
+
+static ANSC_STATUS DmlGetParamValues( const char *pComponent, const char *pBus, const char *pParamName, char *pReturnVal )
+{
+    parameterValStruct_t   **retVal = NULL;
+    char                    *ParamName[ 1 ];
+    int                    ret               = 0,
+                           nval;
+
+    //Assign address for get parameter name
+    ParamName[0] = pParamName;
+
+    ret = CcspBaseIf_getParameterValues(
+                                    bus_handle,
+                                    pComponent,
+                                    pBus,
+                                    ParamName,
+                                    1,
+                                    &nval,
+                                    &retVal);
+
+    //Copy the value
+    if( retVal )
+    {
+
+       if( (CCSP_SUCCESS == ret)  && (nval > 0))
+       {
+          //CcspTraceInfo(("%s parameterValue[%s]\n",__FUNCTION__,retVal[0]->parameterValue));
+
+          if( NULL != retVal[0]->parameterValue )
+          {
+             strncpy( pReturnVal, retVal[0]->parameterValue, strlen( retVal[0]->parameterValue ) + 1 );
+          }
+
+          free_parameterValStruct_t (bus_handle, nval, retVal);
+
+          return ANSC_STATUS_SUCCESS;
+       }
+    }
+
+    return ANSC_STATUS_FAILURE;
+}
+#endif
+
 ANSC_STATUS
 CosaUtilStringToHex
     (
@@ -199,7 +249,7 @@ PCOSA_CONTEXT_LINK_OBJECT
 CosaSListGetEntryByInsNum
     (
         PSLIST_HEADER               pListHead,
-        ULONG                       InstanceNumber
+	ULONG                       InstanceNumber
     )
 {
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
@@ -465,9 +515,39 @@ CosaUtilGetLowerLayers
                     }
                 }
             }
+#ifdef FEATURE_RDKB_WAN_MANAGER
+            else if ( AnscEqualString(pTableStringToken->Name, "Device.X_RDK_Ethernet.VLANTermination.", TRUE ) )
+	    {
+                char tmpReturnValue[ 256 ]    = { 0 };
+                if ( ANSC_STATUS_FAILURE == DmlGetParamValues( VLAN_COMPONENT_NAME, VLAN_DBUS_PATH, VLAN_NOE_PARAM_NAME, tmpReturnValue ) )
+                {
+                    CcspTraceError(("%s %d Failed to get param value\n", __FUNCTION__, __LINE__));
+                    return ANSC_STATUS_FAILURE;
+                }
+                ulNumOfEntries = atoi( tmpReturnValue );
+                CcspTraceDebug(("%s %d - TotalNoofEntries:%d\n", __FUNCTION__, __LINE__, ulNumOfEntries));
+                for ( i = 1 ; i <= ulNumOfEntries; i++ )
+                {
+                    _ansc_sprintf(ucEntryFullPath, "%s%d", "Device.X_RDK_Ethernet.VLANTermination.", i);
+
+                    _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
+                    if ( ANSC_STATUS_FAILURE == DmlGetParamValues( VLAN_COMPONENT_NAME, VLAN_DBUS_PATH, ucEntryParamName, ucEntryNameValue ) )
+                    {
+                        CcspTraceError(("%s %d Failed to get param value\n", __FUNCTION__, __LINE__));
+                        break;
+                    }
+                    else if(AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
+                    {
+                        pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
+                        break;
+                    }
+                }
+            }
+#else
             else if ( AnscEqualString(pTableStringToken->Name, "Device.Ethernet.VLANTermination.", TRUE ) )
             {
-            }
+	    }
+#endif
             else if ( AnscEqualString(pTableStringToken->Name, "Device.WiFi.SSID.", TRUE ) )
             {
                 parameterValStruct_t varStruct;
@@ -597,8 +677,14 @@ LINKTYPE_MAP_T g_linktype_map[COSA_DML_LINK_TYPE_TOTAL] = {
         "EthLink",
         COSA_DML_LINK_TYPE_EthLink 
     },
-    {   "Device.Ethernet.VLANTermination.", 
-        "Ethernet.VLANTermination", 
+    {  
+#ifdef FEATURE_RDKB_WAN_MANAGER
+	"Device.X_RDK_Ethernet.VLANTermination.",
+        "X_RDK_Ethernet.VLANTermination", 
+#else
+        "Device.Ethernet.VLANTermination.",
+	"Ethernet.VLANTermination",
+#endif
         COSA_DML_LINK_TYPE_EthVlan
     },
     {   "Device.USB.Interface.", 

@@ -79,7 +79,7 @@ extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 
-#ifdef _HUB4_PRODUCT_REQ_
+#if defined(_HUB4_PRODUCT_REQ_) || defined(FEATURE_RDKB_WAN_MANAGER)
 #include "ipc_msg.h"
 #if defined SUCCESS
 #undef SUCCESS
@@ -87,12 +87,6 @@ extern char g_Subsystem[32];
 #define SYSEVENT_FIELD_IPV6_DNS_SERVER    "wan6_ns"
 #define SYSEVENT_FIELD_IPV6_ULA_ADDRESS   "ula_address"
 
-/**
- * @brief API to send dhcpv6 configuration data to RdkWanmanager over nanomsg socket
- * @param Pointer to ipc_dhcpv6_data_t holds the IPv6 configurations
- * @return 0 on success else returned -1
- */
-static int send_dhcp_data_to_wanmanager (ipc_dhcpv6_data_t *dhcpv6_data); /* Send data to wanmanager using nanomsg. */
 #endif
 
 #if defined (INTEL_PUMA7)
@@ -1039,6 +1033,9 @@ static struct {
 }g_be_ctx;
 
 static void * dhcpv6c_dbg_thrd(void * in);
+#ifdef FEATURE_RDKB_WAN_MANAGER
+static void * dhcpv6s_dbg_thrd(void * in);
+#endif
 extern COSARepopulateTableProc            g_COSARepopulateTable;
 
 #define UTOPIA_SIMULATOR                0
@@ -1459,9 +1456,9 @@ static void Utopia_Free(UtopiaContext * ctx, ULONG commit)
 
 
 static ULONG                               uDhcpv6ServerPoolNum                                  = 0;
-static COSA_DML_DHCPSV6_POOL_FULL          sDhcpv6ServerPool[DHCPV6S_POOL_NUM]                   = {0};
+static COSA_DML_DHCPSV6_POOL_FULL          sDhcpv6ServerPool[DHCPV6S_POOL_NUM]                   = {};
 static ULONG                               uDhcpv6ServerPoolOptionNum[DHCPV6S_POOL_NUM]          = {0};
-static COSA_DML_DHCPSV6_POOL_OPTION        sDhcpv6ServerPoolOption[DHCPV6S_POOL_NUM][DHCPV6S_POOL_OPTION_NUM] = {{0}};
+static COSA_DML_DHCPSV6_POOL_OPTION        sDhcpv6ServerPoolOption[DHCPV6S_POOL_NUM][DHCPV6S_POOL_OPTION_NUM] = {};
 #if defined(MULTILAN_FEATURE)
 static char v6addr_prev[IPV6_PREF_MAXLEN] = {0};
 #endif
@@ -1799,13 +1796,20 @@ CosaDmlDhcpv6SMsgHandler
     }
 
     /*we start a thread to hear dhcpv6 client message about prefix/address */
+#ifndef FEATURE_RDKB_WAN_MANAGER
     if ( ( !mkfifo(CCSP_COMMON_FIFO, 0666) || errno == EEXIST ) &&
          ( !mkfifo(DHCPS6V_SERVER_RESTART_FIFO, 0666) || errno == EEXIST ) )
     {
         if (pthread_create(&g_be_ctx.dbgthrd, NULL, dhcpv6c_dbg_thrd, NULL)  || pthread_detach(g_be_ctx.dbgthrd)) 
             CcspTraceWarning(("%s error in creating dhcpv6c_dbg_thrd\n", __FUNCTION__));
     }
-
+#else
+    if ( ( !mkfifo(DHCPS6V_SERVER_RESTART_FIFO, 0666) || errno == EEXIST ) )
+    {
+        if (pthread_create(&g_be_ctx.dbgthrd, NULL, dhcpv6s_dbg_thrd, NULL)  || pthread_detach(g_be_ctx.dbgthrd)) 
+            CcspTraceWarning(("%s error in creating dhcpv6s_dbg_thrd\n", __FUNCTION__));
+    }
+#endif
     //CosaDmlStartDHCP6Client();
 //    dhcp v6 client is now initialized in service_wan, no need to initialize from PandM
     #if 0
@@ -2553,10 +2557,10 @@ CosaDmlDhcpv6cGetEnabled
 	}
 #endif
 
-#if defined (_HUB4_PRODUCT_REQ_)
-    // For HUB4, check dhcp6c process status
+#if defined (FEATURE_RDKB_WAN_MANAGER)
+    FILE *fp = popen("ps |grep -i dibbler-client | grep -v grep", "r");
+#elif defined (_HUB4_PRODUCT_REQ_)
     FILE *fp = popen("ps |grep -i dhcp6c | grep -v grep", "r");
-
 #elif defined (_COSA_BCM_ARM_)
     FILE *fp = popen("ps |grep -i dibbler-client | grep -v grep", "r");
 
@@ -2574,7 +2578,10 @@ CosaDmlDhcpv6cGetEnabled
 
     if ( fp != NULL){
         if ( fgets(out, sizeof(out), fp) != NULL ){
-#if defined (_HUB4_PRODUCT_REQ_)
+#if defined (FEATURE_RDKB_WAN_MANAGER)
+            if ( _ansc_strstr(out, "dibbler-client") )
+                bEnabled = TRUE;
+#elif defined (_HUB4_PRODUCT_REQ_)
             if ( _ansc_strstr(out, "dhcp6c") )
                 bEnabled = TRUE;
 #elif defined (_COSA_BCM_ARM_)
@@ -3298,8 +3305,11 @@ static int _dibbler_server_operation(char * arg)
                     * There is not interface enabled. Not start
                     * There is not valid pool. Not start. 
                 */
-        if ( !g_dhcpv6_server )
-            goto EXIT;
+        CcspTraceInfo(("Dibbler Server Start %s Line (%d)\n", __FUNCTION__, __LINE__));
+            if ( !g_dhcpv6_server )
+        {
+                goto EXIT;
+        }
 
         for ( Index = 0; Index < uDhcpv6ServerPoolNum; Index++ )
         {
@@ -3308,8 +3318,17 @@ static int _dibbler_server_operation(char * arg)
                     break;
         }
         if ( Index < uDhcpv6ServerPoolNum )
-            goto EXIT;
-    
+        {
+           goto EXIT;
+        }
+#ifdef FEATURE_RDKB_WAN_MANAGER
+        char prefix[64] = {0};
+        commonSyseventGet("ipv6_prefix", prefix, sizeof(prefix));
+        if (strlen(prefix) > 3)
+        {
+            g_dhcpv6_server_prefix_ready = TRUE;
+        }
+#endif    
         if (g_dhcpv6_server_prefix_ready && g_lan_ready)
         {
             fprintf(stderr, "%s -- %d start %d\n", __FUNCTION__, __LINE__, g_dhcpv6_server);
@@ -6612,6 +6631,15 @@ void CosaDmlDhcpv6sRebootServer()
     char out[128] = {0};
     BOOL isBridgeMode = FALSE;
 
+#ifdef FEATURE_RDKB_WAN_MANAGER
+    char prefix[64] = {0};
+    commonSyseventGet("ipv6_prefix", prefix, sizeof(prefix));
+    if (strlen(prefix) > 3)
+    {
+        g_dhcpv6_server_prefix_ready = TRUE;
+    }
+#endif
+
     if (!g_dhcpv6_server_prefix_ready || !g_lan_ready)
         return;
 #if defined (MULTILAN_FEATURE)
@@ -7252,15 +7280,20 @@ dhcpv6c_dbg_thrd(void * in)
 #endif
 #else
 #ifdef _HUB4_PRODUCT_REQ_
-                        if ((iapd_vldtm[0]=='\0') || (iapd_pretm[0]=='\0')){
-                            strncpy(iapd_pretm, "forever", sizeof(iapd_pretm));
-                            strncpy(iapd_vldtm, "forever", sizeof(iapd_vldtm));
+#ifndef FEATURE_RDKB_WAN_MANAGER
+                        char ula_address[64] = {0};
+                        commonSyseventGet(SYSEVENT_FIELD_IPV6_PREFIXVLTIME,
+                                     hub4_valid_lft, sizeof(hub4_valid_lft));
+                        commonSyseventGet(SYSEVENT_FIELD_IPV6_PREFIXPLTIME,
+                                     hub4_preferred_lft, sizeof(hub4_preferred_lft));
+                        if ((hub4_valid_lft[0]=='\0') || (hub4_preferred_lft[0]=='\0')){
+                            strncpy(hub4_preferred_lft, "forever", sizeof(hub4_preferred_lft));
+                            strncpy(hub4_valid_lft, "forever", sizeof(hub4_valid_lft));
                         }
                         commonSyseventGet(SYSEVENT_FIELD_IPV6_ULA_ADDRESS,
                                      ula_address, sizeof(ula_address));
                         if(ula_address[0] != '\0') {
-                            sprintf(cmd, "ip -6 addr add %s/64 dev %s", ula_address, COSA_DML_DHCPV6_SERVER_IFNAME);
-                            system(cmd);
+                            v_secure_system("ip -6 addr add %s/64 dev %s", ula_address, COSA_DML_DHCPV6_SERVER_IFNAME);
                         }
                         ret = dhcpv6_assign_global_ip(v6pref, COSA_DML_DHCPV6_SERVER_IFNAME, globalIP);
                         if(ret != 0) {
@@ -7268,53 +7301,17 @@ dhcpv6c_dbg_thrd(void * in)
                         }
                         else {
                             commonSyseventSet("lan_ipaddr_v6", globalIP);
-                            sprintf(cmd, "ip -6 addr add %s/64 dev %s valid_lft %s preferred_lft %s",
-                                globalIP, COSA_DML_DHCPV6_SERVER_IFNAME, iapd_vldtm, iapd_pretm);
-                            CcspTraceInfo(("Going to execute: %s \n", cmd));
-                            system(cmd);
+                            v_secure_system("ip -6 addr add %s/64 dev %s valid_lft %s preferred_lft %s", globalIP, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
                         }
                         if(strlen(v6pref) > 0) {
+                            char v6pref_addr[128] = {0};
                             strncpy(v6pref_addr, v6pref, (strlen(v6pref)-5));
                             CcspTraceInfo(("Going to set ::1 address on brlan0 interface \n"));
-                            sprintf(cmd, "ip -6 addr add %s::1/64 dev %s valid_lft %s preferred_lft %s",
-                                v6pref_addr, COSA_DML_DHCPV6_SERVER_IFNAME, iapd_vldtm, iapd_pretm);
-                            CcspTraceInfo(("Going to execute: %s \n", cmd));
-                            system(cmd);
+                            v_secure_system("ip -6 addr add %s::1/64 dev %s valid_lft %s preferred_lft %s", v6pref_addr, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
                         }
                         // send an event to Sky-pro app manager that Global-prefix is set
-                        commonSyseventSet("lan_prefix_set", globalIP); 
-                        /**
-                        * Send data to wanmanager.
-                        */
-                        int ipv6_wan_status = 0;
-                        char dns_server[256] = {'\0'};
-                        ipc_dhcpv6_data_t dhcpv6_data;
-                        memset(&dhcpv6_data, 0, sizeof(ipc_dhcpv6_data_t));
-
-                        if(strlen(v6pref) == 0) {
-                            dhcpv6_data.isExpired = TRUE;
-                        } else {
-                            dhcpv6_data.isExpired = FALSE;
-                            dhcpv6_data.prefixAssigned = TRUE;
-                            strncpy(dhcpv6_data.sitePrefix, v6pref, sizeof(dhcpv6_data.sitePrefix));
-                            strncpy(dhcpv6_data.pdIfAddress, "", sizeof(dhcpv6_data.pdIfAddress));
-                            /** DNS servers. **/
-                            commonSyseventGet(SYSEVENT_FIELD_IPV6_DNS_SERVER, dns_server, sizeof(dns_server));
-                            if (strlen(dns_server) != 0)
-                            {
-                                dhcpv6_data.dnsAssigned = TRUE;
-                                sscanf (dns_server, "%s %s", dhcpv6_data.nameserver, dhcpv6_data.nameserver1);
-                            }
-                            dhcpv6_data.prefixPltime = 3600;
-                            dhcpv6_data.prefixVltime = 3600;
-                            dhcpv6_data.maptAssigned = FALSE;
-                            dhcpv6_data.mapeAssigned = FALSE;
-                            dhcpv6_data.prefixCmd = 0;
-                        }
-
-                        if (send_dhcp_data_to_wanmanager(&dhcpv6_data) != ANSC_STATUS_SUCCESS) {
-                            CcspTraceError(("[%s-%d] Failed to send dhcpv6 data to wanmanager!!! \n", __FUNCTION__, __LINE__));
-                        }
+                        commonSyseventSet("lan_prefix_set", globalIP);
+#endif
 #endif
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
@@ -7431,66 +7428,90 @@ EXIT:
 
 #endif
 
-#ifdef _HUB4_PRODUCT_REQ_
-static int send_dhcp_data_to_wanmanager (ipc_dhcpv6_data_t *dhcpv6_data)
+#ifdef FEATURE_RDKB_WAN_MANAGER
+static void * 
+dhcpv6s_dbg_thrd(void * in)
 {
-    int ret = ANSC_STATUS_SUCCESS;
-    if ( NULL == dhcpv6_data)
+    int fd1=0;
+    char msg[1024] = {0};
+    int i;
+    char * p = NULL;
+    char globalIP2[128] = {0};
+    char out[128] = {0};
+    //When PaM restart, this is to get previous addr.
+    CcspTraceWarning(("(%s)\n", __FUNCTION__));
+    commonSyseventGet("lan_ipaddr_v6", globalIP2, sizeof(globalIP2));
+    if ( globalIP2[0] )
+        CcspTraceWarning((stderr,"%s  It seems there is old value(%s)\n", __FUNCTION__, globalIP2));
+
+    fd_set rfds;
+    struct timeval tm;
+
+    fd1= open(DHCPS6V_SERVER_RESTART_FIFO, O_RDWR);
+
+    if (fd1< 0) 
     {
-        printf ("[%s-%d] Invalid argument \n", __FUNCTION__,__LINE__);
-        return ANSC_STATUS_FAILURE;
+        fprintf(stderr, "open dhcpv6 server restart fifo!!!!!\n");
+        goto EXIT;
     }
 
-    /*
-     * Init nanomsg socket.
-     */
-
-    int sock = -1;
-    int conn = -1;
-
-    sock = nn_socket(AF_SP, NN_PUSH);
-    if (sock < ANSC_STATUS_SUCCESS)
+    while (1) 
     {
-        CcspTraceError(("[%s-%d] Failed to create the nanomsg socket \n", __FUNCTION__, __LINE__));
-        return ANSC_STATUS_INTERNAL_ERROR;
+        int retCode = 0;
+        tm.tv_sec  = 60;
+        tm.tv_usec = 0;
+
+        FD_ZERO(&rfds);
+        // FD_SET(fd, &rfds);
+        FD_SET(fd1, &rfds);
+
+        retCode = select( (fd1+1), &rfds, NULL, NULL, &tm);
+        /* When return -1, it's error.
+           When return 0, it's timeout
+           When return >0, it's the number of valid fds */
+        if (retCode < 0) {
+            fprintf(stderr, "dbg_thrd : select returns error \n" );
+
+            if (errno == EINTR)
+                continue;
+
+            DHCPVS_DEBUG_PRINT
+                CcspTraceWarning(("%s -- select(): %s", __FUNCTION__, strerror(errno)));
+            goto EXIT;
+        }
+        else if(retCode == 0 )
+            continue;
+
+        /*We need consume the data.
+          It's possible more than one triggering events are consumed in one time, which is expected.*/
+        if (FD_ISSET(fd1, &rfds)) {
+            /*this sleep help do two things: 
+             * When GUI operate too fast, it gurantees more operations combine into one; 
+             * Not frequent dibbler start/stop. When do two start fast, dibbler will in bad status. 
+             */
+            sleep(3);
+            memset(msg, 0, sizeof(msg));
+            read(fd1, msg, sizeof(msg));
+            CcspTraceWarning(("%s -- Received dhcpv6 server restart event", __FUNCTION__ ));
+            CosaDmlDhcpv6sRebootServer();
+            continue;
+        }
+
+#ifdef _DEBUG
+        if (!strncmp(msg, "mem", 3))
+        {
+            /*add the test funcs in the run time.*/
+
+            AnscTraceMemoryTable();
+        }
+#endif
     }
 
-    conn = nn_connect(sock, WAN_MANAGER_ADDR);
-    if (conn < ANSC_STATUS_SUCCESS)
-    {
-        CcspTraceError(("[%s-%d] Failed to connect to the wanmanager socket \n", __FUNCTION__, __LINE__));
-        nn_close (sock);
-        return ANSC_STATUS_INTERNAL_ERROR;
+EXIT:
+    if(fd1>=0) {
+        close(fd1);
     }
 
-    CcspTraceInfo(("[%s-%d] Established connection to wanmanager \n",__FUNCTION__, __LINE__));
-
-    ipc_msg_payload_t msg;
-    memset (&msg, 0, sizeof(ipc_msg_payload_t));
-
-    /**
-     * Copy dhcpv6 data.
-     */
-    msg.msg_type = DHCP6C_STATE_CHANGED;
-    memcpy(&msg.data.dhcpv6, dhcpv6_data, sizeof(ipc_dhcpv6_data_t));
-
-    /**
-     * Send data to wanmanager.
-     */
-    int bytes = 0;
-    int sz_msg = sizeof(ipc_msg_payload_t);
-
-
-    bytes = nn_send(sock, (char *) &msg, sz_msg, 0);
-    if (bytes < 0)
-    {
-        CcspTraceError(("[%s-%d] Failed to send data to wanmanager  error=[%d][%s] \n", __FUNCTION__, __LINE__,errno, strerror(errno)));
-        nn_close (sock);
-        return ANSC_STATUS_INTERNAL_ERROR;
-    }
-
-    CcspTraceInfo(("[%s-%d] Successfully send %d bytes over nano msg  \n", __FUNCTION__, __LINE__,bytes));
-    nn_close (sock);
-    return ret;
+    return NULL;
 }
 #endif

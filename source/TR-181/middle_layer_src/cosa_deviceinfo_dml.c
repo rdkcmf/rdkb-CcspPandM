@@ -328,12 +328,13 @@ DeviceInfo_GetParamIntValue
     )
     {
     /* check the parameter name and return the corresponding value */
+#ifndef FEATURE_FWUPGRADE_MANAGER
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FirmwareDownloadAndFactoryReset", TRUE))
     {
         *pInt = 0;
         return TRUE;
     }
-
+#endif
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -936,6 +937,7 @@ DeviceInfo_SetParamIntValue
     )
 {
     /* check the parameter name and set the corresponding value */
+#ifndef FEATURE_FWUPGRADE_MANAGER
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FirmwareDownloadAndFactoryReset", TRUE))
     {
         if( iValue == 1)
@@ -947,7 +949,7 @@ DeviceInfo_SetParamIntValue
         }
 	return TRUE;
     }
-
+#endif
 	/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -14777,12 +14779,14 @@ RPC_GetParamUlongValue
 	PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 	
     /* check the parameter name and return the corresponding value */
+#ifndef FEATURE_FWUPGRADE_MANAGER
     if( AnscEqualString(ParamName, "DeferFWDownloadReboot", TRUE))
     {
         /* collect value */
         *puLong = pMyObject->DeferFWDownloadReboot;
         return TRUE;
-    }	
+    }
+#endif
     if( AnscEqualString(ParamName, "RebootPendingNotification", TRUE))
     {
         /* collect value */
@@ -14834,12 +14838,14 @@ RPC_SetParamUlongValue
 	PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 	
     /* check the parameter name and set the corresponding value */
+#ifndef FEATURE_FWUPGRADE_MANAGER
     if( AnscEqualString(ParamName, "DeferFWDownloadReboot", TRUE))
     {
         /* collect value */
 		CosaDmlDiSet_DeferFWDownloadReboot(&(pMyObject->DeferFWDownloadReboot),uValue);
 		return TRUE;
-    } 
+    }
+#endif
     if( AnscEqualString(ParamName, "RebootPendingNotification", TRUE))
     {
         /* collect value */

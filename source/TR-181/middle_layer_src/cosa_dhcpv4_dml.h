@@ -111,7 +111,7 @@ DHCPv4_GetParamStringValue
         char*                       pValue,
         ULONG*                      pUlSize
     );
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
 /***********************************************************************
 
  APIs for Object:
@@ -519,7 +519,7 @@ ReqOption_Rollback
     (
         ANSC_HANDLE                 hInsContext
     );
-
+#endif
 /***********************************************************************
 
  APIs for Object:

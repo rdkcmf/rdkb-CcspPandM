@@ -134,6 +134,7 @@
 #define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
 #define BOOTSTRAP_INFO_FILE             "/nvram/bootstrap.json"
 
+#ifndef FEATURE_RDKB_WAN_MANAGER
 COSA_DML_DHCPC_FULL     CH_g_dhcpv4_client[COSA_DML_DHCP_MAX_ENTRIES]; 
 COSA_DML_DHCP_OPT       g_dhcpv4_client_sent[COSA_DML_DHCP_MAX_ENTRIES][COSA_DML_DHCP_MAX_OPT_ENTRIES];
 COSA_DML_DHCPC_REQ_OPT  g_dhcpv4_client_req[COSA_DML_DHCP_MAX_ENTRIES][COSA_DML_DHCP_MAX_OPT_ENTRIES]; 
@@ -141,6 +142,7 @@ COSA_DML_DHCPC_REQ_OPT  g_dhcpv4_client_req[COSA_DML_DHCP_MAX_ENTRIES][COSA_DML_
 ULONG          g_Dhcp4ClientNum = 0;
 ULONG          g_Dhcp4ClientSentOptNum[COSA_DML_DHCP_MAX_ENTRIES] = {0,0,0,0};
 ULONG          g_Dhcp4ClientReqOptNum[COSA_DML_DHCP_MAX_ENTRIES]  = {0,0,0,0};
+#endif
 
 /*for server.pool.client*/
 PCOSA_DML_DHCPSV4_CLIENT g_dhcpv4_server_client = NULL; 
@@ -557,7 +559,7 @@ int usg_get_cpe_associate_interface(char *pMac, char ifname[64])
     }
     return(0);
 }
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
 static ANSC_STATUS CosaDmlDhcpcScan()
 {
     CHAR            tmpBuff[64]    = {0};
@@ -732,7 +734,7 @@ static ANSC_STATUS CosaDmlDhcpcScan()
     fclose(fp);
     return ANSC_STATUS_SUCCESS;
 }
-
+#endif
 /*if the address is not in the following range, we think it is a public address
  10.0.0.0    ~ 10.255.255.255
  172.16.0.0  ~ 172.31.255.255
@@ -1362,7 +1364,7 @@ CosaDmlDhcpInit
     //pthread_create(&pid, NULL, usg_get_cpe_associated_ssid, NULL);
     return ANSC_STATUS_SUCCESS;
 }
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
 /*
     Description:
         The API retrieves the number of DHCP clients in the system.
@@ -1812,7 +1814,7 @@ CosaDmlDhcpcSetReqOption
 {
     return ANSC_STATUS_FAILURE;
 }
-
+#endif
 /*
  *  DHCP Server
  */

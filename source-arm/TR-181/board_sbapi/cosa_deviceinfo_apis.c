@@ -138,7 +138,11 @@ extern  ANSC_HANDLE             bus_handle;
 #include <unistd.h>
 
 #include "platform_hal.h"
-#include "autoconf.h"     
+#include "autoconf.h"
+
+#ifdef FEATURE_FWUPGRADE_MANAGER
+#include "fwupgrade_hal.h"
+#endif
  
 #define _ERROR_ "NOT SUPPORTED"
 #define _START_TIME_12AM_ "0"
@@ -3606,7 +3610,7 @@ static int writeToJson(char *data, char *file)
     fclose(fp);
     return 0;
 }
-
+#ifndef FEATURE_FWUPGRADE_MANAGER
 void CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong)
 {
 	char buf[8] = { 0 };
@@ -3644,6 +3648,7 @@ void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uVa
 		}
 	}
 }
+#endif
 
 void* RebootDevice_thread(void* buff)
 {
@@ -3802,7 +3807,7 @@ void CosaDmlDiSet_RebootDevice(char* pValue)
 	pthread_create(&tid, NULL, &RebootDevice_thread, (void*) buff); 
     
 }
-
+#ifndef FEATURE_FWUPGRADE_MANAGER
 static void
 FirmwareDownloadAndFactoryReset()
 {
@@ -3810,7 +3815,6 @@ FirmwareDownloadAndFactoryReset()
     {
        CcspTraceWarning(("FirmwareDownloadAndFactoryReset Thread:FWupdateAndFactoryReset already in progress\n"));
     }
-
 }
 
 ANSC_STATUS
@@ -3835,7 +3839,7 @@ CosaDmlDiSetFirmwareDownloadAndFactoryReset()
 
     return ANSC_STATUS_SUCCESS;
 }
-
+#endif // FEATURE_FWUPGRADE_MANAGER
 
 BOOL
 CosaDmlDi_ValidateRebootDeviceParam( char *pValue )

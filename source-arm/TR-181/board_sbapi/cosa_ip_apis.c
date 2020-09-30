@@ -321,7 +321,11 @@ typedef struct USG_IF_CFG
 
 USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
 {
+#ifdef FEATURE_RDKB_WAN_MANAGER
+    {"erouter0",    COSA_DML_LINK_TYPE_EthVlan, TRUE},
+#else
     {"erouter0",    COSA_DML_LINK_TYPE_EthLink, TRUE},
+#endif
 #if defined(_COSA_INTEL_USG_ARM_) && !defined(_ENABLE_DSL_SUPPORT_)
 #ifndef _PLATFORM_RASPBERRYPI_
 #ifndef _PLATFORM_TURRIS_

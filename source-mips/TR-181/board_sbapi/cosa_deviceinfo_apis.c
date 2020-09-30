@@ -133,8 +133,7 @@
 #include <unistd.h>
 
 #include "platform_hal.h"
-#include "autoconf.h"     
- 
+#include "autoconf.h"
 #define _ERROR_ "NOT SUPPORTED"
 #define _START_TIME_12AM_ "0"
 #define _END_TIME_3AM_ "10800"
@@ -3672,7 +3671,6 @@ FirmwareDownloadAndFactoryReset()
     {
        CcspTraceWarning(("FirmwareDownloadAndFactoryReset Thread:FWupdateAndFactoryReset already in progress\n"));
     }
-
 }
 
 ANSC_STATUS

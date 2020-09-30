@@ -276,6 +276,10 @@ CosaDmlEthInit
     ULONG lbrIndex          = -1;
 #endif
 
+#ifdef FEATURE_RDKB_WAN_MANAGER
+    char wanPhyName[32] = {0};
+    char out_value[32] = {0};
+#endif
     syscfg_init();
 
     /*
@@ -308,7 +312,21 @@ CosaDmlEthInit
         }
     }
 
+#ifdef FEATURE_RDKB_WAN_MANAGER
+    if (syscfg_get(NULL, "wan_physical_ifname", out_value, sizeof(out_value)) == 0)
+    {
+       strncpy(wanPhyName, out_value, sizeof(wanPhyName));
+       CcspTraceInfo(("%s %d - WanPhyName=%s \n", __FUNCTION__,__LINE__, wanPhyName));
+    }
+    else
+    {
+       strncpy(wanPhyName, "erouter0", sizeof(wanPhyName));
+       CcspTraceInfo(("%s %d - WanPhyName=%s \n", __FUNCTION__,__LINE__, wanPhyName));
+    }
+    if ( (-1 != _getMac(wanPhyName, strMac)) && wanIndex >= 0)
+#else
     if ( (-1 != _getMac("erouter0", strMac)) && wanIndex >= 0)
+#endif
                 AnscCopyMemory(g_EthIntSInfo[wanIndex].MacAddress, strMac, 6);
 
 #if !defined(_HUB4_PRODUCT_REQ_)
