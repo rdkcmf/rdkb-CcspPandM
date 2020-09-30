@@ -18257,6 +18257,8 @@ SelfHeal_SetParamUlongValue
 	    AnscTraceWarning(("Minimum interval is 2 for %s !\n", ParamName));
 	    return FALSE;
 	}
+#if defined(_ARRIS_XB6_PRODUCT_REQ_) || defined(_CBR_PRODUCT_REQ_) || \
+(defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_))
 	syscfg_get( NULL, "resource_monitor_interval", buf, sizeof(buf));
         if( 0 == strlen(buf) )
 	{
@@ -18269,6 +18271,7 @@ SelfHeal_SetParamUlongValue
 	    CcspTraceWarning(("AggressiveInterval should be lesser than resource_monitor_interval\n"));
 	    return FALSE;
 	}
+#endif
         snprintf(buf,sizeof(buf),"%lu",uValue);
         if (syscfg_set(NULL, ParamName, buf) != 0)
         {
