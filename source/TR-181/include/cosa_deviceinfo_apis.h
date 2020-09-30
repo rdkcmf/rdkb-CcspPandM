@@ -814,4 +814,7 @@ CosaDmlSetNativeHostapdState
     );
 #endif //FEATURE_HOSTAP_AUTHENTICATOR
 
+BOOL CosaDmlSetDFS(BOOL bValue);
+BOOL CosaDmlSetDFSatBootUp(BOOL bValue);
+
 #endif

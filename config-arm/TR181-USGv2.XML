@@ -2386,6 +2386,38 @@
                 </object>
 <?endif?>
                 <object>
+                         <name>DFS</name>
+                         <objectType>object</objectType>
+                         <functions>
+                             <func_GetParamBoolValue>DFS_GetParamBoolValue</func_GetParamBoolValue>
+                             <func_SetParamBoolValue>DFS_SetParamBoolValue</func_SetParamBoolValue>
+                         </functions>
+                         <parameters>
+                           <parameter>
+                             <name>Enable</name>
+                             <type>boolean</type>
+                             <syntax>bool</syntax>
+                             <writable>true</writable>
+                             </parameter>
+                         </parameters>
+                </object>
+                <object>
+                         <name>DFSatBootUp</name>
+                         <objectType>object</objectType>
+                         <functions>
+                             <func_GetParamBoolValue>DFSatBootUp_GetParamBoolValue</func_GetParamBoolValue>
+                             <func_SetParamBoolValue>DFSatBootUp_SetParamBoolValue</func_SetParamBoolValue>
+                         </functions>
+                         <parameters>
+                           <parameter>
+                             <name>Enable</name>
+                             <type>boolean</type>
+                             <syntax>bool</syntax>
+                             <writable>true</writable>
+                             </parameter>
+                         </parameters>
+                </object>
+                <object>
                         <name>RBUS</name>
 
                         <objectType>object</objectType>

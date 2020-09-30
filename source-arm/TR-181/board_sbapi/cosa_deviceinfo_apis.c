@@ -5278,3 +5278,111 @@ CosaDmlSetNativeHostapdState
     return FALSE;
 }
 #endif //FEATURE_HOSTAP_AUTHENTICATOR
+
+BOOL CosaDmlSetDFS(BOOL bValue)
+{
+    char str[2] = {0};
+    parameterValStruct_t pVal[1];
+    char                 paramName[256] = "Device.WiFi.DFS";
+    char                 compName[256]  = "eRT.com.cisco.spvtg.ccsp.wifi";
+    char                 dbusPath[256]  = "/com/cisco/spvtg/ccsp/wifi";
+    char*                faultParam     = NULL;
+    int                  ret            = 0;
+    CCSP_MESSAGE_BUS_INFO *bus_info               = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+
+    snprintf(str, sizeof(str), "%d", bValue);
+    if (PSM_Set_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent),
+                              "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.DFS.Enable",
+                              ccsp_string, str) == CCSP_SUCCESS)
+    {
+        CcspTraceInfo(("%s - %d - PSM value is updated successfully\n", __FUNCTION__, __LINE__));
+        pVal[0].parameterName  = paramName;
+        pVal[0].parameterValue = bValue ? "true" : "false";
+        pVal[0].type           = ccsp_boolean;
+
+        ret = CcspBaseIf_setParameterValues(
+                 bus_handle,
+                 compName,
+                 dbusPath,
+                 0,
+                 0,
+                 pVal,
+                 1,
+                 TRUE,
+                 &faultParam
+             );
+
+        if (ret != CCSP_SUCCESS)
+        {
+            CcspTraceError(("%s - %d - Failed to notify WiFi component - Error [%s]\n", __FUNCTION__, __LINE__, faultParam));
+            bus_info->freefunc(faultParam);
+
+            //Restore the value in PSM
+            snprintf(str, sizeof(str), "%s", bValue ? "0" : "1");
+            PSM_Set_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent),
+                               "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.DFS.Enable",
+                               ccsp_string, str);
+            return FALSE;
+        }
+
+        CcspTraceInfo(("%s - %d - WiFi Component is notified\n", __FUNCTION__, __LINE__));
+        return TRUE;
+    }
+
+    CcspTraceError(("%s - %d - WiFi Component notification Failed\n", __FUNCTION__, __LINE__));
+    return FALSE;
+}
+
+BOOL CosaDmlSetDFSatBootUp(BOOL bValue)
+{
+    char str[2] = {0};
+    parameterValStruct_t pVal[1];
+    char                 paramName[256] = "Device.WiFi.DFSatBootUp";
+    char                 compName[256]  = "eRT.com.cisco.spvtg.ccsp.wifi";
+    char                 dbusPath[256]  = "/com/cisco/spvtg/ccsp/wifi";
+    char*                faultParam     = NULL;
+    int                  ret            = 0;
+    CCSP_MESSAGE_BUS_INFO *bus_info               = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+
+    snprintf(str, sizeof(str), "%d", bValue);
+    if (PSM_Set_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent),
+                              "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.DFSatBootUp.Enable",
+                              ccsp_string, str) == CCSP_SUCCESS)
+    {
+        CcspTraceInfo(("%s - %d - PSM value is updated successfully\n", __FUNCTION__, __LINE__));
+        pVal[0].parameterName  = paramName;
+        pVal[0].parameterValue = bValue ? "true" : "false";
+        pVal[0].type           = ccsp_boolean;
+
+        ret = CcspBaseIf_setParameterValues(
+                 bus_handle,
+                 compName,
+                 dbusPath,
+                 0,
+                 0,
+                 pVal,
+                 1,
+                 TRUE,
+                 &faultParam
+             );
+
+        if (ret != CCSP_SUCCESS)
+        {
+            CcspTraceError(("%s - %d - Failed to notify WiFi component - Error [%s]\n", __FUNCTION__, __LINE__, faultParam));
+            bus_info->freefunc(faultParam);
+
+            //Restore the value in PSM
+            snprintf(str, sizeof(str), "%s", bValue ? "0" : "1");
+            PSM_Set_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent),
+                               "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.DFSatBootUp.Enable",
+                               ccsp_string, str);
+            return FALSE;
+        }
+
+        CcspTraceInfo(("%s - %d - WiFi Component is notified\n", __FUNCTION__, __LINE__));
+        return TRUE;
+    }
+
+    CcspTraceError(("%s - %d - WiFi Component notification Failed\n", __FUNCTION__, __LINE__));
+    return FALSE;
+}
