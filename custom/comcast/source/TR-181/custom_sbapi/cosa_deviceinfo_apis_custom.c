@@ -412,6 +412,13 @@ void XfinityWifiThread
         } else {
             fprintf(stderr, "%s: set WiFi.SSID.10 Diable OK\n", __FUNCTION__);
         }
+
+        
+        if (DmSetBool("Device.WiFi.SSID.16.Enable", value) != ANSC_STATUS_SUCCESS) {
+            fprintf(stderr, "%s: set WiFi.SSID.16 Disable error\n", __FUNCTION__);
+        } else {
+            fprintf(stderr, "%s: set WiFi.SSID.16 Diable OK\n", __FUNCTION__);
+        }
     }
     else
     {
