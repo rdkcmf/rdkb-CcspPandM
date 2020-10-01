@@ -5170,7 +5170,7 @@ Pool1_SetParamIntValue
             weeks=iValue/604800;
             forever=-1;
         */
-        if(iValue<MINSECS)
+        if((iValue>=0) && (iValue<MINSECS))
             return FALSE;
         if((iValue%WEEKS==0)  ||
             (iValue%DAYS==0)  ||
