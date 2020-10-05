@@ -4082,7 +4082,7 @@ void* RebootDevice_thread(void* buff)
 		CcspTraceWarning(("REBOOT_COUNT : %d Time : %s  \n",rebootcount,buffer));
 		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
 		CosaDmlDcSaveWiFiHealthStatusintoNVRAM( );
-		v_secure_system("/fss/gw/rdklogger/backupLogs.sh");
+		v_secure_system("/rdklogger/backupLogs.sh");
 		return NULL;
     }
 

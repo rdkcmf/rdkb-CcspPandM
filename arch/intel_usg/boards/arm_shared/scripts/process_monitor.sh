@@ -21,10 +21,10 @@
 export LD_LIBRARY_PATH=$PWD:.:$PWD/../../lib:$PWD/../../.:/lib:/usr/lib:$LD_LIBRARY_PATH
 export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket
 
-source /fss/gw/etc/utopia/service.d/log_env_var.sh
+source /etc/utopia/service.d/log_env_var.sh
 source /lib/rdk/t2Shared_api.sh
 
-SUBSYSLOCATION="/fss/gw/usr/ccsp"
+SUBSYSLOCATION="/usr/ccsp"
 rebootNeeded=0
 rebootNeededPAM=0
 rebootNeededPSM=0
@@ -85,7 +85,7 @@ while [ $loop -eq 1 ]
 do
 	sleep 300
 
-	cd /fss/gw/usr/ccsp/
+	cd /usr/ccsp/
 
 	# Checking PandM's PID
 	PAM_PID=`pidof CcspPandMSsp`
@@ -109,8 +109,8 @@ do
 		rebootNeededPAM=1
 		rebootNeeded=1
     		touch $HAVECRASH
-	         /fss/gw/rdklogger/backupLogs.sh "true" "PAM"
-		#/fss/gw/rdklogger/backupLogs.sh
+	         /rdklogger/backupLogs.sh "true" "PAM"
+		#/rdklogger/backupLogs.sh
 		fi
 	fi
 
@@ -128,7 +128,7 @@ do
 		echo_t "RDKB_PROCESS_CRASHED : PSM_process is not running, need to reboot the unit"
 		rebootNeededPSM=1
 		rebootNeeded=1
-		#/fss/gw/rdklogger/backupLogs.sh
+		#/rdklogger/backupLogs.sh
 		fi
 	fi
 
@@ -146,7 +146,7 @@ do
 		echo_t "RDKB_PROCESS_CRASHED : CR_process is not running, need to reboot the unit"
 		rebootNeeded=1
 		rebootNeededCR=1
-		#/fss/gw/rdklogger/backupLogs.sh
+		#/rdklogger/backupLogs.sh
 		fi
 	fi
 
@@ -191,7 +191,7 @@ do
 		echo_t "RDKB_PROCESS_CRASHED : TR69_process is not running, need to reboot the unit"
 		rebootNeeded=1
 		rebootNeededTR69=1
-		#/fss/gw/rdklogger/backupLogs.sh
+		#/rdklogger/backupLogs.sh
 		fi
 	fi
 
@@ -342,7 +342,7 @@ do
 			echo_t "SET succeeded"
 			rebootNeededforbrlan0=1
 			rebootNeeded=1
-	      		/fss/gw/rdklogger/backupLogs.sh "true" ""
+	      		/rdklogger/backupLogs.sh "true" ""
 		fi
 	fi
 

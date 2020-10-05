@@ -5105,7 +5105,7 @@ CosaDmlIaPolicySetBlockedApp
 
 #define FORMAT_STRING_COUNT 4
 #define FIREWALL_LOG_DIR "/tmp/098ujsadf_firewall"
-#define GEN_CURRENT_LOG_CMD "/fss/gw/usr/bin/GenFWLog "
+#define GEN_CURRENT_LOG_CMD "/usr/bin/GenFWLog "
 //#define GEN_CURRENT_LOG_CMD "/var/GenFWLog -nz"
 #define MERGED_FW_LOG_FILE "/nvram/log/mergeLog.txt"
 #define SORT_FW_LOG_FILE "/nvram/log/sortLog.txt"

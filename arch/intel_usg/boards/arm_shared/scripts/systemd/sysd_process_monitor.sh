@@ -166,7 +166,7 @@ then
 					fi
 					rebootNeededforbrlan0=1
 					rebootNeeded=1
-						/fss/gw/rdklogger/backupLogs.sh "true" ""
+					/rdklogger/backupLogs.sh "true" ""
 				fi
 			fi
 

@@ -1452,7 +1452,7 @@ CosaDmlDcSetRebootDevice
             	//system("(sleep 5 && reboot) &");
             	CosaDmlDcSaveWiFiHealthStatusintoNVRAM( );
             	sleep (delay_time);
-            	system("/fss/gw/rdklogger/backupLogs.sh &");
+            	system("/rdklogger/backupLogs.sh &");
         	}
         	else
             {
@@ -1461,7 +1461,7 @@ CosaDmlDcSetRebootDevice
                 //system("(sleep 5 && reboot) &");
 				CosaDmlDcSaveWiFiHealthStatusintoNVRAM( );
 				sleep(5);
-				system("/fss/gw/rdklogger/backupLogs.sh &");
+				system("/rdklogger/backupLogs.sh &");
             }
 		}
 		else {
@@ -1469,7 +1469,7 @@ CosaDmlDcSetRebootDevice
 			CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
 	         //system("reboot");
 			 CosaDmlDcSaveWiFiHealthStatusintoNVRAM( );         
-	         system("/fss/gw/rdklogger/backupLogs.sh &");
+	         system("/rdklogger/backupLogs.sh &");
 	    }
     }
 
@@ -1529,7 +1529,7 @@ void restoreAllDBs()
 void backuplogs()
 {
 	pthread_detach(pthread_self());
-	system("/fss/gw/rdklogger/backupLogs.sh &");
+	system("/rdklogger/backupLogs.sh &");
 }
 
 /*****************************************
@@ -1677,7 +1677,7 @@ CosaDmlDcSetFactoryReset
 		}
 		pthread_t logs;
 		pthread_create(&logs, NULL, &backuplogs, NULL);
-	//	system("/fss/gw/rdklogger/backupLogs.sh");
+	//	system("/rdklogger/backupLogs.sh");
 	}
 	if (factory_reset_mask & FR_WIFI) {
 		/*TODO: SEND EVENT TO WIFI PAM  Device.WiFi.X_CISCO_COM_FactoryReset*/
@@ -2092,7 +2092,7 @@ CosaDmlDcSetIGMPProxyEnable
     {
         if ( detect_process("igmpproxy") == 0 )
         {
-            vsystem("/fss/gw/bin/igmpproxy &");
+            vsystem("igmpproxy &");
         }
     }
     else
@@ -2133,7 +2133,7 @@ CosaDmlDcSetDNSProxyEnable
     {
         if ( detect_process("dnsproxy") == 0 )
         {
-            vsystem("/fss/gw/bin/dnsproxy &");
+            vsystem("dnsproxy &");
         }
     }
     else
