@@ -823,6 +823,8 @@ if(id != 0)
 
         g_bActive = FALSE;
     }
+	
+
 
     return 0;
 }

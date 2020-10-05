@@ -71,6 +71,9 @@
 #include "cosa_x_cisco_com_diagnostics_internal.h"
 #include "plugin_main_apis.h"
 
+#define MERGED_LOG_FILE_NVRAM "/nvram/log/mergeLog.txt"
+#define SORT_MERGE_LOG_FILE_NVRAM "/nvram/log/sortLog.txt"
+
 /**********************************************************************
 
     caller:     owner of the object
@@ -156,7 +159,8 @@ CosaDiagnosticsInitialize
 {
     ANSC_STATUS                     returnStatus     = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DIAGNOSTICS     pMyObject        = (PCOSA_DATAMODEL_DIAGNOSTICS)hThisObject;
-
+	char temp[128];
+	
     /* Call Initiation */
     returnStatus = CosaDmlDiagnosticsInit(NULL, NULL);
     if ( returnStatus != ANSC_STATUS_SUCCESS )
@@ -168,6 +172,10 @@ CosaDiagnosticsInitialize
     pMyObject->ulDiagEntryNumber = 0;
     pMyObject->pDiagEntry        = NULL;
     
+	memset(temp, 0, sizeof(temp));
+    sprintf(temp, "rm -rf %s %s", MERGED_LOG_FILE_NVRAM, SORT_MERGE_LOG_FILE_NVRAM);
+    system(temp);
+	
     return returnStatus;
 }
 

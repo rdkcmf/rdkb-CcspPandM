@@ -83,8 +83,8 @@
 #define EVT_LOG_TEMP_DIR "/tmp/asioiwoDf_evtlog"
 #define EVT_SYSLOG_USER "local4."
 #define SYS_SYSLOG_USER "local5."
-#define MERGED_LOG_FILE "/nvram/log/mergeLog.txt"
-#define SORT_MERGE_LOG_FILE "/nvram/log/sortLog.txt"
+#define MERGED_LOG_FILE "/tmp/mergeLog.txt"
+#define SORT_MERGE_LOG_FILE "/tmp/sortLog.txt"
 
 ANSC_STATUS
 CosaDmlDiagnosticsInit
