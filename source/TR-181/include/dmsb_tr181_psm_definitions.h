@@ -167,7 +167,12 @@
     Bridge and Bridge Port Definition
 *********************************************************************/
 #define DMSB_L2_TYPE_BRIDGE               "Bridge"
-#define DMSB_HIDEN_LAN_INF                "l2sd0-t"
+
+#if defined (_BRIDGE_UTILS_BIN_) && !defined (_COSA_INTEL_XB3_ARM_)
+	#define DMSB_HIDEN_LAN_INF                ""
+#else
+	#define DMSB_HIDEN_LAN_INF                "l2sd0-t"
+#endif
 #define DMSB_BRG_NAME_PREFIX              "br%d"
 #define DMSB_DELIM                        " "
 #define DMSB_TAGGING_DELIM                "-t"

@@ -8322,6 +8322,26 @@ Feature_GetParamBoolValue
 	 return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "BridgeUtilsEnable", TRUE))
+    {
+        #ifdef _BRIDGE_UTILS_BIN_ 
+           char value[8] = {0};
+           syscfg_get(NULL, "bridge_util_enable", value, sizeof(value));
+           if( value[0] != '\0' )
+           {
+               if (strcmp(value, "true") == 0)
+                   *pBool = TRUE;
+               else
+                   *pBool = FALSE;
+           }
+           return TRUE;
+         #else
+                CcspTraceError(("bridge utils not supported ..!! \n",__FUNCTION__));
+                return FALSE;
+
+         #endif
+    }
+
     return FALSE;
 }
 
@@ -9290,6 +9310,42 @@ Feature_SetParamBoolValue
            AnscTraceWarning(("syscfg_commit start_upnp_service failed\n"));
        }
        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "BridgeUtilsEnable", TRUE))
+    {
+         #ifdef _BRIDGE_UTILS_BIN_ 
+
+            if ( bValue == TRUE)
+            {
+               if (syscfg_set(NULL, "bridge_util_enable", "true") != 0)
+               {
+                   AnscTraceWarning(("syscfg_set bridge_util_enable:true failed\n"));
+                  return FALSE;
+
+               }
+
+            }
+            else
+            {
+                if (syscfg_set(NULL, "bridge_util_enable", "false") != 0)
+                {
+                    AnscTraceWarning(("syscfg_set bridge_util_enable:false failed\n"));
+                    return FALSE;
+
+                }
+            }
+            if (syscfg_commit() != 0)
+            {
+                    AnscTraceWarning(("syscfg_commit to save BridgeUtilsEnable failed\n"));
+                    return FALSE;
+
+            }        
+            return TRUE;
+        #else
+                CcspTraceError(("bridge utils not supported ..!! \n",__FUNCTION__));
+                return FALSE;
+        #endif
     }
 
     return FALSE;
@@ -10673,7 +10729,7 @@ SNMP_GetParamBoolValue
     {
         char value[8] = { 0 };
         syscfg_get(NULL,"SNMP_RestartMaintenanceEnable",value, sizeof(value));
-        if( value[ 0] != '\0' )
+        if( value[0] != '\0' )
         {
              if (strcmp(value, "true") == 0)
                  *pBool = TRUE;

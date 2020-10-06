@@ -1694,6 +1694,12 @@
                                 <syntax>bool</syntax>
                                 <writable>true</writable>
                             </parameter>
+                            <parameter>
+                                <name>BridgeUtilsEnable</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
                         </parameters>
                     <objects>
 
