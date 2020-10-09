@@ -5348,13 +5348,13 @@ CosaDmlDhcpv6sSetType
 
     Utopia_Free(&utctx,1);
 
-#ifdef _HUB4_PRODUCT_REQ_
+//#ifdef _HUB4_PRODUCT_REQ_ 
     /* Stateful address is not effecting for clients whenever pool range is changed.
      * Added gw_lan_refresh to effect the stateful address to the clients according
      * to the configured poll range.
      */
     system("gw_lan_refresh");
-#endif
+//#endif
     if ( g_dhcpv6_server && bApply )
     {
         /* We need enable server */
@@ -5741,7 +5741,7 @@ CosaDmlDhcpv6sSetPoolCfg
 		{
 			bNeedZebraRestart = TRUE;
 		}
-#ifdef _HUB4_PRODUCT_REQ_
+//#ifdef _HUB4_PRODUCT_REQ_
         /* Stateful address is not effecting for clients whenever pool range is changed.
          * Added gw_lan_refresh to effect the stateful address to the clients according
          * to the configured poll range.
@@ -5751,7 +5751,7 @@ CosaDmlDhcpv6sSetPoolCfg
         {
             system("gw_lan_refresh");
         }
-#endif
+//#endif
 
         sDhcpv6ServerPool[Index].Cfg = *pCfg;
     }
@@ -5766,7 +5766,7 @@ CosaDmlDhcpv6sSetPoolCfg
 		{
 			bNeedZebraRestart = TRUE;
 		}
-#ifdef _HUB4_PRODUCT_REQ_
+//#ifdef _HUB4_PRODUCT_REQ_
         /* Stateful address is not effecting for clients whenever pool range is changed.
          * Added gw_lan_refresh to effect the stateful address to the clients according
          * to the configured poll range.
@@ -5776,7 +5776,7 @@ CosaDmlDhcpv6sSetPoolCfg
         {
             system("gw_lan_refresh");
         }
-#endif
+//#endif
 
         sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg = *pCfg;
         Index = DHCPV6S_POOL_NUM - 1;
