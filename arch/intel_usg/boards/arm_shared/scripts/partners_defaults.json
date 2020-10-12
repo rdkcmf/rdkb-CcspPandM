@@ -182,7 +182,8 @@
       "Device.Time.NTPServer2" : "ntp2.it.isp.sky",
       "Device.Time.NTPServer3" : "time1.google.com",
       "Device.Time.NTPServer4" : "",
-      "Device.Time.NTPServer5" : ""
+      "Device.Time.NTPServer5" : "",
+      "Device.X_RDK_WebConfig.URL" : ""
    },
 
 

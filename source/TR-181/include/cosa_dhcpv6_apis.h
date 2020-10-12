@@ -130,6 +130,7 @@
 #define SYSEVENT_MAP_TRANSPORT_MODE "map_transport_mode"
 #define SYSEVENT_MAP_IS_FMR "map_is_fmr"
 #define SYSEVENT_MAP_BR_IPV6_PREFIX        "map_br_ipv6_prefix"
+#define SYSEVENT_MAPT_IPADDRESS "mapt_ip_address"
 #endif
 
 typedef  struct
