@@ -4234,6 +4234,10 @@ IPv6Prefix_IsUpdated
         bIsUpdated  = TRUE;
     }
 
+#ifdef _HUB4_PRODUCT_REQ_
+    /* To update the ipv6_prefix value for dibbler configuration, the DML should be syncronzed in time. So time delay check removed */
+    bIsUpdated  = TRUE;
+#endif
     return bIsUpdated;
 }
 

@@ -10894,6 +10894,12 @@
                 <syntax>bool</syntax>
                 <writable>false</writable>
               </parameter>
+              <parameter>
+                <name>MapIpv4Address</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>false</writable>
+              </parameter>
               </parameters>
             </object>
 

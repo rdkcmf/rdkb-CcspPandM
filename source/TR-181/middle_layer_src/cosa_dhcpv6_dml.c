@@ -3544,6 +3544,26 @@ dhcp6c_mapt_mape_GetParamStringValue
 #endif
     }
 
+    if( AnscEqualString(ParamName, "MapIpv4Address", TRUE) )
+    {
+#ifdef _HUB4_PRODUCT_REQ_
+        commonSyseventGet(SYSEVENT_MAPT_IPADDRESS, temp, sizeof(temp));
+        if ( AnscSizeOfString(temp) < *pUlSize)
+        {
+            AnscCopyString(pValue, temp);
+            return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(temp)+1;
+            return 1;
+        }
+#else
+        AnscCopyString(pValue, "");
+        return 0;
+#endif
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
