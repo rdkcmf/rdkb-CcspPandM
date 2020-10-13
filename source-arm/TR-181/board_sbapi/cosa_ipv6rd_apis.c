@@ -499,8 +499,8 @@ generate_6rd_delegated_prefix(
     unsigned char ucv4addr[4];
 
     bzero(out, sizeof(struct in6_addr));
-
-    if (v4masklen > 32 || v6rdmasklen + 32 - v4masklen > 64)
+    /* CID: 71122 Bad bit shift operation */
+    if (v4masklen > 31 || v6rdmasklen + 32 - v4masklen > 64)
         return -1;
 
     o = v6rdmasklen >> 3;

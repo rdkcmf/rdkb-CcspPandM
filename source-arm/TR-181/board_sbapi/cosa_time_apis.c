@@ -286,7 +286,8 @@ void* startNTP(void* arg)
         for (i=0;i<=5;i++) {
             switch (i) {
             case 1:
-                if (pTimeCfg->NTPServer1.ActiveValue && strlen(pTimeCfg->NTPServer1.ActiveValue) > 0)
+                /* CID: 54208 Array compared against 0*/
+                if (strlen(pTimeCfg->NTPServer1.ActiveValue) > 0)
                 {
                     if (server[0] != '\0') {
                         strcat(server, " "); // add spacer
@@ -295,7 +296,8 @@ void* startNTP(void* arg)
                 }
                 break;
             case 2:
-                if (pTimeCfg->NTPServer2.ActiveValue && strlen(pTimeCfg->NTPServer2.ActiveValue) > 0)
+                /* CID: 54208 Array compared against 0*/
+                if (strlen(pTimeCfg->NTPServer2.ActiveValue) > 0)
                 {
                     if (server[0] != '\0') {
                         strcat(server, " "); // add spacer
@@ -304,7 +306,8 @@ void* startNTP(void* arg)
                 }
                 break;
             case 3:
-                if (pTimeCfg->NTPServer3.ActiveValue && strlen(pTimeCfg->NTPServer3.ActiveValue) > 0)
+                /* CID: 54208 Array compared against 0*/
+                if (strlen(pTimeCfg->NTPServer3.ActiveValue) > 0)
                 {
                     if (server[0] != '\0') {
                         strcat(server, " "); // add spacer
@@ -313,7 +316,8 @@ void* startNTP(void* arg)
                 }
                 break;
             case 4:
-                if (pTimeCfg->NTPServer4.ActiveValue && strlen(pTimeCfg->NTPServer4.ActiveValue) > 0)
+                /* CID: 54208 Array compared against 0*/
+                if (strlen(pTimeCfg->NTPServer4.ActiveValue) > 0)
                 {
                     if (server[0] != '\0') {
                         strcat(server, " "); // add spacer
@@ -322,7 +326,8 @@ void* startNTP(void* arg)
                 }
                 break;
             case 5:
-                if (pTimeCfg->NTPServer5.ActiveValue && strlen(pTimeCfg->NTPServer5.ActiveValue) > 0) {
+                /* CID: 54208 Array compared against 0*/
+                if (strlen(pTimeCfg->NTPServer5.ActiveValue) > 0) {
                     if (server[0] != '\0') {
                         strcat(server, " "); // add spacer
                     }
@@ -403,6 +408,9 @@ BOOL isTimeSynced()
 	 }
 
 	 fread(buf, 1, sizeof(buf), fp);
+         /* CID: 135459 String not null terminated*/
+         buf[sizeof(buf)-1] = '\0';
+
 	 if (strstr(buf, "Synchronized")!= NULL) 
 	      isSync = TRUE;
 	 else
@@ -456,21 +464,26 @@ void* startNTP(void* arg)
     /* XXX: ntpclient only support one NTP Server */
     if (pTimeCfg->bEnabled)
     {
-        if ( pTimeCfg->NTPServer1.ActiveValue && strlen(pTimeCfg->NTPServer1.ActiveValue) > 0)
+        /* CID: 54208 Array compared against 0*/
+        if ( strlen(pTimeCfg->NTPServer1.ActiveValue) > 0)
         {
             server = pTimeCfg->NTPServer1.ActiveValue;
             //back_server = pTimeCfg->NTPServer2;
         }
-        else if (pTimeCfg->NTPServer2.ActiveValue && strlen(pTimeCfg->NTPServer2.ActiveValue) > 0) {
+        /* CID: 54208 Array compared against 0*/
+        else if (strlen(pTimeCfg->NTPServer2.ActiveValue) > 0) {
             server = pTimeCfg->NTPServer2.ActiveValue;
         }
-        else if (pTimeCfg->NTPServer3.ActiveValue && strlen(pTimeCfg->NTPServer3.ActiveValue) > 0) {
+        /* CID: 54208 Array compared against 0*/
+        else if (strlen(pTimeCfg->NTPServer3.ActiveValue) > 0) {
             server = pTimeCfg->NTPServer3.ActiveValue;
         }
-        else if (pTimeCfg->NTPServer4.ActiveValue && strlen(pTimeCfg->NTPServer4.ActiveValue) > 0) {
+        /* CID: 54208 Array compared against 0*/
+        else if (strlen(pTimeCfg->NTPServer4.ActiveValue) > 0) {
             server = pTimeCfg->NTPServer4.ActiveValue;
         }
-        else if (pTimeCfg->NTPServer5.ActiveValue && strlen(pTimeCfg->NTPServer5.ActiveValue) > 0) {
+        /* CID: 54208 Array compared against 0*/
+        else if (strlen(pTimeCfg->NTPServer5.ActiveValue) > 0) {
             server = pTimeCfg->NTPServer5.ActiveValue;
         }
         else
@@ -491,15 +504,16 @@ void* startNTP(void* arg)
             }
 
             for(i=1;i<=5;i++) {
-                if (i == 1 && pTimeCfg->NTPServer1.ActiveValue && strlen(pTimeCfg->NTPServer1.ActiveValue) > 0) { 
+                /* CID: 54208 Array compared against 0*/
+                if (i == 1 && strlen(pTimeCfg->NTPServer1.ActiveValue) > 0) { 
                     back_server = pTimeCfg->NTPServer1.ActiveValue;
-                } else if(i == 2 && pTimeCfg->NTPServer2.ActiveValue && strlen(pTimeCfg->NTPServer2.ActiveValue) > 0){
+                } else if(i == 2 && strlen(pTimeCfg->NTPServer2.ActiveValue) > 0){
                     back_server = pTimeCfg->NTPServer2.ActiveValue;
-                } else if(i == 3 && pTimeCfg->NTPServer3.ActiveValue && strlen(pTimeCfg->NTPServer3.ActiveValue) > 0){
+                } else if(i == 3 && strlen(pTimeCfg->NTPServer3.ActiveValue) > 0){
                     back_server = pTimeCfg->NTPServer3.ActiveValue;
-                } else if(i == 4 && pTimeCfg->NTPServer4.ActiveValue && strlen(pTimeCfg->NTPServer4.ActiveValue) > 0){
+                } else if(i == 4 && strlen(pTimeCfg->NTPServer4.ActiveValue) > 0){
                     back_server = pTimeCfg->NTPServer4.ActiveValue;
-                } else if(i == 5 && pTimeCfg->NTPServer5.ActiveValue && strlen(pTimeCfg->NTPServer5.ActiveValue) > 0){
+                } else if(i == 5 && strlen(pTimeCfg->NTPServer5.ActiveValue) > 0){
                     back_server = pTimeCfg->NTPServer5.ActiveValue;
                 } 
                 /* try the back up ntp server */
@@ -690,8 +704,14 @@ CosaDmlTimeGetCfg
     int utc_enabled=0;
     char val[UTOPIA_TR181_PARAM_SIZE1];
     UNREFERENCED_PARAMETER(hContext);
-    if (pTimeCfg)
+
+    /*CID: 56962 Dereference after null check*/
+    if (!pTimeCfg)
     {
+        CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
+        return ANSC_STATUS_FAILURE;
+    }
+
        /* Initialize a Utopia Context */
        if(!Utopia_Init(&ctx))
            return ERR_UTCTX_INIT;
@@ -761,7 +781,7 @@ CosaDmlTimeGetCfg
        Utopia_Free(&ctx,0);
 
        CosaNTPInitJournal(pTimeCfg);
-     }
+
      
     utc_enabled = checkIfUTCEnabled(DEV_PROPERTIES_FILE);
      if (0 == utc_enabled)
@@ -973,6 +993,12 @@ CosaNTPInitJournal
 
          fseek( fileRead, 0, SEEK_END );
          len = ftell( fileRead );
+         /* CID: 53991 Argument cannot be negative*/
+         if(len < 0) {
+            CcspTraceWarning(("%s-%d: File read negative return\n" , __FUNCTION__, __LINE__ ));
+            fclose(fileRead);
+            return ANSC_STATUS_FAILURE;
+         }
          fseek( fileRead, 0, SEEK_SET );
          data = ( char* )malloc( sizeof(char) * (len + 1) );
          if (data != NULL)
@@ -988,7 +1014,8 @@ CosaNTPInitJournal
          }
 
          fclose( fileRead );
-
+         /* CID: 135503 String not null terminated*/
+         data[len] = '\0';
          if ( data == NULL )
          {
                 CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
@@ -1030,6 +1057,9 @@ CosaNTPInitJournal
          else
          {
                 CcspTraceWarning(("BOOTSTRAP_INFO_FILE %s is empty\n", BOOTSTRAP_INFO_FILE));
+                /*CID: 58474 Resource leak*/
+                if(data)
+                   free(data);
                 return ANSC_STATUS_FAILURE;
          }
          return ANSC_STATUS_SUCCESS;

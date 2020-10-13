@@ -1102,7 +1102,11 @@ void test_get_proc_info()
 {
      PCOSA_DATAMODEL_PROCSTATUS p_info = (PCOSA_DATAMODEL_PROCSTATUS)CosaProcStatusCreate();
 
-     if (p_info)  COSADmlGetProcessInfo(p_info);
+     if (p_info){
+         COSADmlGetProcessInfo(p_info);
+         /*CID: 57768 Resource leak*/
+         COSADmlRemoveProcessInfo(p_info);
+     }
 }
 
 typedef  struct

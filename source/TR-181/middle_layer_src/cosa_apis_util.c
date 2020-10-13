@@ -275,8 +275,7 @@ CosaUtilGetLowerLayers
 
     while ((pTableStringToken = AnscTcUnlinkToken(pTableListTokenChain)))
     {
-        if ( pTableStringToken->Name )
-        {
+            /* CID: 56300 Array compared against 0*/
             if ( AnscEqualString(pTableStringToken->Name, "Device.Ethernet.Interface.", TRUE ) )
             {
                 ulNumOfEntries =       CosaGetParamValueUlong("Device.Ethernet.InterfaceNumberOfEntries");
@@ -562,11 +561,9 @@ CosaUtilGetLowerLayers
 		AnscFreeMemory(pTableStringToken);
                 break;
             }
-        }
 
         AnscFreeMemory(pTableStringToken);
     }
-
     if ( pTableListTokenChain )
     {
         AnscTcFree((ANSC_HANDLE)pTableListTokenChain);
@@ -969,8 +966,7 @@ CosaUtilGetFullPathNameByKeyword
 
     while ((pTableStringToken = AnscTcUnlinkToken(pTableListTokenChain)))
     {
-        if ( pTableStringToken->Name )
-        {
+         /*CID: 62085 Array compared against 0*/
             /* Get the string XXXNumberOfEntries */
             pString2 = &pTableStringToken->Name[0];
             pString  = pString2;
@@ -1023,7 +1019,6 @@ CosaUtilGetFullPathNameByKeyword
             {
                 break;
             }
-        }
 
         AnscFreeMemory(pTableStringToken);
     }

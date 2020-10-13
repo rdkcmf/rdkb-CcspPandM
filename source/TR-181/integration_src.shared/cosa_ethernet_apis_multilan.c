@@ -923,6 +923,7 @@ CosaDmlEthLinkAddEntry
         }
     }
     return  ANSC_STATUS_SUCCESS;
+
 }
 
 ANSC_STATUS
@@ -1202,6 +1203,9 @@ int _getMac(char* ifName, char* mac){
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
+    /* CID: 54085 Argument cannot be negative*/
+    if(skfd == -1)
+       return -1;
 
     AnscCopyString(ifr.ifr_name, ifName);
     
@@ -1226,6 +1230,9 @@ COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr)
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
+    /* CID: 56442 Argument cannot be negative*/
+    if(skfd == -1)
+       return -1;
 
     AnscCopyString(ifr.ifr_name, (char*)name);
     
@@ -1267,6 +1274,9 @@ static int setIfStatus(struct ifreq *pIfr)
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
+    /* CID: 62903 Argument cannot be negative*/
+    if (skfd == -1) 
+        return -1;
 
     if (ioctl(skfd, SIOCSIFFLAGS, pIfr) < 0) {
         CcspTraceWarning(("cosa_ethernet_apis.c - setIfStatus: Set interface %s error...\n", pIfr->ifr_name));

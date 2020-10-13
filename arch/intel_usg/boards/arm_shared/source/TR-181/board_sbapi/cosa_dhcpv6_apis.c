@@ -4102,8 +4102,8 @@ void _cosa_dhcpsv6_get_client()
             if ( *pTmp1 == 0 )
                 continue;
 
-            *pTmp1 = 0;
-            *pTmp1++;
+            /*CID: 73851 Incorrect pointer increment*/
+            *pTmp1++ = 0;
 
             // pTmp3 is 1
             // pTmp1 is 00010001C793092300252E7D05B4
@@ -4137,6 +4137,8 @@ void _cosa_dhcpsv6_get_client()
             AnscCopyString( g_dhcps6v_clientcontent[Index].pOption[g_dhcps6v_clientcontent[Index].NumberofOption-1].Value, pTmp1 );
         }else if ( _ansc_strcmp(pTmp1, "Unicast") == 0 )
         {
+            /* CID: 61618 Explicit null dereferenced*/
+            if (g_dhcps6v_client)
             AnscCopyString(g_dhcps6v_client[Index].SourceAddress, pTmp3);
         }else if ( _ansc_strcmp(pTmp1, "Addr") == 0 )
         {
@@ -4169,7 +4171,8 @@ void _cosa_dhcpsv6_get_client()
             timeStamp = atoi(pTmp3);
         }else if ( _ansc_strcmp(pTmp1, "Prefered") == 0 )
         {
-            if ( g_dhcps6v_clientcontent[Index].NumberofIPv6Address )
+            /* CID: 73916 Explicit null dereferenced*/
+            if ( g_dhcps6v_clientcontent && g_dhcps6v_clientcontent[Index].NumberofIPv6Address )
             {
                 t1 = timeStamp;
                 t1 += atoi(pTmp3);

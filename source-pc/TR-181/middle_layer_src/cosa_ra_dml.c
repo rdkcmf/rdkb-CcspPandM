@@ -2585,7 +2585,9 @@ Option5_Validate
             return FALSE;
         }
 
-        if ( ((ULONG)pRAOption2 != (ULONG)pRAOption) &&
+        /* CID: 63159 Dereference after null check*/
+        if ( pRAOption2 && 
+            ((ULONG)pRAOption2 != (ULONG)pRAOption) &&
             (pRAOption->bEnabled && pRAOption2->bEnabled) &&
              pRAOption->Tag == pRAOption2->Tag)
         {

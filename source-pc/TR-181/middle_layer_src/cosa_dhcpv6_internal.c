@@ -1429,6 +1429,9 @@ ClientEnd:
     /* enumerate server.pool.{i} */
     /*ulEntryCount = pPoamIrepFoPool->GetFolderCount((ANSC_HANDLE)pPoamIrepFoPool);*/
 	/*We don't use PSM to save informaiont for DHCPv6*/
+
+    /*CID: 58891 Logically dead code- loop never run*/
+#if 0
 	ulEntryCount = 0;
     for ( ulIndex = 0; ulIndex < ulEntryCount; ulIndex++ )
     {
@@ -1705,7 +1708,7 @@ PoolEnd:
         pPoamIrepFoEnumPool->Remove((ANSC_HANDLE)pPoamIrepFoEnumPool);
         pPoamIrepFoEnumPool = NULL;
     }
-    
+#endif 
     pPoamIrepFoPool->Remove((ANSC_HANDLE)pPoamIrepFoPool);
     pPoamIrepFoPool = NULL;
 
@@ -1751,17 +1754,7 @@ EXIT1:
     if ( pPoamIrepFoEnumSntOpt)
         pPoamIrepFoEnumSntOpt->Remove((ANSC_HANDLE)pPoamIrepFoEnumSntOpt);
     
-    if ( pPoamIrepFoPool)
-        pPoamIrepFoPool->Remove((ANSC_HANDLE)pPoamIrepFoPool);
-
-    if ( pPoamIrepFoEnumPool)
-        pPoamIrepFoEnumPool->Remove((ANSC_HANDLE)pPoamIrepFoEnumPool);
-    
-    if ( pPoamIrepFoPoolOption)
-        pPoamIrepFoPoolOption->Remove((ANSC_HANDLE)pPoamIrepFoPoolOption);
-
-    if ( pPoamIrepFoEnumPoolOption)
-        pPoamIrepFoEnumPoolOption->Remove((ANSC_HANDLE)pPoamIrepFoEnumPoolOption);
+    /*CID: 71033, 54427, 57933, 64391 Logically dead code - EXIT1 invoke only whne ptr is NULL*/
 
     return returnStatus;
 }

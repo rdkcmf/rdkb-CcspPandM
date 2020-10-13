@@ -387,7 +387,7 @@ static void insert_wifi_client(const char *pMac, const char *pSsid, const ULONG 
     ULONG hashIndex; 
     string_tolower((char*)pMac);    
 
-    hashIndex = AnscHashString((char*)pMac, sizeof(pMac), WIFI_CLIENT_MAXIMUM);
+    hashIndex = AnscHashString(pMac, strlen(pMac), WIFI_CLIENT_MAXIMUM);
 
     wifi_client_t *pNewClient = AnscAllocateMemory(sizeof(wifi_client_t));
     if (!pNewClient){
@@ -408,7 +408,8 @@ static void insert_wifi_client(const char *pMac, const char *pSsid, const ULONG 
 /*
 static wifi_client_t* lookup_wifi_client(const char *pMac)
 {
-    ULONG hashIndex = AnscHashString(pMac, sizeof(pMac), WIFI_CLIENT_MAXIMUM);
+    //CID:55477 Wrong sizeof argument
+    ULONG hashIndex = AnscHashString(pMac, strlen(pMac), WIFI_CLIENT_MAXIMUM);
     PSINGLE_LINK_ENTRY pSLinkEntry = NULL;
     wifi_client_t *pClient = NULL;
 
@@ -499,7 +500,8 @@ int usg_get_cpe_associated_ssid(void *arg)
 
     while(1){
 reopen:
-        fd = open(WIFI_CLIENTS_MAC_FILE, O_CREAT|O_WRONLY|O_TRUNC);
+        /* CID: 135361 Insecure file permissions - missing mode arg with O_CREAT*/
+        fd = open(WIFI_CLIENTS_MAC_FILE, O_CREAT|O_WRONLY|O_TRUNC, 0666);
         if (-1 == fd){
             sleep(1);
             goto reopen;
@@ -548,7 +550,7 @@ reopen:
         flush_wifi_client();
 
         close(fd);
-        fd = -1;
+        /* CID: 69027 Unused value - removing the statement fd = -1*/
     }
 }
 #endif
@@ -690,11 +692,10 @@ static ANSC_STATUS CosaDmlDhcpcScan()
                 tok = strtok_r( str_val, " ", &sub_st);
                 if(tok) strncpy(dns[0], tok, sizeof(dns[0])-1 ); 
                 ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: DNS 0 %s\n", __FUNCTION__, dns[0]);
-                if( dns[0] ) 
-                {
-                    ++nmu_dns_server;
-                    AnscWriteUlong(&pEntry->Info.DNSServers[0].Value, _ansc_inet_addr(dns[0]));
-                }
+                /*CID: 68331 Array compared against 0*/
+                ++nmu_dns_server;
+                AnscWriteUlong(&pEntry->Info.DNSServers[0].Value, _ansc_inet_addr(dns[0]));
+               
                 while( tok != NULL)
                 {
                     tok = strtok_r(NULL, " ", &sub_st);
@@ -749,9 +750,10 @@ static ANSC_STATUS CosaDmlDhcpcScan()
         pEntry->Info.NumDnsServers               = nmu_dns_server;
         g_Dhcp4ClientNum++;
         ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: ulIndex %d, Interface %s, g_Dhcp4ClientNum %d\n", __FUNCTION__, ulIndex, CH_g_dhcpv4_client[ulIndex].Cfg.Interface, g_Dhcp4ClientNum);
-        
-    }    
-    fclose(fp);
+     
+     /*CID: 59145 Logically dead code*/   
+     fclose(fp);
+    }
     return ANSC_STATUS_SUCCESS;
 }
 #endif
@@ -1135,14 +1137,16 @@ static void getDHCPv4ServerPoolParametersFromPSM(ULONG instancenum, PCOSA_DML_DH
     _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_DNSSERVERS);
     if (retPsmGet == CCSP_SUCCESS)
     {
-        CosaDmlSetIpaddr((PULONG)&pPoolCfg->DNSServers[0].Value, param_value, COSA_DML_DHCP_MAX_ENTRIES);
+        /*CID: 128145 Out-of-bounds access*/
+        CosaDmlSetIpaddr((PULONG)&pPoolCfg->DNSServers[0], param_value, COSA_DML_DHCP_MAX_ENTRIES);
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);   
     }
 
     _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_IPROUTERS);
     if (retPsmGet == CCSP_SUCCESS)
     {
-        CosaDmlSetIpaddr((PULONG)&pPoolCfg->IPRouters[0].Value, param_value, COSA_DML_DHCP_MAX_ENTRIES);
+        /*CID: 128144 Out-of-bounds access*/
+        CosaDmlSetIpaddr((PULONG)&pPoolCfg->IPRouters[0], param_value, COSA_DML_DHCP_MAX_ENTRIES);
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);   
     }
 
@@ -1315,7 +1319,8 @@ static void readDHCPv4ServerPoolFromPSM()
                 for(j=0; j< optionCnt; j++)
                 {
                     // get optionList from PSM
-                    pOptionLinkObj = (PCOSA_DML_DHCPSV4_OPTION_LINK_OBJ)AnscAllocateMemory(sizeof (PCOSA_DML_DHCPSV4_OPTION_LINK_OBJ));
+                    /* CID:73504 Wrong sizeof argument - modified the struct ptr to struct in sizeof*/
+                    pOptionLinkObj = (PCOSA_DML_DHCPSV4_OPTION_LINK_OBJ)AnscAllocateMemory(sizeof (COSA_DML_DHCPSV4_OPTION_LINK_OBJ));
                     if(pOptionLinkObj == NULL)
                     {
                         AnscTraceFlow(("%s: out of memory!!!\n", __FUNCTION__));
@@ -2929,7 +2934,8 @@ CosaDmlDhcpsSetOptionValues
         if ( !pNewEntry )
         {
             AnscTraceFlow(("%s: Out of memory!\n", __FUNCTION__));
-            return ANSC_STATUS_FAILURE; 
+            /* CID: 57154 Missing return statement*/
+            return ANSC_STATUS_FAILURE;
         }
         AnscZeroMemory(pNewEntry, sizeof(COSA_DML_DHCPSV4_OPTION));
         AnscCopyMemory(pNewEntry, pPoolOption, sizeof(COSA_DML_DHCPSV4_OPTION));
@@ -3979,6 +3985,12 @@ CosaDhcpInitJournal
 
          fseek( fileRead, 0, SEEK_END );
          len = ftell( fileRead );
+         /* CID: 62675 Argument cannot be negative*/
+         if (len < 0) {
+              CcspTraceWarning(("%s-%d : Error in file handle\n" , __FUNCTION__, __LINE__ ));
+              fclose(fileRead);
+              return ANSC_STATUS_FAILURE;
+         }
          fseek( fileRead, 0, SEEK_SET );
          data = ( char* )malloc( sizeof(char) * (len + 1) );
          if (data != NULL)
@@ -3994,7 +4006,8 @@ CosaDhcpInitJournal
          }
 
          fclose( fileRead );
-
+         /*CID: 135443 String not null terminated*/
+         data[len] = '\0';
          if ( data == NULL )
          {
                 CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
@@ -4036,6 +4049,9 @@ CosaDhcpInitJournal
          else
          {
                 CcspTraceWarning(("BOOTSTRAP_INFO_FILE %s is empty\n", BOOTSTRAP_INFO_FILE));
+                /*CID: 71605 Resource leak*/
+                if(data)
+                   free(data);
                 return ANSC_STATUS_FAILURE;
          }
          return ANSC_STATUS_SUCCESS;

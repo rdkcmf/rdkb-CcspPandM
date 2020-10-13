@@ -376,7 +376,8 @@ static void daemonize(void) {
                     s = unlink(PAM_INIT_FILE);
                     if (s < 0)
                     {
-                        CcspTraceInfo(("PAM_DBG:------------unlink returned %d - %s ------------\n", s, strerror(s)));
+                        /*CID: 133860 Argument cannot be negative*/
+                        CcspTraceInfo(("PAM_DBG:------------unlink returned %d - %s ------------\n", s, strerror(errno)));
                     }
                 }
 		_exit(0);

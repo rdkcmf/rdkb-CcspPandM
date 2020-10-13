@@ -1445,6 +1445,7 @@ Port_GetEntryCount
     return:     list entry
 
 **********************************************************************/
+/* CID:65939  useless_type_qualifier_on_return_type*/
 static PCOSA_CONTEXT_LINK_OBJECT
 Find_SListEntry_By_InstanceNumber
     (

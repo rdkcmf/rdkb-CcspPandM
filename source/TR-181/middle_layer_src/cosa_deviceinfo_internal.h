@@ -71,7 +71,8 @@
     /* duplication of the base object class content */                      \
     COSA_BASE_CONTENT                                                       \
     /* start of DeviceInfo object class content */                          \
-    UCHAR               ProvisioningCode[64];                               \
+    /* CID: 78739 Out-of-bounds access with PCOSA_DATAMODEL_DEVICEINFO */     \
+    UCHAR               ProvisioningCode[256];                               \
     
 
 typedef  struct

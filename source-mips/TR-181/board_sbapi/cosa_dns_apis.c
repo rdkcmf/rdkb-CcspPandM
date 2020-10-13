@@ -2956,7 +2956,8 @@ CosaDmlDnsClientGetServer
     for(i = 0; i < count ;i++){
         if( pTable[i].InstanceNumber == pEntry->InstanceNumber)
             memcpy(pEntry, &pTable[i], sizeof(COSA_DML_DNS_CLIENT_SERVER));
-            ret = ANSC_STATUS_SUCCESS;
+        /* CID: 65417 - Indent mismatch*/
+        ret = ANSC_STATUS_SUCCESS;
     }
 
     AnscFreeMemory(pTable);/*RDKB-6837, CID-33471, free unused resource before exit*/

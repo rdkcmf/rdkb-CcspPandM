@@ -355,7 +355,9 @@ int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) 
 
 		if(!(strcmp(varStruct.parameterValue,""))){
 			  snprintf(paramname, sizeof(paramname), "eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.SSID.%d.SSID",inst);
-		  GrePsmGet(paramname,varStruct.parameterValue, size);
+                  /*CID: 67980 Unchecked return value*/
+		  if(GrePsmGet(paramname,varStruct.parameterValue, size) != 0)
+                     return -1;
 		  if(strlen(varStruct.parameterValue)==0) {
 				strcpy(varStruct.parameterValue,"xfinitywifi");
 		  }

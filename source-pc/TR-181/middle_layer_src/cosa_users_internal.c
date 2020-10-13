@@ -875,8 +875,7 @@ EXIT1:
         pSlapVariable = NULL;
     }
 
-    if ( pPoamIrepFoEnumUser )
-        pPoamIrepFoEnumUser->Remove((ANSC_HANDLE)pPoamIrepFoEnumUser);
+    /*CID: 68635 Logically dead code*/
 
     pPoamIrepFoUser->EnableFileSync((ANSC_HANDLE)pPoamIrepFoUser, TRUE);
 

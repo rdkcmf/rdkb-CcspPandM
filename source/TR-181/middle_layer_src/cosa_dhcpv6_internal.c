@@ -1768,17 +1768,8 @@ EXIT1:
     if ( pPoamIrepFoEnumSntOpt)
         pPoamIrepFoEnumSntOpt->Remove((ANSC_HANDLE)pPoamIrepFoEnumSntOpt);
 #endif    
-    if ( pPoamIrepFoPool)
-        pPoamIrepFoPool->Remove((ANSC_HANDLE)pPoamIrepFoPool);
-
-    if ( pPoamIrepFoEnumPool)
-        pPoamIrepFoEnumPool->Remove((ANSC_HANDLE)pPoamIrepFoEnumPool);
-    
-    if ( pPoamIrepFoPoolOption)
-        pPoamIrepFoPoolOption->Remove((ANSC_HANDLE)pPoamIrepFoPoolOption);
-
-    if ( pPoamIrepFoEnumPoolOption)
-        pPoamIrepFoEnumPoolOption->Remove((ANSC_HANDLE)pPoamIrepFoEnumPoolOption);
+   
+    /*CID: 71033, 54427, 57933, 64391 Logically dead code - EXIT1 invoke only when ptr is NULL*/ 
 
     return returnStatus;
 }

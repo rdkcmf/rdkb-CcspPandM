@@ -348,6 +348,8 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
             system(updateTimesyncConf);
         }
     }
+    /*CID: 74638 Missing return statement*/
+    return ANSC_STATUS_SUCCESS;
 }
 
 #else
@@ -386,6 +388,9 @@ BOOL isTimeSynced()
      }
 
      fread(buf, 1, sizeof(buf), fp);
+     /* CID: 135459 String not null terminated*/
+     buf[sizeof(buf)-1] = '\0';
+
      if (strstr(buf, "Synchronized")!= NULL)
           isSync = TRUE;
      else

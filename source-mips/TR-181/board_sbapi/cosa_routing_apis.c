@@ -865,7 +865,8 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
         }
 
         fprintf(fp, "router rip\n");
-        fprintf(fp, " version %s\n", (pConf->Version==COSA_RIP_VERSION_1)?"1":((pConf->Version==COSA_RIP_VERSION_2)?"2":"2") );
+        /* CID: 58193 Identical code for different branches*/
+        fprintf(fp, " version %s\n", (pConf->Version==COSA_RIP_VERSION_1)?"1":((pConf->Version==COSA_RIP_VERSION_2)?"2":"1 2") );
         fprintf(fp, " timers basic %lu %lu %lu\n", pConf->UpdateTime, pConf->TimoutTime, pConf->CollectionTime);
         fprintf(fp, " default-metric %lu\n", pConf->DefaultMetric );
         fprintf(fp, " no redistribute connected\n");
@@ -4072,8 +4073,8 @@ CosaDmlRoutingSetV4Entry
     {
         return ANSC_STATUS_FAILURE;
     }
-
-    if (pEntry->InstanceNumber == 0 || pEntry->Alias == NULL)
+    /*CID: 60087 Array compared against 0*/
+    if (pEntry->InstanceNumber == 0)
         return ANSC_STATUS_FAILURE;
 
     /* Initialize a Utopia Context */

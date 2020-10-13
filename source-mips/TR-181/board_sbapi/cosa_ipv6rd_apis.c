@@ -497,8 +497,8 @@ generate_6rd_delegated_prefix(
     unsigned char ucv4addr[4];
 
     bzero(out, sizeof(struct in6_addr));
-
-    if (v4masklen > 32 || v6rdmasklen + 32 - v4masklen > 64)
+     /* CID: 71122 Bad bit shift operation */
+    if (v4masklen > 31 || v6rdmasklen + 32 - v4masklen > 64)
         return -1;
 
     o = v6rdmasklen >> 3;
@@ -655,7 +655,8 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
         //snprintf(cmd, sizeof(cmd), "ip route add ::/0 via ::%s dev %s", buf, ifconf->Alias);
         snprintf(cmd, sizeof(cmd), "ip route add ::/0 dev %s", ifconf->Alias);
         if (system(cmd) != 0) {
-            syslog(LOG_ERR, "%s: Fail to set default route", __FUNCTION__, ifconf->Alias);
+           /*CID:71376, 124970 Extra argument to printf format specifier*/
+            syslog(LOG_ERR, "%s: Fail to set default route %s", __FUNCTION__, ifconf->Alias);
             return -1;
         }
 #endif

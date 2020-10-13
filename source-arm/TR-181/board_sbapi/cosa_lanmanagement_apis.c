@@ -170,11 +170,11 @@ int generate_ipv6_eui_address(char *eui, int eui_len) {
 }
 
 static int generateIpv6LanPrefix(char *lanPrefix, int lanPrefixLen) {
-    char serial_num[64] = {0};
+    char serial_num[255] = {0};
     char tmp[8] = {0};
     int idx =0;
     unsigned char ula[16] = {0};
-
+    /* CID: 118948 Out-of-bounds access - HAL layer access SNO as 255*/
     if(platform_hal_GetSerialNumber(serial_num) != 0) {
         AnscTraceWarning(("%s platform_hal_GetSerialNumber failure \n", __FUNCTION__));
         return ANSC_STATUS_FAILURE;
@@ -419,7 +419,8 @@ static ANSC_STATUS CosaDmlLanManagement_GetCfg(ANSC_HANDLE hContext, PCOSA_DML_L
         return ANSC_STATUS_FAILURE;
     }
 
-    if(pLanMngmCfg == NULL)
+    /* CID:58531 Dereference before null check*/
+    if(pLanMngmCfg == NULL || pIpv6_enable == NULL || pUla_enable == NULL)
         return ANSC_STATUS_FAILURE;
 
     if ( strncmp(pIpv6_enable, "TRUE", 4 ) == 0) {

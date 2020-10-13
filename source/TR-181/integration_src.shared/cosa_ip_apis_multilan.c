@@ -1110,6 +1110,7 @@ CosaDmlIpIfMlanSetValues
         return  ANSC_STATUS_CANT_FIND;
     }
     return  ANSC_STATUS_SUCCESS;
+
 }
 
 
@@ -1264,6 +1265,7 @@ CosaDmlIpIfMlanAddEntry
         }
     }
     return  ANSC_STATUS_SUCCESS;
+
 }
 
 ANSC_STATUS

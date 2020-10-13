@@ -1120,6 +1120,8 @@ CosaDmlIpIfMlanSetValues
 
         return  ANSC_STATUS_CANT_FIND;
     }
+    /*CID: 55871 Missing return statement*/
+     return  ANSC_STATUS_SUCCESS;
 }
 
 
@@ -1205,6 +1207,8 @@ CosaDmlIpIfMlanAddEntry
             TR181_Mlan_Sysevent_ResyncAll();
         }
     }
+    /* CID:68611 Missing return statement*/
+    return iReturnValue;
 }
 
 ANSC_STATUS

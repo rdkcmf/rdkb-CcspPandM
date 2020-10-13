@@ -798,6 +798,9 @@ void FreeResources_StaticClients(void *arg)
     
     CcspTraceWarning((" Entering %s \n",__FUNCTION__));
     execData *blob_exec_data  = (execData*) arg;
+    /*CID: 158799 Dereference before null check*/
+    if(!blob_exec_data)
+       return;
     macbindingdoc_t *pStaticClients = (macbindingdoc_t *) blob_exec_data->user_data ;
 
     if (pStaticClients != NULL)
@@ -1183,6 +1186,10 @@ void FreeResources_Lan(void *arg)
     
     CcspTraceWarning((" Entering %s \n",__FUNCTION__));
     execData *blob_exec_data  = (execData*) arg;
+    /*CID: 158796 Dereference before null check*/
+    if(!blob_exec_data)
+       return;
+
     landoc_t *pLanConf = (landoc_t *) blob_exec_data->user_data ;
 
     if (pLanConf != NULL)

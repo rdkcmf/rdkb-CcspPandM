@@ -694,7 +694,7 @@ int  _is_static_addr(char * ifname, char * v6addr)
         p_token = strtok_r(str, ",", &saveptr);
         if (p_token == NULL)
                 break;
-    
+
         snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_STATIC_V6ADDR, ifname);
 
         memset(out1, 0, sizeof(out1));
@@ -1874,7 +1874,11 @@ CosaDmlIpIfGetEntry
         UtopiaContext utctx;
 
         /*we can't use InstanceNumber to set a alias name to IP.Interface, because different interfaces will have a same instanceNumber when in BYOI or Primary mode*/
-        Utopia_Init(&utctx);
+        /*CID: 54740 Unchecked return value*/
+        if (!Utopia_Init(&utctx))
+        {
+        return ANSC_STATUS_FAILURE;
+        }
         _ansc_sprintf(buf, "tr_ip_interface_%s_alias", pEntry->Info.Name);
         Utopia_RawGet(&utctx,NULL,buf,out,sizeof(out));
         Utopia_Free(&utctx,0);
@@ -2102,7 +2106,9 @@ CosaDmlIpIfSetCfg
         
         if (strcmp(pCfg->Alias, p_be_buf_cfg->Alias) != 0)
         {
-            Utopia_Init(&utctx);
+            /*CID: 68667 Unchecked return value*/
+            if(!Utopia_Init(&utctx))
+               return ANSC_STATUS_FAILURE;
             _ansc_sprintf(buf, "tr_ip_interface_%s_alias", g_ipif_names[pCfg->InstanceNumber-1]);
             Utopia_RawSet(&utctx,NULL,buf,pCfg->Alias);
             Utopia_Free(&utctx,1);
@@ -2505,8 +2511,10 @@ CosaDmlIpIfGetV4Addr
             char buf[256]= {0};
             char out[COSA_DML_IF_NAME_LENGTH]= {0};
             UtopiaContext utctx;
+            /*CID: 53826 Unchecked return value*/
+            if(!Utopia_Init(&utctx))
+               return ANSC_STATUS_FAILURE;
 
-            Utopia_Init(&utctx);
             _ansc_sprintf(buf, "tr_ip_interface_%s_v4addr_alias", g_ipif_names[ulIpIfInstanceNumber-1]);
             Utopia_RawGet(&utctx,NULL,buf,out,sizeof(out));
             Utopia_Free(&utctx,0);
@@ -2756,7 +2764,9 @@ CosaDmlIpIfSetV4Addr
         /*for IPaddr and netmask, it's middle layer's responsibility to check if the AddressingType is Static. Remember we only set these params in Static AddressingType*/
         if (pEntry->IPAddress.Value != p_be_buf->IPAddress.Value)
         {
-            Utopia_Init(&utctx);
+             /*CID: 74354 Unchecked return value*/
+            if(!Utopia_Init(&utctx))
+               return ANSC_STATUS_FAILURE;
             _ansc_sprintf(buf, "%d.%d.%d.%d", 
                     pEntry->IPAddress.Dot[0],pEntry->IPAddress.Dot[1],pEntry->IPAddress.Dot[2],pEntry->IPAddress.Dot[3] );
 
@@ -2772,7 +2782,9 @@ CosaDmlIpIfSetV4Addr
               in TPG, actually we don't have a chance to go here: TPG's lan/wan ip interface are dynamic*/
             if (strstr((char *)g_ipif_names[ulIpIfInstanceNumber-1], "lan"))
             {
-                Utopia_Init(&utctx);
+                /*CID: 74354 Unchecked return value*/
+                if(!Utopia_Init(&utctx))
+                    return ANSC_STATUS_FAILURE;
                 _ansc_sprintf(buf, "%d.%d.%d.%d", 
                         pEntry->SubnetMask.Dot[0],pEntry->SubnetMask.Dot[1],pEntry->SubnetMask.Dot[2],pEntry->SubnetMask.Dot[3] );
 
@@ -3202,7 +3214,8 @@ CosaDmlIpIfAddV6Addr
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,NULL,name,val,sizeof(val));            
 
-                snprintf(val+strlen(val), sizeof(val),  "%lu,", pEntry->InstanceNumber );
+                /* CID: 75004 Out-of-bounds access*/
+                snprintf(val+strlen(val), sizeof(val)-1,  "%lu,", pEntry->InstanceNumber );
 
                 Utopia_RawSet(&utctx,NULL,name,val);
 
@@ -3321,6 +3334,7 @@ static int _del_one_token(char * buf, int inst_num, int buf_len)
     }
     
     /*buf is in & out*/
+    /* CID:72709 Wrong sizeof argument*/
     memset(buf, 0, buf_len);
     for (i=0; i<size; i++)
         sprintf(buf+strlen(buf), "%d,", num_array[i]);

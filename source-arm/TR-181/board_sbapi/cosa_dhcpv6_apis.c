@@ -4203,8 +4203,8 @@ OPTIONS:
             }
 
             // Get value of redirection_flag
-            syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
-            if( buf != NULL )
+            /* CID: 55578 Array compared against 0*/
+            if(!syscfg_get( NULL, "redirection_flag", buf, sizeof(buf)))
             {
                 if ((strncmp(buf,"true",4) == 0) && iresCode == 204)
                 {
@@ -4221,13 +4221,13 @@ OPTIONS:
         char rfCpEnable[6] = {0};
         char rfCpMode[6] = {0};
         int inRfCaptivePortal = 0;
-        syscfg_get(NULL, "enableRFCaptivePortal", rfCpEnable, sizeof(rfCpEnable));
-        if(rfCpEnable != NULL)
+        /* CID: 55578 Array compared against 0*/
+        if(!syscfg_get(NULL, "enableRFCaptivePortal", rfCpEnable, sizeof(rfCpEnable)))
         {
           if (strncmp(rfCpEnable,"true",4) == 0)
           {
-              syscfg_get(NULL, "rf_captive_portal", rfCpMode,sizeof(rfCpMode));
-              if(rfCpMode != NULL)
+              /* CID: 55578 Array compared against 0*/
+              if(!syscfg_get(NULL, "rf_captive_portal", rfCpMode,sizeof(rfCpMode)))
               {
                  if (strncmp(rfCpMode,"true",4) == 0)
                  {
@@ -4252,7 +4252,6 @@ OPTIONS:
                                 get from data model tree
                             */
 #if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
-
                 char l_cSecWebUI_Enabled[8] = {0};
                 syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
                 if (!strncmp(l_cSecWebUI_Enabled, "true", 4)) {
@@ -5599,7 +5598,8 @@ CosaDmlDhcpv6sDelPool
 
     /* do this lastly */
     /* limiting lower boundary of the DHCP Server Pool Num to avoid -ve values*/
-    uDhcpv6ServerPoolNum = (0 >(int)(uDhcpv6ServerPoolNum-1)? 0 : (uDhcpv6ServerPoolNum-1) );
+    /*CID: 65892 Unsigned compared against 0*/
+    uDhcpv6ServerPoolNum = (0 == (uDhcpv6ServerPoolNum)? 0 : (uDhcpv6ServerPoolNum-1) );
 
 
     if (!Utopia_Init(&utctx))
@@ -6182,6 +6182,8 @@ void _cosa_dhcpsv6_get_client()
             AnscCopyString( (char*)g_dhcps6v_clientcontent[Index].pOption[g_dhcps6v_clientcontent[Index].NumberofOption-1].Value, pTmp1 );
         }else if ( _ansc_strcmp(pTmp1, "Unicast") == 0 )
         {
+          /* CID: 61618 Explicit null dereferenced*/
+          if (g_dhcps6v_client)
             AnscCopyString((char*)g_dhcps6v_client[Index].SourceAddress, pTmp3);
         }else if ( _ansc_strcmp(pTmp1, "Addr") == 0 )
         {
@@ -6214,7 +6216,8 @@ void _cosa_dhcpsv6_get_client()
             timeStamp = atoi(pTmp3);
         }else if ( _ansc_strcmp(pTmp1, "Prefered") == 0 )
         {
-            if ( g_dhcps6v_clientcontent[Index].NumberofIPv6Address )
+            /* CID: 73916 Explicit null dereferenced*/
+            if ( g_dhcps6v_clientcontent && g_dhcps6v_clientcontent[Index].NumberofIPv6Address )
             {
                 t1 = timeStamp;
                 t1 += atoi(pTmp3);
@@ -6993,8 +6996,9 @@ void CosaDmlDhcpv6sRebootServer()
     if (fd < 0) {
         BOOL isBridgeMode = FALSE;
         char out[128] = {0};
-        is_usg_in_bridge_mode(&isBridgeMode);
-        if ( isBridgeMode )
+        /*CID: 66130 Unchecked return value*/
+        if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&isBridgeMode)) &&
+           ( TRUE == isBridgeMode ))
             return;
 
 #ifdef OVERCOMMIT_DISABLED

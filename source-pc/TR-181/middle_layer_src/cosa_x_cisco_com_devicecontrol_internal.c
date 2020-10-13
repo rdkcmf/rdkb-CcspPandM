@@ -172,7 +172,9 @@ CosaDeviceControlInitialize
     CosaDmlDcInit(NULL, NULL);
 
     ulLmCnt = CosaDmlLanMngm_GetNumberOfEntries();
-
+    /* CID: 55365 Negative loop bound*/
+    if(ulLmCnt < 0)
+        return ANSC_STATUS_FAILURE;
     AnscSListInitializeHeader(&pMyObject->LanMngmList);
     pMyObject->ulLanMngmNextInsNum = 1;
     pMyObject->hIrepFolderCOSA = g_GetRegistryRootFolder(g_pDslhDmlAgent);

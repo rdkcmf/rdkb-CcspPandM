@@ -309,10 +309,8 @@ void apply_dmz_ToDML(t_cache *tmp_dmz_cache)
 	}
 	else if (pDmlDmz->bEnabled == TRUE)
 	{
-		if(tmp_dmz_cache[index].val)
-		{
-			AnscCopyString( pDmlDmz->InternalIP, tmp_dmz_cache[index].val);
-		}
+                /* CID: 158833 Array compared against 0*/
+	 	AnscCopyString( pDmlDmz->InternalIP, tmp_dmz_cache[index].val);
 	}
 
 #if CFG_USE_CCSP_SYSLOG
@@ -343,7 +341,9 @@ void freeResources_dmz(void *arg)
 {
     CcspTraceInfo((" Entering %s \n",__FUNCTION__));
     execData *blob_exec_data  = (execData*) arg;
-
+    /*CID: 158837 Dereference before null check*/
+    if(!blob_exec_data)
+       return;
     dmz_wandoc_t *rpm = (dmz_wandoc_t *) blob_exec_data->user_data;
 
     if ( rpm != NULL )

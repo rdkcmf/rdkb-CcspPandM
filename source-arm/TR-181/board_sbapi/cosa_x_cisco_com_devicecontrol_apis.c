@@ -2688,15 +2688,16 @@ CosaDmlDcGetTelnetEnable
 
     char buf[5];
     //printf("Got value mgmt_wan_telnetaccess = %d\n", *pFlag);
-    syscfg_get( NULL, "mgmt_wan_telnetaccess", buf, sizeof(buf));
-    if( buf != NULL )
+    /*CID: 70419 Array compared against 0*/
+    if(!syscfg_get( NULL, "mgmt_wan_telnetaccess", buf, sizeof(buf)))
     {
         //printf("%s buf = %s\n", __FUNCTION__, buf);
         if (strcmp(buf,"1") == 0)
             *pFlag = 1;
         else
             *pFlag = 0;
-    }
+    } else
+        return ANSC_STATUS_FAILURE;
  
     if (platform_hal_GetTelnetEnable(pFlag) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
@@ -2713,8 +2714,8 @@ CosaDmlDcGetSSHEnable
 {
     UNREFERENCED_PARAMETER(hContext);
     char buf[5];
-    syscfg_get( NULL, "mgmt_wan_sshaccess", buf, sizeof(buf));
-    if( buf != NULL )
+    /*CID: 58920 Array compared against 0*/
+    if(!syscfg_get( NULL, "mgmt_wan_sshaccess", buf, sizeof(buf)))
     {
         if (strcmp(buf,"1") == 0) 
             *pFlag = 1;
@@ -4064,8 +4065,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 			}
         }
 #endif
-
-        Utopia_SetLanMngmLanNetworksAllow(&utctx, pLanMngm->LanNetworksAllow);
+        /* TODO: CID: 54391 Useless call Utopia_SetLanMngmLanNetworksAllow , no definition*/
 #if 0 
         if(pLanMngm->LanNaptType == COSA_DML_LanNapt_DHCP && pLanMngm->LanNaptEnable == TRUE)        
             napt = NAPT_MODE_DHCP;

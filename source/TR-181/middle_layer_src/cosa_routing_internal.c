@@ -1230,7 +1230,8 @@ CosaRoutingRegGetInfo
             }
             else if ( _ansc_strstr(pFolderName, "RipInterface") )
             {
-                pRipIF = (PCOSA_DML_RIP_IF_CFG)AnscAllocateMemory(sizeof(PCOSA_DML_RIP_IF_CFG));
+                /* CID: 53503 Wrong sizeof argument*/
+                pRipIF = (PCOSA_DML_RIP_IF_CFG)AnscAllocateMemory(sizeof(COSA_DML_RIP_IF_CFG));
 
                 if ( !pRipIF )
                 {

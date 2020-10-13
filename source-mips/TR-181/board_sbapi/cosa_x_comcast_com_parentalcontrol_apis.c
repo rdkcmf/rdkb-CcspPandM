@@ -1591,9 +1591,8 @@ CosaDmlBlkURL_GetEntryByIndex(ULONG index, COSA_DML_BLOCKEDURL *pEntry)
     _ansc_strncpy(pEntry->StartTime, blkurl.start_time, sizeof(pEntry->StartTime));
     _ansc_strncpy(pEntry->EndTime, blkurl.end_time, sizeof(pEntry->EndTime));
     _ansc_strncpy(pEntry->BlockDays, blkurl.block_days, sizeof(pEntry->BlockDays));
-    if(pEntry->StartTime != NULL)
+    /* CID: 71902 Array compared against 0*/
         pEntry->StartTimeFlg = TRUE;
-    if(pEntry->EndTime != NULL)
         pEntry->EndTimeFlg = TRUE;
 
 #if defined(CONFIG_CISCO_FEATURE_CISCOCONNECT) 

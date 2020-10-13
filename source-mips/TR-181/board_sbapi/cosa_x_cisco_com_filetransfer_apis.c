@@ -117,7 +117,8 @@ VerifyFileFormat (char* configFilePath)
     if ( refFile != NULL )
     {
         i = 0;
-        while ((fgets (refStrings[i], sizeof refStrings[i], refFile) != NULL) && (i < MAX_STRING_COUNT))
+        /*CID: 57082 Out-of-bounds read*/
+        while (((i < MAX_STRING_COUNT) && fgets (refStrings[i], sizeof refStrings[i], refFile) != NULL) )
         {
             refStrings[i][strcspn(refStrings[i], "\n")] = 0;
             i++;
@@ -164,13 +165,15 @@ VerifyFileFormat (char* configFilePath)
             }
         }
 
-        fclose (configFile);
     }
     else
     {
         AnscTraceWarning(("Cannot open config file\n"));
         formatVerifyStatus = FORMAT_VERIFY_FAILURE;
     }
+
+    /*CID: 73784 Resource leak*/
+    fclose (configFile);
 
     return formatVerifyStatus;
 }

@@ -654,8 +654,8 @@ int  _is_static_addr(char * ifname, char * v6addr)
         p_token = strtok_r(str, ",", &saveptr);
         if (p_token == NULL)
                 break;
-    
-        snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_STATIC_V6ADDR, ifname, atoi(p_token) );
+        /*REVISIT: CID: 67896, 125115 Extra argument to printf format specifier*/ 
+        snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6ADDR, ifname, atoi(p_token) );
 
         memset(out1, 0, sizeof(out1));
         Utopia_RawGet(&utctx,namespace,"IPAddress",out1,sizeof(out1));
@@ -3001,8 +3001,8 @@ CosaDmlIpIfAddV6Addr
                 sprintf(name, SYSCFG_FORMAT_STATIC_V6ADDR, (char *)g_ipif_names[i]);
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,NULL,name,val,sizeof(val));            
-
-                snprintf(val+strlen(val), sizeof(val),  "%d,", pEntry->InstanceNumber );
+                /* CID: 75004 Out-of-bounds access*/
+                snprintf(val+strlen(val), sizeof(val)-1,  "%d,", pEntry->InstanceNumber );
 
                 Utopia_RawSet(&utctx,NULL,name,val);
 
@@ -3119,7 +3119,8 @@ static int _del_one_token(char * buf, int inst_num, int buf_len)
     }
     
     /*buf is in & out*/
-    memset(buf, 0, sizeof(buf));
+    /* CID:REVIST 72709 Wrong sizeof argument*/
+    memset(buf, 0, strlen(buf));
     for (i=0; i<size; i++)
         sprintf(buf+strlen(buf), "%d,", num_array[i]);
 
@@ -3546,8 +3547,8 @@ CosaDmlIpIfAddV6Prefix
                 sprintf(name, SYSCFG_FORMAT_STATIC_V6PREF, (char *)g_ipif_names[i]);
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,NULL,name,val,sizeof(val));
-
-                snprintf(val+strlen(val), sizeof(val)-strlen(val), "%d,", (char *)pEntry->InstanceNumber);
+                /* CID: 125069 Invalid type in argument to printf format specifier*/
+                snprintf(val+strlen(val), sizeof(val)-strlen(val), "%d,", pEntry->InstanceNumber);
 
                 Utopia_RawSet(&utctx,NULL,name,val);
 

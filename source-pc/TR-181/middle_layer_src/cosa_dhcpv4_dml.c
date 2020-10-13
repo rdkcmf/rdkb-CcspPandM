@@ -4984,8 +4984,8 @@ int PSMSetLeaseTimeDHCPV4RecordValues(PCOSA_DML_DHCPS_POOL_FULL pNewCfg,ULONG in
 }
 #endif
 
-
-static is_invalid_unicast_ip_addr(unsigned int gw, unsigned int mask, unsigned int ipaddr)
+/*  CID: 75121 Parse warning */
+static int is_invalid_unicast_ip_addr(unsigned int gw, unsigned int mask, unsigned int ipaddr)
 {
     unsigned int subnet, bcast;
 
@@ -5931,40 +5931,29 @@ Pool_SetParamBoolValue
     {
         /* save update to backup */
         return FALSE; /* Not supported */
-
-        pPool->Cfg.VendorClassIDExclude   = bValue;
-
-        return TRUE;
+        /* CID: 60425 Structurally dead code*/
     }
 
     if( AnscEqualString(ParamName, "ClientIDExclude", TRUE))
     {
         /* save update to backup */
         return FALSE; /* Not supported */
-
-        pPool->Cfg.ClientIDExclude   = bValue;
-
-        return TRUE;
+        /* CID: 60425 Structurally dead code*/
     }
 
     if( AnscEqualString(ParamName, "UserClassIDExclude", TRUE))
     {
         /* save update to backup */
         return FALSE; /* Not supported */
+        /* CID: 60425 Structurally dead code*/
 
-        pPool->Cfg.UserClassIDExclude   = bValue;
-
-        return TRUE;
     }
 
     if( AnscEqualString(ParamName, "ChaddrExclude", TRUE))
     {
         /* save update to backup */
         return FALSE; /* Not supported */
-
-        pPool->Cfg.ChaddrExclude   = bValue;
-
-        return TRUE;
+        /* CID: 60425 Structurally dead code*/
     }
 
     /* check the parameter name and set the corresponding value */
@@ -6132,10 +6121,7 @@ Pool_SetParamUlongValue
     {
         /* save update to backup */
         return FALSE; /* Not supported */
-
-        pPool->Cfg.VendorClassIDMode  = uValue;
-        
-        return TRUE;
+        /* CID: 68759 Structurally dead code*/
     }
 
     if( AnscEqualString(ParamName, "MinAddress", TRUE))
@@ -6287,8 +6273,9 @@ Pool_SetParamStringValue
     BOOL bridgeInd = FALSE;
 		
     AnscTraceFlow(("%s: ParamName %s, \npString %s\n", __FUNCTION__, ParamName, pString));    
-	is_usg_in_bridge_mode(&bridgeInd);
-	if(bridgeInd)
+         /*CID: 54294 Unchecked return value*/
+       if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeInd)) &&
+           ( TRUE == bridgeInd ))
 		return(FALSE);
 
     /* check the parameter name and set the corresponding value */
@@ -6372,63 +6359,49 @@ Pool_SetParamStringValue
             /* save update to backup */
         return FALSE; /* Not supported */
 
-        AnscCopyString(pPool->Cfg.VendorClassID, pString);
-
-        return TRUE;
+        /*CID: 56152 Structurally dead code*/
     }
 
     if( AnscEqualString(ParamName, "ClientID", TRUE))
     {
         /* save update to backup */
         return FALSE; /* Not supported */
-
-        AnscCopyString(pPool->Cfg.ClientID, pString);
-
-        return TRUE;
+        /*CID: 56152 Structurally dead code*/
     }
 
     if( AnscEqualString(ParamName, "UserClassID", TRUE))
     {
         /* save update to backup */
         return FALSE; /* Not supported */
-
-        AnscCopyString(pPool->Cfg.UserClassID, pString);
-
-        return TRUE;
+        /*CID: 56152 Structurally dead code*/
     }
 
     if( AnscEqualString(ParamName, "Chaddr", TRUE))
     {
         /* save update to backup */
         return FALSE; /* Not supported */
-
-        AnscCopyString(pPool->Cfg.Chaddr, pString);
-
-        return TRUE;
+        /*CID: 56152 Structurally dead code*/
     }
 
     if( AnscEqualString(ParamName, "ChaddrMask", TRUE))
     {
         /* save update to backup */
         return FALSE; /* Not supported */
-
-        AnscCopyString(pPool->Cfg.ChaddrMask, pString);
-
-        return TRUE;
+        /*CID: 56152 Structurally dead code*/
     }
 
     if( AnscEqualString(ParamName, "ReservedAddresses", TRUE))
     {
         /* save update to backup */
         return FALSE; /* Not supported */
-
-        return CosaDmlSetIpaddr((PULONG)&pPool->Cfg.ReservedAddresses[0].Value, pString, COSA_DML_DHCP_MAX_RESERVED_ADDRESSES);
+        /*CID: 56152 Structurally dead code*/
     }
 
     if( AnscEqualString(ParamName, "DNSServers", TRUE))
     {
         /* save update to backup */
-        return CosaDmlSetIpaddr((PULONG)&pPool->Cfg.DNSServers[0].Value, pString, COSA_DML_DHCP_MAX_ENTRIES);
+        /*CID: 125079 Out-of-bounds access*/
+        return CosaDmlSetIpaddr((PULONG)&pPool->Cfg.DNSServers[0], pString, COSA_DML_DHCP_MAX_ENTRIES);
     }
 
     if( AnscEqualString(ParamName, "DomainName", TRUE))
@@ -6442,7 +6415,8 @@ Pool_SetParamStringValue
     if( AnscEqualString(ParamName, "IPRouters", TRUE))
     {
         /* save update to backup */
-        return CosaDmlSetIpaddr((PULONG)&pPool->Cfg.IPRouters[0].Value, pString, COSA_DML_DHCP_MAX_ENTRIES);
+        /*CID: 125357 Out-of-bounds access*/
+        return CosaDmlSetIpaddr((PULONG)&pPool->Cfg.IPRouters[0], pString, COSA_DML_DHCP_MAX_ENTRIES);
     }
 
 
@@ -7236,9 +7210,10 @@ StaticAddress_SetParamBoolValue
     PCOSA_DML_DHCPS_POOL_FULL       pPool                = (PCOSA_DML_DHCPS_POOL_FULL)pPoolLink->hContext;
     ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
     BOOL bridgeInd = FALSE;
-		
-	is_usg_in_bridge_mode(&bridgeInd);
-	if(bridgeInd)
+
+        /*CID: 56377 Unchecked return value*/
+        if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeInd)) &&
+           ( TRUE == bridgeInd ))
 		return(FALSE);
 
     /* check the parameter name and set the corresponding value */
@@ -7695,7 +7670,7 @@ StaticAddress_Commit
 		}else{/*Add this entry to backend*/
 			returnStatus = CosaDmlDhcpsAddSaddr(NULL, pPool->Cfg.InstanceNumber, pDhcpStaticAddress );
 			if(returnStatus == ANSC_STATUS_SUCCESS)
-				pDhcpStaticAddress->ActiveFlag==TRUE;
+				pDhcpStaticAddress->ActiveFlag=TRUE; /*CID:74919 Test should be assignment*/
 		}
 	}
     }
@@ -8993,6 +8968,12 @@ Client2_GetParamBoolValue
     ULONG n;
     
     PClientContent = (PCOSA_DML_DHCPSV4_CLIENTCONTENT)CosaDhcpv4GetClientContentbyClient(hInsContext);
+    /* CID: 59902 Dereference null return value*/
+    if (!PClientContent){
+       CcspTraceError(("PClientContent is NULL\n"));
+       return FALSE;
+    }
+
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Active", TRUE) ){

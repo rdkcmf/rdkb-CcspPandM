@@ -38,7 +38,6 @@ ANSC_STATUS CosaGetSysCfgUlong(char* setting, ULONG* value)
 {
     ANSC_STATUS         ret = ANSC_STATUS_SUCCESS;
     char buf[32];
-
     memset(buf, 0, sizeof(buf));
     if(ANSC_STATUS_SUCCESS != (ret=syscfg_get( NULL, setting, buf, sizeof(buf))))
     {
@@ -79,14 +78,11 @@ ANSC_STATUS CosaGetSysCfgString(char* setting, char* pValue, PULONG pulSize )
     memset(buf, 0, sizeof(buf));
     if(ANSC_STATUS_SUCCESS == syscfg_get( NULL, setting, buf, sizeof(buf)))
     {
-        if( buf != NULL )
-        {
-            strncpy(pValue ,buf,strlen(buf));
-            *pulSize = AnscSizeOfString(pValue);
-            return ANSC_STATUS_SUCCESS;
-        }
-        else
-            return ANSC_STATUS_FAILURE;
+      /*CID: 59107 Array compared against 0*/
+      /*CID: 59338 Logically dead code*/
+       strncpy(pValue ,buf,strlen(buf));
+       *pulSize = AnscSizeOfString(pValue);
+       return ANSC_STATUS_SUCCESS;
     }
     else
             return ANSC_STATUS_FAILURE;

@@ -129,14 +129,16 @@ DeviceInfo_GetParamBoolValue_Custom
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_WiFiNeedsPersonalization",TRUE))
     {
 	    char buf[5];
-        syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
-    	if( buf != NULL )
+        /*CID: 63071 Array compared against 0*/
+        if(!syscfg_get( NULL, "redirection_flag", buf, sizeof(buf)))
     	{
     		if (strcmp(buf,"true") == 0)
     		        *pBool = TRUE;
     		    else
     		        *pBool = FALSE;
-    	}
+    	} else {
+            return FALSE;
+        }
 	    return TRUE;
     }
 	    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CaptivePortalEnable", TRUE))
@@ -158,14 +160,16 @@ DeviceInfo_GetParamBoolValue_Custom
     {
        *pBool = pMyObject->bCloudEnable;
 	char buf[5];
-        syscfg_get( NULL, "cloud_enable_flag", buf, sizeof(buf));
-    	if( buf != NULL )
-    		{
-    		    if (strcmp(buf,"1") == 0)
-    		        pMyObject->bCloudEnable = TRUE;
-    		    else
-    		        pMyObject->bCloudEnable = FALSE;
-    		}
+        /*CID: 63071 Array compared against 0*/
+        if(!syscfg_get( NULL, "cloud_enable_flag", buf, sizeof(buf)))
+    	{
+            if (strcmp(buf,"1") == 0)
+    		 pMyObject->bCloudEnable = TRUE;
+            else
+    		 pMyObject->bCloudEnable = FALSE;
+    	}else
+            return FALSE;
+
 	*pBool = pMyObject->bCloudEnable;
 	return TRUE;
     }
@@ -434,9 +438,8 @@ DeviceInfo_SetParamBoolValue_Custom
 		pMyObject->bWiFiConfigued = bValue;
 
 		char buf[5];
-		syscfg_get( NULL, "CaptivePortal_Enable" , buf, sizeof(buf));
-		if( buf != NULL )
-		{
+                    /* CID: 92407 Array compared against 0*/
+		if(!syscfg_get( NULL, "CaptivePortal_Enable" , buf, sizeof(buf))) {
 		    if (strcmp(buf,"true") == 0)
 		    {
 #if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_)
@@ -455,7 +458,9 @@ DeviceInfo_SetParamBoolValue_Custom
 				CcspTraceInfo(("Front LED Transition: WHITE LED will be SOLID, Reason: ConfigureWiFi is TRUE, but CaptivePortal is disabled\n"));
 		    }
 #endif
-		}
+                } else {
+                   return FALSE;
+                }
 	 }
 	
          else if  ( bValue == FALSE )

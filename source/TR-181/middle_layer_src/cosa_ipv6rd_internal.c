@@ -258,6 +258,7 @@ CosaIPv6rdRemove(
         while (!pSLinkEntry)
         {
             pLinkObject = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+            /* TODO: deref pSLinkEntry, while condition should be != NULL*/
             pSLinkEntry = AnscSListGetNextEntry(pSLinkEntry);
             AnscSListPopEntryByLink(&pMyObject->IfList, &pLinkObject->Linkage);
 
@@ -474,13 +475,7 @@ CosaIPv6rdIfRegAddInfo(
                     pEntry->Alias,
                     0
                 );
-
-        if ( !pPoamIrepFoIPv6rdIf )
-        {
-            returnStatus = ANSC_STATUS_FAILURE;
-
-            goto  EXIT1;
-        }
+        /*CID: 61342 Logically dead code - NULL check done starting of the func*/
 
         if ( TRUE )
         {

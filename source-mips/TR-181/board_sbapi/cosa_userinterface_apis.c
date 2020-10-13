@@ -358,35 +358,31 @@ CosaDmlUserInterfaceGetCfg
 
         char buf[10];
 	memset(buf,0,sizeof(buf));
-        syscfg_get( NULL, "PasswordLockoutEnable", buf, sizeof(buf));
-
-        if( buf != NULL )
-       {
+        /* CID: 53702 Array compared against 0*/
+        if(!syscfg_get( NULL, "PasswordLockoutEnable", buf, sizeof(buf)))
+        {
                   if (strcmp(buf,"true") == 0)
                        pCfg->bPasswordLockoutEnable = TRUE;
                   else
                        pCfg->bPasswordLockoutEnable = FALSE;
-      }
+        }
 	memset(buf,0,sizeof(buf));
-        syscfg_get( NULL, "PasswordLockoutAttempts", buf, sizeof(buf));
-
-        if( buf != NULL )
-       {
+        /* CID: 53702 Array compared against 0*/
+        if (!syscfg_get( NULL, "PasswordLockoutAttempts", buf, sizeof(buf)))
+        {
 			pCfg->PasswordLockoutAttempts=atoi(buf);
-       }
+        } 
 
 	memset(buf,0,sizeof(buf));
-        syscfg_get( NULL, "PasswordLockoutTime", buf, sizeof(buf));
-
-        if( buf != NULL )
-       {
+        /* CID: 53702 Array compared against 0*/
+        if(!syscfg_get( NULL, "PasswordLockoutTime", buf, sizeof(buf)))
+        {
 			pCfg->PasswordLockoutTime=atoi(buf);
-       }
+        }
 
        memset(buf,0,sizeof(buf));
-       syscfg_get( NULL, "HTTPSecurityHeaderEnable", buf, sizeof(buf));
-
-       if( buf != NULL )
+       /* CID: 53702 Array compared against 0*/
+       if(!syscfg_get( NULL, "HTTPSecurityHeaderEnable", buf, sizeof(buf)))
        {
           if (strcmp(buf,"true") == 0)
                pCfg->bHTTPSecurityHeaderEnable = TRUE;

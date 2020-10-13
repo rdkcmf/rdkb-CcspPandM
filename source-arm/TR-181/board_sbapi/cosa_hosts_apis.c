@@ -884,7 +884,8 @@ CosaDmlHostsGetHosts
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    LM_hosts_t hosts;
+    /* CID: 135585,135618 Large stack use*/
+    LM_hosts_t *hosts;
     LM_host_t *plmHost;
     PLmObjectHost pHost;
     char str[100];
@@ -910,14 +911,18 @@ CosaDmlHostsGetHosts
     /* we don't want some device show in lan host list, get those unwelcome device list */
     _get_unwelcome_list();
 
-    if(LM_RET_SUCCESS == lm_get_all_hosts(&hosts))
+    hosts = (LM_hosts_t *) malloc(sizeof(LM_hosts_t));
+    if (!hosts)
+        return ANSC_STATUS_FAILURE;
+
+    if(LM_RET_SUCCESS == lm_get_all_hosts(hosts))
     {
-        *pulCount = hosts.count;
+        *pulCount = hosts->count;
         _init_DM_List(&g_IPIfNameDMListNum, &g_pIPIfNameDMList, "Device.IP.Interface.", "Name");
         _init_DM_List(&g_MoCAADListNum, &g_pMoCAADList, "Device.MoCA.Interface.1.AssociatedDevice.", "MACAddress");
         _init_DM_List(&g_DHCPv4ListNum, &g_pDHCPv4List, "Device.DHCPv4.Server.Pool.1.Client.", "Chaddr");
-        for(i = 0; i < hosts.count; i++){
-            plmHost = &(hosts.hosts[i]);
+        for(i = 0; i < hosts->count; i++){
+            plmHost = &(hosts->hosts[i]);
             /* filter unwelcome device */
             if(host_filter(plmHost))
                 continue;
@@ -930,6 +935,7 @@ CosaDmlHostsGetHosts
     }else{
         *pulCount = 0;
     }
+    free(hosts);
 
     return ANSC_STATUS_SUCCESS;
 }

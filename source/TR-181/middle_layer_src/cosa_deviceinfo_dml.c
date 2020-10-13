@@ -899,16 +899,16 @@ DeviceInfo_GetParamStringValue
      if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootReason", TRUE))
     {
         char buf[64] = {'\0'};
-        syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", buf, sizeof(buf));
-    	if( buf != NULL )
-    		{
-    		    AnscCopyString(pValue,  buf);
+        /* CID: 57845 Array compared against 0*/
+        if(!syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", buf, sizeof(buf)))
+    	{
+    	     AnscCopyString(pValue,  buf);
     		    
-    		}
-		else
-		{
-			AnscTraceWarning(("Error in syscfg_get for RebootReason\n"));
-		}
+    	}
+	else
+	{
+	     AnscTraceWarning(("Error in syscfg_get for RebootReason\n"));
+	}
 		return 0;
         
     }
@@ -932,24 +932,24 @@ DeviceInfo_GetParamStringValue
        //pMyObject->EMS_ServerURL;
 		char buf[60];
         memset(buf, 0 ,sizeof(buf));
-        syscfg_get( NULL, "ems_server_url", buf, sizeof(buf));
-    	if( buf != NULL )
-    		{
-    		    AnscCopyString(pValue,  buf);
+        /* CID: 57845 Array compared against 0*/
+        if(!syscfg_get( NULL, "ems_server_url", buf, sizeof(buf)))
+    	{
+    		AnscCopyString(pValue,  buf);
     		    
-    		}
-		else
-			{
-			
-			}
-		return 0;
+        }
+        else
+        {
+               AnscTraceWarning(("Error in syscfg_get for ems_server_url\n"));
+	}
+	return 0;
     }
 
 	if( AnscEqualString(ParamName, "RouterName", TRUE))
     {
         char buf[16] = {'\0'};
-        syscfg_get( NULL, "router_name", buf, sizeof(buf));
-    	if( buf != NULL )
+               /* CID: 57845 Array compared against 0*/
+               if(!syscfg_get( NULL, "router_name", buf, sizeof(buf)))
     		{
     		    AnscCopyString(pValue,  buf);
     		}
@@ -1305,9 +1305,8 @@ TelemetryEndpoint_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "TelemetryEndpointEnabled", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /* CID: 58662 Array compared against 0*/
+        if(!syscfg_get( NULL, "TelemetryEndpointEnabled", buf, sizeof(buf)))
         {
             if (strcmp(buf, "true") == 0)
                 *pBool = TRUE;
@@ -1437,9 +1436,9 @@ ULONG
         /* collect value */
         char buf[64];
         memset(buf, 0 ,sizeof(buf));
-        syscfg_get( NULL, "TelemetryEndpointURL", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /* CID: 70225 Array compared against 0*/
+        /* CID: 56488 Logically dead code*/
+        if(!syscfg_get( NULL, "TelemetryEndpointURL", buf, sizeof(buf)))
         {
             AnscCopyString(pValue, buf);
             *pUlSize = AnscSizeOfString( pValue );
@@ -1567,9 +1566,9 @@ AccountInfo_GetParamStringValue
     {
         /* collect value */
            char buff[ACCOUNT_ID_SIZE]={'\0'};
-
-           syscfg_get( NULL, "AccountID", buff, sizeof(buff));
-           if( buff != NULL )
+           /* CID: 64641 Array compared against 0*/
+           /*CID: 67589 Logically dead code*/
+           if(!syscfg_get( NULL, "AccountID", buff, sizeof(buff)))
            {
                 AnscCopyString(pValue,  buff);
                 *pulSize = AnscSizeOfString( pValue );
@@ -1631,8 +1630,8 @@ AccountInfo_SetParamStringValue
            char buff[ACCOUNT_ID_SIZE]={'\0'};
            int idlen = strlen(pString)-1;
            int i;
-
-           if ( idlen > ACCOUNT_ID_SIZE )
+           /* CID: 66168 Out-of-bounds read - protect buff read in else check for idlen val 32*/
+           if ( idlen >= ACCOUNT_ID_SIZE )
            {
                 CcspTraceError(("%s Account ID size is too large %d characters..!! \n",__FUNCTION__, idlen));
                 bReturnValue = FALSE;
@@ -1641,7 +1640,7 @@ AccountInfo_SetParamStringValue
            {
                 snprintf(buff,sizeof(buff),"%s",pString);
 
-                for(i=0; i<=idlen; ++i)
+                for(i=0; i < idlen; ++i)
                 {
                    if(isalnum(buff[i]) == 0 && buff[i] != '_' && buff[i] != '-')
                    {
@@ -2216,8 +2215,8 @@ DeviceInfo_Rollback
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     ULONG pulSize = 0;
-
-    CosaDmlDiGetProvisioningCode(NULL, (char *)pMyObject->ProvisioningCode, &pulSize);
+    /*CID:78739 Out-of-bounds access - updted the ProvisioningCode with 256 in the declaration*/
+    CosaDmlDiGetProvisioningCode(NULL,(char *)pMyObject->ProvisioningCode, &pulSize);
     
     return 0;
 }
@@ -2678,22 +2677,17 @@ UniqueTelemetryId_GetParamStringValue
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "TagString", TRUE))
     {
-		if ( AnscSizeOfString( pMyObject->UniqueTelemetryId.TagString ) < *pUlSize )
-   		{
-       		AnscCopyString( pValue, pMyObject->UniqueTelemetryId.TagString );		
-        	return 0;
-   		}
-   		else
-   		{
-       		*pUlSize = AnscSizeOfString( pMyObject->UniqueTelemetryId.TagString ) + 1;
-       		return 1;
-   		}
-
-        AnscCopyString( pValue, pMyObject->UniqueTelemetryId.TagString );
-        return 0;
+	    if ( AnscSizeOfString( pMyObject->UniqueTelemetryId.TagString ) < *pUlSize )
+	    {
+		    AnscCopyString( pValue, pMyObject->UniqueTelemetryId.TagString );		
+		    return 0;
+	    }
+	    *pUlSize = AnscSizeOfString( pMyObject->UniqueTelemetryId.TagString ) + 1;
+	    return 1;
+	    /* CID: 64836 Structurally dead code*/
     }
 
-	return -1;
+    return -1;
 }
 
 
@@ -3014,16 +3008,16 @@ ManageableNotification_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "ManageableNotificationEnabled", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /*CID: 67293 Array compared against 0*/
+        if(!syscfg_get( NULL, "ManageableNotificationEnabled", buf, sizeof(buf)))
         {
             if (strcmp(buf, "true") == 0)
                 *pBool = TRUE;
             else
                 *pBool = FALSE;
-        }
-        return TRUE;
+           return TRUE;
+        } else
+          return FALSE;
     }
 
     return FALSE;
@@ -3231,6 +3225,9 @@ Snmpv3DHKickstart_SetParamBoolValue
     CcspTraceInfo(("Snmpv3DHKickstart_SetParamBoolValue: pKickstart = 0x%lx\n", (long unsigned)pKickstart));
     CcspTraceInfo(("Snmpv3DHKickstart_SetParamBoolValue: ParamName = %s, bValue = %d\n", ParamName, (int)bValue));
 
+    /*CID: 128676 Uninitialized pointer read*/
+    Snmpv3_Kickstart_Table.n_rows = 0;
+
     if( AnscEqualString( ParamName, "Enabled", TRUE ) )
     {
         if( pKickstart != NULL )
@@ -3343,7 +3340,8 @@ static int bin2hexstring( char *pOut, UINT8 *pIn, int numbytes )
         for( x=0; x < 2; x++ )      // 2 nibbles per character
         {
             workval = val[x];
-            if( workval >= 0x00 && workval <= 0x09 )
+            /* CID: 114994 Unsigned compared against 0*/
+            if(workval <= 0x09 )
             {
                 *pOut = workval + 0x30;
             }
@@ -3894,16 +3892,17 @@ TR069support_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "EnableTR69Binary", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /* CID: 71587 Array compared against 0*/
+        if(!syscfg_get( NULL, "EnableTR69Binary", buf, sizeof(buf)))
         {
             if (strcmp(buf, "false") == 0)
                 *pBool = FALSE;
             else
                 *pBool = TRUE;
-        }
-        return TRUE;
+        } else 
+           return FALSE;
+        
+         return TRUE;
     }
 
     return FALSE;
@@ -4016,9 +4015,8 @@ newNTP_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "new_ntp_enabled", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /*CID:54377 Array compared against 0*/
+        if(!syscfg_get( NULL, "new_ntp_enabled", buf, sizeof(buf))) 
         {
             if (strcmp(buf, "false") == 0)
                 *pBool = FALSE;
@@ -7046,9 +7044,8 @@ CodeBigFirst_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "CodeBigFirstEnabled", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /* CID: 58325 Array compared against 0*/
+        if(!syscfg_get( NULL, "CodeBigFirstEnabled", buf, sizeof(buf)))
         {
             if (strcmp(buf, "true") == 0)
                 *pBool = TRUE;
@@ -7172,15 +7169,16 @@ PresenceDetect_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "PresenceDetectEnabled", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /*CID: 67242 Array compared against 0*/
+        if(!syscfg_get( NULL, "PresenceDetectEnabled", buf, sizeof(buf)))
         {
             if (strcmp(buf, "true") == 0)
                 *pBool = TRUE;
             else
                 *pBool = FALSE;
-        }
+        } else 
+           return FALSE;
+
         return TRUE;
     }
 
@@ -7303,15 +7301,16 @@ LostandFoundInternet_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "BlockLostandFoundInternet", buf, sizeof(buf));
+        /* CID: 119814 Array compared against 0*/
+       if(!syscfg_get( NULL, "BlockLostandFoundInternet", buf, sizeof(buf))) 
+       {
+        if (strcmp(buf, "true") == 0)
+            *pBool = TRUE;
+        else
+            *pBool = FALSE;
+       } else 
+          return FALSE;
 
-        if( buf != NULL )
-        {
-            if (strcmp(buf, "true") == 0)
-                *pBool = TRUE;
-            else
-                *pBool = FALSE;
-        }
         return TRUE;
     }
 
@@ -7947,14 +7946,14 @@ Control_GetParamStringValue
         /* collect value */
            char buff[XCONF_SELECTOR_SIZE]={'\0'};
 
-           syscfg_get( NULL, "XconfSelector", buff, sizeof(buff));
-           if( buff != NULL )
-           {
-                AnscCopyString(pValue,  buff);
-                *pulSize = AnscSizeOfString( pValue );
-                return 0;
-           }
-           return -1;
+           /* CID: 108145 Array compared against 0
+             CID: 108121 Logically dead code*/
+          if(!syscfg_get( NULL, "XconfSelector", buff, sizeof(buff))) {
+           AnscCopyString(pValue,  buff);
+           *pulSize = AnscSizeOfString( pValue );
+           return 0;
+          }
+          return -1;
     }
 
     /* check the "XconfUrl" parameter name and return the corresponding value */
@@ -7963,14 +7962,14 @@ Control_GetParamStringValue
         /* collect value */
            char buff[XCONF_URL_SIZE]={'\0'};
 
-           syscfg_get( NULL, "XconfUrl", buff, sizeof(buff));
-           if( buff != NULL )
-           {
-                AnscCopyString(pValue,  buff);
-                *pulSize = AnscSizeOfString( pValue );
-                return 0;
-           }
-           return -1;
+         if(!syscfg_get( NULL, "XconfUrl", buff, sizeof(buff)))
+         {
+          /*CID: 108145 Array compared against 0*/
+          AnscCopyString(pValue,  buff);
+          *pulSize = AnscSizeOfString( pValue );
+          return 0;
+         }
+         return -1;
     }
 
     return -1;
@@ -8255,29 +8254,32 @@ Feature_GetParamBoolValue
     if( AnscEqualString(ParamName, "OneToOneNAT", TRUE))
     {
          char value[8];
-         syscfg_get(NULL,"one_to_one_nat",value, sizeof(value));
-         if( value != NULL )
+         /*CID: 66608 Array compared against 0*/
+         if(!syscfg_get(NULL,"one_to_one_nat",value, sizeof(value)))
          {
              if (strcmp(value, "true") == 0)
                  *pBool = TRUE;
              else
                  *pBool = FALSE;
-         }
+         } else
+           return FALSE;
+
          return TRUE;
     }
 
     if (AnscEqualString(ParamName, "EnableMultiProfileXDNS", TRUE))
     {
         char buf[5] = {0};
-        syscfg_get( NULL, "MultiProfileXDNS", buf, sizeof(buf));
-        if( buf != NULL )
+         /*CID: 66608 Array compared against 0*/
+        if(!syscfg_get( NULL, "MultiProfileXDNS", buf, sizeof(buf)))
         {
                 if (strcmp(buf,"1") == 0)
                 {
                         *pBool = TRUE;
                         return TRUE;
                 }
-        }
+        } else 
+             return FALSE; 
 
         *pBool = FALSE;
 
@@ -8311,15 +8313,17 @@ Feature_GetParamBoolValue
     if( AnscEqualString(ParamName, "Xupnp", TRUE))
     {
 	 char value[8];
-         syscfg_get(NULL, "start_upnp_service", value, sizeof(value));
-	 if( value != NULL )
+         /*CID: 66608 Array compared against 0*/
+         if(!syscfg_get(NULL, "start_upnp_service", value, sizeof(value)))
          {
              if (strcmp(value, "true") == 0)
                  *pBool = TRUE;
              else
                  *pBool = FALSE;
+            return TRUE;
+         } else {
+	    return FALSE;
          }
-	 return TRUE;
     }
 
     if( AnscEqualString(ParamName, "BridgeUtilsEnable", TRUE))
@@ -8407,15 +8411,17 @@ EncryptCloudUpload_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         char value[8];
-        syscfg_get(NULL,"encryptcloudupload",value, sizeof(value));
-        if( value != NULL )
+        /* CID: 69222 Array compared against 0*/
+        if(!syscfg_get(NULL,"encryptcloudupload",value, sizeof(value)))
         {
              if (strcmp(value, "true") == 0)
                  *pBool = TRUE;
              else
                  *pBool = FALSE;
+             return TRUE;
+        } else {
+            return FALSE;
         }     
-        return TRUE;
     }
     return FALSE;
 }
@@ -8565,14 +8571,15 @@ DNSSTRICTORDER_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         char value[8];
-        syscfg_get(NULL,"DNSStrictOrder",value, sizeof(value));
-        if( value != NULL )
-        {
-             if (strcmp(value, "true") == 0)
-                 *pBool = TRUE;
-             else
-                 *pBool = FALSE;
-        } 
+        if(!syscfg_get(NULL,"DNSStrictOrder",value, sizeof(value))) {
+        /* CID: 119695 Array compared against 0*/
+        if (strcmp(value, "true") == 0)
+            *pBool = TRUE;
+        else
+           *pBool = FALSE;
+        } else
+           return FALSE;
+
         return TRUE;
     }
     return FALSE;
@@ -9728,15 +9735,16 @@ ShortsDL_GetParamBoolValue
         memset (buf, 0, sizeof(buf));
 
         /* collect value */
-        syscfg_get( NULL, "ShortsDL", buf, sizeof(buf));
+        /* CID: 114926 Array compared against 0*/
+       if(!syscfg_get( NULL, "ShortsDL", buf, sizeof(buf)))
+       {
+        if (strcmp(buf, "true") == 0)
+            *pBool = TRUE;
+        else
+            *pBool = FALSE;
+       } else
+          return FALSE;
 
-        if( buf != NULL )
-        {
-            if (strcmp(buf, "true") == 0)
-                *pBool = TRUE;
-            else
-                *pBool = FALSE;
-        }
         return TRUE;
     }
     return FALSE;
@@ -9852,9 +9860,8 @@ SSIDPSWDCTRL_GetParamBoolValue
     if( AnscEqualString(ParamName, "SnmpEnable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "SNMPPSWDCTRLFLAG", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /* CID: 54616 Array compared against 0*/
+        if(!syscfg_get( NULL, "SNMPPSWDCTRLFLAG", buf, sizeof(buf)))
         {
             if (strcmp(buf, "true") == 0)
                 *pBool = TRUE;
@@ -10068,15 +10075,16 @@ AutoExcluded_GetParamBoolValue
         memset (buf, 0, sizeof(buf));
 
         /* collect value */
-        syscfg_get( NULL, "AutoExcludedEnabled", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /* CID: 128899 Array compared against 0*/
+        if(!syscfg_get( NULL, "AutoExcludedEnabled", buf, sizeof(buf)))
         {
-            if (strcmp(buf, "true") == 0)
-                *pBool = TRUE;
-            else
-                *pBool = FALSE;
-        }
+          if (strcmp(buf, "true") == 0)
+            *pBool = TRUE;
+          else
+            *pBool = FALSE;
+        } else 
+             return FALSE;
+
         return TRUE;
     }
     CcspTraceWarning(("Unsupported parameter AutoExcluded.'%s'\n", ParamName));
@@ -10120,11 +10128,13 @@ AutoExcluded_GetParamStringValue
         /* collect value */
         char buf[64];
         memset(buf, 0 ,sizeof(buf));
-        syscfg_get( NULL, "AutoExcludedURL", buf, sizeof(buf));
-        if( buf != NULL )
+        /* CID: 128900 Array compared against 0
+           CID: 128898 Logically dead code*/
+        if(!syscfg_get( NULL, "AutoExcludedURL", buf, sizeof(buf)))
         {
             AnscCopyString(pValue, buf);
             *pUlSize = AnscSizeOfString( pValue );
+
             return 0;
         }
         return -1;
@@ -10230,9 +10240,8 @@ PeriodicFWCheck_GetParamBoolValue
 		{
 			/* collect value */
 			char buf[8];
-			syscfg_get( NULL, "PeriodicFWCheck_Enable", buf, sizeof(buf));
-	
-			if( buf != NULL )
+                        /* CID: 54518 Array compared against 0*/
+			if(!syscfg_get( NULL, "PeriodicFWCheck_Enable", buf, sizeof(buf)))
 			{
 				if (strcmp(buf, "true") == 0)
 					*pBool = TRUE;
@@ -10357,16 +10366,16 @@ AllowOpenPorts_GetParamBoolValue
         {
             /* collect value */
             char buf[8];
-            syscfg_get( NULL, "RFCAllowOpenPorts", buf, sizeof(buf));
-
-            if( buf != NULL )
+            /* CID: 63052 Array compared against 0*/
+            if(!syscfg_get( NULL, "RFCAllowOpenPorts", buf, sizeof(buf)))
             {
                 if (strcmp(buf, "true") == 0)
                     *pBool = TRUE;
                 else
                     *pBool = FALSE;
-            }
-            return TRUE;
+               return TRUE;
+            } else 
+               return FALSE;
         }
 
     return FALSE;
@@ -10707,40 +10716,46 @@ SNMP_GetParamBoolValue
     if( AnscEqualString(ParamName, "V3Support", TRUE))
     {
         char value[8];
-        syscfg_get(NULL,"V3Support",value, sizeof(value));
-        if( value != NULL )
+        /*CID: 72231 Array compared against 0*/
+        if(!syscfg_get(NULL,"V3Support",value, sizeof(value)))
         {
              if (strcmp(value, "true") == 0)
                  *pBool = TRUE;
              else
                  *pBool = FALSE;
-        }
+        } else 
+           return FALSE;
+
         return TRUE;
     }
     if( AnscEqualString(ParamName, "V2Support", TRUE))
     {
         char value[8];
-        syscfg_get(NULL,"V2Support",value, sizeof(value));
-        if( value != NULL )
+        /*CID:72231 Array compared against 0*/
+        if(!syscfg_get(NULL,"V2Support",value, sizeof(value)))
         {
              if (strcmp(value, "true") == 0)
                  *pBool = TRUE;
              else
                  *pBool = FALSE;
-        }
+        } else 
+            return FALSE;
+
         return TRUE;
     }
     if( AnscEqualString(ParamName, "RestartMaintenanceEnable", TRUE))
     {
         char value[8] = { 0 };
-        syscfg_get(NULL,"SNMP_RestartMaintenanceEnable",value, sizeof(value));
-        if( value[0] != '\0' )
+        /* CID: 72231 Array compared against 0*/
+        if(!syscfg_get(NULL,"SNMP_RestartMaintenanceEnable",value, sizeof(value)))
         {
              if (strcmp(value, "true") == 0)
                  *pBool = TRUE;
              else
                  *pBool = FALSE;
-        }
+        } else 
+            return FALSE;
+
         return TRUE;
     }
 
@@ -11255,7 +11270,6 @@ IPv6onLnF_GetParamBoolValue
 	    syscfg_get( NULL, "iot_ifname", Inf_name, sizeof(Inf_name));
 	    if( Inf_name != NULL )
             {
- 
             
             syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
 
@@ -11854,7 +11868,8 @@ IPv6onLnF_SetParamBoolValue
 				}
 			}
 		    return TRUE;
-	    }
+	    } else  
+               return FALSE;
 
             return TRUE;
         }
@@ -11915,15 +11930,16 @@ IPv6onXHS_GetParamBoolValue
             if (retPsmGet == CCSP_SUCCESS) {
 	    	if( Inf_name != NULL )
             	{
-          
-               	    syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
-	            if( buf != NULL )
+                    /* CID: 68662 Array compared against 0*/ 
+               	    if(!syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf)))
 		    {
 		        if (strstr(buf, Inf_name))
 		            *pBool = TRUE;
 		        else
 		            *pBool = FALSE;
-		    }
+		    } else 
+                       return FALSE;
+
 		    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
 		    return TRUE;
 	        }
@@ -11996,10 +12012,9 @@ IPv6onXHS_SetParamBoolValue
 					if( Inf_name != NULL )
 						{
 			 
-						
-						syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
-
-						if( buf != NULL )
+					        /*CID: 65587 Array compared against 0*/
+                                                /* CID: 53214 Logically dead code*/	
+						if(!syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf)))
 						{
 							if (strstr(buf, Inf_name))
 								bFound = TRUE;
@@ -13511,8 +13526,8 @@ ForwardSSH_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-        syscfg_get( NULL, "ForwardSSH", buf, sizeof(buf));
-	if( buf != NULL )
+         /* CID: 91711 Array compared against 0*/
+        if(!syscfg_get( NULL, "ForwardSSH", buf, sizeof(buf)))
         {
             if (strcmp(buf,"true") == 0)
             {
@@ -14116,8 +14131,9 @@ CDLDM_GetParamStringValue
         /* collect value */
            char buff[255]={'\0'};
 
-           syscfg_get( NULL, "CDLModuleUrl", buff, sizeof(buff));
-           if( buff != NULL )
+           /* CID: 72067 Array compared against 0*/
+           /*CID: 65305 Logically dead code*/
+           if(!syscfg_get( NULL, "CDLModuleUrl", buff, sizeof(buff)))
            {
                 AnscCopyString(pValue,  buff);
                 *pulSize = AnscSizeOfString( pValue );
@@ -15111,7 +15127,6 @@ RDKB_UIBranding_SetParamStringValue
 
             }
 
-    return FALSE;
    }
    return FALSE;
 }
@@ -17100,16 +17115,17 @@ BLE_GetParamBoolValue
     if( AnscEqualString(ParamName, "Discovery", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "BLEDiscovery", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /* CID: 59124 Array compared against 0*/
+        if(!syscfg_get( NULL, "BLEDiscovery", buf, sizeof(buf)))
         {
             if (strcmp(buf, "true") == 0)
                 *pBool = TRUE;
             else
                 *pBool = FALSE;
+           return TRUE;
+        } else {
+           return FALSE;
         }
-        return TRUE;
     }
 
     return FALSE;
@@ -18028,13 +18044,12 @@ MessageBusSource_GetParamBoolValue
         char value[8] = {'\0'};
         if( syscfg_get(NULL, "MessageBusSource", value, sizeof(value)) == 0 )
         {
-            if( value != NULL )
-            {
+            /* CID: 63644 Array compared against 0*/
                  if (strcmp(value, "true") == 0)
                      *pBool = TRUE;
                  else
                      *pBool = FALSE;
-            }
+
             return TRUE;
         }
         else
@@ -18160,15 +18175,13 @@ TR104_GetParamBoolValue
         char value[8] = {'\0'};
         if( syscfg_get(NULL, "TR104Enable", value, sizeof(value)) == 0 )
         {
-            if( value != NULL )
-            {
-                 if (strcmp(value, "true") == 0)
-                     *pBool = TRUE;
-                 else
-                     *pBool = FALSE;
-            }
-            return TRUE;
-        }
+		/* CID: 71977 Array compared against 0*/
+		if (strcmp(value, "true") == 0)
+			*pBool = TRUE;
+		else
+			*pBool = FALSE;
+		return TRUE;
+	}
         else
         {
             CcspTraceError(("syscfg_get failed for TR104Enable\n"));
@@ -19096,14 +19109,13 @@ Telemetry_GetParamBoolValue ( ANSC_HANDLE hInsContext, char* ParamName, BOOL* pB
     if( AnscEqualString(ParamName, "Enable", TRUE)) {
         char value[8] = {'\0'};
         if( syscfg_get(NULL, "T2Enable", value, sizeof(value)) == 0 ) {
-            if( value != NULL ) {
-                 if (strcmp(value, "true") == 0)
-                     *pBool = TRUE;
-                 else
-                     *pBool = FALSE;
-            }
-            return TRUE;
-        } else {
+		/*CID: 60562 Array compared against 0*/
+		if (strcmp(value, "true") == 0)
+			*pBool = TRUE;
+		else
+			*pBool = FALSE;
+		return TRUE;
+	} else {
             CcspTraceError(("syscfg_get failed for MessageBusSource\n"));
         }
     }
@@ -19219,9 +19231,10 @@ Telemetry_GetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* p
     if (AnscEqualString(ParamName, "ConfigURL", TRUE)) {
         /* collect value */
         char buf[128] = {'\0'};
-        syscfg_get(NULL, "T2ConfigURL", buf, sizeof(buf));
-
-        if (buf != NULL) {
+        /* CID: 68487 Array compared against 0*/
+        /* CID: 63245 Logically dead code*/
+        if(!syscfg_get(NULL, "T2ConfigURL", buf, sizeof(buf)))
+        {
             AnscCopyString(pValue, buf);
             return 0;
         }
@@ -19231,9 +19244,9 @@ Telemetry_GetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* p
     if (AnscEqualString(ParamName, "Version", TRUE)) {
         /* collect value */
         char buf[MAX_T2_VER_LEN] = {'\0'};
-        syscfg_get(NULL, "T2Version", buf, sizeof(buf));
-
-        if (buf != NULL) {
+        /* CID: 68487 Array compared against 0*/
+        if(!syscfg_get(NULL, "T2Version", buf, sizeof(buf)))
+        {
             AnscCopyString(pValue, buf);
             return 0;
         }
@@ -19491,16 +19504,17 @@ CaptivePortalForNoCableRF_GetParamBoolValue
  if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 	 char value[8];
-	 syscfg_get(NULL,"enableRFCaptivePortal",value, sizeof(value));
-	 if( value != NULL )
-	 {
+         /* CID: 92210 Array compared against 0*/
+	 if(!syscfg_get(NULL,"enableRFCaptivePortal",value, sizeof(value)))
+         {
 		 if (strcmp(value, "true") == 0)
 			 *pBool = TRUE;
 		 else
-			 *pBool = FALSE;
-	 }
-	 return TRUE;
+	  		 *pBool = FALSE;
+         } else 
+            return FALSE;
 
+	 return TRUE;
     }
 #else
     UNREFERENCED_PARAMETER(ParamName);
@@ -19629,17 +19643,18 @@ SecureWebUI_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "SecureWebUI_Enable", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /* CID: 68633 Array compared against 0*/
+        if(!syscfg_get( NULL, "SecureWebUI_Enable", buf, sizeof(buf)))
         {
             if (strcmp(buf, "true") == 0)
                 *pBool = TRUE;
             else
                 *pBool = FALSE;
+            return TRUE;
+        } else {
+              return FALSE;
         }
-        return TRUE;                }
-
+    }
     return FALSE;
 }
 
@@ -19761,9 +19776,8 @@ ULONG
     {
         /* collect value */
         char buf[64];
-        syscfg_get( NULL, "SecureWebUI_LocalFqdn", buf, sizeof(buf));
-
-        if( buf != NULL )
+         /*CID: 59203 Array compared against 0*/
+        if(!syscfg_get( NULL, "SecureWebUI_LocalFqdn", buf, sizeof(buf)))
         {
             AnscCopyString(pValue, buf);
             return 0;
@@ -19873,15 +19887,18 @@ mTlsDCMUpload_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "mTlsDCMUpload_Enable", buf, sizeof(buf));
-        if( buf != NULL )
+        /* CID: 121005 Array compared against 0*/
+        if(!syscfg_get( NULL, "mTlsDCMUpload_Enable", buf, sizeof(buf)))
         {
             if (strcmp(buf, "true") == 0)
                 *pBool = TRUE;
             else
                 *pBool = FALSE;
-        }
-        return TRUE;                }
+        } else 
+              return FALSE;
+
+        return TRUE;                
+    }
     return FALSE;
 }
 /**********************************************************************
@@ -19977,13 +19994,12 @@ mTlsLogUpload_GetParamBoolValue
     {
         char value[8] = {'\0'};
         if( syscfg_get(NULL, "mTlsLogUpload_Enable", value, sizeof(value)) == 0 ) {
-            if( value != NULL )
-            {
-                if (strncmp(value, "true", sizeof(value)) == 0)
-                    *pBool = TRUE;
-                else
-                    *pBool = FALSE;
-            }
+         /* CID: 133796 Array compared against 0*/
+            if (strncmp(value, "true", sizeof(value)) == 0)
+                 *pBool = TRUE;
+            else
+                 *pBool = FALSE;
+
             return TRUE;
         } else {
               CcspTraceError(("syscfg_get failed for MessageBusSource\n"));
@@ -20084,10 +20100,8 @@ XHFW_GetParamBoolValue ( ANSC_HANDLE hInsContext, char* ParamName, BOOL* pBool)
         char value[8] = {'\0'};
         if( syscfg_get(NULL, "XHFW_Enable", value, sizeof(value)) == 0 )
         {
-            if( value != NULL )
-            {
-                 *pBool = (strcmp(value, "true") == 0) ? TRUE : FALSE;
-            }
+            /* CID: 155008 Array name value  compared against 0*/
+            *pBool = (strcmp(value, "true") == 0) ? TRUE : FALSE;
             return TRUE;
         }
         else
@@ -20213,16 +20227,18 @@ NonRootSupport_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "NonRootSupport", buf, sizeof(buf));
-        if( buf != NULL )
+        /* CID: 139337 Array compared against 0*/
+        if(!syscfg_get( NULL, "NonRootSupport", buf, sizeof(buf)))
         {
-            if (strcmp(buf, "true") == 0)
-                *pBool = TRUE;
-            else
-                *pBool = FALSE;
-        }
+          if (strcmp(buf, "true") == 0)
+            *pBool = TRUE;
+          else
+            *pBool = FALSE;
+        } else 
+             return FALSE;
+
         return TRUE;                
-        }
+     }
     return FALSE;
 }
 /**********************************************************************
@@ -20917,31 +20933,34 @@ EnableOCSPStapling_GetParamBoolValue
     {
         char buf[8];
         /* collect value */
-        syscfg_get( NULL, "EnableOCSPStapling", buf, sizeof(buf));
-
-        if( buf != NULL )
-        {
+        if(!syscfg_get( NULL, "EnableOCSPStapling", buf, sizeof(buf))) {
+        /* CID: 154685 Array compared against 0*/
             if (strcmp(buf, "true") == 0)
                 *pBool = TRUE;
             else
                 *pBool = FALSE;
-        }
-        return TRUE;                }
+        } else 
+           return FALSE;
+
+        return TRUE;                
+    }
 
     if( AnscEqualString(ParamName, "DirectOCSP", TRUE))
     {
         char buf1[8];
         /* collect value */
-        syscfg_get( NULL, "EnableOCSPCA", buf1, sizeof(buf1));
-
-        if( buf1 != NULL )
+        /* CID: 154685 Array compared against 0*/
+        if(!syscfg_get( NULL, "EnableOCSPCA", buf1, sizeof(buf1)))
         {
             if (strcmp(buf1, "true") == 0)
                 *pBool = TRUE;
             else
                 *pBool = FALSE;
-        }
-        return TRUE;                }
+        } else 
+           return FALSE;
+
+        return TRUE;                
+    }
 
     return FALSE;
 }

@@ -1740,6 +1740,9 @@ static int setIfStatus(struct ifreq *pIfr)
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
+    /* CID: 73861 Argument cannot be negative*/
+    if(skfd == -1)
+       return -1;
 
     if (ioctl(skfd, SIOCSIFFLAGS, pIfr) < 0) {
         CcspTraceWarning(("cosa_ethernet_apis.c - setIfStatus: Set interface %s error...\n", pIfr->ifr_name));
@@ -1784,7 +1787,9 @@ PCOSA_DML_ETH_VLAN_TERMINATION_FULL getVlanTermination(const ULONG ulInstanceNum
 static int saveID(char* ifName, char* pAlias, ULONG ulInstanceNumber) {
     UtopiaContext utctx;
     char idStr[COSA_DML_IF_NAME_LENGTH+10] = {0};
-    Utopia_Init(&utctx);
+    /* CID: 58910 Unchecked return value*/
+    if(!Utopia_Init(&utctx))
+       return -1;
 
     sprintf(idStr,"%s,%lu", pAlias,ulInstanceNumber);
     Utopia_RawSet(&utctx,COSA_ETH_INT_ID_SYSCFG_NAMESPACE,ifName,idStr);
@@ -1797,7 +1802,9 @@ static int saveID(char* ifName, char* pAlias, ULONG ulInstanceNumber) {
 /*static int saveLinkID(char* ifName, char* pAlias, ULONG ulInstanceNumber) {
     UtopiaContext utctx;
     char idStr[COSA_DML_IF_NAME_LENGTH+10] = {0};
-    Utopia_Init(&utctx);
+    //CID: 65042 Unchecked return value
+    if(!Utopia_Init(&utctx))
+        return -1;
 
     sprintf(idStr,"%s,%u", pAlias,ulInstanceNumber);
     Utopia_RawSet(&utctx,COSA_ETH_LINK_ID_SYSCFG_NAMESPACE,ifName,idStr);
@@ -1812,7 +1819,9 @@ static int loadID(char* ifName, char* pAlias, ULONG* ulInstanceNumber) {
     char idStr[COSA_DML_IF_NAME_LENGTH+10] = {0};
     char* instNumString;
     int rv;
-    Utopia_Init(&utctx);
+    /*CID: 70909 Unchecked return value*/
+    if(!Utopia_Init(&utctx))
+        return -1;
 
     rv =Utopia_RawGet(&utctx, COSA_ETH_INT_ID_SYSCFG_NAMESPACE, ifName, idStr, sizeof(idStr));
     if (rv == -1 || idStr[0] == '\0') {
@@ -1834,7 +1843,9 @@ static int loadID(char* ifName, char* pAlias, ULONG* ulInstanceNumber) {
     char idStr[COSA_DML_IF_NAME_LENGTH+10] = {0};
     char* instNumString;
     int rv;
-    Utopia_Init(&utctx);
+    //CID: 61200 Unchecked return value
+    if(!Utopia_Init(&utctx))
+       return -1;
 
     rv =Utopia_RawGet(&utctx, COSA_ETH_LINK_ID_SYSCFG_NAMESPACE, ifName, idStr, sizeof(idStr));
     if (rv == -1 || idStr[0] == '\0') {

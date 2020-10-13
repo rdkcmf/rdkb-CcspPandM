@@ -481,12 +481,13 @@ CosaDmlBrgVlanAddEntry
         PCOSA_DML_BRG_VLAN_FULL     pVLAN 
     );
 
+/* CID: 135593 Unrecoverable parse warning*/
 ANSC_STATUS
 CosaDmlBrgVlanDelEntry
     (
         ANSC_HANDLE                 hContext,
         ULONG                       ulBrgInstanceNumber,
-        ULONG                       ulVLANInsNum;
+        ULONG                       ulVLANInsNum
     );
 
 ULONG

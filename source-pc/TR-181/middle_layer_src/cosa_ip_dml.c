@@ -3456,10 +3456,11 @@ IPv6Address_GetParamUlongValue
 #ifndef _COSA_SIM_
         *puLong = CosaDmlIPv6addrGetV6Status(pIPv6Addr, pIPInterface);
         return TRUE;
-#endif
-
+#else
+     /* CID:54363 Structurally dead code*/
 		*puLong = pIPv6Addr->V6Status;
         return TRUE;
+#endif
     }
 
     if( AnscEqualString(ParamName, "Origin", TRUE))
@@ -3565,11 +3566,13 @@ IPv6Address_GetParamStringValue
         else 
             AnscCopyString(pValue, pIPv6Addr->Prefix);
         return 0;
-#endif
+#else
+     /*CID: 69097 Structurally dead code*/
 
 
 		AnscCopyString(pValue, pIPv6Addr->Prefix);
         return 0;
+#endif
     }
 
     if( AnscEqualString(ParamName, "PreferredLifetime", TRUE))
@@ -3942,7 +3945,8 @@ IPv6Address_Validate
     }
 
     /*validate 2 lifetimes*/
-    if (pIPv6Addr->PreferredLifetime && pIPv6Addr->ValidLifetime &&
+    /*CID: 58024 Array compared against 0*/
+    if ( pIPv6Addr->ValidLifetime &&
         CosaDmlDateTimeCompare(pIPv6Addr->PreferredLifetime, pIPv6Addr->ValidLifetime) > 0
         )
     {
@@ -4860,10 +4864,12 @@ IPv6Prefix_SetParamBoolValue
         /*not supported, even for static Prefix, we set Enable always true when adding one entry*/
         return FALSE;
     
-#endif
+#else
+      /* CID: 55375 Structurally dead code*/
 
 		pIPv6Pre->bEnabled = bValue;
         return TRUE;
+#endif
     }
 
     if (pIPv6Pre->Origin != COSA_DML_IP6PREFIX_ORIGIN_Static)
@@ -4876,10 +4882,12 @@ IPv6Prefix_SetParamBoolValue
         /*not supported, even for static Prefix, */
         return FALSE;
     
-#endif
+#else
+      /* CID: 55375 Structurally dead code*/
 
 		pIPv6Pre->bOnlink = bValue;
         return TRUE;
+#endif
     }
 
     if( AnscEqualString(ParamName, "Autonomous", TRUE))
@@ -4889,10 +4897,12 @@ IPv6Prefix_SetParamBoolValue
         /*not supported, even for static Prefix, */
         return FALSE;
     
-#endif
+#else
+     /* CID: 55375 Structurally dead code*/
 
 		pIPv6Pre->bAutonomous = bValue;
         return TRUE;
+#endif
     }
 
 
@@ -5009,10 +5019,12 @@ IPv6Prefix_SetParamUlongValue
         /*not supported*/
         return FALSE;
 
-#endif
+#else
+     /* CID: 73388 Structurally dead code*/
         /* save update to backup */
         pIPv6Pre->StaticType = uValue;
         return TRUE;
+#endif
     }
 
 
@@ -5084,9 +5096,11 @@ IPv6Prefix_SetParamStringValue
         /* save update to backup */
 #ifndef _COSA_SIM_
         return FALSE;
-#endif
+#else
+      /*CID: 61160 Structurally dead code*/
 		AnscCopyString(pIPv6Pre->ParentPrefix, pString);
         return TRUE;
+#endif
     }
 
     if( AnscEqualString(ParamName, "ChildPrefixBits", TRUE))
@@ -5094,9 +5108,11 @@ IPv6Prefix_SetParamStringValue
         /* save update to backup */
 #ifndef _COSA_SIM_
         return FALSE;
-#endif
+#else
+       /*CID: 61160 Structurally dead code*/
 		AnscCopyString(pIPv6Pre->ChildPrefixBits, pString);
         return TRUE;
+#endif
     }
 
     if( AnscEqualString(ParamName, "PreferredLifetime", TRUE))
@@ -5843,7 +5859,8 @@ ActivePort_Synchronize
     }
     
     return returnStatus;
-
+    /* CID: 68242 Structurally dead code*/
+#if 0
     pMyObject->pActivePort     = (PCOSA_DML_IP_ACTIVE_PORT)
                                  AnscAllocateMemory(sizeof(COSA_DML_IP_ACTIVE_PORT)*activePortCount);
     
@@ -5857,6 +5874,7 @@ ActivePort_Synchronize
 
     AnscFreeMemory(pActivePort);
     return returnStatus;
+#endif
 }
 
 /**********************************************************************  

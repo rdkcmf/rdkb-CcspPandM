@@ -96,9 +96,11 @@ ssp_PnmMbi_MessageBusEngage
     
     char PsmName[256];
 
+    /* CID: 67630, 144419  Dereference after null check*/
     if ( ! component_id || ! path )
     {
         CcspTraceError((" !!! ssp_PnmMbi_MessageBusEngage: component_id or path is NULL !!!\n"));
+        return ANSC_STATUS_FAILURE;
     }
 
     /* Connect to message bus */
@@ -947,11 +949,10 @@ ssp_PnmMbi_Initialize
         void * user_data
     )
 {
-    ANSC_STATUS             returnStatus    = ANSC_STATUS_SUCCESS;
     
     printf("In %s()\n", __FUNCTION__);
-    
-    return ( returnStatus == ANSC_STATUS_SUCCESS ) ? 0 : 1;
+    /*CID: 60617 Logically dead code*/   
+    return ANSC_STATUS_SUCCESS; 
 }
 
 int
@@ -960,11 +961,12 @@ ssp_PnmMbi_Finalize
         void * user_data
     )
 {
-    ANSC_STATUS             returnStatus    = ANSC_STATUS_SUCCESS;
 
     printf("In %s()\n", __FUNCTION__);
 
-    return ( returnStatus == ANSC_STATUS_SUCCESS ) ? 0 : 1;
+    /*CID: 61087 Logically dead code*/
+    return ANSC_STATUS_SUCCESS;
+
 }
 
 
@@ -987,10 +989,9 @@ ssp_PnmMbi_FreeResources
         void * user_data
     )
 {
-    ANSC_STATUS             returnStatus    = ANSC_STATUS_SUCCESS;
 
     printf("In %s()\n", __FUNCTION__);
-
-    return ( returnStatus == ANSC_STATUS_SUCCESS ) ? 0 : 1;
+    /*CID: 55217 Logically dead code*/
+    return ANSC_STATUS_SUCCESS;
 }
 

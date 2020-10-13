@@ -130,14 +130,16 @@ DeviceInfo_GetParamBoolValue_Custom
     if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_WiFiNeedsPersonalization",TRUE))
     {
 	    char buf[5];
-        syscfg_get( NULL, "redirection_flag", buf, sizeof(buf));
-    	if( buf != NULL )
+        /*CID: 63071 Array compared against 0*/
+        if(!syscfg_get( NULL, "redirection_flag", buf, sizeof(buf)))
     	{
     		if (strcmp(buf,"true") == 0)
     		        *pBool = TRUE;
     		    else
     		        *pBool = FALSE;
-    	}
+    	} else {
+            return FALSE;
+        }
 	    return TRUE;
     }
 	    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CaptivePortalEnable", TRUE))

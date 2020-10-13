@@ -3944,7 +3944,8 @@ Pool1_AddEntry
 	
 	/* We just have one Pool. Not permit to add/delete. */
 	return NULL;
-	
+   /* CID: 67180 Structurally dead code*/
+#if 0	
 #if defined _COSA_DRG_CNS_  || defined _COSA_DRG_TPG_
     return NULL;
 #endif
@@ -3995,6 +3996,7 @@ EXIT1:
 EXIT2:        
     
     return NULL; /* return the handle */
+#endif
 }
 
 /**********************************************************************  
@@ -4037,7 +4039,8 @@ Pool1_DelEntry
 
 	/* We just have one Pool. Not permit to add/delete. */
 	return ANSC_STATUS_FAILURE;
-
+   /*CID: 57530 Structurally dead code*/
+#if 0
 #if defined _COSA_DRG_CNS_  || defined _COSA_DRG_TPG_
     return ANSC_STATUS_FAILURE;
 #endif
@@ -4063,6 +4066,7 @@ Pool1_DelEntry
     }
     
     return returnStatus;
+#endif
 }
 
 /**********************************************************************  
@@ -5516,6 +5520,8 @@ Client4_Synchronize
         if (  !pCxtLink->pClientContentList )
         {
             CcspTraceWarning(( "Client4_Synchronize -- AnscAllocateMemory error.\n"));
+            /* CID: 54474 Dereference after null check*/
+             return ANSC_STATUS_FAILURE;
         }
 
         pClientContentList = pCxtLink->pClientContentList;
@@ -7254,7 +7260,8 @@ Option4_AddEntry
 
 	/* We just have two option:DNS, domain. Not permit to add/delete. */
 	return NULL;
-
+    /* CID: 74014 Structurally dead code*/
+#if 0
     /* We need ask from backend */
     pDhcpOption  = (PCOSA_DML_DHCPSV6_POOL_OPTION)AnscAllocateMemory( sizeof(COSA_DML_DHCPSV6_POOL_OPTION) );
     if ( !pDhcpOption )
@@ -7299,6 +7306,7 @@ EXIT1:
 EXIT2:   
         
     return NULL;
+#endif
 }
 
 /**********************************************************************  
@@ -7343,7 +7351,8 @@ Option4_DelEntry
 
 	/* We just have two option:DNS, domain. Not permit to add/delete. */
 	return ANSC_STATUS_FAILURE;
-
+    /* CID: 60640 Structurally dead code*/
+#if 0
     if ( !pCxtLink->bNew )
     {
         returnStatus = CosaDmlDhcpv6sDelOption( NULL, pDhcpPool->Cfg.InstanceNumber, pDhcpOption->InstanceNumber );
@@ -7362,7 +7371,7 @@ Option4_DelEntry
     }
     
     return returnStatus;
-        
+#endif   
 }
 
 /**********************************************************************  

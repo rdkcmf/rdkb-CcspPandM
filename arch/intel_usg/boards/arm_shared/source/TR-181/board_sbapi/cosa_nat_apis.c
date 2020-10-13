@@ -2983,9 +2983,7 @@ CosaDmlNatSetPortMapping
         return ANSC_STATUS_SUCCESS;
     }
 #endif
-    CcspTraceWarning(("Nothing to setting in %s\n", __FUNCTION__));
-    Utopia_Free(&Ctx, 0);
-    return ANSC_STATUS_FAILURE;
+    /*CID: 62430 Structurally dead code*/
 }
 #ifdef CONFIG_CISCO_HOME_SECURITY 
 #define HNAP_DHCP_POOL_DM "Device.DHCPv4.Server.Pool.2."

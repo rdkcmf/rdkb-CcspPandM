@@ -60,9 +60,8 @@ VideoService_GetParamBoolValue
     if (AnscEqualString(ParamName, "Enabled", TRUE))
     {
         char buf[5] = {0};
-        syscfg_get( NULL, "X_RDKCENTRAL-COM_VIDEOSERVICE", buf, sizeof(buf));
-        if( buf != NULL )
-        {
+        /* CID: 53679 Array compared against 0*/
+        if (!syscfg_get( NULL, "X_RDKCENTRAL-COM_VIDEOSERVICE", buf, sizeof(buf))) {
                 if (strcmp(buf,"1") == 0)
                 {
                         *pBool = TRUE;
@@ -93,8 +92,8 @@ VideoService_SetParamBoolValue
         if( bValue == TRUE )
         {
             char buf[5] = {0};
-            syscfg_get( NULL, "X_RDKCENTRAL-COM_VIDEOSERVICE", buf, sizeof(buf));
-            if( buf != NULL )
+            /* CID:61652 Array compared against 0*/
+            if(!syscfg_get( NULL, "X_RDKCENTRAL-COM_VIDEOSERVICE", buf, sizeof(buf)))
             {
                     if (strcmp(buf,"1") == 0)
                     {
@@ -113,6 +112,8 @@ VideoService_SetParamBoolValue
                 if (pthread_create(&videoServiceThread, NULL, &SetVideoServiceConfig, NULL))
                 {
                     CcspTraceError(("RDK_LOG_ERROR, CcspPandM %s : Failed to Start Thread to start SetVideoServiceConfig  \n", __FUNCTION__ ));
+                    /* CID: 135259 Missing unlock*/
+                    pthread_mutex_unlock(&g_videoservice_mutex);
                     return FALSE;
                 }
 
@@ -214,8 +215,8 @@ void* SetVideoServiceConfig(void* arg)
     }
 
 
-    syscfg_get( NULL, "moca_enabled", buf, sizeof(buf));
-    if( buf != NULL )
+    /* CID : 71973 Array compared against 0*/
+    if(!syscfg_get( NULL, "moca_enabled", buf, sizeof(buf)))
     {
         if (strcmp(buf,"0") == 0)
         {
@@ -257,6 +258,9 @@ void* SetVideoServiceConfig(void* arg)
                 CcspTraceWarning(("MoCA is being ENABLED when VIDEOSERVICE is ENABLED\n"));
             }
         }
+    } else {
+       CcspTraceError(("RDK_LOG_ERROR,  [%s] syscfg_get failed\n",__FUNCTION__));
+       return NULL;
     }
 
     pthread_mutex_lock(&g_videoservice_mutex);

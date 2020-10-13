@@ -97,7 +97,8 @@ CosaUtilStringToHex
         int           hex_sz 
     )
 {
-    INT   i, index, val = 0;
+    /* CID: 59700, 58220 Uninitialized value*/
+    INT   i = 0, index = 0, val = 0;
     CHAR  byte[3]       = {'\0'};
 
     while(str[i] != '\0')
@@ -271,14 +272,13 @@ CosaUtilGetLowerLayers
 
     while ((pTableStringToken = AnscTcUnlinkToken(pTableListTokenChain)))
     {
-        if ( pTableStringToken->Name )
+        /* CID: 56300 Array compared against 0*/
+        if ( AnscEqualString(pTableStringToken->Name, "Device.Ethernet.Interface.", TRUE ) )
         {
-            if ( AnscEqualString(pTableStringToken->Name, "Device.Ethernet.Interface.", TRUE ) )
-            {
-                ulNumOfEntries =       CosaGetParamValueUlong("Device.Ethernet.InterfaceNumberOfEntries");
+             ulNumOfEntries =       CosaGetParamValueUlong("Device.Ethernet.InterfaceNumberOfEntries");
 
-                for ( i = 0 ; i < ulNumOfEntries; i++ )
-                {
+             for ( i = 0 ; i < ulNumOfEntries; i++ )
+             {
                     ulEntryInstanceNum = CosaGetInstanceNumberByIndex("Device.Ethernet.Interface.", i);
 
                     if ( ulEntryInstanceNum )
@@ -296,10 +296,10 @@ CosaUtilGetLowerLayers
                             break;
                         }
                     }
-                }
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.IP.Interface.", TRUE ) )
-            {
+             }
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.IP.Interface.", TRUE ) )
+        {
                 ulNumOfEntries =       CosaGetParamValueUlong("Device.IP.InterfaceNumberOfEntries");
                 for ( i = 0 ; i < ulNumOfEntries; i++ )
                 {
@@ -321,18 +321,18 @@ CosaUtilGetLowerLayers
                         }
                     }
                 }
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.USB.Interface.", TRUE ) )
-            {
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.HPNA.Interface.", TRUE ) )
-            {
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.DSL.Interface.", TRUE ) )
-            {
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.WiFi.Radio.", TRUE ) )
-            {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.USB.Interface.", TRUE ) )
+        {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.HPNA.Interface.", TRUE ) )
+        {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.DSL.Interface.", TRUE ) )
+        {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.WiFi.Radio.", TRUE ) )
+        {
                 ulNumOfEntries =       CosaGetParamValueUlong("Device.WiFi.RadioNumberOfEntries");
 
                 for (i = 0; i < ulNumOfEntries; i++)
@@ -355,12 +355,12 @@ CosaUtilGetLowerLayers
                         }
                     }
                 }
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.HomePlug.Interface.", TRUE ) )
-            {
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.MoCA.Interface.", TRUE ) )
-            {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.HomePlug.Interface.", TRUE ) )
+        {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.MoCA.Interface.", TRUE ) )
+        {
                 ulNumOfEntries =       CosaGetParamValueUlong("Device.MoCA.InterfaceNumberOfEntries");
 
                 for ( i = 0 ; i < ulNumOfEntries; i++ )
@@ -383,9 +383,9 @@ CosaUtilGetLowerLayers
                         }
                     }
                 }
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.X_CISCO_COM_GRE.Interface.", TRUE ) )
-            {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.X_CISCO_COM_GRE.Interface.", TRUE ) )
+        {
                 ulNumOfEntries =       CosaGetParamValueUlong("Device.X_CISCO_COM_GRE.InterfaceNumberOfEntries");
 
                 for ( i = 0 ; i < ulNumOfEntries; i++ )
@@ -408,18 +408,18 @@ CosaUtilGetLowerLayers
                         }
                     }
                 }
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.UPA.Interface.", TRUE ) )
-            {
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.ATM.Link.", TRUE ) )
-            {
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.PTM.Link.", TRUE ) )
-            {
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.Ethernet.Link.", TRUE ) )
-            {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.UPA.Interface.", TRUE ) )
+        {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.ATM.Link.", TRUE ) )
+        {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.PTM.Link.", TRUE ) )
+        {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.Ethernet.Link.", TRUE ) )
+        {
                 ulNumOfEntries =       CosaGetParamValueUlong("Device.Ethernet.LinkNumberOfEntries");
 
                 for ( i = 0 ; i < ulNumOfEntries; i++ )
@@ -442,12 +442,12 @@ CosaUtilGetLowerLayers
                         }
                     }
                 }
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.Ethernet.VLANTermination.", TRUE ) )
-            {
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.WiFi.SSID.", TRUE ) )
-            {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.Ethernet.VLANTermination.", TRUE ) )
+        {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.WiFi.SSID.", TRUE ) )
+        {
                 parameterValStruct_t varStruct;
                 ulEntryNameLen   = sizeof(ucEntryNameValue);
                 ulNumOfEntries = 0;
@@ -489,9 +489,9 @@ CosaUtilGetLowerLayers
                     ulEntryInstanceNum++;
                     i++;
                 }
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.Bridging.Bridge.", TRUE ) )
-            {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.Bridging.Bridge.", TRUE ) )
+        {
                 ulNumOfEntries =  CosaGetParamValueUlong("Device.Bridging.BridgeNumberOfEntries");
                 CcspTraceInfo(("----------CosaUtilGetLowerLayers, bridgenum:%d\n", ulNumOfEntries));
                 for ( i = 0 ; i < ulNumOfEntries; i++ )
@@ -523,18 +523,17 @@ CosaUtilGetLowerLayers
                         }
                     }
                 }
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.PPP.Interface.", TRUE ) )
-            {
-            }
-            else if ( AnscEqualString(pTableStringToken->Name, "Device.DSL.Channel.", TRUE ) )
-            {
-            }
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.PPP.Interface.", TRUE ) )
+        {
+        }
+        else if ( AnscEqualString(pTableStringToken->Name, "Device.DSL.Channel.", TRUE ) )
+        {
+        }
             
-            if ( pMatchedLowerLayer )
-            {
+        if ( pMatchedLowerLayer )
+        {
                 break;
-            }
         }
 
         AnscFreeMemory(pTableStringToken);
@@ -939,16 +938,15 @@ CosaUtilGetFullPathNameByKeyword
 
     if ( !pTableListTokenChain )
     {
-        return NULL;
+	    return NULL;
     }
 
     while ((pTableStringToken = AnscTcUnlinkToken(pTableListTokenChain)))
     {
-        if ( pTableStringToken->Name )
-        {
-            /* Get the string XXXNumberOfEntries */
-            pString2 = &pTableStringToken->Name[0];
-            pString  = pString2;
+	    /*CID: 62085 Array compared against 0*/
+	    /* Get the string XXXNumberOfEntries */
+	    pString2 = &pTableStringToken->Name[0];
+	    pString  = pString2;
             for (i = 0;pTableStringToken->Name[i]; i++)
             {
                 if ( pTableStringToken->Name[i] == '.' )
@@ -998,7 +996,7 @@ CosaUtilGetFullPathNameByKeyword
             {
                 break;
             }
-        }
+        
 
         AnscFreeMemory(pTableStringToken);
     }
@@ -1083,7 +1081,8 @@ CosaUtilChannelValidate2
     switch(uiRadio)
     {
         case 1:
-             if((Channel < 0) || (Channel > 11))
+             /* CID: 57043 Unsigned compared against 0*/
+             if(Channel > 11)
                 return 0;
              return 1;
         case 2:
@@ -1613,10 +1612,8 @@ int CosaUtilGetIpv6AddrInfo (char * ifname, ipv6_addr_info_t ** pp_info, int * p
             CcspTraceInfo(("%s,Interface scope is : %d\n",__FUNCTION__,v6Details.scopeofipv6));           
  
             memset(p_ai->v6pre, 0, sizeof(p_ai->v6pre));
-            if(v6Details.prefix_v6)
-                 strcpy(p_ai->v6pre,v6Details.prefix_v6);
-            else
-                CcspTraceInfo(("%s,Interface ipv6 prefix is NULL\n",__FUNCTION__));
+            /*CID: 64940 Array compared against 0*/
+            strcpy(p_ai->v6pre,v6Details.prefix_v6);
 
             sprintf(p_ai->v6pre+strlen(p_ai->v6pre), ":/%d", v6Details.bitsToMask);
             

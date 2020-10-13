@@ -6083,6 +6083,8 @@ Client4_Synchronize
         if (  !pCxtLink->pClientContentList )
         {
             CcspTraceWarning(( "Client4_Synchronize -- AnscAllocateMemory error.\n"));
+             /* CID: 54474 Dereference after null check*/
+             return ANSC_STATUS_FAILURE;
         }
 
         pClientContentList = pCxtLink->pClientContentList;

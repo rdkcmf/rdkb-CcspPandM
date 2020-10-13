@@ -557,8 +557,10 @@ CosaIFStackCreateAll
             /* To get like .Port */
             pEnd = pEnd + 4;
 
-            AnscZeroMemory(ucEntryFullPath, 256);  
-            AnscCopyMemory(ucEntryFullPath, pEnd,  AnscSizeOfString((const char*)pEnd)-1);
+            AnscZeroMemory(ucEntryFullPath, 256); 
+            /*CID: 71557 Dereference after null check*/
+            if(pEnd) 
+               AnscCopyMemory(ucEntryFullPath, pEnd,  AnscSizeOfString((const char*)pEnd)-1);
 
             /* To get like Device.Bridging.BridgeNumberOfEntries */
             _ansc_strcat(ucTableParam, "NumberOfEntries");  

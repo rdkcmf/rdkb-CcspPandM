@@ -1554,7 +1554,12 @@ void test_get_proc_info()
 {
      PCOSA_DATAMODEL_PROCSTATUS p_info = (PCOSA_DATAMODEL_PROCSTATUS)CosaProcStatusCreate();
 
-     if (p_info)  COSADmlGetProcessInfo(p_info);
+     if (p_info) {
+         COSADmlGetProcessInfo(p_info);
+         /*CID: 57768 Resource leak*/
+         COSADmlRemoveProcessInfo(p_info);
+     }
+
 }
 
 typedef  struct
@@ -1737,9 +1742,9 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
      else if(AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FreeMemThreshold", TRUE))
      {
 	char buf[10];
-	memset(buf,0,sizeof(buf));
-        syscfg_get( NULL, "MinMemoryThreshold_Value", buf, sizeof(buf));
-        if( buf != NULL )
+	memset(buf,0, sizeof(buf));
+        /* CID:56435 Array compared against 0*/
+        if(!syscfg_get( NULL, "MinMemoryThreshold_Value", buf, sizeof(buf)))
         {
             return atoi(buf);
         }
@@ -1900,8 +1905,8 @@ CosaDmlDiGetProcessorSpeed
         AnscCopyString(pValue, pcur);   
        }     
     }
-
 #endif
+    
     if(fp != NULL) {
         v_secure_pclose(fp);
 	fp = NULL;
@@ -2010,16 +2015,16 @@ CosaDmlDiSetAndProcessDhcpServDetectionFlag
 int getRebootCounter()
 {       
         char buf[8];
-		syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf, sizeof(buf));
-    	    if( buf != NULL )
-    		{
-    		    return atoi(buf);
-	   		}
-	   		else
-	   		{
-	   		    AnscTraceWarning(("syscfg_get failed\n"));
-	   		    return -1;
-	   		}
+                /* CID: 74840 Array compared against 0*/
+		if(!syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf, sizeof(buf)))
+                {
+                    return atoi(buf);
+                }
+                else
+                {
+                     AnscTraceWarning(("syscfg_get failed\n"));
+                     return -1;
+                }
 	   		
 }
 
@@ -2407,14 +2412,11 @@ ANSC_STATUS fillCurrentPartnerId
 	memset(buf, 0, sizeof(buf));
     if(ANSC_STATUS_SUCCESS == syscfg_get( NULL, "PartnerID", buf, sizeof(buf)))
     {
-   		if( buf != NULL )
-   		{
- 			strncpy(pValue ,buf,strlen(buf));
-            *pulSize = AnscSizeOfString(pValue);
-			return ANSC_STATUS_SUCCESS;
-   		}
-		else
-			return ANSC_STATUS_FAILURE;
+         /* CID:66248 Array compared against 0*/
+         /*CID: 56187 Logically dead code*/
+ 	 strncpy(pValue ,buf,strlen(buf));
+         *pulSize = AnscSizeOfString(pValue);
+         return ANSC_STATUS_SUCCESS;
     }
 	else
 		return ANSC_STATUS_FAILURE;
@@ -2772,30 +2774,24 @@ CosaDmlDiUniqueTelemetryIdInit
 
     if (syscfg_get(NULL, "unique_telemetry_enable", buf, sizeof(buf)) == 0)
     {
-        if (buf != NULL)
-        {
+            /*CID: 64386 Array compared against 0*/
             PUniqueTelemetryId->Enable = (strcmp(buf,"true") ? FALSE : TRUE);
-        }
     }
 
     memset(buf, 0, sizeof(buf));
 
     if (syscfg_get(NULL, "unique_telemetry_tag", buf,  sizeof(buf) ) == 0)
     {
-	if (buf != NULL)
-	{
+            /*CID: 64386 Array compared against 0*/
     	    AnscCopyString(PUniqueTelemetryId->TagString, buf);
-	}
     }
 
     memset(buf, 0, sizeof(buf));
 
     if (syscfg_get( NULL, "unique_telemetry_interval", buf, sizeof(buf)) == 0)
     {
-        if (buf != NULL)
-        {
+            /*CID: 64386 Array compared against 0*/
             PUniqueTelemetryId->TimingInterval =  atoi(buf);
-        }
     }
     
     return ANSC_STATUS_SUCCESS;
@@ -2883,6 +2879,11 @@ CosaDmlDiUiBrandingInit
 	 
 	 fseek( fileRead, 0, SEEK_END );
 	 len = ftell( fileRead );
+         if (len < 0) {
+            fclose( fileRead );
+            CcspTraceWarning(("%s-%d : File handle error\n" , __FUNCTION__, __LINE__ ));
+            return ANSC_STATUS_FAILURE;
+         }
 	 fseek( fileRead, 0, SEEK_SET );
 	 data = ( char* )malloc( sizeof(char) * (len + 1) );
 	 if (data != NULL) 
@@ -2898,7 +2899,8 @@ CosaDmlDiUiBrandingInit
 	 }
 	 
 	 fclose( fileRead );
-	 
+         /* CID: 135572 String not null terminated*/
+	 data[len] = '\0'; 
 	 if ( data == NULL )
 	 {
 		CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
@@ -2936,9 +2938,8 @@ CosaDmlDiUiBrandingInit
 		}
 		free(data);
 		data = NULL;
-
-		syscfg_get(NULL,"AllowEthernetWAN",buf, sizeof(buf));
-		if( buf != NULL )
+                /* CID: 63746 Array compared against 0*/
+		if(!syscfg_get(NULL,"AllowEthernetWAN",buf, sizeof(buf)))
 		{
 			if (strcmp(buf, "true") == 0)
 			{
@@ -2953,6 +2954,9 @@ CosaDmlDiUiBrandingInit
 	 else
 	 {
 		CcspTraceWarning(("BOOTSTRAP_INFO_FILE %s is empty\n", BOOTSTRAP_INFO_FILE));
+                /*CID: 71167 Resource leak*/
+                if (data)
+                    free(data);
 		return ANSC_STATUS_FAILURE;
 	 }
 	 return ANSC_STATUS_SUCCESS;
@@ -3513,6 +3517,12 @@ ANSC_STATUS UpdateJsonParamLegacy
 	 
 	 fseek( fileRead, 0, SEEK_END );
 	 len = ftell( fileRead );
+         /* CID: 55623 Argument cannot be negative*/
+         if(len < 0) {
+               CcspTraceWarning(("%s-%d : Error in file handle\n" , __FUNCTION__, __LINE__ ));
+               fclose( fileRead );
+               return ANSC_STATUS_FAILURE;
+         }
 	 fseek( fileRead, 0, SEEK_SET );
 	 data = ( char* )malloc( sizeof(char) * (len + 1) );
 	 if (data != NULL) 
@@ -3528,6 +3538,8 @@ ANSC_STATUS UpdateJsonParamLegacy
 	 }
 	 
 	 fclose( fileRead );
+         /* CID: 135238 String not null terminated*/
+         data[len]='\0';
 	 if ( data == NULL )
 	 {
 		CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
@@ -3587,6 +3599,9 @@ ANSC_STATUS UpdateJsonParamLegacy
 	  else
 	  {
 		CcspTraceWarning(("PARTNERS_INFO_FILE %s is empty\n", PARTNERS_INFO_FILE));
+                /* CID: 65542 Resource leak*/
+                if (data)
+                   free(data);
 		return ANSC_STATUS_FAILURE;
 	  }
 	 return ANSC_STATUS_SUCCESS;
@@ -3617,6 +3632,12 @@ ANSC_STATUS UpdateJsonParam
 	 
 	 fseek( fileRead, 0, SEEK_END );
 	 len = ftell( fileRead );
+         /* CID: 56120 Argument cannot be negative*/
+         if (len < 0) {
+             CcspTraceWarning(("%s-%d : Error in File handle\n" , __FUNCTION__, __LINE__ ));
+             fclose( fileRead );
+             return ANSC_STATUS_FAILURE;
+         }
 	 fseek( fileRead, 0, SEEK_SET );
 	 data = ( char* )malloc( sizeof(char) * (len + 1) );
 	 if (data != NULL) 
@@ -3632,6 +3653,8 @@ ANSC_STATUS UpdateJsonParam
 	 }
 	 
 	 fclose( fileRead );
+         /* CID:135285 String not null terminated*/
+         data[len] = '\0';
 	 if ( data == NULL )
 	 {
 		CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
@@ -4004,6 +4027,11 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 		  IsDelayValid		= FALSE;
         char *st = NULL;
 	CcspTraceWarning(("%s %d - String :%s", __FUNCTION__, __LINE__, ( pValue != NULL ) ?  pValue : "NULL" ));
+
+        /*CID: 61097 Dereference before null check*/
+        if (!pValue)
+            return FALSE;
+        
 	if (strcasestr(pValue, "delay=")) {
 		IsDelayValid = TRUE;
 	}
@@ -4058,6 +4086,10 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 			strcpy( tmpCharBuffer,	pValue );
 			subStringForDelay       = strtok_r( tmpCharBuffer, " ", &st );
 			subStringForDummy   = strtok_r( NULL, " ", &st );
+
+                        /* CID: 74460 Dereference before null check*/
+                        if(!subStringForDelay)
+                           return FALSE;
 			if ( strcasestr(subStringForDelay, "delay="))
 			{
 				if ( subStringForDummy != NULL )
@@ -4084,6 +4116,10 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 			strcpy( tmpCharBuffer,	pValue );
 			subStringForSource   = strtok_r( tmpCharBuffer, " ", &st );
 			subStringForDummy   = strtok_r( NULL, " ", &st );
+
+                        /*CID: 55040 Dereference before null check*/
+                        if(!subStringForSource)
+                            return FALSE;
 			if ( strcasestr(subStringForSource, "source="))
 			{
 				if ( subStringForDummy != NULL )
@@ -4112,6 +4148,11 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 			if ( (strcasestr(subStringForDelay, "delay="))  || (strcasestr(subStringForDelay, "source=")) )
 			{
 				subStringForSource = strtok_r( NULL, " ", &st );
+
+                                /* CID: 55040 Dereference before null check*/
+                                if(!subStringForSource)
+                                    return FALSE;
+
 				if ( (strcasestr(subStringForSource, "delay="))  || (strcasestr(subStringForSource, "source=")) )
 				{
 					subStringForDummy   = strtok_r( NULL, " ", &st );
@@ -4147,8 +4188,8 @@ CosaDmlDiSyndicationFlowControlInit
   )
 {
     char buf[64] = {0};
-    syscfg_get(NULL,"SyndicationFlowControlEnable",buf, sizeof(buf));
-    if( buf != NULL )
+    /* CID: 73135 Array compared against 0*/
+    if(!syscfg_get(NULL,"SyndicationFlowControlEnable",buf, sizeof(buf)))
     {
         if (strcmp(buf, "true") == 0)
         {
@@ -4258,6 +4299,13 @@ RfcJsonInit
 
     fseek( fileRead, 0, SEEK_END );
     len = ftell( fileRead );
+    /* CID: 128847 Argument cannot be negative*/
+    if (len < 0) {
+       CcspTraceWarning(("%s-%d : Error in file handle\n" , __FUNCTION__, __LINE__ ));
+       fclose( fileRead );
+       return ANSC_STATUS_FAILURE;
+    }
+
     fseek( fileRead, 0, SEEK_SET );
     data = ( char* )malloc( sizeof(char) * (len + 1) );
     if (data != NULL)
@@ -4273,7 +4321,8 @@ RfcJsonInit
     }
 
     fclose( fileRead );
-
+    /*CID: 140452 String not null terminated*/
+    data[len] = '\0';
     if ( data == NULL )
     {
          CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
@@ -4414,6 +4463,12 @@ ApplyNTPPartnerDefaults()
     }
     fseek( fileRead, 0, SEEK_END );
     len = ftell( fileRead );
+    /* CID: 58127 Argument cannot be negative*/
+    if (len < 0) {
+        CcspTraceWarning(("%s-%d : Error in file handle\n" , __FUNCTION__, __LINE__ ));
+        fclose( fileRead );
+        return ANSC_STATUS_FAILURE;
+    }
     fseek( fileRead, 0, SEEK_SET );
     data = ( char* )malloc( sizeof(char) * (len + 1) );
     if (data != NULL)
@@ -4429,6 +4484,8 @@ ApplyNTPPartnerDefaults()
     }
 
     fclose( fileRead );
+    /* CID: 135336 String not null terminated*/
+    data[len] ='\0';
     if ( data == NULL )
     {
           CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
@@ -4494,6 +4551,9 @@ ApplyNTPPartnerDefaults()
              cJSON_Delete(json);
          }
     }
+    /*58557 Resource leak*/
+    if(data)
+      free(data);
     return ANSC_STATUS_FAILURE;
 }
 ANSC_STATUS

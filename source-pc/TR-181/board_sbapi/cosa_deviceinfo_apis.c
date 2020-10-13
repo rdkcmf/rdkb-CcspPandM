@@ -859,7 +859,12 @@ void test_get_proc_info()
 {
      PCOSA_DATAMODEL_PROCSTATUS p_info = (PCOSA_DATAMODEL_PROCSTATUS)CosaProcStatusCreate();
 
-     if (p_info)  COSADmlGetProcessInfo(p_info);
+     if (p_info) {
+         COSADmlGetProcessInfo(p_info);
+         /*CID: 57768 Resource leak*/
+         COSADmlRemoveProcessInfo(p_info);
+     }
+
 }
 
 typedef  struct
@@ -1091,8 +1096,8 @@ isValidInput
 int getRebootCounter()
 {   
         char buf[8];
-	_get_db_value(SYSCFG_FILE, buf, sizeof(buf), "X_RDKCENTRAL-COM_LastRebootCounter");
-	if( buf != NULL )
+        /* CID: 74840 Array compared against 0*/
+	if((_get_db_value(SYSCFG_FILE, buf, sizeof(buf), "X_RDKCENTRAL-COM_LastRebootCounter") == 0))
     	{
     		return atoi(buf);
 	}
@@ -2087,6 +2092,13 @@ ANSC_STATUS UpdateJsonParam
 
          fseek( fileRead, 0, SEEK_END );
          len = ftell( fileRead );
+         /* CID: 56120 Argument cannot be negative*/
+         if (len < 0) {
+             CcspTraceWarning(("%s-%d : Error in File handle\n" , __FUNCTION__, __LINE__ ));
+             fclose( fileRead );
+             return ANSC_STATUS_FAILURE;
+         }
+
          fseek( fileRead, 0, SEEK_SET );
          data = ( char* )malloc( sizeof(char) * (len + 1) );
          if (data != NULL)
@@ -2102,6 +2114,8 @@ ANSC_STATUS UpdateJsonParam
          }
 
          fclose( fileRead );
+         /* CID:135285 String not null terminated*/
+         data[len] = '\0';
 
 	  if ( data == NULL )
 	  {
@@ -2161,6 +2175,10 @@ ANSC_STATUS UpdateJsonParam
 	  else
 	  {
 		printf("PARTNERS_INFO_FILE %s is empty\n", PARTNERS_INFO_FILE);
+                /* CID: 72622 Resource leak*/
+                if(data)
+                   free(data);
+
 		return ANSC_STATUS_FAILURE;
 	  }
          return ANSC_STATUS_SUCCESS;
@@ -2233,6 +2251,9 @@ CosaDmlDiUiBrandingInit
 
 	 fclose( fileRead );
 
+         /* CID: 135572 String not null terminated*/
+         data[len] = '\0';
+
 	 if ( data == NULL )
 	 {
 		printf("%s-%d : fileRead failed\n" , __FUNCTION__, __LINE__ );
@@ -2271,6 +2292,9 @@ CosaDmlDiUiBrandingInit
 	 else
 	 {
 		printf("PARTNERS_INFO_FILE %s is empty\n", PARTNERS_INFO_FILE);
+                /*CID: 71167 Resource leak*/
+                if (data)
+                    free(data);
 		return ANSC_STATUS_FAILURE;
 	 }
          return ANSC_STATUS_SUCCESS;

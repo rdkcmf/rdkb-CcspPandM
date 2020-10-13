@@ -860,7 +860,8 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
         }
 
         fprintf(fp, "router rip\n");
-        fprintf(fp, " version %s\n", (pConf->Version==COSA_RIP_VERSION_1)?"1":((pConf->Version==COSA_RIP_VERSION_2)?"2":"2") );
+        /* CID: 58193 Identical code for different branches*/
+        fprintf(fp, " version %s\n", (pConf->Version==COSA_RIP_VERSION_1)?"1":((pConf->Version==COSA_RIP_VERSION_2)?"2":"1 2") );
         fprintf(fp, " timers basic %lu %lu %lu\n", pConf->UpdateTime, pConf->TimoutTime, pConf->CollectionTime);
         fprintf(fp, " default-metric %lu\n", pConf->DefaultMetric );
         fprintf(fp, " no redistribute connected\n");
@@ -3614,11 +3615,9 @@ CosaDmlRoutingGetNumberOfV4Entries
 
     /* Free Utopia Context */
     Utopia_Free(&ctx,0);
-
-    if (rc != 0)
-        return 0;
-    else
-        return Num_V4Entry;
+    /* CID: 63127 'Constant' variable guards dead code*/
+        
+    return Num_V4Entry;
 }
 
 /**********************************************************************
@@ -4008,7 +4007,8 @@ CosaDmlRoutingDelV4Entry
         return ANSC_STATUS_FAILURE;
     }
 
-    if (pEntry->InstanceNumber == 0 || pEntry->Alias == NULL)
+    /* CID: 68647 Array compared against 0*/
+    if (pEntry->InstanceNumber == 0)
         return ANSC_STATUS_FAILURE;
 
     CcspTraceWarning(("CosaDmlRoutingDelV4Entry entry, %d\n", pEntry->InstanceNumber));
@@ -4118,8 +4118,8 @@ CosaDmlRoutingSetV4Entry
     {
         return ANSC_STATUS_FAILURE;
     }
-
-    if (pEntry->InstanceNumber == 0 || pEntry->Alias == NULL)
+    /*CID: 60087 Array compared against 0*/
+    if (pEntry->InstanceNumber == 0)
         return ANSC_STATUS_FAILURE;
 
     /* Initialize a Utopia Context */
@@ -5599,7 +5599,10 @@ static int _routeinfo_get_lft(char * prefix, char * lft_str, int lft_str_size)
         fclose(fp);
     }
 
-    remove(TMP_ROUTEINFO_OUTPUT);
+    /*CID:65634 Unchecked return value from library*/
+    if(remove(TMP_ROUTEINFO_OUTPUT) != 0)
+     CcspTraceWarning (("%s: Unable to delete a file.", __FUNCTION__));
+
     return found;
 }
 

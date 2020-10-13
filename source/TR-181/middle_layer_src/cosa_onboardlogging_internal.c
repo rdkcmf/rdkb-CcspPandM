@@ -144,12 +144,17 @@ static int getValueFromDevicePropsFile(char *str, char **value)
                 tempStr = strstr( buf, "=" );
                 tempStr++;
                 *value = tempStr;
+                /*CID: 72878 Resource leak*/
+                fclose(fp);
                 return 0;
             }
         }
         if( NULL == *value)
         {
             CcspTraceError(("%s is not present in device.properties file\n",str));
+             /*CID: 72878 Resource leak*/
+             fclose(fp);
+
             return -1;
         }
     }
@@ -158,6 +163,9 @@ static int getValueFromDevicePropsFile(char *str, char **value)
         CcspTraceError(("Failed to open file:%s\n", DEVICE_PROPS_FILE));
         return -1;
     }
+    /*CID: 72878 & 75108  Resource leak & Missing return statement*/
+    if(fp)
+      fclose(fp);
     return 0;
 }
 #endif

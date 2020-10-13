@@ -197,12 +197,12 @@ int process_webcfgparam( webcfgparam_t *pm,int num, ...)
         
         pm->entries_count = array->size;
        
-        va_end(valist);
 
         pm->entries = (wparam_t *) malloc( sizeof(wparam_t) * pm->entries_count );
         if( NULL == pm->entries )
         {
             pm->entries_count = 0;
+            va_end(valist);
             return -1;
         }
 
@@ -215,15 +215,19 @@ int process_webcfgparam( webcfgparam_t *pm,int num, ...)
             {
                 printf("Inside PM invalid");
                 errno = PM_INVALID_PM_OBJECT;
+                va_end(valist);
                 return -1;
             }
             if( 0 != process_params(&pm->entries[i], &array->ptr[i].via.map) )
             {
 		printf("process_params failed\n");
+                va_end(valist);
                 return -1;
             }
         }
     }
-
+    /*CID: 143641 Missing varargs init or cleanup*/
+    va_end(valist);
+    
     return 0;
 }

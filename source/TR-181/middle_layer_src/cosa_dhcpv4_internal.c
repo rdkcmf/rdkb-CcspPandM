@@ -3326,35 +3326,23 @@ EXIT1:
     if ( pPoamIrepFoEnumClient )
         pPoamIrepFoEnumClient->Remove((ANSC_HANDLE)pPoamIrepFoEnumClient);
 
-    if ( pPoamIrepFoReqOpt)
-        pPoamIrepFoReqOpt->Remove((ANSC_HANDLE)pPoamIrepFoReqOpt);
-
-    if ( pPoamIrepFoEnumReqOpt )
-        pPoamIrepFoEnumReqOpt->Remove((ANSC_HANDLE)pPoamIrepFoEnumReqOpt);
-
-    if ( pPoamIrepFoSndOpt)
-        pPoamIrepFoSndOpt->Remove((ANSC_HANDLE)pPoamIrepFoSndOpt);
+     /*CID 53921,66535,59843, 58572,73009,72655,53404 Logically dead code -
+      goto EXIT only hit in NULL Case*/
 
     if ( pPoamIrepFoEnumSndOpt)
         pPoamIrepFoEnumSndOpt->Remove((ANSC_HANDLE)pPoamIrepFoEnumSndOpt);
 #endif
+
     if ( pPoamIrepFoPool)
         pPoamIrepFoPool->Remove((ANSC_HANDLE)pPoamIrepFoPool);
 
     if ( pPoamIrepFoEnumPool)
         pPoamIrepFoEnumPool->Remove((ANSC_HANDLE)pPoamIrepFoEnumPool);
     
-    if ( pPoamIrepFoStaticAddress)
-        pPoamIrepFoStaticAddress->Remove((ANSC_HANDLE)pPoamIrepFoStaticAddress);
 
     if ( pPoamIrepFoEnumStaticAddress)
         pPoamIrepFoEnumStaticAddress->Remove((ANSC_HANDLE)pPoamIrepFoEnumStaticAddress);
     
-    if ( pPoamIrepFoOption)
-        pPoamIrepFoOption->Remove((ANSC_HANDLE)pPoamIrepFoOption);
-
-    if ( pPoamIrepFoEnumOption)
-        pPoamIrepFoEnumOption->Remove((ANSC_HANDLE)pPoamIrepFoEnumOption);
 
     pPoamIrepFoDhcpv4->EnableFileSync((ANSC_HANDLE)pPoamIrepFoDhcpv4, TRUE);
 

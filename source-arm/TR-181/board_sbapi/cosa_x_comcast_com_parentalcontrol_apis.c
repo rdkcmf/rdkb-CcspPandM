@@ -1321,7 +1321,9 @@ int delBlkUrl()
 	int i = 0;
 	int rc = -1;
 	UtopiaContext ctx;
-	Utopia_Init(&ctx);
+        /* CID: 59086 Unchecked return value*/
+	if(!Utopia_Init(&ctx))
+           return rc;
 	for(i = 0;i<dCnt;i++)
 	{
 		
@@ -1353,8 +1355,9 @@ ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
     for(index = 0;index < nCount; index++)
     {
 
-     
-	 Utopia_Init(&ctx);
+       /*CID: 55473 Unchecked return value*/
+	 if(!Utopia_Init(&ctx))
+            return ANSC_STATUS_FAILURE;
      AnscTraceWarning(("<<< %s -- Call GetBlkURLByIndex %d ...\n", __FUNCTION__,index));
 	 if(ChkDelIndex(index))
 	 {
@@ -1571,7 +1574,9 @@ for(index = 0;index < g_NrBlkURL; index++)
     }
  if(g_NrBlkURL)
 	{
-	   Utopia_Init(&ctx);
+           /* CID: 63902 Unchecked return value*/
+	   if(!Utopia_Init(&ctx))
+              return ANSC_STATUS_FAILURE;
        rc = Utopia_GetNumberOfBlkURL(&ctx, &g_NrBlkURL);
 	   AnscTraceWarning(("%s -- Converted g_NrBlkURL = %d ...\n", __FUNCTION__,g_NrBlkURL));
        Utopia_Free(&ctx, !rc);
@@ -1609,9 +1614,8 @@ CosaDmlBlkURL_GetEntryByIndex(ULONG index, COSA_DML_BLOCKEDURL *pEntry)
     _ansc_strncpy(pEntry->EndTime, blkurl.end_time, sizeof(pEntry->EndTime));
     _ansc_strncpy(pEntry->BlockDays, blkurl.block_days, sizeof(pEntry->BlockDays));
     AnscTraceWarning(("%s-%d RDKB_PCONTROL[URL]:%lu,%s\n", __FUNCTION__, __LINE__, pEntry->InstanceNumber,pEntry->Site));
-    if(pEntry->StartTime != NULL)
+    /* CID: 71902 Array compared against 0*/
         pEntry->StartTimeFlg = TRUE;
-    if(pEntry->EndTime != NULL)
         pEntry->EndTimeFlg = TRUE;
 
 #if defined(CONFIG_CISCO_FEATURE_CISCOCONNECT) 
@@ -2068,7 +2072,9 @@ int delMSServ()
 	int i = 0;
 	int rc = -1;
 	UtopiaContext ctx;
-	Utopia_Init(&ctx);
+        /*CID: 72810 Unchecked return value*/
+	if(!Utopia_Init(&ctx))
+             return rc;
 	for(i = 0;i<dCnt;i++)
 	{
 		
@@ -2096,7 +2102,9 @@ ANSC_STATUS CosaDmlMSServ_RollbackUTCtoLocal()
 AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
 for(index = 0;index < g_NrMSServs; index++)
     {
-     Utopia_Init(&ctx);
+     /*CID: 52932 Unchecked return value*/
+     if(!Utopia_Init(&ctx))
+        return ANSC_STATUS_FAILURE;
 
      AnscTraceWarning(("<<< %s -- Call Utopia_GetMSServByIndex %d ...\n", __FUNCTION__,index));
 	 if(ChkDelIndex(index))
@@ -2305,7 +2313,9 @@ for(index = 0;index < g_NrMSServs; index++)
     }
  if(g_NrMSServs)
 	{
-	   Utopia_Init(&ctx);
+           /*CID: 72126 Unchecked return value*/
+	   if(!Utopia_Init(&ctx))
+               return ANSC_STATUS_FAILURE;
        rc = Utopia_GetNumberOfBlkURL(&ctx, &g_NrMSServs);
 	   AnscTraceWarning(("%s -- Converted g_NrMSServs = %d ...\n", __FUNCTION__,g_NrMSServs));
        Utopia_Free(&ctx, !rc);
@@ -2745,7 +2755,9 @@ int delMDDev()
 	int i = 0;
 	int rc = -1;
 	UtopiaContext ctx;
-	Utopia_Init(&ctx);
+        /*CID: 66110 Unchecked return value*/
+	if(!Utopia_Init(&ctx))
+           return rc;
 	for(i = 0;i<dCnt;i++)
 	{
 		
@@ -2774,7 +2786,9 @@ ANSC_STATUS CosaDmlMDDev_RollbackUTCtoLocal()
 for(index = 0;index < g_NrMDDevs; index++)
     {
 
-	Utopia_Init(&ctx);
+        /*CID: 68927 Unchecked return value*/
+	if(!Utopia_Init(&ctx))
+           return ANSC_STATUS_FAILURE;
      AnscTraceWarning(("<<< %s -- Call Utopia_GetMDDevByIndex %d ...\n", __FUNCTION__,index));
 	 if(ChkDelIndex(index))
 	 {
@@ -2982,7 +2996,9 @@ for(index = 0;index < g_NrMDDevs; index++)
     }
  if(g_NrMDDevs)
 	{
-	   Utopia_Init(&ctx);
+           /* CID: 55877 Unchecked return value*/
+	   if(!Utopia_Init(&ctx))
+              return ANSC_STATUS_FAILURE;
        rc = Utopia_GetNumberOfMDDev(&ctx, &g_NrMDDevs);
 	   AnscTraceWarning(("%s -- Converted g_NrMDDevs = %d ...\n", __FUNCTION__,g_NrMDDevs));
        Utopia_Free(&ctx, !rc);

@@ -263,7 +263,8 @@ int usg_cpe_from_moca(char *pMac)
     moca_GetMocaCPEs(0, cpes, &n);
     printf("");
     for(i=0;i<n;i++){
-        printf("MAC[%d]-> %02x:02x:02x:02x:02x:02x\n", cpes[i].mac_addr[0],cpes[i].mac_addr[1],cpes[i].mac_addr[2],
+         /* CID: 159982, 124939 Printf arg count mismatch*/
+        printf("MAC[%d]-> %02x:02x:02x:02x:02x:02x\n",i, cpes[i].mac_addr[0],cpes[i].mac_addr[1],cpes[i].mac_addr[2],
                 cpes[i].mac_addr[3],cpes[i].mac_addr[4],cpes[i].mac_addr[5]);
         if(!memcmp(macArray,cpes[i].mac_addr,6))
             return(1);
@@ -361,8 +362,8 @@ static void insert_wifi_client(const char *pMac, const char *pSsid, const ULONG 
     ULONG hashIndex; 
 
     string_tolower(pMac);
-
-    hashIndex = AnscHashString(pMac, sizeof(pMac), WIFI_CLIENT_MAXIMUM);
+    /*CID:71545 Wrong sizeof argument*/
+    hashIndex = AnscHashString(pMac, strlen(pMac), WIFI_CLIENT_MAXIMUM);
 
     wifi_client_t *pNewClient = AnscAllocateMemory(sizeof(wifi_client_t));
     if (!pNewClient){
@@ -382,7 +383,8 @@ static void insert_wifi_client(const char *pMac, const char *pSsid, const ULONG 
 
 static wifi_client_t* lookup_wifi_client(const char *pMac)
 {
-    ULONG hashIndex = AnscHashString(pMac, sizeof(pMac), WIFI_CLIENT_MAXIMUM);
+    /* CID:55477 Wrong sizeof argument*/
+    ULONG hashIndex = AnscHashString(pMac, strlen(pMac), WIFI_CLIENT_MAXIMUM);
     PSINGLE_LINK_ENTRY pSLinkEntry = NULL;
     wifi_client_t *pClient = NULL;
 
@@ -469,7 +471,8 @@ int usg_get_cpe_associated_ssid(void *arg)
 
     while(1){
 reopen:
-        fd = open(WIFI_CLIENTS_MAC_FILE, O_CREAT|O_WRONLY|O_TRUNC);
+        /* CID: 135361 Insecure file permissions - missing mode arg with O_CREAT*/
+        fd = open(WIFI_CLIENTS_MAC_FILE, O_CREAT|O_WRONLY|O_TRUNC, 0666);
         if (-1 == fd){
             sleep(1);
             goto reopen;
@@ -649,11 +652,10 @@ static ANSC_STATUS CosaDmlDhcpcScan()
                 tok = strtok_r( str_val, " ", &st);
                 if(tok) strncpy(dns[0], tok, sizeof(dns[0])-1 ); 
                 ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: DNS 0 %s\n", __FUNCTION__, dns[0]);
-                if( dns[0] ) 
-                {
-                    ++nmu_dns_server;
-                    AnscWriteUlong(&pEntry->Info.DNSServers[0].Value, _ansc_inet_addr(dns[0]));
-                }
+                /*CID: 68331 Array compared against 0*/
+                ++nmu_dns_server;
+                AnscWriteUlong(&pEntry->Info.DNSServers[0].Value, _ansc_inet_addr(dns[0]));
+
                 while( tok != NULL)
                 {
                     tok = strtok_r(NULL, " ", &st);
@@ -1276,7 +1278,8 @@ static void readDHCPv4ServerPoolFromPSM()
                 for(j=0; j< optionCnt; j++)
                 {
                     // get optionList from PSM
-                    pOptionLinkObj = (PCOSA_DML_DHCPSV4_OPTION_LINK_OBJ)AnscAllocateMemory(sizeof (PCOSA_DML_DHCPSV4_OPTION_LINK_OBJ));
+                    /* CID:73504 Wrong sizeof argument - modified the struct ptr to struct in sizeof*/
+                    pOptionLinkObj = (PCOSA_DML_DHCPSV4_OPTION_LINK_OBJ)AnscAllocateMemory(sizeof (COSA_DML_DHCPSV4_OPTION_LINK_OBJ));
                     if(pOptionLinkObj == NULL)
                     {
                         AnscTraceFlow(("%s: out of memory!!!\n", __FUNCTION__));
@@ -2807,7 +2810,8 @@ CosaDmlDhcpsSetOptionValues
         if ( !pNewEntry )
         {
             AnscTraceFlow(("%s: Out of memory!\n", __FUNCTION__));
-            return;
+            /* CID: 57154 Missing return statement*/
+            return ANSC_STATUS_FAILURE;
         }
         AnscZeroMemory(pNewEntry, sizeof(COSA_DML_DHCPSV4_OPTION));
         AnscCopyMemory(pNewEntry, pPoolOption, sizeof(COSA_DML_DHCPSV4_OPTION));
@@ -3057,7 +3061,8 @@ int sbapi_get_dhcpv4_active_number(int index, ULONG minAddress, ULONG maxAddress
 	}
 	v_secure_system("cp " COSA_DML_DHCP_LEASES_FILE " /var/dhcpClientList");
 
-	snprintf(buffer,sizeof(buffer),"/var/dhcpClientList", COSA_DML_DHCP_LEASES_FILE);
+        /*CID:125161,55598 Extra argument to printf format specifier*/
+	snprintf(buffer,sizeof(buffer),"/var/dhcpClientList");
 	fp=fopen(buffer,"r");
 	if(fp == NULL){
 		AnscTraceFlow(("failed to open temp lease file\n"));

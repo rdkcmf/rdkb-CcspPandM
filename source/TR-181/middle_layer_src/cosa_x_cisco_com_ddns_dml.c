@@ -1714,14 +1714,18 @@ BOOL Service_IsDomainStringHaveRepeatedWord ( char* pStringDomain )
 {
 
 #if !defined(DDNS_BROADBANDFORUM)
-	struct detail stDetailArray[ 64 ] = {};
 
+        /*CID: 135402 - Large stack use - alloc heap memory*/
+        struct detail *stDetailArray;
 	char   		  acSubstring[ 256 ]  = { 0 };
 	UINT    	  i = 0;
 	int    	      j = 0;
     int           count = 0;
 
-	memset( &stDetailArray, 0, sizeof( stDetailArray  ) );
+        stDetailArray = (struct detail *) malloc( 64 * sizeof(struct detail));
+        if(stDetailArray == NULL)
+            return FALSE;
+
 	
 	for ( i = 0; i < strlen( pStringDomain ); i++ )
     {
@@ -1743,11 +1747,12 @@ BOOL Service_IsDomainStringHaveRepeatedWord ( char* pStringDomain )
 			// Check if repeated
 			if( 1 == IsHaveRepeatedWord )
 			{
+                                free(stDetailArray);
 				return TRUE;
 			}
         }
     }
-
+        free(stDetailArray);
 	return FALSE;
 #endif
 #if defined(DDNS_BROADBANDFORUM)

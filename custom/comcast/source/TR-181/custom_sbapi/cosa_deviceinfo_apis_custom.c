@@ -507,8 +507,8 @@ CosaDmlDiSetXfinityWiFiEnable
 {
     pthread_t thread_xfinity_wifi = 0;
     BOOL *pValue = NULL;
-
-    pValue =  AnscAllocateMemory(sizeof(BOOL*));    
+    /*CID: 61742 Wrong sizeof argument*/
+    pValue =  AnscAllocateMemory(sizeof(BOOL));    
     if (pValue != NULL)
     {
         *pValue = value;
@@ -536,22 +536,25 @@ CosaDmlGetCaptivePortalEnable
     )
 {
 	char buf[5];
-        syscfg_get( NULL, CAPTIVEPORTAL_EANBLE , buf, sizeof(buf));
-
-    	if( buf != NULL )
-    		{
-    		    if (strcmp(buf,"true") == 0)
-		    {
+        /* CID: 58774 Array compared against 0*/
+        if(!syscfg_get( NULL, CAPTIVEPORTAL_EANBLE , buf, sizeof(buf)))
+	{
+    		if (strcmp(buf,"true") == 0)
+		{
 			CcspTraceWarning(("CaptivePortal: Captive Portal switch is enabled...\n"));		
     		       *pValue = true;
-		    }
-    		    else
-			{
+		}
+    		else
+		{
 			CcspTraceWarning(("CaptivePortal: Captive Portal switch is disabled...\n"));		
     		        *pValue = false;	
-			}
-    		}
-    return ANSC_STATUS_SUCCESS;
+		}
+           return ANSC_STATUS_SUCCESS;
+
+    	} else {
+           CcspTraceWarning(("CaptivePortal: syscfg get error\n"));
+           return ANSC_STATUS_FAILURE;
+        }
 }
 
 ANSC_STATUS

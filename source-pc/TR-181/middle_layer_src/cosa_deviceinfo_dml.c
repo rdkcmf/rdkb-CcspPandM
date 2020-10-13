@@ -293,8 +293,8 @@ DeviceInfo_GetParamUlongValue
 		 return FALSE;
 	   }
            retValue = fscanf(fp, "%s", buff);      
-
-           if( (retValue != -1) && (buff != NULL ) )
+            /* CID: 64133 Array compared against 0*/
+           if( (retValue != -1) )
 	   {
           	 *puLong = atoi(buff);
            }
@@ -1002,7 +1002,7 @@ DeviceInfo_Rollback
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     ULONG pulSize = 0;
-
+    /*TODO: 78739 Out-of-bounds access - pulsize updated as 255 in hal layer*/
     CosaDmlDiGetProvisioningCode(NULL,pMyObject->ProvisioningCode, &pulSize);
     
     return 0;
@@ -5647,16 +5647,18 @@ SecureWebUI_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
-        syscfg_get( NULL, "SecureWebUI_Enable", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /*CID: 68633 Array compared against 0*/
+        if(!syscfg_get( NULL, "SecureWebUI_Enable", buf, sizeof(buf)))
         {
             if (strcmp(buf, "true") == 0)
                 *pBool = TRUE;
             else
                 *pBool = FALSE;
+           return TRUE;
+        } else {
+          return FALSE;
         }
-        return TRUE;                }
+    }
 
     return FALSE;
 }
@@ -5777,9 +5779,9 @@ ULONG
     {
         /* collect value */
         char buf[64];
-        syscfg_get( NULL, "SecureWebUI_LocalFqdn", buf, sizeof(buf));
-
-        if( buf != NULL )
+        /*CID: 59203 Array compared against 0*/
+        /*CID: 69469 Logically dead code*/
+        if(!syscfg_get( NULL, "SecureWebUI_LocalFqdn", buf, sizeof(buf)))
         {
             AnscCopyString(pValue, buf);
             return 0;

@@ -1035,8 +1035,8 @@ User_SetParamUlongValue
 	#endif
 
     	memset(buf,0,sizeof(buf));
-        syscfg_get( NULL, "PasswordLockoutAttempts", buf, sizeof(buf));
-        if( buf != NULL )
+       /* CID: 64235 Array compared against 0*/
+       if(!syscfg_get( NULL, "PasswordLockoutAttempts", buf, sizeof(buf)))
        {
 		MaxFailureAttempts=atoi(buf);
 		

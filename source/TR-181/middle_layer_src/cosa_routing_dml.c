@@ -6529,8 +6529,11 @@ InterfaceSetting3_Synchronize
     
 
         AnscCopyMemory(pMyObject->RouteInfo.pInfo,pEntries,sizeof(COSA_DML_ROUTEINFO_IF_INFO)*Count);
-        AnscFreeMemory(pEntries);
     }
+    /*CID: 125174 Resource leak*/
+    if (pEntries != NULL)
+        AnscFreeMemory(pEntries);
+
 
     return returnStatus;
 }

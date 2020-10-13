@@ -3090,12 +3090,14 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
     }
 
     while(-1 != getline(&line, &len, fp)){
+         /*CID: 57783 Dereference before null check*/
+        if(!line)
+           return;
+
         if(0 == anlz_line(line, *entry + *count))
             (*count)++;
-        if(line){
-            free(line);
-            line = NULL;
-        }
+
+        free(line);
     }
     fclose(fp);
     if(*count == 0){
@@ -3298,7 +3300,8 @@ CosaDmlIaGetALLLogEntries
         return ANSC_STATUS_FAILURE;
     }else{
         for(i=0; (i < FWLogNum) && (*pUlSize > tmpsize + 1); i++){
-           tmpsize += snprintf(pValue + tmpsize, *pUlSize - 1 - tmpsize , "\n%d\n%s\n%s\n%s\n%s\n%s\n%s", pFWLogBuf[i].Count, NULL, NULL, NULL, pFWLogBuf[i].Action, pFWLogBuf[i].OccuranceTime,pFWLogBuf[i].Description);
+        /* CID: 74975, 55342,125538, 63199:Printf arg type mismatch -NULL returns void* */
+           tmpsize += snprintf(pValue + tmpsize, *pUlSize - 1 - tmpsize , "\n%d\n%p\n%p\n%p\n%s\n%s\n%s", pFWLogBuf[i].Count, NULL, NULL, NULL, pFWLogBuf[i].Action, pFWLogBuf[i].OccuranceTime,pFWLogBuf[i].Description);
         }
         pValue[tmpsize] = '\0';
         return ANSC_STATUS_SUCCESS;
@@ -5373,7 +5376,8 @@ CosaDmlIaPolicyDelKeyword
 
         p = B.keyword_list + IAP_KEYWORD_SZ*j;
         memset(p, 0, IAP_KEYWORD_SZ);
-        memcpy(p, p+IAP_KEYWORD_SZ, TR_ALIAS_SZ);
+        /* CID: 74324,135345  Copy of overlapping memory*/        
+        memcpy(p, p+IAP_KEYWORD_SZ, IAP_KEYWORD_SZ);
     }
 
     B.keyword_count--;
@@ -5917,7 +5921,8 @@ CosaDmlIaPolicyAddApp
         B.app_tr_inst_num[B.app_count-1] = pApp->InstanceNumber;
 
     B.app_list = realloc(B.app_list, B.app_count*sizeof(appentry_t));
-    if (B.app_list)
+    /* CID: 75164 Dereference after null check*/
+    if (B.app_list && B.app_tr_inst_num)
     {
         appentry_t * p_app;
 

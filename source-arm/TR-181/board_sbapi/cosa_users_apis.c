@@ -73,7 +73,8 @@
 #include <openssl/hmac.h>
 #include <syscfg/syscfg.h>
 
-char SerialNumber[64] = {'\0'};
+/* Changing SNO as 256 bytes from 64 bytes due to HAL layer access more than 64 byets*/
+char SerialNumber[256] = {'\0'};
 #if ( defined _COSA_SIM_ )
 
 COSA_DML_USER  g_users_user[] = 
@@ -585,6 +586,7 @@ ANSC_STATUS
 	ULONG SerialNumberLength = 0;
 	if (SerialNumber[0] =='\0' )
 	{
+          /* CID: 79484 Out-of-bounds access - updated global decl*/
           CosaDmlDiGetSerialNumber(NULL,SerialNumber,&SerialNumberLength);
 	}
         char *convertTo = NULL;

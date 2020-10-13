@@ -93,10 +93,11 @@ static void get_parodus_url(char **url)
                 CcspTraceDebug(("parodus url is %s\n", *url));
             }
         }
+        /* CID: 59956 Dereference after null check*/
+        fclose(fp);
     } else {
         CcspTraceError(("Failed to open device.properties file:%s\n", DEVICE_PROPS_FILE));
     }
-    fclose(fp);
 
     if( NULL == *url ) {
         CcspTraceError(("parodus url is not present in device.properties file\n"));
@@ -448,11 +449,9 @@ void* sendNotification(void* pValue)
 					cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
 					syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", lastRebootReason, sizeof(lastRebootReason));
 					CcspTraceDebug(("lastRebootReason is %s\n", lastRebootReason));
+                                        /*CID: 57243 Array compared against 0*/
+					cJSON_AddStringToObject(notifyPayload,"reboot-reason", lastRebootReason);
 
-					if(lastRebootReason !=NULL)
-					{
-						cJSON_AddStringToObject(notifyPayload,"reboot-reason", lastRebootReason);
-					}
 					if(msg->delay !=NULL)
 					{
 						cJSON_AddNumberToObject(notifyPayload,"delay", atoi(msg->delay));
@@ -706,6 +705,12 @@ int readFromFile(char *filename, char **data, int *len)
 	}
 	fseek(fp, 0, SEEK_END);
 	ch_count = ftell(fp);
+        /* CID: 119907 Argument cannot be negative*/
+        if (ch_count < 0) {
+            printf("Negative return file\n");
+            fclose(fp);
+            return 0;
+        }
 	fseek(fp, 0, SEEK_SET);
 	*data = (char *) malloc(sizeof(char) * (ch_count + 1));
 	
@@ -738,6 +743,8 @@ int writeToFile(char *filename, char *data, int len)
 	else
 	{
 		CcspTraceInfo(("WriteToFile failed, Data is NULL\n"));
+                /*CID: 143642 Resource leak*/
+                fclose(fp);
 		return 0;
 	}
 }

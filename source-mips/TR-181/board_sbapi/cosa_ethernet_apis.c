@@ -394,7 +394,8 @@ CosaDmlEthPortGetEntry
     }
 
 #ifdef _COSA_BCM_MIPS_
-    if (ulIndex >= 0 && ulIndex < g_EthernetIntNum)
+    /* CID: 53756 Unsigned compared against 0 ulIndex >= 0 always true*/
+    if (ulIndex < g_EthernetIntNum)
     {
         g_EthEntries[ulIndex].control->getCfg(g_EthEntries + ulIndex, &pEntry->Cfg);
         AnscCopyMemory(&pEntry->StaticInfo, &g_EthIntSInfo[ulIndex], sizeof(COSA_DML_ETH_PORT_SINFO));
@@ -1543,6 +1544,9 @@ static int setIfStatus(struct ifreq *pIfr)
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
+    /* CID: 73861 Argument cannot be negative*/
+    if(skfd == -1)
+       return -1;
 
     if (ioctl(skfd, SIOCSIFFLAGS, pIfr) < 0) {
         CcspTraceWarning(("cosa_ethernet_apis.c - setIfStatus: Set interface %s error...\n", pIfr->ifr_name));

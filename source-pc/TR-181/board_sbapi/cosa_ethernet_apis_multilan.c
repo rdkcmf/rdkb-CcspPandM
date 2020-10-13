@@ -826,6 +826,8 @@ CosaDmlEthLinkSetValues
     {
         return  ANSC_STATUS_CANT_FIND;
     }
+    /* CID: 66723 Missing return statement*/
+    return  ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -913,6 +915,8 @@ CosaDmlEthLinkAddEntry
             CosaDmlEthLinkSavePsm(pEthContext, &pEthLink->Cfg);
         }
     }
+    /*CID: 58911 Missing return statement*/
+    return iReturnValue;
 }
 
 ANSC_STATUS
@@ -1156,6 +1160,9 @@ int _getMac(char* ifName, char* mac){
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
+    /* CID: 54085 Argument cannot be negative*/
+    if(skfd == -1)
+       return -1;
 
     AnscCopyString(ifr.ifr_name, ifName);
     
@@ -1180,6 +1187,9 @@ COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr)
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
+    /* CID: 56442 Argument cannot be negative*/
+    if(skfd == -1)
+       return -1;
 
     AnscCopyString(ifr.ifr_name, name);
     

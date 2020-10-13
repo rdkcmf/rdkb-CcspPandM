@@ -218,6 +218,8 @@ CosaDmlTSIPLoadMappingFile
         returnStatus =  ANSC_STATUS_FAILURE;
         goto EXIT;
     }
+    /*CID: 137389 String not null terminated*/
+    pBuffer[len]= '\0';
 
     AnscTraceWarning(("!!!!!! CosaDmlTSIPLoadMappingFile 3 !!!!!!\n"));
 
@@ -382,6 +384,12 @@ CosaDmlTSIPApplyConfigFileTask
         {
             fseek(fpConfig3, 0L, SEEK_END);
             len3 = ftell(fpConfig3);
+            /* CID: 60096 Argument cannot be negative*/
+            if (len3 < 0){
+               AnscTraceWarning(("CosaDmlTSIPApplyConfigFile: Negative return file desc.\n"));
+               fclose(fpConfig3);
+               goto EXIT;
+            }
 
             pBuffer2 = (char*)AnscAllocateMemory(len3 + 1);
             if ( pBuffer2 )
@@ -390,6 +398,8 @@ CosaDmlTSIPApplyConfigFileTask
                 fread(pBuffer2, 1, len3, fpConfig3);
             }
             fclose(fpConfig3);
+            /* CID: 137218 String not null terminated*/
+            pBuffer2[len3] = '\0';
             remove("/var/cliconfig.txt");
             goto Start;
         }
@@ -505,6 +515,10 @@ Start:
         }
         *pSeparator++ = '\0';
         pValue = pSeparator;
+        /*CID: 68094 Dereference before null check*/
+        if (!pValue)
+            goto EXIT;
+
         if ( p = _ansc_strstr(pValue, "\r") )
         {
             *p = '\0';
