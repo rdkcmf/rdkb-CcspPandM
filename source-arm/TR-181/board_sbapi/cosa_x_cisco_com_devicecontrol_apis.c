@@ -76,6 +76,11 @@
 #include "ccsp_dm_api.h"
 #include <arpa/inet.h>
 #include "platform_hal.h"
+#if defined (_XB6_PRODUCT_REQ_) || defined (_XB7_PRODUCT_REQ_)
+#define LED_SOLID 0
+#define LED_BLINK 1
+#define FR_BLINK_INTRVL 3
+#endif
 
 extern void* g_pDslhDmlAgent;
 
@@ -1919,6 +1924,24 @@ CosaDmlDcSetFactoryReset
 			tok = strtok_r(NULL, ",", &sv);
 		}
 		
+#if defined (_XB6_PRODUCT_REQ_) || defined (_XB7_PRODUCT_REQ_)
+                if(factory_reset_mask & FR_ROUTER){
+			LEDMGMT_PARAMS ledMgmt;
+			memset(&ledMgmt, 0, sizeof(LEDMGMT_PARAMS));
+			ledMgmt.LedColor = LED_GREEN;
+			ledMgmt.State	 = LED_BLINK;
+			ledMgmt.Interval = FR_BLINK_INTRVL;
+
+			if(0 == platform_hal_setLed(&ledMgmt)) {
+                        	CcspTraceInfo(("Front LED Transition: GREEN LED will blink, Reason: Factory Reset\n"));
+				system("touch /tmp/.FRBLINKGREEN");
+			}
+			else {
+				CcspTraceError(("[%s]:Setting Front LED to Blink Green Failed\n",__FUNCTION__));
+			}
+		}
+#endif
+		
 #if defined (_XB6_PRODUCT_REQ_)
 		//XB6 Needs Time for SNMP packet to get out of device from Atom 
 		if (strstr(pValue, "delay") != NULL) {
@@ -2008,7 +2031,7 @@ CosaDmlDcSetFactoryReset
         fw.spi_protection = 1;
         rc = Utopia_SetFirewallSettings(&ctx, fw);
         Utopia_Free(&ctx, !rc);
-        if(rc != 0)
+        if(rc != 0) 
             return ANSC_STATUS_FAILURE;
         else
             commonSyseventSet("firewall-restart", "");
