@@ -76,9 +76,13 @@
 #include "cosa_apis.h"
 #include "plugin_main_apis.h"
 #include "cosa_x_cisco_com_truestaticip_internal.h"
+#include "cosa_x_cisco_com_truestaticip_apis.h"
 #include "cosa_x_cisco_com_filetransfer_apis.h"
 #include "cosa_x_cisco_com_filetransfer_internal.h"
 #include "ansc_ato_interface.h"
+#include "ansc_ato_external_api.h"
+#include "ansc_platform.h"
+#include <syscfg/syscfg.h>
 
 extern void* g_pDslhDmlAgent;
 
@@ -109,7 +113,6 @@ CosaTSIPCreate
         VOID
     )
 {
-    ANSC_STATUS             returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_TSIP    pMyObject    = (PCOSA_DATAMODEL_TSIP)NULL;
 
     /*
@@ -171,15 +174,12 @@ CosaTSIPInitialize
     PCOSA_DML_FILETRANSFER_CFG      pCfg                   = (PCOSA_DML_FILETRANSFER_CFG  )&pFtObject->Cfg;
     PANSC_ATOM_TABLE_OBJECT         pAtomNamespace         = NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoCOSA        = (PPOAM_IREP_FOLDER_OBJECT)NULL;
-    PPOAM_IREP_FOLDER_OBJECT        hIrepFolderTSIPSubnet  = (PPOAM_IREP_FOLDER_OBJECT)NULL;
     PPOAM_IREP_FOLDER_OBJECT        hIrepFolderTSIPRule    = (PPOAM_IREP_FOLDER_OBJECT)NULL;
     PSLAP_VARIABLE                  pSlapVariable          = (PSLAP_VARIABLE          )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext           = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PCOSA_DML_TSIP_SUBNET_ENTRY     pEntry                 = (PCOSA_DML_TSIP_SUBNET_ENTRY)NULL;
     PCOSA_DML_TSIP_RULE_ENTRY       pEntry2                = (PCOSA_DML_TSIP_RULE_ENTRY)NULL;
     ULONG                           ulEntryCount           = 0;
     ULONG                           ulIndex                = 0;
-    ULONG                           ulNextInsNum           = 0;
 
     /* Initiation all functions */
 
@@ -192,7 +192,7 @@ CosaTSIPInitialize
 
     /* Load Mapping file */
     pAtomNamespace =
-        AnscCreateAtomTable
+        (PANSC_ATOM_TABLE_OBJECT)AnscCreateAtomTable
             (
                 (ANSC_HANDLE)NULL,
                 (ANSC_HANDLE)NULL,
@@ -222,6 +222,8 @@ CosaTSIPInitialize
         return ANSC_STATUS_FAILURE;
     }
 #if 0
+
+    PPOAM_IREP_FOLDER_OBJECT        hIrepFolderTSIPSubnet  = (PPOAM_IREP_FOLDER_OBJECT)NULL;
     hIrepFolderTSIPSubnet =
         (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoCOSA->GetFolder
             (
@@ -335,6 +337,8 @@ CosaTSIPInitialize
     CosaDmlTSIPPortManagementGetCfg(NULL, &pMyObject->PortManagementCfg);
 
 #if 0
+
+    PCOSA_DML_TSIP_SUBNET_ENTRY     pEntry                 = (PCOSA_DML_TSIP_SUBNET_ENTRY)NULL;
     ulEntryCount = CosaDmlTSIPSubnetGetNumberOfEntries(NULL);
 
     for ( ulIndex = 0; ulIndex < ulEntryCount; ulIndex++ )
@@ -456,7 +460,7 @@ CosaTSIPInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pEntry2->Alias, "Rule%d", pCosaContext->InstanceNumber);
+                _ansc_sprintf(pEntry2->Alias, "Rule%lu", pCosaContext->InstanceNumber);
 
                 CosaDmlTSIPRuleSetValues
                 (
@@ -834,8 +838,7 @@ CosaTSIPSubnetRegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_TSIP            pMyObject         = (PCOSA_DATAMODEL_TSIP     )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
@@ -1140,8 +1143,7 @@ CosaTSIPRuleRegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_TSIP            pMyObject         = (PCOSA_DATAMODEL_TSIP     )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;

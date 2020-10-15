@@ -70,7 +70,11 @@
 
 #ifdef AnscTraceError
 #undef AnscTraceError
-#define AnscTraceError(a) printf("%s:%d> ", __FUNCTION__, __LINE__); printf a
+#define AnscTraceError(a)            \
+{            \
+printf("%s:%d> ", __FUNCTION__, __LINE__);            \
+printf a;            \
+}
 #endif
 
 //#ifdef AnscTraceDebug
@@ -121,9 +125,16 @@ static token_t sysevent_token;
 static hotspotfd_statistics_s *g_hsfdStat = NULL;
 
 extern ANSC_HANDLE bus_handle;
-static componentStruct_t **        ppComponents = NULL;
 extern char        g_Subsystem[32];
 extern void* g_pDslhDmlAgent;
+
+ANSC_STATUS
+COSAGetParamValueByPathName
+    (
+        void*                      bus_handle,
+        parameterValStruct_t       *val,
+        ULONG                      *parameterValueLength
+    );
 
 static int
 GrePsmGet(const char *param, char *value, int size)
@@ -160,7 +171,7 @@ GrePsmGetStr(const char *param, int ins, char *value, int size)
     if (GrePsmGet(rec, val, sizeof(val)) != 0)
         return -1;
 
-    if (size <= strlen(val))
+    if ((unsigned int)size <= strlen(val))
         return -1;
 
     snprintf(value, size, "%s", val);
@@ -176,7 +187,7 @@ GreTunnelIfPsmGetStr(const char *param, int tuIns, int ins, char *value, int siz
     if (GrePsmGet(rec, val, sizeof(val)) != 0)
         return -1;
 
-    if (size <= strlen(val))
+    if ((unsigned int)size <= strlen(val))
         return -1;
 
     snprintf(value, size, "%s", val);
@@ -292,7 +303,7 @@ int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) 
     char outdata[80];
     char* curInt = NULL;
     int circuitSave = 0;
-    int size;
+    ULONG size;
     int inst;
     parameterValStruct_t varStruct;
     varStruct.parameterName = paramname;
@@ -400,6 +411,7 @@ int GreTunnel_hotspot_update_circuit_ids(ULONG tuIns, int queuestart) {
 
 
 static void* GreTunnel_circuit_id_init_thread(void* arg) {
+    UNREFERENCED_PARAMETER(arg);
     int ret = -1;
     sleep(INITIAL_CIRCUIT_ID_SLEEP);
 
@@ -487,6 +499,7 @@ CosaDml_GreTunnelIfGetNumberOfEntries(ULONG tuIns)
 ANSC_STATUS
 CosaDml_GreTunnelGetConnectedRemoteEndpoint(ULONG tuIdx, COSA_DML_GRE_TUNNEL *greTu)
 {
+    UNREFERENCED_PARAMETER(tuIdx);
 	char cmd[126] = {0};
 	char line_buf[126] = {0};
 	FILE *fp = NULL;
@@ -541,7 +554,7 @@ CosaDml_GreTunnelGetEntryByIndex(ULONG ins, COSA_DML_GRE_TUNNEL *greTu)
         return ANSC_STATUS_FAILURE;
     if (GrePsmGetInt(GRETU_PARAM_KAPOL, ins, (int *)&greTu->KeepAlivePolicy) != 0)
         return ANSC_STATUS_FAILURE;
-	if (GrePsmGetUlong(GRETU_PARAM_KAITVL, ins, &greTu->RemoteEndpointHealthCheckPingInterval) != 0)
+    if (GrePsmGetUlong(GRETU_PARAM_KAITVL, ins, &greTu->RemoteEndpointHealthCheckPingInterval) != 0)
         return ANSC_STATUS_FAILURE;
     if (GrePsmGetUlong(GRETU_PARAM_KATHRE, ins, &greTu->RemoteEndpointHealthCheckPingFailThreshold) != 0)
         return ANSC_STATUS_FAILURE;
@@ -557,7 +570,7 @@ CosaDml_GreTunnelGetEntryByIndex(ULONG ins, COSA_DML_GRE_TUNNEL *greTu)
         return ANSC_STATUS_FAILURE;
     if (GrePsmGetStr(GRETU_PARAM_GRETU, ins, greTu->GRENetworkTunnel, sizeof(greTu->GRENetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-	greTu->HotSpotReset = FALSE;
+    greTu->HotSpotReset = FALSE;
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -588,12 +601,17 @@ CosaDml_GreTunnelIfGetEntryByIndex(ULONG tuIns, ULONG ins, COSA_DML_GRE_TUNNEL_I
 ANSC_STATUS
 CosaDml_GreTunnelSetIns(ULONG idx, ULONG ins)
 {
+    UNREFERENCED_PARAMETER(idx);
+    UNREFERENCED_PARAMETER(ins);
     return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
 CosaDml_GreTunnelIfSetIns(ULONG tuIdx, ULONG idx, ULONG ins)
 {
+    UNREFERENCED_PARAMETER(tuIdx);
+    UNREFERENCED_PARAMETER(idx);
+    UNREFERENCED_PARAMETER(ins);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -607,7 +625,7 @@ CosaDml_GreTunnelGetEnable(ULONG tuIns, BOOL *enable)
         return ANSC_STATUS_FAILURE;
 
 	//zqiu: try to read enable from the old config
-	BOOL bEnable=FALSE; 
+    BOOL bEnable=FALSE; 
 	if( tuIns==1 && *enable==FALSE) {	
 		if( GrePsmGetBool("dmsb.hotspot.gre.%d.Enable", 1, &bEnable) == 0 &&  bEnable==TRUE) {			
 			CosaDml_GreTunnelSetEnable(1, TRUE);
@@ -656,7 +674,7 @@ CosaDml_GreTunnelSetEnable(ULONG tuIns, BOOL enable)
     snprintf(psmRec, sizeof(psmRec), GRETU_PARAM_ENABLE, tuIns);
     if (GrePsmSet(psmRec, enable ? "1" : "0") != 0)
         return ANSC_STATUS_FAILURE;
-	BOOL bEnable=FALSE;
+    BOOL bEnable=FALSE;
 	if( tuIns==1 && enable==FALSE) {
 		//zqiu: try to erase the old endpoint
 		if( GrePsmGetBool("dmsb.hotspot.gre.%d.Enable", 1, &bEnable) == 0 &&  bEnable!=FALSE) {
@@ -718,12 +736,13 @@ CosaDml_GreTunnelGetStatus(ULONG tuIns, COSA_DML_GRE_STATUS *st)
         *st = COSA_DML_GRE_STATUS_ERROR;
     else
         return ANSC_STATUS_FAILURE;
-	return ANSC_STATUS_SUCCESS;
+    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
 CosaDml_GreTunnelIfGetStatus(ULONG tuIns, ULONG ins, COSA_DML_GRE_STATUS *st)
 {
+    UNREFERENCED_PARAMETER(ins);
 	char status[64];
     ULONG size = sizeof(status);
     char greNetworkTunnel[256];
@@ -747,7 +766,7 @@ CosaDml_GreTunnelIfGetStatus(ULONG tuIns, ULONG ins, COSA_DML_GRE_STATUS *st)
         *st = COSA_DML_GRE_STATUS_ERROR;
     else
         return ANSC_STATUS_FAILURE;
-	return ANSC_STATUS_SUCCESS;
+    return ANSC_STATUS_SUCCESS;
 }
 
 
@@ -773,6 +792,7 @@ CosaDml_GreTunnelGetLastchange(ULONG tuIns, ULONG *time)
 ANSC_STATUS
 CosaDml_GreTunnelIfGetLastchange(ULONG tuIns, ULONG ins, ULONG *time)
 {
+    UNREFERENCED_PARAMETER(ins);
 	char greNetworkTunnel[256];
     char tmpPath[256];
 
@@ -798,7 +818,7 @@ CosaDml_GreTunnelIfGetLocalInterfaces(ULONG tuIns, ULONG ins, char *ifs, ULONG s
     ULONG ptInsList[16], ptInsCnt = 16;
     char dm[1024], dmval[1024 + 1];
     ULONG dmsize;
-    int i;
+    unsigned int i;
 
     if (!ifs)
         return ANSC_STATUS_FAILURE;
@@ -826,18 +846,18 @@ CosaDml_GreTunnelIfGetLocalInterfaces(ULONG tuIns, ULONG ins, char *ifs, ULONG s
 
         for (i = 0; i < ptInsCnt; i++) {
             /* skip management port */
-            snprintf(dm, sizeof(dm), "%sPort.%d.ManagementPort", br, ptInsList[i]);
+            snprintf(dm, sizeof(dm), "%sPort.%lu.ManagementPort", br, ptInsList[i]);
             if (g_GetParamValueBool(g_pDslhDmlAgent, dm)) {
-                AnscTraceDebug(("  Skip Port[%d], it's a management port\n", ptInsList[i]));
+                AnscTraceDebug(("  Skip Port[%lu], it's a management port\n", ptInsList[i]));
                 continue;
             }
 
             /* skip upstream port (GRE IF) */
             dmsize = sizeof(dmval) - 1;
-            snprintf(dm, sizeof(dm), "%sPort.%d.LowerLayers", br, ptInsList[i]);
+            snprintf(dm, sizeof(dm), "%sPort.%lu.LowerLayers", br, ptInsList[i]);
             if (g_GetParamValueString(g_pDslhDmlAgent, dm, dmval, &dmsize) != 0 
                     || strstr(dmval, "Device.WiFi.SSID") == NULL) {
-                AnscTraceDebug(("  Skip Port[%d]: %s\n", ptInsList[i], dmval));
+                AnscTraceDebug(("  Skip Port[%lu]: %s\n", ptInsList[i], dmval));
                 continue;
             }
 
@@ -848,7 +868,7 @@ CosaDml_GreTunnelIfGetLocalInterfaces(ULONG tuIns, ULONG ins, char *ifs, ULONG s
             }
 
             /* add it to list */
-            AnscTraceDebug(("  Add Port[%d] `%s/%s` to Local IF\n", ptInsList[i], dm, dmval));
+            AnscTraceDebug(("  Add Port[%lu] `%s/%s` to Local IF\n", ptInsList[i], dm, dmval));
             //if (strlen(ifs)) {
             if (!start || strlen(ifs)) { /* Local If and Bridge are 1:1 mapping, we need "," */
                 snprintf(ifs +  strlen(ifs), size - strlen(ifs), ",%s", dmval);
@@ -1072,8 +1092,8 @@ CosaDml_GreTunnelSetPrimaryEndpoints(ULONG tuIns, const char *pri)
     if (GrePsmSet(psmRec, pri) != 0)
         return ANSC_STATUS_FAILURE;
 	
-	char endpoints[64]="", endpoints_sv[64]="0.0.0.0", *pt=NULL;
-	if( tuIns==1 && strcmp("0.0.0.0", pri)==0) {
+    char endpoints[64]="", endpoints_sv[64]="0.0.0.0", *pt=NULL;
+    if( tuIns==1 && strcmp("0.0.0.0", pri)==0) {
 		//zqiu: try to erase the old endpoint
 		if( GrePsmGetStr("dmsb.hotspot.gre.%d.Endpoints", 1, endpoints, 64) == 0 &&  strcmp("0.0.0.0,0.0.0.0", endpoints)!=0) {
 			pt=strchr(endpoints, ',');
@@ -1105,8 +1125,8 @@ CosaDml_GreTunnelSetSecondaryEndpoints(ULONG tuIns, const char *sec)
         return ANSC_STATUS_FAILURE;
 		
 	
-	char endpoints[64]="", *pt=NULL;
-	if( tuIns==1 && strcmp("0.0.0.0", sec)==0) {
+    char endpoints[64]="", *pt=NULL;
+    if( tuIns==1 && strcmp("0.0.0.0", sec)==0) {
 		//zqiu: try to erase sec endpoint in old config
 		if( GrePsmGetStr("dmsb.hotspot.gre.%d.Endpoints", 1, endpoints, 64) == 0 &&  strcmp("0.0.0.0,0.0.0.0", endpoints)!=0) {
 			pt=strchr(endpoints, ',');
@@ -1447,6 +1467,7 @@ CosaDml_GreTunnelSetKeepAlivePolicy(ULONG tuIns, COSA_DML_KEEPALIVE_POLICY polic
 ANSC_STATUS
 CosaDml_GreTunnelGetKeepAliveInterval(ULONG tuIns, ULONG *val)
 {
+    UNREFERENCED_PARAMETER(tuIns);
     if (!val)
         return ANSC_STATUS_FAILURE;
 
@@ -1470,7 +1491,7 @@ CosaDml_GreTunnelSetKeepAliveInterval(ULONG tuIns, ULONG val)
     if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
 
-    status = snprintf(str_value, khotspotfd_keep_alive_len, "%d", val);
+    status = snprintf(str_value, khotspotfd_keep_alive_len, "%lu", val);
 
     if(status > 0) {
 
@@ -1497,6 +1518,7 @@ CosaDml_GreTunnelSetKeepAliveInterval(ULONG tuIns, ULONG val)
 ANSC_STATUS
 CosaDml_GreTunnelGetKeepAliveThreshold(ULONG tuIns, ULONG *val)
 {
+    UNREFERENCED_PARAMETER(tuIns);
     if (!val)
         return ANSC_STATUS_FAILURE;
 
@@ -1520,7 +1542,7 @@ CosaDml_GreTunnelSetKeepAliveThreshold(ULONG tuIns, ULONG val)
     if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
 
-    status = snprintf(str_value, khotspotfd_keep_alive_threshold_len, "%d", val);
+    status = snprintf(str_value, khotspotfd_keep_alive_threshold_len, "%lu", val);
 
     if(status > 0) {
 
@@ -1568,7 +1590,7 @@ CosaDml_GreTunnelSetKeepAliveCount(ULONG tuIns, ULONG val)
     if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
 
-    status = snprintf(str_value, sizeof(str_value), "%d", val); 
+    status = snprintf(str_value, sizeof(str_value), "%lu", val); 
 
     if(status > 0) {
 
@@ -1613,7 +1635,7 @@ CosaDml_GreTunnelSetKeepAliveFailInterval(ULONG tuIns, ULONG val)
     if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
 
-    status = snprintf(str_value, khotspotfd_keep_alive_len, "%d", val);
+    status = snprintf(str_value, khotspotfd_keep_alive_len, "%lu", val);
 
     if(status > 0) {
 
@@ -1638,6 +1660,7 @@ CosaDml_GreTunnelSetKeepAliveFailInterval(ULONG tuIns, ULONG val)
 ANSC_STATUS
 CosaDml_GreTunnelGetReconnPrimary(ULONG tuIns, ULONG *time)
 {
+    UNREFERENCED_PARAMETER(tuIns);
     if (!time)
         return ANSC_STATUS_FAILURE;
 
@@ -1661,7 +1684,7 @@ CosaDml_GreTunnelSetReconnPrimary(ULONG tuIns, ULONG time)
     if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
 
-    status = snprintf(str_value, khotspotfd_max_secondary_len, "%d", time);
+    status = snprintf(str_value, khotspotfd_max_secondary_len, "%lu", time);
 
     if(status > 0) {
 
@@ -1837,6 +1860,8 @@ CosaDml_GreTunnelGetGRETunnel(ULONG tuIns, char *greif, ULONG size)
 ANSC_STATUS
 CosaDml_GreTunnelSetGREInterface(ULONG ins, const char *greif)
 {
+    UNREFERENCED_PARAMETER(ins);
+    UNREFERENCED_PARAMETER(greif);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1844,6 +1869,9 @@ CosaDml_GreTunnelSetGREInterface(ULONG ins, const char *greif)
 ANSC_STATUS
 CosaDml_GreTunnelIfSetGREInterface(ULONG tuIns, ULONG ins, const char *greif)
 {
+    UNREFERENCED_PARAMETER(tuIns);
+    UNREFERENCED_PARAMETER(ins);
+    UNREFERENCED_PARAMETER(greif);
     return ANSC_STATUS_FAILURE;
 }
 

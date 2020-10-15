@@ -641,4 +641,19 @@ VLANTermination_Stats_GetParamStringValue
         ULONG*                      pUlSize
     );
 
+int
+_getMac
+    (
+        char*                      ifName, 
+        char*                      mac
+    );
+
+ANSC_STATUS
+CosaDmlEthLinkUpdateStaticMac
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_ETH_LINK_CFG      pCfg,
+        PCOSA_DML_ETH_LINK_FULL     pEntry
+    );
+
 #endif

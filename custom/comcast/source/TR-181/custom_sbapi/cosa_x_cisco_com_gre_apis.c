@@ -102,18 +102,18 @@
 
 #define CGRE_OBJ_GREIF          "dmsb.cisco.gre."
 
-#define CGRE_PARAM_ENABLE       CGRE_OBJ_GREIF "%d.enable"
-#define CGRE_PARAM_ALIAS        CGRE_OBJ_GREIF "%d.alias"
-#define CGRE_PARAM_NAME         CGRE_OBJ_GREIF "%d.name"
-#define CGRE_PARAM_LOWERLAYERS  CGRE_OBJ_GREIF "%d.lowerlayers"
-#define CGRE_PARAM_MODE         CGRE_OBJ_GREIF "%d.mode"
-#define CGRE_PARAM_ENDPOINT     CGRE_OBJ_GREIF "%d.endpoint"
-#define CGRE_PARAM_KEYMODE      CGRE_OBJ_GREIF "%d.keymode"
-#define CGRE_PARAM_KEY          CGRE_OBJ_GREIF "%d.key"
-#define CGRE_PARAM_CSUMEN       CGRE_OBJ_GREIF "%d.csumenabled"
-#define CGRE_PARAM_SEQEN        CGRE_OBJ_GREIF "%d.seqnumenabled"
-#define CGRE_PARAM_TOSMODE      CGRE_OBJ_GREIF "%d.tosmode"
-#define CGRE_PARAM_TOS          CGRE_OBJ_GREIF "%d.tos"
+#define CGRE_PARAM_ENABLE       CGRE_OBJ_GREIF "%lu.enable"
+#define CGRE_PARAM_ALIAS        CGRE_OBJ_GREIF "%lu.alias"
+#define CGRE_PARAM_NAME         CGRE_OBJ_GREIF "%lu.name"
+#define CGRE_PARAM_LOWERLAYERS  CGRE_OBJ_GREIF "%lu.lowerlayers"
+#define CGRE_PARAM_MODE         CGRE_OBJ_GREIF "%lu.mode"
+#define CGRE_PARAM_ENDPOINT     CGRE_OBJ_GREIF "%lu.endpoint"
+#define CGRE_PARAM_KEYMODE      CGRE_OBJ_GREIF "%lu.keymode"
+#define CGRE_PARAM_KEY          CGRE_OBJ_GREIF "%lu.key"
+#define CGRE_PARAM_CSUMEN       CGRE_OBJ_GREIF "%lu.csumenabled"
+#define CGRE_PARAM_SEQEN        CGRE_OBJ_GREIF "%lu.seqnumenabled"
+#define CGRE_PARAM_TOSMODE      CGRE_OBJ_GREIF "%lu.tosmode"
+#define CGRE_PARAM_TOS          CGRE_OBJ_GREIF "%lu.tos"
 
 extern void* g_pDslhDmlAgent;
 
@@ -289,7 +289,7 @@ CGre_LoadConf(ULONG ins, COSA_DML_CGRE_IF *cfg)
     snprintf(rec, sizeof(rec), CGRE_PARAM_TOS, ins);
     if (CGre_PsmGet(rec, val, sizeof(val)) != 0)
         return -1;
-    sscanf(val, "%x", &cfg->TOS);
+    sscanf(val, "%x", (UINT*)&cfg->TOS);
     //cfg->TOS = atoi(val);
 
 #if 0
@@ -381,7 +381,7 @@ CGre_SaveConf(ULONG ins, COSA_DML_CGRE_IF *cfg)
 
     if (cfg->ChangeFlag & COSA_DML_CGRE_CF_TOS) {
     snprintf(rec, sizeof(rec), CGRE_PARAM_TOS, ins);
-    snprintf(val, sizeof(val), "%x", cfg->TOS);
+    snprintf(val, sizeof(val), "%x", (UINT)cfg->TOS);
     if (CGre_PsmSet(rec, val) != 0)
         return -1;
     }
@@ -443,6 +443,9 @@ CosaDml_CGreIfGetEntryByIndex(ULONG idx, COSA_DML_CGRE_IF *greIf)
 ANSC_STATUS
 CosaDml_CGreIfSetInsAlias(ULONG idx, ULONG ins, const char *alias)
 {
+    UNREFERENCED_PARAMETER(idx);
+    UNREFERENCED_PARAMETER(ins);
+    UNREFERENCED_PARAMETER(alias);
     return ANSC_STATUS_SUCCESS;
 }
 

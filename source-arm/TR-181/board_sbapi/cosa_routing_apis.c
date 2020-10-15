@@ -64,6 +64,8 @@
         01/11/2011    initial revision.
 
 **************************************************************************/
+#define _GNU_SOURCE
+#include <string.h>
 #include "cosa_apis.h"
 #include "cosa_routing_dml.h"
 #include "cosa_routing_apis.h"
@@ -599,8 +601,6 @@ void _get_shell_output3(FILE *fp, char *buf, int len)
 #define RIPD_PID_FILE "/var/ripd.pid"
 static int CosaRipdOperation(char * arg)
 {
-    char out[256] = {0};
-    ULONG Index  = 0;
     char *base = basename(COSA_RIPD_BIN);
     
     if (!strncmp(arg, "stop", 4))
@@ -713,7 +713,6 @@ void CosaDmlGetRipd_from_utopia( PCHAR uniqueName, PCHAR table1Name, ULONG table
 void CosaDmlGetRipdConfiguration()
 {
     UtopiaContext utctx        = {0};
-    CHAR  Version[128]        = {0};
     CHAR  Namespace[128]      = {0};
     CHAR  Out[12]             = {0};
     ULONG  ret                 = 0;
@@ -774,7 +773,6 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
     PCOSA_DML_RIPD_CONF pConf = &CosaDmlRIPCurrentConfig;
     FILE * fp                 = fopen(COSA_RIPD_CUR_CONF, "w+");
     char *pstaticRoute        = NULL;
-    char cmd[256]             = {0};
     BOOL bTrueStaticIP        = TRUE;
 
     AnscTraceWarning(("CosaDmlGenerateRipdConfigFile -- starts.\n"));
@@ -885,7 +883,7 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
                 bits = CosaDmlGetBitsNumFromNetMask(SubnetMask);
                 
                 if ( Address[0] && (bits>0) )
-                    fprintf(fp, " network %s/%d\n", Address, bits);
+                    fprintf(fp, " network %s/%lu\n", Address, bits);
                 
                 subnetCount = g_GetParamValueUlong(g_pDslhDmlAgent, "Device.X_CISCO_COM_TrueStaticIP.AdditionalSubnetNumberOfEntries");
 
@@ -895,8 +893,8 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
                     
                     if ( instance )
                     {
-                        _ansc_sprintf(buf1, "Device.X_CISCO_COM_TrueStaticIP.AdditionalSubnet.%d.IPAddress", instance);
-                        _ansc_sprintf(buf2, "Device.X_CISCO_COM_TrueStaticIP.AdditionalSubnet.%d.SubnetMask", instance);
+                        _ansc_sprintf(buf1, "Device.X_CISCO_COM_TrueStaticIP.AdditionalSubnet.%lu.IPAddress", instance);
+                        _ansc_sprintf(buf2, "Device.X_CISCO_COM_TrueStaticIP.AdditionalSubnet.%lu.SubnetMask", instance);
                         
                         len = sizeof(Address);
                         ret = g_GetParamValueString(g_pDslhDmlAgent, buf1, Address, &len );
@@ -910,7 +908,7 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
                         
                         bits = CosaDmlGetBitsNumFromNetMask(SubnetMask);
 
-                        fprintf(fp, " network %s/%d\n", Address, bits);
+                        fprintf(fp, " network %s/%lu\n", Address, bits);
                     }
                 }
 
@@ -1014,6 +1012,7 @@ CosaDmlRipGetCfg
     )
 
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
 
     pCfg->Enable = CosaDmlRIPCurrentConfig.Enable;
@@ -1066,7 +1065,7 @@ CosaDmlRipSetCfg
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-
+    UNREFERENCED_PARAMETER(hContext);
     AnscTraceWarning(("CosaDmlRipSetCfg -- starts.\n"));
 
     CosaDmlRIPCurrentConfig.Enable        = pCfg->Enable;
@@ -1118,7 +1117,7 @@ CosaDmlRipGetNumberOfIfEntries
         ANSC_HANDLE                 hContext
     )
 {
-   
+    UNREFERENCED_PARAMETER(hContext);   
     return g_NumOfRipIFs;
 }
    
@@ -1156,7 +1155,7 @@ CosaDmlRipIfGetCfg
     )
 {
     PCOSA_DML_RIPD_CONF pConf       = &CosaDmlRIPCurrentConfig;
-
+    UNREFERENCED_PARAMETER(hContext);
     if ( (ulIndex+1) > g_NumOfRipIFs )
     {
         return ANSC_STATUS_FAILURE;
@@ -1245,6 +1244,8 @@ CosaDmlRipIfAddCfg
         PCOSA_DML_RIP_IF_CFG        pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1285,6 +1286,8 @@ CosaDmlRipIfDelCfg
         PCOSA_DML_RIP_IF_CFG        pEntry     
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1323,6 +1326,7 @@ CosaDmlRipIfSetCfg
     )
 {
     PCOSA_DML_RIPD_CONF pConf       = &CosaDmlRIPCurrentConfig;
+    UNREFERENCED_PARAMETER(hContext);
 
     AnscTraceWarning(("CosaDmlRipIfSetCfg -- starts.\n"));
 
@@ -1392,6 +1396,7 @@ CosaDmlStaticRouteGetEntries
         PULONG                      pulCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     *pulCount  = 0;
     return NULL;
 }
@@ -1403,6 +1408,8 @@ CosaDmlStaticRouteGetEntryByName
         PCOSA_DML_STATICROUTE_CFG   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1413,6 +1420,8 @@ CosaDmlStaticRouteDelEntry
         PCOSA_DML_STATICROUTE_CFG   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1423,6 +1432,8 @@ CosaDmlStaticRouteAddEntry
         PCOSA_DML_STATICROUTE_CFG   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 ANSC_STATUS 
@@ -1432,7 +1443,9 @@ CosaDmlStaticRouteSetEntry
         PCOSA_DML_STATICROUTE_CFG   pEntry
     )
 {
-  return ANSC_STATUS_FAILURE;
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
+    return ANSC_STATUS_FAILURE;
 }
 
 /*
@@ -1475,6 +1488,7 @@ CosaDmlRoutingInit
 )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(phContext);
 
     AnscTraceWarning(("CosaDmlRipInit -- starts.\n"));
 
@@ -1520,7 +1534,7 @@ CosaDmlRoutingRouterSetCfg
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-
+    UNREFERENCED_PARAMETER(hContext);
     g_RouterFull.Cfg.InstanceNumber = pCfg->InstanceNumber;  
     g_RouterFull.Cfg.bEnabled       = pCfg->bEnabled;        
 
@@ -1564,7 +1578,7 @@ CosaDmlRoutingRouterGetCfg
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-
+    UNREFERENCED_PARAMETER(hContext);
     pCfg->InstanceNumber = g_RouterFull.Cfg.InstanceNumber; 
     pCfg->bEnabled       = g_RouterFull.Cfg.bEnabled;
 
@@ -1608,7 +1622,8 @@ CosaDmlRoutingRouterGetInfo
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pInfo);
     return returnStatus;
 }
 
@@ -1645,7 +1660,7 @@ CosaDmlRoutingGetNumberOfV4Entries
         ANSC_HANDLE                 hContext
     )
 {
-
+    UNREFERENCED_PARAMETER(hContext);
     return g_RouterFull.ulNumOfForward;
 }
 
@@ -1691,7 +1706,7 @@ CosaDmlRoutingGetV4Entry
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-
+    UNREFERENCED_PARAMETER(hContext);
     pEntry->InstanceNumber   = g_RouterFull.V4ForwardList[ulIndex].InstanceNumber;
     pEntry->Enable           = g_RouterFull.V4ForwardList[ulIndex].Enable;
     pEntry->Status           = g_RouterFull.V4ForwardList[ulIndex].Status;
@@ -1754,7 +1769,7 @@ CosaDmlRoutingSetV4EntryValues
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-
+    UNREFERENCED_PARAMETER(hContext);
     g_RouterFull.V4ForwardList[ulIndex].InstanceNumber = ulInstanceNumber;
     AnscCopyString(g_RouterFull.V4ForwardList[ulIndex].Alias, pAlias);
         
@@ -1799,7 +1814,7 @@ CosaDmlRoutingAddV4Entry
     ULONG                           ulIndex = 0;
 
     ulIndex = g_RouterFull.ulNumOfForward;
-
+    UNREFERENCED_PARAMETER(hContext);
     if ( ulIndex >= 10 )
     {
         return ANSC_STATUS_FAILURE;
@@ -1856,6 +1871,7 @@ CosaDmlRoutingDelV4Entry
         PCOSA_DML_ROUTING_V4_ENTRY  pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     ULONG                           j = 0;
 
@@ -1915,6 +1931,7 @@ CosaDmlRoutingSetV4Entry
         PCOSA_DML_ROUTING_V4_ENTRY  pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i       = 0;
 
      for ( i = 0; i < g_RouterFull.ulNumOfForward; i++ )
@@ -1976,7 +1993,8 @@ CosaDmlRoutingGetV4Entry2
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-   
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);   
     return returnStatus;
 }
 
@@ -1986,6 +2004,7 @@ CosaDmlRoutingGetNumberOfV6Entries
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_RouterFull.ulNumOfIPv6Forward;
 }
 
@@ -1997,6 +2016,7 @@ CosaDmlRoutingGetV6Entry
         PCOSA_DML_ROUTING_V6_ENTRY      pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscCopyMemory(pEntry, &g_RouterFull.V6ForwardList[ulIndex], sizeof(COSA_DML_ROUTING_V6_ENTRY));
     
     return ANSC_STATUS_SUCCESS;
@@ -2011,6 +2031,7 @@ CosaDmlRoutingSetV6EntryValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     g_RouterFull.V6ForwardList[ulIndex].InstanceNumber = ulInstanceNumber;
     
     AnscCopyString(g_RouterFull.V6ForwardList[ulIndex].Alias, pAlias);
@@ -2025,6 +2046,7 @@ CosaDmlRoutingAddV6Entry
         PCOSA_DML_ROUTING_V6_ENTRY  pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG   ulIndex;
     
     ulIndex = g_RouterFull.ulNumOfIPv6Forward;
@@ -2048,6 +2070,7 @@ CosaDmlRoutingDelV6Entry
         PCOSA_DML_ROUTING_V6_ENTRY  pEntry      /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     ULONG                           j = 0;
 
@@ -2081,6 +2104,7 @@ CosaDmlRoutingSetV6Entry
         PCOSA_DML_ROUTING_V6_ENTRY  pEntry      /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i       = 0;
 
     for ( i = 0; i < g_RouterFull.ulNumOfIPv6Forward; i++ )
@@ -2103,6 +2127,8 @@ CosaDmlRoutingGetV6Entry2
         PCOSA_DML_ROUTING_V6_ENTRY  pEntry      /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2143,7 +2169,7 @@ CosaDmlRoutingRemove
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-    
+    UNREFERENCED_PARAMETER(hContext);    
     return returnStatus;
 }    
 
@@ -2211,6 +2237,7 @@ CosaDmlRoutingGetRouteInfoIf
         PULONG                      pulCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_DML_ROUTEINFO_IF_INFO        pEntry = NULL;
     int                                num = sizeof(g_routeinfo_ifs)/sizeof(COSA_DML_ROUTEINFO_IF_INFO);
 
@@ -2255,17 +2282,15 @@ CosaDmlStaticRouteGetEntries
         PULONG                      pulCount
     )
 {
-    ULONG                           ulSize  = 0;
-    ULONG                           ulCount = 0;
-    ULONG                           i   = 0;
+    int                             ulCount = 0;
+    int                             i   = 0;
     int                             rc = 0;
     UtopiaContext                   ctx;
     PCOSA_DML_STATICROUTE_CFG       pStaticRoute = NULL;
     routeStatic_t                   *sroutes = NULL;
     CHAR            name[64]   = {0};
     CHAR            value[64]  = {0};
-    ULONG           ret        = 0;
-
+    UNREFERENCED_PARAMETER(hContext);
     /* Initialize a Utopia Context */
     if (!Utopia_Init(&ctx))
     {
@@ -2281,7 +2306,7 @@ CosaDmlStaticRouteGetEntries
     {
         _ansc_sprintf(name, "%s_RIPAdvertise", sroutes[i].name);
         value[0] = '2';
-        ret = Utopia_RawSet( &ctx, "cosa_usgv2_", name, value );
+        Utopia_RawSet( &ctx, "cosa_usgv2_", name, value );
     }
     
         
@@ -2325,15 +2350,15 @@ CosaDmlStaticRouteGetEntryByName
         PCOSA_DML_STATICROUTE_CFG   pEntry
     )
 {
-    ULONG           count      = 0;
-    ULONG           index      = 0;
+    int             count      = 0;
+    int             index      = 0;
     ANSC_STATUS     rc         = ANSC_STATUS_FAILURE;
     routeStatic_t   *sroutes   = NULL;
     UtopiaContext   ctx;
     ULONG           ret        = 0;
     CHAR            name[64]   = {0};
     CHAR            value[64]  = {0};
-    
+    UNREFERENCED_PARAMETER(hContext);    
     /* Initialize a Utopia Context */
     if (!Utopia_Init(&ctx))
     {
@@ -2396,6 +2421,7 @@ CosaDmlStaticRouteDelEntry
     CHAR            value[64]  = {0};
     ULONG           ret        = 0;
 
+    UNREFERENCED_PARAMETER(hContext);
     /* Initialize a Utopia Context */
     if (!Utopia_Init(&ctx))
     {
@@ -2427,12 +2453,13 @@ CosaDmlStaticRouteAddEntry
         PCOSA_DML_STATICROUTE_CFG   pEntry
     )
 {
-    routeStatic_t   staticRoute = {0};
+    routeStatic_t   staticRoute;
     UtopiaContext   ctx;
     ULONG           rc         = 0;
     CHAR            name[64]   = {0};
     CHAR            value[64]  = {0};
     ULONG           ret        = 0;
+    UNREFERENCED_PARAMETER(hContext);
 
     _ansc_strcpy(staticRoute.name, pEntry->Name );
     _ansc_strcpy(staticRoute.dest_lan_ip, _ansc_inet_ntoa(*((struct in_addr*)&pEntry->DestIPAddress)) );
@@ -2475,16 +2502,16 @@ CosaDmlStaticRouteSetEntry
         PCOSA_DML_STATICROUTE_CFG   pEntry
     )
 {
-    ULONG           count           = 0;
-    ULONG           index           = 0;
+    int             count           = 0;
+    int             index           = 0;
     ANSC_STATUS     rc              = ANSC_STATUS_FAILURE;
-    routeStatic_t   sroutes2        = {0};
+    routeStatic_t   sroutes2;
     routeStatic_t   *sroutes        = NULL;
     UtopiaContext   ctx;
     CHAR            name[64]   = {0};
     CHAR            value[64]  = {0};
     ULONG           ret        = 0;
-
+    UNREFERENCED_PARAMETER(hContext);
     /* Initialize a Utopia Context */
     if (!Utopia_Init(&ctx))
     {
@@ -2618,7 +2645,7 @@ static ProtoOrigMap_t protoOrigMap[] =
 };
 
 static COSA_DML_ROUTING_V4_ORIGIN
-Route4_Proto2Origin(const char *proto)
+Route4_Proto2Origin(char *proto)
 {
 	if (!proto || !strlen(proto))
 	{
@@ -2922,15 +2949,11 @@ Route6_IsRouteExist(const char *prefix, const char *gw, const char *dev)
 static int
 Route6_GetIfNames(char iflist[][IFNAME_SIZ], int *nlist)
 {
-    int ifnum, ifcnt, i;
-    ULONG len;
-    char key[256];
-
     if (!iflist || !nlist)
         return -1;
 
 #if defined(USE_TR181_PATH)
-    ifnum = g_GetParamValueUlong(g_pDslhDmlAgent, "Device.IP.InterfaceNumberOfEntries");
+    int ifnum = g_GetParamValueUlong(g_pDslhDmlAgent, "Device.IP.InterfaceNumberOfEntries");
     if (ifnum <= 0)
     {
 #endif
@@ -2952,7 +2975,10 @@ Route6_GetIfNames(char iflist[][IFNAME_SIZ], int *nlist)
     }
     else
     {
-        ifcnt = 0;
+        int ifcnt = 0;
+        int i;
+        char key[256];
+        ULONG len;
         for (i = 1; i <= ifnum; i++) /* start from 1 */
         {
             if (ifcnt >= *nlist)
@@ -3079,7 +3105,7 @@ Route6_UnloadRouteInfo(void)
 static COSA_DML_ROUTING_V6_ORIGIN
 Route6_Proto2Origin(const char *proto)
 {
-    int i;
+    ULONG i;
 
 	if (!proto || !strlen(proto))
 		return COSA_DML_ROUTING_IPV6_ORIGIN_Static;
@@ -3096,7 +3122,7 @@ Route6_Proto2Origin(const char *proto)
 static const char *
 Route6_Origin2Proto(COSA_DML_ROUTING_V6_ORIGIN origin)
 {
-    int i;
+    ULONG i;
 
     for (i = 0; i < NELEM(protoOrigMap); i++) 
     {
@@ -3114,7 +3140,7 @@ Route6_GetInfoByInsNum(int insNum, int *index)
 
     for (i = 0; i < g_numRtInfo6; i++) 
     {
-        if (g_routeInfos6[i].alias6.insNum == insNum) 
+        if (g_routeInfos6[i].alias6.insNum == (ULONG)insNum) 
         {
             if (index)
                 *index = i;
@@ -3138,7 +3164,7 @@ Route6_SaveParams(const RouteAlias6_t *alias6)
 		return -1;
 
     snprintf(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_INS);
-    snprintf(val, sizeof(val), "%d", alias6->insNum);
+    snprintf(val, sizeof(val), "%lu", alias6->insNum);
     if (!Utopia_RawSet(&ctx, NULL, key, val))
 	{
 		Utopia_Free(&ctx, 0);
@@ -3146,7 +3172,7 @@ Route6_SaveParams(const RouteAlias6_t *alias6)
     }
 
     snprintf(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_ALIAS);
-    if (!Utopia_RawSet(&ctx, NULL, key, alias6->alias))
+    if (!Utopia_RawSet(&ctx, NULL, key, (char*)alias6->alias))
 	{
 		Utopia_Free(&ctx, 0);
         return -1;
@@ -3203,6 +3229,7 @@ ANSC_STATUS CosaDmlRipCallBack
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscTraceWarning(("CosaDmlRipCallback -- starts.\n"));
     CosaDmlGenerateRipdConfigFile(g_RoutingEntryInMiddleLayer);
     //CosaRipdOperation("restart");
@@ -3220,7 +3247,7 @@ CosaDmlRoutingInit
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     DSLHDMAGNT_CALLBACK *  pEntry = NULL;
-
+    UNREFERENCED_PARAMETER(phContext);
     CosaDmlRouteInfoInit();
     CosaDmlGetRipdConfiguration();
 
@@ -3266,11 +3293,10 @@ CosaDmlRoutingRouterSetCfg
         PCOSA_DML_ROUTER_CFG        pCfg
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     int                             rc           = -1;
     UtopiaContext                   ctx;
     char                            buf[8]       ={0};
-
+    UNREFERENCED_PARAMETER(hContext);
     /* Initialize a Utopia Context */
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -3326,11 +3352,10 @@ CosaDmlRoutingRouterGetCfg
         PCOSA_DML_ROUTER_CFG        pCfg
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     char                            tmpBuf[8]   = {0};
     int                             rc           = -1;
     UtopiaContext                   ctx;
-
+    UNREFERENCED_PARAMETER(hContext);
     
     /* Initialize a Utopia Context */
     if(!Utopia_Init(&ctx))
@@ -3394,7 +3419,7 @@ CosaDmlRoutingRouterGetInfo
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-    
+    UNREFERENCED_PARAMETER(hContext);    
     pInfo->Status = COSA_DML_ROUTING_STATUS_Enabled;
 
     return returnStatus;
@@ -3466,7 +3491,8 @@ int
 AddRouteEntryToKernel(void *arg)
 {
     int     index, ret;
-    
+    UNREFERENCED_PARAMETER(arg);   
+
     for (index = 0; index < Config_Num; index++) {
         if (Router_Alias[index].Enabled) { // add route entry to kernel when initialize
 #if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
@@ -3491,14 +3517,14 @@ CosaDmlRoutingGetNumberOfV4Entries
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-    ULONG                           index        = 0;
+    int                             index        = 0;
     ULONG                           uIndex       = 0;
     ULONG                           r_count      = 0;
     char                            cmd_buf[80]  = {0};
     char                            sys_buf[80]  = {0};
     int                             rc           = 0;
     UtopiaContext                   ctx;
-
+    UNREFERENCED_PARAMETER(hContext);
     /* Initialize a Utopia Context */
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -3510,7 +3536,7 @@ CosaDmlRoutingGetNumberOfV4Entries
 
         for(uIndex = 0; uIndex < 256 ; uIndex++)
         {
-            sprintf(cmd_buf, "tr_routing_v4entry_%d_alias", uIndex+1);
+            sprintf(cmd_buf, "tr_routing_v4entry_%lu_alias", uIndex+1);
             returnStatus = Utopia_RawGet(&ctx, NULL, cmd_buf, sys_buf, sizeof(sys_buf));
             
             if (returnStatus == 1)
@@ -3520,7 +3546,7 @@ CosaDmlRoutingGetNumberOfV4Entries
 
                 Router_Alias[r_count].InstanceNumber = uIndex+1;
 
-                sprintf(cmd_buf, "tr_routing_v4entry_%d_name", uIndex+1);
+                sprintf(cmd_buf, "tr_routing_v4entry_%lu_name", uIndex+1);
                 returnStatus = Utopia_RawGet(&ctx, NULL, cmd_buf, sys_buf, sizeof(sys_buf));
                 printf("name: %s\n", sys_buf);
 
@@ -3529,7 +3555,7 @@ CosaDmlRoutingGetNumberOfV4Entries
                     AnscCopyString(Router_Alias[r_count].Name, sys_buf);
                 }
                 
-                sprintf(cmd_buf, "tr_routing_v4entry_%d_enabled", uIndex+1);
+                sprintf(cmd_buf, "tr_routing_v4entry_%lu_enabled", uIndex+1);
                 returnStatus = Utopia_RawGet(&ctx, NULL, cmd_buf, sys_buf, sizeof(sys_buf));
 
                 if (returnStatus == 1)
@@ -3616,9 +3642,9 @@ CosaDmlRoutingGetV4Entry
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-    ULONG                           index        = 0;
+    int                             index        = 0;
     char                            buf[33]      = {0};
-
+    UNREFERENCED_PARAMETER(hContext);
     pEntry->Enable           = TRUE;
     pEntry->Status           = 2;
     pEntry->StaticRoute      = TRUE;
@@ -3706,10 +3732,8 @@ CosaDmlRoutingSetV4EntryValues
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     char                            cmd[80]      = {0};
     char                            buf[33]      = {0};
-    int                             index        = 0;
-    int                             rc           = -1;
     UtopiaContext                   ctx;
-
+    UNREFERENCED_PARAMETER(hContext);
     if (ulInstanceNumber == 0 || pAlias == NULL)
         return ANSC_STATUS_FAILURE;
 
@@ -3719,10 +3743,10 @@ CosaDmlRoutingSetV4EntryValues
     
     CcspTraceWarning(("CosaDmlRoutingSetV4EntryValues %d entry,  instance number %d, alias %s", 
                 ulIndex, ulInstanceNumber, pAlias));
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_alias", ulInstanceNumber );
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_alias", ulInstanceNumber );
     Utopia_RawSet(&ctx, NULL, cmd, pAlias);
 
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_name", ulInstanceNumber);
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_name", ulInstanceNumber);
     snprintf(buf, sizeof(buf), "%s %s %s %d", 
             sroute[ulIndex].dest_lan_ip,
             sroute[ulIndex].netmask,
@@ -3731,7 +3755,7 @@ CosaDmlRoutingSetV4EntryValues
             );
     Utopia_RawSet(&ctx, NULL, cmd, buf);
 
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_enabled", ulInstanceNumber);
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_enabled", ulInstanceNumber);
     Utopia_RawSet(&ctx, NULL, cmd, "1");
 
     Utopia_Free(&ctx, 1);
@@ -3784,11 +3808,9 @@ CosaDmlRoutingAddV4Entry
     char                            cmd[80]      = {0};
     char                            buf[80]      = {0};
     StaticRoute                     *new_route   = 0;
-    int                             rc           = -1;
     UtopiaContext                   ctx;
     int                             err = 0;
-    int 			    metric = 0;
-
+    UNREFERENCED_PARAMETER(hContext);    
     if (!pEntry)
     {
         return ANSC_STATUS_FAILURE;
@@ -3846,30 +3868,31 @@ CosaDmlRoutingAddV4Entry
          /* add new route entry */
     if(AnscSizeOfString(pEntry->Interface))
     {
-        if(err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s %s %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), "dev", pEntry->Interface) != 0) {
+        if((err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s %s %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), "dev", pEntry->Interface)) != 0) {
             returnStatus = ANSC_STATUS_FAILURE;
         }
     }
     else
     {
-        if(err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value))) != 0) {
+        if((err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)))) != 0) {
             returnStatus = ANSC_STATUS_FAILURE;
         }
     }
         
 #else
     /* add new route entry */
+    int                             metric = 0;
     metric = (pEntry->ForwardingMetric)?pEntry->ForwardingMetric+1:pEntry->ForwardingMetric;
 
     if(AnscSizeOfString(pEntry->Interface))
     {
-        if(err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s table erouter metric %d %s %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), metric, "dev", pEntry->Interface) != 0) {
+        if((err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s table erouter metric %d %s %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), metric, "dev", pEntry->Interface)) != 0) {
             returnStatus = ANSC_STATUS_FAILURE;
         }
     }
     else
     {
-        if(err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s table erouter metric %d ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), metric) != 0) {
+        if((err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s table erouter metric %d ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), metric)) != 0) {
             returnStatus = ANSC_STATUS_FAILURE;
         }
     }
@@ -3890,11 +3913,11 @@ CosaDmlRoutingAddV4Entry
     Router_Alias[Config_Num].Enabled = (returnStatus == ANSC_STATUS_SUCCESS)?1:0;
     Config_Num++;
 
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_alias", 
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_alias", 
             pEntry->InstanceNumber );
-    rc = Utopia_RawSet(&ctx, NULL, cmd, pEntry->Alias);
+    Utopia_RawSet(&ctx, NULL, cmd, pEntry->Alias);
 
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_name", pEntry->InstanceNumber);
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_name", pEntry->InstanceNumber);
     snprintf(buf, sizeof(buf), "%d.%d.%d.%d %d.%d.%d.%d %s %d", 
             pEntry->DestIPAddress.Dot[0],
             pEntry->DestIPAddress.Dot[1],
@@ -3907,10 +3930,10 @@ CosaDmlRoutingAddV4Entry
             inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)),
             pEntry->ForwardingMetric
             );
-    rc = Utopia_RawSet(&ctx, NULL, cmd, buf);
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_enabled", pEntry->InstanceNumber);
+    Utopia_RawSet(&ctx, NULL, cmd, buf);
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_enabled", pEntry->InstanceNumber);
     snprintf(buf, sizeof(buf), "%d", (returnStatus == ANSC_STATUS_SUCCESS)?1:0);
-    rc = Utopia_RawSet(&ctx, NULL, cmd, buf);
+    Utopia_RawSet(&ctx, NULL, cmd, buf);
 
     /* Free Utopia Context */
     Utopia_Free(&ctx,1);
@@ -3953,17 +3976,11 @@ CosaDmlRoutingDelV4Entry
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     char                            cmd[80]      = {0};
-    char			                buf[32]	 = {0};
-    int                             rc           = -1;
     UtopiaContext                   ctx;
-
+    UNREFERENCED_PARAMETER(hContext);
     
     int index;
-    int sockfd;
-    struct rtentry route;
-    struct sockaddr_in *addr;
     int err = 0;
-    int metric = 0;
     int uindex;
 
     if (!pEntry)
@@ -3999,6 +4016,7 @@ CosaDmlRoutingDelV4Entry
         }
         break;
 #else
+        int metric = 0;
         if(AnscSizeOfString(sroute[uindex].dest_intf))
         {
             err = v_secure_system("ip route del %s/%d via %s table erouter metric %d %s %s ", sroute[uindex].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric, "dev", sroute[uindex].dest_intf);
@@ -4014,16 +4032,16 @@ CosaDmlRoutingDelV4Entry
         CcspTraceWarning(("CosaDmlRoutingDelV4Entry delete failure, %s\n", strerror(errno)));
         returnStatus = ANSC_STATUS_FAILURE;
     }
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_alias", 
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_alias", 
             pEntry->InstanceNumber);
     Utopia_RawSet(&ctx, NULL, cmd, NULL);
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_name", 
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_name", 
             pEntry->InstanceNumber);
     Utopia_RawSet(&ctx, NULL, cmd, NULL);
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_enabled", 
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_enabled", 
             pEntry->InstanceNumber);
     Utopia_RawSet(&ctx, NULL, cmd, NULL);
-    CcspTraceWarning(("CosaDmlRoutingDelV4Entry unset tr_routing_v4entry_%d_alias \n", pEntry->InstanceNumber));
+    CcspTraceWarning(("CosaDmlRoutingDelV4Entry unset tr_routing_v4entry_%lu_alias \n", pEntry->InstanceNumber));
 
     Utopia_Free(&ctx, 1);
 
@@ -4068,10 +4086,13 @@ CosaDmlRoutingSetV4Entry
     char                            buf[80]      = {0};
     int                             index = 0;
     int                             err = 0;
-    int                             rc           = -1;
     UtopiaContext                   ctx;
-    int 			                metric = 0;
+#if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
+#else
+    int                             metric = 0;
+#endif
     int                             uindex;
+    UNREFERENCED_PARAMETER(hContext);
 
     if (!pEntry)
     {
@@ -4085,12 +4106,12 @@ CosaDmlRoutingSetV4Entry
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
     
-    CcspTraceWarning(("CosaDmlRoutingSetV4Entry %d \n", pEntry->InstanceNumber));
+    CcspTraceWarning(("CosaDmlRoutingSetV4Entry %lu \n", pEntry->InstanceNumber));
     /* set syscfg */
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_alias", 
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_alias", 
             pEntry->InstanceNumber );
     Utopia_RawSet(&ctx, NULL, cmd, pEntry->Alias);
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_name", pEntry->InstanceNumber);
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_name", pEntry->InstanceNumber);
     snprintf(buf, sizeof(buf), "%d.%d.%d.%d %d.%d.%d.%d %s %d",
             pEntry->DestIPAddress.Dot[0],
             pEntry->DestIPAddress.Dot[1],
@@ -4104,7 +4125,7 @@ CosaDmlRoutingSetV4Entry
             pEntry->ForwardingMetric
             );
     Utopia_RawSet(&ctx, NULL, cmd, buf);
-    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_enabled", pEntry->InstanceNumber);
+    snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_enabled", pEntry->InstanceNumber);
     snprintf(buf, sizeof(buf), "%d", (pEntry->Enable)?1:0);
     Utopia_RawSet(&ctx, NULL, cmd, buf);
     Utopia_Free(&ctx, 1);
@@ -4219,7 +4240,7 @@ CosaDmlRoutingSetV4Entry
             if(!Utopia_Init(&ctx))
                 return ANSC_STATUS_FAILURE;
 
-            snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_enabled", pEntry->InstanceNumber);
+            snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_enabled", pEntry->InstanceNumber);
             snprintf(buf, sizeof(buf), "%d", 0);
             Utopia_RawSet(&ctx, NULL, cmd, buf);
             Utopia_Free(&ctx, 1);
@@ -4248,6 +4269,7 @@ CosaDmlRoutingGetNumberOfV6Entries
      * Though this function will also called when dml init, 
      * but it will also be called later (every time need the the num of entry).
      */
+    UNREFERENCED_PARAMETER(hContext);
     if (Route6_LoadRouteInfo() != 0)
         return 0;
 	
@@ -4264,15 +4286,13 @@ CosaDmlRoutingGetV6Entry
 {
     RouteInfo6_t *info6;
     RouteAlias6_t *alias6;
-    int i;
-    char *path;
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!pEntry)
         return ANSC_STATUS_FAILURE;
 
     bzero(pEntry, sizeof(COSA_DML_ROUTING_V6_ENTRY));
 
-    if (ulIndex >= g_numRtInfo6) 
+    if (ulIndex >= (ULONG)g_numRtInfo6) 
     {
         CcspTraceWarning(("%s: bad ulIndex\n", __FUNCTION__));
         return ANSC_STATUS_FAILURE;
@@ -4285,6 +4305,7 @@ CosaDmlRoutingGetV6Entry
     snprintf(pEntry->NextHop, sizeof(pEntry->NextHop), "%s", info6->gateway);
 
 #if defined(USE_TR181_PATH)
+    char *path;
     if ((path = CosaUtilGetFullPathNameByKeyword("Device.IP.Interface.", 
 			"Name", info6->interface)) != NULL)
 		snprintf(pEntry->Interface, sizeof(pEntry->Interface), "%s", path);
@@ -4323,13 +4344,14 @@ CosaDmlRoutingSetV6EntryValues
 {
     RouteInfo6_t *info6;
     RouteAlias6_t *alias6;
+    UNREFERENCED_PARAMETER(hContext);
 
 	/**
 	 * This function set RouteAlias6_t{} and PSM param **ONLY**.
 	 * @ulIndex to indicate the existing RouteInfo6_t{};
 	 */
 
-    if (ulIndex >= g_numRtInfo6 || ulInstanceNumber == 0 || !pAlias)
+    if (ulIndex >= (ULONG)g_numRtInfo6 || ulInstanceNumber == 0 || !pAlias)
         return ANSC_STATUS_FAILURE;
 
     info6 = &g_routeInfos6[ulIndex];
@@ -4358,9 +4380,7 @@ CosaDmlRoutingAddV6Entry
 {
     RouteInfo6_t *info6;
     RouteAlias6_t *alias6;
-    char key[256];
-    ULONG len;
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!pEntry)
         return ANSC_STATUS_FAILURE;
 
@@ -4382,6 +4402,8 @@ CosaDmlRoutingAddV6Entry
     snprintf(info6->gateway, sizeof(info6->gateway), "%s", pEntry->NextHop);
 
 #if defined(USE_TR181_PATH)
+    char key[256];
+    ULONG len;
 	if (strlen(pEntry->Interface) == 0) 
     {
 		/* XXX: suitable to use brlan0 ? */
@@ -4440,11 +4462,11 @@ CosaDmlRoutingDelV6Entry
         PCOSA_DML_ROUTING_V6_ENTRY  pEntry      /* Identified by InstanceNumber */
     )
 {
-    int ins, index;
+    int index;
     char key[256];
     RouteInfo6_t *info6;
     RouteAlias6_t *alias6;
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!pEntry)
         return ANSC_STATUS_FAILURE;
 
@@ -4490,9 +4512,7 @@ CosaDmlRoutingSetV6Entry
 {
     RouteInfo6_t *info6;
     RouteAlias6_t *alias6;
-    char key[256];
-    ULONG len;
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!pEntry)
         return ANSC_STATUS_FAILURE;
 
@@ -4512,6 +4532,8 @@ CosaDmlRoutingSetV6Entry
     snprintf(info6->gateway, sizeof(info6->gateway), "%s", pEntry->NextHop);
 
 #if defined(USE_TR181_PATH)
+    char key[256];
+    ULONG len;
 	if (strlen(pEntry->Interface) == 0) 
     {
 		/* XXX: suitable to use brlan0 ? */
@@ -4568,7 +4590,7 @@ CosaDmlRoutingGetV6Entry2
     )
 {
     int index;
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!pEntry)
         return ANSC_STATUS_FAILURE;
 
@@ -5314,7 +5336,8 @@ CosaDmlRoutingGetV4Entry2
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-   
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return returnStatus;
 }
 
@@ -5355,7 +5378,7 @@ CosaDmlRoutingRemove
     )
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-    
+    UNREFERENCED_PARAMETER(hContext);   
     if (sroute != NULL)
     {
         free(sroute);
@@ -5408,8 +5431,8 @@ CosaDmlRouteInfoInit
     
     _set_routeinfo_to_sysctl(g_routeinfo_enabled);
 
-    Utopia_Free(&utctx,0);                    
-
+    Utopia_Free(&utctx,0); 
+    return 0;                   
 }
 
 ANSC_STATUS
@@ -5494,7 +5517,7 @@ static int _routeinfo_get_prefix(char * in, int pref_len, char * out, int out_si
     char * p_token = NULL;
     char * saveptr = NULL;
     int    val = 0;
-    struct in6_addr addr6 = {0};
+    struct in6_addr addr6;
     int    i = 0;
     int    num = 0;
     char   addr_str[64] = {0};
@@ -5576,7 +5599,8 @@ CosaDmlRoutingGetRouteInfoIf
     int                         pref_len = 0;
     char                        prefix[64] = {0};
     char                        line[1024] = {0};
-
+    
+    UNREFERENCED_PARAMETER(hContext);
     if (!fp)
     {
         *pulCount = 0;        
@@ -5590,7 +5614,7 @@ CosaDmlRoutingGetRouteInfoIf
         /*sanity check*/
         if ((p1 = strchr(line, ' '))) 
         {
-            if (p1-line >= sizeof(route_addr))
+            if (((ULONG)(p1-line)) >= sizeof(route_addr))
                 continue;
         }
         else 
@@ -5598,7 +5622,7 @@ CosaDmlRoutingGetRouteInfoIf
         
         if ((p1 = strrchr(line, ' '))) 
         {
-            if (line+strlen(line)-p1 >= sizeof(prefix))
+            if ((ULONG)(line+strlen(line)-p1) >= sizeof(prefix))
                 continue;
         }
         else 

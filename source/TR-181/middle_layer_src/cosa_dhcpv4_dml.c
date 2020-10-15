@@ -87,6 +87,12 @@ extern ULONG g_currentBsUpdate;
 extern char * getRequestorString();
 extern char * getTime();
 
+ANSC_STATUS
+CosaDmlDhcpsARPing
+    (
+        PCOSA_DML_DHCPSV4_CLIENT_IPADDRESS    pDhcpsClient
+    );
+
 #define BS_SOURCE_WEBPA_STR "webpa"
 #define BS_SOURCE_RFC_STR "rfc"
 #define  PARTNER_ID_LEN  64
@@ -200,6 +206,9 @@ DHCPv4_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -244,6 +253,10 @@ DHCPv4_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -288,6 +301,9 @@ DHCPv4_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -341,6 +357,11 @@ DHCPv4_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -398,6 +419,7 @@ Client_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
 
     return AnscSListQueryDepth( &pDhcpv4->ClientList );
@@ -445,6 +467,8 @@ Client_GetEntry
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = NULL;
 
+    UNREFERENCED_PARAMETER(hInsContext);
+
     pSListEntry = AnscSListGetEntryByIndex(&pDhcpv4->ClientList, nIndex);
 
     if ( pSListEntry )
@@ -490,12 +514,11 @@ Client_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = NULL;
     PCOSA_DML_DHCPC_FULL            pDhcpc            = NULL;
-    ULONG                           i                 = 0;
+
+    UNREFERENCED_PARAMETER(hInsContext);
     
     pDhcpc  = (PCOSA_DML_DHCPC_FULL)AnscAllocateMemory( sizeof(COSA_DML_DHCPC_FULL) );
     if ( !pDhcpc )
@@ -526,7 +549,7 @@ Client_AddEntry
     pCxtLink->InstanceNumber   = pDhcpc->Cfg.InstanceNumber;
     *pInsNumber                = pDhcpc->Cfg.InstanceNumber;
 
-    _ansc_sprintf( pDhcpc->Cfg.Alias, "Client%d", pDhcpc->Cfg.InstanceNumber);
+    _ansc_sprintf( pDhcpc->Cfg.Alias, "Client%lu", pDhcpc->Cfg.InstanceNumber);
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pDhcpv4->ClientList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -580,12 +603,11 @@ Client_DelEntry
     )
 {
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInstance;
-    PCOSA_CONTEXT_LINK_OBJECT       pCxtLink2         = NULL;
     PCOSA_DML_DHCPC_FULL            pDhcpc            = (PCOSA_DML_DHCPC_FULL)pCxtLink->hContext;
 
+    UNREFERENCED_PARAMETER(hInsContext);
     /* Normally, two sublinks are empty because our framework will firstly 
             call delEntry for them before coming here. We needn't care them.
          */
@@ -648,7 +670,6 @@ Client_GetParamBoolValue
         BOOL*                       pBool
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPC_FULL            pDhcpc            = (PCOSA_DML_DHCPC_FULL)pCxtLink->hContext;
 
@@ -711,7 +732,6 @@ Client_GetParamIntValue
         int*                        pInt
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPC_FULL            pDhcpc            = (PCOSA_DML_DHCPC_FULL)pCxtLink->hContext;
 
@@ -768,7 +788,6 @@ Client_GetParamUlongValue
         ULONG*                      puLong
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPC_FULL            pDhcpc            = (PCOSA_DML_DHCPC_FULL)pCxtLink->hContext;
 
@@ -891,7 +910,6 @@ Client_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPC_FULL            pDhcpc            = (PCOSA_DML_DHCPC_FULL)pCxtLink->hContext;
     CHAR                            tmpBuff[128]      = {0};
@@ -935,16 +953,16 @@ Client_GetParamStringValue
         /* collect value */
         pString = CosaUtilGetFullPathNameByKeyword
                     (
-                        "Device.IP.Interface.",
-                        "Name",
-                        pDhcpc->Cfg.Interface
+                        (PUCHAR)"Device.IP.Interface.",
+                        (PUCHAR)"Name",
+                        (PUCHAR)pDhcpc->Cfg.Interface
                     );
 
         if ( pString )
         {
-            if ( AnscSizeOfString(pString) < *pUlSize)
+            if ( AnscSizeOfString((const char*)pString) < *pUlSize)
             {
-                AnscCopyString(pValue, pString);
+                AnscCopyString(pValue, (char*)pString);
 
                 AnscFreeMemory(pString);
 
@@ -952,7 +970,7 @@ Client_GetParamStringValue
             }
             else
             {
-                *pUlSize = AnscSizeOfString(pString)+1;
+                *pUlSize = AnscSizeOfString((const char*)pString)+1;
 
                 AnscFreeMemory(pString);
                 
@@ -1152,6 +1170,10 @@ Client_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1196,6 +1218,10 @@ Client_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1240,13 +1266,9 @@ Client_SetParamStringValue
         char*                       pString
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPC_FULL            pDhcpc            = (PCOSA_DML_DHCPC_FULL)pCxtLink->hContext;
-    PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
-    PCOSA_DML_DHCPC_FULL            pDhcpc2           = NULL;
-    BOOL                            bFound            = FALSE;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -1315,13 +1337,14 @@ Client_Validate
         ULONG*                      puLength
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPC_FULL            pDhcpc            = (PCOSA_DML_DHCPC_FULL)pCxtLink->hContext;
     PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
     PCOSA_DML_DHCPC_FULL            pDhcpc2           = NULL;
     BOOL                            bFound            = FALSE;
+
+    UNREFERENCED_PARAMETER(puLength);
 
     /*  only for Alias */
     if ( pDhcpv4->AliasOfClient[0] )
@@ -1534,10 +1557,7 @@ SentOption_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPC_FULL            pDhcpc            = (PCOSA_DML_DHCPC_FULL)pCxtLink->hContext;
-
     return AnscSListQueryDepth( &pCxtLink->SendOptionList );
 }
 
@@ -1570,9 +1590,7 @@ SentOption_GetEntryStatus
         PCHAR                       StatusName
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPC_FULL            pDhcpc            = (PCOSA_DML_DHCPC_FULL)pCxtLink->hContext;
 
     if( AnscEqualString(StatusName, "Committed", TRUE))
     {
@@ -1672,9 +1690,7 @@ SentOption_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtDhcpcLink        = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPC_FULL            pDhcpc               = (PCOSA_DML_DHCPC_FULL)pCxtDhcpcLink->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = NULL;
     PCOSA_DML_DHCP_OPT              pDhcpSendOption      = NULL;
     
@@ -1705,7 +1721,7 @@ SentOption_AddEntry
     pCxtLink->InstanceNumber       = pDhcpSendOption->InstanceNumber;
     *pInsNumber                    = pDhcpSendOption->InstanceNumber;
 
-    _ansc_sprintf( pDhcpSendOption->Alias, "SentOption%d", pDhcpSendOption->InstanceNumber);
+    _ansc_sprintf( pDhcpSendOption->Alias, "SentOption%lu", pDhcpSendOption->InstanceNumber);
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pCxtDhcpcLink->SendOptionList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -1757,6 +1773,7 @@ SentOption_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtDhcpcLink        = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPC_FULL            pDhcpClient          = (PCOSA_DML_DHCPC_FULL)pCxtDhcpcLink->hContext;
@@ -1825,7 +1842,6 @@ SentOption_GetParamBoolValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCP_OPT              pDhcpSendOption      = (PCOSA_DML_DHCP_OPT)pCxtLink->hContext;
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
@@ -1882,6 +1898,10 @@ SentOption_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -1925,7 +1945,6 @@ SentOption_GetParamUlongValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCP_OPT              pDhcpSendOption      = (PCOSA_DML_DHCP_OPT)pCxtLink->hContext;
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Tag", TRUE))
@@ -1990,7 +2009,6 @@ SentOption_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCP_OPT              pDhcpSendOption      = (PCOSA_DML_DHCP_OPT)pCxtLink->hContext;
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -2011,14 +2029,14 @@ SentOption_GetParamStringValue
     if( AnscEqualString(ParamName, "Value", TRUE))
     {
         /* collect value */
-        if ( AnscSizeOfString(pDhcpSendOption->Value) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pDhcpSendOption->Value) < *pUlSize)
         {
-            AnscCopyString(pValue, pDhcpSendOption->Value);
+            AnscCopyString(pValue, (char*)pDhcpSendOption->Value);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pDhcpSendOption->Value)+1;
+            *pUlSize = AnscSizeOfString((const char*)pDhcpSendOption->Value)+1;
             return 1;
         }
     }
@@ -2119,6 +2137,10 @@ SentOption_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2221,10 +2243,6 @@ SentOption_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCP_OPT              pDhcpSendOption   = (PCOSA_DML_DHCP_OPT)pCxtLink->hContext;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtDhcpcLink     = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)pCxtLink->hParentTable;
-    PCOSA_CONTEXT_LINK_OBJECT       pCxtLink2         = NULL;
-    PCOSA_DML_DHCP_OPT              pDhcpSendOption2  = NULL;
-    PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
-    BOOL                            bFound            = FALSE;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -2239,7 +2257,7 @@ SentOption_SetParamStringValue
     if( AnscEqualString(ParamName, "Value", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pDhcpSendOption->Value, pString);
+        AnscCopyString((char*)pDhcpSendOption->Value, pString);
 
         return TRUE;
     }
@@ -2286,6 +2304,7 @@ SentOption_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(puLength);
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCP_OPT              pDhcpSendOption   = (PCOSA_DML_DHCP_OPT)pCxtLink->hContext;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtDhcpcLink     = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)pCxtLink->hParentTable;
@@ -2516,9 +2535,7 @@ ReqOption_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPC_FULL            pDhcpc            = (PCOSA_DML_DHCPC_FULL)pCxtLink->hContext;
 
     return AnscSListQueryDepth( &pCxtLink->ReqOptionList );
 }
@@ -2610,12 +2627,9 @@ ReqOption_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtDhcpcLink        = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPC_FULL            pDhcpc               = (PCOSA_DML_DHCPC_FULL)pCxtDhcpcLink->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = NULL;
     PCOSA_DML_DHCPC_REQ_OPT         pDhcpReqOption       = NULL;
-    CHAR                            tmpBuff[64]          = {0};
     
     /* We need ask from backend */
     pDhcpReqOption  = (PCOSA_DML_DHCPC_REQ_OPT)AnscAllocateMemory( sizeof(COSA_DML_DHCPC_REQ_OPT) );
@@ -2644,7 +2658,7 @@ ReqOption_AddEntry
     pCxtLink->InstanceNumber       = pDhcpReqOption->InstanceNumber; 
     *pInsNumber                    = pDhcpReqOption->InstanceNumber;
 
-    _ansc_sprintf( pDhcpReqOption->Alias, "ReqOption%d", pDhcpReqOption->InstanceNumber);
+    _ansc_sprintf( pDhcpReqOption->Alias, "ReqOption%lu", pDhcpReqOption->InstanceNumber);
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pCxtDhcpcLink->ReqOptionList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -2766,7 +2780,6 @@ ReqOption_GetParamBoolValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPC_REQ_OPT         pDhcpReqOption       = (PCOSA_DML_DHCPC_REQ_OPT)pCxtLink->hContext;
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
@@ -2820,6 +2833,10 @@ ReqOption_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2866,7 +2883,6 @@ ReqOption_GetParamUlongValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPC_REQ_OPT         pDhcpReqOption       = (PCOSA_DML_DHCPC_REQ_OPT)pCxtLink->hContext;
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Order", TRUE))
@@ -2941,7 +2957,6 @@ ReqOption_GetParamStringValue
     PCOSA_DML_DHCPC_REQ_OPT         pDhcpReqOption       = (PCOSA_DML_DHCPC_REQ_OPT)pCxtLink->hContext;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtDhcpcLink     = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)pCxtLink->hParentTable;
     PCOSA_DML_DHCPC_FULL            pDhcpc            = (PCOSA_DML_DHCPC_FULL)pCxtDhcpcLink->hContext;
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -2964,14 +2979,14 @@ ReqOption_GetParamStringValue
         /* collect value */
         CosaDmlDhcpcGetReqOptionbyInsNum(NULL, pDhcpc->Cfg.InstanceNumber, pDhcpReqOption);
         
-        if ( AnscSizeOfString(pDhcpReqOption->Value) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pDhcpReqOption->Value) < *pUlSize)
         {
-            AnscCopyString(pValue, pDhcpReqOption->Value);
+            AnscCopyString(pValue, (char*)pDhcpReqOption->Value);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pDhcpReqOption->Value)+1;
+            *pUlSize = AnscSizeOfString((const char*)pDhcpReqOption->Value)+1;
             return 1;
         }
     }
@@ -3074,6 +3089,10 @@ ReqOption_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3184,10 +3203,6 @@ ReqOption_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPC_REQ_OPT         pDhcpReqOption    = (PCOSA_DML_DHCPC_REQ_OPT)pCxtLink->hContext;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCxtDhcpcLink     = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)pCxtLink->hParentTable;
-    PCOSA_CONTEXT_LINK_OBJECT       pCxtLink2         = NULL;
-    PCOSA_DML_DHCPC_REQ_OPT         pDhcpReqOption2   = NULL;
-    PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
-    BOOL                            bFound            = FALSE;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -3250,6 +3265,8 @@ ReqOption_Validate
     PCOSA_DML_DHCPC_REQ_OPT         pDhcpReqOption2   = NULL;
     PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
     BOOL                            bFound            = FALSE;
+
+    UNREFERENCED_PARAMETER(puLength);
 
     /* Parent hasn't set, we don't permit child is set.*/
     if ( pCxtDhcpcLink->bNew )
@@ -3478,8 +3495,7 @@ Server_GetParamBoolValue
         BOOL*                       pBool
     )
 {
-    PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
-
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -3531,6 +3547,10 @@ Server_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3575,6 +3595,9 @@ Server_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3628,6 +3651,9 @@ Server_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     /* check the parameter name and return the corresponding value */
     if(AnscEqualString(ParamName, "StaticClientsData", TRUE) || AnscEqualString(ParamName, "Lan", TRUE))
     {
@@ -3677,6 +3703,7 @@ Server_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
         
     /* check the parameter name and set the corresponding value */
@@ -3735,6 +3762,10 @@ Server_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3779,6 +3810,10 @@ Server_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3823,6 +3858,7 @@ Server_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */
     if(AnscEqualString(ParamName, "StaticClientsData", TRUE))
     {
@@ -4046,6 +4082,9 @@ Server_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -4077,6 +4116,7 @@ Server_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -4109,6 +4149,7 @@ Server_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -4163,6 +4204,7 @@ X_CISCO_COM_StaticAddress_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
 
     return AnscSListQueryDepth( &pDhcpv4->X_CISCO_COM_StaticAddressList );
@@ -4206,6 +4248,7 @@ X_CISCO_COM_StaticAddress_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4              = (PCOSA_DATAMODEL_DHCPV4   )g_pCosaBEManager->hDhcpv4;
     PSLIST_HEADER                   pListHead            = (PSLIST_HEADER            )&pDhcpv4->X_CISCO_COM_StaticAddressList;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = NULL;
@@ -4257,7 +4300,7 @@ X_CISCO_COM_StaticAddress_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = NULL;
     PCOSA_DML_DHCPS_X_CISCO_COM_SADDR pDhcpX_COM_CISCO_StaticAddress = NULL;
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4              = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
@@ -4289,7 +4332,7 @@ X_CISCO_COM_StaticAddress_AddEntry
     pCxtLink->InstanceNumber           = pDhcpX_COM_CISCO_StaticAddress->InstanceNumber; 
     *pInsNumber                        = pDhcpX_COM_CISCO_StaticAddress->InstanceNumber;
 
-    _ansc_sprintf( pDhcpX_COM_CISCO_StaticAddress->Alias, "cpe-X_COM_CISCO_SAddr%d", pDhcpX_COM_CISCO_StaticAddress->InstanceNumber);
+    _ansc_sprintf( pDhcpX_COM_CISCO_StaticAddress->Alias, "cpe-X_COM_CISCO_SAddr%lu", pDhcpX_COM_CISCO_StaticAddress->InstanceNumber);
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pDhcpv4->X_CISCO_COM_StaticAddressList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -4343,6 +4386,7 @@ X_CISCO_COM_StaticAddress_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_DHCPS_X_CISCO_COM_SADDR pDhcpX_COM_CISCO_StaticAddress = (PCOSA_DML_DHCPS_X_CISCO_COM_SADDR)pCxtLink->hContext;
@@ -4408,6 +4452,10 @@ X_CISCO_COM_StaticAddress_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -4450,6 +4498,10 @@ X_CISCO_COM_StaticAddress_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -4659,6 +4711,9 @@ X_CISCO_COM_StaticAddress_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(bValue);
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -4701,6 +4756,10 @@ X_CISCO_COM_StaticAddress_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -4802,7 +4861,7 @@ X_CISCO_COM_StaticAddress_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT         pContextLinkObject = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_X_CISCO_COM_SADDR pEntry = (PCOSA_DML_DHCPS_X_CISCO_COM_SADDR)pContextLinkObject->hContext;
     int                               rc                 = -1;
-    UCHAR                             chAddr[7]          = {'\0'};
+    UINT                              chAddr[7]          = {'\0'};
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -4895,6 +4954,7 @@ X_CISCO_COM_StaticAddress_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(puLength);
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4 )g_pCosaBEManager->hDhcpv4;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_X_CISCO_COM_SADDR pDhcpStaAddr    = (PCOSA_DML_DHCPS_X_CISCO_COM_SADDR)pCxtLink->hContext;
@@ -4902,7 +4962,7 @@ X_CISCO_COM_StaticAddress_Validate
     PCOSA_DML_DHCPS_X_CISCO_COM_SADDR pDhcpStaAddr2   = NULL;
     PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
     BOOL                            bFound            = FALSE;
-    UCHAR                           strIP[32]         = {'\0'};
+    CHAR                            strIP[32]         = {'\0'};
     UINT                            ip[4]             = {0};
     int                             rc                = -1;
     int                             i                 = 0;
@@ -4997,7 +5057,7 @@ X_CISCO_COM_StaticAddress_Commit
 {
     ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPS_X_CISCO_COM_SADDR pDhcpStaticAddress  = (PCOSA_DML_DHCPS_X_CISCO_COM_SADDR)pCxtLink->hContext;
+    PCOSA_DML_DHCPS_SADDR           pDhcpStaticAddress   = (PCOSA_DML_DHCPS_SADDR)pCxtLink->hContext;
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4              = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
 
     if ( pCxtLink->bNew )
@@ -5072,7 +5132,7 @@ X_CISCO_COM_StaticAddress_Rollback
 
     if ( !pCxtLink->bNew )
     {
-        CosaDmlDhcpsGetX_COM_CISCO_SaddrbyInsNum(NULL, pDhcpStaAddr);
+        CosaDmlDhcpsGetX_COM_CISCO_SaddrbyInsNum(NULL, (PCOSA_DML_DHCPS_SADDR)pDhcpStaAddr);
     }
     else
     {
@@ -5108,7 +5168,7 @@ X_CISCO_COM_StaticAddress_Rollback
 
 ***********************************************************************/
 
-static is_invalid_unicast_ip_addr(unsigned int gw, unsigned int mask, unsigned int ipaddr)
+static int is_invalid_unicast_ip_addr(unsigned int gw, unsigned int mask, unsigned int ipaddr)
 {
     unsigned int subnet, bcast;
 
@@ -5127,7 +5187,6 @@ static int is_pool_invalid(void *hInsContext)
 {
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
-    PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     ULONG                           minaddr, maxaddr, netmask, gateway;
     COSA_DML_DHCPS_POOL_CFG poolCfg;
 
@@ -5173,6 +5232,7 @@ Pool_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
 
     return AnscSListQueryDepth( &pDhcpv4->PoolList );
@@ -5216,6 +5276,7 @@ Pool_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = NULL;
     PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
@@ -5266,13 +5327,10 @@ Pool_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = NULL;
     PCOSA_DML_DHCPS_POOL_FULL       pPool             = NULL;
-    CHAR                            tmpBuff[64]       = {0};
-    ULONG                           i                 = 0;
 
     // return NULL; /* No dynamic addition/deletion of ServerPools at this point */
     
@@ -5305,7 +5363,7 @@ Pool_AddEntry
     pCxtLink->InstanceNumber  = pPool->Cfg.InstanceNumber;
     *pInsNumber               = pPool->Cfg.InstanceNumber;
 
-    _ansc_sprintf( pPool->Cfg.Alias, "Pool%d", pPool->Cfg.InstanceNumber);
+    _ansc_sprintf( pPool->Cfg.Alias, "Pool%lu", pPool->Cfg.InstanceNumber);
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pDhcpv4->PoolList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -5317,7 +5375,7 @@ Pool_AddEntry
 
     // Write to SBAPI directly
     pPool->Cfg.bEnabled      = FALSE;
-    returnStatus = CosaDmlDhcpsAddPool(NULL, pPool );
+    CosaDmlDhcpsAddPool(NULL, pPool );
 
     return (ANSC_HANDLE)pCxtLink;
 
@@ -5365,6 +5423,7 @@ Pool_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInstance;
@@ -5449,7 +5508,6 @@ Pool_GetParamBoolValue
         BOOL*                       pBool
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_POOL_FULL       pDhcpc            = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
 
@@ -5551,7 +5609,6 @@ Pool_GetParamIntValue
         int*                        pInt
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
 
@@ -5614,7 +5671,6 @@ Pool_GetParamUlongValue
         ULONG*                      puLong
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
     COSA_DML_DHCPS_POOL_FULL        poolTemp;
@@ -5770,13 +5826,8 @@ Pool_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
-    CHAR                           *pTmpString        = NULL;
-    ULONG                           i                 = 0;
-    ULONG                           j                 = 0;
-    ULONG                           n                 = 0;
     PUCHAR                          pString           = NULL;
     COSA_DML_DHCPS_POOL_CFG tmpCfg;
     BOOL bValidDomainName;
@@ -5807,17 +5858,17 @@ Pool_GetParamStringValue
             // pPool->Cfg.Interface is name for pool 1
             pString = CosaUtilGetFullPathNameByKeyword
                     (
-                        "Device.IP.Interface.",
-                        "Name",
-                        pPool->Cfg.Interface
+                        (PUCHAR)"Device.IP.Interface.",
+                        (PUCHAR)"Name",
+                        (PUCHAR)pPool->Cfg.Interface
                     );
             AnscTraceFlow(("%s: interface %s\n", __FUNCTION__, pPool->Cfg.Interface));  
             AnscTraceFlow(("%s: pString %s\n", __FUNCTION__, pString));               
             if ( pString )
             {
-                if ( AnscSizeOfString(pString) < *pUlSize)
+                if ( AnscSizeOfString((const char*)pString) < *pUlSize)
                 {
-                    AnscCopyString(pValue, pString);
+                    AnscCopyString(pValue, (char*)pString);
 
                     AnscFreeMemory(pString);
 
@@ -5825,7 +5876,7 @@ Pool_GetParamStringValue
                 }
                 else
                 {
-                    *pUlSize = AnscSizeOfString(pString)+1;
+                    *pUlSize = AnscSizeOfString((const char*)pString)+1;
 
                     AnscFreeMemory(pString);
                 
@@ -5979,7 +6030,7 @@ Pool_GetParamStringValue
     if( AnscEqualString(ParamName, "DNSServers", TRUE))
     {
         /* collect value */
-        if ( CosaDmlGetIpaddrString(pValue, pUlSize, (PULONG)&pPool->Cfg.DNSServers[0].Value, COSA_DML_DHCP_MAX_ENTRIES ) )
+        if ( CosaDmlGetIpaddrString((PUCHAR)pValue, pUlSize, (PULONG)&pPool->Cfg.DNSServers[0].Value, COSA_DML_DHCP_MAX_ENTRIES ) )
         {
             return 0;
         }
@@ -6022,7 +6073,7 @@ Pool_GetParamStringValue
             pTmpAddr = &pPool->Cfg.IPRouters[0].Value;
 
         /* collect value */
-        if ( CosaDmlGetIpaddrString(pValue, pUlSize, pTmpAddr, COSA_DML_DHCP_MAX_ENTRIES ) )
+        if ( CosaDmlGetIpaddrString((PUCHAR)pValue, pUlSize, pTmpAddr, COSA_DML_DHCP_MAX_ENTRIES ) )
         {
             return 0;
         }
@@ -6074,7 +6125,6 @@ Pool_SetParamBoolValue
         BOOL                        bValue
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_POOL_FULL       pPool            = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
     BOOL bridgeInd = FALSE;
@@ -6189,7 +6239,6 @@ Pool_SetParamIntValue
         int                         iValue
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
     BOOL bridgeInd = FALSE;	
@@ -6285,10 +6334,9 @@ Pool_SetParamUlongValue
         ULONG                       uValue
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
-    COSA_DML_DHCPS_POOL_CFG poolCfg;    
+    //COSA_DML_DHCPS_POOL_CFG poolCfg;    
     BOOL bridgeInd = FALSE;	
 
 	is_usg_in_bridge_mode(&bridgeInd);
@@ -6323,20 +6371,20 @@ Pool_SetParamUlongValue
     {
         IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pPool->Cfg.MinAddressUpdateSource);
         /* save update to backup */
-        poolCfg.InstanceNumber = pPool->Cfg.InstanceNumber;
+        //poolCfg.InstanceNumber = pPool->Cfg.InstanceNumber;
         /* CosaDmlDhcpsGetPoolCfg(NULL, &poolCfg);*/
         char pFullName[256] = {0};
         char strval[64] = {0};
         ULONG size = sizeof(strval);
         ULONG gw = 0, mask = 0;
         /* Suppose LanManagementEntry to Pool 1:1 mapping for now */
-        _ansc_sprintf(pFullName, "Device.X_CISCO_COM_DeviceControl.LanManagementEntry.%d.LanIPAddress", pPool->Cfg.InstanceNumber);
+        _ansc_sprintf(pFullName, "Device.X_CISCO_COM_DeviceControl.LanManagementEntry.%lu.LanIPAddress", pPool->Cfg.InstanceNumber);
         g_GetParamValueString(g_pDslhDmlAgent, pFullName, strval, &size);
         gw = _ansc_inet_addr(strval);
 
         size = sizeof(strval);
         AnscZeroMemory(strval, size);
-        _ansc_sprintf(pFullName, "Device.X_CISCO_COM_DeviceControl.LanManagementEntry.%d.LanSubnetMask", pPool->Cfg.InstanceNumber);
+        _ansc_sprintf(pFullName, "Device.X_CISCO_COM_DeviceControl.LanManagementEntry.%lu.LanSubnetMask", pPool->Cfg.InstanceNumber);
         g_GetParamValueString(g_pDslhDmlAgent, pFullName, strval, &size);
         mask = _ansc_inet_addr(strval);
 
@@ -6376,26 +6424,24 @@ Pool_SetParamUlongValue
     {
         IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pPool->Cfg.MaxAddressUpdateSource);
         /* save update to backup */
-        poolCfg.InstanceNumber = pPool->Cfg.InstanceNumber;
+        //poolCfg.InstanceNumber = pPool->Cfg.InstanceNumber;
         /* CosaDmlDhcpsGetPoolCfg(NULL, &poolCfg); */
         char pFullName[256] = {0};
         char strval[64] = {0};
         ULONG size = sizeof(strval);
         ULONG gw = 0, mask = 0;
         /* Suppose LanManagementEntry to Pool 1:1 mapping for now */
-        _ansc_sprintf(pFullName, "Device.X_CISCO_COM_DeviceControl.LanManagementEntry.%d.LanIPAddress", pPool->Cfg.InstanceNumber);
+        _ansc_sprintf(pFullName, "Device.X_CISCO_COM_DeviceControl.LanManagementEntry.%lu.LanIPAddress", pPool->Cfg.InstanceNumber);
         g_GetParamValueString(g_pDslhDmlAgent, pFullName, strval, &size);
         gw = _ansc_inet_addr(strval);
 
         size = sizeof(strval);
         AnscZeroMemory(strval, size);
-        _ansc_sprintf(pFullName, "Device.X_CISCO_COM_DeviceControl.LanManagementEntry.%d.LanSubnetMask", pPool->Cfg.InstanceNumber);
+        _ansc_sprintf(pFullName, "Device.X_CISCO_COM_DeviceControl.LanManagementEntry.%lu.LanSubnetMask", pPool->Cfg.InstanceNumber);
         g_GetParamValueString(g_pDslhDmlAgent, pFullName, strval, &size);
         mask = _ansc_inet_addr(strval);
 
-        if( pPool->Cfg.InstanceNumber == 1 && 
-            is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)) || 
-            uValue < pPool->Cfg.MinAddress.Value)
+        if( ((pPool->Cfg.InstanceNumber == 1) && (is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)))) || (uValue < pPool->Cfg.MinAddress.Value))
             return(FALSE);
 
         if (ntohl(uValue) == ntohl(pPool->Cfg.MinAddress.Value)) {
@@ -6482,13 +6528,9 @@ Pool_SetParamStringValue
         char*                       pString
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
-    PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
-    PCOSA_DML_DHCPS_POOL_FULL       pPool2            = NULL;
-    BOOL                            bFound            = FALSE;
     BOOL bridgeInd = FALSE;
 		
     AnscTraceFlow(("%s: ParamName %s, \npString %s\n", __FUNCTION__, ParamName, pString));    
@@ -6520,9 +6562,9 @@ Pool_SetParamStringValue
         if(pPool->Cfg.InstanceNumber == 1)
         {
             // Need to convert to Device.IP.Interface.x.Name
-            UCHAR   ucEntryParamName[256]       = {0};
+            CHAR    ucEntryParamName[256]       = {0};
             ULONG   ulEntryNameLen              = 256;
-            UCHAR   ucEntryNameValue[256]       = {0};
+            CHAR    ucEntryNameValue[256]       = {0};
 
             _ansc_sprintf(ucEntryParamName, "%s%s", pString, ".Name");
                
@@ -6594,7 +6636,7 @@ Pool_SetParamStringValue
         /* save update to backup */
         return FALSE; /* Not supported */
 
-        AnscCopyString(pPool->Cfg.ClientID, pString);
+        AnscCopyString((char*)pPool->Cfg.ClientID, pString);
 
         return TRUE;
     }
@@ -6604,7 +6646,7 @@ Pool_SetParamStringValue
         /* save update to backup */
         return FALSE; /* Not supported */
 
-        AnscCopyString(pPool->Cfg.UserClassID, pString);
+        AnscCopyString((char*)pPool->Cfg.UserClassID, pString);
 
         return TRUE;
     }
@@ -6614,7 +6656,7 @@ Pool_SetParamStringValue
         /* save update to backup */
         return FALSE; /* Not supported */
 
-        AnscCopyString(pPool->Cfg.Chaddr, pString);
+        AnscCopyString((char*)pPool->Cfg.Chaddr, pString);
 
         return TRUE;
     }
@@ -6624,7 +6666,7 @@ Pool_SetParamStringValue
         /* save update to backup */
         return FALSE; /* Not supported */
 
-        AnscCopyString(pPool->Cfg.ChaddrMask, pString);
+        AnscCopyString((char*)pPool->Cfg.ChaddrMask, pString);
 
         return TRUE;
     }
@@ -6709,19 +6751,9 @@ Pool_Validate
         ULONG*                      puLength
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_DHCPV4          pDhcpv4           = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
-    PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
-    PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
-    PCOSA_DML_DHCPS_POOL_FULL       pPool2            = NULL;
-    BOOL                            bFound            = FALSE;
-    UCHAR                           strIP[32]         = {'\0'};
-    UINT                            ip[4]             = {0};
-    int                             rc                = -1;
-    int                             i                 = 0;
-    ULONG                           minaddr, maxaddr, netmask, gateway;
-
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -6914,10 +6946,8 @@ StaticAddress_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtLink->hContext;
-
     return AnscSListQueryDepth( &pCxtLink->StaticAddressList );
 }
 
@@ -7003,6 +7033,7 @@ StaticAddress_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DHCPV4          pMyObject    = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     BOOL                            bIsUpdated   = TRUE;
 
@@ -7053,6 +7084,7 @@ StaticAddress_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DHCPV4  pDhcpv4 = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     ANSC_STATUS returnStatus      = ANSC_STATUS_FAILURE;
     int ret =0;
@@ -7105,12 +7137,9 @@ StaticAddress_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtPoolLink         = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPS_POOL_FULL       pPool                = (PCOSA_DML_DHCPS_POOL_FULL)pCxtPoolLink->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = NULL;
     PCOSA_DML_DHCPS_SADDR           pDhcpStaticAddress   = NULL;
-    CHAR                            tmpBuff[64]          = {0};
     PCOSA_DATAMODEL_DHCPV4          pDhcpv4              = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     
     /* We need ask from backend */
@@ -7140,7 +7169,7 @@ StaticAddress_AddEntry
     pCxtLink->InstanceNumber           = pDhcpStaticAddress->InstanceNumber; 
     *pInsNumber                        = pDhcpStaticAddress->InstanceNumber;
 
-    _ansc_sprintf( pDhcpStaticAddress->Alias, "StaticAddress%d", pDhcpStaticAddress->InstanceNumber);
+    _ansc_sprintf( pDhcpStaticAddress->Alias, "StaticAddress%lu", pDhcpStaticAddress->InstanceNumber);
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pCxtPoolLink->StaticAddressList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -7323,6 +7352,10 @@ StaticAddress_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -7369,9 +7402,6 @@ StaticAddress_GetParamUlongValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_SADDR           pDhcpStaticAddress   = (PCOSA_DML_DHCPS_SADDR)pCxtLink->hContext;
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
-    COSA_DML_DHCPS_POOL_CFG         Cfg                  = {0};
-    ANSC_IPV4_ADDRESS               IPRouter;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Yiaddr", TRUE))
@@ -7553,9 +7583,6 @@ StaticAddress_SetParamBoolValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_SADDR           pDhcpStaticAddress   = (PCOSA_DML_DHCPS_SADDR)pCxtLink->hContext;
-    PCOSA_CONTEXT_POOL_LINK_OBJECT  pPoolLink            = (PCOSA_CONTEXT_POOL_LINK_OBJECT)pCxtLink->hParentTable;
-    PCOSA_DML_DHCPS_POOL_FULL       pPool                = (PCOSA_DML_DHCPS_POOL_FULL)pPoolLink->hContext;
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
     BOOL bridgeInd = FALSE;
 		
 	is_usg_in_bridge_mode(&bridgeInd);
@@ -7613,6 +7640,9 @@ StaticAddress_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -7659,9 +7689,6 @@ StaticAddress_SetParamUlongValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_SADDR           pDhcpStaticAddress   = (PCOSA_DML_DHCPS_SADDR)pCxtLink->hContext;
-    PCOSA_CONTEXT_POOL_LINK_OBJECT  pPoolLink            = (PCOSA_CONTEXT_POOL_LINK_OBJECT)pCxtLink->hParentTable;
-    PCOSA_DML_DHCPS_POOL_FULL       pPool                = (PCOSA_DML_DHCPS_POOL_FULL)pPoolLink->hContext;
-    ANSC_STATUS                     returnStatus         = ANSC_STATUS_SUCCESS;
     BOOL bridgeInd = FALSE;
 		
 	is_usg_in_bridge_mode(&bridgeInd);
@@ -7740,7 +7767,7 @@ StaticAddress_SetParamStringValue
 		return(FALSE);
 
     /* check if pString doesn't hold null or whitespaces */
-    if(AnscValidStringCheck(pString) != TRUE)
+    if(AnscValidStringCheck((PUCHAR)pString) != TRUE)
         return FALSE;
 
     /* check the parameter name and set the corresponding value */
@@ -7857,6 +7884,11 @@ StaticAddress_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
+#if 0 /*removed by song*/
+    /* Parent hasn't set, we don't permit child is set.*/
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_SADDR           pDhcpStaAddr      = (PCOSA_DML_DHCPS_SADDR)pCxtLink->hContext;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtPoolLink      = (PCOSA_CONTEXT_POOL_LINK_OBJECT)pCxtLink->hParentTable;
@@ -7871,8 +7903,6 @@ StaticAddress_Validate
     int                             i                 = 0;
     ULONG                           ipaddr, netmask, gateway;
 
-#if 0 /*removed by song*/
-    /* Parent hasn't set, we don't permit child is set.*/
     if ( pCxtPoolLink->bNew )
     {
 #if COSA_DHCPV4_ROLLBACK_TEST        
@@ -8021,7 +8051,7 @@ StaticAddress_Commit
 		}else{/*Add this entry to backend*/
 			returnStatus = CosaDmlDhcpsAddSaddr(NULL, pPool->Cfg.InstanceNumber, pDhcpStaticAddress );
 			if(returnStatus == ANSC_STATUS_SUCCESS)
-				pDhcpStaticAddress->ActiveFlag==TRUE;
+				pDhcpStaticAddress->ActiveFlag = TRUE;
 		}
 	}
     }
@@ -8064,11 +8094,12 @@ StaticAddress_Rollback
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_SADDR           pDhcpStaAddr      = (PCOSA_DML_DHCPS_SADDR)pCxtLink->hContext;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtPoolLink      = (PCOSA_CONTEXT_POOL_LINK_OBJECT)pCxtLink->hParentTable;
-    PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtPoolLink->hContext;
+
 
     if ( pCxtPoolLink->AliasOfStaAddr[0] )
         AnscCopyString( pDhcpStaAddr->Alias, pCxtPoolLink->AliasOfStaAddr );
 #if 0/*Removed by song*/
+    PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtPoolLink->hContext;
     if ( !pCxtLink->bNew )
     {
         CosaDmlDhcpsGetSaddrbyInsNum(NULL, pPool->Cfg.InstanceNumber, pDhcpStaAddr);
@@ -8135,7 +8166,6 @@ Option1_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
-    ANSC_STATUS                       returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOL_LINK_OBJECT    pCxtLink          = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
 
     return AnscSListQueryDepth( &pCxtLink->OptionList );
@@ -8227,12 +8257,10 @@ Option1_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    ANSC_STATUS                       returnStatus         = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOL_LINK_OBJECT    pCxtPoolLink         = (PCOSA_CONTEXT_POOL_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_POOL_FULL         pPool                = (PCOSA_DML_DHCPS_POOL_FULL)pCxtPoolLink->hContext;
     PCOSA_CONTEXT_LINK_OBJECT         pCxtLink             = NULL;
     PCOSA_DML_DHCPSV4_OPTION          pDhcpOption          = NULL;
-    CHAR                              tmpBuff[64]          = {0};
     PCOSA_DATAMODEL_DHCPV4            pDhcpv4              = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
     
     /* We need ask from backend */
@@ -8240,7 +8268,7 @@ Option1_AddEntry
     if(pPool->Cfg.InstanceNumber == 1)
     {
         AnscTraceFlow(("%s: not supporting addinging option for pool 1.\n", __FUNCTION__));
-        return ANSC_STATUS_FAILURE;
+        return (ANSC_HANDLE)ANSC_STATUS_FAILURE;
     }
 
     pDhcpOption  = (PCOSA_DML_DHCPSV4_OPTION)AnscAllocateMemory( sizeof(COSA_DML_DHCPSV4_OPTION) );
@@ -8270,7 +8298,7 @@ Option1_AddEntry
     pCxtLink->InstanceNumber           = pDhcpOption->InstanceNumber; 
     *pInsNumber                        = pDhcpOption->InstanceNumber;
 
-    _ansc_sprintf( pDhcpOption->Alias, "Option%d", pDhcpOption->InstanceNumber);
+    _ansc_sprintf( (char*)pDhcpOption->Alias, "Option%lu", pDhcpOption->InstanceNumber);
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pCxtPoolLink->OptionList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -8331,7 +8359,7 @@ Option1_DelEntry
     PCOSA_DML_DHCPS_POOL_FULL         pDhcpPool            = (PCOSA_DML_DHCPS_POOL_FULL)pCxtPoolLink->hContext;
     PCOSA_CONTEXT_LINK_OBJECT         pCxtLink             = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_DHCPSV4_OPTION          pDhcpOption          = (PCOSA_DML_DHCPSV4_OPTION)pCxtLink->hContext;
-    PCOSA_DATAMODEL_DHCPV4            pDhcpv4              = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
+
 
     AnscTraceFlow(("%s: pool instance %d, option instance %d\n", __FUNCTION__, pDhcpPool->Cfg.InstanceNumber, pDhcpOption->InstanceNumber));    
     //printf("%s: pool instance %d, option instance %d\n", __FUNCTION__, pDhcpPool->Cfg.InstanceNumber, pDhcpOption->InstanceNumber);
@@ -8353,6 +8381,7 @@ Option1_DelEntry
     //printf("%s: remove entry.\n", __FUNCTION__);
     if ( AnscSListPopEntryByLink(&pCxtPoolLink->OptionList, &pCxtLink->Linkage) )
     {
+//        PCOSA_DATAMODEL_DHCPV4            pDhcpv4              = (PCOSA_DATAMODEL_DHCPV4)g_pCosaBEManager->hDhcpv4;
 //        if ( pCxtLink->bNew )
 //            CosaDhcpv4RegSetDhcpv4Info(pDhcpv4);
         
@@ -8456,6 +8485,10 @@ Option1_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -8585,17 +8618,17 @@ Option1_GetParamStringValue
     if( AnscEqualString(ParamName, "Value", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString(pDhcpOption->Value) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pDhcpOption->Value) < *pUlSize)
         {
             //printf("%s: size, %d, %d\n", __FUNCTION__, AnscSizeOfString(pDhcpOption->Value), *pUlSize);
-            AnscCopyString(pValue, pDhcpOption->Value);
+            AnscCopyString(pValue, (char*)pDhcpOption->Value);
             return 0;
         }
         else
         {
             //printf("%s: size two, %d, %d\n", __FUNCTION__, AnscSizeOfString(pDhcpOption->Value), *pUlSize);
-            *pUlSize = AnscSizeOfString(pDhcpOption->Value)+1;
-            
+            *pUlSize = AnscSizeOfString((const char*)pDhcpOption->Value) + 1;
+        
             return 1;
         }
     }
@@ -8696,6 +8729,10 @@ Option1_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -8826,7 +8863,7 @@ Option1_SetParamStringValue
     if((!ind) && (rc == EOK))
     {
        /* save update to backup */
-       rc = STRCPY_S_NOCLOBBER(pDhcpOption->Value, sizeof(pDhcpOption->Value), pString);
+       rc = STRCPY_S_NOCLOBBER((char *)pDhcpOption->Value, sizeof(pDhcpOption->Value), pString);
        if(rc != EOK)
        {
           ERR_CHK(rc);
@@ -8878,6 +8915,7 @@ Option1_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(puLength);
     PCOSA_CONTEXT_LINK_OBJECT         pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPSV4_OPTION          pDhcpPoolOption   = (PCOSA_DML_DHCPSV4_OPTION)pCxtLink->hContext;
     PCOSA_CONTEXT_POOL_LINK_OBJECT    pCxtPoolLink      = (PCOSA_CONTEXT_POOL_LINK_OBJECT)pCxtLink->hParentTable;
@@ -9405,6 +9443,10 @@ Client2_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -9449,6 +9491,10 @@ Client2_GetParamUlongValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
+
     return FALSE;
 }
 
@@ -9499,7 +9545,6 @@ Client2_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
-    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;    
     PCOSA_DML_DHCPSV4_CLIENT        pDhcpsClient    = (PCOSA_DML_DHCPSV4_CLIENT)hInsContext;
 
     /* check the parameter name and return the corresponding value */
@@ -9521,14 +9566,14 @@ Client2_GetParamStringValue
     if( AnscEqualString(ParamName, "X_CISCO_COM_Comment", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString(pDhcpsClient->X_CISCO_COM_Comment) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pDhcpsClient->X_CISCO_COM_Comment) < *pUlSize)
         {
-            AnscCopyString(pValue, pDhcpsClient->X_CISCO_COM_Comment);
+            AnscCopyString(pValue, (char*)pDhcpsClient->X_CISCO_COM_Comment);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pDhcpsClient->X_CISCO_COM_Comment)+1;
+            *pUlSize = AnscSizeOfString((const char*)pDhcpsClient->X_CISCO_COM_Comment)+1;
             return 1;
         }
     }
@@ -9536,14 +9581,14 @@ Client2_GetParamStringValue
     if( AnscEqualString(ParamName, "X_CISCO_COM_Interface", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString(pDhcpsClient->X_CISCO_COM_Interface) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pDhcpsClient->X_CISCO_COM_Interface) < *pUlSize)
         {
-            AnscCopyString(pValue, pDhcpsClient->X_CISCO_COM_Interface);
+            AnscCopyString(pValue, (char*)pDhcpsClient->X_CISCO_COM_Interface);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pDhcpsClient->X_CISCO_COM_Interface)+1;
+            *pUlSize = AnscSizeOfString((const char*)pDhcpsClient->X_CISCO_COM_Interface)+1;
             return 1;
         }
     }
@@ -9551,14 +9596,14 @@ Client2_GetParamStringValue
     if( AnscEqualString(ParamName, "X_CISCO_COM_HostName", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString(pDhcpsClient->X_CISCO_COM_HostName) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pDhcpsClient->X_CISCO_COM_HostName) < *pUlSize)
         {
-            AnscCopyString(pValue, pDhcpsClient->X_CISCO_COM_HostName);
+            AnscCopyString(pValue, (char*)pDhcpsClient->X_CISCO_COM_HostName);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pDhcpsClient->X_CISCO_COM_HostName)+1;
+            *pUlSize = AnscSizeOfString((const char*)pDhcpsClient->X_CISCO_COM_HostName)+1;
             return 1;
         }
     }
@@ -9566,14 +9611,14 @@ Client2_GetParamStringValue
     if( AnscEqualString(ParamName, "ClassId", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString(pDhcpsClient->ClassId) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pDhcpsClient->ClassId) < *pUlSize)
         {
-            AnscCopyString(pValue, pDhcpsClient->ClassId);
+            AnscCopyString(pValue, (char*)pDhcpsClient->ClassId);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pDhcpsClient->ClassId)+1;
+            *pUlSize = AnscSizeOfString((const char*)pDhcpsClient->ClassId)+1;
             return 1;
         }
     }
@@ -9581,14 +9626,14 @@ Client2_GetParamStringValue
     if( AnscEqualString(ParamName, "Chaddr", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString(pDhcpsClient->Chaddr) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pDhcpsClient->Chaddr) < *pUlSize)
         {
-            AnscCopyString(pValue, pDhcpsClient->Chaddr);
+            AnscCopyString(pValue, (char*)pDhcpsClient->Chaddr);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pDhcpsClient->Chaddr)+1;
+            *pUlSize = AnscSizeOfString((const char*)pDhcpsClient->Chaddr)+1;
             return 1;
         }
     }
@@ -9639,6 +9684,10 @@ Client2_SetParamBoolValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(bValue);
+
     return FALSE;
 }
 
@@ -9683,6 +9732,10 @@ Client2_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     return FALSE;
 }
 
@@ -9727,6 +9780,10 @@ Client2_SetParamUlongValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
+
     return FALSE;
 }
 
@@ -9768,6 +9825,9 @@ Client2_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pString);
+
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
@@ -9818,6 +9878,10 @@ Client2_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
+
     return TRUE;
 }
 
@@ -9849,6 +9913,7 @@ Client2_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -9881,6 +9946,7 @@ Client2_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -9928,7 +9994,6 @@ IPv4Address2_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
-    ANSC_STATUS                       returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DML_DHCPSV4_CLIENTCONTENT   PClientContent    = NULL;
     
     PClientContent = (PCOSA_DML_DHCPSV4_CLIENTCONTENT)CosaDhcpv4GetClientContentbyClient(hInsContext);
@@ -9979,7 +10044,6 @@ IPv4Address2_GetEntry
         ULONG*                      pInsNumber
     )
 {
-    ANSC_STATUS                       returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DML_DHCPSV4_CLIENTCONTENT   PClientContent    = NULL;
     
     PClientContent = (PCOSA_DML_DHCPSV4_CLIENTCONTENT)CosaDhcpv4GetClientContentbyClient(hInsContext);
@@ -10035,6 +10099,10 @@ IPv4Address2_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
+
     return FALSE;
 }
 
@@ -10079,6 +10147,10 @@ IPv4Address2_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -10120,7 +10192,6 @@ IPv4Address2_GetParamUlongValue
         ULONG*                      puLong
     )
 {
-    ANSC_STATUS                            returnStatus    = ANSC_STATUS_SUCCESS;
     PCOSA_DML_DHCPSV4_CLIENT_IPADDRESS     pIPAddress      = (PCOSA_DML_DHCPSV4_CLIENT_IPADDRESS)hInsContext;
 
     /* check the parameter name and return the corresponding value */
@@ -10190,14 +10261,14 @@ IPv4Address2_GetParamStringValue
     if( AnscEqualString(ParamName, "LeaseTimeRemaining", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString(pIPAddress->LeaseTimeRemaining) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pIPAddress->LeaseTimeRemaining) < *pUlSize)
         {
-            AnscCopyString(pValue, pIPAddress->LeaseTimeRemaining);
+            AnscCopyString(pValue, (char*)pIPAddress->LeaseTimeRemaining);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pIPAddress->LeaseTimeRemaining)+1;
+            *pUlSize = AnscSizeOfString((const char*)pIPAddress->LeaseTimeRemaining)+1;
             return 1;
         }
     }
@@ -10205,14 +10276,14 @@ IPv4Address2_GetParamStringValue
     if( AnscEqualString(ParamName, "X_CISCO_COM_LeaseTimeCreation", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString(pIPAddress->X_CISCO_COM_LeaseTimeCreation) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pIPAddress->X_CISCO_COM_LeaseTimeCreation) < *pUlSize)
         {
-            AnscCopyString(pValue, pIPAddress->X_CISCO_COM_LeaseTimeCreation);
+            AnscCopyString(pValue, (char*)pIPAddress->X_CISCO_COM_LeaseTimeCreation);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pIPAddress->X_CISCO_COM_LeaseTimeCreation)+1;
+            *pUlSize = AnscSizeOfString((const char*)pIPAddress->X_CISCO_COM_LeaseTimeCreation)+1;
             return 1;
         }
     }
@@ -10221,14 +10292,14 @@ IPv4Address2_GetParamStringValue
     {
         CosaDmlDhcpsGetLeaseTimeDuration(pIPAddress);
         /* collect value */
-        if ( AnscSizeOfString(pIPAddress->X_CISCO_COM_LeaseTimeDuration) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pIPAddress->X_CISCO_COM_LeaseTimeDuration) < *pUlSize)
         {
-            AnscCopyString(pValue, pIPAddress->X_CISCO_COM_LeaseTimeDuration);
+            AnscCopyString(pValue, (char*)pIPAddress->X_CISCO_COM_LeaseTimeDuration);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pIPAddress->X_CISCO_COM_LeaseTimeDuration)+1;
+            *pUlSize = AnscSizeOfString((const char*)pIPAddress->X_CISCO_COM_LeaseTimeDuration)+1;
             return 1;
         }
     }
@@ -10385,6 +10456,10 @@ Option2_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
+
     return FALSE;
 }
 
@@ -10429,6 +10504,10 @@ Option2_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -10539,14 +10618,14 @@ Option2_GetParamStringValue
     if( AnscEqualString(ParamName, "Value", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString(pIPv4Option->Value) < *pUlSize)
+        if ( AnscSizeOfString((const char*)pIPv4Option->Value) < *pUlSize)
         {
-            AnscCopyString(pValue, pIPv4Option->Value);
+            AnscCopyString(pValue, (char*)pIPv4Option->Value);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pIPv4Option->Value)+1;
+            *pUlSize = AnscSizeOfString((const char*)pIPv4Option->Value)+1;
             return 1;
         }
     }

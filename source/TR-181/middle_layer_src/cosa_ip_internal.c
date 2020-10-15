@@ -102,7 +102,6 @@ CosaIPCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_IP              pMyObject    = (PCOSA_DATAMODEL_IP)NULL;
 
     /*
@@ -158,6 +157,7 @@ CosaIPInitialize
         ANSC_HANDLE                 hThisObject
     )
 {
+    UNREFERENCED_PARAMETER(hThisObject);
     ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_IP              pMyObject       = (PCOSA_DATAMODEL_IP)hThisObject;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoCOSA = (PPOAM_IREP_FOLDER_OBJECT)NULL;
@@ -167,8 +167,6 @@ CosaIPInitialize
     PSLAP_VARIABLE                  pSlapVariable   = (PSLAP_VARIABLE          )NULL;
     PCOSA_DML_IP_IF_FULL2           pIPInterface    = (PCOSA_DML_IP_IF_FULL2   )NULL;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr       = (PCOSA_DML_IP_V4ADDR     )NULL;
-    PCOSA_DML_IP_V6ADDR             pIPv6Addr       = (PCOSA_DML_IP_V6ADDR     )NULL;
-    PCOSA_DML_IP_V6PREFIX           pIPv6Pre        = (PCOSA_DML_IP_V6PREFIX   )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     char                            FolderName[32]  = {0};
@@ -359,7 +357,7 @@ CosaIPInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pIPInterface->Cfg.Alias, "Interface%d", pMyObject->ulNextInterfaceInsNum);
+                _ansc_sprintf(pIPInterface->Cfg.Alias, "Interface%lu", pMyObject->ulNextInterfaceInsNum);
 
                 CosaDmlIpIfSetValues
                 (
@@ -384,7 +382,7 @@ CosaIPInitialize
             _ansc_sprintf
             (
                 FolderName, 
-                "%s%d", 
+                "%s%lu", 
                 COSA_DML_RR_NAME_IPIF_IPv4_NextInsNum, 
                 pIPInterface->Cfg.InstanceNumber
             );
@@ -472,7 +470,7 @@ CosaIPInitialize
                     }
 
                     /* Generate Alias */
-                    _ansc_sprintf(pIPv4Addr->Alias, "IPv4Address%d", pSubCosaContext->InstanceNumber);
+                    _ansc_sprintf(pIPv4Addr->Alias, "IPv4Address%lu", pSubCosaContext->InstanceNumber);
 
                     /* TODO: Set InstanceNumber Alias back */
                     CosaDmlIpIfSetV4AddrValues
@@ -500,7 +498,7 @@ CosaIPInitialize
             _ansc_sprintf
             (
                 FolderName, 
-                "%s%d", 
+                "%s%lu", 
                 COSA_DML_RR_NAME_IPIF_IPv6_NextInsNum, 
                 pIPInterface->Cfg.InstanceNumber
             );
@@ -541,7 +539,7 @@ CosaIPInitialize
             _ansc_sprintf
             (
                 FolderName, 
-                "%s%d", 
+                "%s%lu", 
                 COSA_DML_RR_NAME_IPIF_IPv6Pre_NextInsNum, 
                 pIPInterface->Cfg.InstanceNumber
             );
@@ -1196,7 +1194,7 @@ CosaIPRegAddInfo
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%d", pNextInsNumName, ulUpperInsNum);
+    _ansc_sprintf(FolderName, "%s%lu", pNextInsNumName, ulUpperInsNum);
 
     if ( TRUE )
     {
@@ -1247,7 +1245,7 @@ CosaIPRegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%d%d", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        _ansc_sprintf(FolderName, "%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
 
         pPoamIrepFo = pPoamIrepFoUpper->AddFolder
                         (
@@ -1372,11 +1370,11 @@ CosaIPRegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_IP              pMyObject         = (PCOSA_DATAMODEL_IP )hThisObject;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
+
+    UNREFERENCED_PARAMETER(hThisObject);
 
     if ( !pPoamIrepUpperFo || !pPoamIrepFo )
     {
@@ -1448,7 +1446,7 @@ CosaIPv6PrefGenInstAlias
 
     }while(1);
 
-    _ansc_sprintf( pEntry->Alias, "IPv6Prefix%d", pEntry->InstanceNumber );
+    _ansc_sprintf( pEntry->Alias, "IPv6Prefix%lu", pEntry->InstanceNumber );
 
     /* keep new MaxInstanceNumber */
 
@@ -1470,7 +1468,7 @@ CosaIPv6PrefGenInstAlias
         goto  EXIT1;
     }
 
-    _ansc_snprintf(FolderName, sizeof(FolderName)-1, "%s%d", COSA_DML_RR_NAME_IPIF_IPv6Pre_NextInsNum, p_ipif->Cfg.InstanceNumber);
+    _ansc_snprintf(FolderName, sizeof(FolderName)-1, "%s%lu", COSA_DML_RR_NAME_IPIF_IPv6Pre_NextInsNum, p_ipif->Cfg.InstanceNumber);
 
     if ( TRUE )
     {
@@ -1577,7 +1575,7 @@ CosaIPv6AddrGenInstAlias
     }while(1);
     
 
-    _ansc_sprintf( pEntry->Alias, "IPv6Address%d", pEntry->InstanceNumber );
+    _ansc_sprintf( pEntry->Alias, "IPv6Address%lu", pEntry->InstanceNumber );
 
     /* keep new MaxInstanceNumber */
 
@@ -1599,7 +1597,7 @@ CosaIPv6AddrGenInstAlias
         goto  EXIT1;
     }
 
-    _ansc_snprintf(FolderName, sizeof(FolderName)-1, "%s%d", COSA_DML_RR_NAME_IPIF_IPv6_NextInsNum, p_ipif->Cfg.InstanceNumber);
+    _ansc_snprintf(FolderName, sizeof(FolderName)-1, "%s%lu", COSA_DML_RR_NAME_IPIF_IPv6_NextInsNum, p_ipif->Cfg.InstanceNumber);
 
     if ( TRUE )
     {

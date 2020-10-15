@@ -108,7 +108,6 @@ CosaDNSCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)NULL;
 
     /*
@@ -354,7 +353,7 @@ CosaDNSInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pDnsServer[ulIndex].Alias, "Server%d", pMyObject->ulNextServerInsNum);
+                _ansc_sprintf(pDnsServer[ulIndex].Alias, "Server%lu", pMyObject->ulNextServerInsNum);
 
                 CosaDmlDnsClientSetServerValues
                 (
@@ -471,7 +470,7 @@ CosaDNSInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pForward[ulIndex2].Alias, "Forwarding%d", pCosaContext2->InstanceNumber);
+                _ansc_sprintf(pForward[ulIndex2].Alias, "Forwarding%lu", pCosaContext2->InstanceNumber);
 
                 /* TODO: Set InstanceNumber Alias back */
                 CosaDmlDnsRelaySetServerValues
@@ -639,7 +638,6 @@ CosaDNSRegGetInfo
     PCOSA_DATAMODEL_DNS             pMyObject      = (PCOSA_DATAMODEL_DNS)hThisObject;
     PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer     = (PCOSA_DML_DNS_CLIENT_SERVER)NULL;
     PCOSA_DML_DNS_RELAY_ENTRY       pForward       = (PCOSA_DML_DNS_RELAY_ENTRY)NULL;
-    PSINGLE_LINK_ENTRY              pLink          = (PSINGLE_LINK_ENTRY )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoServerHA = (PPOAM_IREP_FOLDER_OBJECT)pMyObject->hIrepFolderServerHA;
@@ -648,7 +646,6 @@ CosaDNSRegGetInfo
     ULONG                           ulEntryCount            = 0;
     ULONG                           ulIndex                 = 0;
     ULONG                           ulInstanceNumber        = 0;
-    ULONG                           ulUpperInstanceNumber   = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
 
@@ -920,7 +917,7 @@ CosaDNSRegAddInfo
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%d", pNextInsNumName, ulUpperInsNum);
+    _ansc_sprintf(FolderName, "%s%lu", pNextInsNumName, ulUpperInsNum);
 
     if ( TRUE )
     {
@@ -971,7 +968,7 @@ CosaDNSRegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%d%d", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        _ansc_sprintf(FolderName, "%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
 
         pPoamIrepFo = pPoamIrepFoUpper->AddFolder
                         (
@@ -1096,12 +1093,12 @@ CosaDNSRegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_DNS             pMyObject         = (PCOSA_DATAMODEL_DNS )hThisObject;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
 
+    UNREFERENCED_PARAMETER(hThisObject);
+    
     if ( !pPoamIrepUpperFo || !pPoamIrepFo )
     {
         return ANSC_STATUS_FAILURE;

@@ -75,11 +75,13 @@
 #include "platform_hal.h"
 #include "secure_wrapper.h"
 
+#include "cosa_x_comcast_com_gre_apis.h"
 #include <utctx.h>
 #include <utctx_api.h>
 #include <utapi.h>
 #include <utapi_util.h>
 #include <pthread.h>
+#include <syscfg/syscfg.h>
 
 #define _ERROR_ "NOT SUPPORTED"
 
@@ -107,6 +109,14 @@ PsmGet(const char *param, char *value, int size)
 
 #ifdef CONFIG_VENDOR_CUSTOMER_COMCAST
 
+ANSC_STATUS
+COSAGetParamValueByPathName
+    (
+        void*                      bus_handle,
+        parameterValStruct_t       *val,
+        ULONG                      *parameterValueLength
+    );
+
 extern ANSC_HANDLE bus_handle;
 
 static ANSC_STATUS
@@ -121,10 +131,10 @@ Local_CosaDmlGetParamValueByPathName
     ANSC_STATUS retval = ANSC_STATUS_FAILURE;
     parameterValStruct_t varStruct;
     char outdata[80];
-    int size = sizeof(outdata);
+    ULONG size = sizeof(outdata);
     outdata[0] = '\0';
 
-    varStruct.parameterName = pathName;
+    varStruct.parameterName = (char*)pathName;
     varStruct.parameterValue = outdata;
 
     retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
@@ -150,6 +160,7 @@ CosaDmlDiGetCMMacAddress
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #ifndef _ENABLE_EPON_SUPPORT_ 
 	return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.MACAddress", pValue, pulSize);
 #else
@@ -165,6 +176,7 @@ CosaDmlDiGetEwanCMMacAddress
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
      platform_hal_GetBaseMacAddress(pValue);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
@@ -179,6 +191,7 @@ CosaDmlDiGetRouterMacAddress
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     s_get_interface_mac("erouter0", pValue, 18);
     *pulSize = AnscSizeOfString(pValue);
 
@@ -194,9 +207,12 @@ CosaDmlDiGetMTAMacAddress
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if !defined (_HUB4_PRODUCT_REQ_)
     return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_MTA.MACAddress", pValue, pulSize);
 #else
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pulSize);
     return ANSC_STATUS_FAILURE;
 #endif
 }
@@ -210,6 +226,7 @@ CosaDmlDiGetRouterIPAddress
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 	unsigned int UIntIP = (unsigned int)CosaUtilGetIfAddr("erouter0");
 #if defined (_XB6_PRODUCT_REQ_) ||  defined (_COSA_BCM_ARM_)
 	sprintf(pValue, "%d.%d.%d.%d",(UIntIP & 0xff),((UIntIP >> 8) & 0xff),((UIntIP >> 16) & 0xff),(UIntIP >> 24));
@@ -230,6 +247,8 @@ CosaDmlDiGetRouterIPv6Address
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pulSize);
 	ipv6_addr_info_t * p_v6addr = NULL;
     int  v6addr_num = 0, i, l_iIpV6AddrLen;
 
@@ -266,9 +285,12 @@ CosaDmlDiGetMTAIPAddress
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if !defined (_HUB4_PRODUCT_REQ_)
     return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_MTA.IPAddress", pValue, pulSize);
 #else
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pulSize);
     return ANSC_STATUS_FAILURE;
 #endif
 }
@@ -282,6 +304,7 @@ CosaDmlDiGetMTAIPV6Address
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_MTA_V6.IPV6Address", pValue, pulSize);
 }
 
@@ -294,8 +317,9 @@ CosaDmlDiGetCMIPAddress
         PULONG                      pulSize
     )
 {
-    ANSC_STATUS retStatus;
+    UNREFERENCED_PARAMETER(hContext);
 #ifndef _ENABLE_EPON_SUPPORT_
+    ANSC_STATUS retStatus;
     retStatus = Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.IPv6Address", pValue, pulSize);
     if(!(*pulSize))
         return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.IPAddress", pValue, pulSize);
@@ -306,6 +330,7 @@ CosaDmlDiGetCMIPAddress
     {
         strcpy(pValue, "0.0.0.0");
     }
+    UNREFERENCED_PARAMETER(pulSize);
     return ANSC_STATUS_SUCCESS;
 #endif
 }
@@ -343,7 +368,7 @@ DmSetBool(const char *param, BOOL value)
     char crname[256], *fault = NULL;
     int err;
 
-    val[0].parameterName  = param;
+    val[0].parameterName  = (char*)param;
     val[0].parameterValue = (value ? "true" : "false");
     val[0].type           = ccsp_boolean;
 
@@ -374,7 +399,7 @@ CosaDmlDiGetXfinityWiFiEnable
 }
 
 
-void XfinityWifiThread
+void *XfinityWifiThread
     (
         void *arg
     )
@@ -383,7 +408,7 @@ void XfinityWifiThread
     BOOL value = FALSE;
     
     if (!pvalue)
-        return;
+        return NULL;
     value = *pvalue;
     if (FALSE == value)
     {
@@ -430,7 +455,7 @@ void XfinityWifiThread
 		fprintf(stderr, "%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable error\n", __FUNCTION__);
         AnscTraceError(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable error\n", __FUNCTION__));
         AnscFreeMemory(pvalue);
-		return;
+		return NULL;
     } else {
         AnscTraceWarning(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable OK\n", __FUNCTION__));
     }
@@ -452,6 +477,7 @@ void XfinityWifiThread
     
     AnscFreeMemory(pvalue);
     pvalue = NULL;
+    return NULL;
 }
 
 ANSC_STATUS
@@ -517,9 +543,7 @@ CosaDmlSetCaptivePortalEnable
 {
 
 	char buf[10];
-	char cmd[50];
 	memset(buf,0,sizeof(buf));
-	memset(cmd,0,sizeof(cmd));
 	if (value)
 	{
 		strcpy(buf,"true");
@@ -541,8 +565,7 @@ CosaDmlSetCaptivePortalEnable
                     }
 	  }
 
-    sprintf(cmd,"sh /etc/restart_services.sh %s",buf);
-    system(cmd);
+    v_secure_system("sh /etc/restart_services.sh %s",buf);
     /*commonSyseventSet("dhcp-server-restart", "");
     commonSyseventSet("firewall-restart", "");
     commonSyseventSet("zebra-restart", ""); */

@@ -78,6 +78,8 @@
 #include "ccsp_trace.h"
 #include "dml_tr181_custom_cfg.h"
 #include "safec_lib_common.h"
+#include "cosa_nat_apis.h"
+#include "base64.h"
 
 #if     CFG_USE_CCSP_SYSLOG
     #include <ccsp_syslog.h>
@@ -224,6 +226,9 @@ NAT_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -268,6 +273,7 @@ NAT_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pMyObject    = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT                   pNat         = &pMyObject->Nat;
 
@@ -348,6 +354,10 @@ NAT_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -421,11 +431,12 @@ NAT_SetParamUlongValue
         ULONG                       uValue
     )
 {    
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pMyObject    = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT                   pNat         = &pMyObject->Nat;
-    BOOL                                      bridgeMode;
 
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
@@ -498,6 +509,9 @@ NAT_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -529,6 +543,7 @@ NAT_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT             pMyObject     = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT                   pNat          = &pMyObject->Nat;
@@ -567,11 +582,12 @@ NAT_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT             pMyObject     = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT                   pNat          = &pMyObject->Nat;
 
-    returnStatus = CosaDmlNatGetDmz(NULL, pNat);
+    returnStatus = CosaDmlNatGetDmz(NULL, (PCOSA_DML_NAT_DMZ)pNat);
 
     return returnStatus;
 
@@ -631,6 +647,7 @@ X_CISCO_COM_DMZ_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_DMZ               pDmz         = &pNat->Dmz;
 
@@ -693,6 +710,7 @@ X_CISCO_COM_DMZ_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_DMZ               pDmz         = &pNat->Dmz;
 
@@ -820,6 +838,7 @@ X_CISCO_COM_DMZ_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_DMZ               pDmz         = &pNat->Dmz;
 
@@ -884,6 +903,7 @@ X_CISCO_COM_DMZ_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_DMZ               pDmz         = &pNat->Dmz;
     ULONG                           dmzHost;
@@ -894,7 +914,6 @@ X_CISCO_COM_DMZ_SetParamStringValue
 	char * decodeMsg =NULL;
 	int decodeMsgSize =0;
 	int size =0;
-	int i=0;
 
 	struct timespec start,end,*startPtr,*endPtr;
         startPtr = &start;
@@ -913,7 +932,7 @@ X_CISCO_COM_DMZ_SetParamStringValue
 		return FALSE;
 	}
 
-	size = b64_decode( pString, strlen(pString), decodeMsg );
+	size = b64_decode( (const uint8_t*)pString, strlen(pString), (uint8_t *)decodeMsg );
 	CcspTraceWarning(("base64 decoded data contains %d bytes\n",size));
 
 	getCurrentTime(endPtr);
@@ -1110,6 +1129,9 @@ X_CISCO_COM_DMZ_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_DMZ               pDmz         = &pNat->Dmz;
     ULONG                           dmzHost      = (ULONG)_ansc_inet_addr(pDmz->InternalIP);
@@ -1155,6 +1177,7 @@ X_CISCO_COM_DMZ_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT             pNat          = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_DMZ               pDmz          = &pNat->Dmz;
@@ -1195,6 +1218,7 @@ X_CISCO_COM_DMZ_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT             pNat          = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_DMZ               pDmz          = &pNat->Dmz;
@@ -1258,6 +1282,7 @@ PortMapping_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
 
     return AnscSListQueryDepth( &pNat->NatPMappingList );
@@ -1302,6 +1327,7 @@ PortMapping_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT                   pMyObject         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PSINGLE_LINK_ENTRY                    pSListEntry       = NULL;
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT    pCxtLink          = NULL;
@@ -1344,6 +1370,7 @@ PortMapping_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pMyObject    = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     BOOL                            bIsUpdated   = TRUE;
 
@@ -1393,6 +1420,7 @@ PortMapping_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                           returnStatus      = ANSC_STATUS_FAILURE;
     PCOSA_DATAMODEL_NAT                   pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT    pCxtLink          = NULL;
@@ -1402,7 +1430,6 @@ PortMapping_Synchronize
     PCOSA_DML_NAT_PMAPPING                pPortMapping2     = NULL;
     ULONG                                 entryCount        = 0;
     ULONG                                 i                 = 0;
-    ULONG                                 HashValue         = 0;
     PULONG                                pulTmp            = 0;
 
     pPortMapping         = CosaDmlNatGetPortMappings(NULL,&entryCount);
@@ -1542,15 +1569,13 @@ PortMapping_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT                  pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_PMAPPING               pNatPMapping      = NULL;
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT   pPMappingCxtLink  = NULL;
-    PSINGLE_LINK_ENTRY                   pSListEntry       = NULL;
-    ANSC_STATUS                          returnStatus      = ANSC_STATUS_SUCCESS;
-    CHAR                                 tmpBuff[64]       = {0};
-    BOOL                                      bridgeMode;
 
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return NULL;
@@ -1585,7 +1610,7 @@ PortMapping_AddEntry
 
     CosaSListPushEntryByInsNum(&pNat->NatPMappingList, (PCOSA_CONTEXT_LINK_OBJECT)pPMappingCxtLink);
 
-    returnStatus = CosaNatRegSetNatInfo(pNat);
+    CosaNatRegSetNatInfo(pNat);
 
     return (ANSC_HANDLE)pPMappingCxtLink;
 
@@ -1628,13 +1653,14 @@ PortMapping_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                              returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT                      pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT       pPMappingCxtLink  = (PCOSA_CONTEXT_PMAPPING_LINK_OBJECT)hInstance;
     PCOSA_DML_NAT_PMAPPING                   pNatPMapping      = (PCOSA_DML_NAT_PMAPPING)pPMappingCxtLink->hContext;
-    BOOL                                      bridgeMode;
 
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return ANSC_STATUS_FAILURE;
@@ -1764,6 +1790,9 @@ PortMapping_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1983,15 +2012,15 @@ PortMapping_GetParamStringValue
         /* collect value */
         pString = CosaUtilGetFullPathNameByKeyword
                     (
-                        "Device.IP.Interface.",
-                        "Name",
-                        pNatPMapping->Interface
+                        (PUCHAR)"Device.IP.Interface.",
+                        (PUCHAR)"Name",
+                        (PUCHAR)pNatPMapping->Interface
                     );
         if ( pString )
         {
-            if ( AnscSizeOfString(pString) < *pUlSize)
+            if ( AnscSizeOfString((const char*)pString) < *pUlSize)
             {
-                AnscCopyString(pValue, pString);
+                AnscCopyString(pValue, (char*)pString);
 
                 AnscFreeMemory(pString);
 
@@ -1999,7 +2028,7 @@ PortMapping_GetParamStringValue
             }
             else
             {
-                *pUlSize = AnscSizeOfString(pString)+1;
+                *pUlSize = AnscSizeOfString((const char*)pString)+1;
 
                 AnscFreeMemory(pString);
 
@@ -2072,9 +2101,9 @@ PortMapping_SetParamBoolValue
 {
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT        pCxtLink      = (PCOSA_CONTEXT_PMAPPING_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PMAPPING                    pNatPMapping  = (PCOSA_DML_NAT_PMAPPING)pCxtLink->hContext;
-    BOOL                                      bridgeMode;
 
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
@@ -2150,6 +2179,9 @@ PortMapping_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2197,9 +2229,9 @@ PortMapping_SetParamUlongValue
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT        pCxtLink      = (PCOSA_CONTEXT_PMAPPING_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PMAPPING                    pNatPMapping  = (PCOSA_DML_NAT_PMAPPING)pCxtLink->hContext;
     ANSC_STATUS                               returnStatus  = ANSC_STATUS_SUCCESS;
-    BOOL                                      bridgeMode;
 
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
@@ -2321,9 +2353,8 @@ PortMapping_SetParamStringValue
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT        pCxtLink      = (PCOSA_CONTEXT_PMAPPING_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PMAPPING                    pNatPMapping  = (PCOSA_DML_NAT_PMAPPING)pCxtLink->hContext;
 
-    BOOL                                      bridgeMode;
-
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
@@ -2334,7 +2365,7 @@ PortMapping_SetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString( pNat->AliasOfPortMapping, pNatPMapping->Alias);
+        AnscCopyString( (char*)pNat->AliasOfPortMapping, pNatPMapping->Alias);
 
         AnscCopyString( pNatPMapping->Alias, pString );
 
@@ -2407,6 +2438,7 @@ PortMapping_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(puLength);
     PCOSA_DATAMODEL_NAT                      pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_PMAPPING_LINK_OBJECT)hInsContext;
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT       pCxtLink2         = NULL;
@@ -2527,7 +2559,7 @@ PortMapping_Commit
             NAT_PORTMAPPING_SET_DEFAULTVALUE(pNatPMapping);
 
             if ( pNat->AliasOfPortMapping[0] )
-                AnscCopyString( pNatPMapping->Alias, pNat->AliasOfPortMapping );
+                AnscCopyString( pNatPMapping->Alias, (char*)pNat->AliasOfPortMapping );
         }
     }
     else
@@ -2582,7 +2614,7 @@ PortMapping_Rollback
     PCOSA_DML_NAT_PMAPPING              pNatPMapping  = (PCOSA_DML_NAT_PMAPPING)pCxtLink->hContext;
 
     if ( pNat->AliasOfPortMapping[0] )
-        AnscCopyString( pNatPMapping->Alias, pNat->AliasOfPortMapping );
+        AnscCopyString( pNatPMapping->Alias, (char*)pNat->AliasOfPortMapping );
 
     if ( !pCxtLink->bNew )
     {
@@ -2607,6 +2639,7 @@ NatPortTrigger_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if (CosaDmlNatGetPortTriggerEnable(pBool) != ANSC_STATUS_SUCCESS)
@@ -2626,9 +2659,9 @@ NatPortTrigger_SetParamBoolValue
         BOOL                        bValue
     )
 {
-    BOOL                                      bridgeMode;
-
+    UNREFERENCED_PARAMETER(hInsContext);
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
@@ -2656,6 +2689,9 @@ X_RDK_PortMapping_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
 	if( AnscEqualString(ParamName, "Data", TRUE))
 	{
 		CcspTraceWarning(("Data Get Not supported\n"));
@@ -2703,13 +2739,13 @@ X_RDK_PortMapping_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Data", TRUE))
      {
 	char * decodeMsg =NULL;
 	int decodeMsgSize =0;
 	int size =0;
-	int i=0;       
 
 	struct timespec start,end,*startPtr,*endPtr;
         startPtr = &start;
@@ -2724,7 +2760,7 @@ X_RDK_PortMapping_SetParamStringValue
 
 	decodeMsg = (char *) malloc(sizeof(char) * decodeMsgSize);
 
-	size = b64_decode( pString, strlen(pString), decodeMsg );
+	size = b64_decode( (const uint8_t*)pString, strlen(pString), (uint8_t *)decodeMsg );
 	CcspTraceWarning(("base64 decoded data contains %d bytes\n",size));
 
 	getCurrentTime(endPtr);
@@ -2886,6 +2922,7 @@ PortTrigger_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
 
     return AnscSListQueryDepth( &pNat->NatPTriggerList );
@@ -2931,6 +2968,7 @@ PortTrigger_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pMyObject         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = NULL;
@@ -2980,14 +3018,13 @@ PortTrigger_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    ANSC_STATUS                          returnStatus      = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT                  pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_PTRIGGER               pNatPTrigger      = NULL;
     PCOSA_CONTEXT_LINK_OBJECT            pPTriggerCxtLink  = NULL;
-    PSINGLE_LINK_ENTRY                   pSListEntry       = NULL;
-    BOOL                                      bridgeMode;
 
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return NULL;
@@ -3018,7 +3055,7 @@ PortTrigger_AddEntry
 
     CosaSListPushEntryByInsNum(&pNat->NatPTriggerList, (PCOSA_CONTEXT_LINK_OBJECT)pPTriggerCxtLink);
 
-    returnStatus = CosaNatRegSetNatInfo(pNat);
+    CosaNatRegSetNatInfo(pNat);
 
     return (ANSC_HANDLE)pPTriggerCxtLink;
 
@@ -3062,13 +3099,14 @@ PortTrigger_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT             pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_CONTEXT_LINK_OBJECT       pPTriggerCxtLink  = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger      = (PCOSA_DML_NAT_PTRIGGER)pPTriggerCxtLink->hContext;
-    BOOL                                      bridgeMode;
 
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return ANSC_STATUS_FAILURE;
@@ -3321,7 +3359,6 @@ PortTrigger_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger  = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
-    PUCHAR                          pString       = NULL;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -3401,9 +3438,8 @@ PortTrigger_SetParamBoolValue
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger  = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
 
-    BOOL                                      bridgeMode;
-
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
@@ -3463,9 +3499,9 @@ PortTrigger_SetParamUlongValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger  = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
-    BOOL                                      bridgeMode;
 
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
@@ -3569,13 +3605,12 @@ PortTrigger_SetParamStringValue
         char*                       pString
     )
 {
-    PCOSA_DATAMODEL_NAT             pNat          = (PCOSA_DATAMODEL_NAT      )g_pCosaBEManager->hNat;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger  = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
-    BOOL                                      bridgeMode;
     errno_t                         rc            = -1;
 
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;
@@ -3654,6 +3689,7 @@ PortTrigger_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(puLength);
     PCOSA_DATAMODEL_NAT             pNat              = (PCOSA_DATAMODEL_NAT      )g_pCosaBEManager->hNat;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink2         = NULL;
@@ -3831,7 +3867,6 @@ PortTrigger_Rollback
     )
 {
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_NAT             pNat          = (PCOSA_DATAMODEL_NAT      )g_pCosaBEManager->hNat;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger  = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
 

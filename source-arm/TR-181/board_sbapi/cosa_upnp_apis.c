@@ -74,6 +74,7 @@
 **************************************************************************/
 
 #include "cosa_upnp_apis.h"
+#include <stdlib.h>
 
 #ifdef _COSA_SIM_
 
@@ -88,6 +89,8 @@ CosaDmlUpnpInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -99,7 +102,7 @@ CosaDmlUpnpDevEnable
     )
 {
     g_UpnpDevEnable = bEnabled;
-    
+    UNREFERENCED_PARAMETER(hContext);    
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -109,6 +112,7 @@ CosaDmlUpnpDevGetState
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_UpnpDevEnable;
 }
 
@@ -120,7 +124,7 @@ CosaDmlUpnpDevEnableMediaServer
     )
 {
     g_UpnpDevMediaServerEnable = bEnabled;
-    
+    UNREFERENCED_PARAMETER(hContext);    
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -130,6 +134,7 @@ CosaDmlUpnpDevGetMediaServerState
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_UpnpDevMediaServerEnable;
 }
 
@@ -140,6 +145,7 @@ CosaDmlUpnpDevEnableIgd
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     g_UpnpDevIgdEnable = bEnabled;
     
     return ANSC_STATUS_SUCCESS;
@@ -151,6 +157,7 @@ CosaDmlUpnpDevGetIgdState
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_UpnpDevIgdEnable;
 }
 
@@ -162,6 +169,7 @@ CosaDmlUpnpDevGetArchVer
         ULONG*                      pMinorVer
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( pMajorVer )
     {
         *pMajorVer = 2;
@@ -195,6 +203,8 @@ CosaDmlUpnpInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(phContext);
+    UNREFERENCED_PARAMETER(hDml);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -207,6 +217,7 @@ CosaDmlUpnpDevEnable
 {
     UtopiaContext pCtx;
     g_UpnpDevEnable = bEnabled;
+    UNREFERENCED_PARAMETER(hContext);
 
     if (!Utopia_Init(&pCtx))
     {
@@ -235,11 +246,12 @@ CosaDmlUpnpDevGetState
 {
     UtopiaContext pCtx;
     CHAR buf[64] = {'\0'};
+    UNREFERENCED_PARAMETER(hContext);
 
     if (!Utopia_Init(&pCtx))
     {
         CcspTraceWarning(("Device.UPnP: Error in initializing context!!! \n" ));
-        return ANSC_STATUS_FAILURE;
+        return (BOOLEAN)ANSC_STATUS_FAILURE;
     }
     
     Utopia_RawGet(&pCtx, NULL, "tr_device_upnp_enable", buf, sizeof(buf));
@@ -265,6 +277,7 @@ CosaDmlUpnpDevGetAdvPeriod
 {
 	UtopiaContext utctx;
 	CHAR buf[64] = {'\0'};
+    UNREFERENCED_PARAMETER(hContext);
 
 	if (!Utopia_Init(&utctx)){
 		CcspTraceWarning(("Device.UPnP: Error in initializing utctx!!! \n"));
@@ -274,9 +287,9 @@ CosaDmlUpnpDevGetAdvPeriod
 	Utopia_RawGet(&utctx, NULL, "upnp_igd_advr_expire", buf, sizeof(buf));
     
 	if (AnscSizeOfString(buf)){
-		*val = _ansc_atoi(buf);
+		*val = (PULONG)_ansc_atoi(buf);
 	}else{
-		*val = g_AdvPeriod; // use default value
+		*val = (PULONG)g_AdvPeriod; // use default value
 	}
 
 	Utopia_Free(&utctx, 0);
@@ -293,8 +306,9 @@ CosaDmlUpnpDevSetAdvPeriod
 {
     UtopiaContext utctx;
 	CHAR buf[64] = {'\0'};
+    UNREFERENCED_PARAMETER(hContext);
 
-    syslog_systemlog("UPnP", LOG_NOTICE, "Advertisement Period: %d", val);
+    syslog_systemlog("UPnP", LOG_NOTICE, "Advertisement Period: %lu", val);
 
 	if (!Utopia_Init(&utctx)){
         CcspTraceWarning(("Device.UPnP: Error in initializing utctx!!! \n"));
@@ -319,7 +333,7 @@ CosaDmlUpnpDevGetTTL
 {
 	UtopiaContext utctx;
 	CHAR buf[64] = {'\0'};
-
+    UNREFERENCED_PARAMETER(hContext);
 	if (!Utopia_Init(&utctx)){
 		CcspTraceWarning(("Device.UPnP: Error in initializing utctx!!! \n"));
 		return ANSC_STATUS_FAILURE;
@@ -328,9 +342,9 @@ CosaDmlUpnpDevGetTTL
 	Utopia_RawGet(&utctx, NULL, "upnp_igd_advr_ttl", buf, sizeof(buf));
     
 	if (AnscSizeOfString(buf)){
-		*val = _ansc_atoi(buf);
+		*val = (PULONG)_ansc_atoi(buf);
 	}else{
-		*val = g_TTL; // use default value
+		*val = (PULONG)g_TTL; // use default value
 	}
 
 	Utopia_Free(&utctx, 0);
@@ -347,8 +361,9 @@ CosaDmlUpnpDevSetTTL
 {
     UtopiaContext utctx;
 	CHAR buf[64] = {'\0'};
+    UNREFERENCED_PARAMETER(hContext);
 
-    syslog_systemlog("UPnP", LOG_NOTICE, "Time To Live: %d", val);
+    syslog_systemlog("UPnP", LOG_NOTICE, "Time To Live: %lu", val);
 
 	if (!Utopia_Init(&utctx)){
         CcspTraceWarning(("Device.UPnP: Error in initializing utctx!!! \n"));
@@ -371,6 +386,7 @@ CosaDmlUpnpDevEnableMediaServer
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     g_UpnpDevMediaServerEnable = bEnabled;
     
     return ANSC_STATUS_SUCCESS;
@@ -382,6 +398,7 @@ CosaDmlUpnpDevGetMediaServerState
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_UpnpDevMediaServerEnable;
 }
 
@@ -392,9 +409,9 @@ CosaDmlUpnpDevEnableIgd
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext pCtx;
     igdconf_t igd;
-    CHAR buf[64] = {'\0'};
     g_UpnpDevIgdEnable = bEnabled;
 
     syslog_systemlog("UPnP", LOG_NOTICE, "%s", (bEnabled==TRUE)?"enable":"disable");
@@ -428,11 +445,12 @@ CosaDmlUpnpDevGetIgdState
 {
     UtopiaContext pCtx;
     igdconf_t igd;
+    UNREFERENCED_PARAMETER(hContext);
 
     if (!Utopia_Init(&pCtx))
     {
         CcspTraceWarning(("Device.UPnP: Error in initializing context!!! \n" ));
-        return ANSC_STATUS_FAILURE;
+        return (BOOLEAN)ANSC_STATUS_FAILURE;
     }
     Utopia_GetBool(&pCtx, UtopiaValue_Mgmt_IGDEnabled, &igd.enable);
     g_UpnpDevIgdEnable = (igd.enable == 0)? FALSE : TRUE;
@@ -449,6 +467,7 @@ CosaDmlUpnpDevGetArchVer
         ULONG*                      pMinorVer
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( pMajorVer )
     {
         *pMajorVer = 2;
@@ -469,6 +488,8 @@ CosaDmlUpnpSetDiscoveryEnable
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(bEnabled);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -478,6 +499,7 @@ CosaDmlUpnpGetDiscoveryEnable
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return FALSE;
 }
 
@@ -488,6 +510,8 @@ CosaDmlUpnpSetDiscoveryPollingInterval
         ULONG                       PollingInterval
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(PollingInterval);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -497,6 +521,7 @@ CosaDmlUpnpGetDiscoveryPollingInterval
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return 0;
 }
 
@@ -513,6 +538,8 @@ CosaDmlUpnpInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(phContext);
+    UNREFERENCED_PARAMETER(hDml);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -523,6 +550,7 @@ CosaDmlUpnpDevEnable
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     g_UpnpDevEnable = bEnabled;
     
     return ANSC_STATUS_SUCCESS;
@@ -534,6 +562,7 @@ CosaDmlUpnpDevGetState
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_UpnpDevEnable;
 }
 
@@ -544,6 +573,7 @@ CosaDmlUpnpDevEnableMediaServer
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     g_UpnpDevMediaServerEnable = bEnabled;
     
     return ANSC_STATUS_SUCCESS;
@@ -555,6 +585,7 @@ CosaDmlUpnpDevGetMediaServerState
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_UpnpDevMediaServerEnable;
 }
 
@@ -565,6 +596,7 @@ CosaDmlUpnpDevEnableIgd
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     g_UpnpDevIgdEnable = bEnabled;
     
     return ANSC_STATUS_SUCCESS;
@@ -576,6 +608,7 @@ CosaDmlUpnpDevGetIgdState
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_UpnpDevIgdEnable;
 }
 
@@ -587,6 +620,7 @@ CosaDmlUpnpDevGetArchVer
         ULONG*                      pMinorVer
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( pMajorVer )
     {
         *pMajorVer = 2;

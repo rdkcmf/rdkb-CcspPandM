@@ -72,6 +72,10 @@
 #include "plugin_main_apis.h"
 #include "cosa_interfacestack_internal.h"
 
+static int CosaIFStackGetParamValueString(char *pParamName, char *pParamValue, ULONG *pValueSize);
+static ULONG CosaIFStackGetParamValueULong(char *pParamName);
+ANSC_STATUS COSAGetParamValueByPathName(void* bus_handle, parameterValStruct_t *val, ULONG *parameterValueLength);
+
 /**********************************************************************
 
     caller:     owner of the object
@@ -99,7 +103,6 @@ CosaIFStackCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_IFSTACK         pMyObject    = (PCOSA_DATAMODEL_IFSTACK)NULL;
 
     /*
@@ -260,7 +263,6 @@ CosaIFStackAddEntry
         PCOSA_DML_IFSTACK_ENTRY     pEntry
     )
 {
-    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_IFSTACK         pMyObject       = (PCOSA_DATAMODEL_IFSTACK)hThisObject;
     PCOSA_DML_IFSTACK_ENTRY         pInterfaceStack = (PCOSA_DML_IFSTACK_ENTRY)NULL;
     PSLIST_HEADER                   pIFStackHead    = (PSLIST_HEADER)&pMyObject->InterfaceStackList;
@@ -331,7 +333,6 @@ CosaIFStackEmptyTable
         ANSC_HANDLE                 hThisObject
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_IFSTACK         pMyObject    = (PCOSA_DATAMODEL_IFSTACK)hThisObject;
     PSLIST_HEADER                   pIFStackHead = (PSLIST_HEADER)&pMyObject->InterfaceStackList;
     PCOSA_DML_IFSTACK_ENTRY         pInterfaceStack = (PCOSA_DML_IFSTACK_ENTRY)NULL;
@@ -497,7 +498,7 @@ CosaIFStackCreateAll
     PANSC_TOKEN_CHAIN               pListTokenChain = (PANSC_TOKEN_CHAIN)NULL;
     PANSC_STRING_TOKEN              pStringToken    = (PANSC_STRING_TOKEN)NULL;
     COSA_DML_IFSTACK_ENTRY          sInterfaceStack;
-    PUCHAR                          pEnd                  = NULL;    
+    PCHAR                           pEnd                  = NULL;    
     BOOL                            bMultiLayer           = FALSE;
     ULONG                           i                     = 0;
     ULONG                           j                     = 0;
@@ -510,21 +511,21 @@ CosaIFStackCreateAll
     ULONG                           ulNumOfParent         = 0;
     ULONG                           ulNumOfEntry          = 0;
     ULONG                           ulEntryNameLen        = 256;
-    UCHAR                           ucEntryParamName[256] = {0};
-    UCHAR                           ucEntryNameValue[1024] = {0};
+    CHAR                            ucEntryParamName[256] = {0};
+    CHAR                            ucEntryNameValue[1024] = {0};
     UCHAR                           ucEntryFullPath[256]  = {0};
-    UCHAR                           ucTableParam[256]     = {0};
-    UCHAR                           ucTable1[]            = "Device.Ethernet.Link.";
-    UCHAR                           ucTable2[]            = "Device.WiFi.SSID.";
-    UCHAR                           ucTable3[]            = "Device.IP.Interface.";
-    UCHAR                           ucTable4[]            = "Device.Ethernet.VLANTermination.";
-    UCHAR                           ucTable5[]            = "Device.PPP.Interface.";
-    UCHAR                           ucTable6[]            = "Device.DSL.Channel.";
-    UCHAR                           ucTable7[]            = "Device.DSL.BondingGroup.";
-    UCHAR                           ucTable8[]            = "Device.ATM.Link.";
-    UCHAR                           ucTable9[]            = "Device.PTM.Link.";
-    UCHAR                           ucTable10[256]        = "Device.Bridging.Bridge.{i}.Port.";  //Fix the ABW error in the code below
-    PUCHAR                          pAllTable[]           = {ucTable1, ucTable2, 
+    CHAR                            ucTableParam[256]     = {0};
+    CHAR                            ucTable1[]            = "Device.Ethernet.Link.";
+    CHAR                            ucTable2[]            = "Device.WiFi.SSID.";
+    CHAR                            ucTable3[]            = "Device.IP.Interface.";
+    CHAR                            ucTable4[]            = "Device.Ethernet.VLANTermination.";
+    CHAR                            ucTable5[]            = "Device.PPP.Interface.";
+    CHAR                            ucTable6[]            = "Device.DSL.Channel.";
+    CHAR                            ucTable7[]            = "Device.DSL.BondingGroup.";
+    CHAR                            ucTable8[]            = "Device.ATM.Link.";
+    CHAR                            ucTable9[]            = "Device.PTM.Link.";
+    CHAR                            ucTable10[256]        = "Device.Bridging.Bridge.{i}.Port.";  //Fix the ABW error in the code below
+    PCHAR                           pAllTable[]           = {ucTable1, ucTable2, 
                                                              ucTable3, ucTable4,
                                                              ucTable5, ucTable6,
                                                              ucTable7, ucTable8,
@@ -538,7 +539,7 @@ CosaIFStackCreateAll
 
     for ( i = 0 ; i < ulNumOfTable; i++ )
     {
-        if ( pEnd  = _ansc_strstr(pAllTable[i], ".{i}.") )
+        if (( pEnd  = _ansc_strstr((const char*)pAllTable[i], ".{i}.") ))
         {
             /* This is a multi-layer object like Device.Bridging.Bridge.{i}.Port.{i}. */
             bMultiLayer = TRUE;
@@ -557,7 +558,7 @@ CosaIFStackCreateAll
             pEnd = pEnd + 4;
 
             AnscZeroMemory(ucEntryFullPath, 256);  
-            AnscCopyMemory(ucEntryFullPath, pEnd,  AnscSizeOfString(pEnd)-1);
+            AnscCopyMemory(ucEntryFullPath, pEnd,  AnscSizeOfString((const char*)pEnd)-1);
 
             /* To get like Device.Bridging.BridgeNumberOfEntries */
             _ansc_strcat(ucTableParam, "NumberOfEntries");  
@@ -570,7 +571,7 @@ CosaIFStackCreateAll
         else
         {
             /* To get like  Device.Ethernet.Link. */
-            AnscCopyMemory(ucTableParam, pAllTable[i], AnscSizeOfString(pAllTable[i])-1);
+            AnscCopyMemory(ucTableParam, pAllTable[i], AnscSizeOfString((const char*)pAllTable[i])-1);
 
             /* To go following cycle for once */
             ulNumOfParent = 1;
@@ -590,12 +591,12 @@ CosaIFStackCreateAll
                 
                 /* To get like Device.Bridging.Bridge.1.Port */
                 _ansc_sprintf(pAllTable[i],
-                              "%s%d%s",
+                              "%s%lu%s",
                               ucTableParam,
                               ulEntryInstanceNum,
                               ucEntryFullPath); 
 
-                ulLength = AnscSizeOfString(pAllTable[i]);
+                ulLength = AnscSizeOfString((const char*)pAllTable[i]);
 
                 /* To get like Device.Bridging.Bridge.1.PortNumberOfEntries */
                 _ansc_strcat(pAllTable[i], "NumberOfEntries");  
@@ -615,7 +616,7 @@ CosaIFStackCreateAll
                        
             for ( k = 0 ; k < ulNumOfEntry; k++ )
             {
-                if ( _ansc_strstr(pAllTable[i], ".WiFi.") != NULL )
+                if ( _ansc_strstr((const char*)pAllTable[i], ".WiFi.") != NULL )
                 {
                     /* We can't get WiFi index-to-instance since it's managed by an
                        external component/process, so we derive it manually. */
@@ -637,7 +638,7 @@ CosaIFStackCreateAll
                 AnscZeroMemory(sInterfaceStack.HigherAlias, COSA_IFSTACK_ALIAS_LENGTH);
                 
                 _ansc_sprintf(sInterfaceStack.HigherLayer,
-                              "%s%d",
+                              "%s%lu",
                               pAllTable[i],
                               ulSubEntryInsNum);
 
@@ -655,7 +656,7 @@ CosaIFStackCreateAll
                                                     &ulEntryNameLen);
                 
                 if ( ( 0 == returnValue) && 
-                     ( 0 != AnscSizeOfString(ucEntryNameValue)) )
+                     ( 0 != AnscSizeOfString((const char*)ucEntryNameValue)) )
                 {
                     AnscCopyString(sInterfaceStack.HigherAlias, ucEntryNameValue);
                 } 
@@ -678,7 +679,7 @@ CosaIFStackCreateAll
                                                     &ulEntryNameLen);
                 
                 if ( ( 0 != returnValue) || 
-                     ( 0 == AnscSizeOfString(ucEntryNameValue)) )
+                     ( 0 == AnscSizeOfString((const char*)ucEntryNameValue)) )
                 {
                     CcspTraceWarning(("\n No LowerLayers for '%s'\n", sInterfaceStack.HigherLayer)); 
                     continue;
@@ -699,7 +700,7 @@ CosaIFStackCreateAll
                         continue;
                     }  
                         
-                    while ( pStringToken = AnscTcUnlinkToken(pListTokenChain) )
+                    while (( pStringToken = AnscTcUnlinkToken(pListTokenChain) ))
                     {
                         if ( pStringToken->Name )
                         {
@@ -737,7 +738,7 @@ CosaIFStackCreateAll
                                                                 &ulEntryNameLen);
                             
                             if ( ( 0 == returnValue) && 
-                                 ( 0 != AnscSizeOfString(ucEntryNameValue)) )
+                                 ( 0 != AnscSizeOfString((const char*)ucEntryNameValue)) )
                             {
                                 AnscCopyString(sInterfaceStack.LowerAlias, ucEntryNameValue);
                             } 

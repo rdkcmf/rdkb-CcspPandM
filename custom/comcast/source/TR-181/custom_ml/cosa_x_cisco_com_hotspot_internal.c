@@ -43,7 +43,6 @@ CosaHotspotCreate
         VOID
     )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     COSA_DATAMODEL_HOTSPOT      *pMyObject   = NULL;
 
     pMyObject = AnscAllocateMemory(sizeof(COSA_DATAMODEL_HOTSPOT));
@@ -68,8 +67,7 @@ CosaHotspotInitialize
     )
 {
     COSA_DATAMODEL_HOTSPOT          *hs = (COSA_DATAMODEL_HOTSPOT *)hThisObject;
-    ULONG                           i, j;
-    char                            alias[65];
+    int                             i, j;
     COSA_DML_HOTSPOT_SSID           *hsSsid;
 
     if (CosaDml_HotspotInit() != ANSC_STATUS_SUCCESS)

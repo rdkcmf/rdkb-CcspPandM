@@ -103,7 +103,6 @@ CosaRACreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_RA              pMyObject    = (PCOSA_DATAMODEL_RA)NULL;
 
     /*
@@ -1144,8 +1143,8 @@ CosaRARegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_RA              pMyObject         = (PCOSA_DATAMODEL_RA )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
+    UNREFERENCED_PARAMETER(hCosaContext);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;

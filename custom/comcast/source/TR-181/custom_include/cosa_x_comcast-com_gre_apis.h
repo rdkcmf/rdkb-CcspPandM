@@ -181,6 +181,9 @@ CosaDml_GreTunnelFinalize(void);	//
 ANSC_STATUS 
 CosaDml_GreTunnelIfFinalize(void); //
 
+ANSC_STATUS
+CosaDml_GreTunnelInit(void);
+
 ULONG 
 CosaDml_GreTunnelGetNumberOfEntries(void);	//
 

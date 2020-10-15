@@ -99,7 +99,6 @@ CosaMldCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_MLD             pMyObject    = (PCOSA_DATAMODEL_MLD)NULL;
 
     /*

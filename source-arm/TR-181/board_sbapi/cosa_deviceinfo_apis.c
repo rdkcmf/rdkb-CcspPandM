@@ -90,17 +90,22 @@
         01/11/2011    initial revision.
 
 **************************************************************************/
-
+#define _GNU_SOURCE
+#include <string.h>
+#include <syscfg/syscfg.h>
 #include "cosa_deviceinfo_apis.h"
 #include "cosa_deviceinfo_apis_custom.h"
 #include "dml_tr181_custom_cfg.h" 
 #include "cosa_x_cisco_com_devicecontrol_apis.h"
 #include "cosa_deviceinfo_internal.h"
+#include "cosa_drg_common.h"
 #define DEVICE_PROPERTIES    "/etc/device.properties"
 #define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
 #define BOOTSTRAP_INFO_FILE		"/nvram/bootstrap.json"
 #define RFC_DEFAULTS_FILE       "/etc/rfcDefaults.json"
 #define RFC_STORE_FILE       "/opt/secure/RFC/tr181store.json"
+
+static int writeToJson(char *data, char *file);
 
 #if defined(_PLATFORM_IPQ_)
 #include "ccsp_vendor.h"
@@ -155,6 +160,7 @@ extern  ANSC_HANDLE             bus_handle;
 #define DMSB_TR181_PSM_WIFI_TELEMETRY_SNRList                 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WIFI_TELEMETRY.SNRList"
 
 #ifdef CISCO_XB3_PLATFORM_CHANGES
+#undef CONFIG_VENDOR_NAME
 #define CONFIG_VENDOR_NAME "Cisco"
 #endif
 
@@ -203,10 +209,10 @@ static char* mapArgsToSSHOption(char *revSSHConfig) {
 	char* value = NULL;
 	char* option = NULL;
 
-    if (!revSSHConfig)
-        return NULL;
+        if (!revSSHConfig)
+            return NULL;
 
-	option = (char*) calloc(125, sizeof(char));
+        option = (char*) calloc(125, sizeof(char));
 
 	if (option) {
 		if ((value = strstr(revSSHConfig, "idletimeout="))) {
@@ -236,13 +242,13 @@ static char* findUntilFirstDelimiter(char* input) {
 	char tempCopy[256] = { "\0" };
 	char *tempStr = NULL;
 	char* option = NULL;
-    int inputMsgSize = 0;
+    unsigned int inputMsgSize = 0;
     char *st = NULL;
 
-    if (!input)
-        return NULL;
+        if (!input)
+            return NULL;
 
-	option = (char*) calloc(125, sizeof(char));
+        option = (char*) calloc(125, sizeof(char));
 	inputMsgSize = strlen(input);
     if (sizeof(tempCopy) > inputMsgSize)
     {
@@ -269,7 +275,7 @@ static char* getHostLogin(char *tempStr) {
 	char* hostIp = NULL;
 	char* user = NULL;
 	char* hostLogin = NULL;
-	int inputMsgSize = 0;
+	unsigned int inputMsgSize = 0;
 	char tempCopy[256] = { "\0" };
 
     if (!tempStr)
@@ -333,6 +339,8 @@ CosaDmlDiInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     if ( platform_hal_PandMDBInit() != RETURN_OK)
         return ANSC_STATUS_FAILURE;
     else
@@ -347,6 +355,7 @@ CosaDmlDiGetManufacturer
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscCopyString(pValue, CONFIG_VENDOR_NAME);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
@@ -360,7 +369,7 @@ CosaDmlDiGetManufacturerOUI
         ULONG*                      pulSize
     )
 {
-
+    UNREFERENCED_PARAMETER(hContext);
  /*
     UCHAR strMaceMG[128];
     memset(strMaceMG,0,128);
@@ -417,6 +426,7 @@ CosaDmlDiGetCMTSMac
         ULONG*                      pulSize
     )
 {
+   UNREFERENCED_PARAMETER(hContext);
    if ( platform_hal_getCMTSMac(pValue) != RETURN_OK){
         CcspTraceWarning(("Unable to fetch the CMTS MAC \n"));
         return ANSC_STATUS_FAILURE;
@@ -437,7 +447,8 @@ CosaDmlDiGetModelName
         char*                       pValue,
         ULONG*                      pulSize
     )
-{    
+{
+    UNREFERENCED_PARAMETER(hContext); 
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 
     if ( platform_hal_GetModelName(pValue) != RETURN_OK)
@@ -478,6 +489,7 @@ CosaDmlDiGetDescription
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscCopyString(pValue, CONFIG_TI_GW_DESCRIPTION);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
@@ -491,6 +503,7 @@ CosaDmlDiGetProductClass
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 /*    char val[64] = {0};
     char param_name[256] = {0};
 
@@ -545,6 +558,7 @@ CosaDmlDiGetSerialNumber
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UCHAR unitsn[128];
     memset(unitsn,0,128);
 
@@ -568,7 +582,7 @@ CosaDmlDiGetHardwareVersion
         ULONG*                      pulSize
     )
 {
-
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_    
 
     if (platform_hal_GetHardwareVersion(pValue) != RETURN_OK )
@@ -597,6 +611,7 @@ CosaDmlDiGetSoftwareVersion
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (platform_hal_GetSoftwareVersion(pValue, *pulSize) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
@@ -635,6 +650,7 @@ CosaDmlDiGetProvisioningCode
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if 0
     UtopiaContext ctx;
     int rc = -1;
@@ -670,6 +686,7 @@ CosaDmlDiSetProvisioningCode
         char*                       pProvisioningCode
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     int rc = -1;
 
@@ -685,11 +702,11 @@ CosaDmlDiSetProvisioningCode
 
 
 
-void uploadLogUtilityThread(void* vptr_value)
+void* uploadLogUtilityThread(void* vptr_value)
 {
 	pthread_detach(pthread_self());
 	v_secure_system("/rdklogger/opsLogUpload.sh %s &", (char *) vptr_value);
-	return;
+	return vptr_value;
 
 }
 ANSC_STATUS
@@ -699,6 +716,7 @@ COSADmlUploadLogsNow
         	BOOL                        bEnable
 	)
 {
+    UNREFERENCED_PARAMETER(hContext);
 	pthread_t tid;
 	char* operation = NULL;
 
@@ -725,6 +743,7 @@ COSADmlUploadLogsStatus
 	ULONG*	pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(Context);
 	FILE *ptr_file;
 	char buf[50];
 
@@ -757,6 +776,7 @@ CosaDmlDiGetFirstUseDate
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     int rc = -1;
     char firstUseDate[64];
@@ -784,6 +804,7 @@ CosaDmlDiGetUpTime
         ANSC_HANDLE                 Context
     )
 {
+    UNREFERENCED_PARAMETER(Context);
     struct sysinfo s_info;
 
     if(sysinfo(&s_info))
@@ -802,6 +823,7 @@ CosaDmlDiGetBootTime
 	ANSC_HANDLE                 Context
     )
 {
+    UNREFERENCED_PARAMETER(Context);
 	struct sysinfo s_info;
 	struct timeval currentTime;
 
@@ -824,6 +846,7 @@ CosaDmlDiGetBootloaderVersion
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (platform_hal_GetBootloaderVersion(pValue, *pulSize) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
@@ -840,6 +863,7 @@ CosaDmlDiGetFirmwareName
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (!pValue || !pulSize || *pulSize <= 64)
         return ANSC_STATUS_FAILURE;
 
@@ -861,6 +885,7 @@ CosaDmlDiGetFirmwareBuildTime
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     FILE *fp;
     char line[512];
     char* value_token;
@@ -877,7 +902,7 @@ CosaDmlDiGetFirmwareBuildTime
 		if (value_token != NULL) 
 		{
 			value_token = strtok_r(NULL, "\"", &st); 
-			snprintf(pValue, pulSize, "%s", value_token);
+			snprintf(pValue, (size_t)pulSize, "%s", value_token);
 			*pulSize = AnscSizeOfString(pValue);
 		
 			fclose(fp);
@@ -899,6 +924,7 @@ CosaDmlDiGetBaseMacAddress
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( platform_hal_GetBaseMacAddress(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
@@ -915,6 +941,7 @@ CosaDmlDiGetHardware
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( platform_hal_GetHardware(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
@@ -931,6 +958,7 @@ CosaDmlDiGetHardware_MemUsed
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( platform_hal_GetHardware_MemUsed(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
@@ -947,6 +975,7 @@ CosaDmlDiGetHardware_MemFree
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( platform_hal_GetHardware_MemFree(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
@@ -963,6 +992,7 @@ CosaDmlGetTCPImplementation
         ULONG*                      pulSize    
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char value[25];
     FILE *fp;
 
@@ -1059,6 +1089,7 @@ CosaDmlDiGetFirmwareUpgradeStartTime
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char value[25] = {0};
     FILE *fp;
 
@@ -1096,6 +1127,7 @@ CosaDmlDiGetFirmwareUpgradeStartTime
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char value[25];
     FILE *fp;
     AnscCopyString(pValue, _ERROR_);
@@ -1125,6 +1157,7 @@ CosaDmlDiGetFirmwareUpgradeEndTime
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char value[25] = {0};
     FILE *fp;
 
@@ -1161,6 +1194,7 @@ CosaDmlDiGetFirmwareUpgradeEndTime
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char value[25];
     FILE *fp;
     AnscCopyString(pValue, _ERROR_);
@@ -1251,9 +1285,8 @@ static int read_proc_stat(char * line, char * p_cmd, char * p_state, int * p_siz
             strncpy(p_cmd, tmp1+1, tmp-tmp1-1);
             
             tmp += 2;
-
-            if (sscanf(tmp, "%c %*d %*d %*d %*d %*d %*u %*lu \
-%*lu %*lu %*lu %lu %lu %ld %ld %ld %*ld %*d 0 %*llu %lu", 
+            if (sscanf(tmp, "%c %*d %*d %*d %*d %*d %*u %*u \
+%*u %*u %*u %d %d %d %d %d %*d %*d 0 %*u %d", 
                        p_state,
                        &utime,
                        &stime,
@@ -1278,24 +1311,17 @@ static int read_proc_stat(char * line, char * p_cmd, char * p_state, int * p_siz
 void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
 {
     PCOSA_PROCESS_ENTRY         p_proc = NULL;
-
-    static ULONG                ProcessTimeStamp;
     ULONG                       ProcessNumber       = 0;
-    struct dirent               entry;
     struct dirent               *result = NULL;
     DIR                         *dir;
     FILE                        *fp;
     char*                       name;
-    int                         num;
-    int                         i;
+    ULONG                       i;
     ULONG                       pid;
     char                        status[32];
     char                        buf[400];
-    ULONG                       utime;
-    ULONG                       stime;
     char                        state[64];
-    int                         ret;
-
+    
     dir = opendir("/proc");
         
     if ( !dir )
@@ -1306,15 +1332,15 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
 
     for(;;)
     {
-        ret = readdir_r(dir, &entry, &result);
-        if( ret != 0 || result == NULL )
+        result = readdir(dir);
+        if( result == NULL )
         {
             closedir(dir);
             dir = NULL;
             break;
         }
 
-        name = entry.d_name;
+        name = result->d_name;
             
         if ( *name >= '0' && *name <= '9' )
         {
@@ -1343,15 +1369,15 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
 	result = NULL;
     for(i = 0; i < ProcessNumber; )
     {
-        ret = readdir_r(dir, &entry, &result);
-        if( ret != 0 || result == NULL )
+        result = readdir(dir);
+        if( result == NULL )
         {
             closedir(dir);
             dir = NULL;
             break;
         }
 
-        name = entry.d_name;
+        name = result->d_name;
             
         if ( *name >= '0' && *name <= '9' )
         {
@@ -1379,7 +1405,7 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
 
             memset(state, 0, sizeof(state));
 
-            if (read_proc_stat(name, p_proc->Command, &state, &p_proc->Size, &p_proc->Priority, &p_proc->CPUTime ))
+            if (read_proc_stat(name, p_proc->Command, state, (int*)&p_proc->Size, (int*)&p_proc->Priority, (int*)&p_proc->CPUTime ))
             {
                 CcspTraceWarning(("Failed to parse process %d information!\n", pid));
                 continue;
@@ -1467,22 +1493,13 @@ COSA_CPUTIME_INFO, *PCOSA_CPUTIME_INFO;
 
 ULONG COSADmlGetCpuUsage()
 {
-    struct dirent               *entry;
-    DIR                         *dir;
     FILE                        *fp;
-    char*                       name;
     int                         num;
     COSA_CPUTIME_INFO           time[2];
     ULONG                       UsedTime = 0;
     ULONG                       IdleTime = 0;
     double                      CPUUsage;
     int                         CPUNum;
-    int                         i;
-    ULONG                       pid;
-    char                        status[32];
-    char                        buf[400];
-    ULONG                       utime;
-    ULONG                       stime;
 
     AnscZeroMemory(time, sizeof(time));
 
@@ -1543,8 +1560,8 @@ int COSADmlSetMemoryStatus(char * ParamName, ULONG val)
     if(AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FreeMemThreshold", TRUE))
      {
             char buf[10];
-	    memset(buf,sizeof(buf),0);
-	    snprintf(buf,sizeof(buf),"%d",val);            		    
+	    memset(buf,0,sizeof(buf));
+	    snprintf(buf,sizeof(buf),"%lu",val);            		    
 	    if ((syscfg_set(NULL, "MinMemoryThreshold_Value", buf) != 0)) 
 	    {
 	        CcspTraceWarning(("syscfg_set failed\n"));
@@ -1561,11 +1578,12 @@ int COSADmlSetMemoryStatus(char * ParamName, ULONG val)
 	       return 0;
 	     } 
      }
+    return 0; 
 }
 ULONG COSADmlGetMemoryStatus(char * ParamName)
 {
      struct sysinfo si;
-     int tmp;
+     ULONG tmp;
      if (sysinfo(&si))
      {
           /*Error*/
@@ -1639,7 +1657,7 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
      else if(AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FreeMemThreshold", TRUE))
      {
 	char buf[10];
-	memset(buf,sizeof(buf),0);
+	memset(buf,0,sizeof(buf));
         syscfg_get( NULL, "MinMemoryThreshold_Value", buf, sizeof(buf));
         if( buf != NULL )
         {
@@ -1686,6 +1704,7 @@ CosaDmlDiGetAdvancedServices
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscCopyString(pValue, "");
     *pulSize = 0;
     return ANSC_STATUS_SUCCESS;
@@ -1699,10 +1718,10 @@ CosaDmlDiGetProcessorSpeed
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     #define TOKEN_STR       "BogoMIPS"
     #define MAX_LINE_SIZE   30
     char line[MAX_LINE_SIZE];
-    char *pcur;
     FILE *fp;
 
     memset(line, 0, MAX_LINE_SIZE);
@@ -1729,7 +1748,7 @@ CosaDmlDiGetProcessorSpeed
     pclose(fp);
     fp = NULL;
 #else
-
+    char *pcur;
 #ifdef _COSA_INTEL_XB3_ARM_
 
     fp = popen("cat /proc/avalanche/base_psp_version | grep -i \"Cpu Frequency\" | cut -d \":\" -f2 | awk '{$1=$1};1' | cut -d \" \" -f1", "r");
@@ -1754,9 +1773,7 @@ CosaDmlDiGetProcessorSpeed
 #endif
 
 #ifdef SA_CUSTOM
-    char buf[100]={0};
     char out_val[100]={0};
-    char out1[100]={0};
     char out2[100]={0};
     FILE *fp1=NULL;
     char *urlPtr = NULL;
@@ -1795,7 +1812,7 @@ CosaDmlDiGetProcessorSpeed
    
     while(fgets(line, MAX_LINE_SIZE, fp) != NULL )
     {
-       if(strcasestr(line, TOKEN_STR) != NULL)
+       if(strcasestr(line, TOKEN_STR))
        {
         pcur = strstr(line, ":");
         pcur++;
@@ -1821,7 +1838,7 @@ CosaDmlDiGetFactoryResetCount
         ULONG                       *pValue
     )
 {
-
+    UNREFERENCED_PARAMETER(hContext);
 	platform_hal_GetFactoryResetCount(pValue);
     return ANSC_STATUS_SUCCESS;
 }
@@ -1832,7 +1849,7 @@ ANSC_STATUS CosaDmlDiClearResetCount
         BOOL                        bValue
    )
 {
-
+    UNREFERENCED_PARAMETER(hContext);
 	platform_hal_ClearResetCount(bValue);
     return ANSC_STATUS_SUCCESS;
 }
@@ -1844,6 +1861,7 @@ CosaDmlDiGetAndProcessDhcpServDetectionFlag
 	  BOOLEAN*					  pValue
   )
 {
+    UNREFERENCED_PARAMETER(hContext);
 	char buf[ 8 ] = { 0 };
 
 	if( 0 == syscfg_get( NULL, "DhcpServDetectEnable", buf, sizeof( buf ) ) )
@@ -1861,7 +1879,7 @@ CosaDmlDiGetAndProcessDhcpServDetectionFlag
 		/* 
 		* To schedule/deschedule server test execution based on DhcpServDetectEnable flag 
 		*/
-		system( "/usr/ccsp/tad/schd_dhcp_server_detection_test.sh" );
+		v_secure_system( "/usr/ccsp/tad/schd_dhcp_server_detection_test.sh" );
 	}
 	else
 	{
@@ -1881,6 +1899,7 @@ CosaDmlDiSetAndProcessDhcpServDetectionFlag
 	   BOOLEAN*					   pDhcpServDetectEnable
    )
 {
+    UNREFERENCED_PARAMETER(hContext);
 	if ( syscfg_set( NULL, 
 					  "DhcpServDetectEnable", 
 					  ((*pValue == 1 ) ? "true" : "false") )!= 0 ) 
@@ -1901,7 +1920,7 @@ CosaDmlDiSetAndProcessDhcpServDetectionFlag
 		/* 
 		* To schedule/deschedule server test execution based on DhcpServDetectEnable flag 
 		*/
-		system( "/usr/ccsp/tad/schd_dhcp_server_detection_test.sh" );
+		v_secure_system( "/usr/ccsp/tad/schd_dhcp_server_detection_test.sh" );
 	}  
 
     return ANSC_STATUS_SUCCESS;
@@ -2046,7 +2065,7 @@ int setXOpsReverseSshArgs(char* pString) {
             return 1;
         }
 
-        if (sizeof(tempCopy) > inputMsgSize)
+        if (sizeof(tempCopy) > (unsigned int)inputMsgSize)
         {
             strncpy(tempCopy, pString, inputMsgSize);
         }
@@ -2062,7 +2081,7 @@ int setXOpsReverseSshArgs(char* pString) {
             option = mapArgsToSSHOption(tempStr);
             if (option)
             {
-                int len = strlen(option);
+                unsigned int len = strlen(option);
                 if (sizeof(reverseSSHArgs) > len)
                 {
                     strncpy(reverseSSHArgs, option,len);
@@ -2100,18 +2119,18 @@ int setXOpsReverseSshArgs(char* pString) {
         strncpy(tempCopy, pString, inputMsgSize);
         tempStr = (char*) strtok_r(tempCopy, ";", &st);
         while (NULL != tempStr) {
-            if(value = strstr(tempStr, "type=")) {
+            if((value = strstr(tempStr, "type="))) {
                 sprintf(ip_version_number, "%s",value + strlen("type="));
-            } else if (value = strstr(tempStr, "callbackport=")) {
+            } else if ((value = strstr(tempStr, "callbackport="))) {
                 sprintf(callbackport, "%s",value + strlen("callbackport="));
-            } else if(value = strstr(tempStr, "host=")) {
+            } else if((value = strstr(tempStr, "host="))) {
                 if(NULL == host) {
                     host = (char*) calloc(strlen(value), sizeof(char));
                 }
                 sprintf(host, "%s",value + strlen("host="));
-            } else if(value = strstr(tempStr, "rows=")) {
+            } else if((value = strstr(tempStr, "rows="))) {
                 rows=atoi(value + strlen("rows="));
-            } else if(value = strstr(tempStr, "columns=")) {
+            } else if((value = strstr(tempStr, "columns="))) {
                 columns=atoi(value + strlen("columns="));
             } else {
                 AnscTraceWarning(("SHORTS does not accept invalid property\n"));
@@ -2140,6 +2159,7 @@ ANSC_STATUS getXOpsReverseSshArgs
         ULONG*                      pulSize
     ) 
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscCopyString(pValue, reverseSSHArgs);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
@@ -2192,6 +2212,7 @@ CosaDmlDiGetSyndicationPartnerId
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS retVal = ANSC_STATUS_FAILURE;
     char fileContent[256] = {0};
     FILE *deviceFilePtr = NULL;
@@ -2231,6 +2252,7 @@ CosaDmlDiGetSyndicationTR69CertLocation
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 	char val[ 256 ] = {0};
 	
 	if ( PsmGet( DMSB_TR181_PSM_Syndication_Tr069CertLocation, val, sizeof( val ) ) != 0 ) 
@@ -2254,6 +2276,7 @@ CosaDmlDiSetSyndicationTR69CertLocation
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 	int  retPsmSet = CCSP_SUCCESS;
 	
 	retPsmSet = PSM_Set_Record_Value2( g_MessageBusHandle, 
@@ -2289,6 +2312,8 @@ ANSC_STATUS getFactoryPartnerId
 		CcspTraceError(("%s - Failed Get factoryPartnerId \n", __FUNCTION__));
 	}
 #endif
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pulSize);
 	return ANSC_STATUS_FAILURE;
 }
 
@@ -2360,10 +2385,7 @@ ANSC_STATUS setCMVoiceImg(char* pValue)
 
 #define PARTNERID_FILE  "/nvram/.partner_ID"
 
-ANSC_STATUS activatePartnerId
-	(
-		char*                       pValue
-    )
+ANSC_STATUS activatePartnerId()
 {
 	pthread_t tid;
 
@@ -2405,7 +2427,6 @@ void CosaDmlPresenceEnable(BOOL enable)
     char                 bus[256]        = "/com/cisco/spvtg/ccsp/lmlite";
     char*                faultParam      = NULL;
     int                  ret             = 0; 
-    CCSP_MESSAGE_BUS_INFO *bus_info 		  = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
     notif_val[0].parameterName  = param_name;
     if (enable)
@@ -2446,10 +2467,11 @@ void CosaDmlPresenceEnable(BOOL enable)
     }
 }
 
-void CosaDmlDiPartnerIDChangeHandling( void* buff )
+void* CosaDmlDiPartnerIDChangeHandling()
 {
+
     CCSP_MESSAGE_BUS_INFO *bus_info 		  = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-	parameterValStruct_t param_val[ 1 ] 	  = { "Device.X_CISCO_COM_DeviceControl.FactoryReset", "Router,Wifi,VoIP,Dect,MoCA", ccsp_string };
+	parameterValStruct_t param_val[ 1 ] 	  = {{ "Device.X_CISCO_COM_DeviceControl.FactoryReset", "Router,Wifi,VoIP,Dect,MoCA", ccsp_string }};
 	char 				 pComponentName[ 64 ] = "eRT.com.cisco.spvtg.ccsp.pam";
 	char 				 pComponentPath[ 64 ] = "/com/cisco/spvtg/ccsp/pam";
 	char				*faultParam 		  = NULL;
@@ -2458,8 +2480,8 @@ void CosaDmlDiPartnerIDChangeHandling( void* buff )
 	pthread_detach(pthread_self());	
 
 	// Create /nvram/.apply_partner_defaults file to apply partners default
-	system( "touch /nvram/.apply_partner_defaults" );
-	system( "syscfg set PartnerID_FR 1; syscfg commit" );
+	v_secure_system( "touch /nvram/.apply_partner_defaults" );
+	v_secure_system( "syscfg set PartnerID_FR 1; syscfg commit" );
 
 	/* Need to do factory reset the device here */
     ret = CcspBaseIf_setParameterValues
@@ -2469,7 +2491,7 @@ void CosaDmlDiPartnerIDChangeHandling( void* buff )
 				pComponentPath,
 				0, 
 				0x0,   /* session id and write id */
-				&param_val, 
+				(void*)&param_val, 
                 1, 
 				TRUE,   /* Commit  */
 				&faultParam
@@ -2486,6 +2508,7 @@ void CosaDmlDiPartnerIDChangeHandling( void* buff )
 	{
 		AnscTraceWarning(("%s: Device will reboot in some time\n", __FUNCTION__ ));
 	}
+       return NULL;
 }
 
 ANSC_STATUS
@@ -2513,7 +2536,7 @@ CosaDeriveSyndicationPartnerID(char *Partner_ID)
 			{
 			 // Check for PartnerID available in RDKB-build, if not then return default
 			CcspTraceInfo(("%s Check for PartnerID available in RDKB-build, if not then return defaul\n",__FUNCTION__));
-			 if(ANSC_STATUS_FAILURE == CosaDmlDiGetSyndicationPartnerId(NULL,&PartnerID, &size))
+			 if(ANSC_STATUS_FAILURE == CosaDmlDiGetSyndicationPartnerId(NULL,PartnerID, &size))
 			 	{
 			 		CcspTraceError(("%s - Failed to get PartnerID available in build \n", __FUNCTION__ ));
 			 	}
@@ -2536,6 +2559,9 @@ CosaDmlDiGetSyndicationLocalUIBrandingTable
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pulSize);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2547,6 +2573,9 @@ CosaDmlDiGetSyndicationWifiUIBrandingTable
         PULONG                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pulSize);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2720,7 +2749,7 @@ void ConvertTime(int time, char day[], char hour[], char mins[]) {
 }
 
 //Handle UniqueTelemetry Cron Job
-void UniqueTelemetryCronJob(enable, timeInterval, tagString) {
+void UniqueTelemetryCronJob(BOOL enable, INT timeInterval, char* tagString) {
         char day[5] = {0}, hour[5]={0}, mins[5] = {0};
 
         if(enable) {       //Add unique_telemetry_id Cron job to job list
@@ -2730,7 +2759,7 @@ void UniqueTelemetryCronJob(enable, timeInterval, tagString) {
             }
         }
         else {          //Remove unique_telemetry_id Cron job from job list
-            system("crontab -l | grep -v '/usr/ccsp/pam/unique_telemetry_id.sh'  | crontab -");
+            v_secure_system("crontab -l | grep -v '/usr/ccsp/pam/unique_telemetry_id.sh'  | crontab -");
         }
 }
 
@@ -2747,7 +2776,6 @@ CosaDmlDiUiBrandingInit
 	cJSON *json = NULL;
 	FILE *fileRead = NULL;
 	char PartnerID[PARTNER_ID_LEN] = {0};
-	char cmd[512] = {0};
 	ULONG size = PARTNER_ID_LEN - 1;
 	int len;
 	if (!PUiBrand)
@@ -2759,7 +2787,8 @@ CosaDmlDiUiBrandingInit
 	memset(PUiBrand, 0, sizeof(COSA_DATAMODEL_RDKB_UIBRANDING));	
 	if (access(BOOTSTRAP_INFO_FILE, F_OK) != 0)	
 	{
-		/*snprintf(cmd, sizeof(cmd), "cp %s %s", "/etc/partners_defaults.json", PARTNERS_INFO_FILE);
+		/*	char cmd[512] = {0};
+        snprintf(cmd, sizeof(cmd), "cp %s %s", "/etc/partners_defaults.json", PARTNERS_INFO_FILE);
 		CcspTraceWarning(("%s\n",cmd));
 		system(cmd);*/
                 return ANSC_STATUS_FAILURE;
@@ -3028,7 +3057,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 							pclose(fp);
 						}
 
-						if (DefaultPassword[0] != NULL)
+						if (DefaultPassword[0] != '\0')
 						{
 							AnscCopyString(PUiBrand->LocalUI.DefaultLoginPassword.ActiveValue, DefaultPassword);
 						}
@@ -3322,12 +3351,12 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				if (pDeviceInfo->bWANsideSSHEnable.ActiveValue ==  TRUE)
 				{
 					CcspTraceWarning(("%s - Enabling SSH on WAN side\n", __FUNCTION__ ));
-					system("sh /lib/rdk/wan_ssh.sh enable &");
+					v_secure_system("sh /lib/rdk/wan_ssh.sh enable &");
 				}
 				else
 				{
 					CcspTraceWarning(("%s -Disabling SSH on WAN side\n", __FUNCTION__ ));
-					system("sh /lib/rdk/wan_ssh.sh disable &");
+					v_secure_system("sh /lib/rdk/wan_ssh.sh disable &");
 				}
 
 #if defined(_COSA_BCM_ARM_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_ENABLE_DSL_SUPPORT_)
@@ -3355,7 +3384,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 							if (platform_hal_setFactoryCmVariant(CMVoiceImg) == RETURN_OK)
 							{
 								CcspTraceInfo(("%s CM variant set to %s. Intiating reboot..\n", __FUNCTION__, CMVoiceImg));
-								system("sh /lib/rdk/reboot_CMchange.sh");
+								v_secure_system("sh /lib/rdk/reboot_CMchange.sh");
 							}
 							else
 							{
@@ -3634,7 +3663,7 @@ void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uVa
 {
 	char buf[8] = { 0 };
 	
-	sprintf(buf,"%d",uValue);
+	sprintf(buf,"%lu",uValue);
 	if ( syscfg_set( NULL,"DeferFWDownloadReboot",buf)!= 0 ) 
 	{
 		CcspTraceWarning(("syscfg_set failed\n"));
@@ -3669,30 +3698,30 @@ void* RebootDevice_thread(void* buff)
 	}
 
     router = wifi = voip = dect = moca = all = 0;
-    if (strcasestr(pValue, "Router") != NULL) {
+    if (strcasestr(pValue, "Router")) {
         router = 1;
     }
-    if (strcasestr(pValue, "Wifi") != NULL) {
+    if (strcasestr(pValue, "Wifi")) {
         wifi = 1;
     }
-    if (strcasestr(pValue, "VoIP") != NULL) {
+    if (strcasestr(pValue, "VoIP")) {
         voip = 1;
     }
-    if (strcasestr(pValue, "Dect") != NULL) {
+    if (strcasestr(pValue, "Dect")) {
         dect = 1;
     }
-    if (strcasestr(pValue, "MoCA") != NULL) {
+    if (strcasestr(pValue, "MoCA")) {
         moca = 1;
     }
-    if (strcasestr(pValue, "Device") != NULL) {
+    if (strcasestr(pValue, "Device")) {
         all = 1;
     }
 	
-    if (strcasestr(pValue, "delay=") != NULL) {
-        delay_time = atoi(strcasestr(pValue, "delay=") + strlen("delay="));
+    if (strcasestr(pValue, "delay=")) {
+        delay_time = atoi((const char*)strcasestr(pValue, "delay=") + strlen("delay="));
     }
 	
-	if(strcasestr(pValue, "source=") != NULL){
+	if(strcasestr(pValue, "source=")){
 		source = strcasestr(pValue, "source=") + strlen("source=");
 		int i=0;
 		while(source[i] != ' ' && source[i] != '\0'){
@@ -3762,7 +3791,7 @@ void* RebootDevice_thread(void* buff)
 		CcspTraceWarning(("REBOOT_COUNT : %d Time : %s  \n",rebootcount,buffer));
 		CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
 		CosaDmlDcSaveWiFiHealthStatusintoNVRAM( );
-		system("/fss/gw/rdklogger/backupLogs.sh");
+		v_secure_system("/fss/gw/rdklogger/backupLogs.sh");
 		return NULL;
     }
 
@@ -3794,6 +3823,7 @@ void* RebootDevice_thread(void* buff)
         fprintf(stderr, "MoCA is going to reboot\n");
         // TODO: 
     }
+    return NULL;
 	
 }
 
@@ -3808,9 +3838,10 @@ void CosaDmlDiSet_RebootDevice(char* pValue)
     
 }
 
-static void
-FirmwareDownloadAndFactoryReset()
+static void*
+FirmwareDownloadAndFactoryReset(void* arg)
 {
+    UNREFERENCED_PARAMETER(arg);
     FILE *fp;
     char URL[256]={0};
     char Imagename[256]={0};
@@ -3855,16 +3886,16 @@ FirmwareDownloadAndFactoryReset()
         {
             CcspTraceWarning(("FirmwareDownloadAndFactoryReset Thread:cm_hal_FWupdateAndFactoryReset failed\n"));
             commonSyseventSet("fw_update_inprogress", "false");
-            system("rm -rf /tmp/FactoryReset.txt");
+            v_secure_system("rm -rf /tmp/FactoryReset.txt");
         }
     }
+    return NULL;
 }
 
 ANSC_STATUS
 CosaDmlDiSetFirmwareDownloadAndFactoryReset()
 {
     pthread_t tid;
-    token_t  se_token;
     char evtValue[64] = {0};
     
     commonSyseventGet("fw_update_inprogress", evtValue, sizeof(evtValue));
@@ -3890,35 +3921,35 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 		  IsDelayValid		= FALSE;
         char *st = NULL;
 	CcspTraceWarning(("%s %d - String :%s", __FUNCTION__, __LINE__, ( pValue != NULL ) ?  pValue : "NULL" ));
-	if (strcasestr(pValue, "delay=") != NULL) {
+	if (strcasestr(pValue, "delay=")) {
 		IsDelayValid = TRUE;
 	}
 
-	if(strcasestr(pValue, "source=") != NULL) {
+	if(strcasestr(pValue, "source=")) {
 		IsSourceValid = TRUE;
 	}
 
-	if (strcasestr(pValue, "Router") != NULL) {
+	if (strcasestr(pValue, "Router")) {
 		IsActionValid = TRUE;
 	}
 
-	if (strcasestr(pValue, "Wifi") != NULL) {
+	if (strcasestr(pValue, "Wifi")) {
 		IsActionValid = TRUE;
 	}
 
-	if (strcasestr(pValue, "VoIP") != NULL) {
+	if (strcasestr(pValue, "VoIP")) {
 		IsActionValid = TRUE;
 	}
 
-	if (strcasestr(pValue, "Dect") != NULL) {
+	if (strcasestr(pValue, "Dect")) {
 		IsActionValid = TRUE;
 	}
 
-	if (strcasestr(pValue, "MoCA") != NULL) {
+	if (strcasestr(pValue, "MoCA")) {
 		IsActionValid = TRUE;
 	}
 
-	if (strcasestr(pValue, "Device") != NULL) {
+	if (strcasestr(pValue, "Device")) {
 		IsActionValid = TRUE;
 	}
 	if ( ( NULL != pValue )  && ( strlen( pValue )	== 0 ) )
@@ -3944,7 +3975,7 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 			strcpy( tmpCharBuffer,	pValue );
 			subStringForDelay       = strtok_r( tmpCharBuffer, " ", &st );
 			subStringForDummy   = strtok_r( NULL, " ", &st );
-			if ( strcasestr(subStringForDelay, "delay=") != NULL )
+			if ( strcasestr(subStringForDelay, "delay="))
 			{
 				if ( subStringForDummy != NULL )
 				{
@@ -3970,7 +4001,7 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 			strcpy( tmpCharBuffer,	pValue );
 			subStringForSource   = strtok_r( tmpCharBuffer, " ", &st );
 			subStringForDummy   = strtok_r( NULL, " ", &st );
-			if ( strcasestr(subStringForSource, "source=") != NULL )
+			if ( strcasestr(subStringForSource, "source="))
 			{
 				if ( subStringForDummy != NULL )
 				{
@@ -3995,10 +4026,10 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 				*subStringForDummy  = NULL;
 			strcpy( tmpCharBuffer,	pValue );
 			subStringForDelay   = strtok_r( tmpCharBuffer, " ", &st );
-			if ( (strcasestr(subStringForDelay, "delay=") != NULL )  || (strcasestr(subStringForDelay, "source=") != NULL ) )
+			if ( (strcasestr(subStringForDelay, "delay="))  || (strcasestr(subStringForDelay, "source=")) )
 			{
 				subStringForSource = strtok_r( NULL, " ", &st );
-				if ( (strcasestr(subStringForSource, "delay=") != NULL )  || (strcasestr(subStringForSource, "source=") != NULL ) )
+				if ( (strcasestr(subStringForSource, "delay="))  || (strcasestr(subStringForSource, "source=")) )
 				{
 					subStringForDummy   = strtok_r( NULL, " ", &st );
 					if( subStringForDummy != NULL )
@@ -4075,7 +4106,7 @@ CosaDmlDiSet_SyndicationFlowControl_Enable
     if(syscfg_set(NULL, "SyndicationFlowControlEnable", ((bValue == TRUE ) ? "true" : "false"))==0)
     {
         syscfg_commit();
-        system("sysevent set firewall-restart");
+        v_secure_system("sysevent set firewall-restart");
         return ANSC_STATUS_SUCCESS;
     }
     else
@@ -4337,7 +4368,7 @@ ApplyNTPPartnerDefaults()
                   if ( NULL != partnerObj)
                   {
                        cJSON *objItem = NULL;
-                       int i, rc =0;
+                       int i;
                        char *key[]={"Device.Time.NTPServer1","Device.Time.NTPServer2","Device.Time.NTPServer3","Device.Time.NTPServer4","Device.Time.NTPServer5"};
                        char *name[]={"ntp_server1","ntp_server2","ntp_server3","ntp_server4","ntp_server5"};
 
@@ -4570,7 +4601,12 @@ int setMultiProfileXdnsConfig(BOOL bValue)
         if(fp2 == NULL)
         {
                 fprintf(stderr,"### XDNS : setMultiProfileXdnsConfig() - fopen(XDNS_DNSMASQ_SERVERS_CONF, 'w') Error !!\n");
-                if(fp1) fclose(fp1); fp1 = NULL;
+                if(fp1)
+                {
+                    fclose(fp1);
+                    fp1 = NULL;
+                }
+
                 return 0;
         }
 
@@ -4580,7 +4616,11 @@ int setMultiProfileXdnsConfig(BOOL bValue)
                 fprintf(stderr,"### XDNS : setMultiProfileXdnsConfig() - fopen(XDNS_DNSMASQ_SERVERS_BAK, 'r') Error !!\n");
                 fclose(fp2); 
           	fp2 = NULL;
-                if(fp1) fclose(fp1); fp1 = NULL;
+                if(fp1) 
+                {
+                    fclose(fp1);
+                    fp1 = NULL;
+                }
                 return 0;
         }
 
@@ -4600,9 +4640,21 @@ int setMultiProfileXdnsConfig(BOOL bValue)
                 }
         }
 
-        if(fp3) fclose(fp3); fp3 = NULL;
-        if(fp2) fclose(fp2); fp2 = NULL;
-        if(fp1) fclose(fp1); fp1 = NULL;
+        if(fp3)
+        {
+            fclose(fp3);
+            fp3 = NULL;
+        }
+        if(fp2)
+        {
+            fclose(fp2);
+            fp2 = NULL;
+        }
+        if(fp1)
+        {
+            fclose(fp1);
+            fp1 = NULL;
+        }
 
         return 1; //success
 

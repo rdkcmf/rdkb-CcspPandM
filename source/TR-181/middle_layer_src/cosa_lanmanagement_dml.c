@@ -144,6 +144,7 @@ LanManagement_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
 
     if( AnscEqualString(ParamName, "LanIpv6UlaEnable", TRUE)) {
@@ -207,6 +208,7 @@ LanManagement_GetParamStringValue
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
 
     if( AnscEqualString(ParamName, "LanIpv6Ula", TRUE)) {
@@ -273,6 +275,7 @@ LanManagement_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
     
     if( AnscEqualString(ParamName, "LanIpv6UlaEnable", TRUE)) {
@@ -296,6 +299,7 @@ LanManagement_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
 
     if( AnscEqualString(ParamName, "LanIpv6Ula", TRUE)) {
@@ -349,6 +353,9 @@ LanManagement_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -381,6 +388,7 @@ LanManagement_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
 #ifdef _HUB4_PRODUCT_REQ_
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
     CosaDmlLanManagementSetCfg(NULL, &pMyObject->LanMngmCfg);
@@ -418,6 +426,7 @@ LanManagement_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
 #ifdef _HUB4_PRODUCT_REQ_
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
     CosaDmlLanManagementGetCfg(NULL, &pMyObject->LanMngmCfg);

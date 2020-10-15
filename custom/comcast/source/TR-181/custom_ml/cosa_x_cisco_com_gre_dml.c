@@ -49,6 +49,7 @@ CGreIf_GetEntryCount
         ANSC_HANDLE hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return CosaDml_CGreIfGetNumberOfEntries();
 }
 
@@ -61,8 +62,9 @@ CGreIf_GetEntry
     )
 {
     COSA_DATAMODEL_CGRE              *pMyObject   = (COSA_DATAMODEL_CGRE *)g_pCosaBEManager->hCGRE;
+    UNREFERENCED_PARAMETER(hInsContext);
 
-    if (nIndex >= MAX_CGRE_IFS || nIndex >= pMyObject->IfCnt)
+    if (nIndex >= MAX_CGRE_IFS || nIndex >= (ULONG)pMyObject->IfCnt)
         return NULL;
 
     *pInsNumber = pMyObject->GreIf[nIndex].InstanceNumber;
@@ -76,6 +78,8 @@ CGreIf_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pInsNumber);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -86,6 +90,8 @@ CGreIf_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(hInstance);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -243,6 +249,9 @@ CGreIf_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -410,6 +419,9 @@ CGreIf_SetParamIntValue
         int                         value
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(value);
     return FALSE;
 }
 
@@ -421,6 +433,9 @@ CGreIf_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 

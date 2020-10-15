@@ -340,6 +340,12 @@ CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry);
 
 ANSC_STATUS isValidIP( int type, char *ipAddress, char *wrapped_inputparam, int sizeof_wrapped_inputparam);
 
+int ConvLocalToUTC(char* LocalTime, char* UtcTime);
+
+int ConvUTCToLocal( char* UtcTime, char* LocalTime);
+
+int split_BlockDays(int sRet, int eRet, char *sBDays, char *eBDays);
+
 #ifdef UTC_ENABLE
 
 ANSC_STATUS CosaDmlBlkURL_Migration();

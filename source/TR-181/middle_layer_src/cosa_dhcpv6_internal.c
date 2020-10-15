@@ -108,7 +108,6 @@ CosaDhcpv6Create
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DHCPV6          pMyObject    = (PCOSA_DATAMODEL_DHCPV6)NULL;
 
     /*
@@ -279,7 +278,6 @@ CosaDhcpv6Remove
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink            = NULL;
     PSINGLE_LINK_ENTRY              pSListEntry         = NULL;
     PSINGLE_LINK_ENTRY              pSListEntry2        = NULL;
-    BOOL                            bFound              = FALSE;
     ULONG                           Index               = 0;
     
     /* Remove necessary resource */
@@ -453,14 +451,14 @@ CosaDhcpv6BackendGetDhcpv6Info
             pDhcpc->Cfg.InstanceNumber     = pDhcpv6->maxInstanceOfClient;
             pClientCxtLink->InstanceNumber = pDhcpc->Cfg.InstanceNumber;
             
-            _ansc_sprintf(pDhcpc->Cfg.Alias, "DHCPv6%d", pDhcpc->Cfg.InstanceNumber);
+            _ansc_sprintf((char *)pDhcpc->Cfg.Alias, "DHCPv6%lu", pDhcpc->Cfg.InstanceNumber);
 
             returnStatus = CosaDmlDhcpv6cSetValues
                             (
                                 NULL, 
                                 ulIndex,
                                 pDhcpc->Cfg.InstanceNumber, 
-                                pDhcpc->Cfg.Alias
+                                (char *)pDhcpc->Cfg.Alias
                             );
 
             if ( returnStatus != ANSC_STATUS_SUCCESS )
@@ -577,7 +575,7 @@ CosaDhcpv6BackendGetDhcpv6Info
                 bNeedSave                        = TRUE;
                 pSentOption->InstanceNumber = pClientCxtLink->maxInstanceOfSent;
 
-                _ansc_sprintf( pSentOption->Alias, "SentOption%d", pSentOption->InstanceNumber );
+                _ansc_sprintf( (char *)pSentOption->Alias, "SentOption%lu", pSentOption->InstanceNumber );
         
                 returnStatus = CosaDmlDhcpv6cSetSentOptionValues
                                 (
@@ -585,7 +583,7 @@ CosaDhcpv6BackendGetDhcpv6Info
                                     pDhcpc->Cfg.InstanceNumber,
                                     ulIndex, 
                                     pSentOption->InstanceNumber, 
-                                    pSentOption->Alias
+                                    (char *)pSentOption->Alias
                                 );
         
                 if ( returnStatus != ANSC_STATUS_SUCCESS )
@@ -700,14 +698,14 @@ CosaDhcpv6BackendGetDhcpv6Info
             pPool->Cfg.InstanceNumber    = pDhcpv6->maxInstanceOfPool;
             pPoolCxtLink->InstanceNumber = pPool->Cfg.InstanceNumber; 
              
-            _ansc_sprintf(pPool->Cfg.Alias, "DHCPv6%d", pPool->Cfg.InstanceNumber);
+            _ansc_sprintf((char *)pPool->Cfg.Alias, "DHCPv6%lu", pPool->Cfg.InstanceNumber);
 
             returnStatus = CosaDmlDhcpv6sSetPoolValues
                             (
                                 NULL, 
                                 ulIndex,
                                 pPool->Cfg.InstanceNumber, 
-                                pPool->Cfg.Alias
+                               (char *)pPool->Cfg.Alias
                             );
 
             if ( returnStatus != ANSC_STATUS_SUCCESS )
@@ -805,7 +803,7 @@ CosaDhcpv6BackendGetDhcpv6Info
                 bNeedSave                        = TRUE;
                 pPoolOption->InstanceNumber = pPoolCxtLink->maxInstanceOfOption;
         
-                _ansc_sprintf( pPoolOption->Alias, "Option%d", pPoolOption->InstanceNumber );
+                _ansc_sprintf( (char *)pPoolOption->Alias, "Option%lu", pPoolOption->InstanceNumber );
         
                 returnStatus = CosaDmlDhcpv6sSetOptionValues
                                 (
@@ -813,7 +811,7 @@ CosaDhcpv6BackendGetDhcpv6Info
                                     pPool->Cfg.InstanceNumber,
                                     ulIndex2, 
                                     pPoolOption->InstanceNumber, 
-                                    pPoolOption->Alias
+                                    (char *)pPoolOption->Alias
                                 );
         
                 if ( returnStatus != ANSC_STATUS_SUCCESS )
@@ -1200,7 +1198,7 @@ CosaDhcpv6RegGetDhcpv6Info
 
         /* save alias and instanceNumber */
         pDhcpv6Client->Cfg.InstanceNumber = uInstanceNumber;
-        AnscCopyString( pDhcpv6Client->Cfg.Alias, pAliasClient );
+        AnscCopyString( (char *)pDhcpv6Client->Cfg.Alias, pAliasClient );
         if (pAliasClient)
         {
             AnscFreeMemory(pAliasClient);
@@ -1350,7 +1348,7 @@ CosaDhcpv6RegGetDhcpv6Info
 
             /* save alias and instanceNumber */
             pDhcpv6SntOpt->InstanceNumber = uInstanceNumber;
-            AnscCopyString( pDhcpv6SntOpt->Alias, pAliasSentOption );
+            AnscCopyString((char *) pDhcpv6SntOpt->Alias, pAliasSentOption );
             if (pAliasSentOption)
             {
                 AnscFreeMemory(pAliasSentOption);
@@ -1520,7 +1518,7 @@ ClientEnd:
         
         /* save alias and instanceNumber */
         pDhcpv6Pool->Cfg.InstanceNumber = uInstanceNumber;
-        AnscCopyString( pDhcpv6Pool->Cfg.Alias, pAliasPool );
+        AnscCopyString((char *) pDhcpv6Pool->Cfg.Alias, pAliasPool );
         if (pAliasPool)
         {
             AnscFreeMemory(pAliasPool);
@@ -1668,7 +1666,7 @@ ClientEnd:
             
             /* save alias and instanceNumber */
             pDhcpv6PoolOption->InstanceNumber = uInstanceNumber;
-            AnscCopyString( pDhcpv6PoolOption->Alias, pAliasPoolOption );
+            AnscCopyString((char *)pDhcpv6PoolOption->Alias, pAliasPoolOption );
             if (pAliasPoolOption)
             {
                 AnscFreeMemory(pAliasPoolOption);
@@ -1823,16 +1821,6 @@ CosaDhcpv6RegSetDhcpv6Info
     PCOSA_CONTEXT_LINK_OBJECT         pCosaPoolOptionContext   = NULL;
     
     PSLAP_VARIABLE                  pSlapVariable     = NULL;
-    ULONG                           ulEntryCount      = 0;
-    ULONG                           ulIndex           = 0;
-    ULONG                           ulEntryCount2     = 0;
-    ULONG                           ulIndex2          = 0;
-    ULONG                           uInstanceNumber   = 0;
-    char*                           pAliasClient      = NULL;
-    char*                           pAliasSentOption  = NULL;
-    char*                           pAliasPool        = NULL;
-    char*                           pAliasPoolOption  = NULL;
-    char*                           pFolderName       = NULL;
     char                            FolderName[16]    = {0};
     
     PCOSA_DML_DHCPCV6_FULL          pDhcpv6Client     = NULL;
@@ -1954,7 +1942,7 @@ CosaDhcpv6RegSetDhcpv6Info
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%d", pCosaDhcpcContext->InstanceNumber);
+        _ansc_sprintf(FolderName, "%lu", pCosaDhcpcContext->InstanceNumber);
 
         pPoamIrepFoEnumClient =
             pPoamIrepFoClient->AddFolder
@@ -1973,7 +1961,7 @@ CosaDhcpv6RegSetDhcpv6Info
         if ( TRUE )
         {
             pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_string;
-            pSlapVariable->Variant.varString = AnscCloneString(pDhcpv6Client->Cfg.Alias);
+            pSlapVariable->Variant.varString = AnscCloneString((char *)pDhcpv6Client->Cfg.Alias);
 
             returnStatus =
                 pPoamIrepFoEnumClient->AddRecord
@@ -2070,7 +2058,7 @@ CosaDhcpv6RegSetDhcpv6Info
                 continue;
             }
         
-            _ansc_sprintf(FolderName, "%d", pCosaSentOptionContext->InstanceNumber);
+            _ansc_sprintf(FolderName, "%lu", pCosaSentOptionContext->InstanceNumber);
         
             pPoamIrepFoEnumSntOpt =
                 pPoamIrepFoSntOpt->AddFolder
@@ -2089,7 +2077,7 @@ CosaDhcpv6RegSetDhcpv6Info
             if ( TRUE )
             {
                 pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_string;
-                pSlapVariable->Variant.varString = AnscCloneString(pDhcpv6SntOpt->Alias);
+                pSlapVariable->Variant.varString = AnscCloneString((char *)pDhcpv6SntOpt->Alias);
         
                 returnStatus =
                     pPoamIrepFoEnumSntOpt->AddRecord
@@ -2208,7 +2196,7 @@ ClientEnd:
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%d", pCosaPoolContext->InstanceNumber);
+        _ansc_sprintf(FolderName, "%lu", pCosaPoolContext->InstanceNumber);
 
         pPoamIrepFoEnumPool =
             pPoamIrepFoPool->AddFolder
@@ -2227,7 +2215,7 @@ ClientEnd:
         if ( TRUE )
         {
             pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_string;
-            pSlapVariable->Variant.varString = AnscCloneString(pDhcpv6Pool->Cfg.Alias);
+            pSlapVariable->Variant.varString = AnscCloneString((char *)pDhcpv6Pool->Cfg.Alias);
 
             returnStatus =
                 pPoamIrepFoEnumPool->AddRecord
@@ -2324,7 +2312,7 @@ ClientEnd:
                 continue;
             }
             
-            _ansc_sprintf(FolderName, "%d", pCosaPoolOptionContext->InstanceNumber);
+            _ansc_sprintf(FolderName, "%lu", pCosaPoolOptionContext->InstanceNumber);
         
             pPoamIrepFoEnumPoolOption    =
                 pPoamIrepFoPoolOption->AddFolder
@@ -2343,7 +2331,7 @@ ClientEnd:
             if ( TRUE )
             {
                 pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_string;
-                pSlapVariable->Variant.varString = AnscCloneString(pDhcpv6PoolOption->Alias);
+                pSlapVariable->Variant.varString = AnscCloneString((char *)pDhcpv6PoolOption->Alias);
 
                 returnStatus =
                     pPoamIrepFoEnumPoolOption->AddRecord
@@ -2467,7 +2455,6 @@ CosaDhcpv6ClientHasDelayAddedChild
         PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT                 hContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCosaDhcpcContext = hContext;
     
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY )NULL;
@@ -2518,7 +2505,6 @@ CosaDhcpv6PoolHasDelayAddedChild
         PCOSA_CONTEXT_POOLV6_LINK_OBJECT                hContext
     )
 {
-    ANSC_STATUS                       returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCosaPoolContext  = hContext;
     
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY )NULL;

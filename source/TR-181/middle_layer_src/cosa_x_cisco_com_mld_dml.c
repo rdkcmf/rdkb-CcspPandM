@@ -159,6 +159,7 @@ X_CISCO_COM_MLD_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MLD            pMyObject = (PCOSA_DATAMODEL_MLD)g_pCosaBEManager->hMld;
     PCOSA_DML_MLD_CFG              pCfg      = &(pMyObject->MldFull.Cfg);
 
@@ -221,6 +222,9 @@ X_CISCO_COM_MLD_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -265,9 +269,9 @@ X_CISCO_COM_MLD_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MLD            pMyObject = (PCOSA_DATAMODEL_MLD)g_pCosaBEManager->hMld;
     PCOSA_DML_MLD_INFO             pInfo     = &(pMyObject->MldFull.Info);
-    PCOSA_DML_MLD_CFG              pCfg      = &(pMyObject->MldFull.Cfg);
     
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Status", TRUE))
@@ -329,6 +333,10 @@ X_CISCO_COM_MLD_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -373,6 +381,7 @@ X_CISCO_COM_MLD_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MLD            pMyObject = (PCOSA_DATAMODEL_MLD)g_pCosaBEManager->hMld;
     PCOSA_DML_MLD_CFG              pCfg      = &(pMyObject->MldFull.Cfg);
     
@@ -433,6 +442,9 @@ X_CISCO_COM_MLD_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -477,8 +489,11 @@ X_CISCO_COM_MLD_SetParamUlongValue
         ULONG                       uValue
     )
 {
-    PCOSA_DATAMODEL_MLD            pMyObject = (PCOSA_DATAMODEL_MLD)g_pCosaBEManager->hMld;
-    PCOSA_DML_MLD_CFG              pCfg      = &(pMyObject->MldFull.Cfg);
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
+    /*PCOSA_DATAMODEL_MLD            pMyObject = (PCOSA_DATAMODEL_MLD)g_pCosaBEManager->hMld;
+    PCOSA_DML_MLD_CFG              pCfg      = &(pMyObject->MldFull.Cfg); */
     
     /* check the parameter name and set the corresponding value */
 
@@ -524,6 +539,9 @@ X_CISCO_COM_MLD_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -568,6 +586,9 @@ X_CISCO_COM_MLD_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -599,6 +620,7 @@ X_CISCO_COM_MLD_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MLD            pMyObject = (PCOSA_DATAMODEL_MLD)g_pCosaBEManager->hMld;
     PCOSA_DML_MLD_CFG              pCfg      = &(pMyObject->MldFull.Cfg);
     
@@ -636,6 +658,7 @@ X_CISCO_COM_MLD_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MLD            pMyObject = (PCOSA_DATAMODEL_MLD)g_pCosaBEManager->hMld;
     PCOSA_DML_MLD_CFG              pCfg      = &(pMyObject->MldFull.Cfg);
 
@@ -688,6 +711,7 @@ Group1_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MLD            pMyObject           = (PCOSA_DATAMODEL_MLD)g_pCosaBEManager->hMld;
     
     return pMyObject->ulMldGroupNumber;
@@ -731,6 +755,7 @@ Group1_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MLD            pMyObject           = (PCOSA_DATAMODEL_MLD)g_pCosaBEManager->hMld;
 
     if (nIndex < pMyObject->ulMldGroupNumber)
@@ -776,6 +801,7 @@ Group1_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if ( !last_tick ) 
     {
         last_tick = AnscGetTickInSeconds();
@@ -823,6 +849,7 @@ Group1_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_MLD            pMyObject           = (PCOSA_DATAMODEL_MLD)g_pCosaBEManager->hMld;
 
     CosaDmlMldGetGroup
@@ -873,6 +900,9 @@ Group1_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
     
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -917,6 +947,9 @@ Group1_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -961,7 +994,10 @@ Group1_GetParamUlongValue
         ULONG*                      puLong
     )
 {
-    PCOSA_DML_MLD_GROUP            pMldGroupEntry = (PCOSA_DML_MLD_GROUP)hInsContext;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
+    //PCOSA_DML_MLD_GROUP            pMldGroupEntry = (PCOSA_DML_MLD_GROUP)hInsContext;
     
     /* check the parameter name and return the corresponding value */
 
@@ -1016,6 +1052,8 @@ Group1_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
+
     PCOSA_DML_MLD_GROUP            pMldGroupEntry = (PCOSA_DML_MLD_GROUP)hInsContext;
     
     /* check the parameter name and return the corresponding value */    

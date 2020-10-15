@@ -69,6 +69,7 @@
 **************************************************************************/
 
 #include "cosa_ethernet_internal.h"
+#include <syscfg/syscfg.h>
 
 #define ONE_HR 60*60
 
@@ -104,7 +105,6 @@ CosaEthernetCreate
         VOID
     )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_ETHERNET    pMyObject    = (PCOSA_DATAMODEL_ETHERNET)NULL;
 
     /*
@@ -191,7 +191,7 @@ CosaEthernetInitialize
         {
             pMyObject->EthernetPortFullTable[ulIndex].Cfg.InstanceNumber = ulNextInsNum;
 
-            _ansc_sprintf(pMyObject->EthernetPortFullTable[ulIndex].Cfg.Alias, "Interface%d", ulNextInsNum);
+            _ansc_sprintf(pMyObject->EthernetPortFullTable[ulIndex].Cfg.Alias, "Interface%d", (int)ulNextInsNum);
 
             CosaDmlEthPortSetValues(NULL, ulIndex, ulNextInsNum, pMyObject->EthernetPortFullTable[ulIndex].Cfg.Alias);
 
@@ -368,7 +368,7 @@ CosaEthernetInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pEntry->Cfg.Alias, "Link%d", pCosaContext->InstanceNumber);
+                _ansc_sprintf(pEntry->Cfg.Alias, "Link%d", (int)pCosaContext->InstanceNumber);
 
                 CosaDmlEthLinkSetValues
                 (
@@ -431,8 +431,6 @@ CosaEthernetRemove
     PCOSA_DATAMODEL_ETHERNET        pMyObject               = (PCOSA_DATAMODEL_ETHERNET)hThisObject;
     PSINGLE_LINK_ENTRY              pSLinkEntry             = NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = NULL;
-    PCOSA_DML_ETH_LINK_FULL         pEntry                  = NULL;
-    PCOSA_DML_ETH_VLAN_TERMINATION_FULL pVlanEntry          = NULL;
 
     /* Remove necessary resounce */
     if (AnscSListQueryDepth(&pMyObject->EthernetLinkList) != 0)
@@ -828,8 +826,7 @@ CosaEthLinkRegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_ETHERNET        pMyObject         = (PCOSA_DATAMODEL_ETHERNET )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
@@ -871,7 +868,6 @@ CosaEthPortGetAssocDevices
 {
     int     i = 0,j = 0;
     char macAddr[MACADDR_SZ+1];
-    int size = 0;
 
     maclist[0] = '\0';
 
@@ -1245,8 +1241,7 @@ CosaEthVlanTerminationRegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_ETHERNET        pMyObject         = (PCOSA_DATAMODEL_ETHERNET )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
@@ -1280,6 +1275,7 @@ CosaEthVlanTerminationRegDelInfo
 
 void * EthWan_TelementryLogger_Thread(void *data)
 {
+    UNREFERENCED_PARAMETER(data);
     pthread_detach(pthread_self());
 
     while (1)

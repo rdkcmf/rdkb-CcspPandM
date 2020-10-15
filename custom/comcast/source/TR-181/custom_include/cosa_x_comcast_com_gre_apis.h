@@ -143,6 +143,9 @@ CosaDml_GreInit(void);
 ANSC_STATUS 
 CosaDml_GreFinalize(void);
 
+ANSC_STATUS
+CosaDml_GreIfGetConnectedRemoteEndpoint(ULONG idx, COSA_DML_GRE_IF *greIf);
+
 ULONG 
 CosaDml_GreIfGetNumberOfEntries(void);
 

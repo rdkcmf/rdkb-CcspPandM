@@ -102,7 +102,6 @@ CosaDeviceControlCreate
         VOID
     )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DEVICECONTROL  pMyObject    = (PCOSA_DATAMODEL_DEVICECONTROL)NULL;
 
     /*
@@ -158,7 +157,6 @@ CosaDeviceControlInitialize
         ANSC_HANDLE                 hThisObject
     )
 {
-    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DEVICECONTROL   pMyObject       = (PCOSA_DATAMODEL_DEVICECONTROL)hThisObject;
     ULONG                           ulLmCnt; 
     ULONG                           ulLmIdx;
@@ -259,7 +257,7 @@ CosaDeviceControlInitialize
                 pMyObject->ulLanMngmNextInsNum = 1;
             }
 
-            _ansc_sprintf(pLanMngm->Alias, "cpe-LanManagement-%d", pLanMngm->InstanceNumber);
+            _ansc_sprintf(pLanMngm->Alias, "cpe-LanManagement-%d", (int)pLanMngm->InstanceNumber);
             CosaDmlLanMngm_SetValues(ulLmIdx, pLanMngm->InstanceNumber, pLanMngm->Alias);
         }
 
@@ -377,6 +375,7 @@ CosaDevCtrlReg_SetUserChangedParamsControl(
     /* workaroud for upgrade from 1.3 to 1.6 which may cause core dumped.
      * will not set these two params to PSM
      */
+    UNREFERENCED_PARAMETER(hThisObject);
 #if 0
     PCOSA_DATAMODEL_DEVICECONTROL   pMyObject               = (PCOSA_DATAMODEL_DEVICECONTROL   )hThisObject;
     PSLAP_VARIABLE pSlapVariable = (PSLAP_VARIABLE)NULL;
@@ -424,9 +423,11 @@ ULONG CosaDevCtrlReg_GetUserChangedParams(
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hThisObject);
     char psmName[256];
-    int i, size, ret_size, offset;
+    int i, size, offset;
     parameterInfoStruct_t **val = 0;
+    ULONG ret_size;
     char *pSubSystemPrefix = NULL;
     const char* name_prefix = "UserChanged.";
     const int prefix_len = strlen(name_prefix);
@@ -442,7 +443,7 @@ ULONG CosaDevCtrlReg_GetUserChangedParams(
     }
 
     int ret = CcspBaseIf_getParameterNames(g_MessageBusHandle, psmName, CCSP_DBUS_PATH_PSM,
-                                           name_prefix, 0, &size, &val);
+                                           (char *)name_prefix, 0, &size, &val);
 
     if(ret != CCSP_SUCCESS )
         return -1;
@@ -746,8 +747,7 @@ CosaDevCtrlReg_DelLanMngmInfo(
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_DEVICECONTROL   pMyObject         = (PCOSA_DATAMODEL_DEVICECONTROL   )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;

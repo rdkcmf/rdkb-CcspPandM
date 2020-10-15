@@ -70,6 +70,7 @@
 #include "cosa_x_cisco_com_diagnostics_internal.h"
 #include "plugin_main_apis.h"
 #include "secure_wrapper.h"
+#include "cosa_drg_common.h"
 
 #if ( defined _COSA_SIM_ )
 
@@ -92,7 +93,8 @@ CosaDmlDiagnosticsInit
         PANSC_HANDLE                phContext
     )
 {
-
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -134,6 +136,7 @@ CosaDmlDiagnosticsGetEntry
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <dirent.h>
 #include "syscfg/syscfg.h"
 #include "sysevent/sysevent.h"
 #define printf(x, argv...)  
@@ -164,6 +167,8 @@ CosaDmlDiagnosticsInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -317,12 +322,10 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
     int i = 0, count=0, c;
     char *line = NULL;
     char *tmp = NULL;
-    int i_tmp = 0;
     size_t LineNum;
-    char UserStr[64], LevelStr[64];
+    char LevelStr[64];
     PCOSA_DML_DIAGNOSTICS_ENTRY p;
     int len = 0;
-    int year = 0;
     int year_miss = 0;
 	char *timestamp;
 	time_t now;
@@ -351,7 +354,8 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
         // Jan  1 00:00:00
         //in R1.6 year will append in time string,like 
         // Jan  1 00:00:00 2014
-#if !defined(_COSA_BCM_MIPS_)   
+#if !defined(_COSA_BCM_MIPS_)
+        int year = 0;   
         memcpy(p[i].Time, line, LOG_TIME_SIZE);
         p[i].Time[LOG_TIME_SIZE] = '\0';
         /* If time format < R1.6 */
@@ -427,28 +431,25 @@ CONTINUE:
 }
 
 static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user, size_t *bufsize){
-    struct dirent ptr;
     struct dirent *result = NULL;
     DIR *dir;
     FILE* fd;
-    FILE* revfd;
     int count=0;
     PCOSA_DML_DIAGNOSTICS_ENTRY entry = NULL;
-    char fName[64];
-    int i = 0;
     char HOSTNAME[64] = {0};
+    UNREFERENCED_PARAMETER(bufsize);
 
     dir = opendir(path);
     if(dir == NULL)
         return 0;
 
-    while(readdir_r(dir, &ptr, &result) == 0){
+    while((result = readdir(dir))){
         if(result == NULL)
             break;
-        if(ptr.d_name[0] == '.')
+        if(result->d_name[0] == '.')
             continue;
 
-        v_secure_system("cat %s/%s >> " MERGED_LOG_FILE, path, ptr.d_name);
+        v_secure_system("cat %s/%s >> " MERGED_LOG_FILE, path, result->d_name);
     }
 
     syscfg_get(NULL, "hostname",HOSTNAME, sizeof(HOSTNAME));
@@ -476,7 +477,6 @@ CosaDmlDiagnosticsGetEntry
         PCOSA_DML_DIAGNOSTICS_ENTRY *ppDiagnosticsEntry
     )
 {
-    char logfile[FILENAME_MAX]; 
     char temp[512];
     char LOGFILE[64];
 
@@ -484,6 +484,7 @@ CosaDmlDiagnosticsGetEntry
     *ppDiagnosticsEntry = NULL;
     
     LOGFILE[0] = '\0';
+    UNREFERENCED_PARAMETER(hContext);
     /* Get log file name from sysevent since 1.6.1 */
     //syscfg_init();
     //syscfg_get(NULL, "SYS_LOG_FILE", LOGFILE, sizeof(LOGFILE));
@@ -518,7 +519,6 @@ CosaDmlDiagnosticsGetEventlog
         PCOSA_DML_DIAGNOSTICS_ENTRY *ppDiagnosticsEntry
     )
 {
-    char logfile[FILENAME_MAX]; 
     char temp[512];
     char LOGFILE[64];
 
@@ -529,6 +529,7 @@ CosaDmlDiagnosticsGetEventlog
     //syscfg_init();
     //syscfg_get(NULL, "EVT_LOG_FILE", LOGFILE, sizeof(LOGFILE));
     
+    UNREFERENCED_PARAMETER(hContext);
     if( (!commonSyseventGet("EVT_LOG_FILE_V2", LOGFILE, sizeof(LOGFILE))) \
         && (LOGFILE[0] == '\0'))
         return ANSC_STATUS_FAILURE;
@@ -613,11 +614,8 @@ CosaDmlDiagnosticsGetAllEventlog
         ULONG*                         pUlSize
     )
 {
-    char logfile[FILENAME_MAX]; 
     char temp[512];
     char LOGFILE[64];
-    char logsize;
-    char *pLog;
     size_t tmpsize = 0;
     int i;
     LOGFILE[0] = '\0';
@@ -665,11 +663,8 @@ CosaDmlDiagnosticsGetAllSyslog
         ULONG*                         pUlSize
     )
 {
-    char logfile[FILENAME_MAX]; 
     char temp[512];
     char LOGFILE[64];
-    char logsize;
-    char *pLog;
     size_t tmpsize = 0;
     int i;
     LOGFILE[0] = '\0';

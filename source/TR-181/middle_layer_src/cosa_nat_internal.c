@@ -104,7 +104,6 @@ CosaNatCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT             pMyObject    = (PCOSA_DATAMODEL_NAT)NULL;
 
     /*
@@ -390,6 +389,7 @@ CosaNatGen
         PCOSA_DML_NAT_PMAPPING      pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT             pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
 
@@ -413,7 +413,7 @@ CosaNatGen
     }while(1);
 
     pEntry->InstanceNumber            = pNat->MaxInstanceNumber;
-    _ansc_sprintf( pEntry->Alias, "PortMapping%d", pEntry->InstanceNumber );
+    _ansc_sprintf( pEntry->Alias, "PortMapping%d", (int)pEntry->InstanceNumber );
 
     /* keep new MaxInstanceNumber */
     returnStatus = CosaNatRegSetNatInfo(pNat);
@@ -428,6 +428,7 @@ CosaNatGenForTriggerEntry
         PCOSA_DML_NAT_PTRIGGER      pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT             pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
 
@@ -456,7 +457,7 @@ CosaNatGenForTriggerEntry
 
     if ( pEntry->Alias[0] == '\0' )
     {
-        _ansc_sprintf( pEntry->Alias, "PortTrigger%d", pEntry->InstanceNumber );
+        _ansc_sprintf( pEntry->Alias, "PortTrigger%d", (int)pEntry->InstanceNumber );
     }
 
     pNat->ulPtNextInstanceNumber++;
@@ -862,11 +863,6 @@ CosaNatRegSetNatInfo
 
     PSINGLE_LINK_ENTRY              pSLinkEntry         = (PSINGLE_LINK_ENTRY      )NULL;
     PSLAP_VARIABLE                  pSlapVariable       = NULL;
-    ULONG                           ulEntryCount        = 0;
-    ULONG                           ulIndex             = 0;
-    ULONG                           uInstanceNumber     = 0;
-    char*                           pAliasNat           = NULL;
-    char*                           pFolderName         = NULL;
     char                            FolderName[16]      = {0};
 
 
@@ -925,7 +921,7 @@ CosaNatRegSetNatInfo
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%d", pCosaNat->InstanceNumber);
+        _ansc_sprintf(FolderName, "%d", (int)pCosaNat->InstanceNumber);
 
         pPoamIrepFoEnumNat =
             pPoamIrepFoNat->AddFolder
@@ -1059,7 +1055,7 @@ CosaNatRegSetNatInfo
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%d", pCosaNatPt->InstanceNumber);
+        _ansc_sprintf(FolderName, "%d", (int)pCosaNatPt->InstanceNumber);
 
         pPoamIrepFoEnumNat =
             pPoamIrepFoNatPt->AddFolder

@@ -53,7 +53,6 @@ CosaAdvPCCreate
     )
 {
     PCOSA_DATAMODEL_ADVPC       pMyObject    = (PCOSA_DATAMODEL_ADVPC)NULL;
-    int                     retGet  = CCSP_SUCCESS;
     FILE                           *fd;
 
     /*

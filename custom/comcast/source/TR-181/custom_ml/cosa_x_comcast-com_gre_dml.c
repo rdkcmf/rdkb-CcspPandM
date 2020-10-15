@@ -43,7 +43,6 @@
         05/18/2015    initial revision.
 
 **************************************************************************/
-
 #include "dml_tr181_custom_cfg.h"
 
 #ifdef CONFIG_CISCO_HOTSPOT
@@ -51,17 +50,22 @@
 #include "cosa_x_comcast-com_gre_internal.h"
 #include "safec_lib_common.h"
 
+int hotspot_update_circuit_ids(int greinst, int queuestart);
+
 ULONG GreTunnel_GetEntryCount (  ANSC_HANDLE hInsContext  ) {
+    UNREFERENCED_PARAMETER(hInsContext);
     return CosaDml_GreTunnelGetNumberOfEntries();
 }
 
 ULONG GreTunnelIf_GetEntryCount (  ANSC_HANDLE hInsContext  ) {
+    UNREFERENCED_PARAMETER(hInsContext);
 	//COSA_DATAMODEL_GRET              *pMyObject = (COSA_DATAMODEL_GRETU *)g_pCosaBEManager->hGRE;
 	//TUDO: get Tunnel index somewhere
 	return CosaDml_GreTunnelIfGetNumberOfEntries(1);
 }
 
 ANSC_HANDLE GreTunnel_GetEntry( ANSC_HANDLE hInsContext, ULONG nIndex, ULONG* pInsNumber ) {
+    UNREFERENCED_PARAMETER(hInsContext);
 	COSA_DATAMODEL_GRE2           *pMyObject   = (COSA_DATAMODEL_GRE2 *)g_pCosaBEManager->hTGRE;
 	
     if (nIndex >= MAX_GRE_TU)
@@ -72,8 +76,8 @@ ANSC_HANDLE GreTunnel_GetEntry( ANSC_HANDLE hInsContext, ULONG nIndex, ULONG* pI
 }
 
 ANSC_HANDLE GreTunnelIf_GetEntry( ANSC_HANDLE hInsContext, ULONG nIndex, ULONG* pInsNumber ) {
+    UNREFERENCED_PARAMETER(hInsContext);
 	COSA_DATAMODEL_GRE2             *pGre2   = (COSA_DATAMODEL_GRE2 *)g_pCosaBEManager->hTGRE;
-	COSA_DML_GRE_TUNNEL_IF			*pTuIf=NULL;
     if (nIndex >= MAX_GRE_TUIF)
         return NULL;
 
@@ -81,8 +85,10 @@ ANSC_HANDLE GreTunnelIf_GetEntry( ANSC_HANDLE hInsContext, ULONG nIndex, ULONG* 
     *pInsNumber = pGre2->GreTu[0].GreTunnelIf[nIndex].InstanceNumber;
     return (ANSC_HANDLE)&pGre2->GreTu[0].GreTunnelIf[nIndex];
 }
-BOOL hotspot_thread()
+
+void* hotspot_thread(void* arg)
 {
+    UNREFERENCED_PARAMETER(arg);
     static BOOL running=0;
     if(!running)
     {
@@ -93,10 +99,10 @@ BOOL hotspot_thread()
     else
     {
         CcspTraceError(("%s: already hotspot_update_circuit_ids is running\n", __FUNCTION__));
-        return 0;
+        return NULL;
     }
     running=0;
-    return 1;
+    return NULL;
 }
 
 BOOL GreTunnel_GetParamBoolValue ( ANSC_HANDLE hInsContext, char*  ParamName, BOOL*  pBool) {
@@ -565,12 +571,18 @@ BOOL GreTunnelIf_SetParamIntValue ( ANSC_HANDLE hInsContext, char* ParamName, in
 
 BOOL GreTunnel_Validate ( ANSC_HANDLE hInsContext, char* pReturnParamName, ULONG* puLength ) 
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     //All the parameters are validated in hotspot code
 	return TRUE;
 }	
 
 BOOL GreTunnelIf_Validate ( ANSC_HANDLE hInsContext, char* pReturnParamName, ULONG* puLength )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
 	return TRUE;
 }	
 
@@ -729,7 +741,7 @@ ULONG GreTunnel_Rollback( ANSC_HANDLE hInsContext) {
         return ANSC_STATUS_FAILURE;
     if (CosaDml_GreTunnelGetPrimaryEndpoint(ins, pGreTu->PrimaryRemoteEndpoint, sizeof(pGreTu->PrimaryRemoteEndpoint)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-	if (CosaDml_GreTunnelGetSecondaryEndpoint(ins, pGreTu->SecondaryRemoteEndpoint, sizeof(pGreTu->SecondaryRemoteEndpoint)) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreTunnelGetSecondaryEndpoint(ins, pGreTu->SecondaryRemoteEndpoint, sizeof(pGreTu->SecondaryRemoteEndpoint)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;	
     if (CosaDml_GreTunnelGetKeyGenPolicy(ins, &pGreTu->KeyIdentifierGenerationPolicy) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
@@ -757,7 +769,7 @@ ULONG GreTunnel_Rollback( ANSC_HANDLE hInsContext) {
         return ANSC_STATUS_FAILURE;
     if (CosaDml_GreTunnelGetDhcpRemoteId(ins, &pGreTu->EnableRemoteID) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreTunnelGetGRETunnel(ins, &pGreTu->GRENetworkTunnel, sizeof(pGreTu->GRENetworkTunnel)) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreTunnelGetGRETunnel(ins, pGreTu->GRENetworkTunnel, sizeof(pGreTu->GRENetworkTunnel)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
     return ANSC_STATUS_SUCCESS;
@@ -779,7 +791,7 @@ ULONG GreTunnelIf_Rollback( ANSC_HANDLE hInsContext) {
     if (CosaDml_GreTunnelIfGetAssociatedBridgesWiFiPort(1, ins, pGreTuIf->AssociatedBridgesWiFiPort, sizeof(pGreTuIf->AssociatedBridgesWiFiPort)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
-	return ANSC_STATUS_SUCCESS;
+    return ANSC_STATUS_SUCCESS;
 
 }
 

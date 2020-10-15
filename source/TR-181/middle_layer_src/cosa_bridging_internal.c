@@ -106,7 +106,6 @@ CosaBridgingCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_BRIDGING        pMyObject    = (PCOSA_DATAMODEL_BRIDGING)NULL;
 
     /*
@@ -366,9 +365,9 @@ CosaBridgingInitialize
                     pMyObject->ulNextBridgeInstance = 1;
                 }
 
-                _ansc_sprintf(pDmlBridge->Cfg.Alias, "DmlBridge%d", pMyObject->ulNextBridgeInstance);
+                _ansc_sprintf(pDmlBridge->Cfg.Alias, "DmlBridge%lu", pMyObject->ulNextBridgeInstance);
 #if defined (MULTILAN_FEATURE)
-                _ansc_sprintf(pDmlBridge->Cfg.name, "DmlBridge%d", pMyObject->ulNextBridgeInstance);
+                _ansc_sprintf(pDmlBridge->Cfg.name, "DmlBridge%lu", pMyObject->ulNextBridgeInstance);
 
 
                 CosaDmlBrgSetValues(NULL, ulIndex, pDmlBridge->Cfg.InstanceNumber, pDmlBridge->Cfg.Alias, pDmlBridge->Cfg.name);
@@ -392,7 +391,7 @@ CosaBridgingInitialize
             _ansc_sprintf
                 (
                     FolderName, 
-                    "%s%d", 
+                    "%s%lu", 
                     COSA_DML_RR_NAME_Bridge_Port_NextInsNumber, 
                     pDmlBridge->Cfg.InstanceNumber
                 );
@@ -496,7 +495,7 @@ CosaBridgingInitialize
                         pDmlBridge->ulNextPortInsNum = 1;
                     }
 
-                    _ansc_sprintf(pPort->Cfg.Alias, "Port%d", pCosaContext2->InstanceNumber);
+                    _ansc_sprintf(pPort->Cfg.Alias, "Port%lu", pCosaContext2->InstanceNumber);
 
                     CosaDmlBrgPortSetValues
                         (
@@ -525,7 +524,7 @@ CosaBridgingInitialize
             _ansc_sprintf
                 (
                     FolderName, 
-                    "%s%d", 
+                    "%s%lu", 
                     COSA_DML_RR_NAME_Bridge_VLAN_NextInsNumber, 
                     pDmlBridge->Cfg.InstanceNumber
                 );
@@ -628,7 +627,7 @@ CosaBridgingInitialize
                         pDmlBridge->ulNextVLANInsNum = 1;
                     }
 
-                    _ansc_sprintf(pVLAN->Cfg.Alias, "VLAN%d", pCosaContext2->InstanceNumber);
+                    _ansc_sprintf(pVLAN->Cfg.Alias, "VLAN%lu", pCosaContext2->InstanceNumber);
 
                     CosaDmlBrgVlanSetValues //new sbAPI
                         (
@@ -650,7 +649,7 @@ CosaBridgingInitialize
     }
     //$HL 4/29/2013
     CosaBridgingRegGetInfo((ANSC_HANDLE)pMyObject);
-    CosaDmlPrintHSVlanPsmValue( __FUNCTION__ , __LINE__ );
+    CosaDmlPrintHSVlanPsmValue( (char*)__FUNCTION__ , __LINE__ );
 
 EXIT:
 
@@ -792,7 +791,6 @@ CosaBridgingRegGetInfo
     ULONG                           ulInstanceNumber        = 0;
     ULONG                           ulUpperInstanceNumber   = 0;
     char*                           pFolderName             = NULL;
-    char*                           pBridgeName             = NULL;
     char*                           pAlias                  = NULL;
     BOOLEAN                         found = FALSE;
     if ( !pPoamIrepFoBRGHA )
@@ -1119,7 +1117,7 @@ CosaBridgingRegAddInfo
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%d", pNextInsNumName, ulUpperInsNum);
+    _ansc_sprintf(FolderName, "%s%lu", pNextInsNumName, ulUpperInsNum);
 
     if ( TRUE )
     {
@@ -1174,7 +1172,7 @@ CosaBridgingRegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%d%d", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        _ansc_sprintf(FolderName, "%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
 
         pPoamIrepFo =
             pPoamIrepFoUpper->AddFolder
@@ -1302,12 +1300,10 @@ CosaBridgingRegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_BRIDGING        pMyObject         = (PCOSA_DATAMODEL_BRIDGING )hThisObject;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
-
+    UNREFERENCED_PARAMETER(hThisObject);
     if ( !pPoamIrepUpperFo || !pPoamIrepFo )
     {
         return ANSC_STATUS_FAILURE;

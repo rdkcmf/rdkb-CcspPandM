@@ -91,7 +91,6 @@ CosaFirewallCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_FIREWALL        pMyObject    = (PCOSA_DATAMODEL_FIREWALL)NULL;
 
     /*

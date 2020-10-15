@@ -16,9 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-
+#include <syscfg/syscfg.h>
 #include "cosa_webconfig_api.h"
 #include "webconfig_framework.h"
+#include "base64.h"
 
 int pf_cache_size = 0;
 int pf_cache_size_bkup = 0;
@@ -46,7 +47,7 @@ int  get_base64_decodedbuffer(char *pString, char **buffer, int *size)
     if (!decodeMsg)
         return -1;
 
-    *size = b64_decode( pString, strlen(pString), decodeMsg );
+    *size = b64_decode( (const uint8_t*)pString, strlen(pString), (uint8_t *)decodeMsg );
     CcspTraceWarning(("base64 decoded data contains %d bytes\n",size));
 
     getCurrentTime(endPtr);
@@ -286,6 +287,7 @@ int clear_pf_cache_DB(t_cache *tmp_pf_cache)
 /* API to back up the cache */
 void backup_pf_cache(t_cache *tmp_pf_cache,t_cache *tmp_pf_cache_bkup,int cache_size)
 {
+    UNREFERENCED_PARAMETER(cache_size);
 	int i = 0;
     	for(i = 0; i < pf_cache_size; i++)
     	{
@@ -427,11 +429,10 @@ void print_portmap_entry()
 /* Read blob entries into a cache */
 int set_portmap_conf(portmappingdoc_t *rpm)
 {
-	int i = 0; int count = 0; int j = 0;
+        unsigned long i = 0; 
+        int count = 0; int j = 0;
     	int spf_count = 0;
     	int pfr_count = 0;
-    	char cmd[64];
-    	char val[64];
     	char alias_pre[8];
     	printf("Port map entries %d\n",rpm->entries_count);
     	//printf("SinglePortForwardCount = %d\n", rpm->entries_count);
@@ -465,8 +466,8 @@ int set_portmap_conf(portmappingdoc_t *rpm)
             		spf_count++;
             		snprintf(pf_cache[count].cmd,BLOCK_SIZE,ALIAS_SPF"%d",spf_count);
             		strcpy(alias_pre,ALIAS_PRE_SPF);
-            		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s%d",alias_pre,i);
-            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_EXT_PORT,alias_pre,i);
+            		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s%lu",alias_pre,i);
+            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_EXT_PORT,alias_pre,i);
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s",rpm->entries[j].external_port);
 
         	}
@@ -475,24 +476,24 @@ int set_portmap_conf(portmappingdoc_t *rpm)
            		pfr_count++;
            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,ALIAS_PFR"%d",pfr_count);
             		strcpy(alias_pre,ALIAS_PRE_PFR);
-            		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s%d",alias_pre,i);
-            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_EXT_PORT_RANGE,alias_pre,i);
+            		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s%lu",alias_pre,i);
+            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_EXT_PORT_RANGE,alias_pre,i);
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s %s",rpm->entries[j].external_port,rpm->entries[j].external_port_end_range);
-            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_PFR_PUBLIC_IP,alias_pre,i);
+            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_PFR_PUBLIC_IP,alias_pre,i);
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s","0.0.0.0");
-            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_PFR_INT_RANGE,alias_pre,i);
+            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_PFR_INT_RANGE,alias_pre,i);
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s","0");
         	}
 
-        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_IP,alias_pre,i);
+        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_IP,alias_pre,i);
 
 
       		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s",rpm->entries[j].internal_client);
-        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_NAME,alias_pre,i);
+        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_NAME,alias_pre,i);
         	snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s",rpm->entries[j].description);
-        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_ENABLE,alias_pre,i);
+        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_ENABLE,alias_pre,i);
         	snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s",rpm->entries[j].enable);
-        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_PROTO,alias_pre,i);
+        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_PROTO,alias_pre,i);
 
             if ( ( strcasecmp(rpm->entries[j].protocol,"TCP/UDP") == 0 )|| ( strcasecmp(rpm->entries[j].protocol,"UDP/TCP") == 0 ) || ( strcasecmp(rpm->entries[j].protocol,"BOTH") == 0 )  )
             {
@@ -513,11 +514,11 @@ int set_portmap_conf(portmappingdoc_t *rpm)
             {
                 return INVALID_PROTOCOL ;
             }
-        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_INT_PORT,alias_pre,i);
+        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_INT_PORT,alias_pre,i);
         	snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"0");
-        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_IPV6,alias_pre,i);
+        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_IPV6,alias_pre,i);
         	snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"x");
-        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%d"ALIAS_POS_PREV_STATE,alias_pre,i);
+        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_PREV_STATE,alias_pre,i);
         	snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"1");
 
     	}
@@ -656,7 +657,7 @@ pErr Process_PF_WebConfigRequest(void *Data)
 {
 
     	pErr execRetVal = NULL;
-        int lpfEnable = 0 ;
+        int lpfEnable = 0;
     	execRetVal = (pErr) malloc (sizeof(Err));
     	if (execRetVal == NULL )
     	{

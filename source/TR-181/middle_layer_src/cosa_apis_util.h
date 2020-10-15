@@ -283,5 +283,6 @@ int vsystem(const char *fmt, ...);
 void chomp(char *line);
 
 int get_if_hwaddr(const char *ifname, char *mac, size_t size);
+ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode);
 
 #endif

@@ -102,7 +102,6 @@ CosaRoutingCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_ROUTING         pMyObject    = (PCOSA_DATAMODEL_ROUTING)NULL;
 
     /*
@@ -410,7 +409,7 @@ CosaRoutingInitialize
             }
 
             /* Generate Alias */
-            _ansc_sprintf(pRouter->Cfg.Alias, "Router%d", pMyObject->ulNextRouterInsNum);
+            _ansc_sprintf(pRouter->Cfg.Alias, "Router%lu", pMyObject->ulNextRouterInsNum);
 
             CosaDmlRoutingRouterSetCfg(NULL, (PCOSA_DML_ROUTER_CFG)&pRouter->Cfg);
         }
@@ -428,7 +427,7 @@ CosaRoutingInitialize
         _ansc_sprintf
         (
             FolderName, 
-            "%s%d", 
+            "%s%lu", 
             COSA_DML_RR_NAME_ROUTER_Forward_NextInsNum, 
             pRouter->Cfg.InstanceNumber
         );
@@ -517,7 +516,7 @@ CosaRoutingInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pRouterForward->Alias, "IPv4Forwarding%d", pSubCosaContext->InstanceNumber);
+                _ansc_sprintf(pRouterForward->Alias, "IPv4Forwarding%lu", pSubCosaContext->InstanceNumber);
 
                 /* TODO: Set InstanceNumber Alias back */
                 CosaDmlRoutingSetV4EntryValues
@@ -543,7 +542,7 @@ CosaRoutingInitialize
         _ansc_sprintf
         (
             FolderName, 
-            "%s%d", 
+            "%s%lu", 
             COSA_DML_RR_NAME_ROUTER_IPv6Forward_NextInsNum, 
             pRouter->Cfg.InstanceNumber
         );
@@ -632,7 +631,7 @@ CosaRoutingInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pRouterIPv6Forward->Alias, "IPv6Forwarding%d", pSubCosaContext->InstanceNumber);
+                _ansc_sprintf(pRouterIPv6Forward->Alias, "IPv6Forwarding%lu", pSubCosaContext->InstanceNumber);
 
                 /* TODO: Set InstanceNumber Alias back */
                 CosaDmlRoutingSetV6EntryValues
@@ -1362,7 +1361,7 @@ CosaRoutingRegAddInfo
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%d", pNextInsNumName, ulUpperInsNum);
+    _ansc_sprintf(FolderName, "%s%lu", pNextInsNumName, ulUpperInsNum);
 
     if ( TRUE )
     {
@@ -1413,7 +1412,7 @@ CosaRoutingRegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%d%d", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        _ansc_sprintf(FolderName, "%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
 
         pPoamIrepFo = pPoamIrepFoUpper->AddFolder
                         (
@@ -1538,8 +1537,7 @@ CosaRoutingRegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_ROUTING         pMyObject         = (PCOSA_DATAMODEL_ROUTING )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
@@ -1644,7 +1642,7 @@ char* CosaTimeGetRipdConfStaticPart (ANSC_HANDLE   hContext)
                     Val2 = Val2>>1;
                 }
             }
-            _ansc_sprintf(Buff2, " route %s/%d\n", _ansc_inet_ntoa(*((struct in_addr*)&Val1)), K2);
+            _ansc_sprintf(Buff2, " route %s/%lu\n", _ansc_inet_ntoa(*((struct in_addr*)&Val1)), K2);
             _ansc_strcat(Buff,Buff2);
 
         }

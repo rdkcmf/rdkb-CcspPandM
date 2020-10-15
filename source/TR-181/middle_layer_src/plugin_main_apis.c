@@ -64,7 +64,7 @@
         01/11/2011    initial revision.
 
 **********************************************************************/
-
+#include <syscfg/syscfg.h>
 #include "dml_tr181_custom_cfg.h"
 #include "plugin_main_apis.h"
 #include "cosa_ethernet_apis.h"
@@ -104,10 +104,24 @@
 #include "cosa_ipv6rd_internal.h"
 #include "cosa_x_cisco_com_mld_internal.h"
 #include "cosa_x_cisco_com_multilan_apis.h"
+
 #if defined(DDNS_BROADBANDFORUM)
 #include "cosa_dynamicdns_apis.h"
 #include "cosa_dynamicdns_internal.h"
 #endif
+
+#include "cosa_ra_internal.h"
+#include "cosa_rabid_internal.h"
+#include "cosa_adv_parental_control_internal.h"
+#include "cosa_privacy_protection_internal.h"
+#include "cosa_x_rdkcentral_com_xpc_internal.h"
+#include "cosa_onboardlogging_internal.h"
+#include "cosa_x_cisco_com_diagnostics_internal.h"
+#include "cosa_lanmanagement_internal.h"
+#include "cosa_x_comcast_com_parentalcontrol_internal.h"
+#include "cosa_x_cisco_com_rlog_internal.h"
+#include "cosa_x_cisco_com_hotspot_internal.h"
+
 #ifdef DSLITE_FEATURE_SUPPORT
 #include "cosa_dslite_apis.h"
 #include "cosa_dslite_internal.h"
@@ -153,6 +167,18 @@ char*                              g_SubsystemPrefix;
 COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
 COSARepopulateTableProc            g_COSARepopulateTable;
 
+ANSC_HANDLE CosaDhcpv6Create(VOID);
+ANSC_STATUS CosaDhcpv6Remove(ANSC_HANDLE hThisObject);
+ANSC_HANDLE CosaNeighdiscCreate(VOID);
+ANSC_STATUS CosaNeighdiscRemove(ANSC_HANDLE hThisObject);
+ANSC_HANDLE CosaGreTunnelCreate ();
+ANSC_HANDLE CosaCGreCreate(VOID);
+ANSC_STATUS CosaCGreRemove(ANSC_HANDLE hThisObject);
+ANSC_STATUS CosaGreTunnelRemove( ANSC_HANDLE hThisObject );
+ANSC_HANDLE CosaGreCreate(VOID);
+ANSC_STATUS CosaGreRemove(ANSC_HANDLE hThisObject);
+void initparodusTask();
+
 /**********************************************************************
 
     caller:     owner of the object
@@ -180,7 +206,6 @@ CosaBackEndManagerCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_BACKEND_MANAGER_OBJECT    pMyObject    = (PCOSA_BACKEND_MANAGER_OBJECT)NULL;
 
     /*

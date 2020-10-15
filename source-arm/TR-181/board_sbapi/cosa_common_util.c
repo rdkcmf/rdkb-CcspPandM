@@ -67,6 +67,7 @@
 #include "cosa_apis_util.h"
 #ifdef _HUB4_PRODUCT_REQ_
 #include "cosa_lanmanagement_apis.h"
+#include "ccsp_psm_helper.h"
 
 #define PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE  "dmsb.lanmanagemententry.lanulaenable"
 #define PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE "dmsb.lanmanagemententry.lanipv6enable"
@@ -75,6 +76,7 @@
 
 extern ANSC_HANDLE bus_handle;
 extern void* g_pDslhDmlAgent;
+void ValidUlaHandleEventAsync(void);
 #endif
 
 /**
@@ -453,12 +455,8 @@ EvtDispterEventListen(void)
 {
     int     ret = EVENT_TIMEOUT;
     fd_set  rfds;
-    struct  timeval tv;
     int     retval;
 
-
-    tv.tv_sec = 30;
-    tv.tv_usec=0;
     FD_ZERO(&rfds);
     FD_SET(se_fd, &rfds);
 
@@ -592,7 +590,7 @@ void *
 EvtDispterEventHandler(void *arg)
 {
     int ret = EVENT_ERROR;
-
+    UNREFERENCED_PARAMETER(arg);
     while(EVENT_ERROR == EvtDispterEventInits())
     {
         CcspTraceError(("%s: sysevent init failed!\n", __FUNCTION__));
@@ -664,6 +662,8 @@ void* RegenerateUla(void *arg)
     char *pUla_prefix  = NULL;
     char *pUla = NULL;
 
+    UNREFERENCED_PARAMETER(arg);
+
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
     pthread_detach(pthread_self());
 
@@ -672,7 +672,7 @@ void* RegenerateUla(void *arg)
     	if (pIpv6_enable != NULL) {
            bus_info->freefunc(pIpv6_enable);
     	}
-        return ANSC_STATUS_FAILURE;
+        return NULL;
     }
 
     if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE, NULL, &pUla_enable))
@@ -680,21 +680,21 @@ void* RegenerateUla(void *arg)
     	if (pUla_enable != NULL) {
            bus_info->freefunc(pUla_enable);
     	}
-        return ANSC_STATUS_FAILURE;
+        return NULL;
     }
 
     if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA, NULL, &pUla))
     {
         if(pUla != NULL)
             bus_info->freefunc(pUla);
-        return ANSC_STATUS_FAILURE;
+        return NULL;
     }
 
     if(CCSP_SUCCESS != PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX, NULL, &pUla_prefix))
     {
         if(pUla_prefix != NULL)
             bus_info->freefunc(pUla_prefix);
-        return ANSC_STATUS_FAILURE;
+        return NULL;
     }
 
     if ((strncmp(pIpv6_enable, "TRUE", 4 ) == 0) && (strncmp(pUla_enable, "TRUE", 4 ) == 0))
@@ -731,6 +731,7 @@ void* RegenerateUla(void *arg)
 
     if(pUla != NULL)
         bus_info->freefunc(pUla);
+    return NULL;
 }
 
 /*

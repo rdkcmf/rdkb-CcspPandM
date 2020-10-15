@@ -194,6 +194,26 @@ CosaDmlGetCloudUIReachableStatus
         BOOL *pValue
     );
 
+ANSC_STATUS
+CosaDmlGetCaptivePortalEnable
+    (
+        BOOL *pValue
+    );
+
+ANSC_STATUS
+CosaDmlDiGetRouterIPv6Address
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    );
+
+ANSC_STATUS
+CosaDmlSetCaptivePortalEnable
+    (
+        BOOL value
+    );
+
 #if defined(INTEL_PUMA7) || defined(_COSA_BCM_ARM_)
 ANSC_STATUS
 CosaDmlSetLED

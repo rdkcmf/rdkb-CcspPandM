@@ -68,7 +68,12 @@
 
 #include "ansc_platform.h"
 #include "cosa_upnp_dml.h"
-
+ANSC_STATUS
+CosaDmlUpnpDevSetAdvPeriod
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       val
+    );
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -167,6 +172,7 @@ Device_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and return the corresponding value */
@@ -230,6 +236,10 @@ Device_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -271,13 +281,14 @@ Device_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "X_CISCO_COM_IGD_AdvertisementPeriod", TRUE) )
     {
         /* collect value */
-        CosaDmlUpnpDevGetAdvPeriod(NULL, &pMyObject->AdvertisementPeriod);
+        CosaDmlUpnpDevGetAdvPeriod(NULL, (PULONG*)&pMyObject->AdvertisementPeriod);
         *puLong = pMyObject->AdvertisementPeriod;
         return TRUE;
     }
@@ -285,7 +296,7 @@ Device_GetParamUlongValue
     if( AnscEqualString(ParamName, "X_CISCO_COM_IGD_TTL", TRUE) )
     {
         /* collect value */
-        CosaDmlUpnpDevGetTTL(NULL, &pMyObject->TTL);
+        CosaDmlUpnpDevGetTTL(NULL, (PULONG*)&pMyObject->TTL);
         *puLong = pMyObject->TTL;
         return TRUE;
     }
@@ -344,6 +355,11 @@ Device_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     return -1;
 }
 
@@ -385,6 +401,7 @@ Device_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and set the corresponding value */
@@ -453,6 +470,10 @@ Device_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     return FALSE;
 }
 
@@ -494,6 +515,7 @@ Device_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     #define MIN 1
     #define TTL_MAX 99
@@ -570,6 +592,10 @@ Device_SetParamStringValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
+
     return FALSE;
 }
 
@@ -611,6 +637,10 @@ Device_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
+
     return TRUE;
 }
 
@@ -642,8 +672,7 @@ Device_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
-    
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -676,6 +705,7 @@ Device_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     pMyObject->bUpnpDevEnable               = CosaDmlUpnpDevGetState(NULL);
@@ -737,6 +767,10 @@ Capabilities_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
+
     return FALSE;
 }
 
@@ -781,6 +815,10 @@ Capabilities_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -822,6 +860,7 @@ Capabilities_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and return the corresponding value */
@@ -953,6 +992,11 @@ Capabilities_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     return -1;
 }
 
@@ -1013,6 +1057,7 @@ Discovery_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and return the corresponding value */
@@ -1071,6 +1116,10 @@ Discovery_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -1112,6 +1161,7 @@ Discovery_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and return the corresponding value */
@@ -1179,6 +1229,11 @@ Discovery_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     return -1;
 }
 
@@ -1220,6 +1275,7 @@ Discovery_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and set the corresponding value */
@@ -1275,6 +1331,10 @@ Discovery_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     return FALSE;
 }
 
@@ -1316,6 +1376,7 @@ Discovery_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and return the corresponding value */
@@ -1371,6 +1432,10 @@ Discovery_SetParamStringValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
+
     return FALSE;
 }
 
@@ -1412,6 +1477,10 @@ Discovery_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
+
     return TRUE;
 }
 
@@ -1443,6 +1512,7 @@ Discovery_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     CosaDmlUpnpSetDiscoveryEnable(NULL, pMyObject->bDiscoveryEnable);
@@ -1480,6 +1550,7 @@ Discovery_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     pMyObject->bDiscoveryEnable                  = CosaDmlUpnpGetDiscoveryEnable(NULL);

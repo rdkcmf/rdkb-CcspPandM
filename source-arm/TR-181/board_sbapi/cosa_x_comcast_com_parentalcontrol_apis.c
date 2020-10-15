@@ -32,18 +32,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 **********************************************************************/
-
-#include "cosa_x_comcast_com_parentalcontrol_apis.h"
-#include <utctx/utctx.h>
-#include <utapi/utapi.h>
-#include <utapi/utapi_util.h>
-#include <utapi/utapi_parental_control.h>
-#include "cosa_drg_common.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <ctype.h>
+#include "cosa_x_comcast_com_parentalcontrol_apis.h"
+#include "syscfg/syscfg.h"
+#include <utctx/utctx.h>
+#include <utapi/utapi.h>
+#include <utapi/utapi_util.h>
+#include <utapi/utapi_parental_control.h>
+#include "cosa_drg_common.h"
 #include "autoconf.h"
 #include "safec_lib_common.h"
 #include "secure_wrapper.h"
@@ -53,6 +53,8 @@
 ANSC_STATUS
 CosaDmlParentalControlInit(ANSC_HANDLE hDml, PANSC_HANDLE phContext)
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -783,6 +785,8 @@ WRONG_FORMAT:
 ANSC_STATUS
 CosaDmlParentalControlInit(ANSC_HANDLE hDml, PANSC_HANDLE phContext)
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1226,7 +1230,8 @@ static int g_NrBlkURL =  0;
 static int
 BlkURL_InsGetIndex(ULONG ins)
 {
-    int i, ins_num, ret = -1;
+    int i, ret = -1;
+    int ins_num;
     UtopiaContext ctx;
     
     if (!Utopia_Init(&ctx))
@@ -1235,7 +1240,7 @@ BlkURL_InsGetIndex(ULONG ins)
     for (i = 0; i < g_NrBlkURL; i++)
     {
         Utopia_GetBlkURLInsNumByIndex(&ctx, i, &ins_num);
-        if (ins_num == ins) {
+        if ((ULONG)ins_num == ins) {
             ret = i;
             break;
         }
@@ -1277,7 +1282,9 @@ int SetDelIndex(int ind,int ins)
 	blkIns[dCnt] = ins;
 	dCnt++;
 	AnscTraceWarning(("<<< %s -- set Del index %d ...\n", __FUNCTION__,ind));
+    return 0;
 }
+
 int ChkDelIndex(int ind)
 {
 	int cnt = 0;
@@ -1323,6 +1330,7 @@ int delBlkUrl()
 	}
 	Utopia_GetNumberOfBlkURL(&ctx, &g_NrBlkURL);
 	Utopia_Free(&ctx, !rc);
+    return 0;
 	
 }
 ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
@@ -1335,13 +1343,14 @@ ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
     char start_time[25];
     char end_time[25];
     char eTime_block_days[64];
-	int sRet = 0,eRet = 0, nCount = 0;
+	int sRet = 0,eRet = 0;
+    ULONG nCount = 0;
     AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
 	nCount = g_NrBlkURL;
     ResetInsBuf();
 	AnscTraceWarning(("<<< %s --  g_NrBlkURL %d ...\n", __FUNCTION__,g_NrBlkURL));
 
-for(index = 0;index < nCount; index++)
+    for(index = 0;index < nCount; index++)
     {
 
      
@@ -1447,15 +1456,15 @@ ANSC_STATUS CosaDmlBlkURL_Migration()
 {
     UtopiaContext ctx;
     blkurl_t blkurl;
-    ULONG index =0;
+    int index =0;
     int rc = -1;
     char start_time[25];
     char end_time[25];
     char rb_end_time[25];
-	int sRet = 0,eRet = 0, ret = 0;
+	int sRet = 0,eRet = 0;
 	int                             InsNum                 = 0;
 	char eTime_block_days[64];
-AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
+    AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
 for(index = 0;index < g_NrBlkURL; index++)
     {
      AnscTraceWarning(("<<< %s -- index %d ...\n", __FUNCTION__,index));
@@ -1578,7 +1587,7 @@ CosaDmlBlkURL_GetEntryByIndex(ULONG index, COSA_DML_BLOCKEDURL *pEntry)
     UtopiaContext ctx;
     blkurl_t blkurl;
 
-    if (index >= g_NrBlkURL || !Utopia_Init(&ctx))
+    if (index >= (ULONG)g_NrBlkURL || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
     Utopia_GetBlkURLByIndex(&ctx, index, &blkurl);
@@ -1643,7 +1652,7 @@ CosaDmlBlkURL_SetValues(ULONG index, ULONG ins, const char *alias)
     int rc = -1;
     UtopiaContext ctx;
     
-    if (index >= g_NrBlkURL || !Utopia_Init(&ctx))
+    if (index >= (ULONG)g_NrBlkURL || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
     rc = Utopia_SetBlkURLInsAndAliasByIndex(&ctx, index, ins, alias);
@@ -1715,7 +1724,6 @@ CosaDmlBlkURL_DelEntry(ULONG ins)
 {
     int rc = -1;
     UtopiaContext ctx;
-    char url2ipFilePath[256];
 
     if (!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -1733,6 +1741,7 @@ CosaDmlBlkURL_DelEntry(ULONG ins)
         v_secure_system("ipset destroy %lu", ins);
         v_secure_system("ipset destroy %lu_v6", ins);
 #else
+        char url2ipFilePath[256];
         snprintf(url2ipFilePath, sizeof(url2ipFilePath), URL2IP_PATH, ins);
         remove(url2ipFilePath);
         snprintf(url2ipFilePath, sizeof(url2ipFilePath), URL2IP6_PATH, ins);
@@ -1825,7 +1834,8 @@ static int g_NrTrustedUser   = 0;
 static int
 TrustedUser_InsGetIndex(ULONG ins)
 {
-    int i, ins_num, ret = -1;
+    int i, ret = -1;
+    int ins_num;
     UtopiaContext ctx;
 
     if (!Utopia_Init(&ctx))
@@ -1834,7 +1844,7 @@ TrustedUser_InsGetIndex(ULONG ins)
     for (i = 0; i < g_NrTrustedUser; i++)
     {
         Utopia_GetTrustedUserInsNumByIndex(&ctx, i, &ins_num);
-        if (ins_num == ins) {
+        if ((ULONG)ins_num == ins) {
             ret = i;
             break;
         }
@@ -1866,7 +1876,7 @@ CosaDmlTrustedUser_GetEntryByIndex(ULONG index, COSA_DML_TRUSTEDUSER *pEntry)
     UtopiaContext ctx;
     trusted_user_t trusted_user;
 
-    if (index >= g_NrTrustedUser || !Utopia_Init(&ctx))
+    if (index >= (ULONG)g_NrTrustedUser || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
     Utopia_GetTrustedUserByIndex(&ctx, index, &trusted_user);
@@ -1890,7 +1900,7 @@ CosaDmlTrustedUser_SetValues(ULONG index, ULONG ins, const char *alias)
     int rc = -1;
     UtopiaContext ctx;
     
-    if (index >= g_NrTrustedUser || !Utopia_Init(&ctx))
+    if (index >= (ULONG)g_NrTrustedUser || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
     rc = Utopia_SetTrustedUserInsAndAliasByIndex(&ctx, index, ins, alias);
@@ -2015,7 +2025,8 @@ static int g_NrMSServs   = 0;
 static int
 MSServ_InsGetIndex(ULONG ins)
 {
-    int i, ins_num, ret = -1;
+    int i, ret = -1;
+    int ins_num;
     UtopiaContext ctx;
 
     CosaDmlMSServ_GetNumberOfEntries();
@@ -2026,7 +2037,7 @@ MSServ_InsGetIndex(ULONG ins)
     for (i = 0; i < g_NrMSServs; i++)
     {
         Utopia_GetMSServInsNumByIndex(&ctx, i, &ins_num);
-        if (ins_num == ins) {
+        if ((ULONG)ins_num == ins) {
             ret = i;
             break;
         }
@@ -2066,6 +2077,7 @@ int delMSServ()
 	}
 	Utopia_GetNumberOfMSServ(&ctx, &g_NrMSServs);
 	Utopia_Free(&ctx, !rc);
+    return 0;
 	
 }
 
@@ -2073,14 +2085,13 @@ ANSC_STATUS CosaDmlMSServ_RollbackUTCtoLocal()
 {
     UtopiaContext ctx;
     ms_serv_t ms_serv,tmp;
-    ULONG index =0;
-	ULONG TIndex =0;
+    int index =0;
+	int TIndex =0;
     int rc = -1;
     char start_time[25];
     char end_time[25];
 	char eTime_block_days[64];
-	int sRet = 0,eRet = 0,nCount = 0;;
-	nCount = g_NrMSServs;
+	int sRet = 0,eRet = 0;
     ResetInsBuf();
 AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
 for(index = 0;index < g_NrMSServs; index++)
@@ -2179,12 +2190,12 @@ ANSC_STATUS CosaDmlMSServ_Migration()
 {
     UtopiaContext ctx;
     ms_serv_t ms_serv;
-    ULONG index =0;
+    int index =0;
     int rc = -1;
     char start_time[25];
     char end_time[25];
 	char rb_end_time[25];
-	int sRet = 0,eRet = 0, ret = 0;
+	int sRet = 0,eRet = 0;
 	int InsNum                 = 0;
 	char eTime_block_days[64];
     AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
@@ -2309,9 +2320,8 @@ CosaDmlMSServ_GetEntryByIndex(ULONG index, COSA_DML_MS_SERV *pEntry)
 {
     UtopiaContext ctx;
     ms_serv_t ms_serv;
-    int i;
 
-    if (index >= g_NrMSServs || !Utopia_Init(&ctx))
+    if (index >= (ULONG)g_NrMSServs || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
     Utopia_GetMSServByIndex(&ctx, index, &ms_serv);
@@ -2348,7 +2358,7 @@ CosaDmlMSServ_SetValues(ULONG index, ULONG ins, const char *alias)
     int rc = -1;
     UtopiaContext ctx;
     
-    if (index >= g_NrMSServs || !Utopia_Init(&ctx))
+    if (index >= (ULONG)g_NrMSServs || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
     rc = Utopia_SetMSServInsAndAliasByIndex(&ctx, index, ins, alias);
@@ -2516,7 +2526,7 @@ MSTrustedUser_InsGetIndex(ULONG ins)
     for (i = 0; i < g_NrMSTrustedUsers; i++)
     {
         Utopia_GetMSTrustedUserInsNumByIndex(&ctx, i, &ins_num);
-        if (ins_num == ins) {
+        if ((ULONG)ins_num == ins) {
             ret = i;
             break;
         }
@@ -2548,7 +2558,7 @@ CosaDmlMSTrustedUser_GetEntryByIndex(ULONG index, COSA_DML_MS_TRUSTEDUSER *pEntr
     UtopiaContext ctx;
     ms_trusteduser_t ms_trusteduser;
 
-    if (index >= g_NrMSTrustedUsers || !Utopia_Init(&ctx))
+    if (index >= (ULONG)g_NrMSTrustedUsers || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
     Utopia_GetMSTrustedUserByIndex(&ctx, index, &ms_trusteduser);
@@ -2572,7 +2582,7 @@ CosaDmlMSTrustedUser_SetValues(ULONG index, ULONG ins, const char *alias)
     int rc = -1;
     UtopiaContext ctx;
     
-    if (index >= g_NrMSTrustedUsers || !Utopia_Init(&ctx))
+    if (index >= (ULONG)g_NrMSTrustedUsers || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
     rc = Utopia_SetMSTrustedUserInsAndAliasByIndex(&ctx, index, ins, alias);
@@ -2704,7 +2714,7 @@ MDDev_InsGetIndex(ULONG ins)
     for (i = 0; i < g_NrMDDevs; i++)
     {
         Utopia_GetMDDevInsNumByIndex(&ctx, i, &ins_num);
-        if(ins_num == ins) {
+        if((ULONG)ins_num == ins) {
             ret = i;
             break;
         }
@@ -2744,20 +2754,20 @@ int delMDDev()
 	}
 	Utopia_GetNumberOfMDDev(&ctx, &g_NrMDDevs);
 	Utopia_Free(&ctx, !rc);
+    return 0;
 	
 }
 ANSC_STATUS CosaDmlMDDev_RollbackUTCtoLocal()
 {
     UtopiaContext ctx;
     md_dev_t md_dev,tmp;
-    ULONG index =0;
-	ULONG TIndex =0;
+    int index =0;
+	int TIndex =0;
     int rc = -1;
     char start_time[25];
     char end_time[25];
 	char eTime_block_days[64];
-	int sRet = 0,eRet = 0, nCount = 0;
-	nCount = g_NrMDDevs;
+	int sRet = 0,eRet = 0;
     ResetInsBuf();
 	AnscTraceWarning(("<<< %s --  g_NrBlkURL %d ...\n", __FUNCTION__,g_NrBlkURL));
     AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
@@ -2857,12 +2867,12 @@ ANSC_STATUS CosaDmlMDDev_Migration()
 {
     UtopiaContext ctx;
     md_dev_t md_dev;
-    ULONG index =0;
+    int index =0;
     int rc = -1;
     char start_time[25];
     char end_time[25];
 	char rb_end_time[25];
-	int sRet = 0,eRet = 0, ret = 0;
+	int sRet = 0,eRet = 0;
 	int                             InsNum                 = 0;
 	char eTime_block_days[64];
 AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
@@ -2990,7 +3000,7 @@ CosaDmlMDDev_GetEntryByIndex(ULONG index, COSA_DML_MD_DEV *pEntry)
     int i,j,size;
     char mac_addr[64];
 
-    if (index >= g_NrMDDevs || !Utopia_Init(&ctx))
+    if (index >= (ULONG)g_NrMDDevs || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
     Utopia_GetMDDevByIndex(&ctx, index, &md_dev);
@@ -3029,7 +3039,7 @@ CosaDmlMDDev_SetValues(ULONG index, ULONG ins, const char *alias)
     int rc = -1;
     UtopiaContext ctx;
     
-    if (index >= g_NrMDDevs || !Utopia_Init(&ctx))
+    if (index >= (ULONG)g_NrMDDevs || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
     rc = Utopia_SetMDDevInsAndAliasByIndex(&ctx, index, ins, alias);

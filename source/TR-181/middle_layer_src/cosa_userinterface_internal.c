@@ -99,7 +99,6 @@ CosaUserinterfaceCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject    = (PCOSA_DATAMODEL_USERINTERFACE)NULL;
 
     /*
@@ -164,7 +163,6 @@ CosaUserinterfaceInitialize
     PCOSA_DML_UI_IPRANGE_ENTRY      pEntry                 = (PCOSA_DML_UI_IPRANGE_ENTRY)NULL;
     ULONG                           ulEntryCount           = 0;
     ULONG                           ulIndex                = 0;
-    ULONG                           ulNextInsNum           = 0;
 
     /* Initiation all functions */
     _ansc_memset(&pMyObject->RaCfg, 0, sizeof(COSA_DML_RA_CFG));
@@ -289,7 +287,7 @@ CosaUserinterfaceInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pEntry->Alias, "iprange%d", pCosaContext->InstanceNumber);
+                _ansc_sprintf(pEntry->Alias, "iprange%d", (int)pCosaContext->InstanceNumber);
 
                 CosaDmlUIIPRangeSetValues
                 (

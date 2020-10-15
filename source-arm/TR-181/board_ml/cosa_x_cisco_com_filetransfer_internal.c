@@ -100,7 +100,6 @@ CosaFileTransferCreate
         VOID
     )
 {
-    ANSC_STATUS                  returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_FILETRANSFER pMyObject    = (PCOSA_DATAMODEL_FILETRANSFER)NULL;
 
     /*

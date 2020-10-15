@@ -615,6 +615,13 @@ CosaDmlIaLogIsUpdated
         ANSC_HANDLE                 hContext
     );
 
+ANSC_STATUS
+CosaDmlIaGetALLLogEntries
+    (
+        char*                          pValue,
+        ULONG*                         pUlSize
+    );
+
 BOOL isWellKnownService (const char *name);
 
 void CosaDmlIaRemove();

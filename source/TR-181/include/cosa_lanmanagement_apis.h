@@ -104,4 +104,5 @@ CosaDmlLanManagementGetCfg
 ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Ula(char *ula_prefix, char *ula);
 #endif
 
+INT platform_hal_GetSerialNumber(CHAR* pValue);
 #endif

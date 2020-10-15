@@ -149,5 +149,8 @@ ANSC_STATUS
 CosaDml_CGreIfGetLastChange(const COSA_DML_CGRE_IF *greIf, 
         ULONG *lastChange);
 
+ANSC_STATUS
+CosaDml_CGreIfSetInsAlias(ULONG idx, ULONG ins, const char *alias);        
+
 #endif
 #endif

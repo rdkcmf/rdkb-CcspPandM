@@ -75,6 +75,22 @@ extern ULONG g_currentBsUpdate;
 extern char * getRequestorString();
 extern char * getTime();
 
+ANSC_STATUS
+CosaDmlTimeGetTimeOffset
+    (
+       ANSC_HANDLE                 hContext,
+       char                       *pTimeOffset
+    );
+
+ANSC_STATUS
+isValidInput
+    (
+        char                       *inputparam,
+        char                       *wrapped_inputparam,
+        int                         lengthof_inputparam,
+        int                         sizeof_wrapped_inputparam
+    );
+
 #define BS_SOURCE_WEBPA_STR "webpa"
 #define BS_SOURCE_RFC_STR "rfc"
 #define  PARTNER_ID_LEN  64
@@ -187,6 +203,7 @@ Time_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
     
     /* check the parameter name and return the corresponding value */
@@ -253,6 +270,7 @@ Time_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
     /* check the parameter name and return the corresponding value */
@@ -305,6 +323,7 @@ Time_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
     
     /* check the parameter name and return the corresponding value */
@@ -375,6 +394,8 @@ Time_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
     CosaDmlTimeGetCfg(NULL, &pMyObject->TimeCfg);
@@ -475,6 +496,7 @@ Time_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
     /* check the parameter name and set the corresponding value */
@@ -543,6 +565,7 @@ Time_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
@@ -597,6 +620,7 @@ Time_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
@@ -650,6 +674,7 @@ Time_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
     ANSC_STATUS ret=ANSC_STATUS_FAILURE;
 
@@ -793,6 +818,9 @@ Time_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -824,6 +852,7 @@ Time_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
     CosaDmlTimeSetCfg(NULL, &pMyObject->TimeCfg);
@@ -860,6 +889,7 @@ Time_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
     CosaDmlTimeGetCfg(NULL, &pMyObject->TimeCfg);

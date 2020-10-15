@@ -118,11 +118,12 @@
 
 static int saveID(char* ifName, char* pAlias, ULONG ulInstanceNumber);
 static int loadID(char* ifName, char* pAlias, ULONG* ulInstanceNumber);
-static int saveLinkID(char* ifName, char* pAlias, ULONG ulInstanceNumber);
-static int loadLinkID(char* ifName, char* pAlias, ULONG* ulInstanceNumber);
+//static int saveLinkID(char* ifName, char* pAlias, ULONG ulInstanceNumber);
+//static int loadLinkID(char* ifName, char* pAlias, ULONG* ulInstanceNumber);
 COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr);
 static int setIfStatus(struct ifreq *pIfr);
 int _getMac(char* ifName, char* mac);
+void rdkb_api_platform_hal_GetLanMacAddr(char* mac);
 
 /**************************************************************************
                         DATA STRUCTURE DEFINITIONS
@@ -177,6 +178,15 @@ COSA_DML_ETH_PORT_SINFO      g_EthIntSInfo[] =
     };
 
 static const ULONG g_EthernetIntNum = sizeof(g_EthIntSInfo)/sizeof(g_EthIntSInfo[0]);
+
+#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
+static int getIfCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg);
+static int setIfCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg);
+static int getIfStats(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_STATS pStats);
+static int getIfDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDinfo);
+#endif
+
+static int getIfStats2(const PUCHAR pName, PCOSA_DML_ETH_STATS pStats);
 
 EthIntControlFuncs ifFuncs = {
     getIfCfg,
@@ -277,13 +287,14 @@ CosaDmlEthInit
     ANSC_STATUS                     returnStatus;
 
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    UCHAR strResult[128]    = {0};
-    UCHAR strMac[128]       = {0};
+    CHAR strMac[128]        = {0};
     ULONG i                 = 0;
-    ULONG wanIndex          = -1;
+    ULONG wanIndex          = 0;
+
+    UNREFERENCED_PARAMETER(phContext);
 
 #if !defined(_HUB4_PRODUCT_REQ_)
-    ULONG lbrIndex          = -1;
+    ULONG lbrIndex          = 0;
 #endif
 
     syscfg_init();
@@ -318,11 +329,11 @@ CosaDmlEthInit
         }
     }
 
-    if ( (-1 != _getMac("erouter0", strMac)) && wanIndex >= 0)
+    if ( (-1 != _getMac("erouter0", strMac)) )
                 AnscCopyMemory(g_EthIntSInfo[wanIndex].MacAddress, strMac, 6);
 
 #if !defined(_HUB4_PRODUCT_REQ_)
-    if ( (-1 != _getMac("lbr0", strMac)) && lbrIndex >= 0 )
+    if ( (-1 != _getMac("lbr0", strMac)) )
                 AnscCopyMemory(g_EthIntSInfo[lbrIndex].MacAddress, strMac, 6);
 #endif
 
@@ -349,6 +360,7 @@ CosaDmlEthPortGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {  
+    UNREFERENCED_PARAMETER(hContext);
     return g_EthernetIntNum;
 }
 
@@ -360,6 +372,7 @@ CosaDmlEthPortGetEntry
         PCOSA_DML_ETH_PORT_FULL     pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (pEntry)
     {
         _ansc_memset(pEntry, 0, sizeof(COSA_DML_ETH_PORT_FULL));
@@ -370,7 +383,7 @@ CosaDmlEthPortGetEntry
     }
 
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    if (ulIndex >= 0 && ulIndex < g_EthernetIntNum)
+    if (ulIndex < g_EthernetIntNum)
     {
         g_EthEntries[ulIndex].control->getCfg(g_EthEntries + ulIndex, &pEntry->Cfg);
         AnscCopyMemory(&pEntry->StaticInfo, &g_EthIntSInfo[ulIndex], sizeof(COSA_DML_ETH_PORT_SINFO));
@@ -408,6 +421,7 @@ CosaDmlEthPortSetValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     g_EthEntries[ulIndex].instanceNumber=ulInstanceNumber;
     AnscCopyString(g_EthEntries[ulIndex].Alias, pAlias);
     saveID(g_EthIntSInfo[ulIndex].Name, pAlias, ulInstanceNumber);
@@ -424,6 +438,8 @@ CosaDmlEthPortSetCfg
 {
     COSA_DML_ETH_PORT_CFG origCfg;
     PCosaEthInterfaceInfo pEthIf = (PCosaEthInterfaceInfo  )NULL;
+
+    UNREFERENCED_PARAMETER(hContext);
 
     /*RDKB-6838, CID-32984, null check before use*/
     if ( !pCfg )
@@ -467,6 +483,7 @@ CosaDmlEthPortGetCfg
     )
 {
     PCosaEthInterfaceInfo pEthIf = (PCosaEthInterfaceInfo  )NULL;
+    UNREFERENCED_PARAMETER(hContext);
 
     /*RDKB-6838, CID-33167, null check before use*/
     if ( !pCfg )
@@ -499,6 +516,7 @@ CosaDmlEthPortGetDinfo
         PCOSA_DML_ETH_PORT_DINFO    pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (!pInfo)
     {
         return ANSC_STATUS_FAILURE;
@@ -536,7 +554,7 @@ static int ethGetClientsCount
 
     for (idx = 0; idx < num_eth_device; idx++)
     {
-        if (PortId == eth_device[idx].eth_port)
+        if (PortId == (ULONG)eth_device[idx].eth_port)
         {
             count_client++;
         }
@@ -596,7 +614,6 @@ CosaDmlEthPortGetClientMac
 
 	ULONG total_eth_device = 0;
 	eth_device_t *output_struct = NULL;
-	int mem_size = 0;
 
 	ret = CcspHalExtSw_getAssociatedDevice(&total_eth_device, &output_struct);
 	if (ANSC_STATUS_SUCCESS != ret)
@@ -607,7 +624,7 @@ CosaDmlEthPortGetClientMac
 
         if ( total_eth_device )
         {    
-           int i = 1; 
+           ULONG i = 1; 
            ULONG ulNumClients = 0; 
 
            //Get the no of clients associated with port
@@ -626,7 +643,7 @@ CosaDmlEthPortGetClientMac
                                    i,   
                                    total_eth_device,
                                    output_struct,
-                                   pEthernetPortFull->AssocClient[i - 1].MacAddress);
+                                   (char*)pEthernetPortFull->AssocClient[i - 1].MacAddress);
                }    
            }    
 
@@ -649,6 +666,7 @@ CosaDmlEthPortGetStats
         PCOSA_DML_ETH_STATS         pStats
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (!pStats)
     {
         return ANSC_STATUS_FAILURE;
@@ -703,6 +721,7 @@ CosaDmlEthVlanTerminationGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_EthernetVlanTerminationNum;
 }
 
@@ -714,6 +733,7 @@ CosaDmlEthVlanTerminationGetEntry
         PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( !pEntry )
         return ANSC_STATUS_FAILURE;
 
@@ -722,8 +742,8 @@ CosaDmlEthVlanTerminationGetEntry
         AnscCopyMemory(pEntry, &g_EthernetVlanTermination[ulIndex], sizeof(COSA_DML_ETH_VLAN_TERMINATION_FULL));
 
         char ifName[256];
-        sprintf(ifName, "%s.%u", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
-        pEntry->DynamicInfo.Status = getIfStatus(ifName, NULL);
+        sprintf(ifName, "%s.%lu", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+        pEntry->DynamicInfo.Status = getIfStatus((PUCHAR)ifName, NULL);
     }
     else
     {
@@ -742,6 +762,10 @@ CosaDmlEthVlanTerminationSetValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -752,6 +776,7 @@ CosaDmlEthVlanTerminationAddEntry
         PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( !pEntry )
     {
         return ANSC_STATUS_FAILURE;
@@ -770,7 +795,7 @@ CosaDmlEthVlanTerminationAddEntry
 
             if (pEntry->Cfg.bEnabled)
             {
-                sprintf(cmd, "ip link set %s.%u up", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+                sprintf(cmd, "ip link set %s.%lu up", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
             }
             else
             {
@@ -801,6 +826,8 @@ CosaDmlEthVlanTerminationDelEntry
 {
     ULONG                           i = 0;
     ULONG                           j = 0;
+    
+    UNREFERENCED_PARAMETER(hContext);
 
     for ( i = 0; i < g_EthernetVlanTerminationNum; i++ )
     {
@@ -834,6 +861,7 @@ CosaDmlEthVlanTerminationValidateCfg
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( !pCfg )
     {
         return FALSE;
@@ -847,13 +875,13 @@ CosaDmlEthVlanTerminationValidateCfg
         {
             // LowerLayers or VLANID updated, need to come up a new device name
             ULONG                           ulEntryNameLen              = 256;
-            UCHAR                           ucEntryParamName[256]       = {0};
-            UCHAR                           ucEntryNameValue[256]       = {0};
+            CHAR                            ucEntryParamName[256]       = {0};
+            CHAR                            ucEntryNameValue[256]       = {0};
 
             _ansc_sprintf(ucEntryParamName, "%s%s", pCfg->LowerLayers, "Name");
 
             if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
-                 ( AnscSizeOfString(ucEntryNameValue) != 0                                        ) )
+                 ( AnscSizeOfString((const char*)ucEntryNameValue) != 0                                        ) )
             {
                 AnscCopyString(pCfg->EthLinkName, ucEntryNameValue);
             }
@@ -900,8 +928,7 @@ CosaDmlEthVlanTerminationSetCfg
         PCOSA_DML_ETH_VLAN_TERMINATION_CFG pCfg
     )
 {
-    ULONG                           i = 0;
-
+    UNREFERENCED_PARAMETER(hContext);
     if ( !pCfg )
     {
         return ANSC_STATUS_FAILURE;
@@ -911,7 +938,6 @@ CosaDmlEthVlanTerminationSetCfg
 
     if (pEntry)
     {
-        char cmd[256];
         char ifName[256];
         if (strcmp(pEntry->Cfg.EthLinkName, pCfg->EthLinkName) || pEntry->Cfg.VLANID != pCfg->VLANID)
         {
@@ -936,8 +962,8 @@ CosaDmlEthVlanTerminationSetCfg
 
             pEntry->DynamicInfo.LastChange = AnscGetTickInSeconds();
 
-            sprintf(ifName, "%s.%u", pCfg->EthLinkName, pCfg->VLANID);
-            getIfStats2(ifName, &pEntry->LastStats);
+            sprintf(ifName, "%s.%lu", pCfg->EthLinkName, pCfg->VLANID);
+            getIfStats2((PUCHAR)ifName, &pEntry->LastStats);
         }
         else if (pEntry->Cfg.bEnabled && !pCfg->bEnabled)
         {
@@ -961,8 +987,7 @@ CosaDmlEthVlanTerminationGetCfg
         PCOSA_DML_ETH_VLAN_TERMINATION_CFG pCfg
     )
 {
-    ULONG                           i = 0;
-
+    UNREFERENCED_PARAMETER(hContext);
     if ( !pCfg )
     {
         return ANSC_STATUS_FAILURE;
@@ -988,8 +1013,7 @@ CosaDmlEthVlanTerminationGetDinfo
         PCOSA_DML_ETH_VLAN_TERMINATION_DINFO pInfo
     )
 {
-    ULONG                           i = 0;
-
+    UNREFERENCED_PARAMETER(hContext);
     if ( !pInfo )
     {
         return ANSC_STATUS_FAILURE;
@@ -1010,8 +1034,8 @@ CosaDmlEthVlanTerminationGetDinfo
         else
         {
            char ifName[256];
-           sprintf(ifName, "%s.%u", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
-           pEntry->DynamicInfo.Status = getIfStatus(ifName, NULL);
+           sprintf(ifName, "%s.%lu", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+           pEntry->DynamicInfo.Status = getIfStatus((PUCHAR)ifName, NULL);
         }
 
         AnscCopyMemory(pInfo, &pEntry->DynamicInfo , sizeof(COSA_DML_ETH_VLAN_TERMINATION_DINFO));
@@ -1030,6 +1054,7 @@ CosaDmlEthVlanTerminationGetStats
         PCOSA_DML_ETH_STATS         pStats
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (!pStats)
         return ANSC_STATUS_FAILURE;
 
@@ -1045,12 +1070,12 @@ CosaDmlEthVlanTerminationGetStats
     if (pEntry->Cfg.EthLinkName[0] && pEntry->Cfg.VLANID && pEntry->Cfg.bEnabled)
     {
        char ifName[256];
-       sprintf(ifName, "%s.%u", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
-       pEntry->DynamicInfo.Status = getIfStatus(ifName, NULL);
+       sprintf(ifName, "%s.%lu", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+       pEntry->DynamicInfo.Status = getIfStatus((PUCHAR)ifName, NULL);
 
        if (pEntry->DynamicInfo.Status == COSA_DML_IF_STATUS_Up)
        {
-           getIfStats2(ifName, pStats);
+           getIfStats2((PUCHAR)ifName, pStats);
     
            pStats->BroadcastPacketsReceived    -= pEntry->LastStats.BroadcastPacketsReceived;
            pStats->BroadcastPacketsSent        -= pEntry->LastStats.BroadcastPacketsSent;
@@ -1454,12 +1479,14 @@ int puma6_getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDi
 }
 
 int puma6_getSwitchStats(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_STATS pStats){
-    return ANSC_STATUS_SUCCESS; 
+    UNREFERENCED_PARAMETER(eth);
+    UNREFERENCED_PARAMETER(pStats);
+    return ANSC_STATUS_SUCCESS;
 }
 
 static int getIfCfg(PCosaEthInterfaceInfo pEthIf, PCOSA_DML_ETH_PORT_CFG pCfg)
 {    
-    if ( getIfStatus( pEthIf->sInfo->Name, NULL ) == COSA_DML_IF_STATUS_Up )
+    if ( getIfStatus( (PUCHAR)pEthIf->sInfo->Name, NULL ) == COSA_DML_IF_STATUS_Up )
     {
         pCfg->bEnabled = TRUE;
     }
@@ -1476,11 +1503,10 @@ static int getIfCfg(PCosaEthInterfaceInfo pEthIf, PCOSA_DML_ETH_PORT_CFG pCfg)
 
 static int setIfCfg(PCosaEthInterfaceInfo pEthIf, PCOSA_DML_ETH_PORT_CFG pCfg)
 {
-    FILE *pFile = NULL;
     struct ifreq ifr;
 	COSA_DML_IF_STATUS enifStatus = COSA_DML_IF_STATUS_Unknown;
 
-	enifStatus = getIfStatus(pEthIf->sInfo->Name, &ifr);
+	enifStatus = getIfStatus((PUCHAR)pEthIf->sInfo->Name, &ifr);
 
     if ( ( enifStatus == COSA_DML_IF_STATUS_Unknown ) || \
 		 ( enifStatus == COSA_DML_IF_STATUS_NotPresent )
@@ -1518,12 +1544,12 @@ static int setIfCfg(PCosaEthInterfaceInfo pEthIf, PCOSA_DML_ETH_PORT_CFG pCfg)
 
 static int getIfStats(PCosaEthInterfaceInfo pEthIf, PCOSA_DML_ETH_STATS pStats)
 {
-    return getIfStats2(pEthIf->sInfo->Name, pStats);
+    return getIfStats2((PUCHAR)pEthIf->sInfo->Name, pStats);
 }
 
 static int getIfDInfo(PCosaEthInterfaceInfo pEthIf, PCOSA_DML_ETH_PORT_DINFO pInfo)
 {
-    pInfo->Status = getIfStatus(pEthIf->sInfo->Name, NULL);
+    pInfo->Status = getIfStatus((PUCHAR)pEthIf->sInfo->Name, NULL);
     
     return 0;
 }
@@ -1703,7 +1729,7 @@ static int setIfStatus(struct ifreq *pIfr)
 }
 
 PCosaEthInterfaceInfo getIF(const ULONG instanceNumber) {
-    int i;
+    ULONG i;
     for (i = 0; i < g_EthernetIntNum; ++i) {
         if (g_EthEntries[i].instanceNumber == instanceNumber) {
             break;
@@ -1737,7 +1763,7 @@ static int saveID(char* ifName, char* pAlias, ULONG ulInstanceNumber) {
     char idStr[COSA_DML_IF_NAME_LENGTH+10] = {0};
     Utopia_Init(&utctx);
 
-    sprintf(idStr,"%s,%u", pAlias,ulInstanceNumber);
+    sprintf(idStr,"%s,%lu", pAlias,ulInstanceNumber);
     Utopia_RawSet(&utctx,COSA_ETH_INT_ID_SYSCFG_NAMESPACE,ifName,idStr);
 
     Utopia_Free(&utctx,TRUE);
@@ -1745,7 +1771,7 @@ static int saveID(char* ifName, char* pAlias, ULONG ulInstanceNumber) {
     return 0;
 }
 
-static int saveLinkID(char* ifName, char* pAlias, ULONG ulInstanceNumber) {
+/*static int saveLinkID(char* ifName, char* pAlias, ULONG ulInstanceNumber) {
     UtopiaContext utctx;
     char idStr[COSA_DML_IF_NAME_LENGTH+10] = {0};
     Utopia_Init(&utctx);
@@ -1756,7 +1782,7 @@ static int saveLinkID(char* ifName, char* pAlias, ULONG ulInstanceNumber) {
     Utopia_Free(&utctx,TRUE);
 
     return 0;
-}
+}*/
 
 static int loadID(char* ifName, char* pAlias, ULONG* ulInstanceNumber) {
     UtopiaContext utctx;
@@ -1780,7 +1806,7 @@ static int loadID(char* ifName, char* pAlias, ULONG* ulInstanceNumber) {
     return 0;
 }
 
-static int loadLinkID(char* ifName, char* pAlias, ULONG* ulInstanceNumber) {
+/*static int loadLinkID(char* ifName, char* pAlias, ULONG* ulInstanceNumber) {
     UtopiaContext utctx;
     char idStr[COSA_DML_IF_NAME_LENGTH+10] = {0};
     char* instNumString;
@@ -1800,7 +1826,7 @@ static int loadLinkID(char* ifName, char* pAlias, ULONG* ulInstanceNumber) {
     Utopia_Free(&utctx, 0);
 
     return 0;
-}
+}*/
 
 #endif
 

@@ -49,6 +49,7 @@ HsSsid_GetEntryCount
         ANSC_HANDLE hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return CosaDml_HsSsidGetNumberOfEntries();
 }
 
@@ -60,9 +61,10 @@ HsSsid_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_HOTSPOT          *pMyObject = (COSA_DATAMODEL_HOTSPOT *)g_pCosaBEManager->hHotspot;
 
-    if (nIndex >= MAX_HS_SSIDS || nIndex >= pMyObject->SsidCnt)
+    if (nIndex >= MAX_HS_SSIDS || (int)nIndex >= pMyObject->SsidCnt)
         return NULL;
 
     *pInsNumber = pMyObject->HsSsids[nIndex].InstanceNumber;
@@ -129,7 +131,7 @@ HsAssoDev_GetEntry
 {
     COSA_DML_HOTSPOT_SSID           *hsSsid = (COSA_DML_HOTSPOT_SSID *)hInsContext;
 
-    if (nIndex >= MAX_HS_CLIS || nIndex >= hsSsid->DevCnt)
+    if (nIndex >= MAX_HS_CLIS || (int)nIndex >= hsSsid->DevCnt)
         return NULL;
 
     *pInsNumber = hsSsid->AssoDevs[nIndex].InstanceNumber;
@@ -143,6 +145,7 @@ HsAssoDev_IsUpdated
      ANSC_HANDLE hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return TRUE;
 }
 

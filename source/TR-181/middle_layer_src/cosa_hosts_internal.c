@@ -99,7 +99,6 @@ CosaHostsCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_HOSTS             pMyObject    = (PCOSA_DATAMODEL_HOSTS)NULL;
 
     /*
@@ -234,7 +233,7 @@ void LanManager_Free
 )
 {
     //return AnscFreeMemoryCountSize(pComponentName, p);
-    return AnscFreeMemory(p);
+    AnscFreeMemory(p);
     //if(p) return free(p);
 }
 
