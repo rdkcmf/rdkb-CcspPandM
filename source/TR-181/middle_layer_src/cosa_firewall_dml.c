@@ -163,6 +163,9 @@ Firewall_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     return FALSE;
 }
 
@@ -207,6 +210,9 @@ Firewall_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -250,6 +256,8 @@ Firewall_GetParamUlongValue
 {
     PCOSA_DATAMODEL_FIREWALL        pCosaDMFirewall = (PCOSA_DATAMODEL_FIREWALL)g_pCosaBEManager->hFirewall;
     PCOSA_DML_FIREWALL_CFG          pFirewallCfg    = &pCosaDMFirewall->FirewallConfig;
+
+   UNREFERENCED_PARAMETER(hInsContext);
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Config", TRUE))
@@ -314,6 +322,8 @@ Firewall_GetParamStringValue
     PCOSA_DATAMODEL_FIREWALL        pCosaDMFirewall = (PCOSA_DATAMODEL_FIREWALL)g_pCosaBEManager->hFirewall;
     PCOSA_DML_FIREWALL_CFG          pFirewallCfg    = &pCosaDMFirewall->FirewallConfig;
 
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pUlSize);
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Version", TRUE))
@@ -389,6 +399,9 @@ Firewall_SetParamBoolValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(bValue);
     return FALSE;
 }
 
@@ -433,6 +446,9 @@ Firewall_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     return FALSE;
 }
 
@@ -474,6 +490,7 @@ Firewall_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_FIREWALL        pCosaDMFirewall = (PCOSA_DATAMODEL_FIREWALL)g_pCosaBEManager->hFirewall;
 
     /* check the parameter name and set the corresponding value */
@@ -530,6 +547,9 @@ Firewall_SetParamStringValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
     return FALSE;
 }
 
@@ -571,6 +591,9 @@ Firewall_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -602,6 +625,7 @@ Firewall_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_FIREWALL        pCosaDMFirewall = (PCOSA_DATAMODEL_FIREWALL)g_pCosaBEManager->hFirewall;
 
     CosaDmlFirewallSetConfig(NULL, &pCosaDMFirewall->FirewallConfig);
@@ -638,6 +662,7 @@ Firewall_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -680,6 +705,7 @@ V4_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
 
         CosaDmlGatewayV4GetBlockFragIPPkts(pBool);
@@ -736,6 +762,7 @@ V4_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
 
         CosaDmlGatewayV4SetBlockFragIPPkts(bValue);
@@ -793,6 +820,9 @@ V4_Validate
         ULONG*                      puLength
     )
 {
+   UNREFERENCED_PARAMETER(hInsContext);
+   UNREFERENCED_PARAMETER(pReturnParamName);
+   UNREFERENCED_PARAMETER(puLength);
    return TRUE;
 }
 
@@ -824,7 +854,8 @@ V4_Commit
        ANSC_HANDLE                  hInsContext
    )
 {
-	system("sysevent set firewall-restart");
+  UNREFERENCED_PARAMETER(hInsContext);
+  system("sysevent set firewall-restart");
 
   return ANSC_STATUS_SUCCESS;
 }
@@ -858,6 +889,7 @@ V4_Rollback
        ANSC_HANDLE                  hInsContext
    )
 {
+  UNREFERENCED_PARAMETER(hInsContext);
   return ANSC_STATUS_SUCCESS;
 }
 
@@ -899,6 +931,7 @@ V6_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
 
         CosaDmlGatewayV6GetBlockFragIPPkts(pBool);
@@ -957,6 +990,7 @@ V6_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
 
         CosaDmlGatewayV6SetBlockFragIPPkts(bValue);
@@ -1014,6 +1048,9 @@ V6_Validate
         ULONG*                      puLength
     )
 {
+   UNREFERENCED_PARAMETER(hInsContext);
+   UNREFERENCED_PARAMETER(pReturnParamName);
+   UNREFERENCED_PARAMETER(puLength);
    return TRUE;
 }
 
@@ -1045,7 +1082,8 @@ V6_Commit
        ANSC_HANDLE                  hInsContext
    )
 {
-		system("sysevent set firewall-restart");
+    UNREFERENCED_PARAMETER(hInsContext);
+    system("sysevent set firewall-restart");
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -1079,7 +1117,8 @@ V6_Rollback
        ANSC_HANDLE                  hInsContext
    )
 {
-	system("sysevent set firewall-restart");
+  UNREFERENCED_PARAMETER(hInsContext);
+  system("sysevent set firewall-restart");
 
   return 0;
 }

@@ -67,12 +67,17 @@
  
 
 **************************************************************************/
+#define _XOPEN_SOURCE 700
+#include <string.h>
+#include "secure_wrapper.h"
 #include "cosa_apis.h"
 #include "cosa_dhcpv4_apis.h"
 #include "cosa_dhcpv4_internal.h"
 #include "plugin_main_apis.h"
 #include "dml_tr181_custom_cfg.h"
 #include "secure_wrapper.h"
+#include "utapi/utapi.h"
+#include "utapi/utapi_util.h"
 
 #if ( defined _COSA_SIM_ )
 
@@ -231,6 +236,10 @@ int sbapi_get_dhcpv4_active_number(int index, ULONG minAddress, ULONG maxAddress
 
 ANSC_STATUS CosaDhcpInitJournal(PCOSA_DML_DHCPS_POOL_CFG  pPoolCfg);
 
+ANSC_STATUS COSAGetParamValueByPathName(void* bus_handle, parameterValStruct_t *val, ULONG *parameterValueLength);
+
+int Utopia_get_lan_host_comments(UtopiaContext *ctx, unsigned char *pMac, unsigned char *pComments);
+
 int find_arp_entry(char *ipaddr, char *ifname, unsigned char *pMac)
 {
 	struct arpreq arpreq;
@@ -271,9 +280,9 @@ int usg_cpe_from_moca(char *pMac)
     AnscTraceFlow(("Calling moca_GetMocaCPEs, %s\n", __FUNCTION__));
     moca_GetMocaCPEs(0, cpes, &n);
     AnscTraceFlow(("Returned from moca_GetMocaCPEs, %s\n", __FUNCTION__));
-    printf("");
+    printf("%s", "");
     for(i=0;i<n;i++){
-        printf("MAC[%d]-> %02x:02x:02x:02x:02x:02x\n", cpes[i].mac_addr[0],cpes[i].mac_addr[1],cpes[i].mac_addr[2],
+        printf("MAC[%d]-> %02x:%02x:%02x:%02x:%02x:%02x\n", i, cpes[i].mac_addr[0],cpes[i].mac_addr[1],cpes[i].mac_addr[2],
                 cpes[i].mac_addr[3],cpes[i].mac_addr[4],cpes[i].mac_addr[5]);
         if(!memcmp(macArray,cpes[i].mac_addr,6))
             return(1);
@@ -339,8 +348,10 @@ typedef struct wifi_client_s{
 #define ACCESS_WIFI_CLIENT(p) \
         ACCESS_CONTAINER(p, wifi_client_t, Linkage)
 
+/*
 static SLIST_HEADER g_wifiClientTable[WIFI_CLIENT_MAXIMUM];
 pthread_mutex_t     g_wifiClientTable_mutex;
+
 
 static void init_wifi_client(void)
 {
@@ -364,15 +375,15 @@ static void string_tolower(char *pMac)
         if (pMac[i] >= 'A' && pMac[i] <= 'Z')
             pMac[i] += 'a' - 'A';
     }
-}
+}*/
 
+/*
 static void insert_wifi_client(const char *pMac, const char *pSsid, const ULONG ap)
 {
     ULONG hashIndex; 
+    string_tolower((char*)pMac);    
 
-    string_tolower(pMac);
-
-    hashIndex = AnscHashString(pMac, sizeof(pMac), WIFI_CLIENT_MAXIMUM);
+    hashIndex = AnscHashString((char*)pMac, sizeof(pMac), WIFI_CLIENT_MAXIMUM);
 
     wifi_client_t *pNewClient = AnscAllocateMemory(sizeof(wifi_client_t));
     if (!pNewClient){
@@ -380,16 +391,17 @@ static void insert_wifi_client(const char *pMac, const char *pSsid, const ULONG 
         return;
     }
 
-    AnscCopyString(pNewClient->mac, pMac);
-    AnscCopyString(pNewClient->ssid, pSsid);
+    AnscCopyString(pNewClient->mac, (char*)pMac);
+    AnscCopyString(pNewClient->ssid, (char*)pSsid);
     pNewClient->ap = ap;
 
     pthread_mutex_lock(&g_wifiClientTable_mutex);
     AnscSListPushEntry(&g_wifiClientTable[hashIndex], &pNewClient->Linkage);
     pthread_mutex_unlock(&g_wifiClientTable_mutex);
 
-}
+}*/
 
+/*
 static wifi_client_t* lookup_wifi_client(const char *pMac)
 {
     ULONG hashIndex = AnscHashString(pMac, sizeof(pMac), WIFI_CLIENT_MAXIMUM);
@@ -435,7 +447,8 @@ static void flush_wifi_client(void)
     pthread_mutex_unlock(&g_wifiClientTable_mutex);
 
 }
-
+*/
+/*
 static void print_wifi_client(void)
 {
     wifi_client_t *pClient = NULL;
@@ -456,11 +469,14 @@ static void print_wifi_client(void)
     pthread_mutex_unlock(&g_wifiClientTable_mutex);
 
 }
+*/
 
+#if 0
 int usg_get_cpe_associated_ssid(void *arg)
 {
-	int i, j, amount,size;
-	char dm[128], outdata[33];    // outdata also holds SSID
+    UNREFERENCED_PARAMETER(arg);
+    int i, j, amount,size;
+    char dm[128], outdata[33];    // outdata also holds SSID
     char ssid[64]={0},mac[18];
     parameterValStruct_t varStruct;
     struct timespec tm;
@@ -532,6 +548,7 @@ reopen:
     }
 }
 #endif
+#endif
 
 int usg_get_cpe_associate_interface(char *pMac, char ifname[64])
 {
@@ -542,7 +559,7 @@ int usg_get_cpe_associate_interface(char *pMac, char ifname[64])
     memset(&result, 0, sizeof(result));
     mac_string_to_array(pMac, macArray);
 
-    if(lm_get_host_by_mac(macArray, &result) == -1){ // failed to get wifi interface from Lm_Hosts
+    if(lm_get_host_by_mac((char*)macArray, &result) == -1){ // failed to get wifi interface from Lm_Hosts
 #ifdef CONFIG_SYSTEM_MOCA
         if(usg_cpe_from_moca(pMac))
             sprintf(ifname,"Device.MoCA.Interface.1");
@@ -558,6 +575,7 @@ int usg_get_cpe_associate_interface(char *pMac, char ifname[64])
     return(0);
 }
 
+#if 0
 static ANSC_STATUS CosaDmlDhcpcScan()
 {
     CHAR            tmpBuff[64]    = {0};
@@ -732,6 +750,7 @@ static ANSC_STATUS CosaDmlDhcpcScan()
     fclose(fp);
     return ANSC_STATUS_SUCCESS;
 }
+#endif
 
 /*if the address is not in the following range, we think it is a public address
  10.0.0.0    ~ 10.255.255.255
@@ -772,7 +791,6 @@ static void deleteDHCPv4ServerPoolOptionPSM(ULONG poolInstanceNumber, ULONG inst
         //printf("%s -- delete PSM records, return successful %d", __FUNCTION__, retPsmSet);
     //}
     
-    return  CCSP_SUCCESS;
 }
 
 static void deleteDHCPv4ServerPoolPSM(ULONG instanceNumber)
@@ -790,7 +808,6 @@ static void deleteDHCPv4ServerPoolPSM(ULONG instanceNumber)
         AnscTraceFlow(("%s -- failed to delete PSM records, error code %d", __FUNCTION__, retPsmSet));
     }
     
-    return  CCSP_SUCCESS;
 }
  
 static BOOLEAN writeDHCPv4ServerPoolOptionToPSM(ULONG tblInstancenum, PCOSA_DML_DHCPSV4_OPTION pNewOption, PCOSA_DML_DHCPSV4_OPTION pOldOption)
@@ -833,14 +850,14 @@ static BOOLEAN writeDHCPv4ServerPoolOptionToPSM(ULONG tblInstancenum, PCOSA_DML_
     if (pNewOption->Tag != pOldOption->Tag)
     {
         //printf("%s: write Tag %d\n", __FUNCTION__, pNewOption->Tag);
-        _ansc_sprintf(param_value, "%d", pNewOption->Tag );
+        _ansc_sprintf(param_value, "%lu", pNewOption->Tag );
         _PSM_WRITE_TBL_PARAM(PSM_DHCPV4_SERVER_POOL_OPTION_TAG);
         pOldOption->Tag = pNewOption->Tag;
         dhcpServerRestart = TRUE;
     }
 
     // hexdecimal value
-    if(!AnscEqualString(pNewOption->Value, pOldOption->Value, TRUE))
+    if(!AnscEqualString((char*)pNewOption->Value, (char*)pOldOption->Value, TRUE))
     {
         //printf("%s: write Value %s\n", __FUNCTION__, pNewOption->Value);
         _ansc_sprintf(param_name, PSM_DHCPV4_SERVER_POOL_OPTION_VALUE, tblInstancenum, instancenum); 
@@ -949,7 +966,7 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
     {
         ULONG bufSize = sizeof(param_value);
             
-        if(CosaDmlGetIpaddrString(param_value, &bufSize, (PULONG)&(pNewCfg->DNSServers[0].Value), COSA_DML_DHCP_MAX_ENTRIES ))
+        if(CosaDmlGetIpaddrString((PUCHAR)param_value, &bufSize, (PULONG)&(pNewCfg->DNSServers[0].Value), COSA_DML_DHCP_MAX_ENTRIES ))
         {
             _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_DNSSERVERS);
         }
@@ -975,7 +992,7 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
     {
         ULONG bufSize = sizeof(param_value);
             
-        if ( CosaDmlGetIpaddrString(param_value, &bufSize, (PULONG)&(pNewCfg->IPRouters[0].Value), COSA_DML_DHCP_MAX_ENTRIES ) )
+        if ( CosaDmlGetIpaddrString((PUCHAR)param_value, &bufSize, (PULONG)&(pNewCfg->IPRouters[0].Value), COSA_DML_DHCP_MAX_ENTRIES ) )
         {
             _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_IPROUTERS);
         }
@@ -1004,7 +1021,7 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
 
     if (pNewCfg->Order != pOldCfg->Order)
     {
-        _ansc_sprintf(param_value, "%d", pNewCfg->Order );
+        _ansc_sprintf(param_value, "%lu", pNewCfg->Order );
         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_ORDER);
         pOldCfg->Order = pNewCfg->Order;
         dhcpServerRestart = TRUE;
@@ -1027,7 +1044,6 @@ static void getDHCPv4ServerPoolParametersFromPSM(ULONG instancenum, PCOSA_DML_DH
     char *param_value= NULL;
     char param_name[256]= {0};
     PCOSA_DML_DHCPS_POOL_CFG pPoolCfg = &(pPool->Cfg); 
-    PCOSA_DML_DHCPS_POOL_INFO pPoolInfo = &(pPool->Info);
 
     pPoolCfg->InstanceNumber = instancenum; 
 
@@ -1137,7 +1153,7 @@ static void getDHCPv4ServerPoolParametersFromPSM(ULONG instancenum, PCOSA_DML_DH
     _PSM_READ_PARAM(PSM_DHCPV4_SERVER_POOL_ORDER);
     if (retPsmGet == CCSP_SUCCESS)
     {
-        _ansc_sscanf(param_value, "%d", &(pPoolCfg->Order));
+        _ansc_sscanf(param_value, "%lu", &(pPoolCfg->Order));
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);   
     }
 
@@ -1193,7 +1209,7 @@ static void getDHCPv4ServerPoolOptionFromPSM(ULONG tblInstancenum, ULONG instanc
     _PSM_READ_TBL_PARAM(PSM_DHCPV4_SERVER_POOL_OPTION_TAG);
     if (retPsmGet == CCSP_SUCCESS)
     {
-        _ansc_sscanf(param_value, "%d", &(pPoolOption->Tag));
+        _ansc_sscanf(param_value, "%lu", &(pPoolOption->Tag));
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);   
     }
     else
@@ -1205,12 +1221,12 @@ static void getDHCPv4ServerPoolOptionFromPSM(ULONG tblInstancenum, ULONG instanc
     _PSM_READ_TBL_PARAM(PSM_DHCPV4_SERVER_POOL_OPTION_VALUE);
     if (retPsmGet == CCSP_SUCCESS)
     {
-        AnscCopyString(pPoolOption->Value, param_value); 
+        AnscCopyString((char*)pPoolOption->Value, param_value); 
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
     }
     else
     {
-        AnscCopyString(pPoolOption->Value, "");
+        AnscCopyString((char*)pPoolOption->Value, "");
     }
 
     return;
@@ -1221,22 +1237,20 @@ static void readDHCPv4ServerPoolFromPSM()
     // get pool count and loop through pools in PSM
         // second pool indexed 1
         // getting pool parameters from PSM for second pool
-    int poolCnt = 0;
-    int* poolList = NULL;
+    unsigned int poolCnt = 0;
+    unsigned int* poolList = NULL;
     int retPsmGet = CCSP_SUCCESS;
     PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ pPoolLinkObj = NULL;
     PCOSA_DML_DHCPS_POOL_FULL   pPool = NULL;
-    int saddrCnt = 0;
-    int* saddrList = NULL;
+    unsigned int saddrCnt = 0;
+    unsigned int* saddrList = NULL;
     int retPsmGet1 = CCSP_SUCCESS;
-    PCOSA_DML_DHCPS_SADDR_LINK_OBJ   pSAddrLinkObj = NULL;
-    int optionCnt = 0;
-    int* optionList = NULL;
-    int retPsmGet2 = CCSP_SUCCESS;
+    unsigned int optionCnt = 0;
+    unsigned int* optionList = NULL;
     PCOSA_DML_DHCPSV4_OPTION_LINK_OBJ pOptionLinkObj = NULL;
     PCOSA_DML_DHCPSV4_OPTION          pOption = NULL;
     char param_name[256]= {0};
-    int i=0, j=0;
+    unsigned int i=0, j=0;
 
     AnscSListInitializeHeader(&g_dhcpv4_server_pool_list);
     retPsmGet = PsmGetNextLevelInstances(bus_handle, g_Subsystem, PSM_DHCPV4_SERVER_POOL, &poolCnt, &poolList);
@@ -1288,11 +1302,11 @@ static void readDHCPv4ServerPoolFromPSM()
             }
 
             _ansc_memset(param_name, 0, sizeof(param_name));
-            _ansc_sprintf(param_name, PSM_DHCPV4_SERVER_POOL_OPTION, poolList[i]);
+            _ansc_sprintf(param_name, PSM_DHCPV4_SERVER_POOL_OPTION, (ULONG)poolList[i]);
             retPsmGet1 = PsmGetNextLevelInstances(bus_handle, g_Subsystem, param_name, &optionCnt, &optionList);
             if ( retPsmGet1 == CCSP_SUCCESS && optionList != NULL )
             {
-                AnscTraceFlow(("%s: found %d DHCPv4 Server Pool OPTION entry %s\n", __FUNCTION__, optionCnt, param_name));
+                AnscTraceFlow(("%s: found %lu DHCPv4 Server Pool OPTION entry %s\n", __FUNCTION__, optionCnt, param_name));
                 //printf("%s: found %d DHCPv4 Server Pool OPTION entry %s\n", __FUNCTION__, optionCnt, param_name);
 
                 for(j=0; j< optionCnt; j++)
@@ -1343,8 +1357,8 @@ CosaDmlDhcpInit
         PANSC_HANDLE                phContext
     )
 {
-    pthread_t pid;
-
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     readDHCPv4ServerPoolFromPSM();
 
     //PCOSA_DML_DHCPS_POOL_FULL pServerPool = &g_dhcpv4_server_pool2;
@@ -1359,6 +1373,7 @@ CosaDmlDhcpInit
      *  
      * Based on above, the polling thread will be removed. 
      */
+    //pthread_t pid;
     //pthread_create(&pid, NULL, usg_get_cpe_associated_ssid, NULL);
     return ANSC_STATUS_SUCCESS;
 }
@@ -1373,6 +1388,7 @@ CosaDmlDhcpcGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return 1;
 }
 
@@ -1391,7 +1407,8 @@ CosaDmlDhcpcGetEntry
         PCOSA_DML_DHCPC_FULL        pEntry
     )
 {
-	if(ulIndex >0)
+	UNREFERENCED_PARAMETER(hContext);
+        if(ulIndex >0)
 		return(ANSC_STATUS_FAILURE);
 	pEntry->Cfg.InstanceNumber = 1;
 	CosaDmlDhcpcGetCfg(hContext, &pEntry->Cfg);
@@ -1417,6 +1434,10 @@ CosaDmlDhcpcSetValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1433,6 +1454,8 @@ CosaDmlDhcpcAddEntry
         PCOSA_DML_DHCPC_FULL        pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1449,6 +1472,8 @@ CosaDmlDhcpcDelEntry
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1467,7 +1492,8 @@ CosaDmlDhcpcSetCfg
         PCOSA_DML_DHCPC_CFG         pCfg
     )
 {
-    ULONG                           index  = 0;
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCfg);
     /*don't allow to change dhcp configuration*/ 
 
     return ANSC_STATUS_FAILURE;
@@ -1480,7 +1506,7 @@ CosaDmlDhcpcGetCfg
         PCOSA_DML_DHCPC_CFG         pCfg
     )
 {
-    ULONG       i = 0;
+    UNREFERENCED_PARAMETER(hContext);
 	char ifname[32];
   
     if ( !pCfg )
@@ -1509,9 +1535,8 @@ CosaDmlDhcpcGetInfo
         PCOSA_DML_DHCPC_INFO        pInfo
     )
 {
-    ULONG                           index  = 0;
-    ANSC_STATUS  rc;
-	int i;
+    UNREFERENCED_PARAMETER(hContext);
+	ULONG i;
 	dhcpv4c_ip_list_t ad;
     
     if ( (!pInfo) || (ulInstanceNumber != 1) ){
@@ -1519,11 +1544,11 @@ CosaDmlDhcpcGetInfo
     }
 
 	pInfo->Status = COSA_DML_DHCP_STATUS_Enabled;
-	dhcpv4c_get_ert_fsm_state(&pInfo->DHCPStatus);
-	dhcpv4c_get_ert_ip_addr(&pInfo->IPAddress.Value);
-	dhcpv4c_get_ert_mask(&pInfo->SubnetMask.Value);
+	dhcpv4c_get_ert_fsm_state((int*)&pInfo->DHCPStatus);
+	dhcpv4c_get_ert_ip_addr((unsigned int*)&pInfo->IPAddress.Value);
+	dhcpv4c_get_ert_mask((unsigned int*)&pInfo->SubnetMask.Value);
 	pInfo->NumIPRouters = 1;
-	dhcpv4c_get_ert_gw(&pInfo->IPRouters[0].Value);
+	dhcpv4c_get_ert_gw((unsigned int*)&pInfo->IPRouters[0].Value);
 	ad.number = 0;
 	dhcpv4c_get_ert_dns_svrs(&ad);
 	pInfo->NumDnsServers = ad.number;
@@ -1534,8 +1559,8 @@ CosaDmlDhcpcGetInfo
     }
 	for(i=0; i< pInfo->NumDnsServers;i++)
 		pInfo->DNSServers[i].Value = ad.addrs[i];
-	dhcpv4c_get_ert_remain_lease_time(&pInfo->LeaseTimeRemaining);
-	dhcpv4c_get_ert_dhcp_svr(&pInfo->DHCPServer);
+	dhcpv4c_get_ert_remain_lease_time((unsigned int*)&pInfo->LeaseTimeRemaining);
+	dhcpv4c_get_ert_dhcp_svr((unsigned int*)&pInfo->DHCPServer);
    
     return ANSC_STATUS_SUCCESS;
 }
@@ -1553,9 +1578,10 @@ CosaDmlDhcpcRenew
         ULONG                       ulInstanceNumber
     )
 {  
-	if(ulInstanceNumber != 1)
+	UNREFERENCED_PARAMETER(hContext);
+        if(ulInstanceNumber != 1)
 		return(ANSC_STATUS_FAILURE);
-	system("sysevent set dhcp_client-renew");
+	v_secure_system("sysevent set dhcp_client-renew");
 	return(ANSC_STATUS_SUCCESS);
 }
 
@@ -1566,10 +1592,12 @@ CosaDmlDhcpcRenew
  *  which is identified through pClientAlias
  */
 
+/*
 static BOOL CosaDmlDhcpcWriteOptions(ULONG ulClientInstanceNumber)
 {
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
     return FALSE;
-}
+}*/
 
 
 ULONG
@@ -1579,6 +1607,8 @@ CosaDmlDhcpcGetNumberOfSentOption
         ULONG                       ulClientInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
     return 0;
 }
 
@@ -1591,6 +1621,10 @@ CosaDmlDhcpcGetSentOption
         PCOSA_DML_DHCP_OPT          pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1603,8 +1637,9 @@ CosaDmlDhcpcGetSentOptionbyInsNum
         PCOSA_DML_DHCP_OPT          pEntry
     )
 {   
-    int index   = 0;
-    int i       = 0;
+    UNREFERENCED_PARAMETER(hContext);
+    ULONG index   = 0;
+    ULONG i     = 0;
 
     for(i = 0; i < g_Dhcp4ClientNum; i++)
     {
@@ -1635,10 +1670,10 @@ CosaDmlDhcpcSetSentOptionValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext   ctx;
     CHAR            inst_str[64];    
-    int             i = 0;
-    int             index = 0;
+    ULONG           i = 0;
     
     ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: ulClientInstanceNumber %d,ulIndex %d, ulInstanceNumber %d\n", 
           __FUNCTION__, ulClientInstanceNumber, ulIndex, ulInstanceNumber);
@@ -1663,7 +1698,7 @@ CosaDmlDhcpcSetSentOptionValues
 
             if( !_ansc_strncmp(CH_g_dhcpv4_client[i].Cfg.Interface, COSA_DML_DHCPV4_CLIENT_IFNAME, _ansc_strlen(COSA_DML_DHCPV4_CLIENT_IFNAME)))
             {                
-                sprintf(inst_str, "%d", ulInstanceNumber);
+                sprintf(inst_str, "%lu", ulInstanceNumber);
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_instance_wan", inst_str);
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_alias_wan", pAlias);
             }
@@ -1678,7 +1713,7 @@ CosaDmlDhcpcSetSentOptionValues
             else
             {
                 ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: not " COSA_DML_DHCPV4_CLIENT_IFNAME " nor lan0, New Interface %s\n", __FUNCTION__, CH_g_dhcpv4_client[i].Cfg.Interface);
-                sprintf(inst_str, "%d", ulInstanceNumber);
+                sprintf(inst_str, "%lu", ulInstanceNumber);
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_instance_unknown", inst_str);
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_alias_unknown", pAlias);
                 //return ANSC_STATUS_FAILURE;
@@ -1699,6 +1734,9 @@ CosaDmlDhcpcAddSentOption
         PCOSA_DML_DHCP_OPT          pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1712,6 +1750,9 @@ CosaDmlDhcpcDelSentOption
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1724,6 +1765,9 @@ CosaDmlDhcpcSetSentOption
         PCOSA_DML_DHCP_OPT          pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1740,6 +1784,8 @@ CosaDmlDhcpcGetNumberOfReqOption
         ULONG                       ulClientInstanceNumber
     )
 { 
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
     return 0;
 }
 
@@ -1752,6 +1798,10 @@ CosaDmlDhcpcGetReqOption
         PCOSA_DML_DHCPC_REQ_OPT     pEntry
     )
 {   
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;    
 }
 
@@ -1763,6 +1813,9 @@ CosaDmlDhcpcGetReqOptionbyInsNum
         PCOSA_DML_DHCPC_REQ_OPT     pEntry
     )
 {   
+   UNREFERENCED_PARAMETER(hContext);
+   UNREFERENCED_PARAMETER(ulClientInstanceNumber);
+   UNREFERENCED_PARAMETER(pEntry);
    return ANSC_STATUS_FAILURE;
 }
 
@@ -1776,6 +1829,11 @@ CosaDmlDhcpcSetReqOptionValues
         char*                       pAlias
     )
 { 
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1788,6 +1846,9 @@ CosaDmlDhcpcAddReqOption
         PCOSA_DML_DHCPC_REQ_OPT     pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1799,6 +1860,9 @@ CosaDmlDhcpcDelReqOption
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1810,6 +1874,9 @@ CosaDmlDhcpcSetReqOption
         PCOSA_DML_DHCPC_REQ_OPT     pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -1823,6 +1890,7 @@ CosaDmlDhcpsEnable
         BOOL                        bEnable
     )
 { 
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -1872,6 +1940,7 @@ CosaDmlDhcpsGetState
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
     BOOLEAN bEnabled = FALSE;
@@ -1928,6 +1997,7 @@ CosaDmlDhcpsGetNumberOfPools
 {
     // utopia returns the first pool, and other pools are from pool list
     // we will move first pool from utopia to psm
+    UNREFERENCED_PARAMETER(hContext);
     return Utopia_GetNumberOfDhcpV4ServerPools() + AnscSListQueryDepth(&g_dhcpv4_server_pool_list); 
 }
 
@@ -1941,6 +2011,7 @@ CosaDmlDhcpsGetPool
     )
 {
 
+    UNREFERENCED_PARAMETER(hContext);
     AnscTraceFlow(("%s: ulIndex = %d\n", __FUNCTION__, ulIndex));
 
     if(ulIndex == 0){
@@ -2002,6 +2073,7 @@ CosaDmlDhcpsSetPoolValues
     )
 {
 
+    UNREFERENCED_PARAMETER(hContext);
     AnscTraceFlow(("%s: ulIndex = %d, ulInstanceNumber %d\n", __FUNCTION__, ulIndex, ulInstanceNumber));
 
     if(ulIndex == 0){
@@ -2088,6 +2160,7 @@ CosaDmlDhcpsAddPool
     )
 {
     
+    UNREFERENCED_PARAMETER(hContext);
     if ( !pEntry )
     {
         return ANSC_STATUS_FAILURE;
@@ -2098,7 +2171,7 @@ CosaDmlDhcpsAddPool
         PCOSA_DML_DHCPS_POOL_FULL pPool = NULL;
         BOOLEAN dhcpServerRestart = FALSE;
 
-        syslog(LOG_INFO, "SBAPI->CosaDmlDhcpsAddPool:Instance %d",pEntry->Cfg.InstanceNumber);
+        syslog(LOG_INFO, "SBAPI->CosaDmlDhcpsAddPool:Instance %lu",pEntry->Cfg.InstanceNumber);
         pPoolLinkObj = (PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ)AnscAllocateMemory(sizeof(COSA_DML_DHCPS_POOL_FULL_LINK_OBJ));
         if (!pPoolLinkObj)
         {
@@ -2124,8 +2197,8 @@ CosaDmlDhcpsAddPool
         {
             AnscTraceFlow(("%s: notify sysevent dhcp_server-resync and dhcp_server-restart\n", __FUNCTION__));
             printf("%s: notify sysevent dhcp_server-resync and dhcp_server-restart\n", __FUNCTION__);
-            system("sysevent set dhcp_server-resync");
-            system("sysevent set dhcp_server-restart");
+            v_secure_system("sysevent set dhcp_server-resync");
+            v_secure_system("sysevent set dhcp_server-restart");
         }
         
     }
@@ -2139,7 +2212,8 @@ CosaDmlDhcpsDelPool
         ULONG                       ulInstanceNumber
     )
 {
-    syslog(LOG_ERR, "SBAPI->CosaDmlDhcpsDelPool:Instance %d",ulInstanceNumber);
+    UNREFERENCED_PARAMETER(hContext);
+    syslog(LOG_ERR, "SBAPI->CosaDmlDhcpsDelPool:Instance %lu",ulInstanceNumber);
     PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ pPoolLinkObj = find_dhcpv4_pool_by_instancenum(ulInstanceNumber);
     if(pPoolLinkObj == NULL)
     {
@@ -2166,8 +2240,8 @@ CosaDmlDhcpsDelPool
     AnscFreeMemory(pPoolLinkObj);
 
     AnscTraceFlow(("%s: notify sysevent dhcp_server-resync and dhcp_server-restart\n", __FUNCTION__));
-    system("sysevent set dhcp_server-resync");
-    system("sysevent set dhcp_server-restart");
+    v_secure_system("sysevent set dhcp_server-resync");
+    v_secure_system("sysevent set dhcp_server-restart");
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2179,6 +2253,7 @@ CosaDmlDhcpsSetPoolCfg
     )
 {
 
+    UNREFERENCED_PARAMETER(hContext);
     AnscTraceFlow(("%s: pCfg->InstanceNumber =%d\n", __FUNCTION__, pCfg->InstanceNumber));
 
     if(pCfg->InstanceNumber == 1){
@@ -2250,8 +2325,8 @@ CosaDmlDhcpsSetPoolCfg
             // resync for the second pool
             AnscTraceFlow(("%s: notify sysevent dhcp_server-resync and dhcp_server-restart\n", __FUNCTION__));
             printf("%s: notify sysevent dhcp_server-resync and dhcp_server-restart\n", __FUNCTION__);
-            system("sysevent set dhcp_server-resync");
-            system("sysevent set dhcp_server-restart");
+            v_secure_system("sysevent set dhcp_server-resync");
+            v_secure_system("sysevent set dhcp_server-restart");
         }
     }
 
@@ -2266,6 +2341,7 @@ CosaDmlDhcpsGetPoolCfg
     )
 {
    
+    UNREFERENCED_PARAMETER(hContext);
     AnscTraceFlow(("%s: pCfg->InstanceNumber =%d\n", __FUNCTION__, pCfg->InstanceNumber));
  
     if(pCfg->InstanceNumber == 1){
@@ -2312,6 +2388,7 @@ CosaDmlDhcpsGetPoolInfo
     )
 {
 
+    UNREFERENCED_PARAMETER(hContext);
     AnscTraceFlow(("%s: ulInstanceNumber =%d\n", __FUNCTION__, ulInstanceNumber));
    
     if(ulInstanceNumber == 1) {
@@ -2420,6 +2497,7 @@ CosaDmlDhcpsGetNumberOfSaddr
         ULONG                       ulPoolInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int count = 0;
     UtopiaContext ctx;
 
@@ -2452,6 +2530,7 @@ CosaDmlDhcpsGetSaddr
         PCOSA_DML_DHCPS_SADDR       pEntry
     )
 {  
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -2477,6 +2556,7 @@ CosaDmlDhcpsGetSaddrbyInsNum
         PCOSA_DML_DHCPS_SADDR       pEntry
     )
 {   
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -2506,6 +2586,7 @@ CosaDmlDhcpsSetSaddrValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -2537,6 +2618,7 @@ CosaDmlDhcpsAddSaddr
         PCOSA_DML_DHCPS_SADDR       pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -2576,6 +2658,7 @@ CosaDmlDhcpsDelSaddr
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -2602,6 +2685,7 @@ CosaDmlDhcpsSetSaddr
         PCOSA_DML_DHCPS_SADDR       pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -2648,6 +2732,7 @@ CosaDmlDhcpsGetNumberOfOption
     )
 {
     //printf("%s: ulPoolInstanceNumber %d\n", __FUNCTION__, ulPoolInstanceNumber);
+    UNREFERENCED_PARAMETER(hContext);
     if(ulPoolInstanceNumber == 1)
     {
         // first pool.
@@ -2680,6 +2765,7 @@ CosaDmlDhcpsGetOption
     )
 {
     //printf("%s: ulPoolInstanceNumber %d, ulIndex %d\n", __FUNCTION__, ulPoolInstanceNumber, ulIndex);
+    UNREFERENCED_PARAMETER(hContext);
     if(ulPoolInstanceNumber == 1)
     {
         if ( ulIndex+1 > sizeof(g_dhcpv4_server_pool_option)/sizeof(COSA_DML_DHCPSV4_OPTION) )
@@ -2724,6 +2810,7 @@ CosaDmlDhcpsGetOptionbyInsNum
 {
 
     //printf("%s: ulPoolInstanceNumber %d\n", __FUNCTION__, ulPoolInstanceNumber);
+    UNREFERENCED_PARAMETER(hContext);
     if(ulPoolInstanceNumber == 1)
     {
         ULONG                           index = 0;
@@ -2785,6 +2872,7 @@ CosaDmlDhcpsSetOptionValues
     )
 {
     //printf("%s: ulPoolInstanceNumber %d, ulIndex %d, ulInstanceNumber %d\n", __FUNCTION__, ulPoolInstanceNumber, ulIndex, ulInstanceNumber);
+    UNREFERENCED_PARAMETER(hContext);
     if(ulPoolInstanceNumber == 1)
     {
         if ( ulIndex+1 > sizeof(g_dhcpv4_server_pool_option)/sizeof(COSA_DML_DHCPSV4_OPTION) )
@@ -2799,7 +2887,7 @@ CosaDmlDhcpsSetOptionValues
     {
         PCOSA_DML_DHCPSV4_OPTION_LINK_OBJ curPoolOptionLinkObj = NULL;
         PCOSA_DML_DHCPSV4_OPTION pPoolOption = NULL;
-        BOOLEAN dhcpServerRestart = FALSE;
+        //BOOLEAN dhcpServerRestart = FALSE;
         PCOSA_DML_DHCPSV4_OPTION  pNewEntry = NULL;
         PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ pPoolLinkObj = find_dhcpv4_pool_by_instancenum(ulPoolInstanceNumber);
 
@@ -2835,14 +2923,14 @@ CosaDmlDhcpsSetOptionValues
         if ( !pNewEntry )
         {
             AnscTraceFlow(("%s: Out of memory!\n", __FUNCTION__));
-            return;
+            return ANSC_STATUS_FAILURE; 
         }
         AnscZeroMemory(pNewEntry, sizeof(COSA_DML_DHCPSV4_OPTION));
         AnscCopyMemory(pNewEntry, pPoolOption, sizeof(COSA_DML_DHCPSV4_OPTION));
         AnscCopyString(pNewEntry->Alias, pAlias);
 
         // Write Option to PSM and update to new option value
-        dhcpServerRestart = writeDHCPv4ServerPoolOptionToPSM(ulPoolInstanceNumber, pNewEntry, pPoolOption);
+        writeDHCPv4ServerPoolOptionToPSM(ulPoolInstanceNumber, pNewEntry, pPoolOption);
 
         /*RDKB-6750, CID-33558, free unused resources before exit*/
         AnscFreeMemory(pNewEntry);
@@ -2870,6 +2958,7 @@ CosaDmlDhcpsAddOption
     )
 {
     //printf("%s: ulPoolInstanceNumber %d\n", __FUNCTION__, ulPoolInstanceNumber);
+    UNREFERENCED_PARAMETER(hContext);
     if(ulPoolInstanceNumber == 1)
     {
         // not supported for pool 1 as before
@@ -2918,8 +3007,8 @@ CosaDmlDhcpsAddOption
             {
                 AnscTraceFlow(("%s: notify sysevent dhcp_server-resync and dhcp_server-restart\n", __FUNCTION__));
                 printf("%s: notify sysevent dhcp_server-resync and dhcp_server-restart\n", __FUNCTION__);
-                system("sysevent set dhcp_server-resync");
-                system("sysevent set dhcp_server-restart");
+                v_secure_system("sysevent set dhcp_server-resync");
+                v_secure_system("sysevent set dhcp_server-restart");
             }
         }
         
@@ -2938,6 +3027,7 @@ CosaDmlDhcpsDelOption
     )
 {
     //printf("SBAPI->CosaDmlDhcpsDelPool:Pool %d, Instance %d\n",ulPoolInstanceNumber, ulInstanceNumber);
+     UNREFERENCED_PARAMETER(hContext);
      if(ulPoolInstanceNumber == 1)
     {
         // not supported for pool 1 as before
@@ -2979,8 +3069,8 @@ CosaDmlDhcpsDelOption
 
     AnscTraceFlow(("%s: notify sysevent dhcp_server-resync and dhcp_server-restart\n", __FUNCTION__));
     //printf("%s: notify sysevent dhcp_server-resync and dhcp_server-restart\n", __FUNCTION__);
-    system("sysevent set dhcp_server-resync");
-    system("sysevent set dhcp_server-restart");
+    v_secure_system("sysevent set dhcp_server-resync");
+    v_secure_system("sysevent set dhcp_server-restart");
     return ANSC_STATUS_SUCCESS;
     
 }
@@ -2993,6 +3083,7 @@ CosaDmlDhcpsSetOption
         PCOSA_DML_DHCPSV4_OPTION    pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                          index = 0;
     //printf("%s:Pool %d, Instance %d",__FUNCTION__, ulPoolInstanceNumber);
     if(ulPoolInstanceNumber == 1)
@@ -3052,8 +3143,8 @@ CosaDmlDhcpsSetOption
             {
                 AnscTraceFlow(("%s: notify sysevent dhcp_server-resync and dhcp_server-restart\n", __FUNCTION__));
                 printf("%s: notify sysevent dhcp_server-resync and dhcp_server-restart\n", __FUNCTION__);
-                system("sysevent set dhcp_server-resync");
-                system("sysevent set dhcp_server-restart");
+                v_secure_system("sysevent set dhcp_server-resync");
+                v_secure_system("sysevent set dhcp_server-restart");
             }
 
         }
@@ -3075,10 +3166,11 @@ void mac_string_to_array(char *pStr, unsigned char array[6])
 
 int sbapi_get_dhcpv4_active_number(int index, ULONG minAddress, ULONG maxAddress)
 {
-	struct stat fState;
+	UNREFERENCED_PARAMETER(index);
+        struct stat fState;
 	FILE *fp;
 	int amount=0;
-	unsigned char buffer[1024];
+	char buffer[1024];
 	unsigned long t1;
 	char mac[20],ip[16];
     ULONG ipaddr = 0;
@@ -3088,14 +3180,14 @@ int sbapi_get_dhcpv4_active_number(int index, ULONG minAddress, ULONG maxAddress
 	}
         v_secure_system("cp " COSA_DML_DHCP_LEASES_FILE " /var/dhcpClientList");
 
-	snprintf(buffer,sizeof(buffer),"/var/dhcpClientList", COSA_DML_DHCP_LEASES_FILE);
+	snprintf(buffer,sizeof(buffer),"%s", "/var/dhcpClientList");
 	fp=fopen(buffer,"r");
 	if(fp == NULL){
 		AnscTraceFlow(("failed to open temp lease file\n"));
 		return(0);
 	}
 	while(fgets(buffer,sizeof(buffer),fp)){
-		if(sscanf(buffer,"%lu %20s %16s",&t1,mac,ip)<3){
+		if(sscanf((const char*)buffer,"%lu %20s %16s",&t1,mac,ip)<3){
 			continue;
 		}
         // compare subnet for correct pool
@@ -3106,13 +3198,12 @@ int sbapi_get_dhcpv4_active_number(int index, ULONG minAddress, ULONG maxAddress
             AnscTraceFlow(("%s: IP=%x, is not in subnet of %x, and %x\n", __FUNCTION__, ipaddr, _ansc_ntohl(minAddress), _ansc_ntohl(maxAddress)));
             continue;
         }
-		if(!find_arp_entry(ip, LAN_L3_IFNAME,mac))
+		if(!find_arp_entry(ip, LAN_L3_IFNAME,(unsigned char*)mac))
 			amount++;
 	}
 	
 	fclose(fp);
-	snprintf(buffer,sizeof(buffer),"rm -f /var/dhcpClientList");
-	system(buffer);
+    v_secure_system("rm -f /var/dhcpClientList");
 	return(amount);
 }
 
@@ -3132,6 +3223,7 @@ option 53 03
 */
 int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, ULONG maxAddress)
 {
+    UNREFERENCED_PARAMETER(instancenum);
     FILE * fp = NULL, *fpTmp = NULL;
     PCOSA_DML_DHCPSV4_CLIENT  pEntry  = NULL;
     PCOSA_DML_DHCPSV4_CLIENT  pEntry2 = NULL;
@@ -3141,7 +3233,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
     PCOSA_DML_DHCPSV4_CLIENTCONTENT pNewContentEntry2 = NULL;
     PCOSA_DML_DHCPSV4_CLIENT_OPTION pContentOptionEntry  = NULL;
     PCOSA_DML_DHCPSV4_CLIENT_OPTION *ppOption = NULL;
-    ULONG size = 0, var32=0, sizeClient=0, sizeClientContent=0;
+    ULONG size = 0, var32=0, sizeClientContent=0;
     ULONG i = 0;
     ULONG j = 0;
     ULONG index = 0;
@@ -3149,21 +3241,20 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
     char * pExpire = NULL,*pTemp;
     char * pMac = NULL;
     char * pIP = NULL;
-    char *pHost = NULL, *pClId=NULL, *pVClass = NULL, *pCt=NULL;
+    char *pHost = NULL, *pVClass = NULL, *pCt=NULL;
     char * pKey = NULL;
     char * pTmp1 = NULL;
     char * pTmp2 = NULL;
     time_t t1    = 0;
     struct tm t2 = {0};
-    char buf[128] = {0}, macArray[6]={0};
+    unsigned char macArray[6]={0};
     UtopiaContext utctx;
-    struct timeval tval;
-    struct tm tm;
     ULONG currClientPool = 50;
     ULONG tempIPAddr=0;
 
     AnscTraceFlow(("Entered Inside %s\n", __FUNCTION__));
-#if 0   
+#if 0
+    struct timeval tval;   
     gettimeofday(&tval, NULL);
     tm = *localtime(&tval.tv_sec);
     printf("%02d-%02d-%02d ENTERING %s %d\n",tm.tm_hour, tm.tm_min, tm.tm_sec, __func__, __LINE__);
@@ -3279,7 +3370,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 		if(oneline[i]==0){/*invalid line, ignore it*/
 			continue;
 		}
-		pClId = &oneline[i++];
+
 		while( (oneline[i] != ' ') && (oneline[i] != '\0') ) i++;
 		if(oneline[i]){/*There are newly added parameters*/
 			oneline[i++] = 0; /*end of Client Id*/
@@ -3305,19 +3396,18 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 
 		/* for client */
 		pEntry = &pEntry2[size];
-		sizeClient = size + 1;
-		_ansc_snprintf(pEntry->Alias, 63, "Alias%d", size);
+		_ansc_snprintf(pEntry->Alias, 63, "Alias%lu", size);
 
 
-		if(!find_arp_entry(pIP,ifName,macArray))
+		if(!find_arp_entry(pIP,(char*)ifName,macArray))
 			pEntry->Active = TRUE;
 		
-		_ansc_snprintf(pEntry->Chaddr, 18, pMac);
+		_ansc_snprintf((char*)pEntry->Chaddr, 18, "%s", pMac);
 		if(pEntry->Active==TRUE)
 		{
-			usg_get_cpe_associate_interface(pMac,pEntry->X_CISCO_COM_Interface);
+			usg_get_cpe_associate_interface(pMac, (char*)pEntry->X_CISCO_COM_Interface);
 		}
-		snprintf(pEntry->X_CISCO_COM_HostName, 63, "%s", pHost);
+		snprintf((char*)pEntry->X_CISCO_COM_HostName, 63, "%s", pHost);
 		mac_string_to_array(pMac,macArray);
 		if(Utopia_Init(&utctx)){
 			Utopia_get_lan_host_comments(&utctx,macArray,pEntry->X_CISCO_COM_Comment);
@@ -3326,7 +3416,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 		// This check is to prevent P&M crash
 		if(pVClass != NULL)
                 {
-			sprintf(pEntry->ClassId, "%s", pVClass);
+			sprintf((char*)pEntry->ClassId, "%s", pVClass);
 		}
 
 		/* for client content */
@@ -3339,23 +3429,23 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
         
 		sscanf(pExpire,"%lu", &t1);
 		if((unsigned long)t1 == 0){
-			snprintf(pContentEntry->pIPAddress[0].LeaseTimeRemaining, sizeof(pContentEntry->pIPAddress[0].LeaseTimeRemaining),"0001-01-01T00:00:00Z");
+			snprintf((char*)pContentEntry->pIPAddress[0].LeaseTimeRemaining, sizeof(pContentEntry->pIPAddress[0].LeaseTimeRemaining),"0001-01-01T00:00:00Z");
 		}else{
 			localtime_r(&t1, &t2);
-			snprintf(pContentEntry->pIPAddress[0].LeaseTimeRemaining, sizeof(pContentEntry->pIPAddress[0].LeaseTimeRemaining), "%d-%02d-%02dT%02d:%02d:%02dZ",
+			snprintf((char*)pContentEntry->pIPAddress[0].LeaseTimeRemaining, sizeof(pContentEntry->pIPAddress[0].LeaseTimeRemaining), "%d-%02d-%02dT%02d:%02d:%02dZ",
                  t2.tm_year+1900, t2.tm_mon+1, t2.tm_mday, t2.tm_hour, t2.tm_min, t2.tm_sec);
 		}
 		if(pCt){
 			sscanf(pCt,"%lu", &t1);
 			if((unsigned long)t1 == 0){
-				snprintf(pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation, sizeof(pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation),"0001-01-01T00:00:00Z");
+				snprintf((char*)pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation, sizeof(pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation),"0001-01-01T00:00:00Z");
 			}else{
 				localtime_r(&t1, &t2);
-				snprintf(pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation, sizeof(pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation), "%d-%02d-%02dT%02d:%02d:%02dZ",
+				snprintf((char*)pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation, sizeof(pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation), "%d-%02d-%02dT%02d:%02d:%02dZ",
                      t2.tm_year+1900, t2.tm_mon+1, t2.tm_mday, t2.tm_hour, t2.tm_min, t2.tm_sec);
 			}
 		}else{
-			snprintf(pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation, sizeof(pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation),"0001-01-01T00:00:00Z");
+			snprintf((char*)pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation, sizeof(pContentEntry->pIPAddress[0].X_CISCO_COM_LeaseTimeCreation),"0001-01-01T00:00:00Z");
 		}
 	
 		pContentEntry->NumberofIPAddress = 1;
@@ -3488,19 +3578,19 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 ErrRet:
     if (fp)
         fclose(fp);
-	if(pEntry2)
-		AnscFreeMemory(pEntry2);
-	for(i=0;i<sizeClientContent;i++){
-		if(pContentEntry2[i].pIPAddress)
-			AnscFreeMemory(pContentEntry2[i].pIPAddress);
-		if(pContentEntry2[i].pOption)
-			AnscFreeMemory(pContentEntry2[i].pOption);
+    if(pEntry2)
+        AnscFreeMemory(pEntry2);
+    for(i=0;i<sizeClientContent;i++){
+        if(pContentEntry2[i].pIPAddress)
+            AnscFreeMemory(pContentEntry2[i].pIPAddress);
+	if(pContentEntry2[i].pOption)
+	    AnscFreeMemory(pContentEntry2[i].pOption);
 	}
-	if(pContentEntry2)
-		AnscFreeMemory(pContentEntry2);
-	g_dhcpv4_server_client_count = 0;
-	AnscTraceFlow(("Exiting from %s with error\n", __FUNCTION__));
-	return(-1);
+    if(pContentEntry2)
+        AnscFreeMemory(pContentEntry2);
+        g_dhcpv4_server_client_count = 0;
+        AnscTraceFlow(("Exiting from %s with error\n", __FUNCTION__));
+        return(-1);
 }
 
 /*
@@ -3512,6 +3602,7 @@ static unsigned long ulDhcpsPrevClientNumber = 0;
 
 void CosaDmlDhcpsGetPrevClientNumber(ULONG ulPoolInstanceNumber, ULONG *pNumber)
 {
+    UNREFERENCED_PARAMETER(ulPoolInstanceNumber);
     *pNumber = ulDhcpsPrevClientNumber;
 }
 
@@ -3525,10 +3616,11 @@ CosaDmlDhcpsGetClient
         PULONG                      pSize
     )
 {        
+    UNREFERENCED_PARAMETER(hContext);
     int                     ret = 0;
     COSA_DML_DHCPS_POOL_CFG poolCfg;
-    UCHAR                           ucEntryParamName[256] = {0};
-    UCHAR                           ucEntryNameValue[256] = {0};
+    CHAR                            ucEntryParamName[256] = {0};
+    CHAR                            ucEntryNameValue[256] = {0};
     ULONG                           ulEntryNameLen=sizeof(ucEntryNameValue);
 
     poolCfg.InstanceNumber = ulPoolInstanceNumber;
@@ -3545,7 +3637,7 @@ CosaDmlDhcpsGetClient
         snprintf(ucEntryParamName, sizeof(ucEntryParamName), "%s.Name", poolCfg.Interface);
         CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen );
     }
-    ret = _cosa_get_dhcps_client(ulPoolInstanceNumber, ucEntryNameValue, poolCfg.MinAddress.Value, poolCfg.MaxAddress.Value);
+    ret = _cosa_get_dhcps_client(ulPoolInstanceNumber, (unsigned char*)ucEntryNameValue, poolCfg.MinAddress.Value, poolCfg.MaxAddress.Value);
 
     if ( !ret )
     {
@@ -3577,8 +3669,6 @@ CosaDmlDhcpsPing
     )
 {
     FILE *fp;
-    char      out[256] = {0};
-    ULONG     i        = 0;
 
     /*ping -w 2 -c 1 fe80::225:2eff:fe7d:5b5 */
     fp = v_secure_popen("r","ping -W 1 -c 1 %s", _ansc_inet_ntoa(*((struct in_addr*)&(pDhcpsClient->IPAddress))) );
@@ -3601,8 +3691,6 @@ CosaDmlDhcpsARPing
     )
 {
     FILE *fp;
-    char      out[256] = {0};
-    ULONG     i        = 0;
 
     fp = v_secure_popen("r", "arping -I %s -c 2 -f -w 1 %s", LAN_L3_IFNAME, _ansc_inet_ntoa(*((struct in_addr*)&(pDhcpsClient->IPAddress))) );
     if ( _get_shell_output2(fp, "Received 0 reply"))
@@ -3629,14 +3717,14 @@ CosaDmlDhcpsGetLeaseTimeDuration
     time_t duration_time;
     int d_day, d_hour, d_min, d_sec;
     char time_buf[32] = {0};
-    int i;
+    ULONG i;
 
     /*get current time*/
     current_time = time(NULL);
 
     /*get lease create time*/
     localtime_r(&current_time, &t);
-    strncpy(time_buf, pDhcpsClient->X_CISCO_COM_LeaseTimeCreation, strlen(pDhcpsClient->X_CISCO_COM_LeaseTimeCreation));
+    strncpy(time_buf, (char*)pDhcpsClient->X_CISCO_COM_LeaseTimeCreation, strlen((const char*)pDhcpsClient->X_CISCO_COM_LeaseTimeCreation));
     for (i = 0; i < strlen(time_buf); i++)
     {
         if('T' == time_buf[i])
@@ -3653,7 +3741,7 @@ CosaDmlDhcpsGetLeaseTimeDuration
     d_hour = duration_time % (24 * 3600) / 3600;
     d_min = duration_time % (24 * 3600) % 3600 / 60;
     d_sec = duration_time % (24 * 3600) % 3600 % 60;
-    snprintf(pDhcpsClient->X_CISCO_COM_LeaseTimeDuration, sizeof(pDhcpsClient->X_CISCO_COM_LeaseTimeDuration),
+    snprintf((char*)pDhcpsClient->X_CISCO_COM_LeaseTimeDuration, sizeof(pDhcpsClient->X_CISCO_COM_LeaseTimeDuration),
                 "D:%02d H:%02d M:%02d S:%02d", d_day, d_hour, d_min, d_sec);
 
 
@@ -3667,7 +3755,10 @@ CosaDmlDhcpsGetX_COM_CISCO_Saddr
         ULONG                       ulIndex,
         PCOSA_DML_DHCPS_SADDR       pEntry
     )
-{        
+{   
+     UNREFERENCED_PARAMETER(hContext);
+     UNREFERENCED_PARAMETER(ulIndex);
+     UNREFERENCED_PARAMETER(pEntry);     
 #if 0
     if ( ulIndex+1 > sizeof(g_dhcpv4_server_pool_stadicaddress)/sizeof(COSA_DML_DHCPS_SADDR) )
         return ANSC_STATUS_FAILURE;
@@ -3686,6 +3777,8 @@ CosaDmlDhcpsGetX_COM_CISCO_SaddrbyInsNum
         PCOSA_DML_DHCPS_SADDR       pEntry
     )
 {
+   UNREFERENCED_PARAMETER(hContext);
+   UNREFERENCED_PARAMETER(pEntry);
 #if 0
     ULONG                           index = 0;
 
@@ -3712,6 +3805,10 @@ CosaDmlDhcpsSetX_COM_CISCO_SaddrValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
 #if 0
     if ( ulIndex+1 > sizeof(g_dhcpv4_server_pool_stadicaddress)/sizeof(COSA_DML_DHCPS_SADDR) )
         return ANSC_STATUS_SUCCESS;
@@ -3731,6 +3828,8 @@ CosaDmlDhcpsAddX_COM_CISCO_Saddr
     )
 {
 
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -3742,6 +3841,8 @@ CosaDmlDhcpsDelX_COM_CISCO_Saddr
     )
 {
 
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -3752,6 +3853,8 @@ CosaDmlDhcpsSetX_COM_CISCO_Saddr
         PCOSA_DML_DHCPS_SADDR       pEntry
     )
 {
+   UNREFERENCED_PARAMETER(hContext);
+   UNREFERENCED_PARAMETER(pEntry);
 #if 0
     ULONG                           index = 0;
 
@@ -3806,8 +3909,8 @@ void FillPartnerIDJournal
                 cJSON *partnerObj = cJSON_GetObjectItem( json, partnerID );
                 if( partnerObj != NULL)
                 {
-                      FillParamUpdateSource(partnerObj, "Device.DHCPv4.Server.Pool.1.MinAddress", &pPoolCfg->MinAddressUpdateSource);
-                      FillParamUpdateSource(partnerObj, "Device.DHCPv4.Server.Pool.1.MaxAddress", &pPoolCfg->MaxAddressUpdateSource);
+                      FillParamUpdateSource(partnerObj, "Device.DHCPv4.Server.Pool.1.MinAddress", pPoolCfg->MinAddressUpdateSource);
+                      FillParamUpdateSource(partnerObj, "Device.DHCPv4.Server.Pool.1.MaxAddress", pPoolCfg->MaxAddressUpdateSource);
                 }
                 else
                 {
@@ -3823,11 +3926,9 @@ CosaDhcpInitJournal
     )
 {
         char *data = NULL;
-        char buf[64] = {0};
         cJSON *json = NULL;
         FILE *fileRead = NULL;
         char PartnerID[PARTNER_ID_LEN] = {0};
-        char cmd[512] = {0};
         ULONG size = PARTNER_ID_LEN - 1;
         int len;
         if (!pPoolCfg)

@@ -727,5 +727,12 @@ CosaDmlIpGetActivePorts
         PULONG                      pulCount
     );
 
+PCOSA_DML_IP_IF_INFO
+CosaDmlIpIfGetEntry2
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       InstanceNumber
+    );
+    
 #endif
 

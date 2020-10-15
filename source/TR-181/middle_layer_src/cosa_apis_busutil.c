@@ -85,6 +85,7 @@
 #include "ansc_platform.h"
 
 extern void * g_pDslhDmlAgent;
+COSARepopulateTableProc            g_COSARepopulateTable;
 
 /**********************************************************************
 

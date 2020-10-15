@@ -148,6 +148,7 @@ InterfaceStack_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IFSTACK         pMyObject = (PCOSA_DATAMODEL_IFSTACK)g_pCosaBEManager->hInterfaceStack;
 
 
@@ -193,6 +194,7 @@ InterfaceStack_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IFSTACK         pMyObject     = (PCOSA_DATAMODEL_IFSTACK)g_pCosaBEManager->hInterfaceStack; 
     PSLIST_HEADER                   pIFStackHead  = (PSLIST_HEADER)&pMyObject->InterfaceStackList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -242,6 +244,7 @@ InterfaceStack_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if ( ( AnscGetTickInSeconds() - InterfaceStackPreviousVisitTime ) < InterfaceStack_TIMEOUT )
         return FALSE;
     else
@@ -279,6 +282,7 @@ InterfaceStack_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IFSTACK         pMyObject     = (PCOSA_DATAMODEL_IFSTACK)g_pCosaBEManager->hInterfaceStack; 
 
     CcspTraceWarning(("InterfaceStack_Synchronize()..... '\n"));
@@ -329,6 +333,9 @@ InterfaceStack_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     return FALSE;
 }
 
@@ -373,6 +380,9 @@ InterfaceStack_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -417,6 +427,9 @@ InterfaceStack_GetParamUlongValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
     return FALSE;
 }
 
@@ -467,6 +480,7 @@ InterfaceStack_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IFSTACK_ENTRY         pInterfaceStack = (PCOSA_DML_IFSTACK_ENTRY)pCosaContext->hContext;
 

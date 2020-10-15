@@ -22,6 +22,11 @@
 #include <libparodus.h>
 #include "cJSON.h"
 #include <sysevent/sysevent.h>
+#include <syscfg/syscfg.h>
+#include <math.h>
+#include "cosa_deviceinfo_apis.h"
+#include "utapi/utapi.h"
+#include "utapi/utapi_util.h"
 
 #define CONTENT_TYPE_JSON  "application/json"
 
@@ -52,7 +57,7 @@ typedef struct _notify_params
 	char * download_fw_ver;
 } notify_params_t;
 
-void* connect_parodus();
+void* connect_parodus(void* arg);
 static void getDeviceMac();
 static void get_parodus_url(char **url);
 void initparodusTask();
@@ -82,7 +87,7 @@ static void get_parodus_url(char **url)
         char str[255] = {'\0'};
         while( fscanf(fp,"%s", str) != EOF) {
             char *value = NULL;
-            if( value = strstr(str, "PARODUS_URL=") ) {
+            if( ( value = strstr(str, "PARODUS_URL=") ) ) {
                 value = value + strlen("PARODUS_URL=");
                 *url = strdup(value);
                 CcspTraceDebug(("parodus url is %s\n", *url));
@@ -236,7 +241,6 @@ static void getDeviceMac()
         token_t  token;
         int fd = s_sysevent_connect(&token);
         char deviceMACValue[32] = { '\0' };
-        char isEthEnabled[64]={'\0'};
 
 	if (strlen(deviceMAC))
 	{
@@ -316,15 +320,14 @@ static void getDeviceMac()
     }
 }
 
-void* connect_parodus()
+void* connect_parodus(void* arg)
 {
     int backoffRetryTime = 0;
     int backoff_max_time = 5;
     int max_retry_sleep;
     int c =2;   //Retry Backoff count shall start at c=2 & calculate 2^c - 1.
-    int retval=-1;
     char *parodus_url = NULL;
-    
+    UNREFERENCED_PARAMETER(arg);    
     pthread_detach(pthread_self());
     
     max_retry_sleep = (int) pow(2, backoff_max_time) -1;
@@ -375,9 +378,10 @@ void* connect_parodus()
 		CcspTraceDebug(("backoffRetryTime reached max value, reseting to initial value\n"));
 	    }
         }
-	retval = libparodus_shutdown(&pam_instance);
+	libparodus_shutdown(&pam_instance);
         
     }
+    return NULL;
 }
 
 void* sendNotification(void* pValue)
@@ -389,10 +393,10 @@ void* sendNotification(void* pValue)
     int c=2;
     char source[MAX_PARAMETERNAME_LEN/2] = {'\0'};
     cJSON *notifyPayload = cJSON_CreateObject();
-    char  * stringifiedNotifyPayload;
-    unsigned long bootTime;
+    char  * stringifiedNotifyPayload = NULL;
+    unsigned long bootTime = 0;
     char lastRebootReason[64]={'\0'};
-    notify_params_t *msg;
+    notify_params_t *msg = NULL;
     char * temp = NULL;
     char dest[512] = {'\0'};
     
@@ -556,6 +560,7 @@ void* sendNotification(void* pValue)
 			}
 	   }
 	}
+    return NULL;
 }
 
 void initparodusTask()
@@ -706,11 +711,11 @@ int readFromFile(char *filename, char **data, int *len)
 	
 	fread(*data, 1, ch_count,fp);
         //fgets(*data,400,fp);
-        printf("........data is %s len%lu\n", *data, strlen(*data));
+        printf("........data is %s len%zu\n", *data, strlen(*data));
 	*len = ch_count;
 	(*data)[ch_count] ='\0';
         printf("character count is %d\n",ch_count);
-        printf("data is %s len %lu\n", *data, strlen(*data));
+        printf("data is %s len %zu\n", *data, strlen(*data));
 	fclose(fp);
 	return 1;
 }

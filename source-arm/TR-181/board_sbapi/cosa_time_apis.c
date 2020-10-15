@@ -94,6 +94,8 @@ CosaDmlTimeInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -104,6 +106,7 @@ CosaDmlTimeSetCfg
         PCOSA_DML_TIME_CFG          pTimeCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (pTimeCfg)
         AnscCopyMemory(&g_TimeCfg, pTimeCfg, sizeof(COSA_DML_TIME_CFG));
 
@@ -117,6 +120,7 @@ CosaDmlTimeGetCfg
         PCOSA_DML_TIME_CFG          pTimeCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (pTimeCfg)
         AnscCopyMemory(pTimeCfg, &g_TimeCfg, sizeof(COSA_DML_TIME_CFG));
 
@@ -131,6 +135,7 @@ CosaDmlTimeGetState
         PANSC_UNIVERSAL_TIME        pCurrLocalTime
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (pStatus && pCurrLocalTime)
     {
         *pStatus = COSA_DML_TIME_STATUS_Synchronized;
@@ -147,6 +152,8 @@ CosaDmlTimeGetLocalTime
        char                       *pCurrLocalTime
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCurrLocalTime);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -253,12 +260,12 @@ BOOL isTimeSynced()
 }
 
 
-ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
+void* startNTP(void* arg)
 {
-    FILE *fp;
     char buf[MAXBUF]= {0};
     char server[MAXBUF] = {0};
     int  i = 0;
+    PCOSA_DML_TIME_CFG pTimeCfg = (PCOSA_DML_TIME_CFG)arg;
 
     AnscTraceWarning(("%s: Start Function...\n", __FUNCTION__));
     if (pTimeCfg->bEnabled)
@@ -270,7 +277,7 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
     if(ANSC_STATUS_SUCCESS != updateTimeZone(pTimeCfg->LocalTimeZone))
     {
         AnscTraceWarning(("%s: Fail to update time zone!\n", __FUNCTION__));
-        return ANSC_STATUS_FAILURE;
+        return NULL;
     }
 
     /* Timesynd supports multiple NTP Servers, so we'll build up a list */
@@ -281,7 +288,7 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
             case 1:
                 if (pTimeCfg->NTPServer1.ActiveValue && strlen(pTimeCfg->NTPServer1.ActiveValue) > 0)
                 {
-                    if (server[0] != NULL) {
+                    if (server[0] != '\0') {
                         strcat(server, " "); // add spacer
                     }
                     strcat(server, pTimeCfg->NTPServer1.ActiveValue);
@@ -290,7 +297,7 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
             case 2:
                 if (pTimeCfg->NTPServer2.ActiveValue && strlen(pTimeCfg->NTPServer2.ActiveValue) > 0)
                 {
-                    if (server[0] != NULL) {
+                    if (server[0] != '\0') {
                         strcat(server, " "); // add spacer
                     }
                     strcat(server, pTimeCfg->NTPServer2.ActiveValue);
@@ -299,7 +306,7 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
             case 3:
                 if (pTimeCfg->NTPServer3.ActiveValue && strlen(pTimeCfg->NTPServer3.ActiveValue) > 0)
                 {
-                    if (server[0] != NULL) {
+                    if (server[0] != '\0') {
                         strcat(server, " "); // add spacer
                     }
                     strcat(server, pTimeCfg->NTPServer3.ActiveValue);
@@ -308,7 +315,7 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
             case 4:
                 if (pTimeCfg->NTPServer4.ActiveValue && strlen(pTimeCfg->NTPServer4.ActiveValue) > 0)
                 {
-                    if (server[0] != NULL) {
+                    if (server[0] != '\0') {
                         strcat(server, " "); // add spacer
                     }
                     strcat(server, pTimeCfg->NTPServer4.ActiveValue);
@@ -316,7 +323,7 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
                 break;
             case 5:
                 if (pTimeCfg->NTPServer5.ActiveValue && strlen(pTimeCfg->NTPServer5.ActiveValue) > 0) {
-                    if (server[0] != NULL) {
+                    if (server[0] != '\0') {
                         strcat(server, " "); // add spacer
                     }
                     strcat(server, pTimeCfg->NTPServer5.ActiveValue);
@@ -333,14 +340,14 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
              * Kill the old timesyncd process and unmount the timesyncd.conf file
              */
             AnscTraceWarning(("%s: stopping ntpclient \n", __FUNCTION__));
-            system("systemctl stop tmp-systemd-timesyncd.conf.service");
-            system("systemctl stop systemd-timesyncd");
+            v_secure_system("systemctl stop tmp-systemd-timesyncd.conf.service");
+            v_secure_system("systemctl stop systemd-timesyncd");
 
             // Copy the new server(s) into the temp config file
-            v_secure_system("sed -i '/^[#\s]*NTP=/s/.*/NTP=%s/' %s", server, timesyncConfFile);
+            v_secure_system("sed -i '/^[#\\s]*NTP=/s/.*/NTP=%s/' %s", server, timesyncConfFile);
 
             // remount the modified timesyncd.conf file
-            system("systemctl start tmp-systemd-timesyncd.conf.service");
+            v_secure_system("systemctl start tmp-systemd-timesyncd.conf.service");
 
             // Restart timesyncd
             AnscTraceWarning(("%s: starting ntpclient with host %s,command:%s\n", __FUNCTION__, server, buf));
@@ -355,10 +362,10 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
         {
             AnscTraceWarning(("%s: Set NTP Server via default method\n", __FUNCTION__));
             // Update the timesyncd.conf file using the default method
-            system(updateTimesyncConf);
+            v_secure_system("/usr/ccsp/updateTimesyncdConf.sh");
         }
     }
-    return ANSC_STATUS_SUCCESS;
+    return NULL;
 }
 
 #else
@@ -407,14 +414,14 @@ BOOL isTimeSynced()
      return isSync;
 }
 
-ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
+void* startNTP(void* arg)
 {
-    FILE *fp;
     char buf[MAXBUF]= {0};
     char *server = NULL;
     char *back_server = NULL;
     int  i = 0;
     char wan_interface[32] = {0};
+    PCOSA_DML_TIME_CFG pTimeCfg = (PCOSA_DML_TIME_CFG)arg;
 
     AnscTraceWarning(("%s: Start Function...\n", __FUNCTION__));
     if (pTimeCfg->bEnabled)
@@ -426,16 +433,16 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
     if(ANSC_STATUS_SUCCESS != updateTimeZone(pTimeCfg->LocalTimeZone))
     {
         AnscTraceWarning(("%s: Fail to update time zone!\n", __FUNCTION__));
-        return ANSC_STATUS_FAILURE;
+        return NULL;
     }
 
     /**
      * to kill the old process whenever NTP is enabled or not, 
      * since NTPServer may changed.
      */
-    system("killall ntpclient >/dev/null 2>&1");
-    system("rm -rf /tmp/ntpstatus");
-    system("rm -rf /tmp/ntpclient.log");
+    v_secure_system("killall ntpclient >/dev/null 2>&1");
+    v_secure_system("rm -rf /tmp/ntpstatus");
+    v_secure_system("rm -rf /tmp/ntpclient.log");
     AnscTraceWarning(("%s: stopping ntpclient \n", __FUNCTION__));
 
     /*get current eRT interface*/
@@ -508,9 +515,9 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
                          * to kill the old process whenever NTP is enabled or not, 
                          * since NTPServer may changed.
                          */
-                        system("killall ntpclient >/dev/null 2>&1");
-                        system("rm -rf /tmp/ntpstatus");
-                        system("rm -rf /tmp/ntpclient.log");
+                        v_secure_system("killall ntpclient >/dev/null 2>&1");
+                        v_secure_system("rm -rf /tmp/ntpstatus");
+                        v_secure_system("rm -rf /tmp/ntpclient.log");
                         AnscTraceWarning(("%s: stopping ntpclient 2\n", __FUNCTION__));
 
                         /* XXX: sleep a while to prevent be killed by "killall" above.
@@ -529,6 +536,7 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
             }
         }
     }
+    return NULL;
 }
 #endif
 
@@ -539,10 +547,7 @@ CosaDmlTimeInit
         PANSC_HANDLE                phContext
     )
 {
-    int rc = 0;
-    int iEnbl = 0;
-    char val[UTOPIA_TR181_PARAM_SIZE1];
-
+    UNREFERENCED_PARAMETER(hDml);
     PCOSA_DML_TIME_CFG          pTimeCfg=(PCOSA_DML_TIME_CFG)phContext;
 
     CosaDmlTimeGetCfg(NULL, pTimeCfg);
@@ -568,9 +573,7 @@ CosaDmlTimeSetCfg
     UtopiaContext ctx;
     char buf[32] = {0};
     int rc = 0;
-    int err = 0;
-    pthread_t ntp_thread;
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!pTimeCfg)
         return ANSC_STATUS_FAILURE;
 
@@ -582,29 +585,29 @@ CosaDmlTimeSetCfg
        if(!Utopia_Init(&ctx))
           return ERR_UTCTX_INIT;
        /* Set Local TZ to SysCfg */
-       rc = Utopia_Set_DeviceTime_LocalTZ(&ctx,&(pTimeCfg->LocalTimeZone));
+       rc = Utopia_Set_DeviceTime_LocalTZ(&ctx, (char*)&(pTimeCfg->LocalTimeZone));
 
        /*set city index */
-       sprintf(buf,"%d",pTimeCfg->cityIndex);
+       sprintf(buf,"%lu",pTimeCfg->cityIndex);
        rc = Utopia_RawSet(&ctx, NULL, "ntp_cityindex", buf);
 
        /*Set NTP Server 1 to SysCfg */
-       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer1.ActiveValue),1);
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx, (char*)&(pTimeCfg->NTPServer1.ActiveValue), 1);
 
        /*Set NTP Server 2 to SysCfg */
-       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer2.ActiveValue),2);
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx, (char*)&(pTimeCfg->NTPServer2.ActiveValue), 2);
 
        /*Set NTP Server 3 to SysCfg */
-       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer3.ActiveValue),3);
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx, (char*)&(pTimeCfg->NTPServer3.ActiveValue), 3);
 
         /*Set NTP Server 4 to SysCfg */
-       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer4.ActiveValue),4);
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx, (char*)&(pTimeCfg->NTPServer4.ActiveValue), 4);
 
        /*Set NTP Server 5 to SysCfg */
-       rc = Utopia_Set_DeviceTime_NTPServer(&ctx,&(pTimeCfg->NTPServer5.ActiveValue),5);
+       rc = Utopia_Set_DeviceTime_NTPServer(&ctx, (char*)&(pTimeCfg->NTPServer5.ActiveValue), 5);
        
        /*Set NTP DaylightSaving Enabled or not to SysCfg */
-       rc = Utopia_Set_DeviceTime_DaylightEnable(&ctx,pTimeCfg->bDaylightSaving);
+       rc = Utopia_Set_DeviceTime_DaylightEnable(&ctx, pTimeCfg->bDaylightSaving);
 
        /*Set NTP DaylightSaving Offset to SysCfg */
        rc = Utopia_Set_DeviceTime_DaylightOffset(&ctx,pTimeCfg->DaylightSavingOffset);
@@ -620,6 +623,8 @@ CosaDmlTimeSetCfg
        CcspTraceWarning(("%s: Triggering event to restart ntpd \n", __FUNCTION__));
 	commonSyseventSet("ntpd-restart", "");
 #else
+    pthread_t ntp_thread;
+    int err = 0;
     err = pthread_create(&ntp_thread, NULL, startNTP, (void *)pTimeCfg);
 
     if(0 != err)
@@ -683,9 +688,8 @@ CosaDmlTimeGetCfg
     UtopiaContext ctx;
     int rc = 0;
     int utc_enabled=0;
-    int iEnbl = 0;
     char val[UTOPIA_TR181_PARAM_SIZE1];
-
+    UNREFERENCED_PARAMETER(hContext);
     if (pTimeCfg)
     {
        /* Initialize a Utopia Context */
@@ -748,7 +752,7 @@ CosaDmlTimeGetCfg
        pTimeCfg->bDaylightSaving = Utopia_Get_DeviceTime_DaylightEnable(&ctx);
 
        /* Fill DaylightSaving Offset from syscfg */
-       rc = Utopia_Get_DeviceTime_DaylightOffset(&ctx, &(pTimeCfg->DaylightSavingOffset));
+       rc = Utopia_Get_DeviceTime_DaylightOffset(&ctx, (int*)&(pTimeCfg->DaylightSavingOffset));
 
        /* Fill NTP Enabled or not from syscfg */
        pTimeCfg->bEnabled = Utopia_Get_DeviceTime_Enable(&ctx);
@@ -788,8 +792,8 @@ CosaDmlTimeGetState
     )
 {
     UtopiaContext ctx;
-    int rc = -1;
-
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCurrLocalTime);
     /* Initialize a Utopia Context */
     if(!Utopia_Init(&ctx))
         return ERR_UTCTX_INIT;
@@ -818,9 +822,10 @@ CosaDmlTimeGetLocalTime
        char                       *pCurrLocalTime
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     time_t t;
 #if defined(UTC_ENABLE) && !defined(_XF3_PRODUCT_REQ_)
-struct tm now_time, *pLcltime, temp;
+struct tm *pLcltime, temp;
    time(&t);
    t = t + getOffset();
    localtime_r(&t, &temp);
@@ -857,6 +862,7 @@ CosaDmlTimeGetTimeOffset
        char                       *pTimeOffset
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     platform_hal_getTimeOffSet(pTimeOffset);
     return ANSC_STATUS_SUCCESS;
 }
@@ -898,11 +904,11 @@ void FillPartnerIDNTPJournal
                 cJSON *partnerObj = cJSON_GetObjectItem( json, partnerID );
                 if( partnerObj != NULL)
                 {
-                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer1", &pTimeCfg->NTPServer1.UpdateSource);
-                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer2", &pTimeCfg->NTPServer2.UpdateSource);
-                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer3", &pTimeCfg->NTPServer3.UpdateSource);
-                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer4", &pTimeCfg->NTPServer4.UpdateSource);
-                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer5", &pTimeCfg->NTPServer5.UpdateSource);
+                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer1", (char*)&pTimeCfg->NTPServer1.UpdateSource);
+                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer2", (char*)&pTimeCfg->NTPServer2.UpdateSource);
+                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer3", (char*)&pTimeCfg->NTPServer3.UpdateSource);
+                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer4", (char*)&pTimeCfg->NTPServer4.UpdateSource);
+                      FillParamUpdateSourceNTP(partnerObj, "Device.Time.NTPServer5", (char*)&pTimeCfg->NTPServer5.UpdateSource);
                 }
                 else
                 {
@@ -918,11 +924,9 @@ CosaNTPInitJournal
     )
 {
         char *data = NULL;
-        char buf[64] = {0};
         cJSON *json = NULL;
         FILE *fileRead = NULL;
         char PartnerID[PARTNER_ID_LEN] = {0};
-        char cmd[512] = {0};
         ULONG size = PARTNER_ID_LEN - 1;
         int len;
         if (!pTimeCfg)

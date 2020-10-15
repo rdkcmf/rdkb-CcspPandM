@@ -658,4 +658,39 @@ CosaDmlRouteInfoGetEnabled
         BOOLEAN * pBool
     );
 
+ANSC_STATUS 
+CosaDmlStaticRouteDelEntry
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_STATICROUTE_CFG   pEntry
+    );
+
+ANSC_STATUS 
+CosaDmlStaticRouteAddEntry
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_STATICROUTE_CFG   pEntry
+    );
+
+ANSC_STATUS 
+CosaDmlStaticRouteSetEntry
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_STATICROUTE_CFG   pEntry
+    );
+
+ANSC_STATUS 
+CosaDmlStaticRouteGetEntryByName
+    (
+        ANSC_HANDLE                 hContext,
+        PCOSA_DML_STATICROUTE_CFG   pEntry
+    );
+
+PCOSA_DML_STATICROUTE_CFG 
+CosaDmlStaticRouteGetEntries
+    (
+        ANSC_HANDLE                 hContext,
+        PULONG                      pulCount
+    );
+
 #endif

@@ -184,7 +184,7 @@ Pam_GetFirstIpInterfaceObjectName
             }
             else
             {
-                ulIndex     = EnvIndex;
+                ulIndex     = (ULONG)EnvIndex;
             }
         }
         ulInstNum = CosaGetInstanceNumberByIndex("Device.IP.Interface.", ulIndex);
@@ -197,7 +197,7 @@ Pam_GetFirstIpInterfaceObjectName
         }
         else
         {
-            _ansc_sprintf(pObjName, "Device.IP.Interface.%d.LowerLayers", ulInstNum);
+            _ansc_sprintf(pObjName, "Device.IP.Interface.%lu.LowerLayers", ulInstNum);
             /*CcspTraceInfo(("Checking %s...\n", pObjName));*/
 
             LowerLayersSize = sizeof(LowerLayers);
@@ -264,7 +264,7 @@ Pam_GetFirstIpInterfaceObjectName
                          ulInstNum
                     ));
 
-                _ansc_sprintf(Buffer, "Device.IP.Interface.%d.", ulInstNum);
+                _ansc_sprintf(Buffer, "Device.IP.Interface.%lu.", ulInstNum);
                 BufferSize = _ansc_strlen(Buffer);
                 
                 if ( BufferSize < *pulObjNameSize )
@@ -345,6 +345,9 @@ Pam_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     return FALSE;
 }
 
@@ -390,6 +393,9 @@ Pam_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -432,7 +438,9 @@ Pam_GetParamUlongValue
         ULONG*                      puLong
     )
 {
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
 
     /* check the parameter name and return the corresponding value */
 
@@ -489,13 +497,13 @@ Pam_GetParamStringValue
     )
 {
     int                             iReturnValue        = 0;
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext        = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     char                            IpIfObjName[128]    = {0};
     ULONG                           IpIfObjNameSize     = 0;
     ULONG                           ulInstNum           = 0;
     char                            Buffer[128]         = {0};
     ULONG                           BufferSize          = 0;
 
+    UNREFERENCED_PARAMETER(hInsContext);
 
     CcspTraceInfo(("[%s] -- '%s', pValue addr: 0x%x, pulSize addr: 0x%x \n", __FUNCTION__, ParamName, pValue, pulSize));
 
@@ -581,7 +589,7 @@ Pam_GetParamStringValue
             }
             else
             {
-                _ansc_sprintf(Buffer, "%d.", ulInstNum);
+                _ansc_sprintf(Buffer, "%lu.", ulInstNum);
                 _ansc_strcat(IpIfObjName, Buffer);
                 _ansc_strcat(IpIfObjName, "IPAddress");
             }
@@ -627,7 +635,7 @@ Pam_GetParamStringValue
             }
             else
             {
-                _ansc_sprintf(Buffer, "%d.", ulInstNum);
+                _ansc_sprintf(Buffer, "%lu.", ulInstNum);
                 _ansc_strcat(IpIfObjName, Buffer);
                 _ansc_strcat(IpIfObjName, "SubnetMask");
             }
@@ -673,7 +681,7 @@ Pam_GetParamStringValue
             }
             else
             {
-                _ansc_sprintf(Buffer, "%d.", ulInstNum);
+                _ansc_sprintf(Buffer, "%lu.", ulInstNum);
                 _ansc_strcat(IpIfObjName, Buffer);
                 _ansc_strcat(IpIfObjName, "IPAddress");
             }
@@ -719,7 +727,7 @@ Pam_GetParamStringValue
             }
             else
             {
-                _ansc_sprintf(Buffer, "%d.", ulInstNum);
+                _ansc_sprintf(Buffer, "%lu.", ulInstNum);
                 _ansc_strcat(IpIfObjName, Buffer);
                 _ansc_strcat(IpIfObjName, "SubnetMask");
             }

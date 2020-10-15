@@ -143,8 +143,5 @@ CosaIFStackEmptyTable
         ANSC_HANDLE                 hThisObject
     );
 
-static int CosaIFStackGetParamValueString(char *pParamName, char *pParamValue, ULONG *pValueSize);
-static ULONG CosaIFStackGetParamValueULong(char *pParamName);
-
 #endif
 

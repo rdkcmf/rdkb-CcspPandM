@@ -124,6 +124,8 @@ CosaDmlDnsInit
     )
 {
 
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -160,6 +162,7 @@ CosaDmlDnsEnableClient
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
 
     g_ClientEnable = bEnabled;
@@ -195,6 +198,7 @@ CosaDmlIpDnsGetClientStatus
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     COSA_DML_DNS_STATUS             DnsStatus = COSA_DML_DNS_STATUS_Disabled;
 
     if ( g_ClientEnable )
@@ -238,6 +242,7 @@ CosaDmlDnsClientGetServers
         PULONG                      pulCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer = (PCOSA_DML_DNS_CLIENT_SERVER)NULL;
     ULONG                           ulSize     = 0;
 
@@ -299,6 +304,7 @@ CosaDmlDnsClientSetServerValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
 
     g_DnsServerFull[ulIndex].InstanceNumber = ulInstanceNumber;
@@ -339,6 +345,7 @@ CosaDmlDnsClientAddServer
         PCOSA_DML_DNS_CLIENT_SERVER pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( g_NumOfDnsServers >= 10 )
     {
         return ANSC_STATUS_FAILURE;
@@ -390,6 +397,7 @@ CosaDmlDnsClientDelServer
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     ULONG                           j = 0;
 
@@ -447,6 +455,7 @@ CosaDmlDnsClientSetServer
         PCOSA_DML_DNS_CLIENT_SERVER pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     
     for ( i = 0; i < g_NumOfDnsServers; i++)
@@ -505,6 +514,8 @@ CosaDmlDnsClientGetServer
      )
 
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     
 
@@ -547,6 +558,7 @@ CosaDmlDnsEnableRelay
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     
     g_ReplyEnable = bEnabled;
@@ -583,6 +595,7 @@ CosaDmlIpDnsGetRelayStatus
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     COSA_DML_DNS_STATUS             RelayStatus = COSA_DML_DNS_STATUS_Disabled;
 
     if ( g_ReplyEnable )
@@ -627,6 +640,7 @@ CosaDmlDnsRelayGetServers
         PULONG                      pulCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_DML_DNS_RELAY_ENTRY       pForward = (PCOSA_DML_DNS_RELAY_ENTRY)NULL;
     ULONG                           ulSize     = 0;
 
@@ -689,6 +703,7 @@ CosaDmlDnsRelaySetServerValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
 
     g_DnsRelayFull[ulIndex].InstanceNumber = ulInstanceNumber;
@@ -730,6 +745,7 @@ CosaDmlDnsRelayAddServer
         PCOSA_DML_DNS_RELAY_ENTRY   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( g_NumOfDnsRelays >= 10 )
     {
         return ANSC_STATUS_FAILURE;
@@ -781,6 +797,7 @@ CosaDmlDnsRelayDelServer
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     ULONG                           j = 0;
 
@@ -838,6 +855,7 @@ CosaDmlDnsRelaySetServer
         PCOSA_DML_DNS_RELAY_ENTRY   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfDnsRelays; i++)
@@ -898,6 +916,8 @@ CosaDmlDnsRelayGetServer
 
 
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     
     return returnStatus;
@@ -1209,6 +1229,7 @@ CosaDmlDnsEnableClient
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     UtopiaContext       ctx;
     bClientEnable       = bEnabled;
@@ -1264,6 +1285,7 @@ CosaDmlIpDnsGetClientStatus
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     COSA_DML_DNS_STATUS             DnsStatus = COSA_DML_DNS_STATUS_Disabled;
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     COSA_DML_DNS_STATUS             dnsStatus    = COSA_DML_DNS_STATUS_Disabled;
@@ -1328,6 +1350,7 @@ CosaDmlDnsClientGetServers
         PULONG                      pulCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
 
     PCOSA_DML_DNS_CLIENT_SERVER     pDNSClientServer    = (PCOSA_DML_DNS_CLIENT_SERVER)NULL;
@@ -1396,6 +1419,7 @@ CosaDmlDnsClientSetServerValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
 
     int i = 0;
@@ -1462,6 +1486,7 @@ CosaDmlDnsClientAddServer
         PCOSA_DML_DNS_CLIENT_SERVER pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS     returnStatus = ANSC_STATUS_SUCCESS;
     int i = 0;
     UtopiaContext   ctx;
@@ -1591,6 +1616,7 @@ CosaDmlDnsClientDelServer
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     ULONG i = 0;
     ULONG j = 0;
@@ -1680,6 +1706,7 @@ CosaDmlDnsClientSetServer
         PCOSA_DML_DNS_CLIENT_SERVER pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS     returnStatus = ANSC_STATUS_SUCCESS;
     UtopiaContext   ctx;
     int             i = 0;
@@ -1787,6 +1814,7 @@ CosaDmlDnsClientGetServer
      )
 
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     
     int i = 0;
@@ -1844,6 +1872,7 @@ CosaDmlDnsEnableRelay
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     UtopiaContext pCtx;
     int rc = -1;
@@ -1898,6 +1927,7 @@ CosaDmlIpDnsGetRelayStatus
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     COSA_DML_DNS_STATUS             RelayStatus = COSA_DML_DNS_STATUS_Disabled;
     UtopiaContext pCtx;
     int rc = -1;
@@ -1959,6 +1989,7 @@ CosaDmlDnsRelayGetServers
         PULONG                      pulCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_DML_DNS_RELAY_ENTRY       pForward = (PCOSA_DML_DNS_RELAY_ENTRY)NULL;
     PCOSA_DML_DNS_RELAY_ENTRY       ret_pForward = (PCOSA_DML_DNS_RELAY_ENTRY)NULL;
     ULONG                           ulSize   = 0;
@@ -2104,6 +2135,7 @@ CosaDmlDnsRelaySetServerValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     UtopiaContext pCtx;
     INT         rc = -1;
@@ -2177,6 +2209,7 @@ CosaDmlDnsRelayAddServer
         PCOSA_DML_DNS_RELAY_ENTRY   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     INT           i = 0;
     INT           g_CountStatic = 0;
@@ -2275,6 +2308,7 @@ CosaDmlDnsRelayDelServer
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     INT  i,j = 0;
     INT  g_CountStatic, g_CountDhcp = 0;
     CHAR count[64] = {'\0'};
@@ -2380,6 +2414,7 @@ CosaDmlDnsRelaySetServer
         PCOSA_DML_DNS_RELAY_ENTRY   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     UtopiaContext ctx;
     INT          rc = -1;
@@ -2501,6 +2536,7 @@ CosaDmlDnsRelayGetServer
 
 
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     int i = 0;
 
@@ -2569,6 +2605,8 @@ CosaDmlDnsInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2606,6 +2644,7 @@ CosaDmlDnsEnableClient
     )
 {
     /* USGv2 not support Disable DNS Client */
+    UNREFERENCED_PARAMETER(hContext);
     if( TRUE == bEnabled ){
         return ANSC_STATUS_SUCCESS;
     }else{
@@ -2641,6 +2680,7 @@ CosaDmlIpDnsGetClientStatus
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return COSA_DML_DNS_STATUS_Enabled;    
 }
 
@@ -2693,11 +2733,11 @@ CosaDmlDnsClientGetServers
         PULONG                      pulCount
     )
 {
-    DNS_Client_t dns = {0};
+    DNS_Client_t dns;
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
-    int i, j;    
-    char inst_str[10];
-    char inst_num[32];
+    int i;
+    ULONG j;    
     PCOSA_DML_DNS_CLIENT_SERVER pServer = NULL;
     *pulCount = 0;
     if (Utopia_Init(&ctx)){
@@ -2787,6 +2827,8 @@ CosaDmlDnsClientSetServerValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pAlias);
     char inst_str[10];
     char inst_num[32];
     UtopiaContext ctx;
@@ -2794,8 +2836,8 @@ CosaDmlDnsClientSetServerValues
     if (Utopia_Init(&ctx))
     {
 
-        sprintf(inst_num, "dns_client_server_instance_%d", ulIndex);
-        sprintf(inst_str, "%d", ulInstanceNumber);
+        sprintf(inst_num, "dns_client_server_instance_%lu", ulIndex);
+        sprintf(inst_str, "%lu", ulInstanceNumber);
         Utopia_RawSet(&ctx, NULL, inst_num, inst_str);
         Utopia_Free(&ctx, 1); 
     }
@@ -2834,6 +2876,8 @@ CosaDmlDnsClientAddServer
         PCOSA_DML_DNS_CLIENT_SERVER pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -2867,6 +2911,8 @@ CosaDmlDnsClientDelServer
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -2900,6 +2946,7 @@ CosaDmlDnsClientSetServer
         PCOSA_DML_DNS_CLIENT_SERVER pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG ipAddr;
 
     inet_pton(AF_INET, pEntry->DNSServer, &ipAddr);
@@ -2943,18 +2990,19 @@ CosaDmlDnsClientGetServer
      )
 
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG count;
     PCOSA_DML_DNS_CLIENT_SERVER pTable;
     pTable = CosaDmlDnsClientGetServers(hContext, &count);
     ANSC_STATUS ret = ANSC_STATUS_FAILURE;
-    int i;
+    ULONG i;
     
     if(pTable == NULL)
         return ret;
     for(i = 0; i < count ;i++){
         if( pTable[i].InstanceNumber == pEntry->InstanceNumber)
             memcpy(pEntry, &pTable[i], sizeof(COSA_DML_DNS_CLIENT_SERVER));
-            ret = ANSC_STATUS_SUCCESS;
+        ret = ANSC_STATUS_SUCCESS;
     }
 
     AnscFreeMemory(pTable);/*RDKB-6837, CID-33471, free unused resource before exit*/
@@ -2995,6 +3043,8 @@ CosaDmlDnsEnableRelay
         BOOLEAN                     bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(bEnabled);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -3027,6 +3077,7 @@ CosaDmlIpDnsGetRelayStatus
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -3064,6 +3115,8 @@ CosaDmlDnsRelayGetServers
         PULONG                      pulCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pulCount);
     return NULL;
 }
 
@@ -3110,6 +3163,10 @@ CosaDmlDnsRelaySetServerValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -3146,6 +3203,8 @@ CosaDmlDnsRelayAddServer
         PCOSA_DML_DNS_RELAY_ENTRY   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -3180,6 +3239,8 @@ CosaDmlDnsRelayDelServer
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     return ANSC_STATUS_FAILURE;
 }
 /**********************************************************************
@@ -3213,6 +3274,8 @@ CosaDmlDnsRelaySetServer
         PCOSA_DML_DNS_RELAY_ENTRY   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -3254,6 +3317,8 @@ CosaDmlDnsRelayGetServer
 
 
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_FAILURE;
 
 }

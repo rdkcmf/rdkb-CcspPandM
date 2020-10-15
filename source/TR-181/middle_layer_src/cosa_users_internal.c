@@ -73,6 +73,7 @@
 #include "plugin_main_apis.h"
 #include "poam_irepfo_interface.h"
 #include "sys_definitions.h"
+#include <syscfg/syscfg.h>
 
 extern void * g_pDslhDmlAgent;
 
@@ -103,7 +104,6 @@ CosaUsersCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_USERS           pMyObject    = NULL;
 
     /*
@@ -358,12 +358,10 @@ CosaUsersBackendGetUserInfo
     PCOSA_DATAMODEL_USERS           pMyObject         = (PCOSA_DATAMODEL_USERS)hThisObject;
     PCOSA_DML_USER                  pCosaUser         = NULL;
     ULONG                           clientCount       = 0;
-    ULONG                           count             = 0;
     ULONG                           ulIndex           = 0;
 
     PCOSA_CONTEXT_LINK_OBJECT       pUserCxtLink      = NULL;    
     PCOSA_CONTEXT_LINK_OBJECT       pUserCxtLink2     = NULL;    
-    PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = NULL;
     BOOL                            bNeedSave         = FALSE;
 
     /* Get Users.user.{i} */
@@ -455,7 +453,7 @@ CosaUsersBackendGetUserInfo
             pCosaUser->InstanceNumber    = pMyObject->maxInstanceOfUser;
             pUserCxtLink->InstanceNumber = pCosaUser->InstanceNumber;
 
-            _ansc_sprintf(pCosaUser->Username, "Username%d", pCosaUser->InstanceNumber);
+            _ansc_sprintf(pCosaUser->Username, "Username%d", (int)pCosaUser->InstanceNumber);
 
             returnStatus = CosaDmlUserSetValues
                             (
@@ -782,11 +780,6 @@ CosaUsersRegSetUserInfo
 
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;    
     PSLAP_VARIABLE                  pSlapVariable     = NULL;
-    ULONG                           ulEntryCount      = 0;
-    ULONG                           ulIndex           = 0;
-    ULONG                           uInstanceNumber   = 0;
-    char*                           pAliasUser        = NULL;
-    char*                           pFolderName       = NULL;
     char                            FolderName[16]    = {0};
 
     
@@ -866,7 +859,7 @@ CosaUsersRegSetUserInfo
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%d", pCosaUser->InstanceNumber);
+        _ansc_sprintf(FolderName, "%d", (int)pCosaUser->InstanceNumber);
 
         pPoamIrepFoEnumUser =
             pPoamIrepFoUser->AddFolder

@@ -73,6 +73,7 @@
 #include "plugin_main_apis.h"
 #include "autoconf.h"
 #include "secure_wrapper.h"
+#include <ccsp_psm_helper.h>
 
 extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
@@ -1443,9 +1444,9 @@ static void Utopia_Free(UtopiaContext * ctx, ULONG commit)
 
 
 static ULONG                               uDhcpv6ServerPoolNum                                  = 0;
-static COSA_DML_DHCPSV6_POOL_FULL          sDhcpv6ServerPool[DHCPV6S_POOL_NUM]                   = {0};
+static COSA_DML_DHCPSV6_POOL_FULL          sDhcpv6ServerPool[DHCPV6S_POOL_NUM]                   = {};
 static ULONG                               uDhcpv6ServerPoolOptionNum[DHCPV6S_POOL_NUM]          = {0};
-static COSA_DML_DHCPSV6_POOL_OPTION        sDhcpv6ServerPoolOption[DHCPV6S_POOL_NUM][DHCPV6S_POOL_OPTION_NUM] = {{0}};
+static COSA_DML_DHCPSV6_POOL_OPTION        sDhcpv6ServerPoolOption[DHCPV6S_POOL_NUM][DHCPV6S_POOL_OPTION_NUM] = {};
 #if defined(MULTILAN_FEATURE)
 static char v6addr_prev[IPV6_PREF_MAXLEN] = {0};
 #endif
@@ -1469,15 +1470,15 @@ fprintf(stderr,"%s -- %d !!!!!!!!!!!!!!!!!!\n", __FUNCTION__, __LINE__);
 
 #define SETS_INTO_UTOPIA( uniqueName, table1Name, table1Index, table2Name, table2Index, parameter, value ) \
 {  \
-    UCHAR  Namespace[128] = {0}; \
+    CHAR  Namespace[128] = {0}; \
     _ansc_snprintf(Namespace, sizeof(Namespace)-1, "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
-    Utopia_RawSet(&utctx,Namespace,parameter,value);  \
+    Utopia_RawSet(&utctx,Namespace,parameter,(char*)value);  \
 } \
 
 #define SETI_INTO_UTOPIA( uniqueName, table1Name, table1Index, table2Name, table2Index, parameter, value ) \
 {  \
-    UCHAR  Namespace[128]  = {0}; \
-    UCHAR  Value[12]  = {0}; \
+    CHAR  Namespace[128]  = {0}; \
+    CHAR  Value[12]  = {0}; \
     _ansc_snprintf(Namespace, sizeof(Namespace)-1, "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
     _ansc_snprintf(Value, sizeof(Value) -1, "%lu", (ULONG)value ); \
     Utopia_RawSet(&utctx,Namespace,parameter,Value);  \
@@ -1485,22 +1486,22 @@ fprintf(stderr,"%s -- %d !!!!!!!!!!!!!!!!!!\n", __FUNCTION__, __LINE__);
 
 #define UNSET_INTO_UTOPIA( uniqueName, table1Name, table1Index, table2Name, table2Index, parameter ) \
 {  \
-    UCHAR  Namespace[128]  = {0}; \
+    CHAR  Namespace[128]  = {0}; \
     _ansc_snprintf(Namespace, sizeof(Namespace)-1, "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
     syscfg_unset(Namespace,parameter);  \
 } \
 
 #define GETS_FROM_UTOPIA( uniqueName, table1Name, table1Index, table2Name, table2Index, parameter, out ) \
 {  \
-    UCHAR  Namespace[128] = {0}; \
+    CHAR  Namespace[128] = {0}; \
     _ansc_snprintf(Namespace, sizeof(Namespace)-1, "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
-    Utopia_RawGet(&utctx,Namespace, parameter, out,sizeof(out));  \
+    Utopia_RawGet(&utctx,Namespace, parameter, (char*)out,sizeof(out));  \
 } \
 
 #define GETI_FROM_UTOPIA( uniqueName, table1Name, table1Index, table2Name, table2Index, parameter, out ) \
 {  \
-    UCHAR  Namespace[128] = {0}; \
-    UCHAR  Value[12]  = {0}; \
+    CHAR  Namespace[128] = {0}; \
+    CHAR  Value[12]  = {0}; \
     _ansc_snprintf(Namespace, sizeof(Namespace)-1, "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
     Utopia_RawGet(&utctx,Namespace, parameter,Value,sizeof(Value));  \
     if ( strcmp(Value,"4294967295") == 0) out = -1; \
@@ -1659,8 +1660,8 @@ void getpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1Inde
     CcspTraceInfo(("%s table1Name: %s, table1Index: %d, get IANAInterfacePrefixes: %s\n",
                   __func__, table1Name, table1Index, pEntry->Info.IANAPrefixes));
 
-    if ( _ansc_strcmp(table1Name, "pool") == 0 && table1Index == 0 &&
-        _ansc_strcmp(pEntry->Info.IANAPrefixes, INVALID_IANAInterfacePrefixes) == 0)
+    if ( _ansc_strcmp((const char*)table1Name, "pool") == 0 && table1Index == 0 &&
+        _ansc_strcmp((const char*)pEntry->Info.IANAPrefixes, INVALID_IANAInterfacePrefixes) == 0)
       {
        CcspTraceInfo(("%s Fix invalid IANAInterfacePrefixes by setting it to new default: %s\n", __func__, FIXED_IANAInterfacePrefixes));
        SETS_INTO_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAInterfacePrefixes", FIXED_IANAInterfacePrefixes)
@@ -1767,6 +1768,7 @@ CosaDmlDhcpv6SMsgHandler
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char ret[16] = {0};
     
     /*We may restart by DM manager when pam crashed. We need to get current two status values */
@@ -1801,6 +1803,7 @@ CosaDmlDhcpv6SMsgHandler
 
 int CosaDmlDhcpv6sRestartOnLanStarted(void * arg)
 {
+    UNREFERENCED_PARAMETER(arg);
     CcspTraceWarning(("%s -- lan status is started. \n", __FUNCTION__));
     g_lan_ready = TRUE;
 
@@ -1825,6 +1828,8 @@ CosaDmlDhcpv6Init
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     UtopiaContext utctx = {0};
     ULONG         Index = 0;
     ULONG         Index2 = 0;
@@ -1847,7 +1852,7 @@ CosaDmlDhcpv6Init
 #ifdef _HUB4_PRODUCT_REQ_
     /* Dibbler-init is called to set the pre-configuration for dibbler */
     CcspTraceInfo(("%s dibbler-init.sh Called \n", __func__));
-    system("/lib/rdk/dibbler-init.sh");
+    v_secure_system("/lib/rdk/dibbler-init.sh");
 #endif
     GETI_FROM_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "serverenable", g_dhcpv6_server)
 
@@ -1882,7 +1887,7 @@ CosaDmlDhcpv6Init
         Utopia_RawSet(&utctx,NULL,"router_managed_flag","1");
         SETI_INTO_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "servertype", g_dhcpv6_server_type)
 
-        system("sysevent set zebra-restart");
+        v_secure_system("sysevent set zebra-restart");
     }
 #endif
 
@@ -1908,7 +1913,7 @@ CosaDmlDhcpv6Init
     */
     for ( Index = 0; (Index < uDhcpv6ServerPoolNum) && (Index < DHCPV6S_POOL_NUM); Index++ )
     {
-        getpool_from_utopia(DHCPV6S_NAME, "pool", Index, &sDhcpv6ServerPool[Index]);
+        getpool_from_utopia((PUCHAR)DHCPV6S_NAME, (PUCHAR)"pool", Index, &sDhcpv6ServerPool[Index]);
 
         if (!Utopia_Init(&utctx))
             return ANSC_STATUS_FAILURE;
@@ -1917,7 +1922,7 @@ CosaDmlDhcpv6Init
 
         for( Index2 = 0; (Index2 < uDhcpv6ServerPoolOptionNum[Index]) && (Index2 < DHCPV6S_POOL_OPTION_NUM); Index2++ )
         {
-            getpooloption_from_utopia(DHCPV6S_NAME,"pool",Index,"option",Index2,&sDhcpv6ServerPoolOption[Index][Index2]);
+            getpooloption_from_utopia((PUCHAR)DHCPV6S_NAME,(PUCHAR)"pool",Index,(PUCHAR)"option",Index2,&sDhcpv6ServerPoolOption[Index][Index2]);
         }
     }
 
@@ -1927,7 +1932,7 @@ CosaDmlDhcpv6Init
 
         AnscZeroMemory( &sDhcpv6ServerPool[0], sizeof(sDhcpv6ServerPool[0]));
         sDhcpv6ServerPool[0].Cfg.InstanceNumber = 1;
-        _ansc_sprintf(sDhcpv6ServerPool[0].Cfg.Alias, "%s%d", "Pool",1);
+        _ansc_sprintf((char*)sDhcpv6ServerPool[0].Cfg.Alias, "%s%d", "Pool",1);
         sDhcpv6ServerPool[0].Cfg.bEnabled = TRUE; //By default it's TRUE because we will use stateless DHCPv6 server at lease.
         sDhcpv6ServerPool[0].Cfg.Order = 1;
         sDhcpv6ServerPool[0].Info.Status  = COSA_DML_DHCP_STATUS_Disabled;
@@ -1945,7 +1950,7 @@ CosaDmlDhcpv6Init
         SETI_INTO_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "poolnumber", uDhcpv6ServerPoolNum)
         Utopia_Free(&utctx,1);
 
-        setpool_into_utopia(DHCPV6S_NAME, "pool", 0, &sDhcpv6ServerPool[0]);
+        setpool_into_utopia((PUCHAR)DHCPV6S_NAME, (PUCHAR)"pool", 0, &sDhcpv6ServerPool[0]);
     }
 
     if (!Utopia_Init(&utctx))
@@ -1983,8 +1988,7 @@ CosaDmlDhcpv6cGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {
-    PCOSA_DATAMODEL_DHCPV6          pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
-    
+    UNREFERENCED_PARAMETER(hContext);
     return 1;
 }
 
@@ -2030,11 +2034,11 @@ CosaDmlDhcpv6cGetEntry
         ULONG                       ulIndex,
         PCOSA_DML_DHCPCV6_FULL      pEntry
     )
-{  
+{
+    UNREFERENCED_PARAMETER(hContext); 
     UtopiaContext utctx = {0};
     char buf[256] = {0};
     char out[256] = {0};
-    int  has_set  = 0;
 
     if (ulIndex)
         return ANSC_STATUS_FAILURE;
@@ -2047,26 +2051,26 @@ CosaDmlDhcpv6cGetEntry
     /*Cfg members*/
     safe_strcpy(buf, SYSCFG_FORMAT_DHCP6C"_alias", sizeof(buf));
     memset(pEntry->Cfg.Alias, 0, sizeof(pEntry->Cfg.Alias));
-    Utopia_RawGet(&utctx,NULL,buf,pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias));
+    Utopia_RawGet(&utctx,NULL,buf,(char*)pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias));
 
     pEntry->Cfg.SuggestedT1 = pEntry->Cfg.SuggestedT2 = 0;
     
     safe_strcpy(buf, SYSCFG_FORMAT_DHCP6C"_t1", sizeof(buf));
     memset(out, 0, sizeof(out));
     Utopia_RawGet(&utctx,NULL,buf,out,sizeof(out));
-    sscanf(out, "%d", &pEntry->Cfg.SuggestedT1);
+    sscanf(out, "%lu", &pEntry->Cfg.SuggestedT1);
 
     safe_strcpy(buf, SYSCFG_FORMAT_DHCP6C"_t2", sizeof(buf));
     memset(out, 0, sizeof(out));
     Utopia_RawGet(&utctx,NULL,buf,out,sizeof(out));
-    sscanf(out, "%d", &pEntry->Cfg.SuggestedT2);
+    sscanf(out, "%lu", &pEntry->Cfg.SuggestedT2);
 
     /*pEntry->Cfg.Interface stores interface name, dml will calculate the full path name*/
-    safe_strcpy(pEntry->Cfg.Interface, COSA_DML_DHCPV6_CLIENT_IFNAME, sizeof(pEntry->Cfg.Interface));
+    safe_strcpy((char*)pEntry->Cfg.Interface, COSA_DML_DHCPV6_CLIENT_IFNAME, sizeof(pEntry->Cfg.Interface));
     
     safe_strcpy(buf, SYSCFG_FORMAT_DHCP6C"_requested_options", sizeof(buf));
     memset(pEntry->Cfg.RequestedOptions, 0, sizeof(pEntry->Cfg.RequestedOptions));
-    Utopia_RawGet(&utctx,NULL,buf,pEntry->Cfg.RequestedOptions,sizeof(pEntry->Cfg.RequestedOptions));
+    Utopia_RawGet(&utctx,NULL,buf,(char*)pEntry->Cfg.RequestedOptions,sizeof(pEntry->Cfg.RequestedOptions));
 
     safe_strcpy(buf, SYSCFG_FORMAT_DHCP6C"_enabled", sizeof(buf));
     memset(out, 0, sizeof(out));
@@ -2108,7 +2112,7 @@ CosaDmlDhcpv6cGetEntry
             Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_DHCP6C"_alias","Client1");
             Utopia_Free(&utctx,1);                
            
-            strcpy(pEntry->Cfg.Alias, "Client1");
+            strcpy((char*)pEntry->Cfg.Alias, "Client1");
         }
     }
 
@@ -2129,6 +2133,8 @@ CosaDmlDhcpv6cSetValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     UtopiaContext utctx = {0};
 
     if (ulIndex)
@@ -2139,7 +2145,7 @@ CosaDmlDhcpv6cSetValues
     
 
 
-    safe_strcpy(g_dhcpv6_client.Cfg.Alias, pAlias, sizeof(g_dhcpv6_client.Cfg.Alias));
+    safe_strcpy((char*)g_dhcpv6_client.Cfg.Alias, pAlias, sizeof(g_dhcpv6_client.Cfg.Alias));
     Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_DHCP6C"_alias",pAlias);
 
     Utopia_Free(&utctx,1);
@@ -2160,6 +2166,8 @@ CosaDmlDhcpv6cAddEntry
         PCOSA_DML_DHCPCV6_FULL        pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2176,6 +2184,8 @@ CosaDmlDhcpv6cDelEntry
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2220,14 +2230,14 @@ static int _prepare_client_conf(PCOSA_DML_DHCPCV6_CFG       pCfg)
             if (pCfg->SuggestedT1)
             {
                 memset(line, 0, sizeof(line));
-                snprintf(line, sizeof(line)-1, "    t1 %d\n", pCfg->SuggestedT1);
+                snprintf(line, sizeof(line)-1, "    t1 %lu\n", pCfg->SuggestedT1);
                 fprintf(fp, "%s", line);
             }
 
             if (pCfg->SuggestedT2)
             {
                 memset(line, 0, sizeof(line));
-                snprintf(line, sizeof(line)-1, "    t2 %d\n", pCfg->SuggestedT2);
+                snprintf(line, sizeof(line)-1, "    t2 %lu\n", pCfg->SuggestedT2);
                 fprintf(fp, "%s", line);
             }
 
@@ -2241,14 +2251,14 @@ static int _prepare_client_conf(PCOSA_DML_DHCPCV6_CFG       pCfg)
             if (pCfg->SuggestedT1)
             {
                 memset(line, 0, sizeof(line));
-                snprintf(line, sizeof(line)-1, "    t1 %d\n", pCfg->SuggestedT1);
+                snprintf(line, sizeof(line)-1, "    t1 %lu\n", pCfg->SuggestedT1);
                 fprintf(fp, "%s", line);
             }
 
             if (pCfg->SuggestedT2)
             {
                 memset(line, 0, sizeof(line));
-                snprintf(line, sizeof(line)-1, "    t2 %d\n", pCfg->SuggestedT2);
+                snprintf(line, sizeof(line)-1, "    t2 %lu\n", pCfg->SuggestedT2);
                 fprintf(fp, "%s", line);
             }
 
@@ -2272,8 +2282,10 @@ int _get_shell_output2(FILE *fp, char * dststr);
 
 static int _dibbler_client_operation(char * arg)
 {
+#if defined(INTEL_PUMA7) || defined(_COSA_BCM_ARM_)
     FILE *fp;
     char out[256] = {0};
+#endif
 #if defined (INTEL_PUMA7)
     int watchdog = NO_OF_RETRY;
 #endif
@@ -2286,7 +2298,7 @@ static int _dibbler_client_operation(char * arg)
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX)
         commonSyseventSet("dhcpv6_client-stop", "");
 #else
-        system("/etc/utopia/service.d/service_dhcpv6_client.sh disable");
+        v_secure_system("/etc/utopia/service.d/service_dhcpv6_client.sh disable");
 #endif
       
 #ifdef _COSA_BCM_ARM_
@@ -2343,13 +2355,13 @@ static int _dibbler_client_operation(char * arg)
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX)
       commonSyseventSet("dhcpv6_client-start", "");
 #else
-        system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
+        v_secure_system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
 #endif
       
 #ifdef _COSA_BCM_ARM_
         /* Dibbler-init is called to set the pre-configuration for dibbler */            
         CcspTraceInfo(("%s dibbler-init.sh Called \n", __func__));
-        system("/lib/rdk/dibbler-init.sh");
+        v_secure_system("/lib/rdk/dibbler-init.sh");
         /*Start Dibber client for tchxb6*/
         CcspTraceInfo(("%s Dibbler Client Started \n", __func__));
         v_secure_system(CLIENT_BIN " start");
@@ -2388,6 +2400,7 @@ CosaDmlDhcpv6cSetCfg
         PCOSA_DML_DHCPCV6_CFG       pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
     char buf[256] = {0};
     char out[256] = {0};
@@ -2401,16 +2414,16 @@ CosaDmlDhcpv6cSetCfg
         return ANSC_STATUS_FAILURE;
 
 
-    if (!AnscEqualString(pCfg->Alias, g_dhcpv6_client.Cfg.Alias, TRUE))
+    if (!AnscEqualString((char*)pCfg->Alias, (char*)g_dhcpv6_client.Cfg.Alias, TRUE))
     {
         safe_strcpy(buf, SYSCFG_FORMAT_DHCP6C"_alias", sizeof(buf));
-        Utopia_RawSet(&utctx,NULL,buf,pCfg->Alias);
+        Utopia_RawSet(&utctx,NULL,buf,(char*)pCfg->Alias);
     }
 
     if (pCfg->SuggestedT1 != g_dhcpv6_client.Cfg.SuggestedT1)
     {
         safe_strcpy(buf, SYSCFG_FORMAT_DHCP6C"_t1", sizeof(buf));
-        sprintf(out, "%d", pCfg->SuggestedT1);
+        sprintf(out, "%lu", pCfg->SuggestedT1);
         Utopia_RawSet(&utctx,NULL,buf,out);
         need_to_restart_service = 1;
     }
@@ -2418,15 +2431,15 @@ CosaDmlDhcpv6cSetCfg
     if (pCfg->SuggestedT2 != g_dhcpv6_client.Cfg.SuggestedT2)
     {
         safe_strcpy(buf, SYSCFG_FORMAT_DHCP6C"_t2", sizeof(buf));
-        sprintf(out, "%d", pCfg->SuggestedT2);
+        sprintf(out, "%lu", pCfg->SuggestedT2);
         Utopia_RawSet(&utctx,NULL,buf,out);
         need_to_restart_service = 1;
     }
 
-    if (!AnscEqualString(pCfg->RequestedOptions, g_dhcpv6_client.Cfg.RequestedOptions, TRUE))
+    if (!AnscEqualString((char*)pCfg->RequestedOptions, (char*)g_dhcpv6_client.Cfg.RequestedOptions, TRUE))
     {
         safe_strcpy(buf, SYSCFG_FORMAT_DHCP6C"_requested_options", sizeof(buf));
-        Utopia_RawSet(&utctx,NULL,buf,pCfg->RequestedOptions);
+        Utopia_RawSet(&utctx,NULL,buf,(char*)pCfg->RequestedOptions);
         need_to_restart_service = 1;
     }
 
@@ -2501,6 +2514,7 @@ CosaDmlDhcpv6cGetCfg
         PCOSA_DML_DHCPCV6_CFG       pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     /*for rollback*/
     if (pCfg->InstanceNumber != 1)
         return ANSC_STATUS_FAILURE;
@@ -2516,13 +2530,15 @@ CosaDmlDhcpv6cGetEnabled
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     BOOL bEnabled = FALSE;
     char out[256] = {0};
-    BOOL dibblerEnabled = FALSE;
+
 
 // For XB3, AXB6 if dibbler flag enabled, check dibbler-client process status
 #if defined(_COSA_INTEL_XB3_ARM_) || defined(INTEL_PUMA7)
         char buf[8];
+        BOOL dibblerEnabled = FALSE;
         if(( syscfg_get( NULL, "dibbler_client_enable", buf, sizeof(buf))==0) && (strcmp(buf, "true") == 0))
 	{
 		dibblerEnabled = TRUE;
@@ -2581,6 +2597,7 @@ CosaDmlDhcpv6cGetInfo
         PCOSA_DML_DHCPCV6_INFO      pInfo
     )
 {
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     PCOSA_DML_DHCPCV6_FULL            pDhcpc            = (PCOSA_DML_DHCPCV6_FULL)hContext;
 
     _get_client_duid(g_dhcpv6_client.Info.DUID, sizeof(pInfo->DUID));
@@ -2612,6 +2629,8 @@ CosaDmlDhcpv6cGetServerCfg
         PULONG                      pSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
     FILE * fp = fopen(CLIENT_SERVER_INFO_FILE, "r+");
 
     *pSize = 0;
@@ -2626,19 +2645,19 @@ CosaDmlDhcpv6cGetServerCfg
         memset(*ppCfg, 0, sizeof(COSA_DML_DHCPCV6_SVR));
         
         /*InformationRefreshTime not supported*/
-        safe_strcpy((*ppCfg)->InformationRefreshTime, "0001-01-01T00:00:00Z", sizeof((*ppCfg)->InformationRefreshTime));
+        safe_strcpy((char*)(*ppCfg)->InformationRefreshTime, "0001-01-01T00:00:00Z", sizeof((*ppCfg)->InformationRefreshTime));
         
         while(fgets(buf, sizeof(buf)-1, fp))
         {
             memset(val, 0, sizeof(val));
             if (sscanf(buf, "addr %s", val))
             {
-                safe_strcpy((*ppCfg)->SourceAddress, val, sizeof((*ppCfg)->SourceAddress));
+                safe_strcpy((char*)(*ppCfg)->SourceAddress, val, sizeof((*ppCfg)->SourceAddress));
                 entry_count |= 1;
             }
             else if (sscanf(buf, "duid %s", val))
             {
-                int i = 0, j = 0;
+                unsigned int i = 0, j = 0;
                 /*the file stores duid in this format 00:01:..., we need to transfer it to continuous hex*/
                 
                 for (i=0; i<strlen(val) && j < sizeof((*ppCfg)->DUID)-1; i++)
@@ -2675,6 +2694,8 @@ CosaDmlDhcpv6cRenew
         ULONG                       ulInstanceNumber
     )
 {  
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     
     v_secure_system("killall -SIGUSR2 " CLIENT_BIN);
 
@@ -2687,7 +2708,7 @@ CosaDmlDhcpv6cRenew
  *  The options are managed on top of a DHCP client,
  *  which is identified through pClientAlias
  */
-#define SYSCFG_DHCP6C_SENT_OPTION_FORMAT "tr_dhcp6c_sent_option_%d"
+#define SYSCFG_DHCP6C_SENT_OPTION_FORMAT "tr_dhcp6c_sent_option_%lu"
 static int g_sent_option_num;
 static COSA_DML_DHCPCV6_SENT * g_sent_options;
 static int g_recv_option_num   = 0;
@@ -2716,6 +2737,8 @@ CosaDmlDhcpv6cGetNumberOfSentOption
         ULONG                       ulClientInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
     UtopiaContext utctx = {0};
     char out[256] = {0};
     
@@ -2749,9 +2772,9 @@ static int _write_dibbler_sent_option_file(void)
         for (i=0; i<g_sent_option_num; i++)
         {
             if (g_sent_options[i].bEnabled)
-                fprintf(fp, "%d:%d:%s\n", 
+                fprintf(fp, "%lu:%d:%s\n", 
                         g_sent_options[i].Tag,
-                        strlen(g_sent_options[i].Value)/2,
+                        strlen((const char*)g_sent_options[i].Value)/2,
                         g_sent_options[i].Value);
         }
 
@@ -2770,11 +2793,13 @@ CosaDmlDhcpv6cGetSentOption
         PCOSA_DML_DHCPCV6_SENT      pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
     UtopiaContext utctx = {0};
     char out[256] = {0};
     char namespace[256] = {0};
 
-    if ( ulIndex > g_sent_option_num - 1  || !g_sent_options)
+    if ( (int)ulIndex > g_sent_option_num - 1  || !g_sent_options)
         return ANSC_STATUS_FAILURE;
     
     if (!Utopia_Init(&utctx))
@@ -2784,9 +2809,9 @@ CosaDmlDhcpv6cGetSentOption
     sprintf(namespace, SYSCFG_DHCP6C_SENT_OPTION_FORMAT, ulIndex+1);
     memset(out, 0, sizeof(out));
     Utopia_RawGet(&utctx, namespace, "inst_num" ,out,sizeof(out));
-    sscanf(out, "%d", &pEntry->InstanceNumber);
+    sscanf(out, "%lu", &pEntry->InstanceNumber);
 
-    Utopia_RawGet(&utctx, namespace, "alias" ,pEntry->Alias, sizeof(pEntry->Alias));
+    Utopia_RawGet(&utctx, namespace, "alias" ,(char*)pEntry->Alias, sizeof(pEntry->Alias));
 
     memset(out, 0, sizeof(out));
     Utopia_RawGet(&utctx, namespace, "enabled" ,out,sizeof(out));
@@ -2794,16 +2819,16 @@ CosaDmlDhcpv6cGetSentOption
 
     memset(out, 0, sizeof(out));
     Utopia_RawGet(&utctx, namespace, "tag" ,out,sizeof(out));
-    sscanf(out, "%d", &pEntry->Tag);
+    sscanf(out, "%lu", &pEntry->Tag);
 
-    Utopia_RawGet(&utctx, namespace, "value" ,pEntry->Value, sizeof(pEntry->Value));
+    Utopia_RawGet(&utctx, namespace, "value" ,(char*)pEntry->Value, sizeof(pEntry->Value));
     
     Utopia_Free(&utctx, 0);
 
     AnscCopyMemory( &g_sent_options[ulIndex], pEntry, sizeof(COSA_DML_DHCPCV6_SENT));
 
     /*we only wirte to file when obtaining the last entry*/
-    if (ulIndex == g_sent_option_num-1)
+    if ((int)ulIndex == g_sent_option_num-1)
         _write_dibbler_sent_option_file();
 
 
@@ -2818,8 +2843,10 @@ CosaDmlDhcpv6cGetSentOptionbyInsNum
         ULONG                       ulClientInstanceNumber,
         PCOSA_DML_DHCPCV6_SENT      pEntry
     )
-{   
-    ULONG                           index  = 0;
+{
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber); 
+    int                           index  = 0;
 
     for( index=0;  index<g_sent_option_num; index++)
     {
@@ -2844,6 +2871,7 @@ CosaDmlDhcpv6cSetSentOptionValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
     char out[256] = {0};
     char namespace[256] = {0};
@@ -2851,17 +2879,17 @@ CosaDmlDhcpv6cSetSentOptionValues
     if (ulClientInstanceNumber != g_dhcpv6_client.Cfg.InstanceNumber)
         return ANSC_STATUS_FAILURE;
 
-    if ( ulIndex+1 > g_sent_option_num )
+    if ( (int)ulIndex+1 > g_sent_option_num )
         return ANSC_STATUS_SUCCESS;
 
     g_sent_options[ulIndex].InstanceNumber  = ulInstanceNumber;
-    AnscCopyString( g_sent_options[ulIndex].Alias, pAlias);
+    AnscCopyString( (char*)g_sent_options[ulIndex].Alias, pAlias);
 
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
 
     sprintf(namespace, SYSCFG_DHCP6C_SENT_OPTION_FORMAT, ulIndex+1);
-    snprintf(out, sizeof(out)-1, "%d", ulInstanceNumber);
+    snprintf(out, sizeof(out)-1, "%lu", ulInstanceNumber);
     Utopia_RawSet(&utctx, namespace, "inst_num", out);
 
     Utopia_RawSet(&utctx, namespace, "alias" ,pAlias);
@@ -2883,11 +2911,11 @@ static int _syscfg_add_sent_option(PCOSA_DML_DHCPCV6_SENT      pEntry, int index
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
 
-    sprintf(namespace, SYSCFG_DHCP6C_SENT_OPTION_FORMAT, index);
-    snprintf(out, sizeof(out)-1, "%d", pEntry->InstanceNumber);
+    sprintf(namespace, SYSCFG_DHCP6C_SENT_OPTION_FORMAT, (ULONG)index);
+    snprintf(out, sizeof(out)-1, "%lu", pEntry->InstanceNumber);
     Utopia_RawSet(&utctx, namespace, "inst_num", out );
 
-    Utopia_RawSet(&utctx, namespace, "alias" ,pEntry->Alias);
+    Utopia_RawSet(&utctx, namespace, "alias" ,(char*)pEntry->Alias);
 
     if (pEntry->bEnabled)
         sprintf(out, "1");
@@ -2895,10 +2923,10 @@ static int _syscfg_add_sent_option(PCOSA_DML_DHCPCV6_SENT      pEntry, int index
         sprintf(out, "0");
     Utopia_RawSet(&utctx, namespace, "enabled" ,out);
 
-    snprintf(out, sizeof(out)-1, "%d", pEntry->Tag);
+    snprintf(out, sizeof(out)-1, "%lu", pEntry->Tag);
     Utopia_RawSet(&utctx, namespace, "tag" , out);
 
-    Utopia_RawSet(&utctx, namespace, "value" ,pEntry->Value);
+    Utopia_RawSet(&utctx, namespace, "value" ,(char*)pEntry->Value);
     
     Utopia_Free(&utctx, 1);        
 
@@ -2913,9 +2941,9 @@ CosaDmlDhcpv6cAddSentOption
         PCOSA_DML_DHCPCV6_SENT      pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
     char out[256] = {0};
-    char namespace[256] = {0};
 
     /*we only have one client*/
     if (ulClientInstanceNumber != g_dhcpv6_client.Cfg.InstanceNumber)
@@ -2953,6 +2981,7 @@ CosaDmlDhcpv6cDelSentOption
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
     char out[256] = {0};
     char namespace[256] = {0};
@@ -2990,7 +3019,7 @@ CosaDmlDhcpv6cDelSentOption
         return ANSC_STATUS_FAILURE;
 
     /*syscfg unset the last one, since we move the syscfg table ahead*/
-    sprintf(namespace, SYSCFG_DHCP6C_SENT_OPTION_FORMAT, g_sent_option_num+1);
+    sprintf(namespace, SYSCFG_DHCP6C_SENT_OPTION_FORMAT, (ULONG)(g_sent_option_num+1));
     syscfg_unset(namespace, "inst_num");
     syscfg_unset(namespace, "alias");
     syscfg_unset(namespace, "enabled");
@@ -3020,16 +3049,16 @@ CosaDmlDhcpv6cSetSentOption
         PCOSA_DML_DHCPCV6_SENT      pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber);
     ULONG                           index  = 0;
     UtopiaContext                   utctx = {0};
     char                            out[256] = {0};
     char                            namespace[256] = {0};
-    int                             i = 0;
-    int                             j = 0;
     int                             need_restart_service = 0;
     PCOSA_DML_DHCPCV6_SENT          p_old_entry = NULL;
 
-    for( index=0;  index<g_sent_option_num; index++)
+    for( index=0;  (int)index<g_sent_option_num; index++)
     {
         if ( pEntry->InstanceNumber == g_sent_options[index].InstanceNumber )
         {
@@ -3041,8 +3070,8 @@ CosaDmlDhcpv6cSetSentOption
             /*handle syscfg*/
             sprintf(namespace, SYSCFG_DHCP6C_SENT_OPTION_FORMAT, index+1);
     
-            if (!AnscEqualString(pEntry->Alias, p_old_entry->Alias, TRUE))
-                Utopia_RawSet(&utctx, namespace, "alias" ,pEntry->Alias);                
+            if (!AnscEqualString((char*)pEntry->Alias, (char*)p_old_entry->Alias, TRUE))
+                Utopia_RawSet(&utctx, namespace, "alias" ,(char*)pEntry->Alias);                
 
             if (pEntry->bEnabled != p_old_entry->bEnabled)
             {
@@ -3058,15 +3087,15 @@ CosaDmlDhcpv6cSetSentOption
 
             if (pEntry->Tag != p_old_entry->Tag)
             {
-                snprintf(out, sizeof(out)-1, "%d", pEntry->Tag);
+                snprintf(out, sizeof(out)-1, "%lu", pEntry->Tag);
                 Utopia_RawSet(&utctx, namespace, "tag" , out);
 
                 need_restart_service = 1;
             }
 
-            if (!AnscEqualString(pEntry->Value, p_old_entry->Value, TRUE))
+            if (!AnscEqualString((char*)pEntry->Value, (char*)p_old_entry->Value, TRUE))
             {
-                Utopia_RawSet(&utctx, namespace, "value" ,pEntry->Value);
+                Utopia_RawSet(&utctx, namespace, "value" ,(char*)pEntry->Value);
 
                 need_restart_service = 1;
             }
@@ -3104,7 +3133,9 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
         PCOSA_DML_DHCPCV6_RECV     *ppEntry,
         PULONG                      pSize
     )
-{   
+{
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulClientInstanceNumber); 
     FILE *                          fp = fopen(CLIENT_RCVED_OPTIONS_FILE, "r+");
     SLIST_HEADER                    option_list;
     COSA_DML_DHCPCV6_RECV *         p_rcv = NULL;
@@ -3119,7 +3150,6 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
         while (fgets(buf, sizeof(buf)-1, fp))
         {
             int  opt_len = 0;
-            char opt_data[1024] = {0};
             char * p = NULL;
             
             p_rcv = (COSA_DML_DHCPCV6_RECV * )AnscAllocateMemory(sizeof(*p_rcv));
@@ -3127,7 +3157,7 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
             if (!p_rcv)
                 break;
 
-            if (sscanf(buf, "%d %d", &opt_len, &p_rcv->Tag) != 2)
+            if (sscanf(buf, "%d %lu", &opt_len, &p_rcv->Tag) != 2)
             {
                 AnscFreeMemory(p_rcv); /*RDKB-6780, CID-33399, free unused resource*/
                 p_rcv = NULL;
@@ -3138,7 +3168,7 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
             if ((p = strrchr(buf, ' ')))
             {
                 p++;
-                if (opt_len*2 < (strlen(buf)- (p-buf)))
+                if ((unsigned int)opt_len*2 < (strlen(buf)- (p-buf)))
                     opt_len = (strlen(buf)- (p-buf))/2;
             }
             else 
@@ -3148,7 +3178,7 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
                 continue;
             }
 
-            if (opt_len*2 >= sizeof(p_rcv->Value))
+            if ((unsigned int)opt_len*2 >= sizeof(p_rcv->Value))
             {
                 AnscFreeMemory(p_rcv); /*RDKB-6780, CID-33399, free unused resource*/
                 p_rcv = NULL;
@@ -3163,7 +3193,7 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
                 continue;
             }
             /*we only support one server, hardcode it*/
-            safe_strcpy(p_rcv->Server, "Device.DHCPv6.Client.1.Server.1", sizeof(p_rcv->Server));
+            safe_strcpy((char*)p_rcv->Server, "Device.DHCPv6.Client.1.Server.1", sizeof(p_rcv->Server));
             AnscSListPushEntryAtBack(&option_list, &p_rcv->Link);
 
             memset(buf, 0, sizeof(buf));
@@ -3205,14 +3235,14 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
 
 static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger)
 {
-    int fd = 0;
-    char str[32] = "restart";
     
     DHCPVS_DEBUG_PRINT
   #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX) 
+    UNREFERENCED_PARAMETER(OnlyTrigger);
     commonSyseventSet("dhcpv6_server-restart", "");
   #else
-  
+    int fd = 0;
+    char str[32] = "restart";
     //not restart really.we only need trigger pthread to check whether there is pending action.
     if ( !OnlyTrigger ) {
         g_dhcpv6s_restart_count++;
@@ -3243,7 +3273,6 @@ static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger)
  */
 static int _dibbler_server_operation(char * arg)
 {
-    char out[256] = {0};
     ULONG Index  = 0;
     int fd = 0;
     
@@ -3367,7 +3396,6 @@ char * CosaDmlDhcpv6sGetAddressFromString(char * address){
     static char     ipv6Address[256] = {0};
     ULONG   i =0;
     ULONG   j =0;
-    ULONG   k =0;
 
     while( address[i] && (i< sizeof(ipv6Address)) )
     {
@@ -3470,7 +3498,7 @@ static int format_dibbler_option(char *option)
     if (option == NULL)
         return -1;
 
-    int i;
+    unsigned int i;
 
     for (i = 0; i < strlen(option); i++) {
         if(option[i] == ' ')
@@ -3485,7 +3513,6 @@ static int format_dibbler_option(char *option)
 // adding new logics to handle pd-class
 static int remove_single_quote (char *buf)
 {
-  int  mode;
   int i = 0;
   int j = 0;
 
@@ -3615,7 +3642,7 @@ static int divide_ipv6_prefix()
     int                 delta_bits = 0;
     unsigned int        sub_prefix_num = 0;
     unsigned int        iface_prefix_num = 0;
-    int                 i;
+    unsigned int        i;
     ipv6_prefix_t       *p_prefix = NULL;
     int                 bit_boundary = 0;
     unsigned long long  sub_prefix, tmp_prefix; //64 bits
@@ -3623,14 +3650,14 @@ static int divide_ipv6_prefix()
     char                evt_name[64];
     char                evt_val[64];
     char                iface_name[64];
-    int                 used_sub_prefix_num = 0;
+    ULONG               used_sub_prefix_num = 0;
     char                ipv6_prefix[64] = {0};
     int                 tpmod;
 
     commonSyseventSet("ipv6_prefix-divided", "");
     commonSyseventGet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME, ipv6_prefix, sizeof(ipv6_prefix));
 
-    if (get_prefix_info(ipv6_prefix, mso_prefix.value, sizeof(mso_prefix.value), &mso_prefix.len) != 0) {
+    if (get_prefix_info(ipv6_prefix, mso_prefix.value, sizeof(mso_prefix.value), (unsigned int*)&mso_prefix.len) != 0) {
       CcspTraceError(("[%s] ERROR return -1 (i.e. error due to get_prefix_info() return -1)\n", __FUNCTION__));
       return -1;
     }
@@ -3655,7 +3682,7 @@ static int divide_ipv6_prefix()
       return -1;
     }
 
-    if (enabled_iface_num > (1 << delta_bits)) {
+    if (enabled_iface_num > (ULONG)(1 << delta_bits)) {
       CcspTraceError(("[%s] ERROR delta_bits: %d  is too small to address all of its interfaces.\n",
                       __FUNCTION__, delta_bits));
       return -1;
@@ -3708,7 +3735,7 @@ static int divide_ipv6_prefix()
 #ifdef _CBR_PRODUCT_REQ_
         tmp_prefix = helper_ntoh64(&tmp_prefix); // The memcpy is copying in reverse order due to LEndianess
 #endif
-    tmp_prefix &= ((~0) << delta_bits);
+    tmp_prefix &= ((~0U) << delta_bits);
     for (i = 0; i < sub_prefix_num; i ++) {
         sub_prefix = tmp_prefix | (i << (delta_bits - bit_boundary));
         memset(buf, 0, sizeof(buf));
@@ -3906,47 +3933,30 @@ void __cosa_dhcpsv6_refresh_config()
 #else
     FILE * fp = fopen(TMP_SERVER_CONF, "w+");
 #endif
-    char   line[256] = {0};
-    PUCHAR pTmp1 = NULL;
-    PUCHAR pTmp2 = NULL;
-    PUCHAR pTmp3 = NULL;
-    UCHAR accessLimit[1024] = {0};
-    UCHAR prefixValue[64] = {0};
-    UCHAR prefixFullName[64] = {0};
-    UCHAR SourceAddress[40] = {0};
-    UCHAR SourceAddressMask[40] = {0};
+    PCHAR pTmp1 = NULL;
+    PCHAR pTmp2 = NULL;
+    PCHAR pTmp3 = NULL;
+    CHAR prefixValue[64] = {0};
+    CHAR prefixFullName[64] = {0};
     ULONG Index  = 0;
     ULONG Index2 = 0;
     ULONG Index3 = 0;
-    ULONG Index4 = 0;
     ULONG uSize = 0;
-    ULONG val1  = 0;
-    UCHAR pVal1[16]  = {0};
     ULONG preferedTime = 3600;
     ULONG validTime = 7200;    
     int   returnValue = 0;
-    UCHAR ipv6Addr[16] = {0};
-    UCHAR ipv6Mask[16] = {0};
-    UCHAR ipv6AddrStr[INET6_ADDRSTRLEN] = {0};
-    ULONG ret = 0;
-    int   ret2 = 0;
-    BOOL  bFound = FALSE;
     BOOL  isInCaptivePortal = FALSE;
     char * saveptr = NULL;
-    UCHAR IAPDPrefixes[320] = {0};
-    ULONG IAPDPrefixes_Len = 0;
-    char  ServerOption[256] = {0};
     char *pServerOption = NULL;
     FILE *responsefd=NULL;
     char *networkResponse = "/var/tmp/networkresponse.txt";
     int iresCode = 0;
     char responseCode[10];
-    int inRfCaptivePortal=0,inWifiCp=0;
+    int inWifiCp=0;
     char buf[20]={0};
-    char rfCpEnable[6] = {0};
-    char rfCpMode[6] = {0};
     ULONG  T1 = 0;
     ULONG  T2 = 0;
+    int Index4 = 0;
 
     if (!fp)
         goto EXIT;
@@ -3999,18 +4009,17 @@ void __cosa_dhcpsv6_refresh_config()
                 */
         if ( sDhcpv6ServerPool[Index].Cfg.IANAEnable && sDhcpv6ServerPool[Index].Info.IANAPrefixes[0] )
         {
-            pTmp1 = AnscCloneString(sDhcpv6ServerPool[Index].Info.IANAPrefixes);              
+            pTmp1 = AnscCloneString((char*)sDhcpv6ServerPool[Index].Info.IANAPrefixes);              
             pTmp3 = pTmp1;
-            pTmp2 = pTmp1;
 
-            for (pTmp2; ; pTmp2 = NULL) 
+            for (pTmp2 = pTmp1; ; pTmp2 = NULL) 
             {
                 pTmp1 = strtok_r(pTmp2, ",", &saveptr);
                 if (pTmp1 == NULL)
                     break;
 
                 /* This pTmp1 is IP.Interface.{i}.IPv6Prefix.{i}., we need ipv6 address(eg:2000:1:0:0:6::/64) according to it*/
-                _ansc_sprintf(prefixFullName, "%sPrefix",pTmp1);
+                _ansc_sprintf((char*)prefixFullName, "%sPrefix",pTmp1);
                 uSize = sizeof(prefixValue);
                 returnValue = g_GetParamValueString(g_pDslhDmlAgent, prefixFullName, prefixValue, &uSize);
                 if ( returnValue != 0 )
@@ -4034,7 +4043,7 @@ void __cosa_dhcpsv6_refresh_config()
                                     We need translate them to valid value. 
                                  */
                 {
-                    int i = _ansc_strlen(prefixValue);
+                    int i = _ansc_strlen((const char*)prefixValue);
                     int j = 0;
                     while( (prefixValue[i-1] != '/') && ( i > 0 ) )
                         i--;
@@ -4078,10 +4087,10 @@ void __cosa_dhcpsv6_refresh_config()
                         validTime    = (sDhcpv6ServerPool[Index].Cfg.LeaseTime);
                     }
 
-                    fprintf(fp, "       T1 %u\n", T1);
-                    fprintf(fp, "       T2 %u\n", T2);
-                    fprintf(fp, "       prefered-lifetime %u\n", preferedTime);
-                    fprintf(fp, "       valid-lifetime %u\n", validTime);
+                    fprintf(fp, "       T1 %lu\n", T1);
+                    fprintf(fp, "       T2 %lu\n", T2);
+                    fprintf(fp, "       prefered-lifetime %lu\n", preferedTime);
+                    fprintf(fp, "       valid-lifetime %lu\n", validTime);
                 }
                 
                 fprintf(fp, "   }\n");
@@ -4099,7 +4108,7 @@ OPTIONS:
             
             for ( Index3 = 0; Index3 < sizeof(tagList)/sizeof(struct DHCP_TAG);Index3++ )
             {
-                if ( tagList[Index3].tag != sDhcpv6ServerPoolOption[Index][Index2].Tag )
+                if (tagList[Index3].tag != (int)sDhcpv6ServerPoolOption[Index][Index2].Tag )
                     continue;
                 else
                     break;
@@ -4142,6 +4151,9 @@ OPTIONS:
                 }
             }
 #if defined (_XB6_PRODUCT_REQ_)
+        char rfCpEnable[6] = {0};
+        char rfCpMode[6] = {0};
+        int inRfCaptivePortal = 0;
         syscfg_get(NULL, "enableRFCaptivePortal", rfCpEnable, sizeof(rfCpEnable));
         if(rfCpEnable != NULL)
         {
@@ -4179,7 +4191,7 @@ OPTIONS:
                 if ((sysevent_fd_gs = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT,
                     SE_VERSION, "SERVICE-IPV6", &sysevent_token_gs)) < 0) {
                 fprintf(stderr, "%s: fail to open sysevent\n", __FUNCTION__);
-                return -1;
+                return;
                 }
                 char l_cSecWebUI_Enabled[8] = {0};
                 syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
@@ -4195,7 +4207,7 @@ OPTIONS:
 					if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled )
 					{
 					   memset( dns_str, 0, sizeof( dns_str ) );	 
-					   strcpy( dns_str, sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
+					   strcpy( dns_str, (char*)sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
 					   CosaDmlDhcpv6s_format_DNSoption( dns_str );
 					
 					   // Check device is in captive portal mode or not
@@ -4282,7 +4294,7 @@ OPTIONS:
                                                                 }
                                                                 else
                                                                 {
-                                                                     printf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dns_str);
+                                                                     fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dns_str);
                                                                 }
                                                             }
                                                        }
@@ -4296,14 +4308,14 @@ OPTIONS:
                                                                 }
                                                                 else
                                                                 {
-                                                                    printf(fp, "	option %s %s\n", tagList[Index3].cmdstring, static_dns);
+                                                                    fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, static_dns);
                                                                 }
                                                             }
                                                             else
                                                             {
                                                                 if ( '\0' != dyn_dns[ 0 ] )
                                                                 {
-                                                                    printf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dyn_dns);
+                                                                    fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dyn_dns);
                                                                 }
                                                             }
                                                        }
@@ -4359,7 +4371,7 @@ OPTIONS:
                 if ((sysevent_fd_gs = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT,
                     SE_VERSION, "SERVICE-IPV6", &sysevent_token_gs)) < 0) {
                     fprintf(stderr, "%s: fail to open sysevent\n", __FUNCTION__);
-                    return -1;
+                    return;
                 }
 				/* Static DNS Servers */
                 if ( sDhcpv6ServerPoolOption[Index][Index2].Tag == 23 ) {
@@ -4367,7 +4379,7 @@ OPTIONS:
 				    if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled ) {
                        //CcspTraceWarning(("Cfg.X_RDKCENTRAL_COM_DNSServersEnabled is 1 \n"));
 					    memset( dnsServer, 0, sizeof( dnsServer ) );
-				   	    strcpy( dnsServer, sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
+				   	    strcpy( dnsServer, (const char * restrict)sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
 					    CosaDmlDhcpv6s_format_DNSoption( dnsServer );
                                             char l_cSecWebUI_Enabled[8] = {0};
                                             syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
@@ -4468,7 +4480,7 @@ OPTIONS:
                     else
                         break;
                 }
-
+                ULONG ret = 0;
                 if ( Index4 >= g_recv_option_num )
                     continue;
 
@@ -4483,7 +4495,7 @@ OPTIONS:
 				   if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled )
 				   {
 					  memset( dnsStr, 0, sizeof( dnsStr ) );  	
-				   	  strcpy( dnsStr, sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
+                                          strcpy( dnsStr, (const char * __restrict__)sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
 					  CosaDmlDhcpv6s_format_DNSoption( dnsStr );
 
 					  // Check device is in captive portal mode or not
@@ -4507,7 +4519,7 @@ OPTIONS:
                                                       else
                                                       {
                                                           char dyn_dns[256] = {0};
-                                                          ret = CosaDmlDHCPv6sGetDNS(g_recv_options[Index4].Value, dyn_dns, sizeof(dyn_dns) );
+                                                          ret = CosaDmlDHCPv6sGetDNS((char*)g_recv_options[Index4].Value, dyn_dns, sizeof(dyn_dns) );
                                                           if ( '\0' != dyn_dns[ 0 ] )
                                                           {
                                                               if ( '\0' != static_dns[ 0 ] )
@@ -4540,7 +4552,7 @@ OPTIONS:
                                                       char static_dns[256] = {0};
                                                       commonSyseventGet("lan_ipaddr_v6", static_dns, sizeof(static_dns));
                                                       char dyn_dns[256] = {0};
-                                                      ret = CosaDmlDHCPv6sGetDNS(g_recv_options[Index4].Value, dyn_dns, sizeof(dyn_dns) );
+                                                      ret = CosaDmlDHCPv6sGetDNS((char*)g_recv_options[Index4].Value, dyn_dns, sizeof(dyn_dns) );
                                                       if ( '\0' != dnsStr[ 0 ] )
                                                       {
                                                           if ( '\0' != static_dns[ 0 ] )
@@ -4603,7 +4615,7 @@ OPTIONS:
 				   }
 				   else
 				   {
-					   ret = CosaDmlDHCPv6sGetDNS(g_recv_options[Index4].Value, dnsStr, sizeof(dnsStr) );
+					   ret = CosaDmlDHCPv6sGetDNS((char *)g_recv_options[Index4].Value, dnsStr, sizeof(dnsStr) );
 					   
 					   if ( !ret )
 					   {
@@ -4625,7 +4637,7 @@ OPTIONS:
                 }
                 else if ( g_recv_options[Index4].Tag == 24 )
                 { //domain
-                    pServerOption =    CosaDmlDhcpv6sGetStringFromHex(g_recv_options[Index4].Value);                    
+                    pServerOption =    CosaDmlDhcpv6sGetStringFromHex((char *)g_recv_options[Index4].Value);
                     if ( pServerOption )
                         fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
                 }else{
@@ -4645,7 +4657,7 @@ OPTIONS:
 					if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled )
 					{
 					   memset( dns_str, 0, sizeof( dns_str ) );	 
-					   strcpy( dns_str, sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
+					   strcpy( dns_str, (char*)sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
 					   CosaDmlDhcpv6s_format_DNSoption( dns_str );
 					
 					   // Check device is in captive portal mode or not
@@ -4666,10 +4678,10 @@ OPTIONS:
 					}
 					else
 					{
-						if ( _ansc_strstr(sDhcpv6ServerPoolOption[Index][Index2].Value, ":") )
-							pServerOption = sDhcpv6ServerPoolOption[Index][Index2].Value;
+						if ( _ansc_strstr((const char*)sDhcpv6ServerPoolOption[Index][Index2].Value, ":") )
+							pServerOption = (char*)sDhcpv6ServerPoolOption[Index][Index2].Value;
 						else
-							pServerOption = CosaDmlDhcpv6sGetAddressFromString(sDhcpv6ServerPoolOption[Index][Index2].Value);
+							pServerOption = CosaDmlDhcpv6sGetAddressFromString((char*)sDhcpv6ServerPoolOption[Index][Index2].Value);
 	
 						if ( pServerOption ){
 #if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
@@ -4684,7 +4696,7 @@ OPTIONS:
                 }
                 else if ( g_recv_options[Index4].Tag == 24 )
                 { //domain
-                    pServerOption = CosaDmlDhcpv6sGetStringFromHex(g_recv_options[Index4].Value);
+                    pServerOption = CosaDmlDhcpv6sGetStringFromHex((char*)g_recv_options[Index4].Value);
 
                     if ( pServerOption ){
 #if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
@@ -4734,36 +4746,21 @@ void __cosa_dhcpsv6_refresh_config()
 {
 
     FILE * fp = fopen(SERVER_CONF_LOCATION, "w+");
-
-    char   line[256] = {0};
-    PUCHAR pTmp1 = NULL;
-    PUCHAR pTmp2 = NULL;
-    PUCHAR pTmp3 = NULL;
-    UCHAR accessLimit[1024] = {0};
-    UCHAR prefixValue[64] = {0};
-    UCHAR prefixFullName[64] = {0};
-    UCHAR SourceAddress[40] = {0};
-    UCHAR SourceAddressMask[40] = {0};
+    PCHAR pTmp1 = NULL;
+    PCHAR pTmp2 = NULL;
+    PCHAR pTmp3 = NULL;
+    CHAR prefixValue[64] = {0};
+    CHAR prefixFullName[64] = {0};
     ULONG Index  = 0;
     ULONG Index2 = 0;
     ULONG Index3 = 0;
-    ULONG Index4 = 0;
+    int Index4 = 0;
     ULONG uSize = 0;
-    ULONG val1  = 0;
-    UCHAR pVal1[16]  = {0};
     ULONG preferedTime = 3600;
     ULONG validTime = 7200;
     int   returnValue = 0;
-    UCHAR ipv6Addr[16] = {0};
-    UCHAR ipv6Mask[16] = {0};
-    UCHAR ipv6AddrStr[INET6_ADDRSTRLEN] = {0};
     ULONG ret = 0;
-    int   ret2 = 0;
-    BOOL  bFound = FALSE;
     char * saveptr = NULL;
-    UCHAR IAPDPrefixes[320] = {0};
-    ULONG IAPDPrefixes_Len = 0;
-    char  ServerOption[256] = {0};
     char *pServerOption = NULL;
     FILE *responsefd=NULL;
     char *networkResponse = "/var/tmp/networkresponse.txt";
@@ -4796,7 +4793,7 @@ void __cosa_dhcpsv6_refresh_config()
         fprintf(stderr, "divide the operator-delegated prefix to sub-prefix error.\n");
         // sysevent_set(si6->sefd, si6->setok, "service_ipv6-status", "error", 0);
         commonSyseventSet("service_ipv6-status", "error");
-        return -1;
+        return;
     }
 
 #endif
@@ -4854,11 +4851,11 @@ void __cosa_dhcpsv6_refresh_config()
                 */
         if ( sDhcpv6ServerPool[Index].Cfg.IANAEnable && sDhcpv6ServerPool[Index].Info.IANAPrefixes[0] )
         {
-            pTmp1 = AnscCloneString(sDhcpv6ServerPool[Index].Info.IANAPrefixes);
+            pTmp1 = AnscCloneString((char*)sDhcpv6ServerPool[Index].Info.IANAPrefixes);
             pTmp3 = pTmp1;
             pTmp2 = pTmp1;
 
-            for (pTmp2; ; pTmp2 = NULL)
+            for (; ; pTmp2 = NULL)
             {
                 pTmp1 = strtok_r(pTmp2, ",", &saveptr);
                 if (pTmp1 == NULL)
@@ -4889,7 +4886,7 @@ void __cosa_dhcpsv6_refresh_config()
                                     We need translate them to valid value. 
                                  */
                 {
-                    int i = _ansc_strlen(prefixValue);
+                    ULONG i = _ansc_strlen((const char*)prefixValue);
                     int j = 0;
                     while( (prefixValue[i-1] != '/') && ( i > 0 ) )
                         i--;
@@ -4925,7 +4922,7 @@ void __cosa_dhcpsv6_refresh_config()
 
                        /* Need to convert A....::/xx to W:X:Y:Z: where X, Y or Z could be zero */
                        /* We just delete last ':/' here */
-                       int k;
+                       ULONG k;
                        for ( k = 0; k < i; k++ )
                        {
                            if ( prefixValue[k] == ':' )
@@ -4982,10 +4979,10 @@ void __cosa_dhcpsv6_refresh_config()
                         validTime    = (sDhcpv6ServerPool[Index].Cfg.LeaseTime);
                     }
 
-                    fprintf(fp, "       T1 %u\n", T1);
-                    fprintf(fp, "       T2 %u\n", T2);
-                    fprintf(fp, "       prefered-lifetime %u\n", preferedTime);
-                    fprintf(fp, "       valid-lifetime %u\n", validTime);
+                    fprintf(fp, "       T1 %lu\n", T1);
+                    fprintf(fp, "       T2 %lu\n", T2);
+                    fprintf(fp, "       prefered-lifetime %lu\n", preferedTime);
+                    fprintf(fp, "       valid-lifetime %lu\n", validTime);
                 }
 
                 fprintf(fp, "   }\n");
@@ -5038,7 +5035,7 @@ OPTIONS:
 
             for ( Index3 = 0; Index3 < sizeof(tagList)/sizeof(struct DHCP_TAG);Index3++ )
             {
-                if ( tagList[Index3].tag != sDhcpv6ServerPoolOption[Index][Index2].Tag )
+                if ( tagList[Index3].tag != (int)sDhcpv6ServerPoolOption[Index][Index2].Tag )
                     continue;
                 else
                     break;
@@ -5094,11 +5091,12 @@ OPTIONS:
                 { //dns
                    char dnsStr[256] = {0};
 
+
                                    /* Static DNS Servers */
                                    if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled )
                                    {
                                           memset( dnsStr, 0, sizeof( dnsStr ) );
-                                          strcpy( dnsStr, sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
+                                          strcpy( dnsStr, (const char*)sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
                                           CosaDmlDhcpv6s_format_DNSoption( dnsStr );
 
                                           // Check device is in captive portal mode or not
@@ -5118,7 +5116,7 @@ OPTIONS:
                                    }
                                    else
                                    {
-                                           ret = CosaDmlDHCPv6sGetDNS(g_recv_options[Index4].Value, dnsStr, sizeof(dnsStr) );
+                                           ret = CosaDmlDHCPv6sGetDNS((char*)g_recv_options[Index4].Value, dnsStr, sizeof(dnsStr) );
 
                                                 if ( !ret )
                                                 {
@@ -5138,7 +5136,7 @@ OPTIONS:
                 }
                 else if ( g_recv_options[Index4].Tag == 24 )
                 { //domain
-                    pServerOption =    CosaDmlDhcpv6sGetStringFromHex(g_recv_options[Index4].Value);
+                    pServerOption =    CosaDmlDhcpv6sGetStringFromHex((char*)g_recv_options[Index4].Value);
                     if ( pServerOption )
                         fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
                 }else{
@@ -5157,7 +5155,7 @@ OPTIONS:
                                         if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled )
                                         {
                                            memset( dnsStr, 0, sizeof( dnsStr ) );
-                                           strcpy( dnsStr, sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
+                                           strcpy( dnsStr, (const char*)sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
                                            CosaDmlDhcpv6s_format_DNSoption( dnsStr );
 
                                            // Check device is in captive portal mode or not
@@ -5177,10 +5175,10 @@ OPTIONS:
                                         }
                                         else
                                         {
-                                                if ( _ansc_strstr(sDhcpv6ServerPoolOption[Index][Index2].Value, ":") )
-                                                        pServerOption = sDhcpv6ServerPoolOption[Index][Index2].Value;
+                                                if ( _ansc_strstr((const char*)sDhcpv6ServerPoolOption[Index][Index2].Value, ":") )
+                                                        pServerOption = (char*)sDhcpv6ServerPoolOption[Index][Index2].Value;
                                                 else
-                                                        pServerOption = CosaDmlDhcpv6sGetAddressFromString(sDhcpv6ServerPoolOption[Index][Index2].Value);
+                                                        pServerOption = CosaDmlDhcpv6sGetAddressFromString((char*)sDhcpv6ServerPoolOption[Index][Index2].Value);
 
                                                 if ( pServerOption )
                                                         fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
@@ -5189,7 +5187,7 @@ OPTIONS:
                 }
                 else if ( g_recv_options[Index4].Tag == 24 )
                 { //domain
-                    pServerOption = CosaDmlDhcpv6sGetStringFromHex(g_recv_options[Index4].Value);
+                    pServerOption = CosaDmlDhcpv6sGetStringFromHex((char*)g_recv_options[Index4].Value);
 
                     if ( pServerOption )
                         fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
@@ -5220,7 +5218,7 @@ int CosaDmlDhcpv6s_format_DNSoption( char *option )
     if (option == NULL)
         return -1;
 
-    int i;
+    unsigned int i;
 
     for (i = 0; i < strlen(option); i++) {
         if(option[i] == ' ')
@@ -5237,8 +5235,8 @@ CosaDmlDhcpv6sEnable
         BOOL                        bEnable
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
-    BOOL              bActualEnable = FALSE;
     
     if (g_dhcpv6_server == bEnable) {
         fprintf(stderr, "%s -- %d server is :%d. bEnable:%d\n", __FUNCTION__, __LINE__, g_dhcpv6_server, bEnable);
@@ -5253,7 +5251,7 @@ CosaDmlDhcpv6sEnable
     Utopia_Free(&utctx,1);
 
     #if defined(_BCI_FEATURE_REQ)
-    system("sysevent set zebra-restart");
+    v_secure_system("sysevent set zebra-restart");
     #endif
 
     if ( bEnable )
@@ -5291,10 +5289,10 @@ CosaDmlDhcpv6sGetState
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    /*
     char cmd[256] = {0};
     char out[256] = {0};
-
-    /*
     sprintf(cmd, "ps -A|grep %s", SERVER_BIN);
     _get_shell_output(cmd, out, sizeof(out));
     if (strstr(out, SERVER_BIN))
@@ -5320,6 +5318,7 @@ CosaDmlDhcpv6sSetType
         ULONG                        type        
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     BOOL                            bApply = FALSE;
     UtopiaContext utctx = {0};
 
@@ -5340,14 +5339,14 @@ CosaDmlDhcpv6sSetType
      * Added gw_lan_refresh to effect the stateful address to the clients according
      * to the configured poll range.
      */
-    system("gw_lan_refresh");
+    v_secure_system("gw_lan_refresh");
 //#endif
     if ( g_dhcpv6_server && bApply )
     {
         /* We need enable server */
         CosaDmlDHCPv6sTriggerRestart(FALSE);
 #ifdef _HUB4_PRODUCT_REQ_
-        system("sysevent set zebra-restart");
+        v_secure_system("sysevent set zebra-restart");
 #endif
     }
 
@@ -5364,6 +5363,7 @@ CosaDmlDhcpv6sGetType
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_dhcpv6_server_type;
 }
 
@@ -5376,6 +5376,7 @@ CosaDmlDhcpv6sGetNumberOfPools
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return uDhcpv6ServerPoolNum;
 }
 
@@ -5387,6 +5388,7 @@ CosaDmlDhcpv6sGetPool
         PCOSA_DML_DHCPSV6_POOL_FULL pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( ulIndex+1 > uDhcpv6ServerPoolNum )
         return ANSC_STATUS_FAILURE;
 
@@ -5404,14 +5406,14 @@ CosaDmlDhcpv6sSetPoolValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
-    char out[256] = {0};    
 
     if ( ulIndex+1 > uDhcpv6ServerPoolNum )
         return ANSC_STATUS_FAILURE;
 
     sDhcpv6ServerPool[ulIndex].Cfg.InstanceNumber  = ulInstanceNumber;
-    AnscCopyString(sDhcpv6ServerPool[ulIndex].Cfg.Alias, pAlias);
+    AnscCopyString((char*)sDhcpv6ServerPool[ulIndex].Cfg.Alias, pAlias);
 
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
@@ -5429,10 +5431,11 @@ CosaDmlDhcpv6sAddPool
         PCOSA_DML_DHCPSV6_POOL_FULL   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
     ULONG         Index = 0;
 #if defined (MULTILAN_FEATURE)
-    UCHAR         param_val[CMD_BUFF_SIZE] = {0};
+    CHAR         param_val[CMD_BUFF_SIZE] = {0};
 #endif
 
     if ( uDhcpv6ServerPoolNum >= DHCPV6S_POOL_NUM )
@@ -5448,14 +5451,14 @@ CosaDmlDhcpv6sAddPool
 
     if(pEntry->Cfg.Interface[0] != '\0')
     {
-        snprintf(pEntry->Info.IANAPrefixes, sizeof(pEntry->Info.IANAPrefixes), "%s%s", pEntry->Cfg.Interface, "IPv6Prefix.1.");
+        snprintf((char*)pEntry->Info.IANAPrefixes, sizeof(pEntry->Info.IANAPrefixes), "%s%s", pEntry->Cfg.Interface, "IPv6Prefix.1.");
     }
 #endif
     sDhcpv6ServerPool[Index] = *pEntry;
     sDhcpv6ServerPool[Index].Info.Status = COSA_DML_DHCP_STATUS_Enabled; /* We set this to be enabled all time */
   
     /* Add this entry into utopia */
-    setpool_into_utopia(DHCPV6S_NAME, "pool", Index, &sDhcpv6ServerPool[Index]);
+    setpool_into_utopia((PUCHAR)DHCPV6S_NAME, (PUCHAR)"pool", Index, &sDhcpv6ServerPool[Index]);
     
     /* do this lastly */
     uDhcpv6ServerPoolNum++;    
@@ -5477,9 +5480,9 @@ CosaDmlDhcpv6sDelPool
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx  = {0};
     ULONG         Index  = 0;
-    ULONG         Index2 = 0;
 
     /* RDKB-6780, CID-33220, Out-of-bounds read
     ** Global array defined is of size DHCPV6S_POOL_NUM
@@ -5491,9 +5494,10 @@ CosaDmlDhcpv6sDelPool
             break;
     }
 #if defined (MULTILAN_FEATURE)
+    ULONG         Index2 = 0;
     for ( Index2 = Index+1; (Index2 < uDhcpv6ServerPoolNum) && (Index2 < DHCPV6S_POOL_NUM); Index2++ )
     {
-        setpool_into_utopia(DHCPV6S_NAME, "pool", Index2-1, &sDhcpv6ServerPool[Index2]);
+        setpool_into_utopia((PUCHAR)DHCPV6S_NAME, (PUCHAR)"pool", Index2-1, &sDhcpv6ServerPool[Index2]);
         sDhcpv6ServerPool[Index2-1] =  sDhcpv6ServerPool[Index2];
     }
 #else
@@ -5516,12 +5520,12 @@ CosaDmlDhcpv6sDelPool
         Index =((uDhcpv6ServerPoolNum < DHCPV6S_POOL_NUM)? (uDhcpv6ServerPoolNum - 1):(DHCPV6S_POOL_NUM-1));
     }
 
-    unsetpool_from_utopia(DHCPV6S_NAME, "pool", Index );
+    unsetpool_from_utopia((PUCHAR)DHCPV6S_NAME, (PUCHAR)"pool", Index );
     AnscZeroMemory(&sDhcpv6ServerPool[Index], sizeof(sDhcpv6ServerPool[Index]));
 
     /* do this lastly */
     /* limiting lower boundary of the DHCP Server Pool Num to avoid -ve values*/
-    uDhcpv6ServerPoolNum = (0 >(uDhcpv6ServerPoolNum-1)? 0 : (uDhcpv6ServerPoolNum-1) );
+    uDhcpv6ServerPoolNum = (0 >(int)(uDhcpv6ServerPoolNum-1)? 0 : (uDhcpv6ServerPoolNum-1) );
 
 
     if (!Utopia_Init(&utctx))
@@ -5552,11 +5556,11 @@ _get_iapd_prefix_pathname(char ** pp_pathname, int * p_len)
 
     *p_len = 1; /*RDKB-6780, CID-33107, use after null check*/
 
-    p_ipif_path = CosaUtilGetFullPathNameByKeyword
+    p_ipif_path = (char*)CosaUtilGetFullPathNameByKeyword
         (
-            "Device.IP.Interface.",
-            "Name",
-            COSA_DML_DHCPV6_CLIENT_IFNAME
+            (PUCHAR)"Device.IP.Interface.",
+            (PUCHAR)"Name",
+            (PUCHAR)COSA_DML_DHCPV6_CLIENT_IFNAME
             );
 
     if (!p_ipif_path)
@@ -5573,13 +5577,13 @@ _get_iapd_prefix_pathname(char ** pp_pathname, int * p_len)
 
         if ( inst2 )
         {
-            sprintf(name,  "%sIPv6Prefix.%d.Origin", p_ipif_path, inst2);
+            sprintf(name,  "%sIPv6Prefix.%lu.Origin", p_ipif_path, inst2);
 
             val_len = sizeof(param_val);               
             if ( ( 0 == g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len)) &&
                  AnscEqualString(param_val, "PrefixDelegation", TRUE ) )
             {
-                snprintf(path, sizeof(path)-1, "%sIPv6Prefix.%d.", p_ipif_path, inst2);
+                snprintf(path, sizeof(path)-1, "%sIPv6Prefix.%lu.", p_ipif_path, inst2);
                 *p_len += strlen(path)+1;
                 
                 if (!*pp_pathname)
@@ -5614,16 +5618,15 @@ CosaDmlDhcpv6sGetIAPDPrefixes
     )
 {
     int size = 0;
-    char * p = NULL;
     char * p1 = NULL;
     int need_append_comma = 0;
     char * p_pathname = NULL;
     int pathname_len = 0;
     int ret = 0;
 
-    size = strlen(pCfg->IAPDManualPrefixes);
+    size = strlen((const char*)pCfg->IAPDManualPrefixes);
 
-    p1 = pCfg->IAPDManualPrefixes;
+    p1 = (char*)pCfg->IAPDManualPrefixes;
     if ( strlen(p1) && (p1[strlen(p1)-1] != ',') )
     {
         need_append_comma = 1;
@@ -5633,7 +5636,7 @@ CosaDmlDhcpv6sGetIAPDPrefixes
     _get_iapd_prefix_pathname(&p_pathname, &pathname_len);
     size += pathname_len; 
 
-    if (size > *pSize)
+    if ((unsigned int)size > *pSize)
     {
         *pSize = size+1;
         ret = 1;
@@ -5641,7 +5644,7 @@ CosaDmlDhcpv6sGetIAPDPrefixes
     else
     {
         /*pValue is big enough*/
-        strcpy(pValue, pCfg->IAPDManualPrefixes);
+        strcpy(pValue, (const char*)pCfg->IAPDManualPrefixes);
 
         if (need_append_comma)
             sprintf(pValue+strlen(pValue), ",");
@@ -5667,11 +5670,11 @@ CosaDmlDhcpv6sGetIAPDPrefixes2
         ULONG*                      pSize
     )
 {
-    int size = 0;
+    ULONG size = 0;
     int ret = 0;
     char pd_pool[128] = {0};
-    char evt_val[64] = {0};
     char start[64], end[64], pd_len[4];
+    UNREFERENCED_PARAMETER(pCfg);
 
     commonSyseventGet("ipv6_subprefix-start", start, sizeof(start));
     commonSyseventGet("ipv6_subprefix-end", end, sizeof(end));
@@ -5705,6 +5708,7 @@ CosaDmlDhcpv6sSetPoolCfg
         PCOSA_DML_DHCPSV6_POOL_CFG  pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           Index = 0;
 	BOOLEAN  						bNeedZebraRestart = FALSE;
 
@@ -5722,7 +5726,7 @@ CosaDmlDhcpv6sSetPoolCfg
 		// Zebra restart based on below criteria
 		if( ( pCfg->X_RDKCENTRAL_COM_DNSServersEnabled != sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled ) || \
 			( ( '\0' != pCfg->X_RDKCENTRAL_COM_DNSServers[ 0 ] ) && \
-			  ( 0 != strcmp( pCfg->X_RDKCENTRAL_COM_DNSServers, sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.X_RDKCENTRAL_COM_DNSServers ) )
+			  ( 0 != strcmp( (const char*)pCfg->X_RDKCENTRAL_COM_DNSServers, (const char*)sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.X_RDKCENTRAL_COM_DNSServers ) )
 			 )
 		   )
 		{
@@ -5733,10 +5737,10 @@ CosaDmlDhcpv6sSetPoolCfg
          * Added gw_lan_refresh to effect the stateful address to the clients according
          * to the configured poll range.
          */
-        if ( ( 0 != strcmp( pCfg->PrefixRangeBegin, sDhcpv6ServerPool[Index].Cfg.PrefixRangeBegin ) ) || \
-             ( 0 != strcmp( pCfg->PrefixRangeEnd, sDhcpv6ServerPool[Index].Cfg.PrefixRangeEnd ) ) )
+        if ( ( 0 != strcmp( (const char*)pCfg->PrefixRangeBegin, (const char*)sDhcpv6ServerPool[Index].Cfg.PrefixRangeBegin ) ) || \
+             ( 0 != strcmp( (const char*)pCfg->PrefixRangeEnd, (const char*)sDhcpv6ServerPool[Index].Cfg.PrefixRangeEnd ) ) )
         {
-            system("gw_lan_refresh");
+            v_secure_system("gw_lan_refresh");
         }
 //#endif
 
@@ -5747,7 +5751,7 @@ CosaDmlDhcpv6sSetPoolCfg
 		// Zebra restart based on below criteria
 		if( ( pCfg->X_RDKCENTRAL_COM_DNSServersEnabled != sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled ) || \
 			( ( '\0' != pCfg->X_RDKCENTRAL_COM_DNSServers[ 0 ] ) && \
-			  ( 0 != strcmp( pCfg->X_RDKCENTRAL_COM_DNSServers, sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.X_RDKCENTRAL_COM_DNSServers ) )
+			  ( 0 != strcmp( (const char*)pCfg->X_RDKCENTRAL_COM_DNSServers, (const char*)sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.X_RDKCENTRAL_COM_DNSServers ) )
 			 )
 		   )
 		{
@@ -5758,10 +5762,10 @@ CosaDmlDhcpv6sSetPoolCfg
          * Added gw_lan_refresh to effect the stateful address to the clients according
          * to the configured poll range.
          */
-        if ( ( 0 != strcmp( pCfg->PrefixRangeBegin, sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.PrefixRangeBegin ) ) || \
-             ( 0 != strcmp( pCfg->PrefixRangeEnd, sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.PrefixRangeEnd ) ) )
+        if ( ( 0 != strcmp((const char*)pCfg->PrefixRangeBegin, (const char*)sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.PrefixRangeBegin)) ||
+             ( 0 != strcmp((const char*)pCfg->PrefixRangeEnd, (const char*)sDhcpv6ServerPool[DHCPV6S_POOL_NUM -1].Cfg.PrefixRangeEnd ) ) )
         {
-            system("gw_lan_refresh");
+            v_secure_system("gw_lan_refresh");
         }
 //#endif
 
@@ -5771,18 +5775,18 @@ CosaDmlDhcpv6sSetPoolCfg
 #if defined (MULTILAN_FEATURE)
     if(pCfg->Interface[0] != '\0')
     {
-        snprintf(sDhcpv6ServerPool[Index].Info.IANAPrefixes, sizeof(sDhcpv6ServerPool[Index].Info.IANAPrefixes), "%s%s", pCfg->Interface, "IPv6Prefix.1.");
+        snprintf((char*)sDhcpv6ServerPool[Index].Info.IANAPrefixes, sizeof(sDhcpv6ServerPool[Index].Info.IANAPrefixes), "%s%s", pCfg->Interface, "IPv6Prefix.1.");
     }
 #endif
 
     /* We do this synchronization here*/
-    if ( ( _ansc_strlen(sDhcpv6ServerPool[Index].Cfg.IANAManualPrefixes) > 0 ) && 
-         !_ansc_strstr(sDhcpv6ServerPool[Index].Info.IANAPrefixes, sDhcpv6ServerPool[Index].Cfg.IANAManualPrefixes) ){
-        _ansc_strcat(sDhcpv6ServerPool[Index].Info.IANAPrefixes, "," );
-        _ansc_strcat(sDhcpv6ServerPool[Index].Info.IANAPrefixes, sDhcpv6ServerPool[Index].Cfg.IANAManualPrefixes );
+    if ( ( _ansc_strlen((const char*)sDhcpv6ServerPool[Index].Cfg.IANAManualPrefixes) > 0 ) && 
+         !_ansc_strstr((const char*)sDhcpv6ServerPool[Index].Info.IANAPrefixes, (const char*)sDhcpv6ServerPool[Index].Cfg.IANAManualPrefixes) ){
+        _ansc_strcat((char*)sDhcpv6ServerPool[Index].Info.IANAPrefixes, "," );
+        _ansc_strcat((char*)sDhcpv6ServerPool[Index].Info.IANAPrefixes, (const char*)sDhcpv6ServerPool[Index].Cfg.IANAManualPrefixes );
     }
    
-    setpool_into_utopia(DHCPV6S_NAME, "pool", Index, &sDhcpv6ServerPool[Index]);
+    setpool_into_utopia((PUCHAR)DHCPV6S_NAME, (PUCHAR)"pool", Index, &sDhcpv6ServerPool[Index]);
 
     CosaDmlDHCPv6sTriggerRestart(FALSE);
 
@@ -5790,7 +5794,7 @@ CosaDmlDhcpv6sSetPoolCfg
 	if( bNeedZebraRestart )
 	{
         CcspTraceWarning(("%s Restarting Zebra Process\n", __FUNCTION__));
-        system("sysevent set zebra-restart");
+        v_secure_system("sysevent set zebra-restart");
 	}
 
     return ANSC_STATUS_SUCCESS;
@@ -5803,6 +5807,7 @@ CosaDmlDhcpv6sGetPoolCfg
         PCOSA_DML_DHCPSV6_POOL_CFG    pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           Index = 0;
 
     /* RDKB-6780, CID-33390, out of bound read
@@ -5833,6 +5838,7 @@ CosaDmlDhcpv6sGetPoolInfo
         PCOSA_DML_DHCPSV6_POOL_INFO pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     FILE *fp;
     char out[256] = {0};
 
@@ -5878,7 +5884,7 @@ PCOSA_DML_DHCPSV6_CLIENTCONTENT g_dhcps6v_clientcontent = NULL;
 
 BOOL tagPermitted(int tag)
 {
-    int i = 0;
+    unsigned int i = 0;
 
     for ( i =0; i < sizeof(tagList)/sizeof(struct DHCP_TAG); i++ )
     {
@@ -5919,14 +5925,14 @@ void _cosa_dhcpsv6_get_client()
 {
     ULONG i = 0;
     FILE * fp = fopen(DHCPS6V_CLIENT_FILE, "r");
-    UCHAR  oneLine[256] = {0};
-    PUCHAR pTmp1 = NULL;
-    PUCHAR pTmp2 = NULL;
-    PUCHAR pTmp3 = NULL;
+    CHAR  oneLine[256] = {0};
+    PCHAR pTmp1 = NULL;
+    PCHAR pTmp2 = NULL;
+    PCHAR pTmp3 = NULL;
     ULONG  Index = 0xFFFFFFFF;
     time_t t1    = 0;
     struct tm t2 = {0};
-    UCHAR  buf[128] = {0};
+    CHAR  buf[128] = {0};
     ULONG  timeStamp = 0;    
     PCOSA_DML_DHCPSV6_CLIENT_OPTION          pOption1 = NULL;
     PCOSA_DML_DHCPSV6_CLIENT_IPV6ADDRESS     pIPv6Address1 = NULL;
@@ -6012,7 +6018,7 @@ void _cosa_dhcpsv6_get_client()
 
                 for ( i=0; i < g_dhcps6v_client_num; i++ )
                 {
-                    _ansc_sprintf(g_dhcps6v_client[i].Alias, "Client%d",i+1);
+                    _ansc_sprintf(g_dhcps6v_client[i].Alias, "Client%lu",i+1);
                 }
 
                 g_dhcps6v_clientcontent = (PCOSA_DML_DHCPSV6_CLIENTCONTENT)AnscAllocateMemory(sizeof(COSA_DML_DHCPSV6_CLIENTCONTENT)*g_dhcps6v_client_num);
@@ -6056,7 +6062,6 @@ void _cosa_dhcpsv6_get_client()
                 continue;
 
             *pTmp1 = 0;
-            *pTmp1++;
 
             // pTmp3 is 1
             // pTmp1 is 00010001C793092300252E7D05B4
@@ -6087,10 +6092,10 @@ void _cosa_dhcpsv6_get_client()
             }
             
             g_dhcps6v_clientcontent[Index].pOption[g_dhcps6v_clientcontent[Index].NumberofOption-1].Tag = _ansc_atoi(pTmp3);
-            AnscCopyString( g_dhcps6v_clientcontent[Index].pOption[g_dhcps6v_clientcontent[Index].NumberofOption-1].Value, pTmp1 );
+            AnscCopyString( (char*)g_dhcps6v_clientcontent[Index].pOption[g_dhcps6v_clientcontent[Index].NumberofOption-1].Value, pTmp1 );
         }else if ( _ansc_strcmp(pTmp1, "Unicast") == 0 )
         {
-            AnscCopyString(g_dhcps6v_client[Index].SourceAddress, pTmp3);
+            AnscCopyString((char*)g_dhcps6v_client[Index].SourceAddress, pTmp3);
         }else if ( _ansc_strcmp(pTmp1, "Addr") == 0 )
         {
             g_dhcps6v_clientcontent[Index].NumberofIPv6Address++;
@@ -6116,7 +6121,7 @@ void _cosa_dhcpsv6_get_client()
                 continue;
             }
             
-            AnscCopyString (g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].IPAddress, pTmp3);
+            AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].IPAddress, pTmp3);
         }else if ( _ansc_strcmp(pTmp1, "Timestamp") == 0 )
         {
             timeStamp = atoi(pTmp3);
@@ -6127,19 +6132,19 @@ void _cosa_dhcpsv6_get_client()
                 t1 = timeStamp;
                 t1 += atoi(pTmp3);
 
-                if (t1 == 0xffffffff)
+                if ((unsigned int)t1 == 0xffffffff)
                 {
                     strcpy(buf, "9999-12-31T23:59:59Z");
                 }
                 else
                 {
                     localtime_r(&t1, &t2);
-                    snprintf(buf, sizeof(buf), "%d-%d-%dT%02d:%02d:%02dZ\0", 
+                    snprintf(buf, sizeof(buf), "%d-%d-%dT%02d:%02d:%02dZ%c", 
                          1900+t2.tm_year, t2.tm_mon+1, t2.tm_mday,
-                         t2.tm_hour, t2.tm_min, t2.tm_sec);
+                         t2.tm_hour, t2.tm_min, t2.tm_sec, '\0');
                 }
 
-                AnscCopyString (g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].PreferredLifetime, buf);               
+                AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].PreferredLifetime, buf);               
             }
         }else if ( _ansc_strcmp(pTmp1, "Valid") == 0 )
         {
@@ -6148,19 +6153,19 @@ void _cosa_dhcpsv6_get_client()
                 t1 = timeStamp;
                 t1 += atoi(pTmp3);
 
-                if (t1 == 0xffffffff)
+                if ((unsigned int)t1 == 0xffffffff)
                 {
                     strcpy(buf, "9999-12-31T23:59:59Z");
                 }
                 else
                 {
                     localtime_r(&t1, &t2);
-                    snprintf(buf, sizeof(buf), "%d-%d-%dT%02d:%02d:%02dZ\0", 
+                    snprintf(buf, sizeof(buf), "%d-%d-%dT%02d:%02d:%02dZ%c", 
                          1900+t2.tm_year, t2.tm_mon+1, t2.tm_mday,
-                         t2.tm_hour, t2.tm_min, t2.tm_sec);
+                         t2.tm_hour, t2.tm_min, t2.tm_sec, '\0');
                 }
 
-                AnscCopyString (g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].ValidLifetime, buf);               
+                AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].ValidLifetime, buf);               
             }
         }else if ( _ansc_strcmp(pTmp1, "pdPrefix") == 0 )
         {
@@ -6187,7 +6192,7 @@ void _cosa_dhcpsv6_get_client()
                 continue;
             }
             
-            AnscCopyString (g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].Prefix, pTmp3);
+            AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].Prefix, pTmp3);
 
         }else if ( _ansc_strcmp(pTmp1, "pdTimestamp") == 0 )
         {
@@ -6199,19 +6204,19 @@ void _cosa_dhcpsv6_get_client()
                 t1 = timeStamp;
                 t1 += atoi(pTmp3);
 
-                if (t1 == 0xffffffff)
+                if ((unsigned int)t1 == 0xffffffff)
                 {
                     strcpy(buf, "9999-12-31T23:59:59Z");
                 }
                 else
                 {
                     localtime_r(&t1, &t2);
-                    snprintf(buf, sizeof(buf), "%d-%d-%dT%02d:%02d:%02dZ\0", 
+                    snprintf(buf, sizeof(buf), "%d-%d-%dT%02d:%02d:%02dZ%c", 
                          1900+t2.tm_year, t2.tm_mon+1, t2.tm_mday,
-                         t2.tm_hour, t2.tm_min, t2.tm_sec);
+                         t2.tm_hour, t2.tm_min, t2.tm_sec, '\0');
                 }
 
-                AnscCopyString (g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].PreferredLifetime, buf);               
+                AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].PreferredLifetime, buf);               
             }
 
         }else if ( _ansc_strcmp(pTmp1, "pdValid") == 0 )
@@ -6221,19 +6226,19 @@ void _cosa_dhcpsv6_get_client()
                 t1 = timeStamp;
                 t1 += atoi(pTmp3);
 
-                if (t1 == 0xffffffff)
+                if ((unsigned int)t1 == 0xffffffff)
                 {
                     strcpy(buf, "9999-12-31T23:59:59Z");
                 }
                 else
                 {
                     localtime_r(&t1, &t2);
-                    snprintf(buf, sizeof(buf), "%d-%d-%dT%02d:%02d:%02dZ\0", 
+                    snprintf(buf, sizeof(buf), "%d-%d-%dT%02d:%02d:%02dZ%c", 
                          1900+t2.tm_year, t2.tm_mon+1, t2.tm_mday,
-                         t2.tm_hour, t2.tm_min, t2.tm_sec);
+                         t2.tm_hour, t2.tm_min, t2.tm_sec, '\0');
                 }
 
-                AnscCopyString (g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].ValidLifetime, buf);               
+                AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].ValidLifetime, buf);               
             }
 
         }else
@@ -6256,12 +6261,11 @@ ANSC_STATUS
 CosaDmlDhcpv6sPing( PCOSA_DML_DHCPSV6_CLIENT        pDhcpsClient )
 {
     FILE *fp;
-    char      out[256] = {0};
     ULONG     i        = 0;
 
     for( i =0; i<g_dhcps6v_client_num; i++ )
     {
-        if ( _ansc_strcmp(g_dhcps6v_client[i].SourceAddress, pDhcpsClient->SourceAddress) == 0 )
+        if ( _ansc_strcmp((const char*)g_dhcps6v_client[i].SourceAddress, (const char*)pDhcpsClient->SourceAddress) == 0 )
         {
             break;
         }
@@ -6311,7 +6315,9 @@ CosaDmlDhcpv6sGetClient
         PCOSA_DML_DHCPSV6_CLIENT   *ppEntry,
         PULONG                      pSize
     )
-{        
+{
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulPoolInstanceNumber); 
     /* We don't support this table currently */
     _cosa_dhcpsv6_get_client();
     
@@ -6347,6 +6353,8 @@ CosaDmlDhcpv6sGetIPv6Address
         PULONG                      pSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulPoolInstanceNumber);
     *pSize = g_dhcps6v_clientcontent[ulClientIndex].NumberofIPv6Address ;
     
     *ppEntry = (PCOSA_DML_DHCPSV6_CLIENT_IPV6ADDRESS)AnscAllocateMemory( sizeof(COSA_DML_DHCPSV6_CLIENT_IPV6ADDRESS) * (*pSize) );
@@ -6376,7 +6384,9 @@ CosaDmlDhcpv6sGetIPv6Prefix
         PCOSA_DML_DHCPSV6_CLIENT_IPV6PREFIX   *ppEntry,
         PULONG                      pSize
     )
-{        
+{
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulPoolInstanceNumber); 
     *pSize = g_dhcps6v_clientcontent[ulClientIndex].NumberofIPv6Prefix;
     
     *ppEntry = (PCOSA_DML_DHCPSV6_CLIENT_IPV6PREFIX)AnscAllocateMemory( sizeof(COSA_DML_DHCPSV6_CLIENT_IPV6PREFIX) * (*pSize) );
@@ -6406,7 +6416,9 @@ CosaDmlDhcpv6sGetIPv6Option
         PCOSA_DML_DHCPSV6_CLIENT_OPTION   *ppEntry,
         PULONG                      pSize
     )
-{        
+{
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulPoolInstanceNumber); 
     *pSize = g_dhcps6v_clientcontent[ulClientIndex].NumberofOption;
     
     *ppEntry = (PCOSA_DML_DHCPSV6_CLIENT_OPTION)AnscAllocateMemory( sizeof(COSA_DML_DHCPSV6_CLIENT_OPTION) * (*pSize) );
@@ -6435,6 +6447,7 @@ CosaDmlDhcpv6sGetNumberOfOption
         ULONG                       ulPoolInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           Index  =  0;
     /*RDKB-6780, CID-33219, boundary check for upper limit*/
     for( Index = 0 ; (Index < uDhcpv6ServerPoolNum) && (Index < DHCPV6S_POOL_NUM) ; Index++ )
@@ -6464,10 +6477,11 @@ CosaDmlDhcpv6sGetStartAddress
         int                         len
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char globalAddress[64] = {0};
     commonSyseventGet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME, globalAddress, sizeof(globalAddress));
 
-    strncpy(addr, globalAddress, len>strlen(globalAddress)?strlen(globalAddress):len);
+    strncpy(addr, globalAddress, (unsigned int)len>strlen(globalAddress)?strlen(globalAddress):(unsigned int)len);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -6481,6 +6495,7 @@ CosaDmlDhcpv6sGetOption
         PCOSA_DML_DHCPSV6_POOL_OPTION  pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           Index  =  0;
 
     /* RDKB-6780, CID-33221, out of bound read
@@ -6512,6 +6527,7 @@ CosaDmlDhcpv6sGetOptionbyInsNum
         PCOSA_DML_DHCPSV6_POOL_OPTION  pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           Index   =  0;
     ULONG                           Index2  =  0;
 
@@ -6544,17 +6560,16 @@ CosaDmlDhcpv6sSetOptionValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx             = {0};
-    char out[256]                   = {0};    
     ULONG                           Index   =  0;
-    ULONG                           Index2  =  0;
 
     for( Index = 0 ; Index < uDhcpv6ServerPoolNum; Index++ )
     {
         if ( sDhcpv6ServerPool[Index].Cfg.InstanceNumber == ulPoolInstanceNumber )
         {
             sDhcpv6ServerPoolOption[Index][ulIndex].InstanceNumber = ulInstanceNumber;
-            AnscCopyString( sDhcpv6ServerPoolOption[Index][ulIndex].Alias, pAlias);
+            AnscCopyString( (char*)sDhcpv6ServerPoolOption[Index][ulIndex].Alias, pAlias);
 
             if (!Utopia_Init(&utctx))
                 return ANSC_STATUS_FAILURE;
@@ -6577,8 +6592,8 @@ CosaDmlDhcpv6sAddOption
         PCOSA_DML_DHCPSV6_POOL_OPTION  pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx             = {0};
-    char out[256]                   = {0};    
     ULONG                           Index   =  0;
     ULONG                           Index2  =  0;
 
@@ -6598,7 +6613,7 @@ CosaDmlDhcpv6sAddOption
             Utopia_Free(&utctx,1);
 
             sDhcpv6ServerPoolOption[Index][Index2] = *pEntry;
-            setpooloption_into_utopia(DHCPV6S_NAME,"pool",Index,"option",Index2,&sDhcpv6ServerPoolOption[Index][Index2]);
+            setpooloption_into_utopia((PUCHAR)DHCPV6S_NAME,(PUCHAR)"pool",Index,(PUCHAR)"option",Index2,&sDhcpv6ServerPoolOption[Index][Index2]);
 
             CosaDmlDHCPv6sTriggerRestart(FALSE);
 
@@ -6618,8 +6633,8 @@ CosaDmlDhcpv6sDelOption
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx             = {0};
-    char out[256]                   = {0};    
     ULONG                           Index   =  0;
     ULONG                           Index2  =  0;
 
@@ -6635,22 +6650,19 @@ CosaDmlDhcpv6sDelOption
                 }
             }
 #ifndef MULTILAN_FEATURE
-	    unsetpooloption_from_utopia(DHCPV6S_NAME,"pool",Index,"option",Index2);
+	    unsetpooloption_from_utopia((PUCHAR)DHCPV6S_NAME,(PUCHAR)"pool",Index,(PUCHAR)"option",Index2);
 #endif
             for( Index2++; Index2  < uDhcpv6ServerPoolOptionNum[Index]; Index2++ )
             {
 #if defined (MULTILAN_FEATURE)
-                setpooloption_into_utopia(DHCPV6S_NAME,"pool",Index,"option",Index2-1,&sDhcpv6ServerPoolOption[Index][Index2]);
+                setpooloption_into_utopia((PUCHAR)DHCPV6S_NAME,(PUCHAR)"pool",Index,(PUCHAR)"option",Index2-1,&sDhcpv6ServerPoolOption[Index][Index2]);
 #endif
                 sDhcpv6ServerPoolOption[Index][Index2-1] =  sDhcpv6ServerPoolOption[Index][Index2];
             }
 #if defined (MULTILAN_FEATURE)
-            unsetpooloption_from_utopia(DHCPV6S_NAME,"pool",Index,"option",Index2-1);
-
-            uDhcpv6ServerPoolOptionNum[Index] = (0 >(uDhcpv6ServerPoolOptionNum[Index]-1)? 0: (uDhcpv6ServerPoolOptionNum[Index]-1) );
-#else
-            uDhcpv6ServerPoolOptionNum[Index]--;
+            unsetpooloption_from_utopia((PUCHAR)DHCPV6S_NAME,(PUCHAR)"pool",Index,(PUCHAR)"option",Index2-1);
 #endif
+            uDhcpv6ServerPoolOptionNum[Index]--;
             if (!Utopia_Init(&utctx))
                 return ANSC_STATUS_FAILURE;
             SETI_INTO_UTOPIA(DHCPV6S_NAME, "pool", Index, "", 0, "optionnumber", uDhcpv6ServerPoolOptionNum[Index])
@@ -6673,8 +6685,7 @@ CosaDmlDhcpv6sSetOption
         PCOSA_DML_DHCPSV6_POOL_OPTION  pEntry
     )
 {
-    UtopiaContext utctx                     = {0};
-    char out[256]                           = {0};    
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           Index   =  0;
     ULONG                           Index2  =  0;
 
@@ -6687,16 +6698,16 @@ CosaDmlDhcpv6sSetOption
                 if ( sDhcpv6ServerPoolOption[Index][Index2].InstanceNumber == pEntry->InstanceNumber )
                 {
                     if ( pEntry->Tag == 23 &&
-                        ( _ansc_strcmp(sDhcpv6ServerPoolOption[Index][Index2].PassthroughClient, pEntry->PassthroughClient ) ||
-                        ( _ansc_strcmp(sDhcpv6ServerPoolOption[Index][Index2].Value, pEntry->Value) &&
-                                  !_ansc_strlen(pEntry->PassthroughClient) ) ) )
+                        ( _ansc_strcmp((const char*)sDhcpv6ServerPoolOption[Index][Index2].PassthroughClient, (const char*)pEntry->PassthroughClient ) ||
+                        ( _ansc_strcmp((const char*)sDhcpv6ServerPoolOption[Index][Index2].Value, (const char*)pEntry->Value) &&
+                                  !_ansc_strlen((const char*)pEntry->PassthroughClient) ) ) )
                     {
-                        system("sysevent set zebra-restart");
+                        v_secure_system("sysevent set zebra-restart");
                     }
 
                     sDhcpv6ServerPoolOption[Index][Index2] = *pEntry;
 
-                    setpooloption_into_utopia(DHCPV6S_NAME, "pool", Index, "option", Index2, &sDhcpv6ServerPoolOption[Index][Index2]);
+                    setpooloption_into_utopia((PUCHAR)DHCPV6S_NAME, (PUCHAR)"pool", Index, (PUCHAR)"option", Index2, &sDhcpv6ServerPoolOption[Index][Index2]);
                     
                     CosaDmlDHCPv6sTriggerRestart(FALSE);
                     
@@ -6712,6 +6723,7 @@ CosaDmlDhcpv6sSetOption
 void     
 CosaDmlDhcpv6Remove(ANSC_HANDLE hContext)
 {
+    UNREFERENCED_PARAMETER(hContext);
     /*remove backend memory*/
     if (g_sent_options)
         AnscFreeMemory(g_sent_options);
@@ -6734,7 +6746,6 @@ int dhcpv6_assign_global_ip(char * prefix, char * intfName, char * ipAddr)
     unsigned int    i                = 0;
     unsigned int    j                = 0;
     unsigned int    k                = 0;
-    char            cmd[256]         = {0};
     char            out[256]         = {0};
     char            tmp[8]           = {0};
     FILE *fp;
@@ -6846,16 +6857,14 @@ int dhcpv6_assign_global_ip(char * prefix, char * intfName, char * ipAddr)
 */
 void CosaDmlDhcpv6sRebootServer()
 {
-    FILE *fp;
-    int fd = 0;
-    char out[128] = {0};
-    BOOL isBridgeMode = FALSE;
 
     if (!g_dhcpv6_server_prefix_ready || !g_lan_ready)
         return;
 #if defined (MULTILAN_FEATURE)
     commonSyseventSet("dhcpv6s-restart", "");
 #else
+    FILE *fp;
+    int fd = 0;
     if (g_dhcpv6s_restart_count) {
         g_dhcpv6s_restart_count=0;
 
@@ -6867,9 +6876,10 @@ void CosaDmlDhcpv6sRebootServer()
 
     fd = open(DHCPV6S_SERVER_PID_FILE, O_RDONLY);
     if (fd < 0) {
-
-         is_usg_in_bridge_mode(&isBridgeMode);
-         if ( isBridgeMode )
+        BOOL isBridgeMode = FALSE;
+        char out[128] = {0};
+        is_usg_in_bridge_mode(&isBridgeMode);
+        if ( isBridgeMode )
             return;
 
         //make sure it's not in a bad status
@@ -6890,7 +6900,7 @@ void CosaDmlDhcpv6sRebootServer()
     // refresh lan if we were asked to
     if (g_dhcpv6s_refresh_count) {
         g_dhcpv6s_refresh_count = 0;
-        system("gw_lan_refresh");
+        v_secure_system("gw_lan_refresh");
     }
 
     return;
@@ -6939,7 +6949,6 @@ int CalcIPv6Prefix(char *GlobalPref, char *pref,int index)
 
 int GenIPv6Prefix(char *ifName,char *GlobalPref, char *pref)
 {
-int len = 0;
 int index = 0;
 char cmd[100];
 char out[100];
@@ -6956,7 +6965,6 @@ static int interface_num = 4; // Reserving first 4 /64s for dhcp configurations
 		index = atoi(out);
 	}
 
-	len = strlen(GlobalPref);
 	strcpy(pref,GlobalPref);
 	if(index == 0)
 	{
@@ -6980,6 +6988,9 @@ return 1;
 }
 /* This thread is added to handle the LnF interface IPv6 rule, because LnF is coming up late in XB6 devices. 
 This thread can be generic to handle the operations depending on the interfaces. Other interface and their events can be register here later based on requirement */
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_CBR_PRODUCT_REQ_)
+#else
+static pthread_t InfEvtHandle_tid;
 static int sysevent_fd_1;
 static token_t sysevent_token_1;
 static pthread_t InfEvtHandle_tid;
@@ -7012,6 +7023,7 @@ void enable_IPv6(char* if_name)
 }
 static void *InterfaceEventHandler_thrd(void *data)
 {
+    UNREFERENCED_PARAMETER(data);
     async_id_t interface_asyncid;
     async_id_t interface_XHS_asyncid;
     CcspTraceWarning(("%s started\n",__FUNCTION__));
@@ -7022,7 +7034,7 @@ static void *InterfaceEventHandler_thrd(void *data)
     sysevent_set_options(sysevent_fd_1, sysevent_token_1, "multinet_2-status", TUPLE_FLAG_EVENT);
     sysevent_setnotification(sysevent_fd_1, sysevent_token_1, "multinet_2-status",  &interface_XHS_asyncid);
 
-    FILE *fp;
+    FILE *fp = NULL;
     char *Inf_name = NULL;
     int retPsmGet = CCSP_SUCCESS;
     char tbuff[100];
@@ -7095,7 +7107,7 @@ static void *InterfaceEventHandler_thrd(void *data)
         	{
            		CcspTraceWarning(("sysevent_getnotification failed with error: %d %s\n", err,__FUNCTION__));
            		CcspTraceWarning(("sysevent_getnotification failed name: %s val : %s\n", name,val));
-			if ( 0 != system("pidof syseventd")) {
+			if ( 0 != v_secure_system("pidof syseventd")) {
 
            			CcspTraceWarning(("%s syseventd not running ,breaking the receive notification loop \n",__FUNCTION__));
 				break;
@@ -7105,17 +7117,17 @@ static void *InterfaceEventHandler_thrd(void *data)
         	{
 
            		CcspTraceWarning(("%s Recieved notification event  %s\n",__FUNCTION__,name));
-			if(strcmp(name,"multinet_6-status") == 0)
+			if(strcmp((const char*)name,"multinet_6-status") == 0)
 			{
-				if(strcmp(val, "ready") == 0)
+				if(strcmp((const char*)val, "ready") == 0)
 				{
                     			enable_IPv6("br106");
 				}
 			}
 
-			if(strcmp(name,"multinet_2-status") == 0)
+			if(strcmp((const char*)name,"multinet_2-status") == 0)
 			{
-				if(strcmp(val, "ready") == 0)
+				if(strcmp((const char*)val, "ready") == 0)
 				{
                     			Inf_name = NULL ;
 					retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.2.Port.1.Name", NULL, &Inf_name);
@@ -7134,7 +7146,9 @@ static void *InterfaceEventHandler_thrd(void *data)
 	
 		}
 	}
+    return NULL;
 }
+#endif
 
 static int sysevent_fd_mnet;
 static token_t sysevent_token_mnet;
@@ -7142,23 +7156,21 @@ static token_t sysevent_token_mnet;
 static void * 
 dhcpv6c_dbg_thrd(void * in)
 {
+    UNREFERENCED_PARAMETER(in);
     int fd=0 , fd1=0;
     char msg[1024] = {0};
-    int i;
     char * p = NULL;
     char globalIP2[128] = {0};
-    char out[128] = {0};
-    FILE *fp;
     //When PaM restart, this is to get previous addr.
     commonSyseventGet("lan_ipaddr_v6", globalIP2, sizeof(globalIP2));
     if ( globalIP2[0] )
-        CcspTraceWarning((stderr,"%s  It seems there is old value(%s)\n", __FUNCTION__, globalIP2));
+        CcspTraceWarning(("%s  It seems there is old value(%s)\n", __FUNCTION__, globalIP2));
 
     sysevent_fd_mnet = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "Multinet Status", &sysevent_token_mnet);
    
     CcspTraceWarning(("%s sysevent_fd_mnet is %d\n", __FUNCTION__, sysevent_fd_mnet));
  
-    unsigned char lan_multinet_state[16] ;
+    char lan_multinet_state[16] ;
     
     int return_val=0;
 
@@ -7249,7 +7261,6 @@ dhcpv6c_dbg_thrd(void * in)
         {
             char v6addr[64] = {0};
             char v6pref[128] = {0};
-            char v6pref_addr[128] = {0};
             char v6Tpref[128] = {0};
             int pref_len = 0;
             
@@ -7265,14 +7276,16 @@ dhcpv6c_dbg_thrd(void * in)
             char iapd_pretm[32] = {0};
             char iapd_vldtm[32] = {0};
 
-            int t1 = 0;
-            int idx = 0;
             char action[64] = {0};
             char * pString = NULL;
             char objName[128] = {0};
+
+#ifndef MULTILAN_FEATURE
+            int  ret = 0;
             char globalIP[128] = {0};
             BOOL bRestartLan = FALSE;
-            int  ret = 0;
+#endif
+
 #ifdef _HUB4_PRODUCT_REQ_
             char hub4_valid_lft[64] = {0};
             char hub4_preferred_lft[64] = {0};
@@ -7292,11 +7305,11 @@ dhcpv6c_dbg_thrd(void * in)
                        action, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
                        v6pref, &pref_len, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm ) == 14)
             {
-                pString = CosaUtilGetFullPathNameByKeyword
+                pString = (char*)CosaUtilGetFullPathNameByKeyword
                     (
-                        "Device.IP.Interface.",
-                        "Name",
-                        COSA_DML_DHCPV6_CLIENT_IFNAME
+                        (PUCHAR)"Device.IP.Interface.",
+                        (PUCHAR)"Name",
+                        (PUCHAR)COSA_DML_DHCPV6_CLIENT_IFNAME
                         );
 
                 if (!strncmp(action, "add", 3))
@@ -7312,7 +7325,7 @@ dhcpv6c_dbg_thrd(void * in)
 			
                         	CcspTraceWarning(("%s multinet_1-status is %s, ret val is %d\n",__FUNCTION__,lan_multinet_state,return_val));
 
-				if(strcmp(lan_multinet_state, "ready") == 0)
+				if(strcmp((const char*)lan_multinet_state, "ready") == 0)
 				{
 					break;
 				}
@@ -7357,12 +7370,14 @@ dhcpv6c_dbg_thrd(void * in)
 						}
 #endif
 	char cmd[100];
+
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_CBR_PRODUCT_REQ_)
 #else
 			char out1[100]; 
 			char *token = NULL;char *pt;
-			char s[2] = ",";
             		char interface_name[32] = {0};	
+                        char out[128] = {0};
+                        FILE *fp; 
 			if(pref_len < 64)
 			{
 			    memset(out,0,sizeof(out));
@@ -7382,7 +7397,6 @@ dhcpv6c_dbg_thrd(void * in)
 			 
 					if(GenIPv6Prefix(token,v6Tpref,out1))
 					{
-						char tbuff[100];
 						memset(cmd,0,sizeof(cmd));
                         			memset(interface_name,0,sizeof(interface_name));
 
@@ -7439,12 +7453,13 @@ dhcpv6c_dbg_thrd(void * in)
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_VLDTM_SYSEVENT_NAME, iapd_vldtm);
 
 #if defined (MULTILAN_FEATURE)
+                        ULONG idx = 0;
                         for ( idx=0; idx<uDhcpv6ServerPoolNum; idx++)
                         {
                               if(sDhcpv6ServerPool[idx].Cfg.LeaseTime != atoi(iapd_pretm))
                               {
                                   sDhcpv6ServerPool[idx].Cfg.LeaseTime = atoi(iapd_pretm);
-                                  setpool_into_utopia(DHCPV6S_NAME, "pool", idx, &sDhcpv6ServerPool[idx]);
+                                  setpool_into_utopia((PUCHAR)DHCPV6S_NAME, (PUCHAR)"pool", idx, &sDhcpv6ServerPool[idx]);
                               }
                         }
 #endif
@@ -7564,6 +7579,7 @@ dhcpv6c_dbg_thrd(void * in)
                             v_secure_system("ip -6 addr add %s/64 dev %s valid_lft %s preferred_lft %s", globalIP, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
                         }
                         if(strlen(v6pref) > 0) {
+                            char v6pref_addr[128] = {0};
                             strncpy(v6pref_addr, v6pref, (strlen(v6pref)-5));
                             CcspTraceInfo(("Going to set ::1 address on brlan0 interface \n"));
                             v_secure_system("ip -6 addr add %s::1/64 dev %s valid_lft %s preferred_lft %s", v6pref_addr, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
@@ -7650,7 +7666,7 @@ dhcpv6c_dbg_thrd(void * in)
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && (defined(_CBR_PRODUCT_REQ_) || defined(_BCI_FEATURE_REQ))
 
 #else
-		system("sysevent set zebra-restart");
+		v_secure_system("sysevent set zebra-restart");
 #endif
                 if (pString)
                     AnscFreeMemory(pString);                    

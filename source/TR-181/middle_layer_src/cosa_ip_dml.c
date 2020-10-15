@@ -87,6 +87,8 @@ BOOL CosaIpifGetSetSupported(char * pParamName);
 
 #include <net/if.h>
 
+ANSC_STATUS COSAGetParamValueByPathName(parameterValStruct_t *val, ULONG *parameterValueLength);
+
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -170,6 +172,7 @@ IP_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "IPv4Capable", TRUE))
     {
@@ -241,6 +244,9 @@ IP_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -285,6 +291,7 @@ IP_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "IPv4Status", TRUE))
     {
@@ -352,6 +359,8 @@ IP_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pUlSize);
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "ULAPrefix", TRUE))
     {
@@ -401,6 +410,8 @@ IP_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(bValue);
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "IPv4Enable", TRUE))
     {
@@ -457,6 +468,9 @@ IP_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -501,6 +515,9 @@ IP_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -545,6 +562,8 @@ IP_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pString);
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "ULAPrefix", TRUE))
     {
@@ -595,6 +614,9 @@ IP_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -626,6 +648,7 @@ IP_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -658,6 +681,7 @@ IP_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -712,6 +736,7 @@ Interface2_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IP              pMyObject = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP;
 
     return AnscSListQueryDepth(&pMyObject->InterfaceList);
@@ -755,6 +780,7 @@ Interface2_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IP              pMyObject     = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP; 
     PSLIST_HEADER                   pIPIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -804,6 +830,7 @@ Interface2_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IP              pMyObject     = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP; 
     PSLIST_HEADER                   pIPIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -830,7 +857,7 @@ Interface2_AddEntry
     pIPInterface->Cfg.IfType   = COSA_DML_IP_IF_TYPE_Normal;
 #endif
 
-    _ansc_sprintf(pIPInterface->Cfg.Alias, "Interface%d", pMyObject->ulNextInterfaceInsNum);
+    _ansc_sprintf(pIPInterface->Cfg.Alias, "Interface%lu", pMyObject->ulNextInterfaceInsNum);
 
     AnscSListInitializeHeader(&pIPInterface->IPV4List);
     
@@ -913,7 +940,7 @@ Interface2_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
-    ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IP              pMyObject     = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP; 
     PSLIST_HEADER                   pIPIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
@@ -1085,6 +1112,9 @@ Interface2_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1291,6 +1321,7 @@ Interface2_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
     PUCHAR                          pLowerLayer             = NULL;
@@ -1333,8 +1364,8 @@ Interface2_GetParamStringValue
                 /* Link instance number/LinkName is invalid*/
                 char* linkTypePath = CosaUtilGetLinkTypePath(pIPInterface->Cfg.LinkType);
 
-                if ( pLowerLayer = CosaUtilGetLowerLayers(linkTypePath, pIPInterface->Cfg.LinkName) )
-                    _ansc_strcpy(pIPInterface->Cfg.LowerLayers, pLowerLayer);
+                if (( pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)linkTypePath, (PUCHAR)pIPInterface->Cfg.LinkName) ))
+                    _ansc_strcpy(pIPInterface->Cfg.LowerLayers, (char*)pLowerLayer);
                 else
                     AnscCopyString(pIPInterface->Cfg.LowerLayers, "");
             }
@@ -1342,7 +1373,7 @@ Interface2_GetParamStringValue
             {
                 char* linkTypePath = CosaUtilGetLinkTypePath(pIPInterface->Cfg.LinkType);
 
-                _ansc_sprintf(pIPInterface->Cfg.LowerLayers, "%s%d", linkTypePath, pIPInterface->Cfg.LinkInstNum);
+                _ansc_sprintf(pIPInterface->Cfg.LowerLayers, "%s%lu", linkTypePath, pIPInterface->Cfg.LinkInstNum);
             }
         }
 
@@ -1525,6 +1556,9 @@ Interface2_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1669,12 +1703,12 @@ Interface2_SetParamStringValue
         else
         {
             ULONG                           ulIndex;
-            UCHAR                           ucEntryParamName[256]       = {0};
-            UCHAR                           ucEntryNameValue[256]       = {0};
+            CHAR                           ucEntryParamName[256]       = {0};
+            CHAR                           ucEntryNameValue[256]       = {0};
 #if defined (MULTILAN_FEATURE)
             ULONG                           ulEntryNameLen = 256;
 #else
-      	    int                             size;
+      	    ULONG                           size;
             parameterValStruct_t            varStruct;
 #endif
  
@@ -1692,7 +1726,7 @@ Interface2_SetParamStringValue
             {
                 pIPInterface->Cfg.LinkType    = COSA_DML_LINK_TYPE_LAST;
                 pIPInterface->Cfg.LinkInstNum = 0;
-                pIPInterface->Cfg.LinkName[0] = "\0";
+                pIPInterface->Cfg.LinkName[0] = '\0';
             }
             else
             {
@@ -2086,7 +2120,7 @@ IPv4Address_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pIPv4Addr->Alias, "IPv4Address%d", pIPInterface->ulNextIPV4InsNum);
+    _ansc_sprintf(pIPv4Addr->Alias, "IPv4Address%lu", pIPInterface->ulNextIPV4InsNum);
 
     /* Update the middle layer data */
     if ( TRUE )
@@ -2166,7 +2200,6 @@ IPv4Address_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
-    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_IP              pMyObject       = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface    = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
@@ -2287,6 +2320,9 @@ IPv4Address_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2334,13 +2370,12 @@ IPv4Address_GetParamUlongValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr    = (PCOSA_DML_IP_V4ADDR)pCosaContext->hContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hParentTable;
-    BOOL                                      bridgeMode;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "IPAddress", TRUE))
     {
 #if !defined(_COSA_BCM_MIPS_) && !defined(_ENABLE_DSL_SUPPORT_)
-        if (pIPv4Addr->AddressingType == COSA_DML_IP_ADDR_TYPE_Static && pIPInterface->Cfg.InstanceNumber >= CosaGetUsgIfNum())
+        if ((pIPv4Addr->AddressingType == COSA_DML_IP_ADDR_TYPE_Static) && (pIPInterface->Cfg.InstanceNumber >= (ULONG)CosaGetUsgIfNum()))
         {
 	    CosaDmlIpIfMlanGetIPv4Addr(pIPInterface->Cfg.InstanceNumber, pIPv4Addr);
             *puLong = pIPv4Addr->IPAddress.Value;
@@ -2357,13 +2392,14 @@ IPv4Address_GetParamUlongValue
 
     if( AnscEqualString(ParamName, "SubnetMask", TRUE))
     {
+        //BOOL                                      bridgeMode;
         //if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
         //   (TRUE == bridgeMode))
         //{
         //    *puLong = 0; 
         //}
 #if !defined(_COSA_BCM_MIPS_) && !defined(_ENABLE_DSL_SUPPORT_)
-        if (pIPv4Addr->AddressingType == COSA_DML_IP_ADDR_TYPE_Static && pIPInterface->Cfg.InstanceNumber >= CosaGetUsgIfNum())
+        if ((pIPv4Addr->AddressingType == COSA_DML_IP_ADDR_TYPE_Static) && (pIPInterface->Cfg.InstanceNumber >= (ULONG)CosaGetUsgIfNum()))
         {
 	    CosaDmlIpIfMlanGetSubnetMask(pIPInterface->Cfg.InstanceNumber, pIPv4Addr);
             *puLong = pIPv4Addr->SubnetMask.Value;
@@ -2445,6 +2481,7 @@ IPv4Address_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr    = (PCOSA_DML_IP_V4ADDR)pCosaContext->hContext;
     
@@ -2559,6 +2596,9 @@ IPv4Address_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3037,7 +3077,6 @@ IPv6Address_Synchronize
     )
 {
     ANSC_STATUS                           returnStatus      = ANSC_STATUS_FAILURE;
-    PCOSA_DATAMODEL_IP                    pIP              = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP;
     PCOSA_CONTEXT_LINK_OBJECT             pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2                 pIPInterface     = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT             pCxtLink     = NULL;
@@ -3148,10 +3187,9 @@ IPv6Address_Synchronize
     }
 
     {
-        ULONG ret = 0;
+        /*ULONG ret = 0;
         
-        ret = AnscSListQueryDepth(&pIPInterface->IPV6List);
-
+        ret = AnscSListQueryDepth(&pIPInterface->IPV6List);*/
     }
         
     returnStatus =  ANSC_STATUS_SUCCESS;
@@ -3223,7 +3261,7 @@ IPv6Address_AddEntry
     AnscCopyString(pIPv6Addr->ValidLifetime, "9999-12-31T23:59:59Z");
 
 
-    _ansc_sprintf(pIPv6Addr->Alias, "IPv6Address%d", pIPInterface->ulNextIPV6InsNum);
+    _ansc_sprintf(pIPv6Addr->Alias, "IPv6Address%lu", pIPInterface->ulNextIPV6InsNum);
 
     /* Update the middle layer data */
     if ( TRUE )
@@ -3304,7 +3342,6 @@ IPv6Address_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
-    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_IP              pMyObject       = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface    = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
@@ -3429,9 +3466,12 @@ IPv6Address_GetParamIntValue
         int*                        pInt
     )
 {
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+    /*PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V6ADDR             pIPv6Addr    = (PCOSA_DML_IP_V6ADDR)pCosaContext->hContext;
-    PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hParentTable;
+    PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hParentTable;*/
 
     /* check the parameter name and return the corresponding value */
 
@@ -3575,6 +3615,7 @@ IPv6Address_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V6ADDR             pIPv6Addr    = (PCOSA_DML_IP_V6ADDR)pCosaContext->hContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hParentTable;
@@ -3737,6 +3778,9 @@ IPv6Address_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3971,7 +4015,7 @@ IPv6Address_Validate
     PCOSA_DML_IP_V6ADDR             pIPv6Addr     = (PCOSA_DML_IP_V6ADDR)pCosaContext->hContext;
     PCOSA_DML_IP_V6ADDR             pIPv6Addr2    = (PCOSA_DML_IP_V6ADDR)NULL;
     PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
-    struct in6_addr                 in6           = {0};
+    struct in6_addr                 in6;
 
     pLink = AnscSListGetFirstEntry(&pIPInterface->IPV6List);
 
@@ -4308,7 +4352,6 @@ IPv6Prefix_Synchronize
     )
 {
     ANSC_STATUS                           returnStatus      = ANSC_STATUS_FAILURE;
-    PCOSA_DATAMODEL_IP                    pIP              = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP;
     PCOSA_CONTEXT_LINK_OBJECT             pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2                 pIPInterface     = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT             pCxtLink     = NULL;
@@ -4486,7 +4529,7 @@ IPv6Prefix_AddEntry
     AnscCopyString(pIPv6Pre->PreferredLifetime, "0001-01-01T00:00:00Z");
     AnscCopyString(pIPv6Pre->ValidLifetime, "0001-01-01T00:00:00Z");
 
-    _ansc_sprintf(pIPv6Pre->Alias, "IPv6Prefix%d", pIPInterface->ulNextIPV6PreInsNum);
+    _ansc_sprintf(pIPv6Pre->Alias, "IPv6Prefix%lu", pIPInterface->ulNextIPV6PreInsNum);
 
     /* Update the middle layer data */
     if ( TRUE )
@@ -4567,7 +4610,6 @@ IPv6Prefix_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
-    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_IP              pMyObject       = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface    = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
@@ -4698,6 +4740,9 @@ IPv6Prefix_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -4841,6 +4886,7 @@ IPv6Prefix_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V6PREFIX           pIPv6Pre     = (PCOSA_DML_IP_V6PREFIX)pCosaContext->hContext;
 
@@ -5018,6 +5064,9 @@ IPv6Prefix_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5241,7 +5290,7 @@ IPv6Prefix_Validate
     PCOSA_DML_IP_V6PREFIX           pIPv6Pre      = (PCOSA_DML_IP_V6PREFIX)pCosaContext->hContext;
     PCOSA_DML_IP_V6PREFIX           pIPv6Pre2     = (PCOSA_DML_IP_V6PREFIX)NULL;
     PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
-    struct in6_addr                 in6           = {0};
+    struct in6_addr                 in6;
     char *                          p             =  NULL;
 
     pLink = AnscSListGetFirstEntry(&pIPInterface->IPV6PrefixList);
@@ -5453,6 +5502,9 @@ Stats5_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5497,6 +5549,9 @@ Stats5_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5722,6 +5777,10 @@ Stats5_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5772,6 +5831,7 @@ ActivePort_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IP              pMyObject     = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP;
     ULONG                           entryCount    = 0;
     
@@ -5818,6 +5878,7 @@ ActivePort_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IP              pMyObject     = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP;
     ULONG                           entryCount    = 0;
     PCOSA_DML_IP_ACTIVE_PORT        pActivePort   = (PCOSA_DML_IP_ACTIVE_PORT)pMyObject->pActivePort;
@@ -5861,6 +5922,7 @@ ActivePort_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if (!last_tick) 
     {
         last_tick = AnscGetTickInSeconds();
@@ -5908,6 +5970,7 @@ ActivePort_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_IP              pMyObject     = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP;
     PCOSA_DML_IP_ACTIVE_PORT        pActivePort   = (PCOSA_DML_IP_ACTIVE_PORT)NULL;
@@ -5978,6 +6041,9 @@ ActivePort_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -6022,6 +6088,9 @@ ActivePort_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -6142,6 +6211,7 @@ ActivePort_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DML_IP_ACTIVE_PORT        pActivePort   = (PCOSA_DML_IP_ACTIVE_PORT)hInsContext;
 
     /* check the parameter name and return the corresponding value */

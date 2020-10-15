@@ -54,9 +54,6 @@
         05/9/2019    initial revision.
 
 **************************************************************************/
-
-#include "cosa_lanmanagement_apis.h"
-
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <ifaddrs.h>
@@ -67,6 +64,12 @@
 #include <sys/un.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include "cosa_lanmanagement_apis.h"
+#include "syscfg/syscfg.h"
+#include "utapi/utapi.h"
+#include "utapi/utapi_util.h"
+#include "ccsp_psm_helper.h"
 
 #define PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE  "dmsb.lanmanagemententry.lanulaenable"
 #define PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE "dmsb.lanmanagemententry.lanipv6enable"
@@ -88,7 +91,7 @@ COSA_DML_LANMANAGEMENT_CFG    g_LanMngmCfg = {0};
 
 static int openCommonSyseventConnection() {
     if (commonSyseventFd == -1) {
-        commonSyseventFd = s_sysevent_connect(&commonSyseventToken);
+        commonSyseventFd = s_sysevent_connect((token_t*)&commonSyseventToken);
     }
     return 0;
 }
@@ -203,7 +206,7 @@ static int generateIpv6LanPrefix(char *lanPrefix, int lanPrefixLen) {
 static int setLanIpv6ULAPrefix(char *ula_prefix) {
 
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX, NULL, ula_prefix) )
+    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX, (UINT)NULL, ula_prefix) )
     {
         return ANSC_STATUS_FAILURE;
     }
@@ -214,7 +217,7 @@ static int setLanIpv6ULAPrefix(char *ula_prefix) {
 static int setLanIpv6ULA(char *ula_prefix) {
 
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA, NULL, ula_prefix) )
+    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_ULA, (UINT)NULL, ula_prefix) )
     {
         return ANSC_STATUS_FAILURE;
     }
@@ -227,7 +230,7 @@ static ANSC_STATUS setLanIpv6Enable(BOOLEAN ipv6_enable) {
 
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
-    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE, NULL, ( ipv6_enable ) ? "TRUE"  : "FALSE"))
+    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE, (UINT)NULL, ( ipv6_enable ) ? "TRUE"  : "FALSE"))
     {
         return ANSC_STATUS_FAILURE;
     }
@@ -239,7 +242,7 @@ static ANSC_STATUS setLanIpv6UlaEnable(BOOLEAN ula_enable) {
 
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
-    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, "eRT.", PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE, NULL, ( ula_enable ) ? "TRUE"  : "FALSE"))
+    if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, "eRT.", PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE, (UINT)NULL, ( ula_enable ) ? "TRUE"  : "FALSE"))
     {
         return ANSC_STATUS_FAILURE;
     }
@@ -349,11 +352,11 @@ ANSC_STATUS CosaDmlLanManagement_SetLanIpv6Ula(char *lan_prefix, int lan_prefix_
 
         CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
         if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent),
-                       PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX, NULL, lan_prefix) ) {
+                       PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX, (UINT)NULL, lan_prefix) ) {
             return ANSC_STATUS_FAILURE;
         }
         if(CCSP_SUCCESS != PSM_Set_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent),
-                       PSM_LANMANAGEMENTENTRY_LAN_ULA, NULL, lan_ula) ) {
+                       PSM_LANMANAGEMENTENTRY_LAN_ULA, (UINT)NULL, lan_ula) ) {
             return ANSC_STATUS_FAILURE;
         }
     }
@@ -371,6 +374,7 @@ ANSC_STATUS CosaDmlLanManagement_SetLanIpv6Ula(char *lan_prefix, int lan_prefix_
 }
 
 static ANSC_STATUS CosaDmlLanManagement_GetCfg(ANSC_HANDLE hContext, PCOSA_DML_LANMANAGEMENT_CFG pLanMngmCfg) {
+    UNREFERENCED_PARAMETER(hContext);
     char *pIpv6_enable = NULL;
     char *pUla_enable  = NULL;
     char *pUla_prefix  = NULL;
@@ -448,6 +452,7 @@ CosaDmlLanManagementInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
     PCOSA_DML_LANMANAGEMENT_CFG pLanMngmCfg = (PCOSA_DML_LANMANAGEMENT_CFG) phContext;
     if(CosaDmlLanManagement_GetCfg(NULL, pLanMngmCfg) == ANSC_STATUS_FAILURE) {
         AnscTraceWarning(("%s CosaDmlLanManagementGetCfg() failure \n", __FUNCTION__));
@@ -468,6 +473,7 @@ CosaDmlLanManagementSetCfg
         PCOSA_DML_LANMANAGEMENT_CFG pLanMngmCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     BOOLEAN isUlaPrefixChanged = FALSE, isIpv6UlaEnableChanged = FALSE, isIpv6EnableChanged = FALSE;
 
     if (pLanMngmCfg == NULL) {
@@ -535,6 +541,7 @@ CosaDmlLanManagementGetCfg
         PCOSA_DML_LANMANAGEMENT_CFG          pLanMngmCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (pLanMngmCfg)
         AnscCopyMemory(pLanMngmCfg, &g_LanMngmCfg, sizeof(COSA_DML_LANMANAGEMENT_CFG));
 

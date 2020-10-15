@@ -66,7 +66,7 @@ void* helper_convert_array( const void *buf, size_t len,
 
             /* The outermost wrapper is not present */
             mp_rv = msgpack_unpack_next( &msg, (const char*) buf, len, &offset );
-			printf("mp_rv is %d MSGPACK_UNPACK_SUCCESS %d offset %lu\n", mp_rv, MSGPACK_UNPACK_SUCCESS, offset);
+			printf("mp_rv is %d MSGPACK_UNPACK_SUCCESS %d offset %lu\n", mp_rv, MSGPACK_UNPACK_SUCCESS, (long unsigned int)offset);
 			msgpack_object obj = msg.data;
 			msgpack_object_print(stdout, obj);
 

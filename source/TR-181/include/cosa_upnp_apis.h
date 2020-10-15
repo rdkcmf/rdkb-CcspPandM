@@ -156,5 +156,32 @@ CosaDmlUpnpGetDiscoveryPollingInterval
         ANSC_HANDLE                 hContext
     );
 
+ANSC_STATUS
+CosaDmlUpnpDevGetAdvPeriod
+    (
+        ANSC_HANDLE                 hContext,
+        PULONG                     *val
+    );
+
+ANSC_STATUS
+CosaDmlUpnpDevGetTTL
+    (
+        ANSC_HANDLE                 hContext,
+        PULONG                     *val
+    );
+
+ANSC_STATUS
+CosaDmlUpnpDevSetTTL
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       val
+    );
+
+ANSC_STATUS
+CosaDmlUpnpDevSetAdvPeriod
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       val
+    );
 #endif
 

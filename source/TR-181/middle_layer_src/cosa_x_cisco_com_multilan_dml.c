@@ -163,6 +163,7 @@ X_CISCO_COM_MultiLAN_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus;
     PCOSA_BASE_OBJECT               pMyObject    = (PCOSA_BASE_OBJECT)g_pCosaBEManager->hMultiLan;
 

@@ -167,8 +167,9 @@ UserInterface_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
-	if( AnscEqualString(ParamName, "PasswordReset", TRUE))
+    if( AnscEqualString(ParamName, "PasswordReset", TRUE))
     {
         *pBool = FALSE;
         return TRUE;
@@ -189,10 +190,12 @@ UserInterface_GetParamBoolValue
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
-void ResetPassword()
+void* ResetPassword(void* arg)
 {
-	pthread_detach(pthread_self());
-	system("dmcli eRT setv Device.Users.User.3.X_CISCO_COM_Password string password");
+    UNREFERENCED_PARAMETER(arg);
+    pthread_detach(pthread_self());
+    system("dmcli eRT setv Device.Users.User.3.X_CISCO_COM_Password string password");
+    return NULL;
 }
 
 BOOL
@@ -203,6 +206,7 @@ UserInterface_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 
 	if( AnscEqualString(ParamName, "PasswordReset", TRUE))
@@ -268,6 +272,7 @@ UserInterface_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 
     /* CosaDmlRaGetCfg(NULL, &pMyObject->RaCfg); */
@@ -326,6 +331,7 @@ UserInterface_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 
     if( AnscEqualString(ParamName, "PasswordLockoutAttempts", TRUE))
@@ -379,6 +385,9 @@ UserInterface_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -410,6 +419,7 @@ UserInterface_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 
     CosaDmlUserInterfaceSetCfg(NULL, &pMyObject->UserInterfaceCfg);
@@ -474,6 +484,7 @@ RemoteAccess_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 
     /* CosaDmlRaGetCfg(NULL, &pMyObject->RaCfg); */
@@ -569,6 +580,9 @@ RemoteAccess_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -610,6 +624,7 @@ RemoteAccess_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 
     /* CosaDmlRaGetCfg(NULL, &pMyObject->RaCfg); */
@@ -702,6 +717,8 @@ RemoteAccess_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 
     if( AnscEqualString(ParamName, "SupportedProtocols", TRUE))
@@ -762,6 +779,7 @@ RemoteAccess_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 
     if( AnscEqualString(ParamName, "Enable", TRUE))
@@ -855,6 +873,9 @@ RemoteAccess_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     return FALSE;
 }
 
@@ -896,8 +917,9 @@ RemoteAccess_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
-    ULONG val = "4294967295";                       //ULONG value of 255.255.255.255
+    ULONG val = 4294967295ULL;                       //ULONG value of 255.255.255.255
     
     /*for single computer startIp and EndIp will be equal;
     if its set to empty in UI, default value 255.255.255.255 is taken. */
@@ -985,6 +1007,7 @@ RemoteAccess_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
     char* val = "x";
@@ -994,7 +1017,7 @@ RemoteAccess_SetParamStringValue
     
     if( AnscEqualString(ParamName, "StartIpV6", TRUE))
     {
-        if((strcmp(pString,val)==0) || (is_Ipv6_address(pString)))
+        if((strcmp(pString,val)==0) || (is_Ipv6_address((PUCHAR)pString)))
         {
             AnscCopyString(pMyObject->RaCfg.StartIpV6, pString);
             return TRUE;
@@ -1002,7 +1025,7 @@ RemoteAccess_SetParamStringValue
     }
     if( AnscEqualString(ParamName, "EndIpV6", TRUE))
     {
-        if((strcmp(pString,val)==0) || (is_Ipv6_address(pString)))
+        if((strcmp(pString,val)==0) || (is_Ipv6_address((PUCHAR)pString)))
         {
             AnscCopyString(pMyObject->RaCfg.EndIpV6, pString);
             return TRUE;
@@ -1049,6 +1072,9 @@ RemoteAccess_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -1080,6 +1106,7 @@ RemoteAccess_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 
     CosaDmlRaSetCfg(NULL, &pMyObject->RaCfg);
@@ -1116,6 +1143,7 @@ RemoteAccess_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 
     CosaDmlRaGetCfg(NULL, &pMyObject->RaCfg);
@@ -1131,6 +1159,7 @@ iprange_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
     
     return AnscSListQueryDepth(&pMyObject->iprangeList);
@@ -1144,6 +1173,7 @@ iprange_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject    = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
     PSLIST_HEADER                   piprangeHead  = (PSLIST_HEADER)&pMyObject->iprangeList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -1167,11 +1197,11 @@ iprange_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject               = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->iprangeList;
     PCOSA_DML_UI_IPRANGE_ENTRY      pEntry                  = (PCOSA_DML_UI_IPRANGE_ENTRY)NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PSINGLE_LINK_ENTRY              pSLinkEntry             = (PSINGLE_LINK_ENTRY       )NULL;
 
     pEntry = (PCOSA_DML_UI_IPRANGE_ENTRY)AnscAllocateMemory(sizeof(COSA_DML_UI_IPRANGE_ENTRY));
     if (!pEntry)
@@ -1179,7 +1209,7 @@ iprange_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Alias, "iprange%d", pMyObject->uliprangeNextInsNum);
+    _ansc_sprintf(pEntry->Alias, "iprange%lu", pMyObject->uliprangeNextInsNum);
 
     /* Update the cache */
     pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
@@ -1217,6 +1247,7 @@ iprange_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject               = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_UI_IPRANGE_ENTRY      pEntry                  = (PCOSA_DML_UI_IPRANGE_ENTRY)pCosaContext->hContext;
@@ -1247,6 +1278,7 @@ iprange_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_UI_IPRANGE_ENTRY      piprange      = (PCOSA_DML_UI_IPRANGE_ENTRY)pCosaContext->hContext;
 
@@ -1321,6 +1353,9 @@ iprange_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -1330,7 +1365,6 @@ iprange_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_USERINTERFACE   pMyObject    = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_UI_IPRANGE_ENTRY      piprange      = (PCOSA_DML_UI_IPRANGE_ENTRY)pCosaContext->hContext;
 
@@ -1355,7 +1389,6 @@ iprange_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {   
-    PCOSA_DATAMODEL_USERINTERFACE   pMyObject    = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_UI_IPRANGE_ENTRY      piprange      = (PCOSA_DML_UI_IPRANGE_ENTRY)pCosaContext->hContext;
 

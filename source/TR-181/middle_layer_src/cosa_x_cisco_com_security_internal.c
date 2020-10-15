@@ -98,7 +98,6 @@ CosaSecurityCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_SECURITY        pMyObject    = (PCOSA_DATAMODEL_SECURITY)NULL;
 
     /*
@@ -414,7 +413,7 @@ CosaSecurityInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pDmlIAPolicy->Alias, "DmlIAPolicy%d", pMyObject->ulNextAPInstanceNum);
+                _ansc_sprintf(pDmlIAPolicy->Alias, "DmlIAPolicy%lu", pMyObject->ulNextAPInstanceNum);
 
                 returnStatus = 
                     CosaDmlIaSetPolicyValues
@@ -463,7 +462,7 @@ CosaSecurityInitialize
             _ansc_sprintf
                 (
                     FolderName, 
-                    "%s%d", 
+                    "%s%lu", 
                     COSA_DML_RR_NAME_IA_URL_NextInsNunmber, 
                     pDmlIAPolicy->InstanceNumber
                 );
@@ -551,7 +550,7 @@ CosaSecurityInitialize
                     }
 
                     /* Generate Alias */
-                    _ansc_sprintf(pURL->Alias, "BlockedURL%d", pCosaContext2->InstanceNumber);
+                    _ansc_sprintf(pURL->Alias, "BlockedURL%lu", pCosaContext2->InstanceNumber);
 
                     /* TODO: Set InstanceNumber Alias back */
                     returnStatus =
@@ -595,7 +594,7 @@ CosaSecurityInitialize
             _ansc_sprintf
                 (
                     FolderName, 
-                    "%s%d", 
+                    "%s%lu", 
                     COSA_DML_RR_NAME_IA_KEYWORD_NextInsNunmber, 
                     pDmlIAPolicy->InstanceNumber
                 );
@@ -683,7 +682,7 @@ CosaSecurityInitialize
                     }
 
                     /* Generate Alias */
-                    _ansc_sprintf(pKeyword->Alias, "BlockedKeyword%d", pCosaContext2->InstanceNumber);
+                    _ansc_sprintf(pKeyword->Alias, "BlockedKeyword%lu", pCosaContext2->InstanceNumber);
 
                     /* TODO: Set InstanceNumber Alias back */
                     returnStatus = 
@@ -727,7 +726,7 @@ CosaSecurityInitialize
             _ansc_sprintf
                 (
                     FolderName, 
-                    "%s%d", 
+                    "%s%lu", 
                     COSA_DML_RR_NAME_IA_APP_NextInsNunmber, 
                     pDmlIAPolicy->InstanceNumber
                 );
@@ -815,7 +814,7 @@ CosaSecurityInitialize
                     }
 
                     /* Generate Alias */
-                    _ansc_sprintf(pApp->Alias, "BlockedApp%d", pCosaContext2->InstanceNumber);
+                    _ansc_sprintf(pApp->Alias, "BlockedApp%lu", pCosaContext2->InstanceNumber);
 
                     /* TODO: Set InstanceNumber Alias back */
                     returnStatus = 
@@ -1506,7 +1505,7 @@ CosaSecurityIARegAddInfo
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%d", pNextInsNumName, ulUpperInsNum);
+    _ansc_sprintf(FolderName, "%s%lu", pNextInsNumName, ulUpperInsNum);
 
     if ( TRUE )
     {
@@ -1562,7 +1561,7 @@ CosaSecurityIARegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%d%d", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        _ansc_sprintf(FolderName, "%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
 
         pPoamIrepFo =
             pPoamIrepFoUpper->AddFolder
@@ -1690,8 +1689,7 @@ CosaSecurityIARegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_SECURITY        pMyObject         = (PCOSA_DATAMODEL_SECURITY )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;

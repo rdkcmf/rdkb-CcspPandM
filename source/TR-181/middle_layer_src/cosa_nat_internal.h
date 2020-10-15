@@ -136,8 +136,8 @@ COSA_CONTEXT_PMAPPING_LINK_OBJECT,  *PCOSA_CONTEXT_PMAPPING_LINK_OBJECT;
     (pPortMapping)->InternalPort             = 0;                                           \
     (pPortMapping)->Protocol                 = 0;                                           \
     (pPortMapping)->InternalClient.Value     = 0xFFFFFFFF;                                  \
-    //AnscZeroMemory( (pPortMapping)->Description, sizeof( (pPortMapping)->Description ) );   \
-    AnscZeroMemory( (pPortMapping)->Interface, sizeof( (pPortMapping)->Interface ) );       \
+    /*AnscZeroMemory( (pPortMapping)->Description, sizeof( (pPortMapping)->Description ) );   \
+    AnscZeroMemory( (pPortMapping)->Interface, sizeof( (pPortMapping)->Interface ) );       \ */
 
 /**********************************
     Standard function declaration

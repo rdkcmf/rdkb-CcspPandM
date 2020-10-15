@@ -61,6 +61,7 @@
 **************************************************************************/
 
 #include "cosa_firewall_apis.h"
+#include <syscfg/syscfg.h>
 
 #define V4_BLOCKFRAGIPPKT   "v4_BlockFragIPPkts"
 #define V4_PORTSCANPROTECT  "v4_PortScanProtect"
@@ -231,6 +232,8 @@ CosaDmlFirewallInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -267,6 +270,8 @@ CosaDmlFirewallGetConfig
         PCOSA_DML_FIREWALL_CFG      pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCfg);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -304,6 +309,8 @@ CosaDmlFirewallSetConfig
         PCOSA_DML_FIREWALL_CFG      pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCfg);
     return ANSC_STATUS_SUCCESS;
 }
 

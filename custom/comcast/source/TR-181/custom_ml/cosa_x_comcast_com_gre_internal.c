@@ -50,7 +50,6 @@ CosaGreCreate
         VOID
     )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     COSA_DATAMODEL_GRE          *pMyObject   = NULL;
 
     pMyObject = AnscAllocateMemory(sizeof(COSA_DATAMODEL_GRE));

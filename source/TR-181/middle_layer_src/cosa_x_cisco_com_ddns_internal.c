@@ -100,7 +100,6 @@ CosaDdnsCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DDNS            pMyObject    = (PCOSA_DATAMODEL_DDNS)NULL;
 
     /*
@@ -310,7 +309,7 @@ CosaDdnsInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pDdnsService->Alias, "DdnsService%d", pCosaContext->InstanceNumber);
+                _ansc_sprintf(pDdnsService->Alias, "DdnsService%lu", pCosaContext->InstanceNumber);
 
                 returnStatus = 
                     CosaDmlDdnsServiceSetValues
@@ -474,7 +473,6 @@ CosaDdnsRegGetDdnsInfo
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoDdnsSp = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_DDNS_SERVICE          pDdnsService      = (PCOSA_DML_DDNS_SERVICE   )NULL;
-    PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;
     PSLAP_VARIABLE                  pSlapVariable     = (PSLAP_VARIABLE           )NULL;
     ULONG                           ulEntryCount      = 0;
     ULONG                           ulIndex           = 0;
@@ -811,8 +809,7 @@ CosaDdnsRegDelDdnsInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_DDNS            pMyObject         = (PCOSA_DATAMODEL_DDNS     )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoDdns   = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoDdnsSp = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;

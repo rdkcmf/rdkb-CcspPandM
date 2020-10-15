@@ -588,7 +588,7 @@ CosaDmlDiSetSyndicationTR69CertLocation
         char*                       pValue
     );
 
-void CosaDmlDiPartnerIDChangeHandling( void* buff );
+void* CosaDmlDiPartnerIDChangeHandling();
 
 ANSC_STATUS
 CosaDmlDiGetSyndicationLocalUIBrandingTable
@@ -631,9 +631,6 @@ ANSC_STATUS UpdateJsonParam
 		char*			pCurrentTime
     );
 
-static int writeToJson(char *data, char *file);
-
-
 ANSC_STATUS
 CosaDmlDiWiFiTelemetryInit
   (
@@ -648,6 +645,145 @@ CosaDmlDiUniqueTelemetryIdInit
 
 void ConvertTime(int time, char day[], char hour[], char mins[]);
 
-void UniqueTelemetryCronJob(enable, timeInterval, tagString);
+void UniqueTelemetryCronJob(BOOL enable, INT timeInterval, char* tagString);
+INT platform_hal_getCMTSMac(CHAR *pValue);
+
+ULONG
+CosaDmlDiGetBootTime
+    (
+        ANSC_HANDLE                 Context
+    );
+
+ANSC_STATUS
+CosaDmlDiGetFactoryResetCount
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       *pValue
+    );
+
+ANSC_STATUS
+CosaDmlDiGetHardware_MemUsed
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    );
+
+ANSC_STATUS
+CosaDmlDiGetHardware_MemFree
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        PULONG                      pulSize
+    );
+
+ANSC_STATUS
+CosaDmlDiGetCMTSMac
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue,
+        ULONG*                      pulSize
+    );
+
+ANSC_STATUS CosaDmlDiClearResetCount
+    (
+        ANSC_HANDLE                 hContext,
+        BOOL                        bValue
+   );
+
+ANSC_STATUS
+CosaDmlSetnewNTPEnable(BOOL bValue);
+
+BOOL CosaDmlGetInternetStatus();
+
+ANSC_STATUS
+COSADmlUploadLogsStatus
+    (
+        ANSC_HANDLE                 Context,
+        char*   pValue,
+        ULONG*  pUlSize
+    );
+
+ANSC_STATUS
+COSADmlUploadLogsNow
+        (
+                ANSC_HANDLE                 hContext,
+                BOOL                        bEnable
+        );
+
+void CosaDmlPresenceEnable(BOOL enable);
+
+ANSC_STATUS
+StartRfcProcessing();
+
+ANSC_STATUS
+EndRfcProcessing(cJSON **pRfcStore);
+
+ANSC_STATUS
+CosaDmlDiSet_SyndicationFlowControl_Enable
+    (
+        char bValue
+    );
+
+ANSC_STATUS
+CosaDmlDiSet_SyndicationFlowControl_InitialForwardedMark
+    (
+        char *pString
+    );
+
+ANSC_STATUS
+CosaDmlDiSet_SyndicationFlowControl_InitialOutputMark
+    (
+        char *pString
+    );
+
+ANSC_STATUS 
+setTempPartnerId
+    (
+        char*                       pValue
+    );
+
+ANSC_STATUS 
+getFactoryPartnerId
+    (
+        char*                       pValue,
+        PULONG                      pulSize
+    );
+
+ANSC_STATUS
+CosaDeriveSyndicationPartnerID
+    (
+        char *Partner_ID
+    );
+
+ANSC_STATUS
+CosaDmlDiSyndicationFlowControlInit
+    (
+        PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL pSyndicatonFlowControl
+    );
+
+ANSC_STATUS
+CosaDmlDiRfcDefaultsInit
+    (
+        cJSON **pRfcDefaults
+    );
+
+ANSC_STATUS
+CosaDmlDiRfcStoreInit
+    (
+        cJSON **pRfcStore
+    );
+
+ANSC_STATUS 
+activatePartnerId();
+
+ANSC_STATUS
+ProcessRfcSet(cJSON **pRfcStore, BOOL clearDB, char *paramFullName, char *value, char *pSource, char *pCurrentTime);
+
+ANSC_STATUS
+CosaDmlScheduleAutoReboot(int ConfiguredUpTime, BOOL bValue);
+
+int 
+setMultiProfileXdnsConfig(BOOL bValue);
 
 #endif

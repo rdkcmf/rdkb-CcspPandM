@@ -19,11 +19,11 @@
 
 #include "cosa_webconfig_api.h"
 #include "webconfig_framework.h"
-
+#include "cosa_nat_webconfig_apis.h"
 #include "cosa_nat_apis.h"
 #include "cosa_nat_internal.h"
 #include "plugin_main_apis.h"
-
+#include <syscfg/syscfg.h>
 
 /* Initialize dmz cache , this API will be called once in boot up */
 void init_dmz_cache(t_cache *tmp_dmz_cache)

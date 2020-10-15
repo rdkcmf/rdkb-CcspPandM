@@ -64,9 +64,12 @@
         01/11/2011    initial revision.
 
 **************************************************************************/
+#define _GNU_SOURCE
+#include <string.h>
 #include "plugin_main_apis.h"
 #include "cosa_hosts_apis.h"
 #include "cosa_hosts_internal.h"
+#include <ccsp_psm_helper.h>
 
 #ifdef CONFIG_TI_PACM
 #include "pacm_manager_utilities.h"
@@ -90,6 +93,8 @@ Name_DM_t *g_pMoCAADList = NULL;
 
 int g_DHCPv4ListNum = 0;
 Name_DM_t *g_pDHCPv4List = NULL;
+
+char* _ansc_itoa(int value, char* string, int radix);
 
 static inline int _mac_string_to_array(char *pStr, unsigned char array[6])
 {
@@ -538,7 +543,6 @@ PLmObjectHost Hosts_FindHostByPhysAddress(char * physAddress)
 
 PLmObjectHost Hosts_AddHostByPhysAddress(char * physAddress)
 {
-    char comments[256] = {0};
 
     if(!physAddress) return NULL;
     if(strlen(physAddress) != MACADDR_SZ-1) return NULL;
@@ -549,6 +553,7 @@ PLmObjectHost Hosts_AddHostByPhysAddress(char * physAddress)
     pHost = Hosts_AddHost(lmHosts.availableInstanceNum);
     if(pHost){
         pHost->pStringParaValue[LM_HOST_PhysAddressId] = _CloneString(physAddress);
+        //char comments[256] = {0};
         //pHost->pStringParaValue[LM_HOST_HostNameId] = _CloneString(physAddress);
         //_getLanHostComments(physAddress, comments);
         //if ( comments[0] != 0 )
@@ -686,7 +691,7 @@ static void _get_dmbyname(int num, Name_DM_t *list, char** dm, char* name)
     int i;
 
     for(i = 0; i < num; i++){
-        if(NULL != strcasestr(list[i].name, name)){
+        if(strcasestr(list[i].name, name)){
             STRNCPY_NULL_CHK((*dm), list[i].dm);
             break;
         }
@@ -737,7 +742,6 @@ static inline void _get_host_ipaddress(LM_host_t *pSrcHost, PLmObjectHost pHost)
 static void _init_DM_List(int *num, Name_DM_t **pList, char *path, char *name)
 {
     int i;
-    char dm[200];
     char (*dmnames)[CDM_PATH_SZ];
     int nname = 0;
     int dmlen;
@@ -778,7 +782,6 @@ static inline void _get_host_info(LM_host_t *pDestHost, PLmObjectHost pHost)
         pHost->bBoolParaValue[LM_HOST_ActiveId]= pDestHost->online;
         
         STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_HostNameId], pDestHost->hostName);
-        strstr(pDestHost->l1IfName, "Ethernet.");
         if(NULL != strstr(pDestHost->l1IfName, "Ethernet."))
         {
            int port;
@@ -804,7 +807,7 @@ static inline void _get_host_info(LM_host_t *pDestHost, PLmObjectHost pHost)
         }
 
         _get_dmbyname(g_IPIfNameDMListNum, g_pIPIfNameDMList, &(pHost->pStringParaValue[LM_HOST_Layer3InterfaceId]), pDestHost->l3IfName);
-        STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Comments], pDestHost->comments);
+        STRNCPY_NULL_CHK(pHost->pStringParaValue[LM_HOST_Comments], (const char*)pDestHost->comments);
         pHost->iIntParaValue[LM_HOST_X_CISCO_COM_RSSIId] = pDestHost->RSSI;
         pHost->activityChangeTime = pDestHost->activityChangeTime;
         _get_host_ipaddress(pDestHost, pHost);
@@ -838,6 +841,8 @@ CosaDmlHostsInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(phContext);
+    UNREFERENCED_PARAMETER(hDml);
     lmHosts.availableInstanceNum = 1;
     lmHosts.hostArray = NULL;
     lmHosts.numHost = 0;
@@ -878,12 +883,12 @@ CosaDmlHostsGetHosts
         PULONG                      pulCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     LM_hosts_t hosts;
     LM_host_t *plmHost;
     PLmObjectHost pHost;
     char str[100];
     int i;
-    int ret;
     BOOL                                      bridgeMode;
      
     Hosts_RmHosts();
@@ -937,10 +942,11 @@ CosaDmlHostsSetHostComment
         char*                       pComment
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int ret;
     char mac[6];
 
-    ret = _mac_string_to_array(pMac, mac);
+    ret = _mac_string_to_array(pMac, (unsigned char*)mac);
     if(ret == 0){
         if(LM_RET_SUCCESS != lm_set_host_comments(mac,pComment))
             return ANSC_STATUS_FAILURE;
@@ -953,7 +959,6 @@ ULONG CosaDmlHostsGetOnline()
 {
     int num;
     ULONG rVal = 0;
-    int ret;
     BOOL                                      bridgeMode;
 
     if(((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&

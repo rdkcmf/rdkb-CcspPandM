@@ -36,6 +36,7 @@
 #ifdef CONFIG_CISCO_HOTSPOT
 #include "plugin_main_apis.h"
 #include "cosa_x_cisco_com_gre_internal.h"
+#include "cosa_x_cisco_com_gre_apis.h"
 
 ANSC_HANDLE
 CosaCGreCreate
@@ -43,7 +44,6 @@ CosaCGreCreate
         VOID
     )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     COSA_DATAMODEL_CGRE         *pMyObject   = NULL;
 
     pMyObject = AnscAllocateMemory(sizeof(COSA_DATAMODEL_CGRE));
@@ -68,8 +68,9 @@ CosaCGreInitialize
     )
 {
     COSA_DATAMODEL_CGRE             *cgre = (COSA_DATAMODEL_CGRE *)hThisObject;
-    ULONG                           i, nextIns;
+    ULONG                           nextIns;
     char                            alias[65];
+    int                             i;
 
     if (CosaDml_CGreInit() != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
@@ -87,7 +88,7 @@ CosaCGreInitialize
         if (cgre->GreIf[i].InstanceNumber == 0)
         {
             cgre->GreIf[i].InstanceNumber = nextIns;
-            snprintf(alias, sizeof(alias), "cpe-cgreif-%d", nextIns);
+            snprintf(alias, sizeof(alias), "cpe-cgreif-%lu", nextIns);
             CosaDml_CGreIfSetInsAlias(i, nextIns, alias);
             nextIns++;
         }

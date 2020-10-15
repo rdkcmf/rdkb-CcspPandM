@@ -19,6 +19,7 @@
 #include "cosa_dhcpv4_webconfig_apis.h"
 #include "webconfig_framework.h"
 #include "plugin_main_apis.h"
+#include <syscfg/syscfg.h>
 #define MACADDR_SZ          18
 #define MIN 60
 #define HOURS 3600
@@ -31,7 +32,7 @@ pthread_mutex_t staticClientsMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t lanMutex = PTHREAD_MUTEX_INITIALIZER;
 
 Dhcpv4_Cache_t g_dhcpv4bkup_cache[DHCPV4_CACHE_MAX_NUM_OF_PARAM];
-Dhcpv4_Cache_t cache_temp[DHCPV4_CACHE_MAX_NUM_OF_PARAM] = {0};
+Dhcpv4_Cache_t cache_temp[DHCPV4_CACHE_MAX_NUM_OF_PARAM] = {};
 int g_numOfbkupCacheParam = 0;
 int g_numOfReceivedParam = 0;
 
@@ -313,7 +314,6 @@ int Dhcpv4_StaticClients_UnsetNotUsedParamFromDb(int numOfNewlyReceivedParam, in
     for (index = numOfBackupParam; index < numOfNewlyReceivedParam; ++index)
     {
         char cmd[64] = {0};
-        char val[256] = {0};
         snprintf(cmd,sizeof(cmd),"%s%d",DHCPV4_STATIC_HOST,index + 1);
         if (syscfg_unset(NULL,cmd) != 0)
         {
@@ -453,7 +453,7 @@ int Dhcpv4_StaticClients_UpdateConfToCache(macbindingdoc_t *pConf,Dhcpv4_Cache_t
 
 int Dhcpv4_StaticClients_Validate(macbindingdoc_t *pConf)
 {
-    int index = 0;
+    ULONG index = 0;
     if (!pConf)
         return -1;
 
@@ -499,7 +499,6 @@ int Dhcpv4_StaticClients_Synchronize()
     PCOSA_CONTEXT_LINK_OBJECT  pCxtLink2 = NULL;
     PSINGLE_LINK_ENTRY  pSListEntry       = NULL;
     PSINGLE_LINK_ENTRY  pSListEntry2      = NULL;
-    int index = 0;
     ULONG count = 0;
     ULONG ulIndex2 = 0;
     int numOfHost = 0;
@@ -578,7 +577,7 @@ int Dhcpv4_StaticClients_Synchronize()
             }
             pStaticAddr->InstanceNumber = pCxtPoolLink->maxInstanceOfStaticAddress;
 
-            _ansc_sprintf( pStaticAddr->Alias, "StaticAddress%u", pStaticAddr->InstanceNumber );
+            _ansc_sprintf( pStaticAddr->Alias, "StaticAddress%lu", pStaticAddr->InstanceNumber );
 
             returnStatus = CosaDmlDhcpsSetSaddrValues
                 (
@@ -642,7 +641,7 @@ int Dhcpv4_StaticClients_Synchronize()
 
 void Print_StaticClients_BlobInfo(macbindingdoc_t *pConf)
 {
-    int index = 0;
+    ULONG index = 0;
 
     if (!pConf)
         return;
@@ -817,7 +816,6 @@ void FreeResources_StaticClients(void *arg)
 int Dhcpv4_Lan_BackupFromDb(Dhcpv4_Cache_t *pCache,int *pNumOfParam)
 {
     int numOfParam = 0;
-    int index = 0;
     if (!pCache || !pNumOfParam)
         return -1;
 
@@ -872,7 +870,6 @@ int Dhcpv4_Lan_BackupFromDb(Dhcpv4_Cache_t *pCache,int *pNumOfParam)
 int Dhcpv4_Lan_UpdateConfToCache(landoc_t *pConf,Dhcpv4_Cache_t *pCache,int *pNumOfParam)
 {
     int numOfParam = 0;
-    int index = 0;
     if (!pCache || !pNumOfParam || !pConf || !pConf->param)
         return -1;
 
@@ -1007,7 +1004,7 @@ int Get_LanParameters_ValidityCheckStatus(lanparam_t *pLanParam)
  
 int Dhcpv4_Lan_Validate(landoc_t *pConf)
 {
-    int index = 0;
+    ULONG index = 0;
     if (!pConf)
         return -1;
 

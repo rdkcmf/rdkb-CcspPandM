@@ -169,7 +169,7 @@ syscfg_set_ulong(const char *key, ULONG ulvalue)
 {
     char value[MAX_LINE];
 
-    snprintf(value, sizeof(value), "%u", ulvalue);
+    snprintf(value, sizeof(value), "%lu", ulvalue);
     if (syscfg_set(NULL, key, value) != 0)
         return -1;
 
@@ -192,7 +192,7 @@ static struct ipv6rd_conf *
 load_ipv6rd_conf(void)
 {
     struct ipv6rd_conf *conf = NULL;
-    int len, ins, i;
+    int ins;
     COSA_DML_IPV6RD_IF  *ifconf;
     char key[MAX_LINE];
 
@@ -264,8 +264,6 @@ errout:
 static int 
 unload_ipv6rd_conf(struct ipv6rd_conf *conf)
 {
-    int i;
-
     if (!conf)
         return -1;
 
@@ -284,7 +282,7 @@ get_ifconf_by_insnum(int ins)
     }
 
     for (i = 0; i < g_ipv6rd_conf->ifnum; i++) {
-        if (g_ipv6rd_conf->ifconfs[i].InstanceNumber == ins)
+        if (g_ipv6rd_conf->ifconfs[i].InstanceNumber == (ULONG)ins)
             return &g_ipv6rd_conf->ifconfs[i];
     }
 
@@ -370,12 +368,10 @@ static int
 delete_ifconf(int ins)
 {
     int i;
-    COSA_DML_IPV6RD_IF *ifconf;
     char key[MAX_LINE];
 
     for (i = 0; i < g_ipv6rd_conf->ifnum; i++) {
-        if (g_ipv6rd_conf->ifconfs[i].InstanceNumber == ins) {
-            ifconf = &g_ipv6rd_conf->ifconfs[i];
+        if (g_ipv6rd_conf->ifconfs[i].InstanceNumber == (ULONG)ins) {
             break;
         }
     }
@@ -442,7 +438,7 @@ static int
 extract_first_addr(const char *addrlist, char *buf, unsigned int size)
 {
     char *end;
-    int len;
+    ULONG len;
 
     if (addrlist[0] == '\0')
         return -1; // no address
@@ -651,7 +647,7 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
         //snprintf(cmd, sizeof(cmd), "ip route add ::/0 via ::%s dev %s", buf, ifconf->Alias);
         snprintf(cmd, sizeof(cmd), "ip route add ::/0 dev %s", ifconf->Alias);
         if (system(cmd) != 0) {
-            syslog(LOG_ERR, "%s: Fail to set default route", __FUNCTION__, ifconf->Alias);
+            syslog(LOG_ERR, "%s: Fail to set default route %s", __FUNCTION__, ifconf->Alias);
             return -1;
         }
 #endif
@@ -709,6 +705,8 @@ CosaDml_IPv6rdInit(
 {
     int i;
     COSA_DML_IPV6RD_IF *ifconf;
+    UNREFERENCED_PARAMETER(phContext);
+    UNREFERENCED_PARAMETER(hDml);
 
     if (g_ipv6rd_conf) {
         syslog(LOG_ERR, "%s: already initialized", __FUNCTION__);
@@ -751,6 +749,8 @@ CosaDml_IPv6rdFinalize(
 {
     int i;
     COSA_DML_IPV6RD_IF *ifconf;
+    UNREFERENCED_PARAMETER(phContext);
+    UNREFERENCED_PARAMETER(hDml);
 
     if (!g_ipv6rd_conf) {
         syslog(LOG_ERR, "%s: not initialized", __FUNCTION__);
@@ -784,6 +784,8 @@ CosaDml_IPv6rdGetEnable(
         BOOL            *bEnable
         )
 {
+    UNREFERENCED_PARAMETER(phContext);
+    UNREFERENCED_PARAMETER(hDml);
     if (!g_ipv6rd_conf) {
         syslog(LOG_ERR, "%s: not initialized", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
@@ -802,7 +804,8 @@ CosaDml_IPv6rdSetEnable(
 {
     int i;
     COSA_DML_IPV6RD_IF *ifconf;
-    char key[MAX_LINE];
+    UNREFERENCED_PARAMETER(phContext);
+    UNREFERENCED_PARAMETER(hDml);
 
     if (!g_ipv6rd_conf) {
         syslog(LOG_ERR, "%s: not initialized", __FUNCTION__);
@@ -848,6 +851,7 @@ CosaDml_IPv6rdGetNumberOfEntries(
         )
 {
     int i;
+    UNREFERENCED_PARAMETER(hContext);
 
     if (!g_ipv6rd_conf) {
         syslog(LOG_ERR, "%s: not initialized", __FUNCTION__);
@@ -859,7 +863,7 @@ CosaDml_IPv6rdGetNumberOfEntries(
         return ANSC_STATUS_FAILURE;
     }
 
-    if (*NumEntries < g_ipv6rd_conf->ifnum) {
+    if (*NumEntries < ((ULONG)g_ipv6rd_conf->ifnum)) {
         syslog(LOG_ERR, "%s: space not enough", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
     }
@@ -880,13 +884,15 @@ CosaDml_IPv6rdGetEntry(
         )
 {
     COSA_DML_IPV6RD_IF *ifconf;
+    UNREFERENCED_PARAMETER(hContext);
+
 #if defined(USE_SYSTEM)
     char cmd[MAX_LINE];
     int err;
 #endif
 
     if ((ifconf = get_ifconf_by_insnum(ulInstanceNumber)) == NULL) {
-        syslog(LOG_ERR, "%s: instance [%d] is not exist", __FUNCTION__, ulInstanceNumber);
+        syslog(LOG_ERR, "%s: instance [%lu] is not exist", __FUNCTION__, ulInstanceNumber);
         return ANSC_STATUS_FAILURE;
     }
 
@@ -935,8 +941,10 @@ CosaDml_IPv6rdSetEntry(
     COSA_DML_IPV6RD_IF *ifconf;
     int delold, addnew;
 
+    UNREFERENCED_PARAMETER(hContext);
+
     if ((ifconf = get_ifconf_by_insnum(ulInstanceNumber)) == NULL) {
-		syslog(LOG_ERR, "%s: instance [%d] is not exist", __FUNCTION__, ulInstanceNumber);
+		syslog(LOG_ERR, "%s: instance [%lu] is not exist", __FUNCTION__, ulInstanceNumber);
         return ANSC_STATUS_FAILURE;
     }
 
@@ -995,6 +1003,8 @@ CosaDml_IPv6rdAddEntry(
         PCOSA_DML_IPV6RD_IF     pEntry
         )
 {
+    UNREFERENCED_PARAMETER(hContext);
+
     if (!g_ipv6rd_conf) {
         syslog(LOG_ERR, "%s: not initialized", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
@@ -1014,7 +1024,7 @@ CosaDml_IPv6rdAddEntry(
 
     /* If and Alias is not provide try to generate a default one */
     if (pEntry->Alias[0] == '\0') {
-        snprintf(pEntry->Alias, sizeof(pEntry->Alias), "tun6rd%d", pEntry->InstanceNumber);
+        snprintf(pEntry->Alias, sizeof(pEntry->Alias), "tun6rd%lu", pEntry->InstanceNumber);
         if (get_ifconf_by_alias(pEntry->Alias) != NULL) {
             syslog(LOG_ERR, "%s: Default alias is occupied", __FUNCTION__);
             return ANSC_STATUS_FAILURE;
@@ -1049,10 +1059,10 @@ CosaDml_IPv6rdDelEntry(
         )
 {
     COSA_DML_IPV6RD_IF *ifconf;
-    int i;
+    UNREFERENCED_PARAMETER(hContext);
 
     if ((ifconf = get_ifconf_by_insnum(ulInstanceNumber)) == NULL) {
-		syslog(LOG_ERR, "%s: instance [%d] is not exist", __FUNCTION__, ulInstanceNumber);
+		syslog(LOG_ERR, "%s: instance [%lu] is not exist", __FUNCTION__, ulInstanceNumber);
         return ANSC_STATUS_FAILURE;
     }
 
@@ -1324,7 +1334,7 @@ CosaDml_IPv6rdAddEntry(
 
     /* If and Alias is not provide try to generate a default one */
     if (pEntry->Alias[0] == '\0') {
-        _ansc_sprintf(pEntry->Alias, "tun6rd%d", pEntry->InstanceNumber);
+        _ansc_sprintf(pEntry->Alias, "tun6rd%lu", pEntry->InstanceNumber);
         if (get_ifconf_by_alias(pEntry->Alias) != NULL) {
             return ANSC_STATUS_FAILURE;
         }

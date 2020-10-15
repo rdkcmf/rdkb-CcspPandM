@@ -162,6 +162,7 @@ RouterAdvertisement_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RA pEntry = (PCOSA_DATAMODEL_RA)g_pCosaBEManager->hRA;
 
     /* check the parameter name and return the corresponding value */
@@ -217,6 +218,10 @@ RouterAdvertisement_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -261,6 +266,10 @@ RouterAdvertisement_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -314,6 +323,11 @@ RouterAdvertisement_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -358,6 +372,7 @@ RouterAdvertisement_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RA pEntry = (PCOSA_DATAMODEL_RA)g_pCosaBEManager->hRA;
 
     /* check the parameter name and set the corresponding value */
@@ -411,6 +426,10 @@ RouterAdvertisement_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -455,6 +474,10 @@ RouterAdvertisement_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -499,6 +522,10 @@ RouterAdvertisement_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -543,6 +570,9 @@ RouterAdvertisement_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -574,6 +604,7 @@ RouterAdvertisement_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RA pEntry = (PCOSA_DATAMODEL_RA)g_pCosaBEManager->hRA;
 
     CosaDmlRASetEnabled(pEntry->bEnabled);
@@ -610,6 +641,7 @@ RouterAdvertisement_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RA pEntry = (PCOSA_DATAMODEL_RA)g_pCosaBEManager->hRA;
 
     CosaDmlRAGetEnabled(&pEntry->bEnabled);
@@ -703,6 +735,7 @@ InterfaceSetting1_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RA              pMyObject = (PCOSA_DATAMODEL_RA)g_pCosaBEManager->hRA;
 
     return AnscSListQueryDepth(&pMyObject->InterfaceList);
@@ -746,6 +779,7 @@ InterfaceSetting1_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RA              pMyObject     = (PCOSA_DATAMODEL_RA)g_pCosaBEManager->hRA; 
     PSLIST_HEADER                   pRAIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -799,6 +833,8 @@ InterfaceSetting1_AddEntry
     PSLIST_HEADER                   pRAIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_RA_IF_FULL2           pRAInterface  = (PCOSA_DML_RA_IF_FULL2)NULL;
+    
+    UNREFERENCED_PARAMETER(hInsContext);
 
 #ifdef _COSA_DRG_CNS_
     /*not supported*/
@@ -895,6 +931,7 @@ InterfaceSetting1_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_RA              pMyObject     = (PCOSA_DATAMODEL_RA)g_pCosaBEManager->hRA; 
     PSLIST_HEADER                   pRAIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
@@ -1051,6 +1088,10 @@ InterfaceSetting1_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1239,8 +1280,8 @@ InterfaceSetting1_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RA_IF_FULL2           pRAInterface = (PCOSA_DML_RA_IF_FULL2)pCosaContext->hContext;
-    PUCHAR                          pString = NULL;
 
+    UNREFERENCED_PARAMETER(pUlSize);
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
@@ -1254,6 +1295,7 @@ InterfaceSetting1_GetParamStringValue
     {
         /* collect value */
 #ifdef _COSA_DRG_CNS_
+        PUCHAR                          pString = NULL;
         pString = CosaUtilGetFullPathNameByKeyword
             (
                 "Device.IP.Interface.",
@@ -1422,6 +1464,10 @@ InterfaceSetting1_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2160,6 +2206,10 @@ Option5_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2206,7 +2256,6 @@ Option5_GetParamUlongValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RA_OPTION             pOption      = (PCOSA_DML_RA_OPTION)pCosaContext->hContext;
-    PCOSA_DML_RA_IF_FULL2           pRAInterface = (PCOSA_DML_RA_IF_FULL2)pCosaContext->hParentTable;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Tag", TRUE) )
@@ -2268,9 +2317,9 @@ Option5_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RA_OPTION             pOption      = (PCOSA_DML_RA_OPTION)pCosaContext->hContext;
-    PCOSA_DML_RA_IF_FULL2           pRAInterface = (PCOSA_DML_RA_IF_FULL2)pCosaContext->hParentTable;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
@@ -2332,7 +2381,6 @@ Option5_SetParamBoolValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RA_OPTION             pOption      = (PCOSA_DML_RA_OPTION)pCosaContext->hContext;
-    PCOSA_DML_RA_IF_FULL2           pRAInterface = (PCOSA_DML_RA_IF_FULL2)pCosaContext->hParentTable;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE) )
@@ -2385,6 +2433,10 @@ Option5_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2431,7 +2483,6 @@ Option5_SetParamUlongValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RA_OPTION             pOption      = (PCOSA_DML_RA_OPTION)pCosaContext->hContext;
-    PCOSA_DML_RA_IF_FULL2           pRAInterface = (PCOSA_DML_RA_IF_FULL2)pCosaContext->hParentTable;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Tag", TRUE) )
@@ -2486,7 +2537,6 @@ Option5_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RA_OPTION             pOption      = (PCOSA_DML_RA_OPTION)pCosaContext->hContext;
-    PCOSA_DML_RA_IF_FULL2           pRAInterface = (PCOSA_DML_RA_IF_FULL2)pCosaContext->hParentTable;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
@@ -2629,7 +2679,6 @@ Option5_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_RA              pMyObject    = (PCOSA_DATAMODEL_RA)g_pCosaBEManager->hRA; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RA_OPTION             pRAOption    = (PCOSA_DML_RA_OPTION)pCosaContext->hContext;
     PCOSA_DML_RA_IF_FULL2           pRAInterface = (PCOSA_DML_RA_IF_FULL2)pCosaContext->hParentTable;

@@ -38,6 +38,7 @@
 BOOL
 RLog_GetParamBoolValue(ANSC_HANDLE hInsContext, char *ParamName, BOOL *pBool)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RLOG pDMRLog    = (PCOSA_DATAMODEL_RLOG)g_pCosaBEManager->hRLog;
 
     if (!pDMRLog || !ParamName || !pBool)
@@ -55,6 +56,7 @@ RLog_GetParamBoolValue(ANSC_HANDLE hInsContext, char *ParamName, BOOL *pBool)
 BOOL
 RLog_GetParamUlongValue(ANSC_HANDLE hInsContext, char *ParamName, ULONG *pUlong)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RLOG pDMRLog    = (PCOSA_DATAMODEL_RLOG)g_pCosaBEManager->hRLog;
 
     if (!pDMRLog || !ParamName || !pUlong)
@@ -77,6 +79,7 @@ RLog_GetParamUlongValue(ANSC_HANDLE hInsContext, char *ParamName, ULONG *pUlong)
 ULONG
 RLog_GetParamStringValue(ANSC_HANDLE hInsContext, char *ParamName, char *pStr, ULONG *pSize)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RLOG pDMRLog    = (PCOSA_DATAMODEL_RLOG)g_pCosaBEManager->hRLog;
 
     if (!pDMRLog || !ParamName || !pStr || !pSize)
@@ -99,6 +102,7 @@ RLog_GetParamStringValue(ANSC_HANDLE hInsContext, char *ParamName, char *pStr, U
 BOOL
 RLog_SetParamBoolValue(ANSC_HANDLE hInsContext, char *ParamName, BOOL bValue)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RLOG pDMRLog    = (PCOSA_DATAMODEL_RLOG)g_pCosaBEManager->hRLog;
 
     if (!pDMRLog || !ParamName)
@@ -116,6 +120,7 @@ RLog_SetParamBoolValue(ANSC_HANDLE hInsContext, char *ParamName, BOOL bValue)
 BOOL
 RLog_SetParamUlongValue(ANSC_HANDLE hInsContext, char *ParamName, ULONG ulValue)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RLOG pDMRLog    = (PCOSA_DATAMODEL_RLOG)g_pCosaBEManager->hRLog;
 
     if (!pDMRLog || !ParamName)
@@ -137,6 +142,7 @@ RLog_SetParamUlongValue(ANSC_HANDLE hInsContext, char *ParamName, ULONG ulValue)
 BOOL
 RLog_SetParamStringValue(ANSC_HANDLE hInsContext, char *ParamName, char *sValue)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RLOG pDMRLog    = (PCOSA_DATAMODEL_RLOG)g_pCosaBEManager->hRLog;
 
     if (!pDMRLog || !ParamName || !sValue)
@@ -159,6 +165,9 @@ RLog_SetParamStringValue(ANSC_HANDLE hInsContext, char *ParamName, char *sValue)
 BOOL
 RLog_Validate(ANSC_HANDLE hInsContext, char *pFaultName, ULONG *pLen)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pFaultName);
+    UNREFERENCED_PARAMETER(pLen);
     PCOSA_DATAMODEL_RLOG pDMRLog    = (PCOSA_DATAMODEL_RLOG)g_pCosaBEManager->hRLog;
 
     if (!pDMRLog)
@@ -173,6 +182,7 @@ RLog_Validate(ANSC_HANDLE hInsContext, char *pFaultName, ULONG *pLen)
 ULONG
 RLog_Commit(ANSC_HANDLE hInsContext)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RLOG pDMRLog    = (PCOSA_DATAMODEL_RLOG)g_pCosaBEManager->hRLog;
 
     if (!pDMRLog)
@@ -191,6 +201,7 @@ RLog_Commit(ANSC_HANDLE hInsContext)
 ULONG
 RLog_Rollback(ANSC_HANDLE hInsContext)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_RLOG pDMRLog    = (PCOSA_DATAMODEL_RLOG)g_pCosaBEManager->hRLog;
 
     if (!pDMRLog)

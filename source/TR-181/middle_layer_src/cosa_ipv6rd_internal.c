@@ -226,7 +226,7 @@ CosaIPv6rdInitialize(
                 pMyObject->ulIfNextInstance = 1;
             }
 
-            _ansc_sprintf(pEntry->Alias, "tun6rd%d", pEntry->InstanceNumber);
+            _ansc_sprintf(pEntry->Alias, "tun6rd%lu", pEntry->InstanceNumber);
             CosaDml_IPv6rdSetEntry(NULL, pEntry->InstanceNumber, pEntry);
         }
 
@@ -544,11 +544,11 @@ CosaIPv6rdIfRegDelInfo(
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_IPV6RD          pMyObject         = (PCOSA_DATAMODEL_IPV6RD   )hThisObject;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
+
+    UNREFERENCED_PARAMETER(hThisObject);
 
     if ( !pPoamIrepUpperFo || !pPoamIrepFo )
     {

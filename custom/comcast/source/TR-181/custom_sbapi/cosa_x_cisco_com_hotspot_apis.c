@@ -41,6 +41,7 @@
 
 #include "cosa_x_cisco_com_hotspot_apis.h"
 #include "dhcpsnooper.h"
+#include "cosa_ethernet_dml.h"
 
 #define FIRST_SSID_INS  5
 
@@ -93,6 +94,14 @@ static int              g_num_hs_ssid = 2;
 static struct hs_ssid   g_hs_ssids[MAX_HS_SSIDS];
 static snooper_statistics_s *g_snstat = NULL;
 
+ANSC_STATUS
+COSAGetParamValueByPathName
+    (
+        void*                      bus_handle,
+        parameterValStruct_t       *val,
+        ULONG                      *parameterValueLength
+    );
+
 static int
 hhs_psm_get(const char *param, char *value, int size)
 {
@@ -110,6 +119,7 @@ hhs_psm_get(const char *param, char *value, int size)
     return 0;
 }
 
+/*
 static struct hs_ssid *get_hs_ssid(const char *ssid)
 {
     int i;
@@ -122,6 +132,7 @@ static struct hs_ssid *get_hs_ssid(const char *ssid)
 
     return NULL;
 }
+*/
 
 static int circuit_id_get_ssid(const char *circuit_id, char *ssid, int size)
 {
@@ -147,6 +158,7 @@ static int circuit_id_get_ssid(const char *circuit_id, char *ssid, int size)
     return 0;
 }
 
+#if 0
 static void dump_snoop_stat(const snooper_statistics_s *stat)
 {
     int i;
@@ -178,6 +190,7 @@ static void dump_snoop_stat(const snooper_statistics_s *stat)
 
     return;
 }
+#endif
 
 static ULONG HsSsidUpdateTime = 0;
 #define TIME_NO_NEGATIVE(x) ((long)(x) < 0 ? 0 : (x))
@@ -213,14 +226,14 @@ static int load_hs_ssid(void)
     char ssid[128];
     snooper_client_list *sncli;
     struct hs_client *cli;
-    int i, j;
+    int i;
     char ifs[1024];
     char *tok, *delim, *sp, *from;
 
     extern ANSC_HANDLE bus_handle;
     char param[128];
     parameterValStruct_t valStru;
-    int valSize;
+    ULONG valSize;
 
 	if(!Hs_Ssid_IsUpdated()) {
 		return 0;
@@ -243,7 +256,7 @@ static int load_hs_ssid(void)
     for (from = ifs, delim = ","; 
             (tok = strtok_r(from, delim, &sp)) != NULL; from = NULL) {
         if (g_num_hs_ssid == MAX_HS_SSIDS) {
-            AnscTraceError(("max SSID reached\n", ssid));
+            AnscTraceError(("%s max SSID reached\n", ssid));
             break;
         }
 
@@ -265,7 +278,7 @@ static int load_hs_ssid(void)
 
         for (i = 0; i < g_snstat->snooper_num_clients; i++) {
             if (hsssid->ncli == MAX_HS_CLIS) {
-                AnscTraceError(("max client reached\n", ssid));
+                AnscTraceError(("%s max client reached\n", ssid));
                 break;
             }
 
@@ -337,9 +350,6 @@ CosaDml_HotspotFinalize(void)
 ULONG
 CosaDml_HsSsidGetNumberOfEntries(void)
 {
-    char ifs[1024];
-    char *tok, *delim, *sp, *from;
-    ULONG cnt;
     if (load_hs_ssid() != 0) {
         AnscTraceError(("Fail to load HHS SSID list\n"));
         return 0;
@@ -351,22 +361,19 @@ CosaDml_HsSsidGetNumberOfEntries(void)
 ANSC_STATUS
 CosaDml_HsSsidGetEntryByIndex(ULONG idx, COSA_DML_HOTSPOT_SSID *entry)
 {
-    char ifs[1024];
-    char *tok, *delim, *sp, *from;
-    ULONG offset;
 
     if (load_hs_ssid() != 0) {
         AnscTraceError(("Fail to load HHS SSID list\n"));
         return ANSC_STATUS_FAILURE;
     }
 
-    if (idx >= g_num_hs_ssid) {
+    if (idx >= (ULONG)g_num_hs_ssid) {
         AnscTraceError(("Invalid index\n"));
         return ANSC_STATUS_FAILURE;
     }
 
     entry->InstanceNumber = idx + 1;
-    snprintf(entry->Alias, sizeof(entry->Alias), "cpe-HsSsid-%d", idx + 1);
+    snprintf(entry->Alias, sizeof(entry->Alias), "cpe-HsSsid-%lu", idx + 1);
     snprintf(entry->SSID, sizeof(entry->SSID), "%s", g_hs_ssids[idx].path);
     return ANSC_STATUS_SUCCESS;
 }
@@ -387,8 +394,8 @@ CosaDml_HsSsidAssoDevGetNumberOfEntries(ULONG ssidIns)
         return 0;
     }
 
-    if (ssidIns > g_num_hs_ssid) {
-        AnscTraceError(("ssid ins: %d is not exist\n", ssidIns));
+    if (ssidIns > (ULONG)g_num_hs_ssid) {
+        AnscTraceError(("ssid ins: %lu is not exist\n", ssidIns));
         return 0;
     }
     hsssid = &g_hs_ssids[ssidIns - 1];
@@ -405,7 +412,7 @@ CosaDml_HsSsidAssoDevGetEntryByIndex(ULONG ssidIns, ULONG idx, COSA_DML_HOTSPOT_
 #if defined(_INTEL_BUG_FIXES_) || defined(DUAL_CORE_XB3)
     char curInt[256] = {0};
     int inst;
-    int size;
+    ULONG size;
     int rssi = 0;
     char paramname[60];
     char outdata[80];
@@ -419,13 +426,13 @@ CosaDml_HsSsidAssoDevGetEntryByIndex(ULONG ssidIns, ULONG idx, COSA_DML_HOTSPOT_
         return ANSC_STATUS_FAILURE;
     }
 
-    if (ssidIns > g_num_hs_ssid) {
-        AnscTraceError(("ssid %s not exist\n", ssidIns));
+    if (ssidIns > (ULONG)g_num_hs_ssid) {
+        AnscTraceError(("ssid %lu not exist\n", ssidIns));
         return 0;
     }
     hsssid = &g_hs_ssids[ssidIns - 1];
 
-    if (idx >= hsssid->ncli || !entry) {
+    if (idx >= (ULONG)hsssid->ncli || !entry) {
         AnscTraceError(("bad parameter\n"));
         return ANSC_STATUS_FAILURE;
     }
@@ -440,7 +447,7 @@ CosaDml_HsSsidAssoDevGetEntryByIndex(ULONG ssidIns, ULONG idx, COSA_DML_HOTSPOT_
     inst = atoi(strrchr(curInt,'.')+1);
 
     size = sizeof(outdata);
-    snprintf(paramname, sizeof(paramname), "Device.WiFi.AccessPoint.%d.AssociatedDevice.%d.SignalStrength", inst, idx+1);
+    snprintf(paramname, sizeof(paramname), "Device.WiFi.AccessPoint.%d.AssociatedDevice.%lu.SignalStrength", inst, idx+1);
     if (ANSC_STATUS_SUCCESS == COSAGetParamValueByPathName(bus_handle, &varStruct, &size)) {
         rssi = atoi(varStruct.parameterValue);
     } else {
@@ -450,7 +457,7 @@ CosaDml_HsSsidAssoDevGetEntryByIndex(ULONG ssidIns, ULONG idx, COSA_DML_HOTSPOT_
 
     entry->InstanceNumber = idx + 1;
     entry->SsidIns = ssidIns;
-    snprintf(entry->Alias, sizeof(entry->Alias), "cpe-HsAssoDev-%d", idx + 1);
+    snprintf(entry->Alias, sizeof(entry->Alias), "cpe-HsAssoDev-%lu", idx + 1);
     snprintf(entry->MACAddress, sizeof(entry->MACAddress), "%s", cli->mac);
     snprintf(entry->Hostname, sizeof(entry->Hostname), "%s", cli->hostname);
 #if defined(_INTEL_BUG_FIXES_) || defined(DUAL_CORE_XB3)

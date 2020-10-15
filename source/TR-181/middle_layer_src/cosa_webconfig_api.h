@@ -101,5 +101,7 @@ int rollback_PortForwarding() ;
 void freeResources_PortForwarding(void *arg);
 int  get_base64_decodedbuffer(char *pString, char **buffer, int *size);
 msgpack_unpack_return get_msgpack_unpack_status(char *decodedbuf, int size);
+void getCurrentTime(struct timespec *timer);
+long timeValDiff(struct timespec *starttime, struct timespec *finishtime);
 
 #endif

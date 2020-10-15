@@ -80,6 +80,7 @@
 #include <stdlib.h>
 #include "cosa_drg_common.h"
 #include "secure_wrapper.h"
+#include "messagebus_interface_helper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -129,14 +130,14 @@ TriggerOtherModule
 
     if ( !pTsipCfg->Enabled )
     {
-        system("sysevent set wan_staticip-status stopped");
+        v_secure_system("sysevent set wan_staticip-status stopped");
     }
     else
     {
-        system("sysevent set wan_staticip-status started");
+        v_secure_system("sysevent set wan_staticip-status started");
     }
 
-    system("sysevent set firewall-restart 1");
+    v_secure_system("sysevent set firewall-restart 1");
 
     return returnStatus;
 }
@@ -148,6 +149,8 @@ CosaDmlTSIPInit
         PANSC_HANDLE                phContext
 )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -312,8 +315,7 @@ CosaDmlTSIPTestFullPathName
         ANSC_HANDLE                 hContext
     )
 {
-    ANSC_STATUS                     returnStatus           = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_TSIP            pMyObject              = (PCOSA_DATAMODEL_TSIP      )hContext;
+    UNREFERENCED_PARAMETER(hContext);
     char                            TestName[256]          = {0};
     char                            param_val[64]          = {0};
     ULONG                           val_len                = 0;
@@ -342,7 +344,6 @@ CosaDmlTSIPApplyConfigFileTask
     PANSC_ATOM_DESCRIPTOR           pAtomItem              = (PANSC_ATOM_DESCRIPTOR     )NULL;
     PANSC_TOKEN_CHAIN               pConfigTokenChain      = (PANSC_TOKEN_CHAIN         )NULL;
     PANSC_STRING_TOKEN              pStringToken           = (PANSC_STRING_TOKEN        )NULL;
-    PANSC_STRING_TOKEN              pEntryToken            = (PANSC_STRING_TOKEN        )NULL;
     parameterValStruct_t*           pVal                   = NULL;
     PNAMESPACE_MAPPING              pMapping               = NULL;
     char                            FileName[64]           = {0};
@@ -361,8 +362,6 @@ CosaDmlTSIPApplyConfigFileTask
     int                             i                      = 0;
     int                             ret                    = CCSP_SUCCESS;
     BOOL                            bCommit                = FALSE;
-    ULONG                           ulIndex                = 0;
-    SLAP_VARIABLE                   SlapValue       = {0};
 
     AnscTraceFlow(("%s\n", __FUNCTION__));
 
@@ -434,7 +433,7 @@ CosaDmlTSIPApplyConfigFileTask
     if ( AnscSizeOfString(pTsipCfg->ConfigEncryptKey) == KEY_LENGTH_64BIT ) /* 64 bit DES key */
     {
         DES_cblock Key2 = {0}; /*= {0x57, 0x8A, 0x95, 0x8E, 0x3D, 0xD9, 0x33, 0xFC}*/
-        DES_key_schedule schedule = {0};
+        DES_key_schedule schedule;
         FILE* fpConfig2 = NULL;
         ULONG ulTmpValue = 0;
         char temp_char[3] = {0};
@@ -462,9 +461,9 @@ CosaDmlTSIPApplyConfigFileTask
 
         DES_set_key( &Key2, &schedule );
         
-        for (i = 0; i < len / 8; i++ )
+        for (i = 0; (unsigned int)i < len / 8; i++ )
         {
-            DES_ecb_encrypt(pBuffer + (i*8), pBuffer2 + (i*8), &schedule, DES_DECRYPT);
+            DES_ecb_encrypt((const_DES_cblock*)(pBuffer + (i*8)), (DES_cblock*)(pBuffer2 + (i*8)), &schedule, DES_DECRYPT);
         }
 
         fpConfig2 = fopen("/var/decrypted.txt", "w+");
@@ -505,7 +504,7 @@ Start:
         }
         *pSeparator++ = '\0';
         pValue = pSeparator;
-        if ( p = _ansc_strstr(pValue, "\r") )
+        if (( p = _ansc_strstr(pValue, "\r") ))
         {
             *p = '\0';
         }
@@ -605,9 +604,9 @@ Start:
                 char val[64] = {0};
                 ULONG size = sizeof(strval);
       
-                int i = g_GetParamValueString(g_pDslhDmlAgent, "Device.DHCPv4.Server.Pool.1.DNSServers", strval, &size);
+                g_GetParamValueString(g_pDslhDmlAgent, "Device.DHCPv4.Server.Pool.1.DNSServers", strval, &size);
 
-                if ( strval[0] != NULL && ! _ansc_strstr(strval, pValue) && ! _ansc_strstr(strval, ",") )
+                if ( strval[0] && ! _ansc_strstr(strval, pValue) && ! _ansc_strstr(strval, ",") )
                 {
                     _ansc_sprintf(val, "%s,%s", strval, pValue);
                     g_SetParamValueString("Device.DHCPv4.Server.Pool.1.DNSServers", val);
@@ -673,7 +672,7 @@ Start:
                     continue;
                 }
                 
-                for ( i = 0; i < ulParamCount; i++ )
+                for ( i = 0; (unsigned int)i < ulParamCount; i++ )
                 {
                     pVal[i].parameterName = (char*)AnscAllocateMemory(256);
                     if ( !pVal[i].parameterName )
@@ -758,11 +757,11 @@ Start:
                             pValue,
                             "%s %d %d %s %d %d %s",
                             AlwaysBlock,
-                            &StartHour,
-                            &StartMin,
+                            (INT*)&StartHour,
+                            (INT*)&StartMin,
                             Start,
-                            &EndHour,
-                            &EndMin,
+                            (INT*)&EndHour,
+                            (INT*)&EndMin,
                             End
                         );
                         
@@ -776,14 +775,15 @@ Start:
                         EndHour += 12;
                     }
                     
-                    printf("%02d\n", StartMin);
-                    
-                    _ansc_sprintf(StartTime, "%02d:%02d", StartHour, StartMin);
-                    _ansc_sprintf(EndTime,   "%02d:%02d", EndHour,   EndMin);
+                    printf("%02d\n", (INT)StartMin);
+                   
+                    _ansc_sprintf(StartTime, "%02d:%02d", (INT)StartHour, (INT)StartMin);
+                    _ansc_sprintf(EndTime,   "%02d:%02d", (INT)EndHour, (INT)EndMin);
                 }
                 
-                printf("%s %02d %02d %s %02d %02d %s\n", AlwaysBlock, StartHour, StartMin, Start, EndHour, EndMin, End);
-                for ( i = 0; i < ulParamCount; i++ )
+                printf("%s %02d %02d %s %02d %02d %s\n", AlwaysBlock, (INT)StartHour, (INT)StartMin, Start, (INT)EndHour, (INT)EndMin, End);
+
+                for ( i = 0; (unsigned int)i < ulParamCount; i++ )
                 {
                     pVal[i].parameterName = (char*)AnscAllocateMemory(256);
                     if ( !pVal[i].parameterName )
@@ -899,7 +899,7 @@ CosaDmlTSIPApplyConfigFile
     AnscTraceWarning(("!!!!!!!!!! Creating thread to apply config !!!!!!!!!!\n"));
 
     pthread_t tConfig;
-    pthread_create(&tConfig, NULL, &CosaDmlTSIPApplyConfigFileTask, (ANSC_HANDLE) pMyObject);
+    pthread_create(&tConfig, NULL, (void*)&CosaDmlTSIPApplyConfigFileTask, (ANSC_HANDLE) pMyObject);
 
     return returnStatus;
 }
@@ -1159,6 +1159,7 @@ CosaDmlTSIPGetCfg
         PCOSA_DML_TSIP_CFG          pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
@@ -1404,15 +1405,14 @@ CosaDmlAdditionalSubnetLoadPsm
         ANSC_HANDLE                 hContext
     )
 {
-    ANSC_STATUS                     returnStatus           = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_TSIP            pMyObject              = (PCOSA_DATAMODEL_TSIP       )hContext;
     PCOSA_DML_TSIP_SUBNET_ENTRY     pSubnetEntry           = (PCOSA_DML_TSIP_SUBNET_ENTRY)NULL;
     char                            pParamPath[64]         = {0};
     unsigned int                    RecordType             = 0;
     SLAP_VARIABLE                   SlapValue              = {0};
     int                             iReturnValue           = CCSP_SUCCESS;
-    int                             iNumInst               = 0;
-    int*                            pInstArray             = NULL;
+    unsigned int                    iNumInst               = 0;
+    unsigned int*                   pInstArray             = NULL;
     ULONG                           ulIndex                = 0;
 
     iReturnValue = 
@@ -1421,7 +1421,7 @@ CosaDmlAdditionalSubnetLoadPsm
                 g_MessageBusHandle,
                 g_SubsystemPrefix,
                 DMSB_TR181_PSM_Tsip_Asn_Root,
-                &iNumInst,
+                (unsigned int *)&iNumInst,
                 &pInstArray
             );
 
@@ -1632,7 +1632,7 @@ CosaDmlAdditionalSubnetSavePsm
         ANSC_HANDLE                 hSubnetEntry
     )
 {
-    PCOSA_DATAMODEL_TSIP            pMyObject              = (PCOSA_DATAMODEL_TSIP       )hContext;
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_DML_TSIP_SUBNET_ENTRY     pSubnetEntry           = (PCOSA_DML_TSIP_SUBNET_ENTRY)hSubnetEntry;
     int                             iReturnValue           = CCSP_SUCCESS;
     char                            pParamPath[64]         = {0};
@@ -1650,7 +1650,7 @@ CosaDmlAdditionalSubnetSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_Enable,
-                pSubnetEntry->InstanceNumber
+                (INT)pSubnetEntry->InstanceNumber
             );
 
         RecordType = ccsp_boolean;
@@ -1686,7 +1686,7 @@ CosaDmlAdditionalSubnetSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_Alias,
-                pSubnetEntry->InstanceNumber
+                (INT)pSubnetEntry->InstanceNumber
             );
 
         RecordType = ccsp_string;
@@ -1722,7 +1722,7 @@ CosaDmlAdditionalSubnetSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_IpAddress,
-                pSubnetEntry->InstanceNumber
+                (INT)pSubnetEntry->InstanceNumber
             );
 
         RecordType = ccsp_string;
@@ -1758,7 +1758,7 @@ CosaDmlAdditionalSubnetSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_SubnetMask,
-                pSubnetEntry->InstanceNumber
+                (INT)pSubnetEntry->InstanceNumber
             );
 
         RecordType = ccsp_string;
@@ -1798,7 +1798,7 @@ CosaDmlAdditionalSubnetDelPsm
         ANSC_HANDLE                 hSubnetEntry
     )
 {
-    PCOSA_DATAMODEL_TSIP            pMyObject              = (PCOSA_DATAMODEL_TSIP       )hContext;
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_DML_TSIP_SUBNET_ENTRY     pSubnetEntry           = (PCOSA_DML_TSIP_SUBNET_ENTRY)hSubnetEntry;
     int                             iReturnValue           = CCSP_SUCCESS;
     char                            pParamPath[64]         = {0};
@@ -1814,7 +1814,7 @@ CosaDmlAdditionalSubnetDelPsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i,
-                pSubnetEntry->InstanceNumber
+                (INT)pSubnetEntry->InstanceNumber
             );
 
         iReturnValue =
@@ -1899,7 +1899,7 @@ CosaDmlTSIPSubnetDelEntry
 
     if ( TRUE )
     {
-        system("sysevent set ipv4-tsip_asn_enable 0");
+        v_secure_system("sysevent set ipv4-tsip_asn_enable 0");
 
         /* Instance */
         v_secure_system("sysevent set ipv4-resync_tsip_asn %lu", pSubnetEntry->InstanceNumber);
@@ -1970,13 +1970,11 @@ CosaDmlTSIPSubnetGetCfg
         PCOSA_DML_TSIP_SUBNET_ENTRY pEntry
     )
 {
-    ANSC_STATUS                     returnStatus           = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_TSIP            pMyObject              = (PCOSA_DATAMODEL_TSIP       )hContext;
+    UNREFERENCED_PARAMETER(hContext);
     SLAP_VARIABLE                   SlapValue              = {0};
     int                             iReturnValue           = CCSP_SUCCESS;
     char                            pParamPath[64]         = {0};
     unsigned int                    RecordType             = ccsp_string;
-    char                            RecordValue[64]        = {0};
 
     if ( !pEntry )
     {
@@ -1993,7 +1991,7 @@ CosaDmlTSIPSubnetGetCfg
             (
                 pParamPath,
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_Enable,
-                pEntry->InstanceNumber
+                (INT)pEntry->InstanceNumber
             );
 
         iReturnValue =
@@ -2033,7 +2031,7 @@ CosaDmlTSIPSubnetGetCfg
             (
                 pParamPath,
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_Alias,
-                pEntry->InstanceNumber
+                (INT)pEntry->InstanceNumber
             );
 
         iReturnValue =
@@ -2073,7 +2071,7 @@ CosaDmlTSIPSubnetGetCfg
             (
                 pParamPath,
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_IpAddress,
-                pEntry->InstanceNumber
+                (INT)pEntry->InstanceNumber
             );
 
         iReturnValue =
@@ -2113,7 +2111,7 @@ CosaDmlTSIPSubnetGetCfg
             (
                 pParamPath,
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_SubnetMask,
-                pEntry->InstanceNumber
+                (INT)pEntry->InstanceNumber
             );
 
         iReturnValue =
@@ -2158,8 +2156,8 @@ CosaDmlTSIPPortManagementSetCfg
         PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
-    unsigned long ins;
     char utVal[64];
 
     if (!Utopia_Init(&ctx)) {
@@ -2188,10 +2186,9 @@ CosaDmlTSIPPortManagementGetCfg
         PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
-    unsigned long ins;
     char utVal[64] = {0};
-    int rc;
 
     if (!Utopia_Init(&ctx)) {
         CcspTraceWarning(("%s: Utopia_Init error\n", __FUNCTION__));
@@ -2216,6 +2213,7 @@ CosaDmlTSIPRuleGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     char countStr[16] = {0};
 
@@ -2240,8 +2238,8 @@ CosaDmlTSIPRuleGetEntry
         PCOSA_DML_TSIP_RULE_ENTRY   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
-    unsigned long ins;
     char utVal[64];
     char utKey[64];
 
@@ -2251,23 +2249,23 @@ CosaDmlTSIPRuleGetEntry
         return ANSC_STATUS_FAILURE;
     }
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_ins", ulIndex);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_ins", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     pEntry->InstanceNumber = strtoul(utVal, NULL, 10);
     
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_alias", ulIndex);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_alias", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     strncpy(pEntry->Alias, utVal, sizeof(pEntry->Alias));
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_enabled", ulIndex);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_enabled", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     pEntry->Enabled = (strcmp("1", utVal) == 0);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_name", ulIndex);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_name", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     strncpy(pEntry->Name, utVal, sizeof(pEntry->Name));
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_protocol", ulIndex);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_protocol", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     
     if(strcmp("tcp", utVal) == 0)
@@ -2277,19 +2275,19 @@ CosaDmlTSIPRuleGetEntry
     if(strcmp("both", utVal) == 0)
         pEntry->Protocol = COSA_DML_TSIP_RULE_PROTOCOL_BOTH;
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_startIP", ulIndex);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_startIP", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     strncpy(pEntry->IPRangeMin, utVal, sizeof(pEntry->IPRangeMin));
     
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_endIP", ulIndex);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_endIP", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     strncpy(pEntry->IPRangeMax, utVal, sizeof(pEntry->IPRangeMax));
     
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_startPort", ulIndex);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_startPort", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     pEntry->PortRangeMin = strtoul(utVal, NULL, 10);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_endPort", ulIndex);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_endPort", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     pEntry->PortRangeMax = strtoul(utVal, NULL, 10);
 
@@ -2307,6 +2305,7 @@ CosaDmlTSIPRuleSetValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     char utVal[64];
     char utKey[64];
@@ -2317,11 +2316,11 @@ CosaDmlTSIPRuleSetValues
         return ANSC_STATUS_FAILURE;
     }
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_ins", ulIndex);
-    snprintf(utVal, sizeof(utVal), "%u", ulInstanceNumber);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_ins", ulIndex);
+    snprintf(utVal, sizeof(utVal), "%lu", ulInstanceNumber);
     Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_alias", ulIndex);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_alias", ulIndex);
     Utopia_RawSet(&ctx, NULL, utKey, pAlias);
 
     Utopia_Free(&ctx, 1);
@@ -2349,11 +2348,11 @@ CosaDmlTSIPRuleAddEntry
     pmCount++;
 
     snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"count");
-    snprintf(utVal, sizeof(utVal), "%u", pmCount);
+    snprintf(utVal, sizeof(utVal), "%lu", pmCount);
     Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_ins", pmCount-1);
-    snprintf(utVal, sizeof(utVal), "%u", pEntry->InstanceNumber);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_ins", pmCount-1);
+    snprintf(utVal, sizeof(utVal), "%lu", pEntry->InstanceNumber);
     Utopia_RawSet(&ctx, NULL, utKey, utVal);
     Utopia_Free(&ctx, 1);
 
@@ -2369,6 +2368,7 @@ CosaDmlTSIPRuleDelEntry
         PCOSA_DML_TSIP_RULE_ENTRY   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     char utVal[64];
     char utKey[64];
@@ -2381,7 +2381,7 @@ CosaDmlTSIPRuleDelEntry
     }
 
     for(i = 0; i < pmCount; i++) {
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_ins", i);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_ins", i);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         if(pEntry->InstanceNumber == strtoul(utVal, NULL, 10))
             break;
@@ -2390,23 +2390,23 @@ CosaDmlTSIPRuleDelEntry
     for(; i+1 < pmCount; i++) {
 
         //get elements
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_ins", i+1);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_ins", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         pEntry->InstanceNumber = strtoul(utVal, NULL, 10);
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_alias", i+1);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_alias", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         strncpy(pEntry->Alias, utVal, sizeof(pEntry->Alias));
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_enabled", i+1);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_enabled", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         pEntry->Enabled = (strcmp("1", utVal) == 0);
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_name", i+1);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_name", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         strncpy(pEntry->Name, utVal, sizeof(pEntry->Name));
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_protocol", i+1);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_protocol", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
 
         if(strcmp("tcp", utVal) == 0)
@@ -2416,37 +2416,37 @@ CosaDmlTSIPRuleDelEntry
         if(strcmp("both", utVal) == 0)
             pEntry->Protocol = COSA_DML_TSIP_RULE_PROTOCOL_BOTH;
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_startIP", i+1);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_startIP", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         strncpy(pEntry->IPRangeMin, utVal, sizeof(pEntry->IPRangeMin));
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_endIP", i+1);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_endIP", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         strncpy(pEntry->IPRangeMax, utVal, sizeof(pEntry->IPRangeMax));
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_startPort", i+1);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_startPort", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         pEntry->PortRangeMin = strtoul(utVal, NULL, 10);
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_endPort", i+1);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_endPort", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         pEntry->PortRangeMax = strtoul(utVal, NULL, 10);
 
         //move elements
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_ins", i);
-        snprintf(utVal, sizeof(utVal), "%u", pEntry->InstanceNumber);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_ins", i);
+        snprintf(utVal, sizeof(utVal), "%lu", pEntry->InstanceNumber);
         Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_alias", i);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_alias", i);
         Utopia_RawSet(&ctx, NULL, utKey, pEntry->Alias);
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_enabled", i);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_enabled", i);
         Utopia_RawSet(&ctx, NULL, utKey, pEntry->Enabled ? "1" : "0");
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_name", i);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_name", i);
         Utopia_RawSet(&ctx, NULL, utKey, pEntry->Name);
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_protocol", i);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_protocol", i);
         switch(pEntry->Protocol) {
             case COSA_DML_TSIP_RULE_PROTOCOL_TCP:
                 strcpy(utVal, "tcp");
@@ -2460,53 +2460,53 @@ CosaDmlTSIPRuleDelEntry
         }
         Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_startIP", i);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_startIP", i);
         Utopia_RawSet(&ctx, NULL, utKey, pEntry->IPRangeMin);
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_endIP", i);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_endIP", i);
         Utopia_RawSet(&ctx, NULL, utKey, pEntry->IPRangeMax);
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_startPort", i);
-        snprintf(utVal, sizeof(utVal), "%u", pEntry->PortRangeMin);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_startPort", i);
+        snprintf(utVal, sizeof(utVal), "%lu", pEntry->PortRangeMin);
         Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_endPort", i);
-        snprintf(utVal, sizeof(utVal), "%u", pEntry->PortRangeMax);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_endPort", i);
+        snprintf(utVal, sizeof(utVal), "%lu", pEntry->PortRangeMax);
         Utopia_RawSet(&ctx, NULL, utKey, utVal);
     }
 
     //delete last element
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_ins", pmCount-1);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_ins", pmCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_alias", pmCount-1);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_alias", pmCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_enabled", pmCount-1);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_enabled", pmCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_name", pmCount-1);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_name", pmCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_protocol", pmCount-1);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_protocol", pmCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_startIP", pmCount-1);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_startIP", pmCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
     
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_endIP", pmCount-1);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_endIP", pmCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
     
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_startPort", pmCount-1);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_startPort", pmCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
     
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_endPort", pmCount-1);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_endPort", pmCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
 
     //update counter
     pmCount--;
     snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"count");
-    snprintf(utVal, sizeof(utVal), "%u", pmCount);
+    snprintf(utVal, sizeof(utVal), "%lu", pmCount);
     Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
     Utopia_Free(&ctx, 1);
@@ -2523,6 +2523,7 @@ CosaDmlTSIPRuleSetEntry
         PCOSA_DML_TSIP_RULE_ENTRY   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     unsigned long i;
     char utVal[64];
@@ -2535,22 +2536,22 @@ CosaDmlTSIPRuleSetEntry
     }
 
     for(i = 0; i < pmCount; i++) {
-        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_ins", i);
+        snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_ins", i);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         if(pEntry->InstanceNumber == strtoul(utVal, NULL, 10))
             break;
     }
     
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_alias", i);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_alias", i);
     Utopia_RawSet(&ctx, NULL, utKey, pEntry->Alias);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_enabled", i);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_enabled", i);
     Utopia_RawSet(&ctx, NULL, utKey, pEntry->Enabled ? "1" : "0");
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_name", i);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_name", i);
     Utopia_RawSet(&ctx, NULL, utKey, pEntry->Name);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_protocol", i);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_protocol", i);
     switch(pEntry->Protocol) {
         case COSA_DML_TSIP_RULE_PROTOCOL_TCP:
             strcpy(utVal, "tcp");
@@ -2564,18 +2565,18 @@ CosaDmlTSIPRuleSetEntry
     }
     Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_startIP", i);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_startIP", i);
     Utopia_RawSet(&ctx, NULL, utKey, pEntry->IPRangeMin);
     
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_endIP", i);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_endIP", i);
     Utopia_RawSet(&ctx, NULL, utKey, pEntry->IPRangeMax);
     
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_startPort", i);
-    snprintf(utVal, sizeof(utVal), "%u", pEntry->PortRangeMin);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_startPort", i);
+    snprintf(utVal, sizeof(utVal), "%lu", pEntry->PortRangeMin);
     Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
-    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%u_endPort", i);
-    snprintf(utVal, sizeof(utVal), "%u", pEntry->PortRangeMax);
+    snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_endPort", i);
+    snprintf(utVal, sizeof(utVal), "%lu", pEntry->PortRangeMax);
     Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
     Utopia_Free(&ctx, 1);
@@ -2592,6 +2593,8 @@ CosaDmlTSIPRuleGetCfg
         PCOSA_DML_TSIP_RULE_ENTRY   pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     fprintf(stderr, "%s is not implemented!\n", __FUNCTION__);
 
     return ANSC_STATUS_SUCCESS;

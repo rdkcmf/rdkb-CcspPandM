@@ -39,6 +39,7 @@
 #endif
 #endif
 
+#include "syscfg.h"
 #include "ssp_global.h"
 #include "stdlib.h"
 #include "ccsp_dm_api.h"
@@ -86,7 +87,14 @@ PCCSP_CCD_INTERFACE             pPnmCcdIf               = (PCCSP_CCD_INTERFACE  
 PCCC_MBI_INTERFACE              pPnmMbiIf               = (PCCC_MBI_INTERFACE         )NULL;
 BOOL                            g_bActive               = FALSE;
 extern  ANSC_HANDLE                     bus_handle;
-
+int GetLogInfo(ANSC_HANDLE bus_handle, char *Subsytem, char *pParameterName);
+#ifndef _COSA_INTEL_USG_ATOM_
+void
+CcspBaseIf_deadlock_detection_log_print
+(
+    int sig
+);
+#endif
 //Debug variables
 time_t start_t, end_t;
 double diff_t;
@@ -105,12 +113,8 @@ void get_uptime(long *uptime)
 
 int  cmd_dispatch(int  command)
 {
-    ULONG                           ulInsNumber        = 0;
-    parameterValStruct_t            val[3]             = {0};
     char*                           pParamNames[]      = {"Device.X_CISCO_COM_DDNS."};
     parameterValStruct_t**          ppReturnVal        = NULL;
-    parameterInfoStruct_t**         ppReturnValNames   = NULL;
-    parameterAttributeStruct_t**    ppReturnvalAttr    = NULL;
     ULONG                           ulReturnValCount   = 0;
     ULONG                           i                  = 0;
 
@@ -159,7 +163,7 @@ int  cmd_dispatch(int  command)
                     DSLH_MPA_ACCESS_CONTROL_ACS,
                     pParamNames,
                     1,
-                    &ulReturnValCount,
+                    (int *)&ulReturnValCount,
                     &ppReturnVal,
                     NULL
                 );
@@ -230,6 +234,8 @@ int  cmd_dispatch(int  command)
     return 0;
 }
 
+
+#if 0
 static void _print_stack_backtrace(void)
 {
 #ifdef __GNUC__
@@ -263,10 +269,11 @@ static void _print_stack_backtrace(void)
 #endif
 #endif
 }
+#endif
 
 #if defined(_ANSC_LINUX)
 static void daemonize(void) {
-	int fd,s;
+	int s;
         pid_t   pid;
         struct timespec max_wait;
         int svalue = -1;
@@ -464,6 +471,7 @@ void sig_handler(int sig)
     }
 }
 
+#ifndef INCLUDE_BREAKPAD
 static int is_core_dump_opened(void)
 {
     FILE *fp;
@@ -495,7 +503,7 @@ static int is_core_dump_opened(void)
     fclose(fp);
     return 0;
 }
-
+#endif
 #endif
 
 #if defined(_PLATFORM_RASPBERRYPI_)
@@ -505,7 +513,6 @@ extern int sock = 0;
 
 int main(int argc, char* argv[])
 {
-    ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     int                             cmdChar            = 0;
     BOOL                            bRunAsDaemon       = TRUE;
     int                             idx                = 0;
@@ -517,7 +524,6 @@ int main(int argc, char* argv[])
     BOOL bDebugSlowChildProcess = FALSE;
     FILE *fp;
     int s, svalue = -1;
-    long uptime1=0, uptime2=0, diff=0;
 
 #ifdef FEATURE_SUPPORT_RDKLOG
     RDK_LOGGER_INIT();
@@ -734,7 +740,7 @@ if(id != 0)
     {
          if (strncmp(buf, "false", 5) == 0)
              /*check this file during Tr069 service start*/
-             system("touch /tmp/disableTr069");
+             v_secure_system("touch /tmp/disableTr069");
     }
 #endif
 	

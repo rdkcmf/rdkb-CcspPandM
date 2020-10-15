@@ -111,6 +111,8 @@ FileTransfer_GetParamUlongValue
 {
     PCOSA_DATAMODEL_FILETRANSFER    pMyObject = (PCOSA_DATAMODEL_FILETRANSFER)g_pCosaBEManager->hFileTransfer;
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
+    
+    UNREFERENCED_PARAMETER(hInsContext);
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Server", TRUE))
@@ -202,25 +204,28 @@ FileTransfer_GetParamStringValue
     PCOSA_DATAMODEL_FILETRANSFER    pMyObject = (PCOSA_DATAMODEL_FILETRANSFER)g_pCosaBEManager->hFileTransfer;
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
 
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pulSize);
+
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "FileName", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue,  pCfg->FileName);
+        AnscCopyString(pValue,  (char*)pCfg->FileName);
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Username", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue,  pCfg->Username);
+        AnscCopyString(pValue,  (char*)pCfg->Username);
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Password", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue,  pCfg->Password);
+        AnscCopyString(pValue,  (char*)pCfg->Password);
         return 0;
     }
 
@@ -268,7 +273,7 @@ FileTransfer_SetParamUlongValue
 {
     PCOSA_DATAMODEL_FILETRANSFER    pMyObject = (PCOSA_DATAMODEL_FILETRANSFER)g_pCosaBEManager->hFileTransfer;
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
-
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Server", TRUE))
     {
@@ -342,26 +347,26 @@ FileTransfer_SetParamStringValue
 {
     PCOSA_DATAMODEL_FILETRANSFER    pMyObject = (PCOSA_DATAMODEL_FILETRANSFER)g_pCosaBEManager->hFileTransfer;
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
-    
+    UNREFERENCED_PARAMETER(hInsContext);   
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "FileName", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pCfg->FileName, pString);
+        AnscCopyString((char*)pCfg->FileName, pString);
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Username", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pCfg->Username, pString);
+        AnscCopyString((char*)pCfg->Username, pString);
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Password", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pCfg->Password, pString);
+        AnscCopyString((char*)pCfg->Password, pString);
         return TRUE;
     }
 
@@ -407,9 +412,9 @@ FileTransfer_Validate
         ULONG*                      puLength
     )
 {
-    PCOSA_DATAMODEL_FILETRANSFER    pMyObject = (PCOSA_DATAMODEL_FILETRANSFER)g_pCosaBEManager->hFileTransfer;
-    PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
-
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -443,7 +448,7 @@ FileTransfer_Commit
 {
     PCOSA_DATAMODEL_FILETRANSFER    pMyObject = (PCOSA_DATAMODEL_FILETRANSFER)g_pCosaBEManager->hFileTransfer;
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
-    
+    UNREFERENCED_PARAMETER(hInsContext);    
     if ( ANSC_STATUS_SUCCESS != CosaDmlFileTransferSetCfg((ANSC_HANDLE)pMyObject, pCfg) )
     {
         FileTransfer_Rollback(NULL);
@@ -484,6 +489,7 @@ FileTransfer_Rollback
     PCOSA_DATAMODEL_FILETRANSFER    pMyObject = (PCOSA_DATAMODEL_FILETRANSFER)g_pCosaBEManager->hFileTransfer;
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
 
+    UNREFERENCED_PARAMETER(hInsContext);
     CosaDmlFileTransferGetCfg(NULL, pCfg);
     
     return 0;

@@ -103,7 +103,6 @@ CosaNeighdiscCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NEIGHDISC       pMyObject    = (PCOSA_DATAMODEL_NEIGHDISC)NULL;
 
     /*
@@ -169,12 +168,9 @@ CosaNeighdiscInitialize
     PSLAP_VARIABLE                  pSlapVariable   = (PSLAP_VARIABLE          )NULL;
     PCOSA_DML_NEIGHDISC_IF_FULL     pNeighdiscInterface    = (PCOSA_DML_NEIGHDISC_IF_FULL   )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     char                            FolderName[32]  = {0};
     ULONG                           ulEntryCount    = 0;
     ULONG                           ulIndex         = 0;
-    ULONG                           ulSubEntryCount = 0;
-    ULONG                           ulSubIndex      = 0;
 
     CosaDmlNeighdiscInit(NULL, NULL);
 
@@ -411,9 +407,7 @@ CosaNeighdiscRemove
     PSLIST_HEADER                   pNeighdiscIFHead       = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_DML_NEIGHDISC_IF_FULL     pNeighdiscInterface    = (PCOSA_DML_NEIGHDISC_IF_FULL)NULL;
     PSINGLE_LINK_ENTRY              pLink           = (PSINGLE_LINK_ENTRY )NULL;
-    PSINGLE_LINK_ENTRY              pSubLink        = (PSINGLE_LINK_ENTRY )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoTemp = (PPOAM_IREP_FOLDER_OBJECT)NULL;
 
     /*free the back end memory*/
@@ -495,17 +489,13 @@ CosaNeighdiscRegGetInfo
     PCOSA_DATAMODEL_NEIGHDISC       pMyObject       = (PCOSA_DATAMODEL_NEIGHDISC)hThisObject;
     PSLIST_HEADER                   pNeighdiscIFHead       = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_DML_NEIGHDISC_IF_FULL     pNeighdiscInterface    = (PCOSA_DML_NEIGHDISC_IF_FULL)NULL;
-    PCOSA_DML_NEIGHDISC_IF_FULL     pNeighdiscEntry        = (PCOSA_DML_NEIGHDISC_IF_FULL)NULL;
-    PSINGLE_LINK_ENTRY              pLink           = (PSINGLE_LINK_ENTRY )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoNeighdiscHA = (PPOAM_IREP_FOLDER_OBJECT)pMyObject->hIrepFolderNeighdiscInterfaceHA;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoNeighdiscIF = (PPOAM_IREP_FOLDER_OBJECT)NULL;
     PSLAP_VARIABLE                  pSlapVariable   = (PSLAP_VARIABLE          )NULL;
     ULONG                           ulEntryCount            = 0;
     ULONG                           ulIndex                 = 0;
     ULONG                           ulInstanceNumber        = 0;
-    ULONG                           ulUpperInstanceNumber   = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
 
@@ -878,8 +868,7 @@ CosaNeighdiscRegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_NEIGHDISC              pMyObject         = (PCOSA_DATAMODEL_NEIGHDISC )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;

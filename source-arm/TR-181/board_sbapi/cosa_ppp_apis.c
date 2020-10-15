@@ -87,6 +87,8 @@ CosaDmlPppInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -97,6 +99,7 @@ CosaDmlPPPGetSupportedNCPs
         PULONG                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     *puLong = COSA_DML_PPP_SUPPORTED_NCP_ATCP | COSA_DML_PPP_SUPPORTED_NCP_IPCP;
     
     return ANSC_STATUS_SUCCESS;
@@ -108,6 +111,7 @@ CosaDmlPppIfGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_PPPIfNum;
 }
 
@@ -355,7 +359,6 @@ struct
 
 static void get_wan_proto(wanProto_t * p_wan_proto)
 {
-    UtopiaContext utctx = {0};
     char          output[64] =  {0};
 
     if (!p_wan_proto)
@@ -373,7 +376,6 @@ static void get_wan_proto(wanProto_t * p_wan_proto)
 /*this API is used by bbhm to get pppoe IF address*/
 ULONG get_ppp_ip_addr(void)
 {
-    ULONG addr       = 0;
     wanProto_t proto = 0;
     char buf[128]    = {0};
     
@@ -403,6 +405,8 @@ CosaDmlPppInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     _ansc_strcpy(g_ppp_info.ifname, "ppp0");
     _ansc_strcpy(g_ppp_info.lower_ifname,INTERFACE);
     _ansc_strcpy(g_ppp_info.ut_alias_name, "PPP_Interface_tr_alias");
@@ -420,6 +424,7 @@ CosaDmlPPPGetSupportedNCPs
         PULONG                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     *puLong = COSA_DML_PPP_SUPPORTED_NCP_IPCP;
     return ANSC_STATUS_SUCCESS;
 }
@@ -430,6 +435,7 @@ CosaDmlPppIfGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return 1;
 }
 
@@ -575,7 +581,7 @@ static int get_auth_proto(int * p_proto)
     char buf[1024] = {0};
     char result[1024] = {0};
 
-    if (fp = fopen(LOG_FILE, "r+"))
+    if ((fp = fopen(LOG_FILE, "r+")))
     {
         while (fgets(buf, sizeof(buf)-1, fp))
         {
@@ -618,7 +624,7 @@ static int get_session_id(ULONG * p_id)
     if (!get_ppp_ip_addr())
         return 0;
 
-    if (fp = fopen(LOG_FILE, "r+"))
+    if ((fp = fopen(LOG_FILE, "r+")))
     {
         while (fgets(buf, sizeof(buf)-1, fp))
         {
@@ -656,6 +662,7 @@ static int get_session_id(ULONG * p_id)
 #define DNS_FILE "/var/run/ppp/resolv.conf"
 static void be_struct_2_ml_info(UtopiaContext * p_ctx, wanInfo_t * p_in, PCOSA_DML_PPP_IF_INFO p_out)
 {
+    UNREFERENCED_PARAMETER(p_ctx);
     char buf[128] = {0};
     FILE * fp = NULL;
         
@@ -725,7 +732,7 @@ static void be_struct_2_ml_info(UtopiaContext * p_ctx, wanInfo_t * p_in, PCOSA_D
 
     /*the data model doesn't have "None" auth, here use PAP as default. */
     p_out->AuthenticationProtocol = COSA_DML_PPP_AUTH_PAP;
-    get_auth_proto(&p_out->AuthenticationProtocol);
+    get_auth_proto((int*)&p_out->AuthenticationProtocol);
 
     p_out->CurrentMRUSize         = 1492;
 
@@ -799,6 +806,7 @@ CosaDmlPppIfGetEntry
         PCOSA_DML_PPP_IF_FULL       pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     /*we only have one PPP interface*/
     if (ulIndex == 0)
     {
@@ -836,6 +844,10 @@ CosaDmlPppIfSetValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     /*set calculated instanceNumber & alias, no chance to run here*/
     
     return ANSC_STATUS_SUCCESS;
@@ -848,6 +860,8 @@ CosaDmlPppIfAddEntry
         PCOSA_DML_PPP_IF_FULL       pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -858,6 +872,8 @@ CosaDmlPppIfDelEntry
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -869,6 +885,7 @@ CosaDmlPppIfSetCfg
         PCOSA_DML_PPP_IF_CFG        pCfg        /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     wanInfo_t *  p_wi = &g_ppp_info.wan;    
 	UtopiaContext ctx = {0};
     int           rc  = 0;
@@ -876,7 +893,7 @@ CosaDmlPppIfSetCfg
     if (pCfg->InstanceNumber != 1)
         return ANSC_STATUS_FAILURE;
 
-	if (!Utopia_Init(&ctx)) 
+    if (!Utopia_Init(&ctx)) 
         return ANSC_STATUS_FAILURE;
 
     /*when Enable/Disable PPP interface, save current stats, and LastChange*/
@@ -907,16 +924,17 @@ CosaDmlPppIfGetCfg
         PCOSA_DML_PPP_IF_CFG        pCfg        /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     wanInfo_t *  p_wi = &g_ppp_info.wan;    
 	UtopiaContext ctx = {0};
 
     if (pCfg->InstanceNumber != 1)
         return ANSC_STATUS_FAILURE;
 
-	if (!Utopia_Init(&ctx)) 
+    if (!Utopia_Init(&ctx)) 
         return ANSC_STATUS_FAILURE;
 
-	if (!Utopia_GetWANSettings(&ctx, p_wi))
+    if (!Utopia_GetWANSettings(&ctx, p_wi))
     {
         /*GetWANSettings succeeds*/
         be_struct_2_ml_cfg(&ctx, p_wi, pCfg);
@@ -935,16 +953,17 @@ CosaDmlPppIfGetInfo
         PCOSA_DML_PPP_IF_INFO       pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     wanInfo_t *  p_wi = &g_ppp_info.wan;    
 	UtopiaContext ctx = {0};
 
     if (ulInstanceNumber != 1)
         return ANSC_STATUS_FAILURE;
 
-	if (!Utopia_Init(&ctx)) 
+    if (!Utopia_Init(&ctx)) 
         return ANSC_STATUS_FAILURE;
 
-	if (!Utopia_GetWANSettings(&ctx, p_wi))
+    if (!Utopia_GetWANSettings(&ctx, p_wi))
     {
         /*GetWANSettings succeeds*/
         be_struct_2_ml_info(&ctx, p_wi, pInfo);
@@ -962,6 +981,8 @@ CosaDmlPppIfReset
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     commonSyseventSet("wan-restart", "");
     return ANSC_STATUS_SUCCESS;
 }
@@ -996,6 +1017,8 @@ CosaDmlPppIfGetStats
         PCOSA_DML_IF_STATS          pStats
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulPppIfInstanceNumber);
     COSA_DML_IF_STATS          curr_stats = {0};
 
     if (CosaUtilGetIfStats((char *)g_ppp_info.ifname,  &curr_stats))
@@ -1012,7 +1035,7 @@ CosaDmlPppIfGetStats
 ANSC_STATUS
 CosaPPPApiRemove(ANSC_HANDLE  hContext)
 {
-    
+    UNREFERENCED_PARAMETER(hContext);
     commonSyseventClose();
     return ANSC_STATUS_SUCCESS;
 }

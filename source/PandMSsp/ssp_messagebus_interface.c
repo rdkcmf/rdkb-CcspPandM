@@ -70,6 +70,7 @@
 **********************************************************************/
 
 #include "ssp_global.h"
+#include "ccsp_psm_helper.h"
 
 
 ANSC_HANDLE                 bus_handle         = NULL;
@@ -81,6 +82,14 @@ int ssp_PnmMbi_GetHealth ( )
 {
     return g_pComponent_Common_Dm->Health;
 }
+
+BOOLEAN waitConditionReady
+    (
+        void*                           hMBusHandle,
+        const char*                     dst_component_id,
+        char*                           dbus_path,
+        char*                           src_component_id
+    );
 
 #ifdef _ANSC_LINUX
 
@@ -145,7 +154,7 @@ static char *Upstream = "dmsb.l2net.5.Port.%d.Upstream";
 
 static char *BssMax = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.BssMaxNumSta";
 
-BOOL BwgRemoveParam_Thread(void* arg)
+void* BwgRemoveParam_Thread(void* arg)
 {
     UNREFERENCED_PARAMETER(arg);
     char recName[256]={0};
@@ -236,7 +245,7 @@ BOOL BwgRemoveParam_Thread(void* arg)
               CcspTraceWarning(("%s: PSM Set record failed %s \n", __FUNCTION__, g_Subsystem));
      }    
 
-    return 1;
+    return NULL;
 }
 
 #endif
@@ -266,7 +275,7 @@ ssp_PnmMbi_MessageBusEngage
                 component_id,
                 config_file,
                 &bus_handle,
-                Ansc_AllocateMemory_Callback,           /* mallocfc, use default */
+                (CCSP_MESSAGE_BUS_MALLOC)Ansc_AllocateMemory_Callback,           /* mallocfc, use default */
                 Ansc_FreeMemory_Callback            /* freefc,   use default */
             );
 
@@ -1137,6 +1146,7 @@ ssp_PnmMbi_Initialize
         void * user_data
     )
 {
+    UNREFERENCED_PARAMETER(user_data);
     ANSC_STATUS             returnStatus    = ANSC_STATUS_SUCCESS;
     
     printf("In %s()\n", __FUNCTION__);
@@ -1150,6 +1160,7 @@ ssp_PnmMbi_Finalize
         void * user_data
     )
 {
+    UNREFERENCED_PARAMETER(user_data);
     ANSC_STATUS             returnStatus    = ANSC_STATUS_SUCCESS;
 
     printf("In %s()\n", __FUNCTION__);
@@ -1164,6 +1175,7 @@ ssp_PnmMbi_Buscheck
         void * user_data
     )
 {
+    UNREFERENCED_PARAMETER(user_data);
     printf("In %s()\n", __FUNCTION__);
 
     return 0;
@@ -1177,6 +1189,8 @@ ssp_PnmMbi_FreeResources
         void * user_data
     )
 {
+    UNREFERENCED_PARAMETER(priority);
+    UNREFERENCED_PARAMETER(user_data);
     ANSC_STATUS             returnStatus    = ANSC_STATUS_SUCCESS;
 
     printf("In %s()\n", __FUNCTION__);

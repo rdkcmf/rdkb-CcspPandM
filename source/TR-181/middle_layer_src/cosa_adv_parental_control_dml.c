@@ -22,6 +22,7 @@
 #include "ansc_platform.h"
 #include "syslog.h"
 #include "ccsp_trace.h"
+#include "cosa_deviceinfo_dml.h"
 
 /***********************************************************************
 
@@ -73,6 +74,7 @@ AdvancedParentalControl_GetParamBoolValue
 {
     /* check the parameter name and return the corresponding value */
     PCOSA_DATAMODEL_ADVPC       pMyObject     = (PCOSA_DATAMODEL_ADVPC)g_pCosaBEManager->hAdvPC;
+    UNREFERENCED_PARAMETER(hInsContext);
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         *pBool = pMyObject->bEnable;

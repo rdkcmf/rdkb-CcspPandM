@@ -100,8 +100,8 @@ COSA_PRI_IP_IF_FULL  g_ipif_be_bufs[MAX_IPIF_NUM];
 #define SYSCFG_FORMAT_NORMAL_V6ADDR "tr_%s_v6addr"
 #define SYSCFG_FORMAT_NORMAL_V6PREFIX "tr_%s_v6pref_%s"
 
-#define SYSCFG_FORMAT_NAMESPACE_STATIC_V6ADDR "tr_%s_static_v6addr_%d"
-#define SYSCFG_FORMAT_NAMESPACE_STATIC_V6PREFIX "tr_%s_static_v6pref_%d"
+#define SYSCFG_FORMAT_NAMESPACE_STATIC_V6ADDR "tr_%s_static_v6addr_%lu"
+#define SYSCFG_FORMAT_NAMESPACE_STATIC_V6PREFIX "tr_%s_static_v6pref_%lu"
 #define SYSCFG_FORMAT_STATIC_V6ADDR "tr_%s_ipv6_static_addresses"
 #define SYSCFG_FORMAT_STATIC_V6PREF "tr_%s_ipv6_static_prefixes"
 
@@ -175,7 +175,6 @@ void _get_shell_output(FILE *fp, char *buf, int len)
 int _get_shell_output2(FILE *fp, char * dststr)
 {
     char   buf[256];
-    char * p;
     int   bFound = 0;
 
     if (fp)
@@ -197,6 +196,8 @@ int _get_shell_output2(FILE *fp, char * dststr)
 
 #define LAN_TIMEOUT 3
 #define WAN_TIMEOUT 15
+
+#if 0
 static void _wait_for_services(char * serv_name)
 {
     char buf[256] = {0};
@@ -270,6 +271,7 @@ static int _is_in_linux_bridge(char * if_name, char * br_name)
         return 0;
     
 }
+#endif
 
 
 /**********************************************************************
@@ -303,9 +305,15 @@ static int _is_in_linux_bridge(char * if_name, char * br_name)
     #define COSA_USG_IF_NUM 4
 #endif
 #if defined(_COSA_BCM_MIPS_) || defined(_PLATFORM_RASPBERRYPI_) || defined(_ENABLE_DSL_SUPPORT_)
+    #if defined(COSA_USG_IF_NUM)
+        #undef COSA_USG_IF_NUM
+    #endif
     #define COSA_USG_IF_NUM 3 // we only have 3 interfaces for XF3
 #endif
 #ifdef _PLATFORM_TURRIS_
+    #if defined(COSA_USG_IF_NUM)
+        #undef COSA_USG_IF_NUM
+    #endif
     #define COSA_USG_IF_NUM 3
 #endif
 
@@ -338,7 +346,8 @@ USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
 #define G_USG_IF_NAME(i) g_usg_if_cfg[i].IfName
 #define G_USG_IF_LINKTYPE(i) g_usg_if_cfg[i].LinkType 
 
-static int _is_bridge_mode(){
+#if 0
+ static int _is_bridge_mode(){
     UtopiaContext utctx = {0};
     bridgeInfo_t bridge_info ={0}; /*RDKB-6840, CID-33568, initialize before use*/
     int ret = TRUE;
@@ -349,6 +358,7 @@ static int _is_bridge_mode(){
     }
     return ret;
 }
+#endif
 #endif
 
 int CosaGetUsgIfNum() {
@@ -526,7 +536,7 @@ int _get_datetime_offset(int offset, char * buf, int len)
     if (!buf)
         return -1;
     
-    if (offset == 0xffffffff)
+    if (offset == (int)0xffffffff)
     {
         /*forever*/
         strcpy(buf, "9999-12-31T23:59:59Z");
@@ -558,7 +568,7 @@ static int _get_2_lfts(char * fn, int * p_valid, int * p_prefer, ipv6_addr_info_
 {
     FILE * fp = NULL;
     char buf[256] = {0};
-    struct in6_addr  addr = {0};
+    struct in6_addr  addr;
     char addr_str[128] = {0};
     char * p = NULL;
     char file_str[128] = {0};
@@ -678,7 +688,7 @@ int  _is_static_addr(char * ifname, char * v6addr)
         if (p_token == NULL)
                 break;
     
-        snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_STATIC_V6ADDR, ifname, atoi(p_token) );
+        snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_STATIC_V6ADDR "%d", ifname, atoi(p_token) );
 
         memset(out1, 0, sizeof(out1));
         Utopia_RawGet(&utctx,namespace,"IPAddress",out1,sizeof(out1));
@@ -698,7 +708,7 @@ OUT:
 
 static int _get_early_pref_len(int * p_pref_len, ULONG ulIndex, char * v6pref_path, char * v6addr_str)
 {
-    int inst2 = 0;
+    ULONG inst2 = 0;
     int i = 0;
     int found = 0;
     char * pref_str = NULL;
@@ -707,7 +717,7 @@ static int _get_early_pref_len(int * p_pref_len, ULONG ulIndex, char * v6pref_pa
     if (!p_pref_len || !v6pref_path || !v6addr_str)
         return -1;
 
-    if (sscanf(v6pref_path, "Device.IP.Interface.%*d.IPv6Prefix.%d", &inst2) != 1)
+    if (sscanf(v6pref_path, "Device.IP.Interface.%*d.IPv6Prefix.%lu", &inst2) != 1)
         return -2;
 
     if (!inst2)
@@ -739,7 +749,6 @@ static int _get_early_pref_len(int * p_pref_len, ULONG ulIndex, char * v6pref_pa
 
 static int _load_v6_alias_instNum(UtopiaContext *p_utctx, char * syscfg_instNum, char * syscfg_alias, ULONG * p_inst_num, char * p_alias, int alias_size)
 {
-    char buf[256] = {0};
     char out[256] = {0};
     
     memset(out, 0, sizeof(out));
@@ -761,7 +770,7 @@ static int _save_v6_alias_instNum(UtopiaContext *p_utctx, char * syscfg_instNum,
 {
     char val[256] = {0};
     
-    sprintf(val, "%d", inst_num);
+    sprintf(val, "%lu", inst_num);
     Utopia_RawSet(p_utctx,NULL,syscfg_instNum,val);
        
     Utopia_RawSet(p_utctx,NULL,syscfg_alias,p_alias);
@@ -782,7 +791,7 @@ IPIF_getEntry_for_Ipv6Addr
     char out[1024] = {0};
     UtopiaContext utctx = {0};
     ipv6_addr_info_t * p_v6addr = NULL;
-    ipv6_addr_info_t * orig_p_v6addr = NULL;
+    //ipv6_addr_info_t * orig_p_v6addr = NULL;
     int  v6addr_num = 0;
     int  i = 0;
     COSA_DML_IP_V6ADDR * p_dml_v6addr = NULL;
@@ -790,7 +799,6 @@ IPIF_getEntry_for_Ipv6Addr
     exported_ra_info_t  * p_ra = NULL;
     int  ra_num = 0;
     int  j = 0;
-    int  ra_index = -1;
     char namespace[256] = {0};
     int  need_write = 0;
     
@@ -802,7 +810,7 @@ IPIF_getEntry_for_Ipv6Addr
     g_ipif_be_bufs[ulIndex].ulNumOfV6Addr = 0;
 
     /*save for free()*/
-    orig_p_v6addr = p_v6addr;
+    //orig_p_v6addr = p_v6addr;
 
     /*the following loop block is on link-local, loopback, RA, DHCPv6 IANA address*/
     /*if we have too many ipv6 addresses, drop them*/
@@ -811,7 +819,6 @@ IPIF_getEntry_for_Ipv6Addr
     for (i=0; i<v6addr_num && i<MAX_IPV6_ENTRY_NUM; i++,p_v6addr++)
     {
         p_dml_v6addr = &g_ipif_be_bufs[ulIndex].V6AddrList[g_ipif_be_bufs[ulIndex].ulNumOfV6Addr];
-        ra_index = -1; /*don't know if the address is from RA*/
 
             
         /*for static v6address, it's not done here, just ignore it */
@@ -837,7 +844,6 @@ IPIF_getEntry_for_Ipv6Addr
                 if (!strncmp(p_v6addr->v6pre, p_ra[j].pref, sizeof(p_ra[j].pref)))
                 {
                     p_dml_v6addr->Origin = COSA_DML_IP6_ORIGIN_AutoConfigured;
-                    ra_index = j;
                     break;
                 }
             }
@@ -990,14 +996,11 @@ IPIF_getEntry_for_Ipv6Addr
     
     if (out[0])
     {
-        char * addr = out;
-        char * p = out;
         char val[256] = {0};
         int  index = g_ipif_be_bufs[ulIndex].ulNumOfV6Addr;
-        int  buf_end = 0;
         char * str = NULL;
         char * saveptr = NULL;
-        int  inst_num = 0;
+        ULONG  inst_num = 0;
         char * p_token = NULL;
 
         for (str = out; ; str = NULL) 
@@ -1085,21 +1088,21 @@ IPIF_getEntry_for_Ipv6Addr
     }
 
 
-
+/*
 OUT:
     if (orig_p_v6addr)  
         free(orig_p_v6addr);
 
     if (p_ra)
         free(p_ra);
-    
+*/    
     return ret;
 }
 
 /*for non-static v6addr uses this func to find the matched prefix*/
 int CosaDmlGetPrefixPathName(char * ifname, int inst1, PCOSA_DML_IP_V6ADDR p_dml_v6addr, char * p_val)
 {
-    int   i = 0, j = 0;
+    int   i = 0;
     int   inst2 = 0;
     char  name[256] = {0};
     int   num = 0;
@@ -1109,7 +1112,6 @@ int CosaDmlGetPrefixPathName(char * ifname, int inst1, PCOSA_DML_IP_V6ADDR p_dml
     char  prefix[64] = {0};
     char  param_val[256] = {0};
     ULONG val_len = sizeof(param_val);
-    int   ulIndex1 = 0, ulIndex2 = 0;
     int   found = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -1188,11 +1190,11 @@ static int _get_dynamic_prefix_status(COSA_DML_IP6PREFIX_STATUS_TYPE * p_status,
             
     _get_2_lfts(TMP_IP_OUTPUT, &valid_lft, &prefered_lft, p_v6addr);
     
-    if (valid_lft <= 0 && (valid_lft != 0xffffffff))
+    if (valid_lft <= 0 && (valid_lft != ((int)0xffffffff)))
         *p_status = COSA_DML_IP6PREFIX_STATUS_Invalid;
     else
     {
-        if (prefered_lft <= 0 && (prefered_lft != 0xffffffff))
+        if (prefered_lft <= 0 && (prefered_lft != ((int)0xffffffff)))
             *p_status = COSA_DML_IP6PREFIX_STATUS_Deprecated;
         else
             *p_status = COSA_DML_IP6PREFIX_STATUS_Preferred;
@@ -1211,7 +1213,6 @@ int __find_iana_addr_info(char * ifname, PCOSA_DML_IP_V6ADDR p_dml_v6addr, ipv6_
 
     if (p_all_ai)
     {
-        ipv6_addr_info_t * p_ai = p_all_ai;
         int i = 0;
         
         for (i=0; i<v6addr_num; i++)
@@ -1233,7 +1234,6 @@ int __find_iana_addr_info(char * ifname, PCOSA_DML_IP_V6ADDR p_dml_v6addr, ipv6_
 
 ULONG CosaDmlIPv6addrGetV6Status(PCOSA_DML_IP_V6ADDR p_dml_v6addr, PCOSA_DML_IP_IF_FULL2 p_ipif)
 {
-    char cmd[256] = {0};
     int  valid_lft = 0, prefered_lft = 0;
     ipv6_addr_info_t v6_ai;
 
@@ -1273,11 +1273,11 @@ ULONG CosaDmlIPv6addrGetV6Status(PCOSA_DML_IP_V6ADDR p_dml_v6addr, PCOSA_DML_IP_
 
     _get_2_lfts(TMP_IP_OUTPUT, &valid_lft, &prefered_lft, &v6_ai);
 
-    if (valid_lft <= 0 && (valid_lft != 0xffffffff))
+    if (valid_lft <= 0 && (valid_lft != (int)0xffffffff))
         return COSA_DML_IP6_ADDRSTATUS_Invalid;
     else
     {
-        if (prefered_lft <= 0 && (prefered_lft != 0xffffffff))
+        if (prefered_lft <= 0 && (prefered_lft != (int)0xffffffff))
             return COSA_DML_IP6_ADDRSTATUS_Deprecated;
         else
             return COSA_DML_IP6_ADDRSTATUS_Preferred;
@@ -1293,7 +1293,7 @@ CosaDmlIPGetIPv6Addresses
         PULONG                      p_num
     )
 {
-    ULONG i = 0;
+    int i = 0;
     PCOSA_DML_IP_V6ADDR p_dml_addr = NULL;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -1349,7 +1349,7 @@ CosaDmlIPGetIPv6Addresses
         PULONG                      p_num
     )
 {
-    ULONG i = 0;
+    int i = 0;
     PCOSA_DML_IP_V6ADDR p_dml_addr = NULL;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -1434,7 +1434,7 @@ IPIF_getEntry_for_Ipv6Pre
     char out[1024]= {0};
     UtopiaContext utctx = {0};
     ipv6_addr_info_t * p_v6addr = NULL;
-    ipv6_addr_info_t * orig_p_v6addr = NULL;
+    //ipv6_addr_info_t * orig_p_v6addr = NULL;
     int  v6addr_num = 0;
     int  i = 0;
     COSA_DML_IP_V6PREFIX * p_dml_v6pre = NULL;
@@ -1453,14 +1453,13 @@ IPIF_getEntry_for_Ipv6Pre
     _obtain_ra_info(&p_ra, &ra_num);
 
     /*save for free*/
-    orig_p_v6addr = p_v6addr;
+    //orig_p_v6addr = p_v6addr;
 
     /*for RA prefixes
       note, for DHCPv6 IANA address, the according prefix should be empty, */
     for (i=0; i<v6addr_num && i<MAX_IPV6_ENTRY_NUM; i++, p_v6addr++)
     {
-        char dhcpv6_addr[64] = {0};            
-
+      
         /*according to tr181, we don't need to support WellKnown prefixes.*/
         if (p_v6addr->scope == IPV6_ADDR_SCOPE_LINKLOCAL ||
             p_v6addr->scope == IPV6_ADDR_SCOPE_LOOPBACK)
@@ -1593,11 +1592,11 @@ IPIF_getEntry_for_Ipv6Pre
 
             /*This instance Number should be fixed to 1 because other place will refer it*/
             p_dml_v6pre->InstanceNumber = g_ipif_be_bufs[ulIndex].ulNumOfV6Pre + 1;
-            _ansc_sprintf(p_dml_v6pre->Alias, "IPv6Prefix%d", p_dml_v6pre->InstanceNumber );
+            _ansc_sprintf(p_dml_v6pre->Alias, "IPv6Prefix%lu", p_dml_v6pre->InstanceNumber );
             if ( p_dml_v6pre->InstanceNumber != 1 ) {
                 AnscTrace("The Instance Number is not 1, error ,DHCPv6 Server will not work.\n");
                 p_dml_v6pre->InstanceNumber = 1;
-                _ansc_sprintf(p_dml_v6pre->Alias, "IPv6Prefix%d", p_dml_v6pre->InstanceNumber );
+                _ansc_sprintf(p_dml_v6pre->Alias, "IPv6Prefix%lu", p_dml_v6pre->InstanceNumber );
             }
 
             if (!p_dml_v6pre->InstanceNumber)
@@ -1681,12 +1680,9 @@ IPIF_getEntry_for_Ipv6Pre
     }    
     if (out[0])
     {
-        char * prefix = out;
-        char * p = out;
         char val[256] = {0};
         char namespace[256] = {0};
         int  index = g_ipif_be_bufs[ulIndex].ulNumOfV6Pre;
-        int  buf_end = 0;
         char * str = NULL;
         char * saveptr = NULL;
         char * p_token = NULL;
@@ -1707,7 +1703,7 @@ IPIF_getEntry_for_Ipv6Pre
             else
                 p_dml_v6pre = &g_ipif_be_bufs[ulIndex].V6PreList[index];            
 
-            snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6PREFIX, (char *)g_ipif_names[ulIndex], inst_num);
+            snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6PREFIX, (char *)g_ipif_names[ulIndex], (ULONG)inst_num);
 
             p_dml_v6pre->InstanceNumber = inst_num;
 
@@ -1763,14 +1759,14 @@ IPIF_getEntry_for_Ipv6Pre
         }
     }
 
-
+/*
 OUT:
     if (orig_p_v6addr)
         free(orig_p_v6addr);
 
     if (p_ra)
         free(p_ra);
-    
+*/    
     return ret;
 }
 
@@ -1782,6 +1778,7 @@ CosaDmlIpIfGetEntry2
         ULONG                       InstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     /*It's sure that index is the InstanceNumber - 1*/
     return &g_ipif_be_bufs[InstanceNumber-1].Info;
 }
@@ -2123,7 +2120,7 @@ CosaDmlIpIfSetCfg
                 UtopiaContext utctx;
 
                 Utopia_Init(&utctx);
-                _ansc_sprintf(buf, "%d", pCfg->MaxMTUSize);
+                _ansc_sprintf(buf, "%lu", pCfg->MaxMTUSize);
                 Utopia_Set(&utctx, UtopiaValue_WAN_MTU, buf);
                 Utopia_Free(&utctx, 1);
             }
@@ -2338,11 +2335,11 @@ CosaDmlIpIfReset
         if (strstr((char *)g_ipif_names[ulInstanceNumber-1], "lan0"))
         {
 	    CcspTraceWarning(("%s: setting lan-restart\n", __FUNCTION__));
-            system("sysevent set lan-restart");
+            v_secure_system("sysevent set lan-restart");
         }
         else if (strstr((char *)g_ipif_names[ulInstanceNumber-1],INTERFACE))
         {
-            system("sysevent set wan-restart");        
+            v_secure_system("sysevent set wan-restart");        
         }
         /*we do nothing when the interface is loopback*/
 
@@ -2486,9 +2483,7 @@ CosaDmlIpIfGetV4Addr
     else
     {
         ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-
-        struct sockaddr * p;
-        
+       
         AnscTraceFlow(("%s...\n", __FUNCTION__));
 
         pEntry->InstanceNumber   = ulIndex + 1;
@@ -2521,7 +2516,7 @@ CosaDmlIpIfGetV4Addr
                 /*if the alias is not set before, we initialize it here rather than get a default value from middile layer*/
                 Utopia_Init(&utctx);
                 _ansc_sprintf(buf, "tr_ip_interface_%s_v4addr_alias", g_ipif_names[ulIpIfInstanceNumber-1]);
-                _ansc_sprintf(out, "Interface_%d", pEntry->InstanceNumber);
+                _ansc_sprintf(out, "Interface_%lu", pEntry->InstanceNumber);
                 Utopia_RawSet(&utctx,NULL,buf,out);
                 Utopia_Free(&utctx,1);
 
@@ -2922,7 +2917,6 @@ int CosaDmlDateTimeCompare(char *p_dt1, char *p_dt2)
 
 static int _invoke_ip_cmd(char * cmd, PCOSA_DML_IP_V6ADDR p_old, PCOSA_DML_IP_V6ADDR p_new, char * ifname, void * extra_args)
 {
-    int i = 0;
     int pref_len = 0;
     char buf[256] = {0};
     char name[256] = {0};
@@ -3095,6 +3089,7 @@ int CosaDmlIpv6AddrMatchesPrefix(char * pref_path, char * v6addr, int ipif_inst_
     char   param_val[128] = {0};
     ULONG  val_len = sizeof(param_val);
     char   name[256] = {0};
+    UNREFERENCED_PARAMETER(ipif_inst_num);
 
     sprintf(name, "%sPrefix", pref_path);
     
@@ -3178,7 +3173,7 @@ CosaDmlIpIfAddV6Addr
     }
     else
     {
-        ULONG                           i = 0;
+        int                             i = 0;
         ULONG                           ulIndex = 0;
         char                            name[256]= {0};
         char                            val[1024]= {0};
@@ -3203,7 +3198,7 @@ CosaDmlIpIfAddV6Addr
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,NULL,name,val,sizeof(val));            
 
-                snprintf(val+strlen(val), sizeof(val),  "%d,", pEntry->InstanceNumber );
+                snprintf(val+strlen(val), sizeof(val),  "%lu,", pEntry->InstanceNumber );
 
                 Utopia_RawSet(&utctx,NULL,name,val);
 
@@ -3279,7 +3274,9 @@ static int _syscfg_unset_v6addr(char * ifname, char * v6addr, int inst_num)
 {
     char                            namespace[256]= {0};
 
-    snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6ADDR, ifname, inst_num);
+    UNREFERENCED_PARAMETER(v6addr);
+
+    snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6ADDR, ifname, (ULONG)inst_num);
 
     syscfg_unset(namespace, "IPAddress");
     syscfg_unset(namespace, "Alias");
@@ -3320,7 +3317,7 @@ static int _del_one_token(char * buf, int inst_num, int buf_len)
     }
     
     /*buf is in & out*/
-    memset(buf, 0, sizeof(buf));
+    memset(buf, 0, buf_len);
     for (i=0; i<size; i++)
         sprintf(buf+strlen(buf), "%d,", num_array[i]);
 
@@ -3342,9 +3339,9 @@ CosaDmlIpIfDelV6Addr
     }
     else
     {
-        ULONG                           i = 0;
+        int                             i = 0;
         ULONG                           j = 0;
-        ULONG                           k = 0;
+        int                             k = 0;
         char                            name[256]= {0};
         char                            val[1024]= {0};
         UtopiaContext                   utctx = {0};
@@ -3442,13 +3439,13 @@ CosaDmlIpIfSetV6Addr
     }
     else
     {
-        ULONG                           i       = 0;
+        int                             i       = 0;
         ULONG                           j       = 0;
         ULONG                           mask    = 0;
-        char                            name[256]= {0};
         char                            namespace[256]= {0};
         char                            val[1024]= {0};
         UtopiaContext                   utctx = {0};
+        UNREFERENCED_PARAMETER(hContext);
 
         AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -3585,7 +3582,7 @@ CosaDmlIpIfGetV6Addr2
     else
     {
         ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-        ULONG                           i       = 0;
+        int                             i       = 0;
         ULONG                           j       = 0;
 
         AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -3620,7 +3617,7 @@ CosaDmlIPGetIPv6Prefixes
         PULONG                      p_num
     )
 {       
-    ULONG i = 0;
+    int i = 0;
     PCOSA_DML_IP_V6PREFIX p_dml_pref = NULL;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -3675,7 +3672,7 @@ CosaDmlIPGetIPv6Prefixes
     )
 {
 #if defined (MULTILAN_FEATURE)
-    ULONG i = 0;
+    int i = 0;
     PCOSA_DML_IP_V6PREFIX p_dml_pref = NULL;
 #endif
     /*RDKB-6840, CID-33130, null check before use*/
@@ -3713,7 +3710,7 @@ CosaDmlIPGetIPv6Prefixes
     else
     {
 #ifndef MULTILAN_FEATURE
-	ULONG i = 0;
+	int i = 0;
         PCOSA_DML_IP_V6PREFIX p_dml_pref = NULL;
 #endif
         AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -3812,7 +3809,7 @@ CosaDmlIpIfAddV6Prefix
     }
     else
     {
-        ULONG                           i = 0;
+        int                             i = 0;
         ULONG                           ulIndex = 0;
         char                            name[256] = {0};
         char                            val[1024] = {0};
@@ -3837,7 +3834,7 @@ CosaDmlIpIfAddV6Prefix
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,NULL,name,val,sizeof(val));
 
-                snprintf(val+strlen(val), sizeof(val)-strlen(val), "%d,", (char *)pEntry->InstanceNumber);
+                snprintf(val+strlen(val), sizeof(val)-strlen(val), "%lu,", pEntry->InstanceNumber);
 
                 Utopia_RawSet(&utctx,NULL,name,val);
 
@@ -3890,7 +3887,7 @@ static int _syscfg_unset_v6prefix(char * ifname, int inst_num)
 {
     char                            namespace[256] = {0};
 
-    snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6PREFIX, ifname, inst_num);
+    snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6PREFIX, ifname, (ULONG)inst_num);
     
     syscfg_unset(namespace, "Enable");
     syscfg_unset(namespace, "Alias");
@@ -3913,9 +3910,9 @@ CosaDmlIpIfDelV6Prefix
     }
     else
     {
-        ULONG                           i = 0;
+        int                             i = 0;
         ULONG                           j = 0;
-        ULONG                           k = 0;
+        int                             k = 0;
         char                            name[256] = {0};
         char                            val[1024] = {0};
         UtopiaContext                   utctx = {0};
@@ -4009,10 +4006,8 @@ CosaDmlIpIfSetV6Prefix
     }
     else
     {
-        ULONG                           i       = 0;
+        int                             i       = 0;
         ULONG                           j       = 0;
-        char                            name[256] = {0};
-        char                            val[1024] = {0};
         UtopiaContext                   utctx = {0};
 
         AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -4094,7 +4089,7 @@ CosaDmlIpIfGetV6Prefix2
     else
     {
         ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-        ULONG                           i       = 0;
+        int                             i       = 0;
         ULONG                           j       = 0;
 
         AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -4163,11 +4158,10 @@ CosaDmlIpIfGetStats
     }
     else
     {
-        ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-        
+       
         AnscTraceFlow(("%s...\n", __FUNCTION__));
 
-        if (CosaUtilGetIfStats((char *)g_ipif_names[ulIpIfInstanceNumber-1],  pStats))
+        if (CosaUtilGetIfStats((char *)g_ipif_names[ulIpIfInstanceNumber-1],  (PCOSA_DML_IF_STATS)pStats))
             return ANSC_STATUS_SUCCESS;
         else 
             return ANSC_STATUS_FAILURE;
@@ -4212,19 +4206,19 @@ CosaDmlIpGetActivePorts
         PULONG                      pulCount
     )
 {
-    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_DML_IP_ACTIVE_PORT        pActivePort     = (PCOSA_DML_IP_ACTIVE_PORT)NULL;
-    PUCHAR                          pBegin          = NULL;    
-    PUCHAR                          pEnd            = NULL;  
-    PUCHAR                          pEnd2           = NULL;  
+    PCHAR                           pBegin          = NULL;    
+    PCHAR                           pEnd            = NULL;  
+    PCHAR                           pEnd2           = NULL;  
     FILE                            *pFile          = NULL;
     ULONG                           i               = 0;
     ULONG                           j               = 0;
     ULONG                           ulCount         = 0;
     ULONG                           ulLength        = 0;  
     ULONG                           ulSubLength     = 0;  
-    UCHAR                           ucLineBuf[256]  = {0};
-    UCHAR                           ucTempBuf[128]  = {0};
+    CHAR                            ucLineBuf[256]  = {0};
+    CHAR                            ucTempBuf[128]  = {0};
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -4265,33 +4259,33 @@ CosaDmlIpGetActivePorts
     for (i = 0; i < ulCount && (fgets(ucLineBuf, sizeof(ucLineBuf), pFile) != NULL); i++) 
     {
         pBegin   = ucLineBuf;
-        ulLength = strcspn(pBegin, " ");
+        ulLength = strcspn((const char*)pBegin, " ");
         
         /* Skip the first three columns as "Proto" "Recv-Q" "Send-Q" */
         for (j = 0; j < 3; j++) 
         {
             pBegin += ulLength;
-            pBegin += strspn(pBegin, " ");
-            ulLength = strcspn(pBegin, " ");
+            pBegin += strspn((const char*)pBegin, " ");
+            ulLength = strcspn((const char*)pBegin, " ");
         }
 
         for (j = 0; j < 2; j++)
         {
-            pEnd   = _ansc_strchr(pBegin, ':');
+            pEnd   = _ansc_strchr((const char*)pBegin, ':');
 
             if ( NULL != pEnd )
             {
                 ulSubLength = (ULONG)(pEnd - pBegin);
                 
                 /* Special handle for IPv6 address */
-                pEnd2 = _ansc_strchr(++pEnd, ':');
+                pEnd2 = _ansc_strchr((const char*)++pEnd, ':');
                 
                 if ( pEnd2 && (ulLength > (ULONG)(pEnd2 - pBegin)) )
                 {
                     AnscZeroMemory(ucTempBuf, 128);  
                     AnscCopyMemory(ucTempBuf, pBegin, ulLength);
 
-                    pEnd2 = strrchr(ucTempBuf, ':');
+                    pEnd2 = strrchr((const char*)ucTempBuf, ':');
 
                     ulSubLength = (ULONG)(pEnd2 - ucTempBuf);               
                 }
@@ -4316,27 +4310,27 @@ CosaDmlIpGetActivePorts
                 
                 if ( 0 == j )
                 {
-                    pActivePort[i].LocalPort = _ansc_atoi(ucTempBuf);
+                    pActivePort[i].LocalPort = _ansc_atoi((const char*)ucTempBuf);
                 }
                 else 
                 {
-                    pActivePort[i].RemotePort = _ansc_atoi(ucTempBuf);
+                    pActivePort[i].RemotePort = _ansc_atoi((const char*)ucTempBuf);
                 }
             }
 
              
             /* To get the next column */
             pBegin += ulLength;
-            pBegin += strspn(pBegin, " ");
-            ulLength = strcspn(pBegin, " ");
+            pBegin += strspn((const char*)pBegin, " ");
+            ulLength = strcspn((const char*)pBegin, " ");
         }
 
         /* To get the column "State" */
-        if ( 0 == _ansc_strncmp(pBegin, "ESTABLISHED", ulLength))
+        if ( 0 == _ansc_strncmp((const char*)pBegin, "ESTABLISHED", ulLength))
         {
             pActivePort[i].Status = COSA_DML_IP_PORT_STATUS_Established;
         }
-        else if ( 0 == _ansc_strncmp(pBegin, "LISTEN", ulLength))
+        else if ( 0 == _ansc_strncmp((const char*)pBegin, "LISTEN", ulLength))
         {
             pActivePort[i].Status = COSA_DML_IP_PORT_STATUS_Listen;
         }

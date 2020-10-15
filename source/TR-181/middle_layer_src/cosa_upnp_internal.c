@@ -97,7 +97,6 @@ CosaUpnpCreate
         VOID
     )
 {
-    ANSC_STATUS           returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_UPNP  pMyObject    = (PCOSA_DATAMODEL_UPNP)NULL;
 
     /*

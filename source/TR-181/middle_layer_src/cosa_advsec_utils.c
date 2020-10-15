@@ -32,13 +32,14 @@
 **************************************************************************/
 
 #include "cosa_advsec_utils.h"
+#include "syscfg/syscfg.h"
 
 ANSC_STATUS CosaGetSysCfgUlong(char* setting, ULONG* value)
 {
     ANSC_STATUS         ret = ANSC_STATUS_SUCCESS;
     char buf[32];
 
-    memset(buf,sizeof(buf),0);
+    memset(buf, 0, sizeof(buf));
     if(ANSC_STATUS_SUCCESS != (ret=syscfg_get( NULL, setting, buf, sizeof(buf))))
     {
         CcspTraceWarning(("syscfg_get failed\n"));
@@ -55,9 +56,9 @@ ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value)
     ANSC_STATUS         ret = ANSC_STATUS_SUCCESS;
     char buf[32];
 
-    memset(buf,sizeof(buf),0);
-    sprintf(buf,"%d",value);
-    if(ANSC_STATUS_SUCCESS != (ret=syscfg_set( NULL, setting, buf, sizeof(buf))))
+    memset(buf, 0, sizeof(buf));
+    sprintf(buf,"%lu",value);
+    if(ANSC_STATUS_SUCCESS != (ret=syscfg_set( NULL, setting, buf)))
     {
         CcspTraceWarning(("syscfg_set failed\n"));
     }
