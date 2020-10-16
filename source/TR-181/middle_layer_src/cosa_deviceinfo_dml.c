@@ -3403,11 +3403,11 @@ Snmpv3DHKickstart_GetParamBoolValue
 **********************************************************************/
 //#define LOG_KICKSTART_VALUES
 
-static int hexstring2bin( UINT8* pOut, char *pIn, int numbytes );
-static int bin2hexstring( char *pOut, UINT8 *pIn, int numbytes );
+static int hexstring2bin( unsigned char * pOut, char *pIn, int numbytes );
+static int bin2hexstring( char *pOut, unsigned char *pIn, int numbytes );
 
 #ifdef LOG_KICKSTART_VALUES
-static void PrintBinStream( char *pName, UINT8* pBin, int len );
+static void PrintBinStream( char *pName, unsigned char *pBin, int len );
 #endif
 
 
@@ -3457,11 +3457,11 @@ Snmpv3DHKickstart_SetParamBoolValue
                 pSnmp_Kickstart_Row = Snmp_Kickstart_Row;
                 for( i=0; i < Snmpv3_Kickstart_Table.n_rows && i < MAX_KICKSTART_ROWS; i++ )
                 {
-                    pSnmp_Kickstart_Row->security_name.length = (USHORT)strlen( pKickstartTable->SecurityName );
-                    pSnmp_Kickstart_Row->security_name.buffer = (UINT8*)pKickstartTable->SecurityName;
+                    pSnmp_Kickstart_Row->security_name.length = (unsigned short)strlen( pKickstartTable->SecurityName );
+                    pSnmp_Kickstart_Row->security_name.buffer = (unsigned char *)pKickstartTable->SecurityName;
 
-                    pSnmp_Kickstart_Row->security_number.length = (USHORT)pKickstartTable->SecurityNumberLen;
-                    pSnmp_Kickstart_Row->security_number.buffer = (UINT8*)pKickstartTable->SecurityNumber;
+                    pSnmp_Kickstart_Row->security_number.length = (unsigned short)pKickstartTable->SecurityNumberLen;
+                    pSnmp_Kickstart_Row->security_number.buffer = (unsigned char *)pKickstartTable->SecurityNumber;
 
                     Snmpv3_Kickstart_Table.kickstart_values[i] = pSnmp_Kickstart_Row;
 #ifdef LOG_KICKSTART_VALUES
@@ -3495,7 +3495,7 @@ Snmpv3DHKickstart_SetParamBoolValue
     return bRet;
 }
 
-static int hexstring2bin( UINT8 *pOut, char *pIn, int numbytes )
+static int hexstring2bin( unsigned char *pOut, char *pIn, int numbytes )
 {
     int i, x;
     uint8_t val;
@@ -3537,7 +3537,7 @@ static int hexstring2bin( UINT8 *pOut, char *pIn, int numbytes )
     return i;
 }
 
-static int bin2hexstring( char *pOut, UINT8 *pIn, int numbytes )
+static int bin2hexstring( char *pOut, unsigned char *pIn, int numbytes )
 {
     int i, x, workval;
     uint8_t val[2];
@@ -3568,10 +3568,10 @@ static int bin2hexstring( char *pOut, UINT8 *pIn, int numbytes )
 }
 
 #ifdef LOG_KICKSTART_VALUES
-static void PrintBinStream( char *pName, UINT8* pBin, int len )
+static void PrintBinStream( char *pName, unsigned char *pBin, int len )
 {
     FILE *fp;
-    UINT8* pStart = pBin;
+    unsigned char *pStart = pBin;
     int i;
 
     if( (fp=fopen( "/rdklogs/logs/KickstartLog.txt", "a" )) != NULL )
