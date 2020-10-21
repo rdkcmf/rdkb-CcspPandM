@@ -71,6 +71,7 @@
 **************************************************************************/
 
 #include "cosa_time_apis.h"
+#include "secure_wrapper.h"
 
 #ifdef _COSA_SIM_
 
@@ -327,16 +328,15 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
             system("systemctl stop systemd-timesyncd");
 
             // Copy the new server(s) into the temp config file
-            sprintf(buf, "sed -i '/^[#\s]*NTP=/s/.*/NTP=%s/' %s", server, timesyncConfFile);
-            system(buf);
+            v_secure_system("sed -i '/^[#\s]*NTP=/s/.*/NTP=%s/' %s", server, timesyncConfFile);
 
             // remount the modified timesyncd.conf file
             system("systemctl start tmp-systemd-timesyncd.conf.service");
-            snprintf(buf, sizeof(buf), "sleep 2 && systemctl start systemd-timesyncd");
 
             // Restart timesyncd
             AnscTraceWarning(("%s: starting ntpclient with host %s,command:%s\n", __FUNCTION__, server, buf));
-            if (system(buf) != 0)
+            sleep(2);
+            if (v_secure_system("systemctl start systemd-timesyncd") != 0)
             {
                 AnscTraceWarning(("%s: fail to execute ntpclient\n", __FUNCTION__));
             }
@@ -466,10 +466,10 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
              * if we can found PID for kill instead of using killall 
              * (e.g., ps | awk '/ntpclient/ {print $1}' | xargs kill )
              * then we needn't sleep here. */
-            snprintf(buf, sizeof(buf), "sleep 1 && ntpclient -i 2 -s -h %s -I %s 2>%s", server, wan_interface, NTPC_STATUS);
 
             AnscTraceWarning(("%s: starting ntpclient with host %s,command:%s\n", __FUNCTION__, server, buf));
-            if (system(buf) != 0)
+            sleep(1);
+            if (v_secure_system("ntpclient -i 2 -s -h %s -I %s 2>%s", server, wan_interface, NTPC_STATUS) != 0)
             {
                 AnscTraceWarning(("%s: fail to execute ntpclient\n", __FUNCTION__));
             }
@@ -508,10 +508,10 @@ ANSC_STATUS startNTP(PCOSA_DML_TIME_CFG pTimeCfg)
                          * if we can found PID for kill instead of using killall 
                          * (e.g., ps | awk '/ntpclient/ {print $1}' | xargs kill )
                          * then we needn't sleep here. */
-                        snprintf(buf, sizeof(buf), "sleep 1 && ntpclient -i 2 -s -h %s -I %s 2>%s", back_server, wan_interface, NTPC_STATUS);
 
                         AnscTraceWarning(("%s: starting ntpclient with host %s\n", __FUNCTION__, back_server));
-                        if (system(buf) != 0)
+                        sleep(1);
+                        if (v_secure_system("ntpclient -i 2 -s -h %s -I %s 2>%s", back_server, wan_interface, NTPC_STATUS) != 0)
                         {
                             AnscTraceWarning(("%s: fail to execute ntpclient\n", __FUNCTION__));
                         }

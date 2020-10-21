@@ -34,6 +34,7 @@
 **********************************************************************/
 
 #include "cosa_x_comcast_com_parentalcontrol_apis.h"
+#include "secure_wrapper.h"
 //RDKB-EMULATOR
 #include "dmsb_tr181_psm_definitions.h"
 #include<stdbool.h>
@@ -743,9 +744,7 @@ CosaDmlBlkURL_GetEntryByIndex(ULONG index, COSA_DML_BLOCKEDURL *pEntry)
 		return ANSC_STATUS_FAILURE;
 	//RDKB-EMULATOR
 	//Checking Instance Number is there or not in PSM Database
-	char command[512];
-	snprintf(command, sizeof(command),"cat /nvram/bbhm_cur_cfg.xml | grep dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%ld.BlockMethod > /tmp/PSM_Check.txt",index+1);
-	system(command);
+	v_secure_system("cat /nvram/bbhm_cur_cfg.xml | grep dmsb.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%ld.BlockMethod > /tmp/PSM_Check.txt",index+1);
 	FILE *fp;
 	char path[256];
 	int count,flag = 0,valid_index = 0;
@@ -890,9 +889,7 @@ CosaDmlTrustedUser_GetEntryByIndex(ULONG index, COSA_DML_TRUSTEDUSER *pEntry)
 	if (index >= g_NrTrustedUser)
 		return ANSC_STATUS_FAILURE;
 	//Checking Instance Number is there or not in PSM Database
-	char command[512];
-	snprintf(command, sizeof(command),"cat /nvram/bbhm_cur_cfg.xml | grep dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUser.%ld.HostDescription > /tmp/PSM_Check.txt",index+1);
-	system(command);
+	v_secure_system("cat /nvram/bbhm_cur_cfg.xml | grep dmsb.X_Comcast_com_ParentalControl.ManagedSites.TrustedUser.%ld.HostDescription > /tmp/PSM_Check.txt",index+1);
 	FILE *fp;
 	char path[256];
 	int count,flag = 0,valid_index = 0;
@@ -1099,9 +1096,7 @@ CosaDmlMSServ_GetEntryByIndex(ULONG index, COSA_DML_MS_SERV *pEntry)
 	if (index >= g_NrMSServs)
 		return ANSC_STATUS_FAILURE;
 	//Checking Instance Number is there or not in PSM Database
-	char command[512];
-	snprintf(command, sizeof(command),"cat /nvram/bbhm_cur_cfg.xml | grep dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%ld.Description > /tmp/PSM_Check.txt",index+1);
-	system(command);
+	v_secure_system("cat /nvram/bbhm_cur_cfg.xml | grep dmsb.X_Comcast_com_ParentalControl.ManagedServices.Service.%ld.Description > /tmp/PSM_Check.txt",index+1);
 	FILE *fp;
 	char path[256];
 	int count,flag = 0,valid_index = 0;
@@ -1252,9 +1247,7 @@ CosaDmlMSTrustedUser_GetEntryByIndex(ULONG index, COSA_DML_MS_TRUSTEDUSER *pEntr
 	if (index >= g_NrMSTrustedUsers)
 		return ANSC_STATUS_FAILURE;
 	//Checking Instance Number is there or not in PSM Database
-	char command[512];
-	snprintf(command, sizeof(command),"cat /nvram/bbhm_cur_cfg.xml | grep dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUser.%ld.HostDescription > /tmp/PSM_Check.txt",index+1);
-	system(command);
+	v_secure_system("cat /nvram/bbhm_cur_cfg.xml | grep dmsb.X_Comcast_com_ParentalControl.ManagedServices.TrustedUser.%ld.HostDescription > /tmp/PSM_Check.txt",index+1);
 	FILE *fp;
 	char path[256];
 	int count,flag = 0,valid_index = 0;
@@ -1481,9 +1474,7 @@ CosaDmlMDDev_GetEntryByIndex(ULONG index, COSA_DML_MD_DEV *pEntry)
 	if (index >= g_NrMDDevs)
 		return ANSC_STATUS_FAILURE;
 	//Checking Instance Number is there or not in PSM Database
-	char command[512];
-	snprintf(command, sizeof(command),"cat /nvram/bbhm_cur_cfg.xml | grep dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%ld.Description > /tmp/PSM_Check.txt",index+1);
-	system(command);
+	v_secure_system("cat /nvram/bbhm_cur_cfg.xml | grep dmsb.X_Comcast_com_ParentalControl.ManagedDevices.Device.%ld.Description > /tmp/PSM_Check.txt",index+1);
 	FILE *fp;
 	char path[256];
 	int count,flag = 0,valid_index = 0;

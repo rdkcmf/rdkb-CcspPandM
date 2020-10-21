@@ -72,6 +72,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "secure_wrapper.h"
 
 /* Time format Jan  1 00:00:00 1970, LOG_TIME_SIZE not include null*/
 #define LOG_TIME_SIZE 20
@@ -348,7 +349,6 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
     int count=0;
     PCOSA_DML_DIAGNOSTICS_ENTRY entry = NULL;
     char fName[64];
-    char str[128];
     int i = 0;
     char *HOSTNAME = "qemux86broadband";
 
@@ -362,15 +362,11 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
         if(ptr.d_name[0] == '.')
             continue;
 
-        memset(str, 0, sizeof(str));
-        sprintf(str, "cat %s/%s >> %s", path,ptr.d_name,MERGED_LOG_FILE);
-        system(str);
+        v_secure_system("cat %s/%s >> " MERGED_LOG_FILE, path, ptr.d_name);
     }
 
     /* Sort the logs in descending order of timestamp*/
-    memset(str, 0, sizeof(str));
-    sprintf(str, "grep %s %s | sort -r -n -k4 > %s",HOSTNAME, MERGED_LOG_FILE, SORT_MERGE_LOG_FILE);
-    system(str);
+    v_secure_system("grep %s " MERGED_LOG_FILE " | sort -r -n -k4 > " SORT_MERGE_LOG_FILE, HOSTNAME);
 
     fd = fopen(SORT_MERGE_LOG_FILE, "r");
     if(fd < 0){
@@ -382,9 +378,7 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
 
     closedir(dir);
 
-    memset(str, 0, sizeof(str));
-    sprintf(str, "rm -rf %s %s", MERGED_LOG_FILE, SORT_MERGE_LOG_FILE);
-    system(str);
+    v_secure_system("rm -f " MERGED_LOG_FILE " " SORT_MERGE_LOG_FILE);
 
     *ppEntry = entry;
     return count;
@@ -400,30 +394,24 @@ CosaDmlDiagnosticsGetEntry
     )
 {
     char temp[512];
-    char dir[2*FILENAME_MAX];
     char *LOGFILE = "/nvram/log/system/systemlog";
 
     *pulCount = 0;
     *ppDiagnosticsEntry = NULL;
 
-    snprintf(dir, sizeof(dir), SYS_LOG_TEMP_DIR);
-    snprintf(temp, sizeof(temp), "mkdir -p %s", dir);
-    system(temp);
+    v_secure_system("mkdir -p " SYS_LOG_TEMP_DIR);
 
     snprintf(temp, sizeof(temp), "%s.0", LOGFILE);
     if(!access(temp, 0)){
-        snprintf(temp, sizeof(temp), "cp %s.0 %s", LOGFILE, dir);
-        system(temp);
+        v_secure_system("cp %s.0 " SYS_LOG_TEMP_DIR, LOGFILE);
     }
 
     if(!access(LOGFILE, 0)){
-        snprintf(temp, sizeof(temp), "cp %s %s", LOGFILE, dir);
-        system(temp);
+        v_secure_system("cp %s " SYS_LOG_TEMP_DIR, LOGFILE);
     }
 
-    *pulCount = _get_log(ppDiagnosticsEntry, dir, SYS_SYSLOG_USER, NULL);
-    snprintf(temp, sizeof(temp), "rm -rf %s", dir);
-    system(temp);
+    *pulCount = _get_log(ppDiagnosticsEntry, SYS_LOG_TEMP_DIR, SYS_SYSLOG_USER, NULL);
+    v_secure_system("rm -rf " SYS_LOG_TEMP_DIR);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -437,30 +425,24 @@ CosaDmlDiagnosticsGetEventlog
     )
 {
     char temp[512];
-    char dir[2*FILENAME_MAX];
     char *LOGFILE = "/nvram/log/event/eventlog";
 
     *pulCount = 0;
     *ppDiagnosticsEntry = NULL;
 
-    snprintf(dir, sizeof(dir), EVT_LOG_TEMP_DIR);
-    snprintf(temp, sizeof(temp), "mkdir -p %s", dir);
-    system(temp);
+    v_secure_system("mkdir -p " EVT_LOG_TEMP_DIR);
 
     snprintf(temp, sizeof(temp), "%s.0", LOGFILE);
     if(!access(temp, 0)){
-        snprintf(temp, sizeof(temp), "cp %s.0 %s", LOGFILE, dir);
-        system(temp);
+        v_secure_system("cp %s.0 " EVT_LOG_TEMP_DIR, LOGFILE);
     }
 
     if(!access(LOGFILE, 0)){
-        snprintf(temp, sizeof(temp), "cp %s %s", LOGFILE, dir);
-        system(temp);
+        v_secure_system("cp %s " EVT_LOG_TEMP_DIR, LOGFILE);
     }
 
-    *pulCount = _get_log(ppDiagnosticsEntry, dir, EVT_SYSLOG_USER, NULL);
-    snprintf(temp, sizeof(temp), "rm -rf %s", dir);
-    system(temp);
+    *pulCount = _get_log(ppDiagnosticsEntry, EVT_LOG_TEMP_DIR, EVT_SYSLOG_USER, NULL);
+    v_secure_system("rm -rf " EVT_LOG_TEMP_DIR);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -526,7 +508,6 @@ CosaDmlDiagnosticsGetAllEventlog
     )
 {
     char temp[512];
-    char dir[2*FILENAME_MAX];
     char logsize;
     char *pLog;
     size_t tmpsize = 0;
@@ -538,24 +519,19 @@ CosaDmlDiagnosticsGetAllEventlog
         __freeDiagEntry(&pEventLogBuf, &EventLogNum);
         EventLogBufsize = 0;
 
-        snprintf(dir, sizeof(dir), EVT_LOG_TEMP_DIR);
-        snprintf(temp, sizeof(temp), "mkdir -p %s", dir);
-        system(temp);
+        v_secure_system("mkdir -p " EVT_LOG_TEMP_DIR);
 
         snprintf(temp, sizeof(temp), "%s.0", LOGFILE);
         if(!access(temp, 0)){
-            snprintf(temp, sizeof(temp), "cp %s.0 %s", LOGFILE, dir);
-            system(temp);
+            v_secure_system("cp %s.0 " EVT_LOG_TEMP_DIR, LOGFILE);
         }
 
         if(!access(LOGFILE, 0)){
-            snprintf(temp, sizeof(temp), "cp %s %s", LOGFILE, dir);
-            system(temp);
+            v_secure_system("cp %s " EVT_LOG_TEMP_DIR, LOGFILE);
         }
 
-        EventLogNum = _get_log(&pEventLogBuf, dir, EVT_SYSLOG_USER, &EventLogBufsize);
-        snprintf(temp, sizeof(temp), "rm -rf %s", dir);
-        system(temp);
+        EventLogNum = _get_log(&pEventLogBuf, EVT_LOG_TEMP_DIR, EVT_SYSLOG_USER, &EventLogBufsize);
+        v_secure_system("rm -rf " EVT_LOG_TEMP_DIR);
     }
 
     if(*pUlSize < EventLogBufsize)
@@ -579,7 +555,6 @@ CosaDmlDiagnosticsGetAllSyslog
     )
 {
     char temp[512];
-    char dir[2*FILENAME_MAX];
     char logsize;
     char *pLog;
     size_t tmpsize = 0;
@@ -591,24 +566,19 @@ CosaDmlDiagnosticsGetAllSyslog
         __freeDiagEntry(&pSystemLogBuf, &SystemLogNum);
         SystemLogBufsize = 0;
 
-        snprintf(dir, sizeof(dir), SYS_LOG_TEMP_DIR);
-        snprintf(temp, sizeof(temp), "mkdir -p %s", dir);
-        system(temp);
+        v_secure_system("mkdir -p " SYS_LOG_TEMP_DIR);
 
         snprintf(temp, sizeof(temp), "%s.0", LOGFILE);
         if(!access(temp, 0)){
-            snprintf(temp, sizeof(temp), "cp %s.0 %s", LOGFILE, dir);
-            system(temp);
+            v_secure_system("cp %s.0 " SYS_LOG_TEMP_DIR, LOGFILE);
         }
 
         if(!access(LOGFILE, 0)){
-            snprintf(temp, sizeof(temp), "cp %s %s", LOGFILE, dir);
-            system(temp);
+            v_secure_system("cp %s " SYS_LOG_TEMP_DIR, LOGFILE);
         }
 
-        SystemLogNum = _get_log(&pSystemLogBuf, dir, SYS_SYSLOG_USER, &SystemLogBufsize);
-        snprintf(temp, sizeof(temp), "rm -rf %s", dir);
-        system(temp);
+        SystemLogNum = _get_log(&pSystemLogBuf, SYS_LOG_TEMP_DIR, SYS_SYSLOG_USER, &SystemLogBufsize);
+        v_secure_system("rm -rf " SYS_LOG_TEMP_DIR);
     }
 
     if(*pUlSize < SystemLogBufsize)

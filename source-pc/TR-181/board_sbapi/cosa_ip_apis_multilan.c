@@ -75,6 +75,7 @@
 #include "linux/if.h"
 #include "linux/sockios.h"
 #include <sys/ioctl.h>
+#include "secure_wrapper.h"
 
 //RDKB-EMU
 extern ANSC_HANDLE bus_handle;
@@ -87,12 +88,11 @@ COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr);
 
 BOOLEAN getIfEnable(const PUCHAR name)
 {
-	char buf[512] = {0},status[512] = {0};
+	char buf[512] = {0};
 	FILE *fp = NULL;
 	int count = 0;
-	sprintf(buf,"%s%s%s%s%s","ifconfig ",name," | grep ",name," | wc -l > /tmp/Interface_EnablingStatus.txt");
-	system(buf);
-	fp = popen("cat /tmp/Interface_EnablingStatus.txt","r");
+
+	fp = v_secure_popen("r", "ifconfig %s | grep %s | wc -l > /tmp/Interface_EnablingStatus.txt", name, name);
 	if(fp == NULL)
 	{
 		printf("Failed to run command in Function %s\n",__FUNCTION__);
@@ -100,12 +100,14 @@ BOOLEAN getIfEnable(const PUCHAR name)
         }
 	if(fgets(buf, sizeof(buf)-1, fp) != NULL)
         {
-        for(count=0;buf[count]!='\n';count++)
-                status[count]=buf[count];
-        status[count]='\0';
+        for (count = 0 ; buf[count] ; ++count)
+            if (buf[count] == '\n') {
+                buf[count] = '\0';
+                break;
+            }
         }
-	pclose(fp);
-	if(strcmp(status,"1") == 0)
+	v_secure_pclose(fp);
+	if(strcmp(buf,"1") == 0)
 		return TRUE;
 	else
 		return FALSE;

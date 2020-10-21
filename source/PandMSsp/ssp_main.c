@@ -66,6 +66,7 @@
 #endif
 
 #include "webconfig_framework.h"
+#include "secure_wrapper.h"
 
 #define DEBUG_INI_NAME  "/etc/debug.ini"
 #define PAM_CRASH_TIMEOUT 300  //seconds
@@ -704,9 +705,8 @@ if(id != 0)
     check_component_crash(PAM_INIT_FILE_BOOTUP);
 
     CcspTraceInfo(("PAM_DBG:----------------------touch /tmp/pam_initialized-------------------\n"));
-    char init_files[128] = {0};
-    snprintf(init_files,sizeof(init_files),"touch %s ; touch %s",PAM_INIT_FILE ,PAM_INIT_FILE_BOOTUP);
-    system(init_files);
+    v_secure_system("touch " PAM_INIT_FILE " ; touch " PAM_INIT_FILE_BOOTUP);
+
 #if !defined(_COSA_INTEL_XB3_ARM_)
     char buf[64] = {'\0'};
     if(syscfg_get( NULL, "EnableTR69Binary", buf, sizeof(buf))==0)
@@ -781,9 +781,7 @@ if(id != 0)
         if (urlPtr != NULL && urlPtr[0] != 0 && strlen(urlPtr) > 0) {
             CcspTraceInfo(("Reported an ATOM IP of %s \n", urlPtr));
             CcspTraceInfo(("PAM_DBG:-----------------touch pam_initialized in atom ----------------\n"));
-            char cCmd[128];
-            sprintf(cCmd, "/usr/bin/rpcclient %s \"/bin/touch /tmp/pam_initialized\"&", urlPtr);
-            system(cCmd);
+            v_secure_system("/usr/bin/rpcclient %s '/bin/touch /tmp/pam_initialized'&", urlPtr);
             CcspTraceInfo(("PAM_DBG:-----------------created pam_initialized in atom ----------------\n"));
         }
     }

@@ -67,6 +67,7 @@
 #include "cosa_apis.h"
 #include "cosa_ra_apis.h"
 #include "cosa_ra_internal.h"
+#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -1056,7 +1057,6 @@ COSA_DML_RA_IF_FULL2 g_ra_interface;
 
 /*if set this flag to FALSE, radvd won't start*/
 static BOOLEAN g_ra_enabled = TRUE ;
-void _get_shell_output(char * cmd, char * out, int len);
 static int _radvd_operation(char * arg);
 static int _gen_radvd_conf(COSA_DML_RA_IF_CFG * pCfg);
 static int _gen_ra_option_file(SLIST_HEADER * p_list);
@@ -1262,28 +1262,17 @@ CosaDmlRaIfGetNumberOfEntries
 
 static int _radvd_operation(char * arg)
 {
-    char cmd[256] = {0};
     char out[256] = {0};
 
     if (!strncmp(arg, "stop", 4))
     {
-        sprintf(cmd, "killall %s", basename(RADVD_BIN));
-        system(cmd);
-    
-        sleep(2);
-    
-        sprintf(cmd, "ps -A|grep %s", basename(RADVD_BIN));
-        _get_shell_output(cmd, out, sizeof(out));
-        if (strstr(out, basename(RADVD_BIN)))
-        {
-            sprintf(cmd, "killall -9 %s", basename(RADVD_BIN));
-            system(cmd);
-        }
+        v_secure_system("killall %s", basename(RADVD_BIN)); 
+        sleep(2);      
+        v_secure_system("killall -9 %s", basename(RADVD_BIN));
     }
     else if (!strncmp(arg, "start", 5))
     {
-        sprintf(cmd, "%s -C %s", RADVD_BIN, RADVD_CONF_FILE);
-        system(cmd);
+        v_secure_system(RADVD_BIN " -C " RADVD_CONF_FILE);
     }
     else if (!strncmp(arg, "restart", 7))
     {
