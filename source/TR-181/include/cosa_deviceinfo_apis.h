@@ -303,6 +303,16 @@ typedef  struct
 }
 COSA_DATAMODEL_KICKSTART,   *PCOSA_DATAMODEL_KICKSTART;
 
+typedef struct
+    _COSA_HHT_PTR
+{
+    UINT CPUThreshold;
+    UINT DRAMThreshold;
+    UINT Frequency;
+    BOOL PTREnable;
+}
+COSA_HHT_PTR;
+
 /**********************************************************************
                 FUNCTION PROTOTYPES
 **********************************************************************/

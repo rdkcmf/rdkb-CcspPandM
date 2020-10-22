@@ -111,6 +111,7 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
     cJSON *pRfcDefaults;
     cJSON *pRfcStore;
     COSA_AUTO_REBOOT                            AutoReboot;
+    COSA_HHT_PTR                                HwHealtTestPTR;
 }
 COSA_DATAMODEL_DEVICEINFO, *PCOSA_DATAMODEL_DEVICEINFO;
 

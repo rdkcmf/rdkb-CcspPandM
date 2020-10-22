@@ -217,6 +217,88 @@ int get_deviceinfo_from_name(char *name, enum pString_val *type_ptr)
   return 0;
 }
 
+void UpdateSettingsFile( char param[64], char value[10] )
+{
+    CcspTraceInfo(("\nUpdateSettingsFile\n"));
+
+    FILE* fp = fopen( "/tmp/.hwselftest_settings", "r");
+    if( fp == NULL)
+    {
+        fp = fopen ("/tmp/.hwselftest_settings", "w");
+
+        if( fp != NULL)
+        {
+            char Data[120] = {'\0'};
+            strcpy(Data, param);
+            strcat(Data, value);
+            strcat(Data, "\n");
+            fputs(Data,fp);
+            fclose(fp);
+        }
+        return;
+    }
+
+    char Line[120] = {'\0'};
+    char FileData[1200] = {'\0'};
+    int isFound = 0;
+    int firstLine = 0;
+
+    while(NULL != fgets(Line, 120, fp))
+    {
+        int paramIndex = strstr(Line, param);
+        if(NULL != paramIndex)
+        {
+            int index  = 0;
+            isFound = 1;
+            int startIndex = strlen(Line) - (strlen(Line) - strlen(param));
+            int endIndex = strlen(value);
+
+            for(index = 0; index <  endIndex;index ++)
+            {
+                Line[startIndex] = value[index];
+                startIndex++;
+            }
+            Line[startIndex] = '\0';
+            strcat(Line,"\n");
+        }
+
+        if(0 == firstLine)
+        {
+            if(strstr(param, "FREQ") && strstr(Line, "FirstPTR"))
+            {
+                continue;
+            }
+            firstLine = 1;
+            strcpy(FileData, Line);
+        }
+        else
+        {
+            if(strstr(param, "FREQ") && strstr(Line, "FirstPTR"))
+            {
+                continue;
+            }
+            strcat(FileData, Line);
+        }
+
+    }
+    fclose(fp);
+
+    if(0 == isFound)
+    {
+        strcpy(Line, param);
+        strcat(Line, value);
+        strcat(Line, "\n");
+        strcat(FileData, Line);
+    }
+
+    fp = fopen ("/tmp/.hwselftest_settings", "w");
+
+    if( fp != NULL)
+    {
+        fputs(FileData,fp);
+        fclose(fp);
+    }
+}
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -16921,7 +17003,7 @@ HwHealthTestEnable_GetParamBoolValue
     )
 {
 
- if( AnscEqualString(ParamName, "Enable", TRUE))
+    if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 #ifdef COLUMBO_HWTEST
         char value[8] = {'\0'};
@@ -16944,7 +17026,7 @@ HwHealthTestEnable_GetParamBoolValue
         *pBool = FALSE;
 #endif
     }
-  return FALSE;
+    return FALSE;
 }
 
 /**********************************************************************
@@ -16986,10 +17068,10 @@ HwHealthTestEnable_SetParamBoolValue
         BOOL                        bValue
     )
 {
-  if (IsBoolSame(hInsContext, ParamName, bValue, HwHealthTestEnable_GetParamBoolValue))
+    if (IsBoolSame(hInsContext, ParamName, bValue, HwHealthTestEnable_GetParamBoolValue))
         return TRUE;
 
-  if( AnscEqualString(ParamName, "Enable", TRUE))
+    if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 #ifdef COLUMBO_HWTEST
         char buf[8] = {'\0'};
@@ -17013,9 +17095,507 @@ HwHealthTestEnable_SetParamBoolValue
         return FALSE;
 #endif
     }
-  return FALSE;
+    return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        HwHealthTest_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            )
+
+
+
+    description:
+
+        This function is called to retrieve unsigned long parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned unsigned long value;
+
+    return:     TRUE if succeeded.
+
+
+**********************************************************************/
+
+BOOL
+HwHealthTest_GetParamUlongValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    if( AnscEqualString(ParamName, "cpuThreshold", TRUE))
+    {
+#ifdef COLUMBO_HWTEST
+        *puLong = pMyObject->HwHealtTestPTR.CPUThreshold;
+        return TRUE;
+#else
+        *puLong = 0;
+#endif
+    }
+
+    if( AnscEqualString(ParamName, "dramThreshold", TRUE))
+    {
+#ifdef COLUMBO_HWTEST
+        *puLong = pMyObject->HwHealtTestPTR.DRAMThreshold;
+        return TRUE;
+#else
+        *puLong = 0;
+#endif
+    }
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        HwHealthTest_SetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG                       uLong
+            )
+
+
+    description:
+
+        This function is called to set ULONG parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG                       uLong
+                The updated ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+HwHealthTest_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uLong
+    )
+{
+    /*Changes for RDKB-31737: AC#2 and AC#3
+      To reject the set request from any API other than RFC and dmcli
+    */
+    if(strcmp(getRequestorString(), BS_SOURCE_RFC_STR))
+    {
+        return FALSE;
+    }
+
+    //Check if the new value is same as the old. If so, it is
+    //not required to update settings file.
+    if (IsUlongSame(hInsContext, ParamName, uLong, HwHealthTest_GetParamUlongValue))
+        return TRUE;
+
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    if( AnscEqualString(ParamName, "cpuThreshold", TRUE))
+    {
+#ifdef COLUMBO_HWTEST
+
+        //Threshold value should be in range as per the requirement in COLBO-132
+        if( (uLong >= 1) && ( uLong <= 95))
+        {
+            pMyObject->HwHealtTestPTR.CPUThreshold = uLong;
+
+            //Write the parameter to settings file
+            char buf[8] = {'\0'};
+            snprintf(buf, sizeof(buf), "%d", uLong);
+            UpdateSettingsFile("HWST_CPU_THRESHOLD=", buf);
+            return TRUE;
+        }
+        else
+        {
+            return FALSE;
+        }
+#else
+        return FALSE;
+#endif
+    }
+
+    if( AnscEqualString(ParamName, "dramThreshold", TRUE))
+    {
+#ifdef COLUMBO_HWTEST
+
+        //Threshold value should be in range as per the requirement in COLBO-132
+        if( uLong >= 20 )
+        {
+            pMyObject->HwHealtTestPTR.DRAMThreshold = uLong;
+
+            char buf[8] = {'\0'};
+            snprintf(buf, sizeof(buf), "%d", uLong);
+            UpdateSettingsFile("HWST_DRAM_THRESHOLD=",buf);
+            return TRUE;
+        }
+        else
+        {
+            return FALSE;
+        }
+#else
+        return FALSE;
+#endif
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        HwHealthTestPTREnable_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            )
+
+
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+
+**********************************************************************/
+
+BOOL
+HwHealthTestPTREnable_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    if( AnscEqualString(ParamName, "enable", TRUE))
+    {
+#ifdef COLUMBO_HWTEST
+        *pBool = pMyObject->HwHealtTestPTR.PTREnable;
+        return TRUE;
+#else
+        *pBool = FALSE;
+#endif
+    }
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        HwHealthTestPTREnable_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            )
+
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+HwHealthTestPTREnable_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    /*Changes for RDKB-31737: AC#1 and AC#3
+      To reject the set request from any API other than RFC and dmcli
+    */
+    if(strcmp(getRequestorString(), BS_SOURCE_RFC_STR))
+    {
+        return FALSE;
+    }
+
+    if (IsBoolSame(hInsContext, ParamName, bValue, HwHealthTestPTREnable_GetParamBoolValue))
+        return TRUE;
+
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    if( AnscEqualString(ParamName, "enable", TRUE))
+    {
+#ifdef COLUMBO_HWTEST
+
+        char buf[8] = {'\0'};
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+
+        //Read client version
+        FILE* fp = fopen("/tmp/.hwst_run", "r");
+        char* clientVer = (char*)malloc(8*sizeof(char));
+        char version[8] = {'\0'};
+        if( NULL != fp)
+        {
+            if( NULL != clientVer )
+            {
+                fscanf(fp, "%s", clientVer);
+                strcpy(version,clientVer);
+                free(clientVer);
+                clientVer = NULL;
+            }
+        }
+        if( NULL != clientVer )
+        {
+            free(clientVer);
+        }
+
+        if( (NULL !=fp) && strcmp(version, "0002") && !strcmp(buf,"true"))
+        {
+            CcspTraceError(("\nMultiple connection not allowed"));
+            fclose(fp);
+            return FALSE;
+        }
+
+        pMyObject->HwHealtTestPTR.PTREnable = bValue;
+
+        //If the PTR is enabled, add the hwselftest to crontab
+        if(!strcmp(buf, "true"))
+        {
+            if(strcmp(version, "0002"))
+            {
+                char cmd[128] = {0};
+                memset(cmd, 0, sizeof(cmd));
+                AnscCopyString(cmd, "/usr/bin/hwselftest_cronjobscheduler.sh true &");
+                CcspTraceInfo(("\nExecuting command: %s\n", cmd));
+                system(cmd);
+            }
+            else
+            {
+                CcspTraceInfo(("Hwselftest service already running through PTR"));
+            }
+        }
+        else
+        {
+            //Remove all the hwselftest job from crontab
+            char cmd[128] = {0};
+            memset(cmd, 0, sizeof(cmd));
+            AnscCopyString(cmd, "/usr/bin/hwselftest_cronjobscheduler.sh false &");
+            system(cmd);
+        }
+        return TRUE;
+
+#else
+        return FALSE;
+#endif
+    }
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        HwHealthTestPTRFrequency_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            )
+
+
+
+    description:
+
+        This function is called to retrieve unsigned long parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned unsigned long value;
+
+    return:     TRUE if succeeded.
+
+
+**********************************************************************/
+
+BOOL
+HwHealthTestPTRFrequency_GetParamUlongValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    if( AnscEqualString(ParamName, "frequency", TRUE))
+    {
+#ifdef COLUMBO_HWTEST
+        *puLong = pMyObject->HwHealtTestPTR.Frequency;
+        return TRUE;
+#else
+        *puLong = 0;
+#endif
+    }
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        HwHealthTestPTRFrequency_SetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG                       uLong
+            )
+
+
+    description:
+
+        This function is called to set ULONG parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG                       uLong
+                The updated ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+HwHealthTestPTRFrequency_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uLong
+    )
+{
+    /*Changes for RDKB-31737: AC#1 and AC#3
+      To reject the set request from any API other than RFC and dmcli
+    */
+    if(strcmp(getRequestorString(), BS_SOURCE_RFC_STR))
+    {
+        return FALSE;
+    }
+    //Check if the new value is same as the old. If so, it is
+    //not required to update settings file.
+    if (IsUlongSame(hInsContext, ParamName, uLong, HwHealthTestPTRFrequency_GetParamUlongValue))
+        return TRUE;
+
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+    if( AnscEqualString(ParamName, "frequency", TRUE))
+    {
+#ifdef COLUMBO_HWTEST
+
+        // Frequency should be minimum 2 minutes as per the requirement in COLBO 132.
+        if( uLong >= 2 )
+        {
+            pMyObject->HwHealtTestPTR.Frequency = uLong;
+
+            char buf[8] = {'\0'};
+            snprintf(buf, sizeof(buf), "%d", uLong);
+            UpdateSettingsFile("HWST_PERIODIC_FREQ=", buf);
+
+            // Call the cronjob scheduler.sh script to update the cron job
+            char cmd[128] = {0};
+            char sbuf[128] = {0};
+            memset(cmd, 0, sizeof(cmd));
+
+            //Read the PTR enable param
+            if (IsBoolSame(hInsContext, "enable", true, HwHealthTestPTREnable_GetParamBoolValue))
+            {
+                sprintf(sbuf, "%s%s%s", "/usr/bin/hwselftest_cronjobscheduler.sh", " true", " frequencyUpdate" );
+            }
+            else
+            {
+                sprintf(sbuf, "%s%s", "/usr/bin/hwselftest_cronjobscheduler.sh", " false" );
+            }
+            AnscCopyString(cmd, sbuf);
+            CcspTraceInfo(("\n\nExecuting the command: %s", cmd));
+            system(cmd);
+            return TRUE;
+        }
+        else
+        {
+            return FALSE;
+        }
+#else
+        return FALSE;
+#endif
+    }
+    return FALSE;
+}
 
 /**********************************************************************
 

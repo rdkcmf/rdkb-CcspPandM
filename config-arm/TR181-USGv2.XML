@@ -1934,6 +1934,8 @@
                             <functions>
                                 <func_GetParamBoolValue>HwHealthTestEnable_GetParamBoolValue</func_GetParamBoolValue>
                                 <func_SetParamBoolValue>HwHealthTestEnable_SetParamBoolValue</func_SetParamBoolValue>
+                                <func_GetParamUlongValue>HwHealthTest_GetParamUlongValue</func_GetParamUlongValue>
+                                <func_SetParamUlongValue>HwHealthTest_SetParamUlongValue</func_SetParamUlongValue>
                             </functions>
                             <parameters>
                                 <parameter>
@@ -1942,7 +1944,45 @@
                                     <syntax>bool</syntax>
                                     <writable>true</writable>
                                 </parameter>
+                                <parameter>
+                                    <name>cpuThreshold</name>
+                                    <type>unsignedInt</type>
+                                    <syntax>uint32</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>dramThreshold</name>
+                                    <type>unsignedInt</type>
+                                    <syntax>uint32</syntax>
+                                    <writable>true</writable>
+                                </parameter>
                             </parameters>
+                            <objects>
+                                <object>
+                                    <name>periodicRun</name>
+                                    <objectType>object</objectType>
+                                    <functions>
+                                        <func_GetParamBoolValue>HwHealthTestPTREnable_GetParamBoolValue</func_GetParamBoolValue>
+                                        <func_SetParamBoolValue>HwHealthTestPTREnable_SetParamBoolValue</func_SetParamBoolValue>
+                                        <func_GetParamUlongValue>HwHealthTestPTRFrequency_GetParamUlongValue</func_GetParamUlongValue>
+                                        <func_SetParamUlongValue>HwHealthTestPTRFrequency_SetParamUlongValue</func_SetParamUlongValue>
+                                    </functions>
+                                    <parameters>
+                                        <parameter>
+                                            <name>enable</name>
+                                            <type>boolean</type>
+                                            <syntax>bool</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+                                        <parameter>
+                                            <name>frequency</name>
+                                            <type>unsignedInt</type>
+                                            <syntax>uint32</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+                                    </parameters>
+                                </object>
+                            </objects>
                         </object>
                         <object>
                             <name>AdvancedParentalControl</name>
