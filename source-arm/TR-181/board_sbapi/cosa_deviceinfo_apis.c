@@ -4147,7 +4147,8 @@ FirmwareDownloadAndFactoryReset(void* arg)
         CcspTraceInfo(( "/tmp/FactoryReset.txt doesnot exist go for snmp reboot .\n"));
         if( RETURN_ERR == cm_hal_FWupdateAndFactoryReset( NULL, NULL ))
         {
-           CcspTraceWarning(("FirmwareDownloadAndFactoryReset Thread:FWupdateAndFactoryReset already in progress\n"));
+            commonSyseventSet("fw_update_inprogress", "false");
+            CcspTraceError(("FirmwareDownloadAndFactoryReset :cm_hal_FWupdateAndFactoryReset failed\n"));
         }
     }
     else
@@ -4166,12 +4167,26 @@ FirmwareDownloadAndFactoryReset(void* arg)
                     if(0 == strcmp(token,"Url"))
                     {
                         rc = strcpy_s(URL, sizeof(URL), val);
-                        ERR_CHK(rc);
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            commonSyseventSet("fw_update_inprogress", "false");
+                            CcspTraceError(("FirmwareDownloadAndFactoryReset: failed to copy url"));
+                            fclose(fp);
+                            return NULL;
+                        }
                     }
                     else if(0 == strcmp(token,"Image"))
                     {
                         rc = strcpy_s(Imagename, sizeof(Imagename), val);
-                        ERR_CHK(rc);
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            commonSyseventSet("fw_update_inprogress", "false");
+                            CcspTraceError(("FirmwareDownloadAndFactoryReset: failed to copy image name"));
+                            fclose(fp);
+                            return NULL;
+                        }
                     }
                 }
             }
@@ -4180,7 +4195,7 @@ FirmwareDownloadAndFactoryReset(void* arg)
         CcspTraceWarning(("%s: ImageName %s, url %s\n", __FUNCTION__, Imagename, URL));
         if( RETURN_ERR == cm_hal_FWupdateAndFactoryReset( URL, Imagename ))
         {
-            CcspTraceWarning(("FirmwareDownloadAndFactoryReset Thread:cm_hal_FWupdateAndFactoryReset failed\n"));
+            CcspTraceError(("FirmwareDownloadAndFactoryReset :cm_hal_FWupdateAndFactoryReset failed\n"));
             commonSyseventSet("fw_update_inprogress", "false");
             v_secure_system("rm -rf /tmp/FactoryReset.txt");
         }
