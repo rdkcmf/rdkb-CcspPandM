@@ -230,6 +230,9 @@ X_CISCO_COM_DeviceControl_GetParamBoolValue
 
     if (AnscEqualString(ParamName, "TelnetEnable", TRUE))
     {
+	#if defined(_CBR_PRODUCT_REQ_)
+            return FALSE;
+	#endif
         if (CosaDmlDcGetTelnetEnable(NULL, pBool) != ANSC_STATUS_SUCCESS)
             return FALSE;
         return TRUE;
@@ -892,6 +895,9 @@ X_CISCO_COM_DeviceControl_SetParamBoolValue
 
     if (AnscEqualString(ParamName, "TelnetEnable", TRUE))
     {
+	#if defined(_CBR_PRODUCT_REQ_)
+            return FALSE;
+        #endif
         pMyObject->TelnetEnable = bValue;
 
         retStatus = CosaDmlDcSetTelnetEnable(NULL, pMyObject->TelnetEnable);

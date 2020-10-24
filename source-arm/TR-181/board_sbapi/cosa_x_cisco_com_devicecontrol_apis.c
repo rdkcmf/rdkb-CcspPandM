@@ -415,6 +415,9 @@ int WebServRestart( void *arg )
 
 static int TelnetdConfig(int enable)
 {
+#if defined(_CBR_PRODUCT_REQ_)
+    return 0;
+#endif
     if (enable)
     {
         /* start the server if service not started */
@@ -2543,6 +2546,9 @@ CosaDmlDcGetTelnetEnable
         BOOLEAN                     *pFlag
     )
 {
+    #if defined(_CBR_PRODUCT_REQ_)
+        return ANSC_STATUS_FAILURE;
+    #endif
     char buf[5];
     //printf("Got value mgmt_wan_telnetaccess = %d\n", *pFlag);
     syscfg_get( NULL, "mgmt_wan_telnetaccess", buf, sizeof(buf));
@@ -2601,6 +2607,9 @@ CosaDmlDcSetTelnetEnable
         BOOLEAN                     flag
     )
 {
+    #if defined(_CBR_PRODUCT_REQ_)
+        return ANSC_STATUS_FAILURE;
+    #endif
     char buf[5];
     BOOLEAN bTelnetEnable;
     printf("%s \n", __FUNCTION__);
@@ -2618,7 +2627,6 @@ CosaDmlDcSetTelnetEnable
             return ANSC_STATUS_SUCCESS;
     }
     return ANSC_STATUS_SUCCESS;
-
 }
 
 ANSC_STATUS

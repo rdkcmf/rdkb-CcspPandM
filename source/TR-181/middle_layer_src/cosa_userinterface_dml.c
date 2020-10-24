@@ -511,6 +511,9 @@ RemoteAccess_GetParamBoolValue
 
     if( AnscEqualString(ParamName, "TelnetEnable", TRUE))
     {
+	#if defined(_CBR_PRODUCT_REQ_)
+            return FALSE;
+	#endif
         *pBool = pMyObject->RaCfg.TelnetEnable;
         return TRUE;
     }
@@ -795,6 +798,9 @@ RemoteAccess_SetParamBoolValue
 
     if( AnscEqualString(ParamName, "TelnetEnable", TRUE))
     {
+	#if defined(_CBR_PRODUCT_REQ_)
+            return FALSE;
+        #endif
         pMyObject->RaCfg.TelnetEnable = bValue;
         return TRUE;
     }
