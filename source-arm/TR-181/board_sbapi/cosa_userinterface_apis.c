@@ -313,6 +313,9 @@ CosaDmlRaGetCfg
     /* Telnet access */
     if (!Ut_GetInt(&ctx, "mgmt_wan_telnetaccess", &iVal))
     {
+	#if defined(_CBR_PRODUCT_REQ_)
+            return ANSC_STATUS_FAILURE;
+    	#endif
         fprintf(stderr, "%s: mgmt_wan_telnetaccess error\n", __FUNCTION__);
         goto errout;
     }
