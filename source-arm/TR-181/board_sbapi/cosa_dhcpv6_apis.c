@@ -4214,11 +4214,117 @@ OPTIONS:
 					   // Check device is in captive portal mode or not
 					   if( 1 == isInCaptivePortal )
 					   {
-						   fprintf(fp, "#	 option %s %s\n", tagList[Index3].cmdstring, dns_str);
+                                                  if (!strncmp(l_cSecWebUI_Enabled, "true", 4))
+                                                  {
+                                                      char static_dns[256] = {0};
+                                                      commonSyseventGet("lan_ipaddr_v6", static_dns, sizeof(static_dns));
+                                                      if ( '\0' != dns_str[ 0 ] )
+                                                      {
+                                                          if ( '\0' != static_dns[ 0 ] )
+                                                          {
+						              fprintf(fp, "#	 option %s %s,%s\n", tagList[Index3].cmdstring, static_dns, dns_str);
+                                                          }
+                                                          else
+                                                          {
+                                                              fprintf(fp, "#	 option %s %s\n", tagList[Index3].cmdstring, dns_str);
+                                                          }
+                                                      }
+                                                      else
+                                                      {
+                                                          char dyn_dns[256] = {0};
+                                                          sysevent_get(sysevent_fd_gs, sysevent_token_gs, "wan6_ns", dyn_dns, sizeof(dyn_dns));
+                                                          if ( '\0' != dyn_dns[ 0 ] )
+                                                          {
+                                                              format_dibbler_option(dyn_dns);
+                                                              if ( '\0' != static_dns[ 0 ] )
+                                                              {
+                                                                  fprintf(fp, "#    option %s %s,%s\n", tagList[Index3].cmdstring, static_dns, dyn_dns);
+                                                              }
+                                                              else
+                                                              {
+                                                                  fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dyn_dns);
+                                                              }
+                                                          }
+                                                          else
+                                                          {
+                                                              if ( '\0' != static_dns[ 0 ] )
+                                                              {
+                                                                  fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, static_dns);
+                                                              }
+                                                          }
+                                                      }
+                                                          
+                                                  }
+                                                  else
+                                                  {
+                                                      fprintf(fp, "#	 option %s %s\n", tagList[Index3].cmdstring, dns_str);
+                                                  }
+                                                   
 					   }
 					   else
 					   {
-						   fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dns_str);
+                                                   if (!strncmp(l_cSecWebUI_Enabled, "true", 4)) 
+                                                   {
+                                                       char static_dns[256] = {0};
+                                                       char dyn_dns[256] = {0};
+                                                       sysevent_get(sysevent_fd_gs, sysevent_token_gs, "wan6_ns", dyn_dns, sizeof(dyn_dns));
+                                                       if ( '\0' != dyn_dns[ 0 ] )
+                                                       {
+                                                           format_dibbler_option(dyn_dns);
+                                                       }
+                                                       commonSyseventGet("lan_ipaddr_v6", static_dns, sizeof(static_dns));
+                                                       if ( '\0' != dns_str[ 0 ] )
+                                                       {
+                                                            
+                                                            if ( '\0' != static_dns[ 0 ] )
+                                                            {
+                                                                if ( '\0' != dyn_dns[ 0 ] )
+                                                                {
+						                    fprintf(fp, "	option %s %s,%s,%s\n", tagList[Index3].cmdstring, static_dns, dns_str, dyn_dns);
+                                                                }
+                                                                else
+                                                                {
+                                                                    fprintf(fp, "	option %s %s,%s\n", tagList[Index3].cmdstring, static_dns, dns_str);
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                if ( '\0' != dyn_dns[ 0 ] )
+                                                                {
+                                                                     fprintf(fp, "	option %s %s,%s\n", tagList[Index3].cmdstring, dyn_dns, dns_str);
+                                                                }
+                                                                else
+                                                                {
+                                                                     printf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dns_str);
+                                                                }
+                                                            }
+                                                       }
+                                                       else
+                                                       {
+                                                            if ( '\0' != static_dns[ 0 ] )
+                                                            {
+                                                                if ( '\0' != dyn_dns[ 0 ] )
+                                                                {
+                                                                    fprintf(fp, "	option %s %s,%s\n", tagList[Index3].cmdstring, static_dns,dyn_dns);
+                                                                }
+                                                                else
+                                                                {
+                                                                    printf(fp, "	option %s %s\n", tagList[Index3].cmdstring, static_dns);
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                if ( '\0' != dyn_dns[ 0 ] )
+                                                                {
+                                                                    printf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dyn_dns);
+                                                                }
+                                                            }
+                                                       }
+                                                   }
+                                                   else
+                                                   {
+						       fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dns_str);
+                                                   }
 					   }
 					
 					   CcspTraceWarning(("%s %d - DNSServersEnabled:%d DNSServers:%s\n", __FUNCTION__, 
@@ -4238,7 +4344,7 @@ OPTIONS:
 							else
 							{
 								//By default isInCaptivePortal is false
-								fprintf(fp, "	 option %s %s\n", tagList[Index3].cmdstring, dns_str);
+								fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dns_str);
 							}
 						}
 					}
@@ -4276,15 +4382,68 @@ OPTIONS:
 					    memset( dnsServer, 0, sizeof( dnsServer ) );
 				   	    strcpy( dnsServer, sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServers );
 					    CosaDmlDhcpv6s_format_DNSoption( dnsServer );
+                                            char l_cSecWebUI_Enabled[8] = {0};
+                                            syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
+                                            char static_dns[256] = {0};
+                                            commonSyseventGet("lan_ipaddr_v6", static_dns, sizeof(static_dns));
 
 					    // Check device is in captive portal mode or not
 					    if( 1 == isInCaptivePortal )
 					    {
-						  fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dnsServer);
+                                                  if (!strncmp(l_cSecWebUI_Enabled, "true", 4)) 
+                                                  {
+                                                      if ( '\0' != dnsServer[ 0 ] )
+                                                      {
+                                                          if ( '\0' != static_dns[ 0 ] )
+                                                          {
+                                                              fprintf(fp, "#    option %s %s,%s\n", tagList[Index3].cmdstring, static_dns, dnsServer);
+                                                          }
+                                                          else
+                                                          {
+                                                              fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dnsServer);
+                                                          }
+                                                      }
+                                                      else
+                                                      {
+                                                          if ( '\0' != static_dns[ 0 ] )
+                                                          {
+                                                              fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, static_dns);
+                                                          }
+                                                      }
+                                                  }
+                                                  else
+                                                  {
+						      fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dnsServer);
+                                                  }
 					    }
 					    else
 					    {
-						  fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dnsServer);
+                                                 
+                                                  if (!strncmp(l_cSecWebUI_Enabled, "true", 4)) 
+                                                  {
+                                                      if ( '\0' != dnsServer[ 0 ] )
+                                                      {
+                                                          if ( '\0' != static_dns[ 0 ] )
+                                                          {
+                                                              fprintf(fp, "     option %s %s,%s\n", tagList[Index3].cmdstring, static_dns, dnsServer);
+                                                          }
+                                                          else
+                                                          {
+                                                              fprintf(fp, "     option %s %s\n", tagList[Index3].cmdstring, dnsServer);
+                                                          }
+                                                      }
+                                                      else
+                                                      {
+                                                          if ( '\0' != static_dns[ 0 ] )
+                                                          {
+                                                              fprintf(fp, "     option %s %s\n", tagList[Index3].cmdstring, static_dns);
+                                                          }
+                                                      }
+                                                  }
+                                                  else
+                                                  {
+						      fprintf(fp, "     option %s %s\n", tagList[Index3].cmdstring, dnsServer);
+                                                  }
 					    }
 
 				    }
@@ -4330,6 +4489,8 @@ OPTIONS:
                 if ( g_recv_options[Index4].Tag == 23 )
                 { //dns
                    char dnsStr[ 256 ] = { 0 };
+                   char l_cSecWebUI_Enabled[8] = {0};
+                   syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
 				   
 				   /* Static DNS Servers */
 				   if( 1 == sDhcpv6ServerPool[Index].Cfg.X_RDKCENTRAL_COM_DNSServersEnabled )
@@ -4341,11 +4502,111 @@ OPTIONS:
 					  // Check device is in captive portal mode or not
 					  if( 1 == isInCaptivePortal )
 					  {
-						  fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+                                                  if (!strncmp(l_cSecWebUI_Enabled, "true", 4))
+                                                  {
+                                                      char static_dns[256] = {0};
+                                                      commonSyseventGet("lan_ipaddr_v6", static_dns, sizeof(static_dns));
+                                                      if ( '\0' != dnsStr[ 0 ] )
+                                                      {
+                                                          if ( '\0' != static_dns[ 0 ] )
+                                                          {
+                                                              fprintf(fp, "#    option %s %s,%s\n", tagList[Index3].cmdstring, static_dns, dnsStr);
+                                                          }
+                                                          else
+                                                          {
+                                                              fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+                                                          }
+                                                      }
+                                                      else
+                                                      {
+                                                          char dyn_dns[256] = {0};
+                                                          ret = CosaDmlDHCPv6sGetDNS(g_recv_options[Index4].Value, dyn_dns, sizeof(dyn_dns) );
+                                                          if ( '\0' != dyn_dns[ 0 ] )
+                                                          {
+                                                              if ( '\0' != static_dns[ 0 ] )
+                                                              {
+                                                                  fprintf(fp, "#    option %s %s,%s\n", tagList[Index3].cmdstring, static_dns, dyn_dns);
+                                                              }
+                                                              else
+                                                              {
+                                                                  fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dyn_dns);
+                                                              }
+                                                          }
+                                                          else
+                                                          {
+                                                              if ( '\0' != static_dns[ 0 ] )
+                                                              {
+                                                                  fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, static_dns);
+                                                              }
+                                                          }
+                                                      }
+                                                  }
+                                                  else
+                                                  {
+						      fprintf(fp, "#    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+                                                  }
 					  }
 					  else
 					  {
-						  fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+                                                  if (!strncmp(l_cSecWebUI_Enabled, "true", 4))
+                                                  {
+                                                      char static_dns[256] = {0};
+                                                      commonSyseventGet("lan_ipaddr_v6", static_dns, sizeof(static_dns));
+                                                      char dyn_dns[256] = {0};
+                                                      ret = CosaDmlDHCPv6sGetDNS(g_recv_options[Index4].Value, dyn_dns, sizeof(dyn_dns) );
+                                                      if ( '\0' != dnsStr[ 0 ] )
+                                                      {
+                                                          if ( '\0' != static_dns[ 0 ] )
+                                                          {
+                                                              if ( '\0' != dyn_dns[ 0 ] )
+                                                              {
+						                  fprintf(fp, "    option %s %s,%s,%s\n", tagList[Index3].cmdstring, static_dns, dnsStr, dyn_dns);
+                                                              }
+                                                              else
+                                                              {
+                                                                  fprintf(fp, "    option %s %s,%s\n", tagList[Index3].cmdstring, static_dns, dnsStr);
+                                                              }
+                                                          }
+                                                          else
+                                                          {
+                                                              if ( '\0' != dyn_dns[ 0 ] )
+                                                              {
+                                                                  fprintf(fp, "    option %s %s,%s\n", tagList[Index3].cmdstring, dyn_dns, dnsStr);
+                                                              }
+                                                              else
+                                                              {
+                                                                  fprintf(fp, "     option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+                                                              }
+                                                          }
+                                                               
+                                                      }
+                                                      else
+                                                      {
+                                                          if ( '\0' != static_dns[ 0 ] )
+                                                          {
+                                                              if ( '\0' != dyn_dns[ 0 ] )
+                                                              {
+                                                                  fprintf(fp, "    option %s %s,%s\n", tagList[Index3].cmdstring, static_dns, dyn_dns);
+                                                              }
+                                                              else
+                                                              {
+                                                                  fprintf(fp, "     option %s %s\n", tagList[Index3].cmdstring, static_dns);
+                                                              }
+                                                          }
+                                                          else
+                                                          {
+                                                              if ( '\0' != dyn_dns[ 0 ] )
+                                                              {
+                                                                  fprintf(fp, "     option %s %s\n", tagList[Index3].cmdstring, dyn_dns);
+                                                              }
+                                                          }
+                                                           
+                                                      }
+                                                  }
+                                                  else
+                                                  {
+						      fprintf(fp, "     option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+                                                  }
 					  }
 
 					  CcspTraceWarning(("%s %d - DNSServersEnabled:%d DNSServers:%s\n", __FUNCTION__, 
@@ -4359,17 +4620,19 @@ OPTIONS:
 					   
 					   if ( !ret )
 					   {
+                                                   if ( '\0' != dnsStr[ 0 ] )
+                                                   {
 							// Check device is in captive portal mode or not
-						   if ( 1 == isInCaptivePortal )
-						   {
+						       if ( 1 == isInCaptivePortal )
+						       {
 				   
 							   fprintf(fp, "#	 option %s %s\n", tagList[Index3].cmdstring, dnsStr);
-						   }
-						   else
-						   {
-				   
+						       }
+						       else
+						       { 
 							   fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dnsStr);
-						   }
+						       }
+                                                   }
 				   		}
 					}
                 }
@@ -4380,7 +4643,7 @@ OPTIONS:
                         fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
                 }else{
                     if ( pServerOption )
-                        fprintf(fp, "   option %s 0x%s\n", tagList[Index3].cmdstring, pServerOption);
+                        fprintf(fp, "    option %s 0x%s\n", tagList[Index3].cmdstring, pServerOption);
                 }
 #endif
             }
@@ -4404,9 +4667,10 @@ OPTIONS:
 						   fprintf(fp, "#	 option %s %s\n", tagList[Index3].cmdstring, dns_str);
 					   }
 					   else
-					   {
-						   fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dns_str);
+					   {   
+                                                   fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dns_str);           
 					   }
+                                                
 					
 					   CcspTraceWarning(("%s %d - DNSServersEnabled:%d DNSServers:%s\n", __FUNCTION__, 
 																						 __LINE__,
@@ -4892,7 +5156,7 @@ OPTIONS:
                         fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, pServerOption);
                 }else{
                     if ( pServerOption )
-                        fprintf(fp, "   option %s 0x%s\n", tagList[Index3].cmdstring, pServerOption);
+                        fprintf(fp, "    option %s 0x%s\n", tagList[Index3].cmdstring, pServerOption);
                 }
             }
             else
@@ -4916,8 +5180,8 @@ OPTIONS:
                                            }
                                            else
                                            {
-                                                   fprintf(fp, "        option %s %s\n", tagList[Index3].cmdstring, dnsStr);
-                                           }
+                                                   fprintf(fp, "       option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+                                           } 
 
                                            CcspTraceWarning(("%s %d - DNSServersEnabled:%d DNSServers:%s\n", __FUNCTION__,
                                                                                                                                                                                  __LINE__,
