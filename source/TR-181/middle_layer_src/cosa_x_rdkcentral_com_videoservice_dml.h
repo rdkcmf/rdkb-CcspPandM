@@ -54,6 +54,22 @@ VideoService_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+	
+BOOL
+WMMdownstreamMap_GetParamBoolValue
+	(
+		 ANSC_HANDLE                 hInsContext,
+		 char*                       ParamName,
+		 BOOL*                       pBool
+	);	
+	
+BOOL
+WMMdownstreamMap_SetParamBoolValue
+	(
+		 ANSC_HANDLE                 hInsContext,
+		 char*                       ParamName,
+		 BOOL                        bValue
+	);
 
 /*BOOL
 VideoService_Validate

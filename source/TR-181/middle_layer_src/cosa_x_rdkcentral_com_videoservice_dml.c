@@ -268,7 +268,148 @@ void* SetVideoServiceConfig(void* arg)
     pthread_mutex_unlock(&g_videoservice_mutex);
     return NULL;
 }
+/**
+ *  RFC Feature WMMdownstreamMap
+*/
+/**********************************************************************
 
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        WMMdownstreamMap_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+WMMdownstreamMap_GetParamBoolValue
+
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL*                       pBool
+ )
+{
+	char buf[8];
+	memset (buf, 0, sizeof(buf));
+	UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+		syscfg_get( NULL, "WMMdownstreamMap_enable", buf, sizeof(buf));
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+
+        return TRUE;
+    }  
+	
+    return FALSE;
+ }
+
+
+/**********************************************************************
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        WMMdownstreamMap_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+WMMdownstreamMap_SetParamBoolValue
+
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL                        bValue
+ )
+{
+	 if (IsBoolSame(hInsContext, ParamName, bValue, WMMdownstreamMap_GetParamBoolValue))
+        return TRUE;
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        if( bValue == TRUE)
+        {
+           if (syscfg_set(NULL, "WMMdownstreamMap_enable", "true") != 0)
+		   {
+			   AnscTraceWarning(("syscfg_set WMMdownstreamMap_enable:true failed\n"));
+		   }
+		   else
+		   {
+			   system("sysevent set firewall-restart");
+			   AnscTraceWarning(("syscfg_set WMMdownstreamMap_enable:true \n"));
+		   }
+        }
+        else
+        {
+            if (syscfg_set(NULL, "WMMdownstreamMap_enable", "false") != 0)
+			{
+				AnscTraceWarning(("syscfg_set WMMdownstreamMap_enable:false failed\n"));
+			}
+			else
+			{
+				system("sysevent set firewall-restart");
+				AnscTraceWarning(("syscfg_set WMMdownstreamMap_enable:false \n"));
+			}
+        }
+		
+        if (syscfg_commit() != 0)
+         {
+            AnscTraceWarning(("syscfg_commit WMMdownstreamMap_enable failed\n"));
+         }
+        else
+         {
+            return TRUE;
+         }
+    }
+
+    return FALSE;
+}
 
 
 /*BOOL
