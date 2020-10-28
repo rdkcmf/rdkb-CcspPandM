@@ -1190,6 +1190,7 @@ User_SetParamStringValue
                 user_hashandsavepwd(NULL,pString,pUser);
                 //AnscCopyString(pUser->Password, pString);
                 CcspTraceInfo(("WebUi cusadmin password is changed\n"));
+                syslog_systemlog("Password change", LOG_NOTICE, "Account %s's password changed", pUser->Username);
         }
 #endif
 	else
