@@ -12441,6 +12441,12 @@
             <syntax>uint32</syntax>
             <writable>true</writable>
         </parameter>
+                <parameter>
+            <name>ReinitMacThreshold</name>
+            <type>unsignedInt</type>
+            <syntax>uint32</syntax>
+            <writable>true</writable>
+        </parameter>
         <!-- no DML implement !!
         <parameter>
 
