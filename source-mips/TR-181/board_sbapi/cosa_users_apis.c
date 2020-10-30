@@ -629,8 +629,24 @@ user_validatepwd
    if(fromDB[0] == '\0')
    {
      CcspTraceWarning(("%s, No hashed password, calculate it\n",__FUNCTION__));
-     user_hashandsavepwd(hContext,pEntry->Password,pEntry);
+     #if defined(_HUB4_PRODUCT_REQ_) || defined(INTEL_PUMA7) && defined(_XB7_PRODUCT_REQ_)
+         user_hashandsavepwd(hContext,pEntry->Password,pEntry);
+     #else
+         FILE *ptr;
+         char buff[10];
+         if ((ptr=v_secure_popen("r", "/usr/bin/configparamgen jx lkiprgpkmqfk:3"))!=NULL)
+         if (NULL == ptr) {
+             return ANSC_STATUS_FAILURE;
+         }
+         if (NULL == fgets(buff, 9, ptr)) {
+             v_secure_pclose(ptr);
+             return ANSC_STATUS_FAILURE;
+         }
+         v_secure_pclose(ptr);
+         user_hashandsavepwd(hContext,buff,pEntry);
+     #endif
    }
+   //TODO: Avoid the hardcoded password . This change will be done as part of CMXB7-1766
    if (!strcmp("password",pString))
    { 
      isDefault=1;
@@ -664,7 +680,18 @@ user_validatepwd
 
    if(fromDB[0] == '\0')
    {
-     user_hashandsavepwd(hContext,pEntry->Password,pEntry);
+     FILE *fptr;
+     char outbuff[10];
+     if ((fptr=v_secure_popen("r", "/usr/bin/configparamgen jx jtxpybrepjab:3"))!=NULL)
+     if (NULL == fptr) {
+         return ANSC_STATUS_FAILURE;
+     }
+     if (NULL == fgets(outbuff, 10, fptr)) {
+         v_secure_pclose(fptr);
+         return ANSC_STATUS_FAILURE;
+     }
+     v_secure_pclose(fptr);
+     user_hashandsavepwd(hContext,outbuff,pEntry);
    }
    if (!strcmp("highspeed",pString))
    {
@@ -756,6 +783,8 @@ user_hashandsavepwd
         {
           AnscCopyString(pEntry->HashedPassword,setHash);
           CcspTraceWarning(("%s, Hash value is saved to syscfg\n",__FUNCTION__));
+          syscfg_unset(NULL, "user_password_2");
+          syscfg_commit();
           return ANSC_STATUS_SUCCESS;
         }
      }
@@ -775,15 +804,37 @@ CosaDmlUserResetPassword
       )
 {
    CcspTraceWarning(("%s, Entered Reset function\n",__FUNCTION__));
-   char* defPassword = NULL;
+   char defPassword[10];
+   FILE *ptr;
    if(!strcmp(pEntry->Username,"admin"))
    {
-     defPassword = "password";   
+     #if defined(_HUB4_PRODUCT_REQ_) || defined(INTEL_PUMA7) && defined(_XB7_PRODUCT_REQ_)
+         //TODO: Avoid the hardcoded password . This change will be done as part of CMXB7-1766
+         strcpy(defPassword,"password");
+     #else
+         if ((ptr=v_secure_popen("r", "/usr/bin/configparamgen jx lkiprgpkmqfk:3"))!=NULL)
+         if (NULL == ptr) {
+             return ANSC_STATUS_FAILURE;
+         }
+         if (NULL == fgets(defPassword, 9, ptr)) {
+             v_secure_pclose(ptr);
+             return ANSC_STATUS_FAILURE;
+         }
+         v_secure_pclose(ptr);
+     #endif
    }
 #if defined(_COSA_FOR_BCI_)
    else if(!strcmp(pEntry->Username,"cusadmin"))
    {
-     defPassword = "highspeed";
+     if ((ptr=v_secure_popen("r", "/usr/bin/configparamgen jx jtxpybrepjab:3"))!=NULL)
+     if (NULL == ptr) {
+         return ANSC_STATUS_FAILURE;
+     }
+     if (NULL == fgets(defPassword, 10, ptr)) {
+         v_secure_pclose(ptr);
+         return ANSC_STATUS_FAILURE;
+     }
+     v_secure_pclose(ptr);
    }
 #endif
    else
@@ -793,31 +844,16 @@ CosaDmlUserResetPassword
    if(!strcmp(pEntry->Username,"admin"))
    {
       user_hashandsavepwd(NULL,defPassword,pEntry);
-      AnscCopyString(pEntry->Password, defPassword);
+      //AnscCopyString(pEntry->Password, defPassword);
       return ANSC_STATUS_SUCCESS;
    }
 #if defined(_COSA_FOR_BCI_)
    if(!strcmp(pEntry->Username,"cusadmin"))
    {
-   user_hashandsavepwd(NULL,defPassword,pEntry);
-   CcspTraceWarning(("%s, Set default password to syscfg\n",__FUNCTION__));
-   if(syscfg_set(NULL, "user_password_2", defPassword) != 0)
-   {
-      AnscTraceWarning(("syscfg_set failed\n"));
-   }
-   else
-   {
-     if(syscfg_commit() != 0)
-     {
-       AnscTraceWarning(("syscfg_commit failed\n"));
-     }
-     else
-     {
-       AnscCopyString(pEntry->Password, defPassword);
-       CcspTraceWarning(("%s, Returning Success\n",__FUNCTION__));
-       return ANSC_STATUS_SUCCESS;
-     }
-   }
+      user_hashandsavepwd(NULL,defPassword,pEntry);
+      //AnscCopyString(pEntry->Password, defPassword);
+      CcspTraceWarning(("%s, Returning Success\n",__FUNCTION__));
+      return ANSC_STATUS_SUCCESS;
    }
 #endif
    CcspTraceWarning(("%s, Returning Failure\n",__FUNCTION__));
