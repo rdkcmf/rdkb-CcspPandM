@@ -97,7 +97,7 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
 	ULONG		DeferFWDownloadReboot;
 	BOOL		AbortReboot;
 	BOOL		FirmwareDownloadCompletedNotification;
-	CHAR 		FirmwareDownloadStartedNotification[64];
+	CHAR 		FirmwareDownloadStartedNotification[128];
 	CHAR 		DeviceManageableNotification[64];
 	COSA_BOOTSTRAP_STR 		TR69CertLocation;
 	CHAR 		PartnerID[64];
