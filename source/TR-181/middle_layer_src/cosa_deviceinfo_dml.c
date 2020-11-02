@@ -15569,7 +15569,7 @@ RPC_SetParamUlongValue
         /* collect value */
         char buff[64] = {0};
         sprintf(buff,"%d",uValue);
-	Send_Notification_Task(buff, NULL, NULL, "reboot-pending", NULL);
+	Send_Notification_Task(buff, NULL, NULL, "reboot-pending", NULL, NULL, NULL, NULL);
         return TRUE;
     }	       
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -15691,13 +15691,19 @@ RPC_SetParamStringValue
     )
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    char *current_time = NULL;
+    char *priority = NULL;
+    char *current_fw_ver = NULL;
+    char *download_fw_ver = NULL;
+    const char s[2] = ",";
+    char *notifyStr = NULL;
     errno_t rc =-1;
     int ind =-1;
     /* check the parameter name and set the corresponding value */
 
     rc = strcmp_s("RebootDevice",strlen( "RebootDevice"),ParamName,&ind);
     ERR_CHK(rc);
-     if((!ind) && (rc == EOK)) 
+    if((!ind) && (rc == EOK))  
     {
       
         if( TRUE == CosaDmlDi_ValidateRebootDeviceParam( pString ) )
@@ -15722,6 +15728,11 @@ RPC_SetParamStringValue
 		  ERR_CHK(rc);
                  if((!ind) && (rc == EOK))  
 		  {
+		     /* collect value */
+		     char buff[128];
+		     char *timeValue = NULL;
+		     memset(buff, 0, sizeof(buff));
+		     snprintf(buff,sizeof(buff),"%s",pString);	
 		     rc =  memset_s( pMyObject->FirmwareDownloadStartedNotification, sizeof( pMyObject->FirmwareDownloadStartedNotification ),0, sizeof( pMyObject->FirmwareDownloadStartedNotification ));
 		     ERR_CHK(rc);
 		     rc = STRCPY_S_NOCLOBBER( pMyObject->FirmwareDownloadStartedNotification,sizeof( pMyObject->FirmwareDownloadStartedNotification ), pString );
@@ -15731,9 +15742,29 @@ RPC_SetParamStringValue
 	               return FALSE;
                     }
 		    
-		    set_firmware_download_start_time(strdup(pString));
-		    Send_Notification_Task(NULL,pString, NULL, "firmware-download-started", NULL);
-	         }
+		     timeValue = notifyStr = strdup(buff);
+		     // loop through the string to extract all tokens
+			if( notifyStr != NULL )
+			{
+				current_time = strsep(&notifyStr, s);
+				priority = strsep(&notifyStr, s);
+				current_fw_ver = strsep(&notifyStr, s);
+				download_fw_ver = strsep(&notifyStr, s);
+			}
+			if( current_time != NULL )
+			{
+				set_firmware_download_start_time(strdup(current_time));
+			}
+			if(current_time != NULL && priority != NULL && current_fw_ver != NULL && download_fw_ver !=NULL)
+			{
+				Send_Notification_Task(NULL,current_time, NULL, "firmware-download-started", NULL, priority,current_fw_ver,download_fw_ver);
+			}
+			else
+			{
+				CcspTraceWarning(("Received insufficient data to process notification, firmware download started notfication is not sent\n"));			
+			}
+			free(timeValue);
+		}	
                   
                  else
 	        {
@@ -15770,7 +15801,7 @@ RPC_SetParamStringValue
                     ERR_CHK(rc);
                     return FALSE;
                   }
-                 Send_Notification_Task(NULL, NULL, NULL, "fully-manageable", pString);
+                 Send_Notification_Task(NULL, NULL, NULL, "fully-manageable", pString,NULL, NULL,NULL);
 	      }	 
               else
 	     {
@@ -15945,7 +15976,7 @@ RPC_SetParamBoolValue
 			snprintf(buff, sizeof(buff), "%s", bValue ? "true" : "false");
 			pMyObject->FirmwareDownloadCompletedNotification = bValue;
 			char *start_time = get_firmware_download_start_time();
-			Send_Notification_Task(NULL, start_time, buff, "firmware-download-completed", NULL);
+			Send_Notification_Task(NULL, start_time, buff, "firmware-download-completed", NULL, NULL, NULL, NULL);
 		}
 		else
 		{

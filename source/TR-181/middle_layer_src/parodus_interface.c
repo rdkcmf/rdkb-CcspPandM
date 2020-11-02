@@ -47,13 +47,16 @@ typedef struct _notify_params
 	char * status;
 	char * download_status;
 	char * system_ready_time;
+	char * priority;
+	char * current_fw_ver;
+	char * download_fw_ver;
 } notify_params_t;
 
 void* connect_parodus();
 static void getDeviceMac();
 static void get_parodus_url(char **url);
 void initparodusTask();
-void Send_Notification_Task(char* delay, char* startTime, char* download_status, char* status, char *system_ready_time);
+void Send_Notification_Task(char* delay, char* startTime, char* download_status, char* status, char *system_ready_time, char * priority,  char *current_fw_ver, char *download_fw_ver);
 void* sendNotification(void* buff);
 static void waitForEthAgentComponentReady();
 static void checkComponentHealthStatus(char * compName, char * dbusPath, char *status, int *retStatus);
@@ -458,6 +461,18 @@ void* sendNotification(void* pValue)
 					cJSON_AddNumberToObject(notifyPayload,"boot-time", bootTime);
 					cJSON_AddNumberToObject(notifyPayload,"system-ready-time", atoi(msg->system_ready_time));
 				}
+				if(msg->priority !=NULL)
+				{
+					cJSON_AddStringToObject(notifyPayload,"priority", msg->priority);
+				}
+				if(msg->current_fw_ver !=NULL)
+				{
+					cJSON_AddStringToObject(notifyPayload,"current_fw_ver", msg->current_fw_ver);
+				}
+				if(msg->download_fw_ver !=NULL)
+				{
+					cJSON_AddStringToObject(notifyPayload,"download_fw_ver", msg->download_fw_ver);
+				}
 			}
 			stringifiedNotifyPayload = cJSON_PrintUnformatted(notifyPayload);
 			CcspTraceInfo(("Notification payload %s\n",stringifiedNotifyPayload));
@@ -559,7 +574,7 @@ void initparodusTask()
 	}
 }
 
-void Send_Notification_Task(char* delay, char* startTime, char* download_status, char* status, char* system_ready_time)
+void Send_Notification_Task(char* delay, char* startTime, char* download_status, char* status, char* system_ready_time, char * priority,  char *current_fw_ver, char *download_fw_ver)
 {
 	int err = 0;
 	pthread_t NotificationThreadId;
@@ -590,6 +605,18 @@ void Send_Notification_Task(char* delay, char* startTime, char* download_status,
 		if(system_ready_time != NULL)
 		{
 		    args->system_ready_time = strdup(system_ready_time);
+		}
+		if(priority != NULL)
+		{
+			args->priority = strdup(priority);
+		}
+		if(current_fw_ver != NULL)
+		{
+			args->current_fw_ver = strdup(current_fw_ver);
+		}
+		if(download_fw_ver!= NULL)
+		{
+		    args->download_fw_ver = strdup(download_fw_ver);
 		}
 		err = pthread_create(&NotificationThreadId, NULL, sendNotification, (void *) args);
 		if (err != 0)
@@ -641,6 +668,21 @@ void free_notify_params_struct(notify_params_t *param)
         {
             free(param->system_ready_time);
             param->system_ready_time = NULL;
+        }
+	if(param->priority != NULL)
+        {
+            free(param->priority);
+            param->priority = NULL;
+        }
+        if(param->current_fw_ver != NULL)
+        {
+            free(param->current_fw_ver);
+            param->current_fw_ver = NULL;
+        }
+        if(param->download_fw_ver != NULL)
+        {
+            free(param->download_fw_ver);
+            param->download_fw_ver = NULL;
         }
         free(param);
         param = NULL;
