@@ -214,7 +214,7 @@ typedef struct {
   enum  pString_val type;
 } DEVICEINFO_SET_VALUE;
 
-DEVICEINFO_SET_VALUE deviceinfo_set_table[] = {
+static const DEVICEINFO_SET_VALUE deviceinfo_set_table[] = {
     { "ui_access",UIACCESS },
     { "ui_success",UISUCCESS},
     { "ui_failed", UIFAILED },
@@ -223,7 +223,7 @@ DEVICEINFO_SET_VALUE deviceinfo_set_table[] = {
     {  "captiveportal_failure" , CAPTIVEPORTALFAILURE }
 };
 
-BOOL AnscValidateInputString (char *pString) {
+static BOOL AnscValidateInputString (char *pString) {
 
     char disallowed_chars[] = "<>%`|'";       /*To avoid command injection */
     int i = 0;
@@ -243,7 +243,7 @@ BOOL AnscValidateInputString (char *pString) {
     return TRUE;
 }
 
-int get_deviceinfo_from_name(char *name, enum pString_val *type_ptr)
+static int get_deviceinfo_from_name(char *name, enum pString_val *type_ptr)
 {
   int rc = -1;
   int ind = -1;
@@ -267,7 +267,8 @@ int get_deviceinfo_from_name(char *name, enum pString_val *type_ptr)
   return 0;
 }
 
-unsigned long long GetAvailableSpace_tmp()
+#ifdef COLUMBO_HWTEST
+static unsigned long long GetAvailableSpace_tmp()
 {
     //Check if there is enough space to atleast start HHT.
     unsigned long long result = 0;
@@ -280,7 +281,7 @@ unsigned long long GetAvailableSpace_tmp()
     return result;
 }
 
-void UpdateSettingsFile( char param[64], char value[10] )
+static void UpdateSettingsFile( char param[64], char value[10] )
 {
     CcspTraceInfo(("\nUpdateSettingsFile\n"));
     errno_t          rc                  = -1;
@@ -368,6 +369,7 @@ void UpdateSettingsFile( char param[64], char value[10] )
         fclose(fp);
     }
 }
+#endif
 
 /***********************************************************************
  IMPORTANT NOTE:

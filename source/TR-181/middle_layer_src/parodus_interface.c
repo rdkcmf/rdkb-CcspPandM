@@ -45,7 +45,7 @@
 #define RDKB_ETHAGENT_DBUS_PATH                       "/com/cisco/spvtg/ccsp/ethagent"
 #define STATUS_SIZE 32
 
-pthread_mutex_t device_mac_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t device_mac_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 typedef struct _notify_params
 {

@@ -39,13 +39,14 @@
 #include "syscfg.h"
 #include "cosa_deviceinfo_dml.h"
 
-BOOL videoServiceEnable = FALSE;
-BOOL videoServiceEnableInProgress = FALSE;
-pthread_mutex_t     g_videoservice_mutex = PTHREAD_MUTEX_INITIALIZER;
+//static BOOL videoServiceEnable = FALSE;
+static BOOL videoServiceEnableInProgress = FALSE;
+static pthread_mutex_t g_videoservice_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
 
-void* SetVideoServiceConfig(void* arg);
+static void *SetVideoServiceConfig(void *arg);
 ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode);
 
 BOOL
@@ -148,7 +149,7 @@ VideoService_SetParamBoolValue
 
 }
 
-void* SetVideoServiceConfig(void* arg)
+static void *SetVideoServiceConfig(void *arg)
 {
     UNREFERENCED_PARAMETER(arg);
     int ret = ANSC_STATUS_SUCCESS;

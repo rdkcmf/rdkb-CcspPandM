@@ -840,13 +840,13 @@ CosaDmlGiSetCustomDataModelEnabled
 }
 
 
-void* uploadLogUtilityThread(void* vptr_value)
+static void* uploadLogUtilityThread(void* vptr_value)
 {
 	pthread_detach(pthread_self());
 	v_secure_system("/rdklogger/opsLogUpload.sh %s &", (char *) vptr_value);
 	return vptr_value;
-
 }
+
 ANSC_STATUS
 COSADmlUploadLogsNow
 	(

@@ -330,13 +330,11 @@ typedef struct wifi_client_s{
         ACCESS_CONTAINER(p, wifi_client_t, Linkage)
 
 static SLIST_HEADER g_wifiClientTable[WIFI_CLIENT_MAXIMUM];
-pthread_mutex_t     g_wifiClientTable_mutex;
+static pthread_mutex_t g_wifiClientTable_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void init_wifi_client(void)
 {
     ULONG i;
-
-    pthread_mutex_init(&g_wifiClientTable_mutex, NULL);
 
     pthread_mutex_lock(&g_wifiClientTable_mutex);
     for (i = 0; i < WIFI_CLIENT_MAXIMUM; i++){
