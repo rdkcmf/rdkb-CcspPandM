@@ -45,6 +45,7 @@
 #include <sys/types.h>
 #include <ctype.h>
 #include "autoconf.h"
+#include "safec_lib_common.h"
 
 #if defined(_COSA_SIM_)
 
@@ -1143,31 +1144,31 @@ CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry)
    return ANSC_STATUS_SUCCESS;
 }
 
-ANSC_STATUS isValidIP( int type, char *ipAddress )
+ANSC_STATUS isValidIP( int type, char *ipAddress, char *wrapped_inputparam, int sizeof_wrapped_inputparam)
 {
 	struct sockaddr_in sa;
-	char wrapstring[256]={0};
-	ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
+	struct sockaddr_in6 sa6;
+	int result= -1;
+	errno_t rc =  -1;
 
-	int result=1;
 	if(type == 4)
 		result = inet_pton(AF_INET, ipAddress, &(sa.sin_addr));
 	else
-		result = inet_pton(AF_INET6, ipAddress, &(sa.sin_addr));
+		result = inet_pton(AF_INET6, ipAddress, &(sa6.sin6_addr));
 
 	if (1!=result)
-		returnStatus = ANSC_STATUS_FAILURE;
-	
+		return ANSC_STATUS_FAILURE;
 	if(strstr(ipAddress,"'"))
-		returnStatus = ANSC_STATUS_FAILURE;
+		 return ANSC_STATUS_FAILURE;
 
-     if(ANSC_STATUS_SUCCESS == returnStatus)
-     {
-        sprintf(wrapstring,"'%s'",ipAddress);
-        strcpy(ipAddress,wrapstring);
-     }
-	
-	return returnStatus;
+	rc = sprintf_s(wrapped_inputparam, sizeof_wrapped_inputparam ,"'%s'",ipAddress);
+	if(rc < EOK)
+	{
+		ERR_CHK(rc);
+		return ANSC_STATUS_FAILURE;
+	}
+
+	return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS

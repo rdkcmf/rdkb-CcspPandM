@@ -37,6 +37,7 @@
 #include "dml_tr181_custom_cfg.h"
 #include "ccsp_trace.h"
 #include "ansc_string_util.h"
+#include "safec_lib_common.h"
 
 
 BOOL
@@ -2422,7 +2423,6 @@ MDRed_GetParamStringValue
     return -1;
 }
 
-
 BOOL
 MDRed_SetParamStringValue
     (
@@ -2434,64 +2434,109 @@ MDRed_SetParamStringValue
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
     ANSC_STATUS ret=ANSC_STATUS_FAILURE;
+    errno_t     rc =  -1;
+    int ind = -1;
+    char wrapstring[256] = {0};
 
-    if (AnscEqualString(ParamName, "HTTP_Server_IP", TRUE))
+    rc = strcmp_s("HTTP_Server_IP", strlen("HTTP_Server_IP"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-	ret=isValidIP(4,strValue);
+	ret=isValidIP(4, strValue, wrapstring, sizeof(wrapstring));
         if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
 
-        AnscCopyString(pMDRed->HTTP_Server_IP, strValue);
+        rc = STRCPY_S_NOCLOBBER(pMDRed->HTTP_Server_IP, sizeof(pMDRed->HTTP_Server_IP), wrapstring);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
 		CcspTraceWarning(("HTTP_Server_IP is set to %s\n", pMDRed->HTTP_Server_IP));
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "HTTPS_Server_IP", TRUE))
+    rc = strcmp_s("HTTPS_Server_IP", strlen("HTTPS_Server_IP"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        ret=isValidIP(4,strValue);
+        ret=isValidIP(4, strValue, wrapstring, sizeof(wrapstring));
         if(ANSC_STATUS_SUCCESS != ret)
             return FALSE;
 
-        AnscCopyString(pMDRed->HTTPS_Server_IP, strValue);
+        rc = STRCPY_S_NOCLOBBER(pMDRed->HTTPS_Server_IP,sizeof(pMDRed->HTTPS_Server_IP), wrapstring);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
 		CcspTraceWarning(("HTTPS_Server_IP is set to %s\n", pMDRed->HTTPS_Server_IP));
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "Default_Server_IP", TRUE))
+    rc = strcmp_s("Default_Server_IP", strlen("Default_Server_IP"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        ret=isValidIP(4,strValue);
-       if(ANSC_STATUS_SUCCESS != ret)
+        ret=isValidIP(4, strValue, wrapstring, sizeof(wrapstring));
+        if(ANSC_STATUS_SUCCESS != ret)
             return FALSE;
 
-	    AnscCopyString(pMDRed->Default_Server_IP, strValue);
+        rc = STRCPY_S_NOCLOBBER(pMDRed->Default_Server_IP,sizeof(pMDRed->Default_Server_IP), wrapstring);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
 		CcspTraceWarning(("Default_Server_IP is set to %s\n", pMDRed->Default_Server_IP));
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "HTTP_Server_IPv6", TRUE))
+    rc = strcmp_s("HTTP_Server_IPv6", strlen("HTTP_Server_IPv6"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        ret=isValidIP(6,strValue);
+        ret=isValidIP(6, strValue, wrapstring, sizeof(wrapstring));
         if(ret!=1)
             return FALSE;
 
-        AnscCopyString(pMDRed->HTTP_Server_IPv6, strValue);
+        rc = STRCPY_S_NOCLOBBER(pMDRed->HTTP_Server_IPv6,sizeof(pMDRed->HTTP_Server_IPv6), wrapstring);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
 		CcspTraceWarning(("HTTP_Server_IPv6 is set to %s\n", pMDRed->HTTP_Server_IPv6));
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "HTTPS_Server_IPv6", TRUE))
+    rc = strcmp_s("HTTPS_Server_IPv6", strlen("HTTPS_Server_IPv6"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        ret=isValidIP(6,strValue);
+        ret=isValidIP(6, strValue, wrapstring, sizeof(wrapstring));
         if(ANSC_STATUS_SUCCESS != ret)
             return FALSE;
 
-        AnscCopyString(pMDRed->HTTPS_Server_IPv6, strValue);
+        rc = STRCPY_S_NOCLOBBER(pMDRed->HTTPS_Server_IPv6,sizeof(pMDRed->HTTPS_Server_IPv6), wrapstring);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
 		CcspTraceWarning(("HTTPS_Server_IPv6 is set to %s\n", pMDRed->HTTPS_Server_IPv6));
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "Default_Server_IPv6", TRUE))
+    rc = strcmp_s("Default_Server_IPv6", strlen("Default_Server_IPv6"),ParamName, &ind);
+    ERR_CHK(rc);
+    if((!ind) && (rc == EOK))
     {
-        ret=isValidIP(6,strValue);
+        ret=isValidIP(6, strValue, wrapstring, sizeof(wrapstring));
         if(ANSC_STATUS_SUCCESS != ret)
             return FALSE;
 
-        AnscCopyString(pMDRed->Default_Server_IPv6, strValue);
+        rc = STRCPY_S_NOCLOBBER(pMDRed->Default_Server_IPv6,sizeof(pMDRed->Default_Server_IPv6), wrapstring);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
 		CcspTraceWarning(("Default_Server_IPv6 is set to %s\n", pMDRed->Default_Server_IPv6));
         return TRUE;
     }
