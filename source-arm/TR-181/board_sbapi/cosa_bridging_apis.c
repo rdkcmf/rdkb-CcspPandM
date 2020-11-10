@@ -3508,6 +3508,13 @@ ANSC_STATUS lanBrPCtlSetEnabled(PBRIDGE_PORT port, BOOLEAN enable) {
     struct ifreq ifr;
     int fd = socket(AF_INET, SOCK_DGRAM, 0);
 
+#if defined(MULTILAN_FEATURE)
+    if(port->mode == COSA_DML_BPORT_PASSTHRU) {
+        //Do not try to directly set port state of passthru device to up/down
+        return ANSC_STATUS_SUCCESS;
+    }
+#endif
+
     AnscCopyString(ifr.ifr_name, port->name);
   
     ioctl(fd, SIOCGIFFLAGS, &ifr);
