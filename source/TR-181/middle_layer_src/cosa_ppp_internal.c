@@ -67,6 +67,7 @@
         01/11/2011    initial revision.
 
 **************************************************************************/
+#ifndef FEATURE_RDKB_WAN_MANAGER
 
 #include "cosa_ppp_internal.h"
 
@@ -676,3 +677,4 @@ CosaPPPIfRegDelInfo
 
     return ANSC_STATUS_SUCCESS;
 }
+#endif

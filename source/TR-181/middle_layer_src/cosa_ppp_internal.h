@@ -60,6 +60,7 @@
 
 **************************************************************************/
 
+#ifndef  FEATURE_RDKB_WAN_MANAGER
 
 #ifndef  _COSA_PPP_INTERNAL_H
 #define  _COSA_PPP_INTERNAL_H
@@ -136,4 +137,5 @@ CosaPPPIfRegDelInfo
         ANSC_HANDLE                 hCosaContext
     );
 
+#endif
 #endif

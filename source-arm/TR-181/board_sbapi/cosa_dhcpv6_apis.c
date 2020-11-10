@@ -80,7 +80,7 @@ extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 
 #ifdef _HUB4_PRODUCT_REQ_
-#include "wan_manager_ipc_msg.h"
+#include "ipc_msg.h"
 #if defined SUCCESS
 #undef SUCCESS
 #endif
@@ -89,10 +89,10 @@ extern char g_Subsystem[32];
 
 /**
  * @brief API to send dhcpv6 configuration data to RdkWanmanager over nanomsg socket
- * @param Pointer to dhcpv6_data_t holds the IPv6 configurations
+ * @param Pointer to ipc_dhcpv6_data_t holds the IPv6 configurations
  * @return 0 on success else returned -1
  */
-static int send_dhcp_data_to_wanmanager (dhcpv6_data_t *dhcpv6_data); /* Send data to wanmanager using nanomsg. */
+static int send_dhcp_data_to_wanmanager (ipc_dhcpv6_data_t *dhcpv6_data); /* Send data to wanmanager using nanomsg. */
 #endif
 
 #if defined (INTEL_PUMA7)
@@ -7288,8 +7288,8 @@ dhcpv6c_dbg_thrd(void * in)
                         */
                         int ipv6_wan_status = 0;
                         char dns_server[256] = {'\0'};
-                        dhcpv6_data_t dhcpv6_data;
-                        memset(&dhcpv6_data, 0, sizeof(dhcpv6_data_t));
+                        ipc_dhcpv6_data_t dhcpv6_data;
+                        memset(&dhcpv6_data, 0, sizeof(ipc_dhcpv6_data_t));
 
                         if(strlen(v6pref) == 0) {
                             dhcpv6_data.isExpired = TRUE;
@@ -7432,7 +7432,7 @@ EXIT:
 #endif
 
 #ifdef _HUB4_PRODUCT_REQ_
-static int send_dhcp_data_to_wanmanager (dhcpv6_data_t *dhcpv6_data)
+static int send_dhcp_data_to_wanmanager (ipc_dhcpv6_data_t *dhcpv6_data)
 {
     int ret = ANSC_STATUS_SUCCESS;
     if ( NULL == dhcpv6_data)
@@ -7465,20 +7465,20 @@ static int send_dhcp_data_to_wanmanager (dhcpv6_data_t *dhcpv6_data)
 
     CcspTraceInfo(("[%s-%d] Established connection to wanmanager \n",__FUNCTION__, __LINE__));
 
-    msg_payload_t msg;
-    memset (&msg, 0, sizeof(msg_payload_t));
+    ipc_msg_payload_t msg;
+    memset (&msg, 0, sizeof(ipc_msg_payload_t));
 
     /**
      * Copy dhcpv6 data.
      */
     msg.msg_type = DHCP6C_STATE_CHANGED;
-    memcpy(&msg.data.dhcpv6, dhcpv6_data, sizeof(dhcpv6_data_t));
+    memcpy(&msg.data.dhcpv6, dhcpv6_data, sizeof(ipc_dhcpv6_data_t));
 
     /**
      * Send data to wanmanager.
      */
     int bytes = 0;
-    int sz_msg = sizeof(msg_payload_t);
+    int sz_msg = sizeof(ipc_msg_payload_t);
 
 
     bytes = nn_send(sock, (char *) &msg, sz_msg, 0);

@@ -61,6 +61,7 @@
 
 **************************************************************************/
 
+#ifndef FEATURE_RDKB_WAN_MANAGER
 
 #ifndef  _COSA_PPP_DML_H
 #define  _COSA_PPP_DML_H
@@ -502,5 +503,7 @@ Stats6_GetParamStringValue
         char*                       pValue,
         ULONG*                      pUlSize
     );
+
+#endif
 
 #endif
