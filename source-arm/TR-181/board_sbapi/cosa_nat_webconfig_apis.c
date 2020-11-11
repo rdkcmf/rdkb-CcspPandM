@@ -233,6 +233,7 @@ pErr Process_DMZ_WebConfigRequest(void *Data)
 
 	apply_dmz_ToDML(dmz_cache);
 
+    system("sysevent set firewall-restart");
 	CcspTraceWarning(("DMZ configurartion applied to DML layer!!!!!!!!\n"));
 
 	CcspTraceWarning(("rpm->param[%d].Enable %s\n", index, (rpm->param[index].enable == TRUE)?"true":"false"));
