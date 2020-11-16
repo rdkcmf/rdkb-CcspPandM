@@ -4084,6 +4084,8 @@ CosaDmlDcGetPowerSavingModeStatus
         ULONG                       *pValue
     )
 {
+
+#if !defined (_BWG_PRODUCT_REQ_)
 #if defined (CONFIG_TI_BBU) || defined (CONFIG_TI_BBU_TI)
 
 #include "mta_hal.h"
@@ -4093,6 +4095,7 @@ CosaDmlDcGetPowerSavingModeStatus
     else
         return ANSC_STATUS_SUCCESS;
 
+#endif
 #endif
 
     return ANSC_STATUS_SUCCESS;
