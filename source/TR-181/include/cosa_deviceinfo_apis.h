@@ -538,7 +538,19 @@ CosaDmlDiSetFirmwareUpgradeStartTime (char* pString);
 ANSC_STATUS
 CosaDmlDiSetFirmwareUpgradeEndTime (char* pString);
 
+ULONG
+CosaDmlGiGetCustomDataModelEnabled
+(
+    ANSC_HANDLE                 hContext,
+    BOOL                        *pValue
+);
 
+ULONG
+CosaDmlGiSetCustomDataModelEnabled
+(
+    ANSC_HANDLE                 hContext,
+    BOOL                        bValue
+);
 
 ANSC_STATUS
 CosaDmlDiGetAndProcessDhcpServDetectionFlag
