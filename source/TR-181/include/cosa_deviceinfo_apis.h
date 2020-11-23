@@ -798,4 +798,11 @@ CosaDmlScheduleAutoReboot(int ConfiguredUpTime, BOOL bValue);
 int 
 setMultiProfileXdnsConfig(BOOL bValue);
 
+#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
+BOOL
+CosaDmlSetRadiusGreyListEnable
+    (
+        BOOL        bValue
+    );
+#endif
 #endif

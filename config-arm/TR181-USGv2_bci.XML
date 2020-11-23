@@ -1970,7 +1970,24 @@
                                  </parameters>
                         </object>
                       
-                        <object>
+			<object>
+			    <name>RadiusGreyList</name>
+			    <objectType>object</objectType>
+			    <functions>
+				<func_GetParamBoolValue>RadiusGreyList_GetParamBoolValue</func_GetParamBoolValue>
+				<func_SetParamBoolValue>RadiusGreyList_SetParamBoolValue</func_SetParamBoolValue>
+			    </functions>
+				<parameters>
+				    <parameter>
+				    <name>Enable</name>
+				    <type>boolean</type>
+				    <syntax>bool</syntax>
+				    <writable>true</writable>
+				    </parameter>
+				</parameters>
+			</object>
+
+			<object>
                         <name>OAUTH</name>
                            <objectType>object</objectType>
                            <functions>

@@ -11527,6 +11527,112 @@ WiFiPasspoint_SetParamBoolValue
 }
 
 /**********************************************************************
+    caller:     owner of this object
+
+    prototype:
+
+	BOOL
+	RadiusGreyList_GetParamBoolValue
+	    (
+		ANSC_HANDLE                 hInsContext,
+		char*                       ParamName,
+		BOOL*                       pBool
+	    );
+
+     description:
+
+	This function is called to retrieve Boolean parameter value;
+
+     argument:  ANSC_HANDLE                 hInsContext,
+		The instance handle;
+
+		char*                       ParamName,
+		The parameter name;
+
+		BOOL*                       pBool
+		The buffer of returned boolean value;
+
+     return:     TRUE if succeeded.
+**********************************************************************/
+#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
+BOOL
+RadiusGreyList_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* Collect Value */
+        char *strValue = NULL;
+        int retPsmGet = CCSP_SUCCESS;
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.RadiusGreyList.Enable", NULL, &strValue);
+        if (retPsmGet == CCSP_SUCCESS) {
+            *pBool = _ansc_atoi(strValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        }
+        else
+            *pBool = FALSE;
+        return TRUE;
+    }
+    return FALSE;
+}
+#endif
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+	BOOL
+	RadiusGreyList_SetParamBoolValue
+	    (
+		ANSC_HANDLE                 hInsContext,
+		char*                       ParamName,
+		BOOL                        bValue
+	    );
+
+     description:
+
+	This function is called to set BOOL parameter value;
+
+     argument:  ANSC_HANDLE                 hInsContext,
+		The instance handle;
+
+		char*                       ParamName,
+		The parameter name;
+
+		BOOL                        bValue
+		The updated BOOL value;
+
+     return:     TRUE if succeeded.
+**********************************************************************/
+#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
+BOOL
+RadiusGreyList_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if (IsBoolSame(hInsContext, ParamName, bValue,RadiusGreyList_GetParamBoolValue)) {
+         CcspTraceError(("[%s] set RadiusGreyListEnable [%s]\n",__FUNCTION__, (bValue ? "TRUE" : "FALSE")))
+	return TRUE;
+    }
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        return CosaDmlSetRadiusGreyListEnable(bValue);
+    }
+    return FALSE;
+}
+#endif
+
+/**********************************************************************
 
     caller:     owner of this object
 
