@@ -10992,15 +10992,19 @@ IPv6onLnF_SetParamBoolValue
 	    char Inf_name[32];
 	    BOOL bFound = FALSE;
 	
-        memset(buf,0,sizeof(buf));
-        memset(OutBuff,0,sizeof(OutBuff));
-        memset(Inf_name,0,sizeof(Inf_name));
-	    syscfg_get( NULL, "iot_ifname", Inf_name, sizeof(Inf_name));
+            memset(buf,0,sizeof(buf));
+            memset(OutBuff,0,sizeof(OutBuff));
+            memset(Inf_name,0,sizeof(Inf_name));
+ 	    syscfg_get( NULL, "iot_brname", Inf_name, sizeof(Inf_name));
+            if ( (Inf_name[0] == '\0') && (strlen(Inf_name)) == 0 )
+            {
+             	syscfg_get( NULL, "iot_ifname", Inf_name, sizeof(Inf_name));
+            
+       	    }
+	    
 	    if( Inf_name != NULL )
             {
- 
-            
-            syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
+            	    syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
 
 		    if( buf != NULL )
 		    {
