@@ -678,12 +678,29 @@ if(id != 0)
 
     cmd_dispatch('e');
 
-	#ifndef DISABLE_LOGAGENT
-	RDKLogEnable = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
-	RDKLogLevel = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-X_RDKCENTRAL-COM_LogLevel");
-	PAM_RDKLogLevel = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PAM_LogLevel");
-	PAM_RDKLogEnable = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PAM_LoggerEnable");
-	#endif
+    syscfg_init();
+    CcspTraceInfo(("PAM_DBG:-------Read Log Info\n"));
+    char buffer[5] = {0};
+    if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_LoggerEnable" , buffer, sizeof( buffer ) ) &&  ( buffer[0] != '\0' ) )
+    {
+        RDKLogEnable = (BOOL)atoi(buffer);
+    }
+    memset(buffer, 0, sizeof(buffer));
+    if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_LogLevel" , buffer, sizeof( buffer ) ) &&  ( buffer[0] != '\0' ) )
+    {
+        RDKLogLevel = (ULONG )atoi(buffer);
+    }
+    memset(buffer, 0, sizeof(buffer));
+    if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_PAM_LogLevel" , buffer, sizeof( buffer ) ) &&  ( buffer[0] != '\0' ) )
+    {
+        PAM_RDKLogLevel = (ULONG)atoi(buffer);
+    }
+    memset(buffer, 0, sizeof(buffer));
+    if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_PAM_LoggerEnable" , buffer, sizeof( buffer ) ) &&  ( buffer[0] != '\0' ) )
+    {
+        PAM_RDKLogEnable = (BOOL)atoi(buffer);
+    }
+    CcspTraceInfo(("PAM_DBG:-------Log Info values RDKLogEnable:%d,RDKLogLevel:%u,PAM_RDKLogLevel:%u,PAM_RDKLogEnable:%d\n",RDKLogEnable,RDKLogLevel,PAM_RDKLogLevel, PAM_RDKLogEnable ));
     // printf("Calling Docsis\n");
 
     // ICC_init();
