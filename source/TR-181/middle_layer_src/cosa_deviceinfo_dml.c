@@ -158,6 +158,13 @@ static BOOL g_clearDB = false;
 // ATOM IP length
 #define IP_LEN 20
 
+#ifdef COLUMBO_HWTEST
+//RDKB-33114: Default values defined here due to objects not being persistent by design
+#define DEFAULT_HWST_PTR_CPU_THRESHOLD 80
+#define DEFAULT_HWST_PTR_DRAM_THRESHOLD 20
+#define DEFAULT_HWST_PTR_FREQUENCY 720
+#endif
+
 #if defined(_COSA_INTEL_XB3_ARM_)
 #if defined(_LXY_CXB3_ATOM_IP_)
 #define ATOM_IP "169.254.101.2"
@@ -17305,6 +17312,11 @@ HwHealthTest_GetParamUlongValue
     {
 #ifdef COLUMBO_HWTEST
         *puLong = pMyObject->HwHealtTestPTR.CPUThreshold;
+        if(0 == *puLong)
+        {
+            //Value is not set. Hence using default value
+            *puLong = DEFAULT_HWST_PTR_CPU_THRESHOLD;
+        }
         return TRUE;
 #else
         *puLong = 0;
@@ -17315,6 +17327,11 @@ HwHealthTest_GetParamUlongValue
     {
 #ifdef COLUMBO_HWTEST
         *puLong = pMyObject->HwHealtTestPTR.DRAMThreshold;
+        if(0 == *puLong)
+        {
+            //Value is not set. Hence using default value
+            *puLong = DEFAULT_HWST_PTR_DRAM_THRESHOLD;
+        }
         return TRUE;
 #else
         *puLong = 0;
@@ -17651,6 +17668,11 @@ HwHealthTestPTRFrequency_GetParamUlongValue
     {
 #ifdef COLUMBO_HWTEST
         *puLong = pMyObject->HwHealtTestPTR.Frequency;
+        if(0 == *puLong)
+        {
+            //Value is not set. Hence using default value
+            *puLong = DEFAULT_HWST_PTR_FREQUENCY;
+        }
         return TRUE;
 #else
         *puLong = 0;
