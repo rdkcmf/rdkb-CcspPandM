@@ -6214,8 +6214,10 @@ Pool_SetParamIntValue
             weeks=iValue/604800;
             forever=-1;
         */
-        if((iValue>=0) && (iValue<MINSECS))
-            return FALSE;
+        if((iValue>=0) && (iValue<MINSECS)){
+		Dhcpv4_Lan_MutexUnLock();
+		return FALSE;
+	}
         if((iValue%WEEKS==0)  ||
             (iValue%DAYS==0)  ||
             (iValue%HOURS==0) || 
