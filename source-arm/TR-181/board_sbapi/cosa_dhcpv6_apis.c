@@ -3638,8 +3638,9 @@ static int format_dibbler_option(char *option)
         return -1;
 
     unsigned int i;
+    size_t len = strlen(option);
 
-    for (i = 0; i < strlen(option); i++) {
+    for (i = 0; i < len; i++) {
         if(option[i] == ' ')
             option[i] = ',';
     }
