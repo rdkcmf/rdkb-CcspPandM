@@ -177,8 +177,6 @@ CosaDeviceInfoInitialize
 	AnscCopyString( pMyObject->FirmwareDownloadStartedNotification, "0" );
 	AnscCopyString( pMyObject->DeviceManageableNotification, "0" );
 
-	CosaDmlGiGetCustomDataModelEnabled(NULL, &pMyObject->CustomDataModelEnabled);
-
 	//Get TR69CertLocation
 	CosaDmlDiGetSyndicationTR69CertLocation( (ANSC_HANDLE)pMyObject,
 											  pMyObject->TR69CertLocation.ActiveValue );

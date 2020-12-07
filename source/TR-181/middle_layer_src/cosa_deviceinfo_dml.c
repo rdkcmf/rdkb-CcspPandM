@@ -68,14 +68,9 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "ansc_platform.h"
 #include "cosa_deviceinfo_dml.h"
 #include "dml_tr181_custom_cfg.h"
 #include "cimplog.h"
-#include "cosa_deviceinfo_apis.h"
-#include "cosa_deviceinfo_internal.h"
-#include "ccsp/platform_hal.h"
-#include <syscfg/syscfg.h>
 
 #if defined (_XB6_PRODUCT_REQ_)
 #include "bt_hal.h"
@@ -272,12 +267,6 @@ DeviceInfo_GetParamBoolValue
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_OnBoarding_DeleteLogs", TRUE))
     {
         *pBool = FALSE ;
-        return TRUE;
-    }
-
-    if (AnscEqualString(ParamName, "CustomDataModelEnabled", TRUE))
-    {
-        CosaDmlGiGetCustomDataModelEnabled(NULL, pBool);
         return TRUE;
     }
 
@@ -830,7 +819,6 @@ DeviceInfo_SetParamBoolValue
         BOOL                        bValue
     )
 {
-    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     BOOL                            bReturnValue;
 #if defined(_PLATFORM_RASPBERRYPI_)
     id =getuid();    
@@ -887,12 +875,6 @@ DeviceInfo_SetParamBoolValue
             AnscCopyString(cmd, "sh /rdklogger/onboardLogUpload.sh delete &");
             system(cmd);
         }
-        return TRUE;
-    }
-
-    if( AnscEqualString(ParamName, "CustomDataModelEnabled", TRUE))
-    {
-        pMyObject->CustomDataModelEnabled = bValue;
         return TRUE;
     }
 
@@ -1796,7 +1778,6 @@ DeviceInfo_Commit
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     
     CosaDmlDiSetProvisioningCode(NULL, pMyObject->ProvisioningCode);
-    CosaDmlGiSetCustomDataModelEnabled(NULL, pMyObject->CustomDataModelEnabled);
     
     return 0;
 }

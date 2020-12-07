@@ -99,7 +99,6 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
 	BOOL		FirmwareDownloadCompletedNotification;
 	CHAR 		FirmwareDownloadStartedNotification[64];
 	CHAR 		DeviceManageableNotification[64];
-	BOOL            CustomDataModelEnabled;
 	COSA_BOOTSTRAP_STR 		TR69CertLocation;
 	CHAR 		PartnerID[64];
 	COSA_BOOTSTRAP_BOOL		bWANsideSSHEnable;
