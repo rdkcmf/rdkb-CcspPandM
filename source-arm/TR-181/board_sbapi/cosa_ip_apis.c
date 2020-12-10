@@ -2344,6 +2344,7 @@ CosaDmlIpIfReset
 
         if (strstr((char *)g_ipif_names[ulInstanceNumber-1], "lan0"))
         {
+	    CcspTraceWarning(("%s: setting lan-restart\n", __FUNCTION__));
             system("sysevent set lan-restart");
         }
         else if (strstr((char *)g_ipif_names[ulInstanceNumber-1],INTERFACE))
