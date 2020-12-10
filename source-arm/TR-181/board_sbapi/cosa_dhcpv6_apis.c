@@ -7577,6 +7577,7 @@ dhcpv6c_dbg_thrd(void * in)
                             _ansc_sprintf(cmd, "%d", pref_len);
                             commonSyseventSet("lan_prefix_v6", cmd);
 
+			    CcspTraceWarning(("%s: setting lan-restart\n", __FUNCTION__));
                             commonSyseventSet("lan-restart", "1");
                         }
 #endif
@@ -7689,7 +7690,8 @@ dhcpv6c_dbg_thrd(void * in)
                             commonSyseventSet("lan_ipaddr_v6", globalIP);
                             _ansc_sprintf(cmd, "%d", pref_len);
                             commonSyseventSet("lan_prefix_v6", cmd);
-
+			    
+			    CcspTraceWarning(("%s: setting lan-restart\n", __FUNCTION__));
                             commonSyseventSet("lan-restart", "1");
                         }
 #endif

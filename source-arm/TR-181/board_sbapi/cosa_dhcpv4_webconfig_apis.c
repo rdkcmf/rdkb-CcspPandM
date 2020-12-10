@@ -1153,6 +1153,7 @@ pErr Process_Lan_WebConfigRequest(void *Data)
                 pErrRetVal->ErrorCode = COSA_SYNCHRONIZE_FAILED;
                 strncpy(pErrRetVal->ErrorMsg,"Sync with Cosa object failure",sizeof(pErrRetVal->ErrorMsg)-1);
             }
+	    CcspTraceWarning(("%s: setting lan-restart\n", __FUNCTION__));
             system("sysevent set lan-restart");
             system("sysevent set dhcp_server-restart");
         }
@@ -1172,6 +1173,7 @@ int rollback_Lan()
     ret = Dhcpv4_Cache_ApplyAllToDb(g_dhcpv4bkup_cache,g_numOfbkupCacheParam);
     ret = Dhcpv4_Lan_Synchronize();
     Dhcpv4_Lan_MutexUnLock();
+    CcspTraceWarning(("%s: setting lan-restart\n", __FUNCTION__));
     system("sysevent set lan-restart");
     system("sysevent set dhcp_server-restart");
     CcspTraceWarning((" Success %s \n",__FUNCTION__));
