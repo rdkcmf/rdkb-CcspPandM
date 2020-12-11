@@ -1274,7 +1274,7 @@ TelemetryEndpoint_SetParamBoolValue
  BOOL                        bValue
  )
 {
-    if (IsBoolSame(hInsContext, ParamName, bValue, Telemetry_GetParamBoolValue))
+    if (IsBoolSame(hInsContext, ParamName, bValue, TelemetryEndpoint_GetParamBoolValue))
         return TRUE;
 
     if( AnscEqualString(ParamName, "Enable", TRUE))
