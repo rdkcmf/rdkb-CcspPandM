@@ -1115,6 +1115,27 @@ User_SetParamUlongValue
     return:     TRUE if succeeded.
 
 **********************************************************************/
+
+BOOL isvalid_pwd(char *str)
+{
+    #define LEN_MIN 8
+    #define LEN_MAX 20
+    int len,i=0;
+    if(str==NULL)
+        return FALSE;
+    len=strlen(str);
+    if(len<LEN_MIN || len>LEN_MAX)
+        return FALSE;
+    while(str[i]!='\0')
+    {
+        if(isalnum(str[i])!=0)
+            i++;
+        else
+            return FALSE;
+    }
+    return TRUE;
+}
+
 BOOL
 User_SetParamStringValue
     (
@@ -1178,19 +1199,33 @@ User_SetParamStringValue
 	{
 		unsigned int ret=0;
 		char resultBuffer[32]= {'\0'};
-		user_hashandsavepwd(NULL,pString,pUser);
-                //AnscCopyString(pUser->Password, pString);
-                CcspTraceInfo(("WebUi admin password is changed\n"));
+                if(isvalid_pwd(pString)){
+		    user_hashandsavepwd(NULL,pString,pUser);
+                    //AnscCopyString(pUser->Password, pString);
+                    CcspTraceInfo(("WebUi admin password is changed\n"));
+                }
+                else
+                {
+		    CcspTraceInfo(("Invalid password:only 8-20 characters allowed [A-Z,a-z,0-9]\n"));
+                    return FALSE;
+                }
 	}
 #if defined(_COSA_FOR_BCI_)
         else if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
         {
                 unsigned int ret=0;
                 char resultBuffer[32]= {'\0'};
-                user_hashandsavepwd(NULL,pString,pUser);
-                //AnscCopyString(pUser->Password, pString);
-                CcspTraceInfo(("WebUi cusadmin password is changed\n"));
-                syslog_systemlog("Password change", LOG_NOTICE, "Account %s's password changed", pUser->Username);
+		if(isvalid_pwd(pString)){
+                    user_hashandsavepwd(NULL,pString,pUser);
+                    //AnscCopyString(pUser->Password, pString);
+                    CcspTraceInfo(("WebUi cusadmin password is changed\n"));
+                    syslog_systemlog("Password change", LOG_NOTICE, "Account %s's password changed", pUser->Username);
+		}
+		else
+		{
+                    CcspTraceInfo(("Invalid password:only 8-20 characters allowed [A-Z,a-z,0-9]\n"));
+                    return FALSE;
+                }
         }
 #endif
 	else
