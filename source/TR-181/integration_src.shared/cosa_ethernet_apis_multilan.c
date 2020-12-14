@@ -76,8 +76,10 @@
 #include "linux/if.h"
 #include "linux/sockios.h"
 #include <sys/ioctl.h>
+#include <linux/errno.h>
 #include "safec_lib_common.h"
 
+extern int errno;
 /**********************************************************************
                     HELPER FUNCTION PROTOTYPES
 **********************************************************************/
@@ -94,6 +96,20 @@ BOOLEAN 			getIfAvailability( const PUCHAR name );
 /**********************************************************************
                             MAIN ROUTINES
 **********************************************************************/
+static bool isValid(char *str)
+{
+    int i;
+    int len = strlen(str);
+    for (i = 0; i <= len; i++) {
+        if (!isspace(str[i])) {
+            break;
+        }
+    }
+    if (str[i] == '\0') {
+        return false;
+    }
+    return true;
+}
 
 ANSC_STATUS
 CosaDmlEthMlanInit
@@ -1320,7 +1336,7 @@ CosaDmlEthLinkUpdateStaticLowerLayerName
 int _getMac(char* ifName, char* mac){
 
     struct ifreq ifr;
-    int skfd;
+    int skfd=-1;
     
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1330,6 +1346,12 @@ int _getMac(char* ifName, char* mac){
        return -1;
 
     AnscCopyString(ifr.ifr_name, ifName);
+    if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {
+        if (errno == ENODEV) {
+            close(skfd);
+            return -1;
+        }
+    }
     
     if (ioctl(skfd, SIOCGIFHWADDR, &ifr) < 0) {
         CcspTraceWarning(("cosa_ethernet_apis.c - getMac: Get interface %s error...\n", ifName));
@@ -1347,7 +1369,7 @@ int _getMac(char* ifName, char* mac){
 COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr)
 {
     struct ifreq ifr;
-    int skfd;
+    int skfd=-1;
     
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1357,8 +1379,15 @@ COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr)
        return -1;
 
     AnscCopyString(ifr.ifr_name, (char*)name);
+    if (!isValid((char*)name)) {
+        return -1;
+    }
     
     if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {
+        if (errno == ENODEV) {
+            close(skfd);
+            return -1;
+        }
 		
         CcspTraceWarning(("cosa_ethernet_apis.c - getIfStatus: Get interface %s error...\n", name));
         close(skfd);
@@ -1414,13 +1443,23 @@ static int setIfStatus(struct ifreq *pIfr)
 BOOLEAN getIfAvailability( const PUCHAR name )
 {
     struct ifreq ifr;
-    int skfd;
+    int skfd=-1;
     
     AnscTraceFlow(("%s... name %s\n", __FUNCTION__,name));
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
 
     AnscCopyString(ifr.ifr_name, (char *)name);
+    if (!isValid((char*)name)) {
+        return -1;
+    }
+    
+    if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {
+        if (errno == ENODEV) {
+            close(skfd);
+            return -1;
+        }
+    }
     
     if (ioctl(skfd, SIOCGIFINDEX, &ifr) < 0) {
 		
