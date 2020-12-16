@@ -173,9 +173,6 @@ rfCpInterface()
         done
         echo_t "Restart events triggered to come out from RF CP"
         /etc/revert_redirect.sh rfcp &
-     else
-        echo_t "Restart events triggered to come out from RF CP"
-        /etc/revert_redirect.sh rfcp &
      fi 
   else
     syscfg set rf_captive_portal false

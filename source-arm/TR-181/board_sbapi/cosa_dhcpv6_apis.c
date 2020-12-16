@@ -3262,7 +3262,8 @@ static int _dibbler_server_operation(char * arg)
     char out[256] = {0};
     ULONG Index  = 0;
     int fd = 0;
-
+    
+    CcspTraceInfo(("%s:%d\n",__FUNCTION__, __LINE__));
     if (!strncmp(arg, "stop", 4))
     {
         /*stop the process only if it is started*/
@@ -3272,13 +3273,15 @@ static int _dibbler_server_operation(char * arg)
         #endif
         fd = open(DHCPV6S_SERVER_PID_FILE, O_RDONLY);
         if (fd >= 0) {
-            fprintf(stderr, "%s -- %d stop\n", __FUNCTION__, __LINE__);
+            CcspTraceInfo(("%s:%d stop dibbler.\n",__FUNCTION__, __LINE__));
+            //fprintf(stderr, "%s -- %d stop\n", __FUNCTION__, __LINE__);
             sprintf(cmd, "%s stop >/dev/null", SERVER_BIN);
             system(cmd);
             close(fd);
         }else{
             //this should not happen.
-            fprintf(stderr, "%s -- %d server is not running. \n", __FUNCTION__, __LINE__);
+            CcspTraceInfo(("%s:%d No PID server is not running.\n",__FUNCTION__, __LINE__));
+            //fprintf(stderr, "%s -- %d server is not running. \n", __FUNCTION__, __LINE__);
         }
     }
     else if (!strncmp(arg, "start", 5))
@@ -3301,7 +3304,8 @@ static int _dibbler_server_operation(char * arg)
     
         if (g_dhcpv6_server_prefix_ready && g_lan_ready)
         {
-            fprintf(stderr, "%s -- %d start %d\n", __FUNCTION__, __LINE__, g_dhcpv6_server);
+            CcspTraceInfo(("%s:%d start dibbler %d\n",__FUNCTION__, __LINE__,g_dhcpv6_server));
+            //fprintf(stderr, "%s -- %d start %d\n", __FUNCTION__, __LINE__, g_dhcpv6_server);
 
             #if defined (_HUB4_PRODUCT_REQ_)
                 g_dhcpv6_server_started = TRUE;
@@ -3313,6 +3317,7 @@ static int _dibbler_server_operation(char * arg)
     }
     else if (!strncmp(arg, "restart", 7))
     {
+        CcspTraceInfo(("%s:%d restart dibbler.\n",__FUNCTION__, __LINE__));
         _dibbler_server_operation("stop");
 	_dibbler_server_operation("start");
     }
@@ -6875,7 +6880,7 @@ void CosaDmlDhcpv6sRebootServer()
 
         //when need stop, it's supposed the configuration file need to be updated.
         _cosa_dhcpsv6_refresh_config();
-
+        CcspTraceInfo(("%s - Call _dibbler_server_operation stop\n",__FUNCTION__));
         _dibbler_server_operation("stop");
     }
 
@@ -6895,7 +6900,7 @@ void CosaDmlDhcpv6sRebootServer()
             system(cmd);
 	    sleep(1);
         }
-	
+        CcspTraceInfo(("%s - Call _dibbler_server_operation start\n",__FUNCTION__));
         _dibbler_server_operation("start");
     } else{
         close(fd);
