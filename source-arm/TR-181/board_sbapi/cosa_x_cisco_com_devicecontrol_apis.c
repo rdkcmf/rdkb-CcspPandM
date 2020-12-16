@@ -2255,19 +2255,22 @@ CosaDmlDcSetEnableStaticNameServer
     }
 
     Utopia_SetBool(&ctx, UtopiaValue_WAN_EnableStaticNameServer, bEnabled);
-
+    Utopia_Free(&ctx, 1);
+    
     //get nameservers by DHCP if static nameservers not enabled on GUI
     if(!bFlag)
+    {
+	// Call set_resolv_conf to delete static dns entries from dns server
+        vsystem("/bin/sh /etc/utopia/service.d/set_resolv_conf.sh");
         commonSyseventSet("wan-restart", "");
+    }
     else{
         CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
         if (vsystem("/bin/sh /etc/utopia/service.d/set_resolv_conf.sh") != 0) {
-            Utopia_Free(&ctx, 1);
             fprintf(stderr, "%s: fail to set resolv.conf\n", __FUNCTION__);
             return ANSC_STATUS_FAILURE;
         }
     }
-    Utopia_Free(&ctx, 1);
 
     return ANSC_STATUS_SUCCESS;
 }
