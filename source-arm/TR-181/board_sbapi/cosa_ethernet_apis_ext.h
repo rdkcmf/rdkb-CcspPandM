@@ -50,12 +50,12 @@
 #define SWITCH_PORT_3_NAME "sw_4"
 
 // Original Code Assumed Four Physical Ethernet Ports. Set to that for backwards compatibility. 
-#if !(defined (ETH_8_PORTS) || defined (ETH_4_PORTS) || defined (ETH_2_PORTS) )
+#if !(defined (ETH_8_PORTS) || defined (ETH_6_PORTS) || defined (ETH_4_PORTS) || defined (ETH_2_PORTS) )
 #warning "Number of Ethernet Poarts NOT DEFINED. Setting to 4 Ports
 #define ETH_4_PORTS
 #endif
 
-#if defined (ETH_8_PORTS) ||  ( defined(INTEL_PUMA7) && !defined(_ARRIS_XB6_PRODUCT_REQ_) )
+#if defined (ETH_8_PORTS) || defined (ETH_6_PORTS) ||  ( defined(INTEL_PUMA7) && !defined(_ARRIS_XB6_PRODUCT_REQ_) )
     #define SWITCH_PORT_4_NAME "sw_5"
     #define SWITCH_PORT_5_NAME "sw_6"
     #define SWITCH_PORT_6_NAME "sw_7"
