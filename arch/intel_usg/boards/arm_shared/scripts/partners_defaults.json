@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "5.7"
+      "version" : "5.8"
    },
 
    "comcast" : {
@@ -66,7 +66,8 @@
       "Device.Time.NTPServer4" : "time4.xfinity.com",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile.xdp.comcast.net/api/v1/device/{mac}/config"
   },
 
  "RDKM" : {
@@ -126,7 +127,8 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
   },
 
    "sky-italia" : {
@@ -186,7 +188,8 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
    },
 
 
@@ -247,7 +250,8 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
    },
 
 
@@ -308,7 +312,8 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
    },
 
 
@@ -369,7 +374,8 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
    },
 
 
@@ -430,7 +436,8 @@
       "Device.Time.NTPServer4" : "ntp3.shawcable.net",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
    },
 
 "videotron" : {
@@ -490,7 +497,8 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
    },
 "axb3retail" : {
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink" : "http://www.surfboard.com",
@@ -548,7 +556,8 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
   },
    "unknown" : {
 
@@ -606,7 +615,8 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
    }
 
 }
