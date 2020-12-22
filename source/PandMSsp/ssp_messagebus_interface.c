@@ -83,6 +83,164 @@ int ssp_PnmMbi_GetHealth ( )
 }
 
 #ifdef _ANSC_LINUX
+
+#if defined(_CBR_PRODUCT_REQ_)
+
+static char *BssMax = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.BssMaxNumSta";
+
+void* CbrRemoveParam_Thread(void* arg)
+{
+    UNREFERENCED_PARAMETER(arg);
+    char recName[256]={0};
+    char strValue[30]={0};
+    int  instance = 16;
+    int  inst_value = 15;
+    int retPsmSet = CCSP_SUCCESS;
+
+     memset(recName, 0, sizeof(recName));
+     sprintf(recName, BssMax, instance);
+     sprintf(strValue,"%d", inst_value);
+     retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, strValue);
+     if (retPsmSet != CCSP_SUCCESS) {
+              CcspTraceWarning(("%s: PSM Set record failed %s \n", __FUNCTION__, g_Subsystem));
+     }
+
+     return NULL;
+    
+}
+#endif
+
+#if defined (_BWG_PRODUCT_REQ_)
+static char *AllowDelete = "dmsb.l2net.5.AllowDelete";
+static char *Name = "dmsb.l2net.5.Name";
+static char *Vid = "dmsb.l2net.5.Vid";
+static char *PriorityTag = "dmsb.l2net.5.PriorityTag";
+static char *Enable = "dmsb.l2net.5.Enable";
+static char *Alias = "dmsb.l2net.5.Alias";
+static char *Standard = "dmsb.l2net.5.Standard";
+static char *InstanceNum = "dmsb.l2net.5.InstanceNum";
+static char *Type = "dmsb.l2net.5.Type";
+static char *SW = "dmsb.l2net.5.Members.SW";
+static char *Eth = "dmsb.l2net.5.Members.Eth";
+static char *Moca = "dmsb.l2net.5.Members.Moca";
+static char *WiFi = "dmsb.l2net.5.Members.WiFi";
+static char *Link = "dmsb.l2net.5.Members.Link";
+static char *Gre = "dmsb.l2net.5.Members.Gre";
+
+static char *Alias_2 = "dmsb.l2net.5.Vlan.1.Alias";
+static char *InstanceNum_2 = "dmsb.l2net.5.Vlan.1.InstanceNum";
+
+static char *AllowDelete_2 = "dmsb.l2net.5.Port.%d.AllowDelete";
+static char *Pvid = "dmsb.l2net.5.Port.%d.Pvid";
+static char *PriorityTag_2 = "dmsb.l2net.5.Port.%d.PriorityTag";
+static char *Enable_2 = "dmsb.l2net.5.Port.%d.Enable";
+static char *Alias_3 = "dmsb.l2net.5.Port.%d.Alias";
+static char *Name_2 = "dmsb.l2net.5.Port.%d.Name";
+static char *LinkName = "dmsb.l2net.5.Port.%d.LinkName";
+static char *LinkType = "dmsb.l2net.5.Port.%d.LinkType";
+static char *Management = "dmsb.l2net.5.Port.%d.Management";
+static char *Mode = "dmsb.l2net.5.Port.%d.Mode";
+static char *InstanceNum_3 = "dmsb.l2net.5.Port.%d.InstanceNum";
+static char *Upstream = "dmsb.l2net.5.Port.%d.Upstream";
+
+static char *BssMax = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.BssMaxNumSta";
+
+BOOL BwgRemoveParam_Thread(void* arg)
+{
+    UNREFERENCED_PARAMETER(arg);
+    char recName[256]={0};
+    char strValue[30]={0};
+    int count = 3, instance = 16;
+    int i = 0, inst_value = 15;
+    int retPsmSet = CCSP_SUCCESS;
+    CcspTraceWarning(("%s: PSM_Del record %s \n", __FUNCTION__, g_Subsystem));
+
+    system("touch /tmp/BwgRemoveFlag");
+    
+    PSM_Del_Record(bus_handle,g_Subsystem,AllowDelete);
+    PSM_Del_Record(bus_handle,g_Subsystem,Name);
+    PSM_Del_Record(bus_handle,g_Subsystem,Vid);
+    PSM_Del_Record(bus_handle,g_Subsystem,PriorityTag);
+    PSM_Del_Record(bus_handle,g_Subsystem,Enable);
+    PSM_Del_Record(bus_handle,g_Subsystem,Alias);
+    PSM_Del_Record(bus_handle,g_Subsystem,Standard);
+    PSM_Del_Record(bus_handle,g_Subsystem,InstanceNum);
+    PSM_Del_Record(bus_handle,g_Subsystem,Type);
+    PSM_Del_Record(bus_handle,g_Subsystem,SW);
+    PSM_Del_Record(bus_handle,g_Subsystem,Eth);
+    PSM_Del_Record(bus_handle,g_Subsystem,Moca);
+    PSM_Del_Record(bus_handle,g_Subsystem,WiFi);
+    PSM_Del_Record(bus_handle,g_Subsystem,Link);
+    PSM_Del_Record(bus_handle,g_Subsystem,Gre);
+    PSM_Del_Record(bus_handle,g_Subsystem,Alias_2);
+    PSM_Del_Record(bus_handle,g_Subsystem,InstanceNum_2);
+
+ 
+      
+    for (i = 1; i <= count; i++)
+    {
+        memset(recName, 0, sizeof(recName));
+        sprintf(recName, AllowDelete_2, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+
+        memset(recName, 0, sizeof(recName));
+        sprintf(recName, Pvid, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        
+        memset(recName, 0, sizeof(recName));
+        sprintf(recName, PriorityTag_2, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+    
+        memset(recName, 0, sizeof(recName));
+        sprintf(recName, Enable_2, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+
+        memset(recName, 0, sizeof(recName)); 
+        sprintf(recName, Alias_3, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        
+        memset(recName, 0, sizeof(recName)); 
+        sprintf(recName, Name_2, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+
+        memset(recName, 0, sizeof(recName)); 
+        sprintf(recName, LinkName, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+
+        memset(recName, 0, sizeof(recName)); 
+        sprintf(recName, LinkType, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+    
+        memset(recName, 0, sizeof(recName)); 
+        sprintf(recName, Management, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        
+        memset(recName, 0, sizeof(recName)); 
+        sprintf(recName, Mode, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+     
+        memset(recName, 0, sizeof(recName)); 
+        sprintf(recName, InstanceNum_3, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+
+        memset(recName, 0, sizeof(recName)); 
+        sprintf(recName, Upstream, count);
+        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+
+     }
+     memset(recName, 0, sizeof(recName)); 
+     sprintf(recName, BssMax, instance);
+     sprintf(strValue,"%d", inst_value);
+     retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, strValue);
+     if (retPsmSet != CCSP_SUCCESS) {
+              CcspTraceWarning(("%s: PSM Set record failed %s \n", __FUNCTION__, g_Subsystem));
+     }    
+
+    return 1;
+}
+
+#endif
+
 ANSC_STATUS
 ssp_PnmMbi_MessageBusEngage
     (
@@ -132,6 +290,38 @@ ssp_PnmMbi_MessageBusEngage
     waitConditionReady(bus_handle, PsmName, CCSP_DBUS_PATH_PSM, component_id);
 
     CcspTraceInfo(("!!! Connected to message bus... bus_handle: 0x%08X !!!\n", bus_handle));
+
+#if defined (_BWG_PRODUCT_REQ_)
+
+    if(fopen("/tmp/BwgRemoveFlag","r")==NULL)
+    {
+            CcspTraceWarning(("%s: PSM_Del thread \n", __FUNCTION__));
+            pthread_t bwg_thread;
+            int err = pthread_create(&bwg_thread, NULL, BwgRemoveParam_Thread, NULL);
+            if(0 != err)
+            {   
+                CcspTraceError(("%s: Error in creating BwgRemoveParam_Thread \n", __FUNCTION__));
+            }   
+            else
+                pthread_detach(bwg_thread);
+    }
+
+#endif
+
+#if defined(_CBR_PRODUCT_REQ_)
+    if(fopen("/tmp/CbrRemoveFlag","r")==NULL)
+    {
+            CcspTraceWarning(("%s: CBR PSM_Del thread \n", __FUNCTION__));
+            pthread_t cbr_thread;
+            int err = pthread_create(&cbr_thread, NULL, CbrRemoveParam_Thread, NULL);
+            if(0 != err)
+            {   
+                CcspTraceError(("%s: Error in creating CBR RemoveParam_Thread \n", __FUNCTION__));
+            }   
+            else
+                pthread_detach(cbr_thread);
+    }
+#endif
 
     CCSP_Msg_SleepInMilliSeconds(1000);
 
