@@ -650,12 +650,6 @@ Interface_GetParamStringValue
     char assocDeviceMacList[(17 * ETH_INTERFACE_MAX_ASSOC_DEVICES) + 1];
     int numAssocDev = 0;
 
-#if defined(INTEL_PUMA7)
-
-     CcspTraceWarning(("Interface_GetParamStringValue parameter '%s'\n", ParamName));
-     CcspTraceWarning(("Interface_GetParamStringValue parameter '%s'\n", pEthernetPortFull));
-
-#endif
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
