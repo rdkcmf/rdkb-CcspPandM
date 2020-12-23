@@ -430,27 +430,29 @@ DeviceInfo_SetParamBoolValue_Custom
 		printf("Wi-Fi SSID and Passphrase are not configured,setting ConfigureWiFi to true ...\n");
 		pMyObject->bWiFiConfigued = bValue;
 
-#if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_)
 		char buf[5];
 		syscfg_get( NULL, "CaptivePortal_Enable" , buf, sizeof(buf));
 		if( buf != NULL )
 		{
 		    if (strcmp(buf,"true") == 0)
 		    {
+#if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_)
 			if ( ANSC_STATUS_SUCCESS == CosaDmlSetLED(WHITE, BLINK, 1) )
 				CcspTraceInfo(("Front LED Transition: WHITE LED will blink, Reason: CaptivePortal_MODE\n"));
+#endif
+			    //if CaptivePortal_Enable is true, Then only we need to run redirect_url.sh
+			    printf("%s calling redirect_url.sh script to start redirection\n",__FUNCTION__);
+			    system("source /etc/redirect_url.sh &");
+			    return TRUE;
 		    }
+#if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_)
 		    else
 		    {
 			if ( ANSC_STATUS_SUCCESS == CosaDmlSetLED(WHITE, SOLID, 0) )
 				CcspTraceInfo(("Front LED Transition: WHITE LED will be SOLID, Reason: ConfigureWiFi is TRUE, but CaptivePortal is disabled\n"));
 		    }
-		}
 #endif
-
-		printf("%s calling redirect_url.sh script to start redirection\n",__FUNCTION__);
-		system("source /etc/redirect_url.sh &");
-		return TRUE;
+		}
 	 }
 	
          else if  ( bValue == FALSE )
