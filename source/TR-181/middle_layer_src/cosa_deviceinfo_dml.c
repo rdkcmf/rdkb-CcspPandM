@@ -11413,7 +11413,7 @@ WiFiPasspoint_GetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(_COSA_INTEL_XB3_ARM_) || (defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_))
+#if defined (FEATURE_SUPPORT_PASSPOINT)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 	/* Collect Value */
@@ -11478,7 +11478,7 @@ WiFiPasspoint_SetParamBoolValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
 
-#if defined(_COSA_INTEL_XB3_ARM_) || (defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_))
+#if defined (FEATURE_SUPPORT_PASSPOINT)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 	char str[2];
