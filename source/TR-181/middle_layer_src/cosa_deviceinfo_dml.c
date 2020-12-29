@@ -80,6 +80,7 @@
 #include "cosa_deviceinfo_internal.h"
 #include "ccsp/platform_hal.h"
 #include <syscfg/syscfg.h>
+#include <sys/statvfs.h>
 
 #if defined (_XB6_PRODUCT_REQ_)
 #include "bt_hal.h"
@@ -179,6 +180,7 @@ char* get_firmware_download_start_time();
 #define DEFAULT_HWST_PTR_CPU_THRESHOLD 80
 #define DEFAULT_HWST_PTR_DRAM_THRESHOLD 20
 #define DEFAULT_HWST_PTR_FREQUENCY 720
+#define HWSELFTEST_START_MIN_SPACE (200*1024) //200KB
 #endif
 
 #if defined(_COSA_INTEL_XB3_ARM_)
@@ -262,6 +264,19 @@ int get_deviceinfo_from_name(char *name, enum pString_val *type_ptr)
       }
   }
   return 0;
+}
+
+unsigned long long GetAvailableSpace_tmp()
+{
+    //Check if there is enough space to atleast start HHT.
+    unsigned long long result = 0;
+    struct statvfs sfs;
+    if(statvfs("/tmp", &sfs) != -1)
+    {
+        result = (unsigned long long)sfs.f_bsize * sfs.f_bavail;
+        CcspTraceInfo(("%lu space left in tmp\n", result));
+    }
+    return result;
 }
 
 void UpdateSettingsFile( char param[64], char value[10] )
@@ -18219,6 +18234,14 @@ HwHealthTest_SetParamUlongValue
         return FALSE;
     }
 
+#ifdef COLUMBO_HWTEST
+    if(GetAvailableSpace_tmp() < HWSELFTEST_START_MIN_SPACE)
+    {
+        CcspTraceError(("\nNot enough space in DRAM to save the threshold value in .hwselftest_settings file. Exit\n"));
+        return FALSE;
+    }
+#endif
+
     //Check if the new value is same as the old. If so, it is
     //not required to update settings file.
     if (IsUlongSame(hInsContext, ParamName, uLong, HwHealthTest_GetParamUlongValue))
@@ -18380,6 +18403,14 @@ HwHealthTestPTREnable_SetParamBoolValue
     {
         return FALSE;
     }
+
+#ifdef COLUMBO_HWTEST
+    if(GetAvailableSpace_tmp() < HWSELFTEST_START_MIN_SPACE)
+    {
+        CcspTraceError(("\nNot enough space in DRAM to enable PTR. Exit\n"));
+        return FALSE;
+    }
+#endif
 
     if (IsBoolSame(hInsContext, ParamName, bValue, HwHealthTestPTREnable_GetParamBoolValue))
         return TRUE;
@@ -18560,6 +18591,15 @@ HwHealthTestPTRFrequency_SetParamUlongValue
     {
         return FALSE;
     }
+
+#ifdef COLUMBO_HWTEST
+    if(GetAvailableSpace_tmp() < HWSELFTEST_START_MIN_SPACE)
+    {
+        CcspTraceError(("\nNot enough space in DRAM to save the value for PTR frequency in .hwselftest_settings file. Exit\n"));
+        return FALSE;
+    }
+#endif
+
     //Check if the new value is same as the old. If so, it is
     //not required to update settings file.
     if (IsUlongSame(hInsContext, ParamName, uLong, HwHealthTestPTRFrequency_GetParamUlongValue))

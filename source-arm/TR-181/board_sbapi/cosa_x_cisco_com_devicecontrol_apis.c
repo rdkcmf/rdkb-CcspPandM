@@ -2203,7 +2203,24 @@ CosaDmlDcSetFactoryReset
                         }
                 }
 #endif //_MACSEC_SUPPORT_
-
+#ifdef COLUMBO_HWTEST
+                /*
+                 * RDKB-31738: HHT Enhancements
+                 * As per AC 5, if there is no space in /tmp to write the HHT results,
+                 * the results should be saved into /nvram.
+                 * This results file will get removed in the next HHT run if there is
+                 * space in /tmp directory OR if a FactoryReset is performed.
+                 */
+                FILE *resFile = fopen("/nvram/hwselftest.results","r");
+                if(resFile)
+                {
+                    fclose(resFile);
+                    if(remove("/nvram/hwselftest.results") != 0)
+                    {
+                        CcspTraceWarning(("FactoryReset:Could not remove HardwareHealthTest results file from nvram\n"));
+                    }
+                }
+#endif
                 if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", "1") != 0))
                 {
                         AnscTraceWarning(("syscfg_set failed\n"));
