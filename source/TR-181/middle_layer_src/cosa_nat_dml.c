@@ -1691,6 +1691,8 @@ PortMapping_AddEntry
         goto EXIT;
     }
 
+    NAT_PORTMAPPING_SET_DEFAULTVALUE(pNatPMapping);
+
     /* now we have this link content */
     pPMappingCxtLink->hContext = (ANSC_HANDLE)pNatPMapping;
     pPMappingCxtLink->bNew     = TRUE;
