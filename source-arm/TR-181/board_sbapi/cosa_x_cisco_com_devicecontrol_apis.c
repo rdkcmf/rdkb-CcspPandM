@@ -4198,7 +4198,13 @@ static void configBridgeMode(int bEnable) {
         }
 #elif (!defined _XF3_PRODUCT_REQ_)
         g_SetParamValueBool(brpdm, bEnable);
-        vsystem("/bin/sh /etc/webgui.sh &");
+	 /* RDKB-32831 Trigger only router mode from here, 
+	  *  webgui.sh will be triggeed from Gwprovapp after bridge is started.
+	  */
+        if (brmode[0] == '0')
+	{
+           vsystem("/bin/sh /etc/webgui.sh &");
+	}
 #elif defined( _XF3_PRODUCT_REQ_)
         g_SetParamValueBool(brpdm, (bEnable>0?true:false));
 #endif
