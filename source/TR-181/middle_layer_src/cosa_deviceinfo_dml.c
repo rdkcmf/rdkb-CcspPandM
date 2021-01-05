@@ -8740,6 +8740,8 @@ Feature_SetParamBoolValue
                     system("sysevent set multinet-restart 1");
 #endif
                     system("killall MRD; killall smcroute;igmpproxy -c /tmp/igmpproxy.conf &");
+
+                    system("sh /usr/ccsp/moca/MoCA_isolation.sh &");
                 }
 	}
 	//else
