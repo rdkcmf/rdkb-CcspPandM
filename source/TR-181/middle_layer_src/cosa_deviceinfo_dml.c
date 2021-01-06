@@ -19084,6 +19084,10 @@ NonRootSupport_SetParamBoolValue
               } 
           }
 
+       if( bValue )
+           commonSyseventSet("NonRootSupport", "1");
+       else
+           commonSyseventSet("NonRootSupport", "0");
           return TRUE;
      }
   }
