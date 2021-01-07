@@ -3675,14 +3675,19 @@ ANSC_STATUS UpdateJsonParam
 
 static int writeToJson(char *data, char *file)
 {
+    if (file == NULL || data == NULL)
+    {
+        CcspTraceWarning(("%s : %d Invalid input parameter", __FUNCTION__,__LINE__));
+        return -1;
+    }
     FILE *fp;
     fp = fopen(file, "w");
-    if (fp == NULL) 
+    if (fp == NULL ) 
     {
         CcspTraceWarning(("%s : %d Failed to open file %s\n", __FUNCTION__,__LINE__,file));
         return -1;
     }
-    
+
     fwrite(data, strlen(data), 1, fp);
     fclose(fp);
     return 0;
