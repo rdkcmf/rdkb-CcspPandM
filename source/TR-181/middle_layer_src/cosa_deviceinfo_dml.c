@@ -10106,7 +10106,7 @@ BOOL                        bValue
 {
     if (IsBoolSame(hInsContext, ParamName, bValue, RBUS_GetParamBoolValue))
         return TRUE;
-
+#if !defined(DISABLE_RBUS)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if (bValue == 0)
@@ -10122,7 +10122,13 @@ BOOL                        bValue
             return TRUE;
         }
     }
+    return FALSE;
+#else
+    CcspTraceInfo(("RBUS is forcefully disabled\n"));
+    return TRUE;
+#endif
 }
+
 
 /**********************************************************************
 
