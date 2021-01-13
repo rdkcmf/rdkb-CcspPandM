@@ -220,7 +220,6 @@ static void ethGetClientMacDetails
     )
 {
 	int idx;
-	char mac_addr[20];
 	int isClient = 0;
 
 	if (!eth_device || !mac)
@@ -235,15 +234,13 @@ static void ethGetClientMacDetails
 		{
 			isClient++;
 			if (isClient == client_num) {
-				_ansc_memset(mac_addr, 0, 20);
-				sprintf(mac_addr, "%02X:%02X:%02X:%02X:%02X:%02X",
-						eth_device[idx].eth_devMacAddress[0],
-						eth_device[idx].eth_devMacAddress[1],
-						eth_device[idx].eth_devMacAddress[2],
-						eth_device[idx].eth_devMacAddress[3],
-						eth_device[idx].eth_devMacAddress[4],
-						eth_device[idx].eth_devMacAddress[5]);
-				strcpy(mac, mac_addr);
+				sprintf(mac, "%02X:%02X:%02X:%02X:%02X:%02X",
+					eth_device[idx].eth_devMacAddress[0],
+					eth_device[idx].eth_devMacAddress[1],
+					eth_device[idx].eth_devMacAddress[2],
+					eth_device[idx].eth_devMacAddress[3],
+					eth_device[idx].eth_devMacAddress[4],
+					eth_device[idx].eth_devMacAddress[5]);
 				return;
 			}
 		}

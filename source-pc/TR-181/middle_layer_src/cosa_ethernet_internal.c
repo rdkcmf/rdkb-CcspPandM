@@ -863,20 +863,20 @@ CosaEthPortGetAssocDevices
         int         numMacAddr
     )
 {
-    int     i = 0,j = 0;
-    char macAddr[MACADDR_SZ];
-    int size = 0;
+    int i;
 
-    maclist[0] = '\0';
+    *maclist = '\0';
 
-    for(j=0; j < numMacAddr; j++)
+    for (i = 0; i < numMacAddr; i++)
     {
-        memset(macAddr,0,sizeof(macAddr));
-        if(i > 0)
-            strcat(maclist, ",");
-        sprintf(macAddr, "%02x:%02x:%02x:%02x:%02x:%02x", mac[i], mac[i+1], mac[i+2], mac[i+3], mac[i+4], mac[i+5]);
-        strcat(maclist,macAddr);
-        i += MAC_SZ;
+        if (i > 0)
+        {
+            *maclist++ = ',';
+        }
+
+        maclist += sprintf (maclist, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+        mac += MAC_SZ;
     }
 
     return ANSC_STATUS_SUCCESS;
