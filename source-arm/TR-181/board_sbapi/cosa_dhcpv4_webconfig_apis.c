@@ -16,6 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include <ctype.h>
+
 #include "cosa_dhcpv4_webconfig_apis.h"
 #include "webconfig_framework.h"
 #include "plugin_main_apis.h"
@@ -130,44 +133,24 @@ int CheckStaticClientIpIsValid( char *ipAddress )
     return INVALID_IP;
 }
 
-BOOL CheckMacHasValidCharacter( char *pMac)
+static BOOL CheckMacHasValidCharacter (char *pMac)
 {
-    int index = 0;
-    BOOL bvalid = FALSE;  
-    if (!pMac)
-        return FALSE;
+    int i;
 
-     if (pMac[0]) {
-        if(pMac[2] == ':')
-            if(pMac[5] == ':')
-                if(pMac[8] == ':')
-                    if(pMac[11] == ':')
-                        if(pMac[14] == ':')
-                            bvalid = TRUE;
-    }
-   
-    if (TRUE == bvalid)
+    for (i = 0; i < 6; i++)
     {
-        for (index = 0; index <  MACADDR_SZ-1; ++index)
+        if ((isxdigit(pMac[0])) &&
+            (isxdigit(pMac[1])) &&
+            (pMac[2] == ((i == 5) ? 0 : ':')))
         {
-            if ((pMac[index] >= 48 && pMac[index] <= 57) ||
-                    (pMac[index] >= 65 && pMac[index] <= 70) ||
-                    (pMac[index] >= 97 && pMac[index] <= 102) ||
-                    (2 == index || 5 == index || 8 == index || 11 == index || 14 == index))
-            {
-                continue;
-            }
-            else
-            {
-                return FALSE;
-            }
-
+            pMac += 3;
+        }
+        else
+        {
+            return FALSE;
         }
     }
-    else
-    {
-        return FALSE;
-    }
+
     return TRUE;
 }
 
