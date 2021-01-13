@@ -2326,15 +2326,13 @@ static int _prepare_client_conf(PCOSA_DML_DHCPCV6_CFG       pCfg)
 
             if (pCfg->SuggestedT1)
             {
-                memset(line, 0, sizeof(line));
-                snprintf(line, sizeof(line)-1, "    t1 %lu\n", pCfg->SuggestedT1);
+                snprintf(line, sizeof(line), "    t1 %lu\n", pCfg->SuggestedT1);
                 fprintf(fp, "%s", line);
             }
 
             if (pCfg->SuggestedT2)
             {
-                memset(line, 0, sizeof(line));
-                snprintf(line, sizeof(line)-1, "    t2 %lu\n", pCfg->SuggestedT2);
+                snprintf(line, sizeof(line), "    t2 %lu\n", pCfg->SuggestedT2);
                 fprintf(fp, "%s", line);
             }
 
@@ -2347,15 +2345,13 @@ static int _prepare_client_conf(PCOSA_DML_DHCPCV6_CFG       pCfg)
 
             if (pCfg->SuggestedT1)
             {
-                memset(line, 0, sizeof(line));
-                snprintf(line, sizeof(line)-1, "    t1 %lu\n", pCfg->SuggestedT1);
+                snprintf(line, sizeof(line), "    t1 %lu\n", pCfg->SuggestedT1);
                 fprintf(fp, "%s", line);
             }
 
             if (pCfg->SuggestedT2)
             {
-                memset(line, 0, sizeof(line));
-                snprintf(line, sizeof(line)-1, "    t2 %lu\n", pCfg->SuggestedT2);
+                snprintf(line, sizeof(line), "    t2 %lu\n", pCfg->SuggestedT2);
                 fprintf(fp, "%s", line);
             }
 
@@ -2754,8 +2750,8 @@ CosaDmlDhcpv6cGetServerCfg
     *pSize = 0;
     if (fp)
     {
-        char buf[1024] = {0};
-        char val[1024] = {0};
+        char buf[1024];
+        char val[1024];
         int  entry_count = 0;
         errno_t rc = -1;
 
@@ -2767,16 +2763,15 @@ CosaDmlDhcpv6cGetServerCfg
         rc = strcpy_s((char*)(*ppCfg)->InformationRefreshTime, sizeof((*ppCfg)->InformationRefreshTime), "0001-01-01T00:00:00Z");
         ERR_CHK(rc);
         
-        while(fgets(buf, sizeof(buf)-1, fp))
+        while(fgets(buf, sizeof(buf), fp))
         {
-            memset(val, 0, sizeof(val));
-            if (sscanf(buf, "addr %s", val))
+            if (sscanf(buf, "addr %s", val) == 1)
             {
                 rc = strncpy_s((char*)(*ppCfg)->SourceAddress, sizeof((*ppCfg)->SourceAddress), val, sizeof((*ppCfg)->SourceAddress) - 1);
                 ERR_CHK(rc);
                 entry_count |= 1;
             }
-            else if (sscanf(buf, "duid %s", val))
+            else if (sscanf(buf, "duid %s", val) == 1)
             {
                 unsigned int i = 0, j = 0;
                 /*the file stores duid in this format 00:01:..., we need to transfer it to continuous hex*/
@@ -2793,8 +2788,6 @@ CosaDmlDhcpv6cGetServerCfg
             /*only we have both addr and  duid we think we have a whole server-info*/
             if (entry_count == 3)
                 *pSize = 1;
-
-            memset(buf, 0, sizeof(buf));
         }
         fclose(fp);
     }
@@ -2861,11 +2854,12 @@ CosaDmlDhcpv6cGetNumberOfSentOption
     UNREFERENCED_PARAMETER(hContext);
     UNREFERENCED_PARAMETER(ulClientInstanceNumber);
     UtopiaContext utctx = {0};
-    char out[256] = {0};
+    char out[256];
     
     if (!Utopia_Init(&utctx))
         return 0;
     
+    out[0] = 0;
     Utopia_RawGet(&utctx,NULL,"tr_dhcp6c_sent_option_num",out,sizeof(out));
     
     Utopia_Free(&utctx, 0);
@@ -2917,8 +2911,8 @@ CosaDmlDhcpv6cGetSentOption
     UNREFERENCED_PARAMETER(hContext);
     UNREFERENCED_PARAMETER(ulClientInstanceNumber);
     UtopiaContext utctx = {0};
-    char out[256] = {0};
-    char namespace[256] = {0};
+    char out[256];
+    char namespace[256];
     errno_t rc = -1;
 
     if ( (int)ulIndex > g_sent_option_num - 1  || !g_sent_options)
@@ -2935,17 +2929,17 @@ CosaDmlDhcpv6cGetSentOption
         return ANSC_STATUS_FAILURE;
     }
 
-    memset(out, 0, sizeof(out));
+    out[0] = 0;
     Utopia_RawGet(&utctx, namespace, "inst_num" ,out,sizeof(out));
     sscanf(out, "%lu", &pEntry->InstanceNumber);
 
     Utopia_RawGet(&utctx, namespace, "alias" ,(char*)pEntry->Alias, sizeof(pEntry->Alias));
 
-    memset(out, 0, sizeof(out));
+    out[0] = 0;
     Utopia_RawGet(&utctx, namespace, "enabled" ,out,sizeof(out));
     pEntry->bEnabled = (out[0] == '1') ? TRUE:FALSE;
 
-    memset(out, 0, sizeof(out));
+    out[0] = 0;
     Utopia_RawGet(&utctx, namespace, "tag" ,out,sizeof(out));
     sscanf(out, "%lu", &pEntry->Tag);
 
@@ -3001,8 +2995,8 @@ CosaDmlDhcpv6cSetSentOptionValues
 {
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
-    char out[256] = {0};
-    char namespace[256] = {0};
+    char out[16];
+    char namespace[256];
     errno_t rc = -1;
 
     if (ulClientInstanceNumber != g_dhcpv6_client.Cfg.InstanceNumber)
@@ -3028,7 +3022,7 @@ CosaDmlDhcpv6cSetSentOptionValues
         ERR_CHK(rc);
         return ANSC_STATUS_FAILURE;
     }
-    snprintf(out, sizeof(out)-1, "%lu", ulInstanceNumber);
+    snprintf(out, sizeof(out), "%lu", ulInstanceNumber);
     Utopia_RawSet(&utctx, namespace, "inst_num", out);
 
     Utopia_RawSet(&utctx, namespace, "alias" ,pAlias);
@@ -3041,8 +3035,8 @@ CosaDmlDhcpv6cSetSentOptionValues
 static int _syscfg_add_sent_option(PCOSA_DML_DHCPCV6_SENT      pEntry, int index)
 {
     UtopiaContext utctx = {0};
-    char out[256] = {0};
-    char namespace[256] = {0};
+    char out[16];
+    char namespace[256];
     errno_t rc = -1;
 
     if (!pEntry)
@@ -3056,7 +3050,7 @@ static int _syscfg_add_sent_option(PCOSA_DML_DHCPCV6_SENT      pEntry, int index
     {
         ERR_CHK(rc);
     }
-    snprintf(out, sizeof(out)-1, "%lu", pEntry->InstanceNumber);
+    snprintf(out, sizeof(out), "%lu", pEntry->InstanceNumber);
     Utopia_RawSet(&utctx, namespace, "inst_num", out );
 
     Utopia_RawSet(&utctx, namespace, "alias" ,(char*)pEntry->Alias);
@@ -3065,7 +3059,7 @@ static int _syscfg_add_sent_option(PCOSA_DML_DHCPCV6_SENT      pEntry, int index
     ERR_CHK(rc);
     Utopia_RawSet(&utctx, namespace, "enabled" ,out);
 
-    snprintf(out, sizeof(out)-1, "%lu", pEntry->Tag);
+    snprintf(out, sizeof(out), "%lu", pEntry->Tag);
     Utopia_RawSet(&utctx, namespace, "tag" , out);
 
     Utopia_RawSet(&utctx, namespace, "value" ,(char*)pEntry->Value);
@@ -3085,7 +3079,7 @@ CosaDmlDhcpv6cAddSentOption
 {
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
-    char out[256] = {0};
+    char out[16];
 
     /*we only have one client*/
     if (ulClientInstanceNumber != g_dhcpv6_client.Cfg.InstanceNumber)
@@ -3099,7 +3093,7 @@ CosaDmlDhcpv6cAddSentOption
 
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
-    snprintf(out, sizeof(out)-1, "%d", g_sent_option_num);
+    snprintf(out, sizeof(out), "%d", g_sent_option_num);
     Utopia_RawSet(&utctx, NULL, "tr_dhcp6c_sent_option_num" ,out);
     Utopia_Free(&utctx, 1);        
 
@@ -3125,8 +3119,8 @@ CosaDmlDhcpv6cDelSentOption
 {
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
-    char out[256] = {0};
-    char namespace[256] = {0};
+    char out[16];
+    char namespace[256];
     int  i = 0;
     int  j = 0;
     int  saved_enable = 0;
@@ -3173,7 +3167,7 @@ CosaDmlDhcpv6cDelSentOption
     syscfg_unset(namespace, "tag");
     syscfg_unset(namespace, "value");
 
-    snprintf(out, sizeof(out)-1, "%d", g_sent_option_num);
+    snprintf(out, sizeof(out), "%d", g_sent_option_num);
     Utopia_RawSet(&utctx, NULL, "tr_dhcp6c_sent_option_num" ,out);
 
     Utopia_Free(&utctx, 1);        
@@ -3200,8 +3194,8 @@ CosaDmlDhcpv6cSetSentOption
     UNREFERENCED_PARAMETER(ulClientInstanceNumber);
     ULONG                           index  = 0;
     UtopiaContext                   utctx = {0};
-    char                            out[256] = {0};
-    char                            namespace[256] = {0};
+    char                            out[16];
+    char                            namespace[256];
     int                             need_restart_service = 0;
     PCOSA_DML_DHCPCV6_SENT          p_old_entry = NULL;
     errno_t                         rc = -1;
@@ -3237,7 +3231,7 @@ CosaDmlDhcpv6cSetSentOption
 
             if (pEntry->Tag != p_old_entry->Tag)
             {
-                snprintf(out, sizeof(out)-1, "%lu", pEntry->Tag);
+                snprintf(out, sizeof(out), "%lu", pEntry->Tag);
                 Utopia_RawSet(&utctx, namespace, "tag" , out);
 
                 need_restart_service = 1;
@@ -3289,7 +3283,7 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
     FILE *                          fp = fopen(CLIENT_RCVED_OPTIONS_FILE, "r+");
     SLIST_HEADER                    option_list;
     COSA_DML_DHCPCV6_RECV *         p_rcv = NULL;
-    char                            buf[1024] = {0};
+    char                            buf[1024];
     PSINGLE_LINK_ENTRY              pSLinkEntry       = NULL;
     ULONG                           ulIndex = 0;
 
@@ -3297,7 +3291,7 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
     
     if (fp)
     {
-        while (fgets(buf, sizeof(buf)-1, fp))
+        while (fgets(buf, sizeof(buf), fp))
         {
             int  opt_len = 0;
             char * p = NULL;
@@ -3345,8 +3339,6 @@ CosaDmlDhcpv6cGetReceivedOptionCfg
             /*we only support one server, hardcode it*/
             safe_strcpy((char*)p_rcv->Server, "Device.DHCPv6.Client.1.Server.1", sizeof(p_rcv->Server));
             AnscSListPushEntryAtBack(&option_list, &p_rcv->Link);
-
-            memset(buf, 0, sizeof(buf));
         }
         fclose(fp);
     }
@@ -3577,7 +3569,7 @@ char * CosaDmlDhcpv6sGetAddressFromString(char * address){
 }
 
 char * CosaDmlDhcpv6sGetStringFromHex(char * hexString){
-    static char     newString[256] = {0};
+    static char     newString[256];
     char    buff[8] = {0};
     ULONG   i =0;
     ULONG   j =0;
@@ -3757,12 +3749,12 @@ static int get_prefix_info(const char *prefix,  char *value, unsigned int val_le
  */
 static int get_active_lanif(unsigned int insts[], unsigned int *num)
 {
-    char active_insts[32] = {0};
-    char lan_pd_if[128] = {0};
+    char active_insts[32];
+    char lan_pd_if[128];
     char *p = NULL;
     int i = 0;
-    char if_name[16] = {0};
-    char buf[64] = {0};
+    char if_name[16];
+    char buf[64];
     char *st = NULL;
     syscfg_get(NULL, "lan_pd_interfaces", lan_pd_if, sizeof(lan_pd_if));
 
@@ -3771,12 +3763,14 @@ static int get_active_lanif(unsigned int insts[], unsigned int *num)
         return *num;
     }
 
+    active_insts[0] = 0;
     commonSyseventGet("multinet-instances", active_insts, sizeof(active_insts));
 
     p = strtok_r(active_insts, " ", &st);
 
     while (p != NULL) {
         snprintf(buf, sizeof(buf), "multinet_%s-name", p);
+        if_name[0] = 0;
         commonSyseventGet(buf, if_name, sizeof(if_name));
 
         if (strstr(lan_pd_if, if_name)) { /*active interface and need prefix delegation*/
@@ -7344,7 +7338,6 @@ int remove_interface(char* Inf_name)
 	char OutBuff[128],buf[128] ;
 	
 	memset(OutBuff,0,sizeof(OutBuff));
-	memset(buf,0,sizeof(buf));
 	
 	syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
 	// interface is present in the list, we need to remove interface to disable IPv6 PD
@@ -7369,7 +7362,6 @@ int append_interface(char* Inf_name)
 	char OutBuff[128],buf[128] ;
 	
 	memset(OutBuff,0,sizeof(OutBuff));
-	memset(buf,0,sizeof(buf));
 	
 	syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
 	
@@ -7450,7 +7442,7 @@ int getprefixinfo(const char *prefix,  char *value, unsigned int val_len, unsign
 int GenAndUpdateIpv6PrefixIntoSysevent(char *pInfName)
 {
     char out1[128] = {0};
-    char cmd[256] = {0};
+    char cmd[256];
     char ipv6_prefix[64] = {0};
     char prefixvalue[INET6_ADDRSTRLEN] = {0};
     int  len =0;
@@ -7485,13 +7477,11 @@ int handle_MocaIpv6(char *status)
 	char *str = NULL;
 	int HomeIsolationEnable = 0;
     char tbuff[100];
-    char cmd[128] = {0}, ipv6If[128] = {0}, mbuf[128] = {0};
+    char ipv6If[128], mbuf[128];
     int restart_zebra = 0;
 	
     if (!status)
             return -1;
-	memset(cmd,0,sizeof(cmd));
-	memset(ipv6If,0,sizeof(ipv6If));
 
 	//checking Homeisolation is enabled and ipv6_moca_bridge is true
 	retPsmGet1 = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.HomeNetworkIsolation", NULL, &str);
@@ -7592,22 +7582,23 @@ static void *InterfaceEventHandler_thrd(void *data)
     int retPsmGet = CCSP_SUCCESS;
     char tbuff[100];
     int err;
-    char name[25] = {0}, val[42] = {0},buf[128] = {0},cmd[128] = {0};
+    char name[25] = {0}, val[42] = {0}, buf[128], cmd[128];
     errno_t rc = -1;
 	
     rc = strcpy_s(cmd, sizeof(cmd), "multinet_9-status");
     ERR_CHK(rc);
+
+    buf[0] = 0;
     commonSyseventGet(cmd, buf, sizeof(buf));
             
     CcspTraceWarning(("%s multinet_9-status is %s\n",__FUNCTION__,buf));
 
     handle_MocaIpv6(buf);
 
-    memset(cmd,0,sizeof(cmd));
-    memset(buf,0,sizeof(buf));
-
     rc = strcpy_s(cmd, sizeof(cmd), "multinet_10-status");
     ERR_CHK(rc);
+
+    buf[0] = 0;
     commonSyseventGet(cmd, buf, sizeof(buf));
             
     CcspTraceWarning(("%s multinet_10-status is %s\n",__FUNCTION__,buf));
@@ -7636,12 +7627,10 @@ static void *InterfaceEventHandler_thrd(void *data)
     
     }
 
-
-    memset(cmd,0,sizeof(cmd));
-    memset(buf,0,sizeof(buf));
-
     rc = strcpy_s(cmd, sizeof(cmd), "multinet_2-status");
     ERR_CHK(rc);
+
+    buf[0] = 0;
     commonSyseventGet(cmd, buf, sizeof(buf));
 
     CcspTraceWarning(("%s multinet_2-status is %s\n",__FUNCTION__,buf));
@@ -7664,10 +7653,10 @@ static void *InterfaceEventHandler_thrd(void *data)
 
     }
 
-    memset(buf,0,sizeof(buf));
-
     rc = strcpy_s(cmd, sizeof(cmd), "multinet_6-status");
     ERR_CHK(rc);
+
+    buf[0] = 0;
     commonSyseventGet(cmd, buf, sizeof(buf));
 
     CcspTraceWarning(("%s multinet_6-status is %s\n",__FUNCTION__,buf));
@@ -7684,9 +7673,6 @@ static void *InterfaceEventHandler_thrd(void *data)
         }
 
     }
-
-    memset(cmd,0,sizeof(cmd));
-    memset(buf,0,sizeof(buf));
 
     while(1)
     {
@@ -7848,7 +7834,7 @@ dhcpv6c_dbg_thrd(void * in)
 {
     UNREFERENCED_PARAMETER(in);
     int fd=0 ;
-    char msg[1024] = {0};
+    char msg[1024];
     char * p = NULL;
     char globalIP2[128] = {0};
     //When PaM restart, this is to get previous addr.
@@ -7904,7 +7890,7 @@ dhcpv6c_dbg_thrd(void * in)
 
         if ( FD_ISSET(fd, &rfds) )
         {
-	     memset(msg, 0, sizeof(msg));
+             msg[0] = 0;
              read(fd, msg, sizeof(msg));
         }
 	else
@@ -8076,7 +8062,6 @@ dhcpv6c_dbg_thrd(void * in)
 #endif
                     if (strncmp(v6pref, "::", 2) != 0)
                     {
-			memset(v6Tpref,0,sizeof(v6Tpref));
 			strncpy(v6Tpref,v6pref,sizeof(v6Tpref));
                         /*We just delegate longer and equal 64bits. Use zero to fill in the slot naturally. */
 #if defined (MULTILAN_FEATURE)
