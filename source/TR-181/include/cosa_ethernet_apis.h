@@ -74,7 +74,7 @@
 #define MAXINSTANCE                 128
 #define ETH_INTERFACE_MAX_ASSOC_DEVICES   256
 #define MAC_SZ  6 /* Mac address in Hex format */
-#define MACADDR_SZ 17 /* Expanded MAC address in 00:02:... format */
+#define MACADDR_SZ 18 /* Expanded MAC address in 00:02:... format */
 
 typedef  enum
 _COSA_DML_ETH_DUPLEX_MODE
@@ -140,7 +140,7 @@ COSA_DML_ETH_PORT_SINFO,  *PCOSA_DML_ETH_PORT_SINFO;
 typedef  struct
 _COSA_DML_ASSOCDEV_INFO
 {
-    UCHAR                           MacAddress[MACADDR_SZ];
+    CHAR                            MacAddress[MACADDR_SZ];
 }
 COSA_DML_ASSOCDEV_INFO, *PCOSA_DML_ASSOCDEV_INFO;
 

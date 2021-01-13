@@ -74,7 +74,7 @@
 #define MAXINSTANCE                 128
 #define ETH_INTERFACE_MAX_ASSOC_DEVICES   256
 #define MAC_SZ  6 /* Mac address in Hex format */
-#define MACADDR_SZ 17 /* Expanded MAC address in 00:02:... format */
+#define MACADDR_SZ 18 /* Expanded MAC address in 00:02:... format */
 
 typedef  enum
 _COSA_DML_ETH_DUPLEX_MODE
