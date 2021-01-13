@@ -2152,8 +2152,22 @@
                                         </parameter>
                                   </parameters>
                                  </object>
-
-
+                        <object>
+                            <name>MACsecRequired</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>MACsecRequired_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>MACsecRequired_SetParamBoolValue</func_SetParamBoolValue>
+                            </functions>
+                            <parameters>
+                                <parameter>
+                                    <name>Enable</name>
+                                    <type>boolean</type>
+                                    <syntax>bool</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                            </parameters>
+                        </object>
                         <object>
                                 <name>SecureWebUI</name>
                                 <objectType>object</objectType>
@@ -2305,8 +2319,24 @@
                     <syntax>string</syntax>
                 </parameter>
             </parameters>
-         </object>
-        <object>
+            <objects>
+               <object>
+                  <name>MACsec</name>
+                  <objectType>object</objectType>
+                  <functions>
+                     <func_GetParamStringValue>EthernetWAN_MACsec_GetParamStringValue</func_GetParamStringValue>
+                  </functions>
+                  <parameters>
+                     <parameter>
+                        <name>OperationalStatus</name>
+                        <type>string(32)</type>
+                        <syntax>string</syntax>
+                     </parameter>
+                  </parameters>
+               </object>
+            </objects>
+        </object>
+	<object>
 
             <name>X_RDKCENTRAL-COM_MaintenanceWindow</name>
 
