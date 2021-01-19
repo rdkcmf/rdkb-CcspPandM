@@ -79,7 +79,7 @@ checkForRFCP()
 {
 
 if [ "$1" = "" ]
-then 
+then
   # P&M up will make sure CM agent is up as well as
   # RFC values are picked
   echo_t "No RF CP: Check PAM initialized"
@@ -116,22 +116,23 @@ then
      echo_t "INFO:network_Response.sh - RF captive portal is disabled"
      noRfCp=0
   fi
-  
+  echo_t "Network Response: No RF values RF_SIGNAL_STATUS:$RF_SIGNAL_STATUS, noRfCp: $noRfCp" 
   if [ $noRfCp -eq 1 ]
   then
       syscfg set rf_captive_portal true
       syscfg commit
-      echo "true"
+      return 1
   else
       syscfg set rf_captive_portal false
       syscfg commit
-      echo "false"
+      return 0
   fi
 elif [ "$1" = "recheck" ]
 then
   # this argument is passed by the caller while in a loop 
   # to check RF signal. Hence no need to do initial checks.
   RF_SIGNAL_STATUS=`dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CableRfSignalStatus | grep value | cut -f3 -d : | cut -f2 -d" "`
+  echo_t "Network Response: RF CP recheck RF_SIGNAL_STATUS: $RF_SIGNAL_STATUS"
   if [ "$RF_SIGNAL_STATUS" = "false" ]
   then
       dbValue=`syscfg get rf_captive_portal`
@@ -140,7 +141,7 @@ then
           syscfg set rf_captive_portal true
           syscfg commit
       fi
-      echo "true"
+      return 1 
   else
       dbValue=`syscfg get rf_captive_portal`
       if [ "$dbValue" = "true" ]
@@ -148,10 +149,8 @@ then
           syscfg set rf_captive_portal false
           syscfg commit
       fi
-      echo "false"
+      return 0
   fi
-else
-   echo_t "Wrong arguement to checkForRFCP"
 fi
 }
 
@@ -160,20 +159,33 @@ rfCpInterface()
   #sysevent set rfcp started
   if [ "$CAPTIVEPORTAL_ENABLED" = "true" ]
   then
-     shouldRedirect=`checkForRFCP`
-     if [ "$shouldRedirect" = "true" ]
+    checkForRFCP
+    shouldRedirect=$? 
+    echo_t "Network Response: Initial value of shouldRedirect is : $shouldRedirect"
+     if [ "$shouldRedirect" = "1" ]
      then
-        echo_t "Restart events triggered for RF CP"
+        echo_t "Network Response: Restart events triggered for RF CP"
         /etc/redirect_url.sh rfcp &
         sleep 5
-        while [ "$shouldRedirect" != "false" ]
+        while [ "$shouldRedirect" != "0" ]
         do
-           shouldRedirect=`checkForRFCP "recheck"`
+           checkForRFCP "recheck"
+           shouldRedirect=$?
+           echo_t "Network Response: shouldRedirect is : $shouldRedirect"
            sleep 5
         done
-        echo_t "Restart events triggered to come out from RF CP"
+        echo_t "Network Response: Restart events triggered to come out from RF CP"
         /etc/revert_redirect.sh rfcp &
-     fi 
+     fi
+     needRevert=0 
+     needRevert=`sysevent get norf_webgui`
+     
+     if [ "$needRevert" = "1" ]
+     then
+        echo_t "Network Response: Restart services to come out from RF CP based on norf_webgui"
+        /etc/revert_redirect.sh rfcp &
+        sysevent set norf_webgui 0
+     fi
   else
     syscfg set rf_captive_portal false
     syscfg commit
@@ -181,15 +193,17 @@ rfCpInterface()
   #sysevent set rfcp completed
 }
 
+echo_t "Network Response: Device:$BOX_TYPE, TRIGGER_STATE:$TRIGGER_STATE"
 if [ "$BOX_TYPE" = "XB6" ]
 then
+   echo_t "Network Response: Invoke rfCpInterface function"
    rfCpInterface
    if [ "x$TRIGGER_STATE" = "xOnlyForNoRf" ]
    then
-        exit 0
+       echo_t "Network Response: Exit from network response"
+       exit 0
    fi
 fi
-
 echo_t "Network Response: Checking erouter0 ip address"
 
 # This loop will wait till the erouter0 interface gets IP
