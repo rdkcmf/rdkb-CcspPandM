@@ -449,7 +449,6 @@ DeviceInfo_SetParamBoolValue_Custom
 			    //if CaptivePortal_Enable is true, Then only we need to run redirect_url.sh
 			    printf("%s calling redirect_url.sh script to start redirection\n",__FUNCTION__);
 			    system("source /etc/redirect_url.sh &");
-			    return TRUE;
 		    }
 #if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_)
 		    else
@@ -461,6 +460,8 @@ DeviceInfo_SetParamBoolValue_Custom
                 } else {
                    return FALSE;
                 }
+
+        return TRUE;
 	 }
 	
          else if  ( bValue == FALSE )
