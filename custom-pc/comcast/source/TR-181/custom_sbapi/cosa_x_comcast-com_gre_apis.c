@@ -58,7 +58,6 @@
 #include "syscfg.h" 
 #include "hotspotfd.h"
 #include "dhcpsnooper.h"
-#include "secure_wrapper.h"
 
 #define GRETEST
 
@@ -150,9 +149,12 @@ GrePsmGet(const char *param, char *value, int size)
 
 void xfinitywifi_SetDSCPMarkPolicy(int dscp)//LNT_EMU
 {
+        char str[512];
         system("iptables -t mangle -D POSTROUTING 1");
-        v_secure_system("iptables -t mangle -I POSTROUTING -o eth0 -p gre -j DSCP --set-dscp %d", dscp);
+        sprintf(str,"%s %d","iptables -t mangle -I POSTROUTING -o eth0 -p gre -j DSCP --set-dscp",dscp);
+        system(str);
 }
+
 
 static int
 GrePsmSet(const char *param, const char *value)
@@ -500,20 +502,23 @@ CosaDml_GreTunnelIfGetNumberOfEntries(ULONG tuIns)
 ANSC_STATUS
 CosaDml_GreTunnelGetConnectedRemoteEndpoint(ULONG tuIdx, COSA_DML_GRE_TUNNEL *greTu)
 {
+	char cmd[126] = {0};
 	char line_buf[126] = {0};
 	FILE *fp = NULL;
 
 	if(!greTu)
 			return ANSC_STATUS_FAILURE;
 
-    fp = v_secure_popen("r", "sysevent get %s", kHotspotfd_tunnelEP);
-    if (fp) {
-        if (fgets(line_buf, sizeof(line_buf), fp)) {
-            sprintf(greTu->ConnectedRemoteEndpoint, "%s", line_buf);
-        }
-        v_secure_pclose(fp);
+	snprintf(cmd, sizeof(cmd), "sysevent get %s",kHotspotfd_tunnelEP);       
+	
+    if (((fp = popen(cmd, "r")) != NULL) && (fgets(line_buf, sizeof(line_buf), fp)))
+    {
+        sprintf(greTu->ConnectedRemoteEndpoint,"%s",line_buf);
     }
-    return ANSC_STATUS_SUCCESS;
+	if(fp)
+		pclose(fp);
+
+	return ANSC_STATUS_SUCCESS;     
 }
 
 

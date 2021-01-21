@@ -155,7 +155,6 @@ int fwSync = 0;
 #include <utapi_util.h>
 #include <ccsp_syslog.h>
 #include "syscfg/syscfg.h"
-#include "secure_wrapper.h"
 
 #include "platform_hal.h"
 
@@ -431,19 +430,22 @@ static int detect_process(char *process_name)
 {
     FILE *ptr;
     char buff[512];
+    char ps[128];
 
-    if ((ptr=v_secure_popen("r", "ps | grep -v grep | grep -c %s", process_name))!=NULL)
+    sprintf(ps, "ps | grep -v grep | grep -c %s", process_name);
+
+    if ((ptr=popen(ps, "r"))!=NULL)
     {
         while (fgets(buff,512,ptr)!=NULL)
         {
             if (atoi(buff)>=1)
             {
-                v_secure_pclose(ptr);
+                pclose(ptr);
                 return 1;
             }
         }
 
-        v_secure_pclose(ptr);
+        pclose(ptr);
     }
 
     return 0;

@@ -69,34 +69,31 @@
 #include "cosa_users_internal.h"
 #include "plugin_main_apis.h"
 #include <openssl/hmac.h>
-#include "secure_wrapper.h"
 
 char SerialNumber[64] = {'\0'};
 
 int _unset_db_value(char *file_name,char *current_string)
 {
         FILE *fp = NULL;
-        char path[1024] = {0};
+        char path[1024] = {0},buf[512] = {0},updated_str[512]={0};
         int count = 0;
         char *ch;
         fp = fopen(file_name,"r");
-        if(! fp) {
-            return 0;
-        }
-        while(fgets(path,sizeof(path)-1,fp) != NULL)
+        if(fp)
         {
-            ch=strstr(path,current_string);
-            if(ch != NULL)
+                while(fgets(path,sizeof(path),fp) != NULL)
                 {
-                    for(count = 0; path[count] ; ++count) {
-                        if (path[count] == '\n') {
-                            path[count] = '\0';
-                            break;
+                        ch=strstr(path,current_string);
+                        if(ch != NULL)
+                        {
+                                for(count=0;path[count]!='\n';count++)
+                                        updated_str[count] = path[count];
+                                updated_str[count]='\0';
+                                sprintf(buf,"sed -i \"/%s/d\" %s",updated_str,file_name);
+                                system(buf);
+
+                                return 0;
                         }
-                    }
-                    fclose(fp);
-                    v_secure_system("sed -i '/%s/d' %s",path,file_name);
-                    return 0;
                 }
         }
         fclose(fp);

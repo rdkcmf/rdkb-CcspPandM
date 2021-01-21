@@ -70,7 +70,6 @@
 #include "cosa_x_cisco_com_filetransfer_internal.h"
 #include "dmsb_tr181_psm_definitions.h"
 #include <curl/curl.h>
-#include "secure_wrapper.h"
 
 /* Set up default https server table */
 typedef struct
@@ -210,12 +209,14 @@ FileTransferTask
     _ansc_sprintf(URL, "https://%s/%s", FileTransfer_HTTPSServers[pCfg->Server].mServer, pCfg->FileName);
     ret = curl_easy_setopt(curl, CURLOPT_URL, URL);
 
-    if ((fp = fopen(TRUE_STATIC_IP_CONFIG_PATH TRUE_STATIC_IP_CONFIG_FILE, "w+"))== NULL )
+    _ansc_sprintf(Path, "%s%s", TRUE_STATIC_IP_CONFIG_PATH, TRUE_STATIC_IP_CONFIG_FILE);
+    if ((fp = fopen(Path,"w+"))== NULL )
     {
         curl_easy_cleanup(curl);
         return ANSC_STATUS_FAILURE;
     }
-    v_secure_system("configparamgen jx " PRIVATE_KEY_ENCRYPTED " " PRIVATE_KEY_GENERATED);
+    sprintf(tmp,"configparamgen jx %s %s",PRIVATE_KEY_ENCRYPTED,PRIVATE_KEY_GENERATED);
+    system(tmp);
     ret = curl_easy_setopt(curl, CURLOPT_CAPATH, "/etc/ssl/certs/");
     ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
     ret = curl_easy_setopt(curl, CURLOPT_SSLCERT, PUBLIC_CERT_PATH);
@@ -228,7 +229,9 @@ FileTransferTask
     ret = curl_easy_perform(curl);
     curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &httpCode);
     fclose(fp);
-    v_secure_system("rm -f " PRIVATE_KEY_GENERATED);
+    memset(tmp, 0, sizeof(tmp));
+    sprintf(tmp,"rm -rf %s",PRIVATE_KEY_GENERATED);
+    system(tmp);
     
     if ( ret == CURLE_OK )
     {

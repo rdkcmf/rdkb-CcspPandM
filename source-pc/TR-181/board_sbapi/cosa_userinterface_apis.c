@@ -75,7 +75,6 @@
 #include "cosa_userinterface_apis.h"
 #include "dmsb_tr181_psm_definitions.h"
 #include <arpa/inet.h>
-#include "secure_wrapper.h"
 
 //PSM-ACCESS
 extern ANSC_HANDLE bus_handle;
@@ -280,35 +279,34 @@ int _set_db_value(char *file_name,char *current_string,char *value)
 {
 
         FILE *fp = NULL;
-        char path[1024] = {0},cmd[512]={0};
+        char path[1024] = {0},buf[512] = {0},updated_str[512]={0},cmd[512]={0};
         int count = 0;
         char *ch;
         sprintf(cmd,"%s=%s",current_string,value);
         fp = fopen(file_name,"r");
         if(fp)
         {
-                while(fgets(path,sizeof(path)-1,fp) != NULL)
+                while(fgets(path,sizeof(path),fp) != NULL)
                 {
                         ch=strstr(path,current_string);
                         if(ch != NULL)
                         {
-                                for(count = 0; path[count] ; ++count)
-                                    if (path[count] == '\n') {
-                                        path[count] = '\0';
-                                        break;
-                                    }
-                                fclose(fp);
-                                v_secure_system("sed -i 's/%s/%s/g' %s", path, cmd, file_name);
+                                for(count=0;path[count]!='\n';count++)
+                                        updated_str[count] = path[count];
+                                updated_str[count]='\0';
+                                sprintf(buf,"sed -i \"s/%s/%s/g\" %s",updated_str,cmd,file_name);
+                                system(buf);
                                 return 0;
                         }
                 }
                 if(ch == NULL)
                 {
-                    fclose(fp);
-                    v_secure_system("sed -i '$ a %s' %s",cmd,file_name);
-                    return 0;
+                        sprintf(buf,"sed -i '$ a %s' %s",cmd,file_name);
+                        system(buf);
+			return 0;
                 }
         }
+        fclose(fp);
         return 1;
 }
 

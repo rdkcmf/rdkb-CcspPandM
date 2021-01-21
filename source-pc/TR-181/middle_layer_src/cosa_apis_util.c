@@ -84,7 +84,6 @@
 #include <sys/types.h>
 #endif
 #include "ansc_platform.h"
-#include "secure_wrapper.h"
 
 //$HL 4/30/2013
 #include "ccsp_psm_helper.h"
@@ -1286,6 +1285,7 @@ CosaUtilGetStaticRouteTable
     int i;
     int j;
     StaticRoute *sroute;
+    char cmd[512];
     char line_buf[512];
     int line_count;
     char *pch = NULL;
@@ -1295,8 +1295,9 @@ CosaUtilGetStaticRouteTable
     }
     
     *count = 0;
-
-    v_secure_system("route -n | grep -v '^127.0.0' > /tmp/.route_table_tmp");
+    
+    snprintf(cmd, sizeof(cmd), "route -n | grep -v \"^127.0.0\" > %s", "/tmp/.route_table_tmp");
+    system(cmd);
 
     FILE *fp = fopen("/tmp/.route_table_tmp", "r");
     FILE *fp2 = NULL;
@@ -1398,7 +1399,11 @@ CosaUtilGetStaticRouteTable
 
         if (TRUE)
         {
-            if (((fp2 = v_secure_popen("r", "/sbin/ip route show %s/%d", sroute[i].dest_lan_ip, NetmaskToNumber(sroute[i].netmask)) != NULL) && (fgets(line_buf, sizeof(line_buf), fp2)))
+            snprintf(cmd, sizeof(cmd), "/sbin/ip route show %s/%d",
+                     sroute[i].dest_lan_ip,
+                     NetmaskToNumber(sroute[i].netmask));
+
+            if (((fp2 = popen(cmd, "r")) != NULL) && (fgets(line_buf, sizeof(line_buf), fp2)))
             {
 				st = NULL;
                 pch = strtok_r(line_buf, " ", &st);
@@ -1420,7 +1425,7 @@ CosaUtilGetStaticRouteTable
 
     if (fp2)
     {
-        v_secure_pclose(fp2);
+        pclose(fp2);
     }
     fclose(fp);
     

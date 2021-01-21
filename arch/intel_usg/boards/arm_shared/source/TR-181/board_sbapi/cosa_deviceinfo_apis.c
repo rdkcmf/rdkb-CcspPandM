@@ -113,8 +113,7 @@
 #include <utapi_util.h>
 
 #include "platform_hal.h"
-#include "autoconf.h"
-#include "secure_wrapper.h"
+#include "autoconf.h"     
  
 #define _ERROR_ "NOT SUPPORTED"
 
@@ -457,7 +456,10 @@ CosaDmlDiSetProvisioningCode
 void uploadLogUtilityThread(void* vptr_value)
 {
 	pthread_detach(pthread_self());
-        v_secure_system("/rdklogger/opsLogUpload.sh %s &", (char *) vptr_value);
+	char uploadOnRequest[150];
+	char *str = (char *) vptr_value;
+	snprintf(uploadOnRequest,sizeof(uploadOnRequest),"sh /rdklogger/opsLogUpload.sh %s &",str);
+	system(uploadOnRequest);
 	return;
 
 }
@@ -494,10 +496,12 @@ COSADmlUploadLogsStatus
 	ULONG*	pUlSize
     )
 {
+	char uploadStatus[150];
 	int ret, status;
 	FILE *ptr_file;
-        char buf[50];
-	ret=v_secure_system("/rdklogger/opsLogUpload.sh status");
+    char buf[50];
+	snprintf(uploadStatus,sizeof(uploadStatus),"sh /rdklogger/opsLogUpload.sh %s","status");
+	ret=system(uploadStatus);
 	status=WEXITSTATUS(ret);
 	
 	switch (status)
@@ -523,13 +527,13 @@ COSADmlUploadLogsStatus
     			if (!ptr_file)
         		break;
 
-    			if (fgets(buf,sizeof(buf), ptr_file)!=NULL)
+    			if (fgets(buf,50, ptr_file)!=NULL)
 			{
+				fclose(ptr_file);
 				strip_line(buf);
     				AnscCopyString(pValue, buf);
         			*pUlSize = AnscSizeOfString(pValue);
 			}
-                        fclose(ptr_file);
 			break;
 		default :
 			AnscCopyString(pValue, "Not triggered");
@@ -546,7 +550,6 @@ COSADmlUploadLogsStatus
 #define TMP_WEBPA_CFG "/tmp/webpa_cfg.txt"
 #define WEBPA_CFG     "/nvram/webpa_cfg.json"
 
-#if 0
 ANSC_STATUS
 CosaDmlDiGetWebPACfg
     (
@@ -606,7 +609,7 @@ CosaDmlDiGetWebPACfg
 		sprintf(str, "rm -rf %s", TMP_WEBPA_CFG);
 		system(str);
 		return ANSC_STATUS_SUCCESS;
-	}     
+	}
 	return ANSC_STATUS_FAILURE;
 		
 }
@@ -669,7 +672,6 @@ CosaDmlDiSetWebPACfg
 	system(str);
 	return ANSC_STATUS_SUCCESS;
 }
-#endif
 
 ANSC_STATUS
 CosaDmlDiGetFirstUseDate

@@ -139,8 +139,7 @@ extern  ANSC_HANDLE             bus_handle;
 
 #include "platform_hal.h"
 #include "autoconf.h"     
-#include "secure_wrapper.h"
-
+ 
 #define _ERROR_ "NOT SUPPORTED"
 #define _START_TIME_12AM_ "0"
 #define _END_TIME_3AM_ "10800"
@@ -163,9 +162,10 @@ extern void* g_pDslhDmlAgent;
 static const int OK = 1 ;
 static const int NOK = 0 ;
 static char reverseSSHArgs[256] = { "\0" };
-#define sshCommand "/lib/rdk/startTunnel.sh"
+const char* sshCommand = "/lib/rdk/startTunnel.sh";
 #ifdef ENABLE_SHORTS
-#define stunnelCommand "/lib/rdk/startStunnel.sh"
+const char *stunnelCommand = "/lib/rdk/startStunnel.sh";
+static char stunnelSSHArgs[255] = { "\0" };
 #endif
 const char* rsshPidFile = "/var/tmp/rssh.pid";
 
@@ -688,7 +688,10 @@ CosaDmlDiSetProvisioningCode
 void uploadLogUtilityThread(void* vptr_value)
 {
 	pthread_detach(pthread_self());
-	v_secure_system("/rdklogger/opsLogUpload.sh %s &", (char *) vptr_value);
+	char uploadOnRequest[150];
+	char *str = (char *) vptr_value;
+	snprintf(uploadOnRequest,sizeof(uploadOnRequest),"sh /rdklogger/opsLogUpload.sh %s &",str);
+	system(uploadOnRequest);
 	return;
 
 }
@@ -1005,40 +1008,22 @@ isValidInput
 	  */ 
 	if( sizeof_wrapped_inputparam <= ( lengthof_inputparam  + 2 ) )
 	{
-            return ANSC_STATUS_FAILURE;
+        returnStatus = ANSC_STATUS_FAILURE;
 	}
-        int port = 0;
-        int i = 0;
-        int count =0;
-        char* tok;
-        char *host = strdup(inputparam);
-        if (! host) {
-            return ANSC_STATUS_FAILURE;
-        }
-        else {
-            tok = strtok(host, ":");
-            while(tok != NULL) {
-                if (count == 0 ) { 
-                    while(host[i] != '\0') {
-                        if(((host[i] >='A') &&(host[i]<='Z')) || ((host[i]>='a') && (host[i]<='z')) || ((host[i] >= '0') && (host[i] <= '9')) || (host[i] == '.') || (host[i] == '-') || (host[i] == '_'))
-                            i++;
-                        else
-                            return ANSC_STATUS_FAILURE;
-                    }
-                }
-                else if(count == 1 ) {
-                    port = _ansc_atoi(tok);
-                    if ((port <= 0) || (port > 65535))
-                        return ANSC_STATUS_FAILURE;
-                }
-                else {
-                    return ANSC_STATUS_FAILURE;
-                }
-                tok = strtok (NULL, ":");
-                count++;
-            }
-        free(host);
-        }
+	else if(strstr(inputparam,";")) // check for possible command injection	
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam,"&"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam,"|"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam,"'"))
+        returnStatus = ANSC_STATUS_FAILURE;
 
     if(ANSC_STATUS_SUCCESS == returnStatus)
     {
@@ -1068,7 +1053,6 @@ CosaDmlDiGetFirmwareUpgradeStartTime
     if (fp == NULL)
     {
         CcspTraceError(("ERROR '%s'\n","ERROR"));
-        return ANSC_STATUS_FAILURE;
     }
     else
     {
@@ -1134,7 +1118,6 @@ CosaDmlDiGetFirmwareUpgradeEndTime
     if (fp == NULL)
     {
         CcspTraceError(("ERROR '%s'\n","ERROR"));
-        return ANSC_STATUS_FAILURE;
     }
     else
     {
@@ -1704,6 +1687,7 @@ CosaDmlDiGetProcessorSpeed
     char line[MAX_LINE_SIZE];
     char *pcur;
     FILE *fp;
+    int status;
 
     memset(line, 0, MAX_LINE_SIZE);
 
@@ -1783,7 +1767,8 @@ CosaDmlDiGetProcessorSpeed
     }
     fclose(fp1);
     sprintf(out2,"\"cat /proc/cpuinfo\"");
-    fp = v_secure_popen("r", "rpcclient %s %s",urlPtr,out2);
+    sprintf(out1,"rpcclient %s %s",urlPtr,out2);
+    fp = popen(out1, "r");
 #else
     fp = popen("cat /proc/cpuinfo", "r");
 #endif
@@ -1806,7 +1791,7 @@ CosaDmlDiGetProcessorSpeed
 
 #endif
     if(fp != NULL) {
-        v_secure_pclose(fp);
+        status = pclose(fp);
 	fp = NULL;
     }
     *pulSize = AnscSizeOfString(pValue);
@@ -1861,7 +1846,7 @@ CosaDmlDiGetAndProcessDhcpServDetectionFlag
 		/* 
 		* To schedule/deschedule server test execution based on DhcpServDetectEnable flag 
 		*/
-		system( "/usr/ccsp/tad/schd_dhcp_server_detection_test.sh" );
+		system( "sh /usr/ccsp/tad/schd_dhcp_server_detection_test.sh" );
 	}
 	else
 	{
@@ -1901,7 +1886,7 @@ CosaDmlDiSetAndProcessDhcpServDetectionFlag
 		/* 
 		* To schedule/deschedule server test execution based on DhcpServDetectEnable flag 
 		*/
-		system( "/usr/ccsp/tad/schd_dhcp_server_detection_test.sh" );
+		system( "sh /usr/ccsp/tad/schd_dhcp_server_detection_test.sh" );
 	}  
 
     return ANSC_STATUS_SUCCESS;
@@ -2098,6 +2083,7 @@ int setXOpsReverseSshArgs(char* pString) {
 #ifdef ENABLE_SHORTS
     } else {
         strncpy(tempCopy, pString, inputMsgSize);
+        memset(stunnelSSHArgs,'\0',sizeof(stunnelSSHArgs));
         tempStr = (char*) strtok_r(tempCopy, ";", &st);
         while (NULL != tempStr) {
             if(value = strstr(tempStr, "type=")) {
@@ -2121,9 +2107,13 @@ int setXOpsReverseSshArgs(char* pString) {
         // for arguments for script in the form " ip_version_number localIP + remoteIP + remotePort + remoteTerminalRows
         //                                        + remoteTerminalColumns"
         if(host != NULL) {
-            v_secure_system(stunnelCommand " %s %s %s %s %d %d &", ip_version_number, localIP, host, callbackport, rows, columns);
+            sprintf(stunnelSSHArgs,"%s %s %s %s %s %d %d &",stunnelCommand, ip_version_number, localIP, host, callbackport, rows, columns);
+            if(host != NULL) {
                 free(host);
                 host = NULL;
+            }
+            AnscTraceWarning(("StunnelSSH Command =%s !!!\n",stunnelSSHArgs));
+            system(stunnelSSHArgs);
         } else {
             AnscTraceWarning(("Warning !!! Did not get all args to execute SHORTS path!!!\n"));
         }
@@ -2148,6 +2138,7 @@ ANSC_STATUS getXOpsReverseSshArgs
 int setXOpsReverseSshTrigger(char *input) {
 
     char *trigger = NULL;
+    char command[255] = { '\0' };
     if (!input) {
         printf("Input args are empty \n");
         AnscTraceWarning(("Input args are empty !!!!\n"));
@@ -2156,10 +2147,14 @@ int setXOpsReverseSshTrigger(char *input) {
     
     trigger = strstr(input, "start");
     if (trigger) {
-        v_secure_system(sshCommand " start %s", reverseSSHArgs);           
+            strcpy(command, sshCommand);
+            strcat(command, " start");
+            strcat(command, reverseSSHArgs);
     } else {
-        v_secure_system(sshCommand " stop ");
+        strcpy(command, sshCommand);
+        strcat(command, " stop ");
     }
+    system(command);
     return OK;
 }
 
@@ -2721,12 +2716,16 @@ void ConvertTime(int time, char day[], char hour[], char mins[]) {
 
 //Handle UniqueTelemetry Cron Job
 void UniqueTelemetryCronJob(enable, timeInterval, tagString) {
+        char command[256] = {0};
         char day[5] = {0}, hour[5]={0}, mins[5] = {0};
 
         if(enable) {       //Add unique_telemetry_id Cron job to job list
             if( timeInterval != 0 && strlen(tagString) > 0) {
                 ConvertTime(timeInterval, day, hour, mins);      // Convert time interval
-                v_secure_system("( crontab -l | grep -v '/usr/ccsp/pam/unique_telemetry_id.sh' ; echo '%s %s %s * * /usr/ccsp/pam/unique_telemetry_id.sh' ) | crontab -", mins, hour, day);
+
+                system("crontab -l | grep -v '/usr/ccsp/pam/unique_telemetry_id.sh'  | crontab -");     //Remove unique_telemetry_id Cron job if already exists
+                sprintf(command, "(crontab -l ; echo \"%s %s %s * * /usr/ccsp/pam/unique_telemetry_id.sh\") | crontab -", mins, hour, day);
+                system(command);
             }
         }
         else {          //Remove unique_telemetry_id Cron job from job list
@@ -3733,15 +3732,17 @@ void* RebootDevice_thread(void* buff)
 		syscfg_set(NULL, "reboot_count", buf);
 
 		FILE *fp = NULL;
+		memset(buf,0,sizeof(buf));
+		sprintf(buf, "date");
 		char buffer[50] = {0};
 		memset(buffer,0,sizeof(buffer));
-        fp = v_secure_popen("r", "date");
+        fp = popen(buf, "r");
 		if( fp != NULL) {         
 		    while(fgets(buffer, sizeof(buffer), fp)!=NULL){
 			    buffer[strlen(buffer) - 1] = '\0';
 				syscfg_set(NULL, "latest_reboot_time", buffer);
 			}
-			v_secure_pclose(fp);
+			pclose(fp);
 		}
 
 		char tmp[7] = {0};
@@ -4441,7 +4442,10 @@ CosaDmlScheduleAutoReboot(int ConfiguredUpTime, BOOL bValue)
             CcspTraceInfo(("%s Scheduling reboot after %d days \n",__FUNCTION__, RebootDay ));
         }  
     }
-    v_secure_system("/etc/ScheduleAutoReboot.sh %d %d&",RebootDay,bValue);
+    char AutoRebootRequest[150];
+	snprintf(AutoRebootRequest,sizeof(AutoRebootRequest),"sh /etc/ScheduleAutoReboot.sh %d %d&",RebootDay,bValue);
+    CcspTraceInfo(("%s Scheduling cron %s \n",__FUNCTION__, AutoRebootRequest ));
+    system(AutoRebootRequest);
     return ANSC_STATUS_SUCCESS;    
 }
 

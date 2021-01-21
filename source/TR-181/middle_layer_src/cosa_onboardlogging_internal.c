@@ -92,7 +92,10 @@ ANSC_STATUS DisableOnboardLogging(ANSC_HANDLE hThisObject)
 {
     ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_ONBOARDLOGGING     pMyObject    = (PCOSA_DATAMODEL_ONBOARDLOGGING)hThisObject;
-    v_secure_system("touch /nvram/DISABLE_ONBOARD_LOGGING");
+    char cmd[128];
+    memset(cmd, 0, sizeof(cmd));
+    AnscCopyString(cmd, "touch /nvram/DISABLE_ONBOARD_LOGGING");
+    system(cmd);
     char *boxType = NULL, *atomIp = NULL;
     if(getValueFromDevicePropsFile("BOX_TYPE", &boxType) == 0)
     {
@@ -100,7 +103,9 @@ ANSC_STATUS DisableOnboardLogging(ANSC_HANDLE hThisObject)
         {
             if(getValueFromDevicePropsFile("ATOM_ARPING_IP", &atomIp) == 0)
             {
-                v_secure_system("/usr/bin/rpcclient %s 'touch /nvram/DISABLE_ONBOARD_LOGGING'", atomIp);
+                char rpcCmd[128];
+                sprintf(rpcCmd, "/usr/bin/rpcclient %s \"%s\"", atomIp, cmd);
+                system(rpcCmd);
             }
         }
     }
@@ -112,7 +117,11 @@ ANSC_STATUS EnableOnboardLogging(ANSC_HANDLE hThisObject)
 {
     ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_ONBOARDLOGGING     pMyObject    = (PCOSA_DATAMODEL_ONBOARDLOGGING)hThisObject;
-    v_secure_system("rm -rf /nvram/DISABLE_ONBOARD_LOGGING");
+    char cmd[128];
+
+    memset(cmd, 0, sizeof(cmd));
+    AnscCopyString(cmd, "rm -rf /nvram/DISABLE_ONBOARD_LOGGING");
+    system(cmd);
     char *boxType = NULL, *atomIp = NULL;
     if(getValueFromDevicePropsFile("BOX_TYPE", &boxType) == 0)
     {
@@ -120,7 +129,9 @@ ANSC_STATUS EnableOnboardLogging(ANSC_HANDLE hThisObject)
         {
             if(getValueFromDevicePropsFile("ATOM_ARPING_IP", &atomIp) == 0)
             {
-                v_secure_system("/usr/bin/rpcclient %s 'rm -rf /nvram/DISABLE_ONBOARD_LOGGING'", atomIp);
+                char rpcCmd[128];
+                sprintf(rpcCmd, "/usr/bin/rpcclient %s \"%s\"", atomIp, cmd);
+                system(rpcCmd);
             }
         }
     }
