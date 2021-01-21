@@ -76,7 +76,6 @@
 #ifdef _COSA_SIM_
 
 COSA_DML_TIME_CFG                   g_TimeCfg = {0};
-
 ANSC_STATUS
 CosaDmlTimeInit
     (
@@ -126,7 +125,7 @@ CosaDmlTimeGetState
         *pStatus = COSA_DML_TIME_STATUS_Synchronized;
         _ansc_memset(pCurrLocalTime, 0, sizeof(ANSC_UNIVERSAL_TIME));
     }
-
+   
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -769,8 +768,31 @@ CosaDmlTimeGetTimeOffset
        char                       *pTimeOffset
     )
 {
-    platform_hal_getTimeOffSet(pTimeOffset);
+  UNREFERENCED_PARAMETER(hContext);
+  char response[100]={0};char cmd[100]={0};
+  FILE *fp=NULL;
+
+#ifdef UTC_ENABLE
+    if(!access("/nvram/ETHWAN_ENABLE", 0))
+    {
+        snprintf(cmd,sizeof(cmd),"sysevent get ipv4-timeoffset");
+        fp = popen(cmd, "r");
+        if (fp == NULL) {
+        	CcspTraceWarning((  "%s :  fn   Line  : [%d] failed to execute command \n", __FUNCTION__,__LINE__));
+        }else {
+        	fgets(cmd_response,sizeof(response),fp);
+        	pclose(fp);
+        	strcpy(pTimeOffset,response+1);
+        	CcspTraceWarning((  "%s :  fn   Line  : [%d] timeoffset in Ethwan mode:%s\n", __FUNCTION__,__LINE__,pTimeOffset));
+        }
+    else
+    {
+    	platform_hal_getTimeOffSet(pTimeOffset);
+    }
+#endif
+
     return ANSC_STATUS_SUCCESS;
+
 }
 
 
