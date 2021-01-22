@@ -46,6 +46,7 @@
 #include <ctype.h>
 #include "autoconf.h"
 #include "safec_lib_common.h"
+#include "secure_wrapper.h"
 
 #if defined(_COSA_SIM_)
 
@@ -1609,34 +1610,25 @@ CosaDmlBlkURL_GetEntryByIndex(ULONG index, COSA_DML_BLOCKEDURL *pEntry)
     _ansc_strncpy(pEntry->DeviceName, blkurl.device_name, sizeof(pEntry->DeviceName));
 #endif
 #if defined(CONFIG_CISCO_FEATURE_CISCOCONNECT) || defined(CONFIG_CISCO_PARCON_WALLED_GARDEN)  
-    char cmd[256];
     char str[256];
 
-    snprintf(cmd, sizeof(cmd), "ipset test %u 0.0.0.0 2>&1", blkurl.ins_num);
-
-    FILE *fp = popen(cmd, "r");
+    FILE *fp = v_secure_popen("r", "ipset test %lu 0.0.0.0 2>&1", blkurl.ins_num);
     fgets(str, sizeof(str), fp);
-
+    v_secure_pclose(fp);
+  
     //create ip set if not exists
     if(strstr(str, "does not exist") != NULL) {
-        snprintf(cmd, sizeof(cmd), "ipset create %u hash:ip", blkurl.ins_num);
-        system(cmd);
+        v_secure_system("ipset create %lu hash:ip", blkurl.ins_num);
     }
 
-    pclose(fp);
-
-    snprintf(cmd, sizeof(cmd), "ipset test %u_v6 01::02 2>&1", blkurl.ins_num);
-
-    fp = popen(cmd, "r");
+    fp = v_secure_popen("r", "ipset test %lu_v6 01::02 2>&1", blkurl.ins_num);
     fgets(str, sizeof(str), fp);
-
+    v_secure_pclose(fp);
+  
     //create ip set if not exists
     if(strstr(str, "does not exist") != NULL) {
-        snprintf(cmd, sizeof(cmd), "ipset create %u_v6 hash:ip family inet6 ", blkurl.ins_num);
-        system(cmd);
+        v_secure_system("ipset create %lu_v6 hash:ip family inet6 ", blkurl.ins_num);
     }
-
-    pclose(fp);
 
 #endif
 
@@ -1705,11 +1697,8 @@ CosaDmlBlkURL_AddEntry(COSA_DML_BLOCKEDURL *pEntry)
     else
     {
 #if defined(CONFIG_CISCO_FEATURE_CISCOCONNECT) || defined(CONFIG_CISCO_PARCON_WALLED_GARDEN)  
-        char cmd[128];
-        snprintf(cmd, sizeof(cmd), "ipset create %u hash:ip", blkurl.ins_num);
-        system(cmd);
-        snprintf(cmd, sizeof(cmd), "ipset create %u_v6 hash:ip family inet6 ", blkurl.ins_num);
-        system(cmd);
+        v_secure_system("ipset create %lu hash:ip", blkurl.ins_num);
+        v_secure_system("ipset create %lu_v6 hash:ip family inet6 ", blkurl.ins_num);
 #endif
 
         commonSyseventSet("pp_flush", "1");
@@ -1741,11 +1730,8 @@ CosaDmlBlkURL_DelEntry(ULONG ins)
     else
     {
 #if defined(CONFIG_CISCO_FEATURE_CISCOCONNECT) || defined(CONFIG_CISCO_PARCON_WALLED_GARDEN)  
-        char cmd[128];
-        snprintf(cmd, sizeof(cmd), "ipset destroy %u", ins);
-        system(cmd);
-        snprintf(cmd, sizeof(cmd), "ipset destroy %u_v6", ins);
-        system(cmd);
+        v_secure_system("ipset destroy %lu", ins);
+        v_secure_system("ipset destroy %lu_v6", ins);
 #else
         snprintf(url2ipFilePath, sizeof(url2ipFilePath), URL2IP_PATH, ins);
         remove(url2ipFilePath);
@@ -1814,11 +1800,8 @@ CosaDmlBlkURL_SetConf(ULONG ins, COSA_DML_BLOCKEDURL *pEntry)
     else
     {
 #if defined(CONFIG_CISCO_FEATURE_CISCOCONNECT) || defined(CONFIG_CISCO_PARCON_WALLED_GARDEN)  
-        char cmd[128];
-        snprintf(cmd, sizeof(cmd), "ipset flush %u", blkurl.ins_num);
-        system(cmd);
-        snprintf(cmd, sizeof(cmd), "ipset flush %u_v6", blkurl.ins_num);
-        system(cmd);
+        v_secure_system("ipset flush %lu", blkurl.ins_num);
+        v_secure_system("ipset flush %lu_v6", blkurl.ins_num);
 #else
         char url2ipFilePath[256];
         snprintf(url2ipFilePath, sizeof(url2ipFilePath), URL2IP_PATH, ins);

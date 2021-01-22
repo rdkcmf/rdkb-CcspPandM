@@ -73,6 +73,7 @@
 #include "cosa_x_cisco_com_devicecontrol_apis.h"
 #include "ccsp_hal_dhcpv4_emu_api.h" 
 #include "dmsb_tr181_psm_definitions.h"
+#include "secure_wrapper.h"
 
 #define HTTPD_DEF_CONF  "/etc/lighttpd.conf"
 #define SYSCFG_FILE "/nvram/syscfg.db"
@@ -1206,27 +1207,23 @@ CosaDmlDcGetHTTPSEnable
     return ANSC_STATUS_SUCCESS;
 }
 
-void _get_shell_output(char * cmd, char * out, int len)
+void _get_shell_output(FILE *fp, char *buf, int len)
 {
-    FILE * fp;
-    char   buf[256];
     char * p;
-
-    fp = popen(cmd, "r");
 
     if (fp)
     {
-        fgets(buf, sizeof(buf), fp);
-
-        /*we need to remove the \n char in buf*/
-        if ((p = strchr(buf, '\n'))) *p = 0;
-
-        strncpy(out, buf, len-1);
-
-        pclose(fp);
+        if(fgets (buf, len-1, fp) != NULL)
+        {
+            buf[len-1] = '\0';
+            if ((p = strchr(buf, '\n'))) {
+                *p = '\0';
+            }
+        }
+    v_secure_pclose(fp); 
     }
-
 }
+
 ANSC_STATUS
 CosaDmlDcGetHTTPPort
     (
@@ -1235,11 +1232,10 @@ CosaDmlDcGetHTTPPort
     )
 {
 	char out[128] = {0};
-	char cmd[100];
+	FILE *fp;
 	memset(out,0,sizeof(out));
-        memset(cmd,0,sizeof(cmd));
-        sprintf(cmd, "syscfg get mgmt_wan_httpport");
-        _get_shell_output(cmd, out, sizeof(out));
+        fp = v_secure_popen("r", "syscfg get mgmt_wan_httpport");
+        _get_shell_output(fp, out, sizeof(out));
 
 	if(strncmp(out,"ERROR",5) == 0)
 	{
@@ -1263,11 +1259,10 @@ CosaDmlDcGetHTTPSPort
     )
 {
 	char out[128] = {0};
-	char cmd[100];
+        FILE *fp;
 	memset(out,0,sizeof(out));
-	memset(cmd,0,sizeof(cmd));
-	sprintf(cmd, "syscfg get mgmt_wan_httpsport");
-	_get_shell_output(cmd, out, sizeof(out));
+        fp = v_secure_popen("r","syscfg get mgmt_wan_httpsport");
+        _get_shell_output(fp, out, sizeof(out));
 	if(strncmp(out,"ERROR",5) == 0)
 	{
 		/*During syscfg error scenario*/
@@ -1362,9 +1357,7 @@ CosaDmlDcSetHTTPSPort
 static int
 WebServRestart(ULONG Port)
 {
-	char buf[128];
-	snprintf(buf, sizeof(buf), "sed -i 's/.*SERVER\\[\"socket\"\\] == \":.*/\\$SERVER\\[\"socket\"\\] == \":%d\"  { }/1' %s",Port,HTTPD_DEF_CONF);
-        system(buf);
+	v_secure_system("sed -i 's/.*SERVER\\[\"socket\"\\] == \":.*/\\$SERVER\\[\"socket\"\\] == \":%d\"  { }/1' " HTTPD_DEF_CONF,Port);
 
         CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
         if (vsystem("systemctl restart lighttpd") != 0) {
@@ -1387,19 +1380,16 @@ CosaDmlDcSetWebServer(BOOL httpEn, BOOL httpsEn, ULONG httpPort, ULONG httpsPort
     /* do not support disable HTTP/HTTPS */
         conf.httpport = httpPort;
         conf.httpsport = httpsPort;
-	char cmd[50];
 	if(g_httpPort == TRUE)
 	{
-		snprintf(cmd, sizeof(cmd), "syscfg set mgmt_wan_httpport %ld",httpPort);
-		system(cmd);
+                v_secure_system("syscfg set mgmt_wan_httpport %ld",httpPort);
 		system("syscfg commit");
 		WebServRestart(httpPort);
 		g_httpPort = FALSE;
 	}
 	else
 	{
-		snprintf(cmd, sizeof(cmd), "syscfg set mgmt_wan_httpsport %ld",httpsPort);
-		system(cmd);
+		v_secure_system("syscfg set mgmt_wan_httpsport %ld",httpsPort);
 		system("syscfg commit");
 		WebServRestart(httpsPort);
 		g_httpsPort = FALSE;

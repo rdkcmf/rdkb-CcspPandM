@@ -69,6 +69,7 @@
 #include "cosa_routing_apis.h"
 #include "cosa_routing_internal.h"
 #include "dml_tr181_custom_cfg.h"
+#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -578,48 +579,40 @@ COSA_DML_RIPD_CONF CosaDmlRIPDefaultConfig =
 COSA_DML_RIPD_CONF CosaDmlRIPCurrentConfig = {0};
 
 
-void _get_shell_output3(char * cmd, char * out, int len)
+void _get_shell_output3(FILE *fp, char *buf, int len)
 {
-    FILE * fp;
-    char   buf[256];
     char * p;
-
-    fp = popen(cmd, "r");
 
     if (fp)
     {
-        fgets(buf, sizeof(buf), fp);
-        
-        /*we need to remove the \n char in buf*/
-        if ((p = strchr(buf, '\n'))) *p = 0;
-
-        strncpy(out, buf, len-1);
-
-        pclose(fp);        
+        if(fgets (buf, len-1, fp) != NULL)
+        {
+            buf[len-1] = '\0';
+            if ((p = strchr(buf, '\n'))) {
+                *p = '\0';
+            }
+        }
+    v_secure_pclose(fp);
     }
-
 }
 
 #define RIPD_PID_FILE "/var/ripd.pid"
 static int CosaRipdOperation(char * arg)
 {
-    char cmd[256] = {0};
     char out[256] = {0};
     ULONG Index  = 0;
+    char *base = basename(COSA_RIPD_BIN);
     
     if (!strncmp(arg, "stop", 4))
     {
         /* Zebra's configuration is controlled by Utopia. So we need not restart this one */
-        sprintf(cmd, "killall %s", basename(COSA_RIPD_BIN));
-        system(cmd);
+        v_secure_system("killall %s", base);
     }
     else if (!strncmp(arg, "start", 5))
     {
         if ( CosaDmlRIPCurrentConfig.Enable && (CosaDmlRIPCurrentConfig.If1ReceiveEnable || CosaDmlRIPCurrentConfig.If1SendEnable ) )
         {
-            sprintf(cmd, "%s -d -f %s -u root -g root -i %s &", COSA_RIPD_BIN, COSA_RIPD_CUR_CONF, RIPD_PID_FILE);
-            AnscTraceWarning(("CosaRipdOperation -- run cmd:%s\n", cmd));
-            system(cmd);
+            v_secure_system(COSA_RIPD_BIN " -d -f " COSA_RIPD_CUR_CONF " -u root -g root -i " RIPD_PID_FILE " &");
         }
     }
     else if (!strncmp(arg, "restart", 7))
@@ -629,8 +622,7 @@ static int CosaRipdOperation(char * arg)
     }
     else if (!strncmp(arg, "update", 6))
     {
-        sprintf(cmd, "killall -SIGHUP %s", basename(COSA_RIPD_BIN));
-        system(cmd);
+        v_secure_system("killall -SIGHUP %s", base);
     }
 
     return 0;
@@ -2686,8 +2678,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
      * because of "proto" (orig) info,
      * we use "ip -6 route" instead of "route -A inet6".
      */
-    snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname);
-    if ((fp = popen(cmd, "r")) == NULL)
+    if ((fp = v_secure_popen("r", "/fss/gw/usr/sbin/ip -6 route show dev %s", ifname)) == NULL)
         return -1;
 
     entryCnt = g_numRtInfo6;
@@ -2750,7 +2741,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 			entryCnt ++;
 		}
     }
-	pclose(fp);
+        v_secure_pclose(fp);
 	//Fix for issue RDKB-367
 #if defined(_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
     snprintf(cmd, sizeof(cmd), "/fss/gw/usr/sbin/ip -6 route list table main");
@@ -2832,10 +2823,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 static int
 Route6_Add(const char *prefix, const char *gw, const char *dev, int metric)
 {
-#if defined(USE_SYSTEM)
-    char cmd[256];
-    int n;
-#endif
+    int ret;
 
     if (!prefix || !strlen(prefix) || !dev || !strlen(dev)) 
     {
@@ -2843,32 +2831,31 @@ Route6_Add(const char *prefix, const char *gw, const char *dev, int metric)
         return -1;
     }
 
-#if defined(USE_SYSTEM)
-    n = snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s ", prefix, dev);
-    if (gw && strlen(gw))
-        n += snprintf(cmd + n, sizeof(cmd) - n, "via %s ", gw);
-    if (metric != 0)
-        n += snprintf(cmd + n, sizeof(cmd) - n, "metric %d ", metric);
+    if (gw && *gw) {
+        if (metric != 0)
+            ret = v_secure_system("ip -6 route add %s dev %s via %s metric %d", prefix, dev, gw, metric);
+        else
+            ret = v_secure_system("ip -6 route add %s dev %s via %s", prefix, dev, gw);
+    }
+    else {
+        if (metric != 0)
+            ret = v_secure_system("ip -6 route  add %s dev %s metric %d", prefix, dev, metric);
+        else
+            ret = v_secure_system("ip -6 route add %s dev %s", prefix, dev);
+    }
 
-    if (system(cmd) != 0) 
+    if (ret != 0)
     {
         CcspTraceWarning(("%s: fail to add route\n", __FUNCTION__));
         return -1;
     }
-#else
-    /* TODO: */
-#endif
-
     return 0;
 }
 
 static int
 Route6_Del(const char *prefix, const char *gw, const char *dev)
 {
-#if defined(USE_SYSTEM)
-    char cmd[256];
-    int n;
-#endif
+    int ret;
 
     if (!prefix || !strlen(prefix)) 
     {
@@ -2876,57 +2863,56 @@ Route6_Del(const char *prefix, const char *gw, const char *dev)
         return -1;
     }
 
-#if defined(USE_SYSTEM)
-    n = snprintf(cmd, sizeof(cmd), "ip -6 route del %s ", prefix);
-    if (dev && strlen(dev))
-        n += snprintf(cmd + n, sizeof(cmd) - n, "dev %s ", dev);
-    if (gw && strlen(gw))
-        n += snprintf(cmd + n, sizeof(cmd) - n, "via %s ", gw);
+    if (dev && *dev) {
+        if (gw && *gw)
+            ret = v_secure_system("ip -6 route del %s dev %s via %s", prefix, dev, gw);
+        else
+            ret = v_secure_system("ip -6 route del %s dev %s", prefix, dev);
+    }
+    else {
+        if (gw && *gw)
+            ret = v_secure_system("ip -6 route del %s via %s", prefix, gw);
+        else
+            ret = v_secure_system("ip -6 route del %s ", prefix);
+    }
 
-    if (system(cmd) != 0) 
+    if (ret != 0)
     {
         CcspTraceWarning(("%s: fail to delete route\n", __FUNCTION__));
         return -1;
     }
-#else
-    /* TODO: */
-#endif
-
     return 0;
 }
 
 static BOOL
 Route6_IsRouteExist(const char *prefix, const char *gw, const char *dev)
 {
-#if defined(USE_SYSTEM)
-    char cmd[256];
-    int n;
-#endif
+    int ret;
 
     if (!prefix || !strlen(prefix)) 
     {
         return FALSE;
     }
 
-#if defined(USE_SYSTEM)
-    n = snprintf(cmd, sizeof(cmd), "ip -6 route show %s ", prefix);
-    if (dev && strlen(dev))
-        n += snprintf(cmd + n, sizeof(cmd) - n, "dev %s ", dev);
-    if (gw && strlen(gw))
-        n += snprintf(cmd + n, sizeof(cmd) - n, "via %s ", gw);
+    if (dev && *dev) {
+        if (gw && *gw)
+            ret = v_secure_system("ip -6 route show %s dev %s via %s", prefix, dev, gw);
+        else
+            ret = v_secure_system("ip -6 route show %s dev %s", prefix, dev);
+    }
+    else {
+        if (gw && *gw)
+            ret = v_secure_system("ip -6 route show %s via %s", prefix, gw);
+        else
+            ret = v_secure_system("ip -6 route show %s | grep '^' ", prefix);
+        /* since if no route, system will also return 0 (just no line is shown),
+        * we use " | grep '^'" to ensure one line is showed to STDIN */
+    }
 
-	/* since if no route, system will also return 0 (just no line is shown),
-	 * we use " | grep '^'" to ensure one line is showed to STDIN */
-	n += snprintf(cmd + n, sizeof(cmd) - n, " | grep '^' ");
-
-    if (system(cmd) != 0) 
+    if (ret != 0)
     {
         return FALSE;
     }
-#else
-    /* TODO: */
-#endif
-
     return TRUE;
 }
 
@@ -3479,21 +3465,16 @@ Count_NetmaskBitNum(unsigned long netmask)
 int 
 AddRouteEntryToKernel(void *arg)
 {
-    int     index;
-    char    cmd_buf[80] = {0};
+    int     index, ret;
     
     for (index = 0; index < Config_Num; index++) {
         if (Router_Alias[index].Enabled) { // add route entry to kernel when initialize
 #if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
-                    snprintf(cmd_buf, sizeof(cmd_buf), "ip route add %s/%d via %s ",
-                    sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)),
-                    sroute[index].gateway);
+                    ret = v_secure_system("ip route add %s/%d via %s ", sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)), sroute[index].gateway);
 #else
-     	            snprintf(cmd_buf, sizeof(cmd_buf), "ip route add %s/%d via %s table erouter metric %d", 
-                    sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)), 
-                    sroute[index].gateway, sroute[index].metric);
+                    ret = v_secure_system("ip route add %s/%d via %s table erouter metric %d", sroute[index].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[index].netmask)), sroute[index].gateway, sroute[index].metric);
 #endif
-            if (system(cmd_buf) != 0)
+            if (ret != 0)
             {
                 Router_Alias[index].Enabled = FALSE;
             }
@@ -3863,36 +3844,36 @@ CosaDmlRoutingAddV4Entry
 
 #if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
          /* add new route entry */
-    snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s ",
-                        pEntry->DestIPAddress.Dot[0],
-            pEntry->DestIPAddress.Dot[1],
-            pEntry->DestIPAddress.Dot[2],
-            pEntry->DestIPAddress.Dot[3],
-                        Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
-                        inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)));
+    if(AnscSizeOfString(pEntry->Interface))
+    {
+        if(err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s %s %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), "dev", pEntry->Interface) != 0) {
+            returnStatus = ANSC_STATUS_FAILURE;
+        }
+    }
+    else
+    {
+        if(err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value))) != 0) {
+            returnStatus = ANSC_STATUS_FAILURE;
+        }
+    }
+        
 #else
     /* add new route entry */
     metric = (pEntry->ForwardingMetric)?pEntry->ForwardingMetric+1:pEntry->ForwardingMetric;
-    snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s table erouter metric %d ", 
-			pEntry->DestIPAddress.Dot[0],
-            pEntry->DestIPAddress.Dot[1],
-            pEntry->DestIPAddress.Dot[2],
-            pEntry->DestIPAddress.Dot[3],
-			Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
-			inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)),
-			metric);
-#endif
 
     if(AnscSizeOfString(pEntry->Interface))
     {
-        sprintf(buf, "%s %s ", "dev", pEntry->Interface);
-        strncat(cmd, buf, strlen(buf));
+        if(err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s table erouter metric %d %s %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), metric, "dev", pEntry->Interface) != 0) {
+            returnStatus = ANSC_STATUS_FAILURE;
+        }
     }
-
-    if((err = system(cmd)) != 0) {
-        returnStatus = ANSC_STATUS_FAILURE;
+    else
+    {
+        if(err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s table erouter metric %d ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), metric) != 0) {
+            returnStatus = ANSC_STATUS_FAILURE;
+        }
     }
-
+#endif
     if (returnStatus == ANSC_STATUS_SUCCESS)
     {
         pEntry->Enable           = TRUE;
@@ -4008,27 +3989,31 @@ CosaDmlRoutingDelV4Entry
         /* delete the previous one */
         uindex = Router_Alias[index].Index;
 #if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
-                snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip,
-                        Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
-#else
-    	snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s table erouter metric %d ", sroute[uindex].dest_lan_ip, 
-			Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric);
-#endif
-
-    	if(AnscSizeOfString(sroute[uindex].dest_intf))
-    	{
-        	sprintf(buf, "%s %s ", "dev", sroute[uindex].dest_intf);
-            strncat(cmd, buf, strlen(buf));
-    	}
-
-    	if((err = system(cmd)) != 0) {
-            CcspTraceWarning(("CosaDmlRoutingDelV4Entry delete failure, %s\n", strerror(errno)));
-        	returnStatus = ANSC_STATUS_FAILURE;
+        if(AnscSizeOfString(sroute[uindex].dest_intf))
+        {
+            err = v_secure_system("ip route del %s/%d via %s %s %s ", sroute[uindex].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, "dev", sroute[uindex].dest_intf);
         }
-
+        else 
+        {
+            err = v_secure_system("ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
+        }
         break;
+#else
+        if(AnscSizeOfString(sroute[uindex].dest_intf))
+        {
+            err = v_secure_system("ip route del %s/%d via %s table erouter metric %d %s %s ", sroute[uindex].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric, "dev", sroute[uindex].dest_intf);
+        }
+        else
+        {
+            err = v_secure_system("ip route del %s/%d via %s table erouter metric %d ", sroute[uindex].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric);
+        }
+        break;
+#endif
     }
-
+    if (err) {
+        CcspTraceWarning(("CosaDmlRoutingDelV4Entry delete failure, %s\n", strerror(errno)));
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
     snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%d_alias", 
             pEntry->InstanceNumber);
     Utopia_RawSet(&ctx, NULL, cmd, NULL);
@@ -4148,23 +4133,26 @@ CosaDmlRoutingSetV4Entry
         /* First delete the previous one */
         uindex = Router_Alias[index].Index;
 #if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
-                snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip,
-                        Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
-#else
-    	snprintf(cmd, sizeof(cmd), "ip route del %s/%d via %s table erouter metric %d ", sroute[uindex].dest_lan_ip, 
-			Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric);
-#endif
-
-    	if(AnscSizeOfString(sroute[uindex].dest_intf))
-    	{
-        	sprintf(buf, "%s %s ", "dev", sroute[uindex].dest_intf);
-            strncat(cmd, buf, strlen(buf));
-    	}
-
-    	if((err = system(cmd)) != 0) {
-            CcspTraceWarning(("CosaDmlRoutingDelV4Entry delete failure, %s\n", strerror(errno)));
+        if(AnscSizeOfString(sroute[uindex].dest_intf))
+        {
+            err = v_secure_system("ip route del %s/%d via %s %s %s ", sroute[uindex].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, "dev", sroute[uindex].dest_intf);
         }
-
+        else
+        {
+            err = v_secure_system("ip route del %s/%d via %s ", sroute[uindex].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway);
+        }
+        break;
+#else
+        if(AnscSizeOfString(sroute[uindex].dest_intf))
+        {
+            err = v_secure_system("ip route del %s/%d via %s table erouter metric %d %s %s ", sroute[uindex].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric, "dev", sroute[uindex].dest_intf);
+        }
+        else
+        {
+            err = v_secure_system("ip route del %s/%d via %s table erouter metric %d ", sroute[uindex].dest_lan_ip, Count_NetmaskBitNum(inet_addr(sroute[uindex].netmask)), sroute[uindex].gateway, metric);
+        }
+        break;
+#endif
         pEntry->Status           = 1;
 
         /* Then add the new one */
@@ -4194,37 +4182,27 @@ CosaDmlRoutingSetV4Entry
                 );
         strncpy(sroute[uindex].dest_intf, pEntry->Interface, 9);
 #if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
-                snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s ",
-                 pEntry->DestIPAddress.Dot[0],
-                 pEntry->DestIPAddress.Dot[1],
-                 pEntry->DestIPAddress.Dot[2],
-                 pEntry->DestIPAddress.Dot[3],
-                 Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
-                 inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)));
-#else
-
-        metric = (pEntry->ForwardingMetric)?pEntry->ForwardingMetric+1:pEntry->ForwardingMetric;
-        snprintf(cmd, sizeof(cmd), "ip route add %d.%d.%d.%d/%d via %s table erouter metric %d ", 
-                 pEntry->DestIPAddress.Dot[0],
-                 pEntry->DestIPAddress.Dot[1],
-                 pEntry->DestIPAddress.Dot[2],
-                 pEntry->DestIPAddress.Dot[3],
-                 Count_NetmaskBitNum(pEntry->DestSubnetMask.Value),
-                 inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)),
-                 metric);
-#endif
-
         if(AnscSizeOfString(pEntry->Interface))
         {
-            sprintf(buf, "%s %s ", "dev", pEntry->Interface);
-            strncat(cmd, buf, strlen(buf));
+            err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s %s %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), "dev", pEntry->Interface);
         }
-
-        if((err = system(cmd)) != 0) {
-            CcspTraceWarning(("CosaDmlRoutingSetV4Entry add failure, %s\n", strerror(errno)));
-            returnStatus = ANSC_STATUS_FAILURE;
+        else
+        {
+            err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)));
         }
-
+        break;
+#else
+        metric = (pEntry->ForwardingMetric)?pEntry->ForwardingMetric+1:pEntry->ForwardingMetric;
+        if(AnscSizeOfString(pEntry->Interface))
+        {
+            err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s table erouter metric %d %s %s ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), metric, "dev", pEntry->Interface);
+        }
+        else
+        {
+            err = v_secure_system("ip route add %d.%d.%d.%d/%d via %s table erouter metric %d ", pEntry->DestIPAddress.Dot[0], pEntry->DestIPAddress.Dot[1], pEntry->DestIPAddress.Dot[2], pEntry->DestIPAddress.Dot[3], Count_NetmaskBitNum(pEntry->DestSubnetMask.Value), inet_ntoa(*(struct in_addr *)&(pEntry->GatewayIPAddress.Value)), metric);
+        }
+        break;
+#endif
         if (returnStatus == ANSC_STATUS_SUCCESS)
         {
             pEntry->Status           = 2;
@@ -4249,7 +4227,10 @@ CosaDmlRoutingSetV4Entry
 
         break;
     }
-
+    if (err) {
+        CcspTraceWarning(("CosaDmlRoutingSetV4Entry add failure, %s\n", strerror(errno)));
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
     return returnStatus;
 }
 
@@ -5550,8 +5531,7 @@ static int _routeinfo_get_lft(char * prefix, char * lft_str, int lft_str_size)
     int   expire_time = 0;
     int   found = 0;
 
-    sprintf(buf, "ip -6 route show > %s", TMP_ROUTEINFO_OUTPUT);
-    system(buf);
+    v_secure_system("ip -6 route show > " TMP_ROUTEINFO_OUTPUT);
 
     fp = fopen(TMP_ROUTEINFO_OUTPUT, "r");
     if (fp)

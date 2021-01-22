@@ -61,6 +61,7 @@
 **************************************************************************/
 
 #include "cosa_x_cisco_com_security_apis.h"
+#include "secure_wrapper.h"
 
 #ifdef _COSA_SIM_
 
@@ -5211,15 +5212,11 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
             continue;
         //sprintf(fName, "%s/%s", FIREWALL_LOG_DIR,ptr.d_name);
 
-        memset(str, 0, sizeof(str));
-        sprintf(str, "cat %s/%s >> %s", FIREWALL_LOG_DIR,ptr.d_name,MERGED_FW_LOG_FILE);
-        system(str);
+        v_secure_system("cat %s/%s >> %s", FIREWALL_LOG_DIR,ptr.d_name,MERGED_FW_LOG_FILE);
     }
 
     /* Sort the logs in descending order of timestamp*/
-    memset(str, 0, sizeof(str));
-    sprintf(str, "grep Time %s | sort -r -k2,5 > %s", MERGED_FW_LOG_FILE, SORT_FW_LOG_FILE);
-    system(str);
+    v_secure_system("grep Time " MERGED_FW_LOG_FILE " | sort -r -k2,5 > " SORT_FW_LOG_FILE);
         /* Check log time format */
 		/* Old timestemp not include year, 
  		 * add year to support it */
@@ -5256,9 +5253,7 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
             }   
         }
 #endif
-    memset(str, 0, sizeof(str));
-    sprintf(str, "rm -rf %s %s", MERGED_FW_LOG_FILE, SORT_FW_LOG_FILE);  
-    system(str);
+    v_secure_system("rm -f " MERGED_FW_LOG_FILE " " SORT_FW_LOG_FILE);
 
     closedir(dir);
     return entry;
@@ -5325,29 +5320,16 @@ CosaDmlIaGetLogEntries
 #ifdef FWLOG_SUPPORT_OLD_LOCATION
     }
 #endif
-        
-    /* Generate current log message */
-    system(GEN_CURRENT_LOG_CMD);
+    v_secure_system(GEN_CURRENT_LOG_CMD "; mkdir -p " FIREWALL_LOG_DIR "; log_handle.sh uncompress_fwlog " FIREWALL_LOG_DIR);
 
-    sprintf(temp, "mkdir -p %s", FIREWALL_LOG_DIR);
-    //printf("%s\n", temp);
-    system(temp);
-
-    sprintf(temp, "log_handle.sh uncompress_fwlog %s", FIREWALL_LOG_DIR);
-    //printf("%s\n", temp);
-    system(temp);
-
-    sprintf(temp, "cp %s/???????? %s 2> /dev/null", fw_log_path, FIREWALL_LOG_DIR);
-//printf("%s\n", temp);
-    system(temp);
+    v_secure_system("cp %s/???????? " FIREWALL_LOG_DIR " 2> /dev/null", fw_log_path);
 
 printf("%d\n",__LINE__);
     /* get all log information */
     pConf = _get_log(pulCount);
 
 //printf("%d pulCount %d \n",__LINE__, *pulCount);
-    sprintf(temp, "rm -r %s", FIREWALL_LOG_DIR);
-    system(temp);
+    v_secure_system("rm -r " FIREWALL_LOG_DIR);
     return pConf;
 }
 static PCOSA_DML_IA_LOG_ENTRY pFWLogBuf = NULL;
@@ -5440,27 +5422,14 @@ CosaDmlIaGetALLLogEntries
             FWLogNum = 0;
             pFWLogBuf = NULL;
         }
+        v_secure_system(GEN_CURRENT_LOG_CMD "; mkdir -p " FIREWALL_LOG_DIR "; log_handle.sh uncompress_fwlog " FIREWALL_LOG_DIR);
 
-        /* Generate current log message */
-        system(GEN_CURRENT_LOG_CMD);
-
-        sprintf(temp, "mkdir -p %s", FIREWALL_LOG_DIR);
-        //printf("%s\n", temp);
-        system(temp);
-
-        sprintf(temp, "log_handle.sh uncompress_fwlog %s", FIREWALL_LOG_DIR);
-        //printf("%s\n", temp);
-        system(temp);
-
-        sprintf(temp, "cp %s/???????? %s 2> /dev/null", fw_log_path, FIREWALL_LOG_DIR);
-    //printf("%s\n", temp);
-        system(temp);
+        v_secure_system("cp %s/???????? " FIREWALL_LOG_DIR " 2> /dev/null", fw_log_path);
 
         /* get all log information */
         pFWLogBuf = _get_log(&FWLogNum);
     //printf("%d pulCount %d \n",__LINE__, *pulCount);
-        sprintf(temp, "rm -r %s", FIREWALL_LOG_DIR);
-        system(temp);
+        v_secure_system("rm -r " FIREWALL_LOG_DIR);
     }
     if(FWLogNum == 0){
         pValue[0] = '\0';
@@ -5561,8 +5530,7 @@ static int ssmtp_send(const char *msgFilePath, const char *subject, const char *
 
     strncpy(attachmentPathCopy, attachmentPath, sizeof(attachmentPathCopy));
 
-    snprintf(buf, sizeof(buf), "(((cat %s; echo 'Subject: %s'; echo; echo; uuencode %s %s) | ssmtp %s) && rm %s) &", msgFilePath, subject, attachmentPath, basename(attachmentPathCopy), recipient, attachmentPath);
-    system(buf);
+    v_secure_system("(((cat %s; echo 'Subject: %s'; echo; echo; uuencode %s %s) | ssmtp %s) && rm %s) &", msgFilePath, subject, attachmentPath, basename(attachmentPathCopy), recipient, attachmentPath);
 
     return 0;
 }
@@ -5578,16 +5546,12 @@ static int prepare_firewall_log(char *logFilePath)
 
     curTime=time(NULL); 
     localtime_r(&curTime, &localTime); 
-    
-    system("grep 'UTOPIA: FW' /var/log/kernel > /var/fwlog");
 
     snprintf(logFilePath, MAX_PATH_LEN, "/var/%s_%d_%d_%d_%d_%d_%d.txt", logTypeName, localTime.tm_year+1900, localTime.tm_mon+1, localTime.tm_mday, localTime.tm_hour, localTime.tm_min, localTime.tm_sec); 
     
     //compress attachment if necessary
     //snprintf(buf, sizeof(buf), "tar cvf %s /var/fwlog", logFilePath);
-    snprintf(buf, sizeof(buf), "cp /var/fwlog %s && rm -rf /var/fwlog", logFilePath);
-
-    system(buf);
+    v_secure_system("grep 'UTOPIA: FW' /var/log/kernel > %s", logFilePath);
     
     return 0;
 }

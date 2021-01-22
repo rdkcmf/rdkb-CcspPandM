@@ -73,7 +73,8 @@
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
 #include "platform_hal.h"
- 
+#include "secure_wrapper.h"
+
 #include <utctx.h>
 #include <utctx_api.h>
 #include <utapi.h>
@@ -590,21 +591,15 @@ CosaDmlGetCloudUIReachableStatus
 	if( bProcessFuther )
 	{
 		FILE  *fp;
-		char   cmdBuff[512]   = { 0 },
-			   retBuff[256]   = { 0 };
+                char   retBuff[256]   = { 0 };
 		int    curlResponse   = 0;
-
-		snprintf( cmdBuff,
-				  sizeof( cmdBuff ),	
-				  "curl --connect-timeout 10 --interface erouter0 --write-out %%{http_code} --silent --output /dev/null %s",
-				  pCloudPersonalizationURL);
-		
-		fp = popen( cmdBuff, "r" );
+                
+                fp = v_secure_popen( "r", "curl --connect-timeout 10 --interface erouter0 --write-out %%{http_code} --silent --output /dev/null '%s'", pCloudPersonalizationURL );
 
 		if( NULL != fp )
 		{
 			fgets( retBuff, sizeof(retBuff), fp );
-			pclose(fp);
+                        v_secure_pclose(fp);
 			curlResponse = atoi(retBuff);
 
 			CcspTraceInfo(("URL[ %s ] curlResponse[ %d ]\n",
