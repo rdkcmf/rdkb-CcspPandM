@@ -135,8 +135,7 @@
 
 #include "platform_hal.h"
 #include "autoconf.h"     
-#include "secure_wrapper.h"
-
+ 
 #define _ERROR_ "NOT SUPPORTED"
 #define _START_TIME_12AM_ "0"
 #define _END_TIME_3AM_ "10800"
@@ -288,7 +287,8 @@ static const int NOK = 0 ;
 static char reverseSSHArgs[255] = { "\0" };
 const char* sshCommand = "/lib/rdk/startTunnel.sh";
 #ifdef ENABLE_SHORTS
-#define stunnelCommand "/lib/rdk/startStunnel.sh"
+const char *stunnelCommand = "/lib/rdk/startStunnel.sh";
+static char stunnelSSHArgs[255] = { "\0" };
 #endif
 const char* rsshPidFile = "/var/tmp/rssh.pid";
 
@@ -721,7 +721,10 @@ CosaDmlDiSetProvisioningCode
 void uploadLogUtilityThread(void* vptr_value)
 {
 	pthread_detach(pthread_self());
-	v_secure_system("/rdklogger/opsLogUpload.sh %s &", (char *) vptr_value);
+	char uploadOnRequest[150];
+	char *str = (char *) vptr_value;
+	snprintf(uploadOnRequest,sizeof(uploadOnRequest),"sh /rdklogger/opsLogUpload.sh %s &",str);
+	system(uploadOnRequest);
 	return;
 
 }
@@ -1040,33 +1043,20 @@ isValidInput
 	{
 		returnStatus = ANSC_STATUS_FAILURE;
 	}
-        int port = 0;
-        int i = 0;
-        char* tok;
-        char *host = strdup(inputparam);
-        if (! host) {
-            returnStatus = ANSC_STATUS_FAILURE;
-        }
-        else {
-            tok = strtok(host, ":");
-            if (tok != NULL) {
-                while(host[i] != '\0') {
-                    if(((host[i] >='A') &&(host[i]<='Z')) || ((host[i]>='a') && (host[i]<='z')) || ((host[i] >= '0') && (host[i] <= '9')) || (host[i] == '.') || (host[i] == '-') || (host[i] == '_'))
-                        i++;
-                    else {
-                        returnStatus = ANSC_STATUS_FAILURE;
-                    }
-                }
-                tok = strtok (NULL, ":");
-                if (tok != NULL) 
-                {
-                    port = _ansc_atoi(tok);
-                    if ((port <= 0) || (port > 65535))
-                        returnStatus = ANSC_STATUS_FAILURE;
-                }
-            }
-        free(host);
-        }
+	else if(strstr(inputparam,";")) // check for possible command injection 
+	{
+		returnStatus = ANSC_STATUS_FAILURE;
+	}
+	else if(strstr(inputparam,"&"))
+	{
+		returnStatus = ANSC_STATUS_FAILURE;
+	}
+	else if(strstr(inputparam,"|"))
+	{
+		returnStatus = ANSC_STATUS_FAILURE;
+	}
+	else if(strstr(inputparam,"'"))
+		returnStatus = ANSC_STATUS_FAILURE;
 
 	if(ANSC_STATUS_SUCCESS == returnStatus)
 	{
@@ -1941,6 +1931,7 @@ int setXOpsReverseSshArgs(char* pString) {
 #ifdef ENABLE_SHORTS
     } else {
         strncpy(tempCopy, pString, inputMsgSize);
+        memset(stunnelSSHArgs,'\0',sizeof(stunnelSSHArgs));
         tempStr = (char*) strtok_r(tempCopy, ";", &st);
         while (NULL != tempStr) {
             if(value = strstr(tempStr, "type=")) {
@@ -1964,9 +1955,13 @@ int setXOpsReverseSshArgs(char* pString) {
         // for arguments for script in the form " ip_version_number + localIP + remoteIP + remotePort + remoteTerminalRows
         //                                        + remoteTerminalColumns"
         if(host != NULL) {
-            v_secure_system(stunnelCommand " %s %s %s %s %d %d &", ip_version_number, localIP, host, callbackport, rows, columns);
+            sprintf(stunnelSSHArgs,"%s %s %s %s %s %d %d &",stunnelCommand, ip_version_number, localIP, host, callbackport, rows, columns);
+            if(host != NULL) {
                 free(host);
                 host = NULL;
+            }
+            AnscTraceWarning(("StunnelSSH Command =%s !!!\n",stunnelSSHArgs));
+            system(stunnelSSHArgs);
         } else {
             AnscTraceWarning(("Warning !!! Did not get all args to execute SHORTS path!!!\n"));
         }
@@ -2468,12 +2463,16 @@ void ConvertTime(int time, char day[], char hour[], char mins[]) {
 
 //Handle UniqueTelemetry Cron Job
 void UniqueTelemetryCronJob(enable, timeInterval, tagString) {
+        char command[256] = {0};
         char day[5] = {0}, hour[5]={0}, mins[5] = {0};
 
         if(enable) {       //Add unique_telemetry_id Cron job to job list
             if( timeInterval != 0 && strlen(tagString) > 0) {
                 ConvertTime(timeInterval, day, hour, mins);      // Convert time interval
-                v_secure_system("( crontab -l | grep -v '/usr/ccsp/pam/unique_telemetry_id.sh' ; echo '%s %s %s * * /usr/ccsp/pam/unique_telemetry_id.sh' ) | crontab -", mins, hour, day);
+
+                system("crontab -l | grep -v '/usr/ccsp/pam/unique_telemetry_id.sh'  | crontab -");     //Remove unique_telemetry_id Cron job if already exists
+                sprintf(command, "(crontab -l ; echo \"%s %s %s * * /usr/ccsp/pam/unique_telemetry_id.sh\") | crontab -", mins, hour, day);
+                system(command);
             }
         }
         else {          //Remove unique_telemetry_id Cron job from job list
@@ -2529,7 +2528,9 @@ CosaDmlDiUiBrandingInit
 	memset(PUiBrand, 0, sizeof(COSA_DATAMODEL_RDKB_UIBRANDING));
 	if (access(PARTNERS_INFO_FILE, F_OK) != 0)	
 	{
-		v_secure_system("cp /etc/partners_defaults.json " PARTNERS_INFO_FILE);
+		snprintf(cmd, sizeof(cmd), "cp %s %s", "/etc/partners_defaults.json", PARTNERS_INFO_FILE);
+		CcspTraceWarning(("%s\n",cmd));
+		system(cmd);
 	}
 
 

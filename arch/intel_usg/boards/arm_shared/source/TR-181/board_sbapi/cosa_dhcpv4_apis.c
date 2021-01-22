@@ -104,7 +104,6 @@
 #include <sys/stat.h>
 #include <sys/file.h>
 #include <fcntl.h>
-#include "secure_wrapper.h"
 
 #ifdef CONFIG_SYSTEM_MOCA
 #include "moca_hal.h"
@@ -2511,6 +2510,8 @@ CosaDmlDhcpsAddSaddr
 {
     int rc = -1;
     UtopiaContext ctx;
+    char mac_string[64]={0};
+    char command_string[128]={0};
 
     if(ulPoolInstanceNumber != 1){
         syslog(LOG_ERR, "SBAPI->CosaDmlDhcpsAddSaddr:Instance number of DHCP Pool is not 1");
@@ -2523,7 +2524,18 @@ CosaDmlDhcpsAddSaddr
 
     unlink(LAN_NOT_RESTART_FLAG);
 
-    v_secure_system("ip nei | grep %02x:%02x:%02x:%02x:%02x:%02x > /dev/null || touch " LAN_NOT_RESTART_FLAG, pEntry->Chaddr[0], pEntry->Chaddr[1], pEntry->Chaddr[2], pEntry->Chaddr[3], pEntry->Chaddr[4], pEntry->Chaddr[5]);
+    _ansc_sprintf(mac_string, "%02x:%02x:%02x:%02x:%02x:%02x",
+            pEntry->Chaddr[0],
+            pEntry->Chaddr[1],
+            pEntry->Chaddr[2],
+            pEntry->Chaddr[3],
+            pEntry->Chaddr[4],
+            pEntry->Chaddr[5]);
+
+    _ansc_sprintf(command_string, "ip nei | grep %s > /dev/null || touch %s",
+                    mac_string, LAN_NOT_RESTART_FLAG);
+
+    system(command_string);
 
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -2576,6 +2588,8 @@ CosaDmlDhcpsSetSaddr
 {
     int rc = -1;
     UtopiaContext ctx;
+    char mac_string[64]={0};
+    char command_string[128]={0};
 
     if(ulPoolInstanceNumber != 1){
         syslog(LOG_ERR, "SBAPI->CosaDmlDhcpsSetSaddr:Instance number of DHCP Pool is not 1");
@@ -2588,7 +2602,18 @@ CosaDmlDhcpsSetSaddr
 
     unlink(LAN_NOT_RESTART_FLAG);
 
-    v_secure_system("ip nei | grep %02x:%02x:%02x:%02x:%02x:%02x > /dev/null || touch " LAN_NOT_RESTART_FLAG, pEntry->Chaddr[0], pEntry->Chaddr[1], pEntry->Chaddr[2], pEntry->Chaddr[3], pEntry->Chaddr[4], pEntry->Chaddr[5]);
+    _ansc_sprintf(mac_string, "%02x:%02x:%02x:%02x:%02x:%02x",
+            pEntry->Chaddr[0],
+            pEntry->Chaddr[1],
+            pEntry->Chaddr[2],
+            pEntry->Chaddr[3],
+            pEntry->Chaddr[4],
+            pEntry->Chaddr[5]);
+
+    _ansc_sprintf(command_string, "ip nei | grep %s > /dev/null || touch %s",
+                    mac_string, LAN_NOT_RESTART_FLAG);
+
+    system(command_string);
 
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -3055,7 +3080,8 @@ int sbapi_get_dhcpv4_active_number(int index, ULONG minAddress, ULONG maxAddress
 	if(stat(COSA_DML_DHCP_LEASES_FILE, &fState)){
 		return(0);
 	}
-	v_secure_system("cp " COSA_DML_DHCP_LEASES_FILE " /var/dhcpClientList");
+	snprintf(buffer,sizeof(buffer),"cp %s /var/dhcpClientList", COSA_DML_DHCP_LEASES_FILE);
+	system(buffer);
 
 	snprintf(buffer,sizeof(buffer),"/var/dhcpClientList", COSA_DML_DHCP_LEASES_FILE);
 	fp=fopen(buffer,"r");
@@ -3512,7 +3538,7 @@ CosaDmlDhcpsGetClient
     return ANSC_STATUS_FAILURE;
 }
 
-int _get_shell_output2(FILE *fp, char * dststr);
+int _get_shell_output2(char * cmd, char * dststr);
 
 ANSC_STATUS
 CosaDmlDhcpsPing
@@ -3520,12 +3546,14 @@ CosaDmlDhcpsPing
         PCOSA_DML_DHCPSV4_CLIENT_IPADDRESS    pDhcpsClient
     )
 {
+    UCHAR     cmd[256] = {0};
     char      out[256] = {0};
     ULONG     i        = 0;
 
     /*ping -w 2 -c 1 fe80::225:2eff:fe7d:5b5 */
-    fp = v_secure_popen("r", "ping -W 1 -c 1 %s", _ansc_inet_ntoa(*((struct in_addr*)&(pDhcpsClient->IPAddress))));
-    if ( _get_shell_output2(fp, "0 packets received"))
+    _ansc_sprintf(cmd, "ping -W 1 -c 1 %s\n", _ansc_inet_ntoa(*((struct in_addr*)&(pDhcpsClient->IPAddress))) );
+
+    if ( _get_shell_output2(cmd, "0 packets received"))
     {
         /*1 packets transmitted, 0 packets received, 100% packet loss*/
         return ANSC_STATUS_FAILURE;
@@ -3543,11 +3571,13 @@ CosaDmlDhcpsARPing
         PCOSA_DML_DHCPSV4_CLIENT_IPADDRESS    pDhcpsClient
     )
 {
-    FILE *fp;
+    UCHAR     cmd[256] = {0};
+    char      out[256] = {0};
     ULONG     i        = 0;
 
-    fp = v_secure_popen("r", "arping -I %s -c 2 -f -w 1 %s", LAN_L3_IFNAME, _ansc_inet_ntoa(*((struct in_addr*)&(pDhcpsClient->IPAddress))) );
-    if ( _get_shell_output2(fp, "Received 0 reply"))
+    _ansc_sprintf(cmd, "arping -I %s -c 2 -f -w 1 %s\n", LAN_L3_IFNAME, _ansc_inet_ntoa(*((struct in_addr*)&(pDhcpsClient->IPAddress))) );
+
+    if ( _get_shell_output2(cmd, "Received 0 reply"))
     {
         /*1 packets transmitted, 0 packets received, 100% packet loss*/
         return ANSC_STATUS_FAILURE;

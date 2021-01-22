@@ -69,7 +69,6 @@
 #include "cosa_deviceinfo_apis.h"
 #include "cosa_deviceinfo_apis_custom.h"
 #include "dml_tr181_custom_cfg.h" 
-#include "secure_wrapper.h"
 
 #include "ccsp_psm_helper.h"            // for PSM_Get_Record_Value2
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
@@ -122,13 +121,14 @@ void GetInterfaceName(char interface_name[50],char conf_file[100])
         int count = 0;
         char *interface;
         if(strcmp(conf_file,"/nvram/hostapd1.conf") == 0)
-                fp = popen("grep -w interface /nvram/hostapd1.conf","r");
+                fp = popen("cat /nvram/hostapd1.conf | grep -w interface","r");
         else if(strcmp(conf_file,"/nvram/hostapd0.conf") == 0)
-                fp = popen("grep -w interface /nvram/hostapd0.conf","r");
+                fp = popen("cat /nvram/hostapd0.conf | grep -w interface","r");
         else if(strcmp(conf_file,"/nvram/hostapd5.conf") == 0)
-                fp = popen("grep -w interface /nvram/hostapd5.conf","r");
+                fp = popen("cat /nvram/hostapd5.conf | grep -w interface","r");
         else if(strcmp(conf_file,"/nvram/hostapd4.conf") == 0)
-                fp = popen("grep -w interface /nvram/hostapd4.conf","r");
+                fp = popen("cat /nvram/hostapd4.conf | grep -w interface","r");
+        if(fp == NULL)
         {
                 printf("Failed to run command in Function %s\n",__FUNCTION__);
                 return 0;
@@ -158,7 +158,7 @@ void GetInterfaceName_virtualInterfaceName_2G(char interface_name[50])
         char path[256] = {0},output_string[256] = {0};
         int count = 0;
         char *interface;
-        fp = popen("grep -w bss /nvram/hostapd0.conf","r");
+        fp = popen("cat /nvram/hostapd0.conf | grep -w bss","r");
         if(fp == NULL)
         {
                 printf("Failed to run command in Function %s\n",__FUNCTION__);
@@ -242,14 +242,15 @@ void killXfinityWiFi()//LNT_EMU
 	system("killall CcspHotspot");
         system("killall hotspot_arpd");
         system("brctl delif brlan1 gretap0.100");
-        v_secure_system("brctl delif brlan1 %s", virtual_interface_name);
-
+	sprintf(buf,"%s %s","brctl delif brlan1",virtual_interface_name);
+	system(buf);
         //system("brctl delif brlan1 wlan0_0");
         system("ifconfig brlan1 down");
         system("brctl delbr brlan1");
         system("vconfig rem gretap0.100");
         system("brctl delif brlan2 gretap0.101");
-        v_secure_system("brctl delif brlan2 %s", interface_name);
+	sprintf(buf,"%s %s","brctl delif brlan2",interface_name);
+        system(buf);
 
         //system("brctl delif brlan2 wlan2");
         system("ifconfig brlan2 down");

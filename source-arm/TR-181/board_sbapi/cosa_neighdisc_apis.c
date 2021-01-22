@@ -67,7 +67,6 @@
 #include "cosa_apis.h"
 #include "cosa_neighdisc_apis.h"
 #include "cosa_neighdisc_internal.h"
-#include "secure_wrapper.h"
 
 /*
  *    Because we need interface's Alias to build connection request URL addr,
@@ -1108,6 +1107,8 @@ void CosaDmlNeighborTableGetEntry
         PCOSA_DML_NEIGHTABLE_INFO*  ppNbTbl
     )
 {
+    char    cmd[]      = "ip -6 neigh show |grep -E 'brlan0' > " NEIGHBOR_TABLE_RESULT_FILE "\n";
+    char    cmd2[]     = "grep lladdr -c " NEIGHBOR_TABLE_RESULT_FILE "> " NEIGHBOR_TABLE_LINENUM_FILE "\n";
     FILE*   fp         = NULL;
     char    buf[128]   = {0};
     int     counter    = 0;
@@ -1121,8 +1122,8 @@ void CosaDmlNeighborTableGetEntry
         *pulInstanceNumber = 0;
     }
 
-    v_secure_system("ip -6 neigh show |grep -E 'brlan0' > " NEIGHBOR_TABLE_RESULT_FILE );
-    v_secure_system("grep lladdr -c " NEIGHBOR_TABLE_RESULT_FILE "> " NEIGHBOR_TABLE_LINENUM_FILE );
+    system(cmd);
+    system(cmd2);
     
     fp = fopen(NEIGHBOR_TABLE_LINENUM_FILE, "r");
     if (NULL != fp) {

@@ -5198,6 +5198,7 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
 static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
     struct dirent ptr;
     PCOSA_DML_IA_LOG_ENTRY entry = NULL;
+    char str[128];
 
     *count = 0;
         /* Check log time format */
@@ -5234,7 +5235,9 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
             }   
         }
 #endif
-    v_secure_system("rm -f " MERGED_FW_LOG_FILE " " SORT_FW_LOG_FILE);  
+    memset(str, 0, sizeof(str));
+    sprintf(str, "rm -rf %s %s", MERGED_FW_LOG_FILE, SORT_FW_LOG_FILE);  
+    system(str);
 
     return entry;
 }
@@ -5274,6 +5277,7 @@ CosaDmlIaGetLogEntries
     )
 {
     char fw_log_path[50];
+    char temp[1024];
     static int first_flg = 1;
 
     PCOSA_DML_IA_LOG_ENTRY pConf = NULL;
@@ -5299,14 +5303,20 @@ CosaDmlIaGetLogEntries
 #ifdef FWLOG_SUPPORT_OLD_LOCATION
     }
 #endif
-        v_secure_system(GEN_CURRENT_LOG_CMD "; mkdir -p " FIREWALL_LOG_DIR " ;log_handle.sh uncompress_fwlog " FIREWALL_LOG_DIR " %s",fw_log_path);
+        
+    /* Generate current log message */
+    system(GEN_CURRENT_LOG_CMD);
+
+        sprintf(temp, "mkdir -p %s ;log_handle.sh uncompress_fwlog %s %s", FIREWALL_LOG_DIR,FIREWALL_LOG_DIR,fw_log_path);
+        system(temp);
 
 printf("%d\n",__LINE__);
     /* get all log information */
     pConf = _get_log(pulCount);
 
 //printf("%d pulCount %d \n",__LINE__, *pulCount);
-    v_secure_system("rm -r " FIREWALL_LOG_DIR);
+    sprintf(temp, "rm -r %s", FIREWALL_LOG_DIR);
+    system(temp);
     return pConf;
 }
 static PCOSA_DML_IA_LOG_ENTRY pFWLogBuf = NULL;
@@ -5372,6 +5382,7 @@ CosaDmlIaGetALLLogEntries
     )
 {
     char fw_log_path[50];
+    char temp[1024];
     static int first_flg = 1;
     int i;
     size_t tmpsize=0;
@@ -5399,12 +5410,17 @@ CosaDmlIaGetALLLogEntries
             pFWLogBuf = NULL;
         }
 
-        v_secure_system(GEN_CURRENT_LOG_CMD "; mkdir -p " FIREWALL_LOG_DIR " ;log_handle.sh uncompress_fwlog " FIREWALL_LOG_DIR " %s", fw_log_path);
+        /* Generate current log message */
+        system(GEN_CURRENT_LOG_CMD);
+
+        sprintf(temp, "mkdir -p %s ;log_handle.sh uncompress_fwlog %s %s", FIREWALL_LOG_DIR,FIREWALL_LOG_DIR,fw_log_path);
+        system(temp);
 
         /* get all log information */
         pFWLogBuf = _get_log(&FWLogNum);
     //printf("%d pulCount %d \n",__LINE__, *pulCount);
-        v_secure_system("rm -r " FIREWALL_LOG_DIR);
+        sprintf(temp, "rm -r %s", FIREWALL_LOG_DIR);
+        system(temp);
     }
     if(FWLogNum == 0){
         pValue[0] = '\0';
@@ -5501,12 +5517,13 @@ static int ssmtp_send(const char *msgFilePath, const char *subject, const char *
     
     //copy recipient address from msg file
     fgets(buf, sizeof(buf), fp);
-    fclose(fp);
     strncpy(recipient, buf + strlen("To: "), sizeof(recipient));
 
     strncpy(attachmentPathCopy, attachmentPath, sizeof(attachmentPathCopy));
 
     v_secure_system( "(((cat %s; echo 'Subject: %s'; echo; echo; uuencode %s %s) | ssmtp %s) && rm %s) &", msgFilePath, subject, attachmentPath, basename(attachmentPathCopy), recipient, attachmentPath);
+
+    fclose(fp); /*RDKB-6847, CID-33064, free unused resources before exit*/
 
     return 0;
 }
@@ -5515,18 +5532,23 @@ static int ssmtp_send(const char *msgFilePath, const char *subject, const char *
 
 static int prepare_firewall_log(char *logFilePath)
 {
+    char buf[MAX_LINE_LEN] = "";
     time_t curTime; 
     struct tm *localTime; 
     char *logTypeName = "USGv2_Firewall_Logs";
 
     curTime=time(NULL); 
     localTime = localtime(&curTime); 
+    
+    system("grep 'UTOPIA: FW' /var/log/kernel > /var/fwlog");
 
     snprintf(logFilePath, MAX_PATH_LEN, "/var/%s_%d_%d_%d_%d_%d_%d.txt", logTypeName, localTime->tm_year+1900, localTime->tm_mon+1, localTime->tm_mday, localTime->tm_hour, localTime->tm_min, localTime->tm_sec); 
     
     //compress attachment if necessary
     //snprintf(buf, sizeof(buf), "tar cvf %s /var/fwlog", logFilePath);
-    v_secure_system("grep 'UTOPIA: FW' /var/log/kernel > %s", logFilePath);
+    snprintf(buf, sizeof(buf), "cp /var/fwlog %s && rm -rf /var/fwlog", logFilePath);
+
+    system(buf);
     
     return 0;
 }
