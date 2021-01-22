@@ -68,6 +68,7 @@
 #include "cosa_ip_apis.h"
 #include "cosa_ip_internal.h"
 #include "cosa_ip_apis_multilan.h"
+#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -154,36 +155,28 @@ BOOL CosaIpifGetSetSupported(char * pParamName)
     return TRUE;
 }
 
-void _get_shell_output(char * cmd, char * out, int len)
+void _get_shell_output(FILE *fp, char *buf, int len)
 {
-    FILE * fp;
-    char   buf[256];
     char * p;
-
-    fp = popen(cmd, "r");
 
     if (fp)
     {
-        fgets(buf, sizeof(buf), fp);
-        
-        /*we need to remove the \n char in buf*/
-        if ((p = strchr(buf, '\n'))) *p = 0;
-
-        strncpy(out, buf, len-1);
-
-        pclose(fp);        
+        if(fgets (buf, len-1, fp) != NULL)
+        {
+            buf[len-1] = '\0';
+            if ((p = strchr(buf, '\n'))) {
+                *p = '\0';
+            }
+        }
+    v_secure_pclose(fp); 
     }
-
 }
 
-int _get_shell_output2(char * cmd, char * dststr)
+int _get_shell_output2(FILE *fp, char * dststr)
 {
-    FILE * fp;
     char   buf[256];
     char * p;
     int   bFound = 0;
-
-    fp = popen(cmd, "r");
 
     if (fp)
     {
@@ -196,7 +189,7 @@ int _get_shell_output2(char * cmd, char * dststr)
             }
         }
         
-        pclose(fp);  
+        v_secure_pclose(fp);  
     }
 
     return bFound;
@@ -208,12 +201,14 @@ static void _wait_for_services(char * serv_name)
 {
     char buf[256] = {0};
     int  i = 0;
+    FILE *fp;
 
     if (strcmp(serv_name, "lan") == 0)
     {
         for (i= 0; i< LAN_TIMEOUT; i++)
         {
-            _get_shell_output("sysevent get lan-status", buf, sizeof(buf));
+            fp = v_secure_popen("r","sysevent get lan-status");
+            _get_shell_output(fp, buf, sizeof(buf));
             if (strcmp(buf, "started") != 0)
             {
                 sleep(1);
@@ -229,7 +224,8 @@ static void _wait_for_services(char * serv_name)
     {
         for (i= 0; i< WAN_TIMEOUT; i++)
         {
-            _get_shell_output("sysevent get wan-status", buf, sizeof(buf));
+            fp = v_secure_popen("r","sysevent get wan-status");
+            _get_shell_output(fp, buf, sizeof(buf));
             if (strcmp(buf, "started") != 0)
             {
                 sleep(1);
@@ -247,8 +243,10 @@ static void _wait_for_services(char * serv_name)
 static int _is_primary_mode()
 {
     char buf[256] = {0};
-    
-    _get_shell_output("sysevent get current_hsd_mode", buf, sizeof(buf));
+    FILE *fp;    
+
+    fp = v_secure_popen("r","sysevent get current_hsd_mode");
+    _get_shell_output(fp, buf, sizeof(buf));
 
     /*current_hsd_mode has 3 possible values: byoi, primary. unknown. from IP interface's view, byoi is different from the other 2 */
     if (strcmp(buf, "byoi") == 0)
@@ -261,10 +259,10 @@ static int _is_primary_mode()
 static int _is_in_linux_bridge(char * if_name, char * br_name)
 {
     char buf[256] = {0};
-    char cmd[256] = {0};
+    FILE *fp;
 
-    sprintf(cmd, "brctl show %s|grep %s", br_name, if_name);
-    _get_shell_output(cmd, buf, sizeof(buf));
+    fp = v_secure_popen("r", "brctl show %s|grep %s", br_name, if_name);
+    _get_shell_output(fp, buf, sizeof(buf));
 
     if (strstr(buf, if_name))
         return 1;
@@ -631,15 +629,13 @@ static int _get_2_lfts(char * fn, int * p_valid, int * p_prefer, ipv6_addr_info_
 static int _get_datetime_lfts(char * p_pref_datetime, int len1,  char * p_valid_datetime, int len2, ipv6_addr_info_t * p_v6addr, ULONG ulIndex)
 {
     /*this is a SLAAC address from RA*/
-    char cmd[256] = {0};
     int  valid_lft = 0, prefered_lft = 0;
     char iana_pretm[32] = {0};
     char iana_vldtm[32] = {0};
 
     /*it's hard to use iproute2 C code to obtain 2 lifetimes, here call "ip" directly*/
-    sprintf(cmd, "ip -6 addr show dev %s > %s", g_ipif_names[ulIndex], TMP_IP_OUTPUT);
-    system(cmd);
-            
+    v_secure_system("ip -6 addr show dev %s > " TMP_IP_OUTPUT, g_ipif_names[ulIndex]);
+       
     _get_2_lfts(TMP_IP_OUTPUT, &valid_lft, &prefered_lft, p_v6addr);
     _get_datetime_offset(valid_lft, p_valid_datetime, len1);
     _get_datetime_offset(prefered_lft, p_pref_datetime, len2);
@@ -1185,12 +1181,10 @@ int CosaDmlGetPrefixPathName(char * ifname, int inst1, PCOSA_DML_IP_V6ADDR p_dml
 
 static int _get_dynamic_prefix_status(COSA_DML_IP6PREFIX_STATUS_TYPE * p_status, char * ifname, ipv6_addr_info_t * p_v6addr)
 {
-    char cmd[256] = {0};
     int  valid_lft = 0, prefered_lft = 0;
 
     /*it's hard to use iproute2 C code to obtain 2 lifetimes, here call "ip" directly*/
-    sprintf(cmd, "ip -6 addr show dev %s > %s", ifname, TMP_IP_OUTPUT);
-    system(cmd);
+    v_secure_system("ip -6 addr show dev %s > " TMP_IP_OUTPUT, ifname);
             
     _get_2_lfts(TMP_IP_OUTPUT, &valid_lft, &prefered_lft, p_v6addr);
     
@@ -1275,8 +1269,7 @@ ULONG CosaDmlIPv6addrGetV6Status(PCOSA_DML_IP_V6ADDR p_dml_v6addr, PCOSA_DML_IP_
     }
 
     /*it's hard to use iproute2 C code to obtain 2 lifetimes, here call "ip" directly*/
-    sprintf(cmd, "ip -6 addr show dev %s > %s", p_ipif->Info.Name, TMP_IP_OUTPUT);
-    system(cmd);
+    v_secure_system("ip -6 addr show dev %s > " TMP_IP_OUTPUT, p_ipif->Info.Name);
 
     _get_2_lfts(TMP_IP_OUTPUT, &valid_lft, &prefered_lft, &v6_ai);
 
@@ -2933,7 +2926,6 @@ static int _invoke_ip_cmd(char * cmd, PCOSA_DML_IP_V6ADDR p_old, PCOSA_DML_IP_V6
     int pref_len = 0;
     char buf[256] = {0};
     char name[256] = {0};
-    char shell_cmd[256] = {0};
     ULONG buf_len = 256;
     char * p = NULL;
     struct in6_addr addr;
@@ -2987,16 +2979,14 @@ static int _invoke_ip_cmd(char * cmd, PCOSA_DML_IP_V6ADDR p_old, PCOSA_DML_IP_V6
             valid_lft = _datetime_to_secs(p_new->ValidLifetime);
 
         if (!valid_lft && !prefered_lft)
-            sprintf(shell_cmd, "ip -6 addr add %s dev %s", buf, ifname);
+            v_secure_system("ip -6 addr add %s dev %s", buf, ifname);
         else if (valid_lft && prefered_lft)
-            sprintf(shell_cmd, "ip -6 addr add %s dev %s valid_lft %d preferred_lft %d", buf, ifname, valid_lft, prefered_lft);
+            v_secure_system("ip -6 addr add %s dev %s valid_lft %d preferred_lft %d", buf, ifname, valid_lft, prefered_lft);
         else
         {
             /*if only has one lft, we can only use prefered_lft, cause valid_lft should be bigger*/
-            sprintf(shell_cmd, "ip -6 addr add %s dev %s preferred_lft %d", buf, ifname, prefered_lft);
+            v_secure_system("ip -6 addr add %s dev %s preferred_lft %d", buf, ifname, prefered_lft);
         }
-
-        system(shell_cmd);
     }
     else if (!strcmp(cmd, "del"))
     {
@@ -3018,8 +3008,7 @@ static int _invoke_ip_cmd(char * cmd, PCOSA_DML_IP_V6ADDR p_old, PCOSA_DML_IP_V6
         inet_ntop(AF_INET6, &addr, buf, sizeof(buf));
         snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf),  "/%d", pref_len);
 
-        sprintf(shell_cmd, "ip -6 addr del %s dev %s", buf, ifname);
-        system(shell_cmd);
+        v_secure_system("ip -6 addr del %s dev %s", buf, ifname);
     }
     else if (!strcmp(cmd, "modify"))
     {
@@ -4234,17 +4223,12 @@ CosaDmlIpGetActivePorts
     ULONG                           ulCount         = 0;
     ULONG                           ulLength        = 0;  
     ULONG                           ulSubLength     = 0;  
-    UCHAR                           ucCommand[128]  = {0};
     UCHAR                           ucLineBuf[256]  = {0};
     UCHAR                           ucTempBuf[128]  = {0};
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
-    _ansc_sprintf( ucCommand,
-                    "netstat -nt | grep -E  \"ESTABLISHED|LISTEN\" > %s",
-                    "/tmp/.netstat_tcp");
-
-    system(ucCommand);
+    v_secure_system("netstat -nt | grep -E  'ESTABLISHED|LISTEN' > /tmp/.netstat_tcp");
 
     pFile = fopen("/tmp/.netstat_tcp", "r");
     

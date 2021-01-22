@@ -72,6 +72,7 @@
 #include "dml_tr181_custom_cfg.h"
 #include "cimplog.h"
 #include "safec_lib_common.h"
+#include "secure_wrapper.h"
 
 #if defined (_XB6_PRODUCT_REQ_)
 #include "bt_hal.h"
@@ -1036,10 +1037,7 @@ DeviceInfo_SetParamBoolValue
     {
         if(bValue)
         {
-            char cmd[128];
-            memset(cmd, 0, sizeof(cmd));
-            AnscCopyString(cmd, "sh /rdklogger/onboardLogUpload.sh delete &");
-            system(cmd);
+            v_secure_system("/rdklogger/onboardLogUpload.sh delete &");
         }
         return TRUE;
     }
@@ -1604,6 +1602,46 @@ AccountInfo_SetParamStringValue
     return bReturnValue;
 }
 
+BOOL valid_url(char *buff)
+{
+    int i=0;
+    char *token=NULL;
+    char *delim=".";
+    char *str=NULL;
+    int len=_ansc_strlen(buff);
+    int count=0;
+
+    while(buff[i] != '\0')
+    {
+        //Allowing only integers, alphabets(lower and upper) and certain special characters
+        if(((buff[i] >= '-') && (buff[i] <= ':')) || ((buff[i]>='A') && (buff[i]<='Z')) || ((buff[i]>='a') && (buff[i]<='z')) || (buff[i]=='#') || (buff[i]=='@') || (buff[i]=='~'))
+            i++;
+        else
+            return FALSE;
+    }    
+    if((strncasecmp(buff,"http://",_ansc_strlen("http://"))!=0) && (strncasecmp(buff,"https://",_ansc_strlen("https://"))!=0))
+        return FALSE;
+
+    if(buff[len-1] == '.')
+        return FALSE;
+
+    str=(char*)malloc(sizeof(char)*len);
+    strcpy(str,buff);
+    token=strtok(str,delim);
+    while(token!=NULL)
+    {
+        count++;
+        token=strtok(NULL,delim);
+    }
+    if(count<2)
+    {
+        AnscFreeMemory(str);
+        return FALSE;
+    }
+    AnscFreeMemory(str);
+return TRUE;
+}
+
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -1697,7 +1735,6 @@ DeviceInfo_SetParamStringValue
                  ERR_CHK(rc);
                  return FALSE;
                }
-
 		CcspTraceWarning(("CaptivePortal:Cloud URL is changed, new URL is %s ...\n",pMyObject->WebURL));
              }
 
@@ -1711,6 +1748,8 @@ DeviceInfo_SetParamStringValue
 
     }
 #endif
+#define BUFF_SIZE 2048
+    int len=0;
     /*Changes for 5878 start*/
     
     if(pString == NULL)
@@ -1718,10 +1757,13 @@ DeviceInfo_SetParamStringValue
     
     rc = strcmp_s("X_RDKCENTRAL-COM_CloudPersonalizationURL",strlen( "X_RDKCENTRAL-COM_CloudPersonalizationURL"),ParamName,&ind);
     ERR_CHK(rc);
+    len=_ansc_strlen(pString);
+    if (len > BUFF_SIZE)
+        return FALSE;
 	if((!ind) && (rc == EOK))
     {    
         /* input string size check to avoid truncated data on database  */
-        if(strlen(pString) < sizeof(pMyObject->CloudPersonalizationURL))
+        if((valid_url(pString)) && (strlen(pString) < (sizeof(pMyObject->CloudPersonalizationURL))))
         {	
 		   if (syscfg_set(NULL, "CloudPersonalizationURL", pString) != 0)
 		  {
@@ -1877,7 +1919,7 @@ DeviceInfo_SetParamStringValue
                    return FALSE;
                }
 
-		system(ems_url);
+                v_secure_system("/etc/whitelist.sh %s",wrapped_inputparam);
 		rc = STRCPY_S_NOCLOBBER(pMyObject->EMS_ServerURL,sizeof(pMyObject->EMS_ServerURL), wrapped_inputparam);
 		if(rc != EOK)
          {
@@ -12315,9 +12357,7 @@ CredDwnld_SetParamBoolValue
 
 #if defined(_COSA_INTEL_XB3_ARM_)
         // To address muliple processor platforms
-        char rpcCmd[128];
-        snprintf(rpcCmd,sizeof(rpcCmd),"/usr/bin/rpcclient %s \"" SYSTEMCTL_CMD "\" &", atomIp );
-        system(rpcCmd);
+        v_secure_system("/usr/bin/rpcclient %s '" SYSTEMCTL_CMD "' &", atomIp );
         return TRUE;
 #endif
         system( SYSTEMCTL_CMD );
@@ -12514,9 +12554,7 @@ CredDwnld_SetParamStringValue
 
 #if defined(_COSA_INTEL_XB3_ARM_)
             // To address muliple processor platforms
-            char rpcCmd[128];
-            snprintf(rpcCmd,sizeof(rpcCmd),"/usr/bin/rpcclient %s \"" SYSTEMCTL_CMD "\" &", atomIp );
-            system(rpcCmd);
+            v_secure_system("/usr/bin/rpcclient %s '" SYSTEMCTL_CMD "' &", atomIp );
             return TRUE;
 #endif
             system( SYSTEMCTL_CMD );
@@ -13005,11 +13043,8 @@ SwitchToDibbler_GetParamBoolValue
 
 void dhcpSwitchThread(void* vptr_value)
 {
-        char command[64];
-        char *str = (char *) vptr_value;
         pthread_detach(pthread_self());
-        snprintf(command,sizeof(command),"sh /etc/dhcpswitch.sh %s &",str);
-        system(command);
+        v_secure_system("/etc/dhcpswitch.sh %s &", (char *) vptr_value);
 }
 
 /**********************************************************************
@@ -18536,103 +18571,6 @@ BOOL
 }
 
 /**
-***  RFC Feature UseXPKI
-**/
-/**********************************************************************
-    caller:     owner of this object
-    prototype:
-        BOOL
-        UseXPKI_GetParamBoolValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                BOOL*                       pBool
-            );
-    description:
-        This function is called to retrieve Boolean parameter value;
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-                char*                       ParamName,
-                The parameter name;
-                BOOL*                       pBool
-                The buffer of returned boolean value;
-    return:     TRUE if succeeded.
-**********************************************************************/
-BOOL
-UseXPKI_GetParamBoolValue
-(
- ANSC_HANDLE                 hInsContext,
- char*                       ParamName,
- BOOL*                       pBool
- )
-{
-    if( (pBool != NULL) && (AnscEqualString(ParamName, "Enable", TRUE)))
-    {
-        char value[8];
-        memset(value, 0, sizeof(value));
-        if( syscfg_get(NULL, "UseXPKI_Enable", value, sizeof(value)) == 0 ) {
-
-            if (strncmp(value, "true", sizeof(value)) == 0)
-                *pBool = TRUE;
-            else
-                *pBool = FALSE;
-
-            return TRUE;
-        } else {
-              CcspTraceError(("syscfg_get failed for MessageBusSource\n"));
-        }
-    }
-    return FALSE;
-}
-/**********************************************************************
-    caller:     owner of this object
-    prototype:
-        BOOL
-        UseXPKI_SetParamBoolValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                BOOL                        bValue
-            );
-    description:
-        This function is called to set Boolean parameter value;
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-                char*                       ParamName,
-                The parameter name;
-                BOOL                        bValue
-                The buffer with updated value
-    return:     TRUE if succeeded.
-**********************************************************************/
-BOOL
-UseXPKI_SetParamBoolValue
-(
- ANSC_HANDLE                 hInsContext,
- char*                       ParamName,
- BOOL                        bValue
- )
-{
-    if( AnscEqualString(ParamName, "Enable", TRUE))
-    {
-        /* collect value */
-        if (syscfg_set(NULL, "UseXPKI_Enable", (bValue==FALSE)?"false":"true") != 0) {
-            AnscTraceWarning(("syscfg_set failed\n"));
-            return FALSE;
-        }
-        else
-        {
-            if (syscfg_commit() != 0) {
-                AnscTraceWarning(("syscfg_commit failed\n"));
-                return FALSE;
-            }
-            return TRUE;
-        }
-    }
-    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
-    return FALSE;
-}
-
-/**
  *  RFC Feature mTlsDCMUpload
 */
 /**********************************************************************
@@ -19064,9 +19002,7 @@ NonRootSupport_SetParamBoolValue
                   atomIp=getenv("ATOM_ARPING_IP");
                   if(atomIp != NULL)
                   {
-                     char rpcCmd[128];
-                     sprintf(rpcCmd, "rpcclient %s \"syscfg set NonRootSupport \'%s\'; syscfg commit\"", atomIp, buf);
-                     system(rpcCmd);
+                     v_secure_system("rpcclient %s \"syscfg set NonRootSupport '%s'; syscfg commit\"", atomIp, buf);
                   }
               } 
           }

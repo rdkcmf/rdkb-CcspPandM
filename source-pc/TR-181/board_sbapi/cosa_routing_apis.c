@@ -68,6 +68,7 @@
 #include "cosa_routing_dml.h"
 #include "cosa_routing_apis.h"
 #include "cosa_routing_internal.h"
+#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -548,32 +549,27 @@ COSA_DML_RIPD_CONF CosaDmlRIPDefaultConfig =
 COSA_DML_RIPD_CONF CosaDmlRIPCurrentConfig = {0};
 
 
-void _get_shell_output3(char * cmd, char * out, int len)
+void _get_shell_output3(FILE *fp, char *buf, int len)
 {
-    FILE * fp;
-    char   buf[256];
     char * p;
-
-    fp = popen(cmd, "r");
 
     if (fp)
     {
-        fgets(buf, sizeof(buf), fp);
-        
-        /*we need to remove the \n char in buf*/
-        if ((p = strchr(buf, '\n'))) *p = 0;
-
-        strncpy(out, buf, len-1);
-
-        pclose(fp);        
+        if(fgets (buf, len-1, fp) != NULL)
+        {
+            buf[len-1] = '\0';
+            if ((p = strchr(buf, '\n'))) {
+                *p = '\0';
+            }
+        }
+    v_secure_pclose(fp); 
     }
-
 }
 
 #define RIPD_PID_FILE "/var/ripd.pid"
 static int CosaRipdOperation(char * arg)
 {
-    char cmd[256] = {0};
+    FILE *fp;
     char out[256] = {0};
     ULONG Index  = 0;
     
@@ -585,31 +581,26 @@ static int CosaRipdOperation(char * arg)
         system(cmd);
          */
 
-        sprintf(cmd, "kill `cat %s`", RIPD_PID_FILE);
-        system(cmd);
+        v_secure_system("kill `cat " RIPD_PID_FILE "`");
     }
     else if (!strncmp(arg, "start", 5))
     {
         /* We must be sure Dibbler-server is not up currently.
                     If it is up, we need not start it. */
-        sprintf(cmd, COSA_DML_CMD_PS, basename(COSA_ZEBRA_BIN));
-        _get_shell_output3(cmd, out, sizeof(out));
+        fp = v_secure_popen("r",  COSA_DML_CMD_PS, basename(COSA_ZEBRA_BIN));
+        _get_shell_output3(fp, out, sizeof(out));
         if ( !strstr(out, basename(COSA_ZEBRA_BIN)))
         {
-            sprintf(cmd, "%s -d -f %s -u root -g root -i %s &", COSA_RIPD_BIN, COSA_RIPD_CUR_CONF, RIPD_PID_FILE);
-            AnscTraceWarning(("CosaRipdOperation -- run cmd:%s\n", cmd));
-            system(cmd);
+            v_secure_system(COSA_RIPD_BIN " -d -f " COSA_RIPD_CUR_CONF " -u root -g root -i " RIPD_PID_FILE " &");
         }
 
-        sprintf(cmd, COSA_DML_CMD_PS, basename(COSA_RIPD_BIN));
-        _get_shell_output3(cmd, out, sizeof(out));
+        fp = v_secure_popen("r", COSA_DML_CMD_PS, basename(COSA_RIPD_BIN));
+        _get_shell_output3(fp, out, sizeof(out));
         if ( !strstr(out, basename(COSA_RIPD_BIN)))
         {
             if ( CosaDmlRIPCurrentConfig.Enable )
             {
-                sprintf(cmd, "%s -d -f %s -u root -g root", COSA_RIPD_BIN, COSA_RIPD_CUR_CONF);
-                AnscTraceWarning(("CosaRipdOperation -- run cmd:%s\n", cmd));
-                system(cmd);
+                v_secure_system(COSA_RIPD_BIN " -d -f " COSA_RIPD_CUR_CONF " -u root -g root");
             }
         }
     }
@@ -620,8 +611,7 @@ static int CosaRipdOperation(char * arg)
     }
     else if (!strncmp(arg, "update", 6))
     {
-        sprintf(cmd, "killall -SIGHUP %s", basename(COSA_RIPD_BIN));
-        system(cmd);
+        v_secure_system("killall -SIGHUP %s", basename(COSA_RIPD_BIN));
     }
 
     return 0;
@@ -773,7 +763,6 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
     PCOSA_DML_RIPD_CONF pConf = &CosaDmlRIPCurrentConfig;
     FILE * fp                 = fopen(COSA_RIPD_TMP_CONF, "w+");
     char *pstaticRoute        = NULL;
-    char cmd[256]             = {0};
     if (fp)
     {
         /*we need this to get IANA IAPD info from dibbler*/
@@ -855,9 +844,7 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
 
     }
     
-    sprintf(cmd, "cp "COSA_RIPD_TMP_CONF"  "COSA_RIPD_CUR_CONF );
-    AnscTraceWarning(("Run command:%s\n", cmd));
-    system(cmd);
+    v_secure_system("cp " COSA_RIPD_TMP_CONF " " COSA_RIPD_CUR_CONF );
 
     return;
 }
@@ -866,7 +853,6 @@ void CosaDmlGenerateZebraConfigFile()
 {
     PCOSA_DML_RIPD_CONF pConf = &CosaDmlRIPCurrentConfig;
     FILE * fp                 = fopen(COSA_ZEBRA_CUR_CONF, "r");
-    char cmd[256]             = {0};
 
     if ( fp == NULL )
     {
@@ -881,9 +867,7 @@ void CosaDmlGenerateZebraConfigFile()
 
             fclose(fp);
 
-            sprintf(cmd, "cp  "COSA_ZEBRA_TMP_CONF"  "COSA_ZEBRA_CUR_CONF );
-            AnscTraceWarning(("Run command:%s\n", cmd));
-            system(cmd);
+            v_secure_system("cp  " COSA_ZEBRA_TMP_CONF " " COSA_ZEBRA_CUR_CONF );
         }
     }
     else

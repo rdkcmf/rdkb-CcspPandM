@@ -79,6 +79,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include "autoconf.h"
+#include "secure_wrapper.h"
 
 #define TIME_SIZE 25
 #define DESP_SIZE 100
@@ -535,7 +536,6 @@ void clean_log(void){
     int c;
     int count = 0;
     int flag = 0;
-    char cmd[256];
     char name[20];
     system("ls /var/log/firewall >" TEMP_LOG_LIST);
     fp = fopen(TEMP_LOG_LIST, "r");
@@ -552,9 +552,7 @@ void clean_log(void){
 
                 if(count > LOG_FILE_COUNT_MAX){
                     fseek(fp, 0, SEEK_SET);
-                    sprintf(cmd, "rm %s/%s", FIREWALL_LOG_DIR, get_old(fp,name));
-                    printf("%s\n", cmd);
-                    system(cmd);
+                    v_secure_system("rm " FIREWALL_LOG_DIR " %s", get_old(fp,name));
                     break;
                 }
             }
@@ -625,7 +623,6 @@ void merger_rule(FILE* fd, int *num){
 }
 
 void get_rule_time(int count){
-    char cmd[100];
     char *line = NULL;
     char today[32];
     int i = 0;
@@ -641,8 +638,7 @@ void get_rule_time(int count){
     FILE *fd;
 #endif
     strftime(today, sizeof(today), "%b %d", g_ptime);
-    sprintf(cmd, "grep -h -e \"%s\"  %s > %s 2>/dev/null", today, ORG_LOG_NAME_1, FW_ORG_LOG_NAME);
-    system(cmd);
+    v_secure_system("grep -h -e \"%s\"  " ORG_LOG_NAME_1 " > " FW_ORG_LOG_NAME " 2>/dev/null", today);
 #ifdef _NO_MMAP__
     fd = fopen(FW_ORG_LOG_NAME,"r");
     if(fd == NULL){
@@ -722,7 +718,6 @@ int genfwLog(void){
     char cmd[128];
     int i=0;
     char fFlag[8];
-    char temp[100];
 
     t=time(NULL);
     g_ptime=localtime(&t);
@@ -733,8 +728,7 @@ int genfwLog(void){
 
     if( -1 == access(FIREWALL_LOG_DIR, 0))
     {
-         sprintf(temp, "mkdir -p %s", FIREWALL_LOG_DIR);
-         system(temp);
+         v_secure_system("mkdir -p " FIREWALL_LOG_DIR);
     }
 
     g_p_rule_tbl = NULL;
@@ -745,10 +739,8 @@ int genfwLog(void){
         return 0;
     }
 
-    sprintf(cmd, "%s > %s", IPT_COUNT_CMD , TEMP_FILE);
-    system(cmd);
-    sprintf(cmd, "%s >> %s", IPT_NAT_COUNT_CMD , TEMP_FILE);
-    system(cmd);
+    v_secure_system(IPT_COUNT_CMD " > " TEMP_FILE);
+    v_secure_system(IPT_NAT_COUNT_CMD " >> " TEMP_FILE);
 
     ipt = fopen(TEMP_FILE, "r");
     if(ipt == NULL){
@@ -3116,7 +3108,6 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
 static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
     struct dirent ptr;
     PCOSA_DML_IA_LOG_ENTRY entry = NULL;
-    char str[128];
 
     *count = 0;
 
@@ -3154,9 +3145,7 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
             }
         }
 #endif
-    memset(str, 0, sizeof(str));
-    sprintf(str, "rm -rf %s %s", MERGED_FW_LOG_FILE, SORT_FW_LOG_FILE);
-    system(str);
+    v_secure_system("rm -f " MERGED_FW_LOG_FILE " " SORT_FW_LOG_FILE);
 
     return entry;
 }
@@ -3195,7 +3184,6 @@ CosaDmlIaGetLogEntries
         PULONG                      pulCount
     )
 {
-    char temp[1024];
     static int first_flg = 1;
     char *fw_log_path = "/nvram/log/firewall";
 
@@ -3208,14 +3196,12 @@ CosaDmlIaGetLogEntries
         return NULL;
     }
 
-    sprintf(temp, "mkdir -p %s ;log_handle.sh uncompress_fwlog %s %s", FIREWALL_LOG_DIR,FIREWALL_LOG_DIR,fw_log_path); 
-    system(temp);
+    v_secure_system("mkdir -p " FIREWALL_LOG_DIR " ;log_handle.sh uncompress_fwlog " FIREWALL_LOG_DIR " " fw_log_path); 
 
     /* get all log information */
     pConf = _get_log(pulCount);
 
-    sprintf(temp, "rm -r %s", FIREWALL_LOG_DIR_NEW);
-    system(temp);
+    v_secure_system("rm -r " FIREWALL_LOG_DIR_NEW);
     return pConf;
 }
 static PCOSA_DML_IA_LOG_ENTRY pFWLogBuf = NULL;
@@ -3279,7 +3265,6 @@ CosaDmlIaGetALLLogEntries
         ULONG*                         pUlSize
     )
 {
-    char temp[1024];
     static int first_flg = 1;
     int i;
     size_t tmpsize=0;
@@ -3298,13 +3283,11 @@ CosaDmlIaGetALLLogEntries
         first_flg = 0;
         return NULL;
     }
-        sprintf(temp, "mkdir -p %s ;log_handle.sh uncompress_fwlog %s %s", FIREWALL_LOG_DIR,FIREWALL_LOG_DIR,fw_log_path); 
-        system(temp);
+        v_secure_system("mkdir -p " FIREWALL_LOG_DIR " ;log_handle.sh uncompress_fwlog " FIREWALL_LOG_DIR " " fw_log_path); 
 
         /* get all log information */
         pFWLogBuf = _get_log(&FWLogNum);
-        sprintf(temp, "rm -r %s", FIREWALL_LOG_DIR_NEW);
-        system(temp);
+        v_secure_system("rm -r " FIREWALL_LOG_DIR_NEW);
     }
     if(FWLogNum == 0){
         pValue[0] = '\0';

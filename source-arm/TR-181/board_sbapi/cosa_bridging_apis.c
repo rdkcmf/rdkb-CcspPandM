@@ -68,6 +68,7 @@
 #include "cosa_ethernet_apis_ext.h"
 #include "utctx/utctx_api.h"
 #include "cosa_drg_common.h"
+#include "secure_wrapper.h"
 
 #ifndef NELEMS
 #define NELEMS(a)   (sizeof(a) / sizeof((a)[0]))
@@ -1123,7 +1124,6 @@ CosaDmlBrgSetCfg
 {
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int bEvent = 0;
-    char param_name[256]={0};
     AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
 
     CcspTraceInfo(("------CosaDmlBrgSetCfg...\n"));
@@ -1148,8 +1148,7 @@ CosaDmlBrgSetCfg
     _Psm_SetBr(pBridge->l2InstanceNumber,pBridge);
     if (bEvent)
     {
-        _ansc_sprintf(param_name,"sysevent set multinet-syncMembers %d", pBridge->l2InstanceNumber);
-        system(param_name);
+        v_secure_system("sysevent set multinet-syncMembers %lu", pBridge->l2InstanceNumber);
     }
     return ANSC_STATUS_SUCCESS;
 #endif
@@ -2375,14 +2374,12 @@ static ANSC_STATUS _COSA_NewL2InstNumber(PBRIDGE pBridge)
 
 static ANSC_STATUS _COSA_UpdateBrVLANID(PBRIDGE pBridge, int vlanid)
 {
-    char param_name[256]={0};
     char param_value[256]={0};
     if (vlanid != pBridge->vlanid)
     {
         pBridge->vlanid = vlanid; 
         _Psm_SetBr(pBridge->l2InstanceNumber,pBridge);
-        _ansc_sprintf(param_name,"sysevent set multinet-syncMembers %d", pBridge->l2InstanceNumber);
-        system(param_name);
+        v_secure_system("sysevent set multinet-syncMembers %lu", pBridge->l2InstanceNumber);
     }
     return ANSC_STATUS_SUCCESS;
 }
@@ -3823,9 +3820,7 @@ ANSC_STATUS SWBrAddPort(PBRIDGE pBridge, PCOSA_DML_BRG_PORT_CFG pEntry) {
     }
     if (!pBPort->bMgt)
     {
-        _ansc_memset(param_name, 0, sizeof(param_name));
-        _ansc_sprintf(param_name,"sysevent set multinet-syncMembers %d", pBridge->l2InstanceNumber);
-        system(param_name);
+        v_secure_system("sysevent set multinet-syncMembers %lu", pBridge->l2InstanceNumber);
     }
     return ANSC_STATUS_SUCCESS;
 }
@@ -3833,11 +3828,8 @@ ANSC_STATUS SWBrAddPort(PBRIDGE pBridge, PCOSA_DML_BRG_PORT_CFG pEntry) {
 ANSC_STATUS SWBrRemovePort(struct bridge* bridge, ULONG portInstanceNumber) {
     //$HL 4/16/2013
     //return ANSC_STATUS_NOT_SUPPORTED;
-    char param_name[256];
     _COSA_DelBPort(portInstanceNumber,bridge);
-    _ansc_memset(param_name, 0, sizeof(param_name));
-    _ansc_sprintf(param_name,"sysevent set multinet-syncMembers %d", bridge->l2InstanceNumber);
-    system(param_name);
+    v_secure_system("sysevent set multinet-syncMembers %lu", bridge->l2InstanceNumber);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -3867,8 +3859,7 @@ ANSC_STATUS SWBrConfirmStructureUpdate(struct bridge* pBridge, PBRIDGE_PORT pBPo
     }
 
     // call sysevent
-    _ansc_sprintf(param_name,"sysevent set multinet-syncMembers %d", pBridge->l2InstanceNumber);
-    system(param_name);
+    v_secure_system("sysevent set multinet-syncMembers %lu", pBridge->l2InstanceNumber);
 
     return ANSC_STATUS_SUCCESS;
 }
