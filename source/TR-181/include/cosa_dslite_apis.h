@@ -36,6 +36,7 @@ struct _COSA_DML_DSLITE
     int            mss_clamping_enable;
     unsigned long  tcpmss;
     int            ipv6_frag_enable;
+    char           tunnel_v4addr[64+1];
 }_struct_pack_;
 
 typedef struct _COSA_DML_DSLITE COSA_DML_DSLITE,  *PCOSA_DML_DSLITE;

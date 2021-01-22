@@ -20,6 +20,7 @@
 #include "plugin_main_apis.h"
 #include "cosa_dslite_internal.h"
 #include "safec_lib_common.h"
+#include "cosa_x_cisco_com_devicecontrol_internal.h"
 #include <syscfg/syscfg.h>
 
 static const char *UPDATE_RESOLV_CMD = "/bin/sh /etc/utopia/service.d/set_resolv_conf.sh";
@@ -98,7 +99,10 @@ DSLite_SetParamBoolValue
     if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
-        CosaDmlSetDsliteEnable(NULL, (BOOLEAN)bValue);
+        if (CosaDmlSetDsliteEnable(NULL, (BOOLEAN)bValue) == ANSC_STATUS_FAILURE)
+        {
+              return FALSE;
+        }
         rc = vsystem(UPDATE_RESOLV_CMD);
         return TRUE;
     }
@@ -465,6 +469,27 @@ InterfaceSetting4_GetParamStringValue
         }
     }
 
+    if (strcmp(ParamName, "TunnelV4Addr") == 0)
+    {
+        CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
+        /* collect value */
+        if ( AnscSizeOfString(pDsliteTunnel->tunnel_v4addr) < *pUlSize)
+        {
+            rc =  strcpy_s(pValue, *pUlSize, pDsliteTunnel->tunnel_v4addr);
+            if(rc != EOK)
+            {
+              ERR_CHK(rc);
+              return -1;
+            }
+            return 0;
+        }
+        else
+        {
+            *pUlSize = AnscSizeOfString(pDsliteTunnel->tunnel_v4addr)+1;
+            return 1;
+        }
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
@@ -490,8 +515,9 @@ InterfaceSetting4_GetParamUlongValue
         char buf[8] = {0};
         int status = 2; //status: Enabled(1), Disabled(2), Error(3)
         syscfg_get(NULL, "dslite_enable", buf, sizeof(buf));
+        CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
 
-        if (!strncmp(buf,"1",1))
+        if ((!strcmp(buf,"1")) && (pDsliteTunnel->active == 1))
         {
             char endPointName[260] = {0};
 
@@ -580,6 +606,15 @@ InterfaceSetting4_SetParamBoolValue
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
 
+    ULONG   deviceMode;
+
+    if (CosaDmlDcGetDeviceMode(NULL, &deviceMode) == ANSC_STATUS_SUCCESS) {
+        if(deviceMode != COSA_DML_DEVICE_MODE_Ipv6) {
+            CcspTraceWarning(("Cannot set DSLite.InterfaceSetting, the device mode is ipv4,dualstack or bridgemode \n" ));
+            return FALSE;
+       }
+    }
+
     /* check the parameter name and set the corresponding value */
     if (strcmp(ParamName, "Enable") == 0)
     {
@@ -663,6 +698,13 @@ InterfaceSetting4_SetParamStringValue
            ERR_CHK(rc);
            return FALSE;
         }
+        return TRUE;
+    }
+
+    if (strcmp(ParamName, "TunnelV4Addr") == 0)
+    {
+        /* save update to backup */
+        AnscCopyString(pDsliteTunnel->tunnel_v4addr, pString);
         return TRUE;
     }
 

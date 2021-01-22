@@ -18,6 +18,7 @@
 #include <utapi.h>
 #include "cosa_dslite_apis.h"
 #include <utapi/utapi_dslite.h>
+#include "cosa_x_cisco_com_devicecontrol_internal.h"
 
 ANSC_STATUS
 CosaDmlDsliteInit
@@ -69,6 +70,17 @@ CosaDmlSetDsliteEnable
     UtopiaContext ctx;
     boolean_t read_dslite_enable;
 
+    if (bEnabled == TRUE)
+    {
+        ULONG deviceMode;
+        if (CosaDmlDcGetDeviceMode(NULL, &deviceMode) == ANSC_STATUS_SUCCESS) {
+            if (deviceMode != COSA_DML_DEVICE_MODE_Ipv6) {
+                CcspTraceWarning(("Cannot set DSLite, the device mode is ipv4, dualstack or bridge \n" ));
+                return ANSC_STATUS_FAILURE;
+            }
+        }
+    }
+
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
@@ -118,6 +130,7 @@ CosaDmlDsliteAddEntry
     memcpy(dslite_cfg.addr_ipv6, pEntry->addr_ipv6, 257*sizeof(char));
     memcpy(dslite_cfg.tunnel_interface, pEntry->tunnel_interface, 257*sizeof(char));
     memcpy(dslite_cfg.tunneled_interface, pEntry->tunneled_interface, 257*sizeof(char));
+    memcpy(dslite_cfg.tunnel_v4addr, pEntry->tunnel_v4addr, sizeof(dslite_cfg.tunnel_v4addr));
 
     rc = Utopia_AddDsliteEntry(&ctx,&dslite_cfg);
 
@@ -192,6 +205,7 @@ CosaDmlDsliteSetCfg
     memcpy(dslite_cfg.addr_ipv6, pEntry->addr_ipv6, 257*sizeof(char));
     memcpy(dslite_cfg.tunnel_interface, pEntry->tunnel_interface, 257*sizeof(char));
     memcpy(dslite_cfg.tunneled_interface, pEntry->tunneled_interface, 257*sizeof(char));
+    memcpy(dslite_cfg.tunnel_v4addr, pEntry->tunnel_v4addr, sizeof(dslite_cfg.tunnel_v4addr));
 
     rc = Utopia_SetDsliteCfg(&ctx,&dslite_cfg);
     /* Free Utopia Context */
@@ -258,6 +272,7 @@ CosaDmlDsliteGetCfg
       memcpy(pEntry->addr_ipv6, dslite_cfg.addr_ipv6, 257*sizeof(char));
       memcpy(pEntry->tunnel_interface, dslite_cfg.tunnel_interface, 257*sizeof(char));
       memcpy(pEntry->tunneled_interface, dslite_cfg.tunneled_interface, 257*sizeof(char));
+      memcpy(pEntry->tunnel_v4addr, dslite_cfg.tunnel_v4addr, sizeof(pEntry->tunnel_v4addr));
     }
     /* Free Utopia Context */
     Utopia_Free(&ctx,0);
@@ -321,6 +336,7 @@ CosaDmlDsliteGetEntry
       memcpy(pEntry->addr_ipv6, dslite_cfg.addr_ipv6, 257*sizeof(char));
       memcpy(pEntry->tunnel_interface, dslite_cfg.tunnel_interface, 257*sizeof(char));
       memcpy(pEntry->tunneled_interface, dslite_cfg.tunneled_interface, 257*sizeof(char));
+      memcpy(pEntry->tunnel_v4addr, dslite_cfg.tunnel_v4addr, sizeof(pEntry->tunnel_v4addr));
     }
 
     /* Free Utopia Context */
