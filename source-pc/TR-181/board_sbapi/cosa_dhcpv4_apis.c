@@ -73,6 +73,7 @@
 #include "plugin_main_apis.h"
 #include "ccsp_hal_dhcpv4_emu_api.h"    
 #include <arpa/inet.h>
+#include "secure_wrapper.h"
 #if 1 //RDKB-EMULATOR
 #include "dmsb_tr181_psm_definitions.h"
 #define _PSM_READ_PARAM(_PARAM_NAME) { \
@@ -1180,7 +1181,6 @@ CosaDmlDhcpsGetSaddr
         PCOSA_DML_DHCPS_SADDR       pEntry
     )
 {        
-	char command[512];
 	FILE *fp;
 	char path[256];
 	int count,flag = 0,valid_index = 0;
@@ -1192,8 +1192,7 @@ CosaDmlDhcpsGetSaddr
 	if ( ulIndex >= g_StaticAddressCount)
 		return ANSC_STATUS_FAILURE;
 
-	snprintf(command, sizeof(command),"cat /nvram/bbhm_cur_cfg.xml | grep dmsb.dhcpv4.server.pool.1.StaticAddress.%ld.Chaddr > /tmp/PSM_Check.txt",ulIndex+1);
-	system(command);
+	v_secure_system("cat /nvram/bbhm_cur_cfg.xml | grep dmsb.dhcpv4.server.pool.1.StaticAddress.%ld.Chaddr > /tmp/PSM_Check.txt",ulIndex+1);
 	fp = popen("cat /tmp/PSM_Check.txt | tail -1 ","r");
 	if(fp == NULL)
 	{

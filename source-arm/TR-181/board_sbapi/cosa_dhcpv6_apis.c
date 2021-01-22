@@ -72,7 +72,7 @@
 #include "cosa_dhcpv6_internal.h"
 #include "plugin_main_apis.h"
 #include "autoconf.h"
-
+#include "secure_wrapper.h"
 
 extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
@@ -1108,26 +1108,21 @@ int safe_strcpy(char * dst, char * src, int dst_size)
     return 0;
 }
 
-void _get_shell_output(char * cmd, char * out, int len)
+void _get_shell_output(FILE *fp, char *buf, int len)
 {
-    FILE * fp;
-    char   buf[256];
     char * p;
-
-    fp = popen(cmd, "r");
 
     if (fp)
     {
-        fgets(buf, sizeof(buf), fp);
-        
-        /*we need to remove the \n char in buf*/
-        if ((p = strchr(buf, '\n'))) *p = 0;
-
-        strncpy(out, buf, len-1);
-
-        pclose(fp);        
+        if(fgets (buf, len-1, fp) != NULL)
+        {
+            buf[len-1] = '\0';
+            if ((p = strchr(buf, '\n'))) {
+                *p = '\0';
+            }
+        }
+    v_secure_pclose(fp); 
     }
-
 }
 
 static int Utopia_Init(UtopiaContext *ctx)
@@ -2272,12 +2267,12 @@ static int _prepare_client_conf(PCOSA_DML_DHCPCV6_CFG       pCfg)
     return 0;
 }
 
-void _get_shell_output(char * cmd, char * out, int len);
-int _get_shell_output2(char * cmd, char * dststr);
+void _get_shell_output(FILE *fp, char * buf, int len);
+int _get_shell_output2(FILE *fp, char * dststr);
 
 static int _dibbler_client_operation(char * arg)
 {
-    char cmd[256] = {0};
+    FILE *fp;
     char out[256] = {0};
 #if defined (INTEL_PUMA7)
     int watchdog = NO_OF_RETRY;
@@ -2295,16 +2290,9 @@ static int _dibbler_client_operation(char * arg)
 #endif
       
 #ifdef _COSA_BCM_ARM_
-        sprintf(cmd, "killall %s", CLIENT_BIN);
-        system(cmd);
+        v_secure_system("killall " CLIENT_BIN);
         sleep(2);
-        sprintf(cmd, "ps -A|grep %s", CLIENT_BIN);
-        _get_shell_output(cmd, out, sizeof(out));
-         if (strstr(out, CLIENT_BIN))
-         {
-            sprintf(cmd, "killall -9 %s", CLIENT_BIN);
-            system(cmd);
-          }
+        v_secure_system("killall -9 " CLIENT_BIN);
 #endif
     }
     else if (!strncmp(arg, "start", 5))
@@ -2318,8 +2306,8 @@ static int _dibbler_client_operation(char * arg)
         /* Waiting for the TLV file to be parsed correctly so that the right erouter mode can be used in the code below.
         For ANYWAN please extend the below code to support the case of TLV config file not being there. */
       do{
-         sprintf(cmd, "sysevent get TLV202-status");
-         _get_shell_output(cmd, out, sizeof(out));
+         fp = v_secure_popen("r", "sysevent get TLV202-status");
+         _get_shell_output(fp, out, sizeof(out));
          fprintf( stderr, "\n%s:%s(): Waiting for CcspGwProvApp to parse TLV config file\n", __FILE__, __FUNCTION__);
          sleep(1);//sleep(1) is to avoid lots of trace msgs when there is latency
          watchdog--;
@@ -2332,8 +2320,8 @@ static int _dibbler_client_operation(char * arg)
         }
 #endif
 		
-        sprintf(cmd, "syscfg get last_erouter_mode");
-        _get_shell_output(cmd, out, sizeof(out));
+        fp = v_secure_popen("r","syscfg get last_erouter_mode");
+        _get_shell_output(fp, out, sizeof(out));
 	/* TODO: To be fixed by Comcast
 	         IPv6 address assigned to erouter0 gets deleted when erouter_mode=3(IPV4 and IPV6 both)
 	         Don't start v6 service in parallel. Wait for wan-status to be set to 'started' by IPv4 DHCP client.
@@ -2341,8 +2329,8 @@ static int _dibbler_client_operation(char * arg)
         if (strstr(out, "3"))// If last_erouter_mode is both IPV4/IPV6
 	{
 	     	do{
-            		sprintf(cmd, "sysevent get wan-status");
-        		_get_shell_output(cmd, out, sizeof(out));
+                        fp = v_secure_popen("r","sysevent get wan-status");
+                        _get_shell_output(fp, out, sizeof(out));
         		CcspTraceInfo(("%s waiting for wan-status to started\n", __func__));
 			sleep(1);//sleep(1) is to avoid lots of trace msgs when there is latency
 		}while(!strstr(out,"started"));
@@ -2364,8 +2352,7 @@ static int _dibbler_client_operation(char * arg)
         system("/lib/rdk/dibbler-init.sh");
         /*Start Dibber client for tchxb6*/
         CcspTraceInfo(("%s Dibbler Client Started \n", __func__));
-        sprintf(cmd, "%s start", CLIENT_BIN);
-        system(cmd);
+        v_secure_system(CLIENT_BIN " start");
 #endif
     }
     else if (!strncmp(arg, "restart", 7))
@@ -2688,10 +2675,8 @@ CosaDmlDhcpv6cRenew
         ULONG                       ulInstanceNumber
     )
 {  
-    char cmd[256] = {0};
     
-    sprintf(cmd, "killall -SIGUSR2 %s", CLIENT_BIN);
-    system(cmd);
+    v_secure_system("killall -SIGUSR2 " CLIENT_BIN);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -3258,7 +3243,6 @@ static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger)
  */
 static int _dibbler_server_operation(char * arg)
 {
-    char cmd[256] = {0};
     char out[256] = {0};
     ULONG Index  = 0;
     int fd = 0;
@@ -3275,8 +3259,7 @@ static int _dibbler_server_operation(char * arg)
         if (fd >= 0) {
             CcspTraceInfo(("%s:%d stop dibbler.\n",__FUNCTION__, __LINE__));
             //fprintf(stderr, "%s -- %d stop\n", __FUNCTION__, __LINE__);
-            sprintf(cmd, "%s stop >/dev/null", SERVER_BIN);
-            system(cmd);
+            v_secure_system(SERVER_BIN " stop >/dev/null");
             close(fd);
         }else{
             //this should not happen.
@@ -3311,8 +3294,7 @@ static int _dibbler_server_operation(char * arg)
                 g_dhcpv6_server_started = TRUE;
             #endif
 
-            sprintf(cmd, "%s start", SERVER_BIN);
-            system(cmd);
+            v_secure_system(SERVER_BIN " start");
         }
     }
     else if (!strncmp(arg, "restart", 7))
@@ -5851,7 +5833,7 @@ CosaDmlDhcpv6sGetPoolInfo
         PCOSA_DML_DHCPSV6_POOL_INFO pInfo
     )
 {
-    char cmd[256] = {0};
+    FILE *fp;
     char out[256] = {0};
 
     ULONG                           Index = 0;
@@ -5871,8 +5853,8 @@ CosaDmlDhcpv6sGetPoolInfo
         return ANSC_STATUS_FAILURE;
     }
 
-    sprintf(cmd, "ps -A|grep %s", SERVER_BIN);
-    _get_shell_output(cmd, out, sizeof(out));
+    fp = v_secure_popen("r","ps -A|grep %s", SERVER_BIN);
+    _get_shell_output(fp, out, sizeof(out));
 
     if ( (strstr(out, SERVER_BIN)) && sDhcpv6ServerPool[Index].Cfg.bEnabled )
     {
@@ -6273,7 +6255,7 @@ EXIT:
 ANSC_STATUS
 CosaDmlDhcpv6sPing( PCOSA_DML_DHCPSV6_CLIENT        pDhcpsClient )
 {
-    UCHAR     cmd[256] = {0};
+    FILE *fp;
     char      out[256] = {0};
     ULONG     i        = 0;
 
@@ -6301,9 +6283,8 @@ CosaDmlDhcpv6sPing( PCOSA_DML_DHCPSV6_CLIENT        pDhcpsClient )
     }
 
     /*ping -w 2 -c 1 fe80::225:2eff:fe7d:5b5 */
-    _ansc_sprintf(cmd, "ping6 -w 2 -c 1 %s\n", g_dhcps6v_clientcontent[i].pIPv6Address[i].IPAddress );
-
-    if (_get_shell_output2(cmd, "0 packets received"))
+    fp = v_secure_popen("r",  "ping6 -w 2 -c 1 %s", g_dhcps6v_clientcontent[i].pIPv6Address[i].IPAddress );
+    if (_get_shell_output2(fp, "0 packets received"))
     {
         /*1 packets transmitted, 0 packets received, 100% packet loss*/
         return ANSC_STATUS_FAILURE;
@@ -6756,7 +6737,7 @@ int dhcpv6_assign_global_ip(char * prefix, char * intfName, char * ipAddr)
     char            cmd[256]         = {0};
     char            out[256]         = {0};
     char            tmp[8]           = {0};
-
+    FILE *fp;
 
     _ansc_strcpy( globalIP, prefix);
 
@@ -6805,8 +6786,8 @@ int dhcpv6_assign_global_ip(char * prefix, char * intfName, char * ipAddr)
 
 
     /* prepare second part */
-    _ansc_sprintf(cmd, "ifconfig %s | grep HWaddr\n", intfName );
-    _get_shell_output(cmd, out, sizeof(out));
+    fp = v_secure_popen("r", "ifconfig %s | grep HWaddr", intfName );
+    _get_shell_output(fp, out, sizeof(out));
     pMac =_ansc_strstr(out, "HWaddr");
     if ( pMac == NULL ){
         AnscTrace("error, this interface has not a mac address .\n");
@@ -6865,8 +6846,8 @@ int dhcpv6_assign_global_ip(char * prefix, char * intfName, char * ipAddr)
 */
 void CosaDmlDhcpv6sRebootServer()
 {
+    FILE *fp;
     int fd = 0;
-    char cmd[64] = {0};
     char out[128] = {0};
     BOOL isBridgeMode = FALSE;
 
@@ -6892,12 +6873,11 @@ void CosaDmlDhcpv6sRebootServer()
             return;
 
         //make sure it's not in a bad status
-        sprintf(cmd, "ps|grep %s|grep -v grep", SERVER_BIN);
-        _get_shell_output(cmd, out, sizeof(out));
+        fp = v_secure_popen("r","ps|grep %s|grep -v grep", SERVER_BIN);
+        _get_shell_output(fp, out, sizeof(out));
         if (strstr(out, SERVER_BIN))
         {
-            sprintf(cmd, "kill -15 `pidof %s`", SERVER_BIN);
-            system(cmd);
+            v_secure_system("kill -15 `pidof " SERVER_BIN "`");
 	    sleep(1);
         }
         CcspTraceInfo(("%s - Call _dibbler_server_operation start\n",__FUNCTION__));
@@ -6916,7 +6896,6 @@ void CosaDmlDhcpv6sRebootServer()
     return;
 }
 /*int calcPrefixNumber(int prefixLen, int req_prefixLen)
-{
 int delta = 0;
 int numOfSubnets = 2;
 if(req_prefixLen > prefixLen)
@@ -7103,7 +7082,6 @@ static void *InterfaceEventHandler_thrd(void *data)
     while(1)
     {
          async_id_t getnotification_asyncid;
-
          memset(name,0,sizeof(name));
          memset(val,0,sizeof(val));
          memset(cmd,0,sizeof(cmd));
@@ -7170,6 +7148,7 @@ dhcpv6c_dbg_thrd(void * in)
     char * p = NULL;
     char globalIP2[128] = {0};
     char out[128] = {0};
+    FILE *fp;
     //When PaM restart, this is to get previous addr.
     commonSyseventGet("lan_ipaddr_v6", globalIP2, sizeof(globalIP2));
     if ( globalIP2[0] )
@@ -7387,18 +7366,16 @@ dhcpv6c_dbg_thrd(void * in)
 			if(pref_len < 64)
 			{
 			    memset(out,0,sizeof(out));
-			    memset(cmd,0,sizeof(cmd));
 			    memset(out1,0,sizeof(out1));
-			    sprintf(cmd, "syscfg get IPv6subPrefix");
-      				_get_shell_output(cmd, out, sizeof(out));
+                            fp = v_secure_popen("r","syscfg get IPv6subPrefix");
+                                _get_shell_output(fp, out, sizeof(out));
 			    if(!strcmp(out,"true"))
 				{
                                 static int first = 0;
 
 				memset(out,0,sizeof(out));
-				memset(cmd,0,sizeof(cmd));
-				sprintf(cmd, "syscfg get IPv6_Interface");
-      				_get_shell_output(cmd, out, sizeof(out));
+                                fp = v_secure_popen("r","syscfg get IPv6_Interface");
+                                _get_shell_output(fp, out, sizeof(out));
 				pt = out;
 				while((token = strtok_r(pt, ",", &pt)))
 				 {
@@ -7502,21 +7479,14 @@ dhcpv6c_dbg_thrd(void * in)
 #if !defined(INTEL_PUMA7) && !defined(_COSA_INTEL_XB3_ARM_)
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
-			memset(cmd,0,sizeof(cmd));
-                        sprintf(cmd, "ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
-                        system(cmd);
+                        v_secure_system("ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
 			#ifdef _COSA_INTEL_XB3_ARM_
-			memset(cmd,0,sizeof(cmd));
-                        sprintf(cmd, "ip -6 route add %s dev %s table erouter", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
-                        system(cmd);
+                        v_secure_system("ip -6 route add %s dev %s table erouter", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
 			#endif
-			memset(cmd,0,sizeof(cmd));
                         /* we need save this for zebra to send RA 
                            ipv6_prefix           // xx:xx::/yy
                          */
-                        sprintf(cmd, "sysevent set ipv6_prefix %s \n",v6pref);
-                        system(cmd);
-                        CcspTraceWarning(("!run cmd1:%s", cmd));
+                        v_secure_system("sysevent set ipv6_prefix %s ",v6pref);
 
                         CosaDmlDHCPv6sTriggerRestart(FALSE);
 #if defined(_COSA_BCM_ARM_) || defined(INTEL_PUMA7)
@@ -7583,8 +7553,7 @@ dhcpv6c_dbg_thrd(void * in)
                         commonSyseventGet(SYSEVENT_FIELD_IPV6_ULA_ADDRESS,
                                      ula_address, sizeof(ula_address));
                         if(ula_address[0] != '\0') {
-                            sprintf(cmd, "ip -6 addr add %s/64 dev %s", ula_address, COSA_DML_DHCPV6_SERVER_IFNAME);
-                            system(cmd);
+                            v_secure_system("ip -6 addr add %s/64 dev %s", ula_address, COSA_DML_DHCPV6_SERVER_IFNAME);
                         }
                         ret = dhcpv6_assign_global_ip(v6pref, COSA_DML_DHCPV6_SERVER_IFNAME, globalIP);
                         if(ret != 0) {
@@ -7592,43 +7561,31 @@ dhcpv6c_dbg_thrd(void * in)
                         }
                         else {
                             commonSyseventSet("lan_ipaddr_v6", globalIP);
-                            sprintf(cmd, "ip -6 addr add %s/64 dev %s valid_lft %s preferred_lft %s",
-                                globalIP, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
-                            CcspTraceInfo(("Going to execute: %s \n", cmd));
-                            system(cmd);
+                            v_secure_system("ip -6 addr add %s/64 dev %s valid_lft %s preferred_lft %s", globalIP, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
                         }
                         if(strlen(v6pref) > 0) {
                             strncpy(v6pref_addr, v6pref, (strlen(v6pref)-5));
                             CcspTraceInfo(("Going to set ::1 address on brlan0 interface \n"));
-                            sprintf(cmd, "ip -6 addr add %s::1/64 dev %s valid_lft %s preferred_lft %s",
-                                v6pref_addr, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
-                            CcspTraceInfo(("Going to execute: %s \n", cmd));
-                            system(cmd);
+                            v_secure_system("ip -6 addr add %s::1/64 dev %s valid_lft %s preferred_lft %s", v6pref_addr, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
                         }
                         // send an event to Sky-pro app manager that Global-prefix is set
                         commonSyseventSet("lan_prefix_set", globalIP);
 #endif
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
-                        sprintf(cmd, "ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
-                        system(cmd);
+                        v_secure_system("ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
 			#ifdef _COSA_INTEL_XB3_ARM_
-			memset(cmd,0,sizeof(cmd));
-                        sprintf(cmd, "ip -6 route add %s dev %s table erouter", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
-                        system(cmd);
+                        v_secure_system("ip -6 route add %s dev %s table erouter", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
 			#endif
                         /* we need save this for zebra to send RA 
                            ipv6_prefix           // xx:xx::/yy
                          */
 #ifndef _HUB4_PRODUCT_REQ_
-                        sprintf(cmd, "sysevent set ipv6_prefix %s \n",v6pref);
-                        system(cmd);
+                        v_secure_system("sysevent set ipv6_prefix %s ",v6pref);
 #else
-                        sprintf(cmd, "sysevent set zebra-restart \n");
-                        system(cmd);
+                        v_secure_system("sysevent set zebra-restart ");
 #endif
                         g_dhcpv6_server_prefix_ready = TRUE;
-                        CcspTraceWarning(("!run cmd1:%s", cmd));
 
                         CosaDmlDHCPv6sTriggerRestart(FALSE);
                         

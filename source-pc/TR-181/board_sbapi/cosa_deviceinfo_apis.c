@@ -89,6 +89,7 @@
 
 #include "cosa_deviceinfo_apis.h"
 #include <unistd.h>
+#include "secure_wrapper.h"
 
 //LNT_EMU - PSM ACCESS
 extern ANSC_HANDLE bus_handle;
@@ -115,8 +116,7 @@ static const int NOK = 0 ;
 static char reverseSSHArgs[255] = { "\0" };
 const char* sshCommand = "/lib/rdk/startTunnel.sh";
 #ifdef ENABLE_SHORTS
-const char *stunnelCommand = "/lib/rdk/startStunnel.sh";
-static char stunnelSSHArgs[255] = { "\0" };
+#define stunnelCommand "/lib/rdk/startStunnel.sh"
 #endif
 const char* rsshPidFile = "/var/tmp/rssh.pid";
 
@@ -1042,22 +1042,40 @@ isValidInput
 	  */ 
 	if( sizeof_wrapped_inputparam <= ( lengthof_inputparam  + 2 ) )
 	{
-		returnStatus = ANSC_STATUS_FAILURE;
+	    return ANSC_STATUS_FAILURE;
 	}
-	else if(strstr(inputparam,";")) // check for possible command injection 
-	{
-		returnStatus = ANSC_STATUS_FAILURE;
-	}
-	else if(strstr(inputparam,"&"))
-	{
-		returnStatus = ANSC_STATUS_FAILURE;
-	}
-	else if(strstr(inputparam,"|"))
-	{
-		returnStatus = ANSC_STATUS_FAILURE;
-	}
-	else if(strstr(inputparam,"'"))
-		returnStatus = ANSC_STATUS_FAILURE;
+        int port = 0;
+        int i = 0;
+        int count =0;
+        char* tok;
+        char *host = strdup(inputparam);
+        if (! host) {
+            return ANSC_STATUS_FAILURE;
+        }
+        else {
+            tok = strtok(host, ":");
+            while(tok != NULL) {
+                if (count == 0 ) { 
+                    while(host[i] != '\0') {
+                        if(((host[i] >='A') &&(host[i]<='Z')) || ((host[i]>='a') && (host[i]<='z')) || ((host[i] >= '0') && (host[i] <= '9')) || (host[i] == '.') || (host[i] == '-') || (host[i] == '_'))
+                            i++;
+                        else
+                            return ANSC_STATUS_FAILURE;
+                    }
+                }
+                else if(count == 1 ) {
+                    port = _ansc_atoi(tok);
+                    if ((port <= 0) || (port > 65535))
+                        return ANSC_STATUS_FAILURE;
+                }
+                else {
+                    return ANSC_STATUS_FAILURE;
+                }
+                tok = strtok (NULL, ":");
+                count++;
+            }
+        free(host);
+        }
 
 	if(ANSC_STATUS_SUCCESS == returnStatus)
 	{
@@ -1187,7 +1205,6 @@ int setXOpsReverseSshArgs(char* pString) {
 #ifdef ENABLE_SHORTS
     } else {
         strncpy(tempCopy, pString, inputMsgSize);
-        memset(stunnelSSHArgs,'\0',sizeof(stunnelSSHArgs));
         tempStr = (char*) strtok_r(tempCopy, ";", &st);
         while (NULL != tempStr) {
             if(value = strstr(tempStr, "type=")) {
@@ -1211,13 +1228,9 @@ int setXOpsReverseSshArgs(char* pString) {
         // for arguments for script in the form " ip_version_number localIP + remoteIP + remotePort + remoteTerminalRows
         //                                        + remoteTerminalColumns"
         if(host != NULL) {
-            sprintf(stunnelSSHArgs,"%s %s %s %s %s %d %d &",stunnelCommand, ip_version_number, localIP, host, callbackport, rows, columns);
-            if(host != NULL) {
+            v_secure_system(stunnelCommand " %s %s %s %s %d %d &", ip_version_number, localIP, host, callbackport, rows, columns);
                 free(host);
                 host = NULL;
-            }
-            AnscTraceWarning(("StunnelSSH Command =%s !!!\n",stunnelSSHArgs));
-            system(stunnelSSHArgs);
         } else {
             AnscTraceWarning(("Warning !!! Did not get all args to execute SHORTS path!!!\n"));
         }
@@ -1243,7 +1256,6 @@ ANSC_STATUS getXOpsReverseSshArgs
 int setXOpsReverseSshTrigger(char *input) {
 
     char *trigger = NULL;
-    char command[255] = { '\0' };
     if (!input) {
         printf("Input args are empty \n");
         AnscTraceWarning(("Input args are empty !!!!\n"));
@@ -1252,14 +1264,10 @@ int setXOpsReverseSshTrigger(char *input) {
 
     trigger = strstr(input, "start");
     if (trigger) {
-            strcpy(command, sshCommand);
-            strcat(command, " start");
-            strcat(command, reverseSSHArgs);
+        v_secure_system(sshCommand " start %s", reverseSSHArgs);
     } else {
-        strcpy(command, sshCommand);
-        strcat(command, " stop ");
+        v_secure_system(sshCommand " stop");
     }
-    system(command);
     return OK;
 }
 
@@ -2185,7 +2193,6 @@ CosaDmlDiUiBrandingInit
         FILE *fileRead = NULL;
         char PartnerID[PARTNER_ID_LEN] = {0};
         char Partner_ID[PARTNER_ID_LEN] = {0};
-        char cmd[512] = {0};
         ULONG size = PARTNER_ID_LEN - 1;
         int len,count = 0;
 
@@ -2198,9 +2205,7 @@ CosaDmlDiUiBrandingInit
         memset(PUiBrand, 0, sizeof(COSA_DATAMODEL_RDKB_UIBRANDING));
         if (access(PARTNERS_INFO_FILE, F_OK) != 0)
         {
-                snprintf(cmd, sizeof(cmd), "cp %s %s", "/etc/partners_defaults.json", PARTNERS_INFO_FILE);
-                printf("%s\n",cmd);
-                system(cmd);
+                v_secure_system("cp /etc/partners_defaults.json " PARTNERS_INFO_FILE);
         }
 
          fileRead = fopen( PARTNERS_INFO_FILE, "r" );

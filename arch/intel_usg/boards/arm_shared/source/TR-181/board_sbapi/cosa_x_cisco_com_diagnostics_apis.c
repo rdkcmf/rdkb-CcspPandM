@@ -69,6 +69,7 @@
 #include "cosa_x_cisco_com_diagnostics_apis.h"
 #include "cosa_x_cisco_com_diagnostics_internal.h"
 #include "plugin_main_apis.h"
+#include "secure_wrapper.h"
 
 #if ( defined _COSA_SIM_ )
 
@@ -429,7 +430,6 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
     int count=0;
     PCOSA_DML_DIAGNOSTICS_ENTRY entry = NULL;
     char fName[64];
-    char str[128];
     int i = 0;
 
     dir = opendir(path);
@@ -443,15 +443,11 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
         if(ptr.d_name[0] == '.')
             continue;
 
-        memset(str, 0, sizeof(str));
-        sprintf(str, "cat %s/%s >> %s", path,ptr.d_name,MERGED_LOG_FILE);
-        system(str);
+        v_secure_system("cat %s/%s >> " MERGED_LOG_FILE, path, ptr.d_name);
     }
 
     /* Sort the logs in descending order of timestamp*/
-    memset(str, 0, sizeof(str));
-    sprintf(str, "grep ARRIS %s | sort -r -n -k4 > %s", MERGED_LOG_FILE, SORT_MERGE_LOG_FILE);
-    system(str);
+    v_secure_system("grep ARRIS " MERGED_LOG_FILE " | sort -r -n -k4 > " SORT_MERGE_LOG_FILE);
 
     fd = fopen(SORT_MERGE_LOG_FILE, "r");
     _getLogInfo(fd, &entry, &count, user);
@@ -459,9 +455,7 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
 
     closedir(dir);
 
-    memset(str, 0, sizeof(str));
-    sprintf(str, "rm -rf %s %s", MERGED_LOG_FILE, SORT_MERGE_LOG_FILE);  
-    system(str);
+    v_secure_system("rm -f " MERGED_LOG_FILE " " SORT_MERGE_LOG_FILE);
 
     *ppEntry = entry;
     return count;
@@ -478,7 +472,6 @@ CosaDmlDiagnosticsGetEntry
 {
     char logfile[FILENAME_MAX]; 
     char temp[512];
-    char dir[2*FILENAME_MAX];
     char LOGFILE[64];
 
     *pulCount = 0;
@@ -492,30 +485,19 @@ CosaDmlDiagnosticsGetEntry
     if( (!commonSyseventGet("SYS_LOG_FILE_V2", LOGFILE, sizeof(LOGFILE))) \
         && (LOGFILE[0] == '\0'))
         return ANSC_STATUS_FAILURE;
-    
-    snprintf(dir, sizeof(dir), SYS_LOG_TEMP_DIR);
-    snprintf(temp, sizeof(temp), "mkdir -p %s", dir);
-    printf("%s/n",temp);
-    system(temp);
-    
-    snprintf(temp, sizeof(temp), "log_handle.sh uncompress_syslog %s", dir);
-    printf("%s\n",temp);
-    system(temp);
+        
+    v_secure_system("mkdir -p " SYS_LOG_TEMP_DIR " ; log_handle.sh uncompress_syslog " SYS_LOG_TEMP_DIR);
 
     snprintf(temp, sizeof(temp), "%s.0", LOGFILE);
     if(!access(temp, 0)){
-        snprintf(temp, sizeof(temp), "cp %s.0 %s", LOGFILE, dir);
-        printf("%s\n",temp);
-        system(temp);
+        v_secure_system("cp %s.0 " SYS_LOG_TEMP_DIR, LOGFILE);
     }
 
     if(!access(LOGFILE, 0)){
-        snprintf(temp, sizeof(temp), "cp %s %s", LOGFILE, dir);
-        printf("%s\n",temp);
-        system(temp);
+        v_secure_system("cp %s " SYS_LOG_TEMP_DIR, LOGFILE);
     }
 
-    *pulCount = _get_log(ppDiagnosticsEntry, dir, SYS_SYSLOG_USER, NULL);
+    *pulCount = _get_log(ppDiagnosticsEntry, SYS_LOG_TEMP_DIR, SYS_SYSLOG_USER, NULL);
     /*snprintf(temp, sizeof(temp), "rm -rf %s", dir);
     printf("%s\n",temp);
     system(temp);
@@ -533,7 +515,6 @@ CosaDmlDiagnosticsGetEventlog
 {
     char logfile[FILENAME_MAX]; 
     char temp[512];
-    char dir[2*FILENAME_MAX];
     char LOGFILE[64];
 
     *pulCount = 0;
@@ -548,29 +529,18 @@ CosaDmlDiagnosticsGetEventlog
         && (LOGFILE[0] == '\0'))
         return ANSC_STATUS_FAILURE;
 
-    snprintf(dir, sizeof(dir), EVT_LOG_TEMP_DIR);
-    snprintf(temp, sizeof(temp), "mkdir -p %s", dir);
-    printf("%s/n",temp);
-    system(temp);
-    
-    snprintf(temp, sizeof(temp), "log_handle.sh uncompress_evtlog %s", dir);
-    printf("%s\n",temp);
-    system(temp);
+    v_secure_system("mkdir -p " EVT_LOG_TEMP_DIR " ; log_handle.sh uncompress_evtlog " EVT_LOG_TEMP_DIR);
 
     snprintf(temp, sizeof(temp), "%s.0", LOGFILE);
     if(!access(temp, 0)){
-        snprintf(temp, sizeof(temp), "cp %s.0 %s", LOGFILE, dir);
-        printf("%s\n",temp);
-        system(temp);
+        v_secure_system("cp %s.0 " EVT_LOG_TEMP_DIR, LOGFILE);
     }
 
     if(!access(LOGFILE, 0)){
-        snprintf(temp, sizeof(temp), "cp %s %s", LOGFILE, dir);
-        printf("%s\n",temp);
-        system(temp);
+        v_secure_system("cp %s " EVT_LOG_TEMP_DIR, LOGFILE);
     }
 
-    *pulCount = _get_log(ppDiagnosticsEntry, dir, EVT_SYSLOG_USER, NULL);
+    *pulCount = _get_log(ppDiagnosticsEntry, EVT_LOG_TEMP_DIR, EVT_SYSLOG_USER, NULL);
     /*snprintf(temp, sizeof(temp), "rm -rf %s", dir);
     printf("%s\n",temp);
     system(temp);
@@ -641,7 +611,6 @@ CosaDmlDiagnosticsGetAllEventlog
 {
     char logfile[FILENAME_MAX]; 
     char temp[512];
-    char dir[2*FILENAME_MAX];
     char LOGFILE[64];
     char logsize;
     char *pLog;
@@ -656,33 +625,20 @@ CosaDmlDiagnosticsGetAllEventlog
         if( (!commonSyseventGet("EVT_LOG_FILE_V2", LOGFILE, sizeof(LOGFILE))) \
             && (LOGFILE[0] == '\0'))
             return ANSC_STATUS_FAILURE;
-
-        snprintf(dir, sizeof(dir), EVT_LOG_TEMP_DIR);
-        snprintf(temp, sizeof(temp), "mkdir -p %s", dir);
-        printf("%s/n",temp);
-        system(temp);
-        
-        snprintf(temp, sizeof(temp), "log_handle.sh uncompress_evtlog %s", dir);
-        printf("%s\n",temp);
-        system(temp);
+            
+        v_secure_system("mkdir -p " EVT_LOG_TEMP_DIR " ; log_handle.sh uncompress_evtlog " EVT_LOG_TEMP_DIR);
 
         snprintf(temp, sizeof(temp), "%s.0", LOGFILE);
         if(!access(temp, 0)){
-            snprintf(temp, sizeof(temp), "cp %s.0 %s", LOGFILE, dir);
-            printf("%s\n",temp);
-            system(temp);
+            v_secure_system("cp %s.0 " EVT_LOG_TEMP_DIR, LOGFILE);
         }
 
         if(!access(LOGFILE, 0)){
-            snprintf(temp, sizeof(temp), "cp %s %s", LOGFILE, dir);
-            printf("%s\n",temp);
-            system(temp);
+            v_secure_system("cp %s " EVT_LOG_TEMP_DIR, LOGFILE);
         }
 
-        EventLogNum = _get_log(&pEventLogBuf, dir, EVT_SYSLOG_USER, &EventLogBufsize);
-        snprintf(temp, sizeof(temp), "rm -rf %s", dir);
-        printf("%s\n",temp);
-        system(temp);
+        EventLogNum = _get_log(&pEventLogBuf, EVT_LOG_TEMP_DIR, EVT_SYSLOG_USER, &EventLogBufsize);
+        v_secure_system("rm -rf " EVT_LOG_TEMP_DIR);
     }
 
     if(*pUlSize < EventLogBufsize)
@@ -707,7 +663,6 @@ CosaDmlDiagnosticsGetAllSyslog
 {
     char logfile[FILENAME_MAX]; 
     char temp[512];
-    char dir[2*FILENAME_MAX];
     char LOGFILE[64];
     char logsize;
     char *pLog;
@@ -723,32 +678,19 @@ CosaDmlDiagnosticsGetAllSyslog
             && (LOGFILE[0] == '\0'))
             return ANSC_STATUS_FAILURE;
 
-        snprintf(dir, sizeof(dir), SYS_LOG_TEMP_DIR);
-        snprintf(temp, sizeof(temp), "mkdir -p %s", dir);
-        printf("%s/n",temp);
-        system(temp);
-        
-        snprintf(temp, sizeof(temp), "log_handle.sh uncompress_syslog %s", dir);
-        printf("%s\n",temp);
-        system(temp);
+        v_secure_system("mkdir -p " SYS_LOG_TEMP_DIR " ; log_handle.sh uncompress_syslog " SYS_LOG_TEMP_DIR);
 
         snprintf(temp, sizeof(temp), "%s.0", LOGFILE);
         if(!access(temp, 0)){
-            snprintf(temp, sizeof(temp), "cp %s.0 %s", LOGFILE, dir);
-            printf("%s\n",temp);
-            system(temp);
+            v_secure_system("cp %s.0 " SYS_LOG_TEMP_DIR, LOGFILE);
         }
 
         if(!access(LOGFILE, 0)){
-            snprintf(temp, sizeof(temp), "cp %s %s", LOGFILE, dir);
-            printf("%s\n",temp);
-            system(temp);
+            v_secure_system("cp %s " SYS_LOG_TEMP_DIR, LOGFILE);
         }
 
-        SystemLogNum = _get_log(&pSystemLogBuf, dir, SYS_SYSLOG_USER, &SystemLogBufsize);
-        snprintf(temp, sizeof(temp), "rm -rf %s", dir);
-        printf("%s\n",temp);
-        system(temp);
+        SystemLogNum = _get_log(&pSystemLogBuf, SYS_LOG_TEMP_DIR, SYS_SYSLOG_USER, &SystemLogBufsize);
+        v_secure_system("rm -rf " SYS_LOG_TEMP_DIR);
     }
 
     if(*pUlSize < SystemLogBufsize)
