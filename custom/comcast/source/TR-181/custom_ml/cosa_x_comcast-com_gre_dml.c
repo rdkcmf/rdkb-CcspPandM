@@ -93,12 +93,12 @@ void* hotspot_thread(void* arg)
     if(!running)
     {
       running=1;
-      CcspTraceError(("%s:hotspot_update_circuit_ids starting\n", __FUNCTION__));
+      CcspTraceWarning(("%s:hotspot_update_circuit_ids starting\n", __FUNCTION__));
       hotspot_update_circuit_ids(1,1);
     }
     else
     {
-        CcspTraceError(("%s: already hotspot_update_circuit_ids is running\n", __FUNCTION__));
+        CcspTraceWarning(("%s: already hotspot_update_circuit_ids is running\n", __FUNCTION__));
         return NULL;
     }
     running=0;
