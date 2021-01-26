@@ -3822,12 +3822,10 @@ CosaDmlDhcpsARPing
     fp = v_secure_popen("r", "arping -I %s -c 2 -f -w 1 %s", LAN_L3_IFNAME, _ansc_inet_ntoa(*((struct in_addr*)&(pDhcpsClient->IPAddress))) );
     if ( _get_shell_output2(fp, "Received 0 reply"))
     {
-        /*1 packets transmitted, 0 packets received, 100% packet loss*/
         return ANSC_STATUS_FAILURE;
     }
     else
     {
-        /*1 packets transmitted, 1 packets received, 0% packet loss*/
         return ANSC_STATUS_SUCCESS;
     }
 }

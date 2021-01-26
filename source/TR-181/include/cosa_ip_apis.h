@@ -295,6 +295,11 @@ _COSA_DML_IP_STATS
     ULONG                           BroadcastPacketsSent;
     ULONG                           BroadcastPacketsReceived;
     ULONG                           UnknownProtoPacketsReceived;
+
+    /* Warning: pointers to COSA_DML_IF_STATS (in cosa_dml_api_common.h) are
+       cast to pointers to COSA_DML_IP_STATS (this struct) (e.g. in
+       CosaDmlIpIfGetStats()) so the two structure must be kept in sync
+    */
 }
 COSA_DML_IP_STATS, *PCOSA_DML_IP_STATS;
 
