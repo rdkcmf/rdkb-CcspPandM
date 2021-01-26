@@ -285,7 +285,7 @@ DeviceInfo_GetParamStringValue_Custom
         return 0;
     } 
 #endif
-        	if( 0 == syscfg_get( NULL, "eth_wan_enabled", isEthEnabled, sizeof(isEthEnabled)) && (isEthEnabled[0] != '\0' && strncmp(isEthEnabled, "true", strlen("true")) == 0))
+        	if( 0 == syscfg_get( NULL, "eth_wan_enabled", isEthEnabled, sizeof(isEthEnabled)) && (isEthEnabled[0] != '\0' && strcmp(isEthEnabled, "true") == 0))
         	{
 			EthWANEnable = 1;
 		}
