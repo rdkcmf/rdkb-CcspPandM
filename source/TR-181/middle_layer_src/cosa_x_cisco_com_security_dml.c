@@ -70,6 +70,9 @@
 #include "cosa_x_cisco_com_security_dml.h"
 #include "cosa_x_cisco_com_security_internal.h"
 #include "safec_lib_common.h"
+#if defined(_INTEL_BUG_FIXES_)
+#include "cosa_drg_common.h"
+#endif
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -1865,6 +1868,9 @@ Firewall1_SetParamUlongValue
             return FALSE;
         }
         pCosaDMSecurity->FirewallConfig.FirewallLevel = uValue;
+#if defined(_INTEL_BUG_FIXES_)
+        commonSyseventSet("pp_flush", "1");
+#endif
 
 	/*RDKB-28857 : Restore firewall settings does not restore check boxes in custom security */
 	if( pCosaDMSecurity->FirewallConfig.FirewallLevel == COSA_DML_FIREWALL_LEVEL_Low )
