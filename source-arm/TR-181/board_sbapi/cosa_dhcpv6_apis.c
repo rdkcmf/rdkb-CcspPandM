@@ -7006,39 +7006,29 @@ static token_t sysevent_token_1;
 static pthread_t InfEvtHandle_tid;
 void enable_IPv6(char* if_name)
 {
+        FILE *fp;
 
     	CcspTraceInfo(("%s : Enabling ipv6 on iface %s\n",__FUNCTION__,if_name));
 
     	char tbuff[100] = {0} , ipv6_addr[128] = {0} , cmd[128] = {0} ;
     	memset(ipv6_addr,0,sizeof(ipv6_addr));
-    	memset(cmd,0,sizeof(cmd));
     	memset(tbuff,0,sizeof(tbuff));
-    	sprintf(cmd,"sysctl net.ipv6.conf.%s.autoconf",if_name);
-    	_get_shell_output(cmd, tbuff, sizeof(tbuff));
+    	fp = v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",if_name);
+    	_get_shell_output(fp, tbuff, sizeof(tbuff));
     	if(tbuff[strlen(tbuff)-1] == '0')
     	{
-            	memset(cmd,0,sizeof(cmd));
-            	sprintf(cmd,"sysctl -w net.ipv6.conf.%s.autoconf=1",if_name);
-            	system(cmd);
-            	memset(cmd,0,sizeof(cmd));
-            	sprintf(cmd,"ifconfig %s down;ifconfig %s up",if_name,if_name);
-            	system(cmd);
+            	v_secure_system("sysctl -w net.ipv6.conf.%s.autoconf=1",if_name);
+            	v_secure_system("ifconfig %s down;ifconfig %s up",if_name,if_name);
     	}
 
     	memset(cmd,0,sizeof(cmd));
     	_ansc_sprintf(cmd, "%s_ipaddr_v6",if_name);
     	commonSyseventGet(cmd, ipv6_addr, sizeof(ipv6_addr));
-    	memset(cmd,0,sizeof(cmd));
-    	sprintf(cmd, "ip -6 route add %s dev %s", ipv6_addr, if_name);
-    	system(cmd);
+    	v_secure_system("ip -6 route add %s dev %s", ipv6_addr, if_name);
     	#ifdef _COSA_INTEL_XB3_ARM_
-        memset(cmd,0,sizeof(cmd));
-        sprintf(cmd, "ip -6 route add %s dev %s table erouter", ipv6_addr, if_name);
-        system(cmd);
+        v_secure_system("ip -6 route add %s dev %s table erouter", ipv6_addr, if_name);
     	#endif
-    	memset(cmd,0,sizeof(cmd));
-    	sprintf(cmd, "ip -6 rule add iif %s lookup erouter",if_name);
-    	system(cmd);
+    	v_secure_system("ip -6 rule add iif %s lookup erouter",if_name);
 
 }
 static void *InterfaceEventHandler_thrd(void *data)
@@ -7053,6 +7043,7 @@ static void *InterfaceEventHandler_thrd(void *data)
     sysevent_set_options(sysevent_fd_1, sysevent_token_1, "multinet_2-status", TUPLE_FLAG_EVENT);
     sysevent_setnotification(sysevent_fd_1, sysevent_token_1, "multinet_2-status",  &interface_XHS_asyncid);
 
+    FILE *fp;
     char *Inf_name = NULL;
     int retPsmGet = CCSP_SUCCESS;
     char tbuff[100];
@@ -7071,10 +7062,9 @@ static void *InterfaceEventHandler_thrd(void *data)
             retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.2.Port.1.Name", NULL, &Inf_name);
             if (retPsmGet == CCSP_SUCCESS)
             {                      
-                memset(cmd,0,sizeof(cmd));
                 memset(tbuff,0,sizeof(tbuff));
-                sprintf(cmd,"sysctl net.ipv6.conf.%s.autoconf",Inf_name);
-                _get_shell_output(cmd, tbuff, sizeof(tbuff));
+                v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",Inf_name);
+                _get_shell_output(fp, tbuff, sizeof(tbuff));
                 if(tbuff[strlen(tbuff)-1] == '0')
                 {
                     enable_IPv6(Inf_name);
@@ -7097,10 +7087,9 @@ static void *InterfaceEventHandler_thrd(void *data)
     if(strcmp((const char*)buf, "ready") == 0)
     {
                
-        memset(cmd,0,sizeof(cmd));
         memset(tbuff,0,sizeof(tbuff));
-        sprintf(cmd,"sysctl net.ipv6.conf.br106.autoconf");
-        _get_shell_output(cmd, tbuff, sizeof(tbuff));
+        v_secure_popen("r","sysctl net.ipv6.conf.br106.autoconf");
+        _get_shell_output(fp, tbuff, sizeof(tbuff));
         if(tbuff[strlen(tbuff)-1] == '0')
         {
             enable_IPv6("br106");
