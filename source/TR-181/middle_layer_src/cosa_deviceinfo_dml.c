@@ -16478,6 +16478,91 @@ xBlueTooth_SetParamBoolValue
     return FALSE;
 }
 
+BOOL TileMac_GetParamStringValue
+(
+                 ANSC_HANDLE                 hInsContext,
+                 char*                       ParamName,
+                 char*                       pValue,
+                 ULONG*                      pUlSize)
+
+{
+    CcspTraceInfo(("BLE: TileMac GetParam String...... \n"));
+
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+
+    FILE *fp;
+    char buf[1024]={0}, buf1[1024] = {0};
+    char *ch = NULL;
+    char lastRebootReason[64]={0};
+    static bool disc = false;
+    char res[8] = {0};
+
+    /* Get last reboot reason. If factory reset, enable BLE discovery and get tilemacs info.*/
+    syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", lastRebootReason, sizeof(lastRebootReason));
+
+    if (strcmp(lastRebootReason, "factory-reset") == 0)
+    {
+        syscfg_get( NULL, "BLEDiscovery", res, sizeof(res));
+        /* Check if BLEDiscovery is false or empty. Then set BLEDiscovery to true,set ReportingURL 
+         * and restart ble service.
+         */
+        CcspTraceInfo(("BLE: Reboot reason Factory-reset(BLEDiscovery value: %s) ...... \n",res));
+        if( (strcmp(res, "false") == 0) || (strcmp(res, "") == 0) )
+        {
+           char pStr[128]= {0}, cmd[64] = {0};
+           syscfg_set(NULL, "BLEDiscovery", "true");
+           syscfg_commit();
+
+           CcspTraceInfo(("BLE: Discovery is Set to True..... \n"));
+
+           AnscCopyString(pStr, "https://tile-adapter-prod.codebig2.net/api/v2/bte/device/tilealert");
+           syscfg_set(NULL, "TileReportingURL", pStr);
+           syscfg_commit();
+
+           CcspTraceInfo(("BLE: Tile Reporting URL is Set..... \n"));
+
+           AnscCopyString(cmd, "/bin/systemctl restart ble");
+           //system(cmd);
+           v_secure_system("%s",cmd);
+           
+           CcspTraceInfo(("BLE: ble service restarted..... \n"));
+
+           disc = true;
+        }
+    }
+    fp = fopen("/tmp/tiles.inf","r");
+    if (fp)
+    {
+            while (fgets(buf,1024, fp))
+            {
+                  /*we need to remove the \n char in buf*/
+                  if ((ch = strchr(buf, '\n')))
+                        *ch = 0;
+                  strncat(buf1,buf,strlen(buf));
+            }
+            fclose(fp);
+    } else {
+            CcspTraceError(("BLE: Cannot open /tmp/tiles.inf file. \n"));
+            AnscCopyString(pValue, "Cannot Open File");
+            *pUlSize = AnscSizeOfString(pValue);
+            return TRUE;
+    }
+    AnscCopyString(pValue, buf1);
+    *pUlSize = AnscSizeOfString(pValue);
+
+    /* Restore the discovery state to false */
+    if(disc == true)
+    {
+       syscfg_set(NULL, "BLEDiscovery", "false");
+       syscfg_commit();
+
+       CcspTraceInfo(("BLE: Discovery Set back to False..... \n"));
+
+       disc = false;
+    }
+    return TRUE;
+}
 
 BOOL
 Cmd_GetParamStringValue
