@@ -7063,8 +7063,8 @@ static void *InterfaceEventHandler_thrd(void *data)
             if (retPsmGet == CCSP_SUCCESS)
             {                      
                 memset(tbuff,0,sizeof(tbuff));
-                v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",Inf_name);
-                _get_shell_output(fp, tbuff, sizeof(tbuff));
+                fp = v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",Inf_name);
+		_get_shell_output(fp, tbuff, sizeof(tbuff));
                 if(tbuff[strlen(tbuff)-1] == '0')
                 {
                     enable_IPv6(Inf_name);
@@ -7088,7 +7088,7 @@ static void *InterfaceEventHandler_thrd(void *data)
     {
                
         memset(tbuff,0,sizeof(tbuff));
-        v_secure_popen("r","sysctl net.ipv6.conf.br106.autoconf");
+        fp = v_secure_popen("r","sysctl net.ipv6.conf.br106.autoconf");
         _get_shell_output(fp, tbuff, sizeof(tbuff));
         if(tbuff[strlen(tbuff)-1] == '0')
         {
