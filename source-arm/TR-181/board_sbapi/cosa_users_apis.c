@@ -690,9 +690,6 @@ user_validatepwd
 
    if(fromDB[0] == '\0')
    {
-     #if defined(_CBR2_PRODUCT_REQ_)
-         user_hashandsavepwd(hContext,pEntry->Password,pEntry);
-     #else
          FILE *fptr;
          char outbuff[10];
          if ((fptr=v_secure_popen("r", "/usr/bin/configparamgen jx jtxpybrepjab:3"))!=NULL)
@@ -705,7 +702,6 @@ user_validatepwd
          }
          v_secure_pclose(fptr);
          user_hashandsavepwd(hContext,outbuff,pEntry);
-      #endif
    }
    if (!strcmp("highspeed",pString))
    {
@@ -843,9 +839,6 @@ CosaDmlUserResetPassword
 #if defined(_COSA_FOR_BCI_)
    else if(!strcmp(pEntry->Username,"cusadmin"))
    {
-     #if defined(_CBR2_PRODUCT_REQ_)
-         strcpy(defPassword,"highspeed");
-     #else
          FILE *fptr;
          if ((fptr=v_secure_popen("r", "/usr/bin/configparamgen jx jtxpybrepjab:3"))!=NULL)
          if (NULL == fptr) {
@@ -856,7 +849,6 @@ CosaDmlUserResetPassword
              return ANSC_STATUS_FAILURE;
          }
          v_secure_pclose(fptr);
-     #endif
    }
 #endif
    else
