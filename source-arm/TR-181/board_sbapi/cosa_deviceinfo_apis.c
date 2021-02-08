@@ -528,6 +528,10 @@ CosaDmlDiGetProductClass
 	{
 		AnscCopyString(pValue, "CBR");
 	}
+#elif defined(_XB8_PRODUCT_REQ_)
+    {
+         AnscCopyString(pValue, "XB8");
+    }
 #elif defined(_XB7_PRODUCT_REQ_)
     {
          AnscCopyString(pValue, "XB7");
