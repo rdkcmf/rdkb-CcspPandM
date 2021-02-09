@@ -552,7 +552,7 @@ void clean_log(void){
 
                 if(count > LOG_FILE_COUNT_MAX){
                     fseek(fp, 0, SEEK_SET);
-                    v_secure_system("rm " FIREWALL_LOG_DIR " %s", get_old(fp,name));
+                    v_secure_system("rm %s %s" ,FIREWALL_LOG_DIR , get_old(fp,name));
                     break;
                 }
             }
@@ -638,7 +638,7 @@ void get_rule_time(int count){
     FILE *fd;
 #endif
     strftime(today, sizeof(today), "%b %d", g_ptime);
-    v_secure_system("grep -h -e \"%s\"  " ORG_LOG_NAME_1 " > " FW_ORG_LOG_NAME " 2>/dev/null", today);
+    v_secure_system("grep -h -e \"%s\"  %s > %s 2>/dev/null", today, ORG_LOG_NAME_1, FW_ORG_LOG_NAME);
 #ifdef _NO_MMAP__
     fd = fopen(FW_ORG_LOG_NAME,"r");
     if(fd == NULL){
@@ -728,7 +728,7 @@ int genfwLog(void){
 
     if( -1 == access(FIREWALL_LOG_DIR, 0))
     {
-         v_secure_system("mkdir -p " FIREWALL_LOG_DIR);
+         v_secure_system("mkdir -p %s" ,FIREWALL_LOG_DIR);
     }
 
     g_p_rule_tbl = NULL;
@@ -739,8 +739,8 @@ int genfwLog(void){
         return 0;
     }
 
-    v_secure_system(IPT_COUNT_CMD " > " TEMP_FILE);
-    v_secure_system(IPT_NAT_COUNT_CMD " >> " TEMP_FILE);
+    v_secure_system("%s > %s",IPT_COUNT_CMD,TEMP_FILE);
+    v_secure_system("%s > %s",IPT_NAT_COUNT_CMD ,TEMP_FILE);
 
     ipt = fopen(TEMP_FILE, "r");
     if(ipt == NULL){
@@ -3145,7 +3145,7 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
             }
         }
 #endif
-    v_secure_system("rm -f " MERGED_FW_LOG_FILE " " SORT_FW_LOG_FILE);
+    v_secure_system("rm -f %s %s" ,MERGED_FW_LOG_FILE ,SORT_FW_LOG_FILE);
 
     return entry;
 }
@@ -3195,13 +3195,12 @@ CosaDmlIaGetLogEntries
         first_flg = 0;
         return NULL;
     }
-
-    v_secure_system("mkdir -p " FIREWALL_LOG_DIR " ;log_handle.sh uncompress_fwlog " FIREWALL_LOG_DIR " " fw_log_path); 
+    v_secure_system("mkdir -p %s ;log_handle.sh uncompress_fwlog %s %s", FIREWALL_LOG_DIR,FIREWALL_LOG_DIR,fw_log_path); 
 
     /* get all log information */
     pConf = _get_log(pulCount);
 
-    v_secure_system("rm -r " FIREWALL_LOG_DIR_NEW);
+    v_secure_system("rm -r %s" ,FIREWALL_LOG_DIR_NEW);
     return pConf;
 }
 static PCOSA_DML_IA_LOG_ENTRY pFWLogBuf = NULL;
@@ -3283,11 +3282,11 @@ CosaDmlIaGetALLLogEntries
         first_flg = 0;
         return NULL;
     }
-        v_secure_system("mkdir -p " FIREWALL_LOG_DIR " ;log_handle.sh uncompress_fwlog " FIREWALL_LOG_DIR " " fw_log_path); 
+	v_secure_system("mkdir -p %s ;log_handle.sh uncompress_fwlog %s %s", FIREWALL_LOG_DIR,FIREWALL_LOG_DIR,fw_log_path); 
 
         /* get all log information */
         pFWLogBuf = _get_log(&FWLogNum);
-        v_secure_system("rm -r " FIREWALL_LOG_DIR_NEW);
+        v_secure_system("rm -r %s", FIREWALL_LOG_DIR_NEW);
     }
     if(FWLogNum == 0){
         pValue[0] = '\0';

@@ -1264,9 +1264,9 @@ int setXOpsReverseSshTrigger(char *input) {
 
     trigger = strstr(input, "start");
     if (trigger) {
-        v_secure_system(sshCommand " start %s", reverseSSHArgs);
+        v_secure_system("%s start %s", sshCommand,reverseSSHArgs);
     } else {
-        v_secure_system(sshCommand " stop");
+        v_secure_system("%s stop",sshCommand);
     }
     return OK;
 }

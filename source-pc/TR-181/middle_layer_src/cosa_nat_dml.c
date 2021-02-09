@@ -943,7 +943,7 @@ X_CISCO_COM_DMZ_SetParamStringValue
 				for(count=0;path[count]!='\n';count++)
 					Gateway_IP[count]=path[count];
 				Gateway_IP[count]='\0';//Getting Gateway_IP Address
-				v_secure_system("echo %d > /tmp/dmz_ip", pDmz->InternalIP);
+				v_secure_system("echo %s > /tmp/dmz_ip", pDmz->InternalIP);
 				fp = popen ("cut -d '.' -f1-3 /tmp/dmz_ip","r");
 				if(fp == NULL)
 					return 0;
