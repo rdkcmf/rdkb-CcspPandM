@@ -1357,7 +1357,7 @@ CosaDmlDcSetHTTPSPort
 static int
 WebServRestart(ULONG Port)
 {
-	v_secure_system("sed -i 's/.*SERVER\\[\"socket\"\\] == \":.*/\\$SERVER\\[\"socket\"\\] == \":%d\"  { }/1' " HTTPD_DEF_CONF,Port);
+        v_secure_system("sed -i 's/.*SERVER\\[\"socket\"\\] == \":.*/\\$SERVER\\[\"socket\"\\] == \":%lu\"  { }/1' %s",Port,HTTPD_DEF_CONF);
 
         CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
         if (vsystem("systemctl restart lighttpd") != 0) {

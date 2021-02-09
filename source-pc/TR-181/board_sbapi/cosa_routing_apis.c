@@ -572,7 +572,9 @@ static int CosaRipdOperation(char * arg)
     FILE *fp;
     char out[256] = {0};
     ULONG Index  = 0;
-    
+    char *base = basename(COSA_RIPD_BIN);
+    char *base1 = basename(COSA_ZEBRA_BIN);
+ 
     if (!strncmp(arg, "stop", 4))
     {
         /* Zebra's configuration is controlled by Utopia. So we need not restart this one */
@@ -580,21 +582,20 @@ static int CosaRipdOperation(char * arg)
         sprintf(cmd, "killall %s", basename(COSA_ZEBRA_BIN));
         system(cmd);
          */
-
-        v_secure_system("kill `cat " RIPD_PID_FILE "`");
+	v_secure_system("killall %s", base);
     }
     else if (!strncmp(arg, "start", 5))
     {
         /* We must be sure Dibbler-server is not up currently.
                     If it is up, we need not start it. */
-        fp = v_secure_popen("r",  COSA_DML_CMD_PS, basename(COSA_ZEBRA_BIN));
+        fp = v_secure_popen("r",  COSA_DML_CMD_PS, base1);
         _get_shell_output3(fp, out, sizeof(out));
         if ( !strstr(out, basename(COSA_ZEBRA_BIN)))
         {
             v_secure_system(COSA_RIPD_BIN " -d -f " COSA_RIPD_CUR_CONF " -u root -g root -i " RIPD_PID_FILE " &");
         }
 
-        fp = v_secure_popen("r", COSA_DML_CMD_PS, basename(COSA_RIPD_BIN));
+        fp = v_secure_popen("r", COSA_DML_CMD_PS, base);
         _get_shell_output3(fp, out, sizeof(out));
         if ( !strstr(out, basename(COSA_RIPD_BIN)))
         {
@@ -611,7 +612,7 @@ static int CosaRipdOperation(char * arg)
     }
     else if (!strncmp(arg, "update", 6))
     {
-        v_secure_system("killall -SIGHUP %s", basename(COSA_RIPD_BIN));
+	v_secure_system("killall -SIGHUP %s", base);
     }
 
     return 0;
