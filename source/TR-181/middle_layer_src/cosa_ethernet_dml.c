@@ -1610,7 +1610,7 @@ Stats_GetParamUlongValue
     if( AnscEqualString(ParamName, "UnknownProtoPacketsReceived", TRUE))
     {
         /* collect value */
-        *puLong = stats.UnicastPacketsReceived;
+        *puLong = stats.UnknownProtoPacketsReceived;
         return TRUE;
     }
 

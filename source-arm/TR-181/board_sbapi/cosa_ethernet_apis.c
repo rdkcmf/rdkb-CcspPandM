@@ -479,7 +479,7 @@ CosaDmlEthPortSetCfg
 
     if ( origCfg.bEnabled != pCfg->bEnabled )
     {
-        pEthIf->control->getStats(pEthIf, &pEthIf->LastStats);
+        //pEthIf->control->getStats(pEthIf, &pEthIf->LastStats);
 
         pEthIf->LastChange = AnscGetTickInSeconds();
     }
@@ -1497,8 +1497,13 @@ int puma6_getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDi
 }
 
 int puma6_getSwitchStats(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_STATS pStats){
+#if defined(ETH_STATS_ENABLED)
+    CCSP_HAL_ETHSW_PORT   port  = *((PCCSP_HAL_ETHSW_PORT)eth->hwid);
+    CcspHalEthSwGetEthPortStats(port, (PCCSP_HAL_ETH_STATS)pStats);
+#else
     UNREFERENCED_PARAMETER(eth);
     UNREFERENCED_PARAMETER(pStats);
+#endif
     return ANSC_STATUS_SUCCESS;
 }
 
