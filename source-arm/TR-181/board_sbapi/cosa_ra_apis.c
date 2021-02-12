@@ -77,7 +77,7 @@
 #include "utctx/utctx_api.h"
 
 #define MAX_PREF        8       /* according to TR-181 */
-#define ZEBRA_CONF      "/etc/zebra.conf"
+#define ZEBRA_CONF      "/var/zebra.conf"
 
 #define RA_CONF_START   "# Based on prefix"
 #define RA_CONF_IF      "interface"
@@ -175,6 +175,10 @@ static int ParseZebraRaConf(ZebraRaConf_t *conf)
     char sVal[2][64];
 
     memset(conf, 0, sizeof(ZebraRaConf_t));
+
+    if (access(ZEBRA_CONF, F_OK) != 0) {
+        return -1;
+    }
 
     if ((fp = fopen(ZEBRA_CONF, "rb")) == NULL) {
         fprintf(stderr, "%s: fail to open file %s\n", __FUNCTION__, ZEBRA_CONF);
