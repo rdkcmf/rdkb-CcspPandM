@@ -79,6 +79,7 @@ extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 
+
 #ifdef _HUB4_PRODUCT_REQ_
 #define SYSEVENT_FIELD_IPV6_PREFIXVLTIME  "ipv6_prefix_vldtime"
 #define SYSEVENT_FIELD_IPV6_PREFIXPLTIME  "ipv6_prefix_prdtime"
@@ -3928,6 +3929,9 @@ static int get_iapd_info(ia_pd_t *iapd)
 
 #endif
 
+static int sysevent_fd_global = 0;
+static token_t sysevent_token_global;
+
 #ifdef _COSA_INTEL_USG_ARM_
 void __cosa_dhcpsv6_refresh_config()
 {
@@ -4189,13 +4193,6 @@ OPTIONS:
                             */
 #if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
 
-                static int sysevent_fd_gs;
-                static token_t sysevent_token_gs;
-                if ((sysevent_fd_gs = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT,
-                    SE_VERSION, "SERVICE-IPV6", &sysevent_token_gs)) < 0) {
-                fprintf(stderr, "%s: fail to open sysevent\n", __FUNCTION__);
-                return;
-                }
                 char l_cSecWebUI_Enabled[8] = {0};
                 syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
                 if (!strncmp(l_cSecWebUI_Enabled, "true", 4)) {
@@ -4234,7 +4231,7 @@ OPTIONS:
                                                       else
                                                       {
                                                           char dyn_dns[256] = {0};
-                                                          sysevent_get(sysevent_fd_gs, sysevent_token_gs, "wan6_ns", dyn_dns, sizeof(dyn_dns));
+                                                          sysevent_get(sysevent_fd_global, sysevent_token_global, "wan6_ns", dyn_dns, sizeof(dyn_dns));
                                                           if ( '\0' != dyn_dns[ 0 ] )
                                                           {
                                                               format_dibbler_option(dyn_dns);
@@ -4269,7 +4266,7 @@ OPTIONS:
                                                    {
                                                        char static_dns[256] = {0};
                                                        char dyn_dns[256] = {0};
-                                                       sysevent_get(sysevent_fd_gs, sysevent_token_gs, "wan6_ns", dyn_dns, sizeof(dyn_dns));
+                                                       sysevent_get(sysevent_fd_global, sysevent_token_global, "wan6_ns", dyn_dns, sizeof(dyn_dns));
                                                        if ( '\0' != dyn_dns[ 0 ] )
                                                        {
                                                            format_dibbler_option(dyn_dns);
@@ -4336,7 +4333,7 @@ OPTIONS:
 					}
 					else
 					{
-						sysevent_get(sysevent_fd_gs, sysevent_token_gs, "wan6_ns", dns_str, sizeof(dns_str));
+						sysevent_get(sysevent_fd_global, sysevent_token_global, "wan6_ns", dns_str, sizeof(dns_str));
 						if (dns_str[0] != '\0') {
 							format_dibbler_option(dns_str);
 							if( isInCaptivePortal == TRUE )
@@ -4355,7 +4352,7 @@ OPTIONS:
                 {//domain
                     char domain_str[256] = {0};
                         CcspTraceWarning(("_cosa_dhcpsv6_refresh_config -- Tag is 24 \n"));
-                    sysevent_get(sysevent_fd_gs, sysevent_token_gs, "ipv6_dnssl", domain_str, sizeof(domain_str));
+                    sysevent_get(sysevent_fd_global, sysevent_token_global, "ipv6_dnssl", domain_str, sizeof(domain_str));
                     if (domain_str[0] != '\0') {
                         format_dibbler_option(domain_str);
                         if( isInCaptivePortal == TRUE )
@@ -4369,13 +4366,6 @@ OPTIONS:
                     }
                 }
 #elif defined _HUB4_PRODUCT_REQ_
-                static int sysevent_fd_gs;
-                static token_t sysevent_token_gs;
-                if ((sysevent_fd_gs = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT,
-                    SE_VERSION, "SERVICE-IPV6", &sysevent_token_gs)) < 0) {
-                    fprintf(stderr, "%s: fail to open sysevent\n", __FUNCTION__);
-                    return;
-                }
 				/* Static DNS Servers */
                 if ( sDhcpv6ServerPoolOption[Index][Index2].Tag == 23 ) {
                     char dnsServer[ 256 ] = { 0 };
@@ -4452,7 +4442,7 @@ OPTIONS:
                 }
                 else if (sDhcpv6ServerPoolOption[Index][Index2].Tag == 24) {
                     char domain_str[256] = {0};
-                    sysevent_get(sysevent_fd_gs, sysevent_token_gs, "ipv6_domain_name", domain_str, sizeof(domain_str));
+                    sysevent_get(sysevent_fd_global, sysevent_token_global, "ipv6_domain_name", domain_str, sizeof(domain_str));
                     if (domain_str[0] != '\0') {
                         if( isInCaptivePortal == TRUE )
                         {
@@ -4466,7 +4456,7 @@ OPTIONS:
                 }
                 else if (sDhcpv6ServerPoolOption[Index][Index2].Tag == 17) {
                     char vendor_spec[512] = {0};
-                    sysevent_get(sysevent_fd_gs, sysevent_token_gs, "vendor_spec", vendor_spec, sizeof(vendor_spec));
+                    sysevent_get(sysevent_fd_global, sysevent_token_global, "vendor_spec", vendor_spec, sizeof(vendor_spec));
                     if (vendor_spec[0] != '\0') {
                         fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, vendor_spec);
                     }
@@ -7153,9 +7143,6 @@ static void *InterfaceEventHandler_thrd(void *data)
 }
 #endif
 
-static int sysevent_fd_mnet;
-static token_t sysevent_token_mnet;
-
 static void * 
 dhcpv6c_dbg_thrd(void * in)
 {
@@ -7169,9 +7156,9 @@ dhcpv6c_dbg_thrd(void * in)
     if ( globalIP2[0] )
         CcspTraceWarning(("%s  It seems there is old value(%s)\n", __FUNCTION__, globalIP2));
 
-    sysevent_fd_mnet = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "Multinet Status", &sysevent_token_mnet);
+    sysevent_fd_global = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "sysevent dhcpv6", &sysevent_token_global);
    
-    CcspTraceWarning(("%s sysevent_fd_mnet is %d\n", __FUNCTION__, sysevent_fd_mnet));
+    CcspTraceWarning(("%s sysevent_fd_global is %d\n", __FUNCTION__, sysevent_fd_global));
  
     char lan_multinet_state[16] ;
     
@@ -7324,7 +7311,7 @@ dhcpv6c_dbg_thrd(void * in)
 			{
 
 			        memset(lan_multinet_state,0,sizeof(lan_multinet_state));
-                    		return_val=sysevent_get(sysevent_fd_mnet, sysevent_token_mnet, "multinet_1-status", lan_multinet_state, sizeof(lan_multinet_state));
+                    		return_val=sysevent_get(sysevent_fd_global, sysevent_token_global, "multinet_1-status", lan_multinet_state, sizeof(lan_multinet_state));
 			
                         	CcspTraceWarning(("%s multinet_1-status is %s, ret val is %d\n",__FUNCTION__,lan_multinet_state,return_val));
 
