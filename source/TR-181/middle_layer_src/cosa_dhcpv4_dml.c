@@ -7766,10 +7766,6 @@ StaticAddress_SetParamStringValue
 	if(bridgeInd)
 		return(FALSE);
 
-    /* check if pString doesn't hold null or whitespaces */
-    if(AnscValidStringCheck((PUCHAR)pString) != TRUE)
-        return FALSE;
-
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
@@ -7782,6 +7778,10 @@ StaticAddress_SetParamStringValue
 
     if( AnscEqualString(ParamName, "Chaddr", TRUE))
     {
+        /* check if pString doesn't hold null or whitespaces */
+        if(AnscValidStringCheck((PUCHAR)pString) != TRUE)
+            return FALSE;
+
         /* save update to a temp array - This is required as sscanf puts a NULL character at the end which we dont have space for */
         rc = _ansc_sscanf
                 (
