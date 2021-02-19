@@ -12107,6 +12107,209 @@ IPv6onXHS_SetParamBoolValue
     prototype:
 
         BOOL
+        IPv6onPOD_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+IPv6onPOD_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    /* check the parameter name and return the corresponding value */
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+            /* collect value */
+            char buf[128];
+            char *Inf_name = NULL;
+    	    int retPsmGet = CCSP_SUCCESS;
+
+            retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.10.Name", NULL, &Inf_name);
+			//Setting the interface name, in case it is null.
+			if(!retPsmGet) {
+				retPsmGet = CCSP_SUCCESS;
+				Inf_name = "br403";		
+			}
+            if (retPsmGet == CCSP_SUCCESS) {
+	    	if( Inf_name != NULL )
+            	{
+               	    syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
+	        if( buf != NULL )
+		    {
+		        if (strstr(buf, Inf_name))
+		            *pBool = TRUE;
+		        else
+		            *pBool = FALSE;
+		    }
+		    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
+		    return TRUE;
+	        }
+            }
+            else
+            *pBool = FALSE;
+        }
+
+    return FALSE;
+}
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        IPv6onPOD_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+IPv6onPOD_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+ char *token = NULL;char *pt;
+
+ if (IsBoolSame(hInsContext, ParamName, bValue, IPv6onPOD_GetParamBoolValue))
+        return TRUE;
+
+ if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+     	    char buf[128], OutBuff[128];
+			char *Inf_name = NULL;
+			BOOL bFound = FALSE;
+    	    int retPsmGet = CCSP_SUCCESS;
+
+            retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.10.Name", NULL, &Inf_name);
+			if(!retPsmGet)
+			{
+				retPsmGet = CCSP_SUCCESS;
+				Inf_name = "br403";		
+			}
+            if (retPsmGet == CCSP_SUCCESS)
+				{
+                    memset(buf,0,sizeof(buf));
+                    memset(OutBuff,0,sizeof(OutBuff));
+
+					if( Inf_name != NULL )
+						{
+						syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
+						if( buf != NULL )
+						{
+							if (strstr(buf, Inf_name))
+								bFound = TRUE;
+							else
+								bFound = FALSE;
+
+
+							if(bValue)
+							{
+								if(bFound == FALSE)
+								{
+								// interface is not present in the list, we need to add interface to enable IPv6 PD
+
+										strncpy(OutBuff, buf, sizeof(buf));
+										strcat(OutBuff,Inf_name);
+										strcat(OutBuff,",");
+										syscfg_set(NULL, "IPv6_Interface",OutBuff);
+										syscfg_commit();
+
+								}
+							}
+							else
+							{
+
+								if(bFound == TRUE)
+								{
+								// interface is present in the list, we need to remove interface to disable IPv6 PD
+									pt = buf;
+									   while((token = strtok_r(pt, ",", &pt))) {
+										if(strncmp(Inf_name,token,strlen(Inf_name)))
+										{
+											strcat(OutBuff,token);
+											strcat(OutBuff,",");
+										}
+									   }
+
+									syscfg_set(NULL, "IPv6_Interface",OutBuff);
+									syscfg_commit();
+								}
+							}
+						}
+						else
+						{
+							if(bValue)
+							{
+							strcat(OutBuff,Inf_name);
+							strcat(OutBuff,",");
+							syscfg_set(NULL, "IPv6_Interface",OutBuff);
+							syscfg_commit();
+							}
+						}
+					    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
+						return TRUE;
+					}
+				   ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
+            }
+            return TRUE;
+        }
+    return FALSE;
+}
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
         IPv6onMoCA_GetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,

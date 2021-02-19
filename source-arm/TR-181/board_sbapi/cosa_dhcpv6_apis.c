@@ -7370,6 +7370,7 @@ static void *InterfaceEventHandler_thrd(void *data)
     UNREFERENCED_PARAMETER(data);
     async_id_t interface_asyncid;
     async_id_t interface_XHS_asyncid;
+    async_id_t interface_POD_asyncid;
     async_id_t interface_MoCA_asyncid;
 
     CcspTraceWarning(("%s started\n",__FUNCTION__));
@@ -7379,6 +7380,8 @@ static void *InterfaceEventHandler_thrd(void *data)
     sysevent_setnotification(sysevent_fd_1, sysevent_token_1, "multinet_6-status",  &interface_asyncid);
     sysevent_set_options(sysevent_fd_1, sysevent_token_1, "multinet_2-status", TUPLE_FLAG_EVENT);
     sysevent_setnotification(sysevent_fd_1, sysevent_token_1, "multinet_2-status",  &interface_XHS_asyncid);
+	sysevent_set_options(sysevent_fd_1, sysevent_token_1, "multinet_10-status", TUPLE_FLAG_EVENT);
+    sysevent_setnotification(sysevent_fd_1, sysevent_token_1, "multinet_10-status",  &interface_POD_asyncid);
     sysevent_set_options(sysevent_fd_1, sysevent_token_1, "multinet_9-status", TUPLE_FLAG_EVENT);
     sysevent_setnotification(sysevent_fd_1, sysevent_token_1, "multinet_9-status",  &interface_MoCA_asyncid);
 
@@ -7398,6 +7401,38 @@ static void *InterfaceEventHandler_thrd(void *data)
     CcspTraceWarning(("%s multinet_9-status is %s\n",__FUNCTION__,buf));
 
     handle_MocaIpv6(buf);
+
+   memset(cmd,0,sizeof(cmd));
+    memset(buf,0,sizeof(buf));
+	
+	 _ansc_sprintf(cmd, "multinet_10-status");
+    commonSyseventGet(cmd, buf, sizeof(buf));
+            
+    CcspTraceWarning(("%s multinet_10-status is %s\n",__FUNCTION__,buf));
+
+    if(strcmp((const char*)buf, "ready") == 0)
+    {
+            retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.10.Name", NULL, &Inf_name);
+			if(!retPsmGet)
+			{
+				retPsmGet = CCSP_SUCCESS;
+				Inf_name = "br403";		
+			}
+            if (retPsmGet == CCSP_SUCCESS)
+            {                      
+                memset(tbuff,0,sizeof(tbuff));
+                fp = v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",Inf_name);
+				_get_shell_output(fp, tbuff, sizeof(tbuff));
+                if(tbuff[strlen(tbuff)-1] == '0')
+                {
+                    enable_IPv6(Inf_name);
+                }
+
+                ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
+                Inf_name = NULL;
+            }
+    
+    }
 
 
     memset(cmd,0,sizeof(cmd));
@@ -7523,6 +7558,30 @@ static void *InterfaceEventHandler_thrd(void *data)
                     }
                 }
             }
+			
+			if(strcmp((const char*)name,"multinet_10-status") == 0)
+			{
+				if(strcmp((const char*)val, "ready") == 0)
+				{
+                    Inf_name = NULL ;
+					retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.10.Name", NULL, &Inf_name);
+					if(!retPsmGet)
+					{
+						retPsmGet = CCSP_SUCCESS;
+						Inf_name = "br403";		
+					}
+            		if (retPsmGet == CCSP_SUCCESS)
+					{               
+                        enable_IPv6(Inf_name);
+						((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
+					}
+					else
+					{
+						CcspTraceWarning(("%s PSM get failed for interface name\n", __FUNCTION__));
+					}
+				}
+
+			}	
 
             if(strcmp((const char*)name,"multinet_9-status") == 0)
             {

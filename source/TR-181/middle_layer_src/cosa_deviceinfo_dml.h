@@ -1423,6 +1423,22 @@ IPv6onXHS_SetParamBoolValue
         BOOL                        bValue
     );
 BOOL
+IPv6onPOD_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+BOOL
+IPv6onPOD_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+BOOL
 IPv6onMoCA_GetParamBoolValue
 
     (
