@@ -2522,10 +2522,50 @@
                                         <writable>true</writable>
 
                                 </parameter>
+                           </parameters>
+                           <objects>
+                		<object>
+                        		<name>PeriodicBeacon</name>
+                        		<objectType>object</objectType>
 
-                        </parameters>
+                       		 	<functions>
+
+                                		<func_GetParamBoolValue>PeriodicBeacon_GetParamBoolValue</func_GetParamBoolValue>
+                                		<func_SetParamBoolValue>PeriodicBeacon_SetParamBoolValue</func_SetParamBoolValue>
+                                        <func_GetParamUlongValue>PeriodicBeacon_GetParamUlongValue</func_GetParamUlongValue>
+                                        <func_SetParamUlongValue>PeriodicBeacon_SetParamUlongValue</func_SetParamUlongValue>
+
+                        		</functions>
+
+                       		 	<parameters>
+
+                                		<parameter>
+
+                                        		<name>Enable</name>
+
+                                       		 	<type>boolean</type>
+
+                                        		<syntax>bool</syntax>
+
+                                        		<writable>true</writable>
+
+                                		</parameter>
+         					<parameter>
+
+                                        		<name>frequency</name>
+
+                                        		<type>unsignedInt</type>
+
+                                        		<syntax>uint32</syntax>
+
+                                        		<writable>true</writable>
+
+                                		</parameter>
+
+                        		</parameters>
+
+                		</object>
 						
-			<objects>
                                	<object>
 					<name>Tile</name>
 							

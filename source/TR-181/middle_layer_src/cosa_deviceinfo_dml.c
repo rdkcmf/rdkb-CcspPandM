@@ -119,6 +119,7 @@ static BOOL g_clearDB = false;
 void Send_Notification_Task(char* delay, char* startTime, char* download_status, char* status, char *system_ready_time, char * priority,  char *current_fw_ver, char *download_fw_ver);
 void set_firmware_download_start_time(char *start_time);
 char* get_firmware_download_start_time();
+void *handleBleRestart(void *arg);
 
 #define MAX_ALLOWABLE_STRING_LEN  256
 
@@ -16898,8 +16899,145 @@ BLE_SetParamBoolValue
         return TRUE;
     }
 
+
     return FALSE;
 }
+
+
+
+BOOL
+PeriodicBeacon_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    CcspTraceInfo(("PeriodicBeacon_GetParamBoolValue \n"));
+    UNREFERENCED_PARAMETER(hInsContext);
+    char buf[8];
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        syscfg_get( NULL, "BLEPeriodicBeacon", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            if (strcmp(buf, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
+BOOL
+PeriodicBeacon_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+          CcspTraceInfo(("PeriodicBeacon_SetParamBoolValue \n"));
+    if (IsBoolSame(hInsContext, ParamName, bValue, PeriodicBeacon_GetParamBoolValue))
+        return TRUE;
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        if( bValue == TRUE)
+        {
+            syscfg_set(NULL, "BLEPeriodicBeacon", "true");
+            syscfg_commit();
+        }
+        else
+        {
+            syscfg_set(NULL, "BLEPeriodicBeacon", "false");
+            syscfg_commit();
+        }
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
+BOOL
+PeriodicBeacon_GetParamUlongValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+
+    CcspTraceInfo(("PeriodicBeacon_GetParamUlongValue \n"));
+    UNREFERENCED_PARAMETER(hInsContext);
+    char buf[8] = {0};
+
+    if( AnscEqualString(ParamName, "frequency", TRUE) )
+    {
+        syscfg_get( NULL, "BLEPeriodicBeaconFrequency", buf, sizeof(buf));
+        if( 0 == strlen(buf) )
+	{
+	    CcspTraceInfo(("Return the default Value \n"));
+	    *puLong = 2; // default beacon frequency;
+            return TRUE;
+	}
+        *puLong = atol(buf);
+        return TRUE;
+    }
+    AnscTraceWarning(("%s is invalid argument!\n", ParamName));
+    return FALSE;
+
+}
+
+
+
+
+BOOL
+PeriodicBeacon_SetParamUlongValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+
+    )
+{
+
+	 CcspTraceInfo(("PeriodicBeacon_SetParamUlongValue \n"));
+	 UNREFERENCED_PARAMETER(hInsContext);
+         pthread_t tid;
+
+ 	if( AnscEqualString(ParamName, "frequency", TRUE))
+	{
+		char buf[8] = {'\0'};
+		snprintf(buf,sizeof(buf),"%lu",uValue);
+        	if (syscfg_set(NULL, "BLEPeriodicBeaconFrequency", buf) != 0)
+        	{
+            		AnscTraceWarning(("%s syscfg_set failed!\n", ParamName));
+            		return FALSE;
+        	}
+        	if (syscfg_commit() != 0)
+        	{
+            		AnscTraceWarning(("%s syscfg_commit failed!\n", ParamName));
+            		return FALSE;
+        	}
+                pthread_create(&tid, NULL, handleBleRestart, NULL);
+	}
+
+	return TRUE;
+}
+
 
 
 /**********************************************************************
