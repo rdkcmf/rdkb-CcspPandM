@@ -133,47 +133,47 @@ CosaUtilStringToHex
     return ANSC_STATUS_SUCCESS;
 }
 
-ULONG
-CosaUtilGetIfAddr
-    (
-        char*       netdev
-    )
+ULONG CosaUtilGetIfAddr (char *netdev)
 {
-    ANSC_IPV4_ADDRESS       ip4_addr = {{0}};
-
-#ifdef _ANSC_LINUX
-
-    struct ifreq            ifr;
-    int                     fd = 0;
-    errno_t                 rc = -1;
+    struct ifreq ifr;
+    struct sockaddr_in *ipaddr;
+    uint32_t value = 0;
+    errno_t rc;
+    int fd;
 
     rc = strcpy_s(ifr.ifr_name, sizeof(ifr.ifr_name), netdev);
-    if(rc != EOK)
+    if (rc != EOK)
     {
        ERR_CHK(rc);
     }
 
     if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) >= 0)
     {
-        if (!ioctl(fd, SIOCGIFADDR, &ifr))
-           memcpy(&ip4_addr.Value, ifr.ifr_ifru.ifru_addr.sa_data + 2,4);
-        else {
+        if (ioctl(fd, SIOCGIFADDR, &ifr) == 0)
+        {
+            /*
+               The 32bit IP address is returned within the sin_addr field of
+               a struct sockaddr_in structure. It is always correctly aligned
+               and in network byte order (ie it is always big endian and NOT
+               determined by the endianness of the target CPU).
+            */
+            ipaddr = (struct sockaddr_in *) &ifr.ifr_addr;
+            value = (uint32_t) ipaddr->sin_addr.s_addr;
+        }
+        else
+        {
            perror("CosaUtilGetIfAddr IOCTL failure.");
            CcspTraceWarning(("Cannot get ipv4 address of netdev:%s\n",netdev));
         }
+
         close(fd);
     }
     else
+    {
         perror("CosaUtilGetIfAddr failed to open socket.");
+    }
 
-#else
-
-    AnscGetLocalHostAddress(ip4_addr.Dot);
-
-#endif
-
-    return ip4_addr.Value;
-
+    return value;
 }
 
 ANSC_STATUS
