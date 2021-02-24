@@ -1487,34 +1487,6 @@
 			  </objects>
 			</object>
                         <object>
-                            <name>RabidFramework</name>
-                            <objectType>object</objectType>
-                            <functions>
-                                <func_GetParamUlongValue>RabidFramework_GetParamUlongValue</func_GetParamUlongValue>
-                                <func_SetParamUlongValue>RabidFramework_SetParamUlongValue</func_SetParamUlongValue>
-                            </functions>
-                            <parameters>
-                              <parameter>
-                                <name>MemoryLimit</name>
-                                <type>unsignedInt</type>
-                                <syntax>uint32</syntax>
-                                <writable>true</writable>
-                              </parameter>
-                              <parameter>
-                                <name>MacCacheSize</name>
-                                <type>unsignedInt</type>
-                                <syntax>uint32</syntax>
-                                <writable>true</writable>
-                              </parameter>
-                              <parameter>
-                                <name>DNSCacheSize</name>
-                                <type>unsignedInt</type>
-                                <syntax>uint32</syntax>
-                                <writable>true</writable>
-                              </parameter>
-                            </parameters>
-                        </object>
-                        <object>
                             <name>UPnP</name>
                             <objectType>object</objectType>
                             <functions></functions>
@@ -1537,38 +1509,6 @@
                                      </parameters>
                                 </object>
                             </objects>
-                        </object>
-                        <object>
-                            <name>AdvancedParentalControl</name>
-                            <objectType>object</objectType>
-                            <functions>
-                                <func_GetParamBoolValue>AdvancedParentalControl_GetParamBoolValue</func_GetParamBoolValue>
-                                <func_SetParamBoolValue>AdvancedParentalControl_SetParamBoolValue</func_SetParamBoolValue>
-                            </functions>
-                            <parameters>
-                              <parameter>
-                                <name>Enable</name>
-                                <type>boolean</type>
-                                <syntax>bool</syntax>
-                                <writable>true</writable>
-                              </parameter>
-                            </parameters>
-                        </object>
-                        <object>
-                            <name>PrivacyProtection</name>
-                            <objectType>object</objectType>
-                            <functions>
-                                <func_GetParamBoolValue>PrivacyProtection_GetParamBoolValue</func_GetParamBoolValue>
-                                <func_SetParamBoolValue>PrivacyProtection_SetParamBoolValue</func_SetParamBoolValue>
-                            </functions>
-                            <parameters>
-                              <parameter>
-                                <name>Enable</name>
-                                <type>boolean</type>
-                                <syntax>bool</syntax>
-                                <writable>true</writable>
-                              </parameter>
-                            </parameters>
                         </object>
                         <object>
                             <name>WANLinkHeal</name>

@@ -111,9 +111,6 @@
 #endif
 
 #include "cosa_ra_internal.h"
-#include "cosa_rabid_internal.h"
-#include "cosa_adv_parental_control_internal.h"
-#include "cosa_privacy_protection_internal.h"
 #include "cosa_x_rdkcentral_com_xpc_internal.h"
 #include "cosa_onboardlogging_internal.h"
 #include "cosa_x_cisco_com_diagnostics_internal.h"
@@ -411,14 +408,6 @@ if(id != 0)
     AnscTraceWarning(("  CosaTSIPCreate done!\n"));
 #endif
     
-    pMyObject->hRabid          = (ANSC_HANDLE)CosaRabidCreate();
-    AnscTraceWarning(("  CosaRabidCreate done!\n"));
-
-    pMyObject->hAdvPC          = (ANSC_HANDLE)CosaAdvPCCreate();
-    AnscTraceWarning(("  CosaAdvPCCreate done!\n"));
-
-    pMyObject->hPrivacyProtection         = (ANSC_HANDLE)CosaPrivacyProtectionCreate();
-    AnscTraceWarning(("  CosaPrivacyProtectionCreate done!\n"));
 #ifdef FEATURE_SUPPORT_ONBOARD_LOGGING
     pMyObject->hXpc         = (ANSC_HANDLE)CosaXpcCreate();
     AnscTraceWarning(("  CosaXpcCreate done!\n"));
