@@ -2534,6 +2534,9 @@ CosaDmlDhcpv6cGetEnabled
     BOOL bEnabled = FALSE;
     char out[256] = {0};
 
+#if defined(_PLATFORM_TURRIS_)
+    BOOL dibblerEnabled = FALSE;
+#endif
 
 // For XB3, AXB6 if dibbler flag enabled, check dibbler-client process status
 #if defined(_COSA_INTEL_XB3_ARM_) || defined(INTEL_PUMA7)
