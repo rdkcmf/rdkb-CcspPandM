@@ -407,7 +407,7 @@ CosaDmlDiGetManufacturerOUI
         return ANSC_STATUS_SUCCESS;
     }
 */
-#if defined(_COSA_BCM_ARM_)
+#if defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_)
         sprintf(pValue, "%s%c", CONFIG_VENDOR_ID, '\0');
 #else
         sprintf(pValue, "%06X%c", CONFIG_VENDOR_ID, '\0');

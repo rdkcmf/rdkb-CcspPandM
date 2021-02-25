@@ -369,7 +369,7 @@ DmSetBool(const char *param, BOOL value)
     char crname[256], *fault = NULL;
     int err;
 
-    val[0].parameterName  = param;
+    val[0].parameterName  = (char*)param;
     val[0].parameterValue = (value ? "true" : "false");
     val[0].type           = ccsp_boolean;
 
@@ -4126,7 +4126,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 #if defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_TURRIS_)
 	char buf[7] = {0};
 	BOOL value;
-	snprintf(buf,sizeof(buf),"%ld",bridge_info.mode);
+	snprintf(buf,sizeof(buf),"%d",bridge_info.mode);
 	if ((syscfg_set(NULL, "bridge_mode", buf) != 0))
                         {
                             Utopia_Free(&utctx, 0);
