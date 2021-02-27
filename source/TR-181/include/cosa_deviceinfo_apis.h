@@ -808,4 +808,12 @@ CosaDmlSetRadiusGreyListEnable
         BOOL        bValue
     );
 #endif
+#if defined(FEATURE_HOSTAP_AUTHENTICATOR)
+BOOL
+CosaDmlSetNativeHostapdState
+    (
+        BOOL        bValue
+    );
+#endif //FEATURE_HOSTAP_AUTHENTICATOR
+
 #endif

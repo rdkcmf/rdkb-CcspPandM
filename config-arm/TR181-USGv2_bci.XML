@@ -1244,6 +1244,7 @@
                         <func_SetParamUlongValue>Control_SetParamUlongValue</func_SetParamUlongValue>
                         <func_SetParamStringValue>Control_SetParamStringValue</func_SetParamStringValue>
                         <func_GetParamStringValue>Control_GetParamStringValue</func_GetParamStringValue>
+                        <func_GetParamBoolValue>Control_GetParamBoolValue</func_GetParamBoolValue>
                         <func_SetParamBoolValue>Control_SetParamBoolValue</func_SetParamBoolValue>
                     </functions>
 
@@ -1278,6 +1279,12 @@
                              <syntax>bool</syntax>
                              <writable>true</writable>
                          </parameter>
+                         <parameter>
+                            <name>DisableNativeHostapd</name>
+                            <type>boolean</type>
+                            <syntax>bool</syntax>
+                            <writable>true</writable>
+                        </parameter>
                     </parameters>
                 </object>
 

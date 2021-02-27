@@ -7895,6 +7895,70 @@ Control_SetParamUlongValue
     caller:     owner of this object
 
     prototype:
+                BOOL
+                Control_GetParamBoolValue
+                    (
+                        ANSC_HANDLE         hInsContext,
+                        char*               ParamName,
+                        BOOL*               pBool
+                    );
+
+    description:
+
+        This function is called to get bool parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Control_GetParamBoolValue
+    (
+        ANSC_HANDLE         hInsContext,
+        char*               ParamName,
+        BOOL*               pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+#if defined(FEATURE_HOSTAP_AUTHENTICATOR)
+    char *psmStrValue = NULL;
+
+    *pBool = FALSE; //Initialize to FALSE
+
+    if (AnscEqualString(ParamName, "DisableNativeHostapd", TRUE))
+    {
+        CcspTraceInfo(("[%s] Get DisableNativeHostapd Value \n",__FUNCTION__));
+
+        if (PSM_Get_Record_Value2(bus_handle, g_Subsystem,
+            "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Control.DisableNativeHostapd",
+            NULL, &psmStrValue) == CCSP_SUCCESS)
+        {
+            *pBool = _ansc_atoi(psmStrValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(psmStrValue);
+        }
+        return TRUE;
+    }
+#else
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
+#endif //FEATURE_HOSTAP_AUTHENTICATOR
+
+    return TRUE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
 
         BOOL
         Control_SetParamBoolValue
@@ -7944,7 +8008,13 @@ Control_SetParamBoolValue
         EndRfcProcessing(&pMyObject->pRfcStore);
         return TRUE;
     }
-
+#if defined(FEATURE_HOSTAP_AUTHENTICATOR)
+    if (AnscEqualString(ParamName, "DisableNativeHostapd", TRUE))
+    {
+        CcspTraceInfo(("[%s] set DisableNativeHostapd Value [%s]\n",__FUNCTION__, (bValue ? "TRUE" : "FALSE")));
+        return CosaDmlSetNativeHostapdState(bValue);
+    }
+#endif //FEATURE_HOSTAP_AUTHENTICATOR
     return FALSE;
 }
 

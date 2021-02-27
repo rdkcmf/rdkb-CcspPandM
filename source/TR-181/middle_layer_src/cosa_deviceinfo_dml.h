@@ -397,6 +397,31 @@ Control_SetParamStringValue
 
  APIs for Object:
 
+    DeviceInfo.X_RDKCENTRAL-COM_RFC.Control.DisableNativeHostapd
+
+    *  Control_GetParamBoolValue
+    *  Control_SetParamBoolValue
+***********************************************************************/
+BOOL
+Control_GetParamBoolValue
+        (
+                ANSC_HANDLE         hInsContext,
+                char*               ParamName,
+                BOOL*               pBool
+        );
+
+BOOL
+Control_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
     DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.UniqueTelemetryId.
 
     *  UniqueTelemetryId_GetParamBoolValue
