@@ -367,7 +367,7 @@ DHCPv4_GetParamStringValue
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
 /***********************************************************************
 
  APIs for Object:
@@ -3437,7 +3437,7 @@ ReqOption_Rollback
     
     return returnStatus;
 }
-
+#endif
 /***********************************************************************
 
  APIs for Object:

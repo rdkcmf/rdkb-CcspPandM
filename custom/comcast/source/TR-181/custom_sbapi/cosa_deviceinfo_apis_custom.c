@@ -192,7 +192,26 @@ CosaDmlDiGetRouterMacAddress
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+#ifdef FEATURE_RDKB_WAN_MANAGER
+    char wanPhyName[32] = {0};
+    char out_value[32] = {0};
+
+    syscfg_init();
+
+    if (syscfg_get(NULL, "wan_physical_ifname", out_value, sizeof(out_value)) == 0)
+    {
+       strncpy(wanPhyName, out_value, sizeof(wanPhyName));
+       CcspTraceInfo(("%s %d - WanPhyName=%s \n", __FUNCTION__,__LINE__, wanPhyName));
+    }
+    else
+    {
+       strncpy(wanPhyName, "erouter0", sizeof(wanPhyName));
+       CcspTraceInfo(("%s %d - WanPhyName=%s \n", __FUNCTION__,__LINE__, wanPhyName));
+    }
+    s_get_interface_mac(wanPhyName, pValue, 18);
+#else	
     s_get_interface_mac("erouter0", pValue, 18);
+#endif    
     *pulSize = AnscSizeOfString(pValue);
 
     return ANSC_STATUS_SUCCESS;

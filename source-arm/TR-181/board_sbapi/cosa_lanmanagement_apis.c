@@ -323,11 +323,19 @@ ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Ula(char *ula_prefix, char *ula) {
         strncpy(ula, lan_address, sizeof(lan_address));
         sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, lan_address, 0);
         sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, lan_prefix, 0);
+#if defined (_HUB4_PRODUCT_REQ_)
+        sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ENABLE, "true", 0);
+        sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_IPV6_ENABLE, "true", 0);	
+#endif
     }
     else
     {
         sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, "", 0);
         sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, "", 0);
+#if defined (_HUB4_PRODUCT_REQ_)
+        sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ENABLE, "false", 0);
+        sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_IPV6_ENABLE, "false", 0);	
+#endif
         return ANSC_STATUS_FAILURE;
     }
     return ANSC_STATUS_SUCCESS;
@@ -369,7 +377,10 @@ ANSC_STATUS CosaDmlLanManagement_SetLanIpv6Ula(char *lan_prefix, int lan_prefix_
     }
     sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, prefix, 0);
     sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, lan_ula, 0);
-
+#if defined (_HUB4_PRODUCT_REQ_)
+    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ENABLE, "true", 0);
+    sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_IPV6_ENABLE, "true", 0);    
+#endif
     return ANSC_STATUS_SUCCESS;
 }
 

@@ -109,7 +109,7 @@ DHCPv6_GetParamStringValue
         char*                       pValue,
         ULONG*                      pUlSize
     );
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
 /***********************************************************************
 
  APIs for Object:
@@ -531,7 +531,7 @@ ReceivedOption_GetParamStringValue
         char*                       pValue,
         ULONG*                      pUlSize
     );
-
+#endif
 /***********************************************************************
 
  APIs for Object:

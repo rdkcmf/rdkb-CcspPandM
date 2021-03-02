@@ -169,8 +169,10 @@ CosaDeviceInfoInitialize
 	CosaDmlDiGetAndProcessDhcpServDetectionFlag( pMyObject, &pMyObject->bDhcpServDetectEnable );
 	pMyObject->bMultipleGW	= FALSE;
 #ifndef _COSA_FOR_BCI_
+#ifndef FEATURE_FWUPGRADE_MANAGER
 	CosaDmlDiGet_DeferFWDownloadReboot(&pMyObject->DeferFWDownloadReboot);
 #endif
+#endif	
         pMyObject->AbortReboot	= FALSE;
 	pMyObject->FirmwareDownloadCompletedNotification	= FALSE;
 	_ansc_memset(pMyObject->FirmwareDownloadStartedNotification, 0, 64);

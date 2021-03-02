@@ -322,7 +322,7 @@ DHCPv6_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     return -1;
 }
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
 /***********************************************************************
 
  APIs for Object:
@@ -3618,7 +3618,7 @@ dhcp6c_mapt_mape_GetParamStringValue
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
-
+#endif
 /***********************************************************************
 
  APIs for Object:

@@ -3723,6 +3723,7 @@ static int writeToJson(char *data, char *file)
     return 0;
 }
 
+#ifndef FEATURE_FWUPGRADE_MANAGER
 void CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong)
 {
 	char buf[8] = { 0 };
@@ -3760,6 +3761,7 @@ void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uVa
 		}
 	}
 }
+#endif
 
 void* RebootDevice_thread(void* buff)
 {
@@ -3918,6 +3920,7 @@ void CosaDmlDiSet_RebootDevice(char* pValue)
     
 }
 
+#ifndef FEATURE_FWUPGRADE_MANAGER
 static void*
 FirmwareDownloadAndFactoryReset(void* arg)
 {
@@ -3990,7 +3993,7 @@ CosaDmlDiSetFirmwareDownloadAndFactoryReset()
 
     return ANSC_STATUS_SUCCESS;
 }
-
+#endif //FEATURE_RDKB_WAN_MANAGER
 
 BOOL
 CosaDmlDi_ValidateRebootDeviceParam( char *pValue )

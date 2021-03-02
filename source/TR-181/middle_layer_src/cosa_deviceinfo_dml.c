@@ -540,12 +540,16 @@ DeviceInfo_GetParamIntValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and return the corresponding value */
+#ifndef FEATURE_FWUPGRADE_MANAGER
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FirmwareDownloadAndFactoryReset", TRUE))
     {
         *pInt = 0;
         return TRUE;
     }
-
+#else
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+#endif
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -1154,6 +1158,7 @@ DeviceInfo_SetParamIntValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */
+#ifndef FEATURE_FWUPGRADE_MANAGER
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_FirmwareDownloadAndFactoryReset", TRUE))
     {
         if( iValue == 1)
@@ -1165,7 +1170,10 @@ DeviceInfo_SetParamIntValue
         }
 	return TRUE;
     }
-
+#else
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+#endif
 	/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -16253,15 +16261,18 @@ RPC_GetParamUlongValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-	PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
 	
     /* check the parameter name and return the corresponding value */
+#ifndef FEATURE_FWUPGRADE_MANAGER
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     if( AnscEqualString(ParamName, "DeferFWDownloadReboot", TRUE))
     {
         /* collect value */
         *puLong = pMyObject->DeferFWDownloadReboot;
         return TRUE;
     }	
+#endif    
     if( AnscEqualString(ParamName, "RebootPendingNotification", TRUE))
     {
         /* collect value */
@@ -16311,15 +16322,17 @@ RPC_SetParamUlongValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-	PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 	
     /* check the parameter name and set the corresponding value */
+#ifndef FEATURE_FWUPGRADE_MANAGER
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     if( AnscEqualString(ParamName, "DeferFWDownloadReboot", TRUE))
     {
         /* collect value */
 		CosaDmlDiSet_DeferFWDownloadReboot(&(pMyObject->DeferFWDownloadReboot),uValue);
 		return TRUE;
     } 
+#endif    
     if( AnscEqualString(ParamName, "RebootPendingNotification", TRUE))
     {
         /* collect value */

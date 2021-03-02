@@ -94,7 +94,9 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
     BOOL		bxfinitywifiEnable;
 	BOOL		bDhcpServDetectEnable;	
 	BOOL		bMultipleGW;					
+#ifndef FEATURE_FWUPGRADE_MANAGER
 	ULONG		DeferFWDownloadReboot;
+#endif	
 	BOOL		AbortReboot;
 	BOOL		FirmwareDownloadCompletedNotification;
 	CHAR 		FirmwareDownloadStartedNotification[128];

@@ -617,11 +617,13 @@ CosaDmlDiGetSyndicationWifiUIBrandingTable
         PULONG                      pulSize
     );
 
+#ifndef FEATURE_FWUPGRADE_MANAGER
 ANSC_STATUS
 CosaDmlDiSetFirmwareDownloadAndFactoryReset(void);
 
 void CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong);
 void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uValue);
+#endif
 void CosaDmlDiSet_RebootDevice(char* pValue);
 BOOL CosaDmlDi_ValidateRebootDeviceParam(char *pValue);
 

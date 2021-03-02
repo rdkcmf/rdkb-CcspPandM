@@ -72,9 +72,11 @@
   *
   */
 #define  COSA_IREP_FOLDER_NAME_DHCPV4                      "Dhcpv4"
+#ifndef FEATURE_RDKB_WAN_MANAGER
 #define  COSA_IREP_FOLDER_NAME_DHCPV4_CLIENT               "Client"
 #define  COSA_IREP_FOLDER_NAME_DHCPV4_REQOPTION            "ReqOption"
 #define  COSA_IREP_FOLDER_NAME_DHCPV4_SENTOPTION           "SentOption"
+#endif
 #define  COSA_IREP_FOLDER_NAME_DHCPV4_X_CISCO_COM_SADDR    "X_CISCO_COM_SAddr"
 #define  COSA_IREP_FOLDER_NAME_DHCPV4_POOL                 "Pool"
 #define  COSA_IREP_FOLDER_NAME_DHCPV4_STATICADDRESS        "StaticAddress"
@@ -305,13 +307,14 @@ CosaDhcpv4RegSetDhcpv4Info
     (
         ANSC_HANDLE                 hThisObject
     );
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
 BOOL
 CosaDhcpv4ClientHasDelayAddedChild
     (
         PCOSA_CONTEXT_DHCPC_LINK_OBJECT     hContext
     );
 
+#endif
 BOOL
 CosaDhcpv4PoolHasDelayAddedChild
     (

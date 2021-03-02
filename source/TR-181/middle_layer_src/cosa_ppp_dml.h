@@ -61,6 +61,7 @@
 
 **************************************************************************/
 
+#ifndef FEATURE_RDKB_XDSL_PPP_MANAGER
 
 #ifndef  _COSA_PPP_DML_H
 #define  _COSA_PPP_DML_H
@@ -503,4 +504,5 @@ Stats6_GetParamStringValue
         ULONG*                      pUlSize
     );
 
+#endif
 #endif

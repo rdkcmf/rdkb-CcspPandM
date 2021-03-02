@@ -59,7 +59,7 @@
         01/11/2011    initial revision.
 
 **************************************************************************/
-
+#ifndef  FEATURE_RDKB_XDSL_PPP_MANAGER
 
 #ifndef  _COSA_PPP_INTERNAL_H
 #define  _COSA_PPP_INTERNAL_H
@@ -136,4 +136,5 @@ CosaPPPIfRegDelInfo
         ANSC_HANDLE                 hCosaContext
     );
 
+#endif
 #endif

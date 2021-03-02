@@ -3475,6 +3475,7 @@ static int writeToJson(char *data)
     fclose(fp);
     return 0;
 }
+#ifndef FEATURE_FWUPGRADE_MANAGER
 void CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong)
 {
         char buf[8] = { 0 };
@@ -3511,7 +3512,7 @@ void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uVa
                 }
         }
 }
-
+#endif
 void* RebootDevice_thread(void* buff)
 {
         char pValue[128],source_str[64];
@@ -3669,7 +3670,7 @@ void CosaDmlDiSet_RebootDevice(char* pValue)
         pthread_create(&tid, NULL, &RebootDevice_thread, (void*) buff);
 
 }
-
+#ifndef FEATURE_FWUPGRADE_MANAGER
 static void
 FirmwareDownloadAndFactoryReset()
 {
@@ -3689,7 +3690,7 @@ FirmwareDownloadAndFactoryReset()
         }
         
     }
-    else
+    else 
     {
         while (fgets(line, sizeof(line), fp) != NULL)
         {
@@ -3722,7 +3723,6 @@ FirmwareDownloadAndFactoryReset()
             system("rm -rf /tmp/FactoryReset.txt");
         }
     }
-
 }
 
 ANSC_STATUS
@@ -3744,7 +3744,7 @@ CosaDmlDiSetFirmwareDownloadAndFactoryReset()
 
     return ANSC_STATUS_SUCCESS;
 }
-
+#endif
 BOOL
 CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 {

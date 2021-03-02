@@ -79,10 +79,19 @@ extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 
-
-#ifdef _HUB4_PRODUCT_REQ_
+#if defined(_HUB4_PRODUCT_REQ_) || defined(FEATURE_RDKB_WAN_MANAGER)
+#ifndef FEATURE_RDKB_WAN_MANAGER
 #define SYSEVENT_FIELD_IPV6_PREFIXVLTIME  "ipv6_prefix_vldtime"
 #define SYSEVENT_FIELD_IPV6_PREFIXPLTIME  "ipv6_prefix_prdtime"
+#else // FEATURE_RDKB_WAN_MANAGER
+#include <stdint.h>
+#include "ipc_msg.h"
+#if defined SUCCESS
+#undef SUCCESS
+#endif
+#define SYSEVENT_FIELD_IPV6_DNS_SERVER    "wan6_ns"
+
+#endif //FEATURE_RDKB_WAN_MANAGER
 #define SYSEVENT_FIELD_IPV6_ULA_ADDRESS   "ula_address"
 #endif
 
@@ -1029,7 +1038,11 @@ static struct {
     pthread_t          dbgthrd;
 }g_be_ctx;
 
+#ifdef FEATURE_RDKB_WAN_MANAGER
+static void * dhcpv6s_dbg_thrd(void * in);
+#else 
 static void * dhcpv6c_dbg_thrd(void * in);
+#endif
 extern COSARepopulateTableProc            g_COSARepopulateTable;
 
 #define UTOPIA_SIMULATOR                0
@@ -1786,13 +1799,20 @@ CosaDmlDhcpv6SMsgHandler
     }
 
     /*we start a thread to hear dhcpv6 client message about prefix/address */
+#ifndef FEATURE_RDKB_WAN_MANAGER    
     if ( ( !mkfifo(CCSP_COMMON_FIFO, 0666) || errno == EEXIST ) &&
          ( !mkfifo(DHCPS6V_SERVER_RESTART_FIFO, 0666) || errno == EEXIST ) )
     {
         if (pthread_create(&g_be_ctx.dbgthrd, NULL, dhcpv6c_dbg_thrd, NULL)  || pthread_detach(g_be_ctx.dbgthrd)) 
             CcspTraceWarning(("%s error in creating dhcpv6c_dbg_thrd\n", __FUNCTION__));
     }
-
+#else
+    if ( ( !mkfifo(DHCPS6V_SERVER_RESTART_FIFO, 0666) || errno == EEXIST ) )
+    {
+        if (pthread_create(&g_be_ctx.dbgthrd, NULL, dhcpv6s_dbg_thrd, NULL)  || pthread_detach(g_be_ctx.dbgthrd)) 
+            CcspTraceWarning(("%s error in creating dhcpv6s_dbg_thrd\n", __FUNCTION__));
+    }
+#endif
     //CosaDmlStartDHCP6Client();
 //    dhcp v6 client is now initialized in service_wan, no need to initialize from PandM
     #if 0
@@ -2549,10 +2569,10 @@ CosaDmlDhcpv6cGetEnabled
 	}
 #endif
 
-#if defined (_HUB4_PRODUCT_REQ_)
-    // For HUB4, check dhcp6c process status
+#if defined (FEATURE_RDKB_WAN_MANAGER)
+    FILE *fp = popen("ps |grep -i dibbler-client | grep -v grep", "r");
+#elif defined (_HUB4_PRODUCT_REQ_)
     FILE *fp = popen("ps |grep -i dhcp6c | grep -v grep", "r");
-
 #elif defined (_COSA_BCM_ARM_)
     FILE *fp = popen("ps |grep -i dibbler-client | grep -v grep", "r");
 
@@ -2570,7 +2590,10 @@ CosaDmlDhcpv6cGetEnabled
 
     if ( fp != NULL){
         if ( fgets(out, sizeof(out), fp) != NULL ){
-#if defined (_HUB4_PRODUCT_REQ_)
+#if defined (FEATURE_RDKB_WAN_MANAGER)
+            if ( _ansc_strstr(out, "dibbler-client") )
+                bEnabled = TRUE;
+#elif defined (_HUB4_PRODUCT_REQ_)
             if ( _ansc_strstr(out, "dhcp6c") )
                 bEnabled = TRUE;
 #elif defined (_COSA_BCM_ARM_)
@@ -3306,8 +3329,11 @@ static int _dibbler_server_operation(char * arg)
                     * There is not interface enabled. Not start
                     * There is not valid pool. Not start. 
                 */
+        CcspTraceInfo(("Dibbler Server Start %s Line (%d)\n", __FUNCTION__, __LINE__));
         if ( !g_dhcpv6_server )
+        {
             goto EXIT;
+        }
 
         for ( Index = 0; Index < uDhcpv6ServerPoolNum; Index++ )
         {
@@ -3316,8 +3342,17 @@ static int _dibbler_server_operation(char * arg)
                     break;
         }
         if ( Index < uDhcpv6ServerPoolNum )
+        {
             goto EXIT;
-    
+        }
+#ifdef FEATURE_RDKB_WAN_MANAGER
+        char prefix[64] = {0};
+        commonSyseventGet("ipv6_prefix", prefix, sizeof(prefix));
+        if (strlen(prefix) > 3)
+        {
+            g_dhcpv6_server_prefix_ready = TRUE;
+        }
+#endif	
         if (g_dhcpv6_server_prefix_ready && g_lan_ready)
         {
             CcspTraceInfo(("%s:%d start dibbler %d\n",__FUNCTION__, __LINE__,g_dhcpv6_server));
@@ -6851,6 +6886,14 @@ int dhcpv6_assign_global_ip(char * prefix, char * intfName, char * ipAddr)
 void CosaDmlDhcpv6sRebootServer()
 {
 
+#ifdef FEATURE_RDKB_WAN_MANAGER
+    char prefix[64] = {0};
+    commonSyseventGet("ipv6_prefix", prefix, sizeof(prefix));
+    if (strlen(prefix) > 3)
+    {
+        g_dhcpv6_server_prefix_ready = TRUE;
+    }
+#endif
     if (!g_dhcpv6_server_prefix_ready || !g_lan_ready)
         return;
 #if defined (MULTILAN_FEATURE)
@@ -6983,10 +7026,10 @@ return 1;
 This thread can be generic to handle the operations depending on the interfaces. Other interface and their events can be register here later based on requirement */
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_CBR_PRODUCT_REQ_)
 #else
+#ifndef FEATURE_RDKB_WAN_MANAGER    
 static pthread_t InfEvtHandle_tid;
 static int sysevent_fd_1;
 static token_t sysevent_token_1;
-static pthread_t InfEvtHandle_tid;
 void enable_IPv6(char* if_name)
 {
         FILE *fp;
@@ -7141,7 +7184,9 @@ static void *InterfaceEventHandler_thrd(void *data)
 	}
     return NULL;
 }
+#endif 
 #endif
+#ifndef FEATURE_RDKB_WAN_MANAGER    
 
 static void * 
 dhcpv6c_dbg_thrd(void * in)
@@ -7684,5 +7729,93 @@ EXIT:
 
     return NULL;
 }
+#endif
 
+#ifdef FEATURE_RDKB_WAN_MANAGER
+static void * 
+dhcpv6s_dbg_thrd(void * in)
+{
+    int fd1=0;
+    char msg[1024] = {0};
+    char globalIP2[128] = {0};
+    //When PaM restart, this is to get previous addr.
+    CcspTraceWarning(("(%s)\n", __FUNCTION__));
+    commonSyseventGet("lan_ipaddr_v6", globalIP2, sizeof(globalIP2));
+    if ( globalIP2[0] )
+        CcspTraceWarning(("%s  It seems there is old value(%s)\n", __FUNCTION__, globalIP2));
+
+    fd_set rfds;
+    struct timeval tm;
+
+    fd1= open(DHCPS6V_SERVER_RESTART_FIFO, O_RDWR);
+
+    if (fd1< 0) 
+    {
+        fprintf(stderr, "open dhcpv6 server restart fifo!!!!!\n");
+        goto EXIT;
+    }
+    if (in != NULL)
+    {
+        CcspTraceWarning(("%s-%d func parameter in not used \n", __FUNCTION__, __LINE__));
+    }
+    while (1) 
+    {
+        int retCode = 0;
+        tm.tv_sec  = 60;
+        tm.tv_usec = 0;
+
+        FD_ZERO(&rfds);
+        // FD_SET(fd, &rfds);
+        FD_SET(fd1, &rfds);
+
+        retCode = select( (fd1+1), &rfds, NULL, NULL, &tm);
+        /* When return -1, it's error.
+           When return 0, it's timeout
+           When return >0, it's the number of valid fds */
+        if (retCode < 0) {
+            fprintf(stderr, "dbg_thrd : select returns error \n" );
+
+            if (errno == EINTR)
+                continue;
+
+            DHCPVS_DEBUG_PRINT
+                CcspTraceWarning(("%s -- select(): %s", __FUNCTION__, strerror(errno)));
+            goto EXIT;
+        }
+        else if(retCode == 0 )
+            continue;
+
+        /*We need consume the data.
+          It's possible more than one triggering events are consumed in one time, which is expected.*/
+        if (FD_ISSET(fd1, &rfds)) {
+            /*this sleep help do two things: 
+             * When GUI operate too fast, it gurantees more operations combine into one; 
+             * Not frequent dibbler start/stop. When do two start fast, dibbler will in bad status. 
+             */
+            sleep(3);
+            memset(msg, 0, sizeof(msg));
+            read(fd1, msg, sizeof(msg));
+            CcspTraceWarning(("%s -- Received dhcpv6 server restart event", __FUNCTION__ ));
+            CosaDmlDhcpv6sRebootServer();
+            continue;
+        }
+
+#ifdef _DEBUG
+        if (!strncmp(msg, "mem", 3))
+        {
+            /*add the test funcs in the run time.*/
+
+            AnscTraceMemoryTable();
+        }
+#endif
+    }
+
+EXIT:
+    if(fd1>=0) {
+        close(fd1);
+    }
+
+    return NULL;
+}
+#endif // FEATURE_RDKB_WAN_MANAGER
 #endif

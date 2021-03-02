@@ -65,6 +65,7 @@
         07/12/2011    initial revision.
 
 **************************************************************************/
+#ifndef  FEATURE_RDKB_XDSL_PPP_MANAGER
 
 #include "ansc_platform.h"
 #include "cosa_ppp_dml.h"
@@ -2942,3 +2943,4 @@ Stats6_GetParamStringValue
     return -1;
 }
 
+#endif

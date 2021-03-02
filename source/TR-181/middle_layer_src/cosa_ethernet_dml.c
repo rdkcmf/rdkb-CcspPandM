@@ -678,7 +678,6 @@ Interface_GetParamStringValue
     PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
     char assocDeviceMacList[(17 * ETH_INTERFACE_MAX_ASSOC_DEVICES) + 1];
 
-
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
@@ -717,8 +716,25 @@ Interface_GetParamStringValue
 #if defined(MULTILAN_FEATURE) && defined (INTEL_PUMA7)
 
         CHAR strMac[128] = {0};
+#ifdef FEATURE_RDKB_WAN_MANAGER
+        char wanPhyName[32] = {0};
+        char out_value[32] = {0};	
+        if (syscfg_get(NULL, "wan_physical_ifname", out_value, sizeof(out_value)) == 0)
+        {
+           strncpy(wanPhyName, out_value, sizeof(wanPhyName));
+           CcspTraceInfo(("%s %d - WanPhyName=%s \n", __FUNCTION__,__LINE__, wanPhyName));
+        }
+        else
+        {
+           strncpy(wanPhyName, "erouter0", sizeof(wanPhyName));
+           CcspTraceInfo(("%s %d - WanPhyName=%s \n", __FUNCTION__,__LINE__, wanPhyName));
+        }
+        if(strcmp(pEthernetPortFull->StaticInfo.Name, wanPhyName) == 0 ) {
+                if ( -1 != _getMac(wanPhyName, strMac) )
+#else	
         if(strcmp(pEthernetPortFull->StaticInfo.Name, "erouter0") == 0 ) {
                 if ( -1 != _getMac("erouter0", strMac) )
+#endif			
                 {
                         AnscCopyMemory(pEthernetPortFull->StaticInfo.MacAddress,strMac,6);
                 }
