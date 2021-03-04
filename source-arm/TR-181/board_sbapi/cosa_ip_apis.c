@@ -688,7 +688,7 @@ int  _is_static_addr(char * ifname, char * v6addr)
         if (p_token == NULL)
                 break;
     
-        snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_STATIC_V6ADDR "%d", ifname, atoi(p_token) );
+        snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_STATIC_V6ADDR, ifname);
 
         memset(out1, 0, sizeof(out1));
         Utopia_RawGet(&utctx,namespace,"IPAddress",out1,sizeof(out1));
@@ -791,7 +791,7 @@ IPIF_getEntry_for_Ipv6Addr
     char out[1024] = {0};
     UtopiaContext utctx = {0};
     ipv6_addr_info_t * p_v6addr = NULL;
-    //ipv6_addr_info_t * orig_p_v6addr = NULL;
+    ipv6_addr_info_t * orig_p_v6addr = NULL;
     int  v6addr_num = 0;
     int  i = 0;
     COSA_DML_IP_V6ADDR * p_dml_v6addr = NULL;
@@ -810,7 +810,7 @@ IPIF_getEntry_for_Ipv6Addr
     g_ipif_be_bufs[ulIndex].ulNumOfV6Addr = 0;
 
     /*save for free()*/
-    //orig_p_v6addr = p_v6addr;
+    orig_p_v6addr = p_v6addr;
 
     /*the following loop block is on link-local, loopback, RA, DHCPv6 IANA address*/
     /*if we have too many ipv6 addresses, drop them*/
@@ -1088,14 +1088,12 @@ IPIF_getEntry_for_Ipv6Addr
     }
 
 
-/*
-OUT:
     if (orig_p_v6addr)  
         free(orig_p_v6addr);
 
     if (p_ra)
         free(p_ra);
-*/    
+ 
     return ret;
 }
 
@@ -1434,7 +1432,7 @@ IPIF_getEntry_for_Ipv6Pre
     char out[1024]= {0};
     UtopiaContext utctx = {0};
     ipv6_addr_info_t * p_v6addr = NULL;
-    //ipv6_addr_info_t * orig_p_v6addr = NULL;
+    ipv6_addr_info_t * orig_p_v6addr = NULL;
     int  v6addr_num = 0;
     int  i = 0;
     COSA_DML_IP_V6PREFIX * p_dml_v6pre = NULL;
@@ -1453,7 +1451,7 @@ IPIF_getEntry_for_Ipv6Pre
     _obtain_ra_info(&p_ra, &ra_num);
 
     /*save for free*/
-    //orig_p_v6addr = p_v6addr;
+    orig_p_v6addr = p_v6addr;
 
     /*for RA prefixes
       note, for DHCPv6 IANA address, the according prefix should be empty, */
@@ -1759,14 +1757,13 @@ IPIF_getEntry_for_Ipv6Pre
         }
     }
 
-/*
-OUT:
+
     if (orig_p_v6addr)
         free(orig_p_v6addr);
 
     if (p_ra)
         free(p_ra);
-*/    
+   
     return ret;
 }
 

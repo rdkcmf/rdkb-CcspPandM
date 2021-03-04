@@ -3774,7 +3774,7 @@ static int divide_ipv6_prefix()
 #ifdef _CBR_PRODUCT_REQ_
         tmp_prefix = helper_ntoh64(&tmp_prefix); // The memcpy is copying in reverse order due to LEndianess
 #endif
-    tmp_prefix &= ((~0U) << delta_bits);
+    tmp_prefix &= ((~0) << delta_bits);
     for (i = 0; i < sub_prefix_num; i ++) {
         sub_prefix = tmp_prefix | (i << (delta_bits - bit_boundary));
         memset(buf, 0, sizeof(buf));
@@ -6090,6 +6090,9 @@ void _cosa_dhcpsv6_get_client()
                 continue;
 
             *pTmp1 = 0;
+
+            // commenting out for warning "value computed is not used [-Werror=unused-value]".
+            //*pTmp1++;
 
             // pTmp3 is 1
             // pTmp1 is 00010001C793092300252E7D05B4
