@@ -92,6 +92,96 @@ PFN_COSA_DML_NAT_GEN   g_nat_pportmapping_callback = NULL;
 
 extern void* g_pDslhDmlAgent;
 
+#ifdef _HUB4_PRODUCT_REQ_
+#ifdef FEATURE_MAPT
+#ifdef IVI_KERNEL_SUPPORT
+#define BUFLEN_8 8
+#define BUFLEN_32 32
+#define BUFLEN_256 256
+#define SET "set"
+#define RET_ERR -1
+
+#define SYSEVENT_MAPT_CONFIG_FLAG "mapt_config_flag"
+#define SYSEVENT_MAPT_IP_ADDRESS "mapt_ip_address"
+
+#ifdef FEATURE_MAPT_DEBUG
+void logPrintIvictl(char* filename, int line, char *fmt,...);
+#define LOG_PRINT_IVICTL(...) logPrintIvictl(__FILE__, __LINE__, __VA_ARGS__ )
+#endif
+
+static int delete_mapt_pf_single_rule(int internal_port, int external_port, int protocol, char* dest_ip);
+static int delete_mapt_pf_range_rule(int start_port, int end_port, int protocol, char* dest_ip);
+
+#endif
+#endif
+#endif
+
+#ifdef _HUB4_PRODUCT_REQ_
+#ifdef FEATURE_MAPT
+#ifdef IVI_KERNEL_SUPPORT
+#ifdef FEATURE_MAPT_DEBUG
+void logPrintIvictl(char* filename, int line, char *fmt,...)
+{
+    static FILE *fpMaptLogFile;
+    static char strMaptLogFileName[32] = "/tmp/ivirule_del.txt";
+    va_list         list;
+    char            *p, *r;
+    time_t ctime;
+    int     e;
+    struct tm *info;
+
+    fpMaptLogFile = fopen(strMaptLogFileName,"a");
+
+    time(&ctime); /* Get current time */
+    info = localtime(&ctime);
+
+    fprintf(fpMaptLogFile,"[%02d:%02d:%02d][line:%d] ",
+        info->tm_hour,info->tm_min,info->tm_sec,line);
+
+    va_start( list, fmt );
+
+    for ( p = fmt ; *p ; ++p )
+    {
+        if ( *p != '%' )
+        {
+            fputc( *p,fpMaptLogFile );
+        }
+        else
+        {
+            switch ( *++p )
+            {
+
+            case 's':
+            {
+                r = va_arg( list, char * );
+
+                fprintf(fpMaptLogFile,"%s", r);
+                continue;
+            }
+
+            case 'd':
+            {
+                e = va_arg( list, int );
+
+                fprintf(fpMaptLogFile,"%d", e);
+                continue;
+            }
+
+            default:
+                fputc( *p, fpMaptLogFile );
+            }
+        }
+    }
+    va_end( list );
+    fputc( '\n', fpMaptLogFile );
+    fclose(fpMaptLogFile);
+}
+#endif
+#endif
+#endif
+#endif
+
+
 #if ( defined _COSA_SIM_ )
 
 COSA_DML_NAT_PMAPPING   g_nat_portmapping[] =
@@ -2774,6 +2864,18 @@ CosaDmlNatAddPortMapping
     if( ANSC_STATUS_SUCCESS == _AddPortMapping(&Ctx, pEntry))
     {
         Utopia_Free(&Ctx, 1);
+
+#ifdef _HUB4_PRODUCT_REQ_
+#ifdef FEATURE_MAPT        
+#ifdef IVI_KERNEL_SUPPORT
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL("protocol: %d, ExternalPort :%d, ExternalEndRange : %d, InternalPort : %d, bEnable :%d",
+                    pEntry->Protocol, pEntry->ExternalPort, pEntry->ExternalPortEndRange, pEntry->InternalPort,
+                    pEntry->bEnabled);
+#endif        
+#endif        
+#endif        
+#endif        
         _sent_syslog_pm_sb("ADD", pEntry->Protocol, pEntry->ExternalPort, pEntry->ExternalPortEndRange, pEntry->InternalPort, pEntry->InternalClient.Dot,pEntry->bEnabled);
         return ANSC_STATUS_SUCCESS;
     }
@@ -2784,6 +2886,274 @@ CosaDmlNatAddPortMapping
         return ANSC_STATUS_FAILURE;
     }
 }
+
+#ifdef _HUB4_PRODUCT_REQ_
+#ifdef FEATURE_MAPT
+#ifdef IVI_KERNEL_SUPPORT
+static int delete_mapt_pf_single_rule(int internal_port, int external_port, int protocol, char* dest_ip)
+{
+    token_t sysevent_token;
+    static int sysevent_fd = -1;
+    char mapt_config_value[BUFLEN_8] = {0};
+    char mapt_ip_address[BUFLEN_32] = {0}; /*For Future*/
+    char cmdIvictlPf[BUFLEN_256] = {0};
+    char ipAddress[BUFLEN_32] = {0};
+    char mapt_protocol_tcp[BUFLEN_8]  = "100";
+    char mapt_protocol_udp[BUFLEN_8]  = "010";
+    char mapt_protocol_both[BUFLEN_8] = "110";
+    //char mapt_protocol_icmp[BUFLEN_8] = "001";/*For Future*/
+
+#ifdef FEATURE_MAPT_DEBUG
+    LOG_PRINT_IVICTL("Deleting Single Port Forward Rule --- Start");
+    LOG_PRINT_IVICTL("internal_port:%d external_port:%d protocol:%d dest_ip:%s",internal_port, external_port, protocol, dest_ip);
+#endif
+    sysevent_fd = s_sysevent_connect(&sysevent_token);
+    CcspTraceInfo(("internal_port:%d external_port:%d protocol:%d dest_ip:%s",internal_port, external_port, protocol, dest_ip));
+
+    if (sysevent_fd < 0)
+    {
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL("ERROR: Sysevent FD is not available \n");
+#endif        
+        return ERR_SYSEVENT_CONN;
+    }
+
+    if (sysevent_get(sysevent_fd, sysevent_token, SYSEVENT_MAPT_CONFIG_FLAG, mapt_config_value, sizeof(mapt_config_value)) != 0)
+    {
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL("ERROR: Failed to get MAPT configuration value from sysevent \n");
+#endif        
+        return RET_ERR;
+    }
+
+    if (strncmp(mapt_config_value,SET, 3) == 0)
+    {
+        /*Get the MAP-T Address*/
+        if (sysevent_get(sysevent_fd, sysevent_token, SYSEVENT_MAPT_IP_ADDRESS, mapt_ip_address, sizeof(mapt_ip_address)) != 0)
+        {
+#ifdef FEATURE_MAPT_DEBUG
+            LOG_PRINT_IVICTL("ERROR: Failed to get MAPT IP Address from sysevent \n");
+#endif        
+            return RET_ERR;
+        }
+    }
+
+#ifdef FEATURE_MAPT_DEBUG
+    LOG_PRINT_IVICTL("mapt_ip_address:%s",mapt_ip_address);
+#endif        
+
+    if (strlen(dest_ip) != 0)
+    {    
+        strncpy(ipAddress, dest_ip, sizeof(ipAddress));
+    }
+    else
+    {
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL("Invalid IP Address");
+#endif        
+        return RET_ERR;
+    }
+#ifdef FEATURE_MAPT_DEBUG
+    LOG_PRINT_IVICTL("ipAddress:%s",ipAddress);
+#endif        
+
+    if (protocol == 0 )
+    {
+        snprintf(cmdIvictlPf, sizeof(cmdIvictlPf),
+                "ivictl -d -a %s -p %d -q %d -P %s ",
+                ipAddress, external_port, external_port, mapt_protocol_tcp);
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL("ivictl:tcp: %s",cmdIvictlPf);
+#endif        
+
+        if (system(cmdIvictlPf) != 0)
+        {
+#ifdef FEATURE_MAPT_DEBUG
+            LOG_PRINT_IVICTL("Error Deleting the Rule");
+#endif        
+            return RET_ERR;
+        }
+    }
+    else if (protocol == 1 )
+    {
+        snprintf(cmdIvictlPf, sizeof(cmdIvictlPf),
+                "ivictl -d -a %s -p %d -q %d -P %s ",
+                ipAddress, external_port, external_port, mapt_protocol_udp);
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL("ivictl:udp: %s",cmdIvictlPf);
+#endif        
+        if (system(cmdIvictlPf) != 0)
+        {
+#ifdef FEATURE_MAPT_DEBUG
+                LOG_PRINT_IVICTL("Error Deleting the Rule");
+#endif        
+                return RET_ERR;
+        }
+    }
+    else if (protocol == 2)
+    {
+        snprintf(cmdIvictlPf, sizeof(cmdIvictlPf),
+                "ivictl -d -a %s -p %d -q %d -P %s ",
+                ipAddress, external_port, external_port, mapt_protocol_both);
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL("ivictl:both: %s",cmdIvictlPf);
+#endif        
+        if (system(cmdIvictlPf) != 0)
+        {
+#ifdef FEATURE_MAPT_DEBUG
+            LOG_PRINT_IVICTL("Error Deleting the Rule");
+#endif
+            return RET_ERR;
+        }
+    }
+   
+#ifdef FEATURE_MAPT_DEBUG
+    LOG_PRINT_IVICTL("Deleting Single Port Forward Rule --- End ");
+#endif
+    return ANSC_STATUS_SUCCESS;
+}
+
+static int delete_mapt_pf_range_rule(int start_port, int end_port, int protocol, char* dest_ip)
+{
+    token_t sysevent_token;
+    static int sysevent_fd = -1;
+    char mapt_config_value[BUFLEN_8] = {0};
+    char mapt_ip_address[BUFLEN_32] = {0};/*For Future*/
+    char ipAddress[BUFLEN_32] = {0};
+    char cmdIvictlPf[BUFLEN_256] = {0};
+    char mapt_protocol_tcp[BUFLEN_8]  = "100";
+    char mapt_protocol_udp[BUFLEN_8]  = "010";
+    char mapt_protocol_both[BUFLEN_8] = "110";
+    //char mapt_protocol_icmp[BUFLEN_8] = "001";/*For Future*/
+    int range = 0;
+    int index ;
+
+#ifdef FEATURE_MAPT_DEBUG
+    LOG_PRINT_IVICTL("Deleting Range Port Forward Rule --- Start");
+    LOG_PRINT_IVICTL("start_port:%d end_port:%d protocol:%d dest_ip:%s",start_port, end_port, protocol, dest_ip);
+#endif
+
+    sysevent_fd = s_sysevent_connect(&sysevent_token);
+    if (sysevent_fd < 0)
+    {
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL("ERROR: Sysevent FD is not available \n");
+#endif
+        return ERR_SYSEVENT_CONN;
+    }
+
+    if (sysevent_get(sysevent_fd, sysevent_token, SYSEVENT_MAPT_CONFIG_FLAG, mapt_config_value, sizeof(mapt_config_value)) != 0)
+    {
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL("ERROR: Failed to get MAPT configuration value from sysevent \n");
+#endif
+        return RET_ERR;
+    }
+
+    if (strncmp(mapt_config_value,SET, 3) == 0)
+    {
+        /*Get the MAP-T Address*/
+        if (sysevent_get(sysevent_fd, sysevent_token, SYSEVENT_MAPT_IP_ADDRESS, mapt_ip_address, sizeof(mapt_ip_address)) != 0)
+        {
+#ifdef FEATURE_MAPT_DEBUG
+            LOG_PRINT_IVICTL("ERROR: Failed to get MAPT IP Address from sysevent \n");
+#endif
+            return RET_ERR;
+        }
+    }
+#ifdef FEATURE_MAPT_DEBUG
+    LOG_PRINT_IVICTL("mapt_ip_address:%s",mapt_ip_address);
+#endif
+    if (strlen(dest_ip) != 0)
+    {    
+        strncpy(ipAddress, dest_ip, sizeof(ipAddress));
+    }
+    else
+    {
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL("Invalid IP Address");
+#endif
+        return RET_ERR;
+    }
+#ifdef FEATURE_MAPT_DEBUG
+    LOG_PRINT_IVICTL("ipAddress:%s",ipAddress);
+#endif
+
+    range = end_port - start_port;
+
+#ifdef FEATURE_MAPT_DEBUG
+    LOG_PRINT_IVICTL("range:%d",range);
+#endif
+    if (protocol == 0 )
+    {
+        for (index = 0; index <= range;  index++)
+        {
+            snprintf(cmdIvictlPf, sizeof(cmdIvictlPf),
+                "ivictl -d -a %s -p %d -q %d -P %s ",
+                ipAddress, start_port+index, start_port+index, mapt_protocol_tcp);
+
+#ifdef FEATURE_MAPT_DEBUG
+            LOG_PRINT_IVICTL("ivictl:tcp: %s",cmdIvictlPf);
+#endif
+            if (system(cmdIvictlPf) != 0)
+            {
+#ifdef FEATURE_MAPT_DEBUG
+                LOG_PRINT_IVICTL("Error Deleting the Rule");
+#endif
+                return RET_ERR;
+            }
+            memset(cmdIvictlPf, 0, sizeof(cmdIvictlPf));
+        }
+    }
+    else if (protocol == 1 )
+    {
+        for (index = 0; index <= range;  index++)
+        {
+            snprintf(cmdIvictlPf, sizeof(cmdIvictlPf),
+                "ivictl -d -a %s -p %d -q %d -P %s ",
+                ipAddress, start_port+index, start_port+index, mapt_protocol_udp);
+#ifdef FEATURE_MAPT_DEBUG
+            LOG_PRINT_IVICTL("ivictl:udp: %s",cmdIvictlPf);
+#endif
+            if (system(cmdIvictlPf) != 0)
+            {
+#ifdef FEATURE_MAPT_DEBUG
+                LOG_PRINT_IVICTL("Error Deleting the Rule");
+#endif
+                return RET_ERR;
+            }
+            memset(cmdIvictlPf, 0, sizeof(cmdIvictlPf));
+        }
+    }
+    else if (protocol == 2)
+    {
+        for (index = 0; index <= range;  index++)
+        {
+            snprintf(cmdIvictlPf, sizeof(cmdIvictlPf),
+                    "ivictl -d -a %s -p %d -q %d -P %s ",
+                    ipAddress, start_port+index, start_port+index, mapt_protocol_both);
+#ifdef FEATURE_MAPT_DEBUG
+            LOG_PRINT_IVICTL("ivictl:both: %s",cmdIvictlPf);
+#endif
+            if (system(cmdIvictlPf) != 0)
+            {
+#ifdef FEATURE_MAPT_DEBUG
+                LOG_PRINT_IVICTL("Error Deleting the Rule");
+#endif
+                return RET_ERR;
+            }
+            memset(cmdIvictlPf, 0, sizeof(cmdIvictlPf));
+        }
+    }
+#ifdef FEATURE_MAPT_DEBUG
+    LOG_PRINT_IVICTL("Deleting Range Port Forward Rule --- End  ");
+#endif
+    return ANSC_STATUS_SUCCESS;
+}
+#endif
+#endif
+#endif
+
 /**********************************************************************
 
     caller:     self
@@ -2837,6 +3207,18 @@ CosaDmlNatDelPortMapping
         if(SUCCESS == rc)
         {
             Utopia_Free(&Ctx, 1);
+#ifdef _HUB4_PRODUCT_REQ_
+#ifdef FEATURE_MAPT
+#ifdef IVI_KERNEL_SUPPORT
+            int status ;
+            status = delete_mapt_pf_single_rule(singleInfo.internal_port, singleInfo.external_port, singleInfo.protocol, singleInfo.dest_ip);
+            if (status == RET_ERR)
+#ifdef FEATURE_MAPT_DEBUG
+                LOG_PRINT_IVICTL("Error Deleting Port Forwarding Single Rule");
+#endif
+#endif
+#endif
+#endif
             _sent_syslog_pm_u("DELETE", singleInfo.protocol, singleInfo.external_port, 0, \
                     singleInfo.internal_port, singleInfo.dest_ip, singleInfo.enabled);
             return ANSC_STATUS_SUCCESS;
@@ -2859,6 +3241,18 @@ CosaDmlNatDelPortMapping
         if(SUCCESS == rc)
         {
             Utopia_Free(&Ctx, 1);
+#ifdef _HUB4_PRODUCT_REQ_
+#ifdef FEATURE_MAPT
+#ifdef IVI_KERNEL_SUPPORT
+            int status ;
+            status = delete_mapt_pf_range_rule(rangeInfo.start_port, rangeInfo.end_port, rangeInfo.protocol, rangeInfo.dest_ip);
+            if (status == RET_ERR)
+#ifdef FEATURE_MAPT_DEBUG
+                LOG_PRINT_IVICTL("Error Deleting Port Forwarding Range Rule");
+#endif
+#endif
+#endif
+#endif
             _sent_syslog_pm_u("DELETE", rangeInfo.protocol, rangeInfo.start_port, rangeInfo.end_port,\
                     rangeInfo.internal_port, rangeInfo.dest_ip, rangeInfo.enabled);
             return ANSC_STATUS_SUCCESS;
@@ -2957,6 +3351,13 @@ CosaDmlNatSetPortMapping
     portFwdRange_t           rangeInfo;
     ULONG                            rc = 0;
 
+#ifdef _HUB4_PRODUCT_REQ_
+#ifdef FEATURE_MAPT
+#ifdef IVI_KERNEL_SUPPORT
+    bool singleRule = FALSE;
+#endif    
+#endif    
+#endif    
     if (!pEntry)
     {
         return ANSC_STATUS_FAILURE;
@@ -2983,8 +3384,41 @@ CosaDmlNatSetPortMapping
     }
 
     /* Check/delete range rule */
+#ifdef _HUB4_PRODUCT_REQ_
+#ifdef FEATURE_MAPT
+#ifdef IVI_KERNEL_SUPPORT
+#ifdef FEATURE_MAPT_DEBUG
+    LOG_PRINT_IVICTL("New pEntry protocol: %d, ExternalPort :%d, ExternalEndRange : %d, InternalPort : %d,  bEnable :%d ",
+                    pEntry->Protocol, pEntry->ExternalPort, pEntry->ExternalPortEndRange, pEntry->InternalPort,
+                    pEntry->bEnabled); 
+#endif    
+#endif    
+#endif    
+#endif    
+
     rangeInfo.rule_id = pEntry->InstanceNumber;
     rc = Utopia_GetPortForwardingRangeByRuleId(&Ctx, &rangeInfo);
+#ifdef _HUB4_PRODUCT_REQ_
+#ifdef FEATURE_MAPT
+#ifdef IVI_KERNEL_SUPPORT
+    if (rc == SUCCESS)
+    {    
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL(">>Range-old-params<< ~protocol: %d, ExternalPort :%d, ExternalEndRange : %d, InternalPort : %d,  bEnable :%d ",
+                rangeInfo.protocol, rangeInfo.start_port, rangeInfo.end_port, rangeInfo.internal_port,
+                rangeInfo.enabled);
+        LOG_PRINT_IVICTL("Range old-ip Destip [%s]",rangeInfo.dest_ip);
+        CcspTraceWarning((">>AT :%d>> Range >> New Port Mapping parameter external Port %d ~ %d, InternalPort %d, protocol %d, Enabled %d, DestIP [%02u.%02u.%02u.%02u]\n", \
+                __LINE__,pEntry->ExternalPort, pEntry->ExternalPortEndRange, pEntry->InternalPort, \
+                pEntry->Protocol, pEntry->bEnabled, \
+                pEntry->InternalClient.Dot[0],pEntry->InternalClient.Dot[1],pEntry->InternalClient.Dot[2],pEntry->InternalClient.Dot[3] ));
+#endif
+        singleRule = FALSE;
+    }
+#endif
+#endif
+#endif    
+
     if(rc == SUCCESS)
     {
         rc = Utopia_DelPortForwardingRangeByRuleId(&Ctx, pEntry->InstanceNumber);
@@ -2999,6 +3433,25 @@ CosaDmlNatSetPortMapping
     /* check/delete single rule */
     singleInfo.rule_id = pEntry->InstanceNumber;
     rc = Utopia_GetPortForwardingByRuleId(&Ctx, &singleInfo);
+    
+#ifdef _HUB4_PRODUCT_REQ_
+#ifdef FEATURE_MAPT
+#ifdef IVI_KERNEL_SUPPORT
+    if (rc == SUCCESS)
+    {
+#ifdef FEATURE_MAPT_DEBUG
+        LOG_PRINT_IVICTL(">>Single>>>Old Port Mapping parameter external Port %d ~ %d, InternalPort %d, protocol %d, Enabled %d ", 
+                singleInfo.external_port, singleInfo.internal_port, singleInfo.internal_port, 
+                singleInfo.protocol,singleInfo.enabled);
+        LOG_PRINT_IVICTL("Single old-ip Destip [%s]",singleInfo.dest_ip);
+        LOG_PRINT_IVICTL("Dest_ip : %s", singleInfo.dest_ip);
+#endif
+        singleRule = TRUE;
+    }
+#endif
+#endif
+#endif
+
     if(rc == SUCCESS)    
     {
        rc = Utopia_DelPortForwardingByRuleId(&Ctx, pEntry->InstanceNumber);
@@ -3013,6 +3466,37 @@ CosaDmlNatSetPortMapping
     if( ANSC_STATUS_SUCCESS == _AddPortMapping(&Ctx, pEntry))
     {
         Utopia_Free(&Ctx, 1);
+#ifdef _HUB4_PRODUCT_REQ_
+#ifdef FEATURE_MAPT
+#ifdef FEATURE_MAPT_DEBUG
+#ifdef IVI_KERNEL_SUPPORT
+        LOG_PRINT_IVICTL("!!!! ADDING THE RULES !!!!");
+#endif
+        /*Delete the previous rule*/
+        if (singleRule == TRUE)
+        {
+            int status ;
+            status = delete_mapt_pf_single_rule(singleInfo.internal_port, singleInfo.external_port, singleInfo.protocol, singleInfo.dest_ip);
+            if (status == RET_ERR)
+#ifdef FEATURE_MAPT_DEBUG
+                LOG_PRINT_IVICTL("Error Deleting Port Forwarding Single Rule");
+#endif
+            CcspTraceWarning((" Error Deleting Port Forwarding Single Rule %s\n",  __FUNCTION__));
+        }
+        else
+        {
+            int status;
+            status = delete_mapt_pf_range_rule(rangeInfo.start_port, rangeInfo.end_port, rangeInfo.protocol, rangeInfo.dest_ip);
+            if (status == RET_ERR)
+#ifdef FEATURE_MAPT_DEBUG
+                LOG_PRINT_IVICTL("Error Deleting Port Forwarding Range Rule");
+#endif
+            CcspTraceWarning((" Error Deleting Port Forwarding Range Rule %s\n",  __FUNCTION__));
+        }
+#endif
+#endif
+#endif
+
         _sent_syslog_pm_sb("ADD", pEntry->Protocol, pEntry->ExternalPort, pEntry->ExternalPortEndRange, pEntry->InternalPort, pEntry->InternalClient.Dot,pEntry->bEnabled);
         return ANSC_STATUS_SUCCESS;
     }
