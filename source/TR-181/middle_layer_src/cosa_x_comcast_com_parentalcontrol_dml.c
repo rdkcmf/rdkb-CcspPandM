@@ -652,11 +652,11 @@ BOOL is_url(char *buff)
     char *str=NULL;
     int len=_ansc_strlen(buff);
     int count=0;
-
+    const char spl[] = "-._~:/?#[]@!$&'()*+,;%=";
     while(buff[i] != '\0')
     {
         //Allowing only integers, alphabets(lower and upper) and certain special characters
-        if(((buff[i] >= '-') && (buff[i] <= ':')) || ((buff[i]>='A') && (buff[i]<='Z')) || ((buff[i]>='a') && (buff[i]<='z')) || (buff[i]=='#') || (buff[i]=='@') || (buff[i]=='~'))
+        if(strchr(spl,buff[i]) || ((buff[i]>='A') && (buff[i]<='Z')) || ((buff[i]>='a') && (buff[i]<='z')) || ((buff[i]>='0') && (buff[i]<='9')))
             i++;
         else
             return FALSE;
