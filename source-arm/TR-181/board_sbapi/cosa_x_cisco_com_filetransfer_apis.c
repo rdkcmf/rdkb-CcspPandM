@@ -210,7 +210,8 @@ FileTransferTask
     _ansc_sprintf(URL, "https://%s/%s", FileTransfer_HTTPSServers[pCfg->Server].mServer, pCfg->FileName);
     ret = curl_easy_setopt(curl, CURLOPT_URL, URL);
 
-    if ((fp = fopen(TRUE_STATIC_IP_CONFIG_PATH TRUE_STATIC_IP_CONFIG_FILE, "w+"))== NULL )
+    _ansc_sprintf(Path, "%s%s", TRUE_STATIC_IP_CONFIG_PATH, TRUE_STATIC_IP_CONFIG_FILE);
+    if ((fp = fopen(Path,"w+"))== NULL )  
     {
         curl_easy_cleanup(curl);
         return ANSC_STATUS_FAILURE;
