@@ -2294,6 +2294,24 @@ WiFi_Telemetry_SetParamIntValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "ChUtilityLogInterval", TRUE))
+    {
+        char str[10];
+        int retPsmGet = CCSP_SUCCESS;
+
+        /* Updating the ChUtilityLogInterval  in PSM database  */
+        sprintf(str,"%d",iValue);
+        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.ChUtilityLogInterval", ccsp_string, str);
+        if (retPsmGet != CCSP_SUCCESS) {
+        CcspTraceError(("Set failed for LogInterval Support \n"));
+        return FALSE;
+        }
+        CcspTraceInfo(("Successfully set  LogInterval in PSM \n"));
+        /* save update to backup */
+        pMyObject->WiFi_Telemetry.ChUtilityLogInterval = iValue;
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -2457,6 +2475,12 @@ WiFi_Telemetry_GetParamIntValue
     if( AnscEqualString(ParamName, "LogInterval", TRUE))
     {
         *pInt =  pMyObject->WiFi_Telemetry.LogInterval;
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "ChUtilityLogInterval", TRUE))
+    {
+        *pInt =  pMyObject->WiFi_Telemetry.ChUtilityLogInterval;
         return TRUE;
     }
 

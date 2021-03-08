@@ -2875,6 +2875,18 @@
 
           <parameter>
 
+            <name>ChUtilityLogInterval</name>
+
+            <type>int[5:3600]</type>
+
+            <syntax>int</syntax>
+
+            <writable>true</writable>
+
+          </parameter>
+
+          <parameter>
+
             <name>NormalizedRssiList</name>
 
             <type>string</type>

@@ -251,6 +251,7 @@ typedef  struct
 _COSA_DATAMODEL_RDKB_WIFI_TELEMETRY_CLASS_CONTENT
 {
     INT                 LogInterval;
+    INT                 ChUtilityLogInterval;
     CHAR            NormalizedRssiList[256];
     CHAR            CliStatList[256];
     CHAR            TxRxRateList[256];

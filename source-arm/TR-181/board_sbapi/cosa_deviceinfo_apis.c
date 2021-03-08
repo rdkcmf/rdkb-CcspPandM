@@ -158,6 +158,7 @@ extern  ANSC_HANDLE             bus_handle;
 
 
 #define DMSB_TR181_PSM_WHIX_LogInterval                                 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.LogInterval"
+#define DMSB_TR181_PSM_WHIX_ChUtilityLogInterval                                 "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.ChUtilityLogInterval"
 #define DMSB_TR181_PSM_WHIX_NormalizedRssiList                "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.NormalizedRssiList"
 #define DMSB_TR181_PSM_WHIX_CliStatList                                    "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.CliStatList"
 #define DMSB_TR181_PSM_WHIX_TxRxRateList                              "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.TxRxRateList"
@@ -2680,6 +2681,22 @@ CosaDmlDiWiFiTelemetryInit
     }
 
     memset(PWiFi_Telemetry, 0, sizeof(COSA_DATAMODEL_RDKB_WIFI_TELEMETRY));
+
+    if (PsmGet(DMSB_TR181_PSM_WHIX_ChUtilityLogInterval, val, sizeof(val)) != 0)
+    {
+            PWiFi_Telemetry->ChUtilityLogInterval = 900;
+    }
+    else
+    {
+        if (val[0] != '\0' )
+        {
+            PWiFi_Telemetry->ChUtilityLogInterval = atoi(val);
+        }
+        else
+        {
+            PWiFi_Telemetry->ChUtilityLogInterval = 900;
+        }
+    }
 
     if (PsmGet(DMSB_TR181_PSM_WHIX_LogInterval, val, sizeof(val)) != 0)
     {
