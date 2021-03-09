@@ -12842,10 +12842,8 @@
               <func_GetEntry>DDNSServer_GetEntry</func_GetEntry>
               <func_AddEntry>DDNSServer_AddEntry</func_AddEntry>
               <func_DelEntry>DDNSServer_DelEntry</func_DelEntry>
-              <func_GetParamBoolValue>DDNSServer_GetParamBoolValue</func_GetParamBoolValue>
               <func_GetParamUlongValue>DDNSServer_GetParamUlongValue</func_GetParamUlongValue>
               <func_GetParamStringValue>DDNSServer_GetParamStringValue</func_GetParamStringValue>
-              <func_SetParamBoolValue>DDNSServer_SetParamBoolValue</func_SetParamBoolValue>
               <func_SetParamStringValue>DDNSServer_SetParamStringValue</func_SetParamStringValue>
               <func_SetParamUlongValue>DDNSServer_SetParamUlongValue</func_SetParamUlongValue>
               <func_Validate>DDNSServer_Validate</func_Validate>
@@ -12855,8 +12853,8 @@
           <parameters>
             <parameter>
               <name>Enable</name>
-              <type>boolean</type>
-              <syntax>bool</syntax>
+              <type>string: false(0),true(1)</type>
+              <syntax>uint32/mapped</syntax>
               <writable>true</writable>
             </parameter>
             <parameter>
@@ -12917,6 +12915,7 @@
         <object>
           <name>Client</name>
           <objectType>writableTable</objectType>
+          <maxInstance>1</maxInstance>
           <functions>
             <func_GetEntryCount>DDNSClient_GetEntryCount</func_GetEntryCount>
             <func_GetEntry>DDNSClient_GetEntry</func_GetEntry>

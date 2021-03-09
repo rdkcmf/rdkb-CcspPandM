@@ -23,6 +23,7 @@
 #include <utapi/utapi.h>
 #include <utapi/utapi_util.h>
 #include <syscfg/syscfg.h>
+#include <sysevent/sysevent.h>
 #include "safec_lib_common.h"
 
       /* MACROS */
@@ -40,6 +41,8 @@
 #define  SYSCFG_HOST_ENABLE_KEY           "ddns_host_enable_%lu"
 #define  SYSCFG_HOST_STATUS_KEY           "ddns_host_status_%lu"
 #define  SYSCFG_HOST_NAME_KEY             "ddns_host_name_%lu"
+#define  HOST_REGISTERED                  1
+#define  CLIENT_UPDATED                   3
 #define  HOST_DISABLED                    5
 #define  MAX_HOST_COUNT                   1
 
@@ -48,6 +51,7 @@ typedef struct {
     char Name[64];
     char SupportedProtocols[64];
     char Protocol[16];
+    char ServerAddress[64];
 } DDNS_SERVICE;
 
 DDNS_SERVICE gDdnsServices[] =
@@ -58,39 +62,64 @@ DDNS_SERVICE gDdnsServices[] =
         "Name parameter" //(to be used by UI display)
         "SupportedProtocols"
         "Protocol" //(default)
+        "Server Address"
     },
 */
     {
         "no-ip",
         "No-IP.com",
         "HTTP",
-        "HTTP"
+        "HTTP",
+        "www.no-ip.com"
     },
     {
         "dyndns",
         "Dyn.com",
         "HTTP",
-        "HTTP"
+        "HTTP",
+        "www.dyndns.org"
     },
     {
         "duckdns",
         "DuckDNS.org",
         "HTTPS",
-        "HTTPS"
+        "HTTPS",
+        "www.duckdns.org"
     },
     {
         "afraid",
         "FreeDNS.afraid.org",
         "HTTPS",
-        "HTTPS"
+        "HTTPS",
+        "www.freedns.afraid.org"
     },
     {
         "easydns",
         "EasyDNS.com",
         "HTTPS",
-        "HTTPS"
+        "HTTPS",
+        "www.easydns.com"
+    },
+    {
+        "changeip",
+        "ChangeIP.com",
+        "HTTP",
+        "HTTP",
+        "www.changeip.com"
     }
 };
+
+#ifdef DDNS_SERVICE_BIN
+static void RemoveCheckIntervalEntryFromCron(void)
+{
+    system("sed -i '/#DDNS_CHECK_INTERVAL/d' /var/spool/cron/crontabs/root");
+}
+
+static void RemoveRetryIntervalEntryFromCron(void)
+{
+    system("sed -i '/#DDNS_RETRY_INTERVAL/d' /var/spool/cron/crontabs/root");
+}
+#endif
 
 /***********************************************************************
  APIs for SYSCFG GET and SET
@@ -202,6 +231,14 @@ static int UtSetBool(const char *path, BOOLEAN val)
     return ANSC_STATUS_SUCCESS;
 }
 
+static int resetDynamicDNSStatus(void)
+{
+    syscfg_set(NULL, "ddns_client_Status", "1"); /* CLIENT_CONNECTING=1 */
+    syscfg_set(NULL, "ddns_host_status_1", "2"); /* HOST_UPDATE_NEEDED=2 */
+
+    return ANSC_STATUS_SUCCESS;
+}
+
 /***********************************************************************
  APIs for Object:
 
@@ -274,9 +311,21 @@ CosaDmlDynamicDns_SetEnable
        syscfg_commit();
 
        if (bValue == TRUE && g_NrDynamicDnsClient != 0) {
+#ifdef DDNS_SERVICE_BIN
+           CcspTraceInfo(("%s Going to invoke ddns service from CosaDmlDynamicDns_SetEnable() \n", __FUNCTION__));
+           v_secure_system("service_ddns restart &");
+#else
            CcspTraceInfo(("%s Going to invoke script from CosaDmlDynamicDns_SetEnable() \n", __FUNCTION__));
            v_secure_system("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart &");
+#endif
        }
+
+#ifdef DDNS_SERVICE_BIN
+       if (bValue == FALSE) {
+           RemoveCheckIntervalEntryFromCron();
+           RemoveRetryIntervalEntryFromCron();
+       }
+#endif
 
        return 0;
 }
@@ -412,11 +461,23 @@ CosaDmlDynamicDns_Client_AddEntry
 
     Utopia_GetNumberOfDynamicDnsClient(&ctx, &g_NrDynamicDnsClient);
     Utopia_Free(&ctx, !rc);
+
+#if 0
     if (CosaDmlDynamicDns_GetEnable() && pEntry->Enable == TRUE)
     {
+        /* reset the DynamicDNS client and host status before restart*/
+        resetDynamicDNSStatus();
         CcspTraceInfo(("%s Going to restart dynamic dns service",__FUNCTION__));
+#ifdef DDNS_SERVICE_BIN
+        if (access("/var/run/updating_ddns_server.txt", F_OK) != 0) {
+            v_secure_system("service_ddns restart &");
+        }
+#else
         v_secure_system("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart &");
+#endif
     }
+
+#endif
 
     return (rc != 0) ? ANSC_STATUS_FAILURE : ANSC_STATUS_SUCCESS;
 }
@@ -457,16 +518,25 @@ CosaDmlDynamicDns_Client_GetConf
     return CosaDmlDynamicDns_Client_GetEntryByIndex(index, pEntry);
 }
 
-/* Reset sysevent variable ddns_return_status{DnIdx} to NULL */
-void reset_ddns_return_status()
+/* Clear the ddns_return_status{DnIdx} sysevent variable */
+static void reset_ddns_return_status (void)
 {
-    char server[128]={0};
-    if (!syscfg_get( NULL, "arddnsclient_1::Server", server, sizeof(server)))
+    char server[40];
+
+    if (syscfg_get("arddnsclient_1", "Server", server, sizeof(server)) == 0)
     {
-        char buf[32]={0};
-        int pos=strlen(server)-1;
-        snprintf(buf,sizeof(buf),"ddns_return_status%s",server+pos);
-        commonSyseventSet(buf,"");
+        /*
+           Assume server is in the form "Device.DynamicDNS.Server.1"
+           and index is a single character.
+        */
+        size_t len = strlen(server);
+        if ((len >= 2) && (server[len - 2] == '.'))
+        {
+            char buf[32];
+            char *index = server + len - 1;
+            snprintf(buf, sizeof(buf), "ddns_return_status%s", index);
+            commonSyseventSet(buf, "");
+        }
     }
 }
 
@@ -478,10 +548,17 @@ CosaDmlDynamicDns_Client_SetConf
     )
 {
     int index, rc = -1;
+    char client_status[12];
     char enable_path[sizeof(SYSCFG_HOST_ENABLE_KEY) + 1] = {0};
     BOOLEAN enable = FALSE, isUserconfChanged = FALSE;
     UtopiaContext ctx;
     DynamicDnsClient_t  DDNSclient = {0};
+
+    ULONG InsNumber;
+    ANSC_HANDLE pHostnameInsContext = NULL;
+    PCOSA_CONTEXT_LINK_OBJECT pHostLinkObj = NULL;
+    COSA_DML_DDNS_HOST *pHostEntry = NULL;
+    bool bReadyUpdate = FALSE;
 
     if ((index = DynamicDns_Client_InsGetIndex(ins)) == -1 || !Utopia_Init(&ctx))
     {
@@ -493,11 +570,14 @@ CosaDmlDynamicDns_Client_SetConf
         return ANSC_STATUS_FAILURE;
     }
 
+    syscfg_get(NULL, "ddns_client_Status", client_status, sizeof(client_status));
+
     Utopia_GetDynamicDnsClientByIndex(&ctx, index, &DDNSclient);
     if (CosaDmlDynamicDns_GetEnable() && pEntry->Enable == TRUE &&
        ((strcmp(DDNSclient.Username, pEntry->Username) != 0) ||
        (strcmp(DDNSclient.Password, pEntry->Password) != 0) ||
-       (strcmp(DDNSclient.Server, pEntry->Server) != 0)))
+       (strcmp(DDNSclient.Server, pEntry->Server) != 0)) ||
+       (atoi(client_status) != CLIENT_UPDATED))
     {
         CcspTraceInfo(("%s UserConf changed \n",__FUNCTION__));
         isUserconfChanged = TRUE;
@@ -524,11 +604,43 @@ CosaDmlDynamicDns_Client_SetConf
         }
     }
 
-    if (isUserconfChanged == TRUE)
+    pHostnameInsContext = DDNSHostname_GetEntry(NULL, 0, &InsNumber);
+    if (pHostnameInsContext != NULL)
     {
+        pHostLinkObj = (PCOSA_CONTEXT_LINK_OBJECT)pHostnameInsContext;
+        pHostEntry = (COSA_DML_DDNS_HOST *)pHostLinkObj->hContext;
+    }
+
+    if ((pEntry->Enable) && (pEntry->Server[0] != '\0') && (pEntry->Username[0] != '\0') && pHostEntry && (pHostEntry->Enable) && (pHostEntry->Name[0]!='\0'))
+    {
+        if (strstr(pHostEntry->Name, "duckdns") == NULL)
+        {
+            /* Check whether password is null or not for services other than duckdns */
+            if (pEntry->Password[0] != '\0')
+            {
+                bReadyUpdate = TRUE;
+            }
+        }
+        else
+        {
+            /* for duckdns no need to check password */
+            bReadyUpdate = TRUE;
+        }
+    }
+
+    if ((isUserconfChanged == TRUE) && (bReadyUpdate == TRUE))
+    {
+        /* reset the DynamicDNS client and host status before restart*/
+        resetDynamicDNSStatus();
         CcspTraceInfo(("%s Going to restart dynamic dns service",__FUNCTION__));
         reset_ddns_return_status();
+#ifdef DDNS_SERVICE_BIN
+        if (access("/var/run/updating_ddns_server.txt", F_OK) != 0) {
+            v_secure_system("service_ddns restart &");
+        }
+#else
         v_secure_system("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart &");
+#endif
     }
 
     return (rc != 0) ? ANSC_STATUS_FAILURE : ANSC_STATUS_SUCCESS;
@@ -704,6 +816,8 @@ CosaDmlDynamicDns_Host_AddEntry
         COSA_DML_DDNS_HOST *pEntry
     )
 {
+    CosaDmlDynamicDns_Host_SetValues(0, pEntry->InstanceNumber, pEntry->Alias);
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -744,8 +858,14 @@ CosaDmlDynamicDns_Host_SetConf
     BOOLEAN isHostchanged = FALSE;
 
     char enable_path[sizeof(SYSCFG_HOST_ENABLE_KEY) + 1] = {0};
-    char status_path[sizeof(SYSCFG_HOST_STATUS_KEY) + 1] = {0};
     char name_path[sizeof(SYSCFG_HOST_NAME_KEY) + 1] = {0};
+    char host_status[2];
+
+    ULONG InsNumber;
+    ANSC_HANDLE pClientInsContext = NULL;
+    PCOSA_CONTEXT_LINK_OBJECT pClientLinkObj = NULL;
+    COSA_DML_DDNS_CLIENT *pClientEntry = NULL;
+    BOOL bReadyUpdate = FALSE;
 
     if ((index = DynamicDns_Host_InsGetIndex(ins)) == -1 || (!g_DDNSHost))
     {
@@ -753,27 +873,66 @@ CosaDmlDynamicDns_Host_SetConf
     }
 
     snprintf(enable_path, sizeof(enable_path), SYSCFG_HOST_ENABLE_KEY, index + 1);
-    snprintf(status_path, sizeof(status_path), SYSCFG_HOST_STATUS_KEY, index + 1);
     snprintf(name_path, sizeof(name_path), SYSCFG_HOST_NAME_KEY, index + 1);
 
-    g_DDNSHost[index].Status = pEntry->Status;
-    g_DDNSHost[index].Enable         = pEntry->Enable;
+    if (g_DDNSHost[index].Enable != pEntry->Enable)
+    {
+        isHostchanged = TRUE;
+        g_DDNSHost[index].Enable = pEntry->Enable;
+        UtSetBool(enable_path, g_DDNSHost[index].Enable);
+    }
+
     if(strcmp(g_DDNSHost[index].Name, pEntry->Name) != 0)
     {
         isHostchanged = TRUE;
+        _ansc_strncpy(g_DDNSHost[index].Name, pEntry->Name, sizeof(g_DDNSHost[index].Name)-1);
+        UtSetString(name_path, g_DDNSHost[index].Name);
     }
-    _ansc_strncpy(g_DDNSHost[index].Name,       pEntry->Name,       sizeof(g_DDNSHost[index].Name)-1);
 
-   /* Set syscfg variable */
-    UtSetBool(enable_path, g_DDNSHost[index].Enable);
-    UtSetString(name_path, g_DDNSHost[index].Name);
-    UtSetUlong(status_path, g_DDNSHost[index].Status);
-
-    if (CosaDmlDynamicDns_GetEnable() && (g_DDNSHost[index].Enable == TRUE) && (isHostchanged == TRUE))
+    syscfg_get(NULL, "ddns_host_status_1", host_status, sizeof(host_status));
+    if (atoi(host_status) != HOST_REGISTERED)
     {
+        isHostchanged = TRUE;
+    }
+
+    pClientInsContext = DDNSClient_GetEntry(NULL, 0, &InsNumber);
+    if (pClientInsContext)
+    {
+        pClientLinkObj = (PCOSA_CONTEXT_LINK_OBJECT)pClientInsContext;
+        pClientEntry = (COSA_DML_DDNS_CLIENT *)pClientLinkObj->hContext;
+    }
+
+    if ((pClientInsContext) && (pClientEntry->Enable) && (pClientEntry->Server[0] != '\0') && (pClientEntry->Username[0] != '\0') && (pEntry->Enable) && (pEntry->Name[0]!='\0'))
+    {
+        if (strstr(pEntry->Name, "duckdns") == NULL)
+        {
+            /* Check whether password is null or not for services other than duckdns */
+            if (pClientEntry->Password[0] != '\0')
+            {
+                bReadyUpdate = TRUE;
+            }
+        }
+        else
+        {
+            /* for duckdns no need to check password */
+            bReadyUpdate = TRUE;
+        }
+    }
+
+    if (bReadyUpdate && CosaDmlDynamicDns_GetEnable() && (g_DDNSHost[index].Enable == TRUE) && (isHostchanged == TRUE) && (g_DDNSHost[index].Name[0] != '\0'))
+    {
+        /* reset the DynamicDNS client and host status before restart*/
+        resetDynamicDNSStatus();
+        g_DDNSHost[index].Status = 2; /* HOST_UPDATE_NEEDED=2 */
         CcspTraceInfo(("%s Going to restart dynamic dns service",__FUNCTION__));
         reset_ddns_return_status();
+#ifdef DDNS_SERVICE_BIN
+        if (access("/var/run/updating_ddns_server.txt", F_OK) != 0) {
+            v_secure_system("service_ddns restart &");
+        }
+#else
         v_secure_system("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart &");
+#endif
     }
     return ANSC_STATUS_SUCCESS;
 }
@@ -829,6 +988,7 @@ void CosaInitializeTr181DdnsServiceProviderList()
         ULONG index = 0;
         char enable_path[sizeof(SYSCFG_SERVER_ENABLE_KEY) + 1] = {0};
         char servicename_path[sizeof(SYSCFG_SERVER_SERVICENAME_KEY) +1] = {0};
+        char serveraddress_path[sizeof(SYSCFG_SERVER_SERVERADDRESS_KEY) +1] = {0};
         g_NrDynamicDnsServer = sizeof(gDdnsServices)/sizeof(DDNS_SERVICE);
         g_DDNSServer = (COSA_DML_DDNS_SERVER *)AnscAllocateMemory(g_NrDynamicDnsServer * sizeof(COSA_DML_DDNS_SERVER));
        for(index = 0; index<g_NrDynamicDnsServer; index++)
@@ -853,6 +1013,10 @@ void CosaInitializeTr181DdnsServiceProviderList()
                 snprintf(g_DDNSServer[index].Name, sizeof(g_DDNSServer[index].Name), gDdnsServices[index].Name);
                 snprintf(g_DDNSServer[index].SupportedProtocols, sizeof(g_DDNSServer[index].SupportedProtocols), gDdnsServices[index].SupportedProtocols);
                 snprintf(g_DDNSServer[index].Protocol, sizeof(g_DDNSServer[index].Protocol), gDdnsServices[index].Protocol);
+
+                snprintf(g_DDNSServer[index].ServerAddress, sizeof(g_DDNSServer[index].ServerAddress), gDdnsServices[index].ServerAddress);
+                snprintf(serveraddress_path, sizeof(serveraddress_path), SYSCFG_SERVER_SERVERADDRESS_KEY, index + 1);
+                UtSetString(serveraddress_path, g_DDNSServer[index].ServerAddress);
             }
         }
     }
@@ -1032,10 +1196,12 @@ CosaDmlDynamicDns_Server_SetConf
         return ANSC_STATUS_FAILURE;
     }
 
+#ifndef DDNS_SERVICE_BIN
     if (vsystem("killall -9 ez-ipupdate") != 0)
     {
        fprintf(stderr, "%s: fail to killall ez-ipupdate\n", __FUNCTION__);
     }
+#endif
 
     snprintf(enable_path, sizeof(enable_path), SYSCFG_SERVER_ENABLE_KEY, index + 1);
     snprintf(protocol_path, sizeof(protocol_path), SYSCFG_SERVER_PROTOCOL_KEY, index + 1);
@@ -1065,6 +1231,40 @@ CosaDmlDynamicDns_Server_SetConf
     UtSetUlong(retryinterval_path, g_DDNSServer[index].RetryInterval);
     UtSetUlong(maxretries_path, g_DDNSServer[index].MaxRetries);
     UtSetUlong(serverport_path, g_DDNSServer[index].ServerPort);
+
+#ifdef DDNS_SERVICE_BIN
+    if (g_DDNSServer[index].CheckInterval != 0)
+    {
+        BOOLEAN client_enable = 0;
+        UtGetBool("arddnsclient_1::enable", &client_enable);
+        if (client_enable)
+        {
+            char buf[30];
+            int server_index = -1;
+            UtGetString("arddnsclient_1::Server", buf, sizeof(buf));
+            if ((sscanf(buf, "Device.DynamicDNS.Server.%d", &server_index) == 1) &&
+                (server_index == (index + 1)))
+            {
+                int se_fd = -1;
+                token_t se_token;
+                RemoveCheckIntervalEntryFromCron();
+                FILE *cron_fp = fopen("/var/spool/cron/crontabs/root", "a+");
+                if (!cron_fp)
+                    return ANSC_STATUS_FAILURE;
+                fprintf(cron_fp, "* * * * * /usr/bin/service_ddns ddns-check &  #DDNS_CHECK_INTERVAL\n");
+                fclose(cron_fp);
+                se_fd = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "service_ddns", &se_token);
+                sysevent_set(se_fd, se_token, "crond-restart", "1", 0);
+                sysevent_close(se_fd, se_token);
+            }
+        }
+    }
+    else
+    {
+        /* Delete the DDNS_CHECK_INTERVAL entry from crontab */
+        RemoveCheckIntervalEntryFromCron();
+    }
+#endif
 
     return ANSC_STATUS_SUCCESS;
 }

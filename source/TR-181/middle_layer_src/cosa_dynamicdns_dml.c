@@ -25,7 +25,6 @@
 #include "safec_lib_common.h"
 
           /* MACROS */
-#define  MAX_CLIENT_COUNT 1
 #define  MAX_HOST_COUNT 1
 #define  HOST_DISABLED                    5
 #define  CLIENT_DISABLED                  6
@@ -207,9 +206,6 @@ DDNSClient_AddEntry
     COSA_DML_DDNS_CLIENT  *pClientEntry  = NULL;
     errno_t               rc             = -1;
 
-    if(MAX_CLIENT_COUNT == AnscSListQueryDepth(&pDynamicDns->DDNSClientList)) {
-        return NULL;
-    }
     pLinkObj = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
     if (!pLinkObj)
     {
@@ -543,6 +539,9 @@ DDNSClient_Rollback
     {
         return 0;
     }
+
+    pClientEntry->Enable = 0;
+
     return -1;
 }
 
@@ -903,10 +902,8 @@ DDNSHostname_Rollback
     *  DDNSServer_GetEntry
     *  DDNSServer_AddEntry
     *  DDNSServer_DelEntry
-    *  DDNSServer_GetParamBoolValue
     *  DDNSServer_GetParamUlongValue
     *  DDNSServer_GetParamStringValue
-    *  DDNSServer_SetParamBoolValue
     *  DDNSServer_SetParamStringValue
     *  DDNSServer_Validate
     *  DDNSServer_Commit
@@ -1070,6 +1067,12 @@ DDNSServer_GetParamUlongValue
     COSA_DML_DDNS_SERVER         *pServerEntry = (COSA_DML_DDNS_SERVER *)pLinkObj->hContext;
 
     /* check the parameter name and return the corresponding value */
+    if (strcmp(ParamName, "Enable") == 0)
+    {
+        /* collect value */
+        *puLong = (pServerEntry->Enable) ? 1 : 0;
+        return TRUE;
+    }
     if (strcmp(ParamName, "CheckInterval") == 0)
     {
         /* collect value */
@@ -1237,6 +1240,11 @@ DDNSServer_SetParamUlongValue
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER         *pServerEntry = (COSA_DML_DDNS_SERVER *)pLinkObj->hContext;
 
+    if (strcmp(ParamName, "Enable") == 0)
+    {
+        pServerEntry->Enable = (uValue) ? TRUE : FALSE;
+        return TRUE;
+    }
     if (strcmp(ParamName, "CheckInterval") == 0)
     {
         pServerEntry->CheckInterval = uValue;
