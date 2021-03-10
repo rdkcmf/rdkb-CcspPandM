@@ -73,6 +73,12 @@
 #define WAN_INTERFACE_LEN 8
 #define BUFLEN_16 16
 #endif
+#if defined(MULTILAN_FEATURE) && defined (INTEL_PUMA7)
+#if defined (ETH_4_PORTS) && defined (ENABLE_ETH_WAN)
+#include "syscfg/syscfg.h"
+#define BUFLEN_6 6
+#endif
+#endif
 
 ANSC_STATUS
 COSAGetParamValueByPathName
@@ -708,14 +714,24 @@ Interface_GetParamStringValue
 		}
 	}
 #endif 	 
-#if defined(MULTILAN_FEATURE)   
-#if defined(INTEL_PUMA7)
+#if defined(MULTILAN_FEATURE) && defined (INTEL_PUMA7)
 
         CHAR strMac[128] = {0};
         if(strcmp(pEthernetPortFull->StaticInfo.Name, "erouter0") == 0 ) {
                 if ( -1 != _getMac("erouter0", strMac) )
                 {
                         AnscCopyMemory(pEthernetPortFull->StaticInfo.MacAddress,strMac,6);
+                }
+        }
+#if defined (ETH_4_PORTS) && defined (ENABLE_ETH_WAN)
+        if(strcmp(pEthernetPortFull->StaticInfo.Name, "sw_4") == 0) {
+                char buf[BUFLEN_6]= {0};
+                syscfg_get(NULL, "eth_wan_enabled", buf, sizeof(buf));
+                if(strcmp(buf, "true") == 0) {
+                        if ( -1 != _getMac("erouter0", strMac) )
+                        {
+                               AnscCopyMemory(pEthernetPortFull->StaticInfo.MacAddress,strMac,6);
+                        }
                 }
         }
 #endif
