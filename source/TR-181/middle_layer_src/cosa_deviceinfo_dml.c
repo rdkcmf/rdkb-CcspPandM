@@ -220,6 +220,25 @@ DEVICEINFO_SET_VALUE deviceinfo_set_table[] = {
     {  "captiveportal_failure" , CAPTIVEPORTALFAILURE }
 };
 
+BOOL AnscValidateInputString (char *pString) {
+
+    char disallowed_chars[] = "<>%`|'";       /*To avoid command injection */
+    int i = 0;
+
+   /* check if pstring doesn't hold NULL or whitespaces */
+    if((pString == NULL) || (*pString =='\0')) {
+        return FALSE;
+    }
+
+    while(pString[i] != '\0')
+    {
+        if (!strchr(disallowed_chars,pString[i]))
+            i++;
+        else
+            return FALSE;
+    }
+    return TRUE;
+}
 
 int get_deviceinfo_from_name(char *name, enum pString_val *type_ptr)
 {
@@ -14749,6 +14768,8 @@ RDKB_UIBranding_SetParamStringValue
             return FALSE;
 
         IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
+        if(AnscValidateInputString(pString) != TRUE)
+            return FALSE;
 
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
    {
@@ -14932,6 +14953,8 @@ Footer_SetParamStringValue
 
     CcspTraceWarning(("%s: writeID=%d, bsUpdate=%d\n", __FUNCTION__, g_currentWriteEntity, g_currentBsUpdate));
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
+    if(AnscValidateInputString(pString) != TRUE)
+        return FALSE;
 
     if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
     {
@@ -15254,6 +15277,8 @@ Connection_SetParamStringValue
          return FALSE;
 
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
+    if(AnscValidateInputString(pString) != TRUE)
+        return FALSE;
 
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
    {
@@ -15459,6 +15484,9 @@ NetworkDiagnosticTools_SetParamStringValue
         return FALSE;
 
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
+
+    if(AnscValidateInputString(pString) != TRUE)
+        return FALSE;
 
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
    {
@@ -15732,6 +15760,8 @@ WiFiPersonalization_SetParamStringValue
         return FALSE;
 
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
+    if(AnscValidateInputString(pString) != TRUE)
+        return FALSE;
 
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
    {
@@ -16057,6 +16087,8 @@ CloudUI_SetParamStringValue
         return FALSE;
 
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
+    if(AnscValidateInputString(pString) != TRUE)
+        return FALSE;
 
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
    {
