@@ -328,7 +328,7 @@ then
 		else
 		   # Check v4Count. This variable will be incremented only when we have IPv6 for erouter0
 		   # Try curl command for 3 times in v4 mode. If all 3 fails, try curl command for 3 times in v6 mode
-                   # only if erouter0 has an IPv6.
+		   # only if erouter0 has an IPv6.
 		   if [ $v4Count -lt 3 ]
 		   then
 		      echo_t "Network Response: Executing command for ipv4"
@@ -338,6 +338,13 @@ then
 		      then
 		         echo_t "Network Response: Increment count as we have ipv6 ip"
 		         v4Count=`expr $v4Count + 1`
+		      else
+		         last_erouter_mode=`syscfg get last_erouter_mode`
+		         IPV6_STATUS_CHECK_GIPV6=$(sysevent get ipv6-status)
+		         if [ "$last_erouter_mode" = "1" ] && [ "x$IPV6_STATUS_CHECK_GIPV6" = "x" ];then	
+		          echo_t "Network Response: CDV device, not having ipv6  exiting !!"
+		          exit 0
+		         fi
 		      fi
 		   else
 		      # We will come into this else condition, only if erouter0 has IPv6 and 
@@ -354,7 +361,7 @@ then
 		   fi
 
 		fi
-			
+        
 		if [ -e $RESPONSE_1 ]
 		then
                         # Touching this file and will be checked from webgui.sh
