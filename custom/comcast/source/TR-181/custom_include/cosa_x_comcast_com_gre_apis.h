@@ -110,7 +110,7 @@ _COSA_DML_GRE_IF
     BOOL                        Enable;
     COSA_DML_GRE_STATUS         Status;
     ULONG                       LastChange;
-    char                        LocalInterfaces[1029];
+    char                        LocalInterfaces[256]; /*we can restrict to 256 bytes, because internally coping LocalInterfaces data to LowerLayers buffer which is 256 bytes buffer. So buffer mismatch happening*/
     char                        RemoteEndpoints[1029];
     char                        ConnectedRemoteEndpoint[257];
     COSA_DML_KEY_ID_GEN_POLICY  KeyIdentifierGenerationPolicy;
