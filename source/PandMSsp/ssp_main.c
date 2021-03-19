@@ -507,7 +507,7 @@ static int is_core_dump_opened(void)
 #endif
 
 #if defined(_PLATFORM_RASPBERRYPI_)
-extern int sock = 0;
+int sock = 0;
 #endif
 
 
@@ -557,10 +557,7 @@ int main(int argc, char* argv[])
 #if defined(_PLATFORM_RASPBERRYPI_)
 if(id != 0)
 {
-    struct sockaddr_in address;
-    int valread;
     struct sockaddr_in serv_addr;
-    char buffer[1024] = {0};
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("\n Socket creation error \n");
