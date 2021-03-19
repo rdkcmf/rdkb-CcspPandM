@@ -77,6 +77,7 @@
 #include <utctx/utctx_api.h>
 #include <utapi/utapi.h>
 #include <utapi/utapi_util.h>
+#include <syscfg/syscfg.h>
 #include "cosa_drg_common.h"
 #include "ccsp_custom.h"
 
@@ -89,6 +90,8 @@ CosaDmlRaInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(phContext);
+    UNREFERENCED_PARAMETER(hDml);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -101,7 +104,7 @@ CosaDmlRaSetCfg
 {
     UtopiaContext ctx;
     char sVal[64];
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
 
@@ -125,9 +128,9 @@ CosaDmlRaSetCfg
 
     /* HTTP access */
 #if defined(CONFIG_CCSP_WAN_MGMT_ACCESS)
-    const char *sysCfghttpAccess = "mgmt_wan_httpaccess_ert";
+    char *sysCfghttpAccess = "mgmt_wan_httpaccess_ert";
 #else
-    const char *sysCfghttpAccess = "mgmt_wan_httpaccess";
+    char *sysCfghttpAccess = "mgmt_wan_httpaccess";
 #endif
 
     if (pCfg->HttpEnable)
@@ -198,9 +201,9 @@ CosaDmlRaSetCfg
 static int 
 Ut_GetInt(UtopiaContext *ctx, const char *key, int *val)
 {
-    int buf[64], err;
+    CHAR buf[64] = {'\0'};
 
-    if (!Utopia_RawGet(ctx, NULL, key, buf, sizeof(buf)))
+    if (!Utopia_RawGet(ctx, NULL, (char*)key, buf, sizeof(buf)))
         return 0;
 
     *val = atoi(buf);
@@ -217,7 +220,7 @@ CosaDmlRaGetCfg
     UtopiaContext ctx;
     int iVal;
     char sVal[64];
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!Utopia_Init(&ctx))
     {
         CcspTraceWarning(("%s: Utopia_Init error\n", __FUNCTION__));
@@ -358,7 +361,7 @@ CosaDmlUserInterfaceGetCfg
         PCOSA_DML_USERINTERFACE_CFG            pCfg
     )
 {
-
+    UNREFERENCED_PARAMETER(hContext);
         char buf[10];
 	memset(buf,0,sizeof(buf));
         syscfg_get( NULL, "PasswordLockoutEnable", buf, sizeof(buf));
@@ -407,9 +410,9 @@ CosaDmlUserInterfaceSetCfg
         PCOSA_DML_USERINTERFACE_CFG            pCfg
     )
 {
-
-char buf[10];
-memset(buf,0,sizeof(buf));
+    UNREFERENCED_PARAMETER(hContext);
+    char buf[10];
+    memset(buf,0,sizeof(buf));
 
     if ( TRUE == pCfg->bPasswordLockoutEnable )
     {
@@ -427,13 +430,13 @@ memset(buf,0,sizeof(buf));
 	}
      }
 
- sprintf(buf, "%d",  pCfg->PasswordLockoutAttempts);
+ sprintf(buf, "%lu",  pCfg->PasswordLockoutAttempts);
 	if (syscfg_set(NULL, "PasswordLockoutAttempts", buf) != 0) {
                      AnscTraceWarning(("%s : PasswordLockoutAttempts syscfg_set failed\n",__FUNCTION__));
 	}
 
 memset(buf,0,sizeof(buf));
-sprintf(buf, "%d",  pCfg->PasswordLockoutTime);
+sprintf(buf, "%lu",  pCfg->PasswordLockoutTime);
 	 if (syscfg_set(NULL, "PasswordLockoutTime", buf) != 0) {
                      AnscTraceWarning(("%s : PasswordLockoutTime syscfg_set failed\n",__FUNCTION__));
 	}
@@ -484,7 +487,7 @@ CosaDmlUIIPRangeGetNumberOfEntries
 {
     UtopiaContext ctx;
     char countStr[16];
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!Utopia_Init(&ctx)) {
         CcspTraceWarning(("%s: Utopia_Init error\n", __FUNCTION__));
         fprintf(stderr, "%s: Utopia_Init error\n", __FUNCTION__);
@@ -507,33 +510,32 @@ CosaDmlUIIPRangeGetEntry
     )
 { 
     UtopiaContext ctx;
-    unsigned long ins;
     char utVal[64];
     char utKey[64];
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!Utopia_Init(&ctx)) {
         CcspTraceWarning(("%s: Utopia_Init error\n", __FUNCTION__));
         fprintf(stderr, "%s: Utopia_Init error\n", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
     }
 
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_ins", ulIndex);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_ins", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     pEntry->InstanceNumber = strtoul(utVal, NULL, 10);
     
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_alias", ulIndex);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_alias", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     strncpy(pEntry->Alias, utVal, sizeof(pEntry->Alias));
 
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_startIP", ulIndex);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_startIP", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     strncpy(pEntry->StartIP, utVal, sizeof(pEntry->StartIP));
     
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_endIP", ulIndex);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_endIP", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     strncpy(pEntry->EndIP, utVal, sizeof(pEntry->EndIP));
     
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_desp", ulIndex);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_desp", ulIndex);
     Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
     strncpy(pEntry->Desp, utVal, sizeof(pEntry->Desp));
 
@@ -554,18 +556,18 @@ CosaDmlUIIPRangeSetValues
     UtopiaContext ctx;
     char utVal[64];
     char utKey[64];
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!Utopia_Init(&ctx)) {
         CcspTraceWarning(("%s: Utopia_Init error\n", __FUNCTION__));
         fprintf(stderr, "%s: Utopia_Init error\n", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
     }
 
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_ins", ulIndex);
-    snprintf(utVal, sizeof(utVal), "%u", ulInstanceNumber);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_ins", ulIndex);
+    snprintf(utVal, sizeof(utVal), "%lu", ulInstanceNumber);
     Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_alias", ulIndex);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_alias", ulIndex);
     Utopia_RawSet(&ctx, NULL, utKey, pAlias);
 
     Utopia_Free(&ctx, 1);
@@ -584,7 +586,7 @@ CosaDmlUIIPRangeSetEntry
     unsigned long i;
     char utVal[64];
     char utKey[64];
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!Utopia_Init(&ctx)) {
         CcspTraceWarning(("%s: Utopia_Init error\n", __FUNCTION__));
         fprintf(stderr, "%s: Utopia_Init error\n", __FUNCTION__);
@@ -592,21 +594,21 @@ CosaDmlUIIPRangeSetEntry
     }
 
     for(i = 0; i < iprangeCount; i++) {
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_ins", i);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_ins", i);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         if(pEntry->InstanceNumber == strtoul(utVal, NULL, 10))
             break;
     }
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_alias", i);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_alias", i);
     Utopia_RawSet(&ctx, NULL, utKey, pEntry->Alias);
 
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_startIP", i);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_startIP", i);
     Utopia_RawSet(&ctx, NULL, utKey, pEntry->StartIP);
     
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_endIP", i);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_endIP", i);
     Utopia_RawSet(&ctx, NULL, utKey, pEntry->EndIP);
     
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_desp", i);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_desp", i);
     Utopia_RawSet(&ctx, NULL, utKey, pEntry->Desp);
 
     Utopia_Free(&ctx, 1);
@@ -636,11 +638,11 @@ CosaDmlUIIPRangeAddEntry
     iprangeCount++;
 
     snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"count");
-    snprintf(utVal, sizeof(utVal), "%u", iprangeCount);
+    snprintf(utVal, sizeof(utVal), "%lu", iprangeCount);
     Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_ins", iprangeCount-1);
-    snprintf(utVal, sizeof(utVal), "%u", pEntry->InstanceNumber);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_ins", iprangeCount-1);
+    snprintf(utVal, sizeof(utVal), "%lu", pEntry->InstanceNumber);
     Utopia_RawSet(&ctx, NULL, utKey, utVal);
     Utopia_Free(&ctx, 1);
 
@@ -660,7 +662,8 @@ CosaDmlUIIPRangeDelEntry
     char utVal[64];
     char utKey[64];
     unsigned long i;
-
+    UNREFERENCED_PARAMETER(hContext);
+    
     if (!Utopia_Init(&ctx)) {
         CcspTraceWarning(("%s: Utopia_Init error\n", __FUNCTION__));
         fprintf(stderr, "%s: Utopia_Init error\n", __FUNCTION__);
@@ -668,7 +671,7 @@ CosaDmlUIIPRangeDelEntry
     }
 
     for(i = 0; i < iprangeCount; i++) {
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_ins", i);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_ins", i);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         if(pEntry->InstanceNumber == strtoul(utVal, NULL, 10))
             break;
@@ -677,65 +680,65 @@ CosaDmlUIIPRangeDelEntry
     for(; i+1 < iprangeCount; i++) {
 
         //get elements
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_ins", i+1);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_ins", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         pEntry->InstanceNumber = strtoul(utVal, NULL, 10);
 
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_alias", i+1);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_alias", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         strncpy(pEntry->Alias, utVal, sizeof(pEntry->Alias));
 
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_startIP", i+1);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_startIP", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         strncpy(pEntry->StartIP, utVal, sizeof(pEntry->StartIP));
 
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_endIP", i+1);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_endIP", i+1);
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         strncpy(pEntry->EndIP, utVal, sizeof(pEntry->EndIP));
 
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_desp", i+1);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_desp", i+1);
         utVal[0] = '\0';
         Utopia_RawGet(&ctx, NULL, utKey, utVal, sizeof(utVal));
         strncpy(pEntry->Desp, utVal, sizeof(pEntry->Desp));
 
         //move elements
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_ins", i);
-        snprintf(utVal, sizeof(utVal), "%u", pEntry->InstanceNumber);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_ins", i);
+        snprintf(utVal, sizeof(utVal), "%lu", pEntry->InstanceNumber);
         Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_alias", i);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_alias", i);
         Utopia_RawSet(&ctx, NULL, utKey, pEntry->Alias);
 
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_startIP", i);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_startIP", i);
         Utopia_RawSet(&ctx, NULL, utKey, pEntry->StartIP);
 
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_endIP", i);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_endIP", i);
         Utopia_RawSet(&ctx, NULL, utKey, pEntry->EndIP);
 
-        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_desp", i);
+        snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_desp", i);
         Utopia_RawSet(&ctx, NULL, utKey, pEntry->Desp);
     }
 
     //delete last element
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_ins", iprangeCount-1);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_ins", iprangeCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
 
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_alias", iprangeCount-1);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_alias", iprangeCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
 
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_startIP", iprangeCount-1);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_startIP", iprangeCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
     
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_endIP", iprangeCount-1);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_endIP", iprangeCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
     
-    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%u_desp", iprangeCount-1);
+    snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"%lu_desp", iprangeCount-1);
     Utopia_RawSet(&ctx, NULL, utKey, 0);
 
     //update counter
     iprangeCount--;
     snprintf(utKey, sizeof(utKey), IPRANGE_UTKEY_PREFIX"count");
-    snprintf(utVal, sizeof(utVal), "%u", iprangeCount);
+    snprintf(utVal, sizeof(utVal), "%lu", iprangeCount);
     Utopia_RawSet(&ctx, NULL, utKey, utVal);
 
     Utopia_Free(&ctx, 1);
@@ -753,6 +756,7 @@ CosaDmlUIIPRangeGetCfg
     )
 {
     fprintf(stderr, "%s is not implemented!\n", __FUNCTION__);
-
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_SUCCESS;
 }

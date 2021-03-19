@@ -70,6 +70,7 @@
 #include "cosa_ipv6rd_internal.h"
 #include "cosa_ipv6rd_apis.h"
 #include "dml_tr181_custom_cfg.h"
+#include "cosa_deviceinfo_apis.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -113,6 +114,7 @@ IPv6rd_GetParamBoolValue(
         char *ParamName, 
         BOOL *pBool)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IPV6RD pEntry = (PCOSA_DATAMODEL_IPV6RD)g_pCosaBEManager->hIPv6rd;
 
     if (!pEntry)
@@ -136,6 +138,7 @@ IPv6rd_GetParamUlongValue(
         char *ParamName, 
         ULONG *pUlong)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IPV6RD pEntry = (PCOSA_DATAMODEL_IPV6RD)g_pCosaBEManager->hIPv6rd;
 
     if (!pEntry)
@@ -159,6 +162,7 @@ IPv6rd_SetParamBoolValue(
         BOOL        bValue
         )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IPV6RD pEntry = (PCOSA_DATAMODEL_IPV6RD)g_pCosaBEManager->hIPv6rd;
 
     if (!pEntry)
@@ -180,6 +184,9 @@ IPv6rd_SetParamUlongValue(
         ULONG       ulValue
         )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(ulValue);
     PCOSA_DATAMODEL_IPV6RD pEntry = (PCOSA_DATAMODEL_IPV6RD)g_pCosaBEManager->hIPv6rd;
 
     if (!pEntry)
@@ -195,6 +202,9 @@ IPv6rd_Validate(
         ULONG       *puLength
         )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     /* TODO: */
     return TRUE;
 }
@@ -204,6 +214,7 @@ IPv6rd_Commit(
         ANSC_HANDLE hInsContext
         )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
 
     PCOSA_DATAMODEL_IPV6RD pEntry = (PCOSA_DATAMODEL_IPV6RD)g_pCosaBEManager->hIPv6rd;
 
@@ -221,6 +232,7 @@ IPv6rd_Rollback(
         ANSC_HANDLE hInsContext
         )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IPV6RD pEntry = (PCOSA_DATAMODEL_IPV6RD)g_pCosaBEManager->hIPv6rd;
 
     if (CosaDml_IPv6rdGetEnable(NULL, NULL, &pEntry->Enable) != ANSC_STATUS_SUCCESS)
@@ -236,6 +248,7 @@ ULONG
 IPv6rdIF_GetEntryCount(
         ANSC_HANDLE hInsContext)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IPV6RD  pMyObject = (PCOSA_DATAMODEL_IPV6RD)g_pCosaBEManager->hIPv6rd;
 
     if (!pMyObject)
@@ -250,6 +263,7 @@ IPv6rdIF_GetEntry(
         ULONG       nIndex,
         ULONG       *pInsNumber)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IPV6RD  pMyObject = (PCOSA_DATAMODEL_IPV6RD)g_pCosaBEManager->hIPv6rd;
     PCOSA_CONTEXT_LINK_OBJECT   pLinkObject = NULL;
     PSINGLE_LINK_ENTRY      pSLinkEntry = NULL;
@@ -293,11 +307,11 @@ IPv6rdIF_AddEntry(
         ANSC_HANDLE hInsContext,
         ULONG       *pInsNumber)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IPV6RD      pMyObject   = (PCOSA_DATAMODEL_IPV6RD)g_pCosaBEManager->hIPv6rd;
     PSLIST_HEADER               pListHead   = (PSLIST_HEADER)&pMyObject->IfList;
     PCOSA_DML_IPV6RD_IF         pEntry      = NULL;
     PCOSA_CONTEXT_LINK_OBJECT   pCosaContext = NULL;
-    PSINGLE_LINK_ENTRY          pSLinkEntry = NULL;
 
     pEntry = (PCOSA_DML_IPV6RD_IF)AnscAllocateMemory(sizeof(COSA_DML_IPV6RD_IF));
     if (!pEntry)
@@ -307,7 +321,7 @@ IPv6rdIF_AddEntry(
 
 	/* Set default values here */
 	memset(pEntry, 0, sizeof(COSA_DML_IPV6RD_IF));
-    _ansc_sprintf(pEntry->Alias, "tun6rd%d", pMyObject->ulIfNextInstance);
+    _ansc_sprintf(pEntry->Alias, "tun6rd%lu", pMyObject->ulIfNextInstance);
 #if !CFG_TR181_NO_CosaDml_Ifname2Addr
 	CosaDml_Ifname2Addr(CFG_TR181_6rd_IfName, pEntry->AddressSource, sizeof(pEntry->AddressSource));
 #endif
@@ -346,6 +360,7 @@ IPv6rdIF_DelEntry(
         ANSC_HANDLE hInsContext,
         ULONG       hInstance)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_IPV6RD      pMyObject = (PCOSA_DATAMODEL_IPV6RD)g_pCosaBEManager->hIPv6rd;
     PCOSA_CONTEXT_LINK_OBJECT   pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_CONTEXT_LINK_OBJECT   pCosaContext2 = NULL;
@@ -424,9 +439,10 @@ IPv6rdIF_GetParamStringValue(
         char            *pValue,
         ULONG           *pSize)
 {
+    UNREFERENCED_PARAMETER(pSize);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObject = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)NULL;
-    char *path = NULL;
+    PUCHAR path = NULL;
     char tmp[128];
 
     if (!pLinkObject)
@@ -462,41 +478,41 @@ IPv6rdIF_GetParamStringValue(
             return 0;
         }
 
-        path = CosaUtilGetFullPathNameByKeyword("Device.IP.Interface.", "Name", CFG_TR181_6rd_IfName);
-        if ((path != NULL) && (_ansc_strlen(path) > 0))
+        path = CosaUtilGetFullPathNameByKeyword((PUCHAR)"Device.IP.Interface.", (PUCHAR)"Name", (PUCHAR)CFG_TR181_6rd_IfName);
+        if ((path != NULL) && (_ansc_strlen((char*)path) > 0))
         {
-            if (path[_ansc_strlen(path) - 1] == '.')
-                path[_ansc_strlen(path) - 1] = '\0';
+            if (path[_ansc_strlen((char*)path) - 1] == '.')
+                path[_ansc_strlen((char*)path) - 1] = '\0';
             _ansc_sprintf(tmp, "%s.IPv4Address.", path);
             AnscFreeMemory(path); /*RDKB-6740, CID-33386, free unused resource before exit*/
             path = NULL;
-            path = CosaUtilGetFullPathNameByKeyword(tmp, "IPAddress", pEntry->AddressSource);
+            path = CosaUtilGetFullPathNameByKeyword((PUCHAR)tmp, (PUCHAR)"IPAddress", (PUCHAR)pEntry->AddressSource);
         }
 
         if (path == NULL)
             AnscCopyString(pValue, "");
         else
-            AnscCopyString(pValue, path);
+            AnscCopyString(pValue, (char*)path);
         /* AnscCopyString(pValue, pEntry->AddressSource); */
     }
     else if (AnscEqualString(ParamName, "TunnelInterface", TRUE))
     {
-        path = CosaUtilGetFullPathNameByKeyword("Device.IP.Interface.", 
-                "Name", pEntry->TunnelInterface);
+        path = CosaUtilGetFullPathNameByKeyword((PUCHAR)"Device.IP.Interface.", 
+                (PUCHAR)"Name", (PUCHAR)pEntry->TunnelInterface);
         if (path == NULL)
             AnscCopyString(pValue, "");
         else
-            AnscCopyString(pValue, path);
+            AnscCopyString(pValue, (char*)path);
         /* AnscCopyString(pValue, pEntry->TunnelInterface); */
     }
     else if (AnscEqualString(ParamName, "TunneledInterface", TRUE))
     {
-        path = CosaUtilGetFullPathNameByKeyword("Device.IP.Interface.", 
-                "Name", pEntry->TunneledInterface);
+        path = CosaUtilGetFullPathNameByKeyword((PUCHAR)"Device.IP.Interface.", 
+                (PUCHAR)"Name", (PUCHAR)pEntry->TunneledInterface);
         if (path == NULL)
             AnscCopyString(pValue, "");
         else
-            AnscCopyString(pValue, path);
+            AnscCopyString(pValue, (char*)path);
         /* AnscCopyString(pValue, pEntry->TunneledInterface); */
     }
     else
@@ -688,6 +704,9 @@ IPv6rdIF_Validate(
         ULONG       *puLength
         )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     /* TODO: */
     return TRUE;
 }

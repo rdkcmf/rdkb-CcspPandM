@@ -38,7 +38,6 @@
  */
 
 #include "dml_tr181_custom_cfg.h"
-
 #ifdef CONFIG_CISCO_HOTSPOT
 #include "cosa_x_comcast_com_gre_dml.h"
 #include "cosa_x_comcast_com_gre_internal.h"
@@ -50,8 +49,7 @@ GreIf_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
-    COSA_DATAMODEL_GRE              *pMyObject = (COSA_DATAMODEL_GRE *)g_pCosaBEManager->hGRE;
-
+    UNREFERENCED_PARAMETER(hInsContext);
     return CosaDml_GreIfGetNumberOfEntries();
 }
 
@@ -63,6 +61,7 @@ GreIf_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_GRE              *pMyObject   = (COSA_DATAMODEL_GRE *)g_pCosaBEManager->hGRE;
 
     if (nIndex >= MAX_GRE_IF)
@@ -81,7 +80,6 @@ GreIf_GetParamBoolValue
     )
 {
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
-    ULONG                           ins = pGreIf->InstanceNumber;
 
     if (AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -239,7 +237,6 @@ GreIf_GetParamIntValue
     )
 {
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
-    ULONG                           ins = pGreIf->InstanceNumber;
 
     if (AnscEqualString(ParamName, "DSCPMarkPolicy", TRUE))
     {
@@ -486,6 +483,9 @@ GreIf_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -654,11 +654,11 @@ GreIf_Rollback
         return ANSC_STATUS_FAILURE;
     if (CosaDml_GreIfGetDhcpRemoteId(ins, &pGreIf->DHCPRemoteID) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreIfGetAssociatedBridges(ins, &pGreIf->AssociatedBridges, sizeof(pGreIf->AssociatedBridges)) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetAssociatedBridges(ins, (void*)&pGreIf->AssociatedBridges, sizeof(pGreIf->AssociatedBridges)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreIfGetAssociatedBridgesWiFiPort(ins, &pGreIf->AssociatedBridgesWiFiPort, sizeof(pGreIf->AssociatedBridgesWiFiPort)) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetAssociatedBridgesWiFiPort(ins, (void*)&pGreIf->AssociatedBridgesWiFiPort, sizeof(pGreIf->AssociatedBridgesWiFiPort)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
-    if (CosaDml_GreIfGetGREInterface(ins, &pGreIf->GRENetworkInterface, sizeof(pGreIf->GRENetworkInterface)) != ANSC_STATUS_SUCCESS)
+    if (CosaDml_GreIfGetGREInterface(ins, (void*)&pGreIf->GRENetworkInterface, sizeof(pGreIf->GRENetworkInterface)) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
     return ANSC_STATUS_SUCCESS;

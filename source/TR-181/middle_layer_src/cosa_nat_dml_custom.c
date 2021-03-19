@@ -72,6 +72,7 @@
 #include "dml_tr181_custom_cfg.h" 
 #include "cosa_nat_dml.h"
 #include "cosa_nat_dml_custom.h"
+#include <syscfg/syscfg.h>
 
 #include "plugin_main_apis.h"
 #include "cosa_nat_apis.h"        
@@ -116,6 +117,7 @@ NAT_GetParamBoolValue_Custom
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pMyObject    = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT                   pNat         = &pMyObject->Nat;
 
@@ -165,11 +167,12 @@ NAT_SetParamBoolValue_Custom
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pMyObject    = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT                   pNat         = &pMyObject->Nat;
-    BOOL                                      bridgeMode;
 
     #ifndef MULTILAN_FEATURE
+    BOOL bridgeMode;
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
         return FALSE;

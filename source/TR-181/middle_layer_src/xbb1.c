@@ -81,7 +81,7 @@ static void xbbUpdateStatus()
 {
   if (lastStatusUpdateTime == 0)
   {
-    memset(&xbbStatus, sizeof(XbbStatus), 0);
+    memset(&xbbStatus, 0, sizeof(XbbStatus));
   }
 
   time_t now = time(0);
@@ -100,7 +100,7 @@ static void xbbUpdateConfig()
 {
   if (lastConfigUpdateTime == 0)
   {
-    memset(&xbbConfig, sizeof(xbbConfig), 0);
+    memset(&xbbConfig, 0, sizeof(xbbConfig));
   }
 
   time_t now = time(0);
@@ -129,7 +129,7 @@ XBB1_StringCopy(char* dst, char const* src, ULONG* n)
   }
   else
   {
-    memset(dst, *n, 0);
+    memset(dst, 0, *n);
     strcpy(dst, src);
     status = 0;
   }
@@ -147,6 +147,7 @@ XBB1_StringEquals(char const* s, char const* t)
 BOOL
 XBB1_GetParamBoolValue(ANSC_HANDLE h, char* name, BOOL* val)
 {
+  UNREFERENCED_PARAMETER(h);
   XBB1_DEBUG_ENTER(name);
   XBB1_CHECK_NULL(name);
   XBB1_CHECK_NULL(val);
@@ -162,6 +163,8 @@ XBB1_GetParamBoolValue(ANSC_HANDLE h, char* name, BOOL* val)
 BOOL
 XBB1_SetParamBoolValue(ANSC_HANDLE h, char* name, BOOL  val)
 {
+  UNREFERENCED_PARAMETER(h);
+  UNREFERENCED_PARAMETER(val);
   XBB1_DEBUG_ENTER(name);
   return FALSE;
 }
@@ -169,6 +172,7 @@ XBB1_SetParamBoolValue(ANSC_HANDLE h, char* name, BOOL  val)
 BOOL
 XBB1_GetParamIntValue(ANSC_HANDLE h, char* name, int* val)
 {
+  UNREFERENCED_PARAMETER(h);
   XBB1_DEBUG_ENTER(name);
   XBB1_CHECK_NULL(name);
   XBB1_CHECK_NULL(val);
@@ -197,8 +201,8 @@ XBB1_GetParamIntValue(ANSC_HANDLE h, char* name, int* val)
 BOOL
 XBB1_SetParamIntValue(ANSC_HANDLE h, char* name, int val)
 {
+  UNREFERENCED_PARAMETER(h);
   XBB1_DEBUG_ENTER(name);
-  XbbConfiguration config;
 
   if (XBB1_StringEquals("discover", name))
   {
@@ -212,14 +216,6 @@ XBB1_SetParamIntValue(ANSC_HANDLE h, char* name, int val)
       return FALSE;
     }
   }
-  if (XBB1_StringEquals("lowTempThreshold",name))
-  {
-    config.lowTempThreshold = val;
-  }
-  if (XBB1_StringEquals("highTempThreshold",name))
-  {
-    config.highTempThreshold = val;
-  }
 
   xbbUpdateConfig();
 
@@ -229,6 +225,7 @@ XBB1_SetParamIntValue(ANSC_HANDLE h, char* name, int val)
 BOOL
 XBB1_GetParamUlongValue(ANSC_HANDLE h, char* name, ULONG* val)
 {
+  UNREFERENCED_PARAMETER(h);
   XBB1_DEBUG_ENTER(name);
   XBB1_CHECK_NULL(name);
   XBB1_CHECK_NULL(val);
@@ -276,6 +273,7 @@ XBB1_GetParamUlongValue(ANSC_HANDLE h, char* name, ULONG* val)
 BOOL
 XBB1_SetParamUlongValue(ANSC_HANDLE h, char* name, ULONG val)
 {
+  UNREFERENCED_PARAMETER(h);
   int               dirty;
   XbbConfiguration  config;
   BOOL              paramSet;
@@ -339,6 +337,7 @@ XBB1_SetParamUlongValue(ANSC_HANDLE h, char* name, ULONG val)
 ULONG
 XBB1_GetParamStringValue(ANSC_HANDLE h, char* name, char* val, ULONG* size)
 {
+  UNREFERENCED_PARAMETER(h);
   XBB1_DEBUG_ENTER(name);
   XBB1_CHECK_NULL(name);
   XBB1_CHECK_NULL(val);
@@ -365,6 +364,9 @@ XBB1_GetParamStringValue(ANSC_HANDLE h, char* name, char* val, ULONG* size)
 BOOL
 XBB1_SetParamStringValue(ANSC_HANDLE h, char* name, char* val, ULONG* n)
 {
+  UNREFERENCED_PARAMETER(h);
+  UNREFERENCED_PARAMETER(val);
+  UNREFERENCED_PARAMETER(n);
   XBB1_DEBUG_ENTER(name);
   return FALSE;
 }
@@ -372,6 +374,7 @@ XBB1_SetParamStringValue(ANSC_HANDLE h, char* name, char* val, ULONG* n)
 ULONG
 XBB1_Alarm_GetEntryCount(ANSC_HANDLE h)
 {
+  UNREFERENCED_PARAMETER(h);
   uint16_t n;
 
   xbbUpdateAlarms();

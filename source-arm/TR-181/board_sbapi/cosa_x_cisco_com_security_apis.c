@@ -325,6 +325,8 @@ CosaDmlFirewallGetConfig2
         PCOSA_DML_FIREWALL_CFG2     pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCfg);
     pCfg->FirewallLevel                   = g_FirewallConfig2.FirewallLevel;
     pCfg->FilterAnonymousInternetRequests = g_FirewallConfig2.FilterAnonymousInternetRequests;
     pCfg->FilterIDENT                     = g_FirewallConfig2.FilterIDENT;
@@ -375,6 +377,8 @@ CosaDmlFirewallSetConfig2
         PCOSA_DML_FIREWALL_CFG2     pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCfg);
     g_FirewallConfig2.FirewallLevel                   = pCfg->FirewallLevel;
     g_FirewallConfig2.FilterAnonymousInternetRequests = pCfg->FilterAnonymousInternetRequests;
     g_FirewallConfig2.FilterIDENT                     = pCfg->FilterIDENT;
@@ -421,6 +425,7 @@ CosaDmlIaGetNumberOfPolicies
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_NumOfPolicies;
 }
 
@@ -464,6 +469,8 @@ CosaDmlIaGetPolicy
         PCOSA_DML_IA_POLICY         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIndex);
     pEntry->InstanceNumber = g_SecurityInternetAccess[ulIndex].ulInstanceNumber;
     pEntry->bEnabled = g_SecurityInternetAccess[ulIndex].bEnabled;
     pEntry->EnableLanHostMACAddresses = g_SecurityInternetAccess[ulIndex].EnableLanHostMACAddresses;
@@ -532,6 +539,10 @@ CosaDmlIaSetPolicyValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -576,6 +587,7 @@ CosaDmlIaGetPolicyByInsNum
         PCOSA_DML_IA_POLICY         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
@@ -637,6 +649,7 @@ CosaDmlIaAddPolicy
         PCOSA_DML_IA_POLICY         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     g_SecurityInternetAccess[g_NumOfPolicies].bEnabled = pEntry->bEnabled;
     g_SecurityInternetAccess[g_NumOfPolicies].EnableLanHostMACAddresses = pEntry->EnableLanHostMACAddresses;
     g_SecurityInternetAccess[g_NumOfPolicies].AllowLanHostMACAddresses = pEntry->AllowLanHostMACAddresses;
@@ -691,6 +704,7 @@ CosaDmlIaDelPolicy
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     ULONG                           j = 0;
 
@@ -757,6 +771,7 @@ CosaDmlIaSetPolicy
         PCOSA_DML_IA_POLICY         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
@@ -824,6 +839,7 @@ CosaDmlIaGetPolicySchedule
         PCOSA_DML_IA_POLICY_SCH     pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
@@ -880,6 +896,7 @@ CosaDmlIaSetPolicySchedule
         PCOSA_DML_IA_POLICY_SCH     pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
@@ -934,6 +951,7 @@ CosaDmlIaPolicyGetNumberOfUrls
         ULONG                       ulPolicyInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
@@ -991,6 +1009,7 @@ CosaDmlIaPolicyGetUrl
         PCOSA_DML_IA_POLICY_URL     pUrl
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
@@ -1052,6 +1071,7 @@ CosaDmlIaPolicyGetUrlByInsNum
         PCOSA_DML_IA_POLICY_URL     pUrl
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     ULONG                           j = 0;
 
@@ -1122,6 +1142,11 @@ CosaDmlIaPolicySetUrlValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulPolicyInstanceNumber);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1164,6 +1189,7 @@ CosaDmlIaPolicyAddUrl
         PCOSA_DML_IA_POLICY_URL     pUrl
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i       = 0;
     ULONG                           ulIndex = g_SecurityInternetAccess[i].ulNumOfUrl;
 
@@ -1225,6 +1251,7 @@ CosaDmlIaPolicyDelUrl
         PCOSA_DML_IA_POLICY_URL     pUrl        /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_SECURITY_IA_POLICY2       pPolicy = NULL;
     ULONG                           i       = 0;
     ULONG                           j       = 0;
@@ -1302,6 +1329,7 @@ CosaDmlIaPolicySetUrl
         PCOSA_DML_IA_POLICY_URL     pUrl        /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i       = 0;
     ULONG                           j       = 0;
     PCOSA_SECURITY_IA_POLICY2       pPolicy = NULL;
@@ -1364,6 +1392,7 @@ CosaDmlIaPolicyGetNumberOfKeywords
         ULONG                       ulPolicyInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
@@ -1422,6 +1451,7 @@ CosaDmlIaPolicyGetKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
@@ -1486,6 +1516,7 @@ CosaDmlIaPolicyGetKeywordByInsNum
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     ULONG                           j = 0;
 
@@ -1559,6 +1590,11 @@ CosaDmlIaPolicySetKeywordValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulPolicyInstanceNumber);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1604,6 +1640,7 @@ CosaDmlIaPolicyAddKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i       = 0;
     ULONG                           ulIndex = g_SecurityInternetAccess[i].ulNumOfKeyword;
 
@@ -1664,6 +1701,7 @@ CosaDmlIaPolicyDelKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_SECURITY_IA_POLICY2       pPolicy = NULL;
     ULONG                           i       = 0;
     ULONG                           j       = 0;
@@ -1742,6 +1780,7 @@ CosaDmlIaPolicySetKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i       = 0;
     ULONG                           j       = 0;
     PCOSA_SECURITY_IA_POLICY2       pPolicy = NULL;
@@ -1807,6 +1846,7 @@ CosaDmlIaPolicyGetNumberOfApps
         ULONG                       ulPolicyInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
@@ -1865,6 +1905,7 @@ CosaDmlIaPolicyGetApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
@@ -1930,6 +1971,7 @@ CosaDmlIaPolicyGetAppByInsNum
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     ULONG                           j = 0;
 
@@ -2002,6 +2044,11 @@ CosaDmlIaPolicySetAppValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulPolicyInstanceNumber);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2046,6 +2093,7 @@ CosaDmlIaPolicyAddApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i       = 0;
     ULONG                           ulIndex = g_SecurityInternetAccess[i].ulNumOfApp;
 
@@ -2110,6 +2158,7 @@ CosaDmlIaPolicyDelBlockedApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_SECURITY_IA_POLICY2       pPolicy = NULL;
     ULONG                           i       = 0;
     ULONG                           j       = 0;
@@ -2187,6 +2236,7 @@ CosaDmlIaPolicySetBlockedApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i       = 0;
     ULONG                           j       = 0;
     PCOSA_SECURITY_IA_POLICY2       pPolicy = NULL;
@@ -2252,6 +2302,7 @@ CosaDmlIaGetLogEntries
         PULONG                      pulCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_DML_IA_LOG_ENTRY          pLogBlock = (PCOSA_DML_IA_LOG_ENTRY)NULL;
 
     pLogBlock = (PCOSA_DML_IA_LOG_ENTRY)AnscAllocateMemory(sizeof(COSA_DML_IA_LOG_ENTRY) * g_NumOfLogEntries);
@@ -2290,7 +2341,6 @@ int g_iap_num;
 iap_entry_t * g_iaps ;
 int safe_strcpy(char * dst, char * src, int dst_size);
 
-static void print_iap();
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 static int be_struct_2_middle_layer(iap_entry_t * p_in, PCOSA_DML_IA_POLICY p_out)
 {
@@ -2513,6 +2563,7 @@ CosaDmlFirewallGetConfig2
         PCOSA_DML_FIREWALL_CFG2     pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     firewall_t    fw;
 
@@ -2616,6 +2667,7 @@ CosaDmlFirewallSetConfig2
         PCOSA_DML_FIREWALL_CFG2     pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
     firewall_t fw;
@@ -2732,6 +2784,7 @@ CosaDmlIaGetNumberOfPolicies
         ANSC_HANDLE                 hContext
     )
 {
+   UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     return g_iap_num;
 #endif
@@ -2778,6 +2831,7 @@ CosaDmlIaGetPolicy
         PCOSA_DML_IA_POLICY         pEntry
     )
 {
+   UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 
     be_struct_2_middle_layer(&g_iaps[ulIndex], pEntry);
@@ -2833,6 +2887,7 @@ CosaDmlIaSetPolicyValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     BOOL  alias_changed = 0;
     UtopiaContext ctx ;
@@ -2923,6 +2978,7 @@ CosaDmlIaGetPolicyByInsNum
         PCOSA_DML_IA_POLICY         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     /*for rollback*/
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
@@ -2977,11 +3033,13 @@ CosaDmlIaAddPolicy
         PCOSA_DML_IA_POLICY         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    iap_entry_t iap = {0};
+    iap_entry_t iap;
     UtopiaContext ctx ;
     BOOL          alias_changed = 0;
 
+    memset(&iap, 0, sizeof(iap_entry_t));
     middle_layer_2_be_struct(pEntry, &iap, &alias_changed);
 
     /*PCOSA_DML_IA_POLICY is a samller struct than iap_entry_t, fill in the default values*/
@@ -3045,11 +3103,11 @@ CosaDmlIaDelPolicy
         ULONG                       ulInstanceNum
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     UtopiaContext ctx;
     ANSC_STATUS ret = ANSC_STATUS_FAILURE;
-    iap_entry_t * p_iap = NULL;
 
     if (!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -3059,7 +3117,6 @@ CosaDmlIaDelPolicy
         if (g_iaps[i].tr_inst_num == ulInstanceNum)
         {
             ret = Utopia_DeleteInternetAccessPolicy(&ctx, g_iaps[i].policyname);
-            p_iap = g_iaps + i;
             break;
         }
     }
@@ -3116,9 +3173,9 @@ CosaDmlIaSetPolicy
         PCOSA_DML_IA_POLICY         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     iap_entry_t * p_iap = NULL;
-    int i = 0;
     UtopiaContext ctx ;    
     BOOL          alias_changed = 0;
     char          old_name[128] = {0};
@@ -3260,9 +3317,9 @@ CosaDmlIaGetPolicySchedule
         PCOSA_DML_IA_POLICY_SCH     pEntry
     )
 {
+   UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     iap_entry_t * p_iap = NULL;
-    int i = 0;
 
     p_iap = find_ia_policy(ulInstanceNumber);
 
@@ -3318,8 +3375,8 @@ CosaDmlIaSetPolicySchedule
         PCOSA_DML_IA_POLICY_SCH     pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    int ret = 0;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;
     
@@ -3383,6 +3440,7 @@ CosaDmlIaPolicyGetNumberOfUrls
         ULONG                       ulPolicyInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     iap_entry_t * p_iap = NULL;
     
@@ -3441,8 +3499,8 @@ CosaDmlIaPolicyGetUrl
         PCOSA_DML_IA_POLICY_URL     pUrl
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    int i = 0;
     char * p_url = NULL;
     iap_entry_t * p_iap = NULL;
     
@@ -3451,7 +3509,7 @@ CosaDmlIaPolicyGetUrl
     if (!p_iap)
         return ANSC_STATUS_CANT_FIND;
 
-    if (p_iap->block.url_count <= ulIndex )
+    if ((ULONG)p_iap->block.url_count <= ulIndex )
         return ANSC_STATUS_CANT_FIND;
     
     pUrl->InstanceNumber = p_iap->block.url_tr_inst_num[ulIndex];
@@ -3511,6 +3569,7 @@ CosaDmlIaPolicyGetUrlByInsNum
         PCOSA_DML_IA_POLICY_URL     pUrl
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 /*for rollback*/
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
@@ -3534,7 +3593,7 @@ CosaDmlIaPolicyGetUrlByInsNum
     /*now i stores the index of URL in block.url_list*/
     p_url = p_iap->block.url_list + URL_SZ*i;
 
-    if (p_iap->block.url_count <= ulURLInstanceNumber )
+    if ((ULONG)p_iap->block.url_count <= ulURLInstanceNumber )
         return ANSC_STATUS_CANT_FIND;
 
     pUrl->InstanceNumber = p_iap->block.url_tr_inst_num[i];
@@ -3596,12 +3655,11 @@ CosaDmlIaPolicySetUrlValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 /*for internal.c to adjust alias/instNum*/
     
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     /*the two instance number are all sane, no need to validate*/
-    int i = 0;
-    char * p_url = NULL;
     iap_entry_t * p_iap = NULL;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
@@ -3667,8 +3725,8 @@ CosaDmlIaPolicyAddUrl
         PCOSA_DML_IA_POLICY_URL     pUrl
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    int i = 0;
     char * p_url = NULL;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;
@@ -3754,6 +3812,7 @@ CosaDmlIaPolicyDelUrl
         PCOSA_DML_IA_POLICY_URL     pUrl        /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
@@ -3849,6 +3908,7 @@ CosaDmlIaPolicySetUrl
         PCOSA_DML_IA_POLICY_URL     pUrl        /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     char * p = NULL;
@@ -3928,11 +3988,9 @@ CosaDmlIaPolicyGetNumberOfKeywords
         ULONG                       ulPolicyInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    int i = 0;
-    char * p = NULL;
     iap_entry_t * p_iap = NULL;
-    UtopiaContext ctx;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -3990,11 +4048,10 @@ CosaDmlIaPolicyGetKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    int i = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
-    UtopiaContext ctx ;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -4065,12 +4122,12 @@ CosaDmlIaPolicyGetKeywordByInsNum
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 /*for rollback*/
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
-    UtopiaContext ctx ;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -4152,12 +4209,11 @@ CosaDmlIaPolicySetKeywordValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 /*for inernal.c to generate alias/instNum*/
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    int i = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
-    UtopiaContext ctx ;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -4229,8 +4285,8 @@ CosaDmlIaPolicyAddKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    int i = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;
@@ -4319,6 +4375,7 @@ CosaDmlIaPolicyDelKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
@@ -4415,9 +4472,9 @@ CosaDmlIaPolicySetKeyword
         PCOSA_DML_IA_POLICY_KEYWORD pKeyword
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
-    int j = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;
@@ -4592,10 +4649,8 @@ CosaDmlIaPolicyGetNumberOfApps
         ULONG                       ulPolicyInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    int i = 0;
-    int j = 0;
-    char * p = NULL;
     iap_entry_t * p_iap = NULL;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
@@ -4655,10 +4710,8 @@ CosaDmlIaPolicyGetApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    int i = 0;
-    int j = 0;
-    char * p = NULL;
     iap_entry_t * p_iap = NULL;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
@@ -4720,11 +4773,10 @@ CosaDmlIaPolicyGetAppByInsNum
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 /*for rollback*/
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
-    int j = 0;
-    char * p = NULL;
     iap_entry_t * p_iap = NULL;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
@@ -4799,10 +4851,9 @@ CosaDmlIaPolicySetAppValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 /*for middle layer generated alias/instNum*/
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    int i = 0;
-    int j = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
 
@@ -4877,10 +4928,8 @@ CosaDmlIaPolicyAddApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-    int i = 0;
-    int j = 0;
-    char * p = NULL;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;    
 
@@ -4964,10 +5013,10 @@ CosaDmlIaPolicyDelBlockedApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
     int j = 0;
-    char * p = NULL;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;    
 
@@ -5052,9 +5101,9 @@ CosaDmlIaPolicySetBlockedApp
         PCOSA_DML_IA_POLICY_APP     pApp
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int i = 0;
-    int j = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;    
@@ -5112,7 +5161,7 @@ const char format[4][20] = { "Count=\"", "Time=\"", "Action=\"", "Desp=\""};
 
 int _memcpy_2_chr(char *d, char *s, size_t count, char c){
     char *end = strchr(s, c);
-    if(end == NULL || end -s == 0 || end -s >= count)
+    if(end == NULL || end -s == 0 || (ULONG)(end -s) >= count)
         return 0;
     memcpy(d, s, end - s);
     d[end-s] = '\0';
@@ -5132,7 +5181,6 @@ int _get_value(char **line, int index, char *val, size_t val_size){
 
 
 int anlz_line(char *line, PCOSA_DML_IA_LOG_ENTRY entry){
-    int i;
     char *pos = line;
     char tmp[20]={0};
 
@@ -5273,6 +5321,7 @@ CosaDmlIaGetLogEntries
         PULONG                      pulCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char fw_log_path[50];
     static int first_flg = 1;
 
@@ -5310,7 +5359,7 @@ printf("%d\n",__LINE__);
     return pConf;
 }
 static PCOSA_DML_IA_LOG_ENTRY pFWLogBuf = NULL;
-static int FWLogNum = 0;
+static ULONG FWLogNum = 0;
 static ULONG FWLogLastTick;
 
 #define REFRESH_INTERVAL 30
@@ -5372,10 +5421,8 @@ CosaDmlIaGetALLLogEntries
     )
 {
     char fw_log_path[50];
-    static int first_flg = 1;
-    int i;
+    ULONG i;
     size_t tmpsize=0;
-    char str[128];
 
     /* Don't get the log when initializing */
     if(__is_updated(&FWLogLastTick)){
@@ -5388,7 +5435,7 @@ CosaDmlIaGetALLLogEntries
             syscfg_init();
             syscfg_get(NULL, "FW_LOG_FILE_PATH", fw_log_path, sizeof(fw_log_path));
             if(fw_log_path[0] == '\0'){
-                return NULL;
+                return ANSC_STATUS_FAILURE;
             }
 #ifdef FWLOG_SUPPORT_OLD_LOCATION
         }
@@ -5416,7 +5463,7 @@ CosaDmlIaGetALLLogEntries
         return ANSC_STATUS_FAILURE;
     }else{
         for(i=0; (i < FWLogNum) && (*pUlSize > tmpsize + 1); i++){
-           tmpsize += snprintf(pValue + tmpsize, *pUlSize - 1 - tmpsize , "\n%d\n%s\n%s\n%s\n%s\n%s\n%s", pFWLogBuf[i].Count, NULL, NULL, NULL, pFWLogBuf[i].Action, pFWLogBuf[i].OccuranceTime,pFWLogBuf[i].Description);
+           tmpsize += snprintf(pValue + tmpsize, *pUlSize - 1 - tmpsize , "\n%lu\n%s\n%s\n%s\n%s\n%s\n%s", pFWLogBuf[i].Count, "\0", "\0", "\0", pFWLogBuf[i].Action, pFWLogBuf[i].OccuranceTime, pFWLogBuf[i].Description);
         }
         pValue[tmpsize] = '\0';
         return ANSC_STATUS_SUCCESS;
@@ -5465,6 +5512,8 @@ static int gen_ssmtp_cfg_file(const char *serverAddr, const char *userName, cons
 
 static int gen_ssmtp_msg_file(const char *to, const char *from, const char *subject, const char *body)
 {
+    UNREFERENCED_PARAMETER(subject);
+    UNREFERENCED_PARAMETER(body);
     FILE *fp;
 
     if((fp = fopen(MSG_FILE_PATH, "w")) == NULL)
@@ -5521,7 +5570,7 @@ static int prepare_firewall_log(char *logFilePath)
 
     curTime=time(NULL); 
     localTime = localtime(&curTime); 
-
+    
     snprintf(logFilePath, MAX_PATH_LEN, "/var/%s_%d_%d_%d_%d_%d_%d.txt", logTypeName, localTime->tm_year+1900, localTime->tm_mon+1, localTime->tm_mday, localTime->tm_hour, localTime->tm_min, localTime->tm_sec); 
     
     //compress attachment if necessary
@@ -5533,7 +5582,6 @@ static int prepare_firewall_log(char *logFilePath)
 
 static int gen_email_files(const email_notification_t *emailSetting)
 {
-    int ret;
     FILE *fp;
     char *emailSubject = "USGv2 Firewall Logs";
  
@@ -5623,6 +5671,7 @@ CosaDmlSecurityGetConfig
         PCOSA_DML_SECURITY_CFG      pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
     email_notification_t emailSetting;
@@ -5688,12 +5737,12 @@ CosaDmlSecuritySetConfig
         PCOSA_DML_SECURITY_CFG      pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
-    int ret;
+    int ret = 0;
     UtopiaContext ctx;
     email_notification_t emailSetting, defaultEmailSetting;
-    FILE *fp;
-    char logFilePath[MAX_PATH_LEN] = "";
+     char logFilePath[MAX_PATH_LEN] = "";
     
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -5774,8 +5823,9 @@ CosaDmlIaInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     int rc = -1, ret = -1;
-    FILE *fp;
     UtopiaContext ctx;
     email_notification_t emailSetting;
 

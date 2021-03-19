@@ -38,7 +38,7 @@
 #include "ccsp_trace.h"
 #include "ansc_string_util.h"
 #include "safec_lib_common.h"
-
+#include <syscfg/syscfg.h>
 
 BOOL
 ParentalControl_GetParamBoolValue
@@ -49,6 +49,7 @@ ParentalControl_GetParamBoolValue
     )
 {
 
+    UNREFERENCED_PARAMETER(hInsContext);
     if (AnscEqualString(ParamName, "RollbackUTC_Local", TRUE))
     {
         *pBool = FALSE;
@@ -67,6 +68,7 @@ ParentalControl_SetParamBoolValue
     )
 {
   
+    UNREFERENCED_PARAMETER(hInsContext);
     if (AnscEqualString(ParamName, "RollbackUTC_Local", TRUE))
     {
 		#ifdef UTC_ENABLE
@@ -99,6 +101,7 @@ MngSites_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGEDSITES           *pMngSites = &pParCtrl->ManagedSites;
 
@@ -119,6 +122,7 @@ MngSites_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGEDSITES           *pMngSites = &pParCtrl->ManagedSites;
     BOOL                            pBridgeMode     = FALSE;
@@ -144,6 +148,9 @@ MngSites_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -153,7 +160,8 @@ MngSites_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
+    UNREFERENCED_PARAMETER(hInsContext);
+     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGEDSITES           *pMngSites = &pParCtrl->ManagedSites;
 
     if (CosaDmlMngSites_SetConf(pMngSites) != ANSC_STATUS_SUCCESS)
@@ -171,6 +179,7 @@ MngSites_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGEDSITES           *pMngSites = &pParCtrl->ManagedSites;
 
@@ -188,6 +197,7 @@ MngServs_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGED_SERVS           *pMngServs = &pParCtrl->ManagedServs;
 
@@ -208,6 +218,7 @@ MngServs_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGED_SERVS           *pMngServs = &pParCtrl->ManagedServs;
     BOOL                            pBridgeMode     = FALSE;
@@ -233,6 +244,9 @@ MngServs_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -242,6 +256,7 @@ MngServs_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGED_SERVS           *pMngServs = &pParCtrl->ManagedServs;
 
@@ -260,6 +275,7 @@ MngServs_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGED_SERVS           *pMngServs = &pParCtrl->ManagedServs;
 
@@ -277,6 +293,7 @@ MngDevs_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGED_DEVS           *pMngDevs = &pParCtrl->ManagedDevs;
 
@@ -302,6 +319,7 @@ MngDevs_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGED_DEVS           *pMngDevs = &pParCtrl->ManagedDevs;
     BOOL                            pBridgeMode     = FALSE;
@@ -332,6 +350,9 @@ MngDevs_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -341,6 +362,7 @@ MngDevs_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGED_DEVS           *pMngDevs = &pParCtrl->ManagedDevs;
 
@@ -359,6 +381,7 @@ MngDevs_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MANAGED_DEVS           *pMngDevs = &pParCtrl->ManagedDevs;
 
@@ -374,6 +397,7 @@ PcBlkURL_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     ULONG                           ulCount;
 
@@ -394,6 +418,7 @@ PcBlkURL_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry = NULL;
@@ -418,6 +443,7 @@ PcBlkURL_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     COSA_DML_BLOCKEDURL             *pBlkUrl    = NULL;
@@ -462,6 +488,7 @@ PcBlkURL_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     COSA_DML_BLOCKEDURL             *pBlkUrl    = (COSA_DML_BLOCKEDURL*)pLinkObj->hContext;
@@ -535,7 +562,7 @@ PcBlkURL_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_BLOCKEDURL             *pBlkUrl    = (COSA_DML_BLOCKEDURL*)pLinkObj->hContext;
-
+    UNREFERENCED_PARAMETER(pUlSize);
     AnscTraceWarning(("%s -- param name = %s...\n", __FUNCTION__, ParamName));
 
     if (AnscEqualString(ParamName, "Site", TRUE))
@@ -712,7 +739,7 @@ PcBlkURL_SetParamStringValue
     char *arr[7];
     
     /* check if strValue doesn't hold null or whitespaces */
-    if(AnscValidStringCheck(strValue) != TRUE)
+    if(AnscValidStringCheck((PUCHAR)strValue) != TRUE)
         return FALSE;
         
     AnscTraceWarning(("%s -- param name = %s...\n", __FUNCTION__, ParamName));
@@ -830,9 +857,12 @@ PcBlkURL_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
+#if defined(CONFIG_CISCO_CCSP_PRODUCT_ARES) || defined(CONFIG_CISCO_CCSP_PRODUCT_XB3)
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_BLOCKEDURL             *pBlkUrl    = (COSA_DML_BLOCKEDURL*)pLinkObj->hContext;
-#if defined(CONFIG_CISCO_CCSP_PRODUCT_ARES) || defined(CONFIG_CISCO_CCSP_PRODUCT_XB3)  
     if(!CosaDmlMngSites_Chktime(pBlkUrl))
         return FALSE;
 #endif
@@ -891,6 +921,7 @@ PcTrustedUser_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
 
     AnscTraceWarning(("%s...\n", __FUNCTION__));
@@ -906,6 +937,7 @@ PcTrustedUser_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry = NULL;
@@ -928,6 +960,7 @@ PcTrustedUser_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     COSA_DML_TRUSTEDUSER             *pTrustedUser    = NULL;
@@ -969,6 +1002,7 @@ PcTrustedUser_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     COSA_DML_TRUSTEDUSER             *pTrustedUser    = (COSA_DML_TRUSTEDUSER*)pLinkObj->hContext;
@@ -1016,6 +1050,7 @@ PcTrustedUser_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_TRUSTEDUSER             *pTrustedUser    = (COSA_DML_TRUSTEDUSER*)pLinkObj->hContext;
 
@@ -1070,7 +1105,7 @@ PcTrustedUser_SetParamStringValue
     BOOL                            pBridgeMode     = FALSE;
 
     /* check if strValue doesn't hold null or  whitespaces */
-    if(AnscValidStringCheck(strValue) != TRUE)
+    if(AnscValidStringCheck((PUCHAR)strValue) != TRUE)
         return FALSE;
         
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&pBridgeMode)) && (pBridgeMode == TRUE))
@@ -1085,7 +1120,7 @@ PcTrustedUser_SetParamStringValue
     {
         if(pTrustedUser->IPAddressType == IPADDR_IPV4)
         {
-            if(is_IpAddress(strValue))
+            if(is_IpAddress((PUCHAR)strValue))
             {
                 _ansc_snprintf(pTrustedUser->IPAddress, sizeof(pTrustedUser->IPAddress), "%s", strValue);
                 return TRUE;
@@ -1093,7 +1128,7 @@ PcTrustedUser_SetParamStringValue
         }
         if(pTrustedUser->IPAddressType == IPADDR_IPV6)
         {
-            if(is_Ipv6_address(strValue))
+            if(is_Ipv6_address((PUCHAR)strValue))
             {
                 _ansc_snprintf(pTrustedUser->IPAddress, sizeof(pTrustedUser->IPAddress), "%s", strValue);
                 return TRUE;
@@ -1109,6 +1144,7 @@ PcTrustedUser_GetParamUlongValue(
         char *ParamName, 
         ULONG *pUlong)
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_TRUSTEDUSER             *pTrustedUser    = (COSA_DML_TRUSTEDUSER*)pLinkObj->hContext;
 
@@ -1152,6 +1188,9 @@ PcTrustedUser_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -1205,6 +1244,7 @@ MSServ_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
 
     AnscTraceWarning(("%s...\n", __FUNCTION__));
@@ -1220,6 +1260,7 @@ MSServ_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry = NULL;
@@ -1242,6 +1283,7 @@ MSServ_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     COSA_DML_MS_SERV             *pMSServ    = NULL;
@@ -1284,6 +1326,7 @@ MSServ_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     COSA_DML_MS_SERV             *pMSServ    = (COSA_DML_MS_SERV*)pLinkObj->hContext;
@@ -1331,6 +1374,7 @@ MSServ_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_MS_SERV             *pMSServ    = (COSA_DML_MS_SERV*)pLinkObj->hContext;
 
@@ -1459,7 +1503,7 @@ MSServ_SetParamStringValue
     }
 
     /* check if strValue doesn't hold null or whitespaces */
-    if(AnscValidStringCheck(strValue) != TRUE)
+    if(AnscValidStringCheck((PUCHAR)strValue) != TRUE)
         return FALSE;
 
     if (AnscEqualString(ParamName, "StartTime", TRUE))
@@ -1583,6 +1627,9 @@ MSServ_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -1636,6 +1683,7 @@ MSTrustedUser_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
 
     AnscTraceWarning(("%s...\n", __FUNCTION__));
@@ -1651,6 +1699,7 @@ MSTrustedUser_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry = NULL;
@@ -1673,6 +1722,7 @@ MSTrustedUser_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     COSA_DML_MS_TRUSTEDUSER             *pMSTrustedUser    = NULL;
@@ -1715,6 +1765,7 @@ MSTrustedUser_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     COSA_DML_MS_TRUSTEDUSER             *pMSTrustedUser    = (COSA_DML_MS_TRUSTEDUSER*)pLinkObj->hContext;
@@ -1762,6 +1813,7 @@ MSTrustedUser_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_MS_TRUSTEDUSER             *pMSTrustedUser    = (COSA_DML_MS_TRUSTEDUSER*)pLinkObj->hContext;
 
@@ -1837,7 +1889,7 @@ MSTrustedUser_SetParamStringValue
         return FALSE;
     
     /* check if strValue doesn't hold null or whitespaces */
-    if(AnscValidStringCheck(strValue) != TRUE)
+    if(AnscValidStringCheck((PUCHAR)strValue) != TRUE)
         return FALSE;
 
     if (AnscEqualString(ParamName, "HostDescription", TRUE))
@@ -1849,7 +1901,7 @@ MSTrustedUser_SetParamStringValue
     {
         if(pMSTrustedUser->IPAddressType == IPADDR_IPV4)
         {
-            if(is_IpAddress(strValue))
+            if(is_IpAddress((PUCHAR)strValue))
             {
                 _ansc_snprintf(pMSTrustedUser->IPAddress, sizeof(pMSTrustedUser->IPAddress), "%s", strValue);
                 return TRUE;
@@ -1857,7 +1909,7 @@ MSTrustedUser_SetParamStringValue
         }
         if(pMSTrustedUser->IPAddressType == IPADDR_IPV6)
         {
-            if(is_Ipv6_address(strValue))
+            if(is_Ipv6_address((PUCHAR)strValue))
             {
                 _ansc_snprintf(pMSTrustedUser->IPAddress, sizeof(pMSTrustedUser->IPAddress), "%s", strValue);
                 return TRUE;
@@ -1898,6 +1950,9 @@ MSTrustedUser_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -1951,6 +2006,7 @@ MDDev_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
 
     AnscTraceWarning(("%s...\n", __FUNCTION__));
@@ -1966,6 +2022,7 @@ MDDev_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry = NULL;
@@ -1988,6 +2045,7 @@ MDDev_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     COSA_DML_MD_DEV             *pMDDev    = NULL;
@@ -2034,6 +2092,7 @@ MDDev_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     COSA_DML_MD_DEV             *pMDDev    = (COSA_DML_MD_DEV*)pLinkObj->hContext;
@@ -2081,6 +2140,7 @@ MDDev_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_MD_DEV             *pMDDev    = (COSA_DML_MD_DEV*)pLinkObj->hContext;
 
@@ -2119,6 +2179,7 @@ MDDev_GetParamUlongValue(
         char *ParamName, 
         ULONG *pUlong)
 {
+    UNREFERENCED_PARAMETER(pUlong);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_MD_DEV             *pMDDev    = (COSA_DML_MD_DEV*)pLinkObj->hContext;
 
@@ -2204,7 +2265,7 @@ MDDev_SetParamStringValue
     }
 
      /* check if strValue doesn't hold null or whitespaces */
-    if(AnscValidStringCheck(strValue) != TRUE)
+    if(AnscValidStringCheck((PUCHAR)strValue) != TRUE)
         return FALSE;
 
     if (AnscEqualString(ParamName, "MACAddress", TRUE))
@@ -2326,6 +2387,9 @@ MDDev_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -2382,6 +2446,8 @@ MDRed_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pUlSize);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
     char IPv4[17] = "0"; 
@@ -2431,6 +2497,7 @@ MDRed_SetParamStringValue
         char*                       strValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
     ANSC_STATUS ret=ANSC_STATUS_FAILURE;
@@ -2552,6 +2619,9 @@ MDRed_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -2561,6 +2631,7 @@ MDRed_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
 
@@ -2579,6 +2650,7 @@ MDRed_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
 

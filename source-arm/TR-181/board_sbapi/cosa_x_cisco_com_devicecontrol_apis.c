@@ -77,6 +77,9 @@
 #include <arpa/inet.h>
 #include "platform_hal.h"
 #include "secure_wrapper.h"
+#include "cosa_drg_common.h"
+#include "ccsp_psm_helper.h"
+
 #if defined (_XB6_PRODUCT_REQ_) || defined (_XB7_PRODUCT_REQ_)
 #define LED_SOLID 0
 #define LED_BLINK 1
@@ -177,8 +180,16 @@ static int totalticket = 0;
 extern int commonSyseventFd ;
 extern token_t commonSyseventToken;
 
-ANSC_STATUS set_mesh_disabled();
+void* set_mesh_disabled();
 BOOL is_mesh_enabled();
+
+#if defined (CONFIG_TI_BBU) || defined (CONFIG_TI_BBU_TI)
+    INT mta_hal_BatteryGetPowerSavingModeStatus(ULONG *pValue);
+#endif
+
+#if defined (INTEL_PUMA7)
+    BOOL moca_factoryReset(void);
+#endif
 
 #if 0
 void configWifi()
@@ -235,6 +246,7 @@ static int initWifiComp() {
     return ret == CCSP_SUCCESS ? 0 : ret;
 }
 
+/*
 static int UtGetBool(const char *path, BOOLEAN *pVal)
 {
     UtopiaContext ctx;
@@ -270,6 +282,7 @@ static int UtSetBool(const char *path, BOOLEAN val)
 
     return ANSC_STATUS_SUCCESS;
 }
+*/
 
 static int UtGetUlong(const char *path, ULONG *pVal)
 {
@@ -300,7 +313,7 @@ static int UtSetUlong(const char *path, ULONG val)
     if (!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
     
-    snprintf(buf, sizeof(buf), "%d", val);
+    snprintf(buf, sizeof(buf), "%lu", val);
     Utopia_RawSet(&ctx, NULL, (char *)path, buf);
 
     Utopia_Free(&ctx, 1);
@@ -372,8 +385,9 @@ DmSetBool(const char *param, BOOL value)
 }
 #endif
 
-int WebServRestart( void *arg )
+void* WebServRestart( void *arg )
 {
+    UNREFERENCED_PARAMETER(arg);
 #if 0
     if (access(HTTPD_CONF, F_OK) != 0) {
         if (vsystem("cp %s %s", HTTPD_DEF_CONF, HTTPD_CONF) != 0) {
@@ -411,14 +425,15 @@ int WebServRestart( void *arg )
     CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__)); 
     if (vsystem("/bin/sh /etc/webgui.sh") != 0) {
         fprintf(stderr, "%s: fail to restart lighttpd\n", __FUNCTION__);
-        return -1;
+        return NULL;
     }
 
-    system("sysevent set firewall-restart");
+    v_secure_system("sysevent set firewall-restart");
 
-    return 0;
+    return NULL;
 }
 
+#if 0
 static int TelnetdConfig(int enable)
 {
 #if defined(_CBR_PRODUCT_REQ_)
@@ -459,7 +474,7 @@ static int SshdConfig(int enable)
 
     return 0;
 }
-
+#endif
 
 static int detect_process(char *process_name)
 {
@@ -492,6 +507,8 @@ CosaDmlDcInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     char     buf[256] = {0};
     UtopiaContext utctx = {0};
 
@@ -535,6 +552,7 @@ CosaDmlDcGetMultiHomedHSDFlag
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscCopyString(pValue, "Cisco");
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
@@ -548,6 +566,7 @@ CosaDmlDcGetMultiHomedUIPageControl
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscCopyString(pValue, "000000");
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
@@ -560,7 +579,10 @@ CosaDmlDcGetMultiHomedMode
         char*                       pValue,
         ULONG*                      pulSize
     )
-{    
+{
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pulSize);
     //AnscCopyString(pValue, _ERROR_);
     //*pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
@@ -574,6 +596,9 @@ CosaDmlDcGetMultiHomedBridgingStatus
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pulSize);
     //AnscCopyString(pValue, _ERROR_);
     //*pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
@@ -586,6 +611,8 @@ CosaDmlDcSetMultiHomedMode
         ULONG                       ulValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulValue);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -597,6 +624,8 @@ CosaDmlDcSetMultiHomedHSDFlag
 
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulValue);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -608,6 +637,8 @@ CosaDmlDcSetMultiHomedUIPageControl
 
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulValue);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -618,6 +649,7 @@ CosaDmlDcGetWanAddressMode
         COSA_DML_WanAddrMode        *pMode
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     char wanProto[32] = {'\0'};
 
@@ -649,6 +681,7 @@ CosaDmlDcGetWanStaticIPAddress
         ULONG           *ipAddr
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     char buf[16];
 
@@ -687,6 +720,7 @@ CosaDmlDcGetWanStaticSubnetMask
         ULONG           *ipAddr
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     char buf[16];
 
@@ -711,6 +745,7 @@ CosaDmlDcGetWanStaticGatewayIP
         ULONG           *ipAddr
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     char buf[16];
 
@@ -736,6 +771,8 @@ CosaDmlDcGetWanSecondIPAddr
         ULONG           *ipAddr
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ipAddr);
 //    *ipAddr = g_DcWanDns.SecIPAddr;
     return ANSC_STATUS_SUCCESS;
 }
@@ -747,6 +784,8 @@ CosaDmlDcGetWanSecondIPRipAdvertised
         BOOLEAN                     *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pFlag);
 //    *pFlag = g_DcWanDns.SecIPRIPAdv;
     return ANSC_STATUS_SUCCESS;
 }
@@ -758,6 +797,8 @@ CosaDmlDcGetWanBackupDefaultGateway
         ULONG           *ipAddr
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ipAddr);
 //    *ipAddr = g_DcWanDns.BackupGateway;
     return ANSC_STATUS_SUCCESS;
 }
@@ -770,6 +811,7 @@ CosaDmlDcGetWanNameServer
         int                         nameServerNo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     char buf[16];
 
@@ -799,7 +841,7 @@ CosaDmlDcGetWanHostName
         char                        *pHostName
     )
 {
-
+    UNREFERENCED_PARAMETER(hContext);
 #if 0
     UtopiaContext ctx;
     PCOSA_DATAMODEL_DEVICECONTROL pDc;
@@ -844,6 +886,7 @@ CosaDmlDcGetWanDomainName
         char                        *pDomainName
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if 0
     UtopiaContext ctx;
     PCOSA_DATAMODEL_DEVICECONTROL pDc;
@@ -896,6 +939,7 @@ CosaDmlDcGetWanStaticDomainName
         char                        *pStaticDomainName
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     PCOSA_DATAMODEL_DEVICECONTROL pDc;
 
@@ -919,6 +963,7 @@ CosaDmlDcSetWanAddressMode
         COSA_DML_WanAddrMode        mode
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
 
     if (!Utopia_Init(&utctx))
@@ -957,6 +1002,7 @@ CosaDmlDcSetWanStaticIPAddress
         ULONG           ipAddr
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
     char buf[256];
 
@@ -982,6 +1028,7 @@ CosaDmlDcSetWanStaticSubnetMask
         ULONG           ipAddr
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
     char buf[256];
 
@@ -1007,6 +1054,7 @@ CosaDmlDcSetWanStaticGatewayIP
         ULONG           ipAddr
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
     char buf[256];
 
@@ -1032,6 +1080,8 @@ CosaDmlDcSetWanSecondIPAddr
         ULONG           ipAddr
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ipAddr);
 //    g_DcWanDns.SecIPAddr = ipAddr;
     return ANSC_STATUS_SUCCESS;
 }
@@ -1043,6 +1093,8 @@ CosaDmlDcSetWanSecondIPRipAdvertised
         BOOLEAN                     Flag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(Flag);
 //    g_DcWanDns.SecIPRIPAdv = Flag;
     return ANSC_STATUS_SUCCESS;
 }
@@ -1054,6 +1106,8 @@ CosaDmlDcSetWanBackupDefaultGateway
         ULONG           ipAddr
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ipAddr);
 //    g_DcWanDns.BackupGateway = ipAddr;
     return ANSC_STATUS_SUCCESS;
 }
@@ -1066,6 +1120,7 @@ CosaDmlDcSetWanNameServer
         int                         nameServerNo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
     char buf[256];
 
@@ -1135,6 +1190,7 @@ CosaDmlDcSetDomainName
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
 
     if (!Utopia_Init(&utctx))
@@ -1163,6 +1219,7 @@ CosaDmlDcGetResetDefaultEnable
         BOOLEAN                     *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     *pFlag = FALSE;
     return ANSC_STATUS_SUCCESS;
 }
@@ -1188,7 +1245,7 @@ CosaDmlDcGetSNMPEnable
         char*                       pValue
     )
 {
-    int bAllowed = 0;
+    UNREFERENCED_PARAMETER(hContext);
 
     if (pValue == NULL) {
         AnscTraceError(("[SNMPEnable]: pValue pointer is null.\n"));
@@ -1208,6 +1265,7 @@ CosaDmlDcSetSNMPEnable
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (pValue == NULL) {
         AnscTraceError(("[SNMPEnable]: pValue pointer is null.\n"));
         return ANSC_STATUS_FAILURE;
@@ -1226,6 +1284,7 @@ CosaDmlDcGetRebootDevice
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscCopyString(pValue, "");
     return ANSC_STATUS_SUCCESS;
 }
@@ -1237,6 +1296,7 @@ CosaDmlDcGetFactoryReset
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscCopyString(pValue, "");
     return ANSC_STATUS_SUCCESS;
 }
@@ -1248,6 +1308,7 @@ CosaDmlDcGetUserChangedFlags
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscCopyString(pValue, "0");
     return ANSC_STATUS_SUCCESS;
 }
@@ -1259,6 +1320,7 @@ CosaDmlDcGetDeviceConfigStatus
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if(platform_hal_GetDeviceConfigStatus(pValue) != RETURN_OK)
         return ANSC_STATUS_FAILURE;
     else
@@ -1272,6 +1334,7 @@ CosaDmlDcGetDeviceConfigIgnore
         char*                       pValue
     )
 {
+   UNREFERENCED_PARAMETER(hContext);
    AnscCopyString(pValue, " notRequire");/*need to modfiy @ivan*/
     return ANSC_STATUS_SUCCESS;
 }
@@ -1283,10 +1346,12 @@ CosaDmlDcSetDeviceConfigIgnore
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pValue);
     return ANSC_STATUS_SUCCESS;
 }
 
-ANSC_STATUS
+void*
 CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 {
 	CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
@@ -1320,7 +1385,7 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 					ppComponents[0]->componentName, 
 					ppComponents[0]->dbusPath,
 					0, 0x0,   /* session id and write id */
-					&val, 
+					(void*)&val, 
 //					2,
                                         1, 
 					TRUE,   /* no commit */
@@ -1364,7 +1429,7 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 		}
 	    free_componentStruct_t(bus_handle, size, ppComponents);
 	}
-	return ANSC_STATUS_SUCCESS;
+	return hContext;
 }
 
 ANSC_STATUS
@@ -1373,7 +1438,7 @@ CosaDmlDcResetBr0(char *ip, char *sub) {
 	
 	char objName[256]="Device.WiFi.X_RDKCENTRAL-COM_Br0_Sync";
 	char objValue[256]={0};
-	parameterValStruct_t  value[1] = { objName, objValue, ccsp_string};
+	parameterValStruct_t  value[1] = {{ objName, objValue, ccsp_string}};
 	
 	char dst_pathname_cr[64]  =  {0};
 	componentStruct_t **        ppComponents = NULL;
@@ -1402,7 +1467,7 @@ CosaDmlDcResetBr0(char *ip, char *sub) {
 				ppComponents[0]->componentName,
 				ppComponents[0]->dbusPath,
 				0, 0x0,   /* session id and write id */
-				&value,
+				(void*)&value,
 				1,
 				TRUE,   /* no commit */
 				&faultParam
@@ -1416,24 +1481,26 @@ CosaDmlDcResetBr0(char *ip, char *sub) {
 	return ANSC_STATUS_SUCCESS;
 }
 
+#ifdef _XF3_PRODUCT_REQ_
 static int openCommonSyseventConnection() {
     if (commonSyseventFd == -1) {
         commonSyseventFd = s_sysevent_connect(&commonSyseventToken);
     }
     return 0;
 }
+#endif
 
-ANSC_STATUS CosaDmlDcRestartRouter()
+void* CosaDmlDcRestartRouter(void* arg)
 {
-    char statusValue[256] = {0};
-    int count = 0;
     pthread_detach(pthread_self());
-    system("sysevent set lan-stop");
+    v_secure_system("sysevent set lan-stop");
 
 	sleep(3);
-    system("sysevent set lan_restarted true");
-	system("sysevent set forwarding-restart");
+    v_secure_system("sysevent set lan_restarted true");
+    v_secure_system("sysevent set forwarding-restart");
 #if 0
+    int count = 0;
+    char statusValue[256] = {0};
     while(1) {
 
         if(commonSyseventFd == -1) {
@@ -1456,7 +1523,7 @@ ANSC_STATUS CosaDmlDcRestartRouter()
         count++;            
     } 
 #endif 
-    return ANSC_STATUS_SUCCESS;      
+    return arg;      
 }
 
 ANSC_STATUS
@@ -1466,7 +1533,7 @@ CosaDmlDcSetRebootDevice
         char*                       pValue
     )
 {
-    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+    UNREFERENCED_PARAMETER(hContext);
     int router, wifi, voip, dect, moca, all, delay;
     int delay_time = 0;
 
@@ -1570,7 +1637,7 @@ CosaDmlDcSetRebootDevice
                      ppComponents[0]->componentName,
                      ppComponents[0]->dbusPath,
                      0, 0x0,  
-                     &val,
+                     val,
                      2,
                      TRUE,   
                      &faultParam
@@ -1600,7 +1667,7 @@ CosaDmlDcSetRebootDevice
             	//system("(sleep 5 && reboot) &");
             	CosaDmlDcSaveWiFiHealthStatusintoNVRAM( );
             	sleep (delay_time);
-            	system("/fss/gw/rdklogger/backupLogs.sh &");
+            	v_secure_system("/fss/gw/rdklogger/backupLogs.sh &");
         	}
         	else
             {
@@ -1609,7 +1676,7 @@ CosaDmlDcSetRebootDevice
                 //system("(sleep 5 && reboot) &");
 				CosaDmlDcSaveWiFiHealthStatusintoNVRAM( );
 				sleep(5);
-				system("/fss/gw/rdklogger/backupLogs.sh &");
+				v_secure_system("/fss/gw/rdklogger/backupLogs.sh &");
             }
 		}
 		else {
@@ -1617,7 +1684,7 @@ CosaDmlDcSetRebootDevice
 			CcspTraceWarning(("RebootDevice:Device is going to reboot after taking log backups \n"));
 	         //system("reboot");
  			 CosaDmlDcSaveWiFiHealthStatusintoNVRAM( );
-	         system("/fss/gw/rdklogger/backupLogs.sh &");
+	         v_secure_system("/fss/gw/rdklogger/backupLogs.sh &");
 	    }
     }
 
@@ -1655,22 +1722,22 @@ CosaDmlDcSetRebootDevice
     return ANSC_STATUS_SUCCESS;
 }
 
-void restoreAllDBs()
+void* restoreAllDBs(void* arg)
 {
+    UNREFERENCED_PARAMETER(arg);
+    pthread_detach(pthread_self());
+    CcspTraceWarning(("FactoryReset:%s in thread  Restoring all the DBs to factory defaults  ...\n",__FUNCTION__));
+    v_secure_system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
+    v_secure_system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
+    //Need to remove the encrypted shared keys
+    v_secure_system("rm -f /nvram/.keys/*");
+    v_secure_system("rm -f /nvram/partners_defaults.json");
+    v_secure_system("rm -f /nvram/bootstrap.json");
+    v_secure_system( "touch /nvram/.apply_partner_defaults" );
 
-	pthread_detach(pthread_self());
-	CcspTraceWarning(("FactoryReset:%s in thread  Restoring all the DBs to factory defaults  ...\n",__FUNCTION__));
-	system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
-	system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
-	//Need to remove the encrypted shared keys
-	system("rm -f /nvram/.keys/*");
-    system("rm -f /nvram/partners_defaults.json");
-    system("rm -f /nvram/bootstrap.json");
-    system( "touch /nvram/.apply_partner_defaults" );
-
-        //Need to remove the custom maintenance window
-        system("rm -f /nvram/.FirmwareUpgradeEndTime");
-        system("rm -f /nvram/.FirmwareUpgradeStartTime");
+    //Need to remove the custom maintenance window
+    v_secure_system("rm -f /nvram/.FirmwareUpgradeEndTime");
+    v_secure_system("rm -f /nvram/.FirmwareUpgradeStartTime");
 
 	// We have syscfg running on the ATOM side when mesh is running. We need to clear out the
     // syscfg.db on the ATOM side during factory reset.
@@ -1687,7 +1754,7 @@ void restoreAllDBs()
         fp1 = fopen("/etc/device.properties", "r");
         if (fp1 == NULL) {
             CcspTraceError(("Error opening properties file! \n"));
-            return FALSE;
+            return NULL;
         }
 
         while (fgets(buf, DATA_SIZE, fp1) != NULL) {
@@ -1738,56 +1805,56 @@ void restoreAllDBs()
         // Need to remove lxy database
 #if defined(_LXY_CXB3_ATOM_IP_)
         #define ATOM_IP "169.254.101.2"
-        system("/usr/bin/rpcclient "ATOM_IP" \""RM_L2_PATH"\"");
+        v_secure_system("/usr/bin/rpcclient "ATOM_IP" \""RM_L2_PATH"\"");
 #endif
 #if defined(_LXY_AXB3_ATOM_IP_)
         #define ATOM_IP "192.168.254.254"
-        system("/usr/bin/rpcclient "ATOM_IP" \""RM_L2_PATH"\"");
+        v_secure_system("/usr/bin/rpcclient "ATOM_IP" \""RM_L2_PATH"\"");
 #endif
 #if defined(_ARRIS_XB6_PRODUCT_REQ_)
         #define PEER_INTERFACE_IP "192.168.254.253"
         #define ID "/tmp/elxrretyt-lxy.swr"
-        system("/usr/bin/GetConfigFile "ID"");
-        system("ssh -i "ID" root@"PEER_INTERFACE_IP" "RM_L2_PATH"");
-        system("rm -f "ID"");
+        v_secure_system("/usr/bin/GetConfigFile "ID"");
+        v_secure_system("ssh -i "ID" root@"PEER_INTERFACE_IP" "RM_L2_PATH"");
+        v_secure_system("rm -f "ID"");
 #endif
 
 #if defined (_CBR_PRODUCT_REQ_) || (defined (_XB7_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_))
-	system("rm -f /data/nvram /data/nvram_bak");
-	system("touch /tmp/wifi_factory_reset");
+	v_secure_system("rm -f /data/nvram /data/nvram_bak");
+	v_secure_system("touch /tmp/wifi_factory_reset");
         /* Remove maintenance window data on factory reset */
-        system("rm -f /nvram/.FirmwareUpgradeEndTime");
-        system("rm -f /nvram/.FirmwareUpgradeStartTime");
+        v_secure_system("rm -f /nvram/.FirmwareUpgradeEndTime");
+        v_secure_system("rm -f /nvram/.FirmwareUpgradeStartTime");
 #endif
 #if defined (_XB7_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
-        system("rm -f /data/macaddress_all_updated");
-        system("rm -f /nvram/.bcmwifi*");
-        system("touch /nvram/brcm_wifi_factory_reset");
+        v_secure_system("rm -f /data/macaddress_all_updated");
+        v_secure_system("rm -f /nvram/.bcmwifi*");
+        v_secure_system("touch /nvram/brcm_wifi_factory_reset");
 #endif
 #if defined (_COSA_BCM_ARM_) && !defined (_HUB4_PRODUCT_REQ_)
 	/* Clear cable modem's dynamic nonvol settings */
-	system("latticecli -n \"set Cm.ResetNonvolNoReboot 1\"");
+	v_secure_system("latticecli -n \"set Cm.ResetNonvolNoReboot 1\"");
 #endif
 #if defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
         CcspTraceWarning(("FactoryReset:%s in thread  Restoring moca to factory defaults  ...\n",__FUNCTION__));
-        system("rm -f /nvram/moca.conf.default"); //TCXB6-1028
-        system("rm -f /nvram/*.moca0"); //TCXB6-1028
+        v_secure_system("rm -f /nvram/moca.conf.default"); //TCXB6-1028
+        v_secure_system("rm -f /nvram/*.moca0"); //TCXB6-1028
 #endif
-        system("rm -f /nvram/mesh_enabled"); //RDKB-23900
+        v_secure_system("rm -f /nvram/mesh_enabled"); //RDKB-23900
 #if defined (_ARRIS_XB6_PRODUCT_REQ_)
-	system("rm -f /nvram/etc/passwd"); //ARRISXB6-7330
-	system( "arris_rpc_client arm nvm_reset" ); //ARRISXB6-7323
+	v_secure_system("rm -f /nvram/etc/passwd"); //ARRISXB6-7330
+	v_secure_system( "arris_rpc_client arm nvm_reset" ); //ARRISXB6-7323
 #elif defined(_COSA_BCM_MIPS_)
-        system("xf3_erase_nvram");
+        v_secure_system("xf3_erase_nvram");
 #elif defined(_HUB4_PRODUCT_REQ_)
-        system("/bin/sh /etc/sky/restore_settings.sh factory_reset");
+        v_secure_system("/bin/sh /etc/sky/restore_settings.sh factory_reset");
 #else
-	system("restoreAllDBs"); //Perform factory reset on other components
+	v_secure_system("restoreAllDBs"); //Perform factory reset on other components
 #endif
-	return;
+	return NULL;
 }
 
-void backuplogs(void *thread)
+void* backuplogs(void *thread)
 {
 	void *ret;
 	int s;
@@ -1801,11 +1868,13 @@ void backuplogs(void *thread)
 	}
 	pthread_detach(pthread_self());
 
-	system("/fss/gw/rdklogger/backupLogs.sh &");
+	v_secure_system("/fss/gw/rdklogger/backupLogs.sh &");
+    return NULL;
 }
 
-void resetWiFi()
+void* resetWiFi(void* arg)
 {
+    UNREFERENCED_PARAMETER(arg);
 	CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 	/*TODO: SEND EVENT TO WIFI PAM  Device.WiFi.X_CISCO_COM_FactoryReset*/
 	int ret;
@@ -1815,7 +1884,7 @@ void resetWiFi()
 	if (ppComponents == NULL && initWifiComp())
 	{
 		CcspTraceError(("FactoryReset:%s Restoring WiFi to factory defaults returned error  ...\n",__FUNCTION__));     
-		return ANSC_STATUS_FAILURE;
+		return NULL;
 	}
 	parameterValStruct_t	val = { "Device.WiFi.X_CISCO_COM_FactoryReset", "true", ccsp_boolean};
 
@@ -1823,11 +1892,11 @@ void resetWiFi()
 	/* In Reset Factory Settings, the system is rebooted  before WiFi gets reset.
 	* Add this line to indicate WiFi module to restore after boot up.
 	* This will be removed iff CCSP layer adds sufficient delay during reboot. */
-	system("echo 2 >/nvram/qtn_wifi_reset_indicator");
+	v_secure_system("echo 2 >/nvram/qtn_wifi_reset_indicator");
 #endif
 
 #if defined (_INTEL_WAV_)
-	system("touch /nvram/wifi_reset_indicator");
+	v_secure_system("touch /nvram/wifi_reset_indicator");
 #endif
 
 	ret = CcspBaseIf_setParameterValues
@@ -1868,6 +1937,7 @@ void resetWiFi()
 		bus_info->freefunc(faultParam);
 	}
 #endif
+    return NULL;
 }
 
 /*****************************************
@@ -1892,6 +1962,7 @@ CosaDmlDcSetFactoryReset
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 	char* tok;
 	char* sv;
     char value[50];
@@ -1899,7 +1970,6 @@ CosaDmlDcSetFactoryReset
 	UtopiaContext utctx = {0};
 	static pthread_t wifiThread;
 	int wifiThreadStarted=0;
-    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 #if defined (_XB6_PRODUCT_REQ_)
 	int delay_time = 0;
 	int delay = 0;
@@ -1932,7 +2002,7 @@ CosaDmlDcSetFactoryReset
 
 			if(0 == platform_hal_setLed(&ledMgmt)) {
                         	CcspTraceInfo(("Front LED Transition: GREEN LED will blink, Reason: Factory Reset\n"));
-				system("touch /tmp/.FRBLINKGREEN");
+				v_secure_system("touch /tmp/.FRBLINKGREEN");
 			}
 			else {
 				CcspTraceError(("[%s]:Setting Front LED to Blink Green Failed\n",__FUNCTION__));
@@ -2046,7 +2116,7 @@ CosaDmlDcSetFactoryReset
 	componentStruct_t **        ppVoiceComponent = NULL;
 	int                         size = 0;
 	parameterValStruct_t    val = { "Device.Services.VoiceService.1.X_RDK-Central_COM_VoiceProcessState", "FactoryDefault", ccsp_string};
-
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 	sprintf(dst_pathname_cr, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
 
 	ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
@@ -2173,6 +2243,8 @@ CosaDmlDcSetUserChangedFlags
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pValue);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2183,6 +2255,8 @@ CosaDmlDcSetResetDefaultEnable
         BOOLEAN                     pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pFlag);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2218,8 +2292,8 @@ void _CosaDmlDcStartZeroConfig()
     fclose(fileHandle);
 
     /* Start two daemon */
-    system(CMD_START_AVAHI_DAEMON);
-    system(CMD_START_AVAHI_AUTOIPD);
+    v_secure_system(CMD_START_AVAHI_DAEMON);
+    v_secure_system(CMD_START_AVAHI_AUTOIPD);
 
     return;
 }
@@ -2229,8 +2303,8 @@ void _CosaDmlDcStopZeroConfig()
     /* kill two daemon no matter whether it's successful. */
     AnscTraceWarning(("_CosaDmlDcStopZeroConfig -- stop avahi.\n"));
     
-    system(CMD_STOP_AVAHI_DAEMON);
-    system(CMD_STOP_AVAHI_AUTOIPD);
+    v_secure_system(CMD_STOP_AVAHI_DAEMON);
+    v_secure_system(CMD_STOP_AVAHI_AUTOIPD);
     
     return;
 }
@@ -2242,6 +2316,7 @@ CosaDmlDcGetEnableStaticNameServer
         BOOLEAN                    *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     boolean_t bEnabled;
 
@@ -2266,6 +2341,7 @@ CosaDmlDcSetEnableStaticNameServer
         BOOLEAN                     bFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     boolean_t bEnabled = bFlag;
 
@@ -2303,6 +2379,8 @@ CosaDmlDcGetReleaseWan
         BOOLEAN                    *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pFlag);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2313,7 +2391,9 @@ CosaDmlDcSetReleaseWan
         BOOLEAN                     bFlag
     )
 {
-    system("sysevent set dhcp_client-release");
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(bFlag);
+    v_secure_system("sysevent set dhcp_client-release");
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2324,6 +2404,8 @@ CosaDmlDcGetRenewWan
         BOOLEAN                    *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pFlag);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2334,10 +2416,12 @@ CosaDmlDcSetRenewWan
         BOOLEAN                     bFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(bFlag);
     char status[10] = {'\0'};
     int timeOut = 15;
 
-    system("sysevent set dhcp_client-renew");
+    v_secure_system("sysevent set dhcp_client-renew");
     sleep(3);
     
     do {
@@ -2361,6 +2445,7 @@ CosaDmlDcGetEnableZeroConfig
         BOOLEAN                    *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     *pFlag = g_EnableZeroConfig;
 
     AnscTraceWarning(("CosaDmlDcSetEnableZeroConfig -- *pFlag:%d.\n", *pFlag));
@@ -2375,6 +2460,7 @@ CosaDmlDcSetEnableZeroConfig
         BOOLEAN                     bFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char     buf[256] = {0};
 
     UtopiaContext utctx = {0};
@@ -2424,6 +2510,7 @@ CosaDmlDcGetDeviceMode
         ULONG                       *pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char buf[10];
     UtopiaContext utctx = {0};
     
@@ -2446,6 +2533,7 @@ ANSC_STATUS CosaDmlDcSetDeviceMode
         ULONG                       value
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char buf[8];
     ULONG oldValue;
    
@@ -2461,7 +2549,7 @@ ANSC_STATUS CosaDmlDcSetDeviceMode
     if(oldValue==value)
         return(ANSC_STATUS_SUCCESS);
     value--;
-    snprintf(buf,sizeof(buf),"%d",value);
+    snprintf(buf,sizeof(buf),"%lu",value);
 //     syscfg_set(NULL, "last_erouter_mode", buf);
 //     syscfg_commit();
     commonSyseventSet("erouter_mode", buf);
@@ -2479,6 +2567,7 @@ CosaDmlDcGetIGMPProxyEnable
         BOOLEAN                     *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( detect_process("igmpproxy") == 0 )
     {
         *pFlag = FALSE;
@@ -2499,6 +2588,7 @@ CosaDmlDcSetIGMPProxyEnable
         BOOLEAN                     pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
      
     if (Utopia_Init(&utctx))
@@ -2529,6 +2619,7 @@ CosaDmlDcGetDNSProxyEnable
         BOOLEAN                     *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( detect_process("dnsproxy") == 0 )
     {
         *pFlag = FALSE;
@@ -2549,6 +2640,7 @@ CosaDmlDcSetDNSProxyEnable
         BOOLEAN                     pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (pFlag)
     {
         if ( detect_process("dnsproxy") == 0 )
@@ -2570,9 +2662,11 @@ CosaDmlDcGetTelnetEnable
         BOOLEAN                     *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     #if defined(_CBR_PRODUCT_REQ_)
         return ANSC_STATUS_FAILURE;
     #endif
+
     char buf[5];
     //printf("Got value mgmt_wan_telnetaccess = %d\n", *pFlag);
     syscfg_get( NULL, "mgmt_wan_telnetaccess", buf, sizeof(buf));
@@ -2598,6 +2692,7 @@ CosaDmlDcGetSSHEnable
         BOOLEAN                     *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char buf[5];
     syscfg_get( NULL, "mgmt_wan_sshaccess", buf, sizeof(buf));
     if( buf != NULL )
@@ -2620,6 +2715,7 @@ CosaDmlDcGetHNAPEnable
         BOOLEAN                     *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     *pFlag = TRUE;
     return ANSC_STATUS_SUCCESS;
 }
@@ -2631,6 +2727,7 @@ CosaDmlDcSetTelnetEnable
         BOOLEAN                     flag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     #if defined(_CBR_PRODUCT_REQ_)
         return ANSC_STATUS_FAILURE;
     #endif
@@ -2645,7 +2742,7 @@ CosaDmlDcSetTelnetEnable
         snprintf(buf,sizeof(buf),"%d",flag);
         syscfg_set( NULL, "mgmt_wan_telnetaccess", buf);
         syscfg_commit();
-        system("sysevent set firewall-restart");
+        v_secure_system("sysevent set firewall-restart");
 
         if (platform_hal_SetTelnetEnable(flag) == RETURN_ERR )
             return ANSC_STATUS_SUCCESS;
@@ -2660,6 +2757,7 @@ CosaDmlDcSetSSHEnable
         BOOLEAN                     flag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char buf[5];
     BOOLEAN bSSHEnable;
 
@@ -2670,7 +2768,7 @@ CosaDmlDcSetSSHEnable
         snprintf(buf,sizeof(buf),"%d",flag);
         syscfg_set( NULL, "mgmt_wan_sshaccess", buf);
         syscfg_commit();
-        system("sysevent set firewall-restart");
+        v_secure_system("sysevent set firewall-restart");
         if (platform_hal_SetSSHEnable(flag) == RETURN_ERR )
             return ANSC_STATUS_FAILURE;
     }   
@@ -2684,6 +2782,8 @@ CosaDmlDcSetHNAPEnable
         BOOLEAN                     flag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(flag);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2694,6 +2794,7 @@ CosaDmlDcGetHTTPEnable
         BOOLEAN                     *pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     *pValue = TRUE;
     return ANSC_STATUS_SUCCESS;
 }
@@ -2705,6 +2806,7 @@ CosaDmlDcGetHTTPSEnable
         BOOLEAN                     *pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     *pValue = TRUE;
     return ANSC_STATUS_SUCCESS;
 }
@@ -2716,6 +2818,7 @@ CosaDmlDcGetHTTPPort
         ULONG                       *pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     WebServConf_t conf;
 
     if (LoadWebServConf(&conf) != 0)
@@ -2732,6 +2835,7 @@ CosaDmlDcGetHTTPSPort
         ULONG                       *pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     WebServConf_t conf;
 
     if (LoadWebServConf(&conf) != 0)
@@ -2748,9 +2852,10 @@ CosaDmlDcSetReinitMacThreshold
         ULONG                       value
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char buf[5];
     memset(buf,0,sizeof(buf));
-    sprintf(buf,"%d",value);
+    sprintf(buf,"%lu",value);
 	
     if((syscfg_set( NULL, "rdkbReinitMacThreshold", buf)) != 0 )
     {
@@ -2783,7 +2888,7 @@ CosaDmlDcGetReinitMacThreshold
     else
     {
     	*pValue = 5;
-    	CosaDmlDcSetReinitMacThreshold(hContext, pValue);
+    	CosaDmlDcSetReinitMacThreshold(hContext, *pValue);
     }
     return ANSC_STATUS_SUCCESS;
 }
@@ -2791,6 +2896,8 @@ CosaDmlDcGetReinitMacThreshold
 ANSC_STATUS
 CosaDmlDcSetWebServer(BOOL httpEn, BOOL httpsEn, ULONG httpPort, ULONG httpsPort)
 {
+    UNREFERENCED_PARAMETER(httpEn);
+    UNREFERENCED_PARAMETER(httpsEn);
     WebServConf_t conf;
     pthread_t tid;
 
@@ -2814,6 +2921,7 @@ CosaDmlDcGetMsoRemoteMgmtEnable
         BOOLEAN                     *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     boolean_t bEnabled;
 
@@ -2838,6 +2946,7 @@ CosaDmlDcSetMsoRemoteMgmtEnable
         BOOLEAN                     pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     boolean_t bEnabled = pFlag;
 
@@ -2861,6 +2970,7 @@ CosaDmlDcGetCusadminRemoteMgmtEnable
         BOOLEAN                     *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     boolean_t bEnabled;
 
@@ -2885,6 +2995,7 @@ CosaDmlDcSetCusadminRemoteMgmtEnable
         BOOLEAN                     pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     boolean_t bEnabled = pFlag;
 
@@ -2908,6 +3019,7 @@ CosaDmlDcGetHSEthernetPortEnable
         BOOLEAN                    *pFlagcpv
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char cmdBuf[100];
     char *XHSNetPort, *XHSL2;
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
@@ -2927,7 +3039,7 @@ CosaDmlDcGetHSEthernetPortEnable
     bus_info->freefunc(XHSNetPort);
     bus_info->freefunc(XHSL2);
     
-    Cdm_GetParamBool(cmdBuf, pFlagcpv);
+    Cdm_GetParamBool(cmdBuf, (bool*)pFlagcpv);
     
     return ANSC_STATUS_SUCCESS;
     
@@ -2940,6 +3052,7 @@ CosaDmlDcSetHSEthernetPortEnable
         BOOLEAN                    pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char* primNetXHSPort, *XHSNetPort, *primL2, *XHSL2;
     char* disableL2, *disablePort, *enableL2, *enablePort;
     char cmdBuf[100];
@@ -3005,6 +3118,7 @@ CosaDmlDcGetGuestPassword
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     PCOSA_DATAMODEL_DEVICECONTROL pDc;
 
@@ -3029,6 +3143,7 @@ CosaDmlDcSetGuestPassword
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
 
     if (!Utopia_Init(&utctx))
@@ -3045,7 +3160,7 @@ CosaDmlDcSetGuestPassword
     if(fp != NULL)
         fclose(fp);
 
-    system("sysevent set firewall-restart");
+    v_secure_system("sysevent set firewall-restart");
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -3088,7 +3203,7 @@ CosaDmlDcSetNoOfGuests
         return ANSC_STATUS_FAILURE;
     }
 
-    snprintf(maxNum, sizeof(maxNum), "%u", uVal);
+    snprintf(maxNum, sizeof(maxNum), "%lu", uVal);
     Utopia_RawSet(&utctx, NULL, "guest_max_num", maxNum);
 
     Utopia_Free(&utctx,1);
@@ -3103,6 +3218,7 @@ CosaDmlDcGetParConPassword
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     PCOSA_DATAMODEL_DEVICECONTROL pDc;
 
@@ -3127,6 +3243,7 @@ CosaDmlDcSetParConPassword
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
 
     if (!Utopia_Init(&utctx))
@@ -3143,7 +3260,7 @@ CosaDmlDcSetParConPassword
     if(fp != NULL)
         fclose(fp);
 
-    system("sysevent set firewall-restart");
+    v_secure_system("sysevent set firewall-restart");
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -3155,6 +3272,7 @@ CosaDmlDcGetParConQuestion
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     PCOSA_DATAMODEL_DEVICECONTROL pDc;
 
@@ -3178,8 +3296,8 @@ CosaDmlDcSetParConQuestion
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
-    char pwd[33];
 
     if (!Utopia_Init(&utctx))
     {
@@ -3201,6 +3319,7 @@ CosaDmlDcGetParConAnswer
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     PCOSA_DATAMODEL_DEVICECONTROL pDc;
 
@@ -3224,6 +3343,7 @@ CosaDmlDcSetParConAnswer
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
 
     if (!Utopia_Init(&utctx))
@@ -3246,6 +3366,7 @@ CosaDmlDcGetDefaultParConPassword
         char*                       pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     PCOSA_DATAMODEL_DEVICECONTROL pDc;
 
@@ -3273,7 +3394,7 @@ CosaDmlGetMocaHardwareStatus
         ANSC_HANDLE                 hContext
     )
 {
-    char out[256] = {0};
+    UNREFERENCED_PARAMETER(hContext);
     static int ret = 0;
 
     if (ret) {
@@ -3320,11 +3441,10 @@ static void setLanMgmtUpnp(UtopiaContext *utctx, BOOLEAN enable)
 
 static 
 void _Get_LanMngm_Setting(UtopiaContext *utctx, ULONG index, PCOSA_DML_LAN_MANAGEMENT pLanMngm){
+    UNREFERENCED_PARAMETER(index);
     lanSetting_t lan;
     ANSC_IPV4_ADDRESS network, netmask, ipaddr;
-    int temp;
     bridgeInfo_t bridge_info = {0}; /*RDKB-6845, CID-33087, initialize before use*/
-    boolean_t bool_tmp;
     int int_tmp;
     napt_mode_t napt_mode; 
     /* Till now,just support only one lan interface */
@@ -3434,7 +3554,7 @@ CosaDmlLanMngm_GetEntryByIndex(ULONG index, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
     if (Utopia_Init(&utctx))
     {
         Utopia_GetLanMngmCount(&utctx, &num);
-        if(index < num ){
+        if(index < (ULONG)num ){
             _Get_LanMngm_Setting(&utctx, index, pLanMngm);
             ret = ANSC_STATUS_SUCCESS;
         }
@@ -3446,6 +3566,7 @@ CosaDmlLanMngm_GetEntryByIndex(ULONG index, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 ANSC_STATUS
 CosaDmlLanMngm_SetValues(ULONG index, ULONG ins, const char *alias)
 {
+    UNREFERENCED_PARAMETER(index);
     UtopiaContext utctx = {0};
     ANSC_STATUS ret = ANSC_STATUS_FAILURE;
     if (Utopia_Init(&utctx))
@@ -3461,12 +3582,14 @@ CosaDmlLanMngm_SetValues(ULONG index, ULONG ins, const char *alias)
 ANSC_STATUS
 CosaDmlLanMngm_AddEntry(PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 {
+    UNREFERENCED_PARAMETER(pLanMngm);
     return ANSC_STATUS_FAILURE;
 }
 
 ANSC_STATUS
 CosaDmlLanMngm_DelEntry(ULONG ins)
 {
+    UNREFERENCED_PARAMETER(ins);
     return ANSC_STATUS_FAILURE;
 }
 
@@ -3499,15 +3622,12 @@ static void  checkTicket(int ticket)
 
 void* bridge_mode_wifi_notifier_thread(void* arg) {
     PCOSA_NOTIFY_WIFI pNotify = (PCOSA_NOTIFY_WIFI)arg;
-    char* enableStr = (char*)(pNotify->flag?"false" : "true");
     char*   faultParam = NULL;
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
     ANSC_STATUS ret = ANSC_STATUS_FAILURE;
-    parameterValStruct_t* theVals;
 	char acBridgeMode[ 4 ],
 		 acSetRadioString[ 8 ],
 		 acSetSSIDString[ 8 ];
-    int numVals;
 
     checkTicket(pNotify->ticket);
 
@@ -3563,6 +3683,7 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
     char* enVal = NULL;
     char* guestnetDM = NULL;
     char* guestEnableStr = NULL;
+    char* enableStr = (char*)(pNotify->flag?"false" : "true");
     snprintf(param, sizeof(param), "dmsb.CiscoConnect.guestEnabled");
     if (PSM_Get_Record_Value2(bus_info, g_GetSubsystemPrefix(g_pDslhDmlAgent), (char *)param, NULL, &enVal) == CCSP_SUCCESS) {
         if ( enVal[0] == '1' && enableStr[0] == 't') {
@@ -3711,7 +3832,6 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
     ANSC_STATUS ret = ANSC_STATUS_FAILURE;
     bridgeInfo_t bridge_info;
     char str[IFNAME_SZ];    
-    char *enableStr;
     napt_mode_t napt;
 #if !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_)// MOCA is not present for TCCBR environment, HUB4 and RaspberryPi environment
 	parameterValStruct_t **valMoCAstatus;
@@ -3878,7 +3998,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
                 }
             }
         }
-#else if defined(ENABLE_FEATURE_MESHWIFI)
+#elif defined(ENABLE_FEATURE_MESHWIFI)
         // In all the other platforms XB6, XF3, etc. PandM is running on the same processor as on Mesh, so we just need to
         // send the sysevent call directly.
         {
@@ -3971,12 +4091,16 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         
         //Bridge mode has changed, so we need to report the change and toggle wifi accordingly
         //TODO: move this to a thread
+#ifdef _XF3_PRODUCT_REQ_
         int bEnable;
+#endif
         
         if(bridge_info.mode == BRIDGE_MODE_OFF)
         {
             syslog_systemlog("Local Network", LOG_NOTICE, "Status change: IP %s mask %s", lan.ipaddr, lan.netmask);
-            bEnable = 0;
+            #ifdef _XF3_PRODUCT_REQ_            
+                bEnable = 0;
+            #endif
         }
         else
         {
@@ -3995,7 +4119,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         sysevent_set(commonSyseventFd, commonSyseventToken, "bridge_mode",buf,0);
         configBridgeMode(bEnable);
 #else
-            bEnable = 1;
+            //bEnable = 1;
         }
 #endif
         
@@ -4057,7 +4181,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
         {
             CcspTraceWarning(("Setting MESH to disabled as LanMode is changed to Bridge mode\n"));
             pthread_t tid;
-            pthread_create(&tid,NULL,&set_mesh_disabled,NULL);
+            pthread_create(&tid, NULL, &set_mesh_disabled, NULL);
         }
 
         ret = ANSC_STATUS_SUCCESS;
@@ -4072,6 +4196,8 @@ CosaDmlDcGetIGMPSnoopingEnable
         BOOLEAN                     *pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pValue);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -4082,6 +4208,8 @@ CosaDmlDcSetIGMPSnoopingEnable
         ULONG                     value
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(value);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -4092,6 +4220,7 @@ CosaDmlDcGetWebUITimeout
         ULONG                       *pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (pValue == NULL)
         return ANSC_STATUS_FAILURE;
 
@@ -4108,12 +4237,10 @@ CosaDmlDcGetPowerSavingModeStatus
         ULONG                       *pValue
     )
 {
-
+    UNREFERENCED_PARAMETER(hContext);
 #if !defined (_BWG_PRODUCT_REQ_)
 #if defined (CONFIG_TI_BBU) || defined (CONFIG_TI_BBU_TI)
 
-#include "mta_hal.h"
- 
     if (mta_hal_BatteryGetPowerSavingModeStatus(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else
@@ -4122,6 +4249,7 @@ CosaDmlDcGetPowerSavingModeStatus
 #endif
 #endif
 
+    UNREFERENCED_PARAMETER(pValue);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -4132,6 +4260,7 @@ CosaDmlDcSetWebUITimeout
         ULONG                       value
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ((value == 0) || (value >= 30 && value <= 86400)){
         if (platform_hal_SetWebUITimeout(value) != RETURN_OK )
             return ANSC_STATUS_FAILURE;
@@ -4150,6 +4279,7 @@ CosaDmlDcGetWebAccessLevel
         ULONG                       *pValue
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (pValue == NULL)
         return ANSC_STATUS_FAILURE;
 
@@ -4168,6 +4298,7 @@ CosaDmlDcSetWebAccessLevel
         ULONG                       value
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if (platform_hal_SetWebAccessLevel(userIndex, ifIndex, value) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else
@@ -4210,7 +4341,7 @@ static void configBridgeMode(int bEnable) {
         if (ppComponents == NULL && initWifiComp()) {
             syslog_systemlog("Local Network", LOG_NOTICE, "Bridge mode transition: Failed to acquire wifi component.");
             AnscFreeMemory( pnotifypara ); /*RDKB-6845, CID-33015, free unused resource before return */
-            return ANSC_STATUS_SUCCESS;
+            return;
         }
         totalticket += 1;
         pnotifypara->flag = brmode[0] == '3' ? 3 : bEnable;
@@ -4225,6 +4356,7 @@ CosaDmlDcGetErouterEnabled
         BOOLEAN                     *pFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     char buf[10];
     buf[0]='\0';
     if(!syscfg_get(NULL, "last_erouter_mode", buf, sizeof(buf))) {
@@ -4242,6 +4374,7 @@ CosaDmlDcSetErouterEnabled
         BOOLEAN                     bFlag
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     configBridgeMode(!(bFlag));
     return ANSC_STATUS_SUCCESS;
 }
@@ -4260,8 +4393,9 @@ BOOL is_mesh_enabled()
     return FALSE;
 }
 
-ANSC_STATUS set_mesh_disabled()
+void* set_mesh_disabled(void* arg)
 {
+    UNREFERENCED_PARAMETER(arg);
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
     parameterValStruct_t   param_val[1];
     char  component[256]  = "eRT.com.cisco.spvtg.ccsp.meshagent";
@@ -4279,7 +4413,7 @@ ANSC_STATUS set_mesh_disabled()
             bus,
             0,
             0,
-            &param_val,
+            (void*)&param_val,
             1,
             TRUE,
             &faultParam
@@ -4288,9 +4422,9 @@ ANSC_STATUS set_mesh_disabled()
     if( ( ret != CCSP_SUCCESS ) && ( faultParam!=NULL )) {
         CcspTraceError(("%s-%d Failed to set Mesh Enable to false\n",__FUNCTION__,__LINE__));
         bus_info->freefunc( faultParam );
-        return ANSC_STATUS_FAILURE;
+        return NULL;
     }
-    return ANSC_STATUS_SUCCESS;
+    return NULL;
 
 }
 
@@ -4344,7 +4478,7 @@ void CosaDmlDcSaveWiFiHealthStatusintoNVRAM( void  )
 		else
 		{
 			CcspTraceInfo(("%s - Taking Backup of wifivAPPercentage\n",__FUNCTION__));
-			system( "sh /usr/ccsp/wifi/wifivAPPercentage.sh" );
+			v_secure_system( "sh /usr/ccsp/wifi/wifivAPPercentage.sh" );
 		}
 	}
 }

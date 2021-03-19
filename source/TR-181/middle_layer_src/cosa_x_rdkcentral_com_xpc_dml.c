@@ -52,6 +52,7 @@ SnmpOnboardReboot_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_XPC       pMyObject     = (PCOSA_DATAMODEL_XPC)g_pCosaBEManager->hXpc;
     if (AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -72,6 +73,7 @@ SnmpOnboardReboot_SetParamBoolValue
 {
     PCOSA_DATAMODEL_XPC       pMyObject     = (PCOSA_DATAMODEL_XPC)g_pCosaBEManager->hXpc;
     ANSC_STATUS  returnStatus = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hInsContext);
     if (AnscEqualString(ParamName, "Enable", TRUE))
     {
         CcspTraceInfo(("Write ID is %ld \n", GET_CURRENT_WRITE_ENTITY()));

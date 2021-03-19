@@ -195,22 +195,22 @@
                             DHCPv4 Server Pool
 **********************************************************************/
 #define PSM_DHCPV4_SERVER_POOL "dmsb.dhcpv4.server.pool."
-#define PSM_DHCPV4_SERVER_POOL_i "%d."
+#define PSM_DHCPV4_SERVER_POOL_i "%lu."
 
 #define PSM_DHCPV4_SERVER_ENABLE "dmsb.dhcpv4.server.Enable" 
-#define PSM_DHCPV4_SERVER_POOL_ALLOWDELETE "dmsb.dhcpv4.server.pool.%d.AllowDelete"
-#define PSM_DHCPV4_SERVER_POOL_ENABLE "dmsb.dhcpv4.server.pool.%d.Enable"
-#define PSM_DHCPV4_SERVER_POOL_INTERFACE "dmsb.dhcpv4.server.pool.%d.IPInterface"
-#define PSM_DHCPV4_SERVER_POOL_MINADDRESS "dmsb.dhcpv4.server.pool.%d.MinAddress"
-#define PSM_DHCPV4_SERVER_POOL_MAXADDRESS "dmsb.dhcpv4.server.pool.%d.MaxAddress"
-#define PSM_DHCPV4_SERVER_POOL_SUBNETMASK "dmsb.dhcpv4.server.pool.%d.SubnetMask"
-#define PSM_DHCPV4_SERVER_POOL_DNSSERVERS "dmsb.dhcpv4.server.pool.%d.DNSServers"
-#define PSM_DHCPV4_SERVER_POOL_DOMAINNAME "dmsb.dhcpv4.server.pool.%d.DomainName"
-#define PSM_DHCPV4_SERVER_POOL_IPROUTERS "dmsb.dhcpv4.server.pool.%d.IPRouters"
-#define PSM_DHCPV4_SERVER_POOL_LEASETIME "dmsb.dhcpv4.server.pool.%d.LeaseTime"
-#define PSM_DHCPV4_SERVER_POOL_ALIAS "dmsb.dhcpv4.server.pool.%d.Alias"
-#define PSM_DHCPV4_SERVER_POOL_ORDER "dmsb.dhcpv4.server.pool.%d.Order"
-#define PSM_DHCPV4_SERVER_POOL_TIMEOFFSET "dmsb.dhcpv4.server.pool.%d.TimeOffset"    
+#define PSM_DHCPV4_SERVER_POOL_ALLOWDELETE "dmsb.dhcpv4.server.pool.%lu.AllowDelete"
+#define PSM_DHCPV4_SERVER_POOL_ENABLE "dmsb.dhcpv4.server.pool.%lu.Enable"
+#define PSM_DHCPV4_SERVER_POOL_INTERFACE "dmsb.dhcpv4.server.pool.%lu.IPInterface"
+#define PSM_DHCPV4_SERVER_POOL_MINADDRESS "dmsb.dhcpv4.server.pool.%lu.MinAddress"
+#define PSM_DHCPV4_SERVER_POOL_MAXADDRESS "dmsb.dhcpv4.server.pool.%lu.MaxAddress"
+#define PSM_DHCPV4_SERVER_POOL_SUBNETMASK "dmsb.dhcpv4.server.pool.%lu.SubnetMask"
+#define PSM_DHCPV4_SERVER_POOL_DNSSERVERS "dmsb.dhcpv4.server.pool.%lu.DNSServers"
+#define PSM_DHCPV4_SERVER_POOL_DOMAINNAME "dmsb.dhcpv4.server.pool.%lu.DomainName"
+#define PSM_DHCPV4_SERVER_POOL_IPROUTERS "dmsb.dhcpv4.server.pool.%lu.IPRouters"
+#define PSM_DHCPV4_SERVER_POOL_LEASETIME "dmsb.dhcpv4.server.pool.%lu.LeaseTime"
+#define PSM_DHCPV4_SERVER_POOL_ALIAS "dmsb.dhcpv4.server.pool.%lu.Alias"
+#define PSM_DHCPV4_SERVER_POOL_ORDER "dmsb.dhcpv4.server.pool.%lu.Order"
+#define PSM_DHCPV4_SERVER_POOL_TIMEOFFSET "dmsb.dhcpv4.server.pool.%lu.TimeOffset"    
 
 #define PSM_DHCPV4_SERVER_POOL_STATICADDRESS "dmsb.dhcpv4.server.pool.%d.StaticAddress."
 #define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_ENABLE "dmsb.dhcpv4.server.pool.%d.StaticAddress.%d.Enable"
@@ -218,11 +218,11 @@
 #define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_CHADDR "dmsb.dhcpv4.server.pool.%d.StaticAddress.%d.Chaddr"
 #define PSM_DHCPV4_SERVER_POOL_STATICADDRESS_YIADDR "dmsb.dhcpv4.server.pool.%d.StaticAddress.%d.Yiaddr"
 
-#define PSM_DHCPV4_SERVER_POOL_OPTION "dmsb.dhcpv4.server.pool.%d.Option."
-#define PSM_DHCPV4_SERVER_POOL_OPTION_ENABLE "dmsb.dhcpv4.server.pool.%d.Option.%d.Enable"
-#define PSM_DHCPV4_SERVER_POOL_OPTION_ALIAS "dmsb.dhcpv4.server.pool.%d.Option.%d.Alias"
-#define PSM_DHCPV4_SERVER_POOL_OPTION_TAG "dmsb.dhcpv4.server.pool.%d.Option.%d.Tag"
-#define PSM_DHCPV4_SERVER_POOL_OPTION_VALUE "dmsb.dhcpv4.server.pool.%d.Option.%d.Value"
+#define PSM_DHCPV4_SERVER_POOL_OPTION "dmsb.dhcpv4.server.pool.%lu.Option."
+#define PSM_DHCPV4_SERVER_POOL_OPTION_ENABLE "dmsb.dhcpv4.server.pool.%lu.Option.%lu.Enable"
+#define PSM_DHCPV4_SERVER_POOL_OPTION_ALIAS "dmsb.dhcpv4.server.pool.%lu.Option.%lu.Alias"
+#define PSM_DHCPV4_SERVER_POOL_OPTION_TAG "dmsb.dhcpv4.server.pool.%lu.Option.%lu.Tag"
+#define PSM_DHCPV4_SERVER_POOL_OPTION_VALUE "dmsb.dhcpv4.server.pool.%lu.Option.%lu.Value"
 
 /* Following are not supported by middle-layer of DHCPV4
 "dmsb.dhcpv4.server.pool.%d.vendorclassID" // not supported

@@ -171,6 +171,7 @@ Client1_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DML_DNS_STATUS             eClientStatus = COSA_DML_DNS_STATUS_Disabled;
 
     /* check the parameter name and return the corresponding value */
@@ -231,6 +232,9 @@ Client1_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -275,6 +279,7 @@ Client1_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and return the corresponding value */
     if ( AnscEqualString(ParamName, "Status", TRUE) )
     {
@@ -335,6 +340,10 @@ Client1_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -379,6 +388,7 @@ Client1_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */
     if ( AnscEqualString(ParamName, "Enable", TRUE) )
     {
@@ -431,6 +441,9 @@ Client1_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -475,6 +488,9 @@ Client1_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -519,6 +535,9 @@ Client1_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -563,6 +582,9 @@ Client1_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -594,7 +616,7 @@ Client1_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -627,7 +649,7 @@ Client1_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {   
-    
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -684,6 +706,7 @@ Server1_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
 
     return AnscSListQueryDepth(&pMyObject->ServerList);
@@ -727,6 +750,7 @@ Server1_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PSLIST_HEADER                   pSrvHead     = (PSLIST_HEADER)&pMyObject->ServerList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -778,6 +802,7 @@ Server1_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PSLIST_HEADER                   pSrvHead     = (PSLIST_HEADER)&pMyObject->ServerList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -792,7 +817,7 @@ Server1_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pDnsServer->Alias, "Server%d", pMyObject->ulNextServerInsNum);
+    _ansc_sprintf(pDnsServer->Alias, "Server%lu", pMyObject->ulNextServerInsNum);
 
     pDnsServer->Type = COSA_DML_DNS_ADDR_SRC_Static;
         
@@ -874,7 +899,7 @@ Server1_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PSLIST_HEADER                   pSrvHead     = (PSLIST_HEADER)&pMyObject->ServerList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
@@ -926,6 +951,7 @@ Server1_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     BOOL                            bIsUpdated   = TRUE;
     ULONG                           ulInterval   = 0;              
@@ -976,6 +1002,7 @@ Server1_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_FAILURE;
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -1177,6 +1204,9 @@ Server1_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1296,6 +1326,7 @@ Server1_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer   = (PCOSA_DML_DNS_CLIENT_SERVER)pCosaContext->hContext;
 
@@ -1416,6 +1447,9 @@ Server1_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1591,17 +1625,22 @@ Server1_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
+    /*
     PCOSA_DATAMODEL_DNS             pMyObject     = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2 = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer    = (PCOSA_DML_DNS_CLIENT_SERVER)pCosaContext->hContext;
-    PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer2   = (PCOSA_DML_DNS_CLIENT_SERVER)NULL;
     PSLIST_HEADER                   pSrvHead     = (PSLIST_HEADER)&pMyObject->ServerList;
-    PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
+    //PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
 
     pLink = AnscSListGetFirstEntry(pSrvHead);
 
-	/*
+	
+    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer    = (PCOSA_DML_DNS_CLIENT_SERVER)pCosaContext->hContext;
+    PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer2   = (PCOSA_DML_DNS_CLIENT_SERVER)NULL;
+    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2 = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+
     while ( pLink )
     {
         pCosaContext2 = ACCESS_COSA_CONTEXT_LINK_OBJECT(pLink);
@@ -1654,7 +1693,6 @@ Server1_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer   = (PCOSA_DML_DNS_CLIENT_SERVER)pCosaContext->hContext;
 
@@ -1705,7 +1743,6 @@ Server1_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {  
-    PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer   = (PCOSA_DML_DNS_CLIENT_SERVER)pCosaContext->hContext;
 
@@ -1774,6 +1811,7 @@ Relay_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     COSA_DML_DNS_STATUS             eRelayStatus     = COSA_DML_DNS_STATUS_Disabled;
     
     /* check the parameter name and return the corresponding value */
@@ -1834,6 +1872,9 @@ Relay_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1878,6 +1919,7 @@ Relay_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Status", TRUE))
     {
@@ -1938,6 +1980,10 @@ Relay_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1982,6 +2028,7 @@ Relay_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -2033,6 +2080,9 @@ Relay_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2077,6 +2127,9 @@ Relay_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2121,6 +2174,9 @@ Relay_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2165,6 +2221,9 @@ Relay_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -2196,7 +2255,7 @@ Relay_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -2230,7 +2289,7 @@ Relay_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
-
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -2288,6 +2347,7 @@ Forwarding_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
 
     return AnscSListQueryDepth(&pMyObject->ForwardList);
@@ -2332,6 +2392,7 @@ Forwarding_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PSLIST_HEADER                   pForwardHead = (PSLIST_HEADER)&pMyObject->ForwardList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -2382,6 +2443,7 @@ Forwarding_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PSLIST_HEADER                   pForwardHead = (PSLIST_HEADER)&pMyObject->ForwardList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -2396,7 +2458,7 @@ Forwarding_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pForward->Alias, "Forwarding%d", pMyObject->ulNextForwardInsNum);
+    _ansc_sprintf(pForward->Alias, "Forwarding%lu", pMyObject->ulNextForwardInsNum);
 
     pForward->Type = COSA_DML_DNS_ADDR_SRC_Static;
 
@@ -2478,7 +2540,7 @@ Forwarding_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PSLIST_HEADER                   pForwardHead = (PSLIST_HEADER)&pMyObject->ForwardList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
@@ -2530,6 +2592,7 @@ Forwarding_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     BOOL                            bIsUpdated   = TRUE;
     ULONG                           ulInterval    = 0;              
@@ -2580,6 +2643,7 @@ Forwarding_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_FAILURE;
     PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -2785,6 +2849,9 @@ Forwarding_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3017,6 +3084,9 @@ Forwarding_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3247,7 +3317,6 @@ Forwarding_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DNS_RELAY_ENTRY       pForward     = (PCOSA_DML_DNS_RELAY_ENTRY)pCosaContext->hContext;
 
@@ -3298,7 +3367,6 @@ Forwarding_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {  
-    PCOSA_DATAMODEL_DNS             pMyObject    = (PCOSA_DATAMODEL_DNS)g_pCosaBEManager->hDNS;     
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DNS_RELAY_ENTRY       pForward     = (PCOSA_DML_DNS_RELAY_ENTRY)pCosaContext->hContext;
 

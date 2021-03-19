@@ -60,7 +60,6 @@ CosaLanManagementCreate
         VOID
     )
 {
-    ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT) NULL;
 
     /*
@@ -98,7 +97,7 @@ CosaLanManagementInitialize
     /* Initiation all functions */
     _ansc_memset(&pMyObject->LanMngmCfg, 0, sizeof(COSA_DML_LANMANAGEMENT_CFG));
 
-    CosaDmlLanManagementInit(NULL, &pMyObject->LanMngmCfg);
+    CosaDmlLanManagementInit(NULL, (PANSC_HANDLE)&pMyObject->LanMngmCfg);
 
     return returnStatus;
 }

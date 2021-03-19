@@ -205,6 +205,7 @@ X_CISCO_COM_Security_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
     PCOSA_DML_SECURITY_CFG          pSecurityCfg    = &pCosaDMSecurity->SecurityConfig;
 
@@ -316,6 +317,9 @@ X_CISCO_COM_Security_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -360,6 +364,9 @@ X_CISCO_COM_Security_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
     /* check the parameter name and get the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -413,6 +420,8 @@ X_CISCO_COM_Security_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
     PCOSA_DML_SECURITY_CFG          pSecurityCfg    = &pCosaDMSecurity->SecurityConfig;
 
@@ -531,6 +540,7 @@ X_CISCO_COM_Security_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
     PCOSA_DML_SECURITY_CFG          pSecurityCfg    = &pCosaDMSecurity->SecurityConfig;
 
@@ -642,6 +652,9 @@ X_CISCO_COM_Security_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -686,6 +699,9 @@ X_CISCO_COM_Security_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -730,6 +746,7 @@ X_CISCO_COM_Security_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     errno_t                         rc              = -1;
     int                             ind             = -1;
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
@@ -964,6 +981,9 @@ X_CISCO_COM_Security_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -995,6 +1015,7 @@ X_CISCO_COM_Security_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS ret;
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
     PCOSA_DML_SECURITY_CFG          pSecurityCfg    = &pCosaDMSecurity->SecurityConfig;
@@ -1034,6 +1055,7 @@ X_CISCO_COM_Security_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -1097,6 +1119,7 @@ Firewall1_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
     PCOSA_DML_FIREWALL_CFG2         pFirewallCfg    = &pCosaDMSecurity->FirewallConfig;
 
@@ -1357,6 +1380,9 @@ Firewall1_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1401,6 +1427,7 @@ Firewall1_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
     PCOSA_DML_FIREWALL_CFG2         pFirewallCfg    = &pCosaDMSecurity->FirewallConfig;
 
@@ -1473,6 +1500,10 @@ Firewall1_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1517,6 +1548,7 @@ Firewall1_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
     BOOL                            pBridgeMode     = FALSE;
 
@@ -1773,6 +1805,9 @@ Firewall1_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1817,8 +1852,8 @@ Firewall1_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
-    BOOL                            pBridgeMode     = FALSE;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "FirewallLevel", TRUE))
@@ -1915,6 +1950,9 @@ Firewall1_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1959,6 +1997,9 @@ Firewall1_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -1990,6 +2031,7 @@ Firewall1_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
 
     return CosaDmlFirewallSetConfig2(NULL, &pCosaDMSecurity->FirewallConfig);
@@ -2024,6 +2066,7 @@ Firewall1_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -2077,6 +2120,9 @@ InternetAccess_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2121,6 +2167,9 @@ InternetAccess_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2165,6 +2214,8 @@ InternetAccess_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(puLong);
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "NumberOfPolicies", TRUE))
     {
@@ -2227,11 +2278,12 @@ InternetAccess_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "DumpAllFWlog", TRUE))
     {
         ULONG logSize = *pUlSize;
-        if(ANSC_STATUS_FAILURE == CosaDmlIaGetALLLogEntries(pValue, &logSize) != ANSC_STATUS_SUCCESS)
+        if((ANSC_STATUS_FAILURE == CosaDmlIaGetALLLogEntries(pValue, &logSize)) != ANSC_STATUS_SUCCESS)
         {
             if(logSize > *pUlSize){
                 *pUlSize = logSize;
@@ -2298,6 +2350,7 @@ AccessPolicy_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity   = (PCOSA_DATAMODEL_SECURITY )g_pCosaBEManager->hSecurity;
 
     return AnscSListQueryDepth(&pCosaDMSecurity->AccessPolicyList);
@@ -2341,11 +2394,10 @@ AccessPolicy_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity   = (PCOSA_DATAMODEL_SECURITY )g_pCosaBEManager->hSecurity;
     PSLIST_HEADER                   pPolicyHead       = (PSLIST_HEADER            )&pCosaDMSecurity->AccessPolicyList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PCOSA_DML_IA_POLICY2            pDmlIAPolicy      = (PCOSA_DML_IA_POLICY2     )NULL;
-    PCOSA_DML_IA_POLICY2            pDmlIAEntry       = (PCOSA_DML_IA_POLICY2     )NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;
 
     pSLinkEntry = AnscSListGetEntryByIndex(pPolicyHead, nIndex);
@@ -2397,6 +2449,7 @@ AccessPolicy_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity   = (PCOSA_DATAMODEL_SECURITY )g_pCosaBEManager->hSecurity;
     PSLIST_HEADER                   pPolicyHead       = (PSLIST_HEADER            )&pCosaDMSecurity->AccessPolicyList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -2410,7 +2463,7 @@ AccessPolicy_AddEntry
     }
 
     /* Set the default policy name */
-    _ansc_sprintf(pDmlIAPolicy->Alias, "Policy%d", pCosaDMSecurity->ulNextAPInstanceNum);
+    _ansc_sprintf(pDmlIAPolicy->Alias, "Policy%lu", pCosaDMSecurity->ulNextAPInstanceNum);
 
     AnscSListInitializeHeader(&pDmlIAPolicy->URLList    );
     AnscSListInitializeHeader(&pDmlIAPolicy->KeywordList);
@@ -2500,6 +2553,7 @@ AccessPolicy_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy      = (PCOSA_DML_IA_POLICY2     )pCosaContext->hContext;
@@ -2643,6 +2697,9 @@ AccessPolicy_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2932,7 +2989,6 @@ AccessPolicy_SetParamBoolValue
         BOOL                        bValue
     )
 {
-    PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY )g_pCosaBEManager->hSecurity;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy    = (PCOSA_DML_IA_POLICY2     )pCosaContext->hContext;
 
@@ -3017,6 +3073,9 @@ AccessPolicy_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3061,6 +3120,9 @@ AccessPolicy_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3105,7 +3167,6 @@ AccessPolicy_SetParamStringValue
         char*                       pString
     )
 {
-    PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY )g_pCosaBEManager->hSecurity;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy    = (PCOSA_DML_IA_POLICY2     )pCosaContext->hContext;
     char*                           pNext           = pString;
@@ -3363,7 +3424,6 @@ AccessPolicy_Commit
     )
 {
     ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY )g_pCosaBEManager->hSecurity;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy    = (PCOSA_DML_IA_POLICY2     )pCosaContext->hContext;
 
@@ -3602,6 +3662,9 @@ Schedule_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3646,6 +3709,9 @@ Schedule_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3699,6 +3765,7 @@ Schedule_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy = (PCOSA_DML_IA_POLICY2     )pCosaContext->hContext;
     PCOSA_DML_IA_POLICY_SCH         pSchedule    = (PCOSA_DML_IA_POLICY_SCH  )&pDmlIAPolicy->Schedule;
@@ -3881,6 +3948,9 @@ Schedule_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3925,6 +3995,9 @@ Schedule_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -4032,6 +4105,9 @@ Schedule_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -4105,6 +4181,7 @@ Schedule_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -4204,7 +4281,6 @@ BlockedURL_GetEntry
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy  = (PCOSA_DML_IA_POLICY2     )pCosaContext->hContext;
-    PSLIST_HEADER                   pListHead     = (PSLIST_HEADER            )&pDmlIAPolicy->URLList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2 = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry   = (PSINGLE_LINK_ENTRY       )NULL;
 
@@ -4268,7 +4344,7 @@ BlockedURL_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pURL->Alias, "BlockedURL%d", pDmlIAPolicy->ulNextURLInsNum);
+    _ansc_sprintf(pURL->Alias, "BlockedURL%lu", pDmlIAPolicy->ulNextURLInsNum);
 
     /* Update the middle layer cache */
     if ( TRUE )
@@ -4421,6 +4497,9 @@ BlockedURL_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -4465,6 +4544,9 @@ BlockedURL_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -4509,6 +4591,9 @@ BlockedURL_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -4562,6 +4647,7 @@ BlockedURL_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY_URL         pURL             = (PCOSA_DML_IA_POLICY_URL  )pCosaContext->hContext;
 
@@ -4624,6 +4710,9 @@ BlockedURL_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(bValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -4668,6 +4757,9 @@ BlockedURL_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -4712,6 +4804,9 @@ BlockedURL_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5042,7 +5137,6 @@ BlockedKeyword_GetEntry
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT   )hInsContext;
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy  = (PCOSA_DML_IA_POLICY2        )pCosaContext->hContext;
-    PSLIST_HEADER                   pListHead     = (PSLIST_HEADER               )&pDmlIAPolicy->KeywordList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2 = (PCOSA_CONTEXT_LINK_OBJECT   )NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry   = (PSINGLE_LINK_ENTRY          )NULL;
 
@@ -5106,7 +5200,7 @@ BlockedKeyword_AddEntry
         return NULL;
     }
     
-    _ansc_sprintf(pKeyword->Alias, "Keyword%d", pDmlIAPolicy->ulNextKeyInsNum);
+    _ansc_sprintf(pKeyword->Alias, "Keyword%lu", pDmlIAPolicy->ulNextKeyInsNum);
 
     /* Update the middle layer cache */
     if ( TRUE )
@@ -5253,6 +5347,9 @@ BlockedKeyword_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5297,6 +5394,9 @@ BlockedKeyword_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5341,6 +5441,9 @@ BlockedKeyword_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5394,6 +5497,7 @@ BlockedKeyword_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT   )hInsContext;
     PCOSA_DML_IA_POLICY_KEYWORD     pKeyword         = (PCOSA_DML_IA_POLICY_KEYWORD )pCosaContext->hContext;
 
@@ -5456,6 +5560,9 @@ BlockedKeyword_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(bValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5500,6 +5607,9 @@ BlockedKeyword_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5544,6 +5654,9 @@ BlockedKeyword_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5874,7 +5987,6 @@ BlockedApplication_GetEntry
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy  = (PCOSA_DML_IA_POLICY2     )pCosaContext->hContext;
-    PSLIST_HEADER                   pListHead     = (PSLIST_HEADER            )&pDmlIAPolicy->AppList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2 = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry   = (PSINGLE_LINK_ENTRY       )NULL;
 
@@ -5938,7 +6050,7 @@ BlockedApplication_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pApp->Alias, "App%d", pDmlIAPolicy->ulNextAppInsNum);
+    _ansc_sprintf(pApp->Alias, "App%lu", pDmlIAPolicy->ulNextAppInsNum);
 
     /* Update the middle layer cache */
     if ( TRUE )
@@ -6139,6 +6251,9 @@ BlockedApplication_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -6262,6 +6377,7 @@ BlockedApplication_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY_APP         pApp             = (PCOSA_DML_IA_POLICY_APP  )pCosaContext->hContext;
 
@@ -6382,6 +6498,9 @@ BlockedApplication_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -6733,6 +6852,7 @@ LogEntry_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity   = (PCOSA_DATAMODEL_SECURITY )g_pCosaBEManager->hSecurity;
 
     return pCosaDMSecurity->ulLogEntryCount;
@@ -6776,6 +6896,7 @@ LogEntry_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity   = (PCOSA_DATAMODEL_SECURITY )g_pCosaBEManager->hSecurity;
     PCOSA_DML_IA_LOG_ENTRY          pLogBlock         = (PCOSA_DML_IA_LOG_ENTRY   )pCosaDMSecurity->pLog;
     PCOSA_DML_IA_LOG_ENTRY          pLogEntry         = (PCOSA_DML_IA_LOG_ENTRY   )NULL;
@@ -6819,6 +6940,7 @@ LogEntry_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if ( !last_tick ) 
     {
         last_tick = AnscGetTickInSeconds();
@@ -6866,6 +6988,7 @@ LogEntry_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity   = (PCOSA_DATAMODEL_SECURITY )g_pCosaBEManager->hSecurity;
     ULONG                           ulEntryCount      = 0;
 
@@ -6919,6 +7042,9 @@ LogEntry_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -6963,6 +7089,9 @@ LogEntry_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -7086,6 +7215,7 @@ LogEntry_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DML_IA_LOG_ENTRY          pLogEntry         = (PCOSA_DML_IA_LOG_ENTRY   )hInsContext;
 
     /* check the parameter name and return the corresponding value */

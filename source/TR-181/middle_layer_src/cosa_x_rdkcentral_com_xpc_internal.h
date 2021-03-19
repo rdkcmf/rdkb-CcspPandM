@@ -33,6 +33,10 @@ COSA_DATAMODEL_XPC,  *PCOSA_DATAMODEL_XPC;
 /*
     Standard function declaration 
 */
+ANSC_STATUS CosaXpcEnable(ANSC_HANDLE hThisObject);
+
+ANSC_STATUS CosaXpcDisable(ANSC_HANDLE hThisObject);
+
 ANSC_HANDLE
 CosaXpcCreate
     (

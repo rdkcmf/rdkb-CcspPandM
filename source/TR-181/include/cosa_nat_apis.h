@@ -376,4 +376,13 @@ CosaDmlChkDesp(char *desp);
 BOOL 
 CosaDmlNatChkEnableFlg(PCOSA_DML_NAT_PMAPPING pPortMapping);
 
+int 
+_Check_PF_parameter(PCOSA_DML_NAT_PMAPPING pPortMapping);
+
+int 
+_Check_PT_parameter(PCOSA_DML_NAT_PTRIGGER pPortTrigger);
+
+BOOL 
+CosaDmlNatChkPortMappingMaxRuleNum(PCOSA_DML_NAT_PMAPPING pEntry);
+
 #endif

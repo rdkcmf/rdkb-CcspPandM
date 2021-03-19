@@ -69,6 +69,8 @@
 **************************************************************************/
 
 #include "cosa_deviceinfo_internal.h"
+#include "cosa_deviceinfo_apis_custom.h"
+#include "syscfg/syscfg.h"
 
 /**********************************************************************
 
@@ -97,7 +99,6 @@ CosaDeviceInfoCreate
         VOID
     )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DEVICEINFO  pMyObject    = (PCOSA_DATAMODEL_DEVICEINFO)NULL;
 
     /*

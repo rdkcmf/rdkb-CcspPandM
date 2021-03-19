@@ -85,6 +85,7 @@ TrueStaticIP_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
 
@@ -115,6 +116,8 @@ TrueStaticIP_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
 
@@ -159,6 +162,7 @@ TrueStaticIP_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
 
@@ -190,18 +194,19 @@ TrueStaticIP_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
     unsigned int mask = 0;
 
     /* check if pString doesn't hold null or whitespaces */
-    if(AnscValidStringCheck(pString) != TRUE)
+    if(AnscValidStringCheck((unsigned char*)pString) != TRUE)
         return FALSE;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "IPAddress", TRUE))
     {
-        if(is_IpAddress(pString))
+        if(is_IpAddress((unsigned char*)pString))
         {
             /* save update to backup */
             AnscCopyString(pTSIP->IPAddress, pString);
@@ -289,6 +294,9 @@ TrueStaticIP_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
 
@@ -310,6 +318,7 @@ TrueStaticIP_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
 
@@ -333,7 +342,8 @@ TrueStaticIP_Rollback
     (
         ANSC_HANDLE                 hInsContext
     )
-{   
+{
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
 
@@ -350,6 +360,7 @@ Subnet_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     
     return AnscSListQueryDepth(&pMyObject->SubnetList);
@@ -363,6 +374,7 @@ Subnet_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject    = (PCOSA_DATAMODEL_TSIP       )g_pCosaBEManager->hTSIP;
     PSLIST_HEADER                   pSubnetHead  = (PSLIST_HEADER              )&pMyObject->SubnetList;
     PCOSA_DML_TSIP_SUBNET_ENTRY     pEntry       = (PCOSA_DML_TSIP_SUBNET_ENTRY)NULL;
@@ -386,10 +398,9 @@ Subnet_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject               = (PCOSA_DATAMODEL_TSIP       )g_pCosaBEManager->hTSIP;
-    PSLIST_HEADER                   pListHead               = (PSLIST_HEADER              )&pMyObject->SubnetList;
     PCOSA_DML_TSIP_SUBNET_ENTRY     pEntry                  = (PCOSA_DML_TSIP_SUBNET_ENTRY)NULL;
-    PSINGLE_LINK_ENTRY              pSLinkEntry             = (PSINGLE_LINK_ENTRY         )NULL;
 
     pEntry = (PCOSA_DML_TSIP_SUBNET_ENTRY)AnscAllocateMemory(sizeof(COSA_DML_TSIP_SUBNET_ENTRY));
     if (!pEntry)
@@ -397,7 +408,7 @@ Subnet_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Alias, "Subnet%d", pMyObject->ulSubnetNextInsNum);
+    _ansc_sprintf(pEntry->Alias, "Subnet%lu", pMyObject->ulSubnetNextInsNum);
 
     *pInsNumber = pEntry->InstanceNumber = pMyObject->ulSubnetNextInsNum;
 
@@ -420,6 +431,7 @@ Subnet_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject               = (PCOSA_DATAMODEL_TSIP       )g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_SUBNET_ENTRY     pEntry                  = (PCOSA_DML_TSIP_SUBNET_ENTRY)hInstance;
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER              )&pMyObject->SubnetList;
@@ -462,6 +474,7 @@ Subnet_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DML_TSIP_SUBNET_ENTRY     pSubnet      = (PCOSA_DML_TSIP_SUBNET_ENTRY)hInsContext;
 
     /* check the parameter name and return the corresponding value */
@@ -517,13 +530,13 @@ Subnet_SetParamStringValue
     unsigned int mask = 0;
 
     /* check if pString doesn't hold null or whitespaces */
-    if(AnscValidStringCheck(pString) != TRUE)
+    if(AnscValidStringCheck((unsigned char*)pString) != TRUE)
         return FALSE;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "IPAddress", TRUE))
     {
-        if(is_IpAddress(pString))
+        if(is_IpAddress((unsigned char*)pString))
         {
             /* save update to backup */
             AnscCopyString(pSubnet->IPAddress, pString);
@@ -554,8 +567,9 @@ Subnet_Validate
         ULONG*                      puLength
     )
 {
-    PCOSA_DML_TSIP_SUBNET_ENTRY     pSubnet      = (PCOSA_DML_TSIP_SUBNET_ENTRY)hInsContext;
-
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -598,6 +612,7 @@ PortManagement_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg    = (PCOSA_DML_TSIP_PORTMANAGEMENT_CFG)&pMyObject->PortManagementCfg;
 
@@ -620,6 +635,7 @@ PortManagement_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg    = (PCOSA_DML_TSIP_PORTMANAGEMENT_CFG)&pMyObject->PortManagementCfg;
     
@@ -643,6 +659,7 @@ PortManagement_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg    = (PCOSA_DML_TSIP_PORTMANAGEMENT_CFG)&pMyObject->PortManagementCfg;
 
@@ -666,6 +683,7 @@ PortManagement_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg    = (PCOSA_DML_TSIP_PORTMANAGEMENT_CFG)&pMyObject->PortManagementCfg;
     
@@ -689,6 +707,9 @@ PortManagement_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -698,6 +719,7 @@ PortManagement_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg    = (PCOSA_DML_TSIP_PORTMANAGEMENT_CFG)&pMyObject->PortManagementCfg;
 
@@ -714,7 +736,8 @@ PortManagement_Rollback
     (
         ANSC_HANDLE                 hInsContext
     )
-{   
+{
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg    = (PCOSA_DML_TSIP_PORTMANAGEMENT_CFG)&pMyObject->PortManagementCfg;
 
@@ -731,6 +754,7 @@ Rule_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     
     return AnscSListQueryDepth(&pMyObject->RuleList);
@@ -744,6 +768,7 @@ Rule_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject    = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PSLIST_HEADER                   pRuleHead  = (PSLIST_HEADER)&pMyObject->RuleList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -767,11 +792,11 @@ Rule_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject               = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->RuleList;
     PCOSA_DML_TSIP_RULE_ENTRY       pEntry                  = (PCOSA_DML_TSIP_RULE_ENTRY)NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PSINGLE_LINK_ENTRY              pSLinkEntry             = (PSINGLE_LINK_ENTRY       )NULL;
 
     pEntry = (PCOSA_DML_TSIP_RULE_ENTRY)AnscAllocateMemory(sizeof(COSA_DML_TSIP_RULE_ENTRY));
     if (!pEntry)
@@ -779,7 +804,7 @@ Rule_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Alias, "Rule%d", pMyObject->ulRuleNextInsNum);
+    _ansc_sprintf(pEntry->Alias, "Rule%lu", pMyObject->ulRuleNextInsNum);
 
     /* Update the cache */
     pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
@@ -819,13 +844,11 @@ Rule_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject               = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2           = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_TSIP_RULE_ENTRY       pEntry                  = (PCOSA_DML_TSIP_RULE_ENTRY)pCosaContext->hContext;
-    PCOSA_DML_TSIP_RULE_ENTRY       pNewEntry               = (PCOSA_DML_TSIP_RULE_ENTRY)NULL;
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER)&pMyObject->RuleList;
-    PSINGLE_LINK_ENTRY              pSLinkEntry             = NULL;
 
     if ( !pCosaContext->bNew )
     {
@@ -916,6 +939,7 @@ Rule_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_TSIP_RULE_ENTRY       pRule        = (PCOSA_DML_TSIP_RULE_ENTRY)pCosaContext->hContext;
 
@@ -1050,6 +1074,9 @@ Rule_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -1059,7 +1086,6 @@ Rule_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_TSIP            pMyObject    = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_TSIP_RULE_ENTRY       pRule        = (PCOSA_DML_TSIP_RULE_ENTRY)pCosaContext->hContext;
 
@@ -1084,8 +1110,7 @@ Rule_Rollback
     (
         ANSC_HANDLE                 hInsContext
     )
-{   
-    PCOSA_DATAMODEL_TSIP            pMyObject    = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP; 
+{
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_TSIP_RULE_ENTRY       pRule        = (PCOSA_DML_TSIP_RULE_ENTRY)pCosaContext->hContext;
 

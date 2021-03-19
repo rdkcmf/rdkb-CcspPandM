@@ -91,7 +91,7 @@ CosaDmlMlanInit
     )
 {
     PCOSA_DATAMODEL_MULTILAN        pContext        = NULL;
-
+    UNREFERENCED_PARAMETER(hDml);
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     pContext = (PCOSA_DATAMODEL_MULTILAN)AnscAllocateMemory(sizeof(COSA_DATAMODEL_MULTILAN));
@@ -141,7 +141,6 @@ CosaDmlMlanGetPrimaryLanIpIf
     int                             iReturnValue    = CCSP_SUCCESS;
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
-    unsigned int                    uValue          = 0;
     ULONG                           ulStrSize       = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -178,7 +177,7 @@ CosaDmlMlanGetPrimaryLanIpIf
 
             if ( pContext->pPrimaryLanIpIf )
             {
-                _ansc_sprintf(pContext->pPrimaryLanIpIf, "%s%d", DM_TR181_NAME_IP_IF, SlapValue.Variant.varUint32);
+                _ansc_sprintf(pContext->pPrimaryLanIpIf, "%s%d", DM_TR181_NAME_IP_IF, (int)SlapValue.Variant.varUint32);
             }
         }
         else if (RecordType == ccsp_string)
@@ -232,7 +231,6 @@ CosaDmlMlanGetHomeSecurityIpIf
     int                             iReturnValue    = CCSP_SUCCESS;
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
-    unsigned int                    uValue          = 0;
     ULONG                           ulStrSize       = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -269,7 +267,7 @@ CosaDmlMlanGetHomeSecurityIpIf
 
             if ( pContext->pHomeSecurityIpIf )
             {
-                _ansc_sprintf(pContext->pHomeSecurityIpIf, "%s%d", DM_TR181_NAME_IP_IF, SlapValue.Variant.varUint32);
+                _ansc_sprintf(pContext->pHomeSecurityIpIf, "%s%d", DM_TR181_NAME_IP_IF, (int)SlapValue.Variant.varUint32);
             }
         }
         else if (RecordType == ccsp_string)
@@ -322,7 +320,6 @@ CosaDmlMlanGetPrimaryLanBridge
     int                             iReturnValue    = CCSP_SUCCESS;
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
-    unsigned int                    uValue          = 0;
     ULONG                           ulStrSize       = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -359,7 +356,7 @@ CosaDmlMlanGetPrimaryLanBridge
 
             if ( pContext->pPrimaryLanBridge )
             {
-                _ansc_sprintf(pContext->pPrimaryLanBridge, "%s%d", DM_TR181_NAME_BRIDGE, SlapValue.Variant.varUint32);
+                _ansc_sprintf(pContext->pPrimaryLanBridge, "%s%d", DM_TR181_NAME_BRIDGE,(int) SlapValue.Variant.varUint32);
             }
         }
         else if (RecordType == ccsp_string)
@@ -412,7 +409,6 @@ CosaDmlMlanGetPrimaryLanBridgeHsPorts
     int                             iReturnValue    = CCSP_SUCCESS;
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
-    unsigned int                    uValue          = 0;
     ULONG                           ulStrSize       = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -493,7 +489,6 @@ CosaDmlMlanGetPrimaryLanDhcpv4ServerPool
     int                             iReturnValue    = CCSP_SUCCESS;
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
-    unsigned int                    uValue          = 0;
     ULONG                           ulStrSize       = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -530,7 +525,7 @@ CosaDmlMlanGetPrimaryLanDhcpv4ServerPool
 
             if ( pContext->pPrimaryLanDhcpv4ServerPool )
             {
-                _ansc_sprintf(pContext->pPrimaryLanDhcpv4ServerPool, "%s%d", DM_TR181_NAME_DHCPv4ServerPool, SlapValue.Variant.varUint32);
+                _ansc_sprintf(pContext->pPrimaryLanDhcpv4ServerPool, "%s%d", DM_TR181_NAME_DHCPv4ServerPool, (int)SlapValue.Variant.varUint32);
             }
         }
 
@@ -574,7 +569,6 @@ CosaDmlMlanGetHomeSecurityBridge
     int                             iReturnValue    = CCSP_SUCCESS;
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
-    unsigned int                    uValue          = 0;
     ULONG                           ulStrSize       = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -611,7 +605,7 @@ CosaDmlMlanGetHomeSecurityBridge
 
             if ( pContext->pHomeSecurityBridge )
             {
-                _ansc_sprintf(pContext->pHomeSecurityBridge, "%s%d", DM_TR181_NAME_BRIDGE, SlapValue.Variant.varUint32);
+                _ansc_sprintf(pContext->pHomeSecurityBridge, "%s%d", DM_TR181_NAME_BRIDGE, (int)SlapValue.Variant.varUint32);
             }
         }
         else if (RecordType == ccsp_string)
@@ -664,7 +658,6 @@ CosaDmlMlanGetHomeSecurityBridgePorts
     int                             iReturnValue    = CCSP_SUCCESS;
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
-    unsigned int                    uValue          = 0;
     ULONG                           ulStrSize       = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -744,7 +737,6 @@ CosaDmlMlanGetHomeSecurityDhcpv4ServerPool
     int                             iReturnValue    = CCSP_SUCCESS;
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
-    unsigned int                    uValue          = 0;
     ULONG                           ulStrSize       = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -781,7 +773,7 @@ CosaDmlMlanGetHomeSecurityDhcpv4ServerPool
 
             if ( pContext->pHomeSecurityDHCPv4ServerPool )
             {
-                _ansc_sprintf(pContext->pHomeSecurityDHCPv4ServerPool, "%s%d", DM_TR181_NAME_DHCPv4ServerPool, SlapValue.Variant.varUint32);
+                _ansc_sprintf(pContext->pHomeSecurityDHCPv4ServerPool, "%s%d", DM_TR181_NAME_DHCPv4ServerPool, (int)SlapValue.Variant.varUint32);
             }
         }
         else if (RecordType == ccsp_string)
@@ -835,7 +827,6 @@ CosaDmlMlanGetHomeSecurityWiFiRadio
     int                             iReturnValue    = CCSP_SUCCESS;
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
-    unsigned int                    uValue          = 0;
     ULONG                           ulStrSize       = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -872,7 +863,7 @@ CosaDmlMlanGetHomeSecurityWiFiRadio
 
             if ( pContext->pHomeSecurityWiFiRadio )
             {
-                _ansc_sprintf(pContext->pHomeSecurityWiFiRadio, "%s%d", DM_TR181_NAME_WiFi_Radio, SlapValue.Variant.varUint32);
+                _ansc_sprintf(pContext->pHomeSecurityWiFiRadio, "%s%d", DM_TR181_NAME_WiFi_Radio,(int)SlapValue.Variant.varUint32);
             }
         }
 
@@ -916,7 +907,6 @@ CosaDmlMlanGetHomeSecurityWiFiSsid
     int                             iReturnValue    = CCSP_SUCCESS;
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
-    unsigned int                    uValue          = 0;
     ULONG                           ulStrSize       = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -953,7 +943,7 @@ CosaDmlMlanGetHomeSecurityWiFiSsid
 
             if ( pContext->pHomeSecurityWiFiSsid )
             {
-                _ansc_sprintf(pContext->pHomeSecurityWiFiSsid, "%s%d", DM_TR181_NAME_WiFi_SSID, SlapValue.Variant.varUint32);
+                _ansc_sprintf(pContext->pHomeSecurityWiFiSsid, "%s%d", DM_TR181_NAME_WiFi_SSID, (int)SlapValue.Variant.varUint32);
             }
         }
 
@@ -997,7 +987,6 @@ CosaDmlMlanGetHomeSecurityWiFiAp
     int                             iReturnValue    = CCSP_SUCCESS;
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
-    unsigned int                    uValue          = 0;
     ULONG                           ulStrSize       = 0;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -1034,7 +1023,7 @@ CosaDmlMlanGetHomeSecurityWiFiAp
 
             if ( pContext->pHomeSecurityWiFiAp )
             {
-                _ansc_sprintf(pContext->pHomeSecurityWiFiAp, "%s%d", DM_TR181_NAME_WiFi_AP, SlapValue.Variant.varUint32);
+                _ansc_sprintf(pContext->pHomeSecurityWiFiAp, "%s%d", DM_TR181_NAME_WiFi_AP, (int)SlapValue.Variant.varUint32);
             }
         }
 

@@ -34,6 +34,7 @@
 #include "cosa_onboardlogging_internal.h"
 #include "cosa_onboardlogging_dml.h"
 #include "ccsp_psm_helper.h"
+#include "secure_wrapper.h"
 #define DEVICE_PROPS_FILE  "/etc/device.properties"
 
 extern ANSC_HANDLE bus_handle;
@@ -157,5 +158,6 @@ static int getValueFromDevicePropsFile(char *str, char **value)
         CcspTraceError(("Failed to open file:%s\n", DEVICE_PROPS_FILE));
         return -1;
     }
+    return 0;
 }
 #endif

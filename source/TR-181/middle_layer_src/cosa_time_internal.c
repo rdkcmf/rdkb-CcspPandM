@@ -97,7 +97,6 @@ CosaTimeCreate
         VOID
     )
 {
-    ANSC_STATUS           returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_TIME  pMyObject    = (PCOSA_DATAMODEL_TIME)NULL;
 
     /*
@@ -161,7 +160,7 @@ CosaTimeInitialize
     _ansc_memset(&pMyObject->TimeStatus, 0, sizeof(COSA_DML_TIME_STATUS));
     _ansc_memset(&pMyObject->CurrLocalTime, 0, sizeof(ANSC_UNIVERSAL_TIME));
 
-    CosaDmlTimeInit(NULL, &pMyObject->TimeCfg);
+    CosaDmlTimeInit(NULL, (PANSC_HANDLE)&pMyObject->TimeCfg);
 
     return returnStatus;
 }
@@ -207,4 +206,3 @@ CosaTimeRemove
 
     return returnStatus;
 }
-

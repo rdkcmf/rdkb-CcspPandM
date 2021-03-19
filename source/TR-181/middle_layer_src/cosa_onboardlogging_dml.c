@@ -21,6 +21,7 @@
 #include "cosa_onboardlogging_internal.h"
 #include "ansc_platform.h"
 #include "ccsp_trace.h"
+#include "cosa_deviceinfo_dml.h"
 
 /***********************************************************************
 
@@ -72,7 +73,7 @@ OnboardingLogging_GetParamBoolValue
 {
     /* check the parameter name and return the corresponding value */
     PCOSA_DATAMODEL_ONBOARDLOGGING       pMyObject     = (PCOSA_DATAMODEL_ONBOARDLOGGING)g_pCosaBEManager->hOnboardLogging;
-
+    UNREFERENCED_PARAMETER(hInsContext);  
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         *pBool = pMyObject->bEnable;

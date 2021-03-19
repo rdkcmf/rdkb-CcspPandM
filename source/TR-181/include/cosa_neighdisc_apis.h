@@ -236,5 +236,12 @@ CosaDmlNeighdiscIfBERemove
         void
     );
 
+void 
+CosaDmlNeighborTableGetEntry
+    (
+        ANSC_HANDLE                 hContext,
+        PULONG                      pulInstanceNumber,
+        PCOSA_DML_NEIGHTABLE_INFO*  ppNbTbl
+    );
 
 #endif

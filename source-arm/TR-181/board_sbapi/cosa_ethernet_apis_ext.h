@@ -51,7 +51,9 @@
 
 // Original Code Assumed Four Physical Ethernet Ports. Set to that for backwards compatibility. 
 #if !(defined (ETH_8_PORTS) || defined (ETH_6_PORTS) || defined (ETH_4_PORTS) || defined (ETH_2_PORTS) )
-#warning "Number of Ethernet Poarts NOT DEFINED. Setting to 4 Ports
+    #ifdef DO_WARNINGS
+        #warning "Number of Ethernet Poarts NOT DEFINED. Setting to 4 Ports"
+    #endif /* DO_WARNINGS */
 #define ETH_4_PORTS
 #endif
 
@@ -122,14 +124,5 @@ int ethGetSwitchStats(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_STATS pStats);
 int getSwitchStats(PSwitchPortID swID, PCOSA_DML_IF_STATS pStats);
 int getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDinfo);
 #endif
-
-#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
-static int getIfCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg);
-static int setIfCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg);
-static int getIfStats(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_STATS pStats);
-static int getIfDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDinfo);
-#endif
-
-static int getIfStats2(const PUCHAR pName, PCOSA_DML_ETH_STATS pStats);
 
 #endif

@@ -61,6 +61,7 @@
 **************************************************************************/
 #if !defined(DDNS_BROADBANDFORUM)
 #include "cosa_x_cisco_com_ddns_apis.h"
+#include "secure_wrapper.h"
 
 #if defined _COSA_INTEL_USG_ARM_ || defined _COSA_DRG_TPG_ ||_COSA_BCM_MIPS_
 #include "utctx/utctx_api.h"
@@ -69,17 +70,17 @@
 
 COSA_DML_DDNS_SERVICE g_DdnsService[10] = 
 {
-    {FALSE, 1, "DdnsService1", "dyndns", "admin1", "admin1", "cisco.com", "", COSA_DML_DDNS_STATE_Idle},
-    {FALSE, 2, "DdnsService2", "tzo",    "admin2", "admin2", "cisco.com", "", COSA_DML_DDNS_STATE_Idle},
-    {FALSE, 3, "DdnsService3", "changeip", "admin3", "admin3", "cisco.com", "", COSA_DML_DDNS_STATE_Idle},
-    {FALSE, 4, "DdnsService4", "afraid", "admin4", "admin4", "cisco.com", "", COSA_DML_DDNS_STATE_Idle}
+    {FALSE, 1, "DdnsService1", "dyndns", "admin1", "admin1", "cisco.com", "", COSA_DML_DDNS_STATE_Idle, "", FALSE, FALSE},
+    {FALSE, 2, "DdnsService2", "tzo",    "admin2", "admin2", "cisco.com", "", COSA_DML_DDNS_STATE_Idle, "", FALSE, FALSE},
+    {FALSE, 3, "DdnsService3", "changeip", "admin3", "admin3", "cisco.com", "", COSA_DML_DDNS_STATE_Idle, "", FALSE, FALSE},
+    {FALSE, 4, "DdnsService4", "afraid", "admin4", "admin4", "cisco.com", "", COSA_DML_DDNS_STATE_Idle, "", FALSE, FALSE}
 };
 
 ULONG    g_DdnsServiceNum = 4;
 UCHAR    g_bEnabled       = TRUE;
 
-static int loadID(char* ServiceName, ULONG* ulInstanceNumber, char* pAlias);
-static int saveID(char* Namespace, char* ServiceName, ULONG ulInstanceNumber,char* pAlias);
+//static int loadID(char* ServiceName, ULONG* ulInstanceNumber, char* pAlias);
+//static int saveID(char* Namespace, char* ServiceName, ULONG ulInstanceNumber,char* pAlias);
 #endif
 
 #ifdef _COSA_SIM_
@@ -128,6 +129,8 @@ CosaDmlDdnsInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -164,6 +167,8 @@ CosaDmlDdnsGetConfig
         PCOSA_DML_DDNS_CFG          pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCfg);
     pCfg->bEnabled = bEnabled;
 
     return ANSC_STATUS_SUCCESS;
@@ -203,6 +208,7 @@ CosaDmlDdnsSetConfig
         PCOSA_DML_DDNS_CFG          pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     bEnabled = pCfg->bEnabled;
 
     return ANSC_STATUS_SUCCESS;
@@ -237,6 +243,7 @@ CosaDmlDdnsGetNumberOfServices
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_DdnsServiceNum;
 }
 
@@ -279,6 +286,7 @@ CosaDmlDdnsGetService
         PCOSA_DML_DDNS_SERVICE      pService
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     pService->bEnabled = g_DdnsService[ulIndex].bEnabled;
     pService->InstanceNumber = g_DdnsService[ulIndex].InstanceNumber;
     AnscCopyString(pService->Alias, g_DdnsService[ulIndex].Alias);
@@ -333,6 +341,7 @@ CosaDmlDdnsServiceSetValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     g_DdnsService[ulIndex].InstanceNumber = ulInstanceNumber;
     AnscCopyString(g_DdnsService[ulIndex].Alias, pAlias);
 
@@ -377,6 +386,7 @@ CosaDmlDdnsGetServiceByInstNum
         PCOSA_DML_DDNS_SERVICE      pService
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           ulIndex = 0;
 
     for ( ulIndex = 0; ulIndex < g_DdnsServiceNum; ulIndex++ )
@@ -431,6 +441,7 @@ CosaDmlDdnsAddService
         PCOSA_DML_DDNS_SERVICE      pService
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     g_DdnsService[g_DdnsServiceNum].bEnabled = pService->bEnabled;
     g_DdnsService[g_DdnsServiceNum].InstanceNumber = pService->InstanceNumber;
     AnscCopyString(g_DdnsService[g_DdnsServiceNum].Alias, pService->Alias);
@@ -482,6 +493,7 @@ CosaDmlDdnsDelService
 {
     ULONG                           i = 0;
     ULONG                           j = 0;
+    UNREFERENCED_PARAMETER(hContext);
 
     for ( i = 0; i < g_DdnsServiceNum; i++ )
     {
@@ -547,7 +559,7 @@ CosaDmlDdnsSetService
     )
 {
     ULONG                           i = 0;
-
+    UNREFERENCED_PARAMETER(hContext);
     for ( i = 0; i < g_DdnsServiceNum; i++)
     {
         if ( g_DdnsService[i].InstanceNumber == pService->InstanceNumber )
@@ -603,11 +615,12 @@ CosaDmlDdnsGetInfo
         PCOSA_DML_DDNS_SERVICE      pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return ANSC_STATUS_SUCCESS;
 }
 #elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _COSA_BCM_MIPS_)
 
-
+#if 0
 static int saveID(char* Namespace, char* ServiceName, ULONG ulInstanceNumber,char* pAlias) {
     UtopiaContext utctx;
     char idStr[COSA_DML_SERVICE_NAME_LENGTH+10];
@@ -642,6 +655,7 @@ static int loadID(char* ServiceName, ULONG* ulInstanceNumber, char* pAlias) {
     Utopia_Free(&utctx,0);
     return 0;
 }
+#endif
 
 static int UtGetString(const char *path, char *pVal, ULONG length)
 {
@@ -671,6 +685,7 @@ static int UtSetString(const char *path, char *val)
     return ANSC_STATUS_SUCCESS;
 }
 
+/*
 static int UtGetUlong(const char *path, ULONG *pVal)
 {
     UtopiaContext ctx;
@@ -686,6 +701,7 @@ static int UtGetUlong(const char *path, ULONG *pVal)
 
     return ANSC_STATUS_SUCCESS;
 }
+*/
 
 static int UtGetBool(const char *path, BOOLEAN *pVal)
 {
@@ -728,7 +744,7 @@ DdnsRestart(void)
 {
     ULONG   i = 0;
     char    cmd[512] = {0};
-    int n;
+    ULONG   n = 0;
     
     if (vsystem("killall -9 ez-ipupdate") != 0)
     {
@@ -746,7 +762,7 @@ DdnsRestart(void)
                     g_DdnsService[i].Username,
                     g_DdnsService[i].Password,
                     g_DdnsService[i].Domain);
-                    if (n >= 0 && n < sizeof(cmd))
+                    if (n < sizeof(cmd))
                     {
 					if(-1 == secure_system_call_vp("usr/bin/wget","-T","10",cmd,NULL))
 					{
@@ -762,7 +778,7 @@ DdnsRestart(void)
                 {
                     n=snprintf(cmd , sizeof(cmd),"\"http://freedns.afraid.org/dynamic/update.php?%s\"",
                     g_DdnsService[i].Password);
-                    if(n >=0 && n < sizeof(cmd))
+                    if(n < sizeof(cmd))
                     {
 					if(-1 == secure_system_call_vp("usr/bin/wget",cmd,NULL))
 					{
@@ -777,17 +793,17 @@ DdnsRestart(void)
                 else
                 {
                     char *argp[9] = {NULL};
-                    int len=0;
+                    ULONG len=0;
 
                     argp[0] = "/usr/bin/ez-ipupdate";
 
                     argp[1] = "--interface=erouter0";
 
                     len = strlen("--cache-file=/var/ez-ipupdate.cache.") +strlen(g_DdnsService[i].ServiceName)+1;
-                    if(argp[2] = malloc(len))
+                    if((argp[2] = malloc(len)))
                     {
                         n=snprintf(argp[2], len, "--cache-file=/var/ez-ipupdate.cache.%s",g_DdnsService[i].ServiceName);
-                        if(n < 0 || n >= len)
+                        if(n >= len)
                         {
                             fprintf(stderr, "%s: fail to Write formatted output to sized buffer\n", __FUNCTION__ );
                             goto error;
@@ -804,10 +820,10 @@ DdnsRestart(void)
                     argp[4] = "--max-interval=2073600";
 
                     len = strlen("--service-type=%") + strlen(g_DdnsService[i].ServiceName) + 1;
-                    if(argp[5] = malloc(len))
+                    if((argp[5] = malloc(len)))
                     {
                         n=snprintf(argp[5], len, "--service-type=%s",g_DdnsService[i].ServiceName);
-                        if(n < 0 || n >= len)
+                        if(n >= len)
                         {
                             fprintf(stderr, "%s: fail to Write formatted output to sized buffer\n", __FUNCTION__ );
                             goto error;
@@ -821,10 +837,10 @@ DdnsRestart(void)
    
                       /*add 1 byte len for ":"  for --user=%s:%s*/
                     len=strlen("--user=") + strlen(g_DdnsService[i].Username) + strlen(g_DdnsService[i].Password) + 2;
-                    if(argp[6] = malloc(len))
+                    if((argp[6] = malloc(len)))
                     {
                         n=snprintf(argp[6], len, "--user=%s:%s",g_DdnsService[i].Username,g_DdnsService[i].Password);
-                        if(n < 0 || n >= len)
+                        if(n >= len)
                         {
                             fprintf(stderr, "%s: fail to Write formatted output to sized buffer\n", __FUNCTION__ );
                             goto error;
@@ -837,10 +853,10 @@ DdnsRestart(void)
                     }
  
                     len = strlen("--host=") + strlen(g_DdnsService[i].Domain) + 1;
-                    if(argp[7] = malloc(len))
+                    if((argp[7] = malloc(len)))
                     {
                         n=snprintf(argp[7], len, "--host=%s",g_DdnsService[i].Domain);
-                        if(n < 0 || n >= len)
+                        if(n >= len)
                         {
                             fprintf(stderr, "%s: fail to Write formatted output to sized buffer\n", __FUNCTION__ );    
                             goto error;
@@ -907,6 +923,8 @@ CosaDmlDdnsInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(phContext);
+    UNREFERENCED_PARAMETER(hDml);
 #if 0
     UtopiaContext       utctx;
     ddnsService_t       ddnsService;
@@ -967,11 +985,11 @@ CosaDmlDdnsInit
 
     for (i=0; i<g_DdnsServiceNum; i++)
     {
-        sprintf(service_name_path, "ddns_service%d", i+1);
-        sprintf(username_path, "ddns_username%d", i+1);
-        sprintf(password_path, "ddns_password%d", i+1);
-        sprintf(hostname_path, "ddns_hostname%d", i+1);
-        sprintf(enabled_path, "ddns_enable%d", i+1);
+        sprintf(service_name_path, "ddns_service%lu", i+1);
+        sprintf(username_path, "ddns_username%lu", i+1);
+        sprintf(password_path, "ddns_password%lu", i+1);
+        sprintf(hostname_path, "ddns_hostname%lu", i+1);
+        sprintf(enabled_path, "ddns_enable%lu", i+1);
 
         _ansc_memset(service_name, 0, sizeof(service_name));
 
@@ -1052,6 +1070,7 @@ CosaDmlDdnsGetConfig
         PCOSA_DML_DDNS_CFG          pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     CcspTraceInfo(("------CosaDmlDdnsGetConfig, Enabled:%d\n", g_bEnabled));
     pCfg->bEnabled = g_bEnabled;
     return ANSC_STATUS_SUCCESS;
@@ -1091,6 +1110,7 @@ CosaDmlDdnsSetConfig
         PCOSA_DML_DDNS_CFG          pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if 0
     UtopiaContext        utctx;
     ddnsService_t        ddnsService;
@@ -1182,6 +1202,7 @@ CosaDmlDdnsGetNumberOfServices
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_DdnsServiceNum;
 }
 
@@ -1223,6 +1244,7 @@ CosaDmlDdnsGetInfo
         PCOSA_DML_DDNS_SERVICE      pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if 0
     UtopiaContext         utctx;
     ddnsStatus_t          ddnsStatus;
@@ -1320,6 +1342,7 @@ CosaDmlDdnsGetService
         PCOSA_DML_DDNS_SERVICE      pService
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if 0
     UtopiaContext         utctx;
     ddnsService_t         ddnsService;
@@ -1422,6 +1445,7 @@ CosaDmlDdnsServiceSetValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     CcspTraceInfo(("------CosaDmlDdnsServiceSetValues...\n"));
     g_DdnsService[ulIndex].InstanceNumber = ulInstanceNumber;
     AnscCopyString(g_DdnsService[ulIndex].Alias, pAlias);
@@ -1466,6 +1490,7 @@ CosaDmlDdnsGetServiceByInstNum
         PCOSA_DML_DDNS_SERVICE      pService
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     CcspTraceInfo(("------CosaDmlDdnsGetServiceByInstNum...\n"));
     ULONG                           ulIndex = 0;
 
@@ -1523,6 +1548,8 @@ CosaDmlDdnsAddService
         PCOSA_DML_DDNS_SERVICE      pService
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pService);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1560,6 +1587,8 @@ CosaDmlDdnsDelService
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1601,6 +1630,7 @@ CosaDmlDdnsSetService
         PCOSA_DML_DDNS_SERVICE      pService
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
 #if 0
     ULONG                           i = 0;
     UtopiaContext                   utctx;

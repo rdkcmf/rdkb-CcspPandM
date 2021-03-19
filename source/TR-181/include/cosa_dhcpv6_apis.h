@@ -702,8 +702,36 @@ CosaDmlDhcpv6sGetIAPDPrefixes2
         ULONG*                      pSize
      );
 #endif
+
 ULONG
 CosaDmlDhcpv6sGetType
+    (
+        ANSC_HANDLE                 hContext
+    );
+
+ANSC_STATUS
+CosaDmlDhcpv6sPing
+    (
+        PCOSA_DML_DHCPSV6_CLIENT    pDhcpsClient
+    );
+
+ANSC_STATUS
+CosaDmlDhcpv6sGetStartAddress
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       addr,
+        int                         len
+    );
+
+ANSC_STATUS
+CosaDmlDhcpv6sSetType
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                        type        
+    );
+
+BOOL
+CosaDmlDhcpv6cGetEnabled
     (
         ANSC_HANDLE                 hContext
     );

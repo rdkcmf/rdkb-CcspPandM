@@ -707,8 +707,225 @@ CosaDmlDcSetErouterEnabled
         BOOLEAN                     bFlag
     );
 
-ANSC_STATUS CosaDmlDcRebootWifi(ANSC_HANDLE   hContext);
-ANSC_STATUS CosaDmlDcRestartRouter();
+void* CosaDmlDcRebootWifi(ANSC_HANDLE   hContext);
+void* CosaDmlDcRestartRouter(void* arg);
 void CosaDmlDcSaveWiFiHealthStatusintoNVRAM( void  );
 int CheckAndGetDevicePropertiesEntry( char *pOutput, int size, char *sDevicePropContent );
+INT cm_hal_ReinitMac();
+BOOL moca_HardwareEquipped(void);
+
+ANSC_STATUS
+CosaDmlDcGetHTTPPort
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       *pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcGetHTTPSPort
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       *pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcGetReinitMacThreshold
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       *pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcGetIGMPProxyEnable
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     *pFlag
+    );
+
+ANSC_STATUS
+CosaDmlDcGetDNSProxyEnable
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     *pFlag
+    );
+
+ANSC_STATUS
+CosaDmlDcGetEnableZeroConfig
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                    *pFlag
+    );
+
+ANSC_STATUS
+CosaDmlDcGetHTTPEnable
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     *pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcGetHTTPSEnable
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     *pValue
+    );
+ANSC_STATUS
+CosaDmlDcGetIGMPSnoopingEnable
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     *pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcGetWebUITimeout
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       *pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcGetPowerSavingModeStatus
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       *pValue
+    );
+
+ULONG
+CosaDmlGetMocaHardwareStatus
+    (
+        ANSC_HANDLE                 hContext
+    );
+
+ANSC_STATUS
+CosaDmlDcGetParConPassword
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcGetDefaultParConPassword
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcGetParConQuestion
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcGetParConAnswer
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcSetIGMPProxyEnable
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     pFlag
+    );
+
+ANSC_STATUS
+CosaDmlDcSetDNSProxyEnable
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     pFlag
+    );
+
+ANSC_STATUS
+CosaDmlDcSetEnableZeroConfig
+    (
+        ANSC_HANDLE                 hContext,
+        BOOLEAN                     bFlag
+    );
+
+ANSC_STATUS
+CosaDmlDcSetIGMPSnoopingEnable
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                     value
+    );
+
+ANSC_STATUS CosaDmlDcSetDeviceMode
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       value
+    );
+
+ANSC_STATUS
+CosaDmlDcSetParConPassword
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcSetParConQuestion
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcSetParConAnswer
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcSetFactoryReset
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pValue
+    );
+
+ANSC_STATUS
+CosaDmlDcSetWebServer(BOOL httpEn, BOOL httpsEn, ULONG httpPort, ULONG httpsPort);
+
+
+ANSC_STATUS
+CosaDmlDcSetWebAccessLevel
+    (
+        ANSC_HANDLE                 hContext,
+        int                         userIndex,
+        int                         ifIndex,
+        ULONG                       value
+    );
+
+ANSC_STATUS
+CosaDmlDcGetWebAccessLevel
+    (
+        ANSC_HANDLE                 hContext,
+        int                         userIndex,
+        int                         ifIndex,
+        ULONG                       *pValue
+    );
+
+BOOL 
+IsPortInUse
+(
+    unsigned int port
+);
+
+ANSC_STATUS
+CosaDmlDcSetReinitMacThreshold
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       value
+    );
+
+ANSC_STATUS
+CosaDmlDcSetWebUITimeout
+    (
+        ANSC_HANDLE                 hContext,
+        ULONG                       value
+    );
+       
 #endif

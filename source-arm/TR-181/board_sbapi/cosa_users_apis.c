@@ -68,7 +68,10 @@
 #include "cosa_users_apis.h"
 #include "cosa_users_internal.h"
 #include "plugin_main_apis.h"
+#include "cosa_deviceinfo_apis.h"
+#include "secure_wrapper.h"
 #include <openssl/hmac.h>
+#include <syscfg/syscfg.h>
 
 char SerialNumber[64] = {'\0'};
 #if ( defined _COSA_SIM_ )
@@ -313,21 +316,13 @@ CosaDmlUserGetCfg
 
 }
   
-  
-  
-  
-  
-  
-  
-  
-  
 #elif (defined _COSA_INTEL_USG_ARM_) || (defined  _COSA_BCM_MIPS_)
 #undef _COSA_SIM_
 
 #include <utctx/utctx_api.h>
 #include <ulog/ulog.h>
 #include <utapi/utapi_tr_user.h>
-
+/*
 COSA_DML_USER  g_users_user[] = 
 {
     {
@@ -336,7 +331,7 @@ COSA_DML_USER  g_users_user[] =
         TRUE,
         "mso",
         "pod",
-        ""
+        "",
 	"0"
     },
     {
@@ -345,7 +340,7 @@ COSA_DML_USER  g_users_user[] =
         TRUE,
         "cusadmin",
         "Xfinity",
-        ""
+        "",
 	"0"
     },
     {
@@ -354,12 +349,12 @@ COSA_DML_USER  g_users_user[] =
         TRUE,
         "admin",
         "password",
-        ""
+        "",
 	"0"
     }
 
 };
-
+*/
 ANSC_STATUS
 CosaDmlUserInit
     (
@@ -367,6 +362,8 @@ CosaDmlUserInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
 	/*
     unsigned short index = 0;
     if(0 != CosaDmlUserGetNumberOfEntries(hDml))
@@ -385,7 +382,7 @@ CosaDmlUserGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hContext);
     int count = 0;
     UtopiaContext ctx;
 
@@ -408,6 +405,7 @@ CosaDmlUserGetEntry
         PCOSA_DML_USER              pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -433,6 +431,7 @@ CosaDmlUserSetValues
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -458,6 +457,7 @@ CosaDmlUserAddEntry
         PCOSA_DML_USER              pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -483,6 +483,7 @@ CosaDmlUserDelEntry
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -509,11 +510,12 @@ CosaDmlUserSetCfg
         PCOSA_DML_USER              pEntry      /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
 
     UtopiaContext ctx;
 #if 0
-    /*if (pEntry && (!strcmp(pEntry->Username, "mso"))){
+    if (pEntry && (!strcmp(pEntry->Username, "mso"))){
         int len = -1;
         if (pEntry->Password){
             len = strlen(pEntry->Password);
@@ -522,7 +524,7 @@ CosaDmlUserSetCfg
                 SaRemoteAccessDb_RetrieveAccess();
                 SaRemoteAccessDb_SetWASuperpassLen(len);
                 SaRemoteAccessDb_SetWASuperpass(pEntry->Password);
-                SaRemoteAccessDb_SetWASuperpassSource(2);   /* WEBUI */
+                SaRemoteAccessDb_SetWASuperpassSource(2);
                 SaRemoteAccessDb_SaveToNvram();
                 system("sysevent set potd-restart");
             }
@@ -553,6 +555,7 @@ CosaDmlUserGetCfg
         PCOSA_DML_USER              pEntry      /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int rc = -1;
     UtopiaContext ctx;
 
@@ -580,15 +583,11 @@ ANSC_STATUS
 {
         CcspTraceWarning(("%s, Entered to hash password\n",__FUNCTION__));
 	ULONG SerialNumberLength = 0;
-	char password[128] = {'\0'};
 	if (SerialNumber[0] =='\0' )
 	{
           CosaDmlDiGetSerialNumber(NULL,SerialNumber,&SerialNumberLength);
 	}
-        ANSC_CRYPTO_KEY	key	= {0};
-        ANSC_CRYPTO_HASH hash	= {0};
-        ULONG	hashLength	= 0;
-        char *tmp = NULL, *convertTo = NULL;
+        char *convertTo = NULL;
         char cmp[128] = {'\0'};
         char saltText[128] = {'\0'}, hashedmd[128] = {'\0'};
         int  iIndex = 0, Key_len = 0, salt_len = 0, hashedmd_len = 0;
@@ -748,6 +747,7 @@ user_hashandsavepwd
 
         )
 {
+  UNREFERENCED_PARAMETER(hContext);
   char setHash[128]= {'\0'};
   CcspTraceWarning(("%s, Hash Password using the passed string\n",__FUNCTION__));
 
@@ -818,9 +818,9 @@ CosaDmlUserResetPassword
           PCOSA_DML_USER              pEntry
       )
 {
+   UNREFERENCED_PARAMETER(bValue);
    CcspTraceWarning(("%s, Entered Reset function\n",__FUNCTION__));
    char defPassword[10];
-   FILE *ptr;
    
    if(!strcmp(pEntry->Username,"admin"))
    {
@@ -828,6 +828,7 @@ CosaDmlUserResetPassword
          //TODO: Avoid the hardcoded password . This change will be done as part of CMXB7-1766
          strcpy(defPassword,"password");
      #else
+         FILE *ptr;
          if ((ptr=v_secure_popen("r", "/usr/bin/configparamgen jx lkiprgpkmqfk:3"))!=NULL)
          if (NULL == ptr) {
              return ANSC_STATUS_FAILURE;
@@ -845,15 +846,16 @@ CosaDmlUserResetPassword
      #if defined(_CBR2_PRODUCT_REQ_)
          strcpy(defPassword,"highspeed");
      #else
-         if ((ptr=v_secure_popen("r", "/usr/bin/configparamgen jx jtxpybrepjab:3"))!=NULL)
-         if (NULL == ptr) {
+         FILE *fptr;
+         if ((fptr=v_secure_popen("r", "/usr/bin/configparamgen jx jtxpybrepjab:3"))!=NULL)
+         if (NULL == fptr) {
              return ANSC_STATUS_FAILURE;
          }
-         if (NULL == fgets(defPassword, 10, ptr)) {
-             v_secure_pclose(ptr);
+         if (NULL == fgets(defPassword, 10, fptr)) {
+             v_secure_pclose(fptr);
              return ANSC_STATUS_FAILURE;
          }
-         v_secure_pclose(ptr);
+         v_secure_pclose(fptr);
      #endif
    }
 #endif

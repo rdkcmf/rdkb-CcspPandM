@@ -79,6 +79,8 @@ CosaDmlMldInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -89,6 +91,8 @@ CosaDmlMldGetCfg
         PCOSA_DML_MLD_CFG           pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCfg);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -100,6 +104,8 @@ CosaDmlMldSetCfg
         PCOSA_DML_MLD_CFG           pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCfg);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -110,6 +116,8 @@ CosaDmlMldGetInfo
         PCOSA_DML_MLD_INFO          pInfo
     )    
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pInfo);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -121,6 +129,9 @@ CosaDmlMldGetGroup
         PCOSA_DML_MLD_GROUP         pMldGroupArray        
     )    
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pulCount);
+    UNREFERENCED_PARAMETER(pMldGroupArray);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -134,6 +145,8 @@ CosaDmlMldInit
         PANSC_HANDLE                phContext
     )    
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -144,6 +157,8 @@ CosaDmlMldGetCfg
         PCOSA_DML_MLD_CFG           pCfg
     )    
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCfg);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -154,6 +169,8 @@ CosaDmlMldSetCfg
         PCOSA_DML_MLD_CFG           pCfg
     )    
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pCfg);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -164,6 +181,8 @@ CosaDmlMldGetInfo
         PCOSA_DML_MLD_INFO          pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pInfo);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -175,6 +194,9 @@ CosaDmlMldGetGroup
         PCOSA_DML_MLD_GROUP         pMldGroupArray        
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pulCount);
+    UNREFERENCED_PARAMETER(pMldGroupArray);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -188,6 +210,8 @@ CosaDmlMldInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -198,7 +222,8 @@ CosaDmlMldGetCfg
         PCOSA_DML_MLD_CFG           pCfg
     )
 {
-    FILE *cfg_f, *pid_f, *fd;
+    UNREFERENCED_PARAMETER(hContext);
+    FILE *pid_f, *fd;
     char buffer[256];
     pid_t pid;
 
@@ -225,7 +250,7 @@ CosaDmlMldGetCfg
 
     if ( (pid_f = fopen("/var/run/ecmh.pid", "r")) != NULL )
     {
-        if(fgets(buffer, 255,pid_f) != '\0')
+        if(fgets(buffer, 255,pid_f))
         {
             fclose(pid_f);
             pid_f = NULL;
@@ -261,11 +286,7 @@ CosaDmlMldSetCfg
         PCOSA_DML_MLD_CFG           pCfg
     )
 {
-    FILE *cfg_f, *pid_f, *fd;
-    char buffer[256];
-    pid_t pid;
-    COSA_DML_MLD_CFG Cfg2;
-
+    UNREFERENCED_PARAMETER(hContext);
     if (!pCfg)
     {
         return ANSC_STATUS_FAILURE;
@@ -281,9 +302,13 @@ CosaDmlMldSetCfg
     }
 
 #if !defined (_COSA_BCM_MIPS_) && !defined(_ENABLE_DSL_SUPPORT_)
+    FILE *pid_f;
+    char buffer[256];
+    pid_t pid;
+
     if ( (pid_f = fopen("/var/run/ecmh.pid", "r")) != NULL )
     {
-        if(fgets(buffer, 255,pid_f) != '\0')
+        if(fgets(buffer, 255,pid_f))
         {
             fclose(pid_f);
             pid_f = NULL;
@@ -330,6 +355,7 @@ CosaDmlMldGetInfo
         PCOSA_DML_MLD_INFO          pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     FILE *pid_f;
     char buffer[256];
     pid_t pid;
@@ -341,7 +367,7 @@ CosaDmlMldGetInfo
 
     if ( (pid_f = fopen("/var/run/ecmh.pid", "r")) != NULL )
     {
-        if(fgets(buffer, 255,pid_f) != '\0')
+        if(fgets(buffer, 255,pid_f))
         {
             fclose(pid_f);
             pid_f = NULL;
@@ -377,6 +403,7 @@ CosaDmlMldGetGroup
         PCOSA_DML_MLD_GROUP         pMldGroupArray        
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     FILE *stat_f, *pid_f;
     char buffer[1024];
     pid_t pid;
@@ -391,7 +418,7 @@ CosaDmlMldGetGroup
 
     if ( (pid_f = fopen("/var/run/ecmh.pid", "r")) != NULL )
     {
-        if(fgets(buffer, 255,pid_f) != '\0')
+        if(fgets(buffer, 255,pid_f))
         {
             fclose(pid_f);
             pid_f = NULL;
@@ -421,7 +448,7 @@ CosaDmlMldGetGroup
     {
         fgets(buffer, 255, stat_f); /* Ignore the first line */
         
-        while(fgets(buffer, 255,stat_f) != '\0')
+        while(fgets(buffer, 255,stat_f))
         {
 			st = NULL;
             pch = strtok_r(buffer, " \t\r\n", &st);

@@ -73,7 +73,7 @@
 #include "cosa_ethernet_apis_ext.h"
 #include "dml_tr181_custom_cfg.h"
 #include "safec_lib_common.h"
-
+#include "syscfg/syscfg.h"
 
 #if defined _COSA_DRG_TPG_ || _COSA_DRG_CNS_
 #include "utctx/utctx_api.h"
@@ -84,6 +84,8 @@ extern void* g_pDslhDmlAgent;
 
 //$HL 4/30/2013
 #include "ccsp_psm_helper.h"
+
+ANSC_STATUS COSAGetParamValueByPathName(void* bus_handle, parameterValStruct_t *val, ULONG *parameterValueLength);
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -171,6 +173,9 @@ Bridging_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     return FALSE;
 }
 
@@ -215,6 +220,9 @@ Bridging_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -257,6 +265,7 @@ Bridging_GetParamUlongValue
     )
 {
     /* check the parameter name and return the corresponding value */
+    UNREFERENCED_PARAMETER(hInsContext);
     if( AnscEqualString(ParamName, "MaxBridgeEntries", TRUE) )
     {
         /* collect value */
@@ -349,6 +358,10 @@ Bridging_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     return -1;
 }
 
@@ -403,6 +416,7 @@ Bridge_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_BRIDGING         pCosaDMBridging   = (PCOSA_DATAMODEL_BRIDGING )g_pCosaBEManager->hBridging;
 
     return AnscSListQueryDepth(&pCosaDMBridging->BridgeList);
@@ -446,6 +460,7 @@ Bridge_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_BRIDGING        pCosaDMBridging   = (PCOSA_DATAMODEL_BRIDGING )g_pCosaBEManager->hBridging;
     PSLIST_HEADER                   pBridgeHead       = (PSLIST_HEADER            )&pCosaDMBridging->BridgeList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -496,6 +511,7 @@ Bridge_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_BRIDGING        pCosaDMBridging   = (PCOSA_DATAMODEL_BRIDGING )g_pCosaBEManager->hBridging;
     PSLIST_HEADER                   pBridgeHead       = (PSLIST_HEADER            )&pCosaDMBridging->BridgeList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -511,10 +527,10 @@ Bridge_AddEntry
         return NULL;
     }
 #if defined (MULTILAN_FEATURE)
-    _ansc_sprintf(pDmlBridge->Cfg.Alias, "cpe-Bridge%d", pCosaDMBridging->ulNextBridgeInstance);
-    _ansc_sprintf(pDmlBridge->Cfg.name, "Bridge%d", pCosaDMBridging->ulNextBridgeInstance);
+    _ansc_sprintf(pDmlBridge->Cfg.Alias, "cpe-Bridge%lu", pCosaDMBridging->ulNextBridgeInstance);
+    _ansc_sprintf(pDmlBridge->Cfg.name, "Bridge%lu", pCosaDMBridging->ulNextBridgeInstance);
 #else
-    _ansc_sprintf(pDmlBridge->Cfg.Alias, "Bridge%d", pCosaDMBridging->ulNextBridgeInstance);
+    _ansc_sprintf(pDmlBridge->Cfg.Alias, "Bridge%lu", pCosaDMBridging->ulNextBridgeInstance);
 #endif
     pDmlBridge->Cfg.Std = COSA_DML_BRG_STD_8021Q_2005;
     pDmlBridge->Cfg.bAllowDelete = TRUE;
@@ -580,7 +596,7 @@ Bridge_AddEntry
 
     _ansc_memset(pVLAN, 0, sizeof(COSA_DML_BRG_VLAN_FULL));
 
-    _ansc_sprintf(pVLAN->Cfg.Alias, "cpe-VLAN%d", pDmlBridge->ulNextVLANInsNum);
+    _ansc_sprintf(pVLAN->Cfg.Alias, "cpe-VLAN%lu", pDmlBridge->ulNextVLANInsNum);
     
     /* Update the middle layer cache */
     if ( TRUE )
@@ -663,6 +679,8 @@ Bridge_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(hInstance);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
     PCOSA_DATAMODEL_BRIDGING        pCosaDMBridging   = (PCOSA_DATAMODEL_BRIDGING )g_pCosaBEManager->hBridging;
@@ -728,6 +746,7 @@ Bridge_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
 
@@ -783,8 +802,12 @@ Bridge_GetParamIntValue
         int*                        pInt
     )
 {
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
+     /*PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;*/
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -903,6 +926,8 @@ Bridge_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
 
@@ -1033,8 +1058,11 @@ Bridge_SetParamIntValue
         int                         iValue
     )
 {
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+    /*PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext; */
 
     /* check the parameter name and set the corresponding value */
 
@@ -1275,7 +1303,6 @@ Bridge_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_BRIDGING        pCosaDMBridging   = (PCOSA_DATAMODEL_BRIDGING )g_pCosaBEManager->hBridging;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
 
@@ -1324,9 +1351,10 @@ Bridge_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_BRIDGING        pCosaDMBridging   = (PCOSA_DATAMODEL_BRIDGING )g_pCosaBEManager->hBridging;
+    UNREFERENCED_PARAMETER(hInsContext);
+    /*PCOSA_DATAMODEL_BRIDGING        pCosaDMBridging   = (PCOSA_DATAMODEL_BRIDGING )g_pCosaBEManager->hBridging;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
+    PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;*/
 
     return 0;
 }
@@ -1417,7 +1445,7 @@ Port_GetEntryCount
     return:     list entry
 
 **********************************************************************/
-static const PCOSA_CONTEXT_LINK_OBJECT
+static PCOSA_CONTEXT_LINK_OBJECT
 Find_SListEntry_By_InstanceNumber
     (
         PSLIST_HEADER pList,
@@ -1439,7 +1467,7 @@ Find_SListEntry_By_InstanceNumber
         }
     }
 
-    return (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+    return ((PCOSA_CONTEXT_LINK_OBJECT)NULL);
 }
                             
 
@@ -1544,7 +1572,7 @@ Port_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pPort->Cfg.Alias, "Port%d", pDmlBridge->ulNextPortInsNum);
+    _ansc_sprintf(pPort->Cfg.Alias, "Port%lu", pDmlBridge->ulNextPortInsNum);
 
     /* Update the middle layer cache */
     if ( TRUE )
@@ -1773,7 +1801,6 @@ Port_GetParamIntValue
     )
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_BRG_PORT_FULL         pPort            = (PCOSA_DML_BRG_PORT_FULL  )pCosaContext->hContext;
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge       = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hParentTable;
 
     /* check the parameter name and return the corresponding value */
@@ -1781,6 +1808,7 @@ Port_GetParamIntValue
     {
         //$HL 7/3/2013
         /* collect value */
+        //PCOSA_DML_BRG_PORT_FULL         pPort            = (PCOSA_DML_BRG_PORT_FULL  )pCosaContext->hContext;
         //*pInt = pPort->Cfg.PVID;
         *pInt = CosaDmlBrgGetVLANID(pDmlBridge->Cfg.InstanceNumber);
         return TRUE;
@@ -1951,6 +1979,7 @@ Port_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_PORT_FULL         pPort            = (PCOSA_DML_BRG_PORT_FULL  )pCosaContext->hContext;
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge       = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hParentTable;
@@ -2155,21 +2184,20 @@ Port_GetParamStringValue
                      break;
                 }
 
-                if (path){
-                    path[strlen(path)] = '\0';
-                    pLowerLayer = CosaUtilGetLowerLayers(path, portList->Cfg.LinkName);
+                path[strlen(path)] = '\0';
+                pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)path, (PUCHAR)portList->Cfg.LinkName);
                 
-                    if (pLowerLayer && strlen(pLowerLayer) != 0) {
-                        strcat(lowerLayer, pLowerLayer);
-                        strcat(lowerLayer, ",");
-                        AnscFreeMemory(pLowerLayer);
-                    }
+                if (pLowerLayer && strlen((const char*)pLowerLayer) != 0) {
+                    strcat(lowerLayer, (const char*)pLowerLayer);
+                    strcat(lowerLayer, ",");
+                    AnscFreeMemory(pLowerLayer);
                 }
+
             }
-            if (lowerLayer){
-                lowerLayer[strlen(lowerLayer)-1] = '\0';
-                AnscCopyString(pValue, lowerLayer);
-            }
+
+            lowerLayer[strlen(lowerLayer)-1] = '\0';
+            AnscCopyString(pValue, lowerLayer);
+
             return 0;
       }
       else
@@ -2177,33 +2205,33 @@ Port_GetParamStringValue
         switch (pPort->Cfg.LinkType) {
             case COSA_DML_BRG_LINK_TYPE_EthVlan:
             case COSA_DML_BRG_LINK_TYPE_Eth:
-                pLowerLayer = CosaUtilGetLowerLayers("Device.Ethernet.Interface.", pPort->Cfg.LinkName);
-                AnscCopyString(pValue, pLowerLayer);
+                pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)"Device.Ethernet.Interface.", (PUCHAR)pPort->Cfg.LinkName);
+                AnscCopyString(pValue, (char*)pLowerLayer);
                 AnscFreeMemory(pLowerLayer);
                 break;
             #ifndef _CBR_PRODUCT_REQ_
             case COSA_DML_BRG_LINK_TYPE_Moca:
-                pLowerLayer = CosaUtilGetLowerLayers("Device.MoCA.Interface.", pPort->Cfg.LinkName);
+                pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)"Device.MoCA.Interface.", (PUCHAR)pPort->Cfg.LinkName);
                 //AnscTraceFlow(("<HL>%s moca lowerlayer=%s\n",__FUNCTION__,pLowerLayer ));
-                AnscCopyString(pValue, pLowerLayer);
+                AnscCopyString(pValue, (char*)pLowerLayer);
                 AnscFreeMemory(pLowerLayer);
                 break;
             #endif
             case COSA_DML_BRG_LINK_TYPE_WiFiSsid:
-                pLowerLayer = CosaUtilGetLowerLayers("Device.WiFi.SSID.", pPort->Cfg.LinkName);
+                pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)"Device.WiFi.SSID.", (PUCHAR)pPort->Cfg.LinkName);
                 //AnscTraceFlow(("<HL>%s wifi lowerlayer=%s\n",__FUNCTION__,pLowerLayer ));
-                AnscCopyString(pValue, pLowerLayer);
+                AnscCopyString(pValue, (char*)pLowerLayer);
                 AnscFreeMemory(pLowerLayer);
                 break;
             case COSA_DML_BRG_LINK_TYPE_Bridge:
-                pLowerLayer = CosaUtilGetLowerLayers("Device.Bridging.Bridge.", pPort->Cfg.LinkName);
-                AnscCopyString(pValue, pLowerLayer);
+                pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)"Device.Bridging.Bridge.", (PUCHAR)pPort->Cfg.LinkName);
+                AnscCopyString(pValue, (char*)pLowerLayer);
                 AnscFreeMemory(pLowerLayer);
                 break;
             case COSA_DML_BRG_LINK_TYPE_Gre: //$HL 07/15/2013
-                pLowerLayer = CosaUtilGetLowerLayers("Device.X_CISCO_COM_GRE.Interface.", pPort->Cfg.LinkName);
+                pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)"Device.X_CISCO_COM_GRE.Interface.", (PUCHAR)pPort->Cfg.LinkName);
                 //AnscTraceFlow(("<HL>%s Gre lowerlayer=%s\n",__FUNCTION__,pLowerLayer ));
-                AnscCopyString(pValue, pLowerLayer);
+                AnscCopyString(pValue, (char*)pLowerLayer);
                 AnscFreeMemory(pLowerLayer);
                 break;
             case COSA_DML_BRG_LINK_TYPE_Usb:
@@ -2459,7 +2487,7 @@ Port_SetParamUlongValue
     if( AnscEqualString(ParamName, "PriorityRegeneration", TRUE) )
     {
         /* Not supported here */
-        AnscCopyString(pPort->Cfg.PriorityRegeneration, "");
+        AnscCopyString((char*)pPort->Cfg.PriorityRegeneration, "");
 
         return TRUE;
     }
@@ -2543,8 +2571,8 @@ Port_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_PORT_FULL         pPort            = (PCOSA_DML_BRG_PORT_FULL  )pCosaContext->hContext;
     ULONG                           ulEntryNameLen   = 256;
-    UCHAR                           ucEntryParamName[256] = {0};
-    UCHAR                           ucEntryNameValue[256] = {0};
+    CHAR                            ucEntryParamName[256] = {0};
+    CHAR                           ucEntryNameValue[256] = {0};
     parameterValStruct_t            varStruct;
     errno_t rc = -1;
     int ind    = -1;
@@ -2936,6 +2964,7 @@ Port_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -2990,6 +3019,9 @@ PortStats_GetParamBoolValue
     )
 {
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     return FALSE;
 }
 
@@ -3032,6 +3064,9 @@ PortStats_GetParamIntValue
     )
 {
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -3253,6 +3288,10 @@ PortStats_GetParamStringValue
     )
 {
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     return -1;
 }
 
@@ -3417,8 +3456,8 @@ VLAN_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pVLAN->Cfg.Alias, "cpe-VLAN%d", pDmlBridge->ulNextVLANInsNum);
-    _ansc_sprintf(pVLAN->Info.Name, "cpe-VLAN%d", pDmlBridge->ulNextVLANInsNum);
+    _ansc_sprintf(pVLAN->Cfg.Alias, "cpe-VLAN%lu", pDmlBridge->ulNextVLANInsNum);
+    _ansc_sprintf(pVLAN->Info.Name, "cpe-VLAN%lu", pDmlBridge->ulNextVLANInsNum);
 
     /* Update the middle layer cache */
     if ( TRUE )
@@ -3503,12 +3542,14 @@ VLAN_DelEntry
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pDmlBridge->VLANList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2   = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_BRG_VLAN_FULL         pVLAN           = (PCOSA_DML_BRG_VLAN_FULL  )pCosaContext2->hContext;
-
-    PSLIST_HEADER                   pVlanPortList   = (PSLIST_HEADER            )&pDmlBridge->VLANPortList;
-    PSINGLE_LINK_ENTRY              pSLinkEntry     = (PSINGLE_LINK_ENTRY       )AnscSListGetFirstEntry(pVlanPortList);
     
     //$HL 7/8/2013
- /*   while ( pSLinkEntry )
+
+ /*
+    PSLIST_HEADER                   pVlanPortList   = (PSLIST_HEADER            )&pDmlBridge->VLANPortList;
+    PSINGLE_LINK_ENTRY              pSLinkEntry     = (PSINGLE_LINK_ENTRY       )AnscSListGetFirstEntry(pVlanPortList);
+ 
+    while ( pSLinkEntry )
     {
         PCOSA_CONTEXT_LINK_OBJECT pCosaContext3 = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
         pSLinkEntry   = AnscSListGetNextEntry(pSLinkEntry);
@@ -3686,6 +3727,10 @@ VLAN_GetParamUlongValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
+
     return FALSE;
 }
 
@@ -3736,6 +3781,7 @@ VLAN_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_VLAN_FULL         pVLAN            = (PCOSA_DML_BRG_VLAN_FULL  )pCosaContext->hContext;
 
@@ -3798,14 +3844,16 @@ VLAN_SetParamBoolValue
         BOOL                        bValue
     )
 {
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_BRG_VLAN_FULL         pVLAN            = (PCOSA_DML_BRG_VLAN_FULL  )pCosaContext->hContext;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(bValue);
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE) )
     {
         /* save update to backup */
         //$HL 07/2/2013
+        //PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+        //PCOSA_DML_BRG_VLAN_FULL         pVLAN            = (PCOSA_DML_BRG_VLAN_FULL  )pCosaContext->hContext;
         //pVLAN->Cfg.bEnabled = bValue;
 
         return FALSE;
@@ -3911,6 +3959,9 @@ VLAN_SetParamUlongValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     return FALSE;
 }
 
@@ -4356,7 +4407,7 @@ VLANPort_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pVLANPort->Cfg.Alias, "cpe-VLANPort%d", pDmlBridge->ulNextVLANPortInsNum);
+    _ansc_sprintf(pVLANPort->Cfg.Alias, "cpe-VLANPort%lu", pDmlBridge->ulNextVLANPortInsNum);
 
     /* Update the middle layer cache */
     if ( TRUE )
@@ -4570,6 +4621,9 @@ VLANPort_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -4614,6 +4668,9 @@ VLANPort_GetParamUlongValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
     return FALSE;
 }
 
@@ -4664,6 +4721,7 @@ VLANPort_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge      = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hParentTable;
     PCOSA_DML_BRG_VLANPORT_FULL     pVLANPort       = (PCOSA_DML_BRG_VLANPORT_FULL)pCosaContext->hContext;
@@ -4681,7 +4739,7 @@ VLANPort_GetParamStringValue
         /* collect value */
         if (pVLANPort->Cfg.VLANInsNum > 0)
         {
-            _ansc_sprintf(pValue, "Device.Bridging.Bridge.%u.VLAN.%u.",
+            _ansc_sprintf(pValue, "Device.Bridging.Bridge.%lu.VLAN.%lu.",
                           pDmlBridge->Cfg.InstanceNumber, pVLANPort->Cfg.VLANInsNum);
         }
         else
@@ -4696,7 +4754,7 @@ VLANPort_GetParamStringValue
         /* collect value */
         if (pVLANPort->Cfg.PortInsNum > 0)
         {
-            _ansc_sprintf(pValue, "Device.Bridging.Bridge.%u.Port.%u.",
+            _ansc_sprintf(pValue, "Device.Bridging.Bridge.%lu.Port.%lu.",
                           pDmlBridge->Cfg.InstanceNumber, pVLANPort->Cfg.PortInsNum);
         }
         else
@@ -4813,6 +4871,9 @@ VLANPort_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     return FALSE;
 }
 
@@ -4857,6 +4918,9 @@ VLANPort_SetParamUlongValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     return FALSE;
 }
 
@@ -4899,7 +4963,6 @@ VLANPort_SetParamStringValue
     )
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_BRG_FULL_ALL          pDmlBridge      = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hParentTable;
     PCOSA_DML_BRG_VLANPORT_FULL     pVLANPort       = (PCOSA_DML_BRG_VLANPORT_FULL)pCosaContext->hContext;
 
     AnscTraceFlow(("%s: %s='%s'\n", __func__, ParamName, pString));
@@ -4922,7 +4985,7 @@ VLANPort_SetParamStringValue
             pVLANPort->Cfg.VLANInsNum = 0;
         return TRUE;
         }
-        else if (_ansc_sscanf(pString, "Device.Bridging.Bridge.%u.VLAN.%u.", &brInsNum, &vlanInsNum)==2 &&
+        else if (_ansc_sscanf(pString, "Device.Bridging.Bridge.%lu.VLAN.%lu.", &brInsNum, &vlanInsNum)==2 &&
                  brInsNum > 0 && vlanInsNum > 0)
         {
             pVLANPort->Cfg.VLANInsNum = vlanInsNum;
@@ -4945,7 +5008,7 @@ VLANPort_SetParamStringValue
             pVLANPort->Cfg.PortInsNum = 0;
         return TRUE;
         }
-        else if (_ansc_sscanf(pString, "Device.Bridging.Bridge.%u.Port.%u.", &brInsNum, &portInsNum)==2 &&
+        else if (_ansc_sscanf(pString, "Device.Bridging.Bridge.%lu.Port.%lu.", &brInsNum, &portInsNum)==2 &&
                  brInsNum > 0 && portInsNum > 0)
         {
             pVLANPort->Cfg.PortInsNum = portInsNum;
@@ -5009,7 +5072,6 @@ VLANPort_Validate
     PSLIST_HEADER                   pListHead        = (PSLIST_HEADER            )&pDmlBridge->VLANPortList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2    = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry      = (PSINGLE_LINK_ENTRY       )NULL;
-    PCOSA_DML_BRG_VLAN_FULL         pVLAN            = (PCOSA_DML_BRG_VLAN_FULL  )NULL;
 
     AnscTraceFlow(("%s\n", __func__));
 
@@ -5239,6 +5301,7 @@ Filter_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -5280,6 +5343,7 @@ Filter_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     *pInsNumber  = nIndex + 1; 
     return NULL; /* return the handle */
 }
@@ -5317,6 +5381,8 @@ Filter_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pInsNumber);
     return NULL; /* return the handle */
 }
 
@@ -5353,6 +5419,8 @@ Filter_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(hInstance);
     return 0; /* succeeded */
 }
 
@@ -5395,6 +5463,8 @@ Filter_GetParamBoolValue
     )
 {
     /* check the parameter name and return the corresponding value */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pBool);
     if( AnscEqualString(ParamName, "Enable", TRUE) )
     {
         /* collect value */
@@ -5501,6 +5571,9 @@ Filter_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -5543,6 +5616,8 @@ Filter_GetParamUlongValue
     )
 {
     /* check the parameter name and return the corresponding value */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(puLong);
     if( AnscEqualString(ParamName, "Status", TRUE) )
     {
         /* collect value */
@@ -5632,6 +5707,9 @@ Filter_GetParamStringValue
     )
 {
     /* check the parameter name and return the corresponding value */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* collect value */
@@ -5742,6 +5820,8 @@ Filter_SetParamBoolValue
     )
 {
     /* check the parameter name and set the corresponding value */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(bValue);
     if( AnscEqualString(ParamName, "Enable", TRUE) )
     {
         /* save update to backup */
@@ -5848,6 +5928,9 @@ Filter_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     return FALSE;
 }
 
@@ -5889,6 +5972,8 @@ Filter_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(uValue);
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Order", TRUE) )
     {
@@ -5963,6 +6048,8 @@ Filter_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pString);
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
@@ -6073,6 +6160,9 @@ Filter_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -6104,6 +6194,7 @@ Filter_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -6136,6 +6227,7 @@ Filter_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 

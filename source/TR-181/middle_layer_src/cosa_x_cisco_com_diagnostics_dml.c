@@ -109,6 +109,7 @@ Entry_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DIAGNOSTICS     pDiag    = (PCOSA_DATAMODEL_DIAGNOSTICS)g_pCosaBEManager->hDiag;
 
     return pDiag->ulDiagEntryNumber;
@@ -122,6 +123,7 @@ Entry_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DIAGNOSTICS     pDiag    = (PCOSA_DATAMODEL_DIAGNOSTICS)g_pCosaBEManager->hDiag;
 
     *pInsNumber                     = nIndex + 1;
@@ -145,6 +147,7 @@ Entry_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if ( !last_tick ) 
     {
         last_tick = AnscGetTickInSeconds();
@@ -192,6 +195,7 @@ Entry_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     static int first = 1;
     PCOSA_DATAMODEL_DIAGNOSTICS     pMyObject           = (PCOSA_DATAMODEL_DIAGNOSTICS)g_pCosaBEManager->hDiag;
     ULONG                           index               = 0;
@@ -266,6 +270,9 @@ Entry_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
     
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -310,6 +317,9 @@ Entry_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -459,6 +469,7 @@ Eventlog_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DIAGNOSTICS     pDiag    = (PCOSA_DATAMODEL_DIAGNOSTICS)g_pCosaBEManager->hDiag;
 
     return pDiag->ulDiagEventlogNumber;
@@ -472,6 +483,7 @@ Eventlog_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DIAGNOSTICS     pDiag    = (PCOSA_DATAMODEL_DIAGNOSTICS)g_pCosaBEManager->hDiag;
 
     *pInsNumber                     = nIndex + 1;
@@ -492,6 +504,7 @@ Eventlog_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if ( !eventlog_last_tick ) 
     {
         eventlog_last_tick = AnscGetTickInSeconds();
@@ -542,6 +555,8 @@ Eventlog_Synchronize
     PCOSA_DATAMODEL_DIAGNOSTICS     pMyObject           = (PCOSA_DATAMODEL_DIAGNOSTICS)g_pCosaBEManager->hDiag;
     ULONG                           index               = 0;
     static int first = 1;
+
+    UNREFERENCED_PARAMETER(hInsContext);
 
     if (first) 
     {
@@ -613,6 +628,9 @@ Eventlog_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
     
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -657,6 +675,9 @@ Eventlog_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -808,10 +829,11 @@ X_CISCO_COM_Diagnostics_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ULONG logSize = *pUlSize;
     if( AnscEqualString(ParamName, "DumpAllSyslog", TRUE))
     {
-        if(ANSC_STATUS_FAILURE == CosaDmlDiagnosticsGetAllSyslog(pValue, &logSize) != ANSC_STATUS_SUCCESS)
+        if((ANSC_STATUS_FAILURE == CosaDmlDiagnosticsGetAllSyslog(pValue, &logSize)) != ANSC_STATUS_SUCCESS)
         {
             if(logSize > *pUlSize){
                 *pUlSize = logSize;
@@ -825,7 +847,7 @@ X_CISCO_COM_Diagnostics_GetParamStringValue
  
     if( AnscEqualString(ParamName, "DumpAllEventlog", TRUE))
     {
-        if(ANSC_STATUS_FAILURE == CosaDmlDiagnosticsGetAllEventlog(pValue, &logSize) != ANSC_STATUS_SUCCESS)
+        if((ANSC_STATUS_FAILURE == CosaDmlDiagnosticsGetAllEventlog(pValue, &logSize)) != ANSC_STATUS_SUCCESS)
         {
             if(logSize > *pUlSize){
                 *pUlSize = logSize;

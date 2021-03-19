@@ -1041,5 +1041,10 @@ RIPv2_Rollback
         ANSC_HANDLE                 hInsContext
     );
 
+ANSC_STATUS 
+is_usg_in_bridge_mode
+    (
+        BOOL                        *pBridgeMode
+    );
 
 #endif

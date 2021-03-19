@@ -126,13 +126,14 @@ RLog_SaveConf(const PCOSA_DML_RLOG conf)
 
     Utopia_RawSet(&ctx, NULL, RLOG_CFG_HOST, conf->Host);
 
-    snprintf(param, sizeof(param), "%d", conf->Port);
+    snprintf(param, sizeof(param), "%lu", conf->Port);
     Utopia_RawSet(&ctx, NULL, RLOG_CFG_PORT, param);
 
     Utopia_Free(&ctx, 1);
     return 0;
 }
 
+#if !defined(INTEL_PUMA7)
 static int 
 RLog_GetLevel(void)
 {
@@ -155,12 +156,15 @@ RLog_GetLevel(void)
     fclose(fp);
     return level;
 }
+#endif
 
 static int
 RLog_Restart(PCOSA_DML_RLOG conf)
 {
+#if !defined(INTEL_PUMA7)
     int err, level;
-
+    level = RLog_GetLevel();
+#endif
 #if 0 /* no PID file in current version */
     if (access(SYSLOGD_PID_FILE, F_OK) == 0)
         vsystem("kill `cat %s`", SYSLOGD_PID_FILE);
@@ -168,7 +172,6 @@ RLog_Restart(PCOSA_DML_RLOG conf)
     vsystem("kill `ps | awk '/syslogd/ && !/awk/ {print $1}'`");
 #endif
 
-    level = RLog_GetLevel();
     if (conf->Enable && strlen(conf->Host) > 0)
     {
         CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
@@ -186,9 +189,10 @@ RLog_Restart(PCOSA_DML_RLOG conf)
         err = vsystem("syslogd -l %d", level);
         #endif
     }
-
+#if !defined(INTEL_PUMA7)
     if (err != 0)
         return -1;
+#endif
 
     return 0;
 }
@@ -197,7 +201,6 @@ ANSC_STATUS
 CosaDmlRLog_Init(void)
 {
     COSA_DML_RLOG conf;
-    int level;
 
     if (RLog_LoadConf(&conf) != 0)
     {

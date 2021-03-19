@@ -68,12 +68,18 @@
 
 #include "dml_tr181_custom_cfg.h"
 #include "cosa_ethernet_dml.h"
-
 #ifdef _HUB4_PRODUCT_REQ_
 #include <sys/sysinfo.h>
 #define WAN_INTERFACE_LEN 8
 #define BUFLEN_16 16
 #endif
+
+ANSC_STATUS
+COSAGetParamValueByPathName
+    (
+        parameterValStruct_t       *val,
+        ULONG                      *parameterValueLength
+    );
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -161,6 +167,10 @@ Ethernet_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
+    
     return FALSE;
 }
 
@@ -205,6 +215,10 @@ Ethernet_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -249,6 +263,10 @@ Ethernet_GetParamUlongValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
+
     return FALSE;
 }
 
@@ -302,6 +320,11 @@ Ethernet_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     return -1;
 }
 
@@ -353,9 +376,8 @@ Interface_GetEntryCount
     (
         ANSC_HANDLE                 hInsContext
     )
-{
-    PCOSA_DATAMODEL_ETHERNET        pMyObject     = (PCOSA_DATAMODEL_ETHERNET)g_pCosaBEManager->hEthernet;
-    
+{   
+    UNREFERENCED_PARAMETER(hInsContext);
     return CosaDmlEthPortGetNumberOfEntries(NULL);
 }
 
@@ -397,6 +419,7 @@ Interface_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ETHERNET        pMyObject     = (PCOSA_DATAMODEL_ETHERNET)g_pCosaBEManager->hEthernet;
 
     *pInsNumber = pMyObject->EthernetPortFullTable[nIndex].Cfg.InstanceNumber;
@@ -648,7 +671,6 @@ Interface_GetParamStringValue
 {
     PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
     char assocDeviceMacList[(17 * ETH_INTERFACE_MAX_ASSOC_DEVICES) + 1];
-    int numAssocDev = 0;
 
 
     /* check the parameter name and return the corresponding value */
@@ -679,7 +701,7 @@ Interface_GetParamStringValue
 #if CFG_TR181_ETH_BORROW_MAC
 	if( (0x00 == pEthernetPortFull->StaticInfo.MacAddress[0]) && (0x00 == pEthernetPortFull->StaticInfo.MacAddress[1]) && (0x00 == pEthernetPortFull->StaticInfo.MacAddress[2]) && (0x00 == pEthernetPortFull->StaticInfo.MacAddress[3]) && (0x00 == pEthernetPortFull->StaticInfo.MacAddress[4]) && (0x00 == pEthernetPortFull->StaticInfo.MacAddress[5]))
 	{
-		UCHAR strMac[128] = {0};
+		CHAR strMac[128] = {0};
 		if ( -1 != _getMac("brlan0", strMac) )
 		{
 			AnscCopyMemory(pEthernetPortFull->StaticInfo.MacAddress,strMac,6);
@@ -689,7 +711,7 @@ Interface_GetParamStringValue
 #if defined(MULTILAN_FEATURE)   
 #if defined(INTEL_PUMA7)
 
-        UCHAR strMac[128] = {0};
+        CHAR strMac[128] = {0};
         if(strcmp(pEthernetPortFull->StaticInfo.Name, "erouter0") == 0 ) {
                 if ( -1 != _getMac("erouter0", strMac) )
                 {
@@ -1209,6 +1231,7 @@ AssociatedDevice1_IsUpdated
      ANSC_HANDLE hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return TRUE;
 }
 
@@ -1289,7 +1312,8 @@ AssociatedDevice1_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
-	PCOSA_DML_ASSOCDEV_INFO	     pAssocClient	= (PCOSA_DML_ASSOCDEV_INFO)hInsContext;
+	UNREFERENCED_PARAMETER(pUlSize);
+        PCOSA_DML_ASSOCDEV_INFO	     pAssocClient	= (PCOSA_DML_ASSOCDEV_INFO)hInsContext;
 
 	if( AnscEqualString(ParamName, "MACAddress", TRUE))
 	{
@@ -1354,6 +1378,10 @@ Stats_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
+
     return FALSE;
 }
 
@@ -1398,6 +1426,10 @@ Stats_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -1605,6 +1637,11 @@ Stats_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     return -1;
 }
 
@@ -1659,6 +1696,7 @@ Link_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ETHERNET        pMyObject = (PCOSA_DATAMODEL_ETHERNET)g_pCosaBEManager->hEthernet;
     
     return AnscSListQueryDepth(&pMyObject->EthernetLinkList);
@@ -1702,8 +1740,8 @@ Link_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ETHERNET        pMyObject               = (PCOSA_DATAMODEL_ETHERNET )g_pCosaBEManager->hEthernet;
-    PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->EthernetLinkList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry             = (PSINGLE_LINK_ENTRY       )NULL;
     PCOSA_DML_ETH_LINK_FULL         pEntry                  = (PCOSA_DML_ETH_LINK_FULL  )NULL;
@@ -1757,11 +1795,11 @@ Link_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ETHERNET        pMyObject               = (PCOSA_DATAMODEL_ETHERNET )g_pCosaBEManager->hEthernet;
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->EthernetLinkList;
     PCOSA_DML_ETH_LINK_FULL         pEntry                  = (PCOSA_DML_ETH_LINK_FULL  )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PSINGLE_LINK_ENTRY              pSLinkEntry             = (PSINGLE_LINK_ENTRY       )NULL;
 
 #if defined(_COSA_DRG_CNS_) || defined(_COSA_DRG_TPG_)
     return NULL;
@@ -1773,7 +1811,7 @@ Link_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Cfg.Alias, "Link%d", pMyObject->ulEthernetLinkNextInstance);
+    _ansc_sprintf(pEntry->Cfg.Alias, "Link%lu", pMyObject->ulEthernetLinkNextInstance);
 
     /* Update the cache */
     pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
@@ -1839,6 +1877,7 @@ Link_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2           = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_ETH_LINK_FULL         pEntry                  = (PCOSA_DML_ETH_LINK_FULL  )pCosaContext->hContext;
@@ -1984,6 +2023,10 @@ Link_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -2133,10 +2176,10 @@ Link_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DATAMODEL_ETHERNET        pMyObject               = (PCOSA_DATAMODEL_ETHERNET )g_pCosaBEManager->hEthernet;
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ETH_LINK_FULL         pEntry                  = (PCOSA_DML_ETH_LINK_FULL)pContextLinkObject->hContext;
-    PUCHAR                          pLowerLayer             = NULL;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -2351,6 +2394,10 @@ Link_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     return FALSE;
 }
 
@@ -2395,6 +2442,10 @@ Link_SetParamUlongValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
+
     return FALSE;
 }
 
@@ -2450,19 +2501,19 @@ Link_SetParamStringValue
     if( AnscEqualString(ParamName, "LowerLayers", TRUE))
     {
         ULONG                           ulIndex;
-        UCHAR                           ucEntryParamName[256]       = {0};
-        UCHAR                           ucEntryNameValue[256]       = {0};
+        CHAR                            ucEntryParamName[256]       = {0};
+        CHAR                            ucEntryNameValue[256]       = {0};
 #if defined (MULTILAN_FEATURE)
         ULONG                           ulEntryNameLen = 256;
 #else
-	int                             size;
+        ULONG                             size;
         parameterValStruct_t            varStruct;
 #endif
         if ( _ansc_strlen(pString) == 0 )
         {
             pEntry->Cfg.LinkType    = COSA_DML_LINK_TYPE_LAST;
             pEntry->Cfg.LinkInstNum = 0;
-            pEntry->Cfg.LinkName[0] = "\0";
+            pEntry->Cfg.LinkName[0] = '\0';
         }
         else
         {
@@ -2732,6 +2783,10 @@ Stats1_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
+
     return FALSE;
 }
 
@@ -2776,6 +2831,10 @@ Stats1_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -2985,6 +3044,11 @@ Stats1_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     return -1;
 }
 
@@ -3040,6 +3104,7 @@ VLANTermination_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ETHERNET        pMyObject = (PCOSA_DATAMODEL_ETHERNET)g_pCosaBEManager->hEthernet;
     
     return AnscSListQueryDepth(&pMyObject->EthernetVlanTerminationList);
@@ -3083,11 +3148,10 @@ VLANTermination_GetEntry
         ULONG*                      pInsNumber
     )
 {
-    PCOSA_DATAMODEL_ETHERNET        pMyObject               = (PCOSA_DATAMODEL_ETHERNET )g_pCosaBEManager->hEthernet;
-    PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->EthernetVlanTerminationList;
+    UNREFERENCED_PARAMETER(hInsContext);
+   PCOSA_DATAMODEL_ETHERNET        pMyObject               = (PCOSA_DATAMODEL_ETHERNET )g_pCosaBEManager->hEthernet;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry             = (PSINGLE_LINK_ENTRY       )NULL;
-    PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)NULL;
 
     pSLinkEntry = AnscSListGetEntryByIndex(&pMyObject->EthernetVlanTerminationList, nIndex);
 
@@ -3096,8 +3160,6 @@ VLANTermination_GetEntry
         pCosaContext = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
 
         *pInsNumber = pCosaContext->InstanceNumber;
-
-        pEntry = pCosaContext->hContext;
     }
 
     return pCosaContext;
@@ -3136,11 +3198,11 @@ VLANTermination_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ETHERNET        pMyObject               = (PCOSA_DATAMODEL_ETHERNET )g_pCosaBEManager->hEthernet;
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->EthernetVlanTerminationList;
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL  )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PSINGLE_LINK_ENTRY              pSLinkEntry             = (PSINGLE_LINK_ENTRY       )NULL;
 
     pEntry = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)AnscAllocateMemory(sizeof(COSA_DML_ETH_VLAN_TERMINATION_FULL));
     if (!pEntry)
@@ -3148,8 +3210,8 @@ VLANTermination_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->StaticInfo.Name, "cpe-vlan-termination%d", pMyObject->ulEthernetVlanTerminationNextInstance);
-    _ansc_sprintf(pEntry->Cfg.Alias, "cpe-vlan-termination%d", pMyObject->ulEthernetVlanTerminationNextInstance);
+    _ansc_sprintf(pEntry->StaticInfo.Name, "cpe-vlan-termination%lu", pMyObject->ulEthernetVlanTerminationNextInstance);
+    _ansc_sprintf(pEntry->Cfg.Alias, "cpe-vlan-termination%lu", pMyObject->ulEthernetVlanTerminationNextInstance);
 
     pEntry->DynamicInfo.Status = COSA_DML_IF_STATUS_NotPresent;
 
@@ -3217,6 +3279,7 @@ VLANTermination_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2           = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)pCosaContext->hContext;
@@ -3350,6 +3413,10 @@ VLANTermination_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -3470,9 +3537,9 @@ VLANTermination_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)pContextLinkObject->hContext;
-    PUCHAR                          pLowerLayer             = NULL;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -3595,6 +3662,10 @@ VLANTermination_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     return FALSE;
 }
 
@@ -3941,6 +4012,10 @@ VLANTermination_Stats_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
+
     return FALSE;
 }
 
@@ -3985,6 +4060,10 @@ VLANTermination_Stats_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -4193,5 +4272,10 @@ VLANTermination_Stats_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     return -1;
 }

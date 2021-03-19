@@ -19,7 +19,9 @@
 #include "plugin_main_apis.h"
 #include "cosa_dslite_internal.h"
 
+#ifdef DSLITE_FEATURE_SUPPORT
 static const char *UPDATE_RESOLV_CMD = "/bin/sh /etc/utopia/service.d/set_resolv_conf.sh";
+#endif
 /***********************************************************************
 
  APIs for Object:
@@ -56,6 +58,9 @@ DSLite_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
 #ifdef DSLITE_FEATURE_SUPPORT
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
@@ -85,6 +90,9 @@ DSLite_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(bValue);
 #ifdef DSLITE_FEATURE_SUPPORT
     int rc = -1;
     /* check the parameter name and set the corresponding value */
@@ -105,6 +113,7 @@ InterfaceSetting4_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
 #ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_DATAMODEL_DSLITE pDslite = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
 
@@ -122,6 +131,9 @@ InterfaceSetting4_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(nIndex);
+    UNREFERENCED_PARAMETER(pInsNumber);
 #ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
     PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
@@ -148,6 +160,8 @@ InterfaceSetting4_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pInsNumber);
 #ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = NULL;
@@ -208,6 +222,8 @@ InterfaceSetting4_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(hInstance);
 #ifdef DSLITE_FEATURE_SUPPORT
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
@@ -246,6 +262,9 @@ InterfaceSetting4_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
 #ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                 pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
@@ -292,6 +311,10 @@ InterfaceSetting4_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
 #ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
@@ -430,6 +453,9 @@ InterfaceSetting4_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
 #ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
@@ -519,6 +545,9 @@ InterfaceSetting4_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(bValue);
 #ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
@@ -557,6 +586,9 @@ InterfaceSetting4_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
 #ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
@@ -604,6 +636,9 @@ InterfaceSetting4_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+UNREFERENCED_PARAMETER(uValue);
 #ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
@@ -640,6 +675,9 @@ InterfaceSetting4_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(puLength);
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
 #ifdef DSLITE_FEATURE_SUPPORT
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
@@ -690,6 +728,7 @@ InterfaceSetting4_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
 #ifdef DSLITE_FEATURE_SUPPORT
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
@@ -739,6 +778,7 @@ InterfaceSetting4_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
 #ifdef DSLITE_FEATURE_SUPPORT
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;

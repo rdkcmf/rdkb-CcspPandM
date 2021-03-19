@@ -70,6 +70,7 @@
 #include "cosa_routing_apis.h"
 #include "plugin_main_apis.h"
 #include "cosa_routing_internal.h"
+#include "cosa_deviceinfo_apis.h"
 #include "ansc_string_util.h"
 #include "safec_lib_common.h"
 
@@ -163,6 +164,9 @@ Routing_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
     return FALSE;
 }
 
@@ -207,6 +211,9 @@ Routing_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -251,6 +258,9 @@ Routing_GetParamUlongValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
     return FALSE;
 }
 
@@ -304,6 +314,10 @@ Routing_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     return -1;
 }
 
@@ -358,6 +372,8 @@ Router_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+
     /*
      *     assuming there is only one router in the system
     */
@@ -408,7 +424,9 @@ Router_GetEntry
     PSLIST_HEADER                   pRouterHead  = (PSLIST_HEADER)&pMyObject->RouterList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pLink        = (PSINGLE_LINK_ENTRY       )NULL;
-
+    
+    UNREFERENCED_PARAMETER(hInsContext);
+    
     pLink = AnscSListGetEntryByIndex(pRouterHead, nIndex);
 
     if ( pLink )
@@ -454,6 +472,7 @@ Router_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject    = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PSLIST_HEADER                   pRouterHead  = (PSLIST_HEADER)&pMyObject->RouterList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -550,7 +569,7 @@ Router_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject    = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PSLIST_HEADER                   pRouterHead  = (PSLIST_HEADER)&pMyObject->RouterList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
@@ -667,6 +686,10 @@ Router_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -771,6 +794,7 @@ Router_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTER_FULL2          pRouter      = (PCOSA_DML_ROUTER_FULL2)pCosaContext->hContext;
 
@@ -825,7 +849,6 @@ Router_SetParamBoolValue
         BOOL                        bValue
     )
 {
-    PCOSA_DATAMODEL_ROUTING         pMyObject    = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTER_FULL2          pRouter      = (PCOSA_DML_ROUTER_FULL2)pCosaContext->hContext;
 
@@ -885,6 +908,10 @@ Router_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     return FALSE;
 }
 
@@ -929,6 +956,10 @@ Router_SetParamUlongValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
+
     return FALSE;
 }
 
@@ -1087,7 +1118,6 @@ Router_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_ROUTING         pMyObject    = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTER_FULL2          pRouter      = (PCOSA_DML_ROUTER_FULL2)pCosaContext->hContext;
     PSLIST_HEADER                   pListHead         = (PSLIST_HEADER)NULL;
@@ -1160,7 +1190,6 @@ Router_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {   
-    PCOSA_DATAMODEL_ROUTING         pMyObject    = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTER_FULL2          pRouter      = (PCOSA_DML_ROUTER_FULL2)pCosaContext->hContext;
 
@@ -1223,6 +1252,7 @@ X_CISCO_COM_StaticIPv4Forwarding_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER       )&pMyObject->StaticRoute;
 
@@ -1267,6 +1297,7 @@ X_CISCO_COM_StaticIPv4Forwarding_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject       = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER       )&pMyObject->StaticRoute;
     PSINGLE_LINK_ENTRY              pSListEntry     = NULL;
@@ -1316,9 +1347,9 @@ X_CISCO_COM_StaticIPv4Forwarding_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject       = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER       )&pMyObject->StaticRoute;
-    PSINGLE_LINK_ENTRY              pSListEntry     = NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink        = NULL;
     PCOSA_DML_STATICROUTE_CFG       pEntry          = NULL;
     
@@ -1343,7 +1374,7 @@ X_CISCO_COM_StaticIPv4Forwarding_AddEntry
     *pInsNumber                    = pCxtLink->InstanceNumber;
 
     /* We give a permenant name here*/
-    _ansc_sprintf(pEntry->Name, "StaticRoute_%x_%lu", (ULONG)pEntry, pCxtLink->InstanceNumber );
+    _ansc_sprintf(pEntry->Name, "StaticRoute_%x_%lu", (UINT)pEntry, pCxtLink->InstanceNumber );
 
     pCxtLink->hContext       = (ANSC_HANDLE)pEntry;
     pCxtLink->hParentTable   = (ANSC_HANDLE)pMyObject;
@@ -1397,6 +1428,7 @@ X_CISCO_COM_StaticIPv4Forwarding_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_ROUTING         pMyObject       = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER                )&pMyObject->StaticRoute;
@@ -1517,6 +1549,10 @@ X_CISCO_COM_StaticIPv4Forwarding_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* AnscTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -1634,12 +1670,14 @@ X_CISCO_COM_StaticIPv4Forwarding_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_STATICROUTE_CFG       pEntry          = pCosaContext->hContext;
-
     /* check the parameter name and return the corresponding value */
 
     /* AnscTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     return -1;
 }
 
@@ -1740,6 +1778,10 @@ X_CISCO_COM_StaticIPv4Forwarding_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* AnscTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     return FALSE;
 }
 
@@ -1851,12 +1893,13 @@ X_CISCO_COM_StaticIPv4Forwarding_SetParamStringValue
         char*                       pString
     )
 {
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_STATICROUTE_CFG       pEntry          = pCosaContext->hContext;
-
     /* check the parameter name and set the corresponding value */
 
     /* AnscTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
+
     return FALSE;
 }
 
@@ -1899,10 +1942,9 @@ X_CISCO_COM_StaticIPv4Forwarding_Validate
         ULONG*                      puLength
     )
 {
-    ANSC_STATUS                     reStatus          = ANSC_STATUS_SUCCESS;        
-    PCOSA_DATAMODEL_ROUTING         pMyObject         = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
-    PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_STATICROUTE_CFG       pEntry            = (PCOSA_DML_STATICROUTE_CFG)pCxtLink->hContext;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
 
     return TRUE;
 }
@@ -1936,7 +1978,6 @@ X_CISCO_COM_StaticIPv4Forwarding_Commit
     )
 {
     ANSC_STATUS                     reStatus          = ANSC_STATUS_SUCCESS;        
-    PCOSA_DATAMODEL_ROUTING         pMyObject         = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_STATICROUTE_CFG       pEntry            = (PCOSA_DML_STATICROUTE_CFG)pCxtLink->hContext;
 
@@ -1991,11 +2032,10 @@ X_CISCO_COM_StaticIPv4Forwarding_Rollback
     )
 {
     ANSC_STATUS                     reStatus          = ANSC_STATUS_SUCCESS;        
-    PCOSA_DATAMODEL_ROUTING         pMyObject         = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_STATICROUTE_CFG       pEntry            = (PCOSA_DML_STATICROUTE_CFG)pCxtLink->hContext;
 
-    reStatus = CosaDmlStaticRouteGetEntryByName(NULL, &pEntry->Name);
+    reStatus = CosaDmlStaticRouteGetEntryByName(NULL, (PCOSA_DML_STATICROUTE_CFG)&pEntry->Name);
     
     if ( reStatus == ANSC_STATUS_SUCCESS )
     {
@@ -2171,7 +2211,7 @@ IPv4Forwarding_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pRouterForward->Alias, "IPv4Forwarding%d", pRouter->ulNextForwardInsNum);
+    _ansc_sprintf(pRouterForward->Alias, "IPv4Forwarding%lu", pRouter->ulNextForwardInsNum);
 
     /* Update the middle layer data */
     if ( TRUE )
@@ -2253,8 +2293,6 @@ IPv4Forwarding_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
-    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_ROUTING         pMyObject       = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTER_FULL2          pRouter         = (PCOSA_DML_ROUTER_FULL2)pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
@@ -2551,11 +2589,11 @@ IPv4Forwarding_GetParamStringValue
         char                            * pString      = NULL;
 
         /* collect value */
-        pString = CosaUtilGetFullPathNameByKeyword
+        pString = (char*)CosaUtilGetFullPathNameByKeyword
             (
-                "Device.IP.Interface.",
-                "Name",
-                pRouterForward->Interface
+                (PUCHAR)"Device.IP.Interface.",
+                (PUCHAR)"Name",
+                (PUCHAR)pRouterForward->Interface
             );
         
         if ( pString )
@@ -2944,7 +2982,6 @@ IPv4Forwarding_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_ROUTING         pMyObject      = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTING_V4_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V4_ENTRY)pCosaContext->hContext;
 
@@ -3163,7 +3200,7 @@ IPv6Forwarding_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Alias, "IPv6Forwarding%d", pRouter->ulNextIPv6ForwardInsNum);
+    _ansc_sprintf(pEntry->Alias, "IPv6Forwarding%lu", pRouter->ulNextIPv6ForwardInsNum);
 
     /* Update the middle layer data */
     if ( TRUE )
@@ -3244,8 +3281,6 @@ IPv6Forwarding_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
-    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_ROUTING         pMyObject       = (PCOSA_DATAMODEL_ROUTING       )g_pCosaBEManager->hRouting; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT     )hInsContext;
     PCOSA_DML_ROUTER_FULL2          pRouter         = (PCOSA_DML_ROUTER_FULL2        )pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext = (PCOSA_CONTEXT_LINK_OBJECT     )hInstance;
@@ -3296,6 +3331,7 @@ IPv6Forwarding_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     static ULONG    last_tick = 0;
 
     if (!last_tick) 
@@ -3345,7 +3381,6 @@ IPv6Forwarding_Synchronize
     )
 {
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_ROUTING         pRoute        = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT     )hInsContext;
     PCOSA_DML_ROUTER_FULL2          pRouter         = (PCOSA_DML_ROUTER_FULL2        )pCosaContext->hContext;
 
@@ -3357,7 +3392,6 @@ IPv6Forwarding_Synchronize
     PCOSA_DML_ROUTING_V6_ENTRY      pEntry        = NULL;
     ULONG                           entryCount    = 0;
     ULONG                           i             = 0;
-    ULONG                           HashValue     = 0;
     BOOL                            bFound        = FALSE;
     
  
@@ -3451,7 +3485,7 @@ IPv6Forwarding_Synchronize
             pCxtLink->bNew       = FALSE;
 
 			/* Generate Alias */
-			_ansc_sprintf(pEntry->Alias, "IPv6Forwarding%d", pCxtLink->InstanceNumber);
+			_ansc_sprintf(pEntry->Alias, "IPv6Forwarding%lu", pCxtLink->InstanceNumber);
 			
 			CosaDmlRoutingSetV6EntryValues(NULL,i,pEntry->InstanceNumber,pEntry->Alias);
             CosaSListPushEntryByInsNum(&pRouter->IPv6ForwardList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -3728,11 +3762,11 @@ IPv6Forwarding_GetParamStringValue
         char                            * pString      = NULL;
 
         /* collect value */
-        pString = CosaUtilGetFullPathNameByKeyword
+        pString = (char*)CosaUtilGetFullPathNameByKeyword
             (
-                "Device.IP.Interface.",
-                "Name",
-                pRouterForward->Interface
+                (PUCHAR)"Device.IP.Interface.",
+                (PUCHAR)"Name",
+                (PUCHAR)pRouterForward->Interface
             );
         
         if ( pString )
@@ -3929,11 +3963,13 @@ IPv6Forwarding_SetParamUlongValue
         ULONG                       uValue
     )
 {
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
+
     return FALSE;
 }
 
@@ -4147,7 +4183,6 @@ IPv6Forwarding_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_ROUTING         pMyObject      = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V6_ENTRY)pCosaContext->hContext;
 
@@ -4264,7 +4299,7 @@ RIP_GetParamBoolValue
         BOOL*                       pBool
     )
 {
-    ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_DML_RIP_CFG               pCfg          = &(pMyObject->RIPCfg);
    
@@ -4322,6 +4357,10 @@ RIP_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -4363,7 +4402,7 @@ RIP_GetParamUlongValue
         ULONG*                      puLong
     )
 {
-    ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_DML_RIP_CFG               pCfg          = &(pMyObject->RIPCfg);
 
@@ -4443,6 +4482,11 @@ RIP_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     return -1;
 }
 
@@ -4484,6 +4528,7 @@ RIP_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_DML_RIP_CFG               pCfg          = &(pMyObject->RIPCfg);
     
@@ -4544,6 +4589,10 @@ RIP_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     return FALSE;
 }
 
@@ -4585,6 +4634,7 @@ RIP_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_DML_RIP_CFG               pCfg          = &(pMyObject->RIPCfg);
 
@@ -4656,6 +4706,10 @@ RIP_SetParamStringValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
+
     return FALSE;
 }
 
@@ -4697,6 +4751,10 @@ RIP_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
+
     return TRUE;
 }
 
@@ -4728,6 +4786,7 @@ RIP_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_DML_RIP_CFG               pCfg          = &(pMyObject->RIPCfg);
 
@@ -4765,6 +4824,7 @@ RIP_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -4819,6 +4879,7 @@ InterfaceSetting_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
 
     return AnscSListQueryDepth(&pMyObject->RipIFList);
@@ -4862,6 +4923,7 @@ InterfaceSetting_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING         pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PSLIST_HEADER                   pRipIFHead    = (PSLIST_HEADER)&pMyObject->RipIFList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -4912,11 +4974,9 @@ InterfaceSetting_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    PCOSA_DATAMODEL_ROUTING         pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
-    PSLIST_HEADER                   pRipIFHead    = (PSLIST_HEADER)&pMyObject->RipIFList;
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PCOSA_DML_RIP_IF_CFG            pRipIF        = (PCOSA_DML_RIP_IF_CFG)NULL;
-
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pInsNumber);
+    
     return NULL;
 }
 
@@ -4954,11 +5014,8 @@ InterfaceSetting_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
-    ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_ROUTING         pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
-    PSLIST_HEADER                   pRipIFHead    = (PSLIST_HEADER)&pMyObject->RipIFList;
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
-    PCOSA_DML_RIP_IF_CFG            pRipIF        = (PCOSA_DML_RIP_IF_CFG)pCosaContext->hContext;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(hInstance);
 
     return -1;
 }
@@ -5082,6 +5139,10 @@ InterfaceSetting_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -5227,6 +5288,7 @@ InterfaceSetting_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RIP_IF_CFG           pRipIF         = (PCOSA_DML_RIP_IF_CFG)pCosaContext->hContext;
 
@@ -5379,6 +5441,10 @@ InterfaceSetting_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     return FALSE;
 }
 
@@ -5513,7 +5579,7 @@ InterfaceSetting_SetParamStringValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check if pString doesn't hold null or whitespaces */
-    if(AnscValidStringCheck(pString) != TRUE)
+    if(AnscValidStringCheck((PUCHAR)pString) != TRUE)
         return FALSE;
 
     if(ParamName == NULL)
@@ -5618,13 +5684,9 @@ InterfaceSetting_Validate
         ULONG*                      puLength
     )
 {
-    PCOSA_DATAMODEL_ROUTING         pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2 = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PCOSA_DML_RIP_IF_CFG           pRipIF        = (PCOSA_DML_RIP_IF_CFG)pCosaContext->hContext;
-    PCOSA_DML_RIP_IF_CFG           pRipIF2       = (PCOSA_DML_RIP_IF_CFG)NULL;
-    PSLIST_HEADER                   pRipIFHead    = (PSLIST_HEADER)&pMyObject->RipIFList;
-    PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
 
     return TRUE;
 }
@@ -5658,7 +5720,6 @@ InterfaceSetting_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-    PCOSA_DATAMODEL_ROUTING         pMyObject    = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RIP_IF_CFG            pRipIF       = (PCOSA_DML_RIP_IF_CFG)pCosaContext->hContext;
 
@@ -5708,7 +5769,6 @@ InterfaceSetting_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {   
-    PCOSA_DATAMODEL_ROUTING         pMyObject    = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting; 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RIP_IF_CFG           pRipIF       = (PCOSA_DML_RIP_IF_CFG)pCosaContext->hContext;
 
@@ -5776,10 +5836,8 @@ RouteInformation_GetParamBoolValue
         BOOL*                       pBool
     )
 {
-    PCOSA_DATAMODEL_ROUTING              pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting;
-    PCOSA_DML_ROUTEINFO_CFG              pCfg          = (PCOSA_DML_ROUTEINFO_CFG)&pMyObject->RouteInfo.Cfg;
-
     /* check the parameter name and return the corresponding value */
+    UNREFERENCED_PARAMETER(hInsContext);
     if( AnscEqualString(ParamName, "Enable", TRUE) )
     {
         /* collect value */
@@ -5833,6 +5891,10 @@ RouteInformation_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -5877,6 +5939,10 @@ RouteInformation_GetParamUlongValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
+
     return FALSE;
 }
 
@@ -5930,6 +5996,11 @@ RouteInformation_GetParamStringValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
+
     return -1;
 }
 
@@ -5971,6 +6042,7 @@ RouteInformation_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING              pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting;
     PCOSA_DML_ROUTEINFO_CFG              pCfg          = (PCOSA_DML_ROUTEINFO_CFG)&pMyObject->RouteInfo.Cfg;
 
@@ -6030,6 +6102,10 @@ RouteInformation_SetParamIntValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     return FALSE;
 }
 
@@ -6074,6 +6150,10 @@ RouteInformation_SetParamUlongValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
+
     return FALSE;
 }
 
@@ -6118,6 +6198,10 @@ RouteInformation_SetParamStringValue
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
+
     return FALSE;
 }
 
@@ -6159,6 +6243,9 @@ RouteInformation_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -6190,6 +6277,7 @@ RouteInformation_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING              pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting;
     PCOSA_DML_ROUTEINFO_CFG              pCfg          = (PCOSA_DML_ROUTEINFO_CFG)&pMyObject->RouteInfo.Cfg;
     
@@ -6227,6 +6315,7 @@ RouteInformation_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING              pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting;
     PCOSA_DML_ROUTEINFO_CFG              pCfg          = (PCOSA_DML_ROUTEINFO_CFG)&pMyObject->RouteInfo.Cfg;
 
@@ -6279,6 +6368,7 @@ InterfaceSetting3_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING              pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting;
     
     return pMyObject->RouteInfo.IfNum;
@@ -6322,6 +6412,7 @@ InterfaceSetting3_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_ROUTING            pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting;
     ULONG                              entryCount    = 0;
     PCOSA_DML_ROUTEINFO_IF_INFO        pEntry        = (PCOSA_DML_ROUTEINFO_IF_INFO)pMyObject->RouteInfo.pInfo;
@@ -6365,6 +6456,7 @@ InterfaceSetting3_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     if (!last_tick) 
     {
         last_tick = AnscGetTickInSeconds();
@@ -6410,6 +6502,7 @@ InterfaceSetting3_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_ROUTING         pMyObject     = (PCOSA_DATAMODEL_ROUTING)g_pCosaBEManager->hRouting;
     PCOSA_DML_ROUTEINFO_IF_INFO     pEntries      = (PCOSA_DML_ROUTEINFO_IF_INFO)NULL;
@@ -6483,6 +6576,10 @@ InterfaceSetting3_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
+
     return FALSE;
 }
 
@@ -6527,6 +6624,10 @@ InterfaceSetting3_GetParamIntValue
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     return FALSE;
 }
 
@@ -6637,14 +6738,16 @@ InterfaceSetting3_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DML_ROUTEINFO_IF_INFO     pEntry   = (PCOSA_DML_ROUTEINFO_IF_INFO)hInsContext;
-    PUCHAR                          pString = NULL;
+
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Interface", TRUE) )
     {
         /* collect value */
 #ifdef _COSA_DRG_CNS_
+        PUCHAR                          pString = NULL;
         pString = CosaUtilGetFullPathNameByKeyword
             (
                 "Device.IP.Interface.",

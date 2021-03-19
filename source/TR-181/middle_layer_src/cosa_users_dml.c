@@ -71,16 +71,17 @@
 #include "cosa_users_apis.h"
 #include "plugin_main_apis.h"
 #include "cosa_users_internal.h"
-
 #include "dml_tr181_custom_cfg.h"
+#include <syscfg/syscfg.h>
 
 #if     CFG_USE_CCSP_SYSLOG
     #include <ccsp_syslog.h>
 #endif
 
 
-void ResetFailedAttepmts(PCOSA_DML_USER  pEntry)
+void* ResetFailedAttepmts(void* arg)
 {
+    PCOSA_DML_USER pEntry = (PCOSA_DML_USER)arg;
 	printf("Inside ResetFailedAttepmts\n");
         pthread_detach(pthread_self());
         char buf[10];
@@ -121,20 +122,20 @@ void ResetFailedAttepmts(PCOSA_DML_USER  pEntry)
 
       pEntry->NumOfFailedAttempts = 0;
        pEntry->LockOutRemainingTime=0;
-
-
+    return NULL;
 }
 
 #if defined(_COSA_FOR_BCI_)
-void RestoreFailedAttempts(PCOSA_DML_USER  pEntry)
+void* RestoreFailedAttempts(void* arg)
 {
+        PCOSA_DML_USER  pEntry = (PCOSA_DML_USER)arg;
         printf("Inside RestoreFailedAttepmts\n");
         pthread_detach(pthread_self());
         int lockoutTime =5 ;
 
         sleep(60*lockoutTime);
         pEntry->NumOfRestoreFailedAttempt=0;
-
+        return NULL;
 }
 #endif
 
@@ -231,6 +232,7 @@ User_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERS           pUsers           = (PCOSA_DATAMODEL_USERS)g_pCosaBEManager->hUsers;
 
     return AnscSListQueryDepth( &pUsers->UserList );
@@ -274,6 +276,7 @@ User_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERS           pUsers            = (PCOSA_DATAMODEL_USERS)g_pCosaBEManager->hUsers;
     PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = NULL;
@@ -322,13 +325,10 @@ User_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERS           pUsers            = (PCOSA_DATAMODEL_USERS)g_pCosaBEManager->hUsers;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = NULL;
     PCOSA_DML_USER                  pUser             = NULL;
-    CHAR                            tmpBuff[64]       = {0};
-    ULONG                           i                 = 0;
     
     pUser  = (PCOSA_DML_USER)AnscAllocateMemory( sizeof(COSA_DML_USER) );
     if ( !pUser )
@@ -357,7 +357,7 @@ User_AddEntry
     pCxtLink->InstanceNumber = pUser->InstanceNumber;
     *pInsNumber              = pUser->InstanceNumber;
 
-    _ansc_sprintf( pUser->Username, "User%d", pUser->InstanceNumber);
+    _ansc_sprintf( pUser->Username, "User%lu", pUser->InstanceNumber);
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pUsers->UserList, pCxtLink);
@@ -410,8 +410,8 @@ User_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
     PCOSA_DATAMODEL_USERS           pUsers            = (PCOSA_DATAMODEL_USERS)g_pCosaBEManager->hUsers;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_USER                  pUser             = (PCOSA_DML_USER)pCxtLink->hContext;
@@ -1007,13 +1007,12 @@ User_SetParamUlongValue
         /* collect value */
     	char buf[10];
  	int MaxFailureAttempts = 0;
-	int lockoutState=0;
 	pUser->NumOfFailedAttempts = uValue;
 	#if defined(_COSA_FOR_BCI_)
 		if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
 		{
 			memset(buf,0,sizeof(buf));
-			sprintf(buf, "%d", uValue);
+			sprintf(buf, "%lu", uValue);
 			
 			if (syscfg_set(NULL, "NumOfFailedAttempts_2", buf) != 0) 
 			{
@@ -1046,7 +1045,6 @@ User_SetParamUlongValue
 	if ( MaxFailureAttempts == pUser->NumOfFailedAttempts )
 	{
 		//action required
-			lockoutState=1;
 			pthread_t rstattempt;
 			pthread_create(&rstattempt, NULL, &ResetFailedAttepmts, (void *)pUser);
 		CcspTraceWarning(("WebUI Login:  Num of invalid attempt is %d, WebUI is locked out for %s User\n", pUser->NumOfFailedAttempts, pUser->Username));
@@ -1054,7 +1052,6 @@ User_SetParamUlongValue
 	else if ( MaxFailureAttempts <= pUser->NumOfFailedAttempts)
 	{
 		CcspTraceWarning(("WebUI Login: Num of invalid attempt is %d, WebUI is locked out for %s User \n", pUser->NumOfFailedAttempts, pUser->Username));
-		lockoutState=1;
 	}
 	else
 	{
@@ -1146,10 +1143,6 @@ User_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_USER                  pUser             = (PCOSA_DML_USER)pCxtLink->hContext;
-    PCOSA_DATAMODEL_USERS           pUsers            = (PCOSA_DATAMODEL_USERS)g_pCosaBEManager->hUsers;
-    PSINGLE_LINK_ENTRY              pSListEntry       = NULL;
-    PCOSA_DML_USER                  pUser2            = NULL;
-    BOOL                            bFound            = FALSE;
 
 
     /* check the parameter name and set the corresponding value */
@@ -1157,6 +1150,7 @@ User_SetParamStringValue
     {
         return FALSE;    /* In USG, webgui username is not allowed to change */
 #if 0
+        PCOSA_DATAMODEL_USERS           pUsers            = (PCOSA_DATAMODEL_USERS)g_pCosaBEManager->hUsers;
         AnscCopyString(pUsers->AliasOfUser, pUser->Username);
         AnscCopyString(pUser->Username, pString);
         
@@ -1197,8 +1191,6 @@ User_SetParamStringValue
 	}
         else if( AnscEqualString(pUser->Username, "admin", TRUE) )
 	{
-		unsigned int ret=0;
-		char resultBuffer[32]= {'\0'};
                 if(isvalid_pwd(pString)){
 		    user_hashandsavepwd(NULL,pString,pUser);
                     //AnscCopyString(pUser->Password, pString);
@@ -1213,8 +1205,6 @@ User_SetParamStringValue
 #if defined(_COSA_FOR_BCI_)
         else if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
         {
-                unsigned int ret=0;
-                char resultBuffer[32]= {'\0'};
 		if(isvalid_pwd(pString)){
                     user_hashandsavepwd(NULL,pString,pUser);
                     //AnscCopyString(pUser->Password, pString);
@@ -1246,8 +1236,6 @@ User_SetParamStringValue
 
     if(AnscEqualString(ParamName,"X_RDKCENTRAL-COM_ComparePassword",TRUE))
     {
-
-       unsigned int ret=0;
        char resultBuffer[32]= {'\0'};
        user_validatepwd(NULL,pString,pUser,resultBuffer);
        AnscCopyString(pUser->X_RDKCENTRAL_COM_ComparePassword, resultBuffer);
@@ -1304,7 +1292,8 @@ User_Validate
         ULONG*                      puLength
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     PCOSA_DATAMODEL_USERS           pUsers            = (PCOSA_DATAMODEL_USERS)g_pCosaBEManager->hUsers;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_USER                  pUser             = (PCOSA_DML_USER)pCxtLink->hContext;

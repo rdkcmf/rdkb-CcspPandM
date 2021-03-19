@@ -312,4 +312,16 @@ CosaDmlTSIPRuleGetCfg
         PCOSA_DML_TSIP_RULE_ENTRY   pEntry
     );
 
+ANSC_STATUS
+CosaDmlTSIPApplyConfigFile
+    (
+        ANSC_HANDLE                 hContext
+    );
+
+ANSC_STATUS
+CosaDmlAdditionalSubnetLoadPsm
+    (
+        ANSC_HANDLE                 hContext
+    );
+
 #endif

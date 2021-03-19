@@ -22,6 +22,7 @@
 #include "ansc_platform.h"
 #include "syslog.h"
 #include "ccsp_trace.h"
+#include "cosa_deviceinfo_dml.h"
 
 /***********************************************************************
 
@@ -71,6 +72,7 @@ PrivacyProtection_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and return the corresponding value */
     PCOSA_DATAMODEL_PRIVACYPROTECTION       pMyObject     = (PCOSA_DATAMODEL_PRIVACYPROTECTION)g_pCosaBEManager->hPrivacyProtection;
     if( AnscEqualString(ParamName, "Enable", TRUE))

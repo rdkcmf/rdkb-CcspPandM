@@ -177,4 +177,5 @@ extern ANSC_STATUS fillCurrentPartnerId
         PULONG                      pulSize
     );
 
+time_t getOffset();
 #endif

@@ -72,6 +72,7 @@
 #include "cosa_ip_apis_multilan.h"
 #include "ccsp_psm_helper.h"
 #include "cosa_dhcpv6_apis.h"
+#include "cosa_drg_common.h"
 
 #include "linux/if.h"
 #include "linux/sockios.h"
@@ -94,6 +95,7 @@ CosaDmlIpMlanInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
     PDMSB_TR181_IP_CONTEXT          pIpContext     = NULL;
 
     AnscTraceWarning(("CosaDmlIpMlanInit...\n"));
@@ -171,8 +173,8 @@ CosaDmlIpIfMlanLoadPsm
                 g_MessageBusHandle,
                 g_SubsystemPrefix,
                 DMSB_TR181_PSM_l3net_Root,
-                &iNumInst,
-                &pInstArray
+                (unsigned int *)&iNumInst,
+                (unsigned int **)&pInstArray
             );
 
     if ( iReturnValue != CCSP_SUCCESS )
@@ -181,7 +183,7 @@ CosaDmlIpIfMlanLoadPsm
         goto  EXIT;
     }
 
-    for ( ulIndex = 0; ulIndex < iNumInst; ulIndex++ )
+    for ( ulIndex = 0; (int)ulIndex < iNumInst; ulIndex++ )
     {
         pIpIf = (PDMSB_TR181_IP_IF)AnscAllocateMemory(sizeof(DMSB_TR181_IP_IF));
 
@@ -555,7 +557,7 @@ CosaDmlIpIfMlanLoadPsm
                 (
                     pParamPath,
                     DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
-                    pIpIf->Cfg.LinkInstNum
+                    (int)pIpIf->Cfg.LinkInstNum
                 );
 
             iReturnValue =
@@ -602,7 +604,7 @@ CosaDmlIpIfMlanLoadPsm
                 (
                     pParamPath,
                     DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
-                    ulL2netInst
+                    (int)ulL2netInst
                 );
 
             iReturnValue =
@@ -662,6 +664,7 @@ CosaDmlIpIfMlanSavePsm
         PCOSA_DML_IP_IF_CFG         pCfg
     )
 {
+    UNREFERENCED_PARAMETER(pIpContext);
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = ccsp_string;
@@ -675,7 +678,7 @@ CosaDmlIpIfMlanSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_Enable,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_boolean;
@@ -711,7 +714,7 @@ CosaDmlIpIfMlanSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_Alias,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_string;
@@ -747,11 +750,11 @@ CosaDmlIpIfMlanSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_MaxMTU,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%d", pCfg->MaxMTUSize);
+        _ansc_sprintf(RecordValue, "%lu", pCfg->MaxMTUSize);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -783,7 +786,7 @@ CosaDmlIpIfMlanSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_AutoIPEnable,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_boolean;
@@ -819,11 +822,11 @@ CosaDmlIpIfMlanSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_ArpCacheTimeout,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%d", pCfg->ArpCacheTimeout);
+        _ansc_sprintf(RecordValue, "%lu", pCfg->ArpCacheTimeout);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -855,7 +858,7 @@ CosaDmlIpIfMlanSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_UpnpIgdEnabled,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_boolean;
@@ -891,7 +894,7 @@ CosaDmlIpIfMlanSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_IPv6Enable,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_string;
@@ -927,11 +930,11 @@ CosaDmlIpIfMlanSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%d", pCfg->LinkInstNum);
+        _ansc_sprintf(RecordValue, "%lu", pCfg->LinkInstNum);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -968,6 +971,7 @@ CosaDmlIpIfMlanDelPsm
         PCOSA_DML_IP_IF_CFG         pCfg
     )
 {
+    UNREFERENCED_PARAMETER(pIpContext);
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
 
@@ -979,7 +983,7 @@ CosaDmlIpIfMlanDelPsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         iReturnValue =
@@ -1050,7 +1054,7 @@ CosaDmlIpIfMlanGetEntry
             AnscCopyMemory(&pEntry->Cfg, &pIpIf->Cfg, sizeof(pIpIf->Cfg));
             AnscCopyMemory(&pEntry->Info, &pIpIf->Info, sizeof(pIpIf->Info));
 
-            pEntry->Info.Status = getIfStatus(pIpIf->Info.Name, NULL);
+            pEntry->Info.Status = getIfStatus((PUCHAR)pIpIf->Info.Name, NULL);
 
             return  ANSC_STATUS_SUCCESS;
         }
@@ -1105,6 +1109,7 @@ CosaDmlIpIfMlanSetValues
 
         return  ANSC_STATUS_CANT_FIND;
     }
+    return  ANSC_STATUS_SUCCESS;
 }
 
 
@@ -1117,7 +1122,6 @@ CosaDmlIpIfMlanAddEntry
 {
     int                             iReturnValue    = CCSP_SUCCESS;
     PDMSB_TR181_IP_CONTEXT          pIpContext     = (PDMSB_TR181_IP_CONTEXT)hContext;
-    PSINGLE_LINK_ENTRY              pSLinkEntry;
     PDMSB_TR181_IP_IF               pIpIf;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -1167,7 +1171,7 @@ CosaDmlIpIfMlanAddEntry
 #else
 		     DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
 #endif
-                     pIpIf->Cfg.LinkInstNum
+                    (int)pIpIf->Cfg.LinkInstNum
                   );
 
                 iReturnValue =
@@ -1220,7 +1224,7 @@ CosaDmlIpIfMlanAddEntry
                       (
                           pParamPath,
                           DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
-                          ulL2netInst
+                          (int)ulL2netInst
                       );
 
                     iReturnValue =
@@ -1249,7 +1253,7 @@ CosaDmlIpIfMlanAddEntry
 #endif
             }
 
-            pEntry->Info.Status    = getIfStatus(pIpIf->Info.Name, NULL);
+            pEntry->Info.Status    = getIfStatus((PUCHAR)pIpIf->Info.Name, NULL);
             pIpIf->Info.LastChange = AnscGetTickInSeconds();
 
             AnscSListPushEntryAtBack(&pIpContext->IpIfList, &pIpIf->Linkage);
@@ -1259,6 +1263,7 @@ CosaDmlIpIfMlanAddEntry
             TR181_Mlan_Sysevent_ResyncAll();
         }
     }
+    return  ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -1320,7 +1325,7 @@ CosaDmlIpIfMlanSetCfg
         AnscCopyMemory(&pIpIf->Cfg, pCfg, sizeof(pIpIf->Cfg));
         CosaDmlIpIfMlanSavePsm(pIpContext, &pIpIf->Cfg);
 
-        TR181_Mlan_Sysevent_Resync(pIpIf->Cfg.InstanceNumber);
+        TR181_Mlan_Sysevent_Resync((int)pIpIf->Cfg.InstanceNumber);
 #if defined (MULTILAN_FEATURE)
         commonSyseventSet("ipv6-restart", "");
 #endif
@@ -1331,7 +1336,7 @@ CosaDmlIpIfMlanSetCfg
         /*
          *  Reset stats
          */
-		enifStatus = getIfStatus(pIpIf->Info.Name, &ifr);
+		enifStatus = getIfStatus((PUCHAR)pIpIf->Info.Name, &ifr);
 		
 		if ( ( enifStatus == COSA_DML_IF_STATUS_Unknown ) || \
 			 ( enifStatus == COSA_DML_IF_STATUS_NotPresent )
@@ -1427,7 +1432,7 @@ CosaDmlIpIfMlanGetInfo
     }
     else
     {
-        pInfo->Status       = getIfStatus(pIpIf->Info.Name, NULL);
+        pInfo->Status       = getIfStatus((PUCHAR)pIpIf->Info.Name, NULL);
 
         return  ANSC_STATUS_SUCCESS;
     }
@@ -1454,7 +1459,7 @@ CosaDmlIpIfMlanReset
     }
     else
     {
-        TR181_Mlan_Sysevent_Resync(ulInstanceNumber);
+        TR181_Mlan_Sysevent_Resync((int)ulInstanceNumber);
 
         return  ANSC_STATUS_SUCCESS;
     }
@@ -1471,6 +1476,8 @@ CosaDmlIpIfMlanGetNumberOfV4Addrs
         ULONG                       ulIpIfInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
     /* Always 1 */
     return  1;
 }
@@ -1500,7 +1507,7 @@ CosaDmlIpIfMlanGetIPv4Addr
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4Addr,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         iReturnValue =
@@ -1553,7 +1560,7 @@ CosaDmlIpIfMlanGetSubnetMask
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4SubnetMask,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         iReturnValue =
@@ -1590,6 +1597,7 @@ CosaDmlIpIfMlanGetV4Addr
         PCOSA_DML_IP_V4ADDR         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
@@ -1614,7 +1622,7 @@ CosaDmlIpIfMlanGetV4Addr
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4Addr,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         iReturnValue =
@@ -1650,7 +1658,7 @@ CosaDmlIpIfMlanGetV4Addr
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4SubnetMask,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         iReturnValue =
@@ -1681,7 +1689,7 @@ CosaDmlIpIfMlanGetV4Addr
     if ( TRUE )
     {
         pEntry->InstanceNumber  = 1;
-        _ansc_sprintf(pEntry->Alias, "%d", pEntry->InstanceNumber);
+        _ansc_sprintf(pEntry->Alias, "%lu", pEntry->InstanceNumber);
         pEntry->bEnabled        = TRUE;
         pEntry->Status          = COSA_DML_IP_ADDR_STATUS_Enabled;
         pEntry->AddressingType  = COSA_DML_IP_ADDR_TYPE_Static;
@@ -1701,6 +1709,11 @@ CosaDmlIpIfMlanSetV4AddrValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
     /*
      *  We don't need to set the instance number
      *  Alias cannot be changed, so do nothing here
@@ -1717,6 +1730,9 @@ CosaDmlIpIfMlanAddV4Addr
         PCOSA_DML_IP_V4ADDR         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
 #if defined (MULTILAN_FEATURE)
    /* 
     * This function is called only when the first instance is created 
@@ -1738,6 +1754,9 @@ CosaDmlIpIfMlanDelV4Addr
         PCOSA_DML_IP_V4ADDR         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     /* Add/Del V4/V6 address is not supported */
     return  ANSC_STATUS_UNAPPLICABLE;    
 }
@@ -1750,6 +1769,7 @@ CosaDmlIpIfMlanSetV4Addr
         PCOSA_DML_IP_V4ADDR         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = ccsp_string;
@@ -1781,7 +1801,7 @@ CosaDmlIpIfMlanSetV4Addr
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4Addr,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         RecordType = ccsp_string;
@@ -1810,7 +1830,7 @@ CosaDmlIpIfMlanSetV4Addr
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4SubnetMask,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         RecordType = ccsp_string;
@@ -1832,7 +1852,7 @@ CosaDmlIpIfMlanSetV4Addr
         }
     }
 
-    TR181_Mlan_Sysevent_Resync(ulIpIfInstanceNumber);
+    TR181_Mlan_Sysevent_Resync((int)ulIpIfInstanceNumber);
 
     return  ANSC_STATUS_SUCCESS;
 }
@@ -1846,6 +1866,7 @@ CosaDmlIpIfMlanGetV4Addr2
         PCOSA_DML_IP_V4ADDR         pEntry         
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
@@ -1864,7 +1885,7 @@ CosaDmlIpIfMlanGetV4Addr2
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4Addr,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         iReturnValue =
@@ -1900,7 +1921,7 @@ CosaDmlIpIfMlanGetV4Addr2
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4SubnetMask,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         iReturnValue =
@@ -1931,7 +1952,7 @@ CosaDmlIpIfMlanGetV4Addr2
     if ( TRUE )
     {
         pEntry->InstanceNumber  = 1;
-        _ansc_sprintf(pEntry->Alias, "%d", pEntry->InstanceNumber);
+        _ansc_sprintf(pEntry->Alias, "%lu", pEntry->InstanceNumber);
         pEntry->bEnabled        = TRUE;
         pEntry->Status          = COSA_DML_IP_ADDR_STATUS_Enabled;
         pEntry->AddressingType  = COSA_DML_IP_ADDR_TYPE_Static;
@@ -1951,6 +1972,9 @@ CosaDmlIpIfMlanAddV6Addr
         PCOSA_DML_IP_V6ADDR         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     /* Add/Del V4/V6 address is not supported */
     return  ANSC_STATUS_UNAPPLICABLE;    
 }
@@ -1964,6 +1988,9 @@ CosaDmlIpIfMlanDelV6Addr
         PCOSA_DML_IP_V6ADDR         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     /* Add/Del V4/V6 address is not supported */
     return  ANSC_STATUS_FAILURE;
 }
@@ -1977,6 +2004,9 @@ CosaDmlIpIfMlanSetV6Addr
         PCOSA_DML_IP_V6ADDR         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     /*
      *  No IPv6 support for Multi-LAN at the moment
      *  It should not have got here at all!
@@ -1993,6 +2023,9 @@ CosaDmlIpIfMlanGetV6Addr2
         PCOSA_DML_IP_V6ADDR         pEntry         
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
 #if defined (MULTILAN_FEATURE)
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
@@ -2017,7 +2050,7 @@ CosaDmlIpIfMlanGetV6Addr2
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         iReturnValue =
@@ -2089,7 +2122,7 @@ CosaDmlIpIfMlanGetV6Addr2
             pEntry->Origin = COSA_DML_IP6_ORIGIN_AutoConfigured;
             pEntry->bAnycast = FALSE;
 
-            _ansc_snprintf( pEntry->Alias, sizeof(pEntry->Alias), "cpe-address-%d", pEntry->InstanceNumber );
+            _ansc_snprintf( pEntry->Alias, sizeof(pEntry->Alias), "cpe-address-%lu", pEntry->InstanceNumber );
 
             /*life time*/
             if (!commonSyseventGet(COSA_DML_DHCPV6C_ADDR_PRETM_SYSEVENT_NAME, out, sizeof(out)) )
@@ -2129,7 +2162,7 @@ CosaDmlIpIfMlanGetV6Addr2
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         iReturnValue =
@@ -2203,6 +2236,9 @@ CosaDmlIpIfMlanAddV6Prefix
         PCOSA_DML_IP_V6PREFIX       pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     /*
      *  No IPv6 support for Multi-LAN at the moment
      *  It should not have got here at all!
@@ -2219,6 +2255,9 @@ CosaDmlIpIfMlanDelV6Prefix
         PCOSA_DML_IP_V6PREFIX       pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     /*
      *  No IPv6 support for Multi-LAN at the moment
      *  It should not have got here at all!
@@ -2235,6 +2274,9 @@ CosaDmlIpIfMlanSetV6Prefix
         PCOSA_DML_IP_V6PREFIX       pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     /*
      *  No IPv6 support for Multi-LAN at the moment
      *  It should not have got here at all!
@@ -2251,6 +2293,9 @@ CosaDmlIpIfMlanGetV6Prefix2
         PCOSA_DML_IP_V6PREFIX       pEntry         
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIpIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
 #if defined (MULTILAN_FEATURE)
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
@@ -2275,7 +2320,7 @@ CosaDmlIpIfMlanGetV6Prefix2
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         iReturnValue =
@@ -2350,7 +2395,7 @@ CosaDmlIpIfMlanGetV6Prefix2
             pEntry->bOnlink = TRUE;
             pEntry->bAutonomous = TRUE;
 
-            _ansc_snprintf( pEntry->Alias, sizeof(pEntry->Alias), "cpe-prefix-%d", pEntry->InstanceNumber );
+            _ansc_snprintf( pEntry->Alias, sizeof(pEntry->Alias), "cpe-prefix-%lu", pEntry->InstanceNumber );
 
             /*life time*/
             if (!commonSyseventGet(COSA_DML_DHCPV6C_PREF_PRETM_SYSEVENT_NAME, out, sizeof(out)) )
@@ -2390,7 +2435,7 @@ CosaDmlIpIfMlanGetV6Prefix2
             (
                 pParamPath,
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
-                ulIpIfInstanceNumber
+                (int)ulIpIfInstanceNumber
             );
 
         iReturnValue =
@@ -2483,7 +2528,7 @@ CosaDmlIpIfMlanGetStats
     {
         _ansc_memset(pStats, 0, sizeof(*pStats));
 
-        CosaUtilGetIfStats(pIpIf->Info.Name, pStats);
+        CosaUtilGetIfStats(pIpIf->Info.Name, (PCOSA_DML_IF_STATS)pStats);
         
         pStats->BroadcastPacketsReceived    -= pIpIf->LastStats.BroadcastPacketsReceived;
         pStats->BroadcastPacketsSent        -= pIpIf->LastStats.BroadcastPacketsSent;

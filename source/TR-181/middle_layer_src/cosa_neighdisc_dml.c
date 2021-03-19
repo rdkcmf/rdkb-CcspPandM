@@ -160,6 +160,7 @@ NeighborDiscovery_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NEIGHDISC pEntry = (PCOSA_DATAMODEL_NEIGHDISC)g_pCosaBEManager->hNeighdisc;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE) )
@@ -215,6 +216,10 @@ NeighborDiscovery_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
+
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -259,6 +264,9 @@ NeighborDiscovery_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -312,6 +320,10 @@ NeighborDiscovery_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -356,6 +368,7 @@ NeighborDiscovery_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NEIGHDISC pEntry = (PCOSA_DATAMODEL_NEIGHDISC)g_pCosaBEManager->hNeighdisc;
 
     /* check the parameter name and set the corresponding value */
@@ -415,6 +428,9 @@ NeighborDiscovery_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -459,6 +475,9 @@ NeighborDiscovery_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -503,6 +522,9 @@ NeighborDiscovery_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -547,6 +569,9 @@ NeighborDiscovery_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -578,6 +603,7 @@ NeighborDiscovery_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NEIGHDISC pEntry = (PCOSA_DATAMODEL_NEIGHDISC)g_pCosaBEManager->hNeighdisc;
 
     CosaDmlNeighdiscSetEnabled(pEntry->bEnabled);
@@ -614,6 +640,7 @@ NeighborDiscovery_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NEIGHDISC pEntry = (PCOSA_DATAMODEL_NEIGHDISC)g_pCosaBEManager->hNeighdisc;
 
     CosaDmlNeighdiscGetEnabled(&pEntry->bEnabled);
@@ -672,6 +699,7 @@ InterfaceSetting2_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NEIGHDISC              pMyObject = (PCOSA_DATAMODEL_NEIGHDISC)g_pCosaBEManager->hNeighdisc;
 
     return AnscSListQueryDepth(&pMyObject->InterfaceList);
@@ -715,6 +743,7 @@ InterfaceSetting2_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NEIGHDISC       pMyObject     = (PCOSA_DATAMODEL_NEIGHDISC)g_pCosaBEManager->hNeighdisc; 
     PSLIST_HEADER                   pNeighdiscIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -764,6 +793,7 @@ InterfaceSetting2_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NEIGHDISC       pMyObject            = (PCOSA_DATAMODEL_NEIGHDISC)g_pCosaBEManager->hNeighdisc; 
     PSLIST_HEADER                   pNeighdiscIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext         = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -860,6 +890,7 @@ InterfaceSetting2_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NEIGHDISC       pMyObject     = (PCOSA_DATAMODEL_NEIGHDISC)g_pCosaBEManager->hNeighdisc; 
     PSLIST_HEADER                   pNeighdiscIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
@@ -994,6 +1025,9 @@ InterfaceSetting2_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1130,9 +1164,9 @@ InterfaceSetting2_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_NEIGHDISC_IF_FULL     pNeighdiscInterface = (PCOSA_DML_NEIGHDISC_IF_FULL)pCosaContext->hContext;
-    PUCHAR                          pString = NULL;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
@@ -1287,6 +1321,10 @@ InterfaceSetting2_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
+
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1660,6 +1698,7 @@ NeighborTable_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NEIGHDISC       pMyObject     = (PCOSA_DATAMODEL_NEIGHDISC)g_pCosaBEManager->hNeighdisc; 
     
     return pMyObject->ulNbTblNumber;
@@ -1703,6 +1742,7 @@ NeighborTable_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NEIGHDISC       pMyObject     = (PCOSA_DATAMODEL_NEIGHDISC)g_pCosaBEManager->hNeighdisc; 
 
     if (nIndex < pMyObject->ulNbTblNumber)
@@ -1747,6 +1787,7 @@ NeighborTable_IsUpdated
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     static ULONG last_tick;
 
     if ( !last_tick ) 
@@ -1796,6 +1837,7 @@ NeighborTable_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NEIGHDISC       pMyObject     = (PCOSA_DATAMODEL_NEIGHDISC)g_pCosaBEManager->hNeighdisc; 
     
     CosaDmlNeighborTableGetEntry
@@ -1906,6 +1948,8 @@ NeighborTable_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DML_NEIGHTABLE_INFO       pNbTblEntry = (PCOSA_DML_NEIGHTABLE_INFO)hInsContext;
     
     /* check the parameter name and return the corresponding value */    

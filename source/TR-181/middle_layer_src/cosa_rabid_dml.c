@@ -22,6 +22,7 @@
 #include "ansc_platform.h"
 #include "syslog.h"
 #include "ccsp_trace.h"
+#include "cosa_deviceinfo_dml.h"
 
 #define MIN_RABID_MEMORY_LIMIT 5
 #define MAX_RABID_MACCACHE_SIZE 32768
@@ -78,6 +79,7 @@ RabidFramework_GetParamUlongValue
 {
     /* check the parameter name and return the corresponding value */
     PCOSA_DATAMODEL_RABID       pMyObject     = (PCOSA_DATAMODEL_RABID)g_pCosaBEManager->hRabid;
+    UNREFERENCED_PARAMETER(hInsContext);
 
     if( AnscEqualString(ParamName, "MemoryLimit", TRUE))
     {

@@ -71,6 +71,7 @@
 #include "dml_tr181_custom_cfg.h" 
 #include "cosa_deviceinfo_dml.h"
 #include "cosa_deviceinfo_apis_custom.h"
+#include <syscfg/syscfg.h>
 
 #define WHITE	0
 #define SOLID	0
@@ -116,6 +117,7 @@ DeviceInfo_GetParamBoolValue_Custom
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
 #ifdef CONFIG_INTERNET2P0
@@ -261,6 +263,7 @@ DeviceInfo_GetParamStringValue_Custom
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     char isEthEnabled[64]={'\0'};
     int EthWANEnable = 0;
@@ -416,7 +419,7 @@ DeviceInfo_SetParamBoolValue_Custom
         BOOL                        bValue
     )
 {
-
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 #ifdef CONFIG_INTERNET2P0
 

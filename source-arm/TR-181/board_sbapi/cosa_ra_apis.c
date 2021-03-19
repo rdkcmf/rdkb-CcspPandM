@@ -329,6 +329,8 @@ CosaDmlRAInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -357,6 +359,7 @@ CosaDmlRASetEnabled
         BOOLEAN  bEnabled
     )
 {
+    UNREFERENCED_PARAMETER(bEnabled);
     fprintf(stderr, "%s: NOT SUPPORTED FOR NOW!!\n", __FUNCTION__);
     return ANSC_STATUS_FAILURE;
 }
@@ -367,6 +370,7 @@ CosaDmlRaIfGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return 1;
 }
 
@@ -378,6 +382,7 @@ CosaDmlRaIfGetEntry
         PCOSA_DML_RA_IF_FULL        pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     /* only one instance */
     if (ulIndex != 0 || !pEntry)
         return ANSC_STATUS_FAILURE;
@@ -397,6 +402,10 @@ CosaDmlRaIfSetValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     /* let it return success , even we don't support it */ 
     return ANSC_STATUS_SUCCESS;
 }
@@ -408,6 +417,8 @@ CosaDmlRaIfAddEntry
         PCOSA_DML_RA_IF_FULL        pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     fprintf(stderr, "%s: NOT SUPPORTED FOR NOW!!\n", __FUNCTION__);
     return ANSC_STATUS_FAILURE;
 }
@@ -419,6 +430,8 @@ CosaDmlRaIfDelEntry
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     fprintf(stderr, "%s: NOT SUPPORTED FOR NOW!!\n", __FUNCTION__);
     return ANSC_STATUS_FAILURE;
 }
@@ -430,6 +443,7 @@ CosaDmlRaIfSetCfg
         PCOSA_DML_RA_IF_CFG         pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
     char out[8] = {0};
 	unsigned int  managedFlag = 0;
@@ -479,6 +493,7 @@ CosaDmlRaIfGetCfg
         PCOSA_DML_RA_IF_CFG         pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     COSA_DML_RA_IF_FULL             raif;
 
     if (!pCfg)
@@ -500,6 +515,8 @@ CosaDmlRaIfGetInfo
         PCOSA_DML_RA_IF_INFO        pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     COSA_DML_RA_IF_FULL             raif;
 
     if (!pInfo)
@@ -519,6 +536,8 @@ CosaDmlRaIfGetNumberOfOptions
         ULONG                       ulRaIfInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulRaIfInstanceNumber);
     return 0;
 }
 
@@ -531,6 +550,10 @@ CosaDmlRaIfGetOption
         PCOSA_DML_RA_OPTION         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulRaIfInstanceNumber);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(pEntry);
     fprintf(stderr, "%s: NOT SUPPORTED FOR NOW!!\n", __FUNCTION__);
     return ANSC_STATUS_FAILURE;
 }
@@ -545,6 +568,11 @@ CosaDmlRaIfSetOptionValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulRaIfInstanceNumber);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     fprintf(stderr, "%s: NOT SUPPORTED FOR NOW!!\n", __FUNCTION__);
     return ANSC_STATUS_FAILURE;
 }
@@ -557,6 +585,9 @@ CosaDmlRaIfAddOption
         PCOSA_DML_RA_OPTION         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulRaIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     fprintf(stderr, "%s: NOT SUPPORTED FOR NOW!!\n", __FUNCTION__);
     return ANSC_STATUS_FAILURE;
 }
@@ -569,6 +600,9 @@ CosaDmlRaIfDelOption
         PCOSA_DML_RA_OPTION         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulRaIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     fprintf(stderr, "%s: NOT SUPPORTED FOR NOW!!\n", __FUNCTION__);
     return ANSC_STATUS_FAILURE;
 }
@@ -581,6 +615,9 @@ CosaDmlRaIfSetOption
         PCOSA_DML_RA_OPTION         pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulRaIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     fprintf(stderr, "%s: NOT SUPPORTED FOR NOW!!\n", __FUNCTION__);
     return ANSC_STATUS_FAILURE;
 }
@@ -593,6 +630,9 @@ CosaDmlRaIfGetOption2
         PCOSA_DML_RA_OPTION         pEntry         
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulRaIfInstanceNumber);
+    UNREFERENCED_PARAMETER(pEntry);
     fprintf(stderr, "%s: NOT SUPPORTED FOR NOW!!\n", __FUNCTION__);
     return ANSC_STATUS_FAILURE;
 }

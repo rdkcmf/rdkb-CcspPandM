@@ -89,6 +89,14 @@
 #include "ccsp_psm_helper.h"
 
 ANSC_STATUS
+COSAGetParamValueByPathName
+    (
+        void*                      bus_handle,
+        parameterValStruct_t       *val,
+        ULONG                      *parameterValueLength
+    );
+
+ANSC_STATUS
 CosaUtilStringToHex
     (
         char          *str,
@@ -96,7 +104,7 @@ CosaUtilStringToHex
         int           hex_sz 
     )
 {
-    INT   i, index, val = 0;
+    INT   i = 0, index = 0, val = 0;
     CHAR  byte[3]       = {'\0'};
 
     while(str[i] != '\0')
@@ -124,7 +132,7 @@ CosaUtilGetIfAddr
         char*       netdev
     )
 {
-    ANSC_IPV4_ADDRESS       ip4_addr = {0};
+    ANSC_IPV4_ADDRESS       ip4_addr = {{0}};
 
 #ifdef _ANSC_LINUX
 
@@ -163,7 +171,6 @@ CosaSListPushEntryByInsNum
         PCOSA_CONTEXT_LINK_OBJECT   pCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContextEntry = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;
     ULONG                           ulIndex           = 0;
@@ -202,7 +209,6 @@ CosaSListGetEntryByInsNum
         ULONG                       InstanceNumber
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContextEntry = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;
     ULONG                           ulIndex           = 0;
@@ -239,29 +245,28 @@ CosaUtilGetLowerLayers
 {
 
     ULONG                           ulNumOfEntries              = 0;
-    ULONG                           ulChildNumOfEntries         = 0;
     ULONG                           i                           = 0;
     ULONG                           j                           = 0;
     ULONG                           ulEntryNameLen              = 256;
-    UCHAR                           ucEntryParamName[256]       = {0};
-    UCHAR                           ucEntryNameValue[256]       = {0};
-    UCHAR                           ucEntryFullPath[256]        = {0};
-    UCHAR                           ucLowerEntryPath[256]       = {0};
-    UCHAR                           ucLowerEntryName[256]       = {0};
+    CHAR                            ucEntryParamName[256]       = {0};
+    CHAR                            ucEntryNameValue[256]       = {0};
+    CHAR                            ucEntryFullPath[256]        = {0};
+    CHAR                            ucLowerEntryPath[256]       = {0};
+    CHAR                            ucLowerEntryName[256]       = {0};
     ULONG                           ulEntryInstanceNum          = 0;
     ULONG                           ulEntryPortNum              = 0;
     PUCHAR                          pMatchedLowerLayer          = NULL;
     PANSC_TOKEN_CHAIN               pTableListTokenChain        = (PANSC_TOKEN_CHAIN)NULL;
     PANSC_STRING_TOKEN              pTableStringToken           = (PANSC_STRING_TOKEN)NULL;
 
-    if ( !pTableName || AnscSizeOfString(pTableName) == 0 ||
-         !pKeyword   || AnscSizeOfString(pKeyword) == 0
+    if ( !pTableName || AnscSizeOfString((const char*)pTableName) == 0 ||
+         !pKeyword   || AnscSizeOfString((const char*)pKeyword) == 0
        )
     {
         return NULL;
     }
 
-    pTableListTokenChain = AnscTcAllocate(pTableName, ",");
+    pTableListTokenChain = AnscTcAllocate((char*)pTableName, ",");
 
     if ( !pTableListTokenChain )
     {
@@ -282,15 +287,15 @@ CosaUtilGetLowerLayers
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%d", "Device.Ethernet.Interface.", ulEntryInstanceNum);
+                        _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.Ethernet.Interface.", ulEntryInstanceNum);
 
                         _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
                
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
-                             AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
+                             AnscEqualString(ucEntryNameValue, (char*)pKeyword, TRUE ) )
                         {
-                            pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
+                            pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucEntryFullPath);
 
                             break;
                         }
@@ -306,15 +311,15 @@ CosaUtilGetLowerLayers
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%d", "Device.IP.Interface.", ulEntryInstanceNum);
+                        _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.IP.Interface.", ulEntryInstanceNum);
 
                         _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
 
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
-                             AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
+                             AnscEqualString(ucEntryNameValue, (char*)pKeyword, TRUE ) )
                         {
-                            pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
+                            pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucEntryFullPath);
 
                             break;
                         }
@@ -340,15 +345,15 @@ CosaUtilGetLowerLayers
                     
                     if (ulEntryInstanceNum)
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%d.", "Device.WiFi.Radio.", ulEntryInstanceNum);
+                        _ansc_sprintf(ucEntryFullPath, "%s%lu.", "Device.WiFi.Radio.", ulEntryInstanceNum);
                         
                         _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, "Name");
                         
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if (( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
-                            AnscEqualString(ucEntryNameValue, pKeyword, TRUE) )
+                            AnscEqualString(ucEntryNameValue, (char*)pKeyword, TRUE) )
                         {
-                            pMatchedLowerLayer = AnscCloneString(ucEntryFullPath);
+                            pMatchedLowerLayer = (PUCHAR)AnscCloneString(ucEntryFullPath);
                             
                             break;
                         }
@@ -375,7 +380,7 @@ CosaUtilGetLowerLayers
                 }
 
                 //AnscTraceFlow(("<HL>%s ucEntryNameValue=%s\n", __FUNCTION__,ucEntryNameValue));
-                _ansc_sscanf(ucEntryNameValue,"%d",&ulNumOfEntries);
+                _ansc_sscanf((const char*)ucEntryNameValue,"%lu",&ulNumOfEntries);
                 //AnscTraceFlow(("<HL>%s Wifi # of entries=%d\n", __FUNCTION__,ulNumOfEntries));
 
                 i = 0;
@@ -384,7 +389,7 @@ CosaUtilGetLowerLayers
                 {
                     _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
                     _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
-                    _ansc_sprintf(ucEntryParamName,"Device.MoCA.Interface.%d.Name",ulEntryInstanceNum);                    
+                    _ansc_sprintf(ucEntryParamName,"Device.MoCA.Interface.%lu.Name",ulEntryInstanceNum);                    
                         
                     if (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen))
                     {
@@ -394,10 +399,10 @@ CosaUtilGetLowerLayers
                         continue;
                     }  
                     //AnscTraceFlow(("<HL>%s WiFi instance(%d) has name =%s inputName=%s\n",__FUNCTION__,ulEntryInstanceNum,ucEntryNameValue,pKeyword));
-                    if ( AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
+                    if ( AnscEqualString(ucEntryNameValue, (char*)pKeyword, TRUE ) )
                     {
-                        _ansc_sprintf(ucEntryFullPath,"Device.MoCA.Interface.%d",ulEntryInstanceNum);
-                        pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
+                        _ansc_sprintf(ucEntryFullPath,"Device.MoCA.Interface.%lu",ulEntryInstanceNum);
+                        pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucEntryFullPath);
 
                         break;
                     }
@@ -416,15 +421,15 @@ CosaUtilGetLowerLayers
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%d", "Device.X_CISCO_COM_GRE.Interface.", ulEntryInstanceNum);
+                        _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.X_CISCO_COM_GRE.Interface.", ulEntryInstanceNum);
 
                         _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
                
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
-                             AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
+                             AnscEqualString(ucEntryNameValue, (char*)pKeyword, TRUE ) )
                         {
-                            pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
+                            pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucEntryFullPath);
 
                             break;
                         }
@@ -450,15 +455,15 @@ CosaUtilGetLowerLayers
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%d", "Device.Ethernet.Link.", ulEntryInstanceNum);
+                        _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.Ethernet.Link.", ulEntryInstanceNum);
 
                         _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
                
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
-                             AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
+                             AnscEqualString(ucEntryNameValue, (char*)pKeyword, TRUE ) )
                         {
-                            pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
+                            pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucEntryFullPath);
 
                             break;
                         }
@@ -482,7 +487,7 @@ CosaUtilGetLowerLayers
                     break;
                 }
                 //AnscTraceFlow(("<HL>%s ucEntryNameValue=%s\n", __FUNCTION__,ucEntryNameValue));
-                _ansc_sscanf(ucEntryNameValue,"%d",&ulNumOfEntries);
+                _ansc_sscanf(ucEntryNameValue,"%lu",&ulNumOfEntries);
                 //AnscTraceFlow(("<HL>%s Wifi # of entries=%d\n", __FUNCTION__,ulNumOfEntries));
                 i = 0;
                 ulEntryInstanceNum =1;
@@ -490,7 +495,7 @@ CosaUtilGetLowerLayers
                 {
                     _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
                     _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
-                    _ansc_sprintf(ucEntryParamName,"Device.WiFi.SSID.%d.Name",ulEntryInstanceNum);                    
+                    _ansc_sprintf(ucEntryParamName,"Device.WiFi.SSID.%lu.Name",ulEntryInstanceNum);                    
                         
                     if (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen))
                     {
@@ -500,10 +505,10 @@ CosaUtilGetLowerLayers
                         continue;
                     }  
                     //AnscTraceFlow(("<HL>%s WiFi instance(%d) has name =%s inputName=%s\n",__FUNCTION__,ulEntryInstanceNum,ucEntryNameValue,pKeyword));
-                    if ( AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
+                    if ( AnscEqualString(ucEntryNameValue, (char*)pKeyword, TRUE ) )
                     {
-                        _ansc_sprintf(ucEntryFullPath,"Device.WiFi.SSID.%d",ulEntryInstanceNum);
-                        pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
+                        _ansc_sprintf(ucEntryFullPath,"Device.WiFi.SSID.%lu",ulEntryInstanceNum);
+                        pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucEntryFullPath);
 
                         break;
                     }
@@ -522,22 +527,22 @@ CosaUtilGetLowerLayers
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%d", "Device.Bridging.Bridge.", ulEntryInstanceNum);
+                        _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.Bridging.Bridge.", ulEntryInstanceNum);
                         _ansc_sprintf(ucLowerEntryPath, "%s%s", ucEntryFullPath, ".PortNumberOfEntries"); 
                         
                         ulEntryPortNum = CosaGetParamValueUlong(ucLowerEntryPath);  
                         CcspTraceInfo(("----------CosaUtilGetLowerLayers, Param:%s,port num:%d\n",ucLowerEntryPath, ulEntryPortNum));
 
                         for ( j = 1; j<= ulEntryPortNum; j++) {
-                            _ansc_sprintf(ucLowerEntryName, "%s%s%d", ucEntryFullPath, ".Port.", j);
-                            _ansc_sprintf(ucEntryParamName, "%s%s%d%s", ucEntryFullPath, ".Port.", j, ".Name");
+                            _ansc_sprintf(ucLowerEntryName, "%s%s%lu", ucEntryFullPath, ".Port.", j);
+                            _ansc_sprintf(ucEntryParamName, "%s%s%lu%s", ucEntryFullPath, ".Port.", j, ".Name");
                             CcspTraceInfo(("----------CosaUtilGetLowerLayers, Param:%s,Param2:%s\n", ucLowerEntryName, ucEntryParamName));
                         
                             ulEntryNameLen = sizeof(ucEntryNameValue);
                             if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
-                                 AnscEqualString(ucEntryNameValue, pKeyword , TRUE ) )
+                                 AnscEqualString(ucEntryNameValue, (char*)pKeyword , TRUE ) )
                             {
-                                pMatchedLowerLayer =  AnscCloneString(ucLowerEntryName);
+                                pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucLowerEntryName);
                                 CcspTraceInfo(("----------CosaUtilGetLowerLayers, J:%d, LowerLayer:%s\n", j, pMatchedLowerLayer));
                                 break;
                             }
@@ -744,11 +749,11 @@ CosaUtilConstructLowerLayers
     if ( LinkType == COSA_DML_LINK_TYPE_Bridge )
     {
         /* Special processing for Bridge type LowerLayers */
-        _ansc_sprintf(pLowerLayersBuf, "%s%d.Port.1", linkTypePath, InstNumber);
+        _ansc_sprintf(pLowerLayersBuf, "%s%lu.Port.1", linkTypePath, InstNumber);
     }
     else
     {
-        _ansc_sprintf(pLowerLayersBuf, "%s%d", linkTypePath, InstNumber);
+        _ansc_sprintf(pLowerLayersBuf, "%s%lu", linkTypePath, InstNumber);
     }
 
     AnscTraceFlow(("%s, size %d, buf len %d\n", pLowerLayersBuf, _ansc_strlen(pLowerLayersBuf), *pBufLen));
@@ -809,11 +814,11 @@ CosaUtilFindBridgeName(char* pBridgePath)
 {
     ULONG                           j                           = 0;
     ULONG                           ulEntryNameLen              = 256;
-    UCHAR                           ucEntryParamName[256]       = {0};
-    UCHAR                           ucEntryNameValue[256]       = {0};
+    CHAR                            ucEntryParamName[256]       = {0};
+    CHAR                            ucEntryNameValue[256]       = {0};
    
-    UCHAR                           ucLowerEntryPath[256]       = {0};
-    UCHAR                           ucLowerEntryName[256]       = {0};
+    CHAR                            ucLowerEntryPath[256]       = {0};
+    CHAR                            ucLowerEntryName[256]       = {0};
     ULONG                           ulEntryPortNum              = 0;
     PUCHAR                          pMatchedBridgeName          = NULL;
     BOOL                            bMgrPort                    = FALSE;
@@ -824,20 +829,20 @@ CosaUtilFindBridgeName(char* pBridgePath)
     AnscTraceFlow(("%s: Param:%s,port num:%d\n", __FUNCTION__, ucLowerEntryPath, ulEntryPortNum));
 
     for ( j = 1; j<= ulEntryPortNum; j++) {
-        _ansc_sprintf(ucLowerEntryName, "%s%s%d", pBridgePath, ".Port.", j);
-        _ansc_sprintf(ucEntryParamName, "%s%s%d%s", pBridgePath, ".Port.", j, ".ManagementPort");
+        _ansc_sprintf(ucLowerEntryName, "%s%s%lu", pBridgePath, ".Port.", j);
+        _ansc_sprintf(ucEntryParamName, "%s%s%lu%s", pBridgePath, ".Port.", j, ".ManagementPort");
         AnscTraceFlow(("%s: Param:%s,Param2:%s\n",__FUNCTION__, ucLowerEntryName, ucEntryParamName)); 
                         
         bMgrPort = CosaGetParamValueBool(ucEntryParamName);
         if(bMgrPort)
         {
-            _ansc_sprintf(ucEntryParamName, "%s%s%d%s", pBridgePath, ".Port.", j, ".Name");
+            _ansc_sprintf(ucEntryParamName, "%s%s%lu%s", pBridgePath, ".Port.", j, ".Name");
                 
             ulEntryNameLen = sizeof(ucEntryNameValue);
             if (0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) 
             {
                 // not include port instance.
-                pMatchedBridgeName =  AnscCloneString(ucEntryNameValue);
+                pMatchedBridgeName =  (PUCHAR)AnscCloneString(ucEntryNameValue);
                 AnscTraceFlow(("%s: J:%d, Name:%s\n", __FUNCTION__, j, pMatchedBridgeName));
                 break;
             }
@@ -858,14 +863,14 @@ CosaUtilFindBridgePath(char* pBridgeName)
     ULONG                           i                           = 0;
     ULONG                           j                           = 0;
     ULONG                           ulEntryNameLen              = 256;
-    UCHAR                           ucEntryParamName[256]       = {0};
-    UCHAR                           ucEntryNameValue[256]       = {0};
-    UCHAR                           ucEntryFullPath[256]        = {0};
-    UCHAR                           ucLowerEntryPath[256]       = {0};
-    UCHAR                           ucLowerEntryName[256]       = {0};
+    CHAR                            ucEntryParamName[256]       = {0};
+    CHAR                            ucEntryNameValue[256]       = {0};
+    CHAR                            ucEntryFullPath[256]        = {0};
+    CHAR                            ucLowerEntryPath[256]       = {0};
+    CHAR                            ucLowerEntryName[256]       = {0};
     ULONG                           ulEntryInstanceNum          = 0;
     ULONG                           ulEntryPortNum              = 0;
-    PUCHAR                          pMatchedLowerLayer          = NULL;
+    PUCHAR                          pMatchedLowerLayer         = NULL;
     
 
     ulNumOfEntries =  CosaGetParamValueUlong("Device.Bridging.BridgeNumberOfEntries");
@@ -878,23 +883,23 @@ CosaUtilFindBridgePath(char* pBridgeName)
         AnscTraceFlow(("%s: instance num:%d\n", __FUNCTION__, ulEntryInstanceNum));
         if ( ulEntryInstanceNum )
         {
-            _ansc_sprintf(ucEntryFullPath, "%s%d", "Device.Bridging.Bridge.", ulEntryInstanceNum);
+            _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.Bridging.Bridge.", ulEntryInstanceNum);
             _ansc_sprintf(ucLowerEntryPath, "%s%s", ucEntryFullPath, ".PortNumberOfEntries"); 
                         
             ulEntryPortNum = CosaGetParamValueUlong(ucLowerEntryPath);  
             CcspTraceInfo(("----------CosaUtilGetLowerLayers, Param:%s,port num:%d\n",ucLowerEntryPath, ulEntryPortNum));
 
             for ( j = 1; j<= ulEntryPortNum; j++) {
-                _ansc_sprintf(ucLowerEntryName, "%s%s%d", ucEntryFullPath, ".Port.", j);
-                _ansc_sprintf(ucEntryParamName, "%s%s%d%s", ucEntryFullPath, ".Port.", j, ".Name");
+                _ansc_sprintf(ucLowerEntryName, "%s%s%lu", ucEntryFullPath, ".Port.", j);
+                _ansc_sprintf(ucEntryParamName, "%s%s%lu%s", ucEntryFullPath, ".Port.", j, ".Name");
                 CcspTraceInfo(("----------CosaUtilGetLowerLayers, Param:%s,Param2:%s\n", ucLowerEntryName, ucEntryParamName));
                         
                 ulEntryNameLen = sizeof(ucEntryNameValue);
                 if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
-                        AnscEqualString(ucEntryNameValue, pBridgeName , TRUE ) )
+                        AnscEqualString(ucEntryNameValue, (char*)pBridgeName , TRUE ) )
                 {
                     // not include port instance.
-                    pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
+                    pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucEntryFullPath);
                     CcspTraceInfo(("----------CosaUtilGetLowerLayers, J:%d, LowerLayer:%s\n", j, pMatchedLowerLayer));
                     break;
                 }
@@ -933,31 +938,29 @@ CosaUtilGetFullPathNameByKeyword
 {
 
     ULONG                           ulNumOfEntries              = 0;
-    ULONG                           ulChildNumOfEntries         = 0;
     ULONG                           i                           = 0;
     ULONG                           ulEntryNameLen              = 256;
-    UCHAR                           ucEntryParamName[256]       = {0};
-    UCHAR                           ucEntryNameValue[256]       = {0};
-    UCHAR                           ucTmp[128]                  = {0};
-    UCHAR                           ucTmp2[128]                 = {0};
-    UCHAR                           ucEntryFullPath[256]        = {0};
+    CHAR                            ucEntryParamName[256]       = {0};
+    CHAR                            ucEntryNameValue[256]       = {0};
+    CHAR                            ucTmp[128]                  = {0};
+    CHAR                            ucTmp2[128]                 = {0};
+    CHAR                            ucEntryFullPath[256]        = {0};
     PUCHAR                          pMatchedLowerLayer          = NULL;
-    ULONG                           ulEntryInstanceNum          = 0;
-    ULONG                           ucLength                    = 0;    
+    ULONG                           ulEntryInstanceNum          = 0;  
     PANSC_TOKEN_CHAIN               pTableListTokenChain        = (PANSC_TOKEN_CHAIN)NULL;
     PANSC_STRING_TOKEN              pTableStringToken           = (PANSC_STRING_TOKEN)NULL;
-    PUCHAR                          pString                     = NULL;
-    PUCHAR                          pString2                    = NULL;
+    PCHAR                           pString                     = NULL;
+    PCHAR                           pString2                    = NULL;
 
-    if ( !pTableName || AnscSizeOfString(pTableName) == 0 ||
-         !pKeyword   || AnscSizeOfString(pKeyword) == 0   ||
-         !pParameterName   || AnscSizeOfString(pParameterName) == 0
+    if ( !pTableName || AnscSizeOfString((const char*)pTableName) == 0 ||
+         !pKeyword   || AnscSizeOfString((const char*)pKeyword) == 0   ||
+         !pParameterName   || AnscSizeOfString((const char*)pParameterName) == 0
        )
     {
         return NULL;
     }
 
-    pTableListTokenChain = AnscTcAllocate(pTableName, ",");
+    pTableListTokenChain = AnscTcAllocate((char*)pTableName, ",");
 
     if ( !pTableListTokenChain )
     {
@@ -1000,15 +1003,15 @@ CosaUtilGetFullPathNameByKeyword
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%d%s", pTableStringToken->Name, ulEntryInstanceNum, ".");
+                        _ansc_sprintf(ucEntryFullPath, "%s%lu%s", pTableStringToken->Name, ulEntryInstanceNum, ".");
 
                         _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, pParameterName);
                
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
-                             AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
+                             AnscEqualString(ucEntryNameValue, (char*)pKeyword, TRUE ) )
                         {
-                            pMatchedLowerLayer =  AnscCloneString(ucEntryFullPath);
+                            pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucEntryFullPath);
 
                             break;
                         }
@@ -1096,7 +1099,7 @@ CosaUtilChannelValidate2
     // If channelList is provided use it.
     if (channelList != NULL) {
         char chan[4];
-        sprintf(chan,"%d",Channel);
+        sprintf(chan,"%lu",Channel);
         if (strstr(channelList,chan) != NULL) {
             return 1;
         } 
@@ -1105,7 +1108,7 @@ CosaUtilChannelValidate2
     switch(uiRadio)
     {
         case 1:
-             if((Channel < 0) || (Channel > 11))
+             if(Channel > 11)
                 return 0;
              return 1;
         case 2:
@@ -1245,12 +1248,12 @@ int CosaUtilGetIfStats(char * ifname, PCOSA_DML_IF_STATS pStats)
         {
             if (++i <= 2) continue;
             
-            if (p = strchr(buf, ':'))
+            if ((p = strchr(buf, ':')))
             {
                 if (strstr(buf, ifname))
                 {
                     memset(pStats, 0, sizeof(*pStats));
-                    if (sscanf(p+1, "%d %d %d %d %*d %*d %*d %*d %d %d %d %d %*d %*d %*d %*d", 
+                    if (sscanf(p+1, "%lu %lu %lu %lu %*d %*d %*d %*d %lu %lu %lu %lu %*d %*d %*d %*d", 
                                &pStats->BytesReceived, &pStats->PacketsReceived, &pStats->ErrorsReceived, &pStats->DiscardPacketsReceived,
                                &pStats->BytesSent, &pStats->PacketsSent, &pStats->ErrorsSent, &pStats->DiscardPacketsSent
                             ) == 8)
@@ -1304,6 +1307,8 @@ CosaUtilGetStaticRouteTable
         StaticRoute                 **out_sroute
     )
 {
+    UNREFERENCED_PARAMETER(count);
+    UNREFERENCED_PARAMETER(out_sroute);
 #if ( defined(_COSA_DRG_CNS_) || defined(_COSA_DRG_TPG_))
     int i;
     int j;
@@ -1575,7 +1580,7 @@ int parseProcfileParams(char* lineToParse,ifv6Details *detailsToParse,char* inte
                                                               splitv6[3], splitv6[4],splitv6[5], splitv6[6], splitv6[7])==8)
            {
                memset(detailsToParse->prefix_v6,0,sizeof(detailsToParse->prefix_v6));
-               int iCount =0;
+               UINT iCount =0;
                for (iCount=0; (iCount< ( detailsToParse->bitsToMask%16 ? (detailsToParse->bitsToMask/16+1):detailsToParse->bitsToMask/16)) && iCount<8; iCount++)
                {
                   sprintf(detailsToParse->prefix_v6+strlen(detailsToParse->prefix_v6), "%s:",splitv6[iCount]);
@@ -1603,7 +1608,6 @@ int CosaUtilGetIpv6AddrInfo (char * ifname, ipv6_addr_info_t ** pp_info, int * p
     char procLine[MAX_INET6_PROC_CHARS];
     ifv6Details v6Details;
     int parsingResult;
-    int    i = 0;
     
     if (!ifname || !pp_info || !p_num)
         return -1;
@@ -1670,14 +1674,13 @@ int safe_strcpy(char * dst, char * src, int dst_size)
     if (!dst || !src) return -1;
 
     memset(dst, 0, dst_size);
-    _ansc_strncpy(dst, src, _ansc_strlen(src)<=dst_size-1 ? _ansc_strlen(src):dst_size-1 );
+    _ansc_strncpy(dst, src, _ansc_strlen(src) <= (UINT)(dst_size-1) ? _ansc_strlen(src): (UINT)(dst_size-1) );
 
     return 0;
 }
 
 int  __v6addr_mismatch(char * addr1, char * addr2, int pref_len)
 {
-    char * p = NULL, * p2 = NULL;
     int i = 0;
     int num = 0;
     int mask = 0;
@@ -1897,13 +1900,13 @@ int vsystem(const char *fmt, ...)
 {
     char cmd[512];
     va_list ap;
-    int n;
+    ULONG n;
 
     va_start(ap, fmt);
     n = vsnprintf(cmd, sizeof(cmd), fmt, ap);
     va_end(ap);
 
-    if (n < 0 || n >= sizeof(cmd))
+    if (n >= sizeof(cmd))
         return -1;
 
     fprintf(stderr, "%s: %s\n", __FUNCTION__, cmd);

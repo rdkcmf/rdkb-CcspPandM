@@ -70,6 +70,7 @@
 #include "cosa_drg_common.h"
 #include "cosa_dhcpv4_webconfig_apis.h"
 #include "safec_lib_common.h"
+#include "syscfg/syscfg.h"
 
 static int ifWanRestart = 0;
 
@@ -163,6 +164,7 @@ X_CISCO_COM_DeviceControl_GetParamBoolValue
         BOOL*                       pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICECONTROL   pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     char                            buf[256] = {0};
     ULONG                           uSize    = 0;
@@ -370,6 +372,8 @@ X_CISCO_COM_DeviceControl_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pInt);
     /* check the parameter name and return the corresponding value */
     CcspTraceWarning(("-----DeviceControl_GetParamIntValue,Trying to get parameter '%s'\n", ParamName));
 
@@ -416,6 +420,7 @@ X_CISCO_COM_DeviceControl_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and return the corresponding value */
     /* CcspTraceWarning(("-----DeviceControl_GetParamUlongValue,Trying to get parameter '%s'\n", ParamName)); */
     PCOSA_DATAMODEL_DEVICECONTROL   pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
@@ -607,7 +612,7 @@ X_CISCO_COM_DeviceControl_GetParamUlongValue
     if( AnscEqualString(ParamName, "MocaHardwareStatus", TRUE))
     {
         /* collect value */
-        *puLong = CosaDmlGetMocaHardwareStatus();
+        *puLong = CosaDmlGetMocaHardwareStatus(NULL);
         return TRUE;
     }
 
@@ -662,6 +667,7 @@ X_CISCO_COM_DeviceControl_GetParamStringValue
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICECONTROL   pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "RebootDevice", TRUE) )
@@ -816,7 +822,7 @@ X_CISCO_COM_DeviceControl_SetParamBoolValue
         BOOL                        bValue
     )
 {
-
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICECONTROL      pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     ANSC_STATUS                        retStatus = ANSC_STATUS_SUCCESS;
 
@@ -1075,6 +1081,9 @@ X_CISCO_COM_DeviceControl_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     /* check the parameter name and set the corresponding value */
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1119,6 +1128,7 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICECONTROL      pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     ANSC_STATUS                        retStatus = ANSC_STATUS_SUCCESS;
     #define START_HTTPPORT 1025
@@ -1365,6 +1375,7 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICECONTROL      pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     ANSC_STATUS                        retStatus = ANSC_STATUS_SUCCESS;
     errno_t                            rc        = -1;
@@ -1379,7 +1390,7 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind))
     {
-        rc = STRCPY_S_NOCLOBBER(pMyObject->RebootDevice, sizeof(pMyObject->RebootDevice), pString);
+        rc = STRCPY_S_NOCLOBBER((char *)pMyObject->RebootDevice, sizeof(pMyObject->RebootDevice), pString);
         if(rc != EOK)
         {
             ERR_CHK(rc);
@@ -1394,7 +1405,7 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind))
     {
-        rc = STRCPY_S_NOCLOBBER(pMyObject->FactoryReset, sizeof(pMyObject->FactoryReset), pString);
+        rc = STRCPY_S_NOCLOBBER((char *)pMyObject->FactoryReset, sizeof(pMyObject->FactoryReset), pString);
         if(rc != EOK)
         {
             ERR_CHK(rc);
@@ -1409,14 +1420,14 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind))
     {
-        rc = STRCPY_S_NOCLOBBER(pMyObject->UserChangedFlags, sizeof(pMyObject->UserChangedFlags), pString);
+        rc = STRCPY_S_NOCLOBBER((char *)pMyObject->UserChangedFlags, sizeof(pMyObject->UserChangedFlags), pString);
         if(rc != EOK)
         {
             ERR_CHK(rc);
             return FALSE;
         }
 
-        retStatus = CosaDmlDcSetUserChangedFlags(NULL, pMyObject->UserChangedFlags);
+        retStatus = CosaDmlDcSetUserChangedFlags(NULL, (char*)pMyObject->UserChangedFlags);
         if (retStatus != ANSC_STATUS_SUCCESS)
             return FALSE;
 
@@ -1427,14 +1438,14 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind))
     {
-        rc = STRCPY_S_NOCLOBBER(pMyObject->DeviceConfigIgnore, sizeof(pMyObject->DeviceConfigIgnore), pString);
+        rc = STRCPY_S_NOCLOBBER((char *)pMyObject->DeviceConfigIgnore, sizeof(pMyObject->DeviceConfigIgnore), pString);
         if(rc != EOK)
         {
             ERR_CHK(rc);
             return FALSE;
         }
 
-        retStatus = CosaDmlDcSetDeviceConfigIgnore(NULL, pMyObject->DeviceConfigIgnore);
+        retStatus = CosaDmlDcSetDeviceConfigIgnore(NULL, (char*)pMyObject->DeviceConfigIgnore);
         if (retStatus != ANSC_STATUS_SUCCESS)
             return FALSE;
 
@@ -1445,14 +1456,14 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind))
     {
-        rc = STRCPY_S_NOCLOBBER(pMyObject->SNMPEnable, sizeof(pMyObject->SNMPEnable), pString);
+        rc = STRCPY_S_NOCLOBBER((char *)pMyObject->SNMPEnable, sizeof(pMyObject->SNMPEnable), pString);
         if(rc != EOK)
         {
             ERR_CHK(rc);
             return FALSE;
         }
 
-        retStatus = CosaDmlDcSetSNMPEnable(NULL, pMyObject->SNMPEnable);
+        retStatus = CosaDmlDcSetSNMPEnable(NULL, (char*)pMyObject->SNMPEnable);
         if (retStatus != ANSC_STATUS_SUCCESS)
             return FALSE;
 
@@ -1475,14 +1486,14 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind))
     {
-        rc = STRCPY_S_NOCLOBBER(pMyObject->HostName, sizeof(pMyObject->HostName), pString);
+        rc = STRCPY_S_NOCLOBBER((char *)pMyObject->HostName, sizeof(pMyObject->HostName), pString);
         if(rc != EOK)
         {
             ERR_CHK(rc);
             return FALSE;
         }
 
-        retStatus = CosaDmlDcSetHostName(NULL, pMyObject->HostName);
+        retStatus = CosaDmlDcSetHostName(NULL, (char*)pMyObject->HostName);
         if (retStatus != ANSC_STATUS_SUCCESS)
             return FALSE;
 
@@ -1493,14 +1504,14 @@ X_CISCO_COM_DeviceControl_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind))
     {
-        rc = STRCPY_S_NOCLOBBER(pMyObject->DomainName, sizeof(pMyObject->DomainName), pString);
+        rc = STRCPY_S_NOCLOBBER((char *)pMyObject->DomainName, sizeof(pMyObject->DomainName), pString);
         if(rc != EOK)
         {
             ERR_CHK(rc);
             return FALSE;
         }
 
-        retStatus = CosaDmlDcSetDomainName(NULL, pMyObject->DomainName);
+        retStatus = CosaDmlDcSetDomainName(NULL, (char*)pMyObject->DomainName);
         if (retStatus != ANSC_STATUS_SUCCESS)
             return FALSE;
 
@@ -1621,6 +1632,9 @@ X_CISCO_COM_DeviceControl_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     PCOSA_DATAMODEL_DEVICECONTROL      pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     if(pMyObject->WebServerChanged == TRUE)
     {
@@ -1661,6 +1675,7 @@ X_CISCO_COM_DeviceControl_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICECONTROL      pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     ANSC_STATUS                        retStatus = ANSC_STATUS_SUCCESS;
 
@@ -1672,7 +1687,7 @@ X_CISCO_COM_DeviceControl_Commit
     if( pMyObject->bResetChanged)
     {
         pMyObject->bResetChanged = 0;
-        retStatus = CosaDmlDcSetRebootDevice(NULL, pMyObject->RebootDevice);
+        retStatus = CosaDmlDcSetRebootDevice(NULL, (char*)pMyObject->RebootDevice);
         if (retStatus != ANSC_STATUS_SUCCESS)
             return FALSE;
     }
@@ -1680,7 +1695,7 @@ X_CISCO_COM_DeviceControl_Commit
     if( pMyObject->bFactoryResetChanged)
     {
         pMyObject->bFactoryResetChanged = 0;
-        retStatus = CosaDmlDcSetFactoryReset(NULL, pMyObject->FactoryReset);
+        retStatus = CosaDmlDcSetFactoryReset(NULL, (char*)pMyObject->FactoryReset);
         if (retStatus != ANSC_STATUS_SUCCESS)
             return FALSE;
     }
@@ -1734,6 +1749,7 @@ X_CISCO_COM_DeviceControl_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICECONTROL      pMyObject = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     CosaDevCtrlReg_GetUserChangedParamsControl((ANSC_HANDLE)pMyObject);
 
@@ -1752,6 +1768,7 @@ LanMngm_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICECONTROL   pDevCtrl    = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
 
     return AnscSListQueryDepth(&pDevCtrl->LanMngmList);
@@ -1765,6 +1782,7 @@ LanMngm_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICECONTROL   pDevCtrl    = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry = NULL;
@@ -1787,6 +1805,7 @@ LanMngm_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICECONTROL   pDevCtrl    = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     PCOSA_DML_LAN_MANAGEMENT        pLanMngm    = NULL;
@@ -1813,7 +1832,7 @@ LanMngm_AddEntry
     if (pDevCtrl->ulLanMngmNextInsNum == 0)
         pDevCtrl->ulLanMngmNextInsNum = 1;
 
-    _ansc_sprintf(pLanMngm->Alias, "cpe-LanManamgement-%d", pLinkObj->InstanceNumber);
+    _ansc_sprintf(pLanMngm->Alias, "cpe-LanManamgement-%lu", pLinkObj->InstanceNumber);
     pLinkObj->hContext      = (ANSC_HANDLE)pLanMngm;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
@@ -1834,6 +1853,7 @@ LanMngm_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICECONTROL   pDevCtrl    = (PCOSA_DATAMODEL_DEVICECONTROL)g_pCosaBEManager->hDeviceControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_LAN_MANAGEMENT        pLanMngm    = (PCOSA_DML_LAN_MANAGEMENT)pLinkObj->hContext;
@@ -1907,6 +1927,9 @@ LanMngm_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -1964,6 +1987,10 @@ LanMngm_GetParamStringValue
         ULONG*                      pUlSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pUlSize);
     return -1;
 }
 
@@ -2033,6 +2060,9 @@ LanMngm_SetParamIntValue
         int                         value
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(value);
     return FALSE;
 }
 
@@ -2144,6 +2174,9 @@ LanMngm_SetParamStringValue
         char*                       strValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(strValue);
     return FALSE;
 }
 
@@ -2155,6 +2188,8 @@ LanMngm_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_LAN_MANAGEMENT        pLanMngm    = (PCOSA_DML_LAN_MANAGEMENT)pLinkObj->hContext;
 
@@ -2331,6 +2366,8 @@ WebAccessLevel_GetParamBoolValue
         int*                        pBool
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
     CcspTraceWarning(("-----DeviceControl_GetParamBoolValue,Trying to get parameter '%s'\n", ParamName));
 
@@ -2346,11 +2383,12 @@ WebAccessLevel_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     CcspTraceWarning(("-----WebAccessLevel_GetParamIntValue,Trying to get parameter '%s'\n", ParamName)); 
 	
     if (AnscEqualString(ParamName, "HomeUser_Lan_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 1, 1, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 1, 1, (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
@@ -2358,7 +2396,7 @@ WebAccessLevel_GetParamIntValue
 
 	if (AnscEqualString(ParamName, "HomeUser_RfCM_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 1, 2, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 1, 2, (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
@@ -2366,7 +2404,7 @@ WebAccessLevel_GetParamIntValue
 
 	if (AnscEqualString(ParamName, "HomeUser_Mta_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 1, 16, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 1, 16, (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
@@ -2374,7 +2412,7 @@ WebAccessLevel_GetParamIntValue
 
 	if (AnscEqualString(ParamName, "HomeUser_WanRG_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 1, 40, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 1, 40,  (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
@@ -2382,7 +2420,7 @@ WebAccessLevel_GetParamIntValue
 
 	if (AnscEqualString(ParamName, "CusAdmin_Lan_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 5, 1, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 5, 1,  (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
@@ -2390,7 +2428,7 @@ WebAccessLevel_GetParamIntValue
 
 	if (AnscEqualString(ParamName, "CusAdmin_RfCM_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 5, 2, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 5, 2,  (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
@@ -2398,7 +2436,7 @@ WebAccessLevel_GetParamIntValue
 
 	if (AnscEqualString(ParamName, "CusAdmin_Mta_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 5, 16, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 5, 16,  (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
@@ -2406,7 +2444,7 @@ WebAccessLevel_GetParamIntValue
 
 	if (AnscEqualString(ParamName, "CusAdmin_WanRG_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 5, 40, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 5, 40,  (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
@@ -2414,7 +2452,7 @@ WebAccessLevel_GetParamIntValue
 
 	if (AnscEqualString(ParamName, "AdvUser_Lan_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 10, 1, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 10, 1,  (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
@@ -2422,7 +2460,7 @@ WebAccessLevel_GetParamIntValue
 
 	if (AnscEqualString(ParamName, "AdvUser_RfCM_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 10, 2, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 10, 2,  (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
@@ -2430,7 +2468,7 @@ WebAccessLevel_GetParamIntValue
 
 	if (AnscEqualString(ParamName, "AdvUser_Mta_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 10, 16, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 10, 16,  (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
@@ -2438,12 +2476,12 @@ WebAccessLevel_GetParamIntValue
 
 	if (AnscEqualString(ParamName, "AdvUser_WanRG_Level", TRUE))
     {
-        if (CosaDmlDcGetWebAccessLevel(NULL, 10, 40, pInt) != ANSC_STATUS_SUCCESS)
+        if (CosaDmlDcGetWebAccessLevel(NULL, 10, 40,  (ULONG*)pInt) != ANSC_STATUS_SUCCESS)
             return FALSE;
 
         return TRUE;
     }
-	
+	return FALSE;
 }
 
 BOOL
@@ -2454,6 +2492,8 @@ WebAccessLevel_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(puLong);
     /* check the parameter name and return the corresponding value */
     CcspTraceWarning(("-----DeviceControl_GetParamUlongValue,Trying to get parameter '%s'\n", ParamName));
 
@@ -2470,6 +2510,9 @@ WebAccessLevel_GetParamStringValue
         ULONG*                      pulSize
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pulSize);
     /* check the parameter name and return the corresponding value */
     CcspTraceWarning(("-----DeviceControl_GetParamUlongValue,Trying to get parameter '%s'\n", ParamName));
 
@@ -2485,6 +2528,9 @@ WebAccessLevel_SetParamBoolValue
         BOOL                        bValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(bValue);
     return FALSE;
 }
 
@@ -2496,6 +2542,7 @@ WebAccessLevel_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     CcspTraceWarning(("-----WebAccessLevel_SetParamIntValue,Trying to get parameter '%s'\n", ParamName)); 
 	
     if (AnscEqualString(ParamName, "HomeUser_Lan_Level", TRUE))
@@ -2593,6 +2640,7 @@ WebAccessLevel_SetParamIntValue
 
         return TRUE;
     }
+    return FALSE;
 }
 
 BOOL
@@ -2603,6 +2651,9 @@ WebAccessLevel_SetParamUlongValue
         ULONG                       uValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(uValue);
     return FALSE;
 }
 
@@ -2614,6 +2665,9 @@ WebAccessLevel_SetParamStringValue
         char*                       pString
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
     return FALSE;
 }
 
@@ -2625,6 +2679,9 @@ WebAccessLevel_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -2634,7 +2691,7 @@ WebAccessLevel_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 
@@ -2644,7 +2701,7 @@ WebAccessLevel_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
-
+    UNREFERENCED_PARAMETER(hInsContext);
     return 0;
 }
 

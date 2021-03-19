@@ -48,12 +48,11 @@
         05/18/2015    initial revision.
 
 **************************************************************************/
-
 #include "dml_tr181_custom_cfg.h"
-
 #ifdef CONFIG_CISCO_HOTSPOT
 #include "plugin_main_apis.h"
 #include "cosa_x_comcast-com_gre_internal.h"
+#include "cosa_x_comcast-com_gre_apis.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -106,8 +105,7 @@ CosaGreTunnelInitialize
             return ANSC_STATUS_FAILURE;			
 		CosaGreTunnelIfInitialize(tuIns, (ANSC_HANDLE)(&gre->GreTu[i]));
     }
-
-EXIT:	
+	
     return returnStatus;
 }
 

@@ -99,7 +99,6 @@ CosaPPPCreate
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_PPP             pMyObject    = (PCOSA_DATAMODEL_PPP)NULL;
 
     /*
@@ -164,7 +163,6 @@ CosaPPPInitialize
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext        = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     ULONG                           ulEntryCount        = 0;
     ULONG                           ulIndex             = 0;
-    ULONG                           ulNextInsNum        = 0;
 
     /* Initiation all functions */
     
@@ -283,7 +281,7 @@ CosaPPPInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pEntry->Cfg.Alias, "Interface%d", pCosaContext->InstanceNumber);
+                _ansc_sprintf(pEntry->Cfg.Alias, "Interface%lu", pCosaContext->InstanceNumber);
 
                 CosaDmlPppIfSetValues
                 (
@@ -343,7 +341,6 @@ CosaPPPRemove
     PCOSA_DATAMODEL_PPP             pMyObject    = (PCOSA_DATAMODEL_PPP)hThisObject;
     PSINGLE_LINK_ENTRY              pSLinkEntry  = NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = NULL;
-    PCOSA_DML_PPP_IF_FULL           pEntry       = NULL;
 
     /* Remove necessary resounce */
 
@@ -644,8 +641,7 @@ CosaPPPIfRegDelInfo
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_PPP             pMyObject         = (PCOSA_DATAMODEL_PPP      )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;

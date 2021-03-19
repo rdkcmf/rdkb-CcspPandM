@@ -75,6 +75,7 @@
 #include "hotspotfd.h"
 #include "dhcpsnooper.h"
 #include "safec_lib_common.h"
+#include <syscfg/syscfg.h>
 
 #define GRETEST
 
@@ -87,7 +88,11 @@
 
 #ifdef AnscTraceError
 #undef AnscTraceError
-#define AnscTraceError(a) printf("%s:%d> ", __FUNCTION__, __LINE__); printf a
+#define AnscTraceError(a)            \
+{            \
+printf("%s:%d> ", __FUNCTION__, __LINE__);            \
+printf a;            \
+}
 #endif
 
 //#ifdef AnscTraceDebug
@@ -103,26 +108,26 @@
 
 #define GRE_OBJ_GREIF           "dmsb.hotspot.gre."
 
-#define GRE_PARAM_ENABLE        GRE_OBJ_GREIF "%d.Enable"
-#define GRE_PARAM_LOCALIFS      GRE_OBJ_GREIF "%d.LocalInterfaces"
-#define GRE_PARAM_ENDPOINTS     GRE_OBJ_GREIF "%d.Endpoints"
-#define GRE_PARAM_KEYGENPOL     GRE_OBJ_GREIF "%d.KeyIDGenPolicy"
-#define GRE_PARAM_KEYID         GRE_OBJ_GREIF "%d.KeyID"
-#define GRE_PARAM_USESEQ        GRE_OBJ_GREIF "%d.UseSeqNum"
-#define GRE_PARAM_USECSUM       GRE_OBJ_GREIF "%d.UseCheckSum"
-#define GRE_PARAM_DSCPPOL       GRE_OBJ_GREIF "%d.DSCPMarkPolicy"
-#define GRE_PARAM_VLANID        GRE_OBJ_GREIF "%d.VLANID"
-#define GRE_PARAM_RECONNPRI     GRE_OBJ_GREIF "%d.ReconnPrimary"
-#define GRE_PARAM_KAPOL         GRE_OBJ_GREIF "%d.KeepAlive.Policy"
-#define GRE_PARAM_KAITVL        GRE_OBJ_GREIF "%d.KeepAlive.Interval"
-#define GRE_PARAM_KATHRE        GRE_OBJ_GREIF "%d.KeepAlive.Threshold"
-#define GRE_PARAM_KACNT         GRE_OBJ_GREIF "%d.KeepAlive.Count"
-#define GRE_PARAM_KAFAILITVL    GRE_OBJ_GREIF "%d.KeepAlive.FailInterval"
-#define GRE_PARAM_DHCPCIRSSID   GRE_OBJ_GREIF "%d.DHCP.CircuitIDSSID"
-#define GRE_PARAM_DHCPRMID      GRE_OBJ_GREIF "%d.DHCP.RemoteID"
-#define GRE_PARAM_ASSOBRS       GRE_OBJ_GREIF "%d.AssociatedBridges"
-#define GRE_PARAM_ASSOBRSWFP    GRE_OBJ_GREIF "%d.AssociatedBridgesWiFiPort"
-#define GRE_PARAM_GREIF         GRE_OBJ_GREIF "%d.GRENetworkInterface"
+#define GRE_PARAM_ENABLE        GRE_OBJ_GREIF "%lu.Enable"
+#define GRE_PARAM_LOCALIFS      GRE_OBJ_GREIF "%lu.LocalInterfaces"
+#define GRE_PARAM_ENDPOINTS     GRE_OBJ_GREIF "%lu.Endpoints"
+#define GRE_PARAM_KEYGENPOL     GRE_OBJ_GREIF "%lu.KeyIDGenPolicy"
+#define GRE_PARAM_KEYID         GRE_OBJ_GREIF "%lu.KeyID"
+#define GRE_PARAM_USESEQ        GRE_OBJ_GREIF "%lu.UseSeqNum"
+#define GRE_PARAM_USECSUM       GRE_OBJ_GREIF "%lu.UseCheckSum"
+#define GRE_PARAM_DSCPPOL       GRE_OBJ_GREIF "%lu.DSCPMarkPolicy"
+#define GRE_PARAM_VLANID        GRE_OBJ_GREIF "%lu.VLANID"
+#define GRE_PARAM_RECONNPRI     GRE_OBJ_GREIF "%lu.ReconnPrimary"
+#define GRE_PARAM_KAPOL         GRE_OBJ_GREIF "%lu.KeepAlive.Policy"
+#define GRE_PARAM_KAITVL        GRE_OBJ_GREIF "%lu.KeepAlive.Interval"
+#define GRE_PARAM_KATHRE        GRE_OBJ_GREIF "%lu.KeepAlive.Threshold"
+#define GRE_PARAM_KACNT         GRE_OBJ_GREIF "%lu.KeepAlive.Count"
+#define GRE_PARAM_KAFAILITVL    GRE_OBJ_GREIF "%lu.KeepAlive.FailInterval"
+#define GRE_PARAM_DHCPCIRSSID   GRE_OBJ_GREIF "%lu.DHCP.CircuitIDSSID"
+#define GRE_PARAM_DHCPRMID      GRE_OBJ_GREIF "%lu.DHCP.RemoteID"
+#define GRE_PARAM_ASSOBRS       GRE_OBJ_GREIF "%lu.AssociatedBridges"
+#define GRE_PARAM_ASSOBRSWFP    GRE_OBJ_GREIF "%lu.AssociatedBridgesWiFiPort"
+#define GRE_PARAM_GREIF         GRE_OBJ_GREIF "%lu.GRENetworkInterface"
 #define LOCALINTERFACES_PRE_SECURE_SSID		"Device.WiFi.SSID.5.,Device.WiFi.SSID.6."
 
 /* when secure ssid is supported in mips products, use below flag instaed of above flag for handling race condition in bbhm readiness 
@@ -143,9 +148,17 @@ static token_t sysevent_token;
 static hotspotfd_statistics_s *g_hsfdStat = NULL;
 
 extern ANSC_HANDLE bus_handle;
-static componentStruct_t **        ppComponents = NULL;
+//static componentStruct_t **        ppComponents = NULL;
 extern char        g_Subsystem[32];
 extern void* g_pDslhDmlAgent;
+
+ANSC_STATUS
+COSAGetParamValueByPathName
+    (
+        void*                      bus_handle,
+        parameterValStruct_t       *val,
+        ULONG                      *parameterValueLength
+    );
 
 static int
 GrePsmGet(const char *param, char *value, int size)
@@ -182,7 +195,7 @@ GrePsmGetStr(const char *param, int ins, char *value, int size)
     if (GrePsmGet(rec, val, sizeof(val)) != 0)
         return -1;
 
-    if (size <= strlen(val))
+    if (size <= (int)strlen(val))
         return -1;
 
     snprintf(value, size, "%s", val);
@@ -272,10 +285,8 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
     char* save = NULL;
     char* curInt = NULL;
     char* testcurInt = NULL;
-    int nameSave = 0;
     int circuitSave = 0;
-    int ssidInst = 0;
-    int size;
+    ULONG size;
     int inst;
     int retry_count =0;
     parameterValStruct_t varStruct;
@@ -409,6 +420,7 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
 #define POLL_CIRCUIT_ID_SLEEP 3
 #define INITIAL_SNOOPER_QUEUE 1
 static void* circuit_id_init_thread(void* arg) {
+    UNREFERENCED_PARAMETER(arg);
     int ret = -1;
     sleep(INITIAL_CIRCUIT_ID_SLEEP);
 
@@ -486,6 +498,7 @@ CosaDml_GreIfGetNumberOfEntries(void)
 ANSC_STATUS
 CosaDml_GreIfGetConnectedRemoteEndpoint(ULONG idx, COSA_DML_GRE_IF *greIf)
 {
+	UNREFERENCED_PARAMETER(idx);
 
 	char cmd[126] = {0};
 	char line_buf[126] = {0};
@@ -568,6 +581,7 @@ CosaDml_GreIfGetEntryByIndex(ULONG idx, COSA_DML_GRE_IF *greIf)
 ANSC_STATUS
 CosaDml_GreIfSetIns(ULONG idx, ULONG ins)
 {
+   UNREFERENCED_PARAMETER(ins);
     if (idx != 0)
         return ANSC_STATUS_FAILURE;
 
@@ -666,8 +680,7 @@ CosaDml_GreIfGetLocalInterfaces(ULONG ins, char *ifs, ULONG size)
     ULONG ptInsList[16], ptInsCnt = 16;
     char dm[1024], dmval[1024 + 1];
     ULONG dmsize;
-    int i;
-    char *tif;
+    ULONG i;
 
     if (ins != 1 || !ifs)
         return ANSC_STATUS_FAILURE;
@@ -695,18 +708,18 @@ CosaDml_GreIfGetLocalInterfaces(ULONG ins, char *ifs, ULONG size)
 
         for (i = 0; i < ptInsCnt; i++) {
             /* skip management port */
-            snprintf(dm, sizeof(dm), "%sPort.%d.ManagementPort", br, ptInsList[i]);
+            snprintf(dm, sizeof(dm), "%sPort.%lu.ManagementPort", br, ptInsList[i]);
             if (g_GetParamValueBool(g_pDslhDmlAgent, dm)) {
-                AnscTraceDebug(("  Skip Port[%d], it's a management port\n", ptInsList[i]));
+                AnscTraceDebug(("  Skip Port[%lu], it's a management port\n", ptInsList[i]));
                 continue;
             }
 
             /* skip upstream port (GRE IF) */
             dmsize = sizeof(dmval) - 1;
-            snprintf(dm, sizeof(dm), "%sPort.%d.LowerLayers", br, ptInsList[i]);
+            snprintf(dm, sizeof(dm), "%sPort.%lu.LowerLayers", br, ptInsList[i]);
             if (g_GetParamValueString(g_pDslhDmlAgent, dm, dmval, &dmsize) != 0 
                     || strstr(dmval, "Device.WiFi.SSID") == NULL) {
-                AnscTraceDebug(("  Skip Port[%d]: %s\n", ptInsList[i], dmval));
+                AnscTraceDebug(("  Skip Port[%lu]: %s\n", ptInsList[i], dmval));
                 continue;
             }
 
@@ -717,7 +730,7 @@ CosaDml_GreIfGetLocalInterfaces(ULONG ins, char *ifs, ULONG size)
             }
 
             /* add it to list */
-            AnscTraceDebug(("  Add Port[%d] `%s/%s` to Local IF\n", ptInsList[i], dm, dmval));
+            AnscTraceDebug(("  Add Port[%lu] `%s/%s` to Local IF\n", ptInsList[i], dm, dmval));
             //if (strlen(ifs)) {
             if (!start || strlen(ifs)) { /* Local If and Bridge are 1:1 mapping, we need "," */
                 snprintf(ifs +  strlen(ifs), size - strlen(ifs), ",%s", dmval);
@@ -743,8 +756,8 @@ CosaDml_GreIfSetLocalInterfaces(ULONG ins, const char *ifs)
     char psmRec[MAX_GRE_PSM_REC + 1], dm[1024];
     char *cp, *if1, *if2, *br1, *br2, *brwfp1, *brwfp2;
     char *ifsBuf, *brsBuf, *brswfpBuf;
-    int brIns, brInsStr[3];
-
+    int brIns;
+    char brInsStr[12];
     if (ins != 1 || !ifs)
         return ANSC_STATUS_FAILURE;
 
@@ -1189,7 +1202,6 @@ CosaDml_GreIfSetVlanId(ULONG ins, INT vlanId)
 ANSC_STATUS
 CosaDml_GreIfGetKeepAlivePolicy(ULONG ins, COSA_DML_KEEPALIVE_POLICY *policy)
 {
-    char val[64];
 
     if (ins != 1 || !policy)
         return ANSC_STATUS_FAILURE;
@@ -1260,7 +1272,7 @@ CosaDml_GreIfSetKeepAliveInterval(ULONG ins, ULONG val)
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
-    status = snprintf(str_value, khotspotfd_keep_alive_len, "%d", val);
+    status = snprintf(str_value, khotspotfd_keep_alive_len, "%lu", val);
 
     if(status > 0) {
 
@@ -1308,7 +1320,7 @@ CosaDml_GreIfSetKeepAliveThreshold(ULONG ins, ULONG val)
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
-    status = snprintf(str_value, khotspotfd_keep_alive_threshold_len, "%d", val);
+    status = snprintf(str_value, khotspotfd_keep_alive_threshold_len, "%lu", val);
 
     if(status > 0) {
 
@@ -1353,7 +1365,7 @@ CosaDml_GreIfSetKeepAliveCount(ULONG ins, ULONG val)
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
-    status = snprintf(str_value, sizeof(str_value), "%d", val); 
+    status = snprintf(str_value, sizeof(str_value), "%lu", val); 
 
     if(status > 0) {
 
@@ -1398,7 +1410,7 @@ CosaDml_GreIfSetKeepAliveFailInterval(ULONG ins, ULONG val)
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
-    status = snprintf(str_value, khotspotfd_keep_alive_len, "%d", val);
+    status = snprintf(str_value, khotspotfd_keep_alive_len, "%lu", val);
 
     if(status > 0) {
 
@@ -1446,7 +1458,7 @@ CosaDml_GreIfSetReconnPrimary(ULONG ins, ULONG time)
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
-    status = snprintf(str_value, khotspotfd_max_secondary_len, "%d", time);
+    status = snprintf(str_value, khotspotfd_max_secondary_len, "%lu", time);
 
     if(status > 0) {
 
@@ -1616,6 +1628,8 @@ CosaDml_GreIfGetGREInterface(ULONG ins, char *greif, ULONG size)
 ANSC_STATUS
 CosaDml_GreIfSetGREInterface(ULONG ins, const char *greif)
 {
+    UNREFERENCED_PARAMETER(ins);
+    UNREFERENCED_PARAMETER(greif);
     return ANSC_STATUS_FAILURE;
 }
 

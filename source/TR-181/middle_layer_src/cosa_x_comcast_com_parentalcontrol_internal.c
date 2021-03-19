@@ -36,6 +36,7 @@
 #include "cosa_apis.h"
 #include "cosa_x_comcast_com_parentalcontrol_internal.h"
 #include "plugin_main_apis.h"
+#include <syscfg/syscfg.h>
 
 extern void * g_pDslhDmlAgent;
     BOOL                            bMigration         = FALSE;
@@ -45,7 +46,6 @@ CosaParentalControlCreate
         VOID
     )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_PARENTALCONTROL  pMyObject    = (PCOSA_DATAMODEL_PARENTALCONTROL)NULL;
 
     /*
@@ -77,7 +77,6 @@ CosaParentalControlInitialize
         ANSC_HANDLE                 hThisObject
     )
 {
-    ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_PARENTALCONTROL pParCtrl       = (PCOSA_DATAMODEL_PARENTALCONTROL)hThisObject;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoCOSA = NULL;
     PSLAP_VARIABLE                  pSlapVariable   = NULL;
@@ -948,8 +947,7 @@ CosaPcReg_BlkUrlDelInfo(
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_PARENTALCONTROL   pMyObject         = (PCOSA_DATAMODEL_PARENTALCONTROL   )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
@@ -1251,8 +1249,7 @@ CosaPcReg_TrustedUserDelInfo(
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_PARENTALCONTROL   pMyObject         = (PCOSA_DATAMODEL_PARENTALCONTROL   )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
@@ -1554,11 +1551,11 @@ CosaPcReg_MSServDelInfo(
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_PARENTALCONTROL   pMyObject         = (PCOSA_DATAMODEL_PARENTALCONTROL   )hThisObject;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
+
+    UNREFERENCED_PARAMETER(hThisObject);
 
     if ( !pPoamIrepUpperFo || !pPoamIrepFo )
     {
@@ -1857,8 +1854,7 @@ CosaPcReg_MSTrustedUserDelInfo(
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_PARENTALCONTROL   pMyObject         = (PCOSA_DATAMODEL_PARENTALCONTROL   )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;
@@ -2160,8 +2156,7 @@ CosaPcReg_MDDevDelInfo(
         ANSC_HANDLE                 hCosaContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_DATAMODEL_PARENTALCONTROL   pMyObject         = (PCOSA_DATAMODEL_PARENTALCONTROL   )hThisObject;
+    UNREFERENCED_PARAMETER(hThisObject);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hCosaContext;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepUpperFo  = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepUpperFo;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )pCosaContext->hPoamIrepFo;

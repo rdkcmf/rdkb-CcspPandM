@@ -84,7 +84,10 @@
 
 int                 _getMac(char* ifName, char* mac);
 COSA_DML_IF_STATUS  getIfStatus(const PUCHAR name, struct ifreq *pIfr);
+//unused function
+#if 0
 static int          setIfStatus(struct ifreq *pIfr);
+#endif
 BOOLEAN 			getIfAvailability( const PUCHAR name );
 
 
@@ -99,6 +102,7 @@ CosaDmlEthMlanInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
     PDMSB_TR181_ETH_CONTEXT         pEthContext     = NULL;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -178,8 +182,8 @@ CosaDmlEthLinkLoadPsm
                 g_MessageBusHandle,
                 g_SubsystemPrefix,
                 DMSB_TR181_PSM_EthLink_Root,
-                &iNumInst,
-                &pInstArray
+                (unsigned int *)&iNumInst,
+                (unsigned int **)&pInstArray
             );
 
     if ( iReturnValue != CCSP_SUCCESS )
@@ -188,7 +192,7 @@ CosaDmlEthLinkLoadPsm
         goto  EXIT;
     }
 
-    for ( ulIndex = 0; ulIndex < iNumInst; ulIndex++ )
+    for ( ulIndex = 0; (int)ulIndex < iNumInst; ulIndex++ )
     {
         pEthLink = (PDMSB_TR181_ETH_LINK)AnscAllocateMemory(sizeof(DMSB_TR181_ETH_LINK));
 
@@ -486,7 +490,7 @@ CosaDmlEthLinkLoadPsm
                     (
                         pParamPath,
                         DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
-                        pEthLink->Cfg.LinkInstNum
+                        (int)pEthLink->Cfg.LinkInstNum
                     );
 
                 iReturnValue =
@@ -514,7 +518,7 @@ CosaDmlEthLinkLoadPsm
 
         if ( _ansc_strlen(pEthLink->StaticInfo.Name) > 0 )
         {
-            _getMac(pEthLink->StaticInfo.Name, pEthLink->StaticInfo.MacAddress);
+            _getMac(pEthLink->StaticInfo.Name,(char *) pEthLink->StaticInfo.MacAddress);
         }
 
         /* Fetch DynamicInfo */
@@ -541,6 +545,7 @@ CosaDmlEthLinkSavePsm
         PCOSA_DML_ETH_LINK_CFG      pCfg
     )
 {
+    UNREFERENCED_PARAMETER(pEthContext);
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = ccsp_string;
@@ -554,7 +559,7 @@ CosaDmlEthLinkSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_Enable,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_boolean;
@@ -582,7 +587,7 @@ CosaDmlEthLinkSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_Alias,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_string;
@@ -610,7 +615,7 @@ CosaDmlEthLinkSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_PriorityTagging,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_boolean;
@@ -638,11 +643,11 @@ CosaDmlEthLinkSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%d", pCfg->LinkInstNum);
+        _ansc_sprintf(RecordValue, "%lu", pCfg->LinkInstNum);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -666,7 +671,7 @@ CosaDmlEthLinkSavePsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2netType,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         RecordType = ccsp_string;
@@ -699,6 +704,7 @@ CosaDmlEthLinkDelPsm
         PCOSA_DML_ETH_LINK_CFG      pCfg
     )
 {
+    UNREFERENCED_PARAMETER(pEthContext);
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
 
@@ -710,7 +716,7 @@ CosaDmlEthLinkDelPsm
             (
                 pParamPath,
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i,
-                pCfg->InstanceNumber
+                (int)pCfg->InstanceNumber
             );
 
         iReturnValue =
@@ -783,7 +789,7 @@ CosaDmlEthLinkGetEntry
             AnscCopyMemory(&pEntry->StaticInfo, &pEthLink->StaticInfo, sizeof(pEthLink->StaticInfo));
             AnscCopyMemory(&pEntry->DynamicInfo, &pEthLink->StaticInfo, sizeof(pEthLink->DynamicInfo));
 
-            pEntry->DynamicInfo.Status = getIfStatus(pEthLink->StaticInfo.Name, NULL);
+            pEntry->DynamicInfo.Status = getIfStatus((PUCHAR)pEthLink->StaticInfo.Name, NULL);
 
             return  ANSC_STATUS_SUCCESS;
         }
@@ -807,6 +813,7 @@ CosaDmlEthLinkSetValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     PDMSB_TR181_ETH_CONTEXT         pEthContext     = (PDMSB_TR181_ETH_CONTEXT)hContext;
     PSINGLE_LINK_ENTRY              pSLinkEntry;
     PDMSB_TR181_ETH_LINK            pEthLink;
@@ -828,6 +835,7 @@ CosaDmlEthLinkSetValues
     {
         return  ANSC_STATUS_CANT_FIND;
     }
+    return  ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -839,7 +847,6 @@ CosaDmlEthLinkAddEntry
 {
     int                             iReturnValue    = CCSP_SUCCESS;
     PDMSB_TR181_ETH_CONTEXT         pEthContext     = (PDMSB_TR181_ETH_CONTEXT)hContext;
-    PSINGLE_LINK_ENTRY              pSLinkEntry;
     PDMSB_TR181_ETH_LINK            pEthLink;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -877,7 +884,7 @@ CosaDmlEthLinkAddEntry
                     (
                         pParamPath,
                         DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
-                        pEthLink->Cfg.LinkInstNum
+                        (int)pEthLink->Cfg.LinkInstNum
                     );
 
                 iReturnValue =
@@ -904,10 +911,10 @@ CosaDmlEthLinkAddEntry
 
             if ( _ansc_strlen(pEthLink->StaticInfo.Name) > 0 )
             {
-                _getMac(pEthLink->StaticInfo.Name, pEthLink->StaticInfo.MacAddress);
+                _getMac(pEthLink->StaticInfo.Name, (char *)pEthLink->StaticInfo.MacAddress);
             }
 
-            pEntry->DynamicInfo.Status       = getIfStatus(pEthLink->StaticInfo.Name, NULL);
+            pEntry->DynamicInfo.Status       = getIfStatus((PUCHAR)pEthLink->StaticInfo.Name, NULL);
             pEthLink->DynamicInfo.LastChange = AnscGetTickInSeconds();
 
             AnscSListPushEntryAtBack(&pEthContext->EthLinkList, &pEthLink->Linkage);
@@ -915,6 +922,7 @@ CosaDmlEthLinkAddEntry
             CosaDmlEthLinkSavePsm(pEthContext, &pEthLink->Cfg);
         }
     }
+    return  ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -978,7 +986,7 @@ CosaDmlEthLinkSetCfg
 			COSA_DML_IF_STATUS enifStatus = COSA_DML_IF_STATUS_Unknown;
 			BOOLEAN 		   bProceedFurther = TRUE;
 			
-			enifStatus = getIfStatus(pEthLink->StaticInfo.Name, &ifr);
+			enifStatus = getIfStatus((PUCHAR)pEthLink->StaticInfo.Name, &ifr);
 			
 			if ( ( enifStatus == COSA_DML_IF_STATUS_Unknown ) || \
 				 ( enifStatus == COSA_DML_IF_STATUS_NotPresent )
@@ -1045,7 +1053,7 @@ CosaDmlEthLinkUpdateStaticMac
         if( (0x00 == pEthLink->StaticInfo.MacAddress[0]) && (0x00 == pEthLink->StaticInfo.MacAddress[1]) && (0x00 == pEthLink->StaticInfo.MacAddress[2]) && (0x00 == pEthLink->StaticInfo.MacAddress[3]) && (0x00 == pEthLink->StaticInfo.MacAddress[4]) && (0x00 == pEthLink->StaticInfo.MacAddress[5]))
         {
             UCHAR strMac[128] = {0};
-            if ( -1 != _getMac(pEthLink->StaticInfo.Name, strMac) )
+            if ( -1 != _getMac(pEthLink->StaticInfo.Name,(char *) strMac) )
             {
                 AnscCopyMemory(pEthLink->StaticInfo.MacAddress,strMac,6);
                 AnscCopyMemory(pEntry->StaticInfo.MacAddress,strMac,6);
@@ -1104,7 +1112,7 @@ CosaDmlEthLinkGetDinfo
     }
     else
     {
-        pInfo->Status       = getIfStatus(pEthLink->StaticInfo.Name, NULL);
+        pInfo->Status       = getIfStatus((PUCHAR)pEthLink->StaticInfo.Name, NULL);
 
         return  ANSC_STATUS_SUCCESS;
     }
@@ -1133,7 +1141,7 @@ CosaDmlEthLinkGetStats
     {
         _ansc_memset(pStats, 0, sizeof(COSA_DML_ETH_STATS));
 
-        CosaUtilGetIfStats(pEthLink->StaticInfo.Name, pStats);
+        CosaUtilGetIfStats(pEthLink->StaticInfo.Name, (PCOSA_DML_IF_STATS)pStats);
         
         pStats->BroadcastPacketsReceived    -= pEthLink->LastStats.BroadcastPacketsReceived;
         pStats->BroadcastPacketsSent        -= pEthLink->LastStats.BroadcastPacketsSent;
@@ -1219,7 +1227,7 @@ COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr)
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    AnscCopyString(ifr.ifr_name, name);
+    AnscCopyString(ifr.ifr_name, (char*)name);
     
     if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {
 		
@@ -1250,7 +1258,8 @@ COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr)
     }
 }
 
-
+//unused function
+#if 0
 static int setIfStatus(struct ifreq *pIfr)
 {
     int skfd;
@@ -1268,6 +1277,7 @@ static int setIfStatus(struct ifreq *pIfr)
 
     return 0;
 }
+#endif
 
 BOOLEAN getIfAvailability( const PUCHAR name )
 {
@@ -1278,7 +1288,7 @@ BOOLEAN getIfAvailability( const PUCHAR name )
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    AnscCopyString(ifr.ifr_name, name);
+    AnscCopyString(ifr.ifr_name, (char *)name);
     
     if (ioctl(skfd, SIOCGIFINDEX, &ifr) < 0) {
 		

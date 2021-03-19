@@ -130,6 +130,8 @@ CosaDmlNeighdiscInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -185,6 +187,7 @@ CosaDmlNeighdiscIfGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return g_NumOfInterfaces;
 }
 
@@ -226,6 +229,7 @@ CosaDmlNeighdiscIfGetEntry
         PCOSA_DML_NEIGHDISC_IF_FULL        pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     AnscCopyMemory(pEntry, &g_neighdisc_interfaces[ulIndex], sizeof(*pEntry));
 
     return ANSC_STATUS_SUCCESS;
@@ -272,6 +276,7 @@ CosaDmlNeighdiscIfSetValues
         char*                       pAlias
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     g_neighdisc_interfaces[ulIndex].Cfg.InstanceNumber = ulInstanceNumber;
     AnscCopyString(g_neighdisc_interfaces[ulIndex].Cfg.Alias, pAlias);
 
@@ -311,6 +316,7 @@ CosaDmlNeighdiscIfAddEntry
         PCOSA_DML_NEIGHDISC_IF_FULL        pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( g_NumOfInterfaces >= NEIGHDISC_INTERFACE_MAX_NUM )
     {
         return ANSC_STATUS_FAILURE;
@@ -355,6 +361,7 @@ CosaDmlNeighdiscIfDelEntry
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     ULONG                           j = 0;
 
@@ -414,6 +421,7 @@ CosaDmlNeighdiscIfSetCfg
         PCOSA_DML_NEIGHDISC_IF_CFG         pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfInterfaces; i++)
@@ -460,6 +468,7 @@ CosaDmlNeighdiscIfGetCfg
         PCOSA_DML_NEIGHDISC_IF_CFG         pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfInterfaces; i++)
@@ -512,6 +521,7 @@ CosaDmlNeighdiscIfGetInfo
         PCOSA_DML_NEIGHDISC_IF_INFO        pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
 
     for ( i = 0; i < g_NumOfInterfaces; i++)
@@ -593,6 +603,8 @@ CosaDmlNeighdiscInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -659,6 +671,7 @@ CosaDmlNeighdiscIfGetNumberOfEntries
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     return 1;
 }
 
@@ -714,6 +727,9 @@ CosaDmlNeighdiscIfGetEntry
     UtopiaContext utctx = {0};
     char out[256] = {0};
     int  need_write = 0;
+
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIndex);
 
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
@@ -830,6 +846,10 @@ CosaDmlNeighdiscIfSetValues
     )
 {
     /*can't be called*/
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulIndex);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
+    UNREFERENCED_PARAMETER(pAlias);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -866,6 +886,8 @@ CosaDmlNeighdiscIfAddEntry
         PCOSA_DML_NEIGHDISC_IF_FULL        pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pEntry);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -901,6 +923,8 @@ CosaDmlNeighdiscIfDelEntry
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(ulInstanceNumber);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -936,6 +960,7 @@ CosaDmlNeighdiscIfSetCfg
         PCOSA_DML_NEIGHDISC_IF_CFG         pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
     char out[256] = {0};
 
@@ -960,7 +985,7 @@ CosaDmlNeighdiscIfSetCfg
 
     if (pCfg->RetransTimer != g_neighdisc_interface.Cfg.RetransTimer)
     {
-        sprintf(out, "%d", pCfg->RetransTimer);
+        sprintf(out, "%lu", pCfg->RetransTimer);
         Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_RetransTimer",out);        
 
         /*this is so called backend implementation*/
@@ -969,7 +994,7 @@ CosaDmlNeighdiscIfSetCfg
 
     if (pCfg->RtrSolicitationInterval != g_neighdisc_interface.Cfg.RtrSolicitationInterval)
     {
-        sprintf(out, "%d", pCfg->RtrSolicitationInterval);
+        sprintf(out, "%lu", pCfg->RtrSolicitationInterval);
         Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_RtrSolicitationInterval",out);        
 
         /*this is so called backend implementation*/
@@ -980,7 +1005,7 @@ CosaDmlNeighdiscIfSetCfg
 
     if (pCfg->MaxRtrSolicitations != g_neighdisc_interface.Cfg.MaxRtrSolicitations)
     {
-        sprintf(out, "%d", pCfg->MaxRtrSolicitations);
+        sprintf(out, "%lu", pCfg->MaxRtrSolicitations);
         Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_MaxRtrSolicitations",out);        
 
         /*this is so called backend implementation*/
@@ -1027,6 +1052,7 @@ CosaDmlNeighdiscIfGetCfg
         PCOSA_DML_NEIGHDISC_IF_CFG         pCfg
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( g_neighdisc_interface.Cfg.InstanceNumber == pCfg->InstanceNumber )
     {
         AnscCopyMemory(pCfg, &g_neighdisc_interface.Cfg, sizeof(*pCfg));
@@ -1074,6 +1100,7 @@ CosaDmlNeighdiscIfGetInfo
         PCOSA_DML_NEIGHDISC_IF_INFO        pInfo
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     if ( g_neighdisc_interface.Cfg.InstanceNumber == ulInstanceNumber )
     {
 	#if 0
@@ -1108,6 +1135,7 @@ void CosaDmlNeighborTableGetEntry
         PCOSA_DML_NEIGHTABLE_INFO*  ppNbTbl
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     FILE*   fp         = NULL;
     char    buf[128]   = {0};
     int     counter    = 0;

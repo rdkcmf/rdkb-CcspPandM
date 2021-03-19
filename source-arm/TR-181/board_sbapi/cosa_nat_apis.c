@@ -1062,8 +1062,9 @@ static BOOL g_NatPFEnable;
 static BOOL g_NatHSPFEnable;
 static BOOL g_NatOne2OneEnable;
 
-ANSC_IPV4_ADDRESS  g_NatLanIP = {0};
+ANSC_IPV4_ADDRESS  g_NatLanIP = {{0}};
 
+/*
 static ULONG
 saveID
     (
@@ -1145,9 +1146,10 @@ unsetID
 
     return 0;
 }
+*/
 
 /* InstanceNum save/load for PortTrigger entries */
-
+/*
 static ULONG
 saveIDPt
     (
@@ -1177,7 +1179,6 @@ loadIDPt
 {
     char keyStr[1024] = {0};
     char idStr[1024] = {0};
-    char* instNumString;
     int rv;
 
     _ansc_sprintf(keyStr, "%s", pAlias);
@@ -1209,6 +1210,7 @@ unsetIDPt
 
     return 0;
 }
+*/
 #define trace(x, argv...)
 
 #define UPDATE_PF_SINGLE_RULE_ENABLE(COUNT, DATA, PF_ENABLE,HS_ENABLE) {  \
@@ -1315,7 +1317,6 @@ ANSC_STATUS _Update_NAT_PF_HS_Enable(UtopiaContext *pCtx, int pfEnable, int HSEn
     portFwdRange_t           *rangeInfo = NULL;
     int            PortFwdSingleCount = 0;
     int             PortFwdRangeCount = 0;
-    int                             i;
 
     rc = Utopia_GetPortForwardingRange(pCtx, &PortFwdRangeCount, &rangeInfo);
     if ( rc != SUCCESS )
@@ -1432,7 +1433,7 @@ CosaDmlNatGet
         PCOSA_DML_NAT               pDmlNat
     )
 {
-
+    UNREFERENCED_PARAMETER(hContext);
     COSA_DML_NAT_CUSTOM_SET_ENABLEHSPORTMAPPING(pDmlNat, g_NatHSPFEnable);
 	COSA_DML_NAT_CUSTOM_SET_ENABLEPORTMAPPING(pDmlNat, g_NatPFEnable);
     COSA_DML_NAT_CUSTOM_SET_ENABLENATMAPPING(pDmlNat, g_NatOne2OneEnable);
@@ -1469,10 +1470,9 @@ CosaDmlNatSet
         PCOSA_DML_NAT               pDmlNat
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext Ctx;
-    ANSC_STATUS rc = ANSC_STATUS_SUCCESS;
     int pf = -1, hs = -1, nat = -1;
-    BOOL bCommit = 0;
     if (!Utopia_Init(&Ctx))
     {
         CcspTraceError(("%s Error initializing context\n", __FUNCTION__));
@@ -1512,6 +1512,7 @@ CosaDmlNatGetLanIP
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext          Ctx;
     lanSetting_t           lan;
     ULONG                  rc, i;
@@ -1582,10 +1583,11 @@ CosaDmlNatGetDmz
         PCOSA_DML_NAT_DMZ           pDmlDmz
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     dmz_t*                          pDmz            = (dmz_t*           )NULL;
     ULONG                           rc              = 0;
-    ANSC_IPV4_ADDRESS               InternalIP      = {0};
-    //char*                           pInternalIPStr  = NULL;
+    /*ANSC_IPV4_ADDRESS               InternalIP      = {0};
+      char*                           pInternalIPStr  = NULL;*/
     UtopiaContext                   Ctx;
 
     if ( !pDmlDmz )
@@ -1717,10 +1719,11 @@ CosaDmlNatSetDmz
         PCOSA_DML_NAT_DMZ           pDmlDmz
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     dmz_t*                          pDmz            = (dmz_t*           )NULL;
     ULONG                           rc              = 0;
-    ANSC_IPV4_ADDRESS               InternalIP      = {0};
+
     UtopiaContext                   Ctx;
 
     if ( !pDmlDmz )
@@ -1748,6 +1751,7 @@ CosaDmlNatSetDmz
 
     pDmz->enabled = pDmlDmz->bEnabled;
     /*
+    ANSC_IPV4_ADDRESS               InternalIP      = {0};
     AnscCopyString(pDmz->source_ip_start, pDmlDmz->RemoteIPStart);
     AnscCopyString(pDmz->source_ip_end,   pDmlDmz->RemoteIPEnd  );
     AnscCopyString(pDmz->dest_mac,        pDmlDmz->InternalMAC  );
@@ -1775,7 +1779,7 @@ CosaDmlNatSetDmz
 
     return returnStatus;
 }
-
+/*
 static int s_UpdateDynPortMapping (int index, portMapDyn_t *pmap)
 {
     token_t  se_token;
@@ -1822,6 +1826,7 @@ static int s_UpdateDynPortMapping (int index, portMapDyn_t *pmap)
 
     return UT_SUCCESS;
 }
+*/
 
 ANSC_STATUS _AddPortMapping(        
     UtopiaContext   *pCtx,
@@ -1890,8 +1895,6 @@ ANSC_STATUS _AddPortMapping(
 
 ANSC_STATUS _Update_TriggerEnable(UtopiaContext   *pCtx, boolean_t enabled){
     
-    ANSC_STATUS rc;
-
     if(enabled == TRUE && g_NatPTTriggerEnable == FALSE){
 
         /* Active port trigger */
@@ -2067,6 +2070,7 @@ static inline int _CHECK_PORTMAPPING_RULE_TYPE_UTOPAI_SINGLE(portFwdSingle_t *pE
 
 BOOL CosaDmlNatChkPortMappingMaxRuleNum(PCOSA_DML_NAT_PMAPPING pEntry)
 {
+    UNREFERENCED_PARAMETER(pEntry);
 /* Don't limit portmapping rule number now.*/
 #if 0 
     UtopiaContext          Ctx;
@@ -2158,6 +2162,8 @@ CosaDmlNatInit
         PFN_COSA_DML_NAT_GEN        pValueGenFn
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     UtopiaContext Ctx;
     char tmp[25];
     g_nat_pportmapping_callback = pValueGenFn;
@@ -2249,16 +2255,18 @@ CosaDmlNatGetPortMapping
         PCOSA_DML_NAT_PMAPPING      pNatPMapping
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext          Ctx = {0};
-    portFwdSingle_t        singleInfo = {0};
-    portFwdRange_t         rangeInfo = {0};
-    portMapDyn_t           dynInfo ={0};
-//    lanSetting_t           lan;
-    ULONG                  ulIndex = 0;
+    portFwdSingle_t        singleInfo;
+    portFwdRange_t         rangeInfo;
     int                    PortFwdDynCount = 0;
-    ULONG                  rc,i;
-//    ANSC_IPV4_ADDRESS             nat_lan;  
+    ULONG                  rc;
+/*  portMapDyn_t           dynInfo ={0};
+    ANSC_IPV4_ADDRESS      nat_lan;  
     COSA_DML_NAT_PMAPPING  tmp ={0};
+    lanSetting_t           lan;
+    ULONG                  ulIndex = 0;*/
+
     if (pNatPMapping == NULL)
     {
         return ANSC_STATUS_FAILURE;
@@ -2448,6 +2456,7 @@ CosaDmlNatGetPortMappings
         PULONG                      pulCount
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext          Ctx;
     PCOSA_DML_NAT_PMAPPING pNatPMapping = NULL;
     portFwdSingle_t         *singleInfo = NULL;
@@ -2458,7 +2467,8 @@ CosaDmlNatGetPortMappings
     int            PortFwdSingleCount = 0;
     int             PortFwdRangeCount = 0;
     int               PortFwdDynCount = 0;
-    ULONG                          rc,i;
+    ULONG                          rc;
+    int                              i;
     int                      allCount = 0;
 //    ANSC_IPV4_ADDRESS             nat_lan;  
      if (!pulCount)
@@ -2734,14 +2744,8 @@ CosaDmlNatAddPortMapping
         PCOSA_DML_NAT_PMAPPING      pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext                   Ctx;
-    portFwdSingle_t         *singleInfo = NULL;
-    portFwdRange_t           *rangeInfo = NULL;
-    ULONG                       ulIndex = 0;
-    ULONG          ulPortFwdSingleCount = 0;
-    ULONG           ulPortFwdRangeCount = 0;
-    ULONG                            rc = 0;
-    ULONG            *pulInstanceNumber = NULL;
 
     if (!pEntry)
     {
@@ -2808,12 +2812,11 @@ CosaDmlNatDelPortMapping
         ULONG                       ulInstanceNumber
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext                   Ctx;
-    portFwdSingle_t          singleInfo = {0};
-    portFwdRange_t            rangeInfo = {0};
-    portMapDyn_t                dynInfo = {0};
-    ULONG                       ulIndex = 0;
- //   int                 PortFwdDynCount = 0;
+    portFwdSingle_t          singleInfo;
+    portFwdRange_t            rangeInfo;
+
     ULONG                            rc = 0;
    
     if ( ulInstanceNumber < 1 )
@@ -2871,6 +2874,9 @@ CosaDmlNatDelPortMapping
     }
 
 #if 0
+    ULONG                       ulIndex = 0;
+    portMapDyn_t                dynInfo = {0};
+    int                         PortFwdDynCount = 0;
     Utopia_GetDynPortMappingCount((int*)&PortFwdDynCount);
     PortFwdDynCount = (PortFwdDynCount < g_NatPortFwdDynInstanceNumCount ? PortFwdDynCount : g_NatPortFwdDynInstanceNumCount);
 
@@ -2945,12 +2951,10 @@ CosaDmlNatSetPortMapping
         PCOSA_DML_NAT_PMAPPING      pEntry          /* Identified by InstanceNumber */
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext                   Ctx;
     portFwdSingle_t          singleInfo;
     portFwdRange_t           rangeInfo;
-    portMapDyn_t                dynInfo;
-    ULONG                       ulIndex = 0;
-    int                 PortFwdDynCount = 0;
     ULONG                            rc = 0;
 
     if (!pEntry)
@@ -3021,6 +3025,9 @@ CosaDmlNatSetPortMapping
 
     /* dynPortFwd should not be setting at DM */
 #if 0
+    int                 PortFwdDynCount = 0;
+    ULONG                       ulIndex = 0;
+    portMapDyn_t                dynInfo;
     /* Check if it is a dynPortFwd */
     Utopia_GetDynPortMappingCount(&PortFwdDynCount);
     PortFwdDynCount = (PortFwdDynCount < g_NatPortFwdDynInstanceNumCount ? PortFwdDynCount : g_NatPortFwdDynInstanceNumCount);
@@ -3210,8 +3217,8 @@ BOOL CosaDmlNatChkPortMappingIPV6Address(char* address)
     if(p_v6addr)
         free(p_v6addr);
 
-	bzero(&prx_t, sizeof(prx_t));
-	bzero(&ipv6_info, sizeof(ipv6_info));
+    bzero(&prx_t, sizeof(prx_t));
+    bzero(&ipv6_info, sizeof(ipv6_info));
     if (!Utopia_Init(&Ctx))
     {
         CcspTraceWarning(("%s Error initializing context\n", __FUNCTION__));
@@ -3269,7 +3276,7 @@ static BOOL _Find_IPv4_LAN_DML(ULONG client, ULONG *dml_ip_instance, ULONG *dml_
         if (ip_inst_num)
         {
             /* Get ethernet link object */
-            snprintf(ip_instance, sizeof(ip_instance), "%s%d", IP_INTERFACE_DML, ip_inst_num);
+            snprintf(ip_instance, sizeof(ip_instance), "%s%lu", IP_INTERFACE_DML, ip_inst_num);
             snprintf(name, sizeof(name), "%s.LowerLayers", ip_instance);
             val_len = sizeof(param_val);
             if ( (0 == g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len)) && _ansc_strstr(param_val, "Device.Ethernet.Link"))
@@ -3288,7 +3295,7 @@ static BOOL _Find_IPv4_LAN_DML(ULONG client, ULONG *dml_ip_instance, ULONG *dml_
                         addr_inst_num = g_GetInstanceNumberByIndex(g_pDslhDmlAgent, name, j);
                         if (addr_inst_num)
                         {
-                            snprintf(addr_instance, sizeof(addr_instance), "%s.IPv4Address.%d", ip_instance, addr_inst_num);
+                            snprintf(addr_instance, sizeof(addr_instance), "%s.IPv4Address.%lu", ip_instance, addr_inst_num);
                             /* Get IPv4 address and netmask */
                             snprintf(name, sizeof(name), "%s.IPAddress", addr_instance);
                             val_len = sizeof(ip_addr);
@@ -3344,7 +3351,7 @@ static BOOL validateClientIPAddress(ULONG client_ip_address)
     /* Find the IP instance */
     if(_Find_IPv4_LAN_DML(client_ip_address, &dml_ip_inst_num, NULL) && dml_ip_inst_num)
     {
-        snprintf(ip_instance, sizeof(ip_instance), "%s%d", IP_INTERFACE_DML, dml_ip_inst_num);
+        snprintf(ip_instance, sizeof(ip_instance), "%s%lu", IP_INTERFACE_DML, dml_ip_inst_num);
 
         /* Check dhcp range */
         dhcp_server_pool_count = g_GetParamValueUlong(g_pDslhDmlAgent, DHCPV4_SERVER_POOL_COUNT_DML);
@@ -3354,12 +3361,12 @@ static BOOL validateClientIPAddress(ULONG client_ip_address)
 
             if(pool_inst_num)
             {
-                 snprintf(pool_instance, sizeof(pool_instance), "%s%d", DHCPV4_SERVER_POOL_DML, pool_inst_num);
+                 snprintf(pool_instance, sizeof(pool_instance), "%s%lu", DHCPV4_SERVER_POOL_DML, pool_inst_num);
                  snprintf(name, sizeof(name), "%s.Interface", pool_instance);
                  val_len = sizeof(param_val);
                 if((0 == g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len)) && _ansc_strstr(param_val, ip_instance))
                 {
-                    snprintf(&name, sizeof(name), "%s.Enable", pool_instance);
+                    snprintf(name, sizeof(name), "%s.Enable", pool_instance);
                     if(g_GetParamValueBool(g_pDslhDmlAgent, name))
                     {
                         snprintf(name, sizeof(name), "%s.MinAddress", pool_instance);
@@ -3484,12 +3491,11 @@ CosaDmlNatGetPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pNatPTrigger
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext                   Ctx = {0};
-    portRangeTrig_t                 porttrigger = {0};
-    BOOL                            bSetBack     = FALSE;
-    ULONG                           ulIndex      = 0;
+    portRangeTrig_t                 porttrigger;
     int                             rc           = 0;
-    int                             count = 0;
+
     if ( pNatPTrigger == NULL )
     {
         CcspTraceWarning(("CosaDmlNatGetPortTrigger pTrigger is NULL!\n"));
@@ -3560,10 +3566,10 @@ CosaDmlNatGetPortTriggers
         BOOLEAN                     bCommit
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext                   Ctx;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger = (PCOSA_DML_NAT_PTRIGGER)NULL;
     portRangeTrig_t *               porttrigger  = (portRangeTrig_t *     )NULL;
-    BOOL                            bSetBack     = FALSE;
     ULONG                           ulIndex      = 0;
     int                             rc           = 0;
     int                             count = 0;
@@ -3665,6 +3671,7 @@ CosaDmlNatAddPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pEntry
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus        = ANSC_STATUS_FAILURE;
     UtopiaContext                   Ctx;
     portRangeTrig_t                 porttriggerNew;
@@ -3747,7 +3754,7 @@ CosaDmlNatDelPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pEntry
     )
 {
-    ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext                   Ctx;
     int                             rc                  = 0;
 
@@ -3810,7 +3817,7 @@ CosaDmlNatSetPortTrigger
         PCOSA_DML_NAT_PTRIGGER      pEntry          /* Identified by InstanceNumber */
     )
 {
-    ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hContext);
     UtopiaContext                   Ctx;
     portRangeTrig_t                 porttrigger;
     int                             rc                  = 0;

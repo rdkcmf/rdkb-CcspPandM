@@ -108,7 +108,6 @@ CosaDhcpv4Create
         VOID
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DHCPV4          pMyObject    = (PCOSA_DATAMODEL_DHCPV4)NULL;
 
     /*
@@ -284,7 +283,6 @@ CosaDhcpv4Remove
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink            = NULL;
     PSINGLE_LINK_ENTRY              pSListEntry         = NULL;
     PSINGLE_LINK_ENTRY              pSListEntry2        = NULL;
-    BOOL                            bFound              = FALSE;
 
     /* Remove necessary resource */
     
@@ -443,7 +441,7 @@ CosaDhcpv4BackendGetDhcpv4Info
             pDhcpc->Cfg.InstanceNumber     = pDhcpv4->maxInstanceOfClient;
             pClientCxtLink->InstanceNumber = pDhcpc->Cfg.InstanceNumber;
             
-            _ansc_sprintf(pDhcpc->Cfg.Alias, "DHCPv4%u", pDhcpc->Cfg.InstanceNumber);
+            _ansc_sprintf(pDhcpc->Cfg.Alias, "DHCPv4%lu", pDhcpc->Cfg.InstanceNumber);
 
             returnStatus = CosaDmlDhcpcSetValues
                             (
@@ -547,7 +545,7 @@ CosaDhcpv4BackendGetDhcpv4Info
 
                 pReqOption->InstanceNumber = pClientCxtLink->maxInstanceOfReq;
         
-                _ansc_sprintf( pReqOption->Alias, "ReqOption%u", pReqOption->InstanceNumber );
+                _ansc_sprintf( pReqOption->Alias, "ReqOption%lu", pReqOption->InstanceNumber );
         
                 returnStatus = CosaDmlDhcpcSetReqOptionValues
                                 (
@@ -655,7 +653,7 @@ CosaDhcpv4BackendGetDhcpv4Info
                 bNeedSave                        = TRUE;
                 pSendOption->InstanceNumber = pClientCxtLink->maxInstanceOfSend;
 
-                _ansc_sprintf( pSendOption->Alias, "SentOption%u", pSendOption->InstanceNumber );
+                _ansc_sprintf( pSendOption->Alias, "SentOption%lu", pSendOption->InstanceNumber );
         
                 returnStatus = CosaDmlDhcpcSetSentOptionValues
                                 (
@@ -761,7 +759,7 @@ CosaDhcpv4BackendGetDhcpv4Info
             pPool->Cfg.InstanceNumber    = pDhcpv4->maxInstanceOfPool;
             pPoolCxtLink->InstanceNumber = pPool->Cfg.InstanceNumber; 
              
-            _ansc_sprintf(pPool->Cfg.Alias, "DHCPv4%u", pPool->Cfg.InstanceNumber);
+            _ansc_sprintf(pPool->Cfg.Alias, "DHCPv4%lu", pPool->Cfg.InstanceNumber);
 
             returnStatus = CosaDmlDhcpsSetPoolValues
                             (
@@ -866,7 +864,7 @@ CosaDhcpv4BackendGetDhcpv4Info
                 bNeedSave                        = TRUE;
                 pStaticAddr->InstanceNumber = pPoolCxtLink->maxInstanceOfStaticAddress;
         
-                _ansc_sprintf( pStaticAddr->Alias, "StaticAddress%u", pStaticAddr->InstanceNumber );
+                _ansc_sprintf( pStaticAddr->Alias, "StaticAddress%lu", pStaticAddr->InstanceNumber );
         
                 returnStatus = CosaDmlDhcpsSetSaddrValues
                                 (
@@ -974,7 +972,7 @@ CosaDhcpv4BackendGetDhcpv4Info
                 bNeedSave                        = TRUE;
                 pOption->InstanceNumber = pPoolCxtLink->maxInstanceOfOption;
         
-                _ansc_sprintf( pOption->Alias, "Option%u", pOption->InstanceNumber );
+                _ansc_sprintf( pOption->Alias, "Option%lu", pOption->InstanceNumber );
         
                 returnStatus = CosaDmlDhcpsSetOptionValues
                                 (
@@ -2451,18 +2449,6 @@ CosaDhcpv4RegSetDhcpv4Info
     PCOSA_CONTEXT_LINK_OBJECT       pCosaStaticAddressContext   = NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaOptionContext          = NULL;
     PSLAP_VARIABLE                  pSlapVariable     = NULL;
-    ULONG                           ulEntryCount      = 0;
-    ULONG                           ulIndex           = 0;
-    ULONG                           ulEntryCount2     = 0;
-    ULONG                           ulIndex2          = 0;
-    ULONG                           uInstanceNumber   = 0;
-    char*                           pAliasClient      = NULL;
-    char*                           pAliasReqOption   = NULL;
-    char*                           pAliasSendOption  = NULL;
-    char*                           pAliasPool        = NULL;
-    char*                           pAliasStaticAddress = NULL;
-    char*                           pAliasOption        = NULL;
-    char*                           pFolderName       = NULL;
     char                            FolderName[16]    = {0};
     
     PCOSA_DML_DHCPC_FULL            pDhcpv4Client     = NULL;
@@ -2602,7 +2588,7 @@ CosaDhcpv4RegSetDhcpv4Info
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%u", pCosaDhcpcContext->InstanceNumber);
+        _ansc_sprintf(FolderName, "%lu", pCosaDhcpcContext->InstanceNumber);
 
         pPoamIrepFoEnumClient =
             pPoamIrepFoClient->AddFolder
@@ -2719,7 +2705,7 @@ CosaDhcpv4RegSetDhcpv4Info
                 continue;
             }
             
-            _ansc_sprintf(FolderName, "%u", pCosaReqOptionContext->InstanceNumber);
+            _ansc_sprintf(FolderName, "%lu", pCosaReqOptionContext->InstanceNumber);
         
             pPoamIrepFoEnumReqOpt =
                 pPoamIrepFoReqOpt->AddFolder
@@ -2844,7 +2830,7 @@ SentOption:
                 continue;
             }
         
-            _ansc_sprintf(FolderName, "%u", pCosaSendOptionContext->InstanceNumber);
+            _ansc_sprintf(FolderName, "%lu", pCosaSendOptionContext->InstanceNumber);
         
             pPoamIrepFoEnumSndOpt =
                 pPoamIrepFoSndOpt->AddFolder
@@ -2980,7 +2966,7 @@ ClientEnd:
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%u", pCosaPoolContext->InstanceNumber);
+        _ansc_sprintf(FolderName, "%lu", pCosaPoolContext->InstanceNumber);
 
         pPoamIrepFoEnumPool =
             pPoamIrepFoPool->AddFolder
@@ -3096,7 +3082,7 @@ ClientEnd:
                 continue;
             }
             
-            _ansc_sprintf(FolderName, "%u", pCosaStaticAddressContext->InstanceNumber);
+            _ansc_sprintf(FolderName, "%lu", pCosaStaticAddressContext->InstanceNumber);
         
             pPoamIrepFoEnumStaticAddress =
                 pPoamIrepFoStaticAddress->AddFolder
@@ -3219,7 +3205,7 @@ ClientEnd:
                 continue;
             }
             
-            _ansc_sprintf(FolderName, "%u", pCosaOptionContext->InstanceNumber);
+            _ansc_sprintf(FolderName, "%lu", pCosaOptionContext->InstanceNumber);
 
             pPoamIrepFoEnumOption =
                 pPoamIrepFoOption->AddFolder
@@ -3374,7 +3360,6 @@ CosaDhcpv4ClientHasDelayAddedChild
         PCOSA_CONTEXT_DHCPC_LINK_OBJECT                 hContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pCosaDhcpcContext = hContext;
     
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY )NULL;
@@ -3438,7 +3423,6 @@ CosaDhcpv4PoolHasDelayAddedChild
         PCOSA_CONTEXT_POOL_LINK_OBJECT                hContext
     )
 {
-    ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCosaPoolContext  = hContext;
     
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY )NULL;
@@ -3559,7 +3543,6 @@ CosaDmlGetIpaddrString
 {        
     UCHAR              *pTmpString      = pString;
     ULONG               n               = 0;
-    BOOL                bReturn         = TRUE;
     PULONG              pIPAddr2        = pIPAddr;
 
     if ( !pString || !pulStrLength || !pIPAddr || !MaxNumber )
@@ -3567,18 +3550,18 @@ CosaDmlGetIpaddrString
     
     while( pIPAddr2[n] && ( n < MaxNumber ) && ( (*pulStrLength- (pTmpString - pString)) > 15 ) )
     {
-        AnscCopyString(pTmpString, _ansc_inet_ntoa( *((struct in_addr*)&(pIPAddr2[n]))) );
+        AnscCopyString((char *)pTmpString, _ansc_inet_ntoa( *((struct in_addr*)&(pIPAddr2[n]))) );
     
-        pTmpString[AnscSizeOfString(pTmpString)] = ',';
+        pTmpString[AnscSizeOfString((const char *)pTmpString)] = ',';
     
-        pTmpString = &pTmpString[AnscSizeOfString(pTmpString)];
+        pTmpString = &pTmpString[AnscSizeOfString((const char *)pTmpString)];
         
         n++;
     }
     
     if ( pTmpString != pString )
     {
-        pTmpString[AnscSizeOfString(pTmpString) -1] = 0;
+        pTmpString[AnscSizeOfString((const char *)pTmpString) -1] = 0;
     }
     
     if ( (*pulStrLength - (pTmpString - pString)) <= 15 )

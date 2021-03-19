@@ -535,6 +535,7 @@ CosaDmlBrgVlanPortDelEntry
         ULONG                       ulPortInstanceNumber
     );
 
+void CosaDmlPrintHSVlanPsmValue(char *fun,int linenum);
 
 #endif
 

@@ -55,7 +55,6 @@ CosaRabidCreate
     )
 {
     PCOSA_DATAMODEL_RABID       pMyObject    = (PCOSA_DATAMODEL_RABID)NULL;
-    ULONG                   syscfgValue = 0;
     ULONG                   uSyscfgValue = 0;
     int                     retGet  = ANSC_STATUS_SUCCESS;
 

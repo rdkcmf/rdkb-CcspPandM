@@ -69,6 +69,7 @@
 #include "cosa_x_cisco_com_filetransfer_apis.h"
 #include "cosa_x_cisco_com_filetransfer_internal.h"
 #include "dmsb_tr181_psm_definitions.h"
+#include "ccsp_psm_helper.h"
 #include <curl/curl.h>
 #include "secure_wrapper.h"
 
@@ -94,6 +95,8 @@ CosaDmlFileTransferInit
         PANSC_HANDLE                phContext
 )
 {
+    UNREFERENCED_PARAMETER(hDml);
+    UNREFERENCED_PARAMETER(phContext);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -191,7 +194,6 @@ FileTransferTask
     CURLcode                        ret             = CURLE_OK;
     int                             httpCode        = 0;
     int                             formatVerifyStatus = FORMAT_VERIFY_FAILURE;
-    char                            tmp[128]        = {0};
     
     ret  = curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
@@ -304,7 +306,7 @@ CosaDmlFileTransferSetCfg
             );
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%d", pCfg->Server);
+        _ansc_sprintf(RecordValue, "%lu", pCfg->Server);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -339,7 +341,7 @@ CosaDmlFileTransferSetCfg
             );
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%d", pCfg->Protocol);
+        _ansc_sprintf(RecordValue, "%lu", pCfg->Protocol);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -374,7 +376,7 @@ CosaDmlFileTransferSetCfg
             );
 
         RecordType = ccsp_string;
-        AnscCopyString(RecordValue, pCfg->FileName);
+        AnscCopyString(RecordValue, (char*)pCfg->FileName);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -431,6 +433,7 @@ CosaDmlFileTransferGetCfg
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
 
+    UNREFERENCED_PARAMETER(hContext);
     /* Fetch Cfg, we only support https download for now */
 
     if ( TRUE )     /* Server */
@@ -466,7 +469,7 @@ CosaDmlFileTransferGetCfg
         }
         else
         {
-            pCfg->Server, SlapValue.Variant.varUint32;
+            //pCfg->Server, SlapValue.Variant.varUint32;
         }
 
         SlapCleanVariable(&SlapValue);
@@ -544,7 +547,7 @@ CosaDmlFileTransferGetCfg
         }
         else
         {
-            AnscCopyString(pCfg->FileName, SlapValue.Variant.varString);
+            AnscCopyString((char*)pCfg->FileName, SlapValue.Variant.varString);
         }
 
         SlapCleanVariable(&SlapValue);
@@ -559,6 +562,7 @@ CosaDmlFileTransferGetStatus
         ANSC_HANDLE                 hContext
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     PCOSA_DATAMODEL_FILETRANSFER    pMyObject = (PCOSA_DATAMODEL_FILETRANSFER)hContext;
 
     return pMyObject->Status;
