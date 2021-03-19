@@ -855,6 +855,7 @@ struct tm *pLcltime, temp;
     return ANSC_STATUS_SUCCESS;
 }
 
+
 ANSC_STATUS
 CosaDmlTimeGetTimeOffset
     (
@@ -863,7 +864,28 @@ CosaDmlTimeGetTimeOffset
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    platform_hal_getTimeOffSet(pTimeOffset);
+    char response[100]={0};char cmd[100]={0};
+    FILE *fp=NULL;
+#ifdef UTC_ENABLE
+    if(!access("/nvram/ETHWAN_ENABLE", 0))
+    {
+        snprintf(cmd,sizeof(cmd),"sysevent get ipv4-timeoffset");
+        fp = popen(cmd, "r");
+        if (fp == NULL) {
+            CcspTraceWarning((  "%s :  fn   Line  : [%d] failed to execute command \n", __FUNCTION__,__LINE__));
+        }
+        else {
+            fgets(response,sizeof(response),fp);
+            pclose(fp);
+            strcpy(pTimeOffset,response+1 );
+            CcspTraceWarning((  "%s :  fn   Line  : [%d] timeoffset in Ethwan mode:%s\n", __FUNCTION__,__LINE__,pTimeOffset));
+        }
+    }
+    else
+    {
+        platform_hal_getTimeOffSet(pTimeOffset);
+    }
+#endif
     return ANSC_STATUS_SUCCESS;
 }
 
