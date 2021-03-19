@@ -99,11 +99,15 @@
 #include "cosa_x_cisco_com_devicecontrol_apis.h"
 #include "cosa_deviceinfo_internal.h"
 #include "cosa_drg_common.h"
+#include <syscfg/syscfg.h>
+
 #define DEVICE_PROPERTIES    "/etc/device.properties"
 #define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
 #define BOOTSTRAP_INFO_FILE		"/nvram/bootstrap.json"
 #define RFC_DEFAULTS_FILE       "/etc/rfcDefaults.json"
 #define RFC_STORE_FILE       "/opt/secure/RFC/tr181store.json"
+#define CUSTOM_DATA_MODEL_ENABLED "custom_data_model_enabled"
+#define SYSTEMD "systemd"
 
 static int writeToJson(char *data, char *file);
 
@@ -700,6 +704,82 @@ CosaDmlDiSetProvisioningCode
     return ANSC_STATUS_SUCCESS;
 }
 
+ULONG
+CosaDmlGiGetCustomDataModelEnabled
+    (
+        ANSC_HANDLE                 hContext,
+        BOOL                        *pValue
+    )
+{
+    char buf[2];
+    memset(buf, 0, sizeof(buf));
+    UNREFERENCED_PARAMETER(hContext);
+
+    if(syscfg_init() == 0)
+    {
+        syscfg_get( NULL, CUSTOM_DATA_MODEL_ENABLED, buf, sizeof(buf));
+    }
+    *pValue = (strcmp(buf, "1") == 0);
+    return ANSC_STATUS_SUCCESS;
+}
+
+static int IsSystemdRunning()
+{
+    FILE *f_name = fopen("/proc/1/status", "r");
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read = 0;
+    char initProcess[10] = {0};
+    int res = 0;
+
+    if (f_name)
+    {
+        /* Only need to read the first line to get the process name. Ex. Name:  systemd */
+        read = getline(&line, &len, f_name);
+        if (read != 0 || read != -1)
+        {
+            if (line != NULL)
+            {
+                sscanf(line, "Name:\t%s\n", initProcess);
+                if (strncmp(initProcess, SYSTEMD, 7) == 0)
+                {
+		            res = 1;
+                }
+            }
+        }
+        if(line)
+            free(line);
+
+        fclose(f_name);
+    }
+    return res;
+}
+
+ULONG
+CosaDmlGiSetCustomDataModelEnabled
+    (
+        ANSC_HANDLE                 hContext,
+        BOOL                        bValue
+    )
+{
+    UNREFERENCED_PARAMETER(hContext);
+    if(syscfg_init() == 0)
+    {
+        syscfg_set(NULL, CUSTOM_DATA_MODEL_ENABLED, bValue ? "1" : "0");
+    }
+
+    if (IsSystemdRunning())
+    {
+        v_secure_system("(sleep 5 ; systemctl restart CcspTr069PaSsp) &");
+    }
+    else
+    {
+        v_secure_system("killall CcspTr069PaSsp");
+        v_secure_system("cd /usr/ccsp/tr069pa; /usr/bin/CcspTr069PaSsp -subsys eRT. &");
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
 
 
 void* uploadLogUtilityThread(void* vptr_value)
