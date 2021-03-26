@@ -1847,6 +1847,7 @@ void* restoreAllDBs(void* arg)
 #elif defined(_COSA_BCM_MIPS_)
         v_secure_system("xf3_erase_nvram");
 #elif defined(_HUB4_PRODUCT_REQ_)
+	v_secure_system("rm -f /nvram/ETH_WAN_PORT_RECLAIMED");
 	v_secure_system("rm -rf /nvram/lxy");
         v_secure_system("/bin/sh /etc/sky/restore_settings.sh factory_reset");
 #else
