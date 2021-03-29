@@ -735,6 +735,15 @@ CosaDmlDhcpv6cGetEnabled
     (
         ANSC_HANDLE                 hContext
     );
-
+INT 
+append_interface
+	( 
+		char* 						Inf_name
+	);
+INT
+remove_interface
+	(
+		char* 						Inf_name
+	);
 #endif
 

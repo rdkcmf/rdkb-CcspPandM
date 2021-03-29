@@ -7025,6 +7025,55 @@ static int interface_num = 4; // Reserving first 4 /64s for dhcp configurations
 return 1;
 	
 }
+int remove_interface(char* Inf_name)
+{
+	CcspTraceWarning((">>>>Debug Entered  : %s at line : %d  \n",__FUNCTION__, __LINE__ ));
+	char *token = NULL;char *pt;
+	char OutBuff[128],buf[128] ;
+	
+	memset(OutBuff,0,sizeof(OutBuff));
+	memset(buf,0,sizeof(buf));
+	
+	syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
+	// interface is present in the list, we need to remove interface to disable IPv6 PD
+	pt = buf;
+   while((token = strtok_r(pt, ",", &pt))) {
+	if(strncmp(Inf_name,token,strlen(Inf_name)))
+		{
+			strcat(OutBuff,token);
+			strcat(OutBuff,",");
+		}
+   }
+	syscfg_set(NULL, "IPv6_Interface",OutBuff);
+	CcspTraceWarning((">>>>Debug  Value of  OutBuff : %s infname  : %s  buf : %s \n", OutBuff, Inf_name, buf ));
+    if (syscfg_commit( ) != 0) {
+         CcspTraceError(("syscfg_commit failed\n"));
+		 return -1;
+        }
+	return 0;
+}
+
+int append_interface(char* Inf_name)
+{
+	CcspTraceWarning((">>>>Debug Entered  : %s at line : %d  \n",__FUNCTION__, __LINE__ ));
+	char OutBuff[128],buf[128] ;
+	
+	memset(OutBuff,0,sizeof(OutBuff));
+	memset(buf,0,sizeof(buf));
+	
+	syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
+	
+	strncpy(OutBuff, buf, sizeof(buf));
+	strcat(OutBuff,Inf_name);
+	strcat(OutBuff,",");
+	CcspTraceWarning((">>>>Debug  Value of  OutBuff : %s infname  : %s  buf : %s \n", OutBuff, Inf_name, buf ));
+	syscfg_set(NULL, "IPv6_Interface",OutBuff);
+    if (syscfg_commit( ) != 0) {
+         CcspTraceError(("syscfg_commit failed\n"));
+		 return -1;
+        }
+	return 0;
+}
 /* This thread is added to handle the LnF interface IPv6 rule, because LnF is coming up late in XB6 devices. 
 This thread can be generic to handle the operations depending on the interfaces. Other interface and their events can be register here later based on requirement */
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_CBR_PRODUCT_REQ_)
@@ -7060,11 +7109,154 @@ void enable_IPv6(char* if_name)
     	v_secure_system("ip -6 rule add iif %s lookup erouter",if_name);
 
 }
+
+int getprefixinfo(const char *prefix,  char *value, unsigned int val_len, unsigned int *prefix_len)
+{
+    int i;
+
+    i = strlen(prefix);
+
+    while((prefix[i-1] != '/') && (i > 0)) i--;
+
+    if (i == 0) {
+        CcspTraceError(("[%s] ERROR, there is not '/' in prefix:%s\n", __FUNCTION__, prefix));
+
+        return -1;
+    }
+
+    if (prefix_len != NULL)
+        *prefix_len = atoi(&prefix[i]);
+
+    if (value != NULL) {
+        memset(value, 0, val_len);
+        strncpy(value, prefix, i-1);
+    }
+
+    //fprintf(stderr, "[%s] prefix:%s length: %d.\n",__FUNCTION__, value != NULL ? value : "null", *prefix_len);
+    CcspTraceInfo(("[%s] output value: %s prefix_len: %d.\n", __FUNCTION__, value != NULL ? value : "null", *prefix_len));
+
+    return 0;
+}
+int GenAndUpdateIpv6PrefixIntoSysevent(char *pInfName)
+{
+    char out1[128] = {0};
+    char cmd[256] = {0};
+    char ipv6_prefix[64] = {0};
+     char prefixvalue[INET6_ADDRSTRLEN] = {0};
+    int  len =0;
+
+    if (!pInfName)
+        return -1;
+    commonSyseventGet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME, ipv6_prefix, sizeof(ipv6_prefix));
+
+    if (getprefixinfo(ipv6_prefix, prefixvalue, sizeof(prefixvalue), (unsigned int*)&len) != 0) 
+    {
+      CcspTraceError(("[%s] ERROR return -1 (i.e. error due to get_prefix_info() return -1)\n", __FUNCTION__));
+      return -1;
+    }
+    if(GenIPv6Prefix(pInfName,prefixvalue,out1))
+    {
+        _ansc_sprintf(cmd, "%s%s",pInfName,"_ipaddr_v6");
+        commonSyseventSet(cmd, out1);
+    }
+    return 0;
+}
+int handle_MocaIpv6(char *status)
+{
+    FILE *fp = NULL;
+    char *Inf_name = NULL;
+    int retPsmGet, retPsmGet1 = CCSP_SUCCESS;
+	char *str = NULL;
+	int HomeIsolationEnable = 0;
+    char tbuff[100];
+    char cmd[128] = {0}, ipv6If[128] = {0}, mbuf[128] = {0};
+    int restart_zebra = 0;
+	
+    if (!status)
+            return -1;
+	memset(cmd,0,sizeof(cmd));
+	memset(ipv6If,0,sizeof(ipv6If));
+
+	//checking Homeisolation is enabled and ipv6_moca_bridge is true
+	retPsmGet1 = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.HomeNetworkIsolation", NULL, &str);
+	CcspTraceWarning((">>>>Debug  str :%s\n", str ));
+    if(retPsmGet1 == CCSP_SUCCESS) {
+        HomeIsolationEnable = _ansc_atoi(str);
+        CcspTraceWarning((">>>>Debug Entered  : %s at line : %d  HomeIsolationEnable : %d str :%s\n",__FUNCTION__, __LINE__, HomeIsolationEnable, str ));
+    }
+	syscfg_get( NULL, "ipv6_moca_bridge", mbuf, sizeof(mbuf));
+	syscfg_get( NULL, "IPv6_Interface", ipv6If, sizeof(ipv6If));
+	CcspTraceWarning((">>>>Debug Entered  : %s at line : %d  mbuf : %s, ipv6If : %s HomeIsolationEnable : %d \n",__FUNCTION__, __LINE__, mbuf, ipv6If, HomeIsolationEnable ));
+
+    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(str);
+    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.9.Name", NULL, &Inf_name);
+    if(!retPsmGet)
+    {
+        retPsmGet = CCSP_SUCCESS;
+        Inf_name = "brlan10";		
+    }
+    if(strcmp((const char*)status, "ready") == 0)
+    {
+        if( mbuf != NULL )
+        {
+            if( (strcmp(mbuf, "true") == 0) && (HomeIsolationEnable == 1))
+            {
+                if (!strstr(ipv6If, Inf_name)) {
+                    CcspTraceWarning((">>>>Debug Entered  : %s at line : %d , Inf_name : %s \n",__FUNCTION__, __LINE__ , Inf_name));
+                    append_interface(Inf_name);
+                    GenAndUpdateIpv6PrefixIntoSysevent(Inf_name);
+                    restart_zebra = 1;
+                }
+            }
+            else if ( (strcmp(mbuf, "false") == 0) || (HomeIsolationEnable == 0))
+            {
+                if (strstr(ipv6If, Inf_name)){
+                    CcspTraceWarning((">>>>Debug Entered  : %s at line : %d Inf_name : %s  \n",__FUNCTION__, __LINE__ ,Inf_name ));
+                    remove_interface(Inf_name);
+                    restart_zebra = 1;
+                }
+            }
+        }
+        if (retPsmGet == CCSP_SUCCESS)
+        {                      
+            memset(tbuff,0,sizeof(tbuff));
+            fp = v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",Inf_name);
+            _get_shell_output(fp, tbuff, sizeof(tbuff));
+            if(tbuff[strlen(tbuff)-1] == '0')
+            {
+                enable_IPv6(Inf_name);
+            }
+
+            Inf_name = NULL;
+        }
+
+    }
+    if(strcmp((const char*)status, "stopped") == 0)
+    {
+        if ( (strcmp(mbuf, "false") == 0) || (HomeIsolationEnable == 0))
+        {
+            if (strstr(ipv6If, Inf_name)) {
+                CcspTraceWarning((">>>>Debug Entered  : %s at line : %d Inf_name : %s, ipv6If : %s  \n",__FUNCTION__, __LINE__ , Inf_name, ipv6If));
+                remove_interface(Inf_name);
+                restart_zebra = 1;
+            }
+        }
+    }
+    if (restart_zebra)
+    {
+        v_secure_system("sysevent set zebra-restart");
+    }
+    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
+    return 0;
+
+}
 static void *InterfaceEventHandler_thrd(void *data)
 {
     UNREFERENCED_PARAMETER(data);
     async_id_t interface_asyncid;
     async_id_t interface_XHS_asyncid;
+    async_id_t interface_MoCA_asyncid;
+
     CcspTraceWarning(("%s started\n",__FUNCTION__));
     sysevent_fd_1 = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "Interface_evt_handler", &sysevent_token_1);
 
@@ -7072,6 +7264,8 @@ static void *InterfaceEventHandler_thrd(void *data)
     sysevent_setnotification(sysevent_fd_1, sysevent_token_1, "multinet_6-status",  &interface_asyncid);
     sysevent_set_options(sysevent_fd_1, sysevent_token_1, "multinet_2-status", TUPLE_FLAG_EVENT);
     sysevent_setnotification(sysevent_fd_1, sysevent_token_1, "multinet_2-status",  &interface_XHS_asyncid);
+    sysevent_set_options(sysevent_fd_1, sysevent_token_1, "multinet_9-status", TUPLE_FLAG_EVENT);
+    sysevent_setnotification(sysevent_fd_1, sysevent_token_1, "multinet_9-status",  &interface_MoCA_asyncid);
 
     FILE *fp = NULL;
     char *Inf_name = NULL;
@@ -7079,31 +7273,43 @@ static void *InterfaceEventHandler_thrd(void *data)
     char tbuff[100];
     int err;
     char name[25] = {0}, val[42] = {0},buf[128] = {0},cmd[128] = {0};
+
+    memset(cmd,0,sizeof(cmd));
+    memset(buf,0,sizeof(buf));
+
+    _ansc_sprintf(cmd, "multinet_9-status");
+    commonSyseventGet(cmd, buf, sizeof(buf));
+
+    CcspTraceWarning(("%s multinet_9-status is %s\n",__FUNCTION__,buf));
+
+    handle_MocaIpv6(buf);
+
+
     memset(cmd,0,sizeof(cmd));
     memset(buf,0,sizeof(buf));
 
     _ansc_sprintf(cmd, "multinet_2-status");
     commonSyseventGet(cmd, buf, sizeof(buf));
-            
+
     CcspTraceWarning(("%s multinet_2-status is %s\n",__FUNCTION__,buf));
 
     if(strcmp((const char*)buf, "ready") == 0)
     {
-            retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.2.Port.1.Name", NULL, &Inf_name);
-            if (retPsmGet == CCSP_SUCCESS)
-            {                      
-                memset(tbuff,0,sizeof(tbuff));
-                fp = v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",Inf_name);
-		_get_shell_output(fp, tbuff, sizeof(tbuff));
-                if(tbuff[strlen(tbuff)-1] == '0')
-                {
-                    enable_IPv6(Inf_name);
-                }
-
-                ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
-                Inf_name = NULL;
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.2.Port.1.Name", NULL, &Inf_name);
+        if (retPsmGet == CCSP_SUCCESS)
+        {                      
+            memset(tbuff,0,sizeof(tbuff));
+            fp = v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",Inf_name);
+            _get_shell_output(fp, tbuff, sizeof(tbuff));
+            if(tbuff[strlen(tbuff)-1] == '0')
+            {
+                enable_IPv6(Inf_name);
             }
-    
+
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
+            Inf_name = NULL;
+        }
+
     }
 
     memset(cmd,0,sizeof(cmd));
@@ -7111,12 +7317,12 @@ static void *InterfaceEventHandler_thrd(void *data)
 
     _ansc_sprintf(cmd, "multinet_6-status");
     commonSyseventGet(cmd, buf, sizeof(buf));
-            
+
     CcspTraceWarning(("%s multinet_6-status is %s\n",__FUNCTION__,buf));
 
     if(strcmp((const char*)buf, "ready") == 0)
     {
-               
+
         memset(tbuff,0,sizeof(tbuff));
         fp = v_secure_popen("r","sysctl net.ipv6.conf.br106.autoconf");
         _get_shell_output(fp, tbuff, sizeof(tbuff));
@@ -7124,7 +7330,7 @@ static void *InterfaceEventHandler_thrd(void *data)
         {
             enable_IPv6("br106");
         }
-    
+
     }
 
     memset(cmd,0,sizeof(cmd));
@@ -7132,59 +7338,64 @@ static void *InterfaceEventHandler_thrd(void *data)
 
     while(1)
     {
-         async_id_t getnotification_asyncid;
-         memset(name,0,sizeof(name));
-         memset(val,0,sizeof(val));
-         memset(cmd,0,sizeof(cmd));
-         memset(buf,0,sizeof(buf));
+        async_id_t getnotification_asyncid;
+        memset(name,0,sizeof(name));
+        memset(val,0,sizeof(val));
+        memset(cmd,0,sizeof(cmd));
+        memset(buf,0,sizeof(buf));
 
-         int namelen = sizeof(name);
-         int vallen  = sizeof(val);
-		err = sysevent_getnotification(sysevent_fd_1, sysevent_token_1, name, &namelen,  val, &vallen, &getnotification_asyncid);
+        int namelen = sizeof(name);
+        int vallen  = sizeof(val);
+        err = sysevent_getnotification(sysevent_fd_1, sysevent_token_1, name, &namelen,  val, &vallen, &getnotification_asyncid);
 
-        	if (err)
-        	{
-           		CcspTraceWarning(("sysevent_getnotification failed with error: %d %s\n", err,__FUNCTION__));
-           		CcspTraceWarning(("sysevent_getnotification failed name: %s val : %s\n", name,val));
-			if ( 0 != v_secure_system("pidof syseventd")) {
+        if (err)
+        {
+            CcspTraceWarning(("sysevent_getnotification failed with error: %d %s\n", err,__FUNCTION__));
+            CcspTraceWarning(("sysevent_getnotification failed name: %s val : %s\n", name,val));
+            if ( 0 != v_secure_system("pidof syseventd")) {
 
-           			CcspTraceWarning(("%s syseventd not running ,breaking the receive notification loop \n",__FUNCTION__));
-				break;
-			}	
-        	}
-        	else
-        	{
+                CcspTraceWarning(("%s syseventd not running ,breaking the receive notification loop \n",__FUNCTION__));
+                break;
+            }	
+        }
+        else
+        {
 
-           		CcspTraceWarning(("%s Recieved notification event  %s\n",__FUNCTION__,name));
-			if(strcmp((const char*)name,"multinet_6-status") == 0)
-			{
-				if(strcmp((const char*)val, "ready") == 0)
-				{
-                    			enable_IPv6("br106");
-				}
-			}
+            CcspTraceWarning(("%s Recieved notification event  %s\n",__FUNCTION__,name));
+            if(strcmp((const char*)name,"multinet_6-status") == 0)
+            {
+                if(strcmp((const char*)val, "ready") == 0)
+                {
+                    enable_IPv6("br106");
+                }
+            }
 
-			if(strcmp((const char*)name,"multinet_2-status") == 0)
-			{
-				if(strcmp((const char*)val, "ready") == 0)
-				{
-                    			Inf_name = NULL ;
-					retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.2.Port.1.Name", NULL, &Inf_name);
-            				if (retPsmGet == CCSP_SUCCESS)
-					{               
-                        			enable_IPv6(Inf_name);
-						((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
-					}
-					else
-					{
-						CcspTraceWarning(("%s PSM get failed for interface name\n", __FUNCTION__));
-					}
-				}
+            if(strcmp((const char*)name,"multinet_2-status") == 0)
+            {
+                if(strcmp((const char*)val, "ready") == 0)
+                {
+                    Inf_name = NULL ;
+                    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.2.Port.1.Name", NULL, &Inf_name);
+                    if (retPsmGet == CCSP_SUCCESS)
+                    {               
+                        enable_IPv6(Inf_name);
+                        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
+                    }
+                    else
+                    {
+                        CcspTraceWarning(("%s PSM get failed for interface name\n", __FUNCTION__));
+                    }
+                }
+            }
 
-			}	
-	
-		}
-	}
+            if(strcmp((const char*)name,"multinet_9-status") == 0)
+            {
+                handle_MocaIpv6(val);
+
+            }
+
+        }
+    }
     return NULL;
 }
 #endif 
@@ -7409,6 +7620,7 @@ dhcpv6c_dbg_thrd(void * in)
 #endif
 	char cmd[100];
 
+    commonSyseventSet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME,       v6pref);
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_CBR_PRODUCT_REQ_)
 #else
 			char out1[100]; 
@@ -7483,7 +7695,6 @@ dhcpv6c_dbg_thrd(void * in)
 				}
 			}
 #endif
-                        commonSyseventSet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME,       v6pref);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_IAID_SYSEVENT_NAME,  iapd_iaid);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_T1_SYSEVENT_NAME,    iapd_t1);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_T2_SYSEVENT_NAME,    iapd_t2);

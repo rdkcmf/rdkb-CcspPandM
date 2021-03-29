@@ -1423,6 +1423,22 @@ IPv6onXHS_SetParamBoolValue
         BOOL                        bValue
     );
 BOOL
+IPv6onMoCA_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+BOOL
+IPv6onMoCA_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+BOOL
 EvoStream_DirectConnect_GetParamBoolValue
 
     (
@@ -1430,6 +1446,7 @@ EvoStream_DirectConnect_GetParamBoolValue
         char*                       ParamName,
         BOOL*                       pBool
     );
+
 BOOL
 EvoStream_DirectConnect_SetParamBoolValue
 

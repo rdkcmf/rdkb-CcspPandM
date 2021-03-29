@@ -12056,6 +12056,216 @@ IPv6onXHS_SetParamBoolValue
         }
     return FALSE;
 }
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        IPv6onMoCA_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+IPv6onMoCA_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+	    UNREFERENCED_PARAMETER(hInsContext);
+
+    /* check the parameter name and return the corresponding value */
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+        {			
+		/* collect value */
+		char buf[128];
+			
+		syscfg_get( NULL, "ipv6_moca_bridge", buf, sizeof(buf));
+			if( buf != NULL )
+			{
+				if (strcmp(buf, "true") == 0)
+					*pBool = TRUE;
+				else
+					*pBool = FALSE;
+			}
+		return TRUE;
+		}
+     return FALSE;
+}
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        IPv6onMoCA_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+IPv6onMoCA_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    char *token = NULL;char *pt;
+
+    if(IsBoolSame(hInsContext, ParamName, bValue, IPv6onMoCA_GetParamBoolValue)) {
+        return TRUE;
+    }
+
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[128], OutBuff[128];
+        char *Inf_name = NULL;
+        char *str = NULL;
+        int HomeIsolationEnable = 0;
+        BOOL bFound = FALSE;
+        int retPsmGet, retPsmGet1 = CCSP_SUCCESS;
+
+        if(bValue) {
+            syscfg_set( NULL, "ipv6_moca_bridge", "true");
+        }
+        else {
+            syscfg_set( NULL, "ipv6_moca_bridge", "false");
+        }
+        if (syscfg_commit( ) != 0) {
+            CcspTraceError(("syscfg_commit failed for ipv6_moca_bridge\n"));
+            return -1;
+        }
+
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.9.Name", NULL, &Inf_name);
+        retPsmGet1 = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.HomeNetworkIsolation", NULL, &str);
+        if(!retPsmGet)
+        {
+            retPsmGet = CCSP_SUCCESS;
+            Inf_name = "brlan10";		
+        }
+
+        if(retPsmGet1 == CCSP_SUCCESS) {	
+            HomeIsolationEnable = _ansc_atoi(str);
+        }
+
+        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(str);
+        if (retPsmGet == CCSP_SUCCESS)
+        {
+            memset(buf,0,sizeof(buf));
+            memset(OutBuff,0,sizeof(OutBuff));
+
+            if( Inf_name != NULL )
+            {
+                syscfg_get( NULL, "IPv6_Interface", buf, sizeof(buf));
+                if( buf != NULL )
+                {
+                    if (strstr(buf, Inf_name))
+                        bFound = TRUE;
+                    else
+                        bFound = FALSE;
+
+
+                    if(bValue)
+                    {								
+                        if((bFound == FALSE) && (HomeIsolationEnable == 1))
+                        {
+                            CcspTraceWarning((">>>>Debug Entered  : %s at line : %d  \n",__FUNCTION__, __LINE__ ));
+
+                            // interface is not present in the list, we need to add interface to enable IPv6 PD
+                            strncpy(OutBuff, buf, sizeof(buf));
+                            strcat(OutBuff,Inf_name);
+                            strcat(OutBuff,",");
+                            CcspTraceWarning((">>>>Debug 1 Value of  OutBuff : %s infname  : %s  HomeIsolationEnable: %d \n", OutBuff, Inf_name, HomeIsolationEnable ));
+                            syscfg_set(NULL, "IPv6_Interface",OutBuff);
+                            syscfg_commit();
+                        }
+                    }
+                    else
+                    {
+                        if(bFound == TRUE)
+                        {
+                            // interface is present in the list, we need to remove interface to disable IPv6 PD
+                            pt = buf;
+                            while((token = strtok_r(pt, ",", &pt))) {
+                                if(strncmp(Inf_name,token,strlen(Inf_name)))
+                                {
+                                    strcat(OutBuff,token);
+                                    strcat(OutBuff,",");
+                                }
+                            }
+                            CcspTraceWarning((">>>>Debug 2 Value of  OutBuff : %s infname  : %s  HomeIsolationEnable: %d \n", OutBuff, Inf_name, HomeIsolationEnable ));
+                            syscfg_set(NULL, "IPv6_Interface",OutBuff);
+                            syscfg_commit();
+                        }
+                    }
+                }
+                else
+                {
+                    if((bValue) && (HomeIsolationEnable == 1))
+                    {
+                        strcat(OutBuff,Inf_name);
+                        strcat(OutBuff,",");
+                        syscfg_set(NULL, "IPv6_Interface",OutBuff);
+                        CcspTraceWarning((">>>>Debug 3 Value of  OutBuff : %s infname  : %s  HomeIsolationEnable: %d \n", OutBuff, Inf_name, HomeIsolationEnable ));
+                        syscfg_commit();
+                    }
+                }
+                ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
+                v_secure_system("sysevent set zebra-restart");
+                return TRUE;
+            }
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
+        }
+        return TRUE;
+    }
+    return FALSE;	
+}
 /**********************************************************************  
 
     caller:     owner of this object
