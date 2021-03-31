@@ -634,10 +634,6 @@ LINKTYPE_MAP_T g_linktype_map[COSA_DML_LINK_TYPE_TOTAL] = {
     {   "Device.PPP.Interface.", 
         "PPP", 
         COSA_DML_LINK_TYPE_PPP
-    },
-    {   "DOCSIS", 
-        "DOCSIS", 
-        COSA_DML_LINK_TYPE_DOCSIS
     }
 };
 
@@ -718,7 +714,7 @@ COSA_DML_LINK_TYPE CosaUtilGetLinkTypeFromPath(char*pLinkTypePath)
     {
         //if(!strncmp(g_linktype_map[index].LinkTypePath, pLinkTypePath, 
         //        sizeof(g_linktype_map[index].LinkTypePath)))
-        if(strstr(pLinkTypePath, g_linktype_map[index].LinkTypePath))
+        if(NULL != g_linktype_map[index].LinkTypePath && strstr(pLinkTypePath, g_linktype_map[index].LinkTypePath) != NULL)
         {
             AnscTraceFlow(("%s: return index %d\n", __FUNCTION__, index));
             return g_linktype_map[index].LinkType;

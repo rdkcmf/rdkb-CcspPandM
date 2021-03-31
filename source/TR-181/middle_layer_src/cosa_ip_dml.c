@@ -1732,6 +1732,11 @@ Interface2_SetParamStringValue
             {
                 pIPInterface->Cfg.LinkType = CosaUtilGetLinkTypeFromPath(pString);
 
+                if ( pIPInterface->Cfg.LinkType == COSA_DML_LINK_TYPE_LAST )
+                {
+                   AnscTraceWarning(("%s : Parameter is not matching with any of the Link Type. Linktype:%d\n ",__FUNCTION__,pIPInterface->Cfg.LinkType));
+                   return FALSE;
+                }
                 /* Normalize the LowerLayer string -- remove the '.' at the end */
                 if ( pString[_ansc_strlen(pString) - 1] == '.' )
                 {
