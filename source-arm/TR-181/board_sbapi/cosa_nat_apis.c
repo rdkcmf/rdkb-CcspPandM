@@ -886,7 +886,6 @@ unsetID
 
     return 0;
 }
-*/
 
 /* InstanceNum save/load for PortTrigger entries */
 /*
