@@ -1401,6 +1401,36 @@
 			    </object>
 			  </objects>
 			</object>
+						<object>
+							<name>SyndicationFlowControl</name>
+							<objectType>object</objectType>
+							<functions>
+								<func_GetParamBoolValue>SyndicationFlowControl_GetParamBoolValue</func_GetParamBoolValue>
+								<func_SetParamBoolValue>SyndicationFlowControl_SetParamBoolValue</func_SetParamBoolValue>
+								<func_GetParamStringValue>SyndicationFlowControl_GetParamStringValue</func_GetParamStringValue>
+								<func_SetParamStringValue>SyndicationFlowControl_SetParamStringValue</func_SetParamStringValue>
+							</functions>
+							<parameters>
+								<parameter>
+									<name>Enable</name>
+									<type>boolean</type>
+									<syntax>bool</syntax>
+									<writable>true</writable>
+								</parameter>
+								<parameter>
+									<name>InitialForwardedMark</name>
+									<type>string</type>
+									<syntax>string</syntax>
+									<writable>true</writable>
+								</parameter>
+								<parameter>
+									<name>InitialOutputMark</name>
+									<type>string</type>
+									<syntax>string</syntax>
+									<writable>true</writable>
+								</parameter>
+							</parameters>
+						</object>
                        <object>
                             <name>SNMP</name>
                             <objectType>object</objectType>
