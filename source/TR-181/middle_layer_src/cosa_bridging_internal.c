@@ -72,6 +72,7 @@
 #include "cosa_bridging_dml.h"
 #include "cosa_bridging_apis.h"
 #include "cosa_bridging_internal.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -179,6 +180,7 @@ CosaBridgingInitialize
     ULONG                           ulSubIndex          = 0;
     char                            FolderName[32]      = {0};
     PCOSA_DML_BRG_VLAN_FULL         pVLAN           = (PCOSA_DML_BRG_VLAN_FULL  )NULL;
+    errno_t                         rc              = -1;
 
     /* Initiation all functions */
 
@@ -261,13 +263,18 @@ CosaBridgingInitialize
 
     if ( TRUE )
     {
-        _ansc_sprintf
+        rc = sprintf_s
         (
-            FolderName, 
+            FolderName,
+            sizeof(FolderName),
             "%s%d", 
             COSA_DML_RR_NAME_Bridge_NextInsNunmber,
             0
         );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
         
         pPoamIrepFoNextIns = (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoBRG->GetFolder
                                 (
@@ -365,9 +372,17 @@ CosaBridgingInitialize
                     pMyObject->ulNextBridgeInstance = 1;
                 }
 
-                _ansc_sprintf(pDmlBridge->Cfg.Alias, "DmlBridge%lu", pMyObject->ulNextBridgeInstance);
+                rc = sprintf_s(pDmlBridge->Cfg.Alias, sizeof(pDmlBridge->Cfg.Alias), "DmlBridge%lu", pMyObject->ulNextBridgeInstance);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                }
 #if defined (MULTILAN_FEATURE)
-                _ansc_sprintf(pDmlBridge->Cfg.name, "DmlBridge%lu", pMyObject->ulNextBridgeInstance);
+                rc = sprintf_s(pDmlBridge->Cfg.name, sizeof(pDmlBridge->Cfg.name), "DmlBridge%lu", pMyObject->ulNextBridgeInstance);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                }
 
 
                 CosaDmlBrgSetValues(NULL, ulIndex, pDmlBridge->Cfg.InstanceNumber, pDmlBridge->Cfg.Alias, pDmlBridge->Cfg.name);
@@ -388,13 +403,18 @@ CosaBridgingInitialize
         
         if ( TRUE )
         {
-            _ansc_sprintf
+            rc = sprintf_s
                 (
-                    FolderName, 
+                    FolderName,
+                    sizeof(FolderName),
                     "%s%lu", 
                     COSA_DML_RR_NAME_Bridge_Port_NextInsNumber, 
                     pDmlBridge->Cfg.InstanceNumber
                 );
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+            }
 
             pPoamIrepFoNextIns = 
                 (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoBRG->GetFolder
@@ -495,7 +515,11 @@ CosaBridgingInitialize
                         pDmlBridge->ulNextPortInsNum = 1;
                     }
 
-                    _ansc_sprintf(pPort->Cfg.Alias, "Port%lu", pCosaContext2->InstanceNumber);
+                    rc = sprintf_s(pPort->Cfg.Alias, sizeof(pPort->Cfg.Alias),"Port%lu", pCosaContext2->InstanceNumber);
+                    if(rc < EOK)
+                    {
+                      ERR_CHK(rc);
+                    }
 
                     CosaDmlBrgPortSetValues
                         (
@@ -521,13 +545,18 @@ CosaBridgingInitialize
         
         if ( TRUE )
         {
-            _ansc_sprintf
+            rc = sprintf_s
                 (
-                    FolderName, 
+                    FolderName,
+                    sizeof(FolderName),
                     "%s%lu", 
                     COSA_DML_RR_NAME_Bridge_VLAN_NextInsNumber, 
                     pDmlBridge->Cfg.InstanceNumber
                 );
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+            }
 
             pPoamIrepFoNextIns = 
                 (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoBRG->GetFolder
@@ -627,7 +656,11 @@ CosaBridgingInitialize
                         pDmlBridge->ulNextVLANInsNum = 1;
                     }
 
-                    _ansc_sprintf(pVLAN->Cfg.Alias, "VLAN%lu", pCosaContext2->InstanceNumber);
+                    rc = sprintf_s(pVLAN->Cfg.Alias, sizeof(pVLAN->Cfg.Alias), "VLAN%lu", pCosaContext2->InstanceNumber);
+                    if(rc < EOK)
+                    {
+                      ERR_CHK(rc);
+                    }
 
                     CosaDmlBrgVlanSetValues //new sbAPI
                         (
@@ -1095,6 +1128,7 @@ CosaBridgingRegAddInfo
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PSLAP_VARIABLE                  pSlapVariable     = (PSLAP_VARIABLE           )NULL;
     char                            FolderName[32]    = {0};
+    errno_t                         rc                = -1;
 
     if ( !pPoamIrepFoBRG || !pPoamIrepFoUpper )
     {
@@ -1117,7 +1151,11 @@ CosaBridgingRegAddInfo
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%lu", pNextInsNumName, ulUpperInsNum);
+    rc = sprintf_s(FolderName, sizeof(FolderName), "%s%lu", pNextInsNumName, ulUpperInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+    }
 
     if ( TRUE )
     {
@@ -1172,7 +1210,11 @@ CosaBridgingRegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName), "%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         pPoamIrepFo =
             pPoamIrepFoUpper->AddFolder

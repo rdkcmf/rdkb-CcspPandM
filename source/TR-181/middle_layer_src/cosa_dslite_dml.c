@@ -18,6 +18,7 @@
 #include "cosa_dslite_dml.h"
 #include "plugin_main_apis.h"
 #include "cosa_dslite_internal.h"
+#include "safec_lib_common.h"
 
 #ifdef DSLITE_FEATURE_SUPPORT
 static const char *UPDATE_RESOLV_CMD = "/bin/sh /etc/utopia/service.d/set_resolv_conf.sh";
@@ -166,6 +167,7 @@ InterfaceSetting4_AddEntry
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = NULL;
     PCOSA_DML_DSLITE                pDsliteTunnel     = NULL;
+    errno_t                         rc                = -1;
 
     pDsliteTunnel  = (PCOSA_DML_DSLITE)AnscAllocateMemory( sizeof(COSA_DML_DSLITE) );
     if ( !pDsliteTunnel )
@@ -194,7 +196,13 @@ InterfaceSetting4_AddEntry
     pCxtLink->InstanceNumber         = pDsliteTunnel->InstanceNumber;
     *pInsNumber                      = pDsliteTunnel->InstanceNumber;
 
-    _ansc_sprintf( pDsliteTunnel->alias, "Dslite.Tunnel.%lu", pDsliteTunnel->InstanceNumber);
+    rc = sprintf_s( pDsliteTunnel->alias, sizeof(pDsliteTunnel->alias),"Dslite.Tunnel.%lu", pDsliteTunnel->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pCxtLink);
+      goto EXIT1;
+    }
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pDslite->DsliteList, pCxtLink);

@@ -835,6 +835,7 @@ Interface2_AddEntry
     PSLIST_HEADER                   pIPIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_IP_IF_FULL2           pIPInterface  = (PCOSA_DML_IP_IF_FULL2)NULL;
+    errno_t                         rc            = -1;
 
 #ifndef MULTILAN_FEATURE
 #ifndef _COSA_SIM_
@@ -857,7 +858,13 @@ Interface2_AddEntry
     pIPInterface->Cfg.IfType   = COSA_DML_IP_IF_TYPE_Normal;
 #endif
 
-    _ansc_sprintf(pIPInterface->Cfg.Alias, "Interface%lu", pMyObject->ulNextInterfaceInsNum);
+    rc = sprintf_s(pIPInterface->Cfg.Alias, sizeof(pIPInterface->Cfg.Alias),"Interface%lu", pMyObject->ulNextInterfaceInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pIPInterface);
+      return NULL;
+    }
 
     AnscSListInitializeHeader(&pIPInterface->IPV4List);
     
@@ -1325,6 +1332,7 @@ Interface2_GetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
     PUCHAR                          pLowerLayer             = NULL;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -1365,15 +1373,30 @@ Interface2_GetParamStringValue
                 char* linkTypePath = CosaUtilGetLinkTypePath(pIPInterface->Cfg.LinkType);
 
                 if (( pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)linkTypePath, (PUCHAR)pIPInterface->Cfg.LinkName) ))
-                    _ansc_strcpy(pIPInterface->Cfg.LowerLayers, (char*)pLowerLayer);
+                {
+                    rc = strcpy_s(pIPInterface->Cfg.LowerLayers, sizeof(pIPInterface->Cfg.LowerLayers),(char*)pLowerLayer);
+                    if(rc != EOK)
+                    {
+                      ERR_CHK(rc);
+                      AnscFreeMemory(pLowerLayer);
+                      return -1;
+                    }
+                }
                 else
+                {
                     AnscCopyString(pIPInterface->Cfg.LowerLayers, "");
+                }
             }
             else
             {
                 char* linkTypePath = CosaUtilGetLinkTypePath(pIPInterface->Cfg.LinkType);
 
-                _ansc_sprintf(pIPInterface->Cfg.LowerLayers, "%s%lu", linkTypePath, pIPInterface->Cfg.LinkInstNum);
+                rc = sprintf_s(pIPInterface->Cfg.LowerLayers, sizeof(pIPInterface->Cfg.LowerLayers),"%s%lu", linkTypePath, pIPInterface->Cfg.LinkInstNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  return -1;
+                }
             }
         }
 
@@ -1676,6 +1699,7 @@ Interface2_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
+    errno_t                         rc           = -1;
 #ifndef MULTILAN_FEATURE
 #ifndef _COSA_SIM_
     if (!CosaIpifGetSetSupported(ParamName))
@@ -1764,7 +1788,12 @@ Interface2_SetParamStringValue
                 }
 
                 /* Retrieve LinkName */
-                _ansc_sprintf(ucEntryParamName, "%s.%s", pString, "Name");
+                rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName),"%s.Name", pString);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  return FALSE;
+                }
 #if defined (MULTILAN_FEATURE)
                 ulEntryNameLen = sizeof(ucEntryNameValue);
                 if ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen))
@@ -2110,6 +2139,7 @@ IPv4Address_AddEntry
     PCOSA_DML_IP_IF_FULL2           pIPInterface     = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr        = (PCOSA_DML_IP_V4ADDR)NULL;
+    errno_t                         rc               = -1;
 #ifndef MULTILAN_FEATURE
 #ifndef _COSA_SIM_
     if (!CosaIpifGetSetSupported("ipv4addr_addentry"))
@@ -2125,7 +2155,13 @@ IPv4Address_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pIPv4Addr->Alias, "IPv4Address%lu", pIPInterface->ulNextIPV4InsNum);
+    rc = sprintf_s(pIPv4Addr->Alias, sizeof(pIPv4Addr->Alias),"IPv4Address%lu", pIPInterface->ulNextIPV4InsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pIPv4Addr);
+      return NULL;
+    }
 
     /* Update the middle layer data */
     if ( TRUE )
@@ -3253,6 +3289,7 @@ IPv6Address_AddEntry
     PCOSA_DML_IP_IF_FULL2           pIPInterface     = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_IP_V6ADDR             pIPv6Addr        = (PCOSA_DML_IP_V6ADDR)NULL;
+    errno_t                         rc               = -1;
 
     pIPv6Addr = (PCOSA_DML_IP_V6ADDR)AnscAllocateMemory(sizeof(COSA_DML_IP_V6ADDR));
     /*RDKB-, CID-33520, perform null check before use */
@@ -3266,7 +3303,13 @@ IPv6Address_AddEntry
     AnscCopyString(pIPv6Addr->ValidLifetime, "9999-12-31T23:59:59Z");
 
 
-    _ansc_sprintf(pIPv6Addr->Alias, "IPv6Address%lu", pIPInterface->ulNextIPV6InsNum);
+    rc = sprintf_s(pIPv6Addr->Alias, sizeof(pIPv6Addr->Alias),"IPv6Address%lu", pIPInterface->ulNextIPV6InsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pIPv6Addr);
+      return NULL;
+    }
 
     /* Update the middle layer data */
     if ( TRUE )
@@ -4024,6 +4067,7 @@ IPv6Address_Validate
     PCOSA_DML_IP_V6ADDR             pIPv6Addr2    = (PCOSA_DML_IP_V6ADDR)NULL;
     PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
     struct in6_addr                 in6;
+    errno_t                         rc            = -1;
 
     pLink = AnscSListGetFirstEntry(&pIPInterface->IPV6List);
 
@@ -4050,7 +4094,12 @@ IPv6Address_Validate
              ((ULONG)pIPv6Addr2 != (ULONG)pIPv6Addr ) &&
              CosaDmlV6AddrIsEqual(pIPv6Addr2->IP6Address, pIPv6Addr->IP6Address))
         {
-            _ansc_strcpy(pReturnParamName, "Address");
+            rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Address");
+            if(rc != EOK)
+            {
+              ERR_CHK(rc);
+              return FALSE;
+            }
             *puLength = AnscSizeOfString("Address");
     
             CcspTraceWarning(("IPv6Address_Validate() on Address failed.\n"));            
@@ -4085,7 +4134,12 @@ IPv6Address_Validate
 
     if (inet_pton(AF_INET6, pIPv6Addr->IP6Address, &in6) != 1)
     {
-        _ansc_strcpy(pReturnParamName, "Address");
+        rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Address");
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
         *puLength = AnscSizeOfString("Address");
     
         CcspTraceWarning(("IPv6Address_Validate() on Address failed.\n"));
@@ -4523,6 +4577,7 @@ IPv6Prefix_AddEntry
     PCOSA_DML_IP_IF_FULL2           pIPInterface     = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_IP_V6PREFIX           pIPv6Pre         = (PCOSA_DML_IP_V6PREFIX)NULL;
+    errno_t                         rc               = -1;
 
     pIPv6Pre = (PCOSA_DML_IP_V6PREFIX)AnscAllocateMemory(sizeof(COSA_DML_IP_V6PREFIX));
 
@@ -4538,7 +4593,13 @@ IPv6Prefix_AddEntry
     AnscCopyString(pIPv6Pre->PreferredLifetime, "0001-01-01T00:00:00Z");
     AnscCopyString(pIPv6Pre->ValidLifetime, "0001-01-01T00:00:00Z");
 
-    _ansc_sprintf(pIPv6Pre->Alias, "IPv6Prefix%lu", pIPInterface->ulNextIPV6PreInsNum);
+    rc = sprintf_s(pIPv6Pre->Alias, sizeof(pIPv6Pre->Alias),"IPv6Prefix%lu", pIPInterface->ulNextIPV6PreInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pIPv6Pre);
+      return NULL;
+    }
 
     /* Update the middle layer data */
     if ( TRUE )
@@ -5305,6 +5366,7 @@ IPv6Prefix_Validate
     PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
     struct in6_addr                 in6;
     char *                          p             =  NULL;
+    errno_t                         rc            = -1;
 
     pLink = AnscSListGetFirstEntry(&pIPInterface->IPV6PrefixList);
 
@@ -5331,7 +5393,12 @@ IPv6Prefix_Validate
              ((ULONG)pIPv6Pre2 != (ULONG)pIPv6Pre ) &&
              CosaDmlV6PrefIsEqual(pIPv6Pre2->Prefix, pIPv6Pre->Prefix))
         {
-            _ansc_strcpy(pReturnParamName, "Prefix");
+             rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Prefix");
+             if(rc != EOK)
+             {
+               ERR_CHK(rc);
+               return FALSE;
+             }
             *puLength = AnscSizeOfString("Prefix");
     
             CcspTraceWarning(("IPv6Prefix_Validate() on Prefix failed.\n"));            
@@ -5341,7 +5408,12 @@ IPv6Prefix_Validate
 
     if (!(p= strchr(pIPv6Pre->Prefix, '/')))
     {
-        _ansc_strcpy(pReturnParamName, "Prefix");
+        rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Prefix");
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
         *puLength = AnscSizeOfString("Prefix");
     
         CcspTraceWarning(("IPv6Prefix_Validate() on Prefix failed.\n"));
@@ -5358,7 +5430,12 @@ IPv6Prefix_Validate
         
             if (inet_pton(AF_INET6, dup, &in6) != 1)
             {
-                _ansc_strcpy(pReturnParamName, "Prefix");
+                rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Prefix");
+                if(rc != EOK)
+                {
+                  ERR_CHK(rc);
+                  return FALSE;
+                }
                 *puLength = AnscSizeOfString("Prefix");
 
                 CcspTraceWarning(("IPv6Prefix_Validate() on Prefix failed.\n"));

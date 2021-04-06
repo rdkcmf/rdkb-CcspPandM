@@ -73,6 +73,7 @@
 #include "cosa_neighdisc_internal.h"
 #include "plugin_main_apis.h"
 #include "slap_vho_exported_api.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -171,6 +172,7 @@ CosaNeighdiscInitialize
     char                            FolderName[32]  = {0};
     ULONG                           ulEntryCount    = 0;
     ULONG                           ulIndex         = 0;
+    errno_t                         rc              = -1;
 
     CosaDmlNeighdiscInit(NULL, NULL);
 
@@ -249,13 +251,18 @@ CosaNeighdiscInitialize
     
     if ( TRUE )
     {
-        _ansc_sprintf
+        rc = sprintf_s
         (
-            FolderName, 
+            FolderName,
+            sizeof(FolderName),
             "%s%d", 
             COSA_DML_RR_NAME_NeighdiscIF_NextInsNum,
             0
         );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
         
         pPoamIrepFoNextIns = (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoNeighdiscIF->GetFolder
                                 (
@@ -344,7 +351,11 @@ CosaNeighdiscInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pNeighdiscInterface->Cfg.Alias, "Interface%d", (int)pMyObject->ulNextInterfaceInsNum);
+                rc = sprintf_s(pNeighdiscInterface->Cfg.Alias, sizeof(pNeighdiscInterface->Cfg.Alias),"Interface%d", (int)pMyObject->ulNextInterfaceInsNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                }
 
                 CosaDmlNeighdiscIfSetValues
                 (
@@ -670,6 +681,7 @@ CosaNeighdiscRegAddInfo
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PSLAP_VARIABLE                  pSlapVariable     = (PSLAP_VARIABLE           )NULL;
     char                            FolderName[32]    = {0};
+    errno_t                         rc                = -1;
 
     if ( !pPoamIrepFoNeighdiscIF || !pPoamIrepFoUpper )
     {
@@ -692,7 +704,11 @@ CosaNeighdiscRegAddInfo
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%d", pNextInsNumName, (int)ulUpperInsNum);
+    rc = sprintf_s(FolderName, sizeof(FolderName),"%s%d", pNextInsNumName, (int)ulUpperInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+    }
 
     if ( TRUE )
     {
@@ -743,7 +759,11 @@ CosaNeighdiscRegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%d%d", pPreffix, (int)ulUpperInsNum, (int)pCosaContext->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%s%d%d", pPreffix, (int)ulUpperInsNum, (int)pCosaContext->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         pPoamIrepFo = pPoamIrepFoUpper->AddFolder
                         (

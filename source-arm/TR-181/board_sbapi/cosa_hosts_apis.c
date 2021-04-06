@@ -70,6 +70,7 @@
 #include "cosa_hosts_apis.h"
 #include "cosa_hosts_internal.h"
 #include <ccsp_psm_helper.h>
+#include "safec_lib_common.h"
 
 #ifdef CONFIG_TI_PACM
 #include "pacm_manager_utilities.h"
@@ -330,16 +331,11 @@ static char * _CloneString
     const char * src
     )
 {
-    if(src == NULL) return NULL;
-    size_t len = strlen(src) + 1;
-    if(len <= 1) return NULL;
-    char * dest = AnscAllocateMemory(len);
-    if ( dest )
+    if (!src)
     {
-        strncpy(dest, src, len);
-        dest[len - 1] = 0;
+        return NULL;
     }
-    return dest;
+    return strdup(src);
 }
 
 static void _get_unwelcome_list()
@@ -347,11 +343,16 @@ static void _get_unwelcome_list()
    char *pStr = NULL;
    char ParaName[50];
    int ins = 0;
+   errno_t rc = -1;
    memset(_g_atom_if_ip, 0, sizeof(_g_atom_if_ip));
    if(PSM_Get_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent), "dmsb.MultiLAN.PrimaryLAN_l3net", NULL, &pStr) == CCSP_SUCCESS &&
       pStr != NULL){
       ins = atoi(pStr);
-      sprintf(ParaName, "dmsb.atom.l3net.%d.V4Addr", ins);
+      rc = sprintf_s(ParaName, sizeof(ParaName), "dmsb.atom.l3net.%d.V4Addr", ins);
+      if(rc < EOK)
+      {
+          ERR_CHK(rc);
+      }
       AnscFreeMemory(pStr);
       pStr = NULL;
       if(PSM_Get_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent), ParaName, NULL, &pStr) == CCSP_SUCCESS && 
@@ -394,6 +395,7 @@ int host_filter(LM_host_t *host)
     int i;
     LM_ip_addr_t *pIp;
 	char str[100];
+    errno_t rc = -1;
     if(0 == *(int*)(_g_atom_if_ip))
         return FALSE;
     for(i = 0; i < host->ipv4AddrAmount; i++){
@@ -404,7 +406,11 @@ int host_filter(LM_host_t *host)
 		}
 		if(host->online == 0)
 		{
-			 sprintf(str,"%02x:%02x:%02x:%02x:%02x:%02x", host->phyAddr[0], host->phyAddr[1], host->phyAddr[2], host->phyAddr[3], host->phyAddr[4], host->phyAddr[5]);
+			rc = sprintf_s(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x", host->phyAddr[0], host->phyAddr[1], host->phyAddr[2], host->phyAddr[3], host->phyAddr[4], host->phyAddr[5]);
+			if(rc < EOK)
+			{
+				ERR_CHK(rc);
+			}
 			if(FindHostInLeases(str))
 			{
 				return TRUE;
@@ -890,6 +896,7 @@ CosaDmlHostsGetHosts
     PLmObjectHost pHost;
     char str[100];
     int i;
+    errno_t rc = -1;
     BOOL                                      bridgeMode;
      
     Hosts_RmHosts();
@@ -926,7 +933,11 @@ CosaDmlHostsGetHosts
             /* filter unwelcome device */
             if(host_filter(plmHost))
                 continue;
-            sprintf(str,"%02x:%02x:%02x:%02x:%02x:%02x", plmHost->phyAddr[0], plmHost->phyAddr[1], plmHost->phyAddr[2], plmHost->phyAddr[3], plmHost->phyAddr[4], plmHost->phyAddr[5]); 
+            rc = sprintf_s(str, sizeof(str), "%02x:%02x:%02x:%02x:%02x:%02x", plmHost->phyAddr[0], plmHost->phyAddr[1], plmHost->phyAddr[2], plmHost->phyAddr[3], plmHost->phyAddr[4], plmHost->phyAddr[5]);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
             pHost = Hosts_AddHostByPhysAddress(str);
             if(pHost == NULL)
                 continue;

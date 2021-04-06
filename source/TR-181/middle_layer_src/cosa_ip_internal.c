@@ -72,6 +72,7 @@
 #include "cosa_ip_apis.h"
 #include "cosa_ip_internal.h"
 #include "plugin_main_apis.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -174,6 +175,7 @@ CosaIPInitialize
     ULONG                           ulIndex         = 0;
     ULONG                           ulSubEntryCount = 0;
     ULONG                           ulSubIndex      = 0;
+    errno_t                         rc              = -1;
 
     CosaDmlIpInit(NULL, &pMyObject->hSbContext);
 
@@ -254,13 +256,18 @@ CosaIPInitialize
     
     if ( TRUE )
     {
-        _ansc_sprintf
+        rc = sprintf_s
         (
-            FolderName, 
+            FolderName,
+            sizeof(FolderName),
             "%s%d", 
             COSA_DML_RR_NAME_IPIF_NextInsNum,
             0
         );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
         
         pPoamIrepFoNextIns = (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoIPIF->GetFolder
                                 (
@@ -357,7 +364,11 @@ CosaIPInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pIPInterface->Cfg.Alias, "Interface%lu", pMyObject->ulNextInterfaceInsNum);
+                rc = sprintf_s(pIPInterface->Cfg.Alias, sizeof(pIPInterface->Cfg.Alias),"Interface%lu", pMyObject->ulNextInterfaceInsNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                }
 
                 CosaDmlIpIfSetValues
                 (
@@ -379,13 +390,18 @@ CosaIPInitialize
         /* Initialize middle layer for Device.IP.Interface.{i}.IPv4Address.{i}. */
         if ( TRUE )
         {
-            _ansc_sprintf
+            rc = sprintf_s
             (
-                FolderName, 
+                FolderName,
+                sizeof(FolderName),
                 "%s%lu", 
                 COSA_DML_RR_NAME_IPIF_IPv4_NextInsNum, 
                 pIPInterface->Cfg.InstanceNumber
             );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
             
             pPoamIrepFoNextIns = 
                 (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoIPIF->GetFolder
@@ -470,7 +486,11 @@ CosaIPInitialize
                     }
 
                     /* Generate Alias */
-                    _ansc_sprintf(pIPv4Addr->Alias, "IPv4Address%lu", pSubCosaContext->InstanceNumber);
+                    rc = sprintf_s(pIPv4Addr->Alias, sizeof(pIPv4Addr->Alias),"IPv4Address%lu", pSubCosaContext->InstanceNumber);
+                    if(rc < EOK)
+                    {
+                      ERR_CHK(rc);
+                    }
 
                     /* TODO: Set InstanceNumber Alias back */
                     CosaDmlIpIfSetV4AddrValues
@@ -495,13 +515,18 @@ CosaIPInitialize
         /* Initialize middle layer for Device.IP.Interface.{i}.IPv6Address.{i}. */
         if ( TRUE )
         {
-            _ansc_sprintf
+            rc = sprintf_s
             (
-                FolderName, 
+                FolderName,
+                sizeof(FolderName),
                 "%s%lu", 
                 COSA_DML_RR_NAME_IPIF_IPv6_NextInsNum, 
                 pIPInterface->Cfg.InstanceNumber
             );
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+            }
             
             pPoamIrepFoNextIns = 
                 (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoIPIF->GetFolder
@@ -536,13 +561,18 @@ CosaIPInitialize
         /* Initialize middle layer for Device.IP.Interface.{i}.IPv6Prefix.{i}. */
         if ( TRUE )
         {
-            _ansc_sprintf
+            rc = sprintf_s
             (
-                FolderName, 
+                FolderName,
+                sizeof(FolderName),
                 "%s%lu", 
                 COSA_DML_RR_NAME_IPIF_IPv6Pre_NextInsNum, 
                 pIPInterface->Cfg.InstanceNumber
             );
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+            }
             
             pPoamIrepFoNextIns = 
                 (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoIPIF->GetFolder
@@ -1172,6 +1202,7 @@ CosaIPRegAddInfo
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PSLAP_VARIABLE                  pSlapVariable     = (PSLAP_VARIABLE           )NULL;
     char                            FolderName[32]    = {0};
+    errno_t                         rc                = -1;
 
     if ( !pPoamIrepFoIPIF || !pPoamIrepFoUpper )
     {
@@ -1194,7 +1225,11 @@ CosaIPRegAddInfo
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%lu", pNextInsNumName, ulUpperInsNum);
+    rc = sprintf_s(FolderName, sizeof(FolderName),"%s%lu", pNextInsNumName, ulUpperInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+    }
 
     if ( TRUE )
     {
@@ -1245,7 +1280,11 @@ CosaIPRegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         pPoamIrepFo = pPoamIrepFoUpper->AddFolder
                         (
@@ -1421,6 +1460,7 @@ CosaIPv6PrefGenInstAlias
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PSLAP_VARIABLE                  pSlapVariable     = (PSLAP_VARIABLE           )NULL;
     char                            FolderName[256]    = {0};
+    errno_t                         rc                 = -1;
 
     /*
       For dynamic and writable table, we don't keep the Maximum InstanceNumber.
@@ -1446,7 +1486,11 @@ CosaIPv6PrefGenInstAlias
 
     }while(1);
 
-    _ansc_sprintf( pEntry->Alias, "IPv6Prefix%lu", pEntry->InstanceNumber );
+    rc = sprintf_s( pEntry->Alias, sizeof(pEntry->Alias),"IPv6Prefix%lu", pEntry->InstanceNumber );
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+    }
 
     /* keep new MaxInstanceNumber */
 
@@ -1549,6 +1593,7 @@ CosaIPv6AddrGenInstAlias
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PSLAP_VARIABLE                  pSlapVariable     = (PSLAP_VARIABLE           )NULL;
     char                            FolderName[256]    = {0};
+    errno_t                         rc                 = -1;
 
     /*
       For dynamic and writable table, we don't keep the Maximum InstanceNumber.
@@ -1575,7 +1620,11 @@ CosaIPv6AddrGenInstAlias
     }while(1);
     
 
-    _ansc_sprintf( pEntry->Alias, "IPv6Address%lu", pEntry->InstanceNumber );
+    rc = sprintf_s( pEntry->Alias, sizeof(pEntry->Alias),"IPv6Address%lu", pEntry->InstanceNumber );
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+    }
 
     /* keep new MaxInstanceNumber */
 

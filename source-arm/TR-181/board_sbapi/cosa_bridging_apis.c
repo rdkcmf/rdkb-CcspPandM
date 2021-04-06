@@ -61,6 +61,7 @@
 **************************************************************************/
 
 #include "cosa_bridging_apis.h"
+#include "safec_lib_common.h"
 
 
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
@@ -379,7 +380,11 @@ static const char *g_bVlanTemple[] = {
 };
 #define _PSM_GET_BR(_DmsbInx) { \
         _ansc_memset(param_name, 0, sizeof(param_name)); \
-        _ansc_sprintf(param_name, g_brTemple[_DmsbInx], instancenum); \
+        errno_t rc = -1; \
+        rc = sprintf_s(param_name, sizeof(param_name), g_brTemple[_DmsbInx], instancenum); \
+        if(rc < EOK) { \
+           ERR_CHK(rc); \
+        } \
         retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value); \
         if (retPsmGet != CCSP_SUCCESS) { \
             goto _Psm_GetBr_Err;\
@@ -390,7 +395,11 @@ static const char *g_bVlanTemple[] = {
     }
 
 #define _PSM_SET_BR(_DmsbInx) { \
-        _ansc_sprintf(param_name, g_brTemple[_DmsbInx], instancenum); \
+        errno_t rc = -1; \
+        rc = sprintf_s(param_name, sizeof(param_name), g_brTemple[_DmsbInx], instancenum); \
+        if(rc < EOK) { \
+           ERR_CHK(rc); \
+        } \
         retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value); \
         if (retPsmGet != CCSP_SUCCESS) { \
             goto _Psm_SetBr_Err;\
@@ -402,10 +411,19 @@ static const char *g_bVlanTemple[] = {
 
 #define _PSM_GET_BPORT(_DmsbInx) { \
         _ansc_memset(param_name, 0, sizeof(param_name)); \
-        if (deviceStr) \
-            _ansc_sprintf(param_name, g_bPortTemple[_DmsbInx], l2InstNum, deviceStr); \
-        else \
-            _ansc_sprintf(param_name, g_bPortTemple[_DmsbInx], l2InstNum, bportInstNum); \
+        errno_t rc = -1; \
+        if (deviceStr) { \
+            rc = sprintf_s(param_name, sizeof(param_name), g_bPortTemple[_DmsbInx], l2InstNum, deviceStr); \
+            if(rc < EOK) { \
+               ERR_CHK(rc); \
+            } \
+        } \
+        else { \
+            rc = sprintf_s (param_name, sizeof(param_name), g_bPortTemple[_DmsbInx], l2InstNum, bportInstNum); \
+            if(rc < EOK) { \
+               ERR_CHK(rc); \
+            } \
+        } \
         retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value); \
         if (retPsmGet != CCSP_SUCCESS) { \
             goto _Psm_GetBPort_Err; \
@@ -414,10 +432,19 @@ static const char *g_bVlanTemple[] = {
     }    
 
 #define _PSM_SET_BPORT(_DmsbInx) { \
-        if (deviceStr) \
-            _ansc_sprintf(param_name, g_bPortTemple[_DmsbInx], l2InstNum,deviceStr); \
-        else \
-            _ansc_sprintf(param_name, g_bPortTemple[_DmsbInx], l2InstNum,bportInstNum); \
+        errno_t rc = -1; \
+        if (deviceStr) { \
+            rc = sprintf_s(param_name, sizeof(param_name), g_bPortTemple[_DmsbInx], l2InstNum,deviceStr); \
+            if(rc < EOK) { \
+                ERR_CHK(rc); \
+            } \
+        } \
+        else { \
+            rc = sprintf_s(param_name, sizeof(param_name), g_bPortTemple[_DmsbInx], l2InstNum,bportInstNum); \
+            if(rc < EOK) { \
+                ERR_CHK(rc); \
+            } \
+        } \
         retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value); \
         if (retPsmGet != CCSP_SUCCESS) { \
             goto _Psm_SetBPort_Err; \
@@ -427,12 +454,19 @@ static const char *g_bVlanTemple[] = {
     }    
 
 #define _PSM_DEL_BPORT(_DmsbInx) { \
+            errno_t rc = -1; \
             if (deviceStr) { \
-                _ansc_sprintf(param_name, g_bPortTemple[_DmsbInx], l2InstNum, deviceStr); \
+                rc = sprintf_s(param_name, sizeof(param_name), g_bPortTemple[_DmsbInx], l2InstNum, deviceStr); \
+                if(rc < EOK) { \
+                    ERR_CHK(rc); \
+                } \
             } \
             else \
             { \
-                _ansc_sprintf(param_name, g_bPortTemple[_DmsbInx], l2InstNum,  bportInstNum); \
+                rc = sprintf_s(param_name, sizeof(param_name), g_bPortTemple[_DmsbInx], l2InstNum,  bportInstNum); \
+                if(rc < EOK) { \
+                    ERR_CHK(rc); \
+                } \
             } \
             AnscTraceFlow(("%s delete brigde inst=%d Port inst =%d param_name=%s\n", __FUNCTION__,\
                 l2InstNum, bportInstNum,param_name));\
@@ -441,8 +475,12 @@ static const char *g_bVlanTemple[] = {
         }
 
 #define _PSM_GET_BVLAN(_DmsbInx) { \
+        errno_t rc = -1; \
         _ansc_memset(param_name, 0, sizeof(param_name)); \
-        _ansc_sprintf(param_name, g_bVlanTemple[_DmsbInx], l2InstNum, bvlanInstNum); \
+        rc = sprintf_s(param_name, sizeof(param_name), g_bVlanTemple[_DmsbInx], l2InstNum, bvlanInstNum); \
+        if(rc < EOK) { \
+            ERR_CHK(rc); \
+        } \
         retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value); \
         if (retPsmGet != CCSP_SUCCESS) { \
             goto _Psm_GetBVlan_Err; \
@@ -451,7 +489,11 @@ static const char *g_bVlanTemple[] = {
     }    
 
 #define _PSM_SET_BVLAN(_DmsbInx) { \
-        _ansc_sprintf(param_name, g_bVlanTemple[_DmsbInx], l2InstNum,bvlanInstNum); \
+        errno_t rc = -1; \
+        rc = sprintf_s(param_name, sizeof(param_name), g_bVlanTemple[_DmsbInx], l2InstNum,bvlanInstNum); \
+        if(rc < EOK) { \
+            ERR_CHK(rc); \
+        } \
         retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value); \
         if (retPsmGet != CCSP_SUCCESS) { \
             goto _Psm_SetBVlan_Err; \
@@ -462,7 +504,11 @@ static const char *g_bVlanTemple[] = {
     }    
 
 #define _PSM_DEL_BVLAN(_DmsbInx) { \
-            _ansc_sprintf(param_name, g_bVlanTemple[_DmsbInx], l2InstNum,  bvlanInstNum); \
+            errno_t rc = -1; \
+            rc = sprintf_s(param_name, sizeof(param_name), g_bVlanTemple[_DmsbInx], l2InstNum,  bvlanInstNum); \
+            if(rc < EOK) { \
+                ERR_CHK(rc); \
+            } \
             AnscTraceFlow(("%s delete brigde inst=%d Vlan inst =%d param_name=%s\n", __FUNCTION__,\
                 l2InstNum, bvlanInstNum,param_name));\
             PSM_Del_Record(bus_handle, g_Subsystem, param_name); \
@@ -470,39 +516,61 @@ static const char *g_bVlanTemple[] = {
         }
 
 #define _COSA_FORMAT_MEMBERS_STRING(_Bridge, _BPort, _DmsbInx,_Value )  { \
+            errno_t rc = -1; \
             if (_BPort->mode==COSA_DML_BPORT_PASSTHRU) \
             { \
-                _ansc_sprintf(_Value, "%s-t", _BPort->linkName); \
+                rc = sprintf_s(_Value, 256, "%s-t", _BPort->linkName); \
+                if(rc < EOK) { \
+                    ERR_CHK(rc); \
+                } \
             } \
             else \
             { \
-                _ansc_sprintf(_Value, "%s", _BPort->linkName); \
+                rc = sprintf_s(_Value, 256, "%s", _BPort->linkName); \
+                if(rc < EOK) { \
+                    ERR_CHK(rc); \
+                } \
             }  \
             if (_ansc_strstr(_BPort->linkName,"sw")) \
             { \
-                _ansc_sprintf(_DmsbInx, g_brTemple[_PSM_BRIDGE_TML_SW_MEMBERS], _Bridge->l2InstanceNumber, \
+                rc = sprintf_s(_DmsbInx, 256, g_brTemple[_PSM_BRIDGE_TML_SW_MEMBERS], _Bridge->l2InstanceNumber, \
                     _Value); \
+                if(rc < EOK) { \
+                    ERR_CHK(rc); \
+                } \
             } \
             else if (_BPort->linkType == COSA_DML_BRG_LINK_TYPE_WiFiSsid) \
             { \
-                _ansc_sprintf(_DmsbInx, g_brTemple[_PSM_BRIDGE_TML_WIFI_MEMBERS], _Bridge->l2InstanceNumber, \
+                rc = sprintf_s(_DmsbInx, 256, g_brTemple[_PSM_BRIDGE_TML_WIFI_MEMBERS], _Bridge->l2InstanceNumber, \
                     _Value); \
+                if(rc < EOK) { \
+                    ERR_CHK(rc); \
+                } \
             } \
             else if ((_BPort->linkType == COSA_DML_BRG_LINK_TYPE_Eth) || \
                 (_BPort->linkType == COSA_DML_BRG_LINK_TYPE_EthVlan)) \
             { \
-                _ansc_sprintf(_DmsbInx, g_brTemple[_PSM_BRIDGE_TML_ETH_MEMBERS], _Bridge->l2InstanceNumber, \
+                rc = sprintf_s(_DmsbInx, 256, g_brTemple[_PSM_BRIDGE_TML_ETH_MEMBERS], _Bridge->l2InstanceNumber, \
                     _Value); \
+                if(rc < EOK) { \
+                    ERR_CHK(rc); \
+                } \
             } \
             else if (_BPort->linkType == COSA_DML_BRG_LINK_TYPE_Moca)\
             { \
-                _ansc_sprintf(_DmsbInx, g_brTemple[_PSM_BRIDGE_TML_MOCA_MEMBERS], _Bridge->l2InstanceNumber, \
+                rc = sprintf_s(_DmsbInx, 256, g_brTemple[_PSM_BRIDGE_TML_MOCA_MEMBERS], _Bridge->l2InstanceNumber, \
                     _Value); \
+                if(rc < EOK) { \
+                    ERR_CHK(rc); \
+                } \
             } \
             else if (_BPort->linkType == COSA_DML_BRG_LINK_TYPE_Gre)\
             { \
-                _ansc_sprintf(_DmsbInx, g_brTemple[_PSM_BRIDGE_TML_GRE_MEMBERS], _Bridge->l2InstanceNumber, \
+                rc = sprintf_s(_DmsbInx, 256, g_brTemple[_PSM_BRIDGE_TML_GRE_MEMBERS], _Bridge->l2InstanceNumber, \
                     _Value); \
+                if(rc < EOK) { \
+                    ERR_CHK(rc); \
+                } \
             } \
         } 
 
@@ -622,6 +690,7 @@ CosaDmlBrgInit
     unsigned  int *brList = NULL, *portList = NULL, *vlanList= NULL;
     unsigned int i = 0, j=0;
     char param_name[256] = {0};
+    errno_t rc = -1;
 
     //$HL 4/10/2013
     AnscTraceFlow(("<HL> Start Bridge/Port Initiation %s\n",__FUNCTION__));
@@ -651,7 +720,11 @@ CosaDmlBrgInit
             lanbr = (PBRIDGE)AnscAllocateMemory(sizeof (BRIDGE));
             _ansc_memset(lanbr, 0, sizeof(BRIDGE));
             _ansc_memset(param_name, 0, sizeof(param_name));
-            _ansc_sprintf(param_name, DMSB_L2_BPORT_PREFIX, brList[i]);
+            rc = sprintf_s(param_name, sizeof(param_name), DMSB_L2_BPORT_PREFIX, brList[i]);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
             //AnscTraceFlow(("%s: PSM L2 InstanceNumber %d, Search Path=%s\n", __FUNCTION__,brList[i],param_name));
             if (_Psm_GetBr(brList[i],lanbr)!=ANSC_STATUS_SUCCESS)
             {
@@ -672,7 +745,11 @@ CosaDmlBrgInit
                 AnscSListPushEntryAtBack(&g_Bridgings.bridgeList, &lanbr->Linkage);
             }
             _ansc_memset(param_name, 0, sizeof(param_name));
-            _ansc_sprintf(param_name, DMSB_L2_BVLAN_PREFIX, brList[i]);
+            rc = sprintf_s(param_name, sizeof(param_name), DMSB_L2_BVLAN_PREFIX, brList[i]);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
             //AnscTraceFlow(("%s: PSM L2 InstanceNumber %d, Search Path=%s\n", __FUNCTION__,brList[i],param_name));
             //rebuild vlan list for the bridge
             retPsmGet2 = PsmGetNextLevelInstances(bus_handle, g_Subsystem, param_name, &vlanCnt, &vlanList);
@@ -709,7 +786,11 @@ CosaDmlBrgInit
             }
             //rebuild port list for the bridge
             _ansc_memset(param_name, 0, sizeof(param_name));
-            _ansc_sprintf(param_name, DMSB_L2_BPORT_PREFIX, brList[i]);
+            rc = sprintf_s(param_name, sizeof(param_name), DMSB_L2_BPORT_PREFIX, brList[i]);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
             //AnscTraceFlow(("%s: PSM L2 InstanceNumber %d, Search Path=%s\n", __FUNCTION__,brList[i],param_name));
             retPsmGet2 = 0;
             retPsmGet2 = PsmGetNextLevelInstances(bus_handle, g_Subsystem, param_name, &portCnt, &portList);
@@ -2366,13 +2447,18 @@ static ANSC_STATUS _COSA_GetNewBrName(PBRIDGE pBridge)
     BOOLEAN found = TRUE;
     char param_name[256] = {0};
     int brId = g_brInfo.nxtBrId, i;
+    errno_t rc = -1;
     AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
     for (i=0; i <= g_Bridgings.bridgeList.Depth  ; i++)
     {
         if (found == TRUE)
         {
             curBridge = (PBRIDGE) AnscSListGetFirstEntry(&g_Bridgings.bridgeList);
-            _ansc_sprintf(param_name,g_brInfo.bridgeNamePrefix,brId);
+            rc = sprintf_s(param_name, sizeof(param_name), g_brInfo.bridgeNamePrefix,brId);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
             found = FALSE;
         }
         AnscTraceFlow(("<HL> %s bridge_name=%s \n",__FUNCTION__,param_name));
@@ -2418,7 +2504,13 @@ static ANSC_STATUS _Psm_AddLinkMembers(ULONG instanceNum)
 {
     int retPsmGet = CCSP_SUCCESS;
     char param_name[256]={0};
-    _ansc_sprintf(param_name, g_brTemple[_PSM_BRIDGE_TML_LINK_MEMBERS], instanceNum);
+    errno_t rc = -1;
+    rc = sprintf_s(param_name, sizeof(param_name), g_brTemple[_PSM_BRIDGE_TML_LINK_MEMBERS], instanceNum);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     AnscTraceFlow(("<HL> %s param_name=%s\n",__FUNCTION__,param_name));
     retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, DMSB_HIDEN_LAN_INF);
     if (retPsmGet == CCSP_SUCCESS) {
@@ -2434,7 +2526,13 @@ static ANSC_STATUS _Psm_AddLinkMembers(ULONG instanceNum)
 static ANSC_STATUS _Psm_DelLinkMembers(ULONG instanceNum)
 {
     char param_name[256]={0};
-    _ansc_sprintf(param_name, g_brTemple[_PSM_BRIDGE_TML_LINK_MEMBERS], instanceNum);
+    errno_t rc = -1;
+    rc = sprintf_s(param_name, sizeof(param_name), g_brTemple[_PSM_BRIDGE_TML_LINK_MEMBERS], instanceNum);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     AnscTraceFlow(("<HL> %s param_name=%s\n",__FUNCTION__,param_name));
     PSM_Del_Record(bus_handle, g_Subsystem, param_name);
     return ANSC_STATUS_SUCCESS;
@@ -2781,11 +2879,18 @@ static ANSC_STATUS _Psm_Cleanup(int instanceNumber)
     unsigned int *portList = NULL,*vlanList = NULL;
     ULONG l2InstNum = instanceNumber;
     ULONG bportInstNum = 0, bvlanInstNum=0;
+    errno_t rc = -1;
     char * deviceStr = NULL;
     AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
     while (g_brTemple[i]!=NULL) 
     {
-        _ansc_sprintf(param_name, g_brTemple[i], instanceNumber);
+        rc = sprintf_s(param_name, sizeof(param_name), g_brTemple[i], instanceNumber);
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+            i++;
+            continue;
+        }
         AnscTraceFlow(("%s delete brigde inst=%d param_name=%s\n", __FUNCTION__,
             instanceNumber,param_name));
         PSM_Del_Record(bus_handle, g_Subsystem, param_name);
@@ -2794,7 +2899,12 @@ static ANSC_STATUS _Psm_Cleanup(int instanceNumber)
     }
     _ansc_memset(param_name, 0, sizeof(param_name));
     i = 0;
-    _ansc_sprintf(param_name, DMSB_L2_BPORT_PREFIX, instanceNumber);
+    rc = sprintf_s(param_name, sizeof(param_name), DMSB_L2_BPORT_PREFIX, instanceNumber);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     retPsmGet = PsmGetNextLevelInstances(bus_handle, g_Subsystem, param_name, &portCnt, &portList);
     if ( retPsmGet == CCSP_SUCCESS && portList != NULL ) 
     {
@@ -2829,7 +2939,12 @@ static ANSC_STATUS _Psm_Cleanup(int instanceNumber)
     }
     _ansc_memset(param_name, 0, sizeof(param_name));
     i = 0;
-    _ansc_sprintf(param_name, DMSB_L2_BVLAN_PREFIX, instanceNumber);
+    rc = sprintf_s(param_name, sizeof(param_name), DMSB_L2_BVLAN_PREFIX, instanceNumber);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     retPsmGet = PsmGetNextLevelInstances(bus_handle, g_Subsystem, param_name, &vlanCnt, &vlanList);
     if ( retPsmGet == CCSP_SUCCESS && vlanList != NULL ) 
     {
@@ -2857,11 +2972,18 @@ static ANSC_STATUS _Psm_DelBr(PBRIDGE pBridge)
 {
     int i = 0;
     char param_name[256] = {0};
+    errno_t rc = -1;
 
     AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
     while (g_brTemple[i]!=NULL) 
     {
-        _ansc_sprintf(param_name, g_brTemple[i], pBridge->l2InstanceNumber);
+        rc = sprintf_s(param_name, sizeof(param_name), g_brTemple[i], pBridge->l2InstanceNumber);
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+            i++;
+            continue;
+        }
         AnscTraceFlow(("%s delete brigde inst=%d param_name=%s\n", __FUNCTION__,
             pBridge->l2InstanceNumber,param_name));
         PSM_Del_Record(bus_handle, g_Subsystem, param_name);
@@ -2963,68 +3085,65 @@ static ANSC_STATUS _Psm_SetBr(ULONG instancenum,PBRIDGE pBridge)
     int retPsmGet = CCSP_SUCCESS;
     char param_value[256]={0};
     char param_name[256]= {0};
+    errno_t rc = -1;
 
     fprintf(stderr, "!!!!!!!!!! _Psm_SetBr !!!!!!!!!!!!!!!!!\n");
 
     AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
 
-    if (pBridge->bAllowDelete==TRUE)
-    {
-        _ansc_sprintf(param_value,"%s","TRUE");
-    }
-    else
-    {
-        _ansc_sprintf(param_value,"%s","FALSE");
-    }
+    rc = strcpy_s(param_value, sizeof(param_value), ((pBridge->bAllowDelete==TRUE) ? "TRUE" : "FALSE"));
+    ERR_CHK(rc);
     _PSM_SET_BR(_PSM_BRIDGE_TML_ALLOWDELETE);
 
-    _ansc_sprintf(param_value,"%s",pBridge->alias);
+    rc = strcpy_s(param_value, sizeof(param_value), pBridge->alias);
+    ERR_CHK(rc);
     _PSM_SET_BR(_PSM_BRIDGE_TML_ALIAS);
 
-    _ansc_sprintf(param_value,"%s",pBridge->name);
+    rc = strcpy_s(param_value, sizeof(param_value), pBridge->name);
+    ERR_CHK(rc);
     _PSM_SET_BR(_PSM_BRIDGE_TML_NAME);
     
-    if (pBridge->bEnabled==TRUE)
-    {
-        _ansc_sprintf(param_value,"%s","TRUE");
-    }
-    else
-    {
-        _ansc_sprintf(param_value,"%s","FALSE");
-    }
+    rc = strcpy_s(param_value, sizeof(param_value), ((pBridge->bEnabled==TRUE) ? "TRUE" : "FALSE"));
+    ERR_CHK(rc);
     _PSM_SET_BR(_PSM_BRIDGE_TML_ENABLE);
     
-    _ansc_sprintf(param_value,"%s",pBridge->type);
+    rc = strcpy_s(param_value, sizeof(param_value), pBridge->type);
+    ERR_CHK(rc);
     _PSM_SET_BR(_PSM_BRIDGE_TML_TYPE);
  
     if (pBridge->standard == COSA_DML_BRG_STD_8021Q_2005)
     {
-        _ansc_sprintf(param_value,"%s","BRG_STD_8021Q_2005");
+        rc = strcpy_s(param_value, sizeof(param_value), "BRG_STD_8021Q_2005");
+        ERR_CHK(rc);
     }
     else if (pBridge->standard == COSA_DML_BRG_STD_8021D_2004)
     {
-        _ansc_sprintf(param_value,"%s","BRG_STD_8021D_2004");
+        rc = strcpy_s(param_value, sizeof(param_value), "BRG_STD_8021D_2004");
+        ERR_CHK(rc);
     }
     else 
     {
-        _ansc_sprintf(param_value,"%s","UNKNOWN");   
+        rc = strcpy_s(param_value, sizeof(param_value), "UNKNOWN");
+        ERR_CHK(rc);
     }
     _PSM_SET_BR(_PSM_BRIDGE_TML_STANDARD);
 
-    _ansc_sprintf(param_value,"%d",pBridge->vlanid);
+    rc = sprintf_s(param_value, sizeof(param_value), "%d", pBridge->vlanid);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
     _PSM_SET_BR(_PSM_BRIDGE_TML_VLANID);
  
-    if (pBridge->bPriTag==TRUE)
-    {
-        _ansc_sprintf(param_value,"%s","TRUE");
-    }
-    else
-    {
-        _ansc_sprintf(param_value,"%s","FALSE");
-    }
+    rc = strcpy_s(param_value, sizeof(param_value), ((pBridge->bPriTag==TRUE) ? "TRUE" : "FALSE"));
+    ERR_CHK(rc);
     _PSM_SET_BR(_PSM_BRIDGE_TML_PRITAG);
  
-    _ansc_sprintf(param_value,"%lu",pBridge->instanceNumber);
+    rc = sprintf_s(param_value, sizeof(param_value), "%lu",pBridge->instanceNumber);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
     _PSM_SET_BR(_PSM_BRIDGE_TML_INSTNUM);
 
     if (pBridge->numOfPorts==0)
@@ -3161,90 +3280,70 @@ static ANSC_STATUS _Psm_SetBPort(ULONG l2InstNum, ULONG bportInstNum, PBRIDGE_PO
     char param_value[256]={0};
     char *deviceStr = NULL;
     char param_name[256]= {0};
+    errno_t rc = -1;
 
     //AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
 
     //deviceStr = pBPort->linkName;
-    if (pBPort->bAllowDelete==TRUE)
-    {
-        _ansc_sprintf(param_value,"%s","TRUE");
-    }
-    else
-    {
-        _ansc_sprintf(param_value,"%s","FALSE");
-    }
+    rc = strcpy_s(param_value, sizeof(param_value), ((pBPort->bAllowDelete==TRUE) ? "TRUE" : "FALSE"));
+    ERR_CHK(rc);
     _PSM_SET_BPORT(_PSM_BPORT_TML_ALLOWDELETE);
 
-    _ansc_sprintf(param_value,"%d",pBPort->pvid); 
+    rc = sprintf_s(param_value, sizeof(param_value), "%d", pBPort->pvid);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
     _PSM_SET_BPORT(_PSM_BPORT_TML_PVID);
 
-    if (pBPort->bPriTag==TRUE)
-    {
-        _ansc_sprintf(param_value,"%s","TRUE");
-    }
-    else
-    {
-        _ansc_sprintf(param_value,"%s","FALSE");
-    }
+    rc = strcpy_s(param_value, sizeof(param_value), ((pBPort->bPriTag==TRUE) ? "TRUE" : "FALSE"));
+    ERR_CHK(rc);
     _PSM_SET_BPORT(_PSM_BPORT_TML_PRITAG);
  
 
     deviceStr = NULL;
 
-    if (pBPort->bEnabled==TRUE)
-    {
-        _ansc_sprintf(param_value,"%s","TRUE");
-    }
-    else
-    {
-        _ansc_sprintf(param_value,"%s","FALSE");
-    }
+    rc = strcpy_s(param_value, sizeof(param_value), ((pBPort->bEnabled==TRUE) ? "TRUE" : "FALSE"));
+    ERR_CHK(rc);
     _PSM_SET_BPORT(_PSM_BPORT_TML_ENABLE);
 
-    _ansc_sprintf(param_value,"%s",pBPort->alias); 
+    rc = strcpy_s(param_value, sizeof(param_value), pBPort->alias);
+    ERR_CHK(rc);
     _PSM_SET_BPORT(_PSM_BPORT_TML_ALIAS);
 
-    _ansc_sprintf(param_value,"%s",pBPort->name); 
+    rc = strcpy_s(param_value, sizeof(param_value), pBPort->name);
+    ERR_CHK(rc);
     _PSM_SET_BPORT(_PSM_BPORT_TML_NAME);
 
-    _ansc_sprintf(param_value,"%s",pBPort->linkName); 
+    rc = strcpy_s(param_value, sizeof(param_value), pBPort->linkName);
+    ERR_CHK(rc);
     _PSM_SET_BPORT(_PSM_BPORT_TML_LINKNAME);
  
-    _ansc_sprintf(param_value,"%s",_COSA_GetInterfaceTypeStr(pBPort->linkType)); 
+    rc = sprintf_s(param_value, sizeof(param_value), "%s", _COSA_GetInterfaceTypeStr(pBPort->linkType));
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
     AnscTraceFlow(("%s linkType=%s port->linkType=%d\n",__FUNCTION__,param_value,pBPort->linkType));
     _PSM_SET_BPORT(_PSM_BPORT_TML_LINKTYPE);
   
-    if (pBPort->bMgt==TRUE)
-    {
-        _ansc_sprintf(param_value,"%s","TRUE");
-    }
-    else
-    {
-        _ansc_sprintf(param_value,"%s","FALSE");
-    }
+    rc = strcpy_s(param_value, sizeof(param_value), ((pBPort->bMgt==TRUE) ? "TRUE" : "FALSE"));
+    ERR_CHK(rc);
     _PSM_SET_BPORT(_PSM_BPORT_TML_MGT);
 
-    if (pBPort->mode == COSA_DML_BPORT_PASSTHRU)
-    {
-        _ansc_sprintf(param_value,"%s","PassThrough"); 
-    }
-    else
-    {
-        _ansc_sprintf(param_value,"%s","Tagging"); 
-    }
+    rc = strcpy_s(param_value, sizeof(param_value), ((pBPort->mode == COSA_DML_BPORT_PASSTHRU) ? "PassThrough" : "Tagging"));
+    ERR_CHK(rc);
     _PSM_SET_BPORT(_PSM_BPORT_TML_MODE);
  
-    _ansc_sprintf(param_value,"%lu",pBPort->instanceNumber); 
+    rc = sprintf_s(param_value, sizeof(param_value), "%lu", pBPort->instanceNumber);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
     _PSM_SET_BPORT(_PSM_BPORT_TML_INSTNUM);
   
-    if (pBPort->bUpstream==TRUE)
-    {
-        _ansc_sprintf(param_value,"%s","TRUE");
-    }
-    else
-    {
-        _ansc_sprintf(param_value,"%s","FALSE");
-    }
+    rc = strcpy_s(param_value, sizeof(param_value), ((pBPort->bUpstream==TRUE) ? "TRUE" : "FALSE"));
+    ERR_CHK(rc);
     _PSM_SET_BPORT(_PSM_BPORT_TML_UPSTREAM);
 
     return ANSC_STATUS_SUCCESS;
@@ -3282,15 +3381,21 @@ static ANSC_STATUS _Psm_SetBVlan(ULONG l2InstNum, ULONG bvlanInstNum, PBRIDGE_VL
     int retPsmGet = CCSP_SUCCESS;
     char param_value[256]={0};
     char param_name[256]= {0};
+    errno_t rc = -1;
 
     AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
 
  
-    _ansc_sprintf(param_value,"%s",pBVlan->alias); 
+    rc = strcpy_s(param_value, sizeof(param_value), pBVlan->alias);
+    ERR_CHK(rc);
     _PSM_SET_BVLAN(_PSM_BVLAN_TML_ALIAS);
 
  
-    _ansc_sprintf(param_value,"%lu",pBVlan->instanceNumber); 
+    rc = sprintf_s(param_value, sizeof(param_value), "%lu", pBVlan->instanceNumber);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
     _PSM_SET_BVLAN(_PSM_BVLAN_TML_INSTNUM);
   
  
@@ -3638,7 +3743,13 @@ ANSC_STATUS lanBrPCtlGetState(PBRIDGE_PORT port, PCOSA_DML_BRG_PORT_STATE state)
     int stateVal;
     FILE* fd;
     char stateFile[50];
-    sprintf(stateFile, "/sys/class/net/%s/brport/state", port->name);
+    errno_t rc = -1;
+    rc = sprintf_s(stateFile, sizeof(stateFile), "/sys/class/net/%s/brport/state", port->name);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     fd = fopen(stateFile, "r");
     
     if (!fd) {

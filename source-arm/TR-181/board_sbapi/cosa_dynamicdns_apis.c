@@ -5,6 +5,7 @@
 #include <utapi/utapi.h>
 #include <utapi/utapi_util.h>
 #include <syscfg/syscfg.h>
+#include "safec_lib_common.h"
 
       /* MACROS */
 #define  SYSCFG_SERVER_ENABLE_KEY         "ddns_server_enable_%lu"
@@ -213,12 +214,19 @@ CosaDmlDynamicDns_GetsupportedServices
     )
 {
     char buf[128] = {0};
+    errno_t rc = -1;
 
     if ((!syscfg_init()) &&
         (!syscfg_get( NULL, "ddns_service_providers_list", buf, sizeof(buf))))
     {
-         _ansc_sprintf(supportedServices, "%s", buf);
-         return 0;
+        /* destination buffer supportedServices is declared as an array size of 1024 bytes in the calling func. */
+        rc = strcpy_s(supportedServices, 1024, buf);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+        return 0;
     }
     return -1;
 }
@@ -230,6 +238,7 @@ CosaDmlDynamicDns_SetEnable
     )
 {
    char buf[8] = {0};
+   errno_t rc = -1;
 
    if (!syscfg_init())
    {
@@ -237,7 +246,12 @@ CosaDmlDynamicDns_SetEnable
        if((strcmp(buf, "1") == 0) && bValue == TRUE){
            return -1;
        }
-       _ansc_sprintf(buf, "%s", ((bValue == FALSE) ? "0" : "1"));
+       rc = strcpy_s(buf, sizeof(buf), ((bValue == FALSE) ? "0" : "1"));
+       if(rc != EOK)
+       {
+           ERR_CHK(rc);
+           return -1;
+       }
        syscfg_set(NULL, "dynamic_dns_enable", buf);
        if(bValue == FALSE)
        {
@@ -546,6 +560,7 @@ COSA_DML_DDNS_HOST *g_DDNSHost = NULL;
 void CosaInitializeTr181DdnsHost()
 {
     int i = 0;
+    errno_t rc = -1;
     g_NrDynamicDnsHost = MAX_HOST_COUNT;
     if(!g_DDNSHost && (g_NrDynamicDnsHost > 0))
     {
@@ -556,7 +571,11 @@ void CosaInitializeTr181DdnsHost()
             {
                 g_DDNSHost[i].Enable = FALSE;
                 g_DDNSHost[i].InstanceNumber = i+1;
-                sprintf(g_DDNSHost[i].Alias, "cpe-ddns-host_%d", i+1);
+                rc = sprintf_s(g_DDNSHost[i].Alias, sizeof(g_DDNSHost[i].Alias), "cpe-ddns-host_%d", i+1);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
                 g_DDNSHost[i].Status = HOST_DISABLED;
             }
         }
@@ -739,12 +758,19 @@ CosaDmlDynamicDns_GetHostLastUpdate
     )
 {
     char buf[128] = {0};
+    errno_t rc = -1;
 
     if ((!syscfg_init()) &&
         (!syscfg_get( NULL, "ddns_host_lastupdate_1", buf, sizeof(buf))))
     {
-         _ansc_sprintf(lastUpdate, "%s", buf);
-         return 0;
+        /* destination buffer lastUpdate is defined as array size of 256 bytes in calling func. */
+        rc = strcpy_s(lastUpdate, 256, buf);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+        return 0;
     }
     return -1;
 }
@@ -769,6 +795,7 @@ COSA_DML_DDNS_SERVER  *g_DDNSServer = NULL;
 void CosaInitializeTr181DdnsServiceProviderList()
 {
     char service_list[128] = {0};
+    errno_t rc = -1;
 
     if ((!syscfg_init()) &&
         (!syscfg_get( NULL, "ddns_service_providers_list", service_list, sizeof(service_list))))
@@ -782,7 +809,11 @@ void CosaInitializeTr181DdnsServiceProviderList()
         {
             g_DDNSServer[index].Enable = FALSE;
             g_DDNSServer[index].InstanceNumber = index+1;
-            sprintf(g_DDNSServer[index].Alias, "cpe-ddns-server_%lu", index+1);
+            rc = sprintf_s(g_DDNSServer[index].Alias, sizeof(g_DDNSServer[index].Alias), "cpe-ddns-server_%lu", index+1);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
             if (strstr(service_list, gDdnsServices[index].ServiceName))
             {
                 g_DDNSServer[index].Enable = TRUE;

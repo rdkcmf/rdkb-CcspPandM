@@ -68,6 +68,7 @@
 #include "cosa_neighdisc_apis.h"
 #include "cosa_neighdisc_internal.h"
 #include "secure_wrapper.h"
+#include "safec_lib_common.h"
 
 /*
  *    Because we need interface's Alias to build connection request URL addr,
@@ -727,6 +728,7 @@ CosaDmlNeighdiscIfGetEntry
     UtopiaContext utctx = {0};
     char out[256] = {0};
     int  need_write = 0;
+    errno_t safec_rc = -1;
 
     UNREFERENCED_PARAMETER(hContext);
     UNREFERENCED_PARAMETER(ulIndex);
@@ -740,7 +742,11 @@ CosaDmlNeighdiscIfGetEntry
     {
         /*the first time system boots up*/
         need_write = 1;
-        strcpy(out, "1");
+        safec_rc = strcpy_s(out, sizeof(out), "1");
+        if(safec_rc != EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
         Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_inst_num",out);
     }
     g_neighdisc_interface.Cfg.InstanceNumber = atoi(out);
@@ -751,11 +757,18 @@ CosaDmlNeighdiscIfGetEntry
     {
         /*the first time system boots up*/
         need_write = 1;
-        strcpy(out, "InterfaceSetting1");
+        safec_rc = strcpy_s(out, sizeof(out), "InterfaceSetting1");
+        if(safec_rc != EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
         Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_alias",out);
     }
-    safe_strcpy(g_neighdisc_interface.Cfg.Alias, out, sizeof(g_neighdisc_interface.Cfg.Alias));
-
+    safec_rc = strcpy_s(g_neighdisc_interface.Cfg.Alias, sizeof(g_neighdisc_interface.Cfg.Alias), out);
+    if(safec_rc != EOK)
+    {
+        ERR_CHK(safec_rc);
+    }
     /*we don't support writing to these variables*/
     memset(out, 0, sizeof(out));
     Utopia_RawGet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_enable",out,sizeof(out));
@@ -769,10 +782,18 @@ CosaDmlNeighdiscIfGetEntry
     if (!out[0])
     {
         need_write = 1;
-        strcpy(out, "erouter0");
+        safec_rc = strcpy_s(out, sizeof(out), "erouter0");
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_interface",out);
     }
-    safe_strcpy(g_neighdisc_interface.Cfg.Interface, out, sizeof(g_neighdisc_interface.Cfg.Interface));
+    safec_rc = strcpy_s(g_neighdisc_interface.Cfg.Interface, sizeof(g_neighdisc_interface.Cfg.Interface), out);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     g_neighdisc_interface.Cfg.bNUDEnable = TRUE;
     g_neighdisc_interface.Cfg.bRSEnable  = TRUE;
 
@@ -963,6 +984,7 @@ CosaDmlNeighdiscIfSetCfg
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
     char out[256] = {0};
+    errno_t safec_rc = -1;
 
     if ( g_neighdisc_interface.Cfg.InstanceNumber != pCfg->InstanceNumber )
         return ANSC_STATUS_CANT_FIND;   
@@ -973,7 +995,11 @@ CosaDmlNeighdiscIfSetCfg
 
     if (pCfg->bEnabled != g_neighdisc_interface.Cfg.bEnabled)
     {
-        sprintf(out, "%d", pCfg->bEnabled);
+        safec_rc = sprintf_s(out, sizeof(out), "%d", pCfg->bEnabled);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_enable",out);
     }
 
@@ -985,7 +1011,11 @@ CosaDmlNeighdiscIfSetCfg
 
     if (pCfg->RetransTimer != g_neighdisc_interface.Cfg.RetransTimer)
     {
-        sprintf(out, "%lu", pCfg->RetransTimer);
+        safec_rc = sprintf_s(out, sizeof(out), "%lu", pCfg->RetransTimer);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_RetransTimer",out);        
 
         /*this is so called backend implementation*/
@@ -994,7 +1024,11 @@ CosaDmlNeighdiscIfSetCfg
 
     if (pCfg->RtrSolicitationInterval != g_neighdisc_interface.Cfg.RtrSolicitationInterval)
     {
-        sprintf(out, "%lu", pCfg->RtrSolicitationInterval);
+        safec_rc = sprintf_s(out, sizeof(out), "%lu", pCfg->RtrSolicitationInterval);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_RtrSolicitationInterval",out);        
 
         /*this is so called backend implementation*/
@@ -1005,7 +1039,11 @@ CosaDmlNeighdiscIfSetCfg
 
     if (pCfg->MaxRtrSolicitations != g_neighdisc_interface.Cfg.MaxRtrSolicitations)
     {
-        sprintf(out, "%lu", pCfg->MaxRtrSolicitations);
+        safec_rc = sprintf_s(out, sizeof(out), "%lu", pCfg->MaxRtrSolicitations);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_NEIGHDISC_IF"_MaxRtrSolicitations",out);        
 
         /*this is so called backend implementation*/

@@ -20,6 +20,7 @@
 #include "cosa_webconfig_api.h"
 #include "webconfig_framework.h"
 #include "base64.h"
+#include "safec_lib_common.h"
 
 t_cache pf_cache[PORTMAP_CACHE_SIZE];
 t_cache pf_cache_bkup[PORTMAP_CACHE_SIZE];
@@ -309,15 +310,24 @@ void backup_pf_cache(t_cache *tmp_pf_cache,t_cache *tmp_pf_cache_bkup,int cache_
 {
     UNREFERENCED_PARAMETER(cache_size);
 	int i = 0;
+    errno_t rc = -1;
     	for(i = 0; i < pf_cache_size; i++)
     	{
 
-        	memset(tmp_pf_cache_bkup[i].cmd,0,BLOCK_SIZE);
+			memset(tmp_pf_cache_bkup[i].cmd,0,BLOCK_SIZE);
        		memset(tmp_pf_cache_bkup[i].val,0,VAL_BLOCK_SIZE);
 
-        	strcpy(tmp_pf_cache_bkup[i].cmd,tmp_pf_cache[i].cmd);
-        	strcpy(tmp_pf_cache_bkup[i].val,tmp_pf_cache[i].val);
+			rc = strcpy_s(tmp_pf_cache_bkup[i].cmd, BLOCK_SIZE,tmp_pf_cache[i].cmd);
+			if(rc != EOK)
+			{
+				ERR_CHK(rc);
+			}
 
+			rc = strcpy_s(tmp_pf_cache_bkup[i].val, VAL_BLOCK_SIZE,tmp_pf_cache[i].val);
+			if(rc != EOK)
+			{
+				ERR_CHK(rc);
+			}
    	 } 
 }
 
@@ -454,6 +464,7 @@ int set_portmap_conf(portmappingdoc_t *rpm)
     	int spf_count = 0;
     	int pfr_count = 0;
     	char alias_pre[8];
+        errno_t  rc   = -1;
     	printf("Port map entries %d\n",rpm->entries_count);
     	//printf("SinglePortForwardCount = %d\n", rpm->entries_count);
     	//count = rpm->entries_count + 1;
@@ -485,7 +496,12 @@ int set_portmap_conf(portmappingdoc_t *rpm)
         	{
             		spf_count++;
             		snprintf(pf_cache[count].cmd,BLOCK_SIZE,ALIAS_SPF"%d",spf_count);
-            		strcpy(alias_pre,ALIAS_PRE_SPF);
+            		rc = strcpy_s(alias_pre, sizeof(alias_pre),ALIAS_PRE_SPF);
+					if(rc != EOK)
+					{
+						ERR_CHK(rc);
+						return -1;
+					}
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s%lu",alias_pre,i);
             		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_EXT_PORT,alias_pre,i);
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s",rpm->entries[j].external_port);
@@ -495,7 +511,12 @@ int set_portmap_conf(portmappingdoc_t *rpm)
         	{
            		pfr_count++;
            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,ALIAS_PFR"%d",pfr_count);
-            		strcpy(alias_pre,ALIAS_PRE_PFR);
+					rc = strcpy_s(alias_pre, sizeof(alias_pre),ALIAS_PRE_PFR);
+					if(rc != EOK)
+					{
+						ERR_CHK(rc);
+						return -1;
+					}
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s%lu",alias_pre,i);
             		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_EXT_PORT_RANGE,alias_pre,i);
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s %s",rpm->entries[j].external_port,rpm->entries[j].external_port_end_range);

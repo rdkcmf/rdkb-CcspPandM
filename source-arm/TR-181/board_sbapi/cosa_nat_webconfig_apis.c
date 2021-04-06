@@ -24,6 +24,7 @@
 #include "cosa_nat_internal.h"
 #include "plugin_main_apis.h"
 #include <syscfg/syscfg.h>
+#include "safec_lib_common.h"
 
 /* Initialize dmz cache , this API will be called once in boot up */
 void init_dmz_cache(t_cache *tmp_dmz_cache)
@@ -93,13 +94,19 @@ return 0;
 void backup_dmz_cache(t_cache *tmp_dmz_cache,t_cache *tmp_dmz_cache_bkup,int cache_size)
 {
 	int i = 0;
+    errno_t safec_rc = -1;
     	for(i = 0; i < cache_size; i++)
     	{
-        	memset(tmp_dmz_cache_bkup[i].cmd,0,BLOCK_SIZE);
-        	memset(tmp_dmz_cache_bkup[i].val,0,VAL_BLOCK_SIZE);
-
-        	strcpy(tmp_dmz_cache_bkup[i].cmd,tmp_dmz_cache[i].cmd);
-        	strcpy(tmp_dmz_cache_bkup[i].val,tmp_dmz_cache[i].val);
+			safec_rc = strcpy_s(tmp_dmz_cache_bkup[i].cmd, BLOCK_SIZE, tmp_dmz_cache[i].cmd);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
+			safec_rc = strcpy_s(tmp_dmz_cache_bkup[i].val, VAL_BLOCK_SIZE, tmp_dmz_cache[i].val);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 
 		 CcspTraceWarning(("dmz_cache backup [%d].cmd - %s\n",i,tmp_dmz_cache_bkup[i].cmd));
 		 CcspTraceWarning(("dmz_cache backup [%d].val - %s\n",i,tmp_dmz_cache_bkup[i].val));

@@ -69,6 +69,7 @@
 **************************************************************************/
 
 #include "cosa_userinterface_internal.h"
+#include "safec_lib_common.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -163,6 +164,7 @@ CosaUserinterfaceInitialize
     PCOSA_DML_UI_IPRANGE_ENTRY      pEntry                 = (PCOSA_DML_UI_IPRANGE_ENTRY)NULL;
     ULONG                           ulEntryCount           = 0;
     ULONG                           ulIndex                = 0;
+    errno_t                         rc                     = -1;
 
     /* Initiation all functions */
     _ansc_memset(&pMyObject->RaCfg, 0, sizeof(COSA_DML_RA_CFG));
@@ -287,7 +289,14 @@ CosaUserinterfaceInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pEntry->Alias, "iprange%d", (int)pCosaContext->InstanceNumber);
+                rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias),"iprange%d", (int)pCosaContext->InstanceNumber);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  AnscFreeMemory(pEntry);
+                  AnscFreeMemory(pCosaContext);
+                  return ANSC_STATUS_FAILURE;
+                }
 
                 CosaDmlUIIPRangeSetValues
                 (

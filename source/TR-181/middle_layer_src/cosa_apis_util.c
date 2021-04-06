@@ -73,6 +73,7 @@
 
 #include "cosa_apis.h"
 #include "plugin_main_apis.h"
+#include "safec_lib_common.h"
 
 #ifdef _ANSC_LINUX
 #include <stdio.h>
@@ -138,8 +139,13 @@ CosaUtilGetIfAddr
 
     struct ifreq            ifr;
     int                     fd = 0;
+    errno_t                 rc = -1;
 
-    strcpy(ifr.ifr_name, netdev);
+    rc = strcpy_s(ifr.ifr_name, sizeof(ifr.ifr_name), netdev);
+    if(rc != EOK)
+    {
+       ERR_CHK(rc);
+    }
 
     if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) >= 0)
     {
@@ -258,6 +264,7 @@ CosaUtilGetLowerLayers
     PUCHAR                          pMatchedLowerLayer          = NULL;
     PANSC_TOKEN_CHAIN               pTableListTokenChain        = (PANSC_TOKEN_CHAIN)NULL;
     PANSC_STRING_TOKEN              pTableStringToken           = (PANSC_STRING_TOKEN)NULL;
+    errno_t                         rc                          = -1;
 
     if ( !pTableName || AnscSizeOfString((const char*)pTableName) == 0 ||
          !pKeyword   || AnscSizeOfString((const char*)pKeyword) == 0
@@ -286,9 +293,18 @@ CosaUtilGetLowerLayers
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.Ethernet.Interface.", ulEntryInstanceNum);
-
-                        _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
+                        rc = sprintf_s(ucEntryFullPath, sizeof(ucEntryFullPath), "Device.Ethernet.Interface.%lu", ulEntryInstanceNum);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
+                        rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s.Name", ucEntryFullPath);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
                
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
@@ -310,9 +326,19 @@ CosaUtilGetLowerLayers
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.IP.Interface.", ulEntryInstanceNum);
+                        rc = sprintf_s(ucEntryFullPath, sizeof(ucEntryFullPath), "Device.IP.Interface.%lu",  ulEntryInstanceNum);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
 
-                        _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
+                        rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s.Name", ucEntryFullPath);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
 
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
@@ -344,9 +370,19 @@ CosaUtilGetLowerLayers
                     
                     if (ulEntryInstanceNum)
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%lu.", "Device.WiFi.Radio.", ulEntryInstanceNum);
+                        rc = sprintf_s(ucEntryFullPath, sizeof(ucEntryFullPath), "Device.WiFi.Radio.%lu.", ulEntryInstanceNum);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
                         
-                        _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, "Name");
+                        rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%sName", ucEntryFullPath);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
                         
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if (( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
@@ -388,7 +424,14 @@ CosaUtilGetLowerLayers
                 {
                     _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
                     _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
-                    _ansc_sprintf(ucEntryParamName,"Device.MoCA.Interface.%lu.Name",ulEntryInstanceNum);                    
+                    rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "Device.MoCA.Interface.%lu.Name",ulEntryInstanceNum);
+                    if(rc < EOK)
+                    {
+                      ERR_CHK(rc);
+                      ulEntryInstanceNum++;
+                      i++;
+                      continue;
+                    }
                         
                     if (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen))
                     {
@@ -400,7 +443,14 @@ CosaUtilGetLowerLayers
                     //AnscTraceFlow(("<HL>%s WiFi instance(%d) has name =%s inputName=%s\n",__FUNCTION__,ulEntryInstanceNum,ucEntryNameValue,pKeyword));
                     if ( AnscEqualString(ucEntryNameValue, (char*)pKeyword, TRUE ) )
                     {
-                        _ansc_sprintf(ucEntryFullPath,"Device.MoCA.Interface.%lu",ulEntryInstanceNum);
+                        rc = sprintf_s(ucEntryFullPath, sizeof(ucEntryFullPath),"Device.MoCA.Interface.%lu",ulEntryInstanceNum);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          ulEntryInstanceNum++;
+                          i++;
+                          continue;
+                        }
                         pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucEntryFullPath);
 
                         break;
@@ -420,9 +470,19 @@ CosaUtilGetLowerLayers
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.X_CISCO_COM_GRE.Interface.", ulEntryInstanceNum);
+                        rc = sprintf_s(ucEntryFullPath, sizeof(ucEntryFullPath), "Device.X_CISCO_COM_GRE.Interface.%lu", ulEntryInstanceNum);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
 
-                        _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
+                        rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s.Name", ucEntryFullPath);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
                
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
@@ -454,9 +514,19 @@ CosaUtilGetLowerLayers
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.Ethernet.Link.", ulEntryInstanceNum);
+                        rc = sprintf_s(ucEntryFullPath, sizeof(ucEntryFullPath), "Device.Ethernet.Link.%lu", ulEntryInstanceNum);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
 
-                        _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
+                        rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s.Name", ucEntryFullPath);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
                
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
@@ -494,7 +564,14 @@ CosaUtilGetLowerLayers
                 {
                     _ansc_memset(ucEntryParamName, 0, sizeof(ucEntryParamName));
                     _ansc_memset(ucEntryNameValue, 0, sizeof(ucEntryNameValue));
-                    _ansc_sprintf(ucEntryParamName,"Device.WiFi.SSID.%lu.Name",ulEntryInstanceNum);                    
+                    rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName),"Device.WiFi.SSID.%lu.Name",ulEntryInstanceNum);
+                    if(rc < EOK)
+                    {
+                      ERR_CHK(rc);
+                      ulEntryInstanceNum++;
+                      i++;
+                      continue;
+                    }
                         
                     if (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen))
                     {
@@ -506,7 +583,14 @@ CosaUtilGetLowerLayers
                     //AnscTraceFlow(("<HL>%s WiFi instance(%d) has name =%s inputName=%s\n",__FUNCTION__,ulEntryInstanceNum,ucEntryNameValue,pKeyword));
                     if ( AnscEqualString(ucEntryNameValue, (char*)pKeyword, TRUE ) )
                     {
-                        _ansc_sprintf(ucEntryFullPath,"Device.WiFi.SSID.%lu",ulEntryInstanceNum);
+                        rc = sprintf_s(ucEntryFullPath, sizeof(ucEntryFullPath),"Device.WiFi.SSID.%lu",ulEntryInstanceNum);
+                        if(rc < EOK)
+                        {
+                           ERR_CHK(rc);
+                           ulEntryInstanceNum++;
+                           i++;
+                           continue;
+                        }
                         pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucEntryFullPath);
 
                         break;
@@ -526,15 +610,34 @@ CosaUtilGetLowerLayers
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.Bridging.Bridge.", ulEntryInstanceNum);
-                        _ansc_sprintf(ucLowerEntryPath, "%s%s", ucEntryFullPath, ".PortNumberOfEntries"); 
-                        
+                        rc = sprintf_s(ucEntryFullPath, sizeof(ucEntryFullPath), "Device.Bridging.Bridge.%lu", ulEntryInstanceNum);
+                        if(rc < EOK)
+                        {
+                           ERR_CHK(rc);
+                           continue;
+                        }
+                        rc = sprintf_s(ucLowerEntryPath, sizeof(ucLowerEntryPath), "%s.PortNumberOfEntries", ucEntryFullPath); 
+                        if(rc < EOK)
+                        {
+                           ERR_CHK(rc);
+                           continue;
+                        }
                         ulEntryPortNum = CosaGetParamValueUlong(ucLowerEntryPath);  
                         CcspTraceInfo(("----------CosaUtilGetLowerLayers, Param:%s,port num:%d\n",ucLowerEntryPath, ulEntryPortNum));
 
                         for ( j = 1; j<= ulEntryPortNum; j++) {
-                            _ansc_sprintf(ucLowerEntryName, "%s%s%lu", ucEntryFullPath, ".Port.", j);
-                            _ansc_sprintf(ucEntryParamName, "%s%s%lu%s", ucEntryFullPath, ".Port.", j, ".Name");
+                            rc = sprintf_s(ucLowerEntryName, sizeof(ucLowerEntryName), "%s.Port.%lu", ucEntryFullPath, j);
+                            if(rc < EOK)
+                            {
+                              ERR_CHK(rc);
+                              continue;
+                            }
+                            rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s.Port.%lu.Name", ucEntryFullPath, j);
+                            if(rc < EOK)
+                            {
+                              ERR_CHK(rc);
+                              continue;
+                            }
                             CcspTraceInfo(("----------CosaUtilGetLowerLayers, Param:%s,Param2:%s\n", ucLowerEntryName, ucEntryParamName));
                         
                             ulEntryNameLen = sizeof(ucEntryNameValue);
@@ -734,6 +837,7 @@ CosaUtilConstructLowerLayers
     )
 {
     char*                           linkTypePath;
+    errno_t                         rc  = -1;
 
     linkTypePath = CosaUtilGetLinkTypePath(LinkType);
 
@@ -742,11 +846,21 @@ CosaUtilConstructLowerLayers
     if ( LinkType == COSA_DML_LINK_TYPE_Bridge )
     {
         /* Special processing for Bridge type LowerLayers */
-        _ansc_sprintf(pLowerLayersBuf, "%s%lu.Port.1", linkTypePath, InstNumber);
+        rc = sprintf_s(pLowerLayersBuf, *pBufLen,"%s%lu.Port.1", linkTypePath, InstNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return  ANSC_STATUS_FAILURE;
+        }
     }
     else
     {
-        _ansc_sprintf(pLowerLayersBuf, "%s%lu", linkTypePath, InstNumber);
+        rc = sprintf_s(pLowerLayersBuf, *pBufLen ,"%s%lu", linkTypePath, InstNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return  ANSC_STATUS_FAILURE;
+        }
     }
 
     AnscTraceFlow(("%s, size %d, buf len %d\n", pLowerLayersBuf, _ansc_strlen(pLowerLayersBuf), *pBufLen));
@@ -815,21 +929,43 @@ CosaUtilFindBridgeName(char* pBridgePath)
     ULONG                           ulEntryPortNum              = 0;
     PUCHAR                          pMatchedBridgeName          = NULL;
     BOOL                            bMgrPort                    = FALSE;
+    errno_t                         rc                          = -1;
 
-    _ansc_sprintf(ucLowerEntryPath, "%s%s", pBridgePath, ".PortNumberOfEntries"); 
+    rc = sprintf_s(ucLowerEntryPath, sizeof(ucLowerEntryPath), "%s%s", pBridgePath, ".PortNumberOfEntries");
+    if(rc < EOK)
+    {
+       ERR_CHK(rc);
+       return NULL;
+    }
                         
     ulEntryPortNum = CosaGetParamValueUlong(ucLowerEntryPath);  
     AnscTraceFlow(("%s: Param:%s,port num:%d\n", __FUNCTION__, ucLowerEntryPath, ulEntryPortNum));
 
     for ( j = 1; j<= ulEntryPortNum; j++) {
-        _ansc_sprintf(ucLowerEntryName, "%s%s%lu", pBridgePath, ".Port.", j);
-        _ansc_sprintf(ucEntryParamName, "%s%s%lu%s", pBridgePath, ".Port.", j, ".ManagementPort");
+        rc = sprintf_s(ucLowerEntryName, sizeof(ucLowerEntryName) ,"%s.Port.%lu", pBridgePath, j);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          continue;
+        }
+
+        rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName) , "%s.Port.%lu.ManagementPort", pBridgePath, j);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          continue;
+        }
         AnscTraceFlow(("%s: Param:%s,Param2:%s\n",__FUNCTION__, ucLowerEntryName, ucEntryParamName)); 
                         
         bMgrPort = CosaGetParamValueBool(ucEntryParamName);
         if(bMgrPort)
         {
-            _ansc_sprintf(ucEntryParamName, "%s%s%lu%s", pBridgePath, ".Port.", j, ".Name");
+            rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s.Port.%lu.Name", pBridgePath, j);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              continue;
+            }
                 
             ulEntryNameLen = sizeof(ucEntryNameValue);
             if (0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) 
@@ -864,6 +1000,7 @@ CosaUtilFindBridgePath(char* pBridgeName)
     ULONG                           ulEntryInstanceNum          = 0;
     ULONG                           ulEntryPortNum              = 0;
     PUCHAR                          pMatchedLowerLayer         = NULL;
+    errno_t                         rc                         = -1;
     
 
     ulNumOfEntries =  CosaGetParamValueUlong("Device.Bridging.BridgeNumberOfEntries");
@@ -876,15 +1013,37 @@ CosaUtilFindBridgePath(char* pBridgeName)
         AnscTraceFlow(("%s: instance num:%d\n", __FUNCTION__, ulEntryInstanceNum));
         if ( ulEntryInstanceNum )
         {
-            _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.Bridging.Bridge.", ulEntryInstanceNum);
-            _ansc_sprintf(ucLowerEntryPath, "%s%s", ucEntryFullPath, ".PortNumberOfEntries"); 
+            rc = sprintf_s(ucEntryFullPath, sizeof(ucEntryFullPath), "Device.Bridging.Bridge.%lu", ulEntryInstanceNum);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              continue;
+            }
+            rc = sprintf_s(ucLowerEntryPath, sizeof(ucLowerEntryPath), "%s.PortNumberOfEntries", ucEntryFullPath);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              continue;
+            }
                         
             ulEntryPortNum = CosaGetParamValueUlong(ucLowerEntryPath);  
             CcspTraceInfo(("----------CosaUtilGetLowerLayers, Param:%s,port num:%d\n",ucLowerEntryPath, ulEntryPortNum));
 
             for ( j = 1; j<= ulEntryPortNum; j++) {
-                _ansc_sprintf(ucLowerEntryName, "%s%s%lu", ucEntryFullPath, ".Port.", j);
-                _ansc_sprintf(ucEntryParamName, "%s%s%lu%s", ucEntryFullPath, ".Port.", j, ".Name");
+                rc = sprintf_s(ucLowerEntryName, sizeof(ucLowerEntryName), "%s.Port.%lu", ucEntryFullPath, j);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  continue;
+                }
+
+                rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s.Port.%lu.Name", ucEntryFullPath, j);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  continue;
+                }
+
                 CcspTraceInfo(("----------CosaUtilGetLowerLayers, Param:%s,Param2:%s\n", ucLowerEntryName, ucEntryParamName));
                         
                 ulEntryNameLen = sizeof(ucEntryNameValue);
@@ -944,6 +1103,7 @@ CosaUtilGetFullPathNameByKeyword
     PANSC_STRING_TOKEN              pTableStringToken           = (PANSC_STRING_TOKEN)NULL;
     PCHAR                           pString                     = NULL;
     PCHAR                           pString2                    = NULL;
+    errno_t                         rc                          = -1;
 
     if ( !pTableName || AnscSizeOfString((const char*)pTableName) == 0 ||
          !pKeyword   || AnscSizeOfString((const char*)pKeyword) == 0   ||
@@ -977,7 +1137,12 @@ CosaUtilGetFullPathNameByKeyword
 
             pString--;
             pString[0] = '\0';
-            _ansc_sprintf(ucTmp2, "%s%s", pString2, "NumberOfEntries");                
+            rc = sprintf_s(ucTmp2, sizeof(ucTmp2), "%sNumberOfEntries", pString2);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              continue;
+            }
             pString[0] = '.';
 
             /* Enumerate the entry in this table */
@@ -985,7 +1150,13 @@ CosaUtilGetFullPathNameByKeyword
             {
                 pString2--;
                 pString2[0]='\0';
-                _ansc_sprintf(ucTmp, "%s.%s", pTableStringToken->Name, ucTmp2);                
+                rc = sprintf_s(ucTmp, sizeof(ucTmp), "%s.%s", pTableStringToken->Name, ucTmp2);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  continue;
+                }
+
                 pString2[0]='.';
                 ulNumOfEntries =       CosaGetParamValueUlong(ucTmp);
 
@@ -995,9 +1166,19 @@ CosaUtilGetFullPathNameByKeyword
 
                     if ( ulEntryInstanceNum )
                     {
-                        _ansc_sprintf(ucEntryFullPath, "%s%lu%s", pTableStringToken->Name, ulEntryInstanceNum, ".");
+                        rc = sprintf_s(ucEntryFullPath, sizeof(ucEntryFullPath), "%s%lu.", pTableStringToken->Name, ulEntryInstanceNum);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
 
-                        _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, pParameterName);
+                        rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s%s", ucEntryFullPath, pParameterName);
+                        if(rc < EOK)
+                        {
+                          ERR_CHK(rc);
+                          continue;
+                        }
                
                         ulEntryNameLen = sizeof(ucEntryNameValue);
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
@@ -1090,7 +1271,13 @@ CosaUtilChannelValidate2
     // If channelList is provided use it.
     if (channelList != NULL) {
         char chan[4];
-        sprintf(chan,"%lu",Channel);
+        errno_t rc = -1;
+        rc = sprintf_s(chan, sizeof(chan),"%lu",Channel);
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+           return 0;
+        }
         if (strstr(channelList,chan) != NULL) {
             return 1;
         } 
@@ -1532,6 +1719,7 @@ int parseProcfileParams(char* lineToParse,ifv6Details *detailsToParse,char* inte
 
     struct sockaddr_in6 sAddr6;
     char splitv6[8][5];
+    errno_t  rc  = -1;
     CcspTraceDebug(("%s, Parse the line read from file\n",__FUNCTION__));
 
     if (lineToParse == NULL)
@@ -1574,7 +1762,12 @@ int parseProcfileParams(char* lineToParse,ifv6Details *detailsToParse,char* inte
                UINT iCount =0;
                for (iCount=0; (iCount< ( detailsToParse->bitsToMask%16 ? (detailsToParse->bitsToMask/16+1):detailsToParse->bitsToMask/16)) && iCount<8; iCount++)
                {
-                  sprintf(detailsToParse->prefix_v6+strlen(detailsToParse->prefix_v6), "%s:",splitv6[iCount]);
+                  rc = sprintf_s(detailsToParse->prefix_v6+strlen(detailsToParse->prefix_v6),sizeof(detailsToParse->prefix_v6), "%s:",splitv6[iCount]);
+                  if(rc < EOK)
+                  {
+                    ERR_CHK(rc);
+                    return 0;
+                  }
                }
                CcspTraceDebug(("%s,Interface IPv6 prefix calculation done\n",__FUNCTION__));
             }
@@ -1599,6 +1792,7 @@ int CosaUtilGetIpv6AddrInfo (char * ifname, ipv6_addr_info_t ** pp_info, int * p
     char procLine[MAX_INET6_PROC_CHARS];
     ifv6Details v6Details;
     int parsingResult;
+    errno_t rc = -1;
     
     if (!ifname || !pp_info || !p_num)
         return -1;
@@ -1632,11 +1826,28 @@ int CosaUtilGetIpv6AddrInfo (char * ifname, ipv6_addr_info_t ** pp_info, int * p
  
             memset(p_ai->v6pre, 0, sizeof(p_ai->v6pre));
             if(v6Details.prefix_v6)
-                 strcpy(p_ai->v6pre,v6Details.prefix_v6);
-            else
-                CcspTraceInfo(("%s,Interface ipv6 prefix is NULL\n",__FUNCTION__));
+            {
+                 rc = strcpy_s(p_ai->v6pre, sizeof(p_ai->v6pre),v6Details.prefix_v6);
+                 if(rc != EOK)
+                 {
+                    ERR_CHK(rc);
+                    fclose(fp);
+                    return -1;
+                 }
 
-            sprintf(p_ai->v6pre+strlen(p_ai->v6pre), ":/%d", v6Details.bitsToMask);
+            }
+            else
+            {
+                CcspTraceInfo(("%s,Interface ipv6 prefix is NULL\n",__FUNCTION__));
+            }
+
+            rc = sprintf_s(p_ai->v6pre+strlen(p_ai->v6pre), sizeof(p_ai->v6pre)-strlen(p_ai->v6pre),":/%d", v6Details.bitsToMask);
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+               fclose(fp);
+               return -1;
+            }
             
         }
     }
@@ -1679,12 +1890,24 @@ int  __v6addr_mismatch(char * addr1, char * addr2, int pref_len)
     char addr2_buf[128] = {0};
     struct in6_addr in6_addr1;
     struct in6_addr in6_addr2;
+    errno_t     rc  = -1;
 
     if (!addr1 || !addr2)
         return -1;
-    
-    safe_strcpy(addr1_buf, addr1, sizeof(addr1_buf));
-    safe_strcpy(addr2_buf, addr2, sizeof(addr2_buf));
+
+    rc = strcpy_s(addr1_buf, sizeof(addr1_buf), addr1);
+    if(rc != EOK)
+    {
+       ERR_CHK(rc);
+       return -1;
+    }
+
+    rc = strcpy_s(addr2_buf, sizeof(addr2_buf), addr2);
+    if(rc != EOK)
+    {
+       ERR_CHK(rc);
+       return -1;
+    }
 
     if ( inet_pton(AF_INET6, addr1_buf, &in6_addr1) != 1)
         return -8;
@@ -1722,12 +1945,24 @@ int  __v6addr_mismatches_v6pre(char * v6addr,char * v6pre)
     char addr_buf[128] = {0};
     char pref_buf[128] = {0};
     char * p = NULL;
+    errno_t rc = -1;
 
     if (!v6addr || !v6pre)
         return -1;
     
-    safe_strcpy(addr_buf, v6addr, sizeof(addr_buf));
-    safe_strcpy(pref_buf, v6pre, sizeof(pref_buf));
+    rc = strcpy_s(addr_buf, sizeof(addr_buf), v6addr);
+    if(rc != EOK)
+    {
+       ERR_CHK(rc);
+       return -1;
+    }
+
+    rc = strcpy_s(pref_buf, sizeof(pref_buf), v6pre);
+    if(rc != EOK)
+    {
+       ERR_CHK(rc);
+       return -1;
+    }
 
     if (!(p = strchr(pref_buf, '/')))
         return -1;
@@ -1746,12 +1981,24 @@ int  __v6pref_mismatches(char * v6pref1,char * v6pref2)
     char pref1_buf[128] = {0};
     char pref2_buf[128] = {0};
     char * p = NULL;
+    errno_t rc = -1;
 
     if (!v6pref1 || !v6pref2)
         return -1;
     
-    safe_strcpy(pref1_buf, v6pref1, sizeof(pref1_buf));
-    safe_strcpy(pref2_buf, v6pref2, sizeof(pref2_buf));
+    rc = strcpy_s(pref1_buf, sizeof(pref1_buf), v6pref1);
+    if(rc != EOK)
+    {
+       ERR_CHK(rc);
+       return -1;
+    }
+
+    rc = strcpy_s(pref2_buf, sizeof(pref2_buf), v6pref2);
+    if(rc != EOK)
+    {
+       ERR_CHK(rc);
+       return -1;
+    }
 
     if (!(p = strchr(pref1_buf, '/')))
         return -1;

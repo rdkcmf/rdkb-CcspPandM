@@ -72,6 +72,7 @@
 #include "cosa_routing_apis.h"
 #include "cosa_routing_internal.h"
 #include "plugin_main_apis.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -180,6 +181,7 @@ CosaRoutingInitialize
     PCOSA_DML_STATICROUTE_CFG pStaticRoute  = NULL;
     PCOSA_DML_STATICROUTE_CFG pStaticRoute2 = NULL;
     ULONG                     RouteCount   = 0;
+    errno_t                   rc           = -1;
 
     AnscSListInitializeHeader(&pMyObject->StaticRoute);
     pMyObject->NextInstanceNumber   =   1;
@@ -310,13 +312,18 @@ CosaRoutingInitialize
     /* Retrieve the next Instance Number for routing router */
     if ( TRUE )
     {
-        _ansc_sprintf
+        rc = sprintf_s
         (
-            FolderName, 
+            FolderName,
+            sizeof(FolderName),
             "%s%d", 
             COSA_DML_RR_NAME_ROUTER_NextInsNum,
             0
         );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
         
         pPoamIrepFoNextIns = (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoRouter->GetFolder
                                 (
@@ -409,7 +416,11 @@ CosaRoutingInitialize
             }
 
             /* Generate Alias */
-            _ansc_sprintf(pRouter->Cfg.Alias, "Router%lu", pMyObject->ulNextRouterInsNum);
+            rc = sprintf_s(pRouter->Cfg.Alias, sizeof(pRouter->Cfg.Alias),"Router%lu", pMyObject->ulNextRouterInsNum);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+            }
 
             CosaDmlRoutingRouterSetCfg(NULL, (PCOSA_DML_ROUTER_CFG)&pRouter->Cfg);
         }
@@ -424,13 +435,18 @@ CosaRoutingInitialize
     /* Retrieve the next Instance Number for routing router IPv4Forwarding  */
     if ( TRUE )
     {
-        _ansc_sprintf
+        rc = sprintf_s
         (
-            FolderName, 
+            FolderName,
+            sizeof(FolderName),
             "%s%lu", 
             COSA_DML_RR_NAME_ROUTER_Forward_NextInsNum, 
             pRouter->Cfg.InstanceNumber
         );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
         
         pPoamIrepFoNextIns = 
             (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoRouter->GetFolder
@@ -516,7 +532,11 @@ CosaRoutingInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pRouterForward->Alias, "IPv4Forwarding%lu", pSubCosaContext->InstanceNumber);
+                rc = sprintf_s(pRouterForward->Alias, sizeof(pRouterForward->Alias),"IPv4Forwarding%lu", pSubCosaContext->InstanceNumber);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                }
 
                 /* TODO: Set InstanceNumber Alias back */
                 CosaDmlRoutingSetV4EntryValues
@@ -539,13 +559,18 @@ CosaRoutingInitialize
     /* Retrieve the next Instance Number for routing router IPv6Forwarding  */
     if ( TRUE )
     {
-        _ansc_sprintf
+        rc = sprintf_s
         (
-            FolderName, 
+            FolderName,
+            sizeof(FolderName),
             "%s%lu", 
             COSA_DML_RR_NAME_ROUTER_IPv6Forward_NextInsNum, 
             pRouter->Cfg.InstanceNumber
         );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
         
         pPoamIrepFoNextIns = 
             (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoRouter->GetFolder
@@ -631,7 +656,11 @@ CosaRoutingInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pRouterIPv6Forward->Alias, "IPv6Forwarding%lu", pSubCosaContext->InstanceNumber);
+                rc = sprintf_s(pRouterIPv6Forward->Alias, sizeof(pRouterIPv6Forward->Alias),"IPv6Forwarding%lu", pSubCosaContext->InstanceNumber);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                }
 
                 /* TODO: Set InstanceNumber Alias back */
                 CosaDmlRoutingSetV6EntryValues
@@ -1340,6 +1369,7 @@ CosaRoutingRegAddInfo
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PSLAP_VARIABLE                  pSlapVariable     = (PSLAP_VARIABLE           )NULL;
     char                            FolderName[32]    = {0};
+    errno_t                         rc                = -1;
 
     if ( !pPoamIrepFoRouter || !pPoamIrepFoUpper )
     {
@@ -1362,7 +1392,11 @@ CosaRoutingRegAddInfo
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%lu", pNextInsNumName, ulUpperInsNum);
+    rc = sprintf_s(FolderName, sizeof(FolderName),"%s%lu", pNextInsNumName, ulUpperInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+    }
 
     if ( TRUE )
     {
@@ -1413,7 +1447,11 @@ CosaRoutingRegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         pPoamIrepFo = pPoamIrepFoUpper->AddFolder
                         (
@@ -1592,6 +1630,7 @@ char* CosaTimeGetRipdConfStaticPart (ANSC_HANDLE   hContext)
     ULONG                           nIndex          = 0;
     ULONG                           K1              = 0;
     ULONG                           K2              = 0;
+    errno_t                         rc              = -1;
     
     if ( g_pCosaBEManager->hRouting == NULL )
     {
@@ -1643,7 +1682,12 @@ char* CosaTimeGetRipdConfStaticPart (ANSC_HANDLE   hContext)
                     Val2 = Val2>>1;
                 }
             }
-            _ansc_sprintf(Buff2, " route %s/%lu\n", _ansc_inet_ntoa(*((struct in_addr*)&Val1)), K2);
+            rc = sprintf_s(Buff2, sizeof(Buff2)," route %s/%lu\n", _ansc_inet_ntoa(*((struct in_addr*)&Val1)), K2);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              return NULL;
+            }
             _ansc_strcat(Buff,Buff2);
 
         }

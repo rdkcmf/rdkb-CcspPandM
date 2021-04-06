@@ -72,6 +72,7 @@
 #include "ccsp_psm_helper.h"
 #include <curl/curl.h>
 #include "secure_wrapper.h"
+#include "safec_lib_common.h"
 
 /* Set up default https server table */
 typedef struct
@@ -198,7 +199,8 @@ FileTransferTask
     CURLcode                        ret             = CURLE_OK;
     int                             httpCode        = 0;
     int                             formatVerifyStatus = FORMAT_VERIFY_FAILURE;
-    
+    errno_t safec_rc = -1; 
+ 
     ret  = curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     if ( !curl ) 
@@ -213,10 +215,18 @@ FileTransferTask
         return ANSC_STATUS_FAILURE;
     }
 
-    _ansc_sprintf(URL, "https://%s/%s", FileTransfer_HTTPSServers[pCfg->Server].mServer, pCfg->FileName);
+    safec_rc = sprintf_s(URL, sizeof(URL), "https://%s/%s", FileTransfer_HTTPSServers[pCfg->Server].mServer, pCfg->FileName);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     ret = curl_easy_setopt(curl, CURLOPT_URL, URL);
 
-    _ansc_sprintf(Path, "%s%s", TRUE_STATIC_IP_CONFIG_PATH, TRUE_STATIC_IP_CONFIG_FILE);
+    safec_rc = sprintf_s(Path, sizeof(Path), "%s%s", TRUE_STATIC_IP_CONFIG_PATH, TRUE_STATIC_IP_CONFIG_FILE);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     if ((fp = fopen(Path,"w+"))== NULL )  
     {
         curl_easy_cleanup(curl);
@@ -298,19 +308,28 @@ CosaDmlFileTransferSetCfg
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = ccsp_string;
     char                            RecordValue[64] = {0};
+    errno_t safec_rc = -1;
 
     /* Only support HTTPS download for now */
 
     if ( TRUE )     /* Server */
     {
-        _ansc_sprintf
+        safec_rc = sprintf_s
             (
-                pParamPath,
+                pParamPath, sizeof(pParamPath),
                 DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_Server
             );
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%lu", pCfg->Server);
+        safec_rc = sprintf_s(RecordValue, sizeof(RecordValue), "%lu", pCfg->Server);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -338,14 +357,22 @@ CosaDmlFileTransferSetCfg
 
     if ( TRUE )     /* Protocol */
     {
-        _ansc_sprintf
+        safec_rc = sprintf_s
             (
-                pParamPath,
+                pParamPath, sizeof(pParamPath),
                 DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_Protocol
             );
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%lu", pCfg->Protocol);
+        safec_rc = sprintf_s(RecordValue, sizeof(RecordValue), "%lu", pCfg->Protocol);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -373,11 +400,15 @@ CosaDmlFileTransferSetCfg
 
     if ( TRUE )     /* FileName */
     {
-        _ansc_sprintf
+        safec_rc = sprintf_s
             (
-                pParamPath,
+                pParamPath, sizeof(pParamPath),
                 DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_FileName
             );
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         RecordType = ccsp_string;
         AnscCopyString(RecordValue, (char*)pCfg->FileName);
@@ -436,6 +467,7 @@ CosaDmlFileTransferGetCfg
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
+    errno_t  safec_rc = -1;
 
     UNREFERENCED_PARAMETER(hContext);
     /* Fetch Cfg, we only support https download for now */
@@ -444,11 +476,15 @@ CosaDmlFileTransferGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        safec_rc = sprintf_s
             (
-                pParamPath,
+                pParamPath, sizeof(pParamPath),
                 DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_Server
             );
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -485,11 +521,15 @@ CosaDmlFileTransferGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        safec_rc = sprintf_s
             (
-                pParamPath,
+                pParamPath, sizeof(pParamPath),
                 DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_Protocol
             );
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -524,11 +564,15 @@ CosaDmlFileTransferGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        safec_rc = sprintf_s
             (
-                pParamPath,
+                pParamPath, sizeof(pParamPath),
                 DMSB_TR181_PSM_ft_Root DMSB_TR181_PSM_ft_FileName
             );
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value

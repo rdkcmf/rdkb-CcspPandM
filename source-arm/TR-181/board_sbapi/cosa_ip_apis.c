@@ -69,6 +69,7 @@
 #include "cosa_ip_internal.h"
 #include "cosa_ip_apis_multilan.h"
 #include "secure_wrapper.h"
+#include "safec_lib_common.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -104,6 +105,7 @@ COSA_PRI_IP_IF_FULL  g_ipif_be_bufs[MAX_IPIF_NUM];
 #define SYSCFG_FORMAT_NAMESPACE_STATIC_V6PREFIX "tr_%s_static_v6pref_%lu"
 #define SYSCFG_FORMAT_STATIC_V6ADDR "tr_%s_ipv6_static_addresses"
 #define SYSCFG_FORMAT_STATIC_V6PREF "tr_%s_ipv6_static_prefixes"
+#define PVAL_MAX_SIZE   128
 
 char   g_ipif_names[MAX_IPIF_NUM][64];
 int    g_ipif_num;
@@ -490,6 +492,7 @@ static int _obtain_ra_info(exported_ra_info_t ** pp_info, int * p_num)
     char buf[1024] = {0};
     exported_ra_info_t * p = NULL;
     int  i = 0;
+    errno_t  safec_rc = -1;
 
     if (!pp_info || !p_num)
         return -1;
@@ -522,9 +525,18 @@ static int _obtain_ra_info(exported_ra_info_t ** pp_info, int * p_num)
 
         memset(p->pref, 0, sizeof(p->pref));
         for (i=0; (i< ( p->pref_len%16 ? (p->pref_len/16+1):p->pref_len/16)) && i<8; i++)
-            sprintf(p->pref + strlen(p->pref), "%04x:", p->addr_16b[i]);
-        sprintf(p->pref+strlen(p->pref), ":/%d", p->pref_len);
-
+        {
+            safec_rc = sprintf_s(p->pref + strlen(p->pref), sizeof(p->pref)-strlen(p->pref),"%04x:", p->addr_16b[i]);
+            if(safec_rc < EOK)
+            {
+                ERR_CHK(safec_rc);
+            }
+        }
+        safec_rc = sprintf_s(p->pref+strlen(p->pref), sizeof(p->pref)-strlen(p->pref), ":/%d", p->pref_len);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
 
         memset(buf, 0, sizeof(buf));
     }
@@ -535,10 +547,11 @@ static int _obtain_ra_info(exported_ra_info_t ** pp_info, int * p_num)
 
 
 
-int _get_datetime_offset(int offset, char * buf, int len)
+int _get_datetime_offset(int offset, char * buf, unsigned int len)
 {
     time_t t1;
     struct tm t2 = {0};
+    errno_t safec_rc = -1;
 
     if (!buf)
         return -1;
@@ -546,7 +559,12 @@ int _get_datetime_offset(int offset, char * buf, int len)
     if (offset == (int)0xffffffff)
     {
         /*forever*/
-        strcpy(buf, "9999-12-31T23:59:59Z");
+        safec_rc = strcpy_s(buf, len, "9999-12-31T23:59:59Z");
+        if(safec_rc != EOK)
+        {
+            ERR_CHK(safec_rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -581,6 +599,7 @@ static int _get_2_lfts(char * fn, int * p_valid, int * p_prefer, ipv6_addr_info_
     char file_str[128] = {0};
     int  pre_len = 0;
     int  found = 0;
+    errno_t safec_rc = -1;
 
     if (!(fp = fopen(fn, "r")))
         return -1;
@@ -598,8 +617,11 @@ static int _get_2_lfts(char * fn, int * p_valid, int * p_prefer, ipv6_addr_info_
             
             sscanf(p, "/%d", &pre_len);
 
-            sprintf(addr_str+strlen(addr_str), "/%d", pre_len);
-
+            safec_rc = sprintf_s(addr_str+strlen(addr_str), sizeof(addr_str)-strlen(addr_str), "/%d", pre_len);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             p = (char *)buf;
             while (isblank(*p)) p++;
             
@@ -649,6 +671,7 @@ static int _get_datetime_lfts(char * p_pref_datetime, int len1,  char * p_valid_
     int  valid_lft = 0, prefered_lft = 0;
     char iana_pretm[32] = {0};
     char iana_vldtm[32] = {0};
+    errno_t safec_rc = -1;
 
     /*it's hard to use iproute2 C code to obtain 2 lifetimes, here call "ip" directly*/
     v_secure_system("ip -6 addr show dev %s > " TMP_IP_OUTPUT, g_ipif_names[ulIndex]);
@@ -657,8 +680,16 @@ static int _get_datetime_lfts(char * p_pref_datetime, int len1,  char * p_valid_
     _get_datetime_offset(valid_lft, p_valid_datetime, len1);
     _get_datetime_offset(prefered_lft, p_pref_datetime, len2);
 
-    sprintf(iana_pretm,"%d",prefered_lft);
-    sprintf(iana_vldtm,"%d",valid_lft);
+    safec_rc = sprintf_s(iana_pretm,sizeof(iana_pretm),"%d",prefered_lft);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = sprintf_s(iana_vldtm,sizeof(iana_vldtm),"%d",valid_lft);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     commonSyseventSet(COSA_DML_DHCPV6C_ADDR_PRETM_SYSEVENT_NAME, iana_pretm);
     commonSyseventSet(COSA_DML_DHCPV6C_ADDR_VLDTM_SYSEVENT_NAME, iana_vldtm);
@@ -677,11 +708,16 @@ int  _is_static_addr(char * ifname, char * v6addr)
     char * saveptr = NULL;
     int found = 0;
     UtopiaContext utctx = {0};
+    errno_t safec_rc = -1;
     
     if (!Utopia_Init(&utctx))
         return found ;
 
-    sprintf(buf, SYSCFG_FORMAT_STATIC_V6ADDR, ifname);
+    safec_rc = sprintf_s(buf, sizeof(buf), SYSCFG_FORMAT_STATIC_V6ADDR, ifname);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     memset(out, 0, sizeof(out));
     Utopia_RawGet(&utctx,NULL,buf,out,sizeof(out));
     
@@ -754,9 +790,10 @@ static int _get_early_pref_len(int * p_pref_len, ULONG ulIndex, char * v6pref_pa
     return -1;
 }
 
-static int _load_v6_alias_instNum(UtopiaContext *p_utctx, char * syscfg_instNum, char * syscfg_alias, ULONG * p_inst_num, char * p_alias, int alias_size)
+static int _load_v6_alias_instNum(UtopiaContext *p_utctx, char * syscfg_instNum, char * syscfg_alias, ULONG * p_inst_num, char * p_alias, unsigned int alias_size)
 {
     char out[256] = {0};
+    errno_t safec_rc = -1;
     
     memset(out, 0, sizeof(out));
     Utopia_RawGet(p_utctx,NULL,syscfg_instNum,out,sizeof(out));
@@ -768,8 +805,11 @@ static int _load_v6_alias_instNum(UtopiaContext *p_utctx, char * syscfg_instNum,
 
     memset(out, 0, sizeof(out));
     Utopia_RawGet(p_utctx,NULL,syscfg_alias,out,sizeof(out));
-    safe_strcpy(p_alias, out, alias_size);
-
+    safec_rc = STRCPY_S_NOCLOBBER(p_alias, alias_size, out);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     return 0;
 }
 
@@ -777,7 +817,12 @@ static int _save_v6_alias_instNum(UtopiaContext *p_utctx, char * syscfg_instNum,
 {
     char val[256] = {0};
     
-    sprintf(val, "%lu", inst_num);
+    errno_t safec_rc = sprintf_s(val, sizeof(val), "%lu", inst_num);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+
     Utopia_RawSet(p_utctx,NULL,syscfg_instNum,val);
        
     Utopia_RawSet(p_utctx,NULL,syscfg_alias,p_alias);
@@ -808,6 +853,7 @@ IPIF_getEntry_for_Ipv6Addr
     int  j = 0;
     char namespace[256] = {0};
     int  need_write = 0;
+    errno_t safec_rc = -1;
     
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -908,11 +954,27 @@ IPIF_getEntry_for_Ipv6Addr
        memset(buf1, 0, 256);
 
        if(!strncmp(p_v6addr->v6addr, "fe80", 4)){
-               _ansc_sprintf(buf, SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_link_inst_num", g_ipif_names[ulIndex]);
-               _ansc_sprintf(buf1, SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_link_alias", g_ipif_names[ulIndex]);
+               safec_rc = sprintf_s(buf, sizeof(buf), SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_link_inst_num", g_ipif_names[ulIndex]);
+               if(safec_rc < EOK)
+               {
+                   ERR_CHK(safec_rc);
+               }
+               safec_rc = sprintf_s(buf1, sizeof(buf1), SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_link_alias", g_ipif_names[ulIndex]);
+               if(safec_rc < EOK)
+               {
+                   ERR_CHK(safec_rc);
+               }
        }else{
-               _ansc_sprintf(buf, SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_inst_num", g_ipif_names[ulIndex]);
-               _ansc_sprintf(buf1, SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_alias", g_ipif_names[ulIndex]);
+               safec_rc = sprintf_s(buf, sizeof(buf), SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_inst_num", g_ipif_names[ulIndex]);
+               if(safec_rc < EOK)
+               {
+                   ERR_CHK(safec_rc);
+               }
+               safec_rc = sprintf_s(buf1, sizeof(buf1), SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_alias", g_ipif_names[ulIndex]);
+               if(safec_rc < EOK)
+               {
+                   ERR_CHK(safec_rc);
+               }
        }
 
         if (Utopia_Init(&utctx))
@@ -935,8 +997,11 @@ IPIF_getEntry_for_Ipv6Addr
 
         p_dml_v6addr->V6Status = COSA_DML_IPV4V6_STATUS_Enabled;
 
-        safe_strcpy(p_dml_v6addr->IP6Address, p_v6addr->v6addr, sizeof(p_dml_v6addr->IP6Address));
-
+        safec_rc = strcpy_s(p_dml_v6addr->IP6Address, sizeof(p_dml_v6addr->IP6Address), p_v6addr->v6addr);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         if (p_v6addr->scope == IPV6_ADDR_SCOPE_LINKLOCAL ||
             p_v6addr->scope == IPV6_ADDR_SCOPE_LOOPBACK)
@@ -995,7 +1060,11 @@ IPIF_getEntry_for_Ipv6Addr
 
     if (Utopia_Init(&utctx))
     {
-        sprintf(buf, SYSCFG_FORMAT_STATIC_V6ADDR, (char *)g_ipif_names[ulIndex]);
+        safec_rc = sprintf_s(buf, sizeof(buf), SYSCFG_FORMAT_STATIC_V6ADDR, (char *)g_ipif_names[ulIndex]);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         memset(out, 0, sizeof(out));
         Utopia_RawGet(&utctx,NULL,buf,out,sizeof(out));
         Utopia_Free(&utctx,0);        
@@ -1036,14 +1105,20 @@ IPIF_getEntry_for_Ipv6Addr
                     Utopia_Free(&utctx,0);        
                     continue;
                 }
-                safe_strcpy(p_dml_v6addr->IP6Address, val, sizeof(p_dml_v6addr->IP6Address));
-
+                safec_rc = strcpy_s(p_dml_v6addr->IP6Address, sizeof(p_dml_v6addr->IP6Address), val);
+                if(safec_rc != EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 p_dml_v6addr->InstanceNumber = inst_num;
 
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,namespace,"Alias",val,sizeof(val));
-                safe_strcpy(p_dml_v6addr->Alias, val, sizeof(p_dml_v6addr->Alias));
-            
+                safec_rc = strcpy_s(p_dml_v6addr->Alias, sizeof(p_dml_v6addr->Alias), val);
+                if(safec_rc != EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,namespace,"Enable",val,sizeof(val));
                 p_dml_v6addr->bEnabled = (atoi(val) == 0) ? FALSE : TRUE;
@@ -1057,16 +1132,26 @@ IPIF_getEntry_for_Ipv6Addr
 
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,namespace,"Prefix",val,sizeof(val));
-                safe_strcpy(p_dml_v6addr->Prefix, val, sizeof(p_dml_v6addr->Prefix));
+                safec_rc = strcpy_s(p_dml_v6addr->Prefix, sizeof(p_dml_v6addr->Prefix), val);
+                if(safec_rc != EOK)
+                {
+                  ERR_CHK(safec_rc);
+                }
 
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,namespace,"PreferredLifetime",val,sizeof(val));
-                safe_strcpy(p_dml_v6addr->PreferredLifetime, val, sizeof(p_dml_v6addr->PreferredLifetime));
-
+                safec_rc = strcpy_s(p_dml_v6addr->PreferredLifetime, sizeof(p_dml_v6addr->PreferredLifetime), val);
+                if(safec_rc != EOK)
+                {
+                  ERR_CHK(safec_rc);
+                }
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,namespace,"ValidLifetime",val,sizeof(val));
-                safe_strcpy(p_dml_v6addr->ValidLifetime, val, sizeof(p_dml_v6addr->ValidLifetime));
-
+                safec_rc = strcpy_s(p_dml_v6addr->ValidLifetime, sizeof(p_dml_v6addr->ValidLifetime), val);
+                if(safec_rc != EOK)
+                {
+                  ERR_CHK(safec_rc);
+                }
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,namespace,"Anycast",val,sizeof(val));
                 p_dml_v6addr->bAnycast = (atoi(val) == 0) ? FALSE:TRUE;
@@ -1118,6 +1203,7 @@ int CosaDmlGetPrefixPathName(char * ifname, int inst1, PCOSA_DML_IP_V6ADDR p_dml
     char  param_val[256] = {0};
     ULONG val_len = sizeof(param_val);
     int   found = 0;
+    errno_t safec_rc = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1139,7 +1225,11 @@ int CosaDmlGetPrefixPathName(char * ifname, int inst1, PCOSA_DML_IP_V6ADDR p_dml
     {
         if (!strncmp(p_v6addr->v6addr, p_dml_v6addr->IP6Address, sizeof(p_v6addr->v6addr)))
         {
-            safe_strcpy(prefix, p_v6addr->v6pre, sizeof(prefix));
+            safec_rc = strcpy_s(prefix, sizeof(prefix), p_v6addr->v6pre);
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             found = 1;
             break;
         }
@@ -1152,30 +1242,50 @@ int CosaDmlGetPrefixPathName(char * ifname, int inst1, PCOSA_DML_IP_V6ADDR p_dml
     if (!found)
         return -2;
 
-    sprintf(name, "Device.IP.Interface.%d.IPv6PrefixNumberOfEntries", inst1);
-            
+    safec_rc = sprintf_s(name, sizeof(name), "Device.IP.Interface.%d.IPv6PrefixNumberOfEntries", inst1);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+	
     num = g_GetParamValueUlong(g_pDslhDmlAgent, name);
 
     for (i=0; i<num; i++)
     {
-        sprintf(name, "Device.IP.Interface.%d.IPv6Prefix.", inst1);
+        safec_rc = sprintf_s(name, sizeof(name), "Device.IP.Interface.%d.IPv6Prefix.", inst1);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         inst2 = g_GetInstanceNumberByIndex(g_pDslhDmlAgent, name, i);
 
         if ( inst2 )
         {
 
-            sprintf(name,  "Device.IP.Interface.%d.IPv6Prefix.%d.Origin", inst1, inst2);
+            safec_rc = sprintf_s(name, sizeof(name), "Device.IP.Interface.%d.IPv6Prefix.%d.Origin", inst1, inst2);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             val_len = sizeof(param_val);               
             if (g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len) ||
                  AnscEqualString(param_val, "Static", TRUE ) )
                 continue;
             
-            sprintf(name,  "Device.IP.Interface.%d.IPv6Prefix.%d.Prefix", inst1, inst2);
+            safec_rc = sprintf_s(name, sizeof(name), "Device.IP.Interface.%d.IPv6Prefix.%d.Prefix", inst1, inst2);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             val_len = sizeof(param_val);               
             if ( ( 0 == g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len)) &&
                  !__v6pref_mismatches(param_val, prefix))
             {
-                sprintf(p_val, "Device.IP.Interface.%d.IPv6Prefix.%d.", inst1, inst2);
+                safec_rc = sprintf_s(p_val, PVAL_MAX_SIZE, "Device.IP.Interface.%d.IPv6Prefix.%d.", inst1, inst2);
+                if(safec_rc < EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 break;
             }
         }
@@ -1244,7 +1354,11 @@ ULONG CosaDmlIPv6addrGetV6Status(PCOSA_DML_IP_V6ADDR p_dml_v6addr, PCOSA_DML_IP_
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
-    safe_strcpy(v6_ai.v6addr, p_dml_v6addr->IP6Address, sizeof(v6_ai.v6addr));
+    errno_t safec_rc = strcpy_s(v6_ai.v6addr, sizeof(v6_ai.v6addr), p_dml_v6addr->IP6Address);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     /*for loopback and link-local, always Preferred*/
     if (p_dml_v6addr->Origin == COSA_DML_IP6_ORIGIN_WellKnown
@@ -1268,7 +1382,13 @@ ULONG CosaDmlIPv6addrGetV6Status(PCOSA_DML_IP_V6ADDR p_dml_v6addr, PCOSA_DML_IP_
         ULONG len = sizeof(val);
         snprintf(name, sizeof(name), "%sPrefix", p_dml_v6addr->Prefix);
         if ( 0 == g_GetParamValueString(g_pDslhDmlAgent, name, val, &len))
-            safe_strcpy(v6_ai.v6pre, val, sizeof(v6_ai.v6pre));
+        {
+            safec_rc = strcpy_s(v6_ai.v6pre, sizeof(v6_ai.v6pre), val);
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
+        }
         else
             return COSA_DML_IP6_ADDRSTATUS_Invalid;   
     }
@@ -1450,6 +1570,7 @@ IPIF_getEntry_for_Ipv6Pre
     int  ra_index = -1;
     char dhcpv6_pref[64] = {0};
     int  need_write = 0;
+    errno_t safec_rc = -1;
 
 
     CosaUtilGetIpv6AddrInfo((char *)g_ipif_names[ulIndex], &p_v6addr, &v6addr_num);
@@ -1496,8 +1617,16 @@ IPIF_getEntry_for_Ipv6Pre
         {
             need_write = 0;
 
-            _ansc_sprintf(buf, SYSCFG_FORMAT_NORMAL_V6PREFIX"_inst_num", g_ipif_names[ulIndex], p_v6addr->v6pre);
-            _ansc_sprintf(buf1, SYSCFG_FORMAT_NORMAL_V6PREFIX"_alias", g_ipif_names[ulIndex], p_v6addr->v6pre);
+            safec_rc = sprintf_s(buf, sizeof(buf), SYSCFG_FORMAT_NORMAL_V6PREFIX"_inst_num", g_ipif_names[ulIndex], p_v6addr->v6pre);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
+            safec_rc = sprintf_s(buf1, sizeof(buf1), SYSCFG_FORMAT_NORMAL_V6PREFIX"_alias", g_ipif_names[ulIndex], p_v6addr->v6pre);
+            if(safec_rc < EOK)
+            {
+                ERR_CHK(safec_rc);
+            }
             _load_v6_alias_instNum(&utctx, buf, buf1, &p_dml_v6pre->InstanceNumber, p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias));
 
             if (!p_dml_v6pre->InstanceNumber)
@@ -1513,8 +1642,11 @@ IPIF_getEntry_for_Ipv6Pre
         
         p_dml_v6pre->Status = COSA_DML_PREFIXENTRY_STATUS_Enabled;
 
-        safe_strcpy(p_dml_v6pre->Prefix, p_v6addr->v6pre, sizeof(p_dml_v6pre->Prefix));
-
+        safec_rc = strcpy_s(p_dml_v6pre->Prefix, sizeof(p_dml_v6pre->Prefix), p_v6addr->v6pre);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         _get_dynamic_prefix_status(&p_dml_v6pre->PrefixStatus, (char *)g_ipif_names[ulIndex], p_v6addr);
                     
         p_dml_v6pre->StaticType = COSA_DML_IP6PREFIX_STATICTYPE_Inapplicable;
@@ -1591,17 +1723,33 @@ IPIF_getEntry_for_Ipv6Pre
         if (Utopia_Init(&utctx))
         {
             need_write = 0;             
-            _ansc_sprintf(buf, SYSCFG_FORMAT_NORMAL_V6PREFIX"_inst_num", g_ipif_names[ulIndex], dhcpv6_pref);
-            _ansc_sprintf(buf1, SYSCFG_FORMAT_NORMAL_V6PREFIX"_alias", g_ipif_names[ulIndex], dhcpv6_pref);
+            safec_rc = sprintf_s(buf, sizeof(buf), SYSCFG_FORMAT_NORMAL_V6PREFIX"_inst_num", g_ipif_names[ulIndex], dhcpv6_pref);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
+            safec_rc = sprintf_s(buf1, sizeof(buf1), SYSCFG_FORMAT_NORMAL_V6PREFIX"_alias", g_ipif_names[ulIndex], dhcpv6_pref);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             _load_v6_alias_instNum(&utctx, buf, buf1, &p_dml_v6pre->InstanceNumber, p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias));
 
             /*This instance Number should be fixed to 1 because other place will refer it*/
             p_dml_v6pre->InstanceNumber = g_ipif_be_bufs[ulIndex].ulNumOfV6Pre + 1;
-            _ansc_sprintf(p_dml_v6pre->Alias, "IPv6Prefix%lu", p_dml_v6pre->InstanceNumber );
+            safec_rc = sprintf_s(p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias), "IPv6Prefix%lu", p_dml_v6pre->InstanceNumber );
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             if ( p_dml_v6pre->InstanceNumber != 1 ) {
                 AnscTrace("The Instance Number is not 1, error ,DHCPv6 Server will not work.\n");
                 p_dml_v6pre->InstanceNumber = 1;
-                _ansc_sprintf(p_dml_v6pre->Alias, "IPv6Prefix%lu", p_dml_v6pre->InstanceNumber );
+                safec_rc = sprintf_s(p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias), "IPv6Prefix%lu", p_dml_v6pre->InstanceNumber );
+                if(safec_rc < EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
             }
 
             if (!p_dml_v6pre->InstanceNumber)
@@ -1616,8 +1764,11 @@ IPIF_getEntry_for_Ipv6Pre
 
         p_dml_v6pre->bEnabled = TRUE;
         
-        safe_strcpy(p_dml_v6pre->Prefix, dhcpv6_pref, sizeof(p_dml_v6pre->Prefix));
-
+        safec_rc = strcpy_s(p_dml_v6pre->Prefix, sizeof(p_dml_v6pre->Prefix), dhcpv6_pref);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         if (!commonSyseventGet(COSA_DML_DHCPV6C_PREF_IAID_SYSEVENT_NAME, out, sizeof(out)) )
              g_ipif_be_bufs[ulIndex].Info.iapd_iaid  = atoi(out);
         else
@@ -1658,9 +1809,16 @@ IPIF_getEntry_for_Ipv6Pre
         p_dml_v6pre->bAutonomous  = TRUE;
 
         /*todo: get 2 Lifetimes*/
-        safe_strcpy(p_dml_v6pre->PreferredLifetime, "0001-01-01T00:00:00Z", sizeof(p_dml_v6pre->PreferredLifetime));
-        safe_strcpy(p_dml_v6pre->ValidLifetime, "0001-01-01T00:00:00Z", sizeof(p_dml_v6pre->ValidLifetime));
-
+        safec_rc = strcpy_s(p_dml_v6pre->PreferredLifetime, sizeof(p_dml_v6pre->PreferredLifetime), "0001-01-01T00:00:00Z");
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = strcpy_s(p_dml_v6pre->ValidLifetime, sizeof(p_dml_v6pre->ValidLifetime), "0001-01-01T00:00:00Z");
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         g_ipif_be_bufs[ulIndex].ulNumOfV6Pre++;        
     }while(0);
 
@@ -1678,7 +1836,11 @@ IPIF_getEntry_for_Ipv6Pre
 
     if (Utopia_Init(&utctx))
     {
-        sprintf(buf, SYSCFG_FORMAT_STATIC_V6PREF, (char *)g_ipif_names[ulIndex]);
+        safec_rc = sprintf_s(buf, sizeof(buf), SYSCFG_FORMAT_STATIC_V6PREF, (char *)g_ipif_names[ulIndex]);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         memset(out, 0, sizeof(out));
         Utopia_RawGet(&utctx,NULL,buf,out,sizeof(out));
         Utopia_Free(&utctx,0);                
@@ -1720,12 +1882,18 @@ IPIF_getEntry_for_Ipv6Pre
                     Utopia_Free(&utctx,0);        
                     continue;
                 }
-                safe_strcpy(p_dml_v6pre->Prefix, val, sizeof(p_dml_v6pre->Prefix));
-            
+                safec_rc = strcpy_s(p_dml_v6pre->Prefix, sizeof(p_dml_v6pre->Prefix), val);
+                if(safec_rc != EOK)
+                {
+                    ERR_CHK(safec_rc);
+                }  
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,namespace,"Alias",val,sizeof(val));
-                safe_strcpy(p_dml_v6pre->Alias, val, sizeof(p_dml_v6pre->Alias));
-            
+                safec_rc = strcpy_s(p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias), val);
+                if(safec_rc != EOK)
+                {
+                    ERR_CHK(safec_rc);
+                }              
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,namespace,"Enable",val,sizeof(val));
                 p_dml_v6pre->bEnabled = (atoi(val) == 1) ? TRUE : FALSE;
@@ -1755,9 +1923,16 @@ IPIF_getEntry_for_Ipv6Pre
             p_dml_v6pre->bAutonomous  = TRUE;
 
             /*for static IPv6 prefix, the lifetime is useless, we refer to the corresponding IPv6Address's lifetime */
-            safe_strcpy(p_dml_v6pre->PreferredLifetime, "0001-01-01T00:00:00Z", sizeof(p_dml_v6pre->PreferredLifetime));
-            safe_strcpy(p_dml_v6pre->ValidLifetime, "0001-01-01T00:00:00Z", sizeof(p_dml_v6pre->ValidLifetime));
-
+            safec_rc = strcpy_s(p_dml_v6pre->PreferredLifetime, sizeof(p_dml_v6pre->PreferredLifetime), "0001-01-01T00:00:00Z");
+            if(safec_rc != EOK)
+            {
+                ERR_CHK(safec_rc);
+            }  
+            safec_rc = strcpy_s(p_dml_v6pre->ValidLifetime, sizeof(p_dml_v6pre->ValidLifetime), "0001-01-01T00:00:00Z");
+            if(safec_rc != EOK)
+            {
+                ERR_CHK(safec_rc);
+            }  
             g_ipif_be_bufs[ulIndex].ulNumOfV6Pre++;
 
             index++;
@@ -1872,6 +2047,7 @@ CosaDmlIpIfGetEntry
         char buf[256]= {0};
         char out[COSA_DML_IF_NAME_LENGTH]= {0};
         UtopiaContext utctx;
+        errno_t safec_rc = -1;
 
         /*we can't use InstanceNumber to set a alias name to IP.Interface, because different interfaces will have a same instanceNumber when in BYOI or Primary mode*/
         /*CID: 54740 Unchecked return value*/
@@ -1879,7 +2055,11 @@ CosaDmlIpIfGetEntry
         {
         return ANSC_STATUS_FAILURE;
         }
-        _ansc_sprintf(buf, "tr_ip_interface_%s_alias", pEntry->Info.Name);
+        safec_rc = sprintf_s(buf, sizeof(buf), "tr_ip_interface_%s_alias", pEntry->Info.Name);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         Utopia_RawGet(&utctx,NULL,buf,out,sizeof(out));
         Utopia_Free(&utctx,0);
 
@@ -1891,8 +2071,16 @@ CosaDmlIpIfGetEntry
         {
             /*if the alias is not set before, we initialize it here rather than get a default value from middile layer*/
             Utopia_Init(&utctx);
-            _ansc_sprintf(buf, "tr_ip_interface_%s_alias", pEntry->Info.Name);
-            _ansc_sprintf(out, "Interface_%s", pEntry->Info.Name);
+            safec_rc = sprintf_s(buf, sizeof(buf), "tr_ip_interface_%s_alias", pEntry->Info.Name);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
+            safec_rc = sprintf_s(out, sizeof(out), "Interface_%s", pEntry->Info.Name);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             Utopia_RawSet(&utctx,NULL,buf,out);
             Utopia_Free(&utctx,1);
 
@@ -2094,6 +2282,7 @@ CosaDmlIpIfSetCfg
         PCOSA_DML_IP_IF_CFG             p_be_buf_cfg;
         char                            buf[256] = {0};
         UtopiaContext                   utctx;
+        errno_t safec_rc = -1;
 
         AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -2109,7 +2298,11 @@ CosaDmlIpIfSetCfg
             /*CID: 68667 Unchecked return value*/
             if(!Utopia_Init(&utctx))
                return ANSC_STATUS_FAILURE;
-            _ansc_sprintf(buf, "tr_ip_interface_%s_alias", g_ipif_names[pCfg->InstanceNumber-1]);
+            safec_rc = sprintf_s(buf, sizeof(buf), "tr_ip_interface_%s_alias", g_ipif_names[pCfg->InstanceNumber-1]);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             Utopia_RawSet(&utctx,NULL,buf,pCfg->Alias);
             Utopia_Free(&utctx,1);
 
@@ -2130,7 +2323,11 @@ CosaDmlIpIfSetCfg
                 UtopiaContext utctx;
 
                 Utopia_Init(&utctx);
-                _ansc_sprintf(buf, "%lu", pCfg->MaxMTUSize);
+                safec_rc = sprintf_s(buf, sizeof(buf), "%lu", pCfg->MaxMTUSize);
+                if(safec_rc < EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 Utopia_Set(&utctx, UtopiaValue_WAN_MTU, buf);
                 Utopia_Free(&utctx, 1);
             }
@@ -2154,7 +2351,11 @@ CosaDmlIpIfSetCfg
                 UtopiaContext utctx;
 
                 Utopia_Init(&utctx);
-                _ansc_sprintf(buf, "%d", pCfg->MaxMTUSize);
+                safec_rc = sprintf_s(buf, sizeof(buf), "%d", pCfg->MaxMTUSize);
+                if(safec_rc < EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 UTOPIA_SET(&utctx, UtopiaValue_WAN_MTU, buf);
                 Utopia_Free(&utctx, 1);
             }
@@ -2511,11 +2712,17 @@ CosaDmlIpIfGetV4Addr
             char buf[256]= {0};
             char out[COSA_DML_IF_NAME_LENGTH]= {0};
             UtopiaContext utctx;
+            errno_t safec_rc = -1;
             /*CID: 53826 Unchecked return value*/
             if(!Utopia_Init(&utctx))
                return ANSC_STATUS_FAILURE;
 
-            _ansc_sprintf(buf, "tr_ip_interface_%s_v4addr_alias", g_ipif_names[ulIpIfInstanceNumber-1]);
+
+            safec_rc = sprintf_s(buf, sizeof(buf), "tr_ip_interface_%s_v4addr_alias", g_ipif_names[ulIpIfInstanceNumber-1]);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             Utopia_RawGet(&utctx,NULL,buf,out,sizeof(out));
             Utopia_Free(&utctx,0);
 
@@ -2527,8 +2734,16 @@ CosaDmlIpIfGetV4Addr
             {
                 /*if the alias is not set before, we initialize it here rather than get a default value from middile layer*/
                 Utopia_Init(&utctx);
-                _ansc_sprintf(buf, "tr_ip_interface_%s_v4addr_alias", g_ipif_names[ulIpIfInstanceNumber-1]);
-                _ansc_sprintf(out, "Interface_%lu", pEntry->InstanceNumber);
+                safec_rc = sprintf_s(buf, sizeof(buf), "tr_ip_interface_%s_v4addr_alias", g_ipif_names[ulIpIfInstanceNumber-1]);
+                if(safec_rc < EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
+                safec_rc = sprintf_s(out, sizeof(out), "Interface_%lu", pEntry->InstanceNumber);
+                if(safec_rc < EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 Utopia_RawSet(&utctx,NULL,buf,out);
                 Utopia_Free(&utctx,1);
 
@@ -2741,6 +2956,7 @@ CosaDmlIpIfSetV4Addr
         PCOSA_DML_IP_V4ADDR             p_be_buf = NULL; 
         char                            buf[256];
         UtopiaContext                   utctx;
+        errno_t safec_rc = -1;
         
         AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -2754,7 +2970,11 @@ CosaDmlIpIfSetV4Addr
         if (strcmp(pEntry->Alias, p_be_buf->Alias) != 0)
         {
             Utopia_Init(&utctx);
-            _ansc_sprintf(buf, "tr_ip_interface_%s_v4addr_alias", g_ipif_names[ulIpIfInstanceNumber-1]);
+            safec_rc = sprintf_s(buf, sizeof(buf), "tr_ip_interface_%s_v4addr_alias", g_ipif_names[ulIpIfInstanceNumber-1]);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             Utopia_RawSet(&utctx,NULL,buf,pEntry->Alias);
             Utopia_Free(&utctx,1);
 
@@ -2764,11 +2984,17 @@ CosaDmlIpIfSetV4Addr
         /*for IPaddr and netmask, it's middle layer's responsibility to check if the AddressingType is Static. Remember we only set these params in Static AddressingType*/
         if (pEntry->IPAddress.Value != p_be_buf->IPAddress.Value)
         {
+
              /*CID: 74354 Unchecked return value*/
             if(!Utopia_Init(&utctx))
                return ANSC_STATUS_FAILURE;
-            _ansc_sprintf(buf, "%d.%d.%d.%d", 
+
+            safec_rc = sprintf_s(buf, sizeof(buf), "%d.%d.%d.%d", 
                     pEntry->IPAddress.Dot[0],pEntry->IPAddress.Dot[1],pEntry->IPAddress.Dot[2],pEntry->IPAddress.Dot[3] );
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
 
             UTOPIA_SET(&utctx, UtopiaValue_LAN_IPAddr, buf);
             Utopia_Free(&utctx, 1);
@@ -2785,8 +3011,12 @@ CosaDmlIpIfSetV4Addr
                 /*CID: 74354 Unchecked return value*/
                 if(!Utopia_Init(&utctx))
                     return ANSC_STATUS_FAILURE;
-                _ansc_sprintf(buf, "%d.%d.%d.%d", 
+                safec_rc = sprintf_s(buf, sizeof(buf), "%d.%d.%d.%d", 
                         pEntry->SubnetMask.Dot[0],pEntry->SubnetMask.Dot[1],pEntry->SubnetMask.Dot[2],pEntry->SubnetMask.Dot[3] );
+                if(safec_rc < EOK)
+                {
+                    ERR_CHK(safec_rc);
+                }
 
                 UTOPIA_SET(&utctx, UtopiaValue_LAN_Netmask, buf);
                 Utopia_Free(&utctx, 1);
@@ -2939,6 +3169,7 @@ static int _invoke_ip_cmd(char * cmd, PCOSA_DML_IP_V6ADDR p_old, PCOSA_DML_IP_V6
     ULONG buf_len = 256;
     char * p = NULL;
     struct in6_addr addr;
+    errno_t safec_rc = -1;
 
     if (!cmd || !ifname)
         return -1;
@@ -2965,7 +3196,11 @@ static int _invoke_ip_cmd(char * cmd, PCOSA_DML_IP_V6ADDR p_old, PCOSA_DML_IP_V6
             pref_len = *(int *)extra_args;
         else
         {
-            sprintf(name, "%sPrefix", p_new->Prefix);
+            safec_rc = sprintf_s(name, sizeof(name),"%sPrefix", p_new->Prefix);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             if ( 0 == g_GetParamValueString(g_pDslhDmlAgent, name, buf, &buf_len))
             {
                 if ((p = strchr(buf, '/')))
@@ -3062,23 +3297,35 @@ int _find_matched_prefix(char * pref_path, char * v6addr, int ipif_inst_num)
     int    inst2 = 0;
     int    found = 0;
     int    num = 0;
+    errno_t safec_rc = -1;
     
 
     if (!pref_path)
         return -1;
     
-    sprintf(name, "Device.IP.Interface.%d.IPv6PrefixNumberOfEntries", ipif_inst_num);
-            
+    safec_rc = sprintf_s(name, sizeof(name), "Device.IP.Interface.%d.IPv6PrefixNumberOfEntries", ipif_inst_num);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+	
     num = g_GetParamValueUlong(g_pDslhDmlAgent, name);
     for (i=0; i<num; i++)
     {
-        sprintf(name, "Device.IP.Interface.%d.IPv6Prefix.", ipif_inst_num);
+        safec_rc = sprintf_s(name, sizeof(name), "Device.IP.Interface.%d.IPv6Prefix.", ipif_inst_num);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         inst2 = g_GetInstanceNumberByIndex(g_pDslhDmlAgent, name, i);
 
         if ( inst2 )
         {
-            sprintf(name,  "Device.IP.Interface.%d.IPv6Prefix.%d.Prefix", ipif_inst_num, inst2);
-               
+            safec_rc = sprintf_s(name, sizeof(name), "Device.IP.Interface.%d.IPv6Prefix.%d.Prefix", ipif_inst_num, inst2);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }               
             memset(param_val, 0, sizeof(param_val));
 
             val_len = sizeof(param_val);
@@ -3107,7 +3354,11 @@ int CosaDmlIpv6AddrMatchesPrefix(char * pref_path, char * v6addr, int ipif_inst_
     char   name[256] = {0};
     UNREFERENCED_PARAMETER(ipif_inst_num);
 
-    sprintf(name, "%sPrefix", pref_path);
+    errno_t safec_rc = sprintf_s(name, sizeof(name), "%sPrefix", pref_path);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     
     if ( ( 0 == g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len)) &&
           !__v6addr_mismatches_v6pre(v6addr, param_val))    
@@ -3149,23 +3400,39 @@ static int _syscfg_set_v6addr(char * ifname, UtopiaContext * p_utctx, PCOSA_DML_
 
     char                            val[1024]= {0};
     char                            namespace[256] = {0};
-
+    errno_t  safec_rc = -1;
     snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6ADDR, ifname, pEntry->InstanceNumber);
 
-    safe_strcpy(val, pEntry->IP6Address, sizeof(val));
+    safec_rc = strcpy_s(val, sizeof(val), pEntry->IP6Address);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     Utopia_RawSet(p_utctx,namespace,"IPAddress",val);
 
-    safe_strcpy(val, pEntry->Alias, sizeof(val));
+    safec_rc = strcpy_s(val, sizeof(val), pEntry->Alias);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     Utopia_RawSet(p_utctx,namespace,"Alias",val);
             
     memset(val, 0, sizeof(val));
     val[0] = (pEntry->bEnabled) ? '1':'0';
     Utopia_RawSet(p_utctx,namespace,"Enable",val);
 
-    safe_strcpy(val, pEntry->PreferredLifetime, sizeof(val));
+    safec_rc = strcpy_s(val, sizeof(val), pEntry->PreferredLifetime);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     Utopia_RawSet(p_utctx,namespace,"PreferredLifetime",val);
 
-    safe_strcpy(val, pEntry->ValidLifetime, sizeof(val));
+    safec_rc = strcpy_s(val, sizeof(val), pEntry->ValidLifetime);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     Utopia_RawSet(p_utctx,namespace,"ValidLifetime",val);
 
     memset(val, 0, sizeof(val));
@@ -3195,6 +3462,7 @@ CosaDmlIpIfAddV6Addr
         char                            val[1024]= {0};
         UtopiaContext                   utctx = {0};
         char                            namespace[256] = {0};
+        errno_t  safec_rc = -1;
         
         AnscTraceFlow(("%s...\n", __FUNCTION__));
         
@@ -3210,7 +3478,11 @@ CosaDmlIpIfAddV6Addr
                     return ANSC_STATUS_FAILURE;
 
                 /*first handle syscfg*/
-                sprintf(name, SYSCFG_FORMAT_STATIC_V6ADDR, (char *)g_ipif_names[i]);
+                safec_rc = sprintf_s(name, sizeof(name), SYSCFG_FORMAT_STATIC_V6ADDR, (char *)g_ipif_names[i]);
+                if(safec_rc < EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,NULL,name,val,sizeof(val));            
 
@@ -3238,7 +3510,11 @@ CosaDmlIpIfAddV6Addr
                 
                 /*should record prefix in syscfg after it's adjusted*/
                 snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6ADDR, (char *)g_ipif_names[i], pEntry->InstanceNumber);
-                safe_strcpy(val, pEntry->Prefix, sizeof(val));
+                safec_rc = strcpy_s(val, sizeof(val), pEntry->Prefix);
+                if(safec_rc != EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 Utopia_RawSet(&utctx,namespace,"Prefix",val);
 
                 Utopia_Free(&utctx,1);                    
@@ -3363,6 +3639,7 @@ CosaDmlIpIfDelV6Addr
         char                            name[256]= {0};
         char                            val[1024]= {0};
         UtopiaContext                   utctx = {0};
+        errno_t safec_rc = -1;
 
         AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -3379,7 +3656,11 @@ CosaDmlIpIfDelV6Addr
                             return ANSC_STATUS_FAILURE;
 
                         /*first handle syscfg stuff*/
-                        sprintf(name, SYSCFG_FORMAT_STATIC_V6ADDR, (char *)g_ipif_names[i]);
+                        safec_rc = sprintf_s(name, sizeof(name), SYSCFG_FORMAT_STATIC_V6ADDR, (char *)g_ipif_names[i]);
+                        if(safec_rc < EOK)
+                        {
+                           ERR_CHK(safec_rc);
+                        }
                         memset(val, 0, sizeof(val));
                         Utopia_RawGet(&utctx,NULL,name,val,sizeof(val));
 
@@ -3464,6 +3745,7 @@ CosaDmlIpIfSetV6Addr
         char                            val[1024]= {0};
         UtopiaContext                   utctx = {0};
         UNREFERENCED_PARAMETER(hContext);
+        errno_t safec_rc = -1;
 
         AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -3529,7 +3811,11 @@ CosaDmlIpIfSetV6Addr
                         if (pEntry->Prefix[0])
                         {
                             /*in some corner case, we need to rewrite prefix into syscfg*/
-                            safe_strcpy(val, pEntry->Prefix, sizeof(val));
+                            safec_rc = strcpy_s(val, sizeof(val), pEntry->Prefix);
+                            if(safec_rc != EOK)
+                            {
+                               ERR_CHK(safec_rc);
+                            }
                             Utopia_RawSet(&utctx,namespace,"Prefix",val);
                         }
 
@@ -3797,6 +4083,7 @@ static int _syscfg_set_v6pref(char * ifname, UtopiaContext * p_utctx, PCOSA_DML_
 {
     char                            namespace[256] = {0};
     char                            val[1024] = {0};
+    errno_t  safec_rc = -1;
 
     snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6PREFIX, ifname, pEntry->InstanceNumber);
             
@@ -3804,10 +4091,18 @@ static int _syscfg_set_v6pref(char * ifname, UtopiaContext * p_utctx, PCOSA_DML_
     val[0] = (pEntry->bEnabled) ? '1':'0';
     Utopia_RawSet(p_utctx,namespace,"Enable",val);
                 
-    safe_strcpy(val, pEntry->Alias, sizeof(val));
+    safec_rc = strcpy_s(val, sizeof(val), pEntry->Alias);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     Utopia_RawSet(p_utctx,namespace,"Alias",val);
 
-    safe_strcpy(val, pEntry->Prefix, sizeof(val));
+    safec_rc = strcpy_s(val, sizeof(val), pEntry->Prefix);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     Utopia_RawSet(p_utctx,namespace,"Prefix",val);
 
     return 0;
@@ -3832,6 +4127,7 @@ CosaDmlIpIfAddV6Prefix
         char                            name[256] = {0};
         char                            val[1024] = {0};
         UtopiaContext                   utctx = {0};
+        errno_t safec_rc = -1;
 
         AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -3848,7 +4144,11 @@ CosaDmlIpIfAddV6Prefix
 
     			g_ipif_be_bufs[i].V6PreList[ulIndex] = *pEntry;
 
-                sprintf(name, SYSCFG_FORMAT_STATIC_V6PREF, (char *)g_ipif_names[i]);
+                safec_rc = sprintf_s(name, sizeof(name), SYSCFG_FORMAT_STATIC_V6PREF, (char *)g_ipif_names[i]);
+                if(safec_rc < EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 memset(val, 0, sizeof(val));
                 Utopia_RawGet(&utctx,NULL,name,val,sizeof(val));
 
@@ -3934,6 +4234,7 @@ CosaDmlIpIfDelV6Prefix
         char                            name[256] = {0};
         char                            val[1024] = {0};
         UtopiaContext                   utctx = {0};
+        errno_t safec_rc = -1;
 
         AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -3959,7 +4260,11 @@ CosaDmlIpIfDelV6Prefix
                         if (!Utopia_Init(&utctx))
                             return ANSC_STATUS_FAILURE;
                 
-                        sprintf(name, SYSCFG_FORMAT_STATIC_V6PREF, (char *)g_ipif_names[i]);
+                        safec_rc = sprintf_s(name, sizeof(name), SYSCFG_FORMAT_STATIC_V6PREF, (char *)g_ipif_names[i]);
+                        if(safec_rc < EOK)
+                        {
+                            ERR_CHK(safec_rc);
+                        }
                         memset(val, 0, sizeof(val));
                         Utopia_RawGet(&utctx,NULL,name,val,sizeof(val));
 

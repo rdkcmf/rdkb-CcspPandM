@@ -27,6 +27,7 @@
 #include "cosa_deviceinfo_apis.h"
 #include "utapi/utapi.h"
 #include "utapi/utapi_util.h"
+#include "safec_lib_common.h"
 
 #define CONTENT_TYPE_JSON  "application/json"
 
@@ -42,6 +43,7 @@
 #define ETH_WAN_STATUS_PARAM "Device.Ethernet.X_RDKCENTRAL-COM_WAN.Enabled"
 #define RDKB_ETHAGENT_COMPONENT_NAME                  "com.cisco.spvtg.ccsp.ethagent"
 #define RDKB_ETHAGENT_DBUS_PATH                       "/com/cisco/spvtg/ccsp/ethagent"
+#define STATUS_SIZE 32
 
 pthread_mutex_t device_mac_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -108,7 +110,7 @@ static void get_parodus_url(char **url)
 
 static void waitForEthAgentComponentReady()
 {
-    char status[32] = {'\0'};
+    char status[STATUS_SIZE] = {'\0'};
     int count = 0;
     int ret = -1;
     while(1)
@@ -144,8 +146,14 @@ static void checkComponentHealthStatus(char * compName, char * dbusPath, char *s
 	char tmp[MAX_PARAMETERNAME_LEN];
 	char str[MAX_PARAMETERNAME_LEN/2];     
 	char l_Subsystem[MAX_PARAMETERNAME_LEN/2] = { 0 };
+	errno_t  rc = -1;
 
-	sprintf(tmp,"%s.%s",compName, "Health");
+	rc = sprintf_s(tmp, sizeof(tmp),"%s.Health",compName);
+	if(rc < EOK)
+	{
+		ERR_CHK(rc);
+		return ;
+	}
 	parameterNames[0] = tmp;
 
 	strncpy(l_Subsystem, "eRT.",sizeof(l_Subsystem));
@@ -157,7 +165,11 @@ static void checkComponentHealthStatus(char * compName, char * dbusPath, char *s
 	if(ret == CCSP_SUCCESS)
 	{
 		CcspTraceDebug(("parameterval[0]->parameterName : %s parameterval[0]->parameterValue : %s\n",parameterval[0]->parameterName,parameterval[0]->parameterValue));
-		strcpy(status, parameterval[0]->parameterValue);
+		rc = STRCPY_S_NOCLOBBER(status, STATUS_SIZE, parameterval[0]->parameterValue);
+		if(rc != EOK)
+		{
+			ERR_CHK(rc);
+		}
 		CcspTraceDebug(("status of component:%s\n", status));
 	}
 	free_parameterValStruct_t (bus_handle, val_size, parameterval);
@@ -175,6 +187,7 @@ static int check_ethernet_wan_status()
     componentStruct_t **        ppComponents = NULL;
     char dst_pathname_cr[256] = {0};
     char isEthEnabled[64]={'\0'};
+    errno_t rc  = -1;
     
     if(0 == syscfg_init())
     {
@@ -187,7 +200,11 @@ static int check_ethernet_wan_status()
     else
     {
         waitForEthAgentComponentReady();
-        sprintf(dst_pathname_cr, "%s%s", "eRT.", CCSP_DBUS_INTERFACE_CR);
+        rc = sprintf_s(dst_pathname_cr, sizeof(dst_pathname_cr),"eRT.%s", CCSP_DBUS_INTERFACE_CR);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
         ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle, dst_pathname_cr, ETH_WAN_STATUS_PARAM, "", &ppComponents, &size);
         if ( ret == CCSP_SUCCESS && size >= 1)
         {
@@ -242,6 +259,7 @@ static void getDeviceMac()
         token_t  token;
         int fd = s_sysevent_connect(&token);
         char deviceMACValue[32] = { '\0' };
+        errno_t  rc  = -1;
 
 	if (strlen(deviceMAC))
 	{
@@ -256,7 +274,11 @@ static void getDeviceMac()
 	}
 	else
 	{
-	        sprintf(dst_pathname_cr, "%s%s", "eRT.", CCSP_DBUS_INTERFACE_CR);
+	        rc = sprintf_s(dst_pathname_cr, sizeof(dst_pathname_cr),"eRT.%s", CCSP_DBUS_INTERFACE_CR);
+	        if(rc < EOK)
+	        {
+	          ERR_CHK(rc);
+	        }
 	        ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle, dst_pathname_cr, DEVICE_MAC, "", &ppComponents, &size);
 	        if ( ret == CCSP_SUCCESS && size >= 1)
 	        {

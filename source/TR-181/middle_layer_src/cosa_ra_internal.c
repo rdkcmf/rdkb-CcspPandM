@@ -73,6 +73,7 @@
 #include "cosa_ra_internal.h"
 #include "plugin_main_apis.h"
 #include "slap_vho_exported_api.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -175,6 +176,7 @@ CosaRAInitialize
     ULONG                           ulIndex         = 0;
     ULONG                           ulSubEntryCount = 0;
     ULONG                           ulSubIndex      = 0;
+    errno_t                         rc              = -1;
 
     CosaDmlRAInit(NULL, NULL);
 
@@ -253,13 +255,19 @@ CosaRAInitialize
     
     if ( TRUE )
     {
-        _ansc_sprintf
+        rc = sprintf_s
         (
-            FolderName, 
+            FolderName,
+            sizeof(FolderName),
             "%s%d", 
             COSA_DML_RR_NAME_RAIF_NextInsNum,
             0
         );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return ANSC_STATUS_FAILURE;
+        }
         
         pPoamIrepFoNextIns = (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoRAIF->GetFolder
                                 (
@@ -352,7 +360,14 @@ CosaRAInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pRAInterface->Cfg.Alias, "Interface%d", (int)pMyObject->ulNextInterfaceInsNum);
+                rc = sprintf_s(pRAInterface->Cfg.Alias, sizeof(pRAInterface->Cfg.Alias),"Interface%d", (int)pMyObject->ulNextInterfaceInsNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  AnscFreeMemory(pCosaContext);
+                  AnscFreeMemory(pRAInterface);
+                  return ANSC_STATUS_FAILURE;
+                }
 
                 CosaDmlRaIfSetValues
                 (
@@ -374,13 +389,20 @@ CosaRAInitialize
         /* Initialize middle layer for Device.RouterAdvertisement.InterfaceSetting.{i}.Option.{i}.  */
         if ( TRUE )
         {
-            _ansc_sprintf
+            rc = sprintf_s
             (
-                FolderName, 
+                FolderName,
+                sizeof(FolderName),
                 "%s%d", 
                 COSA_DML_RR_NAME_RAIF_OPTION_NextInsNum, 
                 (int)pRAInterface->Cfg.InstanceNumber
             );
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pRAInterface);
+              return ANSC_STATUS_FAILURE;
+            }
             
             pPoamIrepFoNextIns = 
                 (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoRAIF->GetFolder
@@ -465,7 +487,14 @@ CosaRAInitialize
                     }
 
                     /* Generate Alias */
-                    _ansc_sprintf(pRAOption->Alias, "Option%d", (int)pSubCosaContext->InstanceNumber);
+                    rc = sprintf_s(pRAOption->Alias, sizeof(pRAOption->Alias),"Option%d", (int)pSubCosaContext->InstanceNumber);
+                    if(rc < EOK)
+                    {
+                      ERR_CHK(rc);
+                      AnscFreeMemory(pRAOption);
+                      AnscFreeMemory(pSubCosaContext);
+                      return ANSC_STATUS_FAILURE;
+                    }
 
                     /* TODO: Set InstanceNumber Alias back */
                     CosaDmlRaIfSetOptionValues
@@ -945,6 +974,7 @@ CosaRARegAddInfo
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PSLAP_VARIABLE                  pSlapVariable     = (PSLAP_VARIABLE           )NULL;
     char                            FolderName[32]    = {0};
+    errno_t                         rc                = -1;
 
     if ( !pPoamIrepFoRAIF || !pPoamIrepFoUpper )
     {
@@ -967,7 +997,13 @@ CosaRARegAddInfo
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%d", pNextInsNumName, (int)ulUpperInsNum);
+    rc = sprintf_s(FolderName, sizeof(FolderName),"%s%d", pNextInsNumName, (int)ulUpperInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      returnStatus = ANSC_STATUS_FAILURE;
+      goto  EXIT1;
+    }
 
     if ( TRUE )
     {
@@ -1018,7 +1054,13 @@ CosaRARegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%d%d", pPreffix, (int)ulUpperInsNum, (int)pCosaContext->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%s%d%d", pPreffix, (int)ulUpperInsNum, (int)pCosaContext->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          returnStatus = ANSC_STATUS_FAILURE;
+          goto  EXIT1;
+        }
 
         pPoamIrepFo = pPoamIrepFoUpper->AddFolder
                         (

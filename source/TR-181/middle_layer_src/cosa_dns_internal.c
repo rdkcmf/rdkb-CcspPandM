@@ -74,6 +74,7 @@
 #include "cosa_apis.h"
 #include "cosa_dns_internal.h"
 #include "plugin_main_apis.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -179,6 +180,7 @@ CosaDNSInitialize
     ULONG                           ulIndex         = 0;
     ULONG                           ulEntryCount2   = 0;
     ULONG                           ulIndex2        = 0;
+    errno_t                         rc              = -1;
 
     CosaDmlDnsInit(NULL, NULL);
 
@@ -260,13 +262,19 @@ CosaDNSInitialize
     
     if ( TRUE )
     {
-        _ansc_sprintf
+        rc = sprintf_s
         (
-            FolderName, 
+            FolderName,
+            sizeof(FolderName),
             "%s%d", 
             COSA_DML_RR_NAME_SERVER_NextInsNum,
             0
         );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return ANSC_STATUS_FAILURE;
+        }
         
         pPoamIrepFoNextIns = (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoServer->GetFolder
                                 (
@@ -353,7 +361,15 @@ CosaDNSInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pDnsServer[ulIndex].Alias, "Server%lu", pMyObject->ulNextServerInsNum);
+                rc = sprintf_s(pDnsServer[ulIndex].Alias, sizeof(pDnsServer[ulIndex].Alias), "Server%lu", pMyObject->ulNextServerInsNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  AnscFreeMemory(pDnsServer);
+                  AnscFreeMemory(pCosaContext);
+                  return ANSC_STATUS_FAILURE;
+               }
+
 
                 CosaDmlDnsClientSetServerValues
                 (
@@ -383,13 +399,19 @@ CosaDNSInitialize
     /* Retrieve the next Instance Number for  Device.DNS.Relay.Forwarding.{i}. */
     if ( TRUE )
     {
-        _ansc_sprintf
+        rc = sprintf_s
         (
-            FolderName, 
+            FolderName,
+            sizeof(FolderName),
             "%s%d", 
             COSA_DML_RR_NAME_FORWARD_NextInsNum,
             0
         );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return ANSC_STATUS_FAILURE;
+        }
         
         pPoamIrepFoNextIns = 
             (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoServer->GetFolder
@@ -470,7 +492,14 @@ CosaDNSInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pForward[ulIndex2].Alias, "Forwarding%lu", pCosaContext2->InstanceNumber);
+                rc = sprintf_s(pForward[ulIndex2].Alias, sizeof(pForward[ulIndex2].Alias), "Forwarding%lu", pCosaContext2->InstanceNumber);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  AnscFreeMemory(&pForward[ulIndex2]);
+                  AnscFreeMemory(pCosaContext2);
+                  return ANSC_STATUS_FAILURE;
+                }
 
                 /* TODO: Set InstanceNumber Alias back */
                 CosaDmlDnsRelaySetServerValues
@@ -895,6 +924,7 @@ CosaDNSRegAddInfo
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PSLAP_VARIABLE                  pSlapVariable     = (PSLAP_VARIABLE           )NULL;
     char                            FolderName[32]    = {0};
+    errno_t                         rc                = -1;
 
     if ( !pPoamIrepFoServer || !pPoamIrepFoUpper )
     {
@@ -913,11 +943,17 @@ CosaDNSRegAddInfo
         {
             returnStatus = ANSC_STATUS_RESOURCES;
 
-            goto  EXIT1;
+            goto EXIT1;
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%lu", pNextInsNumName, ulUpperInsNum);
+    rc = sprintf_s(FolderName, sizeof(FolderName),"%s%lu", pNextInsNumName, ulUpperInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      returnStatus = ANSC_STATUS_FAILURE;
+      goto EXIT1;
+    }
 
     if ( TRUE )
     {
@@ -968,7 +1004,13 @@ CosaDNSRegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          returnStatus = ANSC_STATUS_FAILURE;
+          goto  EXIT1;
+        }
 
         pPoamIrepFo = pPoamIrepFoUpper->AddFolder
                         (

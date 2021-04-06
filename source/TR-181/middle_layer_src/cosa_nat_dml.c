@@ -2446,6 +2446,7 @@ PortMapping_Validate
     PCOSA_DML_NAT_PMAPPING                   pPortMapping      = (PCOSA_DML_NAT_PMAPPING)pCxtLink->hContext;
     PCOSA_DML_NAT_PMAPPING                   pPortMapping2     = NULL;
     BOOL                                     bFound            = FALSE;
+    errno_t                                  rc                = -1;
 #if defined (MULTILAN_FEATURE)
     if( pPortMapping->bEnabled && (
         !_Check_PF_parameter(pPortMapping) ||
@@ -2491,7 +2492,12 @@ PortMapping_Validate
                     continue;
                 }
 
-                _ansc_strcpy(pReturnParamName, "Alias");
+                rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Alias");
+                if(rc != EOK)
+                {
+                  ERR_CHK(rc);
+                  return FALSE;
+                }
 
                 bFound = TRUE;
                 break;
@@ -3697,6 +3703,7 @@ PortTrigger_Validate
     PCOSA_DML_NAT_PTRIGGER          pPortTrigger      = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
     PCOSA_DML_NAT_PTRIGGER          pPortTrigger2     = NULL;
     BOOL                            bFound            = FALSE;
+    errno_t                         rc                = -1;
 
 #if defined (MULTILAN_FEATURE)
     /* Don't validate all fields here if entry is not enabled */
@@ -3741,7 +3748,12 @@ PortTrigger_Validate
                     continue;
                 }
 
-                _ansc_strcpy(pReturnParamName, "Alias");
+                rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Alias");
+                if(rc != EOK)
+                {
+                  ERR_CHK(rc);
+                  return FALSE;
+                }
 
                 bFound = TRUE;
                 break;

@@ -71,6 +71,7 @@
 #include "cosa_x_cisco_com_ddns_internal.h"
 #include "dml_tr181_custom_cfg.h"
 #include "ansc_string_util.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -896,6 +897,7 @@ Service_AddEntry
     PSLIST_HEADER                   pListHead    = (PSLIST_HEADER            )&pCosaDMDdns->ContextHead;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )NULL;
+    errno_t                         rc           = -1;
 
     pDdnsService = (PCOSA_DML_DDNS_SERVICE)AnscAllocateMemory(sizeof(COSA_DML_DDNS_SERVICE));
 
@@ -904,7 +906,13 @@ Service_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pDdnsService->Alias, "DdnsService%lu", pCosaDMDdns->ulNextInstance);
+    rc = sprintf_s(pDdnsService->Alias, sizeof(pDdnsService->Alias),"DdnsService%lu", pCosaDMDdns->ulNextInstance);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pDdnsService);
+      return NULL;
+    }
 
     /* Update middle layer cache */
     if ( TRUE )
@@ -1766,6 +1774,7 @@ int Service_CheckRepeatString( struct detail stDetailArray[], const char unit[],
 #if !defined(DDNS_BROADBANDFORUM)
 
     int i;
+    errno_t rc  = -1;
  
     for (i = 0; i < count; i++)
     {
@@ -1778,8 +1787,12 @@ int Service_CheckRepeatString( struct detail stDetailArray[], const char unit[],
     }
 
     /* If control reaches here, it means no match found in struct */
-    strcpy( stDetailArray[count].word, unit );
- 
+    rc = strcpy_s( stDetailArray[count].word, sizeof(stDetailArray[count].word),unit );
+    if(rc != EOK)
+    {
+      ERR_CHK(rc);
+      return 0;
+    }
     /* count represents the number of fields updated in array stDetailArray */
     return ( count + 1);
 #endif

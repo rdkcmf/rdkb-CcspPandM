@@ -91,6 +91,7 @@
 #include "cosa_ethernet_apis.h"
 #include "cosa_ethernet_apis_multilan.h"
 #include "secure_wrapper.h"
+#include "safec_lib_common.h"
 
 #ifdef _HUB4_PRODUCT_REQ_
 #include "sysevent/sysevent.h"
@@ -593,6 +594,7 @@ static void ethGetClientMacDetails
 	int idx;
 	char mac_addr[20];
 	int isClient = 0;
+	errno_t rc = -1;
 
 	if (!eth_device || !mac)
 	{
@@ -606,15 +608,20 @@ static void ethGetClientMacDetails
 		{
 			isClient++;
 			if (isClient == client_num) {
-				_ansc_memset(mac_addr, 0, 20);
-				sprintf(mac_addr, "%02X:%02X:%02X:%02X:%02X:%02X",
+				_ansc_memset(mac_addr, 0, sizeof(mac_addr));
+				rc = sprintf_s(mac_addr, sizeof(mac_addr), "%02X:%02X:%02X:%02X:%02X:%02X",
 						eth_device[idx].eth_devMacAddress[0],
 						eth_device[idx].eth_devMacAddress[1],
 						eth_device[idx].eth_devMacAddress[2],
 						eth_device[idx].eth_devMacAddress[3],
 						eth_device[idx].eth_devMacAddress[4],
 						eth_device[idx].eth_devMacAddress[5]);
-				strcpy(mac, mac_addr);
+				if(rc < EOK)
+				{
+					ERR_CHK(rc);
+				}
+				rc = strcpy_s(mac, sizeof(mac_addr), mac_addr);
+				ERR_CHK(rc);
 				return;
 			}
 		}
@@ -752,6 +759,7 @@ CosaDmlEthVlanTerminationGetEntry
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    errno_t rc = -1;
     if ( !pEntry )
         return ANSC_STATUS_FAILURE;
 
@@ -760,7 +768,12 @@ CosaDmlEthVlanTerminationGetEntry
         AnscCopyMemory(pEntry, &g_EthernetVlanTermination[ulIndex], sizeof(COSA_DML_ETH_VLAN_TERMINATION_FULL));
 
         char ifName[256];
-        sprintf(ifName, "%s.%lu", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+        rc = sprintf_s(ifName, sizeof(ifName), "%s.%lu", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
         pEntry->DynamicInfo.Status = getIfStatus((PUCHAR)ifName, NULL);
     }
     else
@@ -795,6 +808,7 @@ CosaDmlEthVlanTerminationAddEntry
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    errno_t rc = -1;
     if ( !pEntry )
     {
         return ANSC_STATUS_FAILURE;
@@ -813,7 +827,11 @@ CosaDmlEthVlanTerminationAddEntry
 
             if (pEntry->Cfg.bEnabled)
             {
-                sprintf(cmd, "ip link set %s.%lu up", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+                rc = sprintf_s(cmd, sizeof(cmd), "ip link set %s.%lu up", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
             }
             else
             {
@@ -880,6 +898,7 @@ CosaDmlEthVlanTerminationValidateCfg
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    errno_t rc = -1;
     if ( !pCfg )
     {
         return FALSE;
@@ -896,7 +915,12 @@ CosaDmlEthVlanTerminationValidateCfg
             CHAR                            ucEntryParamName[256]       = {0};
             CHAR                            ucEntryNameValue[256]       = {0};
 
-            _ansc_sprintf(ucEntryParamName, "%s%s", pCfg->LowerLayers, "Name");
+            rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%sName", pCfg->LowerLayers);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
 
             if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
                  ( AnscSizeOfString((const char*)ucEntryNameValue) != 0                                        ) )
@@ -957,6 +981,7 @@ CosaDmlEthVlanTerminationSetCfg
     if (pEntry)
     {
         char ifName[256];
+        errno_t rc = -1;
         if (strcmp(pEntry->Cfg.EthLinkName, pCfg->EthLinkName) || pEntry->Cfg.VLANID != pCfg->VLANID)
         {
             if (pEntry->Cfg.EthLinkName[0] && pEntry->Cfg.VLANID)
@@ -980,7 +1005,12 @@ CosaDmlEthVlanTerminationSetCfg
 
             pEntry->DynamicInfo.LastChange = AnscGetTickInSeconds();
 
-            sprintf(ifName, "%s.%lu", pCfg->EthLinkName, pCfg->VLANID);
+            rc = sprintf_s(ifName, sizeof(ifName), "%s.%lu", pCfg->EthLinkName, pCfg->VLANID);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+                return ANSC_STATUS_FAILURE;
+            }
             getIfStats2((PUCHAR)ifName, &pEntry->LastStats);
         }
         else if (pEntry->Cfg.bEnabled && !pCfg->bEnabled)
@@ -1052,7 +1082,13 @@ CosaDmlEthVlanTerminationGetDinfo
         else
         {
            char ifName[256];
-           sprintf(ifName, "%s.%lu", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+           errno_t rc = -1;
+           rc = sprintf_s(ifName, sizeof(ifName), "%s.%lu", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+           if(rc < EOK)
+           {
+               ERR_CHK(rc);
+               return ANSC_STATUS_FAILURE;
+           }
            pEntry->DynamicInfo.Status = getIfStatus((PUCHAR)ifName, NULL);
         }
 
@@ -1073,6 +1109,7 @@ CosaDmlEthVlanTerminationGetStats
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    errno_t rc = -1;
     if (!pStats)
         return ANSC_STATUS_FAILURE;
 
@@ -1088,7 +1125,12 @@ CosaDmlEthVlanTerminationGetStats
     if (pEntry->Cfg.EthLinkName[0] && pEntry->Cfg.VLANID && pEntry->Cfg.bEnabled)
     {
        char ifName[256];
-       sprintf(ifName, "%s.%lu", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+       rc = sprintf_s(ifName, sizeof(ifName), "%s.%lu", pEntry->Cfg.EthLinkName, pEntry->Cfg.VLANID);
+       if(rc < EOK)
+       {
+           ERR_CHK(rc);
+           return ANSC_STATUS_FAILURE;
+       }
        pEntry->DynamicInfo.Status = getIfStatus((PUCHAR)ifName, NULL);
 
        if (pEntry->DynamicInfo.Status == COSA_DML_IF_STATUS_Up)
@@ -1640,90 +1682,139 @@ static int getIfStats2(const PUCHAR pName, PCOSA_DML_ETH_STATS pStats)
     UCHAR strCmd[512] = {0};
     UCHAR strBuf[128] = {0};
     FILE  *pFile      = NULL;
+    errno_t rc        = -1;
     
-    _ansc_sprintf
+    rc = sprintf_s
         (
             strCmd,
+            sizeof(strCmd),
             "cat /proc/net/dev | grep %s | tr : \" \" | awk '{print $2}'",
             pName
         );
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return -1;
+    }
     pFile = popen(strCmd, "r");
     fread(strBuf, sizeof(char), sizeof(strBuf), pFile);
     pStats->BytesReceived = _ansc_atoi(strBuf);
     pclose(pFile);
 
-    _ansc_sprintf
+    rc = sprintf_s
         (
             strCmd,
+            sizeof(strCmd),
             "cat /proc/net/dev | grep %s | tr : \" \" | awk '{print $3}'",
             pName
         );
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return -1;
+    }
     pFile = popen(strCmd, "r");
     fread(strBuf, sizeof(char), sizeof(strBuf), pFile);
     pStats->PacketsReceived= _ansc_atoi(strBuf);
     pclose(pFile);
 
-    _ansc_sprintf
+    rc = sprintf_s
         (
             strCmd,
+            sizeof(strCmd),
             "cat /proc/net/dev | grep %s | tr : \" \" | awk '{print $4}'",
             pName
         );
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return -1;
+    }
     pFile = popen(strCmd, "r");
     fread(strBuf, sizeof(char), sizeof(strBuf), pFile);
     pStats->ErrorsReceived= _ansc_atoi(strBuf);
     pclose(pFile);
 
-    _ansc_sprintf
+    rc = sprintf_s
         (
             strCmd,
+            sizeof(strCmd),
             "cat /proc/net/dev | grep %s | tr : \" \" | awk '{print $5}'",
             pName
         );
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return -1;
+    }
     pFile = popen(strCmd, "r");
     fread(strBuf, sizeof(char), sizeof(strBuf), pFile);
     pStats->DiscardPacketsReceived = _ansc_atoi(strBuf);
     pclose(pFile);
 
-    _ansc_sprintf
+    rc = sprintf_s
         (
             strCmd,
+            sizeof(strCmd),
             "cat /proc/net/dev | grep %s | tr : \" \" | awk '{print $10}'",
             pName
         );
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return -1;
+    }
     pFile = popen(strCmd, "r");
     fread(strBuf, sizeof(char), sizeof(strBuf), pFile);
     pStats->BytesSent= _ansc_atoi(strBuf);
     pclose(pFile);
 
-    _ansc_sprintf
+    rc = sprintf_s
         (
             strCmd,
+            sizeof(strCmd),
             "cat /proc/net/dev | grep %s | tr : \" \" | awk '{print $11}'",
             pName
         );
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return -1;
+    }
     pFile = popen(strCmd, "r");
     fread(strBuf, sizeof(char), sizeof(strBuf), pFile);
     pStats->PacketsSent = _ansc_atoi(strBuf);
     pclose(pFile);
 
-    _ansc_sprintf
+    rc = sprintf_s
         (
             strCmd,
+            sizeof(strCmd),
             "cat /proc/net/dev | grep %s | tr : \" \" | awk '{print $12}'",
             pName
         );
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return -1;
+    }
     pFile = popen(strCmd, "r");
     fread(strBuf, sizeof(char), sizeof(strBuf), pFile);
     pStats->ErrorsSent= _ansc_atoi(strBuf);
     pclose(pFile);
 
-    _ansc_sprintf
+    rc = sprintf_s
         (
             strCmd,
+            sizeof(strCmd),
             "cat /proc/net/dev | grep %s | tr : \" \" | awk '{print $13}'",
             pName
         );
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return -1;
+    }
     pFile = popen(strCmd, "r");
     fread(strBuf, sizeof(char), sizeof(strBuf), pFile);
     pStats->DiscardPacketsSent= _ansc_atoi(strBuf);
@@ -1787,11 +1878,16 @@ PCOSA_DML_ETH_VLAN_TERMINATION_FULL getVlanTermination(const ULONG ulInstanceNum
 static int saveID(char* ifName, char* pAlias, ULONG ulInstanceNumber) {
     UtopiaContext utctx;
     char idStr[COSA_DML_IF_NAME_LENGTH+10] = {0};
+    errno_t rc = -1;
     /* CID: 58910 Unchecked return value*/
     if(!Utopia_Init(&utctx))
        return -1;
 
-    sprintf(idStr,"%s,%lu", pAlias,ulInstanceNumber);
+    rc = sprintf_s(idStr, sizeof(idStr), "%s,%lu", pAlias,ulInstanceNumber);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
     Utopia_RawSet(&utctx,COSA_ETH_INT_ID_SYSCFG_NAMESPACE,ifName,idStr);
 
     Utopia_Free(&utctx,TRUE);

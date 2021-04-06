@@ -74,6 +74,7 @@
 #include "poam_irepfo_interface.h"
 #include "sys_definitions.h"
 #include <syscfg/syscfg.h>
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -363,6 +364,7 @@ CosaUsersBackendGetUserInfo
     PCOSA_CONTEXT_LINK_OBJECT       pUserCxtLink      = NULL;    
     PCOSA_CONTEXT_LINK_OBJECT       pUserCxtLink2     = NULL;    
     BOOL                            bNeedSave         = FALSE;
+    errno_t                         rc                = -1;
 
     /* Get Users.user.{i} */
     clientCount = CosaDmlUserGetNumberOfEntries(NULL);
@@ -412,7 +414,15 @@ CosaUsersBackendGetUserInfo
            if( atoi ( buff ) != 10 )
            {
 		memset(buff,0,sizeof(buff));
-		sprintf(buff, "%d", 10);
+
+		rc = sprintf_s(buff, sizeof(buff),"%d", 10);
+		if(rc < EOK)
+		{
+			ERR_CHK(rc);
+			AnscFreeMemory(pCosaUser);
+			returnStatus = ANSC_STATUS_FAILURE;
+			break;
+		}
 		syscfg_set(NULL, "PasswordLockoutAttempts", buff) ;
 		syscfg_commit() ;
            }
@@ -453,7 +463,15 @@ CosaUsersBackendGetUserInfo
             pCosaUser->InstanceNumber    = pMyObject->maxInstanceOfUser;
             pUserCxtLink->InstanceNumber = pCosaUser->InstanceNumber;
 
-            _ansc_sprintf(pCosaUser->Username, "Username%d", (int)pCosaUser->InstanceNumber);
+            rc = sprintf_s(pCosaUser->Username, sizeof(pCosaUser->Username),"Username%d", (int)pCosaUser->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pCosaUser);
+              AnscFreeMemory(pUserCxtLink);
+              returnStatus = ANSC_STATUS_FAILURE;
+              break;
+            }
 
             returnStatus = CosaDmlUserSetValues
                             (
@@ -781,6 +799,7 @@ CosaUsersRegSetUserInfo
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;    
     PSLAP_VARIABLE                  pSlapVariable     = NULL;
     char                            FolderName[16]    = {0};
+    errno_t                         rc                = -1;
 
     
     if ( !pPoamIrepFoUser )
@@ -856,7 +875,12 @@ CosaUsersRegSetUserInfo
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%d", (int)pCosaUser->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%d", (int)pCosaUser->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          continue;
+        }
 
         pPoamIrepFoEnumUser =
             pPoamIrepFoUser->AddFolder

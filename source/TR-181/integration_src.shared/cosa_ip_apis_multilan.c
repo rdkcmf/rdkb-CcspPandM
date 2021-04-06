@@ -77,6 +77,7 @@
 #include "linux/if.h"
 #include "linux/sockios.h"
 #include <sys/ioctl.h>
+#include "safec_lib_common.h"
 
 
 /**********************************************************************
@@ -164,6 +165,7 @@ CosaDmlIpIfMlanLoadPsm
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
     ULONG                           ulL2netInst     = 0;
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -203,12 +205,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_Enable,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -247,12 +254,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_Alias,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -277,7 +289,11 @@ CosaDmlIpIfMlanLoadPsm
             }
             else
             {
-                _ansc_strcpy(pIpIf->Cfg.Alias, SlapValue.Variant.varString);
+                rc = strcpy_s(pIpIf->Cfg.Alias, sizeof(pIpIf->Cfg.Alias), SlapValue.Variant.varString);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                }
             }
 
             SlapCleanVariable(&SlapValue);
@@ -287,12 +303,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_MaxMTU,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -331,12 +352,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_AutoIPEnable,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -375,12 +401,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_ArpCacheTimeout,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -419,12 +450,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_UpnpIgdEnabled,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -463,12 +499,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_IPv6Enable,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -503,12 +544,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -553,12 +599,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
                     (int)pIpIf->Cfg.LinkInstNum
                 );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -600,12 +651,17 @@ CosaDmlIpIfMlanLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
                     (int)ulL2netInst
                 );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -630,8 +686,17 @@ CosaDmlIpIfMlanLoadPsm
             }
             else
             {
-                _ansc_strcpy(pIpIf->Info.Name, SlapValue.Variant.varString);
-                _ansc_strcpy(pIpIf->Cfg.LinkName, pIpIf->Info.Name);
+                rc = strcpy_s(pIpIf->Info.Name, sizeof(pIpIf->Info.Name), SlapValue.Variant.varString);
+                if(rc != EOK)
+                {
+                  ERR_CHK(rc);
+                }
+
+                rc = strcpy_s(pIpIf->Cfg.LinkName, sizeof(pIpIf->Cfg.LinkName), pIpIf->Info.Name);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                }
             }
 
             SlapCleanVariable(&SlapValue);
@@ -669,20 +734,30 @@ CosaDmlIpIfMlanSavePsm
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = ccsp_string;
     char                            RecordValue[64] = {0};
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     if ( TRUE )     /* Enable */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_Enable,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+        }
 
         RecordType = ccsp_boolean;
-        _ansc_strcpy(RecordValue, pCfg->bEnabled ? PSM_TRUE : PSM_FALSE);
+        rc = strcpy_s(RecordValue, sizeof(RecordValue),(pCfg->bEnabled ? PSM_TRUE : PSM_FALSE));
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -710,15 +785,24 @@ CosaDmlIpIfMlanSavePsm
 
     if ( TRUE )     /* Alias */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_Alias,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+        }
 
         RecordType = ccsp_string;
-        _ansc_strcpy(RecordValue, pCfg->Alias);
+        rc = strcpy_s(RecordValue,sizeof(RecordValue), pCfg->Alias);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -746,15 +830,24 @@ CosaDmlIpIfMlanSavePsm
 
     if ( TRUE )     /* MaxMTU */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_MaxMTU,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%lu", pCfg->MaxMTUSize);
+        rc = sprintf_s(RecordValue,sizeof(RecordValue), "%lu", pCfg->MaxMTUSize);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -782,16 +875,24 @@ CosaDmlIpIfMlanSavePsm
 
     if ( TRUE )     /* AutoIPEnable */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_AutoIPEnable,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_boolean;
-        _ansc_strcpy(RecordValue, pCfg->AutoIPEnable ? PSM_TRUE : PSM_FALSE);
-
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), (pCfg->AutoIPEnable ? PSM_TRUE : PSM_FALSE));
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+        }
         iReturnValue =
             PSM_Set_Record_Value2
                 (
@@ -818,15 +919,24 @@ CosaDmlIpIfMlanSavePsm
 
     if ( TRUE )     /* ArpCacheTimeout */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_ArpCacheTimeout,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%lu", pCfg->ArpCacheTimeout);
+        rc = sprintf_s(RecordValue, sizeof(RecordValue), "%lu", pCfg->ArpCacheTimeout);
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -854,16 +964,24 @@ CosaDmlIpIfMlanSavePsm
 
     if ( TRUE )     /* UPnPIGDEnabled */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_UpnpIgdEnabled,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_boolean;
-        _ansc_strcpy(RecordValue, pCfg->UpnpIgdEnabled ? PSM_TRUE : PSM_FALSE);
-
+        rc = strcpy_s(RecordValue, sizeof(RecordValue),(pCfg->UpnpIgdEnabled ? PSM_TRUE : PSM_FALSE));
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+        }
         iReturnValue =
             PSM_Set_Record_Value2
                 (
@@ -890,15 +1008,24 @@ CosaDmlIpIfMlanSavePsm
 #if defined (MULTILAN_FEATURE)
     if ( TRUE )     /* IPv6Enable */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_IPv6Enable,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_string;
-        _ansc_strcpy(RecordValue, pCfg->bIPv6Enabled ? "true" : "false");
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), (pCfg->bIPv6Enabled ? "true" : "false"));
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -926,15 +1053,24 @@ CosaDmlIpIfMlanSavePsm
 #endif
     if ( TRUE )     /* EthLink */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%lu", pCfg->LinkInstNum);
+        rc = sprintf_s(RecordValue, sizeof(RecordValue), "%lu", pCfg->LinkInstNum);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -974,17 +1110,23 @@ CosaDmlIpIfMlanDelPsm
     UNREFERENCED_PARAMETER(pIpContext);
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     if ( TRUE )     /* Enable */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Del_Record
@@ -1082,6 +1224,7 @@ CosaDmlIpIfMlanSetValues
     PDMSB_TR181_IP_CONTEXT          pIpContext     = (PDMSB_TR181_IP_CONTEXT)hContext;
     PSINGLE_LINK_ENTRY              pSLinkEntry;
     PDMSB_TR181_IP_IF               pIpIf;
+    errno_t                         rc             = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1092,7 +1235,12 @@ CosaDmlIpIfMlanSetValues
         pIpIf = ACCESS_DMSB_TR181_IP_IF(pSLinkEntry);
 
         /* Instance number cannot be changed! */
-        _ansc_strcpy(pIpIf->Cfg.Alias, pAlias);
+        rc = strcpy_s(pIpIf->Cfg.Alias, sizeof(pIpIf->Cfg.Alias), pAlias);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return ANSC_STATUS_FAILURE;
+        }
 
         CosaDmlIpIfMlanSavePsm(pIpContext, &pIpIf->Cfg);
     }
@@ -1124,6 +1272,7 @@ CosaDmlIpIfMlanAddEntry
     int                             iReturnValue    = CCSP_SUCCESS;
     PDMSB_TR181_IP_CONTEXT          pIpContext     = (PDMSB_TR181_IP_CONTEXT)hContext;
     PDMSB_TR181_IP_IF               pIpIf;
+    errno_t                         rc             = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1164,9 +1313,10 @@ CosaDmlIpIfMlanAddEntry
 #endif
                 SlapInitVariable(&SlapValue);
 
-                _ansc_sprintf
+                rc = sprintf_s
                  (
                      pParamPath,
+                     sizeof(pParamPath),
 #if defined (MULTILAN_FEATURE)
                      DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
 #else
@@ -1174,6 +1324,10 @@ CosaDmlIpIfMlanAddEntry
 #endif
                     (int)pIpIf->Cfg.LinkInstNum
                   );
+                if(rc < EOK)
+                {
+                   ERR_CHK(rc);
+                }
 
                 iReturnValue =
                    PSM_Get_Record_Value
@@ -1208,7 +1362,11 @@ CosaDmlIpIfMlanAddEntry
 #else
                 else
                 {
-		    _ansc_strcpy(pIpIf->Info.Name, SlapValue.Variant.varString);
+                    rc = strcpy_s(pIpIf->Info.Name, sizeof(pIpIf->Info.Name), SlapValue.Variant.varString);
+                    if(rc != EOK)
+                    {
+                       ERR_CHK(rc);
+                    }
 #endif
                 }
 
@@ -1221,12 +1379,17 @@ CosaDmlIpIfMlanAddEntry
                 {
                     SlapInitVariable(&SlapValue);
 
-                    _ansc_sprintf
+                    rc = sprintf_s
                       (
                           pParamPath,
+                          sizeof(pParamPath),
                           DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
                           (int)ulL2netInst
                       );
+                    if(rc < EOK)
+                    {
+                      ERR_CHK(rc);
+                    }
 
                     iReturnValue =
                       PSM_Get_Record_Value
@@ -1244,9 +1407,21 @@ CosaDmlIpIfMlanAddEntry
                     }
 			        else
                     {
-                        _ansc_strcpy(pIpIf->Info.Name, SlapValue.Variant.varString);
-                        _ansc_strcpy(pIpIf->Cfg.LinkName, pIpIf->Info.Name);
-                        _ansc_strcpy(pEntry->Info.Name, pIpIf->Info.Name);
+                        rc = strcpy_s(pIpIf->Info.Name, sizeof(pIpIf->Info.Name), SlapValue.Variant.varString);
+                        if(rc != EOK)
+                        {
+                          ERR_CHK(rc);
+                        }
+                        rc = strcpy_s(pIpIf->Cfg.LinkName, sizeof(pIpIf->Cfg.LinkName), pIpIf->Info.Name);
+                        if(rc != EOK)
+                        {
+                           ERR_CHK(rc);
+                        }
+                        rc = STRCPY_S_NOCLOBBER(pEntry->Info.Name, sizeof(pEntry->Info.Name), pIpIf->Info.Name);
+                        if(rc != EOK)
+                        {
+                           ERR_CHK(rc);
+                        }
                     }
 
                     SlapCleanVariable(&SlapValue);
@@ -1309,6 +1484,7 @@ CosaDmlIpIfMlanSetCfg
 {
     PDMSB_TR181_IP_CONTEXT          pIpContext     = (PDMSB_TR181_IP_CONTEXT)hContext;
     PDMSB_TR181_IP_IF               pIpIf;
+    errno_t                         rc             = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1333,7 +1509,11 @@ CosaDmlIpIfMlanSetCfg
 #endif
 
         /* Update the name -- just copy LinkName to Name field */
-        _ansc_strcpy(pIpIf->Info.Name, pCfg->LinkName);
+        rc = strcpy_s(pIpIf->Info.Name, sizeof(pIpIf->Info.Name), pCfg->LinkName);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         /*
          *  Reset stats
@@ -1495,6 +1675,7 @@ CosaDmlIpIfMlanGetIPv4Addr
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1505,12 +1686,17 @@ CosaDmlIpIfMlanGetIPv4Addr
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4Addr,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -1548,6 +1734,7 @@ CosaDmlIpIfMlanGetSubnetMask
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1558,12 +1745,17 @@ CosaDmlIpIfMlanGetSubnetMask
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4SubnetMask,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -1604,6 +1796,7 @@ CosaDmlIpIfMlanGetV4Addr
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1620,12 +1813,17 @@ CosaDmlIpIfMlanGetV4Addr
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4Addr,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -1656,12 +1854,17 @@ CosaDmlIpIfMlanGetV4Addr
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4SubnetMask,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -1691,7 +1894,11 @@ CosaDmlIpIfMlanGetV4Addr
     if ( TRUE )
     {
         pEntry->InstanceNumber  = 1;
-        _ansc_sprintf(pEntry->Alias, "%lu", pEntry->InstanceNumber);
+        rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias) , "%lu", pEntry->InstanceNumber);
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+        }
         pEntry->bEnabled        = TRUE;
         pEntry->Status          = COSA_DML_IP_ADDR_STATUS_Enabled;
         pEntry->AddressingType  = COSA_DML_IP_ADDR_TYPE_Static;
@@ -1776,6 +1983,7 @@ CosaDmlIpIfMlanSetV4Addr
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = ccsp_string;
     char                            RecordValue[64] = {0};
+    errno_t                         rc              = -1;
 
     if ( pEntry->InstanceNumber != 1 )
     {
@@ -1799,16 +2007,24 @@ CosaDmlIpIfMlanSetV4Addr
      */
     if ( TRUE )     /* V4Addr */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4Addr,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_string;
-        _ansc_strcpy(RecordValue, _ansc_inet_ntoa(*((struct in_addr*)pEntry->IPAddress.Dot)));
-
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), _ansc_inet_ntoa(*((struct in_addr*)pEntry->IPAddress.Dot)));
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+        }
         iReturnValue =
             PSM_Set_Record_Value2
                 (
@@ -1828,15 +2044,24 @@ CosaDmlIpIfMlanSetV4Addr
 
     if ( TRUE )     /* V4SubnetMask */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4SubnetMask,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_string;
-        _ansc_strcpy(RecordValue, _ansc_inet_ntoa(*((struct in_addr*)pEntry->SubnetMask.Dot)));
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), _ansc_inet_ntoa(*((struct in_addr*)pEntry->SubnetMask.Dot)));
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -1873,6 +2098,7 @@ CosaDmlIpIfMlanGetV4Addr2
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1883,12 +2109,17 @@ CosaDmlIpIfMlanGetV4Addr2
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4Addr,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -1919,12 +2150,17 @@ CosaDmlIpIfMlanGetV4Addr2
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_V4SubnetMask,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -1954,7 +2190,11 @@ CosaDmlIpIfMlanGetV4Addr2
     if ( TRUE )
     {
         pEntry->InstanceNumber  = 1;
-        _ansc_sprintf(pEntry->Alias, "%lu", pEntry->InstanceNumber);
+        rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias), "%lu", pEntry->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
         pEntry->bEnabled        = TRUE;
         pEntry->Status          = COSA_DML_IP_ADDR_STATUS_Enabled;
         pEntry->AddressingType  = COSA_DML_IP_ADDR_TYPE_Static;
@@ -2038,6 +2278,7 @@ CosaDmlIpIfMlanGetV6Addr2
     char                            evt_name[64] = {0};
     char                            evt_value[64] = {0};
     char                            out[32] = {0};
+    errno_t                         rc      = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -2048,12 +2289,17 @@ CosaDmlIpIfMlanGetV6Addr2
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -2081,12 +2327,17 @@ CosaDmlIpIfMlanGetV6Addr2
          */
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
                 ethlink_instnum
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -2150,6 +2401,7 @@ CosaDmlIpIfMlanGetV6Addr2
     char                            evt_name[64] = {0};
     char                            evt_value[64] = {0};
     char                            out[32] = {0};
+    errno_t                         rc      = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -2160,12 +2412,17 @@ CosaDmlIpIfMlanGetV6Addr2
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -2308,6 +2565,7 @@ CosaDmlIpIfMlanGetV6Prefix2
     char                            evt_name[64] = {0};
     char                            evt_value[64] = {0};
     char                            out[32] = {0};
+    errno_t                         rc      = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -2318,12 +2576,17 @@ CosaDmlIpIfMlanGetV6Prefix2
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -2351,12 +2614,17 @@ CosaDmlIpIfMlanGetV6Prefix2
          */
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
                 ethlink_instnum
             );
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -2423,6 +2691,7 @@ CosaDmlIpIfMlanGetV6Prefix2
     char                            evt_name[64] = {0};
     char                            evt_value[64] = {0};
     char                            out[32] = {0};
+    errno_t                         rc      = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -2433,12 +2702,17 @@ CosaDmlIpIfMlanGetV6Prefix2
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_l3net_Root DMSB_TR181_PSM_l3net_i DMSB_TR181_PSM_l3net_EthLink,
                 (int)ulIpIfInstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value

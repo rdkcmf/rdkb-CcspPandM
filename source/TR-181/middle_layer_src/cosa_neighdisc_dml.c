@@ -69,6 +69,7 @@
 #include "ansc_platform.h"
 #include "cosa_neighdisc_apis.h"
 #include "cosa_neighdisc_internal.h"
+#include "safec_lib_common.h"
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -798,6 +799,7 @@ InterfaceSetting2_AddEntry
     PSLIST_HEADER                   pNeighdiscIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext         = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_NEIGHDISC_IF_FULL     pNeighdiscInterface  = (PCOSA_DML_NEIGHDISC_IF_FULL)NULL;
+    errno_t                         rc                   = -1;
 
 #ifdef _COSA_DRG_CNS_
     /*not supported*/
@@ -811,7 +813,13 @@ InterfaceSetting2_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pNeighdiscInterface->Cfg.Alias, "Interface%d", (int)pMyObject->ulNextInterfaceInsNum); 
+    rc = sprintf_s(pNeighdiscInterface->Cfg.Alias, sizeof(pNeighdiscInterface->Cfg.Alias),"Interface%d", (int)pMyObject->ulNextInterfaceInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pNeighdiscInterface);
+      return NULL;
+    }
 
     if ( TRUE )
     {

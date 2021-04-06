@@ -71,6 +71,9 @@
 #include "cosa_apis.h"
 #include "plugin_main_apis.h"
 #include "cosa_interfacestack_internal.h"
+#include "safec_lib_common.h"
+
+#define TABLE_SIZE 256
 
 static int CosaIFStackGetParamValueString(char *pParamName, char *pParamValue, ULONG *pValueSize);
 static ULONG CosaIFStackGetParamValueULong(char *pParamName);
@@ -529,7 +532,8 @@ CosaIFStackCreateAll
                                                              ucTable3, ucTable4,
                                                              ucTable5, ucTable6,
                                                              ucTable7, ucTable8,
-                                                             ucTable9, ucTable10};    
+                                                             ucTable9, ucTable10};
+    errno_t                         rc                    = -1;
 
     /* Empty interfaceStack table first */
     CosaIFStackEmptyTable(pMyObject);
@@ -568,7 +572,12 @@ CosaIFStackCreateAll
             ulNumOfParent =  CosaIFStackGetParamValueULong(ucTableParam);  
 
             /* To get like Device.Bridging.Bridge. */
-            _ansc_sprintf(ucTableParam + ulLength, "."); 
+            rc = strcpy_s(ucTableParam + ulLength,sizeof(ucTableParam)-ulLength,".");
+            if(rc != EOK)
+            {
+              ERR_CHK(rc);
+              continue;
+            }
         }
         else
         {
@@ -592,11 +601,17 @@ CosaIFStackCreateAll
                 } 
                 
                 /* To get like Device.Bridging.Bridge.1.Port */
-                _ansc_sprintf(pAllTable[i],
+                rc = sprintf_s(pAllTable[i],
+                              TABLE_SIZE,
                               "%s%lu%s",
                               ucTableParam,
                               ulEntryInstanceNum,
-                              ucEntryFullPath); 
+                              ucEntryFullPath);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  continue;
+                }
 
                 ulLength = AnscSizeOfString((const char*)pAllTable[i]);
 
@@ -606,7 +621,12 @@ CosaIFStackCreateAll
                 ulNumOfEntry = CosaIFStackGetParamValueULong(pAllTable[i]);  
 
                 /* To get like Device.Bridging.Bridge.1.Port. */
-                _ansc_sprintf(pAllTable[i] + ulLength, "."); 
+                rc = strcpy_s(pAllTable[i] + ulLength, TABLE_SIZE - ulLength,".");
+                if(rc != EOK)
+                {
+                  ERR_CHK(rc);
+                  continue;
+                }
             }
             else
             {
@@ -639,18 +659,29 @@ CosaIFStackCreateAll
                 AnscZeroMemory(sInterfaceStack.HigherLayer, COSA_IFSTACK_NAME_LENGTH);
                 AnscZeroMemory(sInterfaceStack.HigherAlias, COSA_IFSTACK_ALIAS_LENGTH);
                 
-                _ansc_sprintf(sInterfaceStack.HigherLayer,
+                rc = sprintf_s(sInterfaceStack.HigherLayer,
+                              sizeof(sInterfaceStack.HigherLayer),
                               "%s%lu",
                               pAllTable[i],
                               ulSubEntryInsNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  continue;
+                }
 
                 /* 2. To get value of table like Device.Ethernet.Link.{i}.Alias */
                 ulEntryNameLen = 64;            
                     
-                _ansc_sprintf(ucEntryParamName,
-                              "%s%s",
-                              sInterfaceStack.HigherLayer,
-                              ".Alias");
+                rc = sprintf_s(ucEntryParamName,
+                              sizeof(ucEntryParamName),
+                              "%s.Alias",
+                              sInterfaceStack.HigherLayer);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  continue;
+                }
 
                 ulEntryNameLen = sizeof(ucEntryNameValue);
                 returnValue = CosaIFStackGetParamValueString(ucEntryParamName,
@@ -670,10 +701,15 @@ CosaIFStackCreateAll
                 /* 3. To get value of table like Device.Ethernet.Link.{i}.LowerLayers */
                 ulEntryNameLen = 1024;            
                     
-                _ansc_sprintf(ucEntryParamName,
-                              "%s%s",
-                              sInterfaceStack.HigherLayer,
-                              ".LowerLayers");
+                rc = sprintf_s(ucEntryParamName,
+                              sizeof(ucEntryParamName),
+                              "%s.LowerLayers",
+                              sInterfaceStack.HigherLayer);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  continue;
+                }
 
                 ulEntryNameLen = sizeof(ucEntryNameValue);
                 returnValue = CosaIFStackGetParamValueString(ucEntryParamName,
@@ -729,11 +765,15 @@ CosaIFStackCreateAll
                             /* 4.2 To get one LowerLayer.Alias */
                             ulEntryNameLen = 64;
                             
-                            _ansc_sprintf(ucEntryParamName,
-                                          "%s%s",
-                                          sInterfaceStack.LowerLayer,
-                                          ".Alias");
-                            
+                            rc = sprintf_s(ucEntryParamName,
+                                          sizeof(ucEntryParamName),
+                                          "%s.Alias",
+                                          sInterfaceStack.LowerLayer);
+                            if(rc < EOK)
+                            {
+                               ERR_CHK(rc);
+                               continue;
+                            }               
                             ulEntryNameLen = sizeof(ucEntryNameValue);
                             returnValue = CosaIFStackGetParamValueString(ucEntryParamName,
                                                                 ucEntryNameValue,

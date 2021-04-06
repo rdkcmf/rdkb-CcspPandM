@@ -70,6 +70,7 @@
 
 #include "cosa_ethernet_internal.h"
 #include <syscfg/syscfg.h>
+#include "safec_lib_common.h"
 
 #define ONE_HR 60*60
 
@@ -171,6 +172,7 @@ CosaEthernetInitialize
     ULONG                           ulEntryCount        = 0;
     ULONG                           ulIndex             = 0;
     ULONG                           ulNextInsNum        = 0;
+    errno_t                         rc                  = -1;
 
     /* Initiation all functions */
     CosaDmlEthInit(NULL, &pMyObject->hSbContext);
@@ -191,7 +193,12 @@ CosaEthernetInitialize
         {
             pMyObject->EthernetPortFullTable[ulIndex].Cfg.InstanceNumber = ulNextInsNum;
 
-            _ansc_sprintf(pMyObject->EthernetPortFullTable[ulIndex].Cfg.Alias, "Interface%d", (int)ulNextInsNum);
+            rc = sprintf_s(pMyObject->EthernetPortFullTable[ulIndex].Cfg.Alias, sizeof(pMyObject->EthernetPortFullTable[ulIndex].Cfg.Alias),"Interface%d", (int)ulNextInsNum);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              return ANSC_STATUS_FAILURE;
+            }
 
             CosaDmlEthPortSetValues(NULL, ulIndex, ulNextInsNum, pMyObject->EthernetPortFullTable[ulIndex].Cfg.Alias);
 
@@ -368,7 +375,14 @@ CosaEthernetInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pEntry->Cfg.Alias, "Link%d", (int)pCosaContext->InstanceNumber);
+                rc = sprintf_s(pEntry->Cfg.Alias, sizeof(pEntry->Cfg.Alias),"Link%d", (int)pCosaContext->InstanceNumber);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  AnscFreeMemory(pCosaContext);
+                  AnscFreeMemory(pEntry);
+                  return ANSC_STATUS_FAILURE;
+                }
 
                 CosaDmlEthLinkSetValues
                 (
@@ -868,6 +882,7 @@ CosaEthPortGetAssocDevices
 {
     int     i = 0,j = 0;
     char macAddr[MACADDR_SZ];
+    errno_t rc = -1;
 
     maclist[0] = '\0';
 
@@ -876,7 +891,12 @@ CosaEthPortGetAssocDevices
         memset(macAddr,0,sizeof(macAddr));
         if(i > 0)
             strcat(maclist, ",");
-        sprintf(macAddr, "%02x:%02x:%02x:%02x:%02x:%02x", mac[i], mac[i+1], mac[i+2], mac[i+3], mac[i+4], mac[i+5]);
+        rc = sprintf_s(macAddr, sizeof(macAddr),"%02x:%02x:%02x:%02x:%02x:%02x", mac[i], mac[i+1], mac[i+2], mac[i+3], mac[i+4], mac[i+5]);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return ANSC_STATUS_FAILURE;
+        }
         strcat(maclist,macAddr);
         i += MAC_SZ;
     }

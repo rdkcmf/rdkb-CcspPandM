@@ -79,6 +79,7 @@
 #include "secure_wrapper.h"
 #include "cosa_drg_common.h"
 #include "ccsp_psm_helper.h"
+#include "safec_lib_common.h"
 
 #if defined (_XB6_PRODUCT_REQ_) || defined (_XB7_PRODUCT_REQ_)
 #define LED_SOLID 0
@@ -842,6 +843,7 @@ CosaDmlDcGetWanHostName
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    errno_t safec_rc = -1;
 #if 0
     UtopiaContext ctx;
     PCOSA_DATAMODEL_DEVICECONTROL pDc;
@@ -870,9 +872,16 @@ CosaDmlDcGetWanHostName
     if(buf[strlen(buf)-1] == '\n')
         buf[strlen(buf)-1] = '\0';
 
-    strcpy(pHostName, buf);
-
-    strcpy(g_HostName, buf);
+    safec_rc = strcpy_s(pHostName, sizeof(g_HostName), buf);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(g_HostName, sizeof(g_HostName), buf);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     fclose(hostName);
 
@@ -1005,6 +1014,7 @@ CosaDmlDcSetWanStaticIPAddress
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
     char buf[256];
+    errno_t safec_rc = -1;
 
     if (!Utopia_Init(&utctx))
     {
@@ -1012,7 +1022,11 @@ CosaDmlDcSetWanStaticIPAddress
         return ANSC_STATUS_FAILURE;
     }
 
-    _ansc_sprintf(buf, "%d.%d.%d.%d", ((ANSC_IPV4_ADDRESS)ipAddr).Dot[0], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[1], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[2], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[3] );
+    safec_rc = sprintf_s(buf, sizeof(buf), "%d.%d.%d.%d", ((ANSC_IPV4_ADDRESS)ipAddr).Dot[0], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[1], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[2], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[3] );
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     Utopia_Set(&utctx, UtopiaValue_WAN_IPAddr, buf);
 
@@ -1031,6 +1045,7 @@ CosaDmlDcSetWanStaticSubnetMask
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
     char buf[256];
+    errno_t safec_rc = -1;
 
     if (!Utopia_Init(&utctx))
     {
@@ -1038,7 +1053,11 @@ CosaDmlDcSetWanStaticSubnetMask
         return ANSC_STATUS_FAILURE;
     }
 
-    _ansc_sprintf(buf, "%d.%d.%d.%d", ((ANSC_IPV4_ADDRESS)ipAddr).Dot[0], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[1], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[2], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[3] );
+    safec_rc = sprintf_s(buf, sizeof(buf),"%d.%d.%d.%d", ((ANSC_IPV4_ADDRESS)ipAddr).Dot[0], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[1], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[2], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[3] );
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     Utopia_Set(&utctx, UtopiaValue_WAN_Netmask, buf);
 	
@@ -1057,6 +1076,7 @@ CosaDmlDcSetWanStaticGatewayIP
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
     char buf[256];
+    errno_t  safec_rc = -1;
 
     if (!Utopia_Init(&utctx))
     {
@@ -1064,7 +1084,11 @@ CosaDmlDcSetWanStaticGatewayIP
         return ANSC_STATUS_FAILURE;
     }
 
-    _ansc_sprintf(buf, "%d.%d.%d.%d", ((ANSC_IPV4_ADDRESS)ipAddr).Dot[0], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[1], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[2], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[3] );
+    safec_rc = sprintf_s(buf, sizeof(buf), "%d.%d.%d.%d", ((ANSC_IPV4_ADDRESS)ipAddr).Dot[0], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[1], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[2], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[3] );
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     Utopia_Set(&utctx, UtopiaValue_WAN_DefaultGateway, buf);
 
@@ -1123,6 +1147,7 @@ CosaDmlDcSetWanNameServer
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx;
     char buf[256];
+    errno_t safec_rc = -1;
 
     if (!Utopia_Init(&utctx))
     {
@@ -1130,7 +1155,11 @@ CosaDmlDcSetWanNameServer
         return ANSC_STATUS_FAILURE;
     }
 
-    _ansc_sprintf(buf, "%d.%d.%d.%d", ((ANSC_IPV4_ADDRESS)ipAddr).Dot[0], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[1], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[2], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[3] );
+    safec_rc = sprintf_s(buf, sizeof(buf), "%d.%d.%d.%d", ((ANSC_IPV4_ADDRESS)ipAddr).Dot[0], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[1], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[2], ((ANSC_IPV4_ADDRESS)ipAddr).Dot[3] );
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     Utopia_Set(&utctx, nameServerNo == 1 ? UtopiaValue_WAN_NameServer1 : UtopiaValue_WAN_NameServer2, buf);
 	
@@ -1362,8 +1391,13 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 	int                         size = 0;
 	componentStruct_t **        ppComponents = NULL;
 	char*   faultParam = NULL;
+	errno_t  safec_rc = -1;
 
-	sprintf(dst_pathname_cr, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+	safec_rc = sprintf_s(dst_pathname_cr, sizeof(dst_pathname_cr), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+	if(safec_rc < EOK)
+	{
+		ERR_CHK(safec_rc);
+	}
 
 	ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
 		    dst_pathname_cr,
@@ -1408,8 +1442,11 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 			syscfg_set(NULL, "wifi_reset_count", buf);
 
 			FILE *fp = NULL;
-			memset(buf,0,sizeof(buf));
-			sprintf(buf, "date");
+			safec_rc = strcpy_s(buf, sizeof(buf), "date");
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 			char buffer[50] = {0};
 			memset(buffer,0,sizeof(buffer));
 			fp = popen(buf, "r");
@@ -1579,11 +1616,8 @@ CosaDmlDcSetRebootDevice
 	syscfg_set(NULL, "reboot_count", buf);
 
 		FILE *fp = NULL;
-		memset(buf,0,sizeof(buf));
-		sprintf(buf, "date");
 		char buffer[50] = {0};
-		memset(buffer,0,sizeof(buffer));
-        fp = popen(buf, "r");
+        fp = popen("date", "r");
 		if( fp != NULL) {         
 		    while(fgets(buffer, sizeof(buffer), fp)!=NULL){
 			    buffer[strlen(buffer) - 1] = '\0';
@@ -1612,9 +1646,14 @@ CosaDmlDcSetRebootDevice
             char*   faultParam = NULL;
             extern char        g_Subsystem[32];
             char   dst_pathname_cr[64]  =  {0};
+            errno_t safec_rc = -1;
             CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
-            sprintf(dst_pathname_cr, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+            safec_rc = sprintf_s(dst_pathname_cr, sizeof(dst_pathname_cr), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
 
             ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
                     dst_pathname_cr,
@@ -2115,11 +2154,16 @@ CosaDmlDcSetFactoryReset
 	CcspTraceWarning(("[%s]:Restoring Voice to factory default ...\n",__FUNCTION__));
 	int ret = -1;
 	char* faultParam = NULL;
+	errno_t safec_rc = -1;
 	componentStruct_t **        ppVoiceComponent = NULL;
 	int                         size = 0;
 	parameterValStruct_t    val = { "Device.Services.VoiceService.1.X_RDK-Central_COM_VoiceProcessState", "FactoryDefault", ccsp_string};
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-	sprintf(dst_pathname_cr, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+	safec_rc = sprintf_s(dst_pathname_cr, sizeof(dst_pathname_cr),"%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+	if(safec_rc < EOK)
+	{
+		ERR_CHK(safec_rc);
+	}
 
 	ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
 	                                               dst_pathname_cr,
@@ -2882,8 +2926,12 @@ CosaDmlDcSetReinitMacThreshold
 #else
     UNREFERENCED_PARAMETER(hContext);
     char buf[5];
-    memset(buf,0,sizeof(buf));
-    sprintf(buf,"%lu",value);
+    errno_t safec_rc = -1;
+    safec_rc = sprintf_s(buf, sizeof(buf), "%lu",value);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 	
     if((syscfg_set( NULL, "rdkbReinitMacThreshold", buf)) != 0 )
     {
@@ -3666,6 +3714,7 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
 	char acBridgeMode[ 4 ],
 		 acSetRadioString[ 8 ],
 		 acSetSSIDString[ 8 ];
+	errno_t safec_rc = -1;
 
     checkTicket(pNotify->ticket);
 
@@ -3685,31 +3734,46 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
 	{
 		case BRIDGE_MODE_STATIC:
 		{
-			memset( acSetRadioString, 0 ,sizeof( acSetRadioString ) );
-			sprintf( acSetRadioString, "%s", "true" );
-
-			memset( acSetSSIDString, 0 ,sizeof( acSetSSIDString ) );
-			sprintf( acSetSSIDString, "%s", "false" );
+			safec_rc = strcpy_s( acSetRadioString, sizeof(acSetRadioString), "true" );
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
+			safec_rc = strcpy_s( acSetSSIDString,sizeof(acSetSSIDString), "false" );
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		}
 		break; /* BRIDGE_MODE_STATIC */
 
 		case BRIDGE_MODE_FULL_STATIC:
 		{
-			memset( acSetRadioString, 0 ,sizeof( acSetRadioString ) );
-			sprintf( acSetRadioString, "%s", "false" );
-
-			memset( acSetSSIDString, 0 ,sizeof( acSetSSIDString ) );
-			sprintf( acSetSSIDString, "%s", "false" );
+			safec_rc = strcpy_s( acSetRadioString, sizeof( acSetRadioString ), "false" );
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
+			safec_rc = strcpy_s( acSetSSIDString,sizeof( acSetSSIDString ), "false" );
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		}
 		break; /* BRIDGE_MODE_FULL_STATIC */
 
 		default: /* BRIDGE_MODE_OFF */
 		{
-			memset( acSetRadioString, 0 ,sizeof( acSetRadioString ) );
-			sprintf( acSetRadioString, "%s", "true" );
-
-			memset( acSetSSIDString, 0 ,sizeof( acSetSSIDString ) );
-			sprintf( acSetSSIDString, "%s", "true" );
+			safec_rc = strcpy_s( acSetRadioString,sizeof( acSetRadioString ), "true" );
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
+			safec_rc = strcpy_s( acSetSSIDString,sizeof( acSetSSIDString ), "true" );
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		}
 		break;
 	}
@@ -3982,6 +4046,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
             FILE *fp1;
             char buf[DATA_SIZE] = {0};
             char *urlPtr = NULL;
+            errno_t safec_rc = -1;
 
             // Grab the ATOM RPC IP address
             // sprintf(cmd1, "cat /etc/device.properties | grep ATOM_ARPING_IP | cut -f 2 -d\"=\"");
@@ -4028,8 +4093,12 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
                     // we are the child
                     char cmd[DATA_SIZE] = {0};
                     CcspTraceInfo(("Sending subnet_change notification to ATOM IP %s \n", urlPtr));
-                    sprintf(cmd, "/usr/bin/sysevent set subnet_change \"RDK|%s|%s\"",
+                    safec_rc = sprintf_s(cmd, sizeof(cmd), "/usr/bin/sysevent set subnet_change \"RDK|%s|%s\"",
                             lan.ipaddr,lan.netmask);
+                    if(safec_rc < EOK)
+                    {
+                        ERR_CHK(safec_rc);
+                    }
                     char *args[] = {"/fss/gw/usr/bin/rpcclient", urlPtr, cmd, (char *) 0 };
                     execv(args[0], args);
                     _exit(EXIT_FAILURE);   // exec never returns
@@ -4043,6 +4112,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
             #define DATA_SIZE 1024
 
 			pid_t pid = fork();
+			errno_t safec_rc = -1;
 
 			if (pid == -1)
 			{
@@ -4058,7 +4128,11 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 				// we are the child
 				char cmd[DATA_SIZE] = {0};
 				CcspTraceInfo(("Sending subnet_change notification \n"));
-				sprintf(cmd, "RDK|%s|%s", lan.ipaddr, lan.netmask);
+				safec_rc = sprintf_s(cmd, sizeof(cmd), "RDK|%s|%s", lan.ipaddr, lan.netmask);
+				if(safec_rc < EOK)
+				{
+					ERR_CHK(safec_rc);
+				}
 				char *args[] = {"/usr/bin/sysevent", "set", "subnet_change", cmd, (char *) 0 };
 				execv(args[0], args);
 				_exit(EXIT_FAILURE);   // exec never returns
@@ -4571,6 +4645,7 @@ BOOL IsPortInUse(unsigned int port)
     unsigned int tmpPort;
     long long uint64Inode;
     int r,i;
+    errno_t safec_rc = -1;
     WebServConf_t conf;
 
     if (LoadWebServConf(&conf) == 0)
@@ -4581,8 +4656,11 @@ BOOL IsPortInUse(unsigned int port)
 
     for (i=0; i<2; i++)
     {
-        sprintf(path,"/proc/net/%s",proto[i]);
-
+        safec_rc = sprintf_s(path, sizeof(path), "/proc/net/%s",proto[i]);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         f = fopen (path,"r");
         if (f != NULL)
         {

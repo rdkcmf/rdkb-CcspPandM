@@ -69,6 +69,7 @@
 #include "cosa_x_cisco_com_mld_apis.h"
 #include "cosa_x_cisco_com_mld_internal.h"
 #include "plugin_main_apis.h"
+#include "safec_lib_common.h"
 
 #if ( defined _COSA_SIM_ )
 
@@ -318,8 +319,7 @@ CosaDmlMldSetCfg
             {
                 if ( pCfg->bEnabled == TRUE )
                 {
-                    sprintf(buffer, "/usr/sbin/ecmh -i wan0");
-                    system(buffer);
+                    system("/usr/sbin/ecmh -i wan0");
                 }
             }
             else
@@ -339,8 +339,7 @@ CosaDmlMldSetCfg
     {
         if ( pCfg->bEnabled == TRUE )
         {
-            sprintf(buffer, "/usr/sbin/ecmh -i wan0");
-            system(buffer);
+            system("/usr/sbin/ecmh -i wan0");
         }
     }
 #endif
@@ -410,6 +409,7 @@ CosaDmlMldGetGroup
     char *pch;
     long count;
     char *st = NULL;
+    errno_t safec_rc = -1;
 
     if (!pulCount || !pMldGroupArray)
     {
@@ -472,7 +472,11 @@ CosaDmlMldGetGroup
                             return ANSC_STATUS_SUCCESS;
                         }
                         
-                        strcpy(pMldGroupArray[count].GroupAddress, pch);
+                        safec_rc = strcpy_s(pMldGroupArray[count].GroupAddress, sizeof(pMldGroupArray[count].GroupAddress), pch);
+                        if(safec_rc != EOK)
+                        {
+                            ERR_CHK(safec_rc);
+                        }
                         pMldGroupArray[count].Interfaces[0] = '\0';
 
                         break;

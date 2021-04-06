@@ -75,6 +75,8 @@
 #include "sys_definitions.h"
 #include "cosa_webconfig_api.h"
 #include "cosa_nat_webconfig_apis.h"
+#include "safec_lib_common.h"
+
 extern void * g_pDslhDmlAgent;
 
 /**********************************************************************
@@ -392,6 +394,7 @@ CosaNatGen
     UNREFERENCED_PARAMETER(hDml);
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT             pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
+    errno_t                         rc                = -1;
 
     /*
             For dynamic and writable table, we don't keep the Maximum InstanceNumber.
@@ -413,7 +416,12 @@ CosaNatGen
     }while(1);
 
     pEntry->InstanceNumber            = pNat->MaxInstanceNumber;
-    _ansc_sprintf( pEntry->Alias, "PortMapping%d", (int)pEntry->InstanceNumber );
+    rc = sprintf_s( pEntry->Alias, sizeof(pEntry->Alias),"PortMapping%d", (int)pEntry->InstanceNumber );
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      return ANSC_STATUS_FAILURE;
+    }
 
     /* keep new MaxInstanceNumber */
     returnStatus = CosaNatRegSetNatInfo(pNat);
@@ -431,6 +439,7 @@ CosaNatGenForTriggerEntry
     UNREFERENCED_PARAMETER(hDml);
     ANSC_STATUS                     returnStatus      = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_NAT             pNat              = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
+    errno_t                         rc                = -1;
 
     /*
             For dynamic and writable table, we don't keep the Maximum InstanceNumber.
@@ -457,7 +466,11 @@ CosaNatGenForTriggerEntry
 
     if ( pEntry->Alias[0] == '\0' )
     {
-        _ansc_sprintf( pEntry->Alias, "PortTrigger%d", (int)pEntry->InstanceNumber );
+        rc = sprintf_s( pEntry->Alias, sizeof(pEntry->Alias),"PortTrigger%d", (int)pEntry->InstanceNumber );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
     }
 
     pNat->ulPtNextInstanceNumber++;
@@ -864,6 +877,7 @@ CosaNatRegSetNatInfo
     PSINGLE_LINK_ENTRY              pSLinkEntry         = (PSINGLE_LINK_ENTRY      )NULL;
     PSLAP_VARIABLE                  pSlapVariable       = NULL;
     char                            FolderName[16]      = {0};
+    errno_t                         rc                  = -1;
 
 
     if ( !pPoamIrepFoNat )
@@ -921,7 +935,12 @@ CosaNatRegSetNatInfo
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%d", (int)pCosaNat->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%d", (int)pCosaNat->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          continue;
+        }
 
         pPoamIrepFoEnumNat =
             pPoamIrepFoNat->AddFolder
@@ -1055,7 +1074,12 @@ CosaNatRegSetNatInfo
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%d", (int)pCosaNatPt->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%d", (int)pCosaNatPt->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          continue;
+        }
 
         pPoamIrepFoEnumNat =
             pPoamIrepFoNatPt->AddFolder

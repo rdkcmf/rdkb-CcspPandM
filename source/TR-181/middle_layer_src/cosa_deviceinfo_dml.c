@@ -283,6 +283,7 @@ unsigned long long GetAvailableSpace_tmp()
 void UpdateSettingsFile( char param[64], char value[10] )
 {
     CcspTraceInfo(("\nUpdateSettingsFile\n"));
+    errno_t          rc                  = -1;
 
     FILE* fp = fopen( "/tmp/.hwselftest_settings", "r");
     if( fp == NULL)
@@ -291,12 +292,8 @@ void UpdateSettingsFile( char param[64], char value[10] )
 
         if( fp != NULL)
         {
-            char Data[120] = {'\0'};
-            strcpy(Data, param);
-            strcat(Data, value);
-            strcat(Data, "\n");
-            fputs(Data,fp);
-            fclose(fp);
+          fprintf(fp, "%s%s\n", param, value);
+          fclose(fp);
         }
         return;
     }
@@ -331,7 +328,13 @@ void UpdateSettingsFile( char param[64], char value[10] )
                 continue;
             }
             firstLine = 1;
-            strcpy(FileData, Line);
+            rc = strcpy_s(FileData, sizeof(FileData), Line);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               fclose(fp);
+               return;
+            }
         }
         else
         {
@@ -347,9 +350,13 @@ void UpdateSettingsFile( char param[64], char value[10] )
 
     if(0 == isFound)
     {
-        strcpy(Line, param);
-        strcat(Line, value);
-        strcat(Line, "\n");
+        rc = sprintf_s(Line, sizeof(Line), "%s%s\n", param,value);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return;
+        }
+
         strcat(FileData, Line);
     }
 
@@ -713,6 +720,7 @@ DeviceInfo_GetParamStringValue
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     ULONG                           ReturnValue;
+    errno_t                         rc        = -1;
     
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Manufacturer", TRUE))
@@ -888,7 +896,12 @@ DeviceInfo_GetParamStringValue
                    sysTime.tv_nsec = sysTime.tv_nsec - 1000000000L;
               }                   
 
-              sprintf(sbuf, "%ld.%09ld", sysTime.tv_sec, sysTime.tv_nsec);
+              rc = sprintf_s(sbuf, sizeof(sbuf), "%ld.%09ld", sysTime.tv_sec, sysTime.tv_nsec);
+              if(rc < EOK)
+              {
+                ERR_CHK(rc);
+                return -1;
+              }
 
               AnscCopyString(pValue, sbuf);
               *pulSize = strlen(sbuf)+1;
@@ -1705,8 +1718,11 @@ BOOL valid_url(char *buff)
     if(buff[len-1] == '.')
         return FALSE;
 
-    str=(char*)malloc(sizeof(char)*len);
-    strcpy(str,buff);
+    str = strdup(buff);
+    if (! str) {
+        return FALSE;
+    }
+
     token=strtok(str,delim);
     while(token!=NULL)
     {
@@ -2274,6 +2290,7 @@ WiFi_Telemetry_SetParamIntValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    errno_t                         rc        = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "LogInterval", TRUE))
@@ -2282,7 +2299,12 @@ WiFi_Telemetry_SetParamIntValue
         int retPsmGet = CCSP_SUCCESS;
 
         /* Updating the LogInterval  in PSM database  */
-        sprintf(str,"%d",iValue);
+        rc = sprintf_s(str, sizeof(str),"%d",iValue);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
         retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.LogInterval", ccsp_string, str);
         if (retPsmGet != CCSP_SUCCESS) {
         CcspTraceError(("Set failed for LogInterval Support \n"));
@@ -2808,16 +2830,18 @@ UniqueTelemetryId_SetParamBoolValue
 {
     PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     char buf[8] = {0};
+    errno_t rc  = -1;
 
     if (IsBoolSame(hInsContext, ParamName, bValue, UniqueTelemetryId_GetParamBoolValue))
         return TRUE;
 
     if (AnscEqualString(ParamName, "Enable", TRUE))
     {
-        if(bValue)
-            strcpy(buf,"true");
-        else
-            strcpy(buf,"false");
+        rc = strcpy_s(buf, sizeof(buf), (bValue ? "true" : "false"));
+        if(rc != EOK) {
+           ERR_CHK(rc);
+           return FALSE;
+        }
 
         if (syscfg_set(NULL, "unique_telemetry_enable", buf) != 0) 
         {
@@ -2952,13 +2976,19 @@ UniqueTelemetryId_SetParamIntValue
 {
     PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     char buf[16]={0};
+    errno_t rc = -1;
 
     if (IsIntSame(hInsContext, ParamName, value, UniqueTelemetryId_GetParamIntValue))
         return TRUE;
 
     if (AnscEqualString(ParamName, "TimingInterval", TRUE))
     {
-        sprintf(buf, "%d", value);
+        rc = sprintf_s(buf, sizeof(buf), "%d", value);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
 
         if (syscfg_set(NULL, "unique_telemetry_interval", buf) != 0) 
         {
@@ -6775,6 +6805,7 @@ HTTPSConfigDownload_SetParamBoolValue
         char str[2];
         int retPsmGet = CCSP_SUCCESS;
         BOOL getVal = 0;
+        errno_t rc = -1;
 
         retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_RFC.Feature.HTTPSConfigDownload.Enabled", NULL, &strValue);
         if (retPsmGet == CCSP_SUCCESS)
@@ -6785,7 +6816,12 @@ HTTPSConfigDownload_SetParamBoolValue
 
         if(getVal != bValue)
         {
-            sprintf(str,"%d",bValue);
+            rc = sprintf_s(str, sizeof(str),"%d",bValue);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              return FALSE;
+            }
             retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_RFC.Feature.HTTPSConfigDownload.Enabled", ccsp_string, str);
             if (retPsmGet != CCSP_SUCCESS)
             {
@@ -8713,8 +8749,14 @@ ActiveMeasurements_RFC_SetParamBoolValue
     {
        char str[2];
        int retPsmGet = CCSP_SUCCESS;
+       errno_t rc  = -1;
 
-       sprintf(str,"%d",bValue);
+       rc = sprintf_s(str, sizeof(str),"%d",bValue);
+       if(rc < EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WifiClient.ActiveMeasurements.Enable", ccsp_string, str);
        if (retPsmGet != CCSP_SUCCESS) {
            CcspTraceError(("Set failed for Active Measurement RFC enable \n"));
@@ -9033,12 +9075,19 @@ EasyConnect_SetParamBoolValue
     if (IsBoolSame(hInsContext, ParamName, bValue, EasyConnect_GetParamBoolValue))
         return TRUE;
 
+    errno_t rc = -1;
+
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
        char str[2];
        int retPsmGet = CCSP_SUCCESS;
 
-       sprintf(str,"%d",bValue);
+       rc = sprintf_s(str, sizeof(str),"%d",bValue);
+       if(rc < EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.Enable", ccsp_string, str);
        if (retPsmGet != CCSP_SUCCESS) {
            CcspTraceError(("Set failed for EasyConnect support \n"));
@@ -9053,7 +9102,12 @@ EasyConnect_SetParamBoolValue
        char str[2];
        int retPsmGet = CCSP_SUCCESS;
 
-       sprintf(str,"%d",bValue);
+       rc = sprintf_s(str, sizeof(str),"%d",bValue);
+       if(rc < EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.EnableAPISecurity", ccsp_string, str);
        if (retPsmGet != CCSP_SUCCESS) {
            CcspTraceError(("Set failed for EasyConnect APISecurity support \n"));
@@ -9107,6 +9161,7 @@ Feature_SetParamBoolValue
 {
     if (IsBoolSame(hInsContext, ParamName, bValue, Feature_GetParamBoolValue))
         return TRUE;
+    errno_t rc = -1;
 
 #if defined(MOCA_HOME_ISOLATION)
     /* check the parameter name and set the corresponding value */
@@ -9126,7 +9181,12 @@ Feature_SetParamBoolValue
    / if(getVal != bValue)*/
 	{
             str[1] = '\0';
-             sprintf(str,"%d",bValue);
+             rc = sprintf_s(str, sizeof(str),"%d",bValue);
+             if(rc < EOK)
+             {
+               ERR_CHK(rc);
+               return FALSE;
+             }
              retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.HomeNetworkIsolation", ccsp_string, str);
              if (retPsmGet != CCSP_SUCCESS) {
              CcspTraceError(("Set failed for HomeNetworkIsolation \n"));
@@ -9198,7 +9258,12 @@ Feature_SetParamBoolValue
        }
        syscfg_commit();
 
-       sprintf(str,"%d",bValue);
+       rc = sprintf_s(str, sizeof(str),"%d",bValue);
+       if(rc < EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Container", ccsp_string, str);
        if (retPsmGet != CCSP_SUCCESS) 
        {
@@ -9639,13 +9704,19 @@ MEMSWAP_SetParamBoolValue
 {
     if (IsBoolSame(hInsContext, ParamName, bValue, MEMSWAP_GetParamBoolValue))
         return TRUE;
+    errno_t rc = -1;
 
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
        char str[2];
        int retPsmGet = CCSP_SUCCESS;
 
-       sprintf(str,"%d",bValue);
+       rc = sprintf_s(str, sizeof(str),"%d",bValue);
+       if(rc < EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MEMSWAP.Enable", ccsp_string, str);
        if (retPsmGet != CCSP_SUCCESS) {
            CcspTraceError(("Set failed for MEMSWAP support \n"));
@@ -11423,6 +11494,8 @@ WiFiInterworking_SetParamBoolValue
     {
 	char str[2];
 	int retPsmGet = CCSP_SUCCESS;
+	errno_t rc = -1;
+
         if(bValue == FALSE)
 	{
 		CcspTraceError(("turn off WiFiInterworkingSupport \n"));
@@ -11434,7 +11507,12 @@ WiFiInterworking_SetParamBoolValue
 
 		CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
-		sprintf(dst_pathname_cr, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+		rc = sprintf_s(dst_pathname_cr,  sizeof(dst_pathname_cr),"%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+		if(rc < EOK)
+		{
+			ERR_CHK(rc);
+			return FALSE;
+		}
 
 		ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
 				dst_pathname_cr,
@@ -11481,7 +11559,14 @@ WiFiInterworking_SetParamBoolValue
 			free_componentStruct_t(bus_handle, size, ppComponents);
 		}
         }
-	sprintf(str,"%d",bValue);
+
+		rc = sprintf_s(str, sizeof(str),"%d",bValue);
+		if(rc < EOK)
+		{
+			ERR_CHK(rc);
+			return FALSE;
+		}
+
 	retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WiFi-Interworking.Enable", ccsp_string, str);
 	if (retPsmGet != CCSP_SUCCESS) {
 	    CcspTraceError(("Set failed for WiFiInterworkingSupport \n"));
@@ -11606,8 +11691,14 @@ WiFiPasspoint_SetParamBoolValue
     {
 	char str[2];
 	int retPsmGet = CCSP_SUCCESS;
+	errno_t rc = -1;
 
-	sprintf(str,"%d",bValue);
+	rc = sprintf_s(str, sizeof(str),"%d",bValue);
+	if(rc < EOK)
+	{
+		ERR_CHK(rc);
+		return FALSE;
+	}
 	retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WiFi-Passpoint.Enable", ccsp_string, str);
 	if (retPsmGet != CCSP_SUCCESS) {
 	    CcspTraceError(("Set failed for WiFiPasspointSupport \n"));
@@ -11624,7 +11715,12 @@ WiFiPasspoint_SetParamBoolValue
 
         CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
-        sprintf(dst_pathname_cr, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+        rc = sprintf_s(dst_pathname_cr, sizeof(dst_pathname_cr),"%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
 
         ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
                 dst_pathname_cr,
@@ -11823,6 +11919,7 @@ IPv6onLnF_SetParamBoolValue
      	    char buf[128], OutBuff[128];
 	    char Inf_name[32];
 	    BOOL bFound = FALSE;
+	    errno_t rc = -1;
 	
             memset(buf,0,sizeof(buf));
             memset(OutBuff,0,sizeof(OutBuff));
@@ -11852,9 +11949,12 @@ IPv6onLnF_SetParamBoolValue
 					{
 					// interface is not present in the list, we need to add interface to enable IPv6 PD
 
-							strcpy(OutBuff,buf);
-							strcat(OutBuff,Inf_name);
-							strcat(OutBuff,",");
+							rc = sprintf_s(OutBuff, sizeof(OutBuff),"%s%s,",buf,Inf_name);
+							if(rc < EOK)
+							{
+								ERR_CHK(rc);
+								return FALSE;
+							}
 							syscfg_set(NULL, "IPv6_Interface",OutBuff);
             						syscfg_commit();
 
@@ -12026,6 +12126,7 @@ IPv6onXHS_SetParamBoolValue
 	    char *Inf_name = NULL;
 	    BOOL bFound = FALSE;
     	    int retPsmGet = CCSP_SUCCESS;
+            errno_t rc = -1;
 
             retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.2.Port.1.Name", NULL, &Inf_name);
             if (retPsmGet == CCSP_SUCCESS)
@@ -12052,9 +12153,12 @@ IPv6onXHS_SetParamBoolValue
 								{
 								// interface is not present in the list, we need to add interface to enable IPv6 PD
 
-										strcpy(OutBuff,buf);
-										strcat(OutBuff,Inf_name);
-										strcat(OutBuff,",");
+										rc = sprintf_s(OutBuff,sizeof(OutBuff),"%s%s,",buf,Inf_name);
+										if(rc < EOK)
+										{
+											ERR_CHK(rc);
+											return FALSE;
+										}
 										syscfg_set(NULL, "IPv6_Interface",OutBuff);
 												syscfg_commit();
 
@@ -16871,7 +16975,13 @@ RPC_SetParamUlongValue
     {
         /* collect value */
         char buff[64] = {0};
-        sprintf(buff,"%lu", uValue);
+        errno_t rc = -1;
+        rc = sprintf_s(buff, sizeof(buff),"%lu", uValue);
+        if(rc < EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         Send_Notification_Task(buff, NULL, NULL, "reboot-pending", NULL, NULL, NULL, NULL);
         return TRUE;
     }	       
@@ -17694,9 +17804,14 @@ Tile_SetParamIntValue
     if( AnscEqualString(ParamName, "ReportingInterval", TRUE))
     {
         char buf[16]={0};
+        errno_t rc = -1;
 
-        memset(buf,0,sizeof(buf));
-        sprintf(buf, "%d", iValue);
+        rc = sprintf_s(buf, sizeof(buf), "%d", iValue);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
 
         if (syscfg_set(NULL, "TileReportingInterval", buf) != 0)
         {
@@ -19076,6 +19191,7 @@ HwHealthTestPTREnable_SetParamBoolValue
         PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
         char buf[8] = {'\0'};
+        errno_t rc  = -1;
         snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
 
         //Read client version
@@ -19087,7 +19203,14 @@ HwHealthTestPTREnable_SetParamBoolValue
             if( NULL != clientVer )
             {
                 fscanf(fp, "%s", clientVer);
-                strcpy(version,clientVer);
+                rc = strcpy_s(version,sizeof(version),clientVer);
+                if(rc != EOK)
+                {
+                  ERR_CHK(rc);
+                  free(clientVer);
+                  fclose(fp);
+                  return FALSE;
+                }
                 free(clientVer);
                 clientVer = NULL;
             }
@@ -20598,12 +20721,15 @@ NonRootSupport_SetParamBoolValue
   UNREFERENCED_PARAMETER(hInsContext);
   char buf[8] = {0};
   char *boxType = NULL, *atomIp = NULL;
+  errno_t rc = -1;
   if( AnscEqualString(ParamName, "Enable", TRUE))
   {
-     if(bValue)
-        strcpy(buf,"true");
-     else
-        strcpy(buf,"false");
+     rc = strcpy_s(buf, sizeof(buf), (bValue ? "true" : "false"));
+     if(rc != EOK){
+        ERR_CHK(rc);
+        return FALSE;
+     }
+
      /* collect value */
      if (syscfg_set(NULL, "NonRootSupport", buf) != 0) {
           AnscTraceWarning(("syscfg_set failed\n"));
@@ -20927,9 +21053,14 @@ Generic_SetParamUlongValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     char buf[64]={0};
+    errno_t rc  = -1;
 
-    memset(buf,0,sizeof(buf));
-    sprintf(buf, "%lu", ulValue);
+    rc = sprintf_s(buf, sizeof(buf), "%lu", ulValue);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      return FALSE;
+    }
 
    AnscTraceWarning(("Generic_SetParamIntValue: param = %s\n", ParamName));
    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
@@ -20949,9 +21080,14 @@ Generic_SetParamIntValue
     )
 {
     char buf[16]={0};
+    errno_t rc  = -1;
 
-    memset(buf,0,sizeof(buf));
-    sprintf(buf, "%d", value);
+    rc = sprintf_s(buf, sizeof(buf), "%d", value);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      return FALSE;
+    }
 
     AnscTraceWarning(("Generic_SetParamIntValue: param = %s\n", ParamName));
 
@@ -21494,6 +21630,7 @@ SelfHeal_SetParamUlongValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     char buf[128]={0};
+    errno_t rc  = -1;
 
     if (AnscEqualString(ParamName, "AggressiveInterval", TRUE))
     {
@@ -21528,10 +21665,14 @@ SelfHeal_SetParamUlongValue
             AnscTraceWarning(("%s syscfg_commit failed!\n", ParamName));
             return FALSE;
         }
-        char cmd[128];
-        memset(cmd, 0, sizeof(cmd));
+        char cmd[128] = {0};
         memset(buf, 0, sizeof(buf));
-        sprintf(cmd, "pidof selfheal_aggressive.sh");
+        rc = sprintf_s(cmd, sizeof(cmd), "pidof selfheal_aggressive.sh");
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
         copy_command_output(cmd, buf, sizeof(buf));
         buf[strlen(buf)] = '\0';
         if (strcmp(buf, "") != 0) {

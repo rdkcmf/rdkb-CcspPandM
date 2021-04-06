@@ -66,6 +66,7 @@
 **************************************************************************/
 
 #include "cosa_ipv6rd_internal.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -106,6 +107,7 @@ CosaIPv6rdInitialize(
     PCOSA_DML_IPV6RD_IF         pEntry = NULL;
     PCOSA_CONTEXT_LINK_OBJECT   pLinkObject = NULL;
     ULONG                       InsNumArray[MAX_6RDIF_INS];
+    errno_t                     rc = -1;
 
     if (CosaDml_IPv6rdInit(NULL, NULL) != ANSC_STATUS_SUCCESS)
     {
@@ -226,7 +228,14 @@ CosaIPv6rdInitialize(
                 pMyObject->ulIfNextInstance = 1;
             }
 
-            _ansc_sprintf(pEntry->Alias, "tun6rd%lu", pEntry->InstanceNumber);
+            rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias),"tun6rd%lu", pEntry->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pLinkObject);
+              AnscFreeMemory(pEntry);
+              return ANSC_STATUS_FAILURE;
+            }
             CosaDml_IPv6rdSetEntry(NULL, pEntry->InstanceNumber, pEntry);
         }
 

@@ -4,6 +4,8 @@
 #include "cosa_dynamicdns_dml.h"
 #include "cosa_dynamicdns_internal.h"
 #include "cosa_dynamicdns_apis.h"
+#include "safec_lib_common.h"
+
           /* MACROS */
 #define  MAX_CLIENT_COUNT 1
 #define  MAX_HOST_COUNT 1
@@ -215,6 +217,7 @@ DDNSClient_AddEntry
     COSA_DATAMODEL_TR181_DDNS *pDynamicDns     = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT  pLinkObj  = NULL;
     COSA_DML_DDNS_CLIENT  *pClientEntry  = NULL;
+    errno_t               rc             = -1;
 
     if(MAX_CLIENT_COUNT == AnscSListQueryDepth(&pDynamicDns->DDNSClientList)) {
         return NULL;
@@ -240,7 +243,14 @@ DDNSClient_AddEntry
     {
         pDynamicDns->DDNSClientNextInsNum = 1;
     }
-    _ansc_sprintf(pClientEntry->Alias, "cpe-ddns-client-%d", pLinkObj->InstanceNumber);
+    rc = sprintf_s(pClientEntry->Alias, sizeof(pClientEntry->Alias), "cpe-ddns-client-%d", pLinkObj->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pLinkObj);
+      AnscFreeMemory(pClientEntry);
+      return NULL;
+    }
     pLinkObj->hContext      = (ANSC_HANDLE)pClientEntry;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
@@ -509,17 +519,26 @@ DDNSClient_Validate
     COSA_DML_DDNS_CLIENT         *pClientEntry = (COSA_DML_DDNS_CLIENT *)pLinkObj->hContext;
     PCOSA_DATAMODEL_TR181_DDNS   pDynamicDns   = (PCOSA_DATAMODEL_TR181_DDNS)g_pCosaBEManager->hDynamicDns;
     int validate;
+    errno_t                      rc            = -1;
 
     if (!(1 == sscanf(pClientEntry->Server, "Device.DynamicDNS.Server.%d", &validate) &&
         (validate <= AnscSListQueryDepth(&pDynamicDns->DDNSServerList))))
     {
-        _ansc_strcpy(pReturnParamName, "Server");
-        return FALSE;
+        rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Server");
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
     }
     if(pClientEntry->Enable && !CosaDmlDynamicDns_GetEnable())
     {
-        _ansc_strcpy(pReturnParamName, "Enable");
-        return FALSE;
+        rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Enable");
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
     }
 
     return TRUE;
@@ -673,6 +692,7 @@ DDNSHostname_AddEntry
     COSA_DATAMODEL_TR181_DDNS *pDynamicDns     = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT  pLinkObj  = NULL;
     COSA_DML_DDNS_HOST  *pHostEntry      = NULL;
+    errno_t             rc               = -1;
 
     if(MAX_HOST_COUNT == AnscSListQueryDepth(&pDynamicDns->DDNSHostList)) {
         return NULL;
@@ -699,7 +719,14 @@ DDNSHostname_AddEntry
     {
         pDynamicDns->DDNSHostNextInsNum = 1;
     }
-    _ansc_sprintf(pHostEntry->Alias, "cpe-ddns-host-%d", pLinkObj->InstanceNumber);
+    rc = sprintf_s(pHostEntry->Alias, sizeof(pHostEntry->Alias),"cpe-ddns-host-%d", pLinkObj->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pLinkObj);
+      AnscFreeMemory(pHostEntry);
+      return NULL;
+    }
     pHostEntry->Status      = 5;
     pLinkObj->hContext      = (ANSC_HANDLE)pHostEntry;
     pLinkObj->hParentTable  = NULL;
@@ -931,11 +958,16 @@ DDNSHostname_Validate
 #if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_HOST           *pHostEntry   = (COSA_DML_DDNS_HOST *)pLinkObj->hContext;
+    errno_t                      rc            = -1;
 
     if(pHostEntry->Enable && !CosaDmlDynamicDns_GetEnable())
     {
-        _ansc_strcpy(pReturnParamName, "Enable");
-        return FALSE;
+        rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "Enable");
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
     }
 
     return TRUE;
@@ -1086,6 +1118,7 @@ DDNSServer_AddEntry
     COSA_DATAMODEL_TR181_DDNS        *pMyObject         = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT      pLinkObj           = NULL;
     COSA_DML_DDNS_SERVER           *pDDNSServer       = NULL;
+    errno_t                        rc                 = -1;
 
     pLinkObj = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
     if (!pLinkObj)
@@ -1110,7 +1143,14 @@ DDNSServer_AddEntry
         pMyObject->DDNSServerNextInsNum = 1;
     }
 
-    _ansc_sprintf(pDDNSServer->Alias, "cpe-ddns-server-%d", (int)pLinkObj->InstanceNumber);
+    rc = sprintf_s(pDDNSServer->Alias, sizeof(pDDNSServer->Alias),"cpe-ddns-server-%d", (int)pLinkObj->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pLinkObj);
+      AnscFreeMemory(pDDNSServer);
+      return NULL;
+    }
     pLinkObj->hContext      = (ANSC_HANDLE)pDDNSServer;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
@@ -1416,26 +1456,39 @@ DDNSServer_Validate
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER           *pDDNSServer = (COSA_DML_DDNS_SERVER*)pLinkObj->hContext;
     char validateBuf[1024] = {0};
+    errno_t rc             = -1
 
     if(pDDNSServer->Enable && !CosaDmlDynamicDns_GetEnable())
     {
-        _ansc_strcpy(pReturnParamName, "Enable");
-        return FALSE;
+        rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Enable");
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
     }
 
     /* ServiceName - The value MUST be a member of the list reported by the Device.DynamicDNS.SupportedServices parameter. */
     if (!(CosaDmlDynamicDns_GetsupportedServices(validateBuf)) &&
         (!strstr(validateBuf, pDDNSServer->ServiceName)))
     {
-         _ansc_strcpy(pReturnParamName, "ServiceName");
-         return FALSE;
+         rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"ServiceName");
+         if(rc != EOK)
+         {
+           ERR_CHK(rc);
+           return FALSE;
+         }
     }
 
     /* Protocol - The value MUST be a member of the list reported by the SupportedProtocols parameter.  */
     if (!strstr(pDDNSServer->SupportedProtocols, pDDNSServer->Protocol))
     {
-         _ansc_strcpy(pReturnParamName, "Protocol");
-         return FALSE;
+         rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Protocol");
+         if(rc != EOK)
+         {
+           ERR_CHK(rc);
+           return FALSE;
+         }
     }
 
     return TRUE;

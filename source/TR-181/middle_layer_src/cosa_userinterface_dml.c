@@ -68,6 +68,8 @@
 
 #include "cosa_userinterface_dml.h"
 #include "ansc_string_util.h"
+#include "safec_lib_common.h"
+
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -1202,6 +1204,7 @@ iprange_AddEntry
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->iprangeList;
     PCOSA_DML_UI_IPRANGE_ENTRY      pEntry                  = (PCOSA_DML_UI_IPRANGE_ENTRY)NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+    errno_t                         rc                      = -1;
 
     pEntry = (PCOSA_DML_UI_IPRANGE_ENTRY)AnscAllocateMemory(sizeof(COSA_DML_UI_IPRANGE_ENTRY));
     if (!pEntry)
@@ -1209,7 +1212,13 @@ iprange_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Alias, "iprange%lu", pMyObject->uliprangeNextInsNum);
+    rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias),"iprange%lu", pMyObject->uliprangeNextInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pEntry);
+      return NULL;
+    }
 
     /* Update the cache */
     pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
