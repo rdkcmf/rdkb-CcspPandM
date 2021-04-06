@@ -35,7 +35,8 @@
 #include "msgpack.h"
 #include "webconfig_framework.h"
 
-#define SUBDOC_COUNT 4
+#include "cosa_GRE_webconfig_apis.h"
+#define SUBDOC_COUNT 5
 
 #define PORTMAP_CACHE_SIZE 1024
 #define DMZ_CACHE_SIZE 2
@@ -62,6 +63,7 @@
 #define ALIAS_POS_INT_PORT "::internal_port"
 #define ALIAS_POS_PREV_STATE "::prev_rule_enabled_state"
 
+#define HOTSPOT_BLOB_FILE "/nvram/hotspot_blob"
 
 #ifdef WEBCFG_TEST_SIM
 

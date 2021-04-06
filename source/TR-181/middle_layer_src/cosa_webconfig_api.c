@@ -169,9 +169,20 @@ uint32_t getBlobVersion(char* subdoc)
 int setBlobVersion(char* subdoc,uint32_t version)
 {
 
-	char subdoc_ver[64] = {0}, buf[72] = {0};
+	char subdoc_ver[32] = {0}, buf[72] = {0};
   	snprintf(subdoc_ver,sizeof(subdoc_ver),"%u",version);
   	snprintf(buf,sizeof(buf),"%s_version",subdoc);
+
+    if (strcmp(subdoc,"hotspot") == 0 )
+    {
+        char cmd[256] = {0};
+        memset(cmd,0,sizeof(cmd));
+        snprintf(cmd,sizeof(cmd),"mv /tmp/.%s%s %s",subdoc,subdoc_ver,HOTSPOT_BLOB_FILE);
+        CcspTraceInfo(("%s : cmd to move filename is %s\n",__FUNCTION__,cmd));
+
+        system(cmd);
+
+    }
  	if(syscfg_set(NULL,buf,subdoc_ver) != 0)
  	{
         	CcspTraceError(("syscfg_set failed\n"));
@@ -195,7 +206,7 @@ int setBlobVersion(char* subdoc,uint32_t version)
 
 void webConfigFrameworkInit()
 {
-	char *sub_docs[SUBDOC_COUNT+1]= {"portforwarding","wan","macbinding","lan",(char *) 0 };
+	char *sub_docs[SUBDOC_COUNT+1]= {"portforwarding","wan","macbinding","lan","hotspot",(char *) 0 };
     
     	blobRegInfo *blobData;
 
@@ -214,14 +225,17 @@ void webConfigFrameworkInit()
         	blobDataPointer++;
     	}
 
-   	 blobDataPointer = blobData ;
+   	    blobDataPointer = blobData ;
 
     	getVersion versionGet = getBlobVersion;
 
     	setVersion versionSet = setBlobVersion;
-    
+
     	register_sub_docs(blobData,SUBDOC_COUNT,versionGet,versionSet);
- 
+	initMultiCompMaster(); 
+
+        //Multi Comp
+        wbInitializeHotspot();
 }
 
 /* API to clear the buffer */

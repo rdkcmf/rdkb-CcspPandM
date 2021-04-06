@@ -104,7 +104,6 @@
 #include "cosa_ipv6rd_internal.h"
 #include "cosa_x_cisco_com_mld_internal.h"
 #include "cosa_x_cisco_com_multilan_apis.h"
-
 #if defined(DDNS_BROADBANDFORUM)
 #include "cosa_dynamicdns_apis.h"
 #include "cosa_dynamicdns_internal.h"
@@ -118,6 +117,7 @@
 #include "cosa_x_comcast_com_parentalcontrol_internal.h"
 #include "cosa_x_cisco_com_rlog_internal.h"
 #include "cosa_x_cisco_com_hotspot_internal.h"
+#include "libHotspotApi.h"
 
 #ifdef DSLITE_FEATURE_SUPPORT
 #include "cosa_dslite_apis.h"
@@ -163,6 +163,7 @@ ANSC_HANDLE                        g_MessageBusHandle;
 char*                              g_SubsystemPrefix;
 COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
 COSARepopulateTableProc            g_COSARepopulateTable;
+
 
 ANSC_HANDLE CosaDhcpv6Create(VOID);
 ANSC_STATUS CosaDhcpv6Remove(ANSC_HANDLE hThisObject);
@@ -390,6 +391,7 @@ if(id != 0)
 	printf("-- %s %d CosaGreTunnelCreate\n", __func__, __LINE__);
     pMyObject->hTGRE       = (ANSC_HANDLE)CosaGreTunnelCreate();
     AnscTraceWarning(("  CosaGreTunnelCreate done!\n"));	
+    register_callbackHotspot(callbackWCConfirmVap);
 	//zqiu<<
     pMyObject->hCGRE           = (ANSC_HANDLE)CosaCGreCreate();
     AnscTraceWarning(("  CosaCGreCreate done!\n"));
@@ -752,3 +754,4 @@ static void CheckAndSetRebootReason()
         CcspTraceWarning(("/var/tmp/lastrebootreason File exists\n"));
     }
 }
+        

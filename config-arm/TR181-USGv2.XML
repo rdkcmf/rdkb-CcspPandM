@@ -4225,6 +4225,31 @@
 
     <object>
 
+	  <name>GRE</name>
+
+	  <objectType>object</objectType>
+
+	  <functions>
+	    <func_GetParamStringValue>Gre_GetParamStringValue</func_GetParamStringValue>
+	    <func_SetParamStringValue>Gre_SetParamStringValue</func_SetParamStringValue>
+
+	  </functions>
+	  <parameters>
+		<parameter>
+
+		<name>X_RDK_PublicHotspotData</name>
+
+		<type>string</type>
+
+		<syntax>string</syntax>
+
+		<writable>true</writable>
+
+		</parameter>
+	</parameters>
+    </object>
+    <object>
+
       <name>UserInterface</name>
 
       <objectType>object</objectType>

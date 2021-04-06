@@ -53,7 +53,11 @@
 #include "plugin_main_apis.h"
 #include "cosa_x_comcast-com_gre_internal.h"
 #include "cosa_x_comcast-com_gre_apis.h"
+#include "libHotspotApi.h"
+#include "cosa_deviceinfo_internal.h"
+#define SIZE_OF_IP 16
 
+int hotspot_update_circuit_ids(int,int);
 extern void* g_pDslhDmlAgent;
 
 ANSC_HANDLE
@@ -151,4 +155,36 @@ CosaGreTunnelRemove
     return ANSC_STATUS_SUCCESS;
 }
 
+void callbackWCConfirmVap(tunnelSet_t *tunnelSet){
+
+   int ret = 0;
+
+   CcspTraceWarning(("HOTSPOT_LIB: Entering '%s'\n", __FUNCTION__));
+
+   COSA_DATAMODEL_GRE2           *pGreMyObject   = (COSA_DATAMODEL_GRE2 *)g_pCosaBEManager->hTGRE;
+   PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+
+   if((NULL == pGreMyObject) || (NULL == pMyObject) || (NULL == tunnelSet)){
+      CcspTraceWarning(("HOTSPOT_LIB : Datamodel null \n"));
+      return;
+   }
+
+   CcspTraceWarning(("primary ip in '%s'\n",tunnelSet->set_primary_endpoint ));
+   strncpy(pGreMyObject->GreTu[0].PrimaryRemoteEndpoint, tunnelSet->set_primary_endpoint, SIZE_OF_IP);
+   pGreMyObject->GreTu[0].ChangeFlag |= GRETU_CF_PRIEP;
+   strncpy(pGreMyObject->GreTu[0].SecondaryRemoteEndpoint, tunnelSet->set_sec_endpoint, SIZE_OF_IP);
+   pGreMyObject->GreTu[0].ChangeFlag |= GRETU_CF_SECEP;
+   pMyObject->bxfinitywifiEnable = tunnelSet->set_gre_enable;
+   
+   if(NULL != tunnelSet){
+       free(tunnelSet);
+       tunnelSet = NULL;
+   }
+  
+   ret = hotspot_update_circuit_ids(1,1);
+   if( ret < 0) {
+    CcspTraceWarning(("%s Failed hotspot_update_circuit_ids '%d'\n", __FUNCTION__, ret ));
+   }
+
+}
 #endif

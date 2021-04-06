@@ -469,6 +469,10 @@ void *XfinityWifiThread
     {
          PsmSet(HOTSPOT_PSM_EANBLE, "1");
     }
+        /*Removing webconfig files*/
+        v_secure_system("rm /nvram/hotspot.json");
+
+        v_secure_system("rm /nvram/hotspot_blob");
 	
 	if (g_SetParamValueBool("Device.X_COMCAST-COM_GRE.Tunnel.1.Enable", value) != ANSC_STATUS_SUCCESS) {
 		fprintf(stderr, "%s: set X_COMCAST-COM_GRE.Tunnel.1.Enable error\n", __FUNCTION__);
@@ -507,25 +511,25 @@ CosaDmlDiSetXfinityWiFiEnable
 {
     pthread_t thread_xfinity_wifi = 0;
     BOOL *pValue = NULL;
+    
     /*CID: 61742 Wrong sizeof argument*/
     pValue =  AnscAllocateMemory(sizeof(BOOL));    
     if (pValue != NULL)
     {
-        *pValue = value;
-        pthread_create
+           *pValue = value;
+            pthread_create
             (
              &thread_xfinity_wifi,
              NULL,
              XfinityWifiThread,
              (void*)pValue
             );
-        return ANSC_STATUS_SUCCESS;
-    }
-    else
-    {
-		return ANSC_STATUS_FAILURE;
-    }
-
+            return ANSC_STATUS_SUCCESS;
+     }
+     else
+     {
+            return ANSC_STATUS_FAILURE;
+     }
 }
 #endif
 
