@@ -62,7 +62,10 @@ calcRebootExecTime()
         then
                 rand_time_in_sec=$((rand_time_in_sec-86400))
                 echo_t "[ScheduleAutoReboot.sh] Random time in sec exceed 24 hr limit.setting it correct limit"
-
+        elif [ $rand_time_in_sec -le 0 ]
+        then
+            rand_time_in_sec=$((rand_time_in_sec+86400))
+            echo_t "[ScheduleAutoReboot.sh] Random time in sec negative. Setting it correct limit"
         fi
 
         #conversion of random generated time to HH:MM:SS format
