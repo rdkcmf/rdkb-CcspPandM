@@ -447,7 +447,7 @@ static ULONG CosaIFStackGetParamValueULong(char *pParamName)
 {
     int                   returnValue = 0;
     char                  paramValue[32];
-    ULONG                 paramSize = sizeof(paramValue);
+    ULONG                 paramSize;
     ULONG                 paramValueULong;
     parameterValStruct_t  varStruct;
 
@@ -457,6 +457,7 @@ static ULONG CosaIFStackGetParamValueULong(char *pParamName)
     {
         varStruct.parameterName = pParamName;
         varStruct.parameterValue = paramValue;
+        paramSize = sizeof(paramValue);
         returnValue = COSAGetParamValueByPathName(g_MessageBusHandle, &varStruct, &paramSize);
         paramValueULong = returnValue == 0 ? atoi(paramValue) : 0;
     }

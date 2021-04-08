@@ -323,10 +323,7 @@ int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) 
         
         inst = atoi(strrchr(curInt,'.')+1);
   
-		memset(paramname,0,sizeof(paramname));
 		memset(outdata,0,sizeof(outdata));
-        
-        size = sizeof(outdata);
         
         if (syscfg_get(NULL, "wan_physical_ifname", paramname, sizeof(paramname)) != 0) {
             AnscTraceWarning(("fail to get wan_physical_ifname\n"));
@@ -341,16 +338,16 @@ int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) 
         circuitSave += snprintf(circuitid + circuitSave, sizeof(circuitid) - circuitSave, ";");
 #if 0
         snprintf(paramname, sizeof(paramname), "%s.%s", curInt, "BSSID");
+        size = sizeof(outdata);
         retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
         if ( retval != ANSC_STATUS_SUCCESS)
             return -1;
         circuitSave = snprintf(circuitid, sizeof(circuitid), "%s;", varStruct.parameterValue);
 #endif
-        memset(paramname,0,sizeof(paramname));
 		memset(outdata,0,sizeof(outdata));
 
-        size = sizeof(outdata);
         snprintf(paramname, sizeof(paramname),"%s.%s", curInt, "SSID");
+        size = sizeof(outdata);
         retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
         if ( retval != ANSC_STATUS_SUCCESS)
             return -1;
@@ -368,11 +365,10 @@ int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) 
         
         circuitSave += snprintf(circuitid + circuitSave, sizeof(circuitid) - circuitSave, "%s;", varStruct.parameterValue);
 
-	    memset(paramname,0,sizeof(paramname));
 	    memset(outdata,0,sizeof(outdata));
         
-        size = sizeof(outdata);
         snprintf(paramname, sizeof(paramname), "Device.WiFi.AccessPoint.%d.Security.ModeEnabled", inst);
+        size = sizeof(outdata);
         retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
         if ( retval != ANSC_STATUS_SUCCESS)
             return -1;
