@@ -10312,7 +10312,7 @@ Feature_SetParamBoolValue
 
     if( AnscEqualString(ParamName, "EnableMultiProfileXDNS", TRUE))
     {
-        char buf[5] = {0};
+        char buf[5];
         syscfg_get( NULL, "X_RDKCENTRAL-COM_XDNS", buf, sizeof(buf));
         if( buf != NULL && !strcmp(buf,"1") )
         {
@@ -13605,7 +13605,6 @@ IPv6onLnF_SetParamBoolValue
 	
             memset(buf,0,sizeof(buf));
             memset(OutBuff,0,sizeof(OutBuff));
-            memset(Inf_name,0,sizeof(Inf_name));
  	    syscfg_get( NULL, "iot_brname", Inf_name, sizeof(Inf_name));
             if ( (Inf_name[0] == '\0') && (strlen(Inf_name)) == 0 )
             {
@@ -14520,7 +14519,6 @@ RDKFirmwareUpgrader_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         char buf[8];
-        memset (buf, 0, sizeof(buf));
 
         /* collect value */
         syscfg_get( NULL, "RDKFirmwareUpgraderEnabled", buf, sizeof(buf));
@@ -15854,7 +15852,7 @@ Logging_GetParamUlongValue
     if( AnscEqualString(ParamName, "DmesgLogSyncInterval", TRUE))
     {
         /* collect value */
-	 char buf[8]={0};
+	 char buf[8];
 
 	 syscfg_get(NULL, "dmesglogsync_interval", buf, sizeof(buf));
          *puLong = atoi(buf);
