@@ -7665,11 +7665,9 @@ dhcpv6c_dbg_thrd(void * in)
             char * pString = NULL;
             char objName[128] = {0};
 
-#ifndef MULTILAN_FEATURE
             int  ret = 0;
             char globalIP[128] = {0};
             BOOL bRestartLan = FALSE;
-#endif
 
 #ifdef _HUB4_PRODUCT_REQ_
             char hub4_valid_lft[64] = {0};
@@ -7898,7 +7896,7 @@ dhcpv6c_dbg_thrd(void * in)
 /* Service IPv6 will assign IP address and prefix allocation,
    for all lan interfaces.
 */
-#if !defined(INTEL_PUMA7) && !defined(_COSA_INTEL_XB3_ARM_)
+#if !defined(_COSA_INTEL_XB3_ARM_)
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
                         v_secure_system("ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
