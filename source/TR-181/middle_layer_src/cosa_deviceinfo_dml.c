@@ -19163,7 +19163,7 @@ Telemetry_SetParamBoolValue (ANSC_HANDLE hInsContext, char* ParamName, BOOL bVal
         char buf[8] = { '\0' };
         char versionBuf[8] = { '\0' };
         snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
-        snprintf(versionBuf, sizeof(buf), "%s", bValue ? "2" : "1");
+        snprintf(versionBuf, sizeof(buf), "%s", bValue ? "2.0.1" : "1");
         if (syscfg_set(NULL, "T2Enable", buf) != 0) {
             CcspTraceError(("syscfg_set failed for Telemetry.Enable\n"));
         } else {
