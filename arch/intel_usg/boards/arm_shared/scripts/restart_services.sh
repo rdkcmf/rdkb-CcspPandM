@@ -23,10 +23,7 @@ SERVER6_CONF="/etc/dibbler/server.conf"
 SERVER6_BKUP="/nvram/server_bkup.conf"
 WIFIUNCONFIGURED=`syscfg get redirection_flag`
 # Restart dhcp server
-        sysevent set dhcp_server-stop
-        # Let's make sure dhcp server restarts properly
-        sleep 1
-        sysevent set dhcp_server-start
+        sysevent set dhcp_server-restart
 
 
 # Restart firewall

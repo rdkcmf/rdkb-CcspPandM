@@ -416,10 +416,7 @@ then
 					/usr/bin/onboarding_log "Exit_Captive_Mode:$uptime"
 				fi
 				echo_t "Network Response: Restart DHCP server"
-				sysevent set dhcp_server-stop
-				# Let's make sure dhcp server restarts properly
-				sleep 1
-				sysevent set dhcp_server-start
+				sysevent set dhcp_server-restart
 				echo_t "Network Response: Restart Firewall"
 				sysevent set firewall-restart
 				uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`

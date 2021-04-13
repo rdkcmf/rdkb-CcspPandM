@@ -45,10 +45,7 @@ then
    then
      echo_t "Redirect URL : Restarting dnsmasq daemon for redirection"
      cat /var/dnsmasq.conf
-     sysevent set dhcp_server-stop
-     # Let's make sure dhcp server restarts properly
-     sleep 1
-     sysevent set dhcp_server-start
+     sysevent set dhcp_server-restart
    else
      # Set a different value so that we will restart DHCP server in case 
      # of a WiFi factory reset
@@ -71,9 +68,7 @@ if [ "$1" = "rfcp" ]
 then
    echo_t "RF CP dnsmasq restart"
    cat /var/dnsmasq.conf
-   sysevent set dhcp_server-stop
-   sleep 1
-   sysevent set dhcp_server-start
+   sysevent set dhcp_server-restart
 
    sysevent set zebra-restart
 fi

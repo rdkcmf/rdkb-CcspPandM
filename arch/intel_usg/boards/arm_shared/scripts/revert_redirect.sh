@@ -69,10 +69,7 @@ then
     fi
 fi
 echo_t "Revert Redirect : Reverting dns configuration changes and restarting DHCP servers"
-sysevent set dhcp_server-stop
-# Let's make sure dhcp server restarts properly
-sleep 1
-sysevent set dhcp_server-start
+sysevent set dhcp_server-restart
 
 if [ "$1" != "rfcp" ]
     then
