@@ -365,6 +365,20 @@ SaveWebServConf(const WebServConf_t *conf)
     return 0;
 }
 
+void* WebGuiRestart( void *arg )
+{
+    UNREFERENCED_PARAMETER(arg);
+    pthread_detach(pthread_self());
+    sleep(30);
+    #if defined (_XB6_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_)
+        vsystem("/bin/systemctl restart CcspWebUI.service");
+    #else
+        vsystem("/bin/sh /etc/webgui.sh &");
+    #endif
+    return NULL;
+}
+    
+
 #if defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_TURRIS_)
 static int
 DmSetBool(const char *param, BOOL value)
@@ -3006,7 +3020,7 @@ CosaDmlDcSetWebServer(BOOL httpEn, BOOL httpsEn, ULONG httpPort, ULONG httpsPort
 
     if (SaveWebServConf(&conf) != 0)
         return ANSC_STATUS_FAILURE;
-
+   
     //Needs to start as thread to avoid PAM Hung issue
     pthread_create( &tid, NULL, &WebServRestart, NULL);
 
@@ -4180,21 +4194,17 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 		setLanMgmtUpnp(&utctx, pLanMngm->LanUpnp);
         Utopia_Free(&utctx, 1);
         pLanMngm->LanNetwork.Value = _CALC_NETWORK(pLanMngm->LanIPAddress.Value, pLanMngm->LanSubnetMask.Value);
-        
+        char l_cSecWebUI_Enabled[8] = {0};
+        syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
+        if (!strncmp(l_cSecWebUI_Enabled, "true", 4)) { 
         /* If lan settings are changed, restart the webgui.sh */
-         if(orgLanMngm.LanIPAddress.Value != pLanMngm->LanIPAddress.Value ||
-            orgLanMngm.LanSubnetMask.Value != pLanMngm->LanSubnetMask.Value)
-         {
-            char l_cSecWebUI_Enabled[8] = {0};
-            syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
-            if (!strncmp(l_cSecWebUI_Enabled, "true", 4)) {
-            #if defined (_XB6_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_)
-                vsystem("/bin/systemctl restart CcspWebUI.service");
-            #else
-                vsystem("/bin/sh /etc/webgui.sh &");
-            #endif
-            }
-         }
+             if(orgLanMngm.LanIPAddress.Value != pLanMngm->LanIPAddress.Value)
+             {
+                 pthread_t tid;
+                 pthread_create( &tid, NULL, &WebGuiRestart, NULL);
+             }
+         }    
+        
 
 #ifdef _HUB4_PRODUCT_REQ_
 	/* If lan settings(gw-ip or subnet-mask) not change, skip refreshing lan_prefix */
