@@ -471,28 +471,28 @@ InterfaceStack_GetParamStringValue
     PCOSA_DML_IFSTACK_ENTRY         pInterfaceStack = (PCOSA_DML_IFSTACK_ENTRY)pCosaContext->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "HigherLayer", TRUE))
+    if (strcmp(ParamName, "HigherLayer") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pInterfaceStack->HigherLayer);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayer", TRUE))
+    if (strcmp(ParamName, "LowerLayer") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pInterfaceStack->LowerLayer);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "HigherAlias", TRUE))
+    if (strcmp(ParamName, "HigherAlias") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pInterfaceStack->HigherAlias);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "LowerAlias", TRUE))
+    if (strcmp(ParamName, "LowerAlias") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pInterfaceStack->LowerAlias);

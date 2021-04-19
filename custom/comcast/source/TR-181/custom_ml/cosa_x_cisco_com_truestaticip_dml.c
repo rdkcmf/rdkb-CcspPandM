@@ -91,13 +91,13 @@ TrueStaticIP_GetParamBoolValue
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         *pBool = pTSIP->Enabled;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ConfigApply", TRUE))
+    if (strcmp(ParamName, "ConfigApply") == 0)
     {
         /* This parameter always returns FALSE */
         *pBool = FALSE;
@@ -124,7 +124,7 @@ TrueStaticIP_GetParamStringValue
     errno_t                         rc        = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "IPAddress", TRUE))
+    if (strcmp(ParamName, "IPAddress") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pTSIP->IPAddress);
@@ -136,7 +136,7 @@ TrueStaticIP_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "SubnetMask", TRUE))
+    if (strcmp(ParamName, "SubnetMask") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pTSIP->SubnetMask);
@@ -148,7 +148,7 @@ TrueStaticIP_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "GatewayIPAddress", TRUE))
+    if (strcmp(ParamName, "GatewayIPAddress") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pTSIP->GatewayIPAddress);
@@ -160,7 +160,7 @@ TrueStaticIP_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "ConfigEncryptKey", TRUE))
+    if (strcmp(ParamName, "ConfigEncryptKey") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pTSIP->ConfigEncryptKey);
@@ -189,7 +189,7 @@ TrueStaticIP_SetParamBoolValue
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pTSIP->Enabled        = bValue;
@@ -197,7 +197,7 @@ TrueStaticIP_SetParamBoolValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ConfigApply", TRUE))
+    if (strcmp(ParamName, "ConfigApply") == 0)
     {
         /* save update to backup */
         pTSIP->ConfigApply = bValue;
@@ -227,7 +227,7 @@ TrueStaticIP_SetParamStringValue
         return FALSE;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "IPAddress", TRUE))
+    if (strcmp(ParamName, "IPAddress") == 0)
     {
         if(is_IpAddress((unsigned char*)pString))
         {
@@ -246,7 +246,7 @@ TrueStaticIP_SetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "SubnetMask", TRUE))
+    if (strcmp(ParamName, "SubnetMask") == 0)
     {
         /* In binary representation, the value should be consecutive number of 1's and 0's
            eg: 255.255.255.224*/
@@ -269,7 +269,7 @@ TrueStaticIP_SetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "GatewayIPAddress", TRUE))
+    if (strcmp(ParamName, "GatewayIPAddress") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pTSIP->GatewayIPAddress, sizeof(pTSIP->GatewayIPAddress), pString);
@@ -282,7 +282,7 @@ TrueStaticIP_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ConfigEncryptKey", TRUE))
+    if (strcmp(ParamName, "ConfigEncryptKey") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pTSIP->ConfigEncryptKey, sizeof(pTSIP->ConfigEncryptKey), pString);
@@ -510,7 +510,7 @@ Subnet_GetParamBoolValue
     PCOSA_DML_TSIP_SUBNET_ENTRY     pSubnet      = (PCOSA_DML_TSIP_SUBNET_ENTRY)hInsContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         *pBool = pSubnet->Enabled;
         return TRUE;
@@ -534,7 +534,7 @@ Subnet_GetParamStringValue
     errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "IPAddress", TRUE))
+    if (strcmp(ParamName, "IPAddress") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pSubnet->IPAddress);
@@ -546,7 +546,7 @@ Subnet_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "SubnetMask", TRUE))
+    if (strcmp(ParamName, "SubnetMask") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pSubnet->SubnetMask);
@@ -573,7 +573,7 @@ Subnet_SetParamBoolValue
     PCOSA_DML_TSIP_SUBNET_ENTRY     pSubnet      = (PCOSA_DML_TSIP_SUBNET_ENTRY)hInsContext;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pSubnet->Enabled        = bValue;
@@ -601,7 +601,7 @@ Subnet_SetParamStringValue
         return FALSE;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "IPAddress", TRUE))
+    if (strcmp(ParamName, "IPAddress") == 0)
     {
         if(is_IpAddress((unsigned char*)pString))
         {
@@ -619,7 +619,7 @@ Subnet_SetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "SubnetMask", TRUE))
+    if (strcmp(ParamName, "SubnetMask") == 0)
     {
         in_addr_t subnet_addr = inet_addr(pString);
         if((subnet_addr) && (AnscIsValidIpString(pString)))
@@ -701,7 +701,7 @@ PortManagement_GetParamBoolValue
     PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg    = (PCOSA_DML_TSIP_PORTMANAGEMENT_CFG)&pMyObject->PortManagementCfg;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         *pBool = pCfg->Enabled;
         return TRUE;
@@ -724,7 +724,7 @@ PortManagement_GetParamUlongValue
     PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg    = (PCOSA_DML_TSIP_PORTMANAGEMENT_CFG)&pMyObject->PortManagementCfg;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "RuleType", TRUE))
+    if (strcmp(ParamName, "RuleType") == 0)
     {
         /* collect value */       
         *puLong = pCfg->RuleType;
@@ -748,7 +748,7 @@ PortManagement_SetParamBoolValue
     PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg    = (PCOSA_DML_TSIP_PORTMANAGEMENT_CFG)&pMyObject->PortManagementCfg;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pCfg->Enabled = bValue;
@@ -772,7 +772,7 @@ PortManagement_SetParamUlongValue
     PCOSA_DML_TSIP_PORTMANAGEMENT_CFG pCfg    = (PCOSA_DML_TSIP_PORTMANAGEMENT_CFG)&pMyObject->PortManagementCfg;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "RuleType", TRUE))
+    if (strcmp(ParamName, "RuleType") == 0)
     {
         /* save update to backup */
         pCfg->RuleType = uValue;
@@ -972,7 +972,7 @@ Rule_GetParamBoolValue
     PCOSA_DML_TSIP_RULE_ENTRY       pRule        = (PCOSA_DML_TSIP_RULE_ENTRY)pCosaContext->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         *pBool = pRule->Enabled;
         return TRUE;
@@ -994,21 +994,21 @@ Rule_GetParamUlongValue
     PCOSA_DML_TSIP_RULE_ENTRY       pRule        = (PCOSA_DML_TSIP_RULE_ENTRY)pCosaContext->hContext;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Protocol", TRUE))
+    if (strcmp(ParamName, "Protocol") == 0)
     {
         /* collect value */       
         *puLong = pRule->Protocol;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PortRangeMin", TRUE))
+    if (strcmp(ParamName, "PortRangeMin") == 0)
     {
         /* collect value */       
         *puLong = pRule->PortRangeMin;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PortRangeMax", TRUE))
+    if (strcmp(ParamName, "PortRangeMax") == 0)
     {
         /* collect value */       
         *puLong = pRule->PortRangeMax;
@@ -1034,7 +1034,7 @@ Rule_GetParamStringValue
     errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Name", TRUE))
+    if (strcmp(ParamName, "Name") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRule->Name);
@@ -1046,7 +1046,7 @@ Rule_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "IPRangeMin", TRUE))
+    if (strcmp(ParamName, "IPRangeMin") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRule->IPRangeMin);
@@ -1058,7 +1058,7 @@ Rule_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "IPRangeMax", TRUE))
+    if (strcmp(ParamName, "IPRangeMax") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRule->IPRangeMax);
@@ -1086,7 +1086,7 @@ Rule_SetParamBoolValue
     PCOSA_DML_TSIP_RULE_ENTRY       pRule        = (PCOSA_DML_TSIP_RULE_ENTRY)pCosaContext->hContext;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pRule->Enabled = bValue;
@@ -1109,21 +1109,21 @@ Rule_SetParamUlongValue
     PCOSA_DML_TSIP_RULE_ENTRY       pRule        = (PCOSA_DML_TSIP_RULE_ENTRY)pCosaContext->hContext;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Protocol", TRUE))
+    if (strcmp(ParamName, "Protocol") == 0)
     {
         /* save update to backup */
         pRule->Protocol = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PortRangeMin", TRUE))
+    if (strcmp(ParamName, "PortRangeMin") == 0)
     {
         /* save update to backup */
         pRule->PortRangeMin = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PortRangeMax", TRUE))
+    if (strcmp(ParamName, "PortRangeMax") == 0)
     {
         /* save update to backup */
         pRule->PortRangeMax = uValue;
@@ -1147,7 +1147,7 @@ Rule_SetParamStringValue
     errno_t                         rc           = -1;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Name", TRUE))
+    if (strcmp(ParamName, "Name") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pRule->Name, sizeof(pRule->Name), pString);
@@ -1159,7 +1159,7 @@ Rule_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "IPRangeMin", TRUE))
+    if (strcmp(ParamName, "IPRangeMin") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pRule->IPRangeMin, sizeof(pRule->IPRangeMin), pString);
@@ -1171,7 +1171,7 @@ Rule_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "IPRangeMax", TRUE))
+    if (strcmp(ParamName, "IPRangeMax") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pRule->IPRangeMax, sizeof(pRule->IPRangeMax), pString);

@@ -82,7 +82,7 @@ HsSsid_GetParamStringValue
 
     CosaDml_HsSsidGetCfg(hsSsid->InstanceNumber, hsSsid);
 
-    if (AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(hsSsid->Alias))
         {
@@ -93,7 +93,7 @@ HsSsid_GetParamStringValue
         AnscCopyString(pValue, hsSsid->Alias);
         return 0;
     }
-    if (AnscEqualString(ParamName, "SSID", TRUE))
+    if (strcmp(ParamName, "SSID") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(hsSsid->SSID))
         {
@@ -180,7 +180,7 @@ HsAssoDev_GetParamStringValue
 
    // CosaDml_HsSsidAssoDevGetCfg(assoDev->SsidIns, assoDev->InstanceNumber, assoDev);
 
-    if (AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(assoDev->Alias))
         {
@@ -191,7 +191,7 @@ HsAssoDev_GetParamStringValue
         AnscCopyString(pValue, assoDev->Alias);
         return 0;
     }
-    if (AnscEqualString(ParamName, "MACAddress", TRUE))
+    if (strcmp(ParamName, "MACAddress") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(assoDev->MACAddress))
         {
@@ -202,7 +202,7 @@ HsAssoDev_GetParamStringValue
         AnscCopyString(pValue, assoDev->MACAddress);
         return 0;
     }
-    if (AnscEqualString(ParamName, "Hostname", TRUE))
+    if (strcmp(ParamName, "Hostname") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(assoDev->Hostname))
         {
@@ -213,7 +213,7 @@ HsAssoDev_GetParamStringValue
         AnscCopyString(pValue, assoDev->Hostname);
         return 0;
     }
-    if (AnscEqualString(ParamName, "IPv4Address", TRUE))
+    if (strcmp(ParamName, "IPv4Address") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(assoDev->IPv4Address))
         {
@@ -224,7 +224,7 @@ HsAssoDev_GetParamStringValue
         AnscCopyString(pValue, assoDev->IPv4Address);
         return 0;
     }
-    if (AnscEqualString(ParamName, "DHCPv4Status", TRUE))
+    if (strcmp(ParamName, "DHCPv4Status") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(assoDev->DHCPv4Status))
         {
@@ -235,7 +235,7 @@ HsAssoDev_GetParamStringValue
         AnscCopyString(pValue, assoDev->DHCPv4Status);
         return 0;
     }
-    if (AnscEqualString(ParamName, "IPv6Address", TRUE))
+    if (strcmp(ParamName, "IPv6Address") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(assoDev->IPv6Address))
         {
@@ -246,7 +246,7 @@ HsAssoDev_GetParamStringValue
         AnscCopyString(pValue, assoDev->IPv6Address);
         return 0;
     }
-    if (AnscEqualString(ParamName, "IPv6Prefix", TRUE))
+    if (strcmp(ParamName, "IPv6Prefix") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(assoDev->IPv6Prefix))
         {
@@ -257,7 +257,7 @@ HsAssoDev_GetParamStringValue
         AnscCopyString(pValue, assoDev->IPv6Prefix);
         return 0;
     }
-    if (AnscEqualString(ParamName, "DHCPv6Status", TRUE))
+    if (strcmp(ParamName, "DHCPv6Status") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(assoDev->DHCPv6Status))
         {
@@ -268,7 +268,7 @@ HsAssoDev_GetParamStringValue
         AnscCopyString(pValue, assoDev->DHCPv6Status);
         return 0;
     }
-    if (AnscEqualString(ParamName, "IPv6LinkLocalAddress", TRUE))
+    if (strcmp(ParamName, "IPv6LinkLocalAddress") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(assoDev->IPv6LinkLocalAddress))
         {
@@ -295,7 +295,7 @@ HsAssoDev_GetParamIntValue
 
    // CosaDml_HsSsidAssoDevGetCfg(assoDev->SsidIns, assoDev->InstanceNumber, assoDev);
 
-    if (AnscEqualString(ParamName, "RSSILevel", TRUE))
+    if (strcmp(ParamName, "RSSILevel") == 0)
     {
         *pInt = assoDev->RSSILevel;
         return TRUE;

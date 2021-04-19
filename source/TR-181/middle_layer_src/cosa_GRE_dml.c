@@ -164,7 +164,7 @@ Gre_GetParamStringValue
 	UNREFERENCED_PARAMETER(hInsContext);
 	UNREFERENCED_PARAMETER(pValue);
 	UNREFERENCED_PARAMETER(pUlSize);
-	if( AnscEqualString(ParamName, "X_RDK_PublicHotspotData", TRUE))
+	if (strcmp(ParamName, "X_RDK_PublicHotspotData") == 0)
 	{
 		//CcspTraceWarning(("X_RDK_PublicHotspotData Get Not supported\n"));
 		return 0;
@@ -214,7 +214,7 @@ Gre_SetParamStringValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "X_RDK_PublicHotspotData", TRUE))
+    if (strcmp(ParamName, "X_RDK_PublicHotspotData") == 0)
      {
         return (unpackAndProcessHotspotData(pString));
 

@@ -161,14 +161,14 @@ Time_GetParamBoolValue
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         *pBool = pMyObject->TimeCfg.bEnabled;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DaylightSaving", TRUE))
+    if (strcmp(ParamName, "DaylightSaving") == 0)
     {
         /* collect value */
         *pBool = pMyObject->TimeCfg.bDaylightSaving;
@@ -220,7 +220,7 @@ Time_GetParamIntValue
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "DaylightSavingOffset", TRUE))
+    if (strcmp(ParamName, "DaylightSavingOffset") == 0)
     {
         /* collect value */
         *pInt = pMyObject->TimeCfg.DaylightSavingOffset;
@@ -272,7 +272,7 @@ Time_GetParamUlongValue
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */
         CosaDmlTimeGetState(NULL, &pMyObject->TimeStatus, &pMyObject->CurrLocalTime);
@@ -281,7 +281,7 @@ Time_GetParamUlongValue
     }
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "CityIndex", TRUE))
+    if (strcmp(ParamName, "CityIndex") == 0)
     {
         /* collect value */
         *puLong = pMyObject->TimeCfg.cityIndex;
@@ -342,55 +342,55 @@ Time_GetParamStringValue
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "NTPServer1", TRUE))
+    if (strcmp(ParamName, "NTPServer1") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer1);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "NTPServer2", TRUE))
+    if (strcmp(ParamName, "NTPServer2") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer2);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "NTPServer3", TRUE))
+    if (strcmp(ParamName, "NTPServer3") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer3);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "NTPServer4", TRUE))
+    if (strcmp(ParamName, "NTPServer4") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer4);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "NTPServer5", TRUE))
+    if (strcmp(ParamName, "NTPServer5") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer5);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "CurrentLocalTime", TRUE))
+    if (strcmp(ParamName, "CurrentLocalTime") == 0)
     {
         CosaDmlTimeGetLocalTime(NULL,pValue);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "LocalTimeZone", TRUE))
+    if (strcmp(ParamName, "LocalTimeZone") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pMyObject->TimeCfg.LocalTimeZone);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "TimeOffset", TRUE))
+    if (strcmp(ParamName, "TimeOffset") == 0)
     {
         /* collect value */
 #if 0//LNT_EMU
@@ -443,7 +443,7 @@ Time_SetParamBoolValue
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pMyObject->TimeCfg.bEnabled = bValue;
@@ -458,7 +458,7 @@ Time_SetParamBoolValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DaylightSaving", TRUE))
+    if (strcmp(ParamName, "DaylightSaving") == 0)
     {
         /* save update to backup */
         pMyObject->TimeCfg.bDaylightSaving = bValue;
@@ -511,7 +511,7 @@ Time_SetParamIntValue
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "DaylightSavingOffset", TRUE))
+    if (strcmp(ParamName, "DaylightSavingOffset") == 0)
     {
         /* save update to backup */
         pMyObject->TimeCfg.DaylightSavingOffset = iValue;
@@ -565,7 +565,7 @@ Time_SetParamUlongValue
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "CityIndex", TRUE))
+    if (strcmp(ParamName, "CityIndex") == 0)
     {
         /* save update to backup */
         pMyObject->TimeCfg.cityIndex = uValue;
@@ -618,7 +618,7 @@ Time_SetParamStringValue
     ANSC_STATUS ret=ANSC_STATUS_FAILURE;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "NTPServer1", TRUE))
+    if (strcmp(ParamName, "NTPServer1") == 0)
     {
 		char wrapped_inputparam[64]={0};
 		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
@@ -630,7 +630,7 @@ Time_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "NTPServer2", TRUE))
+    if (strcmp(ParamName, "NTPServer2") == 0)
     {
 		char wrapped_inputparam[64]={0};
 		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
@@ -641,7 +641,7 @@ Time_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "NTPServer3", TRUE))
+    if (strcmp(ParamName, "NTPServer3") == 0)
     {
 		char wrapped_inputparam[64]={0};
 		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
@@ -652,7 +652,7 @@ Time_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "NTPServer4", TRUE))
+    if (strcmp(ParamName, "NTPServer4") == 0)
     {
 		char wrapped_inputparam[64]={0};
 		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
@@ -663,7 +663,7 @@ Time_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "NTPServer5", TRUE))
+    if (strcmp(ParamName, "NTPServer5") == 0)
     {
 		char wrapped_inputparam[64]={0};
 		ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
@@ -674,7 +674,7 @@ Time_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LocalTimeZone", TRUE))
+    if (strcmp(ParamName, "LocalTimeZone") == 0)
     {
         /* save update to backup */
         AnscCopyString(pMyObject->TimeCfg.LocalTimeZone, pString);

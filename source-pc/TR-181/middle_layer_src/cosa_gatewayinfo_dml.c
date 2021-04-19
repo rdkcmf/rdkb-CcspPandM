@@ -294,21 +294,21 @@ GatewayInfo_GetParamStringValue
     )
 {
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "ManufacturerOUI", TRUE))
+    if (strcmp(ParamName, "ManufacturerOUI") == 0)
     {
          /* collect value */
         CosaDmlDiGetManufacturerOUI(NULL,pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "ProductClass", TRUE))
+    if (strcmp(ParamName, "ProductClass") == 0)
     {
          /* collect value */
         CosaDmlDiGetProductClass(NULL,pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "SerialNumber", TRUE))
+    if (strcmp(ParamName, "SerialNumber") == 0)
     {
         /* collect value */
         CosaDmlDiGetSerialNumber(NULL,pValue,pulSize);

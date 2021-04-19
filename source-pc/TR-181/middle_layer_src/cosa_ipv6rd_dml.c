@@ -120,7 +120,7 @@ IPv6rd_GetParamBoolValue(
         return FALSE;
     }
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         CosaDml_IPv6rdGetEnable(NULL, NULL, &pEntry->Enable);
         *pBool = pEntry->Enable;
@@ -143,7 +143,7 @@ IPv6rd_GetParamUlongValue(
         return FALSE;
     }
 
-    if (AnscEqualString(ParamName, "InterfaceSettingNumberOfEntries", TRUE))
+    if (strcmp(ParamName, "InterfaceSettingNumberOfEntries") == 0)
     {
         *pUlong = pEntry->NumOfInterface;
         return TRUE;
@@ -164,7 +164,7 @@ IPv6rd_SetParamBoolValue(
     if (!pEntry)
         return FALSE;
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         pEntry->Enable = bValue;
         return TRUE;
@@ -399,12 +399,12 @@ IPv6rdIF_GetParamBoolValue(
 
     CosaDml_IPv6rdGetEntry(NULL, pEntry->InstanceNumber, pEntry);
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         *pBool = pEntry->Enable;
         return TRUE;
     }
-    else if (AnscEqualString(ParamName, "AllTrafficToBorderRelay", TRUE))
+    else if (strcmp(ParamName, "AllTrafficToBorderRelay") == 0)
     {
         *pBool = pEntry->AllTrafficToBorderRelay;
         return TRUE;
@@ -430,23 +430,23 @@ IPv6rdIF_GetParamStringValue(
 
     CosaDml_IPv6rdGetEntry(NULL, pEntry->InstanceNumber, pEntry);
 
-    if (AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         AnscCopyString(pValue, pEntry->Status);
     }
-    else if (AnscEqualString(ParamName, "Alias", TRUE))
+    else if (strcmp(ParamName, "Alias") == 0)
     {
         AnscCopyString(pValue, pEntry->Alias);
     }
-    else if (AnscEqualString(ParamName, "BorderRelayIPv4Addresses", TRUE))
+    else if (strcmp(ParamName, "BorderRelayIPv4Addresses") == 0)
     {
         AnscCopyString(pValue, pEntry->BorderRelayIPv4Addr);
     }
-    else if (AnscEqualString(ParamName, "SPIPv6Prefix", TRUE))
+    else if (strcmp(ParamName, "SPIPv6Prefix") == 0)
     {
         AnscCopyString(pValue, pEntry->SPIPv6Prefix);
     }
-    else if (AnscEqualString(ParamName, "AddressSource", TRUE))
+    else if (strcmp(ParamName, "AddressSource") == 0)
     {
         if (_ansc_strlen(pEntry->AddressSource) == 0)
         {
@@ -470,7 +470,7 @@ IPv6rdIF_GetParamStringValue(
             AnscCopyString(pValue, path);
         /* AnscCopyString(pValue, pEntry->AddressSource); */
     }
-    else if (AnscEqualString(ParamName, "TunnelInterface", TRUE))
+    else if (strcmp(ParamName, "TunnelInterface") == 0)
     {
         path = CosaUtilGetFullPathNameByKeyword("Device.IP.Interface.", 
                 "Name", pEntry->TunnelInterface);
@@ -480,7 +480,7 @@ IPv6rdIF_GetParamStringValue(
             AnscCopyString(pValue, path);
         /* AnscCopyString(pValue, pEntry->TunnelInterface); */
     }
-    else if (AnscEqualString(ParamName, "TunneledInterface", TRUE))
+    else if (strcmp(ParamName, "TunneledInterface") == 0)
     {
         path = CosaUtilGetFullPathNameByKeyword("Device.IP.Interface.", 
                 "Name", pEntry->TunneledInterface);
@@ -512,7 +512,7 @@ IPv6rdIF_GetParamUlongValue(
 
     CosaDml_IPv6rdGetEntry(NULL, pEntry->InstanceNumber, pEntry);
 
-    if (AnscEqualString(ParamName, "IPv4MaskLength", TRUE))
+    if (strcmp(ParamName, "IPv4MaskLength") == 0)
     {
         *pUlong = pEntry->IPv4MaskLength;
         return TRUE;
@@ -534,12 +534,12 @@ IPv6rdIF_SetParamBoolValue(
     if (!pLinkObject || !pEntry)
         return FALSE;
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         pEntry->Enable = bValue;
         return TRUE;
     }
-    else if (AnscEqualString(ParamName, "AllTrafficToBorderRelay", TRUE))
+    else if (strcmp(ParamName, "AllTrafficToBorderRelay") == 0)
     {
         pEntry->AllTrafficToBorderRelay = bValue;
         return TRUE;
@@ -565,7 +565,7 @@ IPv6rdIF_SetParamStringValue(
     if (!pLinkObject || !pEntry)
         return FALSE;
 
-    if (AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
     char wrapped_inputparam[256]={0};
 	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
@@ -575,7 +575,7 @@ IPv6rdIF_SetParamStringValue(
         AnscCopyString(pEntry->Alias, wrapped_inputparam);
         return TRUE;
     }
-    else if (AnscEqualString(ParamName, "BorderRelayIPv4Addresses", TRUE))
+    else if (strcmp(ParamName, "BorderRelayIPv4Addresses") == 0)
     {
     char wrapped_inputparam[256]={0};
 	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
@@ -584,7 +584,7 @@ IPv6rdIF_SetParamStringValue(
         AnscCopyString(pEntry->BorderRelayIPv4Addr, wrapped_inputparam);
         return TRUE;
     }
-    else if (AnscEqualString(ParamName, "SPIPv6Prefix", TRUE))
+    else if (strcmp(ParamName, "SPIPv6Prefix") == 0)
     {
     char wrapped_inputparam[256]={0};
 	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
@@ -594,7 +594,7 @@ IPv6rdIF_SetParamStringValue(
         AnscCopyString(pEntry->SPIPv6Prefix, wrapped_inputparam);
         return TRUE;
     }
-    else if (AnscEqualString(ParamName, "AddressSource", TRUE))
+    else if (strcmp(ParamName, "AddressSource") == 0)
     {
     char wrapped_inputparam[256]={0};
 	ret=isValidInput(pString,wrapped_inputparam, AnscSizeOfString(pString), sizeof( wrapped_inputparam ));
@@ -638,7 +638,7 @@ IPv6rdIF_SetParamUlongValue(
     if (!pLinkObject || !pEntry)
         return FALSE;
 
-    if (AnscEqualString(ParamName, "IPv4MaskLength", TRUE))
+    if (strcmp(ParamName, "IPv4MaskLength") == 0)
     {
         pEntry->IPv4MaskLength = ulValue;
         return TRUE;

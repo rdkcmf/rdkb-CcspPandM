@@ -309,7 +309,7 @@ PPP_GetParamStringValue
     errno_t      rc  =  -1;
 
     /* check the parameter name and return the corresponding value */
-    if (AnscEqualString(ParamName, "SupportedNCPs", TRUE))
+    if (strcmp(ParamName, "SupportedNCPs") == 0)
     {
         ULONG flag;
         
@@ -697,14 +697,14 @@ Interface3_GetParamBoolValue
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "IPCPEnable", TRUE))
+    if (strcmp(ParamName, "IPCPEnable") == 0)
     {
         /* collect value */
         *pBool = pEntry->Cfg.bEnabled;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Reset", TRUE))
+    if (strcmp(ParamName, "Reset") == 0)
     {
         /* collect value */
         *pBool = FALSE;
@@ -805,7 +805,7 @@ Interface3_GetParamUlongValue
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -813,7 +813,7 @@ Interface3_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LastChange", TRUE))
+    if (strcmp(ParamName, "LastChange") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -821,7 +821,7 @@ Interface3_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ConnectionStatus", TRUE))
+    if (strcmp(ParamName, "ConnectionStatus") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -829,7 +829,7 @@ Interface3_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LastConnectionError", TRUE))
+    if (strcmp(ParamName, "LastConnectionError") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -837,28 +837,28 @@ Interface3_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "AutoDisconnectTime", TRUE))
+    if (strcmp(ParamName, "AutoDisconnectTime") == 0)
     {
         /* collect value */
         *puLong = pEntry->Cfg.AutoDisconnectTime;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "IdleDisconnectTime", TRUE))
+    if (strcmp(ParamName, "IdleDisconnectTime") == 0)
     {
         /* collect value */
         *puLong = pEntry->Cfg.IdleDisconnectTime;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "WarnDisconnectDelay", TRUE))
+    if (strcmp(ParamName, "WarnDisconnectDelay") == 0)
     {
         /* collect value */
         *puLong = pEntry->Cfg.WarnDisconnectDelay;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "EncryptionProtocol", TRUE))
+    if (strcmp(ParamName, "EncryptionProtocol") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -866,7 +866,7 @@ Interface3_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "CompressionProtocol", TRUE))
+    if (strcmp(ParamName, "CompressionProtocol") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -874,7 +874,7 @@ Interface3_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "AuthenticationProtocol", TRUE))
+    if (strcmp(ParamName, "AuthenticationProtocol") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -882,14 +882,14 @@ Interface3_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MaxMRUSize", TRUE))
+    if (strcmp(ParamName, "MaxMRUSize") == 0)
     {
         /* collect value */
         *puLong = pEntry->Cfg.MaxMRUSize;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "CurrentMRUSize", TRUE))
+    if (strcmp(ParamName, "CurrentMRUSize") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -897,14 +897,14 @@ Interface3_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ConnectionTrigger", TRUE))
+    if (strcmp(ParamName, "ConnectionTrigger") == 0)
     {
         /* collect value */
         *puLong = pEntry->Cfg.ConnectionTrigger;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LCPEcho", TRUE))
+    if (strcmp(ParamName, "LCPEcho") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -912,7 +912,7 @@ Interface3_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LCPEchoRetry", TRUE))
+    if (strcmp(ParamName, "LCPEchoRetry") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -979,7 +979,7 @@ Interface3_GetParamStringValue
     errno_t                         rc                      = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize,  pEntry->Cfg.Alias);
@@ -992,7 +992,7 @@ Interface3_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Name", TRUE))
+    if (strcmp(ParamName, "Name") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -1006,7 +1006,7 @@ Interface3_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         /* collect value */
         pString = CosaUtilGetFullPathNameByKeyword((PUCHAR)"Device.Ethernet.Link.", (PUCHAR)"Name", (PUCHAR)"wan0");
@@ -1030,7 +1030,7 @@ Interface3_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Username", TRUE))
+    if (strcmp(ParamName, "Username") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize,  pEntry->Cfg.Username);
@@ -1043,7 +1043,7 @@ Interface3_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Password", TRUE))
+    if (strcmp(ParamName, "Password") == 0)
     {
         /* collect value */
         pValue[0] = '\0';
@@ -1098,14 +1098,14 @@ Interface3_SetParamBoolValue
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "IPCPEnable", TRUE))
+    if (strcmp(ParamName, "IPCPEnable") == 0)
     {
         /* save update to backup */
         pEntry->Cfg.bEnabled = bValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Reset", TRUE))
+    if (strcmp(ParamName, "Reset") == 0)
     {
         /* save update to backup */
         if ( pEntry->Cfg.bEnabled && bValue )
@@ -1209,28 +1209,28 @@ Interface3_SetParamUlongValue
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "AutoDisconnectTime", TRUE))
+    if (strcmp(ParamName, "AutoDisconnectTime") == 0)
     {
         /* save update to backup */
         pEntry->Cfg.AutoDisconnectTime = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "IdleDisconnectTime", TRUE))
+    if (strcmp(ParamName, "IdleDisconnectTime") == 0)
     {
         /* save update to backup */
         pEntry->Cfg.IdleDisconnectTime = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "WarnDisconnectDelay", TRUE))
+    if (strcmp(ParamName, "WarnDisconnectDelay") == 0)
     {
         /* save update to backup */
         pEntry->Cfg.WarnDisconnectDelay = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MaxMRUSize", TRUE))
+    if (strcmp(ParamName, "MaxMRUSize") == 0)
     {
         /* save update to backup */
 
@@ -1239,7 +1239,7 @@ Interface3_SetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ConnectionTrigger", TRUE))
+    if (strcmp(ParamName, "ConnectionTrigger") == 0)
     {
         /* save update to backup */
         
@@ -1296,7 +1296,7 @@ Interface3_SetParamStringValue
     errno_t                         rc                      = -1;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* save update to backup */
         rc = strcpy_s(pEntry->Cfg.Alias, sizeof(pEntry->Cfg.Alias), pString);
@@ -1309,13 +1309,13 @@ Interface3_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         /* save update to backup */
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Username", TRUE))
+    if (strcmp(ParamName, "Username") == 0)
     {
         /* save update to backup */
         rc = strcpy_s(pEntry->Cfg.Username, sizeof(pEntry->Cfg.Username), pString);
@@ -1328,7 +1328,7 @@ Interface3_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Password", TRUE))
+    if (strcmp(ParamName, "Password") == 0)
     {
         /* save update to backup */
         rc = strcpy_s(pEntry->Cfg.Password, sizeof(pEntry->Cfg.Password), pString);
@@ -1405,7 +1405,7 @@ Interface3_Validate
         if ( 
                  pEntry2 && 
                  ((ULONG)pEntry2 != (ULONG)pEntry) && 
-                 AnscEqualString(pEntry->Cfg.Alias, pEntry2->Cfg.Alias, TRUE) 
+                 (strcmp(pEntry->Cfg.Alias, pEntry2->Cfg.Alias) == 0)
            )
         {
             rc = strcpy_s(pReturnParamName, *puLength, "Alias");
@@ -1662,7 +1662,7 @@ PPPoE_GetParamUlongValue
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "SessionID", TRUE))
+    if (strcmp(ParamName, "SessionID") == 0)
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
@@ -1728,7 +1728,7 @@ PPPoE_GetParamStringValue
     errno_t                         rc                      = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "ACName", TRUE))
+    if (strcmp(ParamName, "ACName") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pEntry->Cfg.ACName);
@@ -1740,7 +1740,7 @@ PPPoE_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "ServiceName", TRUE))
+    if (strcmp(ParamName, "ServiceName") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pEntry->Cfg.ServiceName);
@@ -1941,7 +1941,7 @@ PPPoE_SetParamStringValue
     errno_t                         rc                      = -1;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "ACName", TRUE))
+    if (strcmp(ParamName, "ACName") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.ACName, sizeof(pEntry->Cfg.ACName), pString);
@@ -1953,7 +1953,7 @@ PPPoE_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ServiceName", TRUE))
+    if (strcmp(ParamName, "ServiceName") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.ServiceName, sizeof(pEntry->Cfg.ServiceName), pString);
@@ -2159,7 +2159,7 @@ IPCP_GetParamBoolValue
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "PassthroughEnable", TRUE))
+    if (strcmp(ParamName, "PassthroughEnable") == 0)
     {
         /* collect value */
         *pBool = pEntry->Cfg.PassthroughEnable;
@@ -2319,7 +2319,7 @@ IPCP_GetParamStringValue
 
     CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "LocalIPAddress", TRUE))
+    if (strcmp(ParamName, "LocalIPAddress") == 0)
     {
         /* collect value */
         rc = sprintf_s(pValue,
@@ -2338,7 +2338,7 @@ IPCP_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "RemoteIPAddress", TRUE))
+    if (strcmp(ParamName, "RemoteIPAddress") == 0)
     {
         /* collect value */
         rc = sprintf_s(pValue,
@@ -2357,7 +2357,7 @@ IPCP_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "DNSServers", TRUE))
+    if (strcmp(ParamName, "DNSServers") == 0)
     {
         /* collect value */
         if (!pEntry->Info.DNSServers[1].Value)
@@ -2399,7 +2399,7 @@ IPCP_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "PassthroughDHCPPool", TRUE))
+    if (strcmp(ParamName, "PassthroughDHCPPool") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pEntry->Cfg.PassthroughDHCPPool);
@@ -2458,7 +2458,7 @@ IPCP_SetParamBoolValue
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "PassthroughEnable", TRUE))
+    if (strcmp(ParamName, "PassthroughEnable") == 0)
     {
         /* save update to backup */
         pEntry->Cfg.PassthroughEnable = bValue;
@@ -2607,7 +2607,7 @@ IPCP_SetParamStringValue
     errno_t                         rc                      = -1;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "PassthroughDHCPPool", TRUE))
+    if (strcmp(ParamName, "PassthroughDHCPPool") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.PassthroughDHCPPool, sizeof(pEntry->Cfg.PassthroughDHCPPool), pString);
@@ -2903,105 +2903,105 @@ Stats6_GetParamUlongValue
     CosaDmlPppIfGetStats(NULL, pEntry->Cfg.InstanceNumber, &Stats);
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "BytesSent", TRUE))
+    if (strcmp(ParamName, "BytesSent") == 0)
     {
         /* collect value */
         *puLong = Stats.BytesSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BytesReceived", TRUE))
+    if (strcmp(ParamName, "BytesReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.BytesReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PacketsSent", TRUE))
+    if (strcmp(ParamName, "PacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.PacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PacketsReceived", TRUE))
+    if (strcmp(ParamName, "PacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.PacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ErrorsSent", TRUE))
+    if (strcmp(ParamName, "ErrorsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.ErrorsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ErrorsReceived", TRUE))
+    if (strcmp(ParamName, "ErrorsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.ErrorsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnicastPacketsSent", TRUE))
+    if (strcmp(ParamName, "UnicastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.UnicastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnicastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "UnicastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.UnicastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DiscardPacketsSent", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.DiscardPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DiscardPacketsReceived", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.DiscardPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MulticastPacketsSent", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.MulticastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MulticastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.MulticastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BroadcastPacketsSent", TRUE))
+    if (strcmp(ParamName, "BroadcastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.BroadcastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BroadcastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "BroadcastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.BroadcastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnknownProtoPacketsReceived", TRUE))
+    if (strcmp(ParamName, "UnknownProtoPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.UnknownProtoPacketsReceived;

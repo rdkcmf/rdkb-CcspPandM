@@ -497,7 +497,7 @@ Pam_GetParamStringValue
     IpIfObjNameSize = sizeof(IpIfObjName) - 1;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "FirstUpstreamIpInterface", TRUE))
+    if (strcmp(ParamName, "FirstUpstreamIpInterface") == 0)
     {
         /* We hardcode the value here temporarily. In the future, if LowerLayers mechanism works well, we can change back*/
         /*
@@ -525,7 +525,7 @@ Pam_GetParamStringValue
             return  -1;
         }
     }
-    else if( AnscEqualString(ParamName, "FirstDownstreamIpInterface", TRUE))
+    else if (strcmp(ParamName, "FirstDownstreamIpInterface") == 0)
     {
         /* We hardcode the value here temporarily. In the future, if LowerLayers mechanism works well, we can change back*/
         /*
@@ -553,7 +553,7 @@ Pam_GetParamStringValue
             return  -1;
         }
     }
-    else if( AnscEqualString(ParamName, "FirstUpstreamIpv4Address", TRUE))
+    else if (strcmp(ParamName, "FirstUpstreamIpv4Address") == 0)
     {
         if ( ANSC_STATUS_SUCCESS == Pam_GetFirstIpInterfaceObjectName(TRUE, IpIfObjName, &IpIfObjNameSize) )
         {
@@ -599,7 +599,7 @@ Pam_GetParamStringValue
             return  -1;
         }
     }
-    else if( AnscEqualString(ParamName, "FirstUpstreamIpv4SubnetMask", TRUE))
+    else if (strcmp(ParamName, "FirstUpstreamIpv4SubnetMask") == 0)
     {
         if ( ANSC_STATUS_SUCCESS == Pam_GetFirstIpInterfaceObjectName(TRUE, IpIfObjName, &IpIfObjNameSize) )
         {
@@ -645,7 +645,7 @@ Pam_GetParamStringValue
             return  -1;
         }
     }
-    else if( AnscEqualString(ParamName, "FirstDownstreamIpv4Address", TRUE))
+    else if (strcmp(ParamName, "FirstDownstreamIpv4Address") == 0)
     {
         if ( ANSC_STATUS_SUCCESS == Pam_GetFirstIpInterfaceObjectName(FALSE, IpIfObjName, &IpIfObjNameSize) )
         {
@@ -691,7 +691,7 @@ Pam_GetParamStringValue
             return  -1;
         }
     }
-    else if( AnscEqualString(ParamName, "FirstDownstreamIpv4SubnetMask", TRUE))
+    else if (strcmp(ParamName, "FirstDownstreamIpv4SubnetMask") == 0)
     {
         if ( ANSC_STATUS_SUCCESS == Pam_GetFirstIpInterfaceObjectName(FALSE, IpIfObjName, &IpIfObjNameSize) )
         {

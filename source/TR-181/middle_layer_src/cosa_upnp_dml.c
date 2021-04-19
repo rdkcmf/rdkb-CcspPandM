@@ -176,14 +176,14 @@ Device_GetParamBoolValue
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         *pBool = pMyObject->bUpnpDevEnable;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPIGD", TRUE))
+    if (strcmp(ParamName, "UPnPIGD") == 0)
     {
         /* collect value */
         *pBool = pMyObject->bUpnpDevIgdEnable;
@@ -285,7 +285,7 @@ Device_GetParamUlongValue
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "X_CISCO_COM_IGD_AdvertisementPeriod", TRUE) )
+    if (strcmp(ParamName, "X_CISCO_COM_IGD_AdvertisementPeriod") == 0)
     {
         /* collect value */
         CosaDmlUpnpDevGetAdvPeriod(NULL, (PULONG*)&pMyObject->AdvertisementPeriod);
@@ -293,7 +293,7 @@ Device_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_IGD_TTL", TRUE) )
+    if (strcmp(ParamName, "X_CISCO_COM_IGD_TTL") == 0)
     {
         /* collect value */
         CosaDmlUpnpDevGetTTL(NULL, (PULONG*)&pMyObject->TTL);
@@ -405,7 +405,7 @@ Device_SetParamBoolValue
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pMyObject->bUpnpDevEnable = bValue;
@@ -414,7 +414,7 @@ Device_SetParamBoolValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPIGD", TRUE))
+    if (strcmp(ParamName, "UPnPIGD") == 0)
     {
         /* save update to backup */
         pMyObject->bUpnpDevIgdEnable = bValue;
@@ -523,7 +523,7 @@ Device_SetParamUlongValue
     #define SEC 60    //seconds conversion
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "X_CISCO_COM_IGD_AdvertisementPeriod", TRUE) )
+    if (strcmp(ParamName, "X_CISCO_COM_IGD_AdvertisementPeriod") == 0)
     {
         if(uValue == 0)
             return FALSE;
@@ -536,7 +536,7 @@ Device_SetParamUlongValue
         }
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_IGD_TTL", TRUE) )
+    if (strcmp(ParamName, "X_CISCO_COM_IGD_TTL") == 0)
     {
         if((uValue >= MIN) && (uValue <= TTL_MAX))
         {
@@ -864,74 +864,74 @@ Capabilities_GetParamUlongValue
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "UPnPArchitecture", TRUE))
+    if (strcmp(ParamName, "UPnPArchitecture") == 0)
     {
         /* collect value */
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPArchitectureMinorVer", TRUE))
+    if (strcmp(ParamName, "UPnPArchitectureMinorVer") == 0)
     {
         /* collect value */
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPMediaServer", TRUE))
+    if (strcmp(ParamName, "UPnPMediaServer") == 0)
     {
         /* collect value */
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPMediaRenderer", TRUE))
+    if (strcmp(ParamName, "UPnPMediaRenderer") == 0)
     {
         /* collect value */
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPWLANAccessPoint", TRUE))
+    if (strcmp(ParamName, "UPnPWLANAccessPoint") == 0)
     {
         /* collect value */
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPBasicDevice", TRUE))
+    if (strcmp(ParamName, "UPnPBasicDevice") == 0)
     {
         /* collect value */
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPQoSDevice", TRUE))
+    if (strcmp(ParamName, "UPnPQoSDevice") == 0)
     {
         /* collect value */
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPQoSPolicyHolder", TRUE))
+    if (strcmp(ParamName, "UPnPQoSPolicyHolder") == 0)
     {
         /* collect value */
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPIGD", TRUE))
+    if (strcmp(ParamName, "UPnPIGD") == 0)
     {
         /* collect value */
         *puLong = pMyObject->uUpnpIgd;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPDMBasicMgmt", TRUE))
+    if (strcmp(ParamName, "UPnPDMBasicMgmt") == 0)
     {
         /* collect value */
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPDMConfigurationMgmt", TRUE))
+    if (strcmp(ParamName, "UPnPDMConfigurationMgmt") == 0)
     {
         /* collect value */
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UPnPDMSoftwareMgmt", TRUE))
+    if (strcmp(ParamName, "UPnPDMSoftwareMgmt") == 0)
     {
         /* collect value */
         return TRUE;
@@ -1061,7 +1061,7 @@ Discovery_GetParamBoolValue
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "X_CISCO_COM_Enable", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_Enable") == 0)
     {
         /* collect value */
         pMyObject->bDiscoveryEnable = CosaDmlUpnpGetDiscoveryEnable(NULL);
@@ -1165,7 +1165,7 @@ Discovery_GetParamUlongValue
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "X_CISCO_COM_PollingInterval", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_PollingInterval") == 0)
     {
         /* collect value */
         pMyObject->uDiscoveryPollingInterval = CosaDmlUpnpGetDiscoveryPollingInterval(NULL);
@@ -1279,7 +1279,7 @@ Discovery_SetParamBoolValue
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "X_CISCO_COM_Enable", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_Enable") == 0)
     {
         /* save update to backup */
         pMyObject->bDiscoveryEnable = bValue;
@@ -1380,7 +1380,7 @@ Discovery_SetParamUlongValue
     PCOSA_DATAMODEL_UPNP            pMyObject    = (PCOSA_DATAMODEL_UPNP)g_pCosaBEManager->hUpnp;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "X_CISCO_COM_PollingInterval", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_PollingInterval") == 0)
     {
         /* collect value */
         pMyObject->uDiscoveryPollingInterval = uValue;

@@ -117,7 +117,7 @@ DeviceInfo_GetParamBoolValue_Custom
     char *param_value = NULL;
 
 #ifdef CONFIG_INTERNET2P0
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureWiFi", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_ConfigureWiFi") == 0)
     {
         PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_ConfigureWiFi", NULL, &param_value);
 	if(strcmp(param_value,"true") == 0)
@@ -127,7 +127,7 @@ DeviceInfo_GetParamBoolValue_Custom
        *pBool = pMyObject->bWiFiConfigued;
 	return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_WiFiNeedsPersonalization",TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_WiFiNeedsPersonalization") == 0)
     {
 	    char buf[5];
         /*CID: 63071 Array compared against 0*/
@@ -142,7 +142,7 @@ DeviceInfo_GetParamBoolValue_Custom
         }
 	    return TRUE;
     }
-	    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CaptivePortalEnable", TRUE))
+	    if (strcmp(ParamName, "X_RDKCENTRAL-COM_CaptivePortalEnable") == 0)
     {
  //      *pBool = pMyObject->bCaptivePortalEnable;
         if (CosaDmlGetCaptivePortalEnable(&pMyObject->bCaptivePortalEnable) != ANSC_STATUS_SUCCESS)
@@ -150,14 +150,14 @@ DeviceInfo_GetParamBoolValue_Custom
        *pBool = pMyObject->bCaptivePortalEnable;
 	return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUICapable", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_CloudUICapable") == 0)
     {
 
 	    *pBool = pMyObject->bCloudCapable;
 	     return TRUE;
 
     }
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIEnable", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_CloudUIEnable") == 0)
     {
 	*pBool = pMyObject->bCloudEnable;
 	return TRUE;
@@ -166,13 +166,13 @@ DeviceInfo_GetParamBoolValue_Custom
  
 #ifdef CONFIG_CISCO_HOTSPOT
     /* check the parameter name and return the corresponding value */
-    if (AnscEqualString(ParamName, "X_COMCAST-COM_xfinitywifiCapableCPE", TRUE))
+    if (strcmp(ParamName, "X_COMCAST-COM_xfinitywifiCapableCPE") == 0)
     {
         if (CosaDmlDiGetXfinityWiFiCapable(pBool) != ANSC_STATUS_SUCCESS)
             return FALSE;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_COMCAST_COM_xfinitywifiEnable", TRUE))
+    if (strcmp(ParamName, "X_COMCAST_COM_xfinitywifiEnable") == 0)
     {
          if (CosaDmlDiGetXfinityWiFiEnable(pBool) != ANSC_STATUS_SUCCESS)
              return FALSE;
@@ -182,7 +182,7 @@ DeviceInfo_GetParamBoolValue_Custom
     }
 #endif
 
-    if (AnscEqualString(ParamName, "X_COMCAST-COM_rdkbPlatformCapable", TRUE))
+    if (strcmp(ParamName, "X_COMCAST-COM_rdkbPlatformCapable") == 0)
     {
        *pBool = TRUE;
 	    return TRUE;
@@ -243,7 +243,7 @@ DeviceInfo_GetParamStringValue_Custom
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
 #ifdef CONFIG_INTERNET2P0   
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL") == 0)
     { 
 	syscfg_get(NULL, "redirection_url", pMyObject->WebURL, sizeof(pMyObject->WebURL));
 	AnscCopyString(pValue, pMyObject->WebURL);
@@ -252,55 +252,55 @@ DeviceInfo_GetParamStringValue_Custom
 #endif
 
 #ifdef CONFIG_VENDOR_CUSTOMER_COMCAST
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_CM_MAC", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_CM_MAC") == 0)
 	{
 	   CosaDmlDiGetRouterMacAddress(NULL, pValue,pulSize);//Emulator doesn't have support of cable modem
 	   return 0;
 	}
 
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_WAN_MAC", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_WAN_MAC") == 0)
 	{
 	   CosaDmlDiGetRouterMacAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
 
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_AP_MAC", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_AP_MAC") == 0)
 	{
 	   CosaDmlDiGetRouterMacAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
 
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_MTA_MAC", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_MTA_MAC") == 0)
 	{
 	   CosaDmlDiGetMTAMacAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
 
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_CM_IP", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_CM_IP") == 0)
 	{
 	   CosaDmlDiGetRouterIPAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
 
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_WAN_IP", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_WAN_IP") == 0)
 	{
 	   CosaDmlDiGetRouterIPAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
 
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_WAN_IPv6", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_WAN_IPv6") == 0)
 	{
 	   CosaDmlDiGetRouterIPv6Address(NULL, pValue,pulSize);
 	   return 0;
 	}
 
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_MTA_IP", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_MTA_IP") == 0)
 	{
 	   CosaDmlDiGetMTAIPAddress(NULL, pValue,pulSize);
 	   return 0;
 	}
 
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_MTA_IPV6", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_MTA_IPV6") == 0)
 	{
 	   CosaDmlDiGetMTAIPV6Address(NULL, pValue,pulSize);
 	   return 0;
@@ -355,7 +355,7 @@ DeviceInfo_SetParamBoolValue_Custom
 
 #ifdef CONFIG_INTERNET2P0
 
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureWiFi", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_ConfigureWiFi") == 0)
     {
 	if ( bValue == TRUE )
 	{
@@ -384,7 +384,7 @@ DeviceInfo_SetParamBoolValue_Custom
 	return FALSE;
     } 
 
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CaptivePortalEnable", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_CaptivePortalEnable") == 0)
     {
 	if( pMyObject->bCaptivePortalEnable == bValue )
 	{
@@ -396,7 +396,7 @@ DeviceInfo_SetParamBoolValue_Custom
         return TRUE;
     }
 
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUICapable", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_CloudUICapable") == 0)
     {
        // We should not allow SET of Capable flag.
 
@@ -422,7 +422,7 @@ DeviceInfo_SetParamBoolValue_Custom
 
 
     }
-    if (AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIEnable", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_CloudUIEnable") == 0)
     {
         
 
@@ -461,7 +461,7 @@ DeviceInfo_SetParamBoolValue_Custom
 
 #ifdef CONFIG_CISCO_HOTSPOT
     /* check the parameter name and return the corresponding value */
-    if (AnscEqualString(ParamName, "X_COMCAST_COM_xfinitywifiEnable", TRUE))
+    if (strcmp(ParamName, "X_COMCAST_COM_xfinitywifiEnable") == 0)
     {
         if (CosaDmlDiSetXfinityWiFiEnable(bValue) != ANSC_STATUS_SUCCESS)
             return FALSE;

@@ -58,7 +58,7 @@ VideoService_GetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-    if (AnscEqualString(ParamName, "Enabled", TRUE))
+    if (strcmp(ParamName, "Enabled") == 0)
     {
         char buf[5] = {0};
         /* CID: 53679 Array compared against 0*/
@@ -87,7 +87,7 @@ VideoService_SetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-    if (AnscEqualString(ParamName, "Enabled", TRUE))
+    if (strcmp(ParamName, "Enabled") == 0)
     {   
         char bval[2] = {0};
         if( bValue == TRUE )

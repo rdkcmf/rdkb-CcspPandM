@@ -170,7 +170,7 @@ X_CISCO_COM_DDNS_GetParamBoolValue
      _ansc_memset(&DdnsCfg, 0, sizeof(COSA_DML_DDNS_CFG));
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         CosaDmlDdnsGetConfig(NULL, &DdnsCfg);
         /* *pBool = pDdnsCfg->bEnabled; */
@@ -373,7 +373,7 @@ X_CISCO_COM_DDNS_SetParamBoolValue
     }
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         pDdnsCfg->bEnabled = bValue;
 
@@ -930,7 +930,7 @@ Service_GetParamBoolValue
     _ansc_memset(&DdnsService, 0, sizeof(COSA_DML_DDNS_SERVICE));
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         CosaDmlDdnsGetInfo(NULL, pDdnsService->InstanceNumber, &DdnsService);
@@ -940,14 +940,14 @@ Service_GetParamBoolValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Wildcard", TRUE))
+    if (strcmp(ParamName, "Wildcard") == 0)
     {
         *pBool = pDdnsService->Wildcard;
 
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MXHostAsSecondary", TRUE))
+    if (strcmp(ParamName, "MXHostAsSecondary") == 0)
     {
         *pBool = pDdnsService->Backup_mx;
 
@@ -1046,7 +1046,7 @@ Service_GetParamUlongValue
 
     _ansc_memset(&DdnsService, 0, sizeof(COSA_DML_DDNS_SERVICE));
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "ConnectionState", TRUE))
+    if (strcmp(ParamName, "ConnectionState") == 0)
     {
         /* collect value */
         CosaDmlDdnsGetInfo(NULL, pDdnsService->InstanceNumber, &DdnsService);
@@ -1056,7 +1056,7 @@ Service_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ServiceName", TRUE))
+    if (strcmp(ParamName, "ServiceName") == 0)
     {
         /* collect value */
         if ( AnscEqualString(pDdnsService->ServiceName, "dyndns", FALSE) )
@@ -1140,7 +1140,7 @@ Service_GetParamStringValue
     PUCHAR                          pLowerLayer      = NULL;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "AssociatedConnection", TRUE))
+    if (strcmp(ParamName, "AssociatedConnection") == 0)
     {
         /* collect value */
         /* AnscCopyString(pValue, pDdnsService->AssociatedConnection); */
@@ -1153,7 +1153,7 @@ Service_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pDdnsService->Alias);
@@ -1161,7 +1161,7 @@ Service_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Domain", TRUE))
+    if (strcmp(ParamName, "Domain") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pDdnsService->Domain);
@@ -1169,7 +1169,7 @@ Service_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Password", TRUE))
+    if (strcmp(ParamName, "Password") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pDdnsService->Password);
@@ -1177,7 +1177,7 @@ Service_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Username", TRUE))
+    if (strcmp(ParamName, "Username") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pDdnsService->Username);
@@ -1185,7 +1185,7 @@ Service_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "MXHostName", TRUE))
+    if (strcmp(ParamName, "MXHostName") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pDdnsService->Mail_exch);
@@ -1239,7 +1239,7 @@ Service_SetParamBoolValue
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pDdnsService->bEnabled = bValue;
@@ -1247,14 +1247,14 @@ Service_SetParamBoolValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Wildcard", TRUE))
+    if (strcmp(ParamName, "Wildcard") == 0)
     {
         pDdnsService->Wildcard = bValue;
 
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MXHostAsSecondary", TRUE))
+    if (strcmp(ParamName, "MXHostAsSecondary") == 0)
     {
         pDdnsService->Backup_mx = bValue;
 
@@ -1351,7 +1351,7 @@ Service_SetParamUlongValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
 	
-	if( AnscEqualString(ParamName, "ServiceName", TRUE))
+	if (strcmp(ParamName, "ServiceName") == 0)
     {
         /* collect value */
         if ( uValue == 1 )
@@ -1423,7 +1423,7 @@ Service_SetParamStringValue
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "AssociatedConnection", TRUE))
+    if (strcmp(ParamName, "AssociatedConnection") == 0)
     {
         if ( sizeof(pDdnsService->AssociatedConnection) > AnscSizeOfString(pString))
         {
@@ -1438,7 +1438,7 @@ Service_SetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         if ( sizeof(pDdnsService->Alias) > AnscSizeOfString(pString))
         {
@@ -1454,7 +1454,7 @@ Service_SetParamStringValue
 
     }
 
-    if( AnscEqualString(ParamName, "Domain", TRUE))
+    if (strcmp(ParamName, "Domain") == 0)
     {
         if ( sizeof(pDdnsService->Domain) > AnscSizeOfString(pString))
         {
@@ -1469,7 +1469,7 @@ Service_SetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "Password", TRUE))
+    if (strcmp(ParamName, "Password") == 0)
     {
         if ( sizeof(pDdnsService->Password) > AnscSizeOfString(pString))
         {
@@ -1484,7 +1484,7 @@ Service_SetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "Username", TRUE))
+    if (strcmp(ParamName, "Username") == 0)
     {
         if ( sizeof(pDdnsService->Username) > AnscSizeOfString(pString))
         {
@@ -1499,7 +1499,7 @@ Service_SetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "MXHostName", TRUE))
+    if (strcmp(ParamName, "MXHostName") == 0)
     {
         if ( sizeof(pDdnsService->Mail_exch) > AnscSizeOfString(pString))
         {

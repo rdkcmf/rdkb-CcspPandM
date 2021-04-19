@@ -44,7 +44,7 @@ RLog_GetParamBoolValue(ANSC_HANDLE hInsContext, char *ParamName, BOOL *pBool)
     if (!pDMRLog || !ParamName || !pBool)
         return FALSE;
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         *pBool = pDMRLog->RLog.Enable;
         return TRUE;
@@ -62,12 +62,12 @@ RLog_GetParamUlongValue(ANSC_HANDLE hInsContext, char *ParamName, ULONG *pUlong)
     if (!pDMRLog || !ParamName || !pUlong)
         return FALSE;
 
-    if (AnscEqualString(ParamName, "Port", TRUE))
+    if (strcmp(ParamName, "Port") == 0)
     {
         *pUlong = pDMRLog->RLog.Port;
         return TRUE;
     }
-    else if (AnscEqualString(ParamName, "Protocol", TRUE))
+    else if (strcmp(ParamName, "Protocol") == 0)
     {
         *pUlong = pDMRLog->RLog.Protocol;
         return TRUE;
@@ -85,12 +85,12 @@ RLog_GetParamStringValue(ANSC_HANDLE hInsContext, char *ParamName, char *pStr, U
     if (!pDMRLog || !ParamName || !pStr || !pSize)
         return -1;
 
-    if (AnscEqualString(ParamName, "Host", TRUE))
+    if (strcmp(ParamName, "Host") == 0)
     {
         snprintf(pStr, *pSize, "%s", pDMRLog->RLog.Host);
         return 0;
     }
-    else if (AnscEqualString(ParamName, "Patterns", TRUE))
+    else if (strcmp(ParamName, "Patterns") == 0)
     {
         snprintf(pStr, *pSize, "%s", pDMRLog->RLog.Patterns);
         return 0;
@@ -108,7 +108,7 @@ RLog_SetParamBoolValue(ANSC_HANDLE hInsContext, char *ParamName, BOOL bValue)
     if (!pDMRLog || !ParamName)
         return FALSE;
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         pDMRLog->RLog.Enable = bValue;
         return TRUE;
@@ -126,11 +126,11 @@ RLog_SetParamUlongValue(ANSC_HANDLE hInsContext, char *ParamName, ULONG ulValue)
     if (!pDMRLog || !ParamName)
         return FALSE;
 
-    if (AnscEqualString(ParamName, "Port", TRUE))
+    if (strcmp(ParamName, "Port") == 0)
     {
         pDMRLog->RLog.Port = ulValue;
         return TRUE;
-    } else if (AnscEqualString(ParamName, "Protocol", TRUE))
+    } else if (strcmp(ParamName, "Protocol") == 0)
     {
         pDMRLog->RLog.Protocol = ulValue;
         return TRUE;
@@ -148,12 +148,12 @@ RLog_SetParamStringValue(ANSC_HANDLE hInsContext, char *ParamName, char *sValue)
     if (!pDMRLog || !ParamName || !sValue)
         return FALSE;
 
-    if (AnscEqualString(ParamName, "Host", TRUE))
+    if (strcmp(ParamName, "Host") == 0)
     {
         snprintf(pDMRLog->RLog.Host, sizeof(pDMRLog->RLog.Host), "%s", sValue);
         return TRUE;
     }
-    else if (AnscEqualString(ParamName, "Patterns", TRUE))
+    else if (strcmp(ParamName, "Patterns") == 0)
     {
         snprintf(pDMRLog->RLog.Patterns, sizeof(pDMRLog->RLog.Patterns), "%s", sValue);
         return TRUE;

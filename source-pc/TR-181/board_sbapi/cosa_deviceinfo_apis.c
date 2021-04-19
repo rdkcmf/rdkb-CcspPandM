@@ -966,11 +966,11 @@ ULONG COSADmlGetCpuUsage()
 ULONG COSADmlGetMemoryStatus(char * ParamName)
 {
 #ifdef _ANSC_WINDOWSNT
-     if( AnscEqualString(ParamName, "Total", TRUE))
+     if (strcmp(ParamName, "Total") == 0)
      {
           return 128;
      }
-     else if(AnscEqualString(ParamName, "Free", TRUE))
+     else if (strcmp(ParamName, "Free") == 0)
      {
           return 64;
      }
@@ -985,11 +985,11 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
           /*Error*/
           return 0;
      }
-     if( AnscEqualString(ParamName, "Total", TRUE))
+     if (strcmp(ParamName, "Total") == 0)
      {
           return si.totalram*si.mem_unit/1024;
      }
-     else if(AnscEqualString(ParamName, "Free", TRUE))
+     else if (strcmp(ParamName, "Free") == 0)
      {
          return si.freeram*si.mem_unit/1024;
      }

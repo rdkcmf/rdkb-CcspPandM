@@ -99,18 +99,18 @@ CGreIf_GetParamBoolValue
 {
     COSA_DML_CGRE_IF                *pCGreIf      = (COSA_DML_CGRE_IF *)hInsContext;
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
 	CosaDml_CGreIfGetCfg(pCGreIf->InstanceNumber,pCGreIf);//RDKB-EMULATOR
         *pBool = pCGreIf->Enable;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ChecksumEnabled", TRUE))
+    if (strcmp(ParamName, "ChecksumEnabled") == 0)
     {
         *pBool = pCGreIf->ChecksumEnabled;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "SequenceNumberEnabled", TRUE))
+    if (strcmp(ParamName, "SequenceNumberEnabled") == 0)
     {
         *pBool = pCGreIf->SequenceNumberEnabled;
         return TRUE;
@@ -129,34 +129,34 @@ CGreIf_GetParamUlongValue
 {
     COSA_DML_CGRE_IF                *pCGreIf      = (COSA_DML_CGRE_IF *)hInsContext;
 
-    if (AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         if (CosaDml_CGreIfGetStatus(pCGreIf, (COSA_DML_CGRE_STATUS *)pUlong) != ANSC_STATUS_SUCCESS)
             return FALSE;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "LastChange", TRUE))
+    if (strcmp(ParamName, "LastChange") == 0)
     {
         if (CosaDml_CGreIfGetLastChange(pCGreIf, pUlong) != ANSC_STATUS_SUCCESS)
             return FALSE;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "Mode", TRUE))
+    if (strcmp(ParamName, "Mode") == 0)
     {
         *pUlong = pCGreIf->Mode;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeyMode", TRUE))
+    if (strcmp(ParamName, "KeyMode") == 0)
     {
         *pUlong = pCGreIf->KeyMode;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "TOSMode", TRUE))
+    if (strcmp(ParamName, "TOSMode") == 0)
     {
         *pUlong = pCGreIf->TOSMode;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "TOS", TRUE))
+    if (strcmp(ParamName, "TOS") == 0)
     {
         *pUlong = pCGreIf->TOS;
         return TRUE;
@@ -177,7 +177,7 @@ CGreIf_GetParamStringValue
 {
     COSA_DML_CGRE_IF                *pCGreIf      = (COSA_DML_CGRE_IF *)hInsContext;
 
-    if (AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(pCGreIf->Alias))
         {
@@ -188,7 +188,7 @@ CGreIf_GetParamStringValue
         AnscCopyString(pValue, pCGreIf->Alias);
         return 0;
     }
-    if (AnscEqualString(ParamName, "Name", TRUE))
+    if (strcmp(ParamName, "Name") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(pCGreIf->Name))
         {
@@ -199,7 +199,7 @@ CGreIf_GetParamStringValue
         AnscCopyString(pValue, pCGreIf->Name);
         return 0;
     }
-    if (AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(pCGreIf->LowerLayers))
         {
@@ -210,7 +210,7 @@ CGreIf_GetParamStringValue
         AnscCopyString(pValue, pCGreIf->LowerLayers);
         return 0;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpoint", TRUE))
+    if (strcmp(ParamName, "RemoteEndpoint") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(pCGreIf->RemoteEndpoint))
         {
@@ -221,7 +221,7 @@ CGreIf_GetParamStringValue
         AnscCopyString(pValue, pCGreIf->RemoteEndpoint);
         return 0;
     }
-    if (AnscEqualString(ParamName, "Key", TRUE))
+    if (strcmp(ParamName, "Key") == 0)
     {
         if (*pUlSize <= AnscSizeOfString(pCGreIf->Key))
         {
@@ -257,7 +257,7 @@ CGreIf_SetParamBoolValue
 {
     COSA_DML_CGRE_IF                *pCGreIf      = (COSA_DML_CGRE_IF *)hInsContext;
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* 
          * need set the flag for "force restart".
@@ -271,7 +271,7 @@ CGreIf_SetParamBoolValue
         pCGreIf->ChangeFlag |= COSA_DML_CGRE_CF_ENABLE;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ChecksumEnabled", TRUE))
+    if (strcmp(ParamName, "ChecksumEnabled") == 0)
     {
         if (bValue == pCGreIf->ChecksumEnabled)
             return TRUE;
@@ -280,7 +280,7 @@ CGreIf_SetParamBoolValue
         pCGreIf->ChangeFlag |= COSA_DML_CGRE_CF_CSUMEN;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "SequenceNumberEnabled", TRUE))
+    if (strcmp(ParamName, "SequenceNumberEnabled") == 0)
     {
         if (bValue == pCGreIf->SequenceNumberEnabled)
             return TRUE;
@@ -303,7 +303,7 @@ CGreIf_SetParamUlongValue
 {
     COSA_DML_CGRE_IF                *pCGreIf      = (COSA_DML_CGRE_IF *)hInsContext;
 
-    if (AnscEqualString(ParamName, "Mode", TRUE))
+    if (strcmp(ParamName, "Mode") == 0)
     {
         if (uValue == pCGreIf->Mode)
             return TRUE;
@@ -312,7 +312,7 @@ CGreIf_SetParamUlongValue
         pCGreIf->ChangeFlag |= COSA_DML_CGRE_CF_MODE;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeyMode", TRUE))
+    if (strcmp(ParamName, "KeyMode") == 0)
     {
         if (uValue == pCGreIf->KeyMode)
             return TRUE;
@@ -321,7 +321,7 @@ CGreIf_SetParamUlongValue
         pCGreIf->ChangeFlag |= COSA_DML_CGRE_CF_KEYMOD;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "TOSMode", TRUE))
+    if (strcmp(ParamName, "TOSMode") == 0)
     {
         if (uValue == pCGreIf->TOSMode)
             return TRUE;
@@ -330,7 +330,7 @@ CGreIf_SetParamUlongValue
         pCGreIf->ChangeFlag |= COSA_DML_CGRE_CF_TOSMOD;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "TOS", TRUE))
+    if (strcmp(ParamName, "TOS") == 0)
     {
         if (uValue == pCGreIf->TOS)
             return TRUE;
@@ -353,7 +353,7 @@ CGreIf_SetParamStringValue
 {
     COSA_DML_CGRE_IF                *pCGreIf      = (COSA_DML_CGRE_IF *)hInsContext;
 
-    if (AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         if (AnscEqualString(strValue, pCGreIf->Alias, TRUE))
             return TRUE;
@@ -362,7 +362,7 @@ CGreIf_SetParamStringValue
         pCGreIf->ChangeFlag |= COSA_DML_CGRE_CF_ALIAS;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "Name", TRUE))
+    if (strcmp(ParamName, "Name") == 0)
     {
         if (AnscEqualString(strValue, pCGreIf->Name, TRUE))
             return TRUE;
@@ -371,7 +371,7 @@ CGreIf_SetParamStringValue
         pCGreIf->ChangeFlag |= COSA_DML_CGRE_CF_NAME;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         if (AnscEqualString(strValue, pCGreIf->LowerLayers, TRUE))
             return TRUE;
@@ -380,7 +380,7 @@ CGreIf_SetParamStringValue
         pCGreIf->ChangeFlag |= COSA_DML_CGRE_CF_LOWLAY;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpoint", TRUE))
+    if (strcmp(ParamName, "RemoteEndpoint") == 0)
     {
         if (AnscEqualString(strValue, pCGreIf->RemoteEndpoint, TRUE))
             return TRUE;
@@ -389,7 +389,7 @@ CGreIf_SetParamStringValue
         pCGreIf->ChangeFlag |= COSA_DML_CGRE_CF_EP;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "Key", TRUE))
+    if (strcmp(ParamName, "Key") == 0)
     {
         if (AnscEqualString(strValue, pCGreIf->Key, TRUE))
             return TRUE;
@@ -470,77 +470,77 @@ CGreIfStat_GetParamUlongValue
     if (CosaDml_CGreIfGetStats(pCGreIf->InstanceNumber, &pCGreIf->Stats) != ANSC_STATUS_SUCCESS)
         return FALSE;
 
-    if (AnscEqualString(ParamName, "BytesSent", TRUE))
+    if (strcmp(ParamName, "BytesSent") == 0)
     {
         *pUlong = pStats->BytesSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "BytesReceived", TRUE))
+    if (strcmp(ParamName, "BytesReceived") == 0)
     {
         *pUlong = pStats->BytesReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "PacketsSent", TRUE))
+    if (strcmp(ParamName, "PacketsSent") == 0)
     {
         *pUlong = pStats->PacketsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "PacketsReceived", TRUE))
+    if (strcmp(ParamName, "PacketsReceived") == 0)
     {
         *pUlong = pStats->PacketsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ErrorsSent", TRUE))
+    if (strcmp(ParamName, "ErrorsSent") == 0)
     {
         *pUlong = pStats->ErrorsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ErrorsReceived", TRUE))
+    if (strcmp(ParamName, "ErrorsReceived") == 0)
     {
         *pUlong = pStats->ErrorsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "UnicastPacketsSent", TRUE))
+    if (strcmp(ParamName, "UnicastPacketsSent") == 0)
     {
         *pUlong = pStats->UnicastPacketsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "UnicastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "UnicastPacketsReceived") == 0)
     {
         *pUlong = pStats->UnicastPacketsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DiscardPacketsSent", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsSent") == 0)
     {
         *pUlong = pStats->DiscardPacketsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DiscardPacketsReceived", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsReceived") == 0)
     {
         *pUlong = pStats->DiscardPacketsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "MulticastPacketsSent", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsSent") == 0)
     {
         *pUlong = pStats->MulticastPacketsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "MulticastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsReceived") == 0)
     {
         *pUlong = pStats->MulticastPacketsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "BroadcastPacketsSent", TRUE))
+    if (strcmp(ParamName, "BroadcastPacketsSent") == 0)
     {
         *pUlong = pStats->BroadcastPacketsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "BroadcastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "BroadcastPacketsReceived") == 0)
     {
         *pUlong = pStats->BroadcastPacketsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "UnknownProtoPacketsReceived", TRUE))
+    if (strcmp(ParamName, "UnknownProtoPacketsReceived") == 0)
     {
         *pUlong = pStats->UnknownProtoPacketsReceived;
         return TRUE;

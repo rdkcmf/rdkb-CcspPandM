@@ -64,7 +64,7 @@ DSLite_GetParamBoolValue
     UNREFERENCED_PARAMETER(ParamName);
     UNREFERENCED_PARAMETER(pBool);
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
        BOOL bEnabled = FALSE; 
         /* collect value */
@@ -95,7 +95,7 @@ DSLite_SetParamBoolValue
     UNREFERENCED_PARAMETER(bValue);
     int rc = -1;
     /* check the parameter name and set the corresponding value */
-    if ( AnscEqualString(ParamName, "Enable", TRUE) )
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         CosaDmlSetDsliteEnable(NULL, (BOOLEAN)bValue);
@@ -261,7 +261,7 @@ InterfaceSetting4_GetParamBoolValue
     PCOSA_DML_DSLITE                 pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
         /* collect value */
@@ -270,7 +270,7 @@ InterfaceSetting4_GetParamBoolValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_MssClampingEnable", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_MssClampingEnable") == 0)
     {
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
         /* collect value */
@@ -279,7 +279,7 @@ InterfaceSetting4_GetParamBoolValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_IPv6FragEnable", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_IPv6FragEnable") == 0)
     {
 
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
@@ -310,7 +310,7 @@ InterfaceSetting4_GetParamStringValue
     errno_t                         rc                = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
         /* collect value */
@@ -331,7 +331,7 @@ InterfaceSetting4_GetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "EndpointAddressInUse", TRUE))
+    if (strcmp(ParamName, "EndpointAddressInUse") == 0)
     {
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
         /* collect value */
@@ -352,7 +352,7 @@ InterfaceSetting4_GetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "EndpointName", TRUE))
+    if (strcmp(ParamName, "EndpointName") == 0)
     {
         char endPointName[260] = {0};
         char buf[8] = {0};
@@ -402,7 +402,7 @@ InterfaceSetting4_GetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "EndpointAddress", TRUE))
+    if (strcmp(ParamName, "EndpointAddress") == 0)
     {
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
         /* collect value */
@@ -423,7 +423,7 @@ InterfaceSetting4_GetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "TunnelInterface", TRUE))
+    if (strcmp(ParamName, "TunnelInterface") == 0)
     {
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
         /* collect value */
@@ -444,7 +444,7 @@ InterfaceSetting4_GetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "TunneledInterface", TRUE))
+    if (strcmp(ParamName, "TunneledInterface") == 0)
     {
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
         /* collect value */
@@ -485,7 +485,7 @@ InterfaceSetting4_GetParamUlongValue
     errno_t                         rc                = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         char buf[8] = {0};
         int status = 2; //status: Enabled(1), Disabled(2), Error(3)
@@ -528,7 +528,7 @@ InterfaceSetting4_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "EndpointAssignmentPrecedence", TRUE))
+    if (strcmp(ParamName, "EndpointAssignmentPrecedence") == 0)
     {
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
         /* collect value */
@@ -537,7 +537,7 @@ InterfaceSetting4_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "EndpointAddressTypePrecedence", TRUE))
+    if (strcmp(ParamName, "EndpointAddressTypePrecedence") == 0)
     {
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
         /* collect value */
@@ -546,7 +546,7 @@ InterfaceSetting4_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Origin", TRUE))
+    if (strcmp(ParamName, "Origin") == 0)
     {
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
         /* collect value */
@@ -555,7 +555,7 @@ InterfaceSetting4_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_Tcpmss", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_Tcpmss") == 0)
     {
         CosaDmlDsliteGetCfg(NULL, pDsliteTunnel);
         /* collect value */
@@ -581,21 +581,21 @@ InterfaceSetting4_SetParamBoolValue
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
 
     /* check the parameter name and set the corresponding value */
-    if ( AnscEqualString(ParamName, "Enable", TRUE) )
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pDsliteTunnel->active   =  bValue;
         return TRUE;
     }
 
-    if ( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_MssClampingEnable", TRUE) )
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_MssClampingEnable") == 0)
     {
         /* save update to backup */
         pDsliteTunnel->mss_clamping_enable   =  bValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_IPv6FragEnable", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_IPv6FragEnable") == 0)
     {
         /* save update to backup */
         pDsliteTunnel->ipv6_frag_enable   =  bValue;
@@ -622,7 +622,7 @@ InterfaceSetting4_SetParamStringValue
 
     CcspTraceWarning(("Dslite: set %s to %s\n", ParamName, pString));
 
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* save update to backup */
         rc = strcpy_s(pDsliteTunnel->alias, sizeof(pDsliteTunnel->alias), pString);
@@ -634,7 +634,7 @@ InterfaceSetting4_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "EndpointName", TRUE))
+    if (strcmp(ParamName, "EndpointName") == 0)
     {
         COSA_DML_DSLITE read_cfg;
         read_cfg.InstanceNumber = pDsliteTunnel->InstanceNumber;
@@ -654,7 +654,7 @@ InterfaceSetting4_SetParamStringValue
             return FALSE;
     }
 
-    if( AnscEqualString(ParamName, "EndpointAddress", TRUE))
+    if (strcmp(ParamName, "EndpointAddress") == 0)
     {
         /* save update to backup */
         rc = strcpy_s(pDsliteTunnel->addr_ipv6,sizeof(pDsliteTunnel->addr_ipv6), pString);
@@ -683,21 +683,21 @@ UNREFERENCED_PARAMETER(uValue);
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
 
-    if( AnscEqualString(ParamName, "EndpointAssignmentPrecedence", TRUE))
+    if (strcmp(ParamName, "EndpointAssignmentPrecedence") == 0)
     {
         /* save update to backup */
         pDsliteTunnel->mode   =  uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "EndpointAddressTypePrecedence", TRUE))
+    if (strcmp(ParamName, "EndpointAddressTypePrecedence") == 0)
     {
         /* save update to backup */
         pDsliteTunnel->addr_type   =  uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_Tcpmss", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_Tcpmss") == 0)
     {
         /* save update to backup */
         pDsliteTunnel->tcpmss   =  uValue;
@@ -735,7 +735,7 @@ InterfaceSetting4_Validate
 
             pDsliteTunnel2 = (PCOSA_DML_DSLITE)pCxtLink->hContext;
 
-            if( AnscEqualString(pDsliteTunnel2->alias, pDsliteTunnel->alias, TRUE) )
+            if (strcmp(pDsliteTunnel2->alias, pDsliteTunnel->alias) == 0)
             {
                 if ( (ANSC_HANDLE)pCxtLink == hInsContext )
                 {

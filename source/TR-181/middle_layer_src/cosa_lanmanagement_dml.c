@@ -148,12 +148,12 @@ LanManagement_GetParamBoolValue
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
 
-    if( AnscEqualString(ParamName, "LanIpv6UlaEnable", TRUE)) {
+    if (strcmp(ParamName, "LanIpv6UlaEnable") == 0) {
         *pBool = pMyObject->LanMngmCfg.LanIpv6UlaEnable;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LanIpv6Enable", TRUE)) {
+    if (strcmp(ParamName, "LanIpv6Enable") == 0) {
         *pBool = pMyObject->LanMngmCfg.LanIpv6Enable;
         return TRUE;
     }
@@ -213,7 +213,7 @@ LanManagement_GetParamStringValue
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
     errno_t                        rc        = -1;
 
-    if( AnscEqualString(ParamName, "LanIpv6Ula", TRUE)) {
+    if (strcmp(ParamName, "LanIpv6Ula") == 0) {
         if ( AnscSizeOfString(pMyObject->LanMngmCfg.LanIpv6Ula) < *pulSize) {
             rc = strcpy_s(pValue, *pulSize,  pMyObject->LanMngmCfg.LanIpv6Ula);
             if (rc != EOK) {
@@ -228,7 +228,7 @@ LanManagement_GetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "LanIpv6UlaPrefix", TRUE)) {
+    if (strcmp(ParamName, "LanIpv6UlaPrefix") == 0) {
         if ( AnscSizeOfString(pMyObject->LanMngmCfg.LanIpv6UlaPrefix) < *pulSize) {
             rc = strcpy_s(pValue, *pulSize, pMyObject->LanMngmCfg.LanIpv6UlaPrefix);
             if (rc != EOK) {
@@ -288,12 +288,12 @@ LanManagement_SetParamBoolValue
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
     
-    if( AnscEqualString(ParamName, "LanIpv6UlaEnable", TRUE)) {
+    if (strcmp(ParamName, "LanIpv6UlaEnable") == 0) {
         pMyObject->LanMngmCfg.LanIpv6UlaEnable = bValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LanIpv6Enable", TRUE)) {
+    if (strcmp(ParamName, "LanIpv6Enable") == 0) {
         pMyObject->LanMngmCfg.LanIpv6Enable = bValue;
         return TRUE;
     }
@@ -313,7 +313,7 @@ LanManagement_SetParamStringValue
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
     errno_t                        rc        = -1;
 
-    if( AnscEqualString(ParamName, "LanIpv6Ula", TRUE)) {
+    if (strcmp(ParamName, "LanIpv6Ula") == 0) {
         rc = STRCPY_S_NOCLOBBER(pMyObject->LanMngmCfg.LanIpv6Ula, sizeof(pMyObject->LanMngmCfg.LanIpv6Ula), pString);
         if (rc != EOK) {
            ERR_CHK(rc);
@@ -322,7 +322,7 @@ LanManagement_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LanIpv6UlaPrefix", TRUE)) {
+    if (strcmp(ParamName, "LanIpv6UlaPrefix") == 0) {
         rc = STRCPY_S_NOCLOBBER(pMyObject->LanMngmCfg.LanIpv6UlaPrefix, sizeof(pMyObject->LanMngmCfg.LanIpv6UlaPrefix), pString);
         if (rc != EOK) {
             ERR_CHK(rc);

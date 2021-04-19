@@ -82,22 +82,22 @@ GreIf_GetParamBoolValue
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
     ULONG                           ins = pGreIf->InstanceNumber;
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         *pBool = pGreIf->Enable;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "UseSequenceNumber", TRUE))
+    if (strcmp(ParamName, "UseSequenceNumber") == 0)
     {
         *pBool = pGreIf->UseSequenceNumber;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "UseChecksum", TRUE))
+    if (strcmp(ParamName, "UseChecksum") == 0)
     {
         *pBool = pGreIf->UseChecksum;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DHCPCircuitIDSSID", TRUE))
+    if (strcmp(ParamName, "DHCPCircuitIDSSID") == 0)
     {
         *pBool = pGreIf->DHCPCircuitIDSSID;
         if(pGreIf->DHCPCircuitIDSSID) {
@@ -106,7 +106,7 @@ GreIf_GetParamBoolValue
 	    }
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DHCPRemoteID", TRUE))
+    if (strcmp(ParamName, "DHCPRemoteID") == 0)
     {
         *pBool = pGreIf->DHCPRemoteID;
         return TRUE;
@@ -125,49 +125,49 @@ GreIf_GetParamUlongValue
 {
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
     ULONG                           ins = pGreIf->InstanceNumber;
-    if (AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         //REFPLTB-286 :: Returning FALSE leads to uint32 to string mappin failure in dmcli. Hence ANSC status check discarded
         CosaDml_GreIfGetStatus(ins, (COSA_DML_GRE_STATUS *)pUlong);
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "LastChange", TRUE))
+    if (strcmp(ParamName, "LastChange") == 0)
     {
         if (CosaDml_GreIfGetLastchange(ins, pUlong) != ANSC_STATUS_SUCCESS)
             return FALSE;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeyIdentifierGenerationPolicy", TRUE))
+    if (strcmp(ParamName, "KeyIdentifierGenerationPolicy") == 0)
     {
         *pUlong = pGreIf->KeyIdentifierGenerationPolicy;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAlivePolicy", TRUE))
+    if (strcmp(ParamName, "KeepAlivePolicy") == 0)
     {
         *pUlong = pGreIf->KeepAlivePolicy;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveInterval", TRUE))
+    if (strcmp(ParamName, "KeepAliveInterval") == 0)
     {
         *pUlong = pGreIf->KeepAliveInterval;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveThreshold", TRUE))
+    if (strcmp(ParamName, "KeepAliveThreshold") == 0)
     {
         *pUlong = pGreIf->KeepAliveThreshold;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveCount", TRUE))
+    if (strcmp(ParamName, "KeepAliveCount") == 0)
     {
         *pUlong = pGreIf->KeepAliveCount;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveFailInterval", TRUE))
+    if (strcmp(ParamName, "KeepAliveFailInterval") == 0)
     {
         *pUlong = pGreIf->KeepAliveFailInterval;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ReconnectPrimary", TRUE))
+    if (strcmp(ParamName, "ReconnectPrimary") == 0)
     {
         *pUlong = pGreIf->ReconnectPrimary;
         return TRUE;
@@ -188,38 +188,38 @@ GreIf_GetParamStringValue
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
     ULONG                           ins = pGreIf->InstanceNumber;
 
-    if (AnscEqualString(ParamName, "LocalInterfaces", TRUE))
+    if (strcmp(ParamName, "LocalInterfaces") == 0)
     {
         snprintf(pValue, *pUlSize, "%s", pGreIf->LocalInterfaces);
         return 0;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpoints", TRUE))
+    if (strcmp(ParamName, "RemoteEndpoints") == 0)
     {
         snprintf(pValue, *pUlSize, "%s", pGreIf->RemoteEndpoints);
         return 0;
     }
-    if (AnscEqualString(ParamName, "ConnectedRemoteEndpoint", TRUE))
+    if (strcmp(ParamName, "ConnectedRemoteEndpoint") == 0)
     {	
 		CosaDml_GreIfGetConnectedRemoteEndpoint(ins,pGreIf);
 	   	snprintf(pValue, *pUlSize, "%s", pGreIf->ConnectedRemoteEndpoint);
         return 0;
     }
-    if (AnscEqualString(ParamName, "KeyIdentifier", TRUE))
+    if (strcmp(ParamName, "KeyIdentifier") == 0)
     {
         snprintf(pValue, *pUlSize, "%s", pGreIf->KeyIdentifier);
         return 0;
     }
-    if (AnscEqualString(ParamName, "AssociatedBridges", TRUE))
+    if (strcmp(ParamName, "AssociatedBridges") == 0)
     {
         snprintf(pValue, *pUlSize, "%s", pGreIf->AssociatedBridges);
         return 0;
     }
-    if (AnscEqualString(ParamName, "AssociatedBridgesWiFiPort", TRUE))
+    if (strcmp(ParamName, "AssociatedBridgesWiFiPort") == 0)
     {
         snprintf(pValue, *pUlSize, "%s", pGreIf->AssociatedBridgesWiFiPort);
         return 0;
     }
-    if (AnscEqualString(ParamName, "GRENetworkInterface", TRUE))
+    if (strcmp(ParamName, "GRENetworkInterface") == 0)
     {
         snprintf(pValue, *pUlSize, "%s", pGreIf->GRENetworkInterface);
         return 0;
@@ -239,12 +239,12 @@ GreIf_GetParamIntValue
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
     ULONG                           ins = pGreIf->InstanceNumber;
 
-    if (AnscEqualString(ParamName, "DSCPMarkPolicy", TRUE))
+    if (strcmp(ParamName, "DSCPMarkPolicy") == 0)
     {
         *pInt = pGreIf->DSCPMarkPolicy;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "VLANID", TRUE))
+    if (strcmp(ParamName, "VLANID") == 0)
     {
         *pInt = pGreIf->VLANID;
         return TRUE;
@@ -263,31 +263,31 @@ GreIf_SetParamBoolValue
 {
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         pGreIf->Enable = bValue;
         pGreIf->ChangeFlag |= GREIF_CF_ENABLE;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "UseSequenceNumber", TRUE))
+    if (strcmp(ParamName, "UseSequenceNumber") == 0)
     {
         pGreIf->UseSequenceNumber = bValue;
         pGreIf->ChangeFlag |= GREIF_CF_USESEQ;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "UseChecksum", TRUE))
+    if (strcmp(ParamName, "UseChecksum") == 0)
     {
         pGreIf->UseChecksum = bValue;
         pGreIf->ChangeFlag |= GREIF_CF_USECSUM;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DHCPCircuitIDSSID", TRUE))
+    if (strcmp(ParamName, "DHCPCircuitIDSSID") == 0)
     {
         pGreIf->DHCPCircuitIDSSID = bValue;
         pGreIf->ChangeFlag |= GREIF_CF_DHCPCIRID;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DHCPRemoteID", TRUE))
+    if (strcmp(ParamName, "DHCPRemoteID") == 0)
     {
         pGreIf->DHCPRemoteID = bValue;
         pGreIf->ChangeFlag |= GREIF_CF_DHCPRMID;
@@ -307,43 +307,43 @@ GreIf_SetParamUlongValue
 {
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
 
-    if (AnscEqualString(ParamName, "KeyIdentifierGenerationPolicy", TRUE))
+    if (strcmp(ParamName, "KeyIdentifierGenerationPolicy") == 0)
     {
         pGreIf->KeyIdentifierGenerationPolicy = uValue;
         pGreIf->ChangeFlag |= GREIF_CF_KEYGENPOL;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAlivePolicy", TRUE))
+    if (strcmp(ParamName, "KeepAlivePolicy") == 0)
     {
         pGreIf->KeepAlivePolicy = uValue;
         pGreIf->ChangeFlag |= GREIF_CF_KEEPPOL;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveInterval", TRUE))
+    if (strcmp(ParamName, "KeepAliveInterval") == 0)
     {
         pGreIf->KeepAliveInterval = uValue;
         pGreIf->ChangeFlag |= GREIF_CF_KEEPITVL;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveThreshold", TRUE))
+    if (strcmp(ParamName, "KeepAliveThreshold") == 0)
     {
         pGreIf->KeepAliveThreshold = uValue;
         pGreIf->ChangeFlag |= GREIF_CF_KEEPTHRE;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveCount", TRUE))
+    if (strcmp(ParamName, "KeepAliveCount") == 0)
     {
         pGreIf->KeepAliveCount = uValue;
         pGreIf->ChangeFlag |= GREIF_CF_KEEPCNT;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveFailInterval", TRUE))
+    if (strcmp(ParamName, "KeepAliveFailInterval") == 0)
     {
         pGreIf->KeepAliveFailInterval = uValue;
         pGreIf->ChangeFlag |= GREIF_CF_KEEPFAILITVL;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ReconnectPrimary", TRUE))
+    if (strcmp(ParamName, "ReconnectPrimary") == 0)
     {
         pGreIf->ReconnectPrimary = uValue;
         pGreIf->ChangeFlag |= GREIF_CF_RECONNPRIM;
@@ -363,37 +363,37 @@ GreIf_SetParamStringValue
 {
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
 
-    if (AnscEqualString(ParamName, "LocalInterfaces", TRUE))
+    if (strcmp(ParamName, "LocalInterfaces") == 0)
     {
         snprintf(pGreIf->LocalInterfaces, sizeof(pGreIf->LocalInterfaces), "%s", strValue);
         pGreIf->ChangeFlag |= GREIF_CF_LOCALIF;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpoints", TRUE))
+    if (strcmp(ParamName, "RemoteEndpoints") == 0)
     {
         snprintf(pGreIf->RemoteEndpoints, sizeof(pGreIf->RemoteEndpoints), "%s", strValue);
         pGreIf->ChangeFlag |= GREIF_CF_RMEP;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeyIdentifier", TRUE))
+    if (strcmp(ParamName, "KeyIdentifier") == 0)
     {
         snprintf(pGreIf->KeyIdentifier, sizeof(pGreIf->KeyIdentifier), "%s", strValue);
         pGreIf->ChangeFlag |= GREIF_CF_KEYID;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "AssociatedBridges", TRUE))
+    if (strcmp(ParamName, "AssociatedBridges") == 0)
     {
         snprintf(pGreIf->AssociatedBridges, sizeof(pGreIf->AssociatedBridges), "%s", strValue);
         pGreIf->ChangeFlag |= GREIF_CF_ASSOBR;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "AssociatedBridgesWiFiPort", TRUE))
+    if (strcmp(ParamName, "AssociatedBridgesWiFiPort") == 0)
     {
         snprintf(pGreIf->AssociatedBridgesWiFiPort, sizeof(pGreIf->AssociatedBridgesWiFiPort), "%s", strValue);
         pGreIf->ChangeFlag |= GREIF_CF_ASSOBRWFP;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "GRENetworkInterface", TRUE))
+    if (strcmp(ParamName, "GRENetworkInterface") == 0)
     {
         snprintf(pGreIf->GRENetworkInterface, sizeof(pGreIf->GRENetworkInterface), "%s", strValue);
         pGreIf->ChangeFlag |= GREIF_CF_GREIF;
@@ -413,7 +413,7 @@ GreIf_SetParamIntValue
 {
     COSA_DML_GRE_IF                 *pGreIf      = (COSA_DML_GRE_IF *)hInsContext;
 
-    if (AnscEqualString(ParamName, "DSCPMarkPolicy", TRUE))
+    if (strcmp(ParamName, "DSCPMarkPolicy") == 0)
     {
         if(pGreIf->DSCPMarkPolicy == value)
             return TRUE;
@@ -422,7 +422,7 @@ GreIf_SetParamIntValue
         pGreIf->ChangeFlag |= GREIF_CF_DSCP;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "VLANID", TRUE))
+    if (strcmp(ParamName, "VLANID") == 0)
     {
         pGreIf->VLANID = value;
         pGreIf->ChangeFlag |= GREIF_CF_VLANID;
@@ -631,22 +631,22 @@ GreIfStat_GetParamUlongValue
 
     CosaDml_GreIfGetStats(pGreIf->InstanceNumber, pStats);
 
-    if (AnscEqualString(ParamName, "KeepAliveSent", TRUE))
+    if (strcmp(ParamName, "KeepAliveSent") == 0)
     {
         *pUlong = pStats->KeepAliveSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveReceived", TRUE))
+    if (strcmp(ParamName, "KeepAliveReceived") == 0)
     {
         *pUlong = pStats->KeepAliveReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DiscardChecksumReceived", TRUE))
+    if (strcmp(ParamName, "DiscardChecksumReceived") == 0)
     {
         *pUlong = pStats->DiscardChecksumReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DiscardSequenceNumberReceived", TRUE))
+    if (strcmp(ParamName, "DiscardSequenceNumberReceived") == 0)
     {
         *pUlong = pStats->DiscardSequenceNumberReceived;
         return TRUE;

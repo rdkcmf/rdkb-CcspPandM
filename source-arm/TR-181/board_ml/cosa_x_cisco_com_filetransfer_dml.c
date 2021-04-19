@@ -116,35 +116,35 @@ FileTransfer_GetParamUlongValue
     UNREFERENCED_PARAMETER(hInsContext);
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Server", TRUE))
+    if (strcmp(ParamName, "Server") == 0)
     {
         /* collect value */
         *puLong = pCfg->Server;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Protocol", TRUE))
+    if (strcmp(ParamName, "Protocol") == 0)
     {
         /* collect value */
         *puLong = pCfg->Protocol;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "AuthType", TRUE))
+    if (strcmp(ParamName, "AuthType") == 0)
     {
         /* collect value */
         *puLong = pCfg->AuthType;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Action", TRUE))
+    if (strcmp(ParamName, "Action") == 0)
     {
         /* collect value */
         *puLong = pCfg->Action;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */
         *puLong = CosaDmlFileTransferGetStatus((ANSC_HANDLE)pMyObject);
@@ -209,7 +209,7 @@ FileTransfer_GetParamStringValue
     UNREFERENCED_PARAMETER(pulSize);
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "FileName", TRUE))
+    if (strcmp(ParamName, "FileName") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue,*pulSize, (char*)pCfg->FileName);
@@ -221,7 +221,7 @@ FileTransfer_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Username", TRUE))
+    if (strcmp(ParamName, "Username") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue,*pulSize, (char*)pCfg->Username);
@@ -233,7 +233,7 @@ FileTransfer_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Password", TRUE))
+    if (strcmp(ParamName, "Password") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue,*pulSize, (char*)pCfg->Password);
@@ -291,28 +291,28 @@ FileTransfer_SetParamUlongValue
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
     UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Server", TRUE))
+    if (strcmp(ParamName, "Server") == 0)
     {
         /* save update to backup */
         pCfg->Server = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Protocol", TRUE))
+    if (strcmp(ParamName, "Protocol") == 0)
     {
         /* save update to backup */
         pCfg->Protocol = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "AuthType", TRUE))
+    if (strcmp(ParamName, "AuthType") == 0)
     {
         /* save update to backup */
         pCfg->AuthType = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Action", TRUE))
+    if (strcmp(ParamName, "Action") == 0)
     {
         /* save update to backup */
         pCfg->Action = uValue;
@@ -366,7 +366,7 @@ FileTransfer_SetParamStringValue
     errno_t                         rc        = -1;
     UNREFERENCED_PARAMETER(hInsContext);   
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "FileName", TRUE))
+    if (strcmp(ParamName, "FileName") == 0)
     {
         /* save update to backup */
         rc = strcpy_s((char*)pCfg->FileName, sizeof(pCfg->FileName),pString);
@@ -378,7 +378,7 @@ FileTransfer_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Username", TRUE))
+    if (strcmp(ParamName, "Username") == 0)
     {
         /* save update to backup */
         rc = strcpy_s((char*)pCfg->Username,sizeof(pCfg->Username), pString);
@@ -390,7 +390,7 @@ FileTransfer_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Password", TRUE))
+    if (strcmp(ParamName, "Password") == 0)
     {
         /* save update to backup */
         rc = strcpy_s((char*)pCfg->Password,sizeof(pCfg->Password), pString);

@@ -170,47 +170,47 @@ X_CISCO_COM_MultiLAN_GetParamStringValue
 //    AnscTraceFlow(("%s -- %s, buffer size %ul...\n", __FUNCTION__, ParamName, *pUlSize));
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "PrimayLANIPInterface", TRUE) )
+    if (strcmp(ParamName, "PrimayLANIPInterface") == 0)
     {
         returnStatus = CosaDmlMlanGetPrimaryLanIpIf((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
-    else if( AnscEqualString(ParamName, "HomeSecurityIPInterface", TRUE) )
+    else if (strcmp(ParamName, "HomeSecurityIPInterface") == 0)
     {
         returnStatus = CosaDmlMlanGetHomeSecurityIpIf((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
-    else if( AnscEqualString(ParamName, "PrimaryLANBridge", TRUE) )
+    else if (strcmp(ParamName, "PrimaryLANBridge") == 0)
     {
         returnStatus = CosaDmlMlanGetPrimaryLanBridge((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
-    else if( AnscEqualString(ParamName, "PrimaryLANBridgeHSPorts", TRUE) )
+    else if (strcmp(ParamName, "PrimaryLANBridgeHSPorts") == 0)
     {
         returnStatus = CosaDmlMlanGetPrimaryLanBridgeHsPorts((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
-    else if( AnscEqualString(ParamName, "PrimaryLANDHCPv4ServerPool", TRUE) )
+    else if (strcmp(ParamName, "PrimaryLANDHCPv4ServerPool") == 0)
     {
         returnStatus = CosaDmlMlanGetPrimaryLanDhcpv4ServerPool((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
-    else if( AnscEqualString(ParamName, "HomeSecurityBridge", TRUE) )
+    else if (strcmp(ParamName, "HomeSecurityBridge") == 0)
     {
         returnStatus = CosaDmlMlanGetHomeSecurityBridge((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
-    else if( AnscEqualString(ParamName, "HomeSecurityBridgePorts", TRUE) )
+    else if (strcmp(ParamName, "HomeSecurityBridgePorts") == 0)
     {
         returnStatus = CosaDmlMlanGetHomeSecurityBridgePorts((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
-    else if( AnscEqualString(ParamName, "HomeSecurityDHCPv4ServerPool", TRUE) )
+    else if (strcmp(ParamName, "HomeSecurityDHCPv4ServerPool") == 0)
     {
         returnStatus = CosaDmlMlanGetHomeSecurityDhcpv4ServerPool((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
-    else if( AnscEqualString(ParamName, "HomeSecurityWiFiRadio", TRUE) )
+    else if (strcmp(ParamName, "HomeSecurityWiFiRadio") == 0)
     {
         returnStatus = CosaDmlMlanGetHomeSecurityWiFiRadio((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
-    else if( AnscEqualString(ParamName, "HomeSecurityWiFiSsid", TRUE) )
+    else if (strcmp(ParamName, "HomeSecurityWiFiSsid") == 0)
     {
         returnStatus = CosaDmlMlanGetHomeSecurityWiFiSsid((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }
-    else if( AnscEqualString(ParamName, "HomeSecurityWiFiAp", TRUE) )
+    else if (strcmp(ParamName, "HomeSecurityWiFiAp") == 0)
     {
         returnStatus = CosaDmlMlanGetHomeSecurityWiFiAp((ANSC_HANDLE)pMyObject, pValue, pUlSize);
     }

@@ -260,7 +260,7 @@ Firewall_GetParamUlongValue
    UNREFERENCED_PARAMETER(hInsContext);
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Config", TRUE))
+    if (strcmp(ParamName, "Config") == 0)
     {
         /* collect value */
         *puLong = pFirewallCfg->FirewallLevel;
@@ -327,7 +327,7 @@ Firewall_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Version", TRUE))
+    if (strcmp(ParamName, "Version") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pFirewallCfg->Version);
@@ -340,7 +340,7 @@ Firewall_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "LastChange", TRUE))
+    if (strcmp(ParamName, "LastChange") == 0)
     {
         pFirewallCfg = AnscAllocateMemory(sizeof(COSA_DML_FIREWALL_CFG));
 
@@ -505,7 +505,7 @@ Firewall_SetParamUlongValue
     PCOSA_DATAMODEL_FIREWALL        pCosaDMFirewall = (PCOSA_DATAMODEL_FIREWALL)g_pCosaBEManager->hFirewall;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Config", TRUE))
+    if (strcmp(ParamName, "Config") == 0)
     {
         /* save update to backup */
         pCosaDMFirewall->FirewallConfig.FirewallLevel = uValue;
@@ -717,17 +717,17 @@ V4_GetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-    if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
+    if (strcmp(ParamName, "BlockFragIPPkts") == 0) {
 
         CosaDmlGatewayV4GetBlockFragIPPkts(pBool);
         return TRUE;
     }
-    else if (AnscEqualString(ParamName, "PortScanProtect", TRUE)) {
+    else if (strcmp(ParamName, "PortScanProtect") == 0) {
 
       CosaDmlGatewayV4GetPortScanProtect(pBool);
       return TRUE;
     }
-    else if (AnscEqualString(ParamName, "IPFloodDetect", TRUE)) {
+    else if (strcmp(ParamName, "IPFloodDetect") == 0) {
 
       CosaDmlGatewayV4GetIPFloodDetect(pBool);
       return TRUE;
@@ -774,17 +774,17 @@ V4_SetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-    if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
+    if (strcmp(ParamName, "BlockFragIPPkts") == 0) {
 
         CosaDmlGatewayV4SetBlockFragIPPkts(bValue);
         return TRUE;
     }
-    else if (AnscEqualString(ParamName, "PortScanProtect", TRUE)) {
+    else if (strcmp(ParamName, "PortScanProtect") == 0) {
 
       CosaDmlGatewayV4SetPortScanProtect(bValue);
       return TRUE;
     }
-    else if (AnscEqualString(ParamName, "IPFloodDetect", TRUE)) {
+    else if (strcmp(ParamName, "IPFloodDetect") == 0) {
 
       CosaDmlGatewayV4SetIPFloodDetect(bValue);
       return TRUE;
@@ -943,17 +943,17 @@ V6_GetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-    if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
+    if (strcmp(ParamName, "BlockFragIPPkts") == 0) {
 
         CosaDmlGatewayV6GetBlockFragIPPkts(pBool);
         return TRUE;
     }
-    else if (AnscEqualString(ParamName, "PortScanProtect", TRUE)) {
+    else if (strcmp(ParamName, "PortScanProtect") == 0) {
 
       CosaDmlGatewayV6GetPortScanProtect(pBool);
       return TRUE;
     }
-    else if (AnscEqualString(ParamName, "IPFloodDetect", TRUE)) {
+    else if (strcmp(ParamName, "IPFloodDetect") == 0) {
 
       CosaDmlGatewayV6GetIPFloodDetect(pBool);
       return TRUE;
@@ -1002,17 +1002,17 @@ V6_SetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-    if (AnscEqualString(ParamName, "BlockFragIPPkts", TRUE)) {
+    if (strcmp(ParamName, "BlockFragIPPkts") == 0) {
 
         CosaDmlGatewayV6SetBlockFragIPPkts(bValue);
         return TRUE;
     }
-    else if (AnscEqualString(ParamName, "PortScanProtect", TRUE)) {
+    else if (strcmp(ParamName, "PortScanProtect") == 0) {
 
       CosaDmlGatewayV6SetPortScanProtect(bValue);
       return TRUE;
     }
-    else if (AnscEqualString(ParamName, "IPFloodDetect", TRUE)) {
+    else if (strcmp(ParamName, "IPFloodDetect") == 0) {
 
       CosaDmlGatewayV6SetIPFloodDetect(bValue);
       return TRUE;

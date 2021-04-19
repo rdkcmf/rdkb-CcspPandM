@@ -1029,7 +1029,7 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
           /*Error*/
           return 0;
      }
-     if( AnscEqualString(ParamName, "Total", TRUE))
+     if (strcmp(ParamName, "Total") == 0)
      {
 #ifdef  _COSA_INTEL_USG_ARM_
 #if 0
@@ -1068,7 +1068,7 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
         return si.totalram*si.mem_unit/(1024);
 #endif
      }
-     else if(AnscEqualString(ParamName, "Free", TRUE))
+     else if (strcmp(ParamName, "Free") == 0)
      {
 #ifdef _COSA_INTEL_USG_ARM_
 	if ( platform_hal_GetFreeMemorySize(&tmp) != RETURN_OK )
@@ -1081,7 +1081,7 @@ ULONG COSADmlGetMemoryStatus(char * ParamName)
      }
 
 
-     else if(AnscEqualString(ParamName, "Used", TRUE))
+     else if (strcmp(ParamName, "Used") == 0)
      {
 #ifdef _COSA_INTEL_USG_ARM_
 	if ( platform_hal_GetUsedMemorySize(&tmp) != RETURN_OK )

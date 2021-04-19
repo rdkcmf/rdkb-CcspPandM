@@ -355,18 +355,18 @@ GRETunnel_GetParamBoolValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_GRE_TUNNEL_FULL_ALL   pDmlGRETunnel     = (PCOSA_DML_GRE_TUNNEL_FULL_ALL)pCosaContext->hContext;
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         *pBool = pDmlGRETunnel->Cfg.Enable;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_INTEL_Hotspot_SnoopCircuitEnable", TRUE))
+    if (strcmp(ParamName, "X_INTEL_Hotspot_SnoopCircuitEnable") == 0)
     {
         *pBool = pDmlGRETunnel->Cfg.SnoopCircuitEnable;
         GRE_hotspot_update_circuit_ids(pDmlGRETunnel->Cfg.TunnelInstanceNumber, 1);
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_INTEL_Hotspot_SnoopRemoteEnable", TRUE))
+    if (strcmp(ParamName, "X_INTEL_Hotspot_SnoopRemoteEnable") == 0)
     {
         *pBool = pDmlGRETunnel->Cfg.SnoopRemoteEnable;
         return TRUE;
@@ -426,17 +426,17 @@ GRETunnel_GetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_GRE_TUNNEL_FULL_ALL   pDmlGRETunnel     = (PCOSA_DML_GRE_TUNNEL_FULL_ALL)pCosaContext->hContext;
 
-    if (AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         AnscCopyString(pValue, pDmlGRETunnel->Cfg.Alias);
         return 0;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpoints", TRUE))
+    if (strcmp(ParamName, "RemoteEndpoints") == 0)
     {
         AnscCopyString(pValue, pDmlGRETunnel->Cfg.RemoteEndpoints);
         return 0;
     }
-    if (AnscEqualString(ParamName, "ConnectedRemoteEndpoint", TRUE))
+    if (strcmp(ParamName, "ConnectedRemoteEndpoint") == 0)
     {
         CosaDmlGRETunnelGetCfg(pMyObject->hSbContext, &pDmlGRETunnel->Cfg);
         AnscCopyString(pValue, pDmlGRETunnel->Cfg.ConnectedRemoteEndpoint);
@@ -487,69 +487,69 @@ GRETunnel_GetParamUlongValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_GRE_TUNNEL_FULL_ALL   pDmlGRETunnel     = (PCOSA_DML_GRE_TUNNEL_FULL_ALL)pCosaContext->hContext;
 
-    if( AnscEqualString(ParamName, "Status", TRUE) )
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */
         CosaDmlGRETunnelGetInfo(pMyObject->hSbContext, pDmlGRETunnel->Cfg.TunnelInstanceNumber, &pDmlGRETunnel->Info);
         *puLong = pDmlGRETunnel->Info.Status;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAlivePolicy", TRUE))
+    if (strcmp(ParamName, "KeepAlivePolicy") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.KeepAlivePolicy;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DeliveryHeaderProtocol", TRUE))
+    if (strcmp(ParamName, "DeliveryHeaderProtocol") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.DeliveryHeaderProtocol;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveTimeout", TRUE))
+    if (strcmp(ParamName, "KeepAliveTimeout") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.KeepAliveTimeout;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveThreshold", TRUE))
+    if (strcmp(ParamName, "KeepAliveThreshold") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.KeepAliveThreshold;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DefaultDSCPMark", TRUE))
+    if (strcmp(ParamName, "DefaultDSCPMark") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.DefaultDSCPMark;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "InterfaceNumberOfEntries", TRUE))
+    if (strcmp(ParamName, "InterfaceNumberOfEntries") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.InterfaceNumberOfEntries;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_CABLELABS_COM_KeepAliveCount", TRUE))
+    if (strcmp(ParamName, "X_CABLELABS_COM_KeepAliveCount") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.KeepAliveCount;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_CABLELABS_COM_KeepAliveInterval", TRUE))
+    if (strcmp(ParamName, "X_CABLELABS_COM_KeepAliveInterval") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.KeepAliveInterval;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_CABLELABS_COM_KeepAliveFailureInterval", TRUE))
+    if (strcmp(ParamName, "X_CABLELABS_COM_KeepAliveFailureInterval") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.KeepAliveFailureInterval;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_CABLELABS_COM_KeepAliveRecoverInterval", TRUE))
+    if (strcmp(ParamName, "X_CABLELABS_COM_KeepAliveRecoverInterval") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.KeepAliveRecoverInterval;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_CABLELABS_COM_MSSClampingValue", TRUE))
+    if (strcmp(ParamName, "X_CABLELABS_COM_MSSClampingValue") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.MSSClampingValue;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_INTEL_Hotspot_MaxClients", TRUE))
+    if (strcmp(ParamName, "X_INTEL_Hotspot_MaxClients") == 0)
     {
         *puLong = pDmlGRETunnel->Cfg.MaxClients;
         return TRUE;
@@ -641,12 +641,12 @@ GRETunnel_SetParamBoolValue
     PCOSA_DML_GRE_TUNNEL_FULL_ALL   pDmlGRETunnel     = (PCOSA_DML_GRE_TUNNEL_FULL_ALL)pCosaContext->hContext;
     char                            str_value[STR_VAL_LENGTH]   = {0};
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         pDmlGRETunnel->Cfg.Enable = bValue;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_INTEL_Hotspot_SnoopCircuitEnable", TRUE))
+    if (strcmp(ParamName, "X_INTEL_Hotspot_SnoopCircuitEnable") == 0)
     {
         pDmlGRETunnel->Cfg.SnoopCircuitEnable = bValue;
         snprintf(str_value, sizeof(str_value), "%d", bValue);
@@ -663,7 +663,7 @@ GRETunnel_SetParamBoolValue
 
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_INTEL_Hotspot_SnoopRemoteEnable", TRUE))
+    if (strcmp(ParamName, "X_INTEL_Hotspot_SnoopRemoteEnable") == 0)
     {
         pDmlGRETunnel->Cfg.SnoopRemoteEnable = bValue;
         snprintf(str_value, sizeof(str_value), "%d", bValue);
@@ -729,7 +729,7 @@ GRETunnel_SetParamUlongValue
 
     snprintf(str_value, sizeof(str_value), "%d", uValue);
 
-    if (AnscEqualString(ParamName, "KeepAlivePolicy", TRUE))
+    if (strcmp(ParamName, "KeepAlivePolicy") == 0)
     {
         pDmlGRETunnel->Cfg.KeepAlivePolicy = uValue;
         snprintf(str_value, sizeof(str_value), "%d", uValue);
@@ -745,17 +745,17 @@ GRETunnel_SetParamUlongValue
         }
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DeliveryHeaderProtocol", TRUE))
+    if (strcmp(ParamName, "DeliveryHeaderProtocol") == 0)
     {
         pDmlGRETunnel->Cfg.DeliveryHeaderProtocol = uValue;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveTimeout", TRUE))
+    if (strcmp(ParamName, "KeepAliveTimeout") == 0)
     {
         pDmlGRETunnel->Cfg.KeepAliveTimeout = uValue;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveThreshold", TRUE))
+    if (strcmp(ParamName, "KeepAliveThreshold") == 0)
     {
         pDmlGRETunnel->Cfg.KeepAliveThreshold = uValue;
         snprintf(str_value, sizeof(str_value), "%d", uValue);
@@ -771,12 +771,12 @@ GRETunnel_SetParamUlongValue
         }
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DefaultDSCPMark", TRUE))
+    if (strcmp(ParamName, "DefaultDSCPMark") == 0)
     {
         pDmlGRETunnel->Cfg.DefaultDSCPMark = uValue;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_CABLELABS_COM_KeepAliveCount", TRUE))
+    if (strcmp(ParamName, "X_CABLELABS_COM_KeepAliveCount") == 0)
     {
         pDmlGRETunnel->Cfg.KeepAliveCount = uValue;
 
@@ -791,7 +791,7 @@ GRETunnel_SetParamUlongValue
         }
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_CABLELABS_COM_KeepAliveInterval", TRUE))
+    if (strcmp(ParamName, "X_CABLELABS_COM_KeepAliveInterval") == 0)
     {
         pDmlGRETunnel->Cfg.KeepAliveInterval = uValue;
 
@@ -806,7 +806,7 @@ GRETunnel_SetParamUlongValue
         }
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_CABLELABS_COM_KeepAliveFailureInterval", TRUE))
+    if (strcmp(ParamName, "X_CABLELABS_COM_KeepAliveFailureInterval") == 0)
     {
         pDmlGRETunnel->Cfg.KeepAliveFailureInterval = uValue;
 
@@ -821,7 +821,7 @@ GRETunnel_SetParamUlongValue
         }
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_CABLELABS_COM_KeepAliveRecoverInterval", TRUE))
+    if (strcmp(ParamName, "X_CABLELABS_COM_KeepAliveRecoverInterval") == 0)
     {
         pDmlGRETunnel->Cfg.KeepAliveRecoverInterval = uValue;
 
@@ -836,14 +836,14 @@ GRETunnel_SetParamUlongValue
         }
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_CABLELABS_COM_MSSClampingValue", TRUE))
+    if (strcmp(ParamName, "X_CABLELABS_COM_MSSClampingValue") == 0)
     {
         pDmlGRETunnel->Cfg.MSSClampingValue = uValue;
         _ansc_sprintf(param_name, "sysevent set mssclamping %d", uValue);
         system(param_name);
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "X_INTEL_Hotspot_MaxClients", TRUE))
+    if (strcmp(ParamName, "X_INTEL_Hotspot_MaxClients") == 0)
     {
         pDmlGRETunnel->Cfg.MaxClients = uValue;
 
@@ -903,12 +903,12 @@ GRETunnel_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_GRE_TUNNEL_FULL_ALL   pDmlGRETunnel     = (PCOSA_DML_GRE_TUNNEL_FULL_ALL)pCosaContext->hContext;
 
-    if (AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         AnscCopyString(pDmlGRETunnel->Cfg.Alias, pString);
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "RemoteEndpoints", TRUE))
+    if (strcmp(ParamName, "RemoteEndpoints") == 0)
     {
         AnscCopyString(pDmlGRETunnel->Cfg.RemoteEndpoints, pString);
         return TRUE;
@@ -1126,57 +1126,57 @@ GRETunnelStats_GetParamUlongValue
 
     CosaDmlGRETunnelGetStats(pMyObject->hSbContext, pDmlGRETunnel->Cfg.TunnelInstanceNumber, &stats);
 
-    if (AnscEqualString(ParamName, "KeepAliveSent", TRUE))
+    if (strcmp(ParamName, "KeepAliveSent") == 0)
     {
         *pUlong = stats.KeepAliveSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeepAliveReceived", TRUE))
+    if (strcmp(ParamName, "KeepAliveReceived") == 0)
     {
         *pUlong = stats.KeepAliveReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "BytesSent", TRUE))
+    if (strcmp(ParamName, "BytesSent") == 0)
     {
         *pUlong = stats.BytesSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "BytesReceived", TRUE))
+    if (strcmp(ParamName, "BytesReceived") == 0)
     {
         *pUlong = stats.BytesReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "PacketsSent", TRUE))
+    if (strcmp(ParamName, "PacketsSent") == 0)
     {
         *pUlong = stats.PacketsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "PacketsReceived", TRUE))
+    if (strcmp(ParamName, "PacketsReceived") == 0)
     {
         *pUlong = stats.PacketsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ErrorsSent", TRUE))
+    if (strcmp(ParamName, "ErrorsSent") == 0)
     {
         *pUlong = stats.ErrorsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ErrorsReceived", TRUE))
+    if (strcmp(ParamName, "ErrorsReceived") == 0)
     {
         *pUlong = stats.ErrorsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "MulticastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsReceived") == 0)
     {
         *pUlong = stats.MulticastPacketsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DiscardPacketsSent", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsSent") == 0)
     {
         *pUlong = stats.DiscardPacketsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DiscardPacketsReceived", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsReceived") == 0)
     {
         *pUlong = stats.DiscardPacketsReceived;
         return TRUE;
@@ -1448,17 +1448,17 @@ GRETunnelIf_GetParamBoolValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_GRE_TUNNEL_IF_FULL    pDmlGRETunnelIf   = (PCOSA_DML_GRE_TUNNEL_IF_FULL)pCosaContext->hContext;
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         *pBool = pDmlGRETunnelIf->Cfg.Enable;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "UseChecksum", TRUE))
+    if (strcmp(ParamName, "UseChecksum") == 0)
     {
         *pBool = pDmlGRETunnelIf->Cfg.UseChecksum;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "UseSequenceNumber", TRUE))
+    if (strcmp(ParamName, "UseSequenceNumber") == 0)
     {
         *pBool = pDmlGRETunnelIf->Cfg.UseSequenceNumber;
         return TRUE;
@@ -1519,18 +1519,18 @@ GRETunnelIf_GetParamStringValue
     PCOSA_DML_GRE_TUNNEL_FULL_ALL   pDmlGRETunnel     = (PCOSA_DML_GRE_TUNNEL_FULL_ALL)pCosaContext->hParentTable;
     PCOSA_DML_GRE_TUNNEL_IF_FULL    pDmlGRETunnelIf   = (PCOSA_DML_GRE_TUNNEL_IF_FULL)pCosaContext->hContext;
 
-    if( AnscEqualString(ParamName, "Name", TRUE) )
+    if (strcmp(ParamName, "Name") == 0)
     {
         CosaDmlGRETunnelIfGetInfo(pMyObject->hSbContext, pDmlGRETunnel->Cfg.TunnelInstanceNumber, pDmlGRETunnelIf->Cfg.IfInstanceNumber, &pDmlGRETunnelIf->Info);
         AnscCopyString(pValue, pDmlGRETunnelIf->Info.Name);
         return 0;
     }
-    if (AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         AnscCopyString(pValue, pDmlGRETunnelIf->Cfg.Alias);
         return 0;
     }
-    if (AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         AnscCopyString(pValue, pDmlGRETunnelIf->Cfg.LowerLayers);
         return 0;
@@ -1582,29 +1582,29 @@ GRETunnelIf_GetParamUlongValue
     PCOSA_DML_GRE_TUNNEL_FULL_ALL   pDmlGRETunnel     = (PCOSA_DML_GRE_TUNNEL_FULL_ALL)pCosaContext->hParentTable;
     PCOSA_DML_GRE_TUNNEL_IF_FULL    pDmlGRETunnelIf   = (PCOSA_DML_GRE_TUNNEL_IF_FULL)pCosaContext->hContext;
 
-    if( AnscEqualString(ParamName, "Status", TRUE) )
+    if (strcmp(ParamName, "Status") == 0)
     {
         CosaDmlGRETunnelIfGetInfo(pMyObject->hSbContext, pDmlGRETunnel->Cfg.TunnelInstanceNumber, pDmlGRETunnelIf->Cfg.IfInstanceNumber, &pDmlGRETunnelIf->Info);
         *puLong = pDmlGRETunnelIf->Info.Status;
         return TRUE;
     }
-    if( AnscEqualString(ParamName, "LastChange", TRUE) )
+    if (strcmp(ParamName, "LastChange") == 0)
     {
         CosaDmlGRETunnelIfGetInfo(pMyObject->hSbContext, pDmlGRETunnel->Cfg.TunnelInstanceNumber, pDmlGRETunnelIf->Cfg.IfInstanceNumber, &pDmlGRETunnelIf->Info);
         *puLong = AnscGetTimeIntervalInSeconds(pDmlGRETunnelIf->Info.LastChange, AnscGetTickInSeconds());
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeyIdentifierGenerationPolicy", TRUE))
+    if (strcmp(ParamName, "KeyIdentifierGenerationPolicy") == 0)
     {
         *puLong = pDmlGRETunnelIf->Cfg.KeyIdentifierGenerationPolicy;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ProtocolIdOverride", TRUE))
+    if (strcmp(ParamName, "ProtocolIdOverride") == 0)
     {
         *puLong = pDmlGRETunnelIf->Cfg.ProtocolIdOverride;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeyIdentifier", TRUE))
+    if (strcmp(ParamName, "KeyIdentifier") == 0)
     {
         *puLong = pDmlGRETunnelIf->Cfg.KeyIdentifier;
         return TRUE;
@@ -1694,17 +1694,17 @@ GRETunnelIf_SetParamBoolValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_GRE_TUNNEL_IF_FULL    pDmlGRETunnelIf   = (PCOSA_DML_GRE_TUNNEL_IF_FULL)pCosaContext->hContext;
 
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         pDmlGRETunnelIf->Cfg.Enable = bValue;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "UseChecksum", TRUE))
+    if (strcmp(ParamName, "UseChecksum") == 0)
     {
         pDmlGRETunnelIf->Cfg.UseChecksum = bValue;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "UseSequenceNumber", TRUE))
+    if (strcmp(ParamName, "UseSequenceNumber") == 0)
     {
         pDmlGRETunnelIf->Cfg.UseSequenceNumber = bValue;
         return TRUE;
@@ -1753,17 +1753,17 @@ GRETunnelIf_SetParamUlongValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_GRE_TUNNEL_IF_FULL    pDmlGRETunnelIf   = (PCOSA_DML_GRE_TUNNEL_IF_FULL)pCosaContext->hContext;
 
-    if (AnscEqualString(ParamName, "KeyIdentifierGenerationPolicy", TRUE))
+    if (strcmp(ParamName, "KeyIdentifierGenerationPolicy") == 0)
     {
         pDmlGRETunnelIf->Cfg.KeyIdentifierGenerationPolicy = uValue;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ProtocolIdOverride", TRUE))
+    if (strcmp(ParamName, "ProtocolIdOverride") == 0)
     {
         pDmlGRETunnelIf->Cfg.ProtocolIdOverride = uValue;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "KeyIdentifier", TRUE))
+    if (strcmp(ParamName, "KeyIdentifier") == 0)
     {
         pDmlGRETunnelIf->Cfg.KeyIdentifier = uValue;
         return TRUE;
@@ -1812,12 +1812,12 @@ GRETunnelIf_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_GRE_TUNNEL_IF_FULL    pDmlGRETunnelIf   = (PCOSA_DML_GRE_TUNNEL_IF_FULL)pCosaContext->hContext;
 
-    if (AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         AnscCopyString(pDmlGRETunnelIf->Cfg.Alias, pString);
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         AnscCopyString(pDmlGRETunnelIf->Cfg.LowerLayers, pString);
         return TRUE;
@@ -2039,57 +2039,57 @@ GRETunnelIfStats_GetParamUlongValue
 
     CosaDmlGRETunnelIfGetStats(pMyObject->hSbContext, pDmlGRETunnelIf->Info.Name, &stats);
 
-    if (AnscEqualString(ParamName, "BytesSent", TRUE))
+    if (strcmp(ParamName, "BytesSent") == 0)
     {
         *pUlong = stats.BytesSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "BytesReceived", TRUE))
+    if (strcmp(ParamName, "BytesReceived") == 0)
     {
         *pUlong = stats.BytesReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "PacketsSent", TRUE))
+    if (strcmp(ParamName, "PacketsSent") == 0)
     {
         *pUlong = stats.PacketsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "PacketsReceived", TRUE))
+    if (strcmp(ParamName, "PacketsReceived") == 0)
     {
         *pUlong = stats.PacketsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ErrorsSent", TRUE))
+    if (strcmp(ParamName, "ErrorsSent") == 0)
     {
         *pUlong = stats.ErrorsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "ErrorsReceived", TRUE))
+    if (strcmp(ParamName, "ErrorsReceived") == 0)
     {
         *pUlong = stats.ErrorsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DiscardChecksumReceived", TRUE))
+    if (strcmp(ParamName, "DiscardChecksumReceived") == 0)
     {
         *pUlong = stats.DiscardChecksumReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DiscardSequenceNumberReceived", TRUE))
+    if (strcmp(ParamName, "DiscardSequenceNumberReceived") == 0)
     {
         *pUlong = stats.DiscardSequenceNumberReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "MulticastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsReceived") == 0)
     {
         *pUlong = stats.MulticastPacketsReceived;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DiscardPacketsSent", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsSent") == 0)
     {
         *pUlong = stats.DiscardPacketsSent;
         return TRUE;
     }
-    if (AnscEqualString(ParamName, "DiscardPacketsReceived", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsReceived") == 0)
     {
         *pUlong = stats.DiscardPacketsReceived;
         return TRUE;

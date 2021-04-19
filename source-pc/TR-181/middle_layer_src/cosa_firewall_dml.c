@@ -252,7 +252,7 @@ Firewall_GetParamUlongValue
     PCOSA_DML_FIREWALL_CFG          pFirewallCfg    = &pCosaDMFirewall->FirewallConfig;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Config", TRUE))
+    if (strcmp(ParamName, "Config") == 0)
     {
         /* collect value */
         *puLong = pFirewallCfg->FirewallLevel;
@@ -316,7 +316,7 @@ Firewall_GetParamStringValue
 
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Version", TRUE))
+    if (strcmp(ParamName, "Version") == 0)
     {
         /* collect value */
         AnscCopyString(pValue, pFirewallCfg->Version);
@@ -324,7 +324,7 @@ Firewall_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "LastChange", TRUE))
+    if (strcmp(ParamName, "LastChange") == 0)
     {
         pFirewallCfg = AnscAllocateMemory(sizeof(COSA_DML_FIREWALL_CFG));
 
@@ -477,7 +477,7 @@ Firewall_SetParamUlongValue
     PCOSA_DATAMODEL_FIREWALL        pCosaDMFirewall = (PCOSA_DATAMODEL_FIREWALL)g_pCosaBEManager->hFirewall;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Config", TRUE))
+    if (strcmp(ParamName, "Config") == 0)
     {
         /* save update to backup */
         pCosaDMFirewall->FirewallConfig.FirewallLevel = uValue;

@@ -640,7 +640,7 @@ Router_GetParamBoolValue
     PCOSA_DML_ROUTER_FULL2          pRouter      = (PCOSA_DML_ROUTER_FULL2)pCosaContext->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         *pBool = pRouter->Cfg.bEnabled;
         /* collect value */
@@ -742,7 +742,7 @@ Router_GetParamUlongValue
     PCOSA_DML_ROUTER_FULL2          pRouter      = (PCOSA_DML_ROUTER_FULL2)pCosaContext->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */
         *puLong = pRouter->Info.Status;
@@ -807,7 +807,7 @@ Router_GetParamStringValue
     errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRouter->Cfg.Alias);
@@ -868,7 +868,7 @@ Router_SetParamBoolValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pRouter->Cfg.bEnabled = bValue;
@@ -1021,7 +1021,7 @@ Router_SetParamStringValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pRouter->Cfg.Alias, sizeof(pRouter->Cfg.Alias), pString);
@@ -1096,7 +1096,7 @@ Router_Validate
 
         if ( pRouter2 && 
             ((ULONG)pRouter2 != (ULONG)pRouter) &&
-             AnscEqualString(pRouter2->Cfg.Alias, pRouter->Cfg.Alias, TRUE))
+	      (strcmp(pRouter2->Cfg.Alias, pRouter->Cfg.Alias) == 0))
         {
             rc = strcpy_s(pReturnParamName, *puLength, "Alias");
             if ( rc != EOK)
@@ -1528,7 +1528,7 @@ X_CISCO_COM_StaticIPv4Forwarding_GetParamBoolValue
     PCOSA_DML_STATICROUTE_CFG       pEntry          = pCosaContext->hContext;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "RIPAdvertise", TRUE) )
+    if (strcmp(ParamName, "RIPAdvertise") == 0)
     {
         /* collect value */
         *pBool = pEntry->RIPAdvertise;
@@ -1630,21 +1630,21 @@ X_CISCO_COM_StaticIPv4Forwarding_GetParamUlongValue
     PCOSA_DML_STATICROUTE_CFG       pEntry          = pCosaContext->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "DestIPAddress", TRUE) )
+    if (strcmp(ParamName, "DestIPAddress") == 0)
     {
         /* collect value */
         *puLong = pEntry->DestIPAddress;
         return TRUE;
     }
     
-    if( AnscEqualString(ParamName, "DestSubnetMask", TRUE) )
+    if (strcmp(ParamName, "DestSubnetMask") == 0)
     {
         /* collect value */
         *puLong = pEntry->DestSubnetMask;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "GatewayIPAddress", TRUE) )
+    if (strcmp(ParamName, "GatewayIPAddress") == 0)
     {
         /* collect value */
         *puLong = pEntry->GatewayIPAddress;
@@ -1757,7 +1757,7 @@ X_CISCO_COM_StaticIPv4Forwarding_SetParamBoolValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "RIPAdvertise", TRUE) )
+    if (strcmp(ParamName, "RIPAdvertise") == 0)
     {
         /* save update to backup */
         pEntry->RIPAdvertise = bValue;
@@ -1861,21 +1861,21 @@ X_CISCO_COM_StaticIPv4Forwarding_SetParamUlongValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "DestIPAddress", TRUE) )
+    if (strcmp(ParamName, "DestIPAddress") == 0)
     {
         /* save update to backup */
         pEntry->DestIPAddress = uValue;
         return TRUE;
     }
     
-    if( AnscEqualString(ParamName, "DestSubnetMask", TRUE) )
+    if (strcmp(ParamName, "DestSubnetMask") == 0)
     {
         /* save update to backup */
         pEntry->DestSubnetMask = uValue;
         return TRUE;
     }
     
-    if( AnscEqualString(ParamName, "GatewayIPAddress", TRUE) )
+    if (strcmp(ParamName, "GatewayIPAddress") == 0)
     {
         /* save update to backup */
         pEntry->GatewayIPAddress = uValue;
@@ -2395,21 +2395,21 @@ IPv4Forwarding_GetParamBoolValue
     PCOSA_DML_ROUTING_V4_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V4_ENTRY)pCosaContext->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         *pBool = pRouterForward->Enable;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "StaticRoute", TRUE))
+    if (strcmp(ParamName, "StaticRoute") == 0)
     {
         /* collect value */
         *pBool = pRouterForward->StaticRoute;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_RIPAdvertise", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_RIPAdvertise") == 0)
     {
         /* collect value */
         *pBool = pRouterForward->X_CISCO_COM_RIPAdvertise;
@@ -2462,14 +2462,14 @@ IPv4Forwarding_GetParamIntValue
     PCOSA_DML_ROUTING_V4_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V4_ENTRY)pCosaContext->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "ForwardingPolicy", TRUE))
+    if (strcmp(ParamName, "ForwardingPolicy") == 0)
     {
         /* collect value */
         *pInt = pRouterForward->ForwardingPolicy;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ForwardingMetric", TRUE))
+    if (strcmp(ParamName, "ForwardingMetric") == 0)
     {
         /* collect value */
         *pInt = pRouterForward->ForwardingMetric;
@@ -2524,35 +2524,35 @@ IPv4Forwarding_GetParamUlongValue
 
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */
         *puLong = pRouterForward->Status;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DestIPAddress", TRUE))
+    if (strcmp(ParamName, "DestIPAddress") == 0)
     {
         /* collect value */
         *puLong = pRouterForward->DestIPAddress.Value;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DestSubnetMask", TRUE))
+    if (strcmp(ParamName, "DestSubnetMask") == 0)
     {
         /* collect value */
         *puLong = pRouterForward->DestSubnetMask.Value;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "GatewayIPAddress", TRUE))
+    if (strcmp(ParamName, "GatewayIPAddress") == 0)
     {
         /* collect value */
         *puLong = pRouterForward->GatewayIPAddress.Value;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Origin", TRUE))
+    if (strcmp(ParamName, "Origin") == 0)
     {
         /* collect value */
         CosaDmlRoutingGetV4Entry2(NULL, pRouterForward);
@@ -2617,7 +2617,7 @@ IPv4Forwarding_GetParamStringValue
     errno_t                         rc             = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRouterForward->Alias);
@@ -2629,7 +2629,7 @@ IPv4Forwarding_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Interface", TRUE))
+    if (strcmp(ParamName, "Interface") == 0)
     {
         char                            * pString      = NULL;
 
@@ -2719,14 +2719,14 @@ IPv4Forwarding_SetParamBoolValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pRouterForward->Enable = bValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_RIPAdvertise", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_RIPAdvertise") == 0)
     {
         /* save update to backup */
         pRouterForward->X_CISCO_COM_RIPAdvertise = bValue;
@@ -2781,14 +2781,14 @@ IPv4Forwarding_SetParamIntValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "ForwardingPolicy", TRUE))
+    if (strcmp(ParamName, "ForwardingPolicy") == 0)
     {
         /* save update to backup */
         pRouterForward->ForwardingPolicy = iValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ForwardingMetric", TRUE))
+    if (strcmp(ParamName, "ForwardingMetric") == 0)
     {
         /* save update to backup */
         pRouterForward->ForwardingMetric = iValue;
@@ -2844,21 +2844,21 @@ IPv4Forwarding_SetParamUlongValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "DestIPAddress", TRUE))
+    if (strcmp(ParamName, "DestIPAddress") == 0)
     {
         /* save update to backup */
         pRouterForward->DestIPAddress.Value = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DestSubnetMask", TRUE))
+    if (strcmp(ParamName, "DestSubnetMask") == 0)
     {
         /* save update to backup */
         pRouterForward->DestSubnetMask.Value = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "GatewayIPAddress", TRUE))
+    if (strcmp(ParamName, "GatewayIPAddress") == 0)
     {
         /* save update to backup */
         pRouterForward->GatewayIPAddress.Value = uValue;
@@ -2915,7 +2915,7 @@ IPv4Forwarding_SetParamStringValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pRouterForward->Alias, sizeof(pRouterForward->Alias), pString);
@@ -2927,7 +2927,7 @@ IPv4Forwarding_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Interface", TRUE))
+    if (strcmp(ParamName, "Interface") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pRouterForward->Interface, sizeof(pRouterForward->Interface), pString);
@@ -3001,7 +3001,7 @@ IPv4Forwarding_Validate
 
         if ( pRouterForward2 &&
             ((ULONG)pRouterForward2 != (ULONG)pRouterForward) &&
-             AnscEqualString(pRouterForward2->Alias, pRouterForward->Alias, TRUE))
+             (strcmp(pRouterForward2->Alias, pRouterForward->Alias) == 0))
         {
             rc = strcpy_s(pReturnParamName, *puLength, "Alias");
             if ( rc != EOK)
@@ -3631,7 +3631,7 @@ IPv6Forwarding_GetParamBoolValue
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V6_ENTRY)pCosaContext->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         *pBool = pRouterForward->Enable;
@@ -3684,14 +3684,14 @@ IPv6Forwarding_GetParamIntValue
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V6_ENTRY)pCosaContext->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "ForwardingPolicy", TRUE))
+    if (strcmp(ParamName, "ForwardingPolicy") == 0)
     {
         /* collect value */
         *pInt = pRouterForward->ForwardingPolicy;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ForwardingMetric", TRUE))
+    if (strcmp(ParamName, "ForwardingMetric") == 0)
     {
         /* collect value */
         *pInt = pRouterForward->ForwardingMetric;
@@ -3745,7 +3745,7 @@ IPv6Forwarding_GetParamUlongValue
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V6_ENTRY)pCosaContext->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */
         /*CosaDmlRoutingGetV6Entry2(NULL, pRouterForward);*/
@@ -3753,7 +3753,7 @@ IPv6Forwarding_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Origin", TRUE))
+    if (strcmp(ParamName, "Origin") == 0)
     {
         /* collect value */
         /*CosaDmlRoutingGetV6Entry2(NULL, pRouterForward);*/
@@ -3817,7 +3817,7 @@ IPv6Forwarding_GetParamStringValue
     errno_t                         rc             = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRouterForward->Alias);
@@ -3829,7 +3829,7 @@ IPv6Forwarding_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "DestIPPrefix", TRUE))
+    if (strcmp(ParamName, "DestIPPrefix") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRouterForward->DestIPPrefix);
@@ -3841,7 +3841,7 @@ IPv6Forwarding_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "NextHop", TRUE))
+    if (strcmp(ParamName, "NextHop") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRouterForward->NextHop);
@@ -3853,7 +3853,7 @@ IPv6Forwarding_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Interface", TRUE))
+    if (strcmp(ParamName, "Interface") == 0)
     {
         char                            * pString      = NULL;
 
@@ -3895,7 +3895,7 @@ IPv6Forwarding_GetParamStringValue
         }
     }
 
-    if( AnscEqualString(ParamName, "ExpirationTime", TRUE))
+    if (strcmp(ParamName, "ExpirationTime") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRouterForward->ExpirationTime);
@@ -3956,7 +3956,7 @@ IPv6Forwarding_SetParamBoolValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pRouterForward->Enable = bValue;
@@ -4012,14 +4012,14 @@ IPv6Forwarding_SetParamIntValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "ForwardingPolicy", TRUE))
+    if (strcmp(ParamName, "ForwardingPolicy") == 0)
     {
         /* save update to backup */
         pRouterForward->ForwardingPolicy = iValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ForwardingMetric", TRUE))
+    if (strcmp(ParamName, "ForwardingMetric") == 0)
     {
         /* save update to backup */
         pRouterForward->ForwardingMetric = iValue;
@@ -4248,7 +4248,7 @@ IPv6Forwarding_Validate
 
         if ( pRouterForward2 &&
             ((ULONG)pRouterForward2 != (ULONG)pRouterForward) &&
-             AnscEqualString(pRouterForward2->Alias, pRouterForward->Alias, TRUE))
+             (strcmp(pRouterForward2->Alias, pRouterForward->Alias) == 0))
         {
             rc = strcpy_s(pReturnParamName, *puLength, "Alias");
             if ( rc != EOK)
@@ -4416,7 +4416,7 @@ RIP_GetParamBoolValue
     PCOSA_DML_RIP_CFG               pCfg          = &(pMyObject->RIPCfg);
    
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         *pBool = pCfg->Enable;
@@ -4519,21 +4519,21 @@ RIP_GetParamUlongValue
     PCOSA_DML_RIP_CFG               pCfg          = &(pMyObject->RIPCfg);
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "SupportedModes", TRUE))
+    if (strcmp(ParamName, "SupportedModes") == 0)
     {
         /* collect value */
         *puLong = pCfg->Mode;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_UpdateInterval", TRUE) )
+    if (strcmp(ParamName, "X_CISCO_COM_UpdateInterval") == 0)
     {
         /* collect value */
         *puLong  = pCfg->X_CISCO_COM_UpdateInterval;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_DefaultMetric", TRUE) )
+    if (strcmp(ParamName, "X_CISCO_COM_DefaultMetric") == 0)
     {
         /* collect value */
         *puLong = pCfg->X_CISCO_COM_DefaultMetric;
@@ -4647,7 +4647,7 @@ RIP_SetParamBoolValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if ( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pCfg->Enable = bValue;        
@@ -4756,14 +4756,14 @@ RIP_SetParamUlongValue
     
     /* check the parameter name and set the corresponding value */
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_UpdateInterval", TRUE) )
+    if (strcmp(ParamName, "X_CISCO_COM_UpdateInterval") == 0)
     {
         /* collect value */
         pCfg->X_CISCO_COM_UpdateInterval  = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_DefaultMetric", TRUE) )
+    if (strcmp(ParamName, "X_CISCO_COM_DefaultMetric") == 0)
     {
         /* collect value */
         if((uValue >= MIN) && (uValue <= MAX))
@@ -5177,14 +5177,14 @@ InterfaceSetting_GetParamBoolValue
     PCOSA_DML_RIP_CFG               pCfg          = &(pMyObject->RIPCfg);
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         *pBool = pRipIF->Enable;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "AcceptRA", TRUE))
+    if (strcmp(ParamName, "AcceptRA") == 0)
     {
         /* collect value */
         if(!pCfg->Enable) 
@@ -5195,7 +5195,7 @@ InterfaceSetting_GetParamBoolValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "SendRA", TRUE))
+    if (strcmp(ParamName, "SendRA") == 0)
     {
         /* collect value */
         if(!pCfg->Enable) 
@@ -5300,49 +5300,49 @@ InterfaceSetting_GetParamUlongValue
     PCOSA_DML_RIP_IF_CFG           pRipIF         = (PCOSA_DML_RIP_IF_CFG)pCosaContext->hContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */        
         *puLong = pRipIF->Status;  
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_SendVersion", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_SendVersion") == 0)
     {
         /* collect value */
         *puLong = (ULONG)pRipIF->X_CISCO_COM_SendVersion;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_ReceiveVersion", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_ReceiveVersion") == 0)
     {
         /* collect value */
         *puLong = (ULONG)pRipIF->X_CISCO_COM_ReceiveVersion;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_Neighbor", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_Neighbor") == 0)
     {
         /* collect value */
         *puLong = (ULONG)pRipIF->X_CISCO_COM_Neighbor;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_Md5KeyID", TRUE) )
+    if (strcmp(ParamName, "X_CISCO_COM_Md5KeyID") == 0)
     {
         /* collect value */
         *puLong  = pRipIF->X_CISCO_COM_Md5KeyID;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_AuthenticationType", TRUE) )
+    if (strcmp(ParamName, "X_CISCO_COM_AuthenticationType") == 0)
     {
         /* collect value */
         *puLong = pRipIF->X_CISCO_COM_AuthenticationType;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ReportIPAddressType", TRUE))
+    if (strcmp(ParamName, "ReportIPAddressType") == 0)
     {
         /* collect value */
         *puLong = 1; /*Fixed to be Unicast. This one should be from pRipIF->X_CISCO_COM_Neighbor. do this later */
@@ -5406,7 +5406,7 @@ InterfaceSetting_GetParamStringValue
     errno_t                         rc            = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRipIF->Alias);
@@ -5418,7 +5418,7 @@ InterfaceSetting_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Interface", TRUE))
+    if (strcmp(ParamName, "Interface") == 0)
     {
         /* collect value */
         if ((_ansc_strcmp(pRipIF->Alias, COSA_RIPD_IF1_NAME ) == 0 ) ||
@@ -5444,7 +5444,7 @@ InterfaceSetting_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_Md5KeyValue", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_Md5KeyValue") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRipIF->X_CISCO_COM_Md5KeyValue);
@@ -5456,7 +5456,7 @@ InterfaceSetting_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_SimplePassword", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_SimplePassword") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pRipIF->X_CISCO_COM_SimplePassword);
@@ -5516,21 +5516,21 @@ InterfaceSetting_SetParamBoolValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pRipIF->Enable = bValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "AcceptRA", TRUE))
+    if (strcmp(ParamName, "AcceptRA") == 0)
     {
         /* save update to backup */
         pRipIF->AcceptRA = bValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "SendRA", TRUE))
+    if (strcmp(ParamName, "SendRA") == 0)
     {
         /* save update to backup */
         pRipIF->SendRA = bValue;       
@@ -5633,28 +5633,28 @@ InterfaceSetting_SetParamUlongValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "X_CISCO_COM_SendVersion", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_SendVersion") == 0)
     {
         /* save update to backup */
         pRipIF->X_CISCO_COM_SendVersion = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_ReceiveVersion", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_ReceiveVersion") == 0)
     {
         /* save update to backup */
         pRipIF->X_CISCO_COM_ReceiveVersion = uValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_Neighbor", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_Neighbor") == 0)
     {
         /* save update to backup */
         pRipIF->X_CISCO_COM_Neighbor = uValue;
         return TRUE;
     }
     
-    if( AnscEqualString(ParamName, "X_CISCO_COM_AuthenticationType", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_AuthenticationType") == 0)
     {
         if ( uValue == COSA_RIP_AUTHEN_md5 )
             pRipIF->X_CISCO_COM_AuthenticationType = (ULONG)COSA_RIP_AUTHEN_MD5;
@@ -5664,7 +5664,7 @@ InterfaceSetting_SetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_Md5KeyID", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_Md5KeyID") == 0)
     {
         pRipIF->X_CISCO_COM_Md5KeyID = uValue;
         return TRUE;
@@ -5979,7 +5979,7 @@ RouteInformation_GetParamBoolValue
 {
     /* check the parameter name and return the corresponding value */
     UNREFERENCED_PARAMETER(hInsContext);
-    if( AnscEqualString(ParamName, "Enable", TRUE) )
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         CosaDmlRouteInfoGetEnabled(pBool);
@@ -6190,7 +6190,7 @@ RouteInformation_SetParamBoolValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE) )
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pCfg->bEnabled = bValue;
@@ -6816,14 +6816,14 @@ InterfaceSetting3_GetParamUlongValue
     PCOSA_DML_ROUTEINFO_IF_INFO        pEntry   = (PCOSA_DML_ROUTEINFO_IF_INFO)hInsContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Status", TRUE) )
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */
         *puLong = pEntry->Status;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PreferredRouteFlag", TRUE) )
+    if (strcmp(ParamName, "PreferredRouteFlag") == 0)
     {
         /* collect value */
         *puLong = pEntry->PreferredRouteFlag;
@@ -6887,7 +6887,7 @@ InterfaceSetting3_GetParamStringValue
     errno_t                         rc              = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Interface", TRUE) )
+    if (strcmp(ParamName, "Interface") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pEntry->Interface);
@@ -6899,7 +6899,7 @@ InterfaceSetting3_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "SourceRouter", TRUE) )
+    if (strcmp(ParamName, "SourceRouter") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pEntry->SourceRouter);
@@ -6911,7 +6911,7 @@ InterfaceSetting3_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Prefix", TRUE) )
+    if (strcmp(ParamName, "Prefix") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pEntry->Prefix);
@@ -6923,7 +6923,7 @@ InterfaceSetting3_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "RouteLifetime", TRUE) )
+    if (strcmp(ParamName, "RouteLifetime") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pEntry->RouteLifetime);

@@ -475,7 +475,7 @@ Interface_GetParamBoolValue
     PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
          CosaDmlEthPortGetCfg(NULL, &pEthernetPortFull->Cfg);
@@ -483,7 +483,7 @@ Interface_GetParamBoolValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Upstream", TRUE))
+    if (strcmp(ParamName, "Upstream") == 0)
     {
         /* collect value */
         *pBool = pEthernetPortFull->StaticInfo.bUpstream;
@@ -536,7 +536,7 @@ Interface_GetParamIntValue
     PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "MaxBitRate", TRUE))
+    if (strcmp(ParamName, "MaxBitRate") == 0)
     {
         /* collect value */
 	CosaDmlEthPortGetCfg(NULL, &pEthernetPortFull->Cfg);
@@ -590,7 +590,7 @@ Interface_GetParamUlongValue
     PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */
         CosaDmlEthPortGetDinfo(NULL, pEthernetPortFull->Cfg.InstanceNumber, &pEthernetPortFull->DynamicInfo);
@@ -599,7 +599,7 @@ Interface_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LastChange", TRUE))
+    if (strcmp(ParamName, "LastChange") == 0)
     {
         /* collect value */
         CosaDmlEthPortGetDinfo(NULL, pEthernetPortFull->Cfg.InstanceNumber, &pEthernetPortFull->DynamicInfo);
@@ -608,14 +608,14 @@ Interface_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DuplexMode", TRUE))
+    if (strcmp(ParamName, "DuplexMode") == 0)
     {
         /* collect value */
         *puLong = pEthernetPortFull->Cfg.DuplexMode;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "CurrentBitRate", TRUE))
+    if (strcmp(ParamName, "CurrentBitRate") == 0)
     {
         /* collect value */
 
@@ -681,7 +681,7 @@ Interface_GetParamStringValue
     errno_t rc = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pEthernetPortFull->Cfg.Alias);
@@ -693,7 +693,7 @@ Interface_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Name", TRUE))
+    if (strcmp(ParamName, "Name") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue,*pUlSize, pEthernetPortFull->StaticInfo.Name);
@@ -705,14 +705,14 @@ Interface_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         /* collect value */
         
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "MACAddress", TRUE))
+    if (strcmp(ParamName, "MACAddress") == 0)
     {
 	//when dut reboot, brlan0 start so late then sometimes g_EthIntSInfo still can't get brlan0's mac
 #if CFG_TR181_ETH_BORROW_MAC
@@ -784,7 +784,7 @@ Interface_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_AssociatedDevice", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_AssociatedDevice") == 0)
 	{
 		CosaDmlEthPortGetDinfo(NULL, pEthernetPortFull->Cfg.InstanceNumber, &pEthernetPortFull->DynamicInfo);
 		CosaEthPortGetAssocDevices(pEthernetPortFull->DynamicInfo.AssocDevices,assocDeviceMacList,pEthernetPortFull->DynamicInfo.AssocDevicesCount);
@@ -851,7 +851,7 @@ Interface_SetParamBoolValue
     PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pEthernetPortFull->Cfg.bEnabled = bValue;
@@ -904,7 +904,7 @@ Interface_SetParamIntValue
     PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "MaxBitRate", TRUE))
+    if (strcmp(ParamName, "MaxBitRate") == 0)
     {
         /* save update to backup */
         pEthernetPortFull->Cfg.MaxBitRate = iValue;
@@ -956,7 +956,7 @@ Interface_SetParamUlongValue
     PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "DuplexMode", TRUE))
+    if (strcmp(ParamName, "DuplexMode") == 0)
     {
         /* save update to backup */
         pEthernetPortFull->Cfg.DuplexMode = uValue;
@@ -1010,7 +1010,7 @@ Interface_SetParamStringValue
     errno_t                         rc                = -1;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pEthernetPortFull->Cfg.Alias, sizeof(pEthernetPortFull->Cfg.Alias),pString);
@@ -1022,7 +1022,7 @@ Interface_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         /* save update to backup */
         /* Interface is a layer 1 interface. LowerLayers will not be used. */
@@ -1084,7 +1084,7 @@ Interface_Validate
     {
         if (
                 ((ULONG)pEthernetPortFull != (ULONG)&pMyObject->EthernetPortFullTable[ulIndex]) &&
-                AnscEqualString(pEthernetPortFull->Cfg.Alias, pMyObject->EthernetPortFullTable[ulIndex].Cfg.Alias, TRUE)
+                (strcmp(pEthernetPortFull->Cfg.Alias, pMyObject->EthernetPortFullTable[ulIndex].Cfg.Alias) == 0)
             )
         {
             rc = strcpy_s(pReturnParamName, *puLength, "Alias");
@@ -1380,7 +1380,7 @@ AssociatedDevice1_GetParamStringValue
 	UNREFERENCED_PARAMETER(pUlSize);
         PCOSA_DML_ASSOCDEV_INFO	     pAssocClient	= (PCOSA_DML_ASSOCDEV_INFO)hInsContext;
 
-	if( AnscEqualString(ParamName, "MACAddress", TRUE))
+	if (strcmp(ParamName, "MACAddress") == 0)
 	{
 		AnscCopyMemory(pValue, pAssocClient->MacAddress, 18);
 		return 0;
@@ -1542,105 +1542,105 @@ Stats_GetParamUlongValue
     CosaDmlEthPortGetStats(NULL, pEthernetPortFull->Cfg.InstanceNumber, &stats);
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "BytesSent", TRUE))
+    if (strcmp(ParamName, "BytesSent") == 0)
     {
         /* collect value */
         *puLong = stats.BytesSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BytesReceived", TRUE))
+    if (strcmp(ParamName, "BytesReceived") == 0)
     {
         /* collect value */
         *puLong = stats.BytesReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PacketsSent", TRUE))
+    if (strcmp(ParamName, "PacketsSent") == 0)
     {
         /* collect value */
         *puLong = stats.PacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PacketsReceived", TRUE))
+    if (strcmp(ParamName, "PacketsReceived") == 0)
     {
         /* collect value */
         *puLong = stats.PacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ErrorsSent", TRUE))
+    if (strcmp(ParamName, "ErrorsSent") == 0)
     {
         /* collect value */
         *puLong = stats.ErrorsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ErrorsReceived", TRUE))
+    if (strcmp(ParamName, "ErrorsReceived") == 0)
     {
         /* collect value */
         *puLong = stats.ErrorsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnicastPacketsSent", TRUE))
+    if (strcmp(ParamName, "UnicastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = stats.UnicastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnicastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "UnicastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = stats.UnicastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DiscardPacketsSent", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsSent") == 0)
     {
         /* collect value */
         *puLong = stats.DiscardPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DiscardPacketsReceived", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = stats.DiscardPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MulticastPacketsSent", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = stats.MulticastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MulticastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = stats.MulticastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BroadcastPacketsSent", TRUE))
+    if (strcmp(ParamName, "BroadcastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = stats.BroadcastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BroadcastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "BroadcastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = stats.BroadcastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnknownProtoPacketsReceived", TRUE))
+    if (strcmp(ParamName, "UnknownProtoPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = stats.UnknownProtoPacketsReceived;
@@ -2029,14 +2029,14 @@ Link_GetParamBoolValue
     PCOSA_DML_ETH_LINK_FULL         pEntry                  = (PCOSA_DML_ETH_LINK_FULL)pContextLinkObject->hContext;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         *pBool = pEntry->Cfg.bEnabled;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PriorityTagging", TRUE))
+    if (strcmp(ParamName, "PriorityTagging") == 0)
     {
         /* collect value */
         *pBool = pEntry->Cfg.bPriorityTagging;
@@ -2148,14 +2148,14 @@ Link_GetParamUlongValue
     CosaDmlEthLinkGetDinfo(pMyObject->hSbContext, pEntry->Cfg.InstanceNumber, &pEntry->DynamicInfo);
  
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */
         *puLong = pEntry->DynamicInfo.Status;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LastChange", TRUE))
+    if (strcmp(ParamName, "LastChange") == 0)
     {
 #ifdef _HUB4_PRODUCT_REQ_
         if ( _ansc_strlen(pEntry->StaticInfo.Name) == 0 )
@@ -2249,7 +2249,7 @@ Link_GetParamStringValue
     errno_t                         rc                      = -1;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue,*pUlSize, pEntry->Cfg.Alias);
@@ -2262,7 +2262,7 @@ Link_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Name", TRUE))
+    if (strcmp(ParamName, "Name") == 0)
     {
         if ( _ansc_strlen(pEntry->StaticInfo.Name) == 0 )
         {
@@ -2300,7 +2300,7 @@ Link_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         if( _ansc_strlen(pEntry->Cfg.LowerLayers) == 0 )
         {            
@@ -2343,7 +2343,7 @@ Link_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "MACAddress", TRUE))
+    if (strcmp(ParamName, "MACAddress") == 0)
     {       
 	PCOSA_DATAMODEL_ETHERNET pMyObject = (PCOSA_DATAMODEL_ETHERNET )g_pCosaBEManager->hEthernet;
 	CosaDmlEthLinkUpdateStaticMac(pMyObject->hSbContext, &pEntry->Cfg,pEntry);
@@ -2430,14 +2430,14 @@ Link_SetParamBoolValue
     PCOSA_DML_ETH_LINK_FULL         pEntry                  = (PCOSA_DML_ETH_LINK_FULL)pContextLinkObject->hContext;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pEntry->Cfg.bEnabled = bValue;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PriorityTagging", TRUE))
+    if (strcmp(ParamName, "PriorityTagging") == 0)
     {
         /* save update to backup */
         pEntry->Cfg.bPriorityTagging = bValue;
@@ -2587,7 +2587,7 @@ Link_SetParamStringValue
     errno_t                         rc                      = -1;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.Alias, sizeof(pEntry->Cfg.Alias) ,pString);
@@ -2599,7 +2599,7 @@ Link_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         ULONG                           ulIndex;
         CHAR                            ucEntryParamName[256]       = {0};
@@ -2743,7 +2743,7 @@ Link_Validate
         if ( 
                  pEntry2 && 
                  ((ULONG)pEntry2 != (ULONG)pEntry) && 
-                 AnscEqualString(pEntry->Cfg.Alias, pEntry2->Cfg.Alias, TRUE) 
+                  (strcmp(pEntry->Cfg.Alias, pEntry2->Cfg.Alias) == 0)
            )
         {
             rc = strcpy_s(pReturnParamName, *puLength, "Alias");
@@ -3001,105 +3001,105 @@ Stats1_GetParamUlongValue
     CosaDmlEthLinkGetStats(pMyObject->hSbContext, pEntry->Cfg.InstanceNumber, &Stats);
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "BytesSent", TRUE))
+    if (strcmp(ParamName, "BytesSent") == 0)
     {
         /* collect value */
         *puLong = Stats.BytesSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BytesReceived", TRUE))
+    if (strcmp(ParamName, "BytesReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.BytesReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PacketsSent", TRUE))
+    if (strcmp(ParamName, "PacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.PacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PacketsReceived", TRUE))
+    if (strcmp(ParamName, "PacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.PacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ErrorsSent", TRUE))
+    if (strcmp(ParamName, "ErrorsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.ErrorsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ErrorsReceived", TRUE))
+    if (strcmp(ParamName, "ErrorsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.ErrorsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnicastPacketsSent", TRUE))
+    if (strcmp(ParamName, "UnicastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.UnicastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnicastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "UnicastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.UnicastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DiscardPacketsSent", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.DiscardPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DiscardPacketsReceived", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.DiscardPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MulticastPacketsSent", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.MulticastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MulticastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.MulticastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BroadcastPacketsSent", TRUE))
+    if (strcmp(ParamName, "BroadcastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.BroadcastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BroadcastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "BroadcastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.BroadcastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnknownProtoPacketsReceived", TRUE))
+    if (strcmp(ParamName, "UnknownProtoPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.UnknownProtoPacketsReceived;
@@ -3492,7 +3492,7 @@ VLANTermination_GetParamBoolValue
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)pContextLinkObject->hContext;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         *pBool = pEntry->Cfg.bEnabled;
@@ -3595,21 +3595,21 @@ VLANTermination_GetParamUlongValue
     CosaDmlEthVlanTerminationGetDinfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->DynamicInfo);
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Status", TRUE))
+    if (strcmp(ParamName, "Status") == 0)
     {
         /* collect value */
         *puLong = pEntry->DynamicInfo.Status;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LastChange", TRUE))
+    if (strcmp(ParamName, "LastChange") == 0)
     {
         /* collect value */
         *puLong = AnscGetTimeIntervalInSeconds(pEntry->DynamicInfo.LastChange, AnscGetTickInSeconds());
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "VLANID", TRUE))
+    if (strcmp(ParamName, "VLANID") == 0)
     {
         /* collect value */
         *puLong = pEntry->Cfg.VLANID;
@@ -3673,7 +3673,7 @@ VLANTermination_GetParamStringValue
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)pContextLinkObject->hContext;
     errno_t                             rc                  = -1;
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue,*pUlSize, pEntry->Cfg.Alias);
@@ -3685,7 +3685,7 @@ VLANTermination_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Name", TRUE))
+    if (strcmp(ParamName, "Name") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue,*pUlSize, pEntry->StaticInfo.Name);
@@ -3697,7 +3697,7 @@ VLANTermination_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue,*pUlSize, pEntry->Cfg.LowerLayers);
@@ -3755,7 +3755,7 @@ VLANTermination_SetParamBoolValue
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)pContextLinkObject->hContext;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* save update to backup */
         pEntry->Cfg.bEnabled = bValue;
@@ -3857,7 +3857,7 @@ VLANTermination_SetParamUlongValue
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)pContextLinkObject->hContext;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "VLANID", TRUE))
+    if (strcmp(ParamName, "VLANID") == 0)
     {
         /* save update to backup */
         pEntry->Cfg.VLANID = uValue;
@@ -3910,7 +3910,7 @@ VLANTermination_SetParamStringValue
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)pContextLinkObject->hContext;
     errno_t                             rc                  = -1;
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* save update to backup */
         rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias), pString);
@@ -3923,7 +3923,7 @@ VLANTermination_SetParamStringValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "LowerLayers", TRUE))
+    if (strcmp(ParamName, "LowerLayers") == 0)
     {
         /* save update to backup */
         rc = strcpy_s(pEntry->Cfg.LowerLayers,sizeof(pEntry->Cfg.LowerLayers), pString);
@@ -4003,7 +4003,7 @@ VLANTermination_Validate
         if ( 
                  pEntry2 && 
                  ((ULONG)pEntry2 != (ULONG)pEntry) && 
-                 AnscEqualString(pEntry->Cfg.Alias, pEntry2->Cfg.Alias, TRUE) 
+                 (strcmp(pEntry->Cfg.Alias, pEntry2->Cfg.Alias) == 0)
            )
         {
             rc = strcpy_s(pReturnParamName, *puLength, "Alias");
@@ -4021,7 +4021,7 @@ VLANTermination_Validate
                  pEntry2 && 
                  ((ULONG)pEntry2 != (ULONG)pEntry) && 
                  pEntry2->Cfg.bEnabled &&
-                 AnscEqualString(pEntry->Cfg.EthLinkName, pEntry2->Cfg.EthLinkName, TRUE)  &&
+                 (strcmp(pEntry->Cfg.EthLinkName, pEntry2->Cfg.EthLinkName) == 0) &&
                  pEntry->Cfg.VLANID == pEntry2->Cfg.VLANID
            )
         {
@@ -4278,105 +4278,105 @@ VLANTermination_Stats_GetParamUlongValue
     CosaDmlEthVlanTerminationGetStats(NULL, pEntry->Cfg.InstanceNumber, &Stats);
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "BytesSent", TRUE))
+    if (strcmp(ParamName, "BytesSent") == 0)
     {
         /* collect value */
         *puLong = Stats.BytesSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BytesReceived", TRUE))
+    if (strcmp(ParamName, "BytesReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.BytesReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PacketsSent", TRUE))
+    if (strcmp(ParamName, "PacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.PacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "PacketsReceived", TRUE))
+    if (strcmp(ParamName, "PacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.PacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ErrorsSent", TRUE))
+    if (strcmp(ParamName, "ErrorsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.ErrorsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "ErrorsReceived", TRUE))
+    if (strcmp(ParamName, "ErrorsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.ErrorsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnicastPacketsSent", TRUE))
+    if (strcmp(ParamName, "UnicastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.UnicastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnicastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "UnicastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.UnicastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DiscardPacketsSent", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.DiscardPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "DiscardPacketsReceived", TRUE))
+    if (strcmp(ParamName, "DiscardPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.DiscardPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MulticastPacketsSent", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.MulticastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MulticastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "MulticastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.MulticastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BroadcastPacketsSent", TRUE))
+    if (strcmp(ParamName, "BroadcastPacketsSent") == 0)
     {
         /* collect value */
         *puLong = Stats.BroadcastPacketsSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "BroadcastPacketsReceived", TRUE))
+    if (strcmp(ParamName, "BroadcastPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.BroadcastPacketsReceived;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "UnknownProtoPacketsReceived", TRUE))
+    if (strcmp(ParamName, "UnknownProtoPacketsReceived") == 0)
     {
         /* collect value */
         *puLong = Stats.UnknownProtoPacketsReceived;

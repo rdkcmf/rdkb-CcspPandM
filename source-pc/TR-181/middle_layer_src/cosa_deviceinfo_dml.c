@@ -166,7 +166,7 @@ DeviceInfo_GetParamBoolValue
 {
     BOOL                            bReturnValue;
     
-    if( AnscEqualString(ParamName, "ClearResetCount", TRUE))
+    if (strcmp(ParamName, "ClearResetCount") == 0)
     {
         *pBool = FALSE ; 
         return TRUE;
@@ -272,14 +272,14 @@ DeviceInfo_GetParamUlongValue
     )
 {
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "UpTime", TRUE))
+    if (strcmp(ParamName, "UpTime") == 0)
     {
         /* collect value */
         *puLong = CosaDmlDiGetUpTime(NULL);
         return TRUE;
     }
 	/* Required for xPC sync */
-	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureDocsicPollTime", TRUE))
+	if (strcmp(ParamName, "X_RDKCENTRAL-COM_ConfigureDocsicPollTime") == 0)
     {
         /* collect value */
 	   FILE *fp;
@@ -303,14 +303,14 @@ DeviceInfo_GetParamUlongValue
            return TRUE;
     }
     
-    if( AnscEqualString(ParamName, "BootTime", TRUE))
+    if (strcmp(ParamName, "BootTime") == 0)
     {
         /* collect value */
        	*puLong = CosaDmlDiGetBootTime(NULL);
         return TRUE;
     }
     
-    if( AnscEqualString(ParamName, "FactoryResetCount", TRUE))
+    if (strcmp(ParamName, "FactoryResetCount") == 0)
     {
         /* collect value */
 #if 0//LNT_EMU
@@ -374,77 +374,77 @@ DeviceInfo_GetParamStringValue
     ULONG                           ReturnValue;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Manufacturer", TRUE))
+    if (strcmp(ParamName, "Manufacturer") == 0)
     {
         /* collect value */
         CosaDmlDiGetManufacturer(NULL,pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "ManufacturerOUI", TRUE))
+    if (strcmp(ParamName, "ManufacturerOUI") == 0)
     {
         /* collect value */
         CosaDmlDiGetManufacturerOUI(NULL,pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "ModelName", TRUE))
+    if (strcmp(ParamName, "ModelName") == 0)
     {
         /* collect value */
         CosaDmlDiGetModelName(NULL,pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Description", TRUE))
+    if (strcmp(ParamName, "Description") == 0)
     {
         /* collect value */
         CosaDmlDiGetDescription(NULL,pValue, pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "ProductClass", TRUE))
+    if (strcmp(ParamName, "ProductClass") == 0)
     {
         /* collect value */
         CosaDmlDiGetProductClass(NULL, pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "SerialNumber", TRUE))
+    if (strcmp(ParamName, "SerialNumber") == 0)
     {
         /* collect value */
         CosaDmlDiGetSerialNumber(NULL,pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "HardwareVersion", TRUE))
+    if (strcmp(ParamName, "HardwareVersion") == 0)
     {
         /* collect value */
        CosaDmlDiGetHardwareVersion(NULL,pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "SoftwareVersion", TRUE))
+    if (strcmp(ParamName, "SoftwareVersion") == 0)
     {
         /* collect value */
         CosaDmlDiGetSoftwareVersion(NULL,pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "AdditionalHardwareVersion", TRUE))
+    if (strcmp(ParamName, "AdditionalHardwareVersion") == 0)
     {
         /* collect value */
          CosaDmlDiGetAdditionalHardwareVersion(NULL,pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "AdditionalSoftwareVersion", TRUE))
+    if (strcmp(ParamName, "AdditionalSoftwareVersion") == 0)
     {
         /* collect value */
         CosaDmlDiGetAdditionalSoftwareVersion(NULL,pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "ProvisioningCode", TRUE))
+    if (strcmp(ParamName, "ProvisioningCode") == 0)
     {
         /* collect value */
         CosaDmlDiGetProvisioningCode(NULL,pValue,pulSize);
@@ -452,48 +452,48 @@ DeviceInfo_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "FirstUseDate", TRUE))
+    if (strcmp(ParamName, "FirstUseDate") == 0)
     {
 
 	CosaDmlDiGetFirstUseDate(NULL, pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_BootloaderVersion", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_BootloaderVersion") == 0)
     {
 
 	    CosaDmlDiGetBootloaderVersion(NULL, pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_FirmwareName", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_FirmwareName") == 0)
     {
 
 	    CosaDmlDiGetFirmwareName(NULL, pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_FirmwareBuildTime", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_FirmwareBuildTime") == 0)
     {
 
 	    CosaDmlDiGetFirmwareBuildTime(NULL, pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_BaseMacAddress", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_BaseMacAddress") == 0)
     {
 
 	    CosaDmlDiGetBaseMacAddress(NULL, pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Hardware", TRUE))
+    if (strcmp(ParamName, "Hardware") == 0)
     {
         CosaDmlDiGetHardware(NULL, pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Hardware_MemUsed", TRUE))
+    if (strcmp(ParamName, "Hardware_MemUsed") == 0)
     {
 #if 0//LNT_EMU
         CosaDmlDiGetHardware_MemUsed(NULL, pValue,pulSize);
@@ -501,7 +501,7 @@ DeviceInfo_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Hardware_MemFree", TRUE))
+    if (strcmp(ParamName, "Hardware_MemFree") == 0)
     {
 #if 0//LNT_EMU
         CosaDmlDiGetHardware_MemFree(NULL, pValue,pulSize);
@@ -509,21 +509,21 @@ DeviceInfo_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_AdvancedServices", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_AdvancedServices") == 0)
     {
 
     	CosaDmlDiGetAdvancedServices(NULL, pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_ProcessorSpeed", TRUE))
+    if (strcmp(ParamName, "X_CISCO_COM_ProcessorSpeed") == 0)
     {
 
     	CosaDmlDiGetProcessorSpeed(NULL, pValue,pulSize);
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootReason", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_LastRebootReason") == 0)
     {
 	char *param_value = NULL;
         PSM_Get_Record_Value2(bus_handle,g_Subsystem,"dmsb.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason", NULL, &param_value);
@@ -535,13 +535,13 @@ DeviceInfo_GetParamStringValue
      }	
 	/* Changes for EMS begins here */
 	
-    if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))
+    if (strcmp(ParamName, "X_COMCAST-COM_EMS_MobileNumber") == 0)
     {
 		AnscCopyString(pValue,  pMyObject->EMS_MobileNo);
         return 0;
     }
 	
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_ServerURL", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_EMS_ServerURL") == 0)
     {
        //pMyObject->EMS_ServerURL;
 		char buf[60];
@@ -622,7 +622,7 @@ DeviceInfo_SetParamBoolValue
     BOOL                            bReturnValue;
     
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "ClearResetCount", TRUE))
+    if (strcmp(ParamName, "ClearResetCount") == 0)
     {
         /* collect value */
 #if 0//LNT_EMU
@@ -731,7 +731,7 @@ DeviceInfo_SetParamUlongValue
     )
 {
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ConfigureDocsicPollTime", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_ConfigureDocsicPollTime") == 0)
     {
         /* collect value */
            FILE *fp;
@@ -793,14 +793,14 @@ DeviceInfo_SetParamStringValue
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "ProvisioningCode", TRUE))
+    if (strcmp(ParamName, "ProvisioningCode") == 0)
     {
         /* save update to backup */
         AnscCopyString(pMyObject->ProvisioningCode, pString);
         return TRUE;
     }
 #ifdef CONFIG_INTERNET2P0
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL") == 0)
     {
 #if 0//LNT_EMU
 	if (syscfg_set(NULL, "redirection_url", pString) != 0) {
@@ -820,7 +820,7 @@ DeviceInfo_SetParamStringValue
 
     }
 #endif
-   if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_UI_ACCESS", TRUE))
+   if (strcmp(ParamName, "X_RDKCENTRAL-COM_UI_ACCESS") == 0)
    {
 
          if (AnscEqualString(pString, "ui_access", TRUE))
@@ -856,7 +856,7 @@ DeviceInfo_SetParamStringValue
    }
 
    /* Changes for EMS */
-   if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_ServerURL", TRUE))
+   if (strcmp(ParamName, "X_COMCAST-COM_EMS_ServerURL") == 0)
     {
 #if 0//LNT_EMU
 	if (syscfg_set(NULL, "ems_server_url", pString) != 0) {
@@ -874,14 +874,14 @@ DeviceInfo_SetParamStringValue
 	return TRUE;
 
     }
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_LastRebootReason", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_LastRebootReason") == 0)
     {
 	    PSM_Set_Record_Value2(bus_handle,g_Subsystem,"dmsb.DeviceInfo.X_RDKCENTRAL-COM_LastRebootReason", ccsp_string,pString);
             return TRUE;
 
      }
 
-    if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))
+    if (strcmp(ParamName, "X_COMCAST-COM_EMS_MobileNumber") == 0)
     {
         /* save update to backup */
         AnscCopyString(pMyObject->EMS_MobileNo, pString);
@@ -1282,31 +1282,31 @@ VendorConfigFile_GetParamStringValue
     )
 {
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* collect value */
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Name", TRUE))
+    if (strcmp(ParamName, "Name") == 0)
     {
         /* collect value */
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Version", TRUE))
+    if (strcmp(ParamName, "Version") == 0)
     {
         /* collect value */
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Date", TRUE))
+    if (strcmp(ParamName, "Date") == 0)
     {
         /* collect value */
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Description", TRUE))
+    if (strcmp(ParamName, "Description") == 0)
     {
         /* collect value */
         return 0;
@@ -1488,7 +1488,7 @@ VendorConfigFile_SetParamStringValue
     )
 {
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "Alias", TRUE))
+    if (strcmp(ParamName, "Alias") == 0)
     {
         /* save update to backup */
         return TRUE;
@@ -1870,19 +1870,19 @@ SupportedDataModel_GetParamStringValue
     )
 {
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "URL", TRUE))
+    if (strcmp(ParamName, "URL") == 0)
     {
         /* collect value */
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "URN", TRUE))
+    if (strcmp(ParamName, "URN") == 0)
     {
         /* collect value */
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "Features", TRUE))
+    if (strcmp(ParamName, "Features") == 0)
     {
         /* collect value */
         return 0;
@@ -2032,14 +2032,14 @@ MemoryStatus_GetParamUlongValue
     )
 {
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Total", TRUE))
+    if (strcmp(ParamName, "Total") == 0)
     {
          /* collect value */
         *puLong = COSADmlGetMemoryStatus(ParamName);
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Free", TRUE))
+    if (strcmp(ParamName, "Free") == 0)
     {
         /* collect value */
         *puLong = COSADmlGetMemoryStatus(ParamName);
@@ -2047,7 +2047,7 @@ MemoryStatus_GetParamUlongValue
     }
 
 
-    if( AnscEqualString(ParamName, "Used", TRUE))
+    if (strcmp(ParamName, "Used") == 0)
     {
         /* collect value */
         *puLong = COSADmlGetMemoryStatus(ParamName);
@@ -2362,7 +2362,7 @@ Ops_GetParamBoolValue
 {
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "UploadLogsNow", TRUE))
+    if (strcmp(ParamName, "UploadLogsNow") == 0)
     {
         /* collect value */
          *pBool = FALSE;
@@ -2508,7 +2508,7 @@ Ops_GetParamStringValue
     )
 {
 
-    if( AnscEqualString(ParamName, "LogsUploadStatus", TRUE))
+    if (strcmp(ParamName, "LogsUploadStatus") == 0)
     {
 #if 0//LNT_EMU
         /* collect value */
@@ -2560,7 +2560,7 @@ Ops_SetParamBoolValue
 {
     BOOL                            bReturnValue;
 
-    if( AnscEqualString(ParamName, "UploadLogsNow", TRUE))
+    if (strcmp(ParamName, "UploadLogsNow") == 0)
     {
 #if 0//LNT_EMU
 	bReturnValue =
@@ -2724,7 +2724,7 @@ ProcessStatus_GetParamUlongValue
     )
 {
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "CPUUsage", TRUE))
+    if (strcmp(ParamName, "CPUUsage") == 0)
     {
         /* collect value */
          *puLong = COSADmlGetCpuUsage();
@@ -3109,35 +3109,35 @@ Process_GetParamUlongValue
     PCOSA_PROCESS_ENTRY        p_proc = (PCOSA_PROCESS_ENTRY)hInsContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "PID", TRUE))
+    if (strcmp(ParamName, "PID") == 0)
     {
         /* collect value */
         *puLong = p_proc->Pid;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Size", TRUE))
+    if (strcmp(ParamName, "Size") == 0)
     {
         /* collect value */
         *puLong = p_proc->Size;        
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Priority", TRUE))
+    if (strcmp(ParamName, "Priority") == 0)
     {
         /* collect value */
         *puLong = p_proc->Priority;                
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "CPUTime", TRUE))
+    if (strcmp(ParamName, "CPUTime") == 0)
     {
         /* collect value */
         *puLong = p_proc->CPUTime;                
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "State", TRUE))
+    if (strcmp(ParamName, "State") == 0)
     {
         /* collect value */
         *puLong = p_proc->State;                
@@ -3199,7 +3199,7 @@ Process_GetParamStringValue
     PCOSA_PROCESS_ENTRY        p_proc = (PCOSA_PROCESS_ENTRY)hInsContext;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Command", TRUE))
+    if (strcmp(ParamName, "Command") == 0)
     {
         /* collect value */
         if ( AnscSizeOfString(p_proc->Command) < *pUlSize)
@@ -3358,7 +3358,7 @@ NetworkProperties_GetParamUlongValue
     )
 {
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "MaxTCPWindowSize", TRUE))
+    if (strcmp(ParamName, "MaxTCPWindowSize") == 0)
     {
         /* collect value */
         *puLong = COSADmlGetMaxWindowSize();
@@ -3415,7 +3415,7 @@ NetworkProperties_GetParamStringValue
         ULONG*                      pulSize
     )
 {
-    if( AnscEqualString(ParamName, "TCPImplementation", TRUE))
+    if (strcmp(ParamName, "TCPImplementation") == 0)
     {
 	/* collect value */
         CosaDmlGetTCPImplementation(NULL,pValue,pulSize);
@@ -3466,7 +3466,7 @@ Webpa_GetParamBoolValue
     )
 {
    char pchar[128];
-   if (AnscEqualString(ParamName, "Enable", TRUE))
+   if (strcmp(ParamName, "Enable") == 0)
     {
 #if 0//LNT_EMU
 		if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pchar))
@@ -3531,7 +3531,7 @@ Webpa_GetParamIntValue
 	char pchar[256]; 	
 #if 0
     /* check the parameter name and return the corresponding value */
-	if( AnscEqualString(ParamName, "ServerPort", TRUE))
+	if (strcmp(ParamName, "ServerPort") == 0)
     {
         if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pchar))
 		{
@@ -3540,7 +3540,7 @@ Webpa_GetParamIntValue
 		*pInt = _ansc_atoi(pchar);
 		return TRUE;
     }
-	if (AnscEqualString(ParamName, "RetryIntervalInSec", TRUE))
+	if (strcmp(ParamName, "RetryIntervalInSec") == 0)
     {
         if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pchar))
 		{
@@ -3549,7 +3549,7 @@ Webpa_GetParamIntValue
 		*pInt = _ansc_atoi(pchar);
 		return TRUE;
     }
-	if (AnscEqualString(ParamName, "MaxPingWaitTimeInSec", TRUE))
+	if (strcmp(ParamName, "MaxPingWaitTimeInSec") == 0)
     {
 		if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pchar))
 		{
@@ -3604,7 +3604,7 @@ Webpa_GetParamUlongValue
 {
     /* check the parameter name and return the corresponding value */
     /* Required for xPC sync */
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_CMC", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_CMC") == 0)
     {
         /* collect value */
 		char buf[8];
@@ -3666,7 +3666,7 @@ Webpa_GetParamStringValue
 {
 
 	/* Required for xPC sync */
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_CID", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_CID") == 0)
     	{
         	/* collect value */
 		char buf[64];
@@ -3681,7 +3681,7 @@ Webpa_GetParamStringValue
 #endif
 		return -1;
     	}
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_SyncProtocolVersion", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_SyncProtocolVersion") == 0)
     {
         /* collect value */
 		char buf[5];
@@ -3696,7 +3696,7 @@ Webpa_GetParamStringValue
 		return -1;
     }
 	
-	if (AnscEqualString(ParamName, "ServerURL", TRUE))
+	if (strcmp(ParamName, "ServerURL") == 0)
 	{	
 #if 0//LNT_EMU
 		if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pValue))
@@ -3708,7 +3708,7 @@ Webpa_GetParamStringValue
 		return 0;
 	}
 	
-    if (AnscEqualString(ParamName, "DeviceNetworkInterface", TRUE))
+    if (strcmp(ParamName, "DeviceNetworkInterface") == 0)
     {
 #if 0//LNT_EMU
         if(ANSC_STATUS_SUCCESS != CosaDmlDiGetWebPACfg(ParamName,pValue))
@@ -3764,7 +3764,7 @@ Webpa_SetParamBoolValue
 {
 	char pchar[128];
 	char cValue[128];
-    if (AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
 		if(bValue)
 		{
@@ -3870,7 +3870,7 @@ Webpa_SetParamIntValue
 {
 	/* check the parameter name and set the corresponding value */
 #if 0
-	if( AnscEqualString(ParamName, "ServerPort", TRUE))
+	if (strcmp(ParamName, "ServerPort") == 0)
     {
 		char pchar[256];
 
@@ -3882,7 +3882,7 @@ Webpa_SetParamIntValue
 		}
 		return TRUE;
 	}
-    if( AnscEqualString(ParamName, "RetryIntervalInSec", TRUE))
+    if (strcmp(ParamName, "RetryIntervalInSec") == 0)
     {
         char pchar[256];
 
@@ -3894,7 +3894,7 @@ Webpa_SetParamIntValue
 		}
 		return TRUE;
     }
-	if( AnscEqualString(ParamName, "MaxPingWaitTimeInSec", TRUE))
+	if (strcmp(ParamName, "MaxPingWaitTimeInSec") == 0)
     {
         char pchar[256];
 
@@ -3954,7 +3954,7 @@ Webpa_SetParamUlongValue
 	
    /* check the parameter name and set the corresponding value */
 		/* Required for xPC sync */
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_CMC", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_CMC") == 0)
     {
         /* collect value */
 		char buf[8];
@@ -4021,7 +4021,7 @@ Webpa_SetParamStringValue
 {
 
 	/* Required for xPC sync */
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_CID", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_CID") == 0)
     	{
 #if 0//LNT_EMU
 		if (syscfg_set(NULL, "X_COMCAST-COM_CID", pString) != 0) 
@@ -4040,7 +4040,7 @@ Webpa_SetParamStringValue
 #endif
     	}
 #if 0
-	if( AnscEqualString(ParamName, "X_COMCAST-COM_SyncProtocolVersion", TRUE))
+	if (strcmp(ParamName, "X_COMCAST-COM_SyncProtocolVersion") == 0)
     {
 	if (syscfg_set(NULL, "X_COMCAST-COM_SyncProtocolVersion", pString) != 0) {
              AnscTraceWarning(("syscfg_set failed\n"));
@@ -4055,7 +4055,7 @@ Webpa_SetParamStringValue
 	return TRUE;
 
     }
-    if (AnscEqualString(ParamName, "ServerURL", TRUE))
+    if (strcmp(ParamName, "ServerURL") == 0)
     {	
 		if(ANSC_STATUS_SUCCESS != CosaDmlDiSetWebPACfg(ParamName,pString))
 		{
@@ -4064,7 +4064,7 @@ Webpa_SetParamStringValue
 		return TRUE;		
     }
     
-    if (AnscEqualString(ParamName, "DeviceNetworkInterface", TRUE))
+    if (strcmp(ParamName, "DeviceNetworkInterface") == 0)
     {
         if(ANSC_STATUS_SUCCESS != CosaDmlDiSetWebPACfg(ParamName,pString))
 		{
@@ -4117,7 +4117,7 @@ Iot_GetParamBoolValue
     )
 {
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ENABLEIOT", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_ENABLEIOT") == 0)
     {
         /* collect value */
         char buf[8];
@@ -4175,7 +4175,7 @@ Iot_SetParamBoolValue
     )
 {
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ENABLEIOT", TRUE))
+    if (strcmp(ParamName, "X_RDKCENTRAL-COM_ENABLEIOT") == 0)
     {
         char buf[8];
         memset(buf, 0, sizeof(buf));
@@ -4251,7 +4251,7 @@ Logging_GetParamBoolValue
 {
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "xOpsDMUploadLogsNow", TRUE))
+    if (strcmp(ParamName, "xOpsDMUploadLogsNow") == 0)
     {
         /* collect value */
          *pBool = FALSE;
@@ -4305,7 +4305,7 @@ Logging_SetParamBoolValue
 {
     BOOL                     bReturnValue;
 
-    if( AnscEqualString(ParamName, "xOpsDMUploadLogsNow", TRUE))
+    if (strcmp(ParamName, "xOpsDMUploadLogsNow") == 0)
     {
 #if 0//LNT_EMU
 	bReturnValue =
@@ -4339,7 +4339,7 @@ Logging_GetParamStringValue
     )
 {
 
-    if( AnscEqualString(ParamName, "xOpsDMLogsUploadStatus", TRUE))
+    if (strcmp(ParamName, "xOpsDMLogsUploadStatus") == 0)
     {
 #if 0//LNT_EMU
         /* collect value */
@@ -4415,13 +4415,13 @@ ReverseSSH_GetParamStringValue
     char* inActiveStr = "INACTIVE";
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "xOpsReverseSshArgs", TRUE))
+    if (strcmp(ParamName, "xOpsReverseSshArgs") == 0)
     {
         bReturnValue = getXOpsReverseSshArgs(NULL, pValue,pulSize);
         return bReturnValue;
     }
 
-    if( AnscEqualString(ParamName, "xOpsReverseSshStatus", TRUE))
+    if (strcmp(ParamName, "xOpsReverseSshStatus") == 0)
     {
         if (isRevSshActive()) {
             AnscCopyString(pValue, activeStr);
@@ -4481,13 +4481,13 @@ ReverseSSH_SetParamStringValue
     ANSC_STATUS retValue = ANSC_STATUS_FAILURE;
 
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "xOpsReverseSshArgs", TRUE))
+    if (strcmp(ParamName, "xOpsReverseSshArgs") == 0)
     {
         bReturnValue = setXOpsReverseSshArgs(pString);
         return TRUE ;
     }
 
-    if( AnscEqualString(ParamName, "xOpsReverseSshTrigger", TRUE)) {
+    if (strcmp(ParamName, "xOpsReverseSshTrigger") == 0) {
         bReturnValue = setXOpsReverseSshTrigger(pString);
         return TRUE ;
     }
@@ -4556,7 +4556,7 @@ Syndication_GetParamStringValue
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
-    if( AnscEqualString(ParamName, "PartnerId", TRUE))
+    if (strcmp(ParamName, "PartnerId") == 0)
     {
         /* collect value */
         //CosaDmlDiGetSyndicationPartnerId(NULL, pValue,pulSize);
@@ -4565,26 +4565,26 @@ Syndication_GetParamStringValue
         return 0;
     }
 
-    if( AnscEqualString(ParamName, "TR69CertLocation", TRUE))
+    if (strcmp(ParamName, "TR69CertLocation") == 0)
     {
         /* collect value */
                 AnscCopyString( pValue, pMyObject->TR69CertLocation );
                 *pulSize = AnscSizeOfString( pValue );
         return 0;
     }
-    if( AnscEqualString(ParamName, "LocalUIBrandingTable", TRUE))
+    if (strcmp(ParamName, "LocalUIBrandingTable") == 0)
     {
         /* collect value */
         CosaDmlDiGetSyndicationLocalUIBrandingTable(NULL, pValue,pulSize);
         return 0;
     }
-    if( AnscEqualString(ParamName, "WifiUIBrandingTable", TRUE))
+    if (strcmp(ParamName, "WifiUIBrandingTable") == 0)
     {
         /* collect value */
         CosaDmlDiGetSyndicationWifiUIBrandingTable(NULL, pValue,pulSize);
         return 0;
     }
-    if( AnscEqualString(ParamName, "PauseScreenFileLocation", TRUE))
+    if (strcmp(ParamName, "PauseScreenFileLocation") == 0)
     {
          /* collect value */
          if ( AnscSizeOfString(pMyObject->UiBrand.PauseScreenFileLocation) < *pulSize)
@@ -4646,7 +4646,7 @@ Syndication_SetParamStringValue
     char PartnerID[PARTNER_ID_LEN] = {0};
     ULONG size = PARTNER_ID_LEN - 1;
     /* check the parameter name and set the corresponding value */
-    if( AnscEqualString(ParamName, "TR69CertLocation", TRUE) )
+    if (strcmp(ParamName, "TR69CertLocation") == 0)
     {
                 retValue = CosaDmlDiSetSyndicationTR69CertLocation( hInsContext, pString );
                 if( ANSC_STATUS_SUCCESS == retValue )
@@ -4657,7 +4657,7 @@ Syndication_SetParamStringValue
 
                 return TRUE;
     }
-    if( AnscEqualString(ParamName, "PartnerId", TRUE) )
+    if (strcmp(ParamName, "PartnerId") == 0)
     {
                                 memset( pMyObject->PartnerID, 0, sizeof( pMyObject->PartnerID ));
                                 AnscCopyString( pMyObject->PartnerID, pString );
@@ -4665,7 +4665,7 @@ Syndication_SetParamStringValue
                         return TRUE;
     }
          /* check the parameter name and set the corresponding value */
-         if( AnscEqualString(ParamName, "PauseScreenFileLocation", TRUE) )
+         if (strcmp(ParamName, "PauseScreenFileLocation") == 0)
         {
                 if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.PauseScreenFileLocation",PartnerID, pString))
                 {
@@ -4721,7 +4721,7 @@ Syndication_GetParamBoolValue
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
     /* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "enable", TRUE))
+    if (strcmp(ParamName, "enable") == 0)
     {
        /* Collect Value */
        *pBool = pMyObject->SyndicationEnable;
@@ -4771,7 +4771,7 @@ Syndication_SetParamBoolValue
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     ANSC_STATUS                                         retValue  = ANSC_STATUS_FAILURE;
 
-    if( AnscEqualString(ParamName, "enable", TRUE))
+    if (strcmp(ParamName, "enable") == 0)
     {
                 if( bValue != pMyObject->SyndicationEnable )
                 {
@@ -4809,7 +4809,7 @@ RDKB_UIBranding_GetParamStringValue
         PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
         PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
 
-         if( AnscEqualString(ParamName, "DefaultAdminIP", TRUE))
+         if (strcmp(ParamName, "DefaultAdminIP") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->DefaultAdminIP) < *pulSize)
                 {
@@ -4823,7 +4823,7 @@ RDKB_UIBranding_GetParamStringValue
                 }
 
         }
-        if( AnscEqualString(ParamName, "DefaultLocalIPv4SubnetRange", TRUE))
+        if (strcmp(ParamName, "DefaultLocalIPv4SubnetRange") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->DefaultLocalIPv4SubnetRange) < *pulSize)
                 {
@@ -4871,7 +4871,7 @@ Footer_GetParamStringValue
         PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
         PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
 
-        if( AnscEqualString(ParamName, "PartnerLink", TRUE))
+        if (strcmp(ParamName, "PartnerLink") == 0)
         {
                 /* collect value */
                  if ( AnscSizeOfString(pBindObj->Footer.PartnerLink) < *pulSize)
@@ -4887,7 +4887,7 @@ Footer_GetParamStringValue
 
         }
 
-        if( AnscEqualString(ParamName, "UserGuideLink", TRUE))
+        if (strcmp(ParamName, "UserGuideLink") == 0)
         {
                  if ( AnscSizeOfString(pBindObj->Footer.UserGuideLink) < *pulSize)
                 {
@@ -4900,7 +4900,7 @@ Footer_GetParamStringValue
                         return 1;
                 }
         }
-                if( AnscEqualString(ParamName, "CustomerCentralLink", TRUE))
+                if (strcmp(ParamName, "CustomerCentralLink") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->Footer.CustomerCentralLink) < *pulSize)
                 {
@@ -4915,7 +4915,7 @@ Footer_GetParamStringValue
 
         }
 
-        if( AnscEqualString(ParamName, "PartnerText", TRUE))
+        if (strcmp(ParamName, "PartnerText") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->Footer.PartnerText) < *pulSize)
                 {
@@ -4930,7 +4930,7 @@ Footer_GetParamStringValue
 
         }
 
-        if( AnscEqualString(ParamName, "UserGuideText", TRUE))
+        if (strcmp(ParamName, "UserGuideText") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->Footer.UserGuideText) < *pulSize)
                 {
@@ -4945,7 +4945,7 @@ Footer_GetParamStringValue
 
         }
 
-        if( AnscEqualString(ParamName, "CustomerCentralText", TRUE))
+        if (strcmp(ParamName, "CustomerCentralText") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->Footer.CustomerCentralText) < *pulSize)
                 {
@@ -4981,7 +4981,7 @@ Footer_SetParamStringValue
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
    {
          /* check the parameter name and set the corresponding value */
-            if( AnscEqualString(ParamName, "PartnerLink", TRUE) )
+            if (strcmp(ParamName, "PartnerLink") == 0)
             {
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink",PartnerID,pString))
                         {
@@ -4991,7 +4991,7 @@ Footer_SetParamStringValue
                         }
 
             }
-            if( AnscEqualString(ParamName, "UserGuideLink", TRUE) )
+            if (strcmp(ParamName, "UserGuideLink") == 0)
             {
 
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideLink",PartnerID,pString))
@@ -5002,7 +5002,7 @@ Footer_SetParamStringValue
                         }
 
             }
-            if( AnscEqualString(ParamName, "CustomerCentralLink", TRUE) )
+            if (strcmp(ParamName, "CustomerCentralLink") == 0)
             {
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralLink",PartnerID,pString))
                         {
@@ -5013,7 +5013,7 @@ Footer_SetParamStringValue
 
             }
 
-        if( AnscEqualString(ParamName, "PartnerText", TRUE) )
+        if (strcmp(ParamName, "PartnerText") == 0)
         {
                 if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerText",PartnerID,pString))
                 {
@@ -5024,7 +5024,7 @@ Footer_SetParamStringValue
 
         }
 
-        if( AnscEqualString(ParamName, "UserGuideText", TRUE) )
+        if (strcmp(ParamName, "UserGuideText") == 0)
         {
                 if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideText",PartnerID,pString))
                 {
@@ -5035,7 +5035,7 @@ Footer_SetParamStringValue
 
         }
 
-        if( AnscEqualString(ParamName, "CustomerCentralText", TRUE) )
+        if (strcmp(ParamName, "CustomerCentralText") == 0)
         {
                 if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralText",PartnerID,pString))
 		                {
@@ -5070,7 +5070,7 @@ Connection_GetParamStringValue
         PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
         PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
 
-        if( AnscEqualString(ParamName, "MSOmenu", TRUE))
+        if (strcmp(ParamName, "MSOmenu") == 0)
         {
 		                if ( AnscSizeOfString(pBindObj->Connection.MSOmenu) < *pulSize)
                 {
@@ -5084,7 +5084,7 @@ Connection_GetParamStringValue
                 }
         }
 
-        if( AnscEqualString(ParamName, "MSOinfo", TRUE))
+        if (strcmp(ParamName, "MSOinfo") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->Connection.MSOinfo) < *pulSize)
                 {
@@ -5099,7 +5099,7 @@ Connection_GetParamStringValue
 
         }
 
-        if( AnscEqualString(ParamName, "StatusTitle", TRUE))
+        if (strcmp(ParamName, "StatusTitle") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->Connection.StatusTitle) < *pulSize)
                 {
@@ -5113,7 +5113,7 @@ Connection_GetParamStringValue
                 }
         }
 
-        if( AnscEqualString(ParamName, "StatusInfo", TRUE))
+        if (strcmp(ParamName, "StatusInfo") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->Connection.StatusInfo) < *pulSize)
                 {
@@ -5146,7 +5146,7 @@ Connection_SetParamStringValue
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
    {
          /* check the parameter name and set the corresponding value */
-            if( AnscEqualString(ParamName, "MSOmenu", TRUE) )
+            if (strcmp(ParamName, "MSOmenu") == 0)
             {
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOmenu",PartnerID,pString))
                         {
@@ -5155,7 +5155,7 @@ Connection_SetParamStringValue
                                 return TRUE;
                         }
             }
-            if( AnscEqualString(ParamName, "MSOinfo", TRUE) )
+            if (strcmp(ParamName, "MSOinfo") == 0)
             {
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.MSOinfo",PartnerID,pString) )
                         {
@@ -5164,7 +5164,7 @@ Connection_SetParamStringValue
                                 return TRUE;
                         }
             }
-            if( AnscEqualString(ParamName, "StatusTitle", TRUE) )
+            if (strcmp(ParamName, "StatusTitle") == 0)
             {
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusTitle",PartnerID,pString) )
                         {
@@ -5174,7 +5174,7 @@ Connection_SetParamStringValue
                         }
 
             }
-            if( AnscEqualString(ParamName, "StatusInfo", TRUE) )
+            if (strcmp(ParamName, "StatusInfo") == 0)
             {
 
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Connection.StatusInfo",PartnerID,pString))
@@ -5207,7 +5207,7 @@ NetworkDiagnosticTools_GetParamStringValue
         PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
         PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
 
-        if( AnscEqualString(ParamName, "ConnectivityTestURL", TRUE))
+        if (strcmp(ParamName, "ConnectivityTestURL") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->NDiagTool.ConnectivityTestURL) < *pulSize)
                 {
@@ -5243,7 +5243,7 @@ NetworkDiagnosticTools_SetParamStringValue
    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
    {
          /* check the parameter name and set the corresponding value */
-            if( AnscEqualString(ParamName, "ConnectivityTestURL", TRUE) )
+            if (strcmp(ParamName, "ConnectivityTestURL") == 0)
             {
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.NetworkDiagnosticTools.ConnectivityTestURL",PartnerID, pString))
                         {
@@ -5276,14 +5276,14 @@ WiFiPersonalization_GetParamBoolValue
         PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
         PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
 
-        if( AnscEqualString(ParamName, "Support", TRUE))
+        if (strcmp(ParamName, "Support") == 0)
         {
                  /* collect value */
                 *pBool = pBindObj->WifiPersonal.Support;
                 return TRUE;
         }
 
-        if( AnscEqualString(ParamName, "SMSsupport", TRUE))
+        if (strcmp(ParamName, "SMSsupport") == 0)
         {
                 /* collect value */
                 *pBool = pBindObj->WifiPersonal.SMSsupport;
@@ -5291,7 +5291,7 @@ WiFiPersonalization_GetParamBoolValue
 
         }
 
-        if( AnscEqualString(ParamName, "MyAccountAppSupport", TRUE))
+        if (strcmp(ParamName, "MyAccountAppSupport") == 0)
         {
                 /* collect value */
                 *pBool = pBindObj->WifiPersonal.MyAccountAppSupport;
@@ -5319,7 +5319,7 @@ WiFiPersonalization_SetParamBoolValue
 
    //if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
    //{
-            if( AnscEqualString(ParamName, "Support", TRUE))
+            if (strcmp(ParamName, "Support") == 0)
             {
 
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.Support",PartnerID, value ))
@@ -5330,7 +5330,7 @@ WiFiPersonalization_SetParamBoolValue
 
             }
 
-            if( AnscEqualString(ParamName, "SMSsupport", TRUE))
+            if (strcmp(ParamName, "SMSsupport") == 0)
             {
 
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.SMSsupport",PartnerID, value))
@@ -5341,7 +5341,7 @@ WiFiPersonalization_SetParamBoolValue
 
             }
 
-	     if( AnscEqualString(ParamName, "MyAccountAppSupport", TRUE))
+	     if (strcmp(ParamName, "MyAccountAppSupport") == 0)
             {
 
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.MyAccountAppSupport",PartnerID, value))
@@ -5370,7 +5370,7 @@ WiFiPersonalization_GetParamStringValue
         PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
         PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
 
-         if( AnscEqualString(ParamName, "PartnerHelpLink", TRUE))
+         if (strcmp(ParamName, "PartnerHelpLink") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->WifiPersonal.PartnerHelpLink) < *pulSize)
                 {
@@ -5384,7 +5384,7 @@ WiFiPersonalization_GetParamStringValue
                 }
 
         }
-        if( AnscEqualString(ParamName, "MSOLogo", TRUE))
+        if (strcmp(ParamName, "MSOLogo") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->WifiPersonal.MSOLogo) < *pulSize)
                 {
@@ -5398,7 +5398,7 @@ WiFiPersonalization_GetParamStringValue
                 }
 
         }
-        if( AnscEqualString(ParamName, "Title", TRUE))
+        if (strcmp(ParamName, "Title") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->WifiPersonal.Title) < *pulSize)
                 {
@@ -5412,7 +5412,7 @@ WiFiPersonalization_GetParamStringValue
                 }
 
         }
-	if( AnscEqualString(ParamName, "WelcomeMessage", TRUE))
+	if (strcmp(ParamName, "WelcomeMessage") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->WifiPersonal.WelcomeMessage) < *pulSize)
                 {
@@ -5447,7 +5447,7 @@ WiFiPersonalization_SetParamStringValue
 //   if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0') )
   // {
          /* check the parameter name and set the corresponding value */
-            if( AnscEqualString(ParamName, "PartnerHelpLink", TRUE) )
+            if (strcmp(ParamName, "PartnerHelpLink") == 0)
             {
                         if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.WiFiPersonalization.PartnerHelpLink",PartnerID, pString))
                         {
@@ -5482,7 +5482,7 @@ LocalUI_GetParamStringValue
         PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
         PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
 
-         if( AnscEqualString(ParamName, "MSOLogo", TRUE))
+         if (strcmp(ParamName, "MSOLogo") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->LocalUI.MSOLogo) < *pulSize)
                 {
@@ -5496,7 +5496,7 @@ LocalUI_GetParamStringValue
                 }
 
         }
-        if( AnscEqualString(ParamName, "DefaultLoginUsername", TRUE))
+        if (strcmp(ParamName, "DefaultLoginUsername") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->LocalUI.DefaultLoginUsername) < *pulSize)
                 {
@@ -5510,7 +5510,7 @@ LocalUI_GetParamStringValue
                 }
 
         }
-	if( AnscEqualString(ParamName, "DefaultLoginPassword", TRUE))
+	if (strcmp(ParamName, "DefaultLoginPassword") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->LocalUI.DefaultLoginPassword) < *pulSize)
                 {
@@ -5524,7 +5524,7 @@ LocalUI_GetParamStringValue
                 }
 
         }
-        if( AnscEqualString(ParamName, "MSOLogoTitle", TRUE))
+        if (strcmp(ParamName, "MSOLogoTitle") == 0)
         {
                 if ( AnscSizeOfString(pBindObj->LocalUI.MSOLogoTitle) < *pulSize)
                 {
@@ -5574,7 +5574,7 @@ LocalUI_GetParamBoolValue
         PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
         PCOSA_DATAMODEL_RDKB_UIBRANDING pBindObj =      & pMyObject->UiBrand;
 
-        if( AnscEqualString(ParamName, "HomeNetworkControl", TRUE))
+        if (strcmp(ParamName, "HomeNetworkControl") == 0)
         {
                  /* collect value */
                 *pBool = pBindObj->LocalUI.HomeNetworkControl;
@@ -5644,7 +5644,7 @@ SecureWebUI_GetParamBoolValue
 	
 	/* check the parameter name and return the corresponding value */
 
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         /*CID: 68633 Array compared against 0*/
@@ -5703,7 +5703,7 @@ SecureWebUI_SetParamBoolValue
  BOOL                        bValue
  )
 {
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         if( bValue == TRUE)
@@ -5775,7 +5775,7 @@ ULONG
 {
 
     /* Required for xPC sync */
-    if( AnscEqualString(ParamName, "LocalFqdn", TRUE))
+    if (strcmp(ParamName, "LocalFqdn") == 0)
     {
         /* collect value */
         char buf[64];
@@ -5831,7 +5831,7 @@ BOOL
  )
 {
 
-    if( AnscEqualString(ParamName, "LocalFqdn", TRUE))
+    if (strcmp(ParamName, "LocalFqdn") == 0)
     {
         if (syscfg_set(NULL, "SecureWebUI_LocalFqdn", pString) != 0)
         {
