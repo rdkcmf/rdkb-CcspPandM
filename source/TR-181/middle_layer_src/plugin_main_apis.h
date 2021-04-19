@@ -166,6 +166,9 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
 #if defined(DDNS_BROADBANDFORUM)
 #define COSA_DATAMODEL_DYNDNS_OID                               43
 #endif
+#ifdef INTEL_GRE_HOTSPOT
+#define COSA_DATAMODEL_IGRE_OID                                 44
+#endif
 
 
 /*
@@ -214,6 +217,7 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
     ANSC_HANDLE                  hHotspot;                                                  \
     ANSC_HANDLE                  hTSIP;                                                     \
     ANSC_HANDLE                  hFileTransfer;                                             \
+    ANSC_HANDLE                  hIGRE;                                                    \
     ANSC_HANDLE                  hLanMngm;                                                  \
     ANSC_HANDLE                  hXpc;                                                    \
     ANSC_HANDLE                  hOnboardLogging;                                                    \

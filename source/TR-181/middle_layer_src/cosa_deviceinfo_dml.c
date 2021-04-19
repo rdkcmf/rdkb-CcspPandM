@@ -977,19 +977,16 @@ DeviceInfo_GetParamStringValue
 		}
 		return 0;
     }
-
+#if !defined(_COSA_BCM_MIPS_) && !defined(_ENABLE_DSL_SUPPORT_)
 	/* Changes for EMS end here */
 	/*Changes for RDKB-6560*/
    	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CMTS_MAC", TRUE))
     		{
-                    #if defined(_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
-                    return -1;
-                    #else
 		    CosaDmlDiGetCMTSMac(NULL, pValue,pulSize);
         	    return 0;
-                    #endif
     		}
 	/*Changes for RDKB-6560 end*/
+#endif
 	/*Changes for RDKB-5878*/
 	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudPersonalizationURL", TRUE))
 	{
@@ -4169,6 +4166,7 @@ newNTP_SetParamBoolValue
     return:     TRUE if succeeded.
 
 **********************************************************************/
+#ifdef _MACSEC_SUPPORT_
 BOOL
 MACsecRequired_GetParamBoolValue
     (
@@ -4178,7 +4176,6 @@ MACsecRequired_GetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#ifdef _MACSEC_SUPPORT_
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if ( RETURN_ERR == platform_hal_GetMACsecEnable( ETHWAN_DEF_INTF_NUM, pBool )) {
@@ -4186,10 +4183,6 @@ MACsecRequired_GetParamBoolValue
         }
         return TRUE;
     }
-#else
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pBool);
-#endif
 
     return FALSE;
 }
@@ -4235,7 +4228,6 @@ MACsecRequired_SetParamBoolValue
     if (IsBoolSame(hInsContext, ParamName, bValue, MACsecRequired_GetParamBoolValue))
         return TRUE;
 
-#ifdef _MACSEC_SUPPORT_
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if ( RETURN_ERR == platform_hal_SetMACsecEnable( ETHWAN_DEF_INTF_NUM, bValue )) {
@@ -4243,11 +4235,9 @@ MACsecRequired_SetParamBoolValue
         }
         return TRUE;
     }
-#endif
-
     return FALSE;
 }
-
+#endif
 
 
 /***********************************************************************
@@ -8260,12 +8250,10 @@ Feature_GetParamBoolValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and return the corresponding value */
-
+#if defined(MOCA_HOME_ISOLATION)
     if( AnscEqualString(ParamName, "HomeNetworkIsolation", TRUE))
     {
-#if defined(MOCA_HOME_ISOLATION)
         /* collect value */
-
     char *strValue = NULL;
     int retPsmGet = CCSP_SUCCESS;
 
@@ -8276,12 +8264,9 @@ Feature_GetParamBoolValue
     }
     else
         *pBool = FALSE;
-#else        
-        *pBool = FALSE;
-#endif
      return TRUE;   
     }
-
+#endif
     if( AnscEqualString(ParamName, "CodebigSupport", TRUE))
     {
          char value[8];
@@ -8352,9 +8337,9 @@ Feature_GetParamBoolValue
     }
 #endif
 
+#if defined(_XB6_PRODUCT_REQ_)   
    if(AnscEqualString(ParamName, "BLERadio", TRUE))
     {
-#if defined(_XB6_PRODUCT_REQ_)   
         BLE_Status_e status;
         if(!ble_GetStatus(&status))
         {
@@ -8369,12 +8354,8 @@ Feature_GetParamBoolValue
         else {
             CcspTraceWarning(("%s: ble_GetStatus failed\n", __func__));
 	    }
-#else
-        *pBool = FALSE;
-        return TRUE;
-#endif
     }
-
+#endif
     if( AnscEqualString(ParamName, "Xupnp", TRUE))
     {
 	 char value[8];
@@ -8391,9 +8372,9 @@ Feature_GetParamBoolValue
          }
     }
 
+#ifdef _BRIDGE_UTILS_BIN_ 
     if( AnscEqualString(ParamName, "BridgeUtilsEnable", TRUE))
     {
-        #ifdef _BRIDGE_UTILS_BIN_ 
            char value[8] = {0};
            syscfg_get(NULL, "bridge_util_enable", value, sizeof(value));
            if( value[0] != '\0' )
@@ -8404,15 +8385,11 @@ Feature_GetParamBoolValue
                    *pBool = FALSE;
            }
            return TRUE;
-         #else
-                CcspTraceError(("bridge utils not supported ..!! \n",__FUNCTION__));
-                return FALSE;
-
-         #endif
     }
-
+#endif
     return FALSE;
 }
+
 
 BOOL
 SyndicationFlowControl_GetParamBoolValue
@@ -9343,10 +9320,9 @@ Feature_SetParamBoolValue
 
     }
 #endif
-
+#if defined (_XB6_PRODUCT_REQ_)
     if( AnscEqualString(ParamName, "BLERadio", TRUE))
     {
-#if defined (_XB6_PRODUCT_REQ_)
        BLE_Status_e status;
        if(bValue == TRUE)
        {
@@ -9376,10 +9352,9 @@ Feature_SetParamBoolValue
        else {
             CcspTraceWarning(("%s: ble_Enable failed\n", __func__));
        }
-#else
-       return FALSE;
-#endif
     }
+#endif
+
     if( AnscEqualString(ParamName, "Xupnp", TRUE))
     {
        if ( bValue == TRUE)
@@ -9417,11 +9392,9 @@ Feature_SetParamBoolValue
        }
        return TRUE;
     }
-
+#ifdef _BRIDGE_UTILS_BIN_ 
     if( AnscEqualString(ParamName, "BridgeUtilsEnable", TRUE))
     {
-         #ifdef _BRIDGE_UTILS_BIN_ 
-
             if ( bValue == TRUE)
             {
                if (syscfg_set(NULL, "bridge_util_enable", "true") != 0)
@@ -9448,12 +9421,8 @@ Feature_SetParamBoolValue
 
             }        
             return TRUE;
-        #else
-                CcspTraceError(("bridge utils not supported ..!! \n",__FUNCTION__));
-                return FALSE;
-        #endif
     }
-
+#endif
     return FALSE;
 }
 
@@ -10637,6 +10606,7 @@ BOOL*                       pBool
 
 **********************************************************************/
 
+#if !defined(DISABLE_RBUS)
 BOOL
 RBUS_SetParamBoolValue
 (
@@ -10647,7 +10617,6 @@ BOOL                        bValue
 {
     if (IsBoolSame(hInsContext, ParamName, bValue, RBUS_GetParamBoolValue))
         return TRUE;
-#if !defined(DISABLE_RBUS)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         if (bValue == 0)
@@ -10664,11 +10633,8 @@ BOOL                        bValue
         }
     }
     return FALSE;
-#else
-    CcspTraceInfo(("RBUS is forcefully disabled\n"));
-    return TRUE;
-#endif
 }
+#endif
 
 
 /**********************************************************************
@@ -11387,7 +11353,7 @@ IPv6onLnF_GetParamBoolValue
     return FALSE;
 }
 
- 
+ #if defined (FEATURE_SUPPORT_INTERWORKING)
 /**********************************************************************
 
     caller:     owner of this object
@@ -11428,7 +11394,6 @@ WiFiInterworking_GetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined (FEATURE_SUPPORT_INTERWORKING)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 	/* Collect Value */
@@ -11446,11 +11411,6 @@ WiFiInterworking_GetParamBoolValue
     }
 
     return FALSE;
-#else
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pBool);
-    return FALSE;
-#endif
 }
 
 /**********************************************************************
@@ -11494,7 +11454,6 @@ WiFiInterworking_SetParamBoolValue
     if (IsBoolSame(hInsContext, ParamName, bValue, WiFiInterworking_GetParamBoolValue))
         return TRUE;
 
-#if defined (FEATURE_SUPPORT_INTERWORKING)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 	char str[2];
@@ -11581,11 +11540,10 @@ WiFiInterworking_SetParamBoolValue
 	return TRUE;
     }
     return FALSE;
-#else
-    return FALSE;
-#endif
 }
+#endif
 
+#if defined (FEATURE_SUPPORT_PASSPOINT)
 /**********************************************************************
 
     caller:     owner of this object
@@ -11626,7 +11584,6 @@ WiFiPasspoint_GetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined (FEATURE_SUPPORT_PASSPOINT)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 	/* Collect Value */
@@ -11644,11 +11601,6 @@ WiFiPasspoint_GetParamBoolValue
     }
 
     return FALSE;
-#else
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pBool);
-    return FALSE;
-#endif
 }
 
 /**********************************************************************
@@ -11691,7 +11643,6 @@ WiFiPasspoint_SetParamBoolValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
 
-#if defined (FEATURE_SUPPORT_PASSPOINT)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 	char str[2];
@@ -11762,13 +11713,10 @@ WiFiPasspoint_SetParamBoolValue
     return TRUE;
     }
     return FALSE;
-#else
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(bValue);
-    return FALSE;
-#endif
 }
+#endif
 
+#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
 /**********************************************************************
     caller:     owner of this object
 
@@ -11797,7 +11745,7 @@ WiFiPasspoint_SetParamBoolValue
 
      return:     TRUE if succeeded.
 **********************************************************************/
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
+
 BOOL
 RadiusGreyList_GetParamBoolValue
     (
@@ -11823,7 +11771,6 @@ RadiusGreyList_GetParamBoolValue
     }
     return FALSE;
 }
-#endif
 
 /**********************************************************************
 
@@ -11854,7 +11801,6 @@ RadiusGreyList_GetParamBoolValue
 
      return:     TRUE if succeeded.
 **********************************************************************/
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
 BOOL
 RadiusGreyList_SetParamBoolValue
     (
@@ -13337,7 +13283,7 @@ EthernetWAN_GetParamStringValue
                 -1 if not supported.
 
 **********************************************************************/
-
+#ifdef _MACSEC_SUPPORT_
 ULONG
 EthernetWAN_MACsec_GetParamStringValue
     (
@@ -13349,7 +13295,6 @@ EthernetWAN_MACsec_GetParamStringValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and return the corresponding value */
-#ifdef _MACSEC_SUPPORT_
     if( AnscEqualString(ParamName, "OperationalStatus", TRUE))
     {
         BOOL flag;
@@ -13361,14 +13306,9 @@ EthernetWAN_MACsec_GetParamStringValue
            return 0;
         }
     }
-#else
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pValue);
-    UNREFERENCED_PARAMETER(pUlSize);
-#endif //_MACSEC_SUPPORT_
     return 0;
 }
-
+#endif
 
 /* Maintenance window can be customized for bci routers */
 
@@ -14242,6 +14182,7 @@ Logging_SetParamUlongValue
     return:     TRUE if succeeded.
 
 **********************************************************************/
+#if defined(_COSA_INTEL_XB3_ARM_) || defined(INTEL_PUMA7)
 BOOL
 SwitchToDibbler_GetParamBoolValue
     (
@@ -14252,8 +14193,6 @@ SwitchToDibbler_GetParamBoolValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
 	/* This Get API is only for XB3,AXB6 devices */
-#if defined(_COSA_INTEL_XB3_ARM_) || defined(INTEL_PUMA7)
-
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
@@ -14277,10 +14216,6 @@ SwitchToDibbler_GetParamBoolValue
 
         return TRUE;
     }
-#else
-    UNREFERENCED_PARAMETER(pBool);
-    UNREFERENCED_PARAMETER(ParamName);
-#endif
     return FALSE;
 }
 
@@ -14331,8 +14266,6 @@ SwitchToDibbler_SetParamBoolValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
      /* This set API is only for XB3,AXB6 devices */
-#if defined(_COSA_INTEL_XB3_ARM_) || defined(INTEL_PUMA7)
-
 if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         char buf[8];
@@ -14409,14 +14342,10 @@ if( AnscEqualString(ParamName, "Enable", TRUE))
 
         return TRUE;
     }
-#else
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(bValue);
-#endif
    return FALSE;
 
 }
-
+#endif
 /**********************************************************************
 
     caller:     owner of this object
@@ -14653,9 +14582,9 @@ Syndication_GetParamStringValue
 		 return 1;
 	 }
      }
+#if defined(_COSA_BCM_ARM_) && !defined(_CBR_PRODUCT_REQ_)
     if( AnscEqualString(ParamName, "CMVoiceImageSelect", TRUE))
     {
-#if defined(_COSA_BCM_ARM_) && !defined(_CBR_PRODUCT_REQ_)
 	char buf[64] = { 0 };
 	if(0 == syscfg_get(NULL, "CMVoiceImg", buf, sizeof(buf)))
 	{
@@ -14675,11 +14604,8 @@ Syndication_GetParamStringValue
 		CcspTraceError(("syscfg_get for CMVoiceImg failed\n"));
 		return 1;
 	}
-#else
-	return 0;
-#endif
     }
-
+#endif
     return -1;
 }
 
@@ -14896,6 +14822,7 @@ Syndication_SetParamStringValue
     return:     TRUE if succeeded.
 
 **********************************************************************/
+#if defined(_COSA_INTEL_XB3_ARM_) || defined(INTEL_PUMA7)
 BOOL
 SwitchToUDHCPC_GetParamBoolValue
     (
@@ -14906,8 +14833,6 @@ SwitchToUDHCPC_GetParamBoolValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
 	/* This Get API is only for XB3,AXB6 devices */
-#if defined(_COSA_INTEL_XB3_ARM_) || defined(INTEL_PUMA7)
-
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         /* collect value */
@@ -14931,10 +14856,6 @@ SwitchToUDHCPC_GetParamBoolValue
 
         return TRUE;
     }
-#else
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pBool);
-#endif
     return FALSE;
 }
 
@@ -14978,8 +14899,6 @@ SwitchToUDHCPC_SetParamBoolValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
      /* This set API is only for XB3,AXB6 devices */
-
-#if defined(_COSA_INTEL_XB3_ARM_) || defined(INTEL_PUMA7)
 if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         char buf[8];
@@ -15053,13 +14972,9 @@ if( AnscEqualString(ParamName, "Enable", TRUE))
 
         return TRUE;
     }
-#else
-   UNREFERENCED_PARAMETER(ParamName);
-   UNREFERENCED_PARAMETER(bValue);
-#endif
    return FALSE;
 }
-
+#endif
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -18506,7 +18421,7 @@ MessageBusSource_SetParamBoolValue
 
 
 **********************************************************************/
-
+#ifdef MTA_TR104SUPPORT
 BOOL
 TR104_GetParamBoolValue
     (
@@ -18518,7 +18433,6 @@ TR104_GetParamBoolValue
     UNREFERENCED_PARAMETER(hInsContext);
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-#ifdef MTA_TR104SUPPORT
         char value[8] = {'\0'};
         if( syscfg_get(NULL, "TR104Enable", value, sizeof(value)) == 0 )
         {
@@ -18533,11 +18447,6 @@ TR104_GetParamBoolValue
         {
             CcspTraceError(("syscfg_get failed for TR104Enable\n"));
         }
-#else
-        *pBool = FALSE;
-        CcspTraceWarning(("TR104 is not supported in this build\n"));
-        return TRUE;
-#endif
     }
   return FALSE;
 }
@@ -18586,7 +18495,6 @@ TR104_SetParamBoolValue
 
   if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-#ifdef MTA_TR104SUPPORT
         char buf[8] = {'\0'};
         snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
         if( syscfg_set(NULL, "TR104Enable", buf) != 0 )
@@ -18604,12 +18512,10 @@ TR104_SetParamBoolValue
                  CcspTraceError(("syscfg_commit failed for TR104Enable \n"));
             }
         }
-#else
-        return FALSE;
-#endif
     }
   return FALSE;
 }
+#endif
 
 /**********************************************************************
 
@@ -18774,7 +18680,7 @@ UPnPRefactor_SetParamBoolValue
 
 
 **********************************************************************/
-
+#ifdef COLUMBO_HWTEST
 BOOL
 HwHealthTestEnable_GetParamBoolValue
 
@@ -18788,7 +18694,6 @@ HwHealthTestEnable_GetParamBoolValue
     UNREFERENCED_PARAMETER(hInsContext);
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-#ifdef COLUMBO_HWTEST
         char value[8] = {'\0'};
         if( syscfg_get(NULL, "hwHealthTest", value, sizeof(value)) == 0 )
         {
@@ -18805,9 +18710,6 @@ HwHealthTestEnable_GetParamBoolValue
         {
             CcspTraceError(("syscfg_get failed for hwHealthTest Enable\n"));
         }
-#else
-        *pBool = FALSE;
-#endif
     }
     return FALSE;
 }
@@ -18856,7 +18758,6 @@ HwHealthTestEnable_SetParamBoolValue
 
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-#ifdef COLUMBO_HWTEST
         char buf[8] = {'\0'};
         snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
         if( syscfg_set(NULL, "hwHealthTest", buf) != 0 )
@@ -18874,9 +18775,6 @@ HwHealthTestEnable_SetParamBoolValue
                  CcspTraceError(("syscfg_commit failed for hwHealthTest Enable \n"));
             }
         }
-#else
-        return FALSE;
-#endif
     }
     return FALSE;
 }
@@ -18924,13 +18822,10 @@ HwHealthTest_GetParamUlongValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#ifdef COLUMBO_HWTEST
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
-#endif
 
     if( AnscEqualString(ParamName, "cpuThreshold", TRUE))
     {
-#ifdef COLUMBO_HWTEST
         *puLong = pMyObject->HwHealtTestPTR.CPUThreshold;
         if(0 == *puLong)
         {
@@ -18938,14 +18833,10 @@ HwHealthTest_GetParamUlongValue
             *puLong = DEFAULT_HWST_PTR_CPU_THRESHOLD;
         }
         return TRUE;
-#else
-        *puLong = 0;
-#endif
     }
 
     if( AnscEqualString(ParamName, "dramThreshold", TRUE))
     {
-#ifdef COLUMBO_HWTEST
         *puLong = pMyObject->HwHealtTestPTR.DRAMThreshold;
         if(0 == *puLong)
         {
@@ -18953,9 +18844,6 @@ HwHealthTest_GetParamUlongValue
             *puLong = DEFAULT_HWST_PTR_DRAM_THRESHOLD;
         }
         return TRUE;
-#else
-        *puLong = 0;
-#endif
     }
     return FALSE;
 }
@@ -19008,27 +18896,21 @@ HwHealthTest_SetParamUlongValue
         return FALSE;
     }
 
-#ifdef COLUMBO_HWTEST
     if(GetAvailableSpace_tmp() < HWSELFTEST_START_MIN_SPACE)
     {
         CcspTraceError(("\nNot enough space in DRAM to save the threshold value in .hwselftest_settings file. Exit\n"));
         return FALSE;
     }
-#endif
 
     //Check if the new value is same as the old. If so, it is
     //not required to update settings file.
     if (IsUlongSame(hInsContext, ParamName, uLong, HwHealthTest_GetParamUlongValue))
         return TRUE;
 
-#ifdef COLUMBO_HWTEST
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
-#endif
 
     if( AnscEqualString(ParamName, "cpuThreshold", TRUE))
     {
-#ifdef COLUMBO_HWTEST
-
         //Threshold value should be in range as per the requirement in COLBO-132
         if( (uLong >= 1) && ( uLong <= 95))
         {
@@ -19044,15 +18926,10 @@ HwHealthTest_SetParamUlongValue
         {
             return FALSE;
         }
-#else
-        return FALSE;
-#endif
     }
 
     if( AnscEqualString(ParamName, "dramThreshold", TRUE))
     {
-#ifdef COLUMBO_HWTEST
-
         //Threshold value should be in range as per the requirement in COLBO-132
         if( uLong >= 20 )
         {
@@ -19067,9 +18944,6 @@ HwHealthTest_SetParamUlongValue
         {
             return FALSE;
         }
-#else
-        return FALSE;
-#endif
     }
     return FALSE;
 }
@@ -19119,13 +18993,9 @@ HwHealthTestPTREnable_GetParamBoolValue
 
     if( AnscEqualString(ParamName, "enable", TRUE))
     {
-#ifdef COLUMBO_HWTEST
         PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
         *pBool = pMyObject->HwHealtTestPTR.PTREnable;
         return TRUE;
-#else
-        *pBool = FALSE;
-#endif
     }
     return FALSE;
 }
@@ -19178,21 +19048,17 @@ HwHealthTestPTREnable_SetParamBoolValue
         return FALSE;
     }
 
-#ifdef COLUMBO_HWTEST
     if(GetAvailableSpace_tmp() < HWSELFTEST_START_MIN_SPACE)
     {
         CcspTraceError(("\nNot enough space in DRAM to enable PTR. Exit\n"));
         return FALSE;
     }
-#endif
 
     if (IsBoolSame(hInsContext, ParamName, bValue, HwHealthTestPTREnable_GetParamBoolValue))
         return TRUE;
 
     if( AnscEqualString(ParamName, "enable", TRUE))
     {
-#ifdef COLUMBO_HWTEST
-
         PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
         char buf[8] = {'\0'};
@@ -19256,11 +19122,7 @@ HwHealthTestPTREnable_SetParamBoolValue
             v_secure_system("/usr/bin/hwselftest_cronjobscheduler.sh false &");
         }
         return TRUE;
-
-#else
-        return FALSE;
-#endif
-    }
+   }
     return FALSE;
 }
 
@@ -19310,7 +19172,6 @@ HwHealthTestPTRFrequency_GetParamUlongValue
     UNREFERENCED_PARAMETER(hInsContext);
     if( AnscEqualString(ParamName, "frequency", TRUE))
     {
-#ifdef COLUMBO_HWTEST
         PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
         *puLong = pMyObject->HwHealtTestPTR.Frequency;
         if(0 == *puLong)
@@ -19319,9 +19180,6 @@ HwHealthTestPTRFrequency_GetParamUlongValue
             *puLong = DEFAULT_HWST_PTR_FREQUENCY;
         }
         return TRUE;
-#else
-        *puLong = 0;
-#endif
     }
     return FALSE;
 }
@@ -19374,13 +19232,11 @@ HwHealthTestPTRFrequency_SetParamUlongValue
         return FALSE;
     }
 
-#ifdef COLUMBO_HWTEST
     if(GetAvailableSpace_tmp() < HWSELFTEST_START_MIN_SPACE)
     {
         CcspTraceError(("\nNot enough space in DRAM to save the value for PTR frequency in .hwselftest_settings file. Exit\n"));
         return FALSE;
     }
-#endif
 
     //Check if the new value is same as the old. If so, it is
     //not required to update settings file.
@@ -19389,7 +19245,6 @@ HwHealthTestPTRFrequency_SetParamUlongValue
 
     if( AnscEqualString(ParamName, "frequency", TRUE))
     {
-#ifdef COLUMBO_HWTEST
         PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
         // Frequency should be minimum 2 minutes as per the requirement in COLBO 132.
@@ -19420,12 +19275,10 @@ HwHealthTestPTRFrequency_SetParamUlongValue
         {
             return FALSE;
         }
-#else
-        return FALSE;
-#endif
     }
     return FALSE;
 }
+#endif
 
 /**********************************************************************
 
@@ -19845,6 +19698,7 @@ MocaAccountIsolation_SetParamBoolValue
 
 **********************************************************************/
 
+#if defined (_XB6_PRODUCT_REQ_)
 BOOL
 CaptivePortalForNoCableRF_GetParamBoolValue
 
@@ -19855,7 +19709,6 @@ CaptivePortalForNoCableRF_GetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined (_XB6_PRODUCT_REQ_)
  if( AnscEqualString(ParamName, "Enable", TRUE))
     {
 	 char value[8];
@@ -19871,10 +19724,6 @@ CaptivePortalForNoCableRF_GetParamBoolValue
 
 	 return TRUE;
     }
-#else
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pBool);
-#endif
     return FALSE;
 }
 
@@ -19920,7 +19769,6 @@ CaptivePortalForNoCableRF_SetParamBoolValue
     )
 {
   UNREFERENCED_PARAMETER(hInsContext);
-#if defined (_XB6_PRODUCT_REQ_)
 
   if( AnscEqualString(ParamName, "Enable", TRUE))
     {
@@ -19940,12 +19788,9 @@ CaptivePortalForNoCableRF_SetParamBoolValue
 	  
 	  return TRUE;
     }
-#else
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(bValue);
-#endif
     return FALSE;
 }
+#endif
 
 /**
  *  RFC Features SecureWebUI
@@ -20543,12 +20388,11 @@ mTlsLogUpload_SetParamBoolValue
     return:     TRUE if succeeded.
 
 **********************************************************************/
-
+#if defined(_XB6_PRODUCT_REQ_) || defined(_XB7_PRODUCT_REQ_)
 BOOL
 XHFW_GetParamBoolValue ( ANSC_HANDLE hInsContext, char* ParamName, BOOL* pBool)
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(_XB6_PRODUCT_REQ_) || defined(_XB7_PRODUCT_REQ_)
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         char value[8] = {'\0'};
@@ -20563,10 +20407,6 @@ XHFW_GetParamBoolValue ( ANSC_HANDLE hInsContext, char* ParamName, BOOL* pBool)
             CcspTraceError(("syscfg_get failed for XHFW.Enable\n"));
         }
     }
-#else
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pBool);
-#endif
     return FALSE;
 }
 
@@ -20607,7 +20447,6 @@ XHFW_SetParamBoolValue (ANSC_HANDLE hInsContext, char* ParamName, BOOL bValue)
     UNREFERENCED_PARAMETER(hInsContext);
     BOOL result = FALSE;
 
-#if defined(_XB6_PRODUCT_REQ_) || defined(_XB7_PRODUCT_REQ_)
     if (AnscEqualString(ParamName, "Enable", TRUE))
     {
         char buf[8] = { '\0' };
@@ -20637,12 +20476,9 @@ XHFW_SetParamBoolValue (ANSC_HANDLE hInsContext, char* ParamName, BOOL bValue)
             v_secure_system("systemctl stop zilker");
         }
     }
-#else
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(bValue);
-#endif
     return result;
 }
+#endif
 
 /**
  *  RFC Features NonRootSupport

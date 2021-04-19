@@ -79,7 +79,6 @@ typedef  struct
 _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
 {
     COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT 
-    
 #ifdef CONFIG_INTERNET2P0
     BOOL		bWiFiConfigued;	
     BOOL		bCaptivePortalEnable;	

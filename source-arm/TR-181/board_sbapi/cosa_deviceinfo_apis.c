@@ -5007,13 +5007,14 @@ int setMultiProfileXdnsConfig(BOOL bValue)
 }
 
 #endif
+
+#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
 BOOL
 CosaDmlSetRadiusGreyListEnable
     (
         BOOL        bValue
     )
 {
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
     parameterValStruct_t pVal[1];
     char                 paramName[256] = "Device.WiFi.X_RDKCENTRAL-COM_EnableRadiusGreyList";
     char                 compName[256]  = "eRT.com.cisco.spvtg.ccsp.wifi";
@@ -5063,8 +5064,6 @@ CosaDmlSetRadiusGreyListEnable
        CcspTraceInfo(("%s - %d - Triggered Firewall Restart\n", __FUNCTION__, __LINE__));
        return TRUE;
     }
-#else 
-    UNREFERENCED_PARAMETER(bValue);
-#endif
     return FALSE;
 }
+#endif

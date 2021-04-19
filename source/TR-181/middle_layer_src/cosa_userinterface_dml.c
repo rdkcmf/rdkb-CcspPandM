@@ -521,16 +521,13 @@ RemoteAccess_GetParamBoolValue
         *pBool = pMyObject->RaCfg.HttpsEnable;
         return TRUE;
     }
-
+#if !defined(_CBR_PRODUCT_REQ_)
     if( AnscEqualString(ParamName, "TelnetEnable", TRUE))
     {
-	#if defined(_CBR_PRODUCT_REQ_)
-            return FALSE;
-	#endif
         *pBool = pMyObject->RaCfg.TelnetEnable;
         return TRUE;
     }
-
+#endif
     if( AnscEqualString(ParamName, "SSHEnable", TRUE))
     {
         *pBool = pMyObject->RaCfg.SSHEnable;
@@ -815,16 +812,13 @@ RemoteAccess_SetParamBoolValue
         CcspTraceNotice(("RA_HTTPS_split :Feature Switch Remote Access HTTPS %d\n",bValue));
         return TRUE;
     }
-
+#if !defined(_CBR_PRODUCT_REQ_)
     if( AnscEqualString(ParamName, "TelnetEnable", TRUE))
     {
-	#if defined(_CBR_PRODUCT_REQ_)
-            return FALSE;
-        #endif
         pMyObject->RaCfg.TelnetEnable = bValue;
         return TRUE;
     }
-
+#endif
     if( AnscEqualString(ParamName, "SSHEnable", TRUE))
     {
         pMyObject->RaCfg.SSHEnable = bValue;

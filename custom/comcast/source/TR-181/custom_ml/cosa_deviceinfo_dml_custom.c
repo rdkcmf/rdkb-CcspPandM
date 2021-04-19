@@ -214,7 +214,6 @@ DeviceInfo_GetParamBoolValue_Custom
 
 	return TRUE;
     }
-
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -602,7 +601,6 @@ DeviceInfo_SetParamBoolValue_Custom
         return TRUE;
     }
 #endif
-
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }

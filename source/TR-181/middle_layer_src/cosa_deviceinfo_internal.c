@@ -159,7 +159,6 @@ CosaDeviceInfoInitialize
 
     /* Initiation all functions */
     _ansc_memset(pMyObject->ProvisioningCode, 0, 64);
-
     CosaDmlDiInit(NULL, NULL);
     CosaDmlDiGetXfinityWiFiEnable(&pMyObject->bxfinitywifiEnable);
 	CosaDmlDiGetCloudCapable(&pMyObject->bCloudCapable);

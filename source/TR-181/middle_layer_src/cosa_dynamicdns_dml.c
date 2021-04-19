@@ -1,5 +1,5 @@
 
-
+#if defined(DDNS_BROADBANDFORUM)
 #include "ansc_platform.h"
 #include "cosa_dynamicdns_dml.h"
 #include "cosa_dynamicdns_internal.h"
@@ -31,19 +31,12 @@ DynamicDNS_GetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     if (AnscEqualString(ParamName, "X_RDK-COM_Enable", TRUE))
     {
         *pBool = CosaDmlDynamicDns_GetEnable();
         return TRUE;
     }
     return FALSE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pBool); 
-    return TRUE;
-#endif
 }
 
 ULONG
@@ -57,7 +50,6 @@ DynamicDNS_GetParamStringValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(puLong);
-#if defined(DDNS_BROADBANDFORUM)
     char supportedServices[1024] = {0};
     if (AnscEqualString(ParamName, "SupportedServices", TRUE))
     {
@@ -68,13 +60,6 @@ DynamicDNS_GetParamStringValue
         }
     }
     return -1;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pValue); 
-    return  0;
-#endif
 }
 
 BOOL
@@ -86,7 +71,6 @@ DynamicDNS_SetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     if (AnscEqualString(ParamName, "X_RDK-COM_Enable", TRUE))
     {
         if (!CosaDmlDynamicDns_SetEnable(bValue))
@@ -95,12 +79,6 @@ DynamicDNS_SetParamBoolValue
         }
     }
     return FALSE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(bValue);
-    return TRUE;
-#endif
 }
 
 BOOL
@@ -163,14 +141,9 @@ DDNSClient_GetEntryCount
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     COSA_DATAMODEL_TR181_DDNS *pDynamicDns = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
 
     return AnscSListQueryDepth(&pDynamicDns->DDNSClientList);
-#endif
-#if !defined(DDNS_BROADBANDFORUM) 
-   return 0;
-#endif
 
 }
 
@@ -183,7 +156,6 @@ DDNSClient_GetEntry
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     COSA_DATAMODEL_TR181_DDNS *pDynamicDns = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry = NULL;
@@ -196,13 +168,7 @@ DDNSClient_GetEntry
     }
 
     return pSLinkEntry;
-#endif
 
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(nIndex);
-    UNREFERENCED_PARAMETER(pInsNumber); 
-    return 0;
-#endif
 }
 
 ANSC_HANDLE
@@ -213,7 +179,6 @@ DDNSClient_AddEntry
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     COSA_DATAMODEL_TR181_DDNS *pDynamicDns     = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT  pLinkObj  = NULL;
     COSA_DML_DDNS_CLIENT  *pClientEntry  = NULL;
@@ -260,12 +225,6 @@ DDNSClient_AddEntry
 
     *pInsNumber = pLinkObj->InstanceNumber;
     return pLinkObj;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(pInsNumber); 
-    return 0;
-#endif
 }
 
 ULONG
@@ -276,7 +235,6 @@ DDNSClient_DelEntry
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     COSA_DATAMODEL_TR181_DDNS        *pDynamicDns  = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT  pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     COSA_DML_DDNS_CLIENT       *pClientEntry = (COSA_DML_DDNS_CLIENT *)pLinkObj->hContext;
@@ -305,11 +263,6 @@ DDNSClient_DelEntry
     AnscFreeMemory(pLinkObj);
 
     return returnStatus;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInstance); 
-    return 0;
-#endif
 }
 
 BOOL
@@ -320,7 +273,7 @@ DDNSClient_GetParamBoolValue
         BOOL*                       pBool
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
+
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_CLIENT         *pClientEntry = (COSA_DML_DDNS_CLIENT *)pLinkObj->hContext;
 
@@ -331,13 +284,6 @@ DDNSClient_GetParamBoolValue
         return TRUE;
     }
     return FALSE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pBool); 
-    return TRUE;
-#endif
 }
 BOOL
 DDNSClient_GetParamUlongValue
@@ -347,7 +293,6 @@ DDNSClient_GetParamUlongValue
         ULONG*                      puLong
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_CLIENT         *pClientEntry = (COSA_DML_DDNS_CLIENT *)pLinkObj->hContext;
 
@@ -372,13 +317,6 @@ DDNSClient_GetParamUlongValue
     }
 
     return FALSE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(puLong); 
-    return TRUE;
-#endif
 }
 
 ULONG
@@ -391,7 +329,6 @@ DDNSClient_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(pUlSize);
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_CLIENT         *pClientEntry = (COSA_DML_DDNS_CLIENT *)pLinkObj->hContext;
 
@@ -421,14 +358,6 @@ DDNSClient_GetParamStringValue
         return 0;
     }
     return -1;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pValue);  
-    return 0;
-#endif
 }
 
 BOOL
@@ -439,7 +368,6 @@ DDNSClient_SetParamBoolValue
         BOOL                        bValue
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_CLIENT         *pClientEntry = (COSA_DML_DDNS_CLIENT *)pLinkObj->hContext;
 
@@ -449,13 +377,7 @@ DDNSClient_SetParamBoolValue
         return TRUE;
     }
     return FALSE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(bValue);
-    return TRUE;
-#endif
+
 }
 
 BOOL
@@ -466,7 +388,6 @@ DDNSClient_SetParamStringValue
         char*                       strValue
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_CLIENT         *pClientEntry = (COSA_DML_DDNS_CLIENT *)pLinkObj->hContext;
 
@@ -496,14 +417,6 @@ DDNSClient_SetParamStringValue
         return TRUE;
     }
     return FALSE;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(strValue); 
-    return TRUE;
-#endif
 }
 
 BOOL
@@ -514,7 +427,6 @@ DDNSClient_Validate
         ULONG*                      puLength
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_CLIENT         *pClientEntry = (COSA_DML_DDNS_CLIENT *)pLinkObj->hContext;
     PCOSA_DATAMODEL_TR181_DDNS   pDynamicDns   = (PCOSA_DATAMODEL_TR181_DDNS)g_pCosaBEManager->hDynamicDns;
@@ -542,14 +454,6 @@ DDNSClient_Validate
     }
 
     return TRUE;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(pReturnParamName);
-    UNREFERENCED_PARAMETER(puLength); 
-    return TRUE;
-#endif
 }
 
 ULONG
@@ -558,7 +462,6 @@ DDNSClient_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_CLIENT         *pClientEntry = (COSA_DML_DDNS_CLIENT *)pLinkObj->hContext;
     PCOSA_DATAMODEL_TR181_DDNS   pDynamicDns   = (PCOSA_DATAMODEL_TR181_DDNS)g_pCosaBEManager->hDynamicDns;
@@ -582,11 +485,6 @@ DDNSClient_Commit
     }
 
     return 0;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext); 
-    return 0;
-#endif
 }
 
 ULONG
@@ -595,7 +493,6 @@ DDNSClient_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_CLIENT         *pClientEntry = (COSA_DML_DDNS_CLIENT *)pLinkObj->hContext;
 
@@ -604,11 +501,6 @@ DDNSClient_Rollback
         return 0;
     }
     return -1;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext); 
-    return 0;
-#endif
 }
 
 /***********************************************************************
@@ -639,14 +531,9 @@ DDNSHostname_GetEntryCount
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     COSA_DATAMODEL_TR181_DDNS *pDynamicDns = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
 
     return AnscSListQueryDepth(&pDynamicDns->DDNSHostList); //Hard-coded to 1,as maximum instance will be always 1
-#endif
-#if !defined(DDNS_BROADBANDFORUM) 
-  return 0;
-#endif
 }
 
 ANSC_HANDLE
@@ -658,7 +545,6 @@ DDNSHostname_GetEntry
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     COSA_DATAMODEL_TR181_DDNS *pDynamicDns = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry = NULL;
@@ -671,13 +557,6 @@ DDNSHostname_GetEntry
     }
 
     return pSLinkEntry;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM) 
-    UNREFERENCED_PARAMETER(nIndex);
-    UNREFERENCED_PARAMETER(pInsNumber);
-    return 0;
-#endif
 }
 
 ANSC_HANDLE
@@ -688,7 +567,6 @@ DDNSHostname_AddEntry
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     COSA_DATAMODEL_TR181_DDNS *pDynamicDns     = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT  pLinkObj  = NULL;
     COSA_DML_DDNS_HOST  *pHostEntry      = NULL;
@@ -737,12 +615,6 @@ DDNSHostname_AddEntry
 
     *pInsNumber = pLinkObj->InstanceNumber;
     return  pLinkObj;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(pInsNumber); 
-    return 0;
-#endif
 }
 
 ULONG
@@ -753,7 +625,6 @@ DDNSHostname_DelEntry
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     COSA_DATAMODEL_TR181_DDNS        *pDynamicDns  = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT  pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     ANSC_STATUS                returnStatus  = ANSC_STATUS_SUCCESS;
@@ -780,12 +651,6 @@ DDNSHostname_DelEntry
     AnscFreeMemory(pLinkObj->hContext);
     AnscFreeMemory(pLinkObj);
     return returnStatus;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInstance);   
-    return 0;
-#endif
 }
 
 BOOL
@@ -796,7 +661,6 @@ DDNSHostname_GetParamBoolValue
         BOOL*                       pBool
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_HOST           *pHostEntry   = (COSA_DML_DDNS_HOST *)pLinkObj->hContext;
     CosaDmlDynamicDns_Host_GetConf(pHostEntry->InstanceNumber,pHostEntry);
@@ -807,14 +671,6 @@ DDNSHostname_GetParamBoolValue
         return TRUE;
     }
     return FALSE;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pBool); 
-    return TRUE;
-#endif
 }
 
 BOOL
@@ -825,7 +681,6 @@ DDNSHostname_GetParamUlongValue
         ULONG*                      puLong
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_HOST           *pHostEntry   = (COSA_DML_DDNS_HOST *)pLinkObj->hContext;
     CosaDmlDynamicDns_Host_GetConf(pHostEntry->InstanceNumber,pHostEntry);
@@ -841,14 +696,6 @@ DDNSHostname_GetParamUlongValue
     }
 
     return FALSE;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(puLong); 
-    return TRUE;
-#endif
 }
 
 ULONG
@@ -861,7 +708,6 @@ DDNSHostname_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(pUlSize);
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj        = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_HOST           *pHostEntry     = (COSA_DML_DDNS_HOST *)pLinkObj->hContext;
     CosaDmlDynamicDns_Host_GetConf(pHostEntry->InstanceNumber,pHostEntry);
@@ -880,14 +726,6 @@ DDNSHostname_GetParamStringValue
     }
 
     return -1;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pValue); 
-    return 0;
-#endif
 }
 
 BOOL
@@ -898,7 +736,6 @@ DDNSHostname_SetParamBoolValue
         BOOL                        bValue
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_HOST           *pHostEntry   = (COSA_DML_DDNS_HOST *)pLinkObj->hContext;
 
@@ -908,14 +745,6 @@ DDNSHostname_SetParamBoolValue
         return TRUE;
     }
     return FALSE;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(bValue); 
-   return TRUE;
-#endif
 }
 
 BOOL
@@ -926,7 +755,6 @@ DDNSHostname_SetParamStringValue
         char*                       strValue
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_HOST           *pHostEntry   = (COSA_DML_DDNS_HOST *)pLinkObj->hContext;
 
@@ -937,13 +765,6 @@ DDNSHostname_SetParamStringValue
     }
 
     return FALSE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(strValue); 
-   return TRUE;
-#endif
 }
 
 
@@ -955,7 +776,6 @@ DDNSHostname_Validate
         ULONG*                      puLength
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_HOST           *pHostEntry   = (COSA_DML_DDNS_HOST *)pLinkObj->hContext;
     errno_t                      rc            = -1;
@@ -971,14 +791,6 @@ DDNSHostname_Validate
     }
 
     return TRUE;
-#endif
-
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(pReturnParamName);
-    UNREFERENCED_PARAMETER(puLength); 
-    return TRUE;
-#endif
 }
 
 ULONG
@@ -987,7 +799,6 @@ DDNSHostname_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_HOST           *pHostEntry   = (COSA_DML_DDNS_HOST *)pLinkObj->hContext;
     PCOSA_DATAMODEL_TR181_DDNS     pDynamicDns   = (PCOSA_DATAMODEL_TR181_DDNS)g_pCosaBEManager->hDynamicDns;
@@ -1011,11 +822,6 @@ DDNSHostname_Commit
     }
 
     return 0;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    return 0;
-#endif
 }
 
 ULONG
@@ -1024,7 +830,6 @@ DDNSHostname_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_HOST           *pHostEntry   = (COSA_DML_DDNS_HOST *)pLinkObj->hContext;
 
@@ -1033,11 +838,6 @@ DDNSHostname_Rollback
         return 0;
     }
     return -1;
-#endif
-#if !defined(DDNS_BROADBANDFORUM) 
-    UNREFERENCED_PARAMETER(hInsContext);
-    return 0;
-#endif
 }
 
 /***********************************************************************
@@ -1066,14 +866,9 @@ DDNSServer_GetEntryCount
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_DATAMODEL_TR181_DDNS             pMyObject         = (PCOSA_DATAMODEL_TR181_DDNS)g_pCosaBEManager->hDynamicDns;
 
     return AnscSListQueryDepth(&pMyObject->DDNSServerList);
-#endif
-#if !defined(DDNS_BROADBANDFORUM) 
-    return 0;
-#endif
 }
 
 ANSC_HANDLE
@@ -1085,7 +880,6 @@ DDNSServer_GetEntry
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_DATAMODEL_TR181_DDNS         pMyObject         = (PCOSA_DATAMODEL_TR181_DDNS)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT        pLinkObj          = NULL;
     PSINGLE_LINK_ENTRY               pSLinkEntry       = NULL;
@@ -1098,12 +892,6 @@ DDNSServer_GetEntry
     }
 
     return pLinkObj;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(nIndex);
-    UNREFERENCED_PARAMETER(pInsNumber);
-    return 0;
-#endif
 }
 
 ANSC_HANDLE
@@ -1114,7 +902,6 @@ DDNSServer_AddEntry
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     COSA_DATAMODEL_TR181_DDNS        *pMyObject         = (COSA_DATAMODEL_TR181_DDNS *)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT      pLinkObj           = NULL;
     COSA_DML_DDNS_SERVER           *pDDNSServer       = NULL;
@@ -1160,11 +947,6 @@ DDNSServer_AddEntry
 
     *pInsNumber = pLinkObj->InstanceNumber;
     return pLinkObj;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(pInsNumber);
-    return 0;
-#endif
 }
 
 ULONG
@@ -1175,7 +957,6 @@ DDNSServer_DelEntry
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_DATAMODEL_TR181_DDNS   pMyObject     = (PCOSA_DATAMODEL_TR181_DDNS)g_pCosaBEManager->hDynamicDns;
     PCOSA_CONTEXT_LINK_OBJECT  pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     COSA_DML_DDNS_SERVER       *pDDNSServer  = (COSA_DML_DDNS_SERVER*)pLinkObj->hContext;
@@ -1199,11 +980,6 @@ DDNSServer_DelEntry
     }
 
     return returnStatus;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInstance);
-    return 0;
-#endif
 }
 
 BOOL
@@ -1214,7 +990,6 @@ DDNSServer_GetParamBoolValue
         BOOL*                       pBool
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT     pLinkObj     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER          *pDDNSServer = (COSA_DML_DDNS_SERVER*)pLinkObj->hContext;
 
@@ -1226,13 +1001,6 @@ DDNSServer_GetParamBoolValue
         return TRUE;
     }
     return FALSE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pBool);
-    return TRUE;
-#endif
 }
 
 BOOL
@@ -1243,7 +1011,6 @@ DDNSServer_GetParamUlongValue
         ULONG*                      puLong
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
 
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER         *pServerEntry = (COSA_DML_DDNS_SERVER *)pLinkObj->hContext;
@@ -1269,13 +1036,6 @@ DDNSServer_GetParamUlongValue
     }
 
     return FALSE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(puLong);
-    return TRUE;
-#endif
 }
 
 ULONG
@@ -1288,7 +1048,6 @@ DDNSServer_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(pUlSize);
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER            *pDDNSServer = (COSA_DML_DDNS_SERVER*)pLinkObj->hContext;
 
@@ -1323,13 +1082,6 @@ DDNSServer_GetParamStringValue
         return 0;
     }
     return -1;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pValue);
-    return 0;
-#endif
 }
 
 BOOL
@@ -1340,7 +1092,6 @@ DDNSServer_SetParamBoolValue
         BOOL                        pBool
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER          *pDDNSServer  = (COSA_DML_DDNS_SERVER*)pLinkObj->hContext;
 
@@ -1350,13 +1101,6 @@ DDNSServer_SetParamBoolValue
         return TRUE;
     }
     return FALSE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pBool);
-    return TRUE;
-#endif
 }
 
 BOOL
@@ -1367,7 +1111,6 @@ DDNSServer_SetParamStringValue
         char*                       strValue
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER           *pDDNSServer = (COSA_DML_DDNS_SERVER*)pLinkObj->hContext;
 
@@ -1397,13 +1140,6 @@ DDNSServer_SetParamStringValue
         return TRUE;
     }
     return FALSE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(strValue);
-    return TRUE;
-#endif
 }
 
 BOOL
@@ -1414,7 +1150,6 @@ DDNSServer_SetParamUlongValue
         ULONG                       uValue
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER         *pServerEntry = (COSA_DML_DDNS_SERVER *)pLinkObj->hContext;
 
@@ -1435,13 +1170,6 @@ DDNSServer_SetParamUlongValue
     }
 
     return FALSE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(uValue); 
-   return TRUE;
-#endif
 }
 
 BOOL
@@ -1452,7 +1180,6 @@ DDNSServer_Validate
         ULONG*                      puLength
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER           *pDDNSServer = (COSA_DML_DDNS_SERVER*)pLinkObj->hContext;
     char validateBuf[1024] = {0};
@@ -1492,13 +1219,6 @@ DDNSServer_Validate
     }
 
     return TRUE;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(pReturnParamName);
-    UNREFERENCED_PARAMETER(puLength);
-   return TRUE;
-#endif
 }
 
 ULONG
@@ -1507,7 +1227,6 @@ DDNSServer_Commit
         ANSC_HANDLE                 hInsContext
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER           *pDDNSServer = (COSA_DML_DDNS_SERVER*)pLinkObj->hContext;
     PCOSA_DATAMODEL_TR181_DDNS       pMyObject    = (PCOSA_DATAMODEL_TR181_DDNS)g_pCosaBEManager->hDynamicDns;
@@ -1531,11 +1250,6 @@ DDNSServer_Commit
         }
     }
     return 0;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext);
-    return 0;
-#endif
 }
 
 ULONG
@@ -1544,7 +1258,6 @@ DDNSServer_Rollback
         ANSC_HANDLE                 hInsContext
     )
 {
-#if defined(DDNS_BROADBANDFORUM)
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER           *pDDNSServer = (COSA_DML_DDNS_SERVER *)pLinkObj->hContext;
 
@@ -1553,11 +1266,6 @@ DDNSServer_Rollback
         return -1;
     }
     return 0;
-#endif
-#if !defined(DDNS_BROADBANDFORUM)
-    UNREFERENCED_PARAMETER(hInsContext); 
-    return 0;
-#endif
 }
-
+#endif
 

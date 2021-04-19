@@ -198,6 +198,7 @@ CosaDmlDhcpsARPing
     return:     TRUE if succeeded.
 
 **********************************************************************/
+#ifndef FEATURE_RDKB_WAN_MANAGER
 BOOL
 DHCPv4_GetParamBoolValue
     (
@@ -367,7 +368,7 @@ DHCPv4_GetParamStringValue
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
-#ifndef FEATURE_RDKB_WAN_MANAGER
+
 /***********************************************************************
 
  APIs for Object:

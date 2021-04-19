@@ -230,17 +230,14 @@ X_CISCO_COM_DeviceControl_GetParamBoolValue
             return FALSE;
         return TRUE;
     }
-
+#if !defined(_CBR_PRODUCT_REQ_)
     if (AnscEqualString(ParamName, "TelnetEnable", TRUE))
     {
-	#if defined(_CBR_PRODUCT_REQ_)
-            return FALSE;
-	#endif
         if (CosaDmlDcGetTelnetEnable(NULL, pBool) != ANSC_STATUS_SUCCESS)
             return FALSE;
         return TRUE;
     }
-
+#endif
     if (AnscEqualString(ParamName, "SSHEnable", TRUE))
     {
         if (CosaDmlDcGetSSHEnable(NULL, pBool) != ANSC_STATUS_SUCCESS)
@@ -899,12 +896,9 @@ X_CISCO_COM_DeviceControl_SetParamBoolValue
 
         return TRUE;
     }
-
+#if !defined(_CBR_PRODUCT_REQ_)
     if (AnscEqualString(ParamName, "TelnetEnable", TRUE))
     {
-	#if defined(_CBR_PRODUCT_REQ_)
-            return FALSE;
-        #endif
         pMyObject->TelnetEnable = bValue;
 
         retStatus = CosaDmlDcSetTelnetEnable(NULL, pMyObject->TelnetEnable);
@@ -913,7 +907,7 @@ X_CISCO_COM_DeviceControl_SetParamBoolValue
 
         return TRUE;
     }
-
+#endif
     if (AnscEqualString(ParamName, "SSHEnable", TRUE))
     {
         pMyObject->SSHEnable = bValue;

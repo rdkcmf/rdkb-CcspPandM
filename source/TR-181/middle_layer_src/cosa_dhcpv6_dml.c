@@ -155,6 +155,7 @@
     return:     TRUE if succeeded.
 
 **********************************************************************/
+#ifndef FEATURE_RDKB_WAN_MANAGER
 BOOL
 DHCPv6_GetParamBoolValue
     (
@@ -322,7 +323,7 @@ DHCPv6_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     return -1;
 }
-#ifndef FEATURE_RDKB_WAN_MANAGER
+
 /***********************************************************************
 
  APIs for Object:
@@ -3342,6 +3343,7 @@ ReceivedOption_GetParamStringValue
     return -1;
 }
 
+#ifdef _HUB4_PRODUCT_REQ_
 /**********************************************************************
 
     caller:     owner of this object
@@ -3384,16 +3386,12 @@ dhcp6c_mapt_mape_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "MapIsFMR", TRUE) )
     {
-#ifdef _HUB4_PRODUCT_REQ_
         char temp[32] = {0};
         commonSyseventGet(SYSEVENT_MAP_IS_FMR, temp, sizeof(temp));
         if( AnscEqualString(temp, "TRUE", TRUE))
             *pBool  = TRUE;
         else
             *pBool  = FALSE;
-#else
-        *pBool  = FALSE;
-#endif
         return TRUE;
     }
 
@@ -3440,51 +3438,33 @@ dhcp6c_mapt_mape_GetParamUlongValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#ifdef _HUB4_PRODUCT_REQ_
     char temp[64] = {0};
-#endif
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "MapEALen", TRUE) )
     {
-#ifdef _HUB4_PRODUCT_REQ_
         commonSyseventGet(SYSEVENT_MAP_EA_LEN, temp, sizeof(temp));
         *puLong  = strtoul(temp, NULL, 10);
-#else
-        *puLong  = 0;
-#endif
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "MapPSIDOffset", TRUE) )
     {
-#ifdef _HUB4_PRODUCT_REQ_
         commonSyseventGet(SYSEVENT_MAPT_PSID_OFFSET, temp, sizeof(temp));
         *puLong  = strtoul(temp, NULL, 10);
-#else
-        *puLong  = 0;
-#endif
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "MapPSIDLen", TRUE) )
     {
-#ifdef _HUB4_PRODUCT_REQ_
         commonSyseventGet(SYSEVENT_MAPT_PSID_LENGTH, temp, sizeof(temp));
         *puLong  = strtoul(temp, NULL, 10);
-#else
-        *puLong  = 0;
-#endif
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "MapPSID", TRUE) )
     {
-#ifdef _HUB4_PRODUCT_REQ_
         commonSyseventGet(SYSEVENT_MAPT_PSID_VALUE, temp, sizeof(temp));
         *puLong  = strtoul(temp, NULL, 10);
-#else
-        *puLong  = 0;
-#endif
         return TRUE;
     }
 
@@ -3540,15 +3520,10 @@ dhcp6c_mapt_mape_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-#ifdef _HUB4_PRODUCT_REQ_
     char temp[64] = {0};
-#else
-    UNREFERENCED_PARAMETER(pUlSize);
-#endif 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "MapTransportMode", TRUE) )
     {
-#ifdef _HUB4_PRODUCT_REQ_
         commonSyseventGet(SYSEVENT_MAP_TRANSPORT_MODE, temp, sizeof(temp));
         if ( AnscSizeOfString(temp) < *pUlSize)
         {
@@ -3560,15 +3535,10 @@ dhcp6c_mapt_mape_GetParamStringValue
             *pUlSize = AnscSizeOfString(temp)+1;
             return 1;
         }
-#else
-        AnscCopyString(pValue, "");
-        return 0;
-#endif
     }
 
     if( AnscEqualString(ParamName, "MapBRPrefix", TRUE) )
     {
-#ifdef _HUB4_PRODUCT_REQ_
         commonSyseventGet(SYSEVENT_MAP_BR_IPV6_PREFIX, temp, sizeof(temp));
         if ( AnscSizeOfString(temp) < *pUlSize)
         {
@@ -3580,15 +3550,10 @@ dhcp6c_mapt_mape_GetParamStringValue
             *pUlSize = AnscSizeOfString(temp)+1;
             return 1;
         }
-#else
-        AnscCopyString(pValue, "");
-        return 0;
-#endif
     }
 
     if( AnscEqualString(ParamName, "MapRuleIPv4Prefix", TRUE) )
     {
-#ifdef _HUB4_PRODUCT_REQ_
         commonSyseventGet(SYSEVENT_MAP_RULE_IPADDRESS, temp, sizeof(temp));
         if ( AnscSizeOfString(temp) < *pUlSize)
         {
@@ -3600,15 +3565,10 @@ dhcp6c_mapt_mape_GetParamStringValue
             *pUlSize = AnscSizeOfString(temp)+1;
             return 1;
         }
-#else
-        AnscCopyString(pValue, "");
-        return 0;
-#endif
     }
 
     if( AnscEqualString(ParamName, "MapRuleIPv6Prefix", TRUE) )
     {
-#ifdef _HUB4_PRODUCT_REQ_
         commonSyseventGet(SYSEVENT_MAP_RULE_IPV6_ADDRESS, temp, sizeof(temp));
         if ( AnscSizeOfString(temp) < *pUlSize)
         {
@@ -3620,15 +3580,10 @@ dhcp6c_mapt_mape_GetParamStringValue
             *pUlSize = AnscSizeOfString(temp)+1;
             return 1;
         }
-#else
-        AnscCopyString(pValue, "");
-        return 0;
-#endif
     }
 
     if( AnscEqualString(ParamName, "MapIpv4Address", TRUE) )
     {
-#ifdef _HUB4_PRODUCT_REQ_
         commonSyseventGet(SYSEVENT_MAPT_IPADDRESS, temp, sizeof(temp));
         if ( AnscSizeOfString(temp) < *pUlSize)
         {
@@ -3640,15 +3595,12 @@ dhcp6c_mapt_mape_GetParamStringValue
             *pUlSize = AnscSizeOfString(temp)+1;
             return 1;
         }
-#else
-        AnscCopyString(pValue, "");
-        return 0;
-#endif
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
+#endif
 #endif
 /***********************************************************************
 
