@@ -436,7 +436,7 @@
       "Device.Time.NTPServer4" : "ntp3.shawcable.net",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
    },
 
@@ -497,7 +497,7 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
    },
 "axb3retail" : {
