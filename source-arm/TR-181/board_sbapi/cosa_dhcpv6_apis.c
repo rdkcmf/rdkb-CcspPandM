@@ -100,6 +100,8 @@ extern char g_Subsystem[32];
 #define NO_OF_RETRY 90  /*No of times the file will poll for TLV config file*/
 #endif
 
+#define WRAPPER_LOGFILE "/tmp/libsys.txt"
+
 #if defined _COSA_SIM_  || defined _COSA_DRG_TPG_
 
 COSA_DML_DHCPCV6_FULL  g_dhcpv6_client[] =
@@ -2304,7 +2306,7 @@ int _get_shell_output2(FILE *fp, char * dststr);
 static int _dibbler_client_operation(char * arg)
 {
 #if defined(INTEL_PUMA7) || defined(_COSA_BCM_ARM_)
-    FILE *fp;
+    FILE *fp = NULL;
     char out[256] = {0};
 #endif
 #if defined (INTEL_PUMA7)
@@ -2332,8 +2334,7 @@ static int _dibbler_client_operation(char * arg)
     {
         CcspTraceInfo(("%s start\n", __func__));
 
-#if defined(INTEL_PUMA7) || defined(_COSA_BCM_ARM_)
-
+#if defined(INTEL_PUMA7) || defined(_COSA_BCM_ARM_) 
 #if defined(INTEL_PUMA7)
         //Intel Proposed RDKB Generic Bug Fix from XB6 SDK      
         /* Waiting for the TLV file to be parsed correctly so that the right erouter mode can be used in the code below.
@@ -2352,8 +2353,19 @@ static int _dibbler_client_operation(char * arg)
             fprintf(stderr, "\n%s()%s(): TLV data has not been initialized by CcspGwProvApp.Continuing with the previous configuration\n",__FILE__, __FUNCTION__);  
         }
 #endif
-		
+   
+#ifdef OVERCOMMIT_DISABLED
+        int ret = 0;
+        ret = v_secure_system("syscfg get last_erouter_mode > " WRAPPER_LOGFILE);
+        if(ret != 0) {
+            CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+        }
+        else {
+            fp = fopen (WRAPPER_LOGFILE, "r");
+        }
+#else
         fp = v_secure_popen("r","syscfg get last_erouter_mode");
+#endif
         _get_shell_output(fp, out, sizeof(out));
 	/* TODO: To be fixed by Comcast
 	         IPv6 address assigned to erouter0 gets deleted when erouter_mode=3(IPV4 and IPV6 both)
@@ -2362,7 +2374,18 @@ static int _dibbler_client_operation(char * arg)
         if (strstr(out, "3"))// If last_erouter_mode is both IPV4/IPV6
 	{
 	     	do{
+#ifdef OVERCOMMIT_DISABLED
+                        int ret = 0;
+                        ret = v_secure_system("r","sysevent get wan-status > " WRAPPER_LOGFILE);
+                        if(ret != 0) {
+                            CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+                        }
+                        else {
+                            fp = fopen (WRAPPER_LOGFILE, "r");
+                        }
+#else
                         fp = v_secure_popen("r","sysevent get wan-status");
+#endif
                         _get_shell_output(fp, out, sizeof(out));
         		CcspTraceInfo(("%s waiting for wan-status to started\n", __func__));
 			sleep(1);//sleep(1) is to avoid lots of trace msgs when there is latency
@@ -5867,7 +5890,7 @@ CosaDmlDhcpv6sGetPoolInfo
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    FILE *fp;
+    FILE *fp = NULL;
     char out[256] = {0};
 
     ULONG                           Index = 0;
@@ -5887,9 +5910,19 @@ CosaDmlDhcpv6sGetPoolInfo
         return ANSC_STATUS_FAILURE;
     }
 
+#ifdef OVERCOMMIT_DISABLED
+    int ret = 0;
+    ret = v_secure_system("ps -A|grep %s > " WRAPPER_LOGFILE, SERVER_BIN);
+    if(ret != 0) {
+        CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+        }
+    else {
+        fp = fopen (WRAPPER_LOGFILE, "r");
+    }
+#else
     fp = v_secure_popen("r","ps -A|grep %s", SERVER_BIN);
+#endif
     _get_shell_output(fp, out, sizeof(out));
-
     if ( (strstr(out, SERVER_BIN)) && sDhcpv6ServerPool[Index].Cfg.bEnabled )
     {
         sDhcpv6ServerPool[0].Info.Status  = COSA_DML_DHCP_STATUS_Enabled;
@@ -6291,7 +6324,7 @@ EXIT:
 ANSC_STATUS
 CosaDmlDhcpv6sPing( PCOSA_DML_DHCPSV6_CLIENT        pDhcpsClient )
 {
-    FILE *fp;
+    FILE *fp = NULL;
     ULONG     i        = 0;
 
     for( i =0; i<g_dhcps6v_client_num; i++ )
@@ -6317,8 +6350,20 @@ CosaDmlDhcpv6sPing( PCOSA_DML_DHCPSV6_CLIENT        pDhcpsClient )
         return ANSC_STATUS_FAILURE;
     }
 
+#ifdef OVERCOMMIT_DISABLED
+    int ret = 0;
+    /*ping -w 2 -c 1 fe80::225:2eff:fe7d:5b5 */
+    ret = v_secure_system("ping6 -w 2 -c 1 %s > " WRAPPER_LOGFILE, g_dhcps6v_clientcontent[i].pIPv6Address[i].IPAddress );
+    if(ret != 0) {
+        CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+    }
+    else {
+        fp = fopen (WRAPPER_LOGFILE, "r");
+    }
+#else
     /*ping -w 2 -c 1 fe80::225:2eff:fe7d:5b5 */
     fp = v_secure_popen("r",  "ping6 -w 2 -c 1 %s", g_dhcps6v_clientcontent[i].pIPv6Address[i].IPAddress );
+#endif
     if (_get_shell_output2(fp, "0 packets received"))
     {
         /*1 packets transmitted, 0 packets received, 100% packet loss*/
@@ -6329,8 +6374,6 @@ CosaDmlDhcpv6sPing( PCOSA_DML_DHCPSV6_CLIENT        pDhcpsClient )
         /*1 packets transmitted, 1 packets received, 0% packet loss*/
         return ANSC_STATUS_SUCCESS;
     }
-
-
 }
 
 /*
@@ -6779,7 +6822,7 @@ int dhcpv6_assign_global_ip(char * prefix, char * intfName, char * ipAddr)
     unsigned int    k                = 0;
     char            out[256]         = {0};
     char            tmp[8]           = {0};
-    FILE *fp;
+    FILE *fp = NULL;
 
     _ansc_strcpy( globalIP, prefix);
 
@@ -6826,9 +6869,19 @@ int dhcpv6_assign_global_ip(char * prefix, char * intfName, char * ipAddr)
 
     AnscTrace("the first part is:%s\n", globalIP);
 
-
+#ifdef OVERCOMMIT_DISABLED
+    int ret = 0;
     /* prepare second part */
+    ret = v_secure_system("ifconfig %s | grep HWaddr > " WRAPPER_LOGFILE, intfName );
+    if(ret != 0) {
+        CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+    }
+    else {
+        fp = fopen (WRAPPER_LOGFILE, "r");
+    }
+#else
     fp = v_secure_popen("r", "ifconfig %s | grep HWaddr", intfName );
+#endif
     _get_shell_output(fp, out, sizeof(out));
     pMac =_ansc_strstr(out, "HWaddr");
     if ( pMac == NULL ){
@@ -6902,7 +6955,7 @@ void CosaDmlDhcpv6sRebootServer()
 #if defined (MULTILAN_FEATURE)
     commonSyseventSet("dhcpv6s-restart", "");
 #else
-    FILE *fp;
+    FILE *fp = NULL;
     int fd = 0;
     if (g_dhcpv6s_restart_count) {
         g_dhcpv6s_restart_count=0;
@@ -6921,8 +6974,20 @@ void CosaDmlDhcpv6sRebootServer()
         if ( isBridgeMode )
             return;
 
+#ifdef OVERCOMMIT_DISABLED
+        int ret = 0;
+        //make sure it's not in a bad status
+        ret = v_secure_system("ps|grep %s|grep -v grep > " WRAPPER_LOGFILE, SERVER_BIN);
+        if(ret != 0) {
+            CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+        }
+        else {
+            fp = fopen (WRAPPER_LOGFILE, "r");
+        }
+#else
         //make sure it's not in a bad status
         fp = v_secure_popen("r","ps|grep %s|grep -v grep", SERVER_BIN);
+#endif
         _get_shell_output(fp, out, sizeof(out));
         if (strstr(out, SERVER_BIN))
         {
@@ -7084,14 +7149,25 @@ static int sysevent_fd_1;
 static token_t sysevent_token_1;
 void enable_IPv6(char* if_name)
 {
-        FILE *fp;
+        FILE *fp = NULL;
 
     	CcspTraceInfo(("%s : Enabling ipv6 on iface %s\n",__FUNCTION__,if_name));
 
     	char tbuff[100] = {0} , ipv6_addr[128] = {0} , cmd[128] = {0} ;
     	memset(ipv6_addr,0,sizeof(ipv6_addr));
     	memset(tbuff,0,sizeof(tbuff));
+#ifdef OVERCOMMIT_DISABLED
+        int ret = 0;
+        ret = v_secure_system("sysctl net.ipv6.conf.%s.autoconf > " WRAPPER_LOGFILE ,if_name);
+        if(ret != 0) {
+            CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+        }
+        else {
+            fp = fopen (WRAPPER_LOGFILE, "r");
+        }
+#else
     	fp = v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",if_name);
+#endif
     	_get_shell_output(fp, tbuff, sizeof(tbuff));
     	if(tbuff[strlen(tbuff)-1] == '0')
     	{
@@ -7220,7 +7296,18 @@ int handle_MocaIpv6(char *status)
         if (retPsmGet == CCSP_SUCCESS)
         {                      
             memset(tbuff,0,sizeof(tbuff));
+#ifdef OVERCOMMIT_DISABLED
+            int ret = 0;
+            ret = v_secure_system("sysctl net.ipv6.conf.%s.autoconf > " WRAPPER_LOGFILE,Inf_name);
+            if(ret != 0) {
+                CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+            }
+            else {
+                fp = fopen (WRAPPER_LOGFILE, "r");
+            }
+#else
             fp = v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",Inf_name);
+#endif
             _get_shell_output(fp, tbuff, sizeof(tbuff));
             if(tbuff[strlen(tbuff)-1] == '0')
             {
@@ -7250,6 +7337,7 @@ int handle_MocaIpv6(char *status)
     return 0;
 
 }
+
 static void *InterfaceEventHandler_thrd(void *data)
 {
     UNREFERENCED_PARAMETER(data);
@@ -7297,15 +7385,25 @@ static void *InterfaceEventHandler_thrd(void *data)
     {
         retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.2.Port.1.Name", NULL, &Inf_name);
         if (retPsmGet == CCSP_SUCCESS)
-        {                      
+        {
             memset(tbuff,0,sizeof(tbuff));
+#ifdef OVERCOMMIT_DISABLED
+            int ret = 0;
+            ret = v_secure_system("sysctl net.ipv6.conf.%s.autoconf > " WRAPPER_LOGFILE,Inf_name);
+            if(ret != 0) {
+                CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+            }
+            else {
+                fp = fopen (WRAPPER_LOGFILE, "r");
+            }
+#else
             fp = v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",Inf_name);
+#endif
             _get_shell_output(fp, tbuff, sizeof(tbuff));
             if(tbuff[strlen(tbuff)-1] == '0')
             {
                 enable_IPv6(Inf_name);
             }
-
             ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
             Inf_name = NULL;
         }
@@ -7324,7 +7422,18 @@ static void *InterfaceEventHandler_thrd(void *data)
     {
 
         memset(tbuff,0,sizeof(tbuff));
+#ifdef OVERCOMMIT_DISABLED
+        int ret = 0;
+        ret = v_secure_system("sysctl net.ipv6.conf.br106.autoconf > " WRAPPER_LOGFILE);
+        if(ret != 0) {
+            CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+        }
+        else {
+            fp = fopen (WRAPPER_LOGFILE, "r");
+        }
+#else
         fp = v_secure_popen("r","sysctl net.ipv6.conf.br106.autoconf");
+#endif
         _get_shell_output(fp, tbuff, sizeof(tbuff));
         if(tbuff[strlen(tbuff)-1] == '0')
         {
@@ -7627,19 +7736,41 @@ dhcpv6c_dbg_thrd(void * in)
 			char *token = NULL;char *pt;
             		char interface_name[32] = {0};	
                         char out[128] = {0};
-                        FILE *fp; 
+                        FILE *fp = NULL; 
 			if(pref_len < 64)
 			{
 			    memset(out,0,sizeof(out));
 			    memset(out1,0,sizeof(out1));
+#ifdef OVERCOMMIT_DISABLED
+                            int ret = 0;
+                            ret = v_secure_system("syscfg get IPv6subPrefix > " WRAPPER_LOGFILE);
+                            if(ret != 0) {
+                                CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+                            }
+                            else {
+                                fp = fopen (WRAPPER_LOGFILE, "r");
+                            }
+#else
                             fp = v_secure_popen("r","syscfg get IPv6subPrefix");
-                                _get_shell_output(fp, out, sizeof(out));
+#endif
+                            _get_shell_output(fp, out, sizeof(out));
 			    if(!strcmp(out,"true"))
 				{
                                 static int first = 0;
 
 				memset(out,0,sizeof(out));
+#ifdef OVERCOMMIT_DISABLED
+                                int ret = 0;
+                                ret = v_secure_system("syscfg get IPv6_Interface > " WRAPPER_LOGFILE);
+                                if(ret != 0) {
+                                    CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
+                                }
+                                else {
+                                    fp = fopen (WRAPPER_LOGFILE, "r");
+                                }
+#else
                                 fp = v_secure_popen("r","syscfg get IPv6_Interface");
+#endif
                                 _get_shell_output(fp, out, sizeof(out));
 				pt = out;
 				while((token = strtok_r(pt, ",", &pt)))

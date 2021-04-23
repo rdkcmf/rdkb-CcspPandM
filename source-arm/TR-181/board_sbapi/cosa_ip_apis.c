@@ -168,7 +168,11 @@ void _get_shell_output(FILE *fp, char *buf, int len)
                 *p = '\0';
             }
         }
+#ifdef OVERCOMMIT_DISABLED
+    fclose(fp);
+#else
     v_secure_pclose(fp); 
+#endif
     }
 }
 
@@ -187,8 +191,11 @@ int _get_shell_output2(FILE *fp, char * dststr)
                 break;
             }
         }
-        
-        v_secure_pclose(fp);  
+#ifdef OVERCOMMIT_DISABLED
+        fclose(fp);
+#else
+        v_secure_pclose(fp);
+#endif
     }
 
     return bFound;
