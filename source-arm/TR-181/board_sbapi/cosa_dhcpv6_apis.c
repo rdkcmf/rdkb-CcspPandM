@@ -74,6 +74,7 @@
 #include "autoconf.h"
 #include "secure_wrapper.h"
 #include <ccsp_psm_helper.h>
+#include <sys/stat.h>
 
 extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
@@ -4022,6 +4023,7 @@ void __cosa_dhcpsv6_refresh_config()
     ULONG  T1 = 0;
     ULONG  T2 = 0;
     int Index4 = 0;
+    struct stat check_ConfigFile;
 
     if (!fp)
         goto EXIT;
@@ -4786,6 +4788,16 @@ OPTIONS:
         CcspTraceWarning(("%s rename failed %s\n", __FUNCTION__, strerror(errno)));
 #endif
 
+if (stat(SERVER_CONF_LOCATION, &check_ConfigFile) == -1) {
+  	v_secure_system("sysevent set dibbler_server_conf-status ");
+}
+else if (check_ConfigFile.st_size == 0) {
+  	v_secure_system("sysevent set dibbler_server_conf-status empty");
+}
+else {
+	v_secure_system("sysevent set dibbler_server_conf-status ready");
+}
+
 EXIT:
 
     return;
@@ -4817,6 +4829,7 @@ void __cosa_dhcpsv6_refresh_config()
     char *networkResponse = "/var/tmp/networkresponse.txt";
     int iresCode = 0;
     char responseCode[10];
+    struct stat check_ConfigFile;
 #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
     pd_pool_t           pd_pool;
     ia_pd_t             ia_pd;
@@ -5256,6 +5269,15 @@ OPTIONS:
       fclose(fp);
 
 
+	if (stat(SERVER_CONF_LOCATION, &check_ConfigFile) == -1) {
+          	v_secure_system("sysevent set dibbler_server_conf-status ");
+	}
+	else if (check_ConfigFile.st_size == 0) {
+          	v_secure_system("sysevent set dibbler_server_conf-status empty");
+	}
+	else {
+          	v_secure_system("sysevent set dibbler_server_conf-status ready");
+	}
 
 EXIT:
 
