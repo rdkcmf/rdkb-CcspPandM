@@ -3759,7 +3759,7 @@ KickstartTable_GetParamStringValue
             {
                 if( pValue != NULL )
                 {
-                    bin2hexstring( pValue, (UINT8 *)pPtr, pKickstartTable->SecurityNumberLen );
+                    bin2hexstring( pValue, (unsigned char *) pPtr, pKickstartTable->SecurityNumberLen );
                     lRet = 0;
                 }
             }
