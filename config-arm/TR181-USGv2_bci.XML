@@ -7980,7 +7980,7 @@
 
               <type>string(40)</type>
 
-              <syntax>string</syntax>
+              <syntax>string/ip6_addr</syntax>
 
               <writable>true</writable>
 
