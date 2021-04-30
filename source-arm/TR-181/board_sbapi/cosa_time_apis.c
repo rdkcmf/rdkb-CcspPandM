@@ -864,28 +864,30 @@ CosaDmlTimeGetTimeOffset
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    char response[100]={0};char cmd[100]={0};
-    FILE *fp=NULL;
-#ifdef UTC_ENABLE
+    char offset_value[100]={0};
+    memset(offset_value,0,sizeof(offset_value));
     if(!access("/nvram/ETHWAN_ENABLE", 0))
     {
-        snprintf(cmd,sizeof(cmd),"sysevent get ipv4-timeoffset");
-        fp = popen(cmd, "r");
-        if (fp == NULL) {
-            CcspTraceWarning((  "%s :  fn   Line  : [%d] failed to execute command \n", __FUNCTION__,__LINE__));
+        commonSyseventGet("ipv4-timeoffset", offset_value, sizeof(offset_value));
+        if ( ('\0' != offset_value[0] ) && ( 0 != strlen(offset_value) ) ) 
+        {
+             CcspTraceWarning(("%s: offset_value received from ipv4-timeoffset is %s \n", __FUNCTION__,offset_value));
+             if ( offset_value[0] == '@' )
+             {
+                strcpy(pTimeOffset,offset_value+1);
+             }
+             else
+             {
+                strcpy(pTimeOffset,offset_value);
+
+             }
+             return ANSC_STATUS_SUCCESS;       
         }
-        else {
-            fgets(response,sizeof(response),fp);
-            pclose(fp);
-            strcpy(pTimeOffset,response+1 );
-            CcspTraceWarning((  "%s :  fn   Line  : [%d] timeoffset in Ethwan mode:%s\n", __FUNCTION__,__LINE__,pTimeOffset));
-        }
+
     }
-    else
-    {
-        platform_hal_getTimeOffSet(pTimeOffset);
-    }
-#endif
+    
+    platform_hal_getTimeOffSet(pTimeOffset);
+
     return ANSC_STATUS_SUCCESS;
 }
 
