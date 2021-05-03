@@ -4789,14 +4789,15 @@ OPTIONS:
 #endif
 
 if (stat(SERVER_CONF_LOCATION, &check_ConfigFile) == -1) {
-  	v_secure_system("sysevent set dibbler_server_conf-status ");
+	commonSyseventSet("dibbler_server_conf-status","");
 }
 else if (check_ConfigFile.st_size == 0) {
-  	v_secure_system("sysevent set dibbler_server_conf-status empty");
+        commonSyseventSet("dibbler_server_conf-status","empty");
 }
 else {
-	v_secure_system("sysevent set dibbler_server_conf-status ready");
+        commonSyseventSet("dibbler_server_conf-status","ready");
 }
+
 
 EXIT:
 
@@ -5270,13 +5271,13 @@ OPTIONS:
 
 
 	if (stat(SERVER_CONF_LOCATION, &check_ConfigFile) == -1) {
-          	v_secure_system("sysevent set dibbler_server_conf-status ");
+		commonSyseventSet("dibbler_server_conf-status","");
 	}
 	else if (check_ConfigFile.st_size == 0) {
-          	v_secure_system("sysevent set dibbler_server_conf-status empty");
+		commonSyseventSet("dibbler_server_conf-status","empty");
 	}
 	else {
-          	v_secure_system("sysevent set dibbler_server_conf-status ready");
+		commonSyseventSet("dibbler_server_conf-status","ready");
 	}
 
 EXIT:
