@@ -7935,16 +7935,16 @@ dhcpv6c_dbg_thrd(void * in)
             char globalIP[128] = {0};
             BOOL bRestartLan = FALSE;
 
-#ifdef _HUB4_PRODUCT_REQ_
 #if defined(FEATURE_RDKB_WAN_MANAGER)
             int hub4_valid_lft = 0;
             int hub4_preferred_lft = 0;
 #else
+#if defined(_HUB4_PRODUCT_REQ_) 
             char ula_address[64] = {0};
             char hub4_valid_lft[64] = {0};
             char hub4_preferred_lft[64] = {0};
 #endif
-#endif//_HUB4_PRODUCT_REQ_
+#endif
             /*the format is :
              add 2000::ba7a:1ed4:99ea:cd9f :: 0 t1
              action, address, prefix, pref_len 3600
@@ -8266,7 +8266,6 @@ dhcpv6c_dbg_thrd(void * in)
                         }
 #endif
 #else
-#ifdef _HUB4_PRODUCT_REQ_
 #if defined(FEATURE_RDKB_WAN_MANAGER)
                        /*
                         * Send data to wanmanager.
@@ -8339,6 +8338,7 @@ dhcpv6c_dbg_thrd(void * in)
                             commonSyseventSet("lan_prefix_set", globalIP);
                         }
 #else
+#if defined(_HUB4_PRODUCT_REQ_) 
                     commonSyseventGet(SYSEVENT_FIELD_IPV6_PREFIXVLTIME,
                                  hub4_valid_lft, sizeof(hub4_valid_lft));
                     commonSyseventGet(SYSEVENT_FIELD_IPV6_PREFIXPLTIME,
@@ -8368,8 +8368,8 @@ dhcpv6c_dbg_thrd(void * in)
                     }
                     // send an event to Sky-pro app manager that Global-prefix is set
                     commonSyseventSet("lan_prefix_set", globalIP);
+#endif
 #endif // FEATURE_RDKB_WAN_MANAGER
-#endif //_HUB4_PRODUCT_REQ_
                         // not the best place to add route, just to make it work
                         // delegated prefix need to route to LAN interface
                         v_secure_system("ip -6 route add %s dev %s", v6pref, COSA_DML_DHCPV6_SERVER_IFNAME);
@@ -8445,7 +8445,7 @@ dhcpv6c_dbg_thrd(void * in)
                             commonSyseventSet("lan-restart", "1");
                         }
 #endif
-                    }
+                   }
                 }
                 else if (!strncmp(action, "del", 3))
                 {
