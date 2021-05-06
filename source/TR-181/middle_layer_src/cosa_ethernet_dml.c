@@ -718,7 +718,7 @@ Interface_GetParamStringValue
 #if defined(MULTILAN_FEATURE) && defined (INTEL_PUMA7)
 
         CHAR strMac[128] = {0};
-#ifdef FEATURE_RDKB_WAN_MANAGER
+#ifdef FEATURE_RDKB_XDSL_PPP_MANAGER
         char wanPhyName[32] = {0};
         char out_value[32] = {0};	
         if (syscfg_get(NULL, "wan_physical_ifname", out_value, sizeof(out_value)) == 0)

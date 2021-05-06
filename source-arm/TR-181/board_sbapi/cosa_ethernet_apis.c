@@ -298,7 +298,7 @@ CosaDmlEthInit
     ULONG lbrIndex          = 0;
 #endif
 
-#ifdef FEATURE_RDKB_WAN_MANAGER
+#ifdef FEATURE_RDKB_XDSL_PPP_MANAGER
     char wanPhyName[32] = {0};
     char out_value[32] = {0};
 #endif
@@ -334,7 +334,7 @@ CosaDmlEthInit
 #endif
         }
     }
-#ifdef FEATURE_RDKB_WAN_MANAGER
+#ifdef FEATURE_RDKB_XDSL_PPP_MANAGER
     if (syscfg_get(NULL, "wan_physical_ifname", out_value, sizeof(out_value)) == 0)
     {
        strncpy(wanPhyName, out_value, sizeof(wanPhyName));
