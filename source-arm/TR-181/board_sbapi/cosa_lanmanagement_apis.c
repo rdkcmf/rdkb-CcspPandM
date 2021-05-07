@@ -122,7 +122,8 @@ static int iface_get_hwaddr(const char *ifname, char *mac, size_t size)
             fprintf(stderr, "%s interface is present, but got an error:%d while getting MAC Address\n",
                     ifname, errno);
         }
-        perror("ioctl");
+	fprintf(stderr," %s interface not present :",ifname);
+	perror("ioctl");
         close(sockfd);
         return -1;
     }
