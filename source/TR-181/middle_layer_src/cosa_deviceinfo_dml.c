@@ -9294,15 +9294,20 @@ Feature_SetParamBoolValue
            {
                AnscTraceWarning(("syscfg_set start_upnp_service:false failed\n"));
            }
-           v_secure_system("if [ -f /lib/rdk/start-upnp-service ] ; \
-                   then \
-                            `/lib/rdk/start-upnp-service stop`; \
-                            `killall xcal-device`; \
-                            `killall xdiscovery`; \
-                   else \
-                         `systemctl stop xcal-device`; \
-                         `systemctl stop xupnp`; \
-                   fi ");
+
+		   if(access("/lib/rdk/start-upnp-service", F_OK) == 0)
+		   {
+			   v_secure_system("/lib/rdk/start-upnp-service stop;killall xcal-device;killall xdiscovery");
+		   }
+		   else
+		   {
+			   v_secure_system("systemctl stop xcal-device;systemctl stop xupnp");
+		   }
+
+		   if(access("/nvram/output.json", F_OK) == 0)
+		   {
+			   v_secure_system("rm /nvram/output.json");
+		   }
            v_secure_system("ifconfig brlan0:0 down");
        }
        if (syscfg_commit() != 0)
