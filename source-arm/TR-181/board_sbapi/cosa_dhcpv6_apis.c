@@ -7979,7 +7979,14 @@ dhcpv6c_dbg_thrd(void * in)
                     /*for now we only support one address, one prefix notify, if need multiple addr/prefix, must modify dibbler-client code*/
                     if (strncmp(v6addr, "::", 2) != 0) 
                     {
-                        commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME,       v6addr);
+                        if (strncmp(v6addr, "''", 2) == 0)
+                        {
+                            commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME, "");
+                        }
+                        else
+                        {
+                             commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME,       v6addr);
+                        }
                         commonSyseventSet(COSA_DML_DHCPV6C_ADDR_IAID_SYSEVENT_NAME,  iana_iaid);
                         commonSyseventSet(COSA_DML_DHCPV6C_ADDR_T1_SYSEVENT_NAME,    iana_t1);
                         commonSyseventSet(COSA_DML_DHCPV6C_ADDR_T2_SYSEVENT_NAME,    iana_t2);
