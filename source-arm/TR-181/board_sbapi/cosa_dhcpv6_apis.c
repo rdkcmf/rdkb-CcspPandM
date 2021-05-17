@@ -1063,10 +1063,12 @@ BOOL tagPermitted(int tag)
 #define DHCPV6S_NAME                   "dhcpv6s"
 
 static struct {
-    pthread_t          dbgthrd;
+    pthread_t          dbgthrdc;
+    pthread_t          dbgthrds;
 }g_be_ctx;
 
 static void * dhcpv6c_dbg_thrd(void * in);
+static void * dhcpv6s_dbg_thrd(void * in);
 
 extern COSARepopulateTableProc            g_COSARepopulateTable;
 
@@ -1849,12 +1851,19 @@ CosaDmlDhcpv6SMsgHandler
     }
 
     /*we start a thread to hear dhcpv6 client message about prefix/address */
-    if ( ( !mkfifo(CCSP_COMMON_FIFO, 0666) || errno == EEXIST ) &&
-         ( !mkfifo(DHCPS6V_SERVER_RESTART_FIFO, 0666) || errno == EEXIST ) )
+    if ( !mkfifo(CCSP_COMMON_FIFO, 0666) || errno == EEXIST )
     {
-        if (pthread_create(&g_be_ctx.dbgthrd, NULL, dhcpv6c_dbg_thrd, NULL)  || pthread_detach(g_be_ctx.dbgthrd)) 
+        if (pthread_create(&g_be_ctx.dbgthrdc, NULL, dhcpv6c_dbg_thrd, NULL)  || pthread_detach(g_be_ctx.dbgthrdc)) 
             CcspTraceWarning(("%s error in creating dhcpv6c_dbg_thrd\n", __FUNCTION__));
     }
+
+    /*we start a thread to hear dhcpv6 server messages */
+    if ( !mkfifo(DHCPS6V_SERVER_RESTART_FIFO, 0666) || errno == EEXIST )
+    {
+        if (pthread_create(&g_be_ctx.dbgthrds, NULL, dhcpv6s_dbg_thrd, NULL)  || pthread_detach(g_be_ctx.dbgthrds))
+            CcspTraceWarning(("%s error in creating dhcpv6s_dbg_thrd\n", __FUNCTION__));
+    }
+
     //CosaDmlStartDHCP6Client();
 //    dhcp v6 client is now initialized in service_wan, no need to initialize from PandM
     #if 0
@@ -7763,11 +7772,78 @@ static void *InterfaceEventHandler_thrd(void *data)
 }
 #endif
 
+static void *
+dhcpv6s_dbg_thrd(void * in)
+{
+    UNREFERENCED_PARAMETER(in);
+    int v6_srvr_fifo_file_dscrptr=0;
+    char msg[1024] = {0};
+    fd_set rfds;
+    struct timeval tm;
+
+    v6_srvr_fifo_file_dscrptr = open(DHCPS6V_SERVER_RESTART_FIFO, O_RDWR);
+
+    if (v6_srvr_fifo_file_dscrptr< 0)
+    {
+        fprintf(stderr, "open dhcpv6 server restart fifo!!!!!\n");
+        goto EXIT;
+    }
+
+    while (1)
+    {
+        int retCode = 0;
+        tm.tv_sec  = 60;
+        tm.tv_usec = 0;
+
+        FD_ZERO(&rfds);
+        FD_SET(v6_srvr_fifo_file_dscrptr, &rfds);
+
+        retCode = select(v6_srvr_fifo_file_dscrptr+1, &rfds, NULL, NULL, &tm);
+        /* When return -1, it's error.
+           When return 0, it's timeout
+           When return >0, it's the number of valid fds */
+        if (retCode < 0) {
+            fprintf(stderr, "dbg_thrd : select returns error \n" );
+
+            if (errno == EINTR)
+                continue;
+
+            DHCPVS_DEBUG_PRINT
+            CcspTraceWarning(("%s -- select(): %s", __FUNCTION__, strerror(errno)));
+            goto EXIT;
+        }
+        else if(retCode == 0 )
+            continue;
+
+        /* We need consume the data.
+	 * It's possible more than one triggering events are consumed in one time, which is expected.*/
+        if (FD_ISSET(v6_srvr_fifo_file_dscrptr, &rfds)) {
+            /* This sleep help do two things:
+             * When GUI operate too fast, it gurantees more operations combine into one;
+             * Not frequent dibbler start/stop. When do two start fast, dibbler will in bad status.
+             */
+            sleep(3);
+            memset(msg, 0, sizeof(msg));
+            read(v6_srvr_fifo_file_dscrptr, msg, sizeof(msg));
+
+            CosaDmlDhcpv6sRebootServer();
+            continue;
+        }
+    }
+
+EXIT:
+    if(v6_srvr_fifo_file_dscrptr>=0) {
+        close(v6_srvr_fifo_file_dscrptr);
+    }
+
+    return NULL;
+}
+
 static void * 
 dhcpv6c_dbg_thrd(void * in)
 {
     UNREFERENCED_PARAMETER(in);
-    int fd=0 , fd1=0;
+    int fd=0 ;
     char msg[1024] = {0};
     char * p = NULL;
     char globalIP2[128] = {0};
@@ -7796,14 +7872,6 @@ dhcpv6c_dbg_thrd(void * in)
         goto EXIT;
     }
 
-    fd1= open(DHCPS6V_SERVER_RESTART_FIFO, O_RDWR);
-
-    if (fd1< 0) 
-    {
-        fprintf(stderr, "open dhcpv6 server restart fifo!!!!!\n");
-        goto EXIT;
-    }
-
     while (1) 
     {
 	int retCode = 0;
@@ -7812,9 +7880,8 @@ dhcpv6c_dbg_thrd(void * in)
     
         FD_ZERO(&rfds);
         FD_SET(fd, &rfds);
-        FD_SET(fd1, &rfds);
 
-	retCode = select( (fd>fd1)?(fd+1):(fd1+1), &rfds, NULL, NULL, &tm);
+	retCode = select(fd+1, &rfds, NULL, NULL, &tm);
         /* When return -1, it's error.
            When return 0, it's timeout
            When return >0, it's the number of valid fds */
@@ -7831,32 +7898,13 @@ dhcpv6c_dbg_thrd(void * in)
 	else if(retCode == 0 )
 	    continue;
 
-        /*We need consume the data.
-          It's possible more than one triggering events are consumed in one time, which is expected.*/
-        if (FD_ISSET(fd1, &rfds)) {
-            /*this sleep help do two things: 
-                * When GUI operate too fast, it gurantees more operations combine into one; 
-                * Not frequent dibbler start/stop. When do two start fast, dibbler will in bad status. 
-              */
-            sleep(3);
-            memset(msg, 0, sizeof(msg));
-            read(fd1, msg, sizeof(msg));
-
-            CosaDmlDhcpv6sRebootServer();
-	    continue;
-        }
-
         if ( FD_ISSET(fd, &rfds) )
         {
 	     memset(msg, 0, sizeof(msg));
              read(fd, msg, sizeof(msg));
-
-            /*check dibbler server status*/
-//            CosaDmlDhcpv6sRebootServer();
-//            continue;
         }
 	else
-		continue;
+	    continue;
 
         if (msg[0] != 0)
         {
@@ -7905,6 +7953,23 @@ dhcpv6c_dbg_thrd(void * in)
             char hub4_preferred_lft[64] = {0};
 #endif
 #endif
+
+#if defined(FEATURE_MAPT) && defined(FEATURE_RDKB_WAN_MANAGER)
+            int dataLen = 0;
+            char preflen[12] = {0};
+            char brIPv6Prefix[128] = {0};
+            char ruleIPv4Prefix[32] = {0};
+            char ruleIPv6Prefix[128] = {0};
+            char pdIPv6Prefix[128] = {0};
+            char mapAssigned[8] = {0};
+            char v4Len[8] = {0};
+            char v6Len[8] = {0};
+            char eaLen[8] = {0};
+            char psidOffset[8] = {0};
+            char psidLen[8] = {0};
+            char psid[8] = {0};
+            char isFMR[8] = {0};
+#endif
             /*the format is :
              add 2000::ba7a:1ed4:99ea:cd9f :: 0 t1
              action, address, prefix, pref_len 3600
@@ -7916,9 +7981,22 @@ dhcpv6c_dbg_thrd(void * in)
 
             fprintf(stderr, "%s -- %d !!! get event from v6 client: %s \n", __FUNCTION__, __LINE__,p);
 
+#if defined(FEATURE_MAPT) && defined(FEATURE_RDKB_WAN_MANAGER)
+            dataLen = sscanf(p, "%63s %63s %s %s %s %s %s %63s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
+                       action, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
+                       v6pref, preflen, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm,
+                       mapAssigned, ruleIPv6Prefix, ruleIPv4Prefix, brIPv6Prefix, v6Len, isFMR, eaLen, v4Len,
+                       psidOffset, psidLen, psid );
+
+            /* dataLen = 25 : MAPT 16:1
+             * dataLen = 22 : MAPT 1:1
+             * dataLen = 14 : NON-MAPT */
+            if((dataLen == 25) || (dataLen == 22) || (dataLen == 14))
+#else // FEATURE_MAPT
             if (sscanf(p, "%63s %63s %s %s %s %s %s %63s %d %s %s %s %s %s", 
                        action, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
                        v6pref, &pref_len, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm ) == 14)
+#endif
             {
                 pString = (char*)CosaUtilGetFullPathNameByKeyword
                     (
@@ -7985,7 +8063,13 @@ dhcpv6c_dbg_thrd(void * in)
                             g_COSARepopulateTable(g_pDslhDmlAgent, objName);
                         }
                     }
-                    
+
+#if defined(FEATURE_MAPT) && defined(FEATURE_RDKB_WAN_MANAGER)
+                    remove_single_quote(v6pref);
+                    strcpy(pdIPv6Prefix, v6pref);
+                    remove_single_quote(preflen);
+                    pref_len=atoi(preflen);
+#endif
                     if (strncmp(v6pref, "::", 2) != 0)
                     {
 			memset(v6Tpref,0,sizeof(v6Tpref));
@@ -8281,6 +8365,55 @@ dhcpv6c_dbg_thrd(void * in)
                             dhcpv6_data.mapeAssigned = FALSE;
                             dhcpv6_data.prefixCmd = 0;
                         }
+#ifdef FEATURE_MAPT
+                        remove_single_quote(brIPv6Prefix);
+                        remove_single_quote(ruleIPv4Prefix);
+                        remove_single_quote(ruleIPv6Prefix);
+                        remove_single_quote(mapAssigned);
+                        remove_single_quote(v4Len);
+                        remove_single_quote(v6Len);
+                        remove_single_quote(eaLen);
+                        remove_single_quote(psidOffset);
+                        remove_single_quote(psidLen);
+                        remove_single_quote(psid);
+                        remove_single_quote(isFMR);
+
+                        if(!strncmp(mapAssigned, "MAPT", 4))
+                            dhcpv6_data.maptAssigned = TRUE;
+                        else if(!strncmp(mapAssigned, "MAPE", 4))
+                            dhcpv6_data.mapeAssigned = TRUE;
+
+                        if((dhcpv6_data.maptAssigned == TRUE) || (dhcpv6_data.mapeAssigned == TRUE))
+                        {
+                            strncpy(dhcpv6_data.mapt.pdIPv6Prefix, pdIPv6Prefix, sizeof(pdIPv6Prefix));
+
+                            strncpy(dhcpv6_data.mapt.ruleIPv6Prefix, ruleIPv6Prefix, sizeof(ruleIPv6Prefix));
+                            if(strlen(ruleIPv6Prefix) == 0) {
+                                CcspTraceError(("[%s-%d] MAPT Rule_V6_Prefix is Empty \n", __FUNCTION__, __LINE__));
+                            }
+
+                            strncpy(dhcpv6_data.mapt.brIPv6Prefix, brIPv6Prefix, sizeof(brIPv6Prefix));
+                            if(strlen(brIPv6Prefix) == 0) {
+                                CcspTraceError(("[%s-%d] MAPT Br_V6_Prefix is Empty \n", __FUNCTION__, __LINE__));
+                            }
+
+                            strncpy(dhcpv6_data.mapt.ruleIPv4Prefix, ruleIPv4Prefix, sizeof(ruleIPv4Prefix));
+                            if(strlen(ruleIPv4Prefix) == 0) {
+                                CcspTraceError(("[%s-%d] MAPT Rule_V4_Prefix is Empty \n", __FUNCTION__, __LINE__));
+                            }
+
+                            dhcpv6_data.mapt.iapdPrefixLen = pref_len;
+                            dhcpv6_data.mapt.v6Len = atoi(v6Len);
+                            dhcpv6_data.mapt.isFMR = atoi(isFMR);
+                            dhcpv6_data.mapt.eaLen = atoi(eaLen);
+                            dhcpv6_data.mapt.v4Len = atoi(v4Len);
+                            dhcpv6_data.mapt.psidOffset = atoi(psidOffset);
+                            dhcpv6_data.mapt.psidLen = atoi(psidLen);
+                            dhcpv6_data.mapt.psid = atoi(psid);
+                            dhcpv6_data.mapt.ratio = 1 << (dhcpv6_data.mapt.eaLen - (32 - dhcpv6_data.mapt.v4Len));
+                        }
+
+#endif //FEATURE_MAPT
                         if (send_dhcp_data_to_wanmanager(&dhcpv6_data) != ANSC_STATUS_SUCCESS) {
                             CcspTraceError(("[%s-%d] Failed to send dhcpv6 data to wanmanager!!! \n", __FUNCTION__, __LINE__));
                         }
@@ -8465,10 +8598,6 @@ dhcpv6c_dbg_thrd(void * in)
 EXIT:
     if(fd>=0) {
         close(fd);
-    }
-
-    if(fd1>=0) {
-        close(fd1);
     }
 
     return NULL;

@@ -3290,8 +3290,8 @@ CosaDmlNatSetPortMapping
         Utopia_Free(&Ctx, 1);
 #ifdef _HUB4_PRODUCT_REQ_
 #ifdef FEATURE_MAPT
-#ifdef FEATURE_MAPT_DEBUG
 #ifdef IVI_KERNEL_SUPPORT
+#ifdef FEATURE_MAPT_DEBUG
         LOG_PRINT_IVICTL("!!!! ADDING THE RULES !!!!");
 #endif
         /*Delete the previous rule*/
