@@ -259,7 +259,7 @@ restartLanServices()
     dibbler-server start
 
     sysevent set firewall-restart
-    uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+    uptime=$(cut -d. -f1 /proc/uptime)
     if [ -e "/usr/bin/onboarding_log" ]; then
         /usr/bin/onboarding_log "RDKB_FIREWALL_RESTART:$uptime"
     fi
@@ -415,7 +415,7 @@ then
 				# Set syscfg parameter to indicate unit is activated
 				syscfg set unit_activated 1
 				syscfg commit
-				uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+				uptime=$(cut -d. -f1 /proc/uptime)
 				echo_t "Exit_Captive_Mode:$uptime"
 				t2ValNotify "btime_cpexit_split" $uptime
 				if [ -e "/usr/bin/onboarding_log" ]; then
@@ -425,7 +425,7 @@ then
 				sysevent set dhcp_server-restart
 				echo_t "Network Response: Restart Firewall"
 				sysevent set firewall-restart
-				uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+				uptime=$(cut -d. -f1 /proc/uptime)
 				if [ -e "/usr/bin/onboarding_log" ]; then
 					/usr/bin/onboarding_log "RDKB_FIREWALL_RESTART:$uptime"
 				fi
@@ -457,7 +457,7 @@ then
 				    # As we haven't received 204 response, indicate unit is not activated
 				    syscfg set unit_activated 0
 				    syscfg commit
-				    uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+				    uptime=$(cut -d. -f1 /proc/uptime)
 				    echo_t "Enter_Captive_Mode:$uptime"
 				    t2ValNotify "btime_cpenter_split" $uptime
 				    if [ -e "/usr/bin/onboarding_log" ]; then
@@ -576,7 +576,7 @@ then
                               if [ "$check_success" != "" ]
                               then
                                  echo_t "Network Response : Setting ConfigureWiFi to true is success"
-				uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+				uptime=$(cut -d. -f1 /proc/uptime)
 				 echo_t "Enter_WiFi_Personalization_captive_mode:$uptime"
 				 t2ValNotify "btime_wcpenter_split" $uptime
 				 if [ -e "/usr/bin/onboarding_log" ]; then

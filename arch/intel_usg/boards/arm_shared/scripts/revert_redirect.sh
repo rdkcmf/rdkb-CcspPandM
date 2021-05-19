@@ -61,7 +61,7 @@ then
 
     echo_t "Revert Redirect : Indicate revert rediretion is triggered"
     touch $REVERTED_FLAG
-    uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+    uptime=$(cut -d. -f1 /proc/uptime)
     echo_t "Exit_WiFi_Personalization_captive_mode:$uptime"
     t2ValNotify "btime_wcpexit_split" $uptime
     if [ -e "/usr/bin/onboarding_log" ]; then

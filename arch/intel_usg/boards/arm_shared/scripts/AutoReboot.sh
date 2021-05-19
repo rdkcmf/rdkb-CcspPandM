@@ -72,7 +72,7 @@ ConfiguredDays=`dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Au
 
 while [ $reboot_device_success -eq 0 ]; do 
     if [ "$AutoReboot" == "true" ];then
-        uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+        uptime=$(cut -d. -f1 /proc/uptime)
         uptime_days=$((uptime/86400))  
         # Check if still within reboot window
         if [ $uptime_days -lt $ConfiguredDays ]
