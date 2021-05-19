@@ -285,13 +285,11 @@ static inline void _gen_year(char *miss,char **base)
         case 0:
             //printf("copy year, time: %s , %s \n", miss, date);
             strncpy(miss + LOG_TIME_SIZE-5, date + LOG_TIME_SIZE-5, 5);
-            *base = miss;
             break;
         case -1:
             //printf("subtract 1 year, time:  %s\n", miss);
             y = atoi(date + LOG_TIME_SIZE - 5) -1;
             sprintf(miss + LOG_TIME_SIZE - 5, " %4d", y);
-            *base = miss;
             break;
         /* 12/31/1961 or 1/1/1970, box might not get the time  */
         case 1970:
