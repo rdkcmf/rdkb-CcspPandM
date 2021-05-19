@@ -4615,6 +4615,7 @@ CosaDmlScheduleAutoReboot(int ConfiguredUpTime, BOOL bValue)
             CcspTraceInfo(("%s Scheduling reboot after %d days \n",__FUNCTION__, RebootDay ));
         }  
     }
+    CcspTraceInfo(("%s Scheduling cron sh /etc/ScheduleAutoReboot.sh %d %d& \n",__FUNCTION__, RebootDay,bValue ));
     v_secure_system("/etc/ScheduleAutoReboot.sh %d %d&",RebootDay,bValue);
     return ANSC_STATUS_SUCCESS;    
 }
