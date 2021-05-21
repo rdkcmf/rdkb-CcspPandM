@@ -756,10 +756,12 @@ ULONG CosaDmlGetBitsNumFromNetMask(char * Address)
     struct in_addr addr = {0};
     ULONG ulAddr = 0;
     ULONG bits = 0;
+ #if defined (_CBR_PRODUCT_REQ_)
     ULONG mul = 0;
-    
+ #endif   
     if ( inet_aton(Address, &addr) ){
         ulAddr = addr.s_addr;
+#if defined (_CBR_PRODUCT_REQ_)
         if((ulAddr > 0xffffff) && (ulAddr <= 0xffffffff))
         {
            mul = 1;
@@ -779,12 +781,15 @@ ULONG CosaDmlGetBitsNumFromNetMask(char * Address)
            ulAddr = ulAddr*0x1000000;
            mul = 4;
         }
+#endif
         while( ulAddr & 0x80000000 ){
             bits++;
             ulAddr = ulAddr<<1;
         }
     }
+#if defined (_CBR_PRODUCT_REQ_)
     bits = 32 - (8*mul - bits);
+#endif
     return bits;
 }
 /* Generate configuration file */
