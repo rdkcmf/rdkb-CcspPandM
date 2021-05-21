@@ -654,7 +654,7 @@ BOOL ValidateTime(int hh , int mm)
 {
     if((hh<0) || (hh>23))
         return FALSE;
-    if((mm!=00) && (mm!=15) && (mm!=30) && (mm!=45))
+    if((mm < 0) || (mm >59))
         return FALSE;
     return TRUE;
 }
