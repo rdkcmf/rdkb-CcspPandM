@@ -94,7 +94,7 @@ ScheduleCron()
         crontab -l -c $CRONTAB_DIR > $CRONFILE_BK
         existing_cron=$(grep "AutoReboot.sh" $CRONFILE_BK)
         cronPattern="$rand_min $rand_hr * * *"
-        if [ $Rebootday -eq 0 ]; then
+        if [ "$Rebootday" = "0" ]; then
                 echo_t "Auto Reboot in next Maintienance window $cronPattern"     
         else           
                 cronPattern="$rand_min $rand_hr $date_final * *"
