@@ -68,6 +68,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <dirent.h>
 #include <syscfg/syscfg.h>
 #include "ansc_platform.h"
 #include "cosa_deviceinfo_dml.h"
@@ -20873,6 +20874,174 @@ NonRootSupport_SetParamBoolValue
            commonSyseventSet("NonRootSupport", "0");
           return TRUE;
      }
+  }
+  CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+  return FALSE;
+}
+
+static void Replace_AllOccurrence(char *str, int size, char ch, char Newch)
+{
+  int i=0;
+  for(i = 0; i<size-1; i++)
+  {
+      if(str[i] == ch || str[i] == '\r')
+      {
+         str[i] = Newch;
+      }
+  }
+  str[i]='\0';
+}
+
+ULONG
+NonRootSupport_GetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pValue,
+ ULONG*                      pUlSize
+)
+{
+  UNREFERENCED_PARAMETER(hInsContext);
+  #define APPARMOR_BLOCKLIST_FILE "/opt/secure/Apparmor_blocklist"
+  #define SIZE_LEN 32
+  char *buf = NULL;
+  FILE *fp = NULL;
+  size_t len = 0;
+  ssize_t read = 0;
+  /* check the parameter name and return the corresponding value */
+  if( AnscEqualString( ParamName, "ApparmorBlocklist", TRUE) )
+  {
+      fp = fopen(APPARMOR_BLOCKLIST_FILE,"r");
+      if(fp != NULL) {
+         read = getdelim( &buf, &len, '\0', fp);
+         if (read != -1) {
+             AnscCopyString(pValue, buf);
+             *pUlSize = AnscSizeOfString(pValue);
+             Replace_AllOccurrence( pValue, *pUlSize, '\n', ',');
+             CcspTraceWarning(("Apparmor profile configuration:%s\n", pValue));
+         }
+         return 0;
+      }
+      else {
+         CcspTraceWarning(("%s does not exist\n", APPARMOR_BLOCKLIST_FILE));
+         strncpy(pValue,"Apparmorblocklist is empty",SIZE_LEN);
+      }
+  }
+  return -1;
+}
+
+static BOOL ValidateInput_Arguments(char *input, FILE *tmp_fptr)
+{
+  #define APPARMOR_PROFILE_DIR "/etc/apparmor.d"
+  #define BUF_SIZE 64
+  struct dirent *entry=NULL;
+  DIR *dir=NULL;
+  char files_name[1024]={0};
+  char *token=NULL;
+  char *subtoken=NULL;
+  char *sub_string=NULL;
+  char *sp=NULL;
+  char *sptr=NULL;
+  char tmp[BUF_SIZE]={0};
+  char *arg=NULL;
+  dir=opendir(APPARMOR_PROFILE_DIR);
+  if( (dir == NULL) || (tmp_fptr == NULL) ) {
+     CcspTraceError(("Failed to open the %s directory\n", APPARMOR_PROFILE_DIR));
+     return FALSE;
+  }
+  entry = readdir(dir);
+  memset(files_name,'\0',sizeof(files_name));
+  /* storing Apparmor profile (file) names into files_name which can be used to check with input arguments using strstr() */
+  while(entry != NULL) {
+        strncat(files_name,entry->d_name,strlen(entry->d_name));
+        entry = readdir(dir);
+  }
+  if (closedir(dir) != 0) {
+      CcspTraceError(("Failed to close %s directory\n", APPARMOR_PROFILE_DIR));
+      return FALSE;
+  }
+  /* Read the input arguments and ensure the corresponding profiles exist or not by searching in
+     Apparmor profile directory (/etc/apparmor.d/). Returns false if input does not have the
+     apparmor profile, Returns true if apparmor profile finds for the input */
+  token=strtok_r( input,",", &sp);
+  while(token != NULL) {
+        arg=strchr(token,':');
+        if ( ( (strcmp(arg+1,"disable") != 0) && (strcmp(arg+1,"complain") != 0) && (strcmp(arg+1,"enforce") != 0) ) ) {
+              CcspTraceWarning(("Invalid arguments in the parser:%s\n", token));
+              return FALSE;
+        }
+        strncpy(tmp,token,sizeof(tmp));
+        subtoken=strtok_r(tmp,":",&sptr);
+        if(subtoken != NULL) {
+           sub_string=strstr(files_name, subtoken);
+           if(sub_string != NULL) {
+              fprintf(tmp_fptr,"%s\n",token);
+           }
+           else {
+              CcspTraceWarning(("Invalid arguments %s error found in the parser\n", subtoken));
+              return FALSE;
+           }
+        }
+  token=strtok_r(NULL,",",&sp);
+  }
+  return TRUE;
+}
+
+BOOL
+NonRootSupport_SetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                        pValue
+ )
+{
+  UNREFERENCED_PARAMETER(hInsContext);
+  #define APPARMOR_BLOCKLIST_FILE "/opt/secure/Apparmor_blocklist"
+  #define TMP_FILE "/opt/secure/Apparmor_blocklist_bck.txt"
+  #define SIZE 128
+  FILE *fptr = NULL;
+  FILE *tmp_fptr = NULL;
+  char buf[SIZE] = {0};
+  char *token = NULL;
+  char *sub_string = NULL;
+  char *sp = NULL;
+  char tmp[SIZE] = {0};
+  if( AnscEqualString( ParamName, "ApparmorBlocklist", TRUE) )
+  {
+     fptr = fopen(APPARMOR_BLOCKLIST_FILE,"r");
+     tmp_fptr = fopen(TMP_FILE,"w+");
+     if( (!pValue) || (strlen(pValue) == 0) || (tmp_fptr == NULL) ) {
+         CcspTraceError(("Failed to open the file or invalid argument\n"));
+         return FALSE;
+     }
+     /* Traversing the Blocklist file and write the contents into tmp file expect the entry in Blocklist if it matches with input arguments */
+     if(fptr != NULL ) {
+        while(fgets( buf, sizeof(buf), fptr) != NULL)  {
+              buf[strcspn(buf,"\n")] = 0;
+              strncpy( tmp, buf, sizeof(tmp));
+              token=strtok_r(tmp,":",&sp);
+              if(token != NULL) {
+                 sub_string=strstr( pValue, token);
+                 if(sub_string != NULL)
+                    continue;
+                 else
+                    fprintf(tmp_fptr,"%s\n",buf);
+              }
+        }
+     }
+     /* To ensure input arguments are valid or not */
+     if (ValidateInput_Arguments(pValue, tmp_fptr) != TRUE) {
+         return FALSE;
+     }
+     /* Copying tmp file contents into main file by using rename() */
+     if(fptr != NULL)
+        fclose(fptr);
+     fclose(tmp_fptr);
+     if(rename( TMP_FILE, APPARMOR_BLOCKLIST_FILE) != 0) {
+        CcspTraceError(("Error in renaming  file\n"));
+        return FALSE;
+     }
+     return TRUE;
   }
   CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
   return FALSE;

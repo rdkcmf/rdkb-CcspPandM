@@ -3428,12 +3428,20 @@
                                 <functions>
                                         <func_GetParamBoolValue>NonRootSupport_GetParamBoolValue</func_GetParamBoolValue>
                                         <func_SetParamBoolValue>NonRootSupport_SetParamBoolValue</func_SetParamBoolValue>
+                                        <func_SetParamStringValue>NonRootSupport_SetParamStringValue</func_SetParamStringValue>
+                                        <func_GetParamStringValue>NonRootSupport_GetParamStringValue</func_GetParamStringValue>
                                 </functions>
                                 <parameters>
                                 <parameter>
                                         <name>Enable</name>
                                         <type>boolean</type>
                                         <syntax>bool</syntax>
+                                        <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                        <name>ApparmorBlocklist</name>
+                                        <type>string</type>
+                                        <syntax>string</syntax>
                                         <writable>true</writable>
                                 </parameter>
                                 </parameters>
