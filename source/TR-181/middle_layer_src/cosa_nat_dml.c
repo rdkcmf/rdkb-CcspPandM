@@ -713,6 +713,7 @@ X_CISCO_COM_DMZ_GetParamStringValue
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_DMZ               pDmz         = &pNat->Dmz;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Data", TRUE))
@@ -726,7 +727,12 @@ X_CISCO_COM_DMZ_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pDmz->RemoteIPStart) < *pUlSize)
         {
-            AnscCopyString(pValue, pDmz->RemoteIPStart);
+            rc = strcpy_s(pValue, *pUlSize, pDmz->RemoteIPStart);
+            if (rc != EOK)
+            {
+              ERR_CHK(rc);
+              return -1;
+            }
             return 0;
         }
         else
@@ -741,7 +747,12 @@ X_CISCO_COM_DMZ_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pDmz->RemoteIPEnd) < *pUlSize)
         {
-            AnscCopyString(pValue, pDmz->RemoteIPEnd);
+            rc = strcpy_s(pValue, *pUlSize, pDmz->RemoteIPEnd);
+            if (rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -756,7 +767,12 @@ X_CISCO_COM_DMZ_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pDmz->InternalIP) < *pUlSize)
         {
-            AnscCopyString(pValue, pDmz->InternalIP);
+            rc = strcpy_s(pValue, *pUlSize, pDmz->InternalIP);
+            if (rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -771,7 +787,12 @@ X_CISCO_COM_DMZ_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pDmz->InternalMAC) < *pUlSize)
         {
-            AnscCopyString(pValue, pDmz->InternalMAC);
+            rc = strcpy_s(pValue, *pUlSize, pDmz->InternalMAC);
+            if (rc != EOK)
+            {  
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -786,7 +807,12 @@ X_CISCO_COM_DMZ_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pDmz->IPv6Host) < *pUlSize)
         {
-            AnscCopyString(pValue, pDmz->IPv6Host);
+            rc = strcpy_s(pValue, *pUlSize, pDmz->IPv6Host);
+            if (rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -841,6 +867,7 @@ X_CISCO_COM_DMZ_SetParamBoolValue
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_DMZ               pDmz         = &pNat->Dmz;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Enable", TRUE))
@@ -848,7 +875,12 @@ X_CISCO_COM_DMZ_SetParamBoolValue
         /* save update to backup */
         pDmz->bEnabled     = bValue;
         if (bValue == FALSE) {
-            AnscCopyString(pDmz->InternalIP, "0.0.0.0");  /* keep sync between webui and snmp */
+            rc = STRCPY_S_NOCLOBBER(pDmz->InternalIP, sizeof(pDmz->InternalIP), "0.0.0.0");  /* keep sync between webui and snmp */
+            if (rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             //CISCOXB3-5927 : ip6 table is not getting restored
             memset(pDmz->IPv6Host ,0 ,sizeof(pDmz->IPv6Host));
         }
@@ -907,6 +939,7 @@ X_CISCO_COM_DMZ_SetParamStringValue
     PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_DML_NAT_DMZ               pDmz         = &pNat->Dmz;
     ULONG                           dmzHost;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Data", TRUE))
@@ -1034,16 +1067,24 @@ X_CISCO_COM_DMZ_SetParamStringValue
     if( AnscEqualString(ParamName, "RemoteIPStart", TRUE))
     {
         /* save update to backup */
-        AnscCopyString( pDmz->RemoteIPStart, pString);
-
+        rc = STRCPY_S_NOCLOBBER( pDmz->RemoteIPStart, sizeof(pDmz->RemoteIPStart), pString);
+        if (rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "RemoteIPEnd", TRUE))
     {
         /* save update to backup */
-        AnscCopyString( pDmz->RemoteIPEnd, pString );
-
+        rc = STRCPY_S_NOCLOBBER( pDmz->RemoteIPEnd, sizeof(pDmz->RemoteIPEnd), pString );
+        if (rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -1052,18 +1093,33 @@ X_CISCO_COM_DMZ_SetParamStringValue
         /* save update to backup */
         if (AnscEqualString(pString, "0.0.0.0", FALSE)){ /* keep sync between gui and snmp */
             // pDmz->bEnabled = FALSE;
-            AnscCopyString(pDmz->InternalIP, pString);
+            rc = STRCPY_S_NOCLOBBER(pDmz->InternalIP, sizeof(pDmz->InternalIP), pString);
+            if (rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
         }
         else if (AnscEqualString(pString, "", FALSE)){   /* snmp comes with 0.0.0.0 */
             // pDmz->bEnabled = FALSE;
-            AnscCopyString(pDmz->InternalIP, "0.0.0.0");
+            rc = STRCPY_S_NOCLOBBER(pDmz->InternalIP, sizeof(pDmz->InternalIP), "0.0.0.0");
+            if (rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
         }
         else{
             dmzHost = (ULONG)_ansc_inet_addr(pString);
             if(FALSE == CosaDmlNatChkPortMappingClient(dmzHost)){
                 return FALSE;   /* dmz host not in local lan network */
             }else{
-                AnscCopyString( pDmz->InternalIP, pString );
+                rc = STRCPY_S_NOCLOBBER( pDmz->InternalIP, sizeof(pDmz->InternalIP), pString );
+                if (rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return FALSE;
+                }
                 pDmz->bEnabled = TRUE;
             }
         }
@@ -1074,16 +1130,24 @@ X_CISCO_COM_DMZ_SetParamStringValue
     if( AnscEqualString(ParamName, "InternalMAC", TRUE))
     {
         /* save update to backup */
-        AnscCopyString( pDmz->InternalMAC, pString );
-
+        rc = STRCPY_S_NOCLOBBER( pDmz->InternalMAC, sizeof(pDmz->InternalMAC), pString );
+        if (rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "IPv6Host", TRUE))
     {
         /* save update to backup */
-        AnscCopyString( pDmz->IPv6Host, pString );
-
+        rc = STRCPY_S_NOCLOBBER( pDmz->IPv6Host, sizeof(pDmz->IPv6Host), pString );
+        if (rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -1972,6 +2036,7 @@ PortMapping_GetParamStringValue
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT        pCxtLink      = (PCOSA_CONTEXT_PMAPPING_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PMAPPING                    pNatPMapping  = (PCOSA_DML_NAT_PMAPPING)pCxtLink->hContext;
     PUCHAR                                    pString       = NULL;
+    errno_t                                   rc            = -1;
 
     /* check the parameter name and return the corresponding value */
     
@@ -1981,7 +2046,12 @@ PortMapping_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pNatPMapping->Alias) < *pUlSize)
         {
-            AnscCopyString(pValue, pNatPMapping->Alias);
+            rc = strcpy_s(pValue, *pUlSize, pNatPMapping->Alias);
+            if (rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -1996,7 +2066,12 @@ PortMapping_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pNatPMapping->Description) < *pUlSize)
         {
-            AnscCopyString(pValue, pNatPMapping->Description);
+            rc = strcpy_s(pValue, *pUlSize, pNatPMapping->Description);
+            if (rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -2020,10 +2095,13 @@ PortMapping_GetParamStringValue
         {
             if ( AnscSizeOfString((const char*)pString) < *pUlSize)
             {
-                AnscCopyString(pValue, (char*)pString);
-
+                rc = strcpy_s(pValue, *pUlSize, (char*)pString);
                 AnscFreeMemory(pString);
-
+                if (rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return -1;
+                }
                 return 0;
             }
             else
@@ -2047,7 +2125,12 @@ PortMapping_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pNatPMapping->X_CISCO_COM_InternalClientV6) < *pUlSize)
         {
-            AnscCopyString(pValue, pNatPMapping->X_CISCO_COM_InternalClientV6);
+            rc = strcpy_s(pValue, *pUlSize, pNatPMapping->X_CISCO_COM_InternalClientV6);
+            if (rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -2352,6 +2435,7 @@ PortMapping_SetParamStringValue
     PCOSA_DATAMODEL_NAT                       pNat          = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT        pCxtLink      = (PCOSA_CONTEXT_PMAPPING_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PMAPPING                    pNatPMapping  = (PCOSA_DML_NAT_PMAPPING)pCxtLink->hContext;
+    errno_t                                   rc            = -1;
 
     #ifndef MULTILAN_FEATURE
     BOOL bridgeMode;
@@ -2365,34 +2449,54 @@ PortMapping_SetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString( (char*)pNat->AliasOfPortMapping, pNatPMapping->Alias);
-
-        AnscCopyString( pNatPMapping->Alias, pString );
-
+        rc = STRCPY_S_NOCLOBBER( (char*)pNat->AliasOfPortMapping, sizeof(pNat->AliasOfPortMapping),pNatPMapping->Alias);
+        if (rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+        rc = STRCPY_S_NOCLOBBER( pNatPMapping->Alias, sizeof(pNatPMapping->Alias), pString );
+        if (rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Description", TRUE))
     {
         /* save update to backup */
-        AnscCopyString( pNatPMapping->Description, pString );
-
+        rc = STRCPY_S_NOCLOBBER( pNatPMapping->Description, sizeof(pNatPMapping->Description), pString );
+        if (rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Interface", TRUE))
     {
         /* save update to backup */
-        AnscCopyString( pNatPMapping->Interface, pString );
-
+        rc = STRCPY_S_NOCLOBBER( pNatPMapping->Interface, sizeof(pNatPMapping->Interface), pString );
+        if (rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "X_CISCO_COM_InternalClientV6", TRUE))
     {
         /* save update to backup */
-        AnscCopyString( pNatPMapping->X_CISCO_COM_InternalClientV6, pString );
-
+        rc = STRCPY_S_NOCLOBBER( pNatPMapping->X_CISCO_COM_InternalClientV6, sizeof(pNatPMapping->X_CISCO_COM_InternalClientV6), pString );
+        if (rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -2549,6 +2653,7 @@ PortMapping_Commit
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT  pCxtLink      = (PCOSA_CONTEXT_PMAPPING_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PMAPPING              pNatPMapping  = (PCOSA_DML_NAT_PMAPPING)pCxtLink->hContext;
     PCOSA_DATAMODEL_NAT                 pNat          = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
+    errno_t                             rc            = -1;
 
     if ( pCxtLink->bNew )
     {
@@ -2564,8 +2669,10 @@ PortMapping_Commit
         {
             NAT_PORTMAPPING_SET_DEFAULTVALUE(pNatPMapping);
 
-            if ( pNat->AliasOfPortMapping[0] )
-                AnscCopyString( pNatPMapping->Alias, (char*)pNat->AliasOfPortMapping );
+            if ( pNat->AliasOfPortMapping[0] ) {
+                rc = STRCPY_S_NOCLOBBER( pNatPMapping->Alias, sizeof(pNatPMapping->Alias), (char*)pNat->AliasOfPortMapping );
+                ERR_CHK(rc);
+            }
         }
     }
     else
@@ -2618,10 +2725,12 @@ PortMapping_Rollback
     PCOSA_DATAMODEL_NAT                 pNat          = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
     PCOSA_CONTEXT_PMAPPING_LINK_OBJECT  pCxtLink      = (PCOSA_CONTEXT_PMAPPING_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PMAPPING              pNatPMapping  = (PCOSA_DML_NAT_PMAPPING)pCxtLink->hContext;
+    errno_t                             rc            = -1;
 
-    if ( pNat->AliasOfPortMapping[0] )
-        AnscCopyString( pNatPMapping->Alias, (char*)pNat->AliasOfPortMapping );
-
+    if ( pNat->AliasOfPortMapping[0] ) {
+        rc = STRCPY_S_NOCLOBBER( pNatPMapping->Alias, sizeof(pNatPMapping->Alias), (char*)pNat->AliasOfPortMapping );
+        ERR_CHK(rc);
+    }
     if ( !pCxtLink->bNew )
     {
         /* We have nothing to do with this case unless we have one getbyEntry() */
@@ -3365,6 +3474,7 @@ PortTrigger_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger  = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
+    errno_t                         rc            = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -3372,7 +3482,12 @@ PortTrigger_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pNatPTrigger->Alias) < *pUlSize)
         {
-            AnscCopyString(pValue, pNatPTrigger->Alias);
+            rc = STRCPY_S_NOCLOBBER(pValue, *pUlSize, pNatPTrigger->Alias);
+            if (rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -3387,7 +3502,12 @@ PortTrigger_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pNatPTrigger->Description) < *pUlSize)
         {
-            AnscCopyString(pValue, pNatPTrigger->Description);
+            rc = STRCPY_S_NOCLOBBER(pValue, *pUlSize, pNatPTrigger->Description);
+            if (rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -3634,7 +3754,12 @@ PortTrigger_SetParamStringValue
 
         pNatPTrigger->pOriAlias = AnscCloneString(pNatPTrigger->Alias);
 
-        AnscCopyString( pNatPTrigger->Alias, pString );
+        rc = STRCPY_S_NOCLOBBER( pNatPTrigger->Alias, sizeof(pNatPTrigger->Alias), pString );
+        if (rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         return TRUE;
     }
@@ -3806,6 +3931,7 @@ PortTrigger_Commit
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger  = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
     PCOSA_DATAMODEL_NAT             pNat          = (PCOSA_DATAMODEL_NAT      )g_pCosaBEManager->hNat;
+    errno_t                         rc            = -1;
 
     /*returnStatus = CosaDmlNatSetPortTrigger(NULL, pNatPTrigger);*/
 
@@ -3822,8 +3948,10 @@ PortTrigger_Commit
         else
         {
             COSA_DML_NAT_PTRIGGER_INIT(pNatPTrigger);
-            if ( pNatPTrigger->pOriAlias )
-                AnscCopyString( pNatPTrigger->Alias, pNatPTrigger->pOriAlias );
+            if ( pNatPTrigger->pOriAlias ) {
+                rc = STRCPY_S_NOCLOBBER( pNatPTrigger->Alias, sizeof(pNatPTrigger->Alias), pNatPTrigger->pOriAlias );
+                ERR_CHK(rc);
+            }
         }
     }
     else
@@ -3881,9 +4009,12 @@ PortTrigger_Rollback
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_NAT_PTRIGGER          pNatPTrigger  = (PCOSA_DML_NAT_PTRIGGER   )pCxtLink->hContext;
+    errno_t                         rc            = -1;
 
-    if ( pNatPTrigger->pOriAlias )
-        AnscCopyString( pNatPTrigger->Alias, pNatPTrigger->pOriAlias );
+    if ( pNatPTrigger->pOriAlias ) {
+        rc = STRCPY_S_NOCLOBBER(pNatPTrigger->Alias, sizeof(pNatPTrigger->Alias), pNatPTrigger->pOriAlias);
+        ERR_CHK(rc);
+    }
 
     if ( !pCxtLink->bNew )
     {

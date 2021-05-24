@@ -104,6 +104,7 @@
 
 #include "cosa_lanmanagement_dml.h"
 #include "cosa_drg_common.h"
+#include "safec_lib_common.h"
 
 /**********************************************************************  
 
@@ -210,10 +211,15 @@ LanManagement_GetParamStringValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
+    errno_t                        rc        = -1;
 
     if( AnscEqualString(ParamName, "LanIpv6Ula", TRUE)) {
         if ( AnscSizeOfString(pMyObject->LanMngmCfg.LanIpv6Ula) < *pulSize) {
-            AnscCopyString(pValue, pMyObject->LanMngmCfg.LanIpv6Ula);
+            rc = strcpy_s(pValue, *pulSize,  pMyObject->LanMngmCfg.LanIpv6Ula);
+            if (rc != EOK) {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else {
@@ -224,7 +230,11 @@ LanManagement_GetParamStringValue
 
     if( AnscEqualString(ParamName, "LanIpv6UlaPrefix", TRUE)) {
         if ( AnscSizeOfString(pMyObject->LanMngmCfg.LanIpv6UlaPrefix) < *pulSize) {
-            AnscCopyString(pValue, pMyObject->LanMngmCfg.LanIpv6UlaPrefix);
+            rc = strcpy_s(pValue, *pulSize, pMyObject->LanMngmCfg.LanIpv6UlaPrefix);
+            if (rc != EOK) {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else {
@@ -301,14 +311,23 @@ LanManagement_SetParamStringValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_LANMANAGEMENT  pMyObject = (PCOSA_DATAMODEL_LANMANAGEMENT)g_pCosaBEManager->hLanMngm;
+    errno_t                        rc        = -1;
 
     if( AnscEqualString(ParamName, "LanIpv6Ula", TRUE)) {
-        AnscCopyString(pMyObject->LanMngmCfg.LanIpv6Ula, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->LanMngmCfg.LanIpv6Ula, sizeof(pMyObject->LanMngmCfg.LanIpv6Ula), pString);
+        if (rc != EOK) {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "LanIpv6UlaPrefix", TRUE)) {
-        AnscCopyString(pMyObject->LanMngmCfg.LanIpv6UlaPrefix, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->LanMngmCfg.LanIpv6UlaPrefix, sizeof(pMyObject->LanMngmCfg.LanIpv6UlaPrefix), pString);
+        if (rc != EOK) {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 

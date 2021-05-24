@@ -69,7 +69,7 @@
 #include "ansc_platform.h"
 #include "cosa_firewall_dml.h"
 #include "cosa_firewall_internal.h"
-
+#include "safec_lib_common.h"
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -321,6 +321,7 @@ Firewall_GetParamStringValue
 {
     PCOSA_DATAMODEL_FIREWALL        pCosaDMFirewall = (PCOSA_DATAMODEL_FIREWALL)g_pCosaBEManager->hFirewall;
     PCOSA_DML_FIREWALL_CFG          pFirewallCfg    = &pCosaDMFirewall->FirewallConfig;
+    errno_t                         rc              = -1;
 
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(pUlSize);
@@ -329,7 +330,12 @@ Firewall_GetParamStringValue
     if( AnscEqualString(ParamName, "Version", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pFirewallCfg->Version);
+        rc = strcpy_s(pValue, *pUlSize, pFirewallCfg->Version);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
 
         return 0;
     }
@@ -342,13 +348,17 @@ Firewall_GetParamStringValue
         {
             CcspTraceWarning(("Firewall_GetParamUlongValue -- Resource allocation error\n"));
 
-            return FALSE;
+            return -1;
         }
 
         CosaDmlFirewallGetConfig(NULL, pFirewallCfg);
         /* collect value */
-        AnscCopyString(pValue, pFirewallCfg->LastChange);
-
+        rc = strcpy_s(pValue,*pUlSize, pFirewallCfg->LastChange);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         AnscFreeMemory(pFirewallCfg);
 
         return 0;

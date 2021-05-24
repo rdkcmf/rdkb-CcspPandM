@@ -437,6 +437,7 @@ CosaDsliteRegGetDsliteInfo
     BOOL                            bNew              = FALSE;
     char*                           pAliasDslite      = NULL;
     char*                           pFolderName       = NULL;
+    errno_t                         rc                = -1;
 
 
     if ( !pPoamIrepFoDslite )
@@ -568,7 +569,8 @@ CosaDsliteRegGetDsliteInfo
 
         /* save alias and instanceNumber */
         pCosaDslite->InstanceNumber = uInstanceNumber;
-        AnscCopyString( pCosaDslite->alias, pAliasDslite );
+        rc = strcpy_s( pCosaDslite->alias, sizeof(pCosaDslite->alias), pAliasDslite );
+        ERR_CHK(rc);
 
         /* Create one link point */
         pCosaDsliteContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));

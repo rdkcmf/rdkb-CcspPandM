@@ -502,6 +502,7 @@ CosaDynamicDns_ClientGetInfo
     ULONG                       ulInstanceNumber           = 0;
     char*                       pFolderName                = NULL;
     char*                       pAlias                     = NULL;
+    errno_t                     rc                         = -1;
 
 
 
@@ -593,7 +594,8 @@ CosaDynamicDns_ClientGetInfo
         }
 
         pClientEntry->InstanceNumber = ulInstanceNumber;
-        AnscCopyString(pClientEntry->Alias, pAlias);
+        rc = strcpy_s(pClientEntry->Alias,sizeof(pClientEntry->Alias),pAlias);
+        ERR_CHK(rc);
 
         /*Copy the current entry into COSA_CONTEXT_LINK_OBJECT */
         pCosaContext->InstanceNumber        = ulInstanceNumber;
@@ -775,6 +777,7 @@ CosaDynamicDns_HostGetInfo
     ULONG                       ulInstanceNumber           = 0;
     char*                       pFolderName                = NULL;
     char*                       pAlias                     = NULL;
+    errno_t                     rc                         = -1;
 
     if (!pPoamIrepFoDDNSHost)
     {
@@ -864,7 +867,8 @@ CosaDynamicDns_HostGetInfo
         }
 
         pHostEntry->InstanceNumber = ulInstanceNumber;
-        AnscCopyString(pHostEntry->Alias, pAlias);
+        rc = strcpy_s(pHostEntry->Alias,sizeof(pHostEntry->Alias),pAlias);
+        ERR_CHK(rc);
 
         /*Copy the current entry into COSA_CONTEXT_LINK_OBJECT */
         pCosaContext->InstanceNumber        = ulInstanceNumber;
@@ -1047,6 +1051,7 @@ CosaDynamicDns_ServerGetInfo
     ULONG                       ulInstanceNumber           = 0;
     char*                       pFolderName                = NULL;
     char*                       pAlias                     = NULL;
+    errno_t                     rc                         = -1;
 
     if (!pPoamIrepFoDDNSServer)
     {
@@ -1135,7 +1140,8 @@ CosaDynamicDns_ServerGetInfo
         }
 
         pServerEntry->InstanceNumber = ulInstanceNumber;
-        AnscCopyString(pServerEntry->Alias, pAlias);
+        rc = strcpy_s(pServerEntry->Alias,sizeof(pServerEntry->Alias),pAlias);
+        ERR_CHK(rc);
         /*Copy the current entry into COSA_CONTEXT_LINK_OBJECT */
         pCosaContext->InstanceNumber        = ulInstanceNumber;
         pCosaContext->bNew                  = TRUE;

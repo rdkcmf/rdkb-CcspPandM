@@ -684,14 +684,24 @@ Interface_GetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pEthernetPortFull->Cfg.Alias);
+        rc = strcpy_s(pValue, *pUlSize, pEthernetPortFull->Cfg.Alias);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Name", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pEthernetPortFull->StaticInfo.Name);
+        rc = strcpy_s(pValue,*pUlSize, pEthernetPortFull->StaticInfo.Name);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
@@ -781,7 +791,12 @@ Interface_GetParamStringValue
 
 		if(AnscSizeOfString(assocDeviceMacList) < *pUlSize) 
 		{
-			AnscCopyString(pValue,assocDeviceMacList);
+			rc = strcpy_s(pValue,*pUlSize,assocDeviceMacList);
+			if(rc != EOK)
+			{
+				ERR_CHK(rc);
+				return -1;
+			}
 			*pUlSize = AnscSizeOfString(assocDeviceMacList);
 			return 0;
 		}
@@ -993,12 +1008,18 @@ Interface_SetParamStringValue
     )
 {
     PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
+    errno_t                         rc                = -1;
     
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pEthernetPortFull->Cfg.Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pEthernetPortFull->Cfg.Alias, sizeof(pEthernetPortFull->Cfg.Alias),pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -1056,6 +1077,7 @@ Interface_Validate
     PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull       = (PCOSA_DML_ETH_PORT_FULL )hInsContext;
     ULONG                           ulEntryCount            = 0;
     ULONG                           ulIndex                 = 0;
+    errno_t                         rc                      = -1;
     
     ulEntryCount = CosaDmlEthPortGetNumberOfEntries(NULL);
     
@@ -1066,7 +1088,12 @@ Interface_Validate
                 AnscEqualString(pEthernetPortFull->Cfg.Alias, pMyObject->EthernetPortFullTable[ulIndex].Cfg.Alias, TRUE)
             )
         {
-            AnscCopyString(pReturnParamName, "Alias");
+            rc = strcpy_s(pReturnParamName,sizeof(pReturnParamName), "Alias");
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
 
             *puLength = AnscSizeOfString("Alias");
 
@@ -2232,7 +2259,13 @@ Link_GetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->Cfg.Alias);
+        rc = strcpy_s(pValue,*pUlSize, pEntry->Cfg.Alias);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return -1;
+        }
+
         return 0;
     }
 
@@ -2265,7 +2298,12 @@ Link_GetParamStringValue
 			}
         }
 
-        AnscCopyString(pValue, pEntry->StaticInfo.Name);
+        rc = strcpy_s(pValue,*pUlSize, pEntry->StaticInfo.Name);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
@@ -2276,7 +2314,8 @@ Link_GetParamStringValue
             if ( (pEntry->Cfg.LinkType == COSA_DML_LINK_TYPE_LAST) || (pEntry->Cfg.LinkInstNum == 0) )
             {
                 /* Lower Link is invalid*/
-                AnscCopyString(pEntry->Cfg.LowerLayers, "");
+                pEntry->Cfg.LowerLayers[0] = '\0';
+
             }
             else
             {
@@ -2291,11 +2330,21 @@ Link_GetParamStringValue
                     );
             }
 
-            AnscCopyString(pValue, pEntry->Cfg.LowerLayers);
+            rc = strcpy_s(pValue,*pUlSize, pEntry->Cfg.LowerLayers);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
         }
         else //LowerLayer is pre-set
         {
-            AnscCopyString(pValue, pEntry->Cfg.LowerLayers);
+           rc = strcpy_s(pValue,*pUlSize, pEntry->Cfg.LowerLayers);
+           if(rc != EOK)
+           {
+             ERR_CHK(rc);
+             return -1;
+           }
         }
 
         return 0;
@@ -2548,7 +2597,12 @@ Link_SetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pEntry->Cfg.Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.Alias, sizeof(pEntry->Cfg.Alias) ,pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -2617,7 +2671,12 @@ Link_SetParamStringValue
                     COSAGetParamValueByPathName(&varStruct, &size) )
 #endif
             {
-                AnscCopyString(pEntry->Cfg.LinkName, ucEntryNameValue);
+               rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.LinkName, sizeof(pEntry->Cfg.LinkName),ucEntryNameValue);
+               if(rc != EOK)
+               {
+                 ERR_CHK(rc);
+                 return FALSE;
+               }
             }
             else
             {
@@ -2677,6 +2736,7 @@ Link_Validate
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2     = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_ETH_LINK_FULL         pEntry2           = (PCOSA_DML_ETH_LINK_FULL  )NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;
+    errno_t                         rc                = -1;
 
     pSLinkEntry = AnscSListGetFirstEntry(pListHead);
 
@@ -2693,7 +2753,12 @@ Link_Validate
                  AnscEqualString(pEntry->Cfg.Alias, pEntry2->Cfg.Alias, TRUE) 
            )
         {
-            AnscCopyString(pReturnParamName, "Alias");
+            rc = strcpy_s(pReturnParamName,sizeof(pReturnParamName), "Alias");
+            if(rc != EOK)
+            {
+              ERR_CHK(rc);
+              return FALSE;
+            }
 
             *puLength = AnscSizeOfString("Alias");
             
@@ -3613,26 +3678,41 @@ VLANTermination_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)pContextLinkObject->hContext;
-
+    errno_t                             rc                  = -1;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->Cfg.Alias);
+        rc = strcpy_s(pValue,*pUlSize, pEntry->Cfg.Alias);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Name", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->StaticInfo.Name);
+        rc = strcpy_s(pValue,*pUlSize, pEntry->StaticInfo.Name);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "LowerLayers", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->Cfg.LowerLayers);
+        rc = strcpy_s(pValue,*pUlSize, pEntry->Cfg.LowerLayers);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return -1;
+        }
         return 0;
     }
 
@@ -3835,19 +3915,30 @@ VLANTermination_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)pContextLinkObject->hContext;
-    
+    errno_t                             rc                  = -1;
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pEntry->Cfg.Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
+
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "LowerLayers", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pEntry->Cfg.LowerLayers, pString);
+        rc = strcpy_s(pEntry->Cfg.LowerLayers,sizeof(pEntry->Cfg.LowerLayers), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
@@ -3900,6 +3991,7 @@ VLANTermination_Validate
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2     = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry2       = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;
+    errno_t                         rc                = -1;
 
     if (!CosaDmlEthVlanTerminationValidateCfg(NULL, &pEntry->Cfg, pReturnParamName, puLength))
     {
@@ -3921,8 +4013,12 @@ VLANTermination_Validate
                  AnscEqualString(pEntry->Cfg.Alias, pEntry2->Cfg.Alias, TRUE) 
            )
         {
-            AnscCopyString(pReturnParamName, "Alias");
-
+            rc = strcpy_s(pReturnParamName,sizeof(pReturnParamName), "Alias");
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
             *puLength = AnscSizeOfString("Alias");
             
             return FALSE;
@@ -3937,8 +4033,12 @@ VLANTermination_Validate
            )
         {
             // We can not enable
-            AnscCopyString(pReturnParamName, "VLANID");
-
+            rc = strcpy_s(pReturnParamName,sizeof(pReturnParamName), "VLANID");
+            if(rc != EOK)
+            {
+              ERR_CHK(rc);
+              return FALSE;
+            }
             *puLength = AnscSizeOfString("VLANID");
             
             return FALSE;

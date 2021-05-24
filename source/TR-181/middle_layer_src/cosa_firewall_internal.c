@@ -61,7 +61,7 @@
 **************************************************************************/
 
 #include "cosa_firewall_internal.h"
-
+#include "safec_lib_common.h"
 
 /**********************************************************************
 
@@ -147,6 +147,7 @@ CosaFirewallInitialize
     ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_FIREWALL        pMyObject       = (PCOSA_DATAMODEL_FIREWALL)hThisObject;
     PCOSA_DML_FIREWALL_CFG          pFirewallCfg    = NULL;
+    errno_t                         rc              = -1;
 
     returnStatus = CosaDmlFirewallInit(NULL, NULL);
 
@@ -171,8 +172,10 @@ CosaFirewallInitialize
     {
         pMyObject->FirewallConfig.FirewallLevel = pFirewallCfg->FirewallLevel;
 
-        AnscCopyString(pMyObject->FirewallConfig.Version, pFirewallCfg->Version);
-        AnscCopyString(pMyObject->FirewallConfig.LastChange, pFirewallCfg->LastChange);
+        rc = strcpy_s(pMyObject->FirewallConfig.Version, sizeof(pMyObject->FirewallConfig.Version),pFirewallCfg->Version);
+        ERR_CHK(rc);
+        rc = strcpy_s(pMyObject->FirewallConfig.LastChange, sizeof(pMyObject->FirewallConfig.LastChange),pFirewallCfg->LastChange);
+        ERR_CHK(rc);
     }
 
     AnscFreeMemory(pFirewallCfg);

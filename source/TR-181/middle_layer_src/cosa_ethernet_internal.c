@@ -529,6 +529,7 @@ CosaEthLinkRegGetInfo
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoEthLink )
     {
@@ -616,8 +617,8 @@ CosaEthLinkRegGetInfo
 
             return ANSC_STATUS_RESOURCES;
         }
-
-        AnscCopyString(pEntry->Cfg.Alias, pAlias);
+        rc = strcpy_s(pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->Cfg.InstanceNumber = ulInstanceNumber;
 
@@ -950,6 +951,7 @@ CosaEthVlanTerminationRegGetInfo
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoEthVlan )
     {
@@ -1037,8 +1039,8 @@ CosaEthVlanTerminationRegGetInfo
 
             return ANSC_STATUS_RESOURCES;
         }
-
-        AnscCopyString(pEntry->Cfg.Alias, pAlias);
+        rc = strcpy_s(pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->Cfg.InstanceNumber = ulInstanceNumber;
 

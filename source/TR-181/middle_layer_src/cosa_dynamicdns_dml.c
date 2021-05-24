@@ -51,11 +51,17 @@ DynamicDNS_GetParamStringValue
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(puLong);
     char supportedServices[1024] = {0};
+    errno_t rc = -1;
     if (AnscEqualString(ParamName, "SupportedServices", TRUE))
     {
         if (!CosaDmlDynamicDns_GetsupportedServices(supportedServices))
         {
-            AnscCopyString(pValue, supportedServices);
+            rc =strcpy_s(pValue, *pUlSize, supportedServices);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
             return 0;
         }
     }
@@ -331,30 +337,50 @@ DDNSClient_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_CLIENT         *pClientEntry = (COSA_DML_DDNS_CLIENT *)pLinkObj->hContext;
-
+    errno_t                      rc            = -1;
     if (AnscEqualString(ParamName, "Alias", TRUE))
     {
-        AnscCopyString(pValue, pClientEntry->Alias);
+        rc =strcpy_s(pValue, *pUlSize, pClientEntry->Alias);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "Username", TRUE))
     {
-        AnscCopyString(pValue, pClientEntry->Username);
+        rc =strcpy_s(pValue, *pUlSize,  pClientEntry->Username);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "Password", TRUE))
     {
-        AnscCopyString(pValue, "");
+        pValue[0] = '\0';
         return 0;
     }
     if (AnscEqualString(ParamName, "Server", TRUE))
     {
-        AnscCopyString(pValue, pClientEntry->Server);
+        rc =strcpy_s(pValue, *pUlSize, pClientEntry->Server);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "Interface", TRUE))
     {
-        AnscCopyString(pValue, "Device.IP.Interface.1");
+        rc =strcpy_s(pValue, *pUlSize, "Device.IP.Interface.1");
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     return -1;
@@ -710,18 +736,29 @@ DDNSHostname_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT    pLinkObj        = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_HOST           *pHostEntry     = (COSA_DML_DDNS_HOST *)pLinkObj->hContext;
+    errno_t                      rc              = -1;
     CosaDmlDynamicDns_Host_GetConf(pHostEntry->InstanceNumber,pHostEntry);
 
     if (AnscEqualString(ParamName, "Name", TRUE))
     {
-        AnscCopyString(pValue, pHostEntry->Name);
+        rc =strcpy_s(pValue, *pUlSize, pHostEntry->Name);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "LastUpdate", TRUE))
     {
         //Need to check the date time format
         CosaDmlDynamicDns_GetHostLastUpdate(pHostEntry->LastUpdate);
-        AnscCopyString(pValue, pHostEntry->LastUpdate);
+        rc =strcpy_s(pValue, *pUlSize, pHostEntry->LastUpdate);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1050,35 +1087,65 @@ DDNSServer_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER            *pDDNSServer = (COSA_DML_DDNS_SERVER*)pLinkObj->hContext;
-
+    errno_t                         rc           = -1;
     if (AnscEqualString(ParamName, "Name", TRUE))
     {
-        AnscCopyString(pValue, pDDNSServer->Name);
+        rc =strcpy_s(pValue, *pUlSize, pDDNSServer->Name);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "Alias", TRUE))
     {
-        AnscCopyString(pValue, pDDNSServer->Alias);
+        rc =strcpy_s(pValue, *pUlSize, pDDNSServer->Alias);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "ServiceName", TRUE))
     {
-        AnscCopyString(pValue, pDDNSServer->ServiceName);
+        rc =strcpy_s(pValue, *pUlSize, pDDNSServer->ServiceName);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "ServerAddress", TRUE))
     {
-        AnscCopyString(pValue, pDDNSServer->ServerAddress);
+        rc =strcpy_s(pValue, *pUlSize, pDDNSServer->ServerAddress);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "SupportedProtocols", TRUE))
     {
-        AnscCopyString(pValue, pDDNSServer->SupportedProtocols);
+        rc =strcpy_s(pValue, *pUlSize, pDDNSServer->SupportedProtocols);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "Protocol", TRUE))
     {
-        AnscCopyString(pValue, pDDNSServer->Protocol);
+        rc =strcpy_s(pValue, *pUlSize, pDDNSServer->Protocol);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     return -1;

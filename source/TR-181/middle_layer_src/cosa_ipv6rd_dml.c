@@ -468,28 +468,47 @@ IPv6rdIF_GetParamStringValue(
         return FALSE;
 
     CosaDml_IPv6rdGetEntry(NULL, pEntry->InstanceNumber, pEntry);
-
     if (AnscEqualString(ParamName, "Status", TRUE))
     {
-        AnscCopyString(pValue, pEntry->Status);
+      rc = strcpy_s(pValue,*pSize, pEntry->Status);
+      if(rc != EOK)
+      {
+         ERR_CHK(rc);
+         return -1;
+      }
     }
     else if (AnscEqualString(ParamName, "Alias", TRUE))
     {
-        AnscCopyString(pValue, pEntry->Alias);
+       rc = strcpy_s(pValue,*pSize, pEntry->Alias);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return -1;
+       }
     }
     else if (AnscEqualString(ParamName, "BorderRelayIPv4Addresses", TRUE))
     {
-        AnscCopyString(pValue, pEntry->BorderRelayIPv4Addr);
+       rc = strcpy_s(pValue,*pSize, pEntry->BorderRelayIPv4Addr);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return -1;
+       }
     }
     else if (AnscEqualString(ParamName, "SPIPv6Prefix", TRUE))
     {
-        AnscCopyString(pValue, pEntry->SPIPv6Prefix);
+       rc = strcpy_s(pValue,*pSize, pEntry->SPIPv6Prefix);
+       if(rc != EOK)
+       {
+          ERR_CHK(rc);
+          return -1;
+       }
     }
     else if (AnscEqualString(ParamName, "AddressSource", TRUE))
     {
         if (_ansc_strlen(pEntry->AddressSource) == 0)
         {
-            AnscCopyString(pValue, "");
+            pValue[0] = '\0';
             return 0;
         }
 
@@ -511,9 +530,18 @@ IPv6rdIF_GetParamStringValue(
         }
 
         if (path == NULL)
-            AnscCopyString(pValue, "");
+        {
+           pValue[0] = '\0';
+        }
         else
-            AnscCopyString(pValue, (char*)path);
+        {
+           rc = strcpy_s(pValue,*pSize, (char*)path);
+           if(rc != EOK)
+           {
+             ERR_CHK(rc);
+             return -1;
+           }
+        }
         /* AnscCopyString(pValue, pEntry->AddressSource); */
     }
     else if (AnscEqualString(ParamName, "TunnelInterface", TRUE))
@@ -521,9 +549,18 @@ IPv6rdIF_GetParamStringValue(
         path = CosaUtilGetFullPathNameByKeyword((PUCHAR)"Device.IP.Interface.", 
                 (PUCHAR)"Name", (PUCHAR)pEntry->TunnelInterface);
         if (path == NULL)
-            AnscCopyString(pValue, "");
+        {
+           pValue[0] = '\0';
+        }
         else
-            AnscCopyString(pValue, (char*)path);
+        {
+           rc = strcpy_s(pValue,*pSize, (char*)path);
+           if(rc != EOK)
+           {
+              ERR_CHK(rc);
+              return -1;
+           }
+        }
         /* AnscCopyString(pValue, pEntry->TunnelInterface); */
     }
     else if (AnscEqualString(ParamName, "TunneledInterface", TRUE))
@@ -531,9 +568,18 @@ IPv6rdIF_GetParamStringValue(
         path = CosaUtilGetFullPathNameByKeyword((PUCHAR)"Device.IP.Interface.", 
                 (PUCHAR)"Name", (PUCHAR)pEntry->TunneledInterface);
         if (path == NULL)
-            AnscCopyString(pValue, "");
+        {
+           pValue[0] = '\0';
+        }
         else
-            AnscCopyString(pValue, (char*)path);
+        {
+           rc = strcpy_s(pValue,*pSize, (char*)path);
+           if(rc != EOK)
+           {
+              ERR_CHK(rc);
+              return -1;
+           }
+        }
         /* AnscCopyString(pValue, pEntry->TunneledInterface); */
     }
     else
@@ -630,7 +676,6 @@ IPv6rdIF_SetParamStringValue(
     pEntry = (PCOSA_DML_IPV6RD_IF)pLinkObject->hContext; /*RDKB-6740, CID-33172, null must checked before use*/
     if (!pEntry)
         return FALSE;
-
     if (AnscEqualString(ParamName, "Alias", TRUE))
     {
 		char wrapped_inputparam[256]={0};
@@ -638,7 +683,12 @@ IPv6rdIF_SetParamStringValue(
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
         CcspTraceWarning(("after isValidInput\n"));
-        AnscCopyString(pEntry->Alias, wrapped_inputparam);
+        rc = strcpy_s(pEntry->Alias,sizeof(pEntry->Alias) ,wrapped_inputparam);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
 		
         return TRUE;
     }
@@ -649,8 +699,13 @@ IPv6rdIF_SetParamStringValue(
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
         
-        AnscCopyString(pEntry->BorderRelayIPv4Addr, wrapped_inputparam);
-        return TRUE;
+	rc = strcpy_s(pEntry->BorderRelayIPv4Addr,sizeof(pEntry->BorderRelayIPv4Addr), wrapped_inputparam);
+	if(rc != EOK)
+	{
+	    ERR_CHK(rc);
+	    return FALSE;
+	}
+	return TRUE;
     }
     else if (AnscEqualString(ParamName, "SPIPv6Prefix", TRUE))
     {
@@ -659,8 +714,14 @@ IPv6rdIF_SetParamStringValue(
 	if(ANSC_STATUS_SUCCESS != ret)
 	    return FALSE;
         
-        AnscCopyString(pEntry->SPIPv6Prefix, wrapped_inputparam);
-        return TRUE;
+	rc = strcpy_s(pEntry->SPIPv6Prefix,sizeof(pEntry->SPIPv6Prefix), wrapped_inputparam);
+	if(rc != EOK)
+	{
+	    ERR_CHK(rc);
+	    return FALSE;
+	}
+
+	return TRUE;
     }
     else if (AnscEqualString(ParamName, "AddressSource", TRUE))
     {
@@ -673,7 +734,7 @@ IPv6rdIF_SetParamStringValue(
 			( _ansc_strlen(wrapped_inputparam) == 0 )
 			)
         {
-            AnscCopyString(pEntry->AddressSource, "");
+            pEntry->AddressSource[0] = '\0';
             return TRUE;
         }
 
@@ -690,7 +751,12 @@ IPv6rdIF_SetParamStringValue(
             return FALSE;
         }
 
-        AnscCopyString(pEntry->AddressSource, v4addr);
+        rc = strcpy_s(pEntry->AddressSource,sizeof(pEntry->AddressSource) ,v4addr);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         /* AnscCopyString(pEntry->AddressSource, pString); */
         return TRUE;
     }

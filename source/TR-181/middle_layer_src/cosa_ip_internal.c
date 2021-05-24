@@ -824,6 +824,7 @@ CosaIpRegGetInfo
     ULONG                           ulUpperInstanceNumber   = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoIPHA )
     {
@@ -921,7 +922,8 @@ CosaIpRegGetInfo
             pIPInterface->ulNextIPV6PreInsNum = 1;
             
             pIPInterface->Cfg.InstanceNumber = ulInstanceNumber;
-            AnscCopyString(pIPInterface->Cfg.Alias, pAlias);
+            rc = strcpy_s(pIPInterface->Cfg.Alias, sizeof(pIPInterface->Cfg.Alias), pAlias);
+            ERR_CHK(rc);
 
             pCosaContext->InstanceNumber   = ulInstanceNumber;
             pCosaContext->bNew             = TRUE;
@@ -1039,7 +1041,8 @@ CosaIpRegGetInfo
                 }
 
                 pIPv4Addr->InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pIPv4Addr->Alias, pAlias);
+                rc = strcpy_s(pIPv4Addr->Alias, sizeof(pIPv4Addr->Alias), pAlias);
+                ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber  = ulInstanceNumber;
                 pSubCosaContext->hContext        = (ANSC_HANDLE)pIPv4Addr;
@@ -1076,7 +1079,8 @@ CosaIpRegGetInfo
                 }
 
                 pIPv6Addr->InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pIPv6Addr->Alias, pAlias);
+                rc = strcpy_s(pIPv6Addr->Alias, sizeof(pIPv6Addr->Alias), pAlias);
+                ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber  = ulInstanceNumber;
                 pSubCosaContext->hContext        = (ANSC_HANDLE)pIPv6Addr;
@@ -1114,7 +1118,8 @@ CosaIpRegGetInfo
                 }
 
                 pIPv6Pre->InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pIPv6Pre->Alias, pAlias);
+                rc = strcpy_s(pIPv6Pre->Alias, sizeof(pIPv6Pre->Alias), pAlias);
+                ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber  = ulInstanceNumber;
                 pSubCosaContext->hContext        = (ANSC_HANDLE)pIPv6Pre;

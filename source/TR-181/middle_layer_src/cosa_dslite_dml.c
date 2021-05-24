@@ -307,6 +307,7 @@ InterfaceSetting4_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
+    errno_t                         rc                = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -315,8 +316,13 @@ InterfaceSetting4_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pDsliteTunnel->alias) < *pUlSize)
         {
-            AnscCopyString(pValue, pDsliteTunnel->alias);
-            return 0;
+           rc = strcpy_s(pValue, *pUlSize, pDsliteTunnel->alias);
+           if(rc != EOK)
+           {
+              ERR_CHK(rc);
+              return -1;
+           }
+           return 0;
         }
         else
         {
@@ -331,8 +337,13 @@ InterfaceSetting4_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pDsliteTunnel->addr_inuse) < *pUlSize)
         {
-            AnscCopyString(pValue, pDsliteTunnel->addr_inuse);
-            return 0;
+           rc = strcpy_s(pValue, *pUlSize, pDsliteTunnel->addr_inuse);
+           if(rc != EOK)
+           {
+             ERR_CHK(rc);
+             return -1;
+           }
+           return 0;
         }
         else
         {
@@ -359,24 +370,34 @@ InterfaceSetting4_GetParamStringValue
             {
                 if ( AnscSizeOfString(pDsliteTunnel->addr_fqdn) < sizeof(endPointName))
                 {
-                    AnscCopyString(endPointName,pDsliteTunnel->addr_fqdn);
+                    rc = strcpy_s(endPointName, sizeof(endPointName), pDsliteTunnel->addr_fqdn);
+                    if(rc != EOK)
+                    {
+                       ERR_CHK(rc);
+                       return -1;
+                    }
                 }
             }
             /* collect value */
             if ( AnscSizeOfString(endPointName) < *pUlSize)
             {
-                AnscCopyString(pValue, endPointName);
+                rc = strcpy_s(pValue, *pUlSize, endPointName);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return -1;
+                }
                 return 0;
             }
             else
             {
-                *pUlSize = AnscSizeOfString(endPointName);
+                *pUlSize = AnscSizeOfString(endPointName)+1;
                 return 1;
             }
         }
         else
         {
-            AnscCopyString(pValue, "");
+            pValue[0] = '\0';
             return 0;
         }
     }
@@ -387,7 +408,12 @@ InterfaceSetting4_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pDsliteTunnel->addr_ipv6) < *pUlSize)
         {
-            AnscCopyString(pValue, pDsliteTunnel->addr_ipv6);
+            rc =  strcpy_s(pValue,*pUlSize, pDsliteTunnel->addr_ipv6);
+            if(rc != EOK)
+            {
+              ERR_CHK(rc);
+              return -1;
+            }
             return 0;
         }
         else
@@ -403,7 +429,12 @@ InterfaceSetting4_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pDsliteTunnel->tunnel_interface) < *pUlSize)
         {
-            AnscCopyString(pValue, pDsliteTunnel->tunnel_interface);
+            rc =  strcpy_s(pValue, *pUlSize, pDsliteTunnel->tunnel_interface);
+            if(rc != EOK)
+            {
+              ERR_CHK(rc);
+              return -1;
+            }
             return 0;
         }
         else
@@ -419,7 +450,12 @@ InterfaceSetting4_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pDsliteTunnel->tunneled_interface) < *pUlSize)
         {
-            AnscCopyString(pValue, pDsliteTunnel->tunneled_interface);
+            rc =  strcpy_s(pValue,*pUlSize, pDsliteTunnel->tunneled_interface);
+            if(rc != EOK)
+            {
+              ERR_CHK(rc);
+              return -1;
+            }
             return 0;
         }
         else
@@ -446,6 +482,7 @@ InterfaceSetting4_GetParamUlongValue
     UNREFERENCED_PARAMETER(puLong);
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
+    errno_t                         rc                = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Status", TRUE))
@@ -467,7 +504,13 @@ InterfaceSetting4_GetParamUlongValue
             {
                 if (AnscSizeOfString(pDsliteTunnel->addr_fqdn) < sizeof(endPointName))
                 {
-                    AnscCopyString(endPointName,pDsliteTunnel->addr_fqdn);
+                   rc = strcpy_s(endPointName,sizeof(endPointName),pDsliteTunnel->addr_fqdn);
+                   if(rc != EOK)
+                   {
+                      ERR_CHK(rc);
+                      *puLong = status;
+                      return FALSE;
+                   }
                 }
             }
             if (AnscSizeOfString(endPointName) > 0)
@@ -575,13 +618,19 @@ InterfaceSetting4_SetParamStringValue
     UNREFERENCED_PARAMETER(pString);
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
+    errno_t                         rc                = -1;
 
     CcspTraceWarning(("Dslite: set %s to %s\n", ParamName, pString));
 
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pDsliteTunnel->alias, pString);
+        rc = strcpy_s(pDsliteTunnel->alias, sizeof(pDsliteTunnel->alias), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
@@ -593,7 +642,12 @@ InterfaceSetting4_SetParamStringValue
         if(read_cfg.mode == 2)//EndpointName is only writable when EndpointAssignmentPrecedence is Static
         {
             /* save update to backup */
-            AnscCopyString(pDsliteTunnel->addr_fqdn, pString);
+            rc = strcpy_s(pDsliteTunnel->addr_fqdn, sizeof(pDsliteTunnel->addr_fqdn),pString);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
             return TRUE;
         }
         else
@@ -603,7 +657,12 @@ InterfaceSetting4_SetParamStringValue
     if( AnscEqualString(ParamName, "EndpointAddress", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pDsliteTunnel->addr_ipv6, pString);
+        rc = strcpy_s(pDsliteTunnel->addr_ipv6,sizeof(DsliteTunnel->addr_ipv6), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
@@ -711,6 +770,7 @@ InterfaceSetting4_Commit
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
+    errno_t                         rc                = -1;
 
     if ( pCxtLink->bNew )
     {
@@ -726,8 +786,14 @@ InterfaceSetting4_Commit
         {
             DSLITE_SET_DEFAULTVALUE(pDsliteTunnel);
 
-            if ( pDslite->Alias[0] )
-                AnscCopyString( pDsliteTunnel->alias, pDslite->Alias );
+            if ( pDslite->Alias[0] ){
+                rc = strcpy_s(pDsliteTunnel->alias,sizeof(pDsliteTunnel->alias),pDslite->Alias);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return 0;
+                }
+            }
         }
     }
     else
@@ -757,10 +823,17 @@ InterfaceSetting4_Rollback
     PCOSA_DATAMODEL_DSLITE          pDslite           = (PCOSA_DATAMODEL_DSLITE)g_pCosaBEManager->hDslite;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DSLITE                pDsliteTunnel     = (PCOSA_DML_DSLITE)pCxtLink->hContext;
+    errno_t                         rc                = -1;
 
     if ( pDslite->Alias[0] )
-        AnscCopyString( pDsliteTunnel->alias, pDslite->Alias );
-
+    {
+       rc = strcpy_s(pDsliteTunnel->alias,sizeof(pDsliteTunnel->alias),pDslite->Alias);
+       if(rc != EOK)
+       {
+         ERR_CHK(rc);
+         return 0;
+       }
+    }
     if ( !pCxtLink->bNew )
     {
         CosaDmlDsliteGetCfg( NULL, pDsliteTunnel );

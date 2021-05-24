@@ -529,6 +529,7 @@ CosaNatRegGetNatInfo
     BOOL                            bNew              = FALSE;
     char*                           pAliasNat         = NULL;
     char*                           pFolderName       = NULL;
+    errno_t                         rc                = -1;
 
     CcspTraceWarning(("!!!!!! In CosaNatRegGetNatInfo !!!!!!\n"));
 
@@ -642,7 +643,8 @@ CosaNatRegGetNatInfo
 
         /* save alias and instanceNumber */
         pCosaNat->InstanceNumber = uInstanceNumber;
-        AnscCopyString( pCosaNat->Alias, pAliasNat );
+        rc = strcpy_s(pCosaNat->Alias, sizeof(pCosaNat->Alias), pAliasNat);
+        ERR_CHK(rc);
 
         /* Create one link point */
         pCosaNatContext = (PCOSA_CONTEXT_PMAPPING_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_PMAPPING_LINK_OBJECT));
@@ -783,7 +785,8 @@ CosaNatRegGetNatInfo
 
         /* save alias and instanceNumber */
         pCosaNatPt->InstanceNumber = uInstanceNumber;
-        AnscCopyString( pCosaNatPt->Alias, pAliasNat );
+        rc = strcpy_s(pCosaNatPt->Alias, sizeof(pCosaNatPt->Alias), pAliasNat);
+        ERR_CHK(rc);
 
         CcspTraceWarning(("!!!!!! pCosaNatPt->InstanceNumber: %d, pCosaNatPt->Alias: %s !!!!!!\n", pCosaNatPt->InstanceNumber, pCosaNatPt->Alias));
 

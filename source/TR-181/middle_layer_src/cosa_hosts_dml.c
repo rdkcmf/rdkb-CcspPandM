@@ -71,6 +71,7 @@
 #include "plugin_main_apis.h"
 #include "cosa_hosts_apis.h"
 #include "cosa_hosts_internal.h"
+#include "safec_lib_common.h"
 
 extern LmObjectHosts lmHosts;
 
@@ -798,18 +799,26 @@ Host_GetParamStringValue
 {
     //printf("Host_GetParamStringValue %p, %s\n", hInsContext, ParamName);
     PLmObjectHost pHost = (PLmObjectHost) hInsContext;
+    errno_t rc = -1;
     int i = 0;
     for(; i<LM_HOST_NumStringPara; i++){
         if( AnscEqualString(ParamName, lmHosts.pHostStringParaName[i], TRUE))
         {
             /* collect value */
-            size_t len = 0;
-            if(pHost->pStringParaValue[i]) len = strlen(pHost->pStringParaValue[i]);
+            if (! pHost->pStringParaValue[i]) {
+                return -1;
+            }
+            size_t len = strlen(pHost->pStringParaValue[i]);
             if(*pUlSize <= len){
                 *pUlSize = len + 1;
                 return 1;
             }
-            AnscCopyString(pValue, pHost->pStringParaValue[i]);
+            rc = strcpy_s(pValue,*pUlSize, pHost->pStringParaValue[i]);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
             return 0;
         }
     }
@@ -1494,18 +1503,27 @@ Host_IPv4Address_GetParamStringValue
 {
     //printf("IPv4Address_GetParamStringValue %p, %s\n", hInsContext, ParamName);
     PLmObjectHostIPv4Address pIPv4Address = (PLmObjectHostIPv4Address) hInsContext;
+    errno_t rc = -1;
     int i = 0;
     for(; i<LM_HOST_IPv4Address_NumStringPara; i++){
         if( AnscEqualString(ParamName, lmHosts.pIPv4AddressStringParaName[i], TRUE))
         {
             /* collect value */
-            size_t len = 0;
-            if(pIPv4Address->pStringParaValue[i]) len = strlen(pIPv4Address->pStringParaValue[i]);
+            if (! pIPv4Address->pStringParaValue[i]) {
+                  return -1;
+            }
+            size_t len = strlen(pIPv4Address->pStringParaValue[i]);
             if(*pUlSize <= len){
                 *pUlSize = len + 1;
                 return 1;
             }
-            AnscCopyString(pValue, pIPv4Address->pStringParaValue[i]);
+            rc = strcpy_s(pValue,*pUlSize, IPv4Address->pStringParaValue[i]);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
+
             return 0;
         }
     }
@@ -1794,18 +1812,26 @@ Host_IPv6Address_GetParamStringValue
 {
     //printf("IPv6Address_GetParamStringValue %p, %s\n", hInsContext, ParamName);
     PLmObjectHostIPv6Address pIPv6Address = (PLmObjectHostIPv6Address) hInsContext;
+    errno_t rc = -1;
     int i = 0;
     for(; i<LM_HOST_IPv6Address_NumStringPara; i++){
         if( AnscEqualString(ParamName, lmHosts.pIPv6AddressStringParaName[i], TRUE))
         {
             /* collect value */
-            size_t len = 0;
-            if(pIPv6Address->pStringParaValue[i]) len = strlen(pIPv6Address->pStringParaValue[i]);
+            if (! pIPv6Address->pStringParaValue[i]) {
+                return -1;
+            }
+            size_t len = strlen(pIPv6Address->pStringParaValue[i]);
             if(*pUlSize <= len){
                 *pUlSize = len + 1;
                 return 1;
             }
-            AnscCopyString(pValue, pIPv6Address->pStringParaValue[i]);
+            rc = strcpy_s(pValue, *pUlSize, pIPv6Address->pStringParaValue[i]));
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
             return 0;
         }
     }

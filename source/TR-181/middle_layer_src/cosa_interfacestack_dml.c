@@ -70,7 +70,7 @@
 #include "plugin_main_apis.h"
 #include "cosa_interfacestack_dml.h"
 #include "cosa_interfacestack_internal.h"
-
+#include "safec_lib_common.h"
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -483,33 +483,53 @@ InterfaceStack_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IFSTACK_ENTRY         pInterfaceStack = (PCOSA_DML_IFSTACK_ENTRY)pCosaContext->hContext;
-
+    errno_t                         rc              = -1;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "HigherLayer", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pInterfaceStack->HigherLayer);
+        rc = strcpy_s(pValue,*pUlSize, pInterfaceStack->HigherLayer);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "LowerLayer", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pInterfaceStack->LowerLayer);
+        rc = strcpy_s(pValue,*pUlSize, pInterfaceStack->LowerLayer);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "HigherAlias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pInterfaceStack->HigherAlias);
+        rc = strcpy_s(pValue,*pUlSize, pInterfaceStack->HigherAlias);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "LowerAlias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pInterfaceStack->LowerAlias);
+        rc = strcpy_s(pValue,*pUlSize, pInterfaceStack->LowerAlias);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 

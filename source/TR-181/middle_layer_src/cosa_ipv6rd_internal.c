@@ -301,6 +301,7 @@ CosaIPv6rdIfRegGetInfo(
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoIPv6rdIF )
     {
@@ -334,8 +335,6 @@ CosaIPv6rdIfRegGetInfo(
             continue;
         }
 
-        if ( TRUE )
-        {
             pSlapVariable =
                 (PSLAP_VARIABLE)pPoamIrepFoIPv6rdIFSp->GetRecord
                     (
@@ -350,10 +349,7 @@ CosaIPv6rdIfRegGetInfo(
 
                 SlapFreeVariable(pSlapVariable);
             }
-        }
 
-        if ( TRUE )
-        {
             pSlapVariable =
                 (PSLAP_VARIABLE)pPoamIrepFoIPv6rdIFSp->GetRecord
                     (
@@ -368,7 +364,6 @@ CosaIPv6rdIfRegGetInfo(
 
                 SlapFreeVariable(pSlapVariable);
             }
-        }
 
         pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
 
@@ -389,7 +384,8 @@ CosaIPv6rdIfRegGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        AnscCopyString(pEntry->Alias, pAlias);
+        rc = strcpy_s(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
 

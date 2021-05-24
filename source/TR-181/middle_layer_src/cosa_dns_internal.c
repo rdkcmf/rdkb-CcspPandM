@@ -677,6 +677,7 @@ CosaDNSRegGetInfo
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoServerHA )
     {
@@ -766,7 +767,8 @@ CosaDNSRegGetInfo
             }
            
             pDnsServer->InstanceNumber = ulInstanceNumber;
-            AnscCopyString(pDnsServer->Alias, pAlias);
+            rc = strcpy_s(pDnsServer->Alias, sizeof(pDnsServer->Alias),pAlias);
+            ERR_CHK(rc);
 
             pCosaContext->bNew             = TRUE;
             pCosaContext->hParentTable     = NULL;
@@ -836,7 +838,8 @@ CosaDNSRegGetInfo
                 }
 
                 pForward->InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pForward->Alias, pAlias);
+                rc = strcpy_s(pForward->Alias, sizeof(pForward->Alias),pAlias);
+                ERR_CHK(rc);
 
                 pCosaContext2->bNew             = TRUE;
                 pCosaContext2->hParentTable     = NULL;

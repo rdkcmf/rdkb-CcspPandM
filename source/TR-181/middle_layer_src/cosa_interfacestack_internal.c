@@ -691,7 +691,8 @@ CosaIFStackCreateAll
                 if ( ( 0 == returnValue) && 
                      ( 0 != AnscSizeOfString((const char*)ucEntryNameValue)) )
                 {
-                    AnscCopyString(sInterfaceStack.HigherAlias, ucEntryNameValue);
+                    rc = strcpy_s(sInterfaceStack.HigherAlias,sizeof(sInterfaceStack.HigherAlias), ucEntryNameValue);
+                    ERR_CHK(rc);
                 } 
                 else
                 {
@@ -759,9 +760,9 @@ CosaIFStackCreateAll
                             } 
                             else
                             {
-                                AnscCopyString(sInterfaceStack.LowerLayer, pStringToken->Name);
+                                rc = strcpy_s(sInterfaceStack.LowerLayer,sizeof(sInterfaceStack.LowerLayer), pStringToken->Name);
+                                ERR_CHK(rc);
                             }
-
                             /* 4.2 To get one LowerLayer.Alias */
                             ulEntryNameLen = 64;
                             
@@ -782,7 +783,8 @@ CosaIFStackCreateAll
                             if ( ( 0 == returnValue) && 
                                  ( 0 != AnscSizeOfString((const char*)ucEntryNameValue)) )
                             {
-                                AnscCopyString(sInterfaceStack.LowerAlias, ucEntryNameValue);
+                               rc = strcpy_s(sInterfaceStack.LowerAlias,sizeof(sInterfaceStack.LowerAlias), ucEntryNameValue);
+                               ERR_CHK(rc);
                             } 
                             else
                             {

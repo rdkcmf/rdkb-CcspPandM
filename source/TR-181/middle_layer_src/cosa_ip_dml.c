@@ -1338,14 +1338,24 @@ Interface2_GetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pIPInterface->Cfg.Alias);
+        rc = strcpy_s(pValue, *pUlSize, pIPInterface->Cfg.Alias);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Name", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pIPInterface->Info.Name);
+        rc = strcpy_s(pValue, *pUlSize, pIPInterface->Info.Name);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1365,7 +1375,7 @@ Interface2_GetParamStringValue
 
             if ( pIPInterface->Cfg.IfType != COSA_DML_IP_IF_TYPE_Normal )
             {
-                AnscCopyString(pIPInterface->Cfg.LowerLayers, "");
+                pIPInterface->Cfg.LowerLayers[0] = '\0';
             }
             else if ( !pIPInterface->Cfg.LinkInstNum )
             {
@@ -1384,7 +1394,7 @@ Interface2_GetParamStringValue
                 }
                 else
                 {
-                    AnscCopyString(pIPInterface->Cfg.LowerLayers, "");
+                    pIPInterface->Cfg.LowerLayers[0] = '\0';
                 }
             }
             else
@@ -1407,7 +1417,13 @@ Interface2_GetParamStringValue
                 pIPInterface->Cfg.LowerLayers
             ));
 
-        AnscCopyString(pValue, pIPInterface->Cfg.LowerLayers);
+        rc = strcpy_s(pValue, *pUlSize, pIPInterface->Cfg.LowerLayers);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+
     }
 
     /*RDKB-, CID-33002, free unused resource before exit*/
@@ -1419,7 +1435,12 @@ Interface2_GetParamStringValue
     if( AnscEqualString(ParamName, "Router", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pIPInterface->Cfg.RouterName);         
+        rc = strcpy_s(pValue, *pUlSize, pIPInterface->Cfg.RouterName);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1712,7 +1733,12 @@ Interface2_SetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pIPInterface->Cfg.Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pIPInterface->Cfg.Alias, sizeof(pIPInterface->Cfg.Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         return TRUE;
     }
@@ -1805,7 +1831,13 @@ Interface2_SetParamStringValue
                         COSAGetParamValueByPathName(&varStruct, &size) )
 #endif
                 {
-                    AnscCopyString(pIPInterface->Cfg.LinkName, ucEntryNameValue);
+                    rc = STRCPY_S_NOCLOBBER(pIPInterface->Cfg.LinkName, sizeof(pIPInterface->Cfg.LinkName), ucEntryNameValue);
+                    if(rc != EOK)
+                    {
+                        ERR_CHK(rc);
+                        return FALSE;
+                    }
+
                 }
                 else
                 {
@@ -1874,6 +1906,7 @@ Interface2_Validate
     PCOSA_DML_IP_IF_FULL2           pIPInterface2 = (PCOSA_DML_IP_IF_FULL2)NULL;
     PSLIST_HEADER                   pIPIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
+    errno_t                         rc            = -1;
 
     pLink = AnscSListGetFirstEntry(pIPIFHead);
 
@@ -1888,7 +1921,13 @@ Interface2_Validate
             ((ULONG)pIPInterface2 != (ULONG)pIPInterface) &&
              AnscEqualString(pIPInterface2->Cfg.Alias, pIPInterface->Cfg.Alias, TRUE))
         {
-            AnscCopyString(pReturnParamName, "Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
+
             *puLength = AnscSizeOfString("Alias");
 
             CcspTraceWarning(("Interface2_Validate() failed.\n"));
@@ -2525,12 +2564,19 @@ IPv4Address_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr    = (PCOSA_DML_IP_V4ADDR)pCosaContext->hContext;
+    errno_t                         rc           = -1;
     
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pIPv4Addr->Alias);
+        rc = strcpy_s(pValue, *pUlSize, pIPv4Addr->Alias);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+
         return 0;
     }
 
@@ -2767,6 +2813,7 @@ IPv4Address_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr    = (PCOSA_DML_IP_V4ADDR)pCosaContext->hContext;
+    errno_t                         rc           = -1;
 #ifndef MULTILAN_FEATURE
 #ifndef _COSA_SIM_
     if (!CosaIpifGetSetSupported(ParamName))
@@ -2779,7 +2826,12 @@ IPv4Address_SetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pIPv4Addr->Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pIPv4Addr->Alias, sizeof(pIPv4Addr->Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -2832,6 +2884,7 @@ IPv4Address_Validate
     PCOSA_DML_IP_V4ADDR             pIPv4Addr     = (PCOSA_DML_IP_V4ADDR)pCosaContext->hContext;
     PCOSA_DML_IP_V4ADDR             pIPv4Addr2    = (PCOSA_DML_IP_V4ADDR)NULL;
     PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
+    errno_t                         rc            = -1;
 
     pLink = AnscSListGetFirstEntry(&pIPInterface->IPV4List);
 
@@ -2846,7 +2899,12 @@ IPv4Address_Validate
             ((ULONG)pIPv4Addr2 != (ULONG)pIPv4Addr) &&
              AnscEqualString(pIPv4Addr2->Alias, pIPv4Addr->Alias, TRUE))
         {
-            AnscCopyString(pReturnParamName, "Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             *puLength = AnscSizeOfString("Alias");
 
             CcspTraceWarning(("IPv4Address_Validate() failed.\n"));            
@@ -3299,8 +3357,20 @@ IPv6Address_AddEntry
     }
 
     pIPv6Addr->Origin = COSA_DML_IP6_ORIGIN_Static;
-    AnscCopyString(pIPv6Addr->PreferredLifetime, "9999-12-31T23:59:59Z");
-    AnscCopyString(pIPv6Addr->ValidLifetime, "9999-12-31T23:59:59Z");
+    rc = strcpy_s(pIPv6Addr->PreferredLifetime, sizeof(pIPv6Addr->PreferredLifetime), "9999-12-31T23:59:59Z");
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        AnscFreeMemory(pIPv6Addr);
+        return NULL;
+    }
+    rc = strcpy_s(pIPv6Addr->ValidLifetime, sizeof(pIPv6Addr->ValidLifetime), "9999-12-31T23:59:59Z");
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        AnscFreeMemory(pIPv6Addr);
+        return NULL;
+    }
 
 
     rc = sprintf_s(pIPv6Addr->Alias, sizeof(pIPv6Addr->Alias),"IPv6Address%lu", pIPInterface->ulNextIPV6InsNum);
@@ -3669,19 +3739,30 @@ IPv6Address_GetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V6ADDR             pIPv6Addr    = (PCOSA_DML_IP_V6ADDR)pCosaContext->hContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hParentTable;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pIPv6Addr->Alias);
+        rc = strcpy_s(pValue, *pUlSize, pIPv6Addr->Alias);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "IPAddress", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pIPv6Addr->IP6Address);
+        rc = strcpy_s(pValue, *pUlSize, pIPv6Addr->IP6Address);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -3690,15 +3771,26 @@ IPv6Address_GetParamStringValue
         /* collect value */
 #ifndef _COSA_SIM_
 
-        if (pIPv6Addr->Origin != COSA_DML_IP6_ORIGIN_Static)        
+        if (pIPv6Addr->Origin != COSA_DML_IP6_ORIGIN_Static){        
             CosaDmlGetPrefixPathName(pIPInterface->Info.Name, pIPInterface->Cfg.InstanceNumber, pIPv6Addr, pValue);
-        else 
-            AnscCopyString(pValue, pIPv6Addr->Prefix);
+        }else {
+            rc = strcpy_s(pValue, *pUlSize, pIPv6Addr->Prefix);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
+        }
         return 0;
 #else
     /*CID: 69097 Structurally dead code*/
 
-		AnscCopyString(pValue, pIPv6Addr->Prefix);
+        rc = strcpy_s(pValue, *pUlSize, pIPv6Addr->Prefix);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
 #endif
     }
@@ -3706,14 +3798,24 @@ IPv6Address_GetParamStringValue
     if( AnscEqualString(ParamName, "PreferredLifetime", TRUE))
     {
         /* collect value */
-		AnscCopyString(pValue, pIPv6Addr->PreferredLifetime);
+        rc = strcpy_s(pValue, *pUlSize, pIPv6Addr->PreferredLifetime);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "ValidLifetime", TRUE))
     {
         /* collect value */
-		AnscCopyString(pValue, pIPv6Addr->ValidLifetime);
+        rc = strcpy_s(pValue, *pUlSize, pIPv6Addr->ValidLifetime);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
@@ -4082,7 +4184,12 @@ IPv6Address_Validate
             ((ULONG)pIPv6Addr2 != (ULONG)pIPv6Addr ) &&
              AnscEqualString(pIPv6Addr2->Alias, pIPv6Addr->Alias, TRUE))
         {
-            AnscCopyString(pReturnParamName, "Alias");
+            rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "Alias");
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
             *puLength = AnscSizeOfString("Alias");
 
             CcspTraceWarning(("IPv6Address_Validate() on Alias failed.\n"));            
@@ -4111,7 +4218,12 @@ IPv6Address_Validate
     if (pIPv6Addr->Prefix[0] &&
         !CosaDmlIpv6AddrMatchesPrefix(pIPv6Addr->Prefix, pIPv6Addr->IP6Address, pIPInterface->Cfg.InstanceNumber))
     {
-        AnscCopyString(pReturnParamName, "Prefix");
+        rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "Prefix");
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         *puLength = AnscSizeOfString("Prefix");
 
         CcspTraceWarning(("IPv6Address_Validate() on Prefix failed.\n"));            
@@ -4124,7 +4236,12 @@ IPv6Address_Validate
         CosaDmlDateTimeCompare(pIPv6Addr->PreferredLifetime, pIPv6Addr->ValidLifetime) > 0
         )
     {
-        AnscCopyString(pReturnParamName, "PreferredLifetime/ValidLifetime");
+        rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "PreferredLifetime/ValidLifetime");
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         *puLength = AnscSizeOfString("PreferredLifetime/ValidLifetime");
 
         CcspTraceWarning(("IPv6Address_Validate() on Lifetime failed.\n"));            
@@ -4590,8 +4707,10 @@ IPv6Prefix_AddEntry
     pIPv6Pre->Origin = COSA_DML_IP6PREFIX_ORIGIN_Static;
     pIPv6Pre->StaticType = COSA_DML_IP6PREFIX_STATICTYPE_Static;
     pIPv6Pre->bEnabled = COSA_DML_PREFIXENTRY_STATUS_Enabled;
-    AnscCopyString(pIPv6Pre->PreferredLifetime, "0001-01-01T00:00:00Z");
-    AnscCopyString(pIPv6Pre->ValidLifetime, "0001-01-01T00:00:00Z");
+    rc = strcpy_s(pIPv6Pre->PreferredLifetime, sizeof(pIPv6Pre->PreferredLifetime), "0001-01-01T00:00:00Z");
+    ERR_CHK(rc);
+    rc = strcpy_s(pIPv6Pre->ValidLifetime, sizeof(pIPv6Pre->ValidLifetime), "0001-01-01T00:00:00Z");
+    ERR_CHK(rc);
 
     rc = sprintf_s(pIPv6Pre->Alias, sizeof(pIPv6Pre->Alias),"IPv6Prefix%lu", pIPInterface->ulNextIPV6PreInsNum);
     if(rc < EOK)
@@ -4959,47 +5078,81 @@ IPv6Prefix_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V6PREFIX           pIPv6Pre     = (PCOSA_DML_IP_V6PREFIX)pCosaContext->hContext;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pIPv6Pre->Alias);
+        rc = strcpy_s(pValue, *pUlSize, pIPv6Pre->Alias);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Prefix", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pIPv6Pre->Prefix);
+        rc = strcpy_s(pValue, *pUlSize, pIPv6Pre->Prefix);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
+
         return 0;
     }
 
     if( AnscEqualString(ParamName, "ParentPrefix", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pIPv6Pre->ParentPrefix);
+        rc = strcpy_s(pValue, *pUlSize, pIPv6Pre->ParentPrefix);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
+
         return 0;
     }
 
     if( AnscEqualString(ParamName, "ChildPrefixBits", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pIPv6Pre->ChildPrefixBits);
+        rc = strcpy_s(pValue, *pUlSize, pIPv6Pre->ChildPrefixBits);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
+
         return 0;
     }
 
     if( AnscEqualString(ParamName, "PreferredLifetime", TRUE))
     {
         /* collect value */
-		AnscCopyString(pValue, pIPv6Pre->PreferredLifetime);
+        rc = strcpy_s(pValue, *pUlSize, pIPv6Pre->PreferredLifetime);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "ValidLifetime", TRUE))
     {
         /* collect value */
-		AnscCopyString(pValue, pIPv6Pre->ValidLifetime);
+        rc = strcpy_s(pValue, *pUlSize, pIPv6Pre->ValidLifetime);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
@@ -5259,12 +5412,18 @@ IPv6Prefix_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_V6PREFIX           pIPv6Pre     = (PCOSA_DML_IP_V6PREFIX)pCosaContext->hContext;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pIPv6Pre->Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pIPv6Pre->Alias, sizeof(pIPv6Pre->Alias), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
@@ -5274,7 +5433,12 @@ IPv6Prefix_SetParamStringValue
     if( AnscEqualString(ParamName, "Prefix", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pIPv6Pre->Prefix, pString);
+        rc = STRCPY_S_NOCLOBBER(pIPv6Pre->Prefix, sizeof(pIPv6Pre->Prefix), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
@@ -5285,7 +5449,12 @@ IPv6Prefix_SetParamStringValue
         return FALSE;
 #else
        /*CID: 61160 Structurally dead code*/
-		AnscCopyString(pIPv6Pre->ParentPrefix, pString);
+        rc = STRCPY_S_NOCLOBBER(pIPv6Pre->ParentPrefix, sizeof(pIPv6Pre->ParentPrefix), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
 #endif
     }
@@ -5297,7 +5466,12 @@ IPv6Prefix_SetParamStringValue
         return FALSE;
 #else
        /*CID: 61160 Structurally dead code*/
-		AnscCopyString(pIPv6Pre->ChildPrefixBits, pString);
+        rc = STRCPY_S_NOCLOBBER(pIPv6Pre->ChildPrefixBits, sizeof(pIPv6Pre->ChildPrefixBits), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
 #endif
     }
@@ -5305,14 +5479,24 @@ IPv6Prefix_SetParamStringValue
     if( AnscEqualString(ParamName, "PreferredLifetime", TRUE))
     {
         /* save update to backup */
-		AnscCopyString(pIPv6Pre->PreferredLifetime, pString);
+        rc = STRCPY_S_NOCLOBBER(pIPv6Pre->PreferredLifetime, sizeof(pIPv6Pre->PreferredLifetime), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "ValidLifetime", TRUE))
     {
         /* save update to backup */
-		AnscCopyString(pIPv6Pre->ValidLifetime, pString);
+        rc = STRCPY_S_NOCLOBBER(pIPv6Pre->ValidLifetime, sizeof(pIPv6Pre->ValidLifetime), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
@@ -5381,7 +5565,12 @@ IPv6Prefix_Validate
             ((ULONG)pIPv6Pre2 != (ULONG)pIPv6Pre ) &&
              AnscEqualString(pIPv6Pre2->Alias, pIPv6Pre->Alias, TRUE))
         {
-            AnscCopyString(pReturnParamName, "Alias");
+            rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "Alias");
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
             *puLength = AnscSizeOfString("Alias");
 
             CcspTraceWarning(("IPv6Prefix_Validate() on Alias failed.\n"));            
@@ -6307,19 +6496,30 @@ ActivePort_GetParamStringValue
 {
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DML_IP_ACTIVE_PORT        pActivePort   = (PCOSA_DML_IP_ACTIVE_PORT)hInsContext;
+    errno_t                         rc            = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "LocalIPAddress", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pActivePort->LocalIPAddress);
+        rc = strcpy_s(pValue, *pUlSize, pActivePort->LocalIPAddress);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "RemoteIPAddress", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pActivePort->RemoteIPAddress);
+        rc = strcpy_s(pValue, *pUlSize, pActivePort->RemoteIPAddress);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
