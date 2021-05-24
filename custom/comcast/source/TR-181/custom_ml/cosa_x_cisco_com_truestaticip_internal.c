@@ -82,6 +82,7 @@
 #include "ansc_ato_interface.h"
 #include "ansc_ato_external_api.h"
 #include "ansc_platform.h"
+#include "safec_lib_common.h"
 #include <syscfg/syscfg.h>
 
 extern void* g_pDslhDmlAgent;
@@ -180,6 +181,7 @@ CosaTSIPInitialize
     PCOSA_DML_TSIP_RULE_ENTRY       pEntry2                = (PCOSA_DML_TSIP_RULE_ENTRY)NULL;
     ULONG                           ulEntryCount           = 0;
     ULONG                           ulIndex                = 0;
+    errno_t                         rc                     = -1;
 
     /* Initiation all functions */
 
@@ -389,7 +391,11 @@ CosaTSIPInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pEntry->Alias, "Subnet%d", pCosaContext->InstanceNumber);
+                rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias), "Subnet%d", pCosaContext->InstanceNumber);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
 
                 CosaDmlTSIPSubnetSetValues
                 (
@@ -460,7 +466,11 @@ CosaTSIPInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pEntry2->Alias, "Rule%lu", pCosaContext->InstanceNumber);
+                rc = sprintf_s(pEntry2->Alias, sizeof(pEntry2->Alias), "Rule%lu", pCosaContext->InstanceNumber);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
 
                 CosaDmlTSIPRuleSetValues
                 (
@@ -583,6 +593,7 @@ CosaTSIPSubnetRegGetInfo
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoTSIPSubnet )
     {
@@ -671,7 +682,8 @@ CosaTSIPSubnetRegGetInfo
             return ANSC_STATUS_RESOURCES;
         }
 
-        AnscCopyString(pEntry->Alias, pAlias);
+        rc = strcpy_s(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
 
@@ -888,6 +900,7 @@ CosaTSIPRuleRegGetInfo
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoTSIPRule )
     {
@@ -976,7 +989,8 @@ CosaTSIPRuleRegGetInfo
             return ANSC_STATUS_RESOURCES;
         }
 
-        AnscCopyString(pEntry->Alias, pAlias);
+        rc = strcpy_s(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
 

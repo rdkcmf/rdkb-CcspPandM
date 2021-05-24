@@ -58,6 +58,7 @@
 #include "syscfg.h" 
 #include "hotspotfd.h"
 #include "dhcpsnooper.h"
+#include "safec_lib_common.h"
 
 #define GRETEST
 
@@ -305,6 +306,7 @@ int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) 
     int circuitSave = 0;
     ULONG size;
     int inst;
+    errno_t rc = -1;
     parameterValStruct_t varStruct;
     varStruct.parameterName = paramname;
     varStruct.parameterValue = outdata;
@@ -359,7 +361,8 @@ int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) 
 		  if(GrePsmGet(paramname,varStruct.parameterValue, size) != 0)
                      return -1;
 		  if(strlen(varStruct.parameterValue)==0) {
-				strcpy(varStruct.parameterValue,"xfinitywifi");
+		        rc = strcpy_s(varStruct.parameterValue, sizeof(outdata), "xfinitywifi");
+		        ERR_CHK(rc);
 		  }
 		}
         
@@ -505,6 +508,7 @@ CosaDml_GreTunnelGetConnectedRemoteEndpoint(ULONG tuIdx, COSA_DML_GRE_TUNNEL *gr
 	char cmd[126] = {0};
 	char line_buf[126] = {0};
 	FILE *fp = NULL;
+	errno_t rc = -1;
 
 	if(!greTu)
 			return ANSC_STATUS_FAILURE;
@@ -513,7 +517,8 @@ CosaDml_GreTunnelGetConnectedRemoteEndpoint(ULONG tuIdx, COSA_DML_GRE_TUNNEL *gr
 	
     if (((fp = popen(cmd,"r")) != NULL) && (fgets(line_buf, sizeof(line_buf), fp)))
     {
-        sprintf(greTu->ConnectedRemoteEndpoint,"%s",line_buf);
+        rc = strcpy_s(greTu->ConnectedRemoteEndpoint, sizeof(greTu->ConnectedRemoteEndpoint), line_buf);
+        ERR_CHK(rc);
     }
 	if(fp)
 		pclose(fp);
@@ -1897,11 +1902,14 @@ CosaDml_GreTunnelGetStats( ULONG ins, COSA_DML_GRE_TUNNEL_STATS *stats)
 }
 ANSC_STATUS CosaDml_GreTunnelHotspotReset(COSA_DML_GRE_TUNNEL *pGreTu)
 {
+	errno_t rc = -1;
 
 	/*Set the default values to paramaeters*/
 	pGreTu->DSCPMarkPolicy=44;
-	strcpy(pGreTu->PrimaryRemoteEndpoint,"0.0.0.0");
-	strcpy(pGreTu->SecondaryRemoteEndpoint,"0.0.0.0");
+	rc = STRCPY_S_NOCLOBBER(pGreTu->PrimaryRemoteEndpoint, sizeof(pGreTu->PrimaryRemoteEndpoint), "0.0.0.0");
+	ERR_CHK(rc);
+	rc = STRCPY_S_NOCLOBBER(pGreTu->SecondaryRemoteEndpoint, sizeof(pGreTu->SecondaryRemoteEndpoint), "0.0.0.0");
+	ERR_CHK(rc);
 	pGreTu->RemoteEndpointHealthCheckPingCount = 3;
 	pGreTu->RemoteEndpointHealthCheckPingInterval = 60;
 	pGreTu->RemoteEndpointHealthCheckPingFailThreshold = 3;

@@ -38,6 +38,7 @@
  */
 
 #include "dml_tr181_custom_cfg.h"
+#include "safec_lib_common.h"
 
 #ifdef CONFIG_CISCO_HOTSPOT
 #include "cosa_x_cisco_com_gre_dml.h"
@@ -181,6 +182,7 @@ CGreIf_GetParamStringValue
 
 {
     COSA_DML_CGRE_IF                *pCGreIf      = (COSA_DML_CGRE_IF *)hInsContext;
+    errno_t                         rc            = -1;
 
     if (AnscEqualString(ParamName, "Alias", TRUE))
     {
@@ -190,7 +192,12 @@ CGreIf_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, pCGreIf->Alias);
+        rc = strcpy_s(pValue, *pUlSize, pCGreIf->Alias);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "Name", TRUE))
@@ -201,7 +208,12 @@ CGreIf_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, pCGreIf->Name);
+        rc = strcpy_s(pValue, *pUlSize, pCGreIf->Name);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "LowerLayers", TRUE))
@@ -212,7 +224,12 @@ CGreIf_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, pCGreIf->LowerLayers);
+        rc = strcpy_s(pValue, *pUlSize, pCGreIf->LowerLayers);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "RemoteEndpoint", TRUE))
@@ -223,7 +240,12 @@ CGreIf_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, pCGreIf->RemoteEndpoint);
+        rc = strcpy_s(pValue, *pUlSize, pCGreIf->RemoteEndpoint);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "Key", TRUE))
@@ -234,7 +256,12 @@ CGreIf_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, pCGreIf->Key);
+        rc = strcpy_s(pValue, *pUlSize, pCGreIf->Key);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 

@@ -72,6 +72,7 @@
 #include "cosa_deviceinfo_dml.h"
 #include "cosa_deviceinfo_apis_custom.h"
 #include <syscfg/syscfg.h>
+#include "safec_lib_common.h"
 
 #define WHITE	0
 #define SOLID	0
@@ -270,11 +271,17 @@ DeviceInfo_GetParamStringValue_Custom
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
     char isEthEnabled[64]={'\0'};
     int EthWANEnable = 0;
-#ifdef CONFIG_INTERNET2P0   
+#ifdef CONFIG_INTERNET2P0
+    errno_t rc = -1;
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudUIWebURL", TRUE))
     { 
-	syscfg_get(NULL, "redirection_url", pMyObject->WebURL, sizeof(pMyObject->WebURL));
-	AnscCopyString(pValue, pMyObject->WebURL);
+        syscfg_get(NULL, "redirection_url", pMyObject->WebURL, sizeof(pMyObject->WebURL));
+        rc = strcpy_s(pValue, *pulSize, pMyObject->WebURL);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     } 
 #endif

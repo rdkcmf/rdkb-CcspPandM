@@ -81,6 +81,7 @@
 #include "cosa_drg_common.h"
 #include "secure_wrapper.h"
 #include "messagebus_interface_helper.h"
+#include "safec_lib_common.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -178,6 +179,7 @@ CosaDmlTSIPLoadMappingFile
     ULONG                           ulIndex                = 0;
     ULONG                           len                    = 0;
     ULONG                           len2                   = 0;
+    errno_t                         rc                     = -1;
 
     if ( !pAtomNamespace )
     {
@@ -270,7 +272,8 @@ CosaDmlTSIPLoadMappingFile
             *pSeparator++ = '\0';
             ulType =_ansc_atoi(pType);
             pMapping[ulIndex].Type = ulType;
-            AnscCopyString(pMapping[ulIndex++].FullPath, pSeparator);
+            rc = strcpy_s(pMapping[ulIndex++].FullPath, sizeof(pMapping[ulIndex].FullPath), pSeparator);
+            ERR_CHK(rc);
             AnscFreeMemory(pEntryToken);
         }
 
@@ -322,8 +325,14 @@ CosaDmlTSIPTestFullPathName
     char                            param_val[64]          = {0};
     ULONG                           val_len                = 0;
     int                             ret                    = 0;
+    errno_t                         rc                     = -1;
     
-    _ansc_sprintf(TestName, "Device.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.Site", iBlockedURLInsNum);
+    rc = sprintf_s(TestName, sizeof(TestName), "Device.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.Site", iBlockedURLInsNum);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return FALSE;
+    }
     val_len = sizeof(param_val);
 
     ret = g_GetParamValueString(g_pDslhDmlAgent, TestName, param_val, &val_len);
@@ -364,6 +373,7 @@ CosaDmlTSIPApplyConfigFileTask
     int                             i                      = 0;
     int                             ret                    = CCSP_SUCCESS;
     BOOL                            bCommit                = FALSE;
+    errno_t                         rc                     = -1;
 
     AnscTraceFlow(("%s\n", __FUNCTION__));
 
@@ -406,7 +416,12 @@ CosaDmlTSIPApplyConfigFileTask
         }
     }
 
-    _ansc_sprintf(FileName, "%s%s", TRUE_STATIC_IP_CONFIG_PATH, pFtCfg->FileName);
+    rc = sprintf_s(FileName, sizeof(FileName), "%s%s", TRUE_STATIC_IP_CONFIG_PATH, pFtCfg->FileName);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
 
     fpConfig = fopen(FileName, "r");
     if ( !fpConfig )
@@ -582,7 +597,11 @@ Start:
                     else
                     {
                         iBlockedURLInsNum = InsNum;
-                        _ansc_sprintf(FullName, "Device.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.BlockMethod", iBlockedURLInsNum);
+                        rc = sprintf_s(FullName, sizeof(FullName), "Device.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.BlockMethod", iBlockedURLInsNum);
+                        if(rc < EOK)
+                        {
+                            ERR_CHK(rc);
+                        }
                         g_SetParamValueString(FullName, "URL");
                     }
                 }
@@ -599,7 +618,11 @@ Start:
                     }
                     continue;
                 }
-                _ansc_sprintf(pVal[0].parameterName, pMapping[0].FullPath, iBlockedURLInsNum);
+                rc = sprintf_s(pVal[0].parameterName, (AnscSizeOfString(pMapping[0].FullPath) + 8), pMapping[0].FullPath, iBlockedURLInsNum);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
                 printf("!!! pVal[0].parameterName: %s !!!\n", pVal[0].parameterName);
                 if ( AnscEqualString(pStringToken->Name, "website_block_schedule_day", FALSE) )
                 {
@@ -623,7 +646,11 @@ Start:
 
                 if ( strval[0] && ! _ansc_strstr(strval, pValue) && ! _ansc_strstr(strval, ",") )
                 {
-                    _ansc_sprintf(val, "%s,%s", strval, pValue);
+                    rc = sprintf_s(val, sizeof(val), "%s,%s", strval, pValue);
+                    if(rc < EOK)
+                    {
+                        ERR_CHK(rc);
+                    }
                     g_SetParamValueString("Device.DHCPv4.Server.Pool.1.DNSServers", val);
                 }
                 else
@@ -701,7 +728,11 @@ Start:
                         continue;
                     }
                     
-                    _ansc_sprintf(pVal[i].parameterName, pMapping[i].FullPath, InsNum);
+                    rc = sprintf_s(pVal[i].parameterName, 256, pMapping[i].FullPath, InsNum);
+                    if(rc < EOK)
+                    {
+                        ERR_CHK(rc);
+                    }
                     if ( pValue )
                     {
                         pTmp = _ansc_strstr(pValue, " ");
@@ -760,7 +791,11 @@ Start:
                     else
                     {
                         iBlockedURLInsNum = InsNum;
-                        _ansc_sprintf(FullName, "Device.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.BlockMethod", iBlockedURLInsNum);
+                        rc = sprintf_s(FullName, sizeof(FullName), "Device.X_Comcast_com_ParentalControl.ManagedSites.BlockedSite.%d.BlockMethod", iBlockedURLInsNum);
+                        if(rc < EOK)
+                        {
+                            ERR_CHK(rc);
+                        }
                         g_SetParamValueString(FullName, "URL");
                     }
                 }
@@ -792,8 +827,16 @@ Start:
                     
                     printf("%02d\n", (INT)StartMin);
                    
-                    _ansc_sprintf(StartTime, "%02d:%02d", (INT)StartHour, (INT)StartMin);
-                    _ansc_sprintf(EndTime,   "%02d:%02d", (INT)EndHour, (INT)EndMin);
+                    rc = sprintf_s(StartTime, sizeof(StartTime), "%02d:%02d", (INT)StartHour, (INT)StartMin);
+                    if(rc < EOK)
+                    {
+                        ERR_CHK(rc);
+                    }
+                    rc = sprintf_s(EndTime, sizeof(EndTime), "%02d:%02d", (INT)EndHour, (INT)EndMin);
+                    if(rc < EOK)
+                    {
+                        ERR_CHK(rc);
+                    }
                 }
                 
                 printf("%s %02d %02d %s %02d %02d %s\n", AlwaysBlock, (INT)StartHour, (INT)StartMin, Start, (INT)EndHour, (INT)EndMin, End);
@@ -812,7 +855,11 @@ Start:
                         }
                         continue;
                     }
-                    _ansc_sprintf(pVal[i].parameterName, pMapping[i].FullPath, iBlockedURLInsNum);
+                    rc = sprintf_s(pVal[i].parameterName, 256, pMapping[i].FullPath, iBlockedURLInsNum);
+                    if(rc < EOK)
+                    {
+                        ERR_CHK(rc);
+                    }
                     printf("!!! pVal[%d].parameterName: %s !!!\n", i, pVal[i].parameterName);
                     pVal[i].type = pMapping[i].Type;
                 }
@@ -932,6 +979,7 @@ CosaDmlTSIPSetCfg
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = ccsp_string;
     char                            RecordValue[64] = {0};
+    errno_t                         rc              = -1;
 
     if ( pCfg->bIPInfoChanged && (!AnscIsValidIpString(pCfg->IPAddress) || !AnscIsValidIpString(pCfg->SubnetMask) /*|| !AnscIsValidIpString(pCfg->GatewayIPAddress)*/) )
     {
@@ -968,14 +1016,23 @@ CosaDmlTSIPSetCfg
 
          if ( TRUE )     /* Enable */
          {
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_Tsip_Root DMSB_TR181_PSM_Tsip_Enable
                 );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
 
             RecordType = ccsp_boolean;
-            _ansc_sprintf(RecordValue, "%d", pCfg->Enabled);
+            rc = sprintf_s(RecordValue, sizeof(RecordValue), "%d", pCfg->Enabled);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Set_Record_Value2
@@ -1003,14 +1060,20 @@ CosaDmlTSIPSetCfg
 
         if ( TRUE )     /* IPAddress */
         {
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_Tsip_Root DMSB_TR181_PSM_Tsip_IpAddress
                 );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
 
             RecordType = ccsp_string;
-            AnscCopyString(RecordValue, pCfg->IPAddress);
+            rc = strcpy_s(RecordValue, sizeof(RecordValue), pCfg->IPAddress);
+            ERR_CHK(rc);
 
             iReturnValue =
                 PSM_Set_Record_Value2
@@ -1038,14 +1101,20 @@ CosaDmlTSIPSetCfg
 
         if ( TRUE )     /* Subnet Mask */
         {
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_Tsip_Root DMSB_TR181_PSM_Tsip_SubnetMask
                 );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
 
             RecordType = ccsp_string;
-            AnscCopyString(RecordValue, pCfg->SubnetMask);
+            rc = strcpy_s(RecordValue, sizeof(RecordValue), pCfg->SubnetMask);
+            ERR_CHK(rc);
 
             iReturnValue =
                 PSM_Set_Record_Value2
@@ -1073,14 +1142,20 @@ CosaDmlTSIPSetCfg
 
         if ( TRUE )     /* Gateway */
         {
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_Tsip_Root DMSB_TR181_PSM_Tsip_Gateway
                 );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
 
             RecordType = ccsp_string;
-            AnscCopyString(RecordValue, pCfg->GatewayIPAddress);
+            rc = strcpy_s(RecordValue, sizeof(RecordValue), pCfg->GatewayIPAddress);
+            ERR_CHK(rc);
 
             iReturnValue =
                 PSM_Set_Record_Value2
@@ -1131,14 +1206,20 @@ CosaDmlTSIPSetCfg
 
     if ( TRUE )     /* Encrypt Key */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Root DMSB_TR181_PSM_Tsip_EncryptKey
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         RecordType = ccsp_string;
-        AnscCopyString(RecordValue, pCfg->ConfigEncryptKey);
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), pCfg->ConfigEncryptKey);
+        ERR_CHK(rc);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -1179,6 +1260,7 @@ CosaDmlTSIPGetCfg
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
+    errno_t                         rc              = -1;
 
     /* Fetch Cfg */
 
@@ -1186,11 +1268,16 @@ CosaDmlTSIPGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Root DMSB_TR181_PSM_Tsip_Enable
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -1225,11 +1312,16 @@ CosaDmlTSIPGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Root DMSB_TR181_PSM_Tsip_IpAddress
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -1254,7 +1346,8 @@ CosaDmlTSIPGetCfg
         }
         else
         {
-            AnscCopyString(pCfg->IPAddress, SlapValue.Variant.varString);
+            rc = STRCPY_S_NOCLOBBER(pCfg->IPAddress, sizeof(pCfg->IPAddress), SlapValue.Variant.varString);
+            ERR_CHK(rc);
         }
 
         SlapCleanVariable(&SlapValue);
@@ -1264,11 +1357,16 @@ CosaDmlTSIPGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Root DMSB_TR181_PSM_Tsip_SubnetMask
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -1293,7 +1391,8 @@ CosaDmlTSIPGetCfg
         }
         else
         {
-            AnscCopyString(pCfg->SubnetMask, SlapValue.Variant.varString);
+            rc = STRCPY_S_NOCLOBBER(pCfg->SubnetMask, sizeof(pCfg->SubnetMask), SlapValue.Variant.varString);
+            ERR_CHK(rc);
         }
 
         SlapCleanVariable(&SlapValue);
@@ -1303,11 +1402,16 @@ CosaDmlTSIPGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Root DMSB_TR181_PSM_Tsip_Gateway
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -1332,7 +1436,8 @@ CosaDmlTSIPGetCfg
         }
         else
         {
-            AnscCopyString(pCfg->GatewayIPAddress, SlapValue.Variant.varString);
+            rc = STRCPY_S_NOCLOBBER(pCfg->GatewayIPAddress, sizeof(pCfg->GatewayIPAddress), SlapValue.Variant.varString);
+            ERR_CHK(rc);
         }
 
         SlapCleanVariable(&SlapValue);
@@ -1342,11 +1447,16 @@ CosaDmlTSIPGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Root DMSB_TR181_PSM_Tsip_EncryptKey
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -1371,7 +1481,8 @@ CosaDmlTSIPGetCfg
         }
         else
         {
-            AnscCopyString(pCfg->ConfigEncryptKey, SlapValue.Variant.varString);
+            rc = STRCPY_S_NOCLOBBER(pCfg->ConfigEncryptKey, sizeof(pCfg->ConfigEncryptKey), SlapValue.Variant.varString);
+            ERR_CHK(rc);
         }
 
         SlapCleanVariable(&SlapValue);
@@ -1429,6 +1540,7 @@ CosaDmlAdditionalSubnetLoadPsm
     unsigned int                    iNumInst               = 0;
     unsigned int*                   pInstArray             = NULL;
     ULONG                           ulIndex                = 0;
+    errno_t                         rc                     = -1;
 
     iReturnValue = 
         PsmGetNextLevelInstances
@@ -1470,12 +1582,17 @@ CosaDmlAdditionalSubnetLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_Enable,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -1510,12 +1627,17 @@ CosaDmlAdditionalSubnetLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_Alias,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -1540,7 +1662,8 @@ CosaDmlAdditionalSubnetLoadPsm
             }
             else
             {
-                _ansc_strcpy(pSubnetEntry->Alias, SlapValue.Variant.varString);
+                rc = strcpy_s(pSubnetEntry->Alias, sizeof(pSubnetEntry->Alias), SlapValue.Variant.varString);
+                ERR_CHK(rc);
             }
 
             SlapCleanVariable(&SlapValue);
@@ -1550,12 +1673,17 @@ CosaDmlAdditionalSubnetLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_IpAddress,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -1580,7 +1708,8 @@ CosaDmlAdditionalSubnetLoadPsm
             }
             else
             {
-                _ansc_strcpy(pSubnetEntry->IPAddress, SlapValue.Variant.varString);
+                rc = strcpy_s(pSubnetEntry->IPAddress, sizeof(pSubnetEntry->IPAddress), SlapValue.Variant.varString);
+                ERR_CHK(rc);
             }
 
             SlapCleanVariable(&SlapValue);
@@ -1590,12 +1719,17 @@ CosaDmlAdditionalSubnetLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_SubnetMask,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -1620,7 +1754,8 @@ CosaDmlAdditionalSubnetLoadPsm
             }
             else
             {
-                _ansc_strcpy(pSubnetEntry->SubnetMask, SlapValue.Variant.varString);
+                rc = strcpy_s(pSubnetEntry->SubnetMask, sizeof(pSubnetEntry->SubnetMask), SlapValue.Variant.varString);
+                ERR_CHK(rc);
             }
 
             SlapCleanVariable(&SlapValue);
@@ -1653,6 +1788,7 @@ CosaDmlAdditionalSubnetSavePsm
     char                            pParamPath[64]         = {0};
     unsigned int                    RecordType             = ccsp_string;
     char                            RecordValue[64]        = {0};
+    errno_t                         rc                     = -1;
 
     if ( !pSubnetEntry )
     {
@@ -1661,15 +1797,21 @@ CosaDmlAdditionalSubnetSavePsm
 
     if ( TRUE )     /* Enable */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_Enable,
                 (INT)pSubnetEntry->InstanceNumber
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         RecordType = ccsp_boolean;
-        _ansc_strcpy(RecordValue, pSubnetEntry->Enabled ? PSM_TRUE : PSM_FALSE);
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), (pSubnetEntry->Enabled ? PSM_TRUE : PSM_FALSE));
+        ERR_CHK(rc);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -1697,15 +1839,21 @@ CosaDmlAdditionalSubnetSavePsm
 
     if ( TRUE )     /* Alias */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_Alias,
                 (INT)pSubnetEntry->InstanceNumber
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         RecordType = ccsp_string;
-        _ansc_strcpy(RecordValue, pSubnetEntry->Alias);
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), pSubnetEntry->Alias);
+        ERR_CHK(rc);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -1733,15 +1881,21 @@ CosaDmlAdditionalSubnetSavePsm
 
     if ( TRUE )     /* Ipaddress */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_IpAddress,
                 (INT)pSubnetEntry->InstanceNumber
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         RecordType = ccsp_string;
-        _ansc_strcpy(RecordValue, pSubnetEntry->IPAddress);
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), pSubnetEntry->IPAddress);
+        ERR_CHK(rc);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -1769,15 +1923,21 @@ CosaDmlAdditionalSubnetSavePsm
 
     if ( TRUE )     /* Subnet mask */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_SubnetMask,
                 (INT)pSubnetEntry->InstanceNumber
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         RecordType = ccsp_string;
-        _ansc_strcpy(RecordValue, pSubnetEntry->SubnetMask);
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), pSubnetEntry->SubnetMask);
+        ERR_CHK(rc);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -1817,6 +1977,7 @@ CosaDmlAdditionalSubnetDelPsm
     PCOSA_DML_TSIP_SUBNET_ENTRY     pSubnetEntry           = (PCOSA_DML_TSIP_SUBNET_ENTRY)hSubnetEntry;
     int                             iReturnValue           = CCSP_SUCCESS;
     char                            pParamPath[64]         = {0};
+    errno_t                         rc                     = -1;
 
     if ( !pSubnetEntry )
     {
@@ -1825,12 +1986,17 @@ CosaDmlAdditionalSubnetDelPsm
 
     if ( TRUE )
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i,
                 (INT)pSubnetEntry->InstanceNumber
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Del_Record
@@ -1990,6 +2156,7 @@ CosaDmlTSIPSubnetGetCfg
     int                             iReturnValue           = CCSP_SUCCESS;
     char                            pParamPath[64]         = {0};
     unsigned int                    RecordType             = ccsp_string;
+    errno_t                         rc                     = -1;
 
     if ( !pEntry )
     {
@@ -2002,12 +2169,17 @@ CosaDmlTSIPSubnetGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_Enable,
                 (INT)pEntry->InstanceNumber
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -2042,12 +2214,17 @@ CosaDmlTSIPSubnetGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_Alias,
                 (INT)pEntry->InstanceNumber
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -2072,7 +2249,8 @@ CosaDmlTSIPSubnetGetCfg
         }
         else
         {
-            _ansc_strcpy(pEntry->Alias, SlapValue.Variant.varString);
+            rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), SlapValue.Variant.varString);
+            ERR_CHK(rc);
         }
 
         SlapCleanVariable(&SlapValue);
@@ -2082,12 +2260,17 @@ CosaDmlTSIPSubnetGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_IpAddress,
                 (INT)pEntry->InstanceNumber
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -2112,7 +2295,8 @@ CosaDmlTSIPSubnetGetCfg
         }
         else
         {
-            _ansc_strcpy(pEntry->IPAddress, SlapValue.Variant.varString);
+            rc = STRCPY_S_NOCLOBBER(pEntry->IPAddress, sizeof(pEntry->IPAddress), SlapValue.Variant.varString);
+            ERR_CHK(rc);
         }
 
         SlapCleanVariable(&SlapValue);
@@ -2122,12 +2306,17 @@ CosaDmlTSIPSubnetGetCfg
     {
         SlapInitVariable(&SlapValue);
 
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_Tsip_Asn_Root DMSB_TR181_PSM_Tsip_Asn_i DMSB_TR181_PSM_Tsip_Asn_SubnetMask,
                 (INT)pEntry->InstanceNumber
             );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Get_Record_Value
@@ -2152,7 +2341,8 @@ CosaDmlTSIPSubnetGetCfg
         }
         else
         {
-            _ansc_strcpy(pEntry->SubnetMask, SlapValue.Variant.varString);
+            rc = STRCPY_S_NOCLOBBER(pEntry->SubnetMask, sizeof(pEntry->SubnetMask), SlapValue.Variant.varString);
+            ERR_CHK(rc);
         }
 
         SlapCleanVariable(&SlapValue);
@@ -2174,6 +2364,7 @@ CosaDmlTSIPPortManagementSetCfg
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext ctx;
     char utVal[64];
+    errno_t rc = -1;
 
     if (!Utopia_Init(&ctx)) {
         CcspTraceWarning(("%s: Utopia_Init error\n", __FUNCTION__));
@@ -2181,10 +2372,20 @@ CosaDmlTSIPPortManagementSetCfg
         return ANSC_STATUS_FAILURE;
     }
 
-    pCfg->Enabled ? strcpy(utVal, "1") : strcpy(utVal, "0");
+    rc = strcpy_s(utVal, sizeof(utVal), ((pCfg->Enabled) ? "1" : "0"));
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     Utopia_RawSet(&ctx, NULL, PT_MGMT_PREFIX"enabled", utVal);
 
-    pCfg->RuleType == COSA_DML_TSIP_RULE_White ? strcpy(utVal, "white") : strcpy(utVal, "black");
+    rc = strcpy_s(utVal, sizeof(utVal), ((pCfg->RuleType == COSA_DML_TSIP_RULE_White) ? "white" : "black"));
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     Utopia_RawSet(&ctx, NULL, PT_MGMT_PREFIX"type", utVal);
 
     Utopia_Free(&ctx, 1);
@@ -2388,6 +2589,7 @@ CosaDmlTSIPRuleDelEntry
     char utVal[64];
     char utKey[64];
     unsigned long i;
+    errno_t rc = -1;
 
     if (!Utopia_Init(&ctx)) {
         CcspTraceWarning(("%s: Utopia_Init error\n", __FUNCTION__));
@@ -2464,13 +2666,16 @@ CosaDmlTSIPRuleDelEntry
         snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_protocol", i);
         switch(pEntry->Protocol) {
             case COSA_DML_TSIP_RULE_PROTOCOL_TCP:
-                strcpy(utVal, "tcp");
+                rc = strcpy_s(utVal, sizeof(utVal), "tcp");
+                ERR_CHK(rc);
                 break;
             case COSA_DML_TSIP_RULE_PROTOCOL_UDP:
-                strcpy(utVal, "udp");
+                rc = strcpy_s(utVal, sizeof(utVal), "udp");
+                ERR_CHK(rc);
                 break;
             case COSA_DML_TSIP_RULE_PROTOCOL_BOTH:
-                strcpy(utVal, "both");
+                rc = strcpy_s(utVal, sizeof(utVal), "both");
+                ERR_CHK(rc);
                 break;
         }
         Utopia_RawSet(&ctx, NULL, utKey, utVal);
@@ -2543,6 +2748,7 @@ CosaDmlTSIPRuleSetEntry
     unsigned long i;
     char utVal[64];
     char utKey[64];
+    errno_t rc = -1;
 
     if (!Utopia_Init(&ctx)) {
         CcspTraceWarning(("%s: Utopia_Init error\n", __FUNCTION__));
@@ -2569,13 +2775,16 @@ CosaDmlTSIPRuleSetEntry
     snprintf(utKey, sizeof(utKey), PT_MGMT_PREFIX"%lu_protocol", i);
     switch(pEntry->Protocol) {
         case COSA_DML_TSIP_RULE_PROTOCOL_TCP:
-            strcpy(utVal, "tcp");
+            rc = strcpy_s(utVal, sizeof(utVal), "tcp");
+            ERR_CHK(rc);
             break;
         case COSA_DML_TSIP_RULE_PROTOCOL_UDP:
-            strcpy(utVal, "udp");
+            rc = strcpy_s(utVal, sizeof(utVal), "udp");
+            ERR_CHK(rc);
             break;
         case COSA_DML_TSIP_RULE_PROTOCOL_BOTH:
-            strcpy(utVal, "both");
+            rc = strcpy_s(utVal, sizeof(utVal), "both");
+            ERR_CHK(rc);
             break;
     }
     Utopia_RawSet(&ctx, NULL, utKey, utVal);

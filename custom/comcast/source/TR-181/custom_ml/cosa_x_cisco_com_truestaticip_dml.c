@@ -68,6 +68,7 @@
 
 #include "ansc_platform.h"
 #include "dml_tr181_custom_cfg.h"
+#include "safec_lib_common.h"
 
 #ifdef   CONFIG_CISCO_TRUE_STATIC_IP
 
@@ -120,33 +121,54 @@ TrueStaticIP_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
+    errno_t                         rc        = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "IPAddress", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pTSIP->IPAddress);
+        rc = strcpy_s(pValue, *pUlSize, pTSIP->IPAddress);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "SubnetMask", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pTSIP->SubnetMask);
+        rc = strcpy_s(pValue, *pUlSize, pTSIP->SubnetMask);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "GatewayIPAddress", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pTSIP->GatewayIPAddress);
+        rc = strcpy_s(pValue, *pUlSize, pTSIP->GatewayIPAddress);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "ConfigEncryptKey", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pTSIP->ConfigEncryptKey);
+        rc = strcpy_s(pValue, *pUlSize, pTSIP->ConfigEncryptKey);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -197,6 +219,7 @@ TrueStaticIP_SetParamStringValue
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject = (PCOSA_DATAMODEL_TSIP)g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_CFG              pTSIP     = (PCOSA_DML_TSIP_CFG  )&pMyObject->TSIPCfg;
+    errno_t                         rc        = -1;
     unsigned int mask = 0;
 
     /* check if pString doesn't hold null or whitespaces */
@@ -209,7 +232,12 @@ TrueStaticIP_SetParamStringValue
         if(is_IpAddress((unsigned char*)pString))
         {
             /* save update to backup */
-            AnscCopyString(pTSIP->IPAddress, pString);
+            rc = STRCPY_S_NOCLOBBER(pTSIP->IPAddress, sizeof(pTSIP->IPAddress), pString);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             pTSIP->bIPInfoChanged = TRUE;
             return TRUE;
         }
@@ -223,7 +251,12 @@ TrueStaticIP_SetParamStringValue
         if(0==(mask & (~mask >> 1)))
         {
             /* save update to backup */
-            AnscCopyString(pTSIP->SubnetMask, pString);
+            rc = STRCPY_S_NOCLOBBER(pTSIP->SubnetMask, sizeof(pTSIP->SubnetMask), pString);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             pTSIP->bIPInfoChanged = TRUE;
             return TRUE;
         }
@@ -232,7 +265,12 @@ TrueStaticIP_SetParamStringValue
     if( AnscEqualString(ParamName, "GatewayIPAddress", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pTSIP->GatewayIPAddress, pString);
+        rc = STRCPY_S_NOCLOBBER(pTSIP->GatewayIPAddress, sizeof(pTSIP->GatewayIPAddress), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         pTSIP->bIPInfoChanged = TRUE;
         return TRUE;
     }
@@ -240,7 +278,12 @@ TrueStaticIP_SetParamStringValue
     if( AnscEqualString(ParamName, "ConfigEncryptKey", TRUE))
     {
         /* save update to backup */
-         AnscCopyString(pTSIP->ConfigEncryptKey, pString);
+        rc = STRCPY_S_NOCLOBBER(pTSIP->ConfigEncryptKey, sizeof(pTSIP->ConfigEncryptKey), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -401,6 +444,7 @@ Subnet_AddEntry
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TSIP            pMyObject               = (PCOSA_DATAMODEL_TSIP       )g_pCosaBEManager->hTSIP;
     PCOSA_DML_TSIP_SUBNET_ENTRY     pEntry                  = (PCOSA_DML_TSIP_SUBNET_ENTRY)NULL;
+    errno_t                         rc                      = -1;
 
     pEntry = (PCOSA_DML_TSIP_SUBNET_ENTRY)AnscAllocateMemory(sizeof(COSA_DML_TSIP_SUBNET_ENTRY));
     if (!pEntry)
@@ -408,7 +452,11 @@ Subnet_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Alias, "Subnet%lu", pMyObject->ulSubnetNextInsNum);
+    rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias), "Subnet%lu", pMyObject->ulSubnetNextInsNum);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
 
     *pInsNumber = pEntry->InstanceNumber = pMyObject->ulSubnetNextInsNum;
 
@@ -476,19 +524,30 @@ Subnet_GetParamStringValue
 {
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DML_TSIP_SUBNET_ENTRY     pSubnet      = (PCOSA_DML_TSIP_SUBNET_ENTRY)hInsContext;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "IPAddress", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSubnet->IPAddress);
+        rc = strcpy_s(pValue, *pUlSize, pSubnet->IPAddress);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "SubnetMask", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSubnet->SubnetMask);
+        rc = strcpy_s(pValue, *pUlSize, pSubnet->SubnetMask);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -528,6 +587,7 @@ Subnet_SetParamStringValue
 {
     PCOSA_DML_TSIP_SUBNET_ENTRY     pSubnet      = (PCOSA_DML_TSIP_SUBNET_ENTRY)hInsContext;
     unsigned int mask = 0;
+    errno_t rc = -1;
 
     /* check if pString doesn't hold null or whitespaces */
     if(AnscValidStringCheck((unsigned char*)pString) != TRUE)
@@ -539,7 +599,12 @@ Subnet_SetParamStringValue
         if(is_IpAddress((unsigned char*)pString))
         {
             /* save update to backup */
-            AnscCopyString(pSubnet->IPAddress, pString);
+            rc = STRCPY_S_NOCLOBBER(pSubnet->IPAddress, sizeof(pSubnet->IPAddress), pString);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             return TRUE;
         }
     }
@@ -550,7 +615,12 @@ Subnet_SetParamStringValue
         if(0==(mask & (~mask >> 1)))
         {
             /* save update to backup */
-            AnscCopyString(pSubnet->SubnetMask, pString);
+            rc = STRCPY_S_NOCLOBBER(pSubnet->SubnetMask, sizeof(pSubnet->SubnetMask), pString);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             return TRUE;
         }
     }
@@ -797,6 +867,7 @@ Rule_AddEntry
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->RuleList;
     PCOSA_DML_TSIP_RULE_ENTRY       pEntry                  = (PCOSA_DML_TSIP_RULE_ENTRY)NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+    errno_t                         rc                      = -1;
 
     pEntry = (PCOSA_DML_TSIP_RULE_ENTRY)AnscAllocateMemory(sizeof(COSA_DML_TSIP_RULE_ENTRY));
     if (!pEntry)
@@ -804,7 +875,11 @@ Rule_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Alias, "Rule%lu", pMyObject->ulRuleNextInsNum);
+    rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias), "Rule%lu", pMyObject->ulRuleNextInsNum);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
 
     /* Update the cache */
     pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
@@ -942,26 +1017,42 @@ Rule_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_TSIP_RULE_ENTRY       pRule        = (PCOSA_DML_TSIP_RULE_ENTRY)pCosaContext->hContext;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Name", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRule->Name);
+        rc = strcpy_s(pValue, *pUlSize, pRule->Name);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "IPRangeMin", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRule->IPRangeMin);
+        rc = strcpy_s(pValue, *pUlSize, pRule->IPRangeMin);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "IPRangeMax", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRule->IPRangeMax);
+        rc = strcpy_s(pValue, *pUlSize, pRule->IPRangeMax);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1039,26 +1130,42 @@ Rule_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_TSIP_RULE_ENTRY       pRule        = (PCOSA_DML_TSIP_RULE_ENTRY)pCosaContext->hContext;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Name", TRUE))
     {
         /* save update to backup */
-         AnscCopyString(pRule->Name, pString);
+        rc = STRCPY_S_NOCLOBBER(pRule->Name, sizeof(pRule->Name), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "IPRangeMin", TRUE))
     {
         /* save update to backup */
-         AnscCopyString(pRule->IPRangeMin, pString);
+        rc = STRCPY_S_NOCLOBBER(pRule->IPRangeMin, sizeof(pRule->IPRangeMin), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "IPRangeMax", TRUE))
     {
         /* save update to backup */
-         AnscCopyString(pRule->IPRangeMax, pString);
+        rc = STRCPY_S_NOCLOBBER(pRule->IPRangeMax, sizeof(pRule->IPRangeMax), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 

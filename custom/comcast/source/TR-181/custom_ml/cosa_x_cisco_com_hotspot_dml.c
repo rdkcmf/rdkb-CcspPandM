@@ -38,6 +38,7 @@
  */
 
 #include "dml_tr181_custom_cfg.h"
+#include "safec_lib_common.h"
 
 #ifdef CONFIG_CISCO_HOTSPOT
 #include "cosa_x_cisco_com_hotspot_dml.h"
@@ -81,6 +82,7 @@ HsSsid_GetParamStringValue
     )
 {
     COSA_DML_HOTSPOT_SSID           *hsSsid = (COSA_DML_HOTSPOT_SSID *)hInsContext;
+    errno_t                         rc      = -1;
 
     CosaDml_HsSsidGetCfg(hsSsid->InstanceNumber, hsSsid);
 
@@ -92,7 +94,12 @@ HsSsid_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, hsSsid->Alias);
+        rc = strcpy_s(pValue, *pUlSize, hsSsid->Alias);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "SSID", TRUE))
@@ -103,7 +110,12 @@ HsSsid_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, hsSsid->SSID);
+        rc = strcpy_s(pValue, *pUlSize, hsSsid->SSID);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -180,6 +192,7 @@ HsAssoDev_GetParamStringValue
     )
 {
     COSA_DML_HOTSPOT_ASSODEV        *assoDev = (COSA_DML_HOTSPOT_ASSODEV *)hInsContext;
+    errno_t                         rc       = -1;
 
    // CosaDml_HsSsidAssoDevGetCfg(assoDev->SsidIns, assoDev->InstanceNumber, assoDev);
 
@@ -191,7 +204,12 @@ HsAssoDev_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, assoDev->Alias);
+        rc = strcpy_s(pValue, *pUlSize, assoDev->Alias);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "MACAddress", TRUE))
@@ -202,7 +220,12 @@ HsAssoDev_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, assoDev->MACAddress);
+        rc = strcpy_s(pValue, *pUlSize, assoDev->MACAddress);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "Hostname", TRUE))
@@ -213,7 +236,12 @@ HsAssoDev_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, assoDev->Hostname);
+        rc = strcpy_s(pValue, *pUlSize, assoDev->Hostname);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "IPv4Address", TRUE))
@@ -224,7 +252,12 @@ HsAssoDev_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, assoDev->IPv4Address);
+        rc = strcpy_s(pValue, *pUlSize, assoDev->IPv4Address);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "DHCPv4Status", TRUE))
@@ -235,7 +268,12 @@ HsAssoDev_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, assoDev->DHCPv4Status);
+        rc = strcpy_s(pValue, *pUlSize, assoDev->DHCPv4Status);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "IPv6Address", TRUE))
@@ -246,7 +284,12 @@ HsAssoDev_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, assoDev->IPv6Address);
+        rc = strcpy_s(pValue, *pUlSize, assoDev->IPv6Address);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "IPv6Prefix", TRUE))
@@ -257,7 +300,12 @@ HsAssoDev_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, assoDev->IPv6Prefix);
+        rc = strcpy_s(pValue, *pUlSize, assoDev->IPv6Prefix);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "DHCPv6Status", TRUE))
@@ -268,7 +316,12 @@ HsAssoDev_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, assoDev->DHCPv6Status);
+        rc = strcpy_s(pValue, *pUlSize, assoDev->DHCPv6Status);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "IPv6LinkLocalAddress", TRUE))
@@ -279,7 +332,12 @@ HsAssoDev_GetParamStringValue
             return 1;
         }
 
-        AnscCopyString(pValue, assoDev->IPv6LinkLocalAddress);
+        rc = strcpy_s(pValue, *pUlSize, assoDev->IPv6LinkLocalAddress);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 

@@ -289,6 +289,7 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
     ULONG size;
     int inst;
     int retry_count =0;
+    errno_t rc = -1;
     parameterValStruct_t varStruct;
     varStruct.parameterName = paramname;
     varStruct.parameterValue = outdata;
@@ -370,7 +371,8 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
 			  snprintf(paramname, sizeof(paramname), "eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.SSID.%d.SSID",inst);
 		  GrePsmGet(paramname,varStruct.parameterValue, size);
 		  if(strlen(varStruct.parameterValue)==0) {
-				strcpy(varStruct.parameterValue,"xfinitywifi");
+				rc = strcpy_s(varStruct.parameterValue, sizeof(outdata), "xfinitywifi");
+				ERR_CHK(rc);
 		  }
 		}
         
@@ -503,6 +505,7 @@ CosaDml_GreIfGetConnectedRemoteEndpoint(ULONG idx, COSA_DML_GRE_IF *greIf)
 	char cmd[126] = {0};
 	char line_buf[126] = {0};
 	FILE *fp = NULL;
+	errno_t rc = -1;
 
 	if(!greIf)
 		return ANSC_STATUS_FAILURE;
@@ -510,7 +513,8 @@ CosaDml_GreIfGetConnectedRemoteEndpoint(ULONG idx, COSA_DML_GRE_IF *greIf)
 	snprintf(cmd, sizeof(cmd), "sysevent get %s",kHotspotfd_tunnelEP);       
     if (((fp = popen(cmd,"r")) != NULL) && (fgets(line_buf, sizeof(line_buf), fp)))
     {
-		sprintf(greIf->ConnectedRemoteEndpoint,"%s",line_buf);
+		rc = strcpy_s(greIf->ConnectedRemoteEndpoint, sizeof(greIf->ConnectedRemoteEndpoint), line_buf);
+		ERR_CHK(rc);
     }
 	if(fp)
 		pclose(fp);

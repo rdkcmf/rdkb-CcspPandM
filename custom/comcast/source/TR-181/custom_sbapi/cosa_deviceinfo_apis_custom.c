@@ -74,6 +74,7 @@
 #include "dmsb_tr181_psm_definitions.h" // for DMSB_TR181_PSM_DeviceInfo_Root/ProductClass
 #include "platform_hal.h"
 #include "secure_wrapper.h"
+#include "safec_lib_common.h"
 
 #include "cosa_x_comcast_com_gre_apis.h"
 #include <utctx.h>
@@ -133,6 +134,7 @@ Local_CosaDmlGetParamValueByPathName
     char outdata[80];
     ULONG size = sizeof(outdata);
     outdata[0] = '\0';
+    errno_t rc = -1;
 
     varStruct.parameterName = (char*)pathName;
     varStruct.parameterValue = outdata;
@@ -145,7 +147,12 @@ Local_CosaDmlGetParamValueByPathName
     }
     else 
     {
-        AnscCopyString(pValue, outdata);
+        rc = STRCPY_S_NOCLOBBER(pValue, *pulSize, outdata);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
         *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
     }
@@ -247,10 +254,21 @@ CosaDmlDiGetRouterIPAddress
 {
     UNREFERENCED_PARAMETER(hContext);
 	unsigned int UIntIP = (unsigned int)CosaUtilGetIfAddr("erouter0");
+	errno_t rc = -1;
 #if defined (_XB6_PRODUCT_REQ_) ||  defined (_COSA_BCM_ARM_)
-	sprintf(pValue, "%d.%d.%d.%d",(UIntIP & 0xff),((UIntIP >> 8) & 0xff),((UIntIP >> 16) & 0xff),(UIntIP >> 24));
+	rc = sprintf_s(pValue, *pulSize, "%d.%d.%d.%d",(UIntIP & 0xff),((UIntIP >> 8) & 0xff),((UIntIP >> 16) & 0xff),(UIntIP >> 24));
+	if(rc < EOK)
+	{
+		ERR_CHK(rc);
+		return ANSC_STATUS_FAILURE;
+	}
 #else
-	sprintf(pValue, "%d.%d.%d.%d", (UIntIP >> 24),((UIntIP >> 16) & 0xff),((UIntIP >> 8) & 0xff),(UIntIP & 0xff));
+	rc = sprintf_s(pValue, *pulSize, "%d.%d.%d.%d", (UIntIP >> 24),((UIntIP >> 16) & 0xff),((UIntIP >> 8) & 0xff),(UIntIP & 0xff));
+	if(rc < EOK)
+	{
+		ERR_CHK(rc);
+		return ANSC_STATUS_FAILURE;
+	}
 #endif
 	*pulSize = AnscSizeOfString(pValue);
 
@@ -347,7 +365,9 @@ CosaDmlDiGetCMIPAddress
 #else
     if ( pValue )
     {
-        strcpy(pValue, "0.0.0.0");
+        errno_t rc = -1;
+        rc = strcpy_s(pValue, *pulSize, "0.0.0.0");
+        ERR_CHK(rc);
     }
     UNREFERENCED_PARAMETER(pulSize);
     return ANSC_STATUS_SUCCESS;
@@ -570,15 +590,26 @@ CosaDmlSetCaptivePortalEnable
 
 	char buf[10];
 	memset(buf,0,sizeof(buf));
+	errno_t rc = -1;
 	if (value)
 	{
-		strcpy(buf,"true");
+		rc = strcpy_s(buf, sizeof(buf), "true");
+		if(rc != EOK)
+		{
+			ERR_CHK(rc);
+			return ANSC_STATUS_FAILURE;
+		}
 		CcspTraceWarning(("CaptivePortal: Enabling Captive Portal switch ...\n"));		
 	}
 	else
 	{
 		CcspTraceWarning(("CaptivePortal: Disabling Captive Portal switch ...\n"));		
-		strcpy(buf,"false");
+		rc = strcpy_s(buf, sizeof(buf), "false");
+		if(rc != EOK)
+		{
+			ERR_CHK(rc);
+			return ANSC_STATUS_FAILURE;
+		}
 	}
 	if (syscfg_set(NULL, CAPTIVEPORTAL_EANBLE , buf) != 0) {
                      CcspTraceWarning(("syscfg_set failed to enable/disable captive portal\n"));
