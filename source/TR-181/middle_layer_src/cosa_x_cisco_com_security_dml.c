@@ -73,6 +73,7 @@
 #if defined(_INTEL_BUG_FIXES_)
 #include "cosa_drg_common.h"
 #endif
+#include <syscfg/syscfg.h>
 
 /***********************************************************************
  IMPORTANT NOTE:

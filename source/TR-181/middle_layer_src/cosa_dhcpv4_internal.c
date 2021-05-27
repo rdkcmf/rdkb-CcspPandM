@@ -79,6 +79,7 @@
 #include "poam_irepfo_interface.h"
 #include "sys_definitions.h"
 #include "safec_lib_common.h"
+#include <syscfg/syscfg.h>
 
 extern void * g_pDslhDmlAgent;
 

@@ -20,7 +20,7 @@
 #include "plugin_main_apis.h"
 #include "cosa_dslite_internal.h"
 #include "safec_lib_common.h"
-
+#include <syscfg/syscfg.h>
 
 static const char *UPDATE_RESOLV_CMD = "/bin/sh /etc/utopia/service.d/set_resolv_conf.sh";
 //#endif
