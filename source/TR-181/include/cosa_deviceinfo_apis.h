@@ -660,7 +660,6 @@ CosaDmlDiUniqueTelemetryIdInit
 void ConvertTime(int time, char day[], char hour[], char mins[]);
 
 void UniqueTelemetryCronJob(BOOL enable, INT timeInterval, char* tagString);
-INT platform_hal_getCMTSMac(CHAR *pValue);
 
 ULONG
 CosaDmlDiGetBootTime
