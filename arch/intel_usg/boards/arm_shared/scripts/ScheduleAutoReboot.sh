@@ -1,5 +1,7 @@
 #! /bin/sh
 source /etc/log_timestamp.sh
+source /etc/utopia/service.d/log_capture_path.sh
+source /etc/utopia/service.d/log_env_var.sh
 CRONTAB_DIR="/var/spool/cron/crontabs/"
 CRONTAB_FILE=$CRONTAB_DIR"root"
 CRONFILE_BK="/tmp/cron_tab$$.txt"
