@@ -595,8 +595,21 @@ if(id != 0)
     {
         if ( (strcmp(argv[idx], "-subsys") == 0) )
         {
-            AnscCopyString(g_Subsystem, argv[idx+1]);
-            CcspTraceWarning(("\nSubsystem is %s\n", g_Subsystem));
+           if ((idx+1) < argc)
+           {
+               rc = strcpy_s(g_Subsystem, sizeof(g_Subsystem), argv[idx+1]);
+               if(rc != EOK)
+               {
+                  ERR_CHK(rc);
+                  CcspTraceError(("exit ERROR %s:%d\n", __FUNCTION__, __LINE__));
+                  exit(1);
+               }
+           }
+           else
+           {
+               CcspTraceError(("Argument missing after -subsys\n"));
+           }
+           CcspTraceWarning(("\nSubsystem is %s\n", g_Subsystem));
         }
         else if ( strcmp(argv[idx], "-c" ) == 0 )
         {

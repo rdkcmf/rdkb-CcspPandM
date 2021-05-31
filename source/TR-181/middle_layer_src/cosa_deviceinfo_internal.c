@@ -71,6 +71,7 @@
 #include "cosa_deviceinfo_internal.h"
 #include "cosa_deviceinfo_apis_custom.h"
 #include "syscfg/syscfg.h"
+#include "safec_lib_common.h"
 
 /**********************************************************************
 
@@ -156,6 +157,7 @@ CosaDeviceInfoInitialize
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject    = (PCOSA_DATAMODEL_DEVICEINFO)hThisObject;
+    errno_t rc = -1;
 
     /* Initiation all functions */
     _ansc_memset(pMyObject->ProvisioningCode, 0, 64);
@@ -176,8 +178,10 @@ CosaDeviceInfoInitialize
 	pMyObject->FirmwareDownloadCompletedNotification	= FALSE;
 	_ansc_memset(pMyObject->FirmwareDownloadStartedNotification, 0, 64);
 	_ansc_memset(pMyObject->DeviceManageableNotification, 0, 64);
-	AnscCopyString( pMyObject->FirmwareDownloadStartedNotification, "0" );
-	AnscCopyString( pMyObject->DeviceManageableNotification, "0" );
+	rc = STRCPY_S_NOCLOBBER( pMyObject->FirmwareDownloadStartedNotification, sizeof(pMyObject->FirmwareDownloadStartedNotification), "0" );
+	ERR_CHK(rc);
+	rc = STRCPY_S_NOCLOBBER( pMyObject->DeviceManageableNotification, sizeof(pMyObject->DeviceManageableNotification), "0" );
+	ERR_CHK(rc);
 
 	CosaDmlGiGetCustomDataModelEnabled(NULL, &pMyObject->CustomDataModelEnabled);
 

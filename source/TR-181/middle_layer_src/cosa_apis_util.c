@@ -404,7 +404,8 @@ CosaUtilGetLowerLayers
                 parameterValStruct_t varStruct;
                 ulEntryNameLen   = sizeof(ucEntryNameValue);
                   ulNumOfEntries = 0;
-                AnscCopyString(ucEntryParamName,"Device.MoCA.InterfaceNumberOfEntries");
+                rc = strcpy_s(ucEntryParamName, sizeof(ucEntryParamName), "Device.MoCA.InterfaceNumberOfEntries");
+                ERR_CHK(rc);
                 varStruct.parameterName = ucEntryParamName;
                 varStruct.parameterValue = ucEntryNameValue;
 
@@ -547,7 +548,8 @@ CosaUtilGetLowerLayers
                 parameterValStruct_t varStruct;
                 ulEntryNameLen   = sizeof(ucEntryNameValue);
                 ulNumOfEntries = 0;
-                AnscCopyString(ucEntryParamName,"Device.WiFi.SSIDNumberOfEntries");
+                rc = strcpy_s(ucEntryParamName, sizeof(ucEntryParamName), "Device.WiFi.SSIDNumberOfEntries");
+                ERR_CHK(rc);
                 varStruct.parameterName = ucEntryParamName;
                 varStruct.parameterValue = ucEntryNameValue;
                 if (COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct,&ulEntryNameLen))

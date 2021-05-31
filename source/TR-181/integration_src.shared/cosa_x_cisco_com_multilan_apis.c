@@ -80,6 +80,26 @@
                             HELPER FUNCTIONS
 **********************************************************************/
 
+ANSC_STATUS pValue_update(char *pValue, PULONG pValueSize, char *str)
+{
+    errno_t rc = -1;
+    if (! str)
+    {
+        return ANSC_STATUS_RESOURCES;
+    }
+    size_t len = strlen(str);
+    if ( (len+1) > *pValueSize)
+    {
+        *pValueSize = len+1;
+        return  ANSC_STATUS_MORE_DATA;
+    }
+    rc = strcpy_s(pValue, *pValueSize, str);
+    ERR_CHK(rc);
+    *pValueSize = len+1;
+    return  ANSC_STATUS_SUCCESS;
+}
+
+
 /**********************************************************************
                             MAIN ROUTINES
 **********************************************************************/
@@ -204,28 +224,7 @@ CosaDmlMlanGetPrimaryLanIpIf
         SlapCleanVariable(&SlapValue);
     }
 
-    if ( pContext->pPrimaryLanIpIf )
-    {
-        ulStrSize = _ansc_strlen(pContext->pPrimaryLanIpIf);
-
-        if ( ( ulStrSize + 1) <= *pValueSize )
-        {
-            AnscCopyString(pValue, pContext->pPrimaryLanIpIf);
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_SUCCESS;
-        }
-        else
-        {
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_MORE_DATA;
-        }
-    }
-    else
-    {
-        return  ANSC_STATUS_RESOURCES;
-    }
+    return  pValue_update(pValue,pValueSize, pContext->pPrimaryLanIpIf);
 }
 
 
@@ -303,28 +302,7 @@ CosaDmlMlanGetHomeSecurityIpIf
         SlapCleanVariable(&SlapValue);
     }
 
-    if ( pContext->pHomeSecurityIpIf )
-    {
-        ulStrSize = _ansc_strlen(pContext->pHomeSecurityIpIf);
-
-        if ( ( ulStrSize + 1) <= *pValueSize )
-        {
-            AnscCopyString(pValue, pContext->pHomeSecurityIpIf);
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_SUCCESS;
-        }
-        else
-        {
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_MORE_DATA;
-        }
-    }
-    else
-    {
-        return  ANSC_STATUS_RESOURCES;
-    }
+    return  pValue_update(pValue,pValueSize, pContext->pHomeSecurityIpIf);
 }
 
 ANSC_STATUS
@@ -401,28 +379,7 @@ CosaDmlMlanGetPrimaryLanBridge
         SlapCleanVariable(&SlapValue);
     }
 
-    if ( pContext->pPrimaryLanBridge )
-    {
-        ulStrSize = _ansc_strlen(pContext->pPrimaryLanBridge);
-
-        if ( ( ulStrSize + 1) <= *pValueSize )
-        {
-            AnscCopyString(pValue, pContext->pPrimaryLanBridge);
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_SUCCESS;
-        }
-        else
-        {
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_MORE_DATA;
-        }
-    }
-    else
-    {
-        return  ANSC_STATUS_RESOURCES;
-    }
+    return  pValue_update(pValue,pValueSize, pContext->pPrimaryLanBridge);
 }
 
 ANSC_STATUS
@@ -438,6 +395,7 @@ CosaDmlMlanGetPrimaryLanBridgeHsPorts
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
     ULONG                           ulStrSize       = 0;
+    errno_t                         rc   = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -468,40 +426,20 @@ CosaDmlMlanGetPrimaryLanBridgeHsPorts
         }
         else
         {
-            ulStrSize = _ansc_strlen(SlapValue.Variant.varString) + 3;
+            ulStrSize = _ansc_strlen(SlapValue.Variant.varString) + 1;
             pContext->pPrimaryLanBridgeHsPorts = AnscAllocateMemory(ulStrSize);
 
             if ( pContext->pPrimaryLanBridgeHsPorts )
             {
-                AnscCopyString(pContext->pPrimaryLanBridgeHsPorts, SlapValue.Variant.varString);
+                rc = strcpy_s(pContext->pPrimaryLanBridgeHsPorts, ulStrSize, SlapValue.Variant.varString);
+                ERR_CHK(rc);
             }
         }
 
         SlapCleanVariable(&SlapValue);
     }
 
-    if ( pContext->pPrimaryLanBridgeHsPorts )
-    {
-        ulStrSize = _ansc_strlen(pContext->pPrimaryLanBridgeHsPorts);
-
-        if ( ( ulStrSize + 1) <= *pValueSize )
-        {
-            AnscCopyString(pValue, pContext->pPrimaryLanBridgeHsPorts);
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_SUCCESS;
-        }
-        else
-        {
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_MORE_DATA;
-        }
-    }
-    else
-    {
-        return  ANSC_STATUS_RESOURCES;
-    }
+    return  pValue_update(pValue,pValueSize, pContext->pPrimaryLanBridgeHsPorts);
 }
 
 
@@ -565,28 +503,7 @@ CosaDmlMlanGetPrimaryLanDhcpv4ServerPool
         SlapCleanVariable(&SlapValue);
     }
 
-    if ( pContext->pPrimaryLanDhcpv4ServerPool )
-    {
-        ulStrSize = _ansc_strlen(pContext->pPrimaryLanDhcpv4ServerPool);
-
-        if ( ( ulStrSize + 1) <= *pValueSize )
-        {
-            AnscCopyString(pValue, pContext->pPrimaryLanDhcpv4ServerPool);
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_SUCCESS;
-        }
-        else
-        {
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_MORE_DATA;
-        }
-    }
-    else
-    {
-        return  ANSC_STATUS_RESOURCES;
-    }
+    return  pValue_update(pValue,pValueSize, pContext->pPrimaryLanDhcpv4ServerPool);
 }
 
 
@@ -664,28 +581,7 @@ CosaDmlMlanGetHomeSecurityBridge
         SlapCleanVariable(&SlapValue);
     }
 
-    if ( pContext->pHomeSecurityBridge )
-    {
-        ulStrSize = _ansc_strlen(pContext->pHomeSecurityBridge);
-
-        if ( ( ulStrSize + 1) <= *pValueSize )
-        {
-            AnscCopyString(pValue, pContext->pHomeSecurityBridge);
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_SUCCESS;
-        }
-        else
-        {
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_MORE_DATA;
-        }
-    }
-    else
-    {
-        return  ANSC_STATUS_RESOURCES;
-    }
+    return  pValue_update(pValue,pValueSize, pContext->pHomeSecurityBridge);
 }
 
 ANSC_STATUS
@@ -701,6 +597,7 @@ CosaDmlMlanGetHomeSecurityBridgePorts
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
     ULONG                           ulStrSize       = 0;
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -731,40 +628,20 @@ CosaDmlMlanGetHomeSecurityBridgePorts
         }
         else
         {
-            ulStrSize = _ansc_strlen(SlapValue.Variant.varString) + 3;
+            ulStrSize = _ansc_strlen(SlapValue.Variant.varString) + 1;
             pContext->pHomeSecurityBridgePorts = AnscAllocateMemory(ulStrSize);
 
             if ( pContext->pHomeSecurityBridgePorts )
             {
-                AnscCopyString(pContext->pHomeSecurityBridgePorts, SlapValue.Variant.varString);
+                rc = strcpy_s(pContext->pHomeSecurityBridgePorts, ulStrSize, SlapValue.Variant.varString);
+                ERR_CHK(rc);
             }
         }
 
         SlapCleanVariable(&SlapValue);
     }
 
-    if ( pContext->pHomeSecurityBridgePorts )
-    {
-        ulStrSize = _ansc_strlen(pContext->pHomeSecurityBridgePorts);
-
-        if ( ( ulStrSize + 1) <= *pValueSize )
-        {
-            AnscCopyString(pValue, pContext->pHomeSecurityBridgePorts);
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_SUCCESS;
-        }
-        else
-        {
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_MORE_DATA;
-        }
-    }
-    else
-    {
-        return  ANSC_STATUS_RESOURCES;
-    }
+    return  pValue_update(pValue,pValueSize, pContext->pHomeSecurityBridgePorts);
 }
 
 ANSC_STATUS
@@ -841,28 +718,7 @@ CosaDmlMlanGetHomeSecurityDhcpv4ServerPool
         SlapCleanVariable(&SlapValue);
     }
 
-    if ( pContext->pHomeSecurityDHCPv4ServerPool )
-    {
-        ulStrSize = _ansc_strlen(pContext->pHomeSecurityDHCPv4ServerPool);
-
-        if ( ( ulStrSize + 1) <= *pValueSize )
-        {
-            AnscCopyString(pValue, pContext->pHomeSecurityDHCPv4ServerPool);
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_SUCCESS;
-        }
-        else
-        {
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_MORE_DATA;
-        }
-    }
-    else
-    {
-        return  ANSC_STATUS_RESOURCES;
-    }
+    return  pValue_update(pValue,pValueSize, pContext->pHomeSecurityDHCPv4ServerPool);
 }
 
 
@@ -926,28 +782,7 @@ CosaDmlMlanGetHomeSecurityWiFiRadio
         SlapCleanVariable(&SlapValue);
     }
 
-    if ( pContext->pHomeSecurityWiFiRadio )
-    {
-        ulStrSize = _ansc_strlen(pContext->pHomeSecurityWiFiRadio);
-
-        if ( ( ulStrSize + 1) <= *pValueSize )
-        {
-            AnscCopyString(pValue, pContext->pHomeSecurityWiFiRadio);
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_SUCCESS;
-        }
-        else
-        {
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_MORE_DATA;
-        }
-    }
-    else
-    {
-        return  ANSC_STATUS_RESOURCES;
-    }
+    return  pValue_update(pValue,pValueSize, pContext->pHomeSecurityWiFiRadio);
 }
 
 
@@ -1011,28 +846,7 @@ CosaDmlMlanGetHomeSecurityWiFiSsid
         SlapCleanVariable(&SlapValue);
     }
 
-    if ( pContext->pHomeSecurityWiFiSsid )
-    {
-        ulStrSize = _ansc_strlen(pContext->pHomeSecurityWiFiSsid);
-
-        if ( ( ulStrSize + 1) <= *pValueSize )
-        {
-            AnscCopyString(pValue, pContext->pHomeSecurityWiFiSsid);
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_SUCCESS;
-        }
-        else
-        {
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_MORE_DATA;
-        }
-    }
-    else
-    {
-        return  ANSC_STATUS_RESOURCES;
-    }
+    return  pValue_update(pValue,pValueSize, pContext->pHomeSecurityWiFiSsid);
 }
 
 
@@ -1096,27 +910,6 @@ CosaDmlMlanGetHomeSecurityWiFiAp
         SlapCleanVariable(&SlapValue);
     }
 
-    if ( pContext->pHomeSecurityWiFiAp )
-    {
-        ulStrSize = _ansc_strlen(pContext->pHomeSecurityWiFiAp);
-
-        if ( ( ulStrSize + 1) <= *pValueSize )
-        {
-            AnscCopyString(pValue, pContext->pHomeSecurityWiFiAp);
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_SUCCESS;
-        }
-        else
-        {
-            *pValueSize = ulStrSize;
-
-            return  ANSC_STATUS_MORE_DATA;
-        }
-    }
-    else
-    {
-        return  ANSC_STATUS_RESOURCES;
-    }
+    return  pValue_update(pValue,pValueSize, pContext->pHomeSecurityWiFiAp);
 }
 

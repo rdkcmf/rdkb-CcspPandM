@@ -113,6 +113,28 @@
  }
  
 ***********************************************************************/
+static int update_pValue(char *pValue, PULONG pulSize, char *str)
+{
+    errno_t rc = -1;
+
+    if(!str)
+        return -1;
+
+    size_t len = strlen(str);
+    if ( len < *pulSize)
+    {
+        rc = strcpy_s( pValue, *pulSize, str);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+        return 0;
+    }
+
+    *pulSize = len+1;
+    return 1;
+}
 /***********************************************************************
 
  APIs for Object:
@@ -866,18 +888,7 @@ Client3_GetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpc->Cfg.Alias) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpc->Cfg.Alias);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpc->Cfg.Alias)+1;
-            return 1;
-        }
-
-        return 0;
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpc->Cfg.Alias);
     }
 
     if( AnscEqualString(ParamName, "Interface", TRUE) )
@@ -891,22 +902,9 @@ Client3_GetParamStringValue
                     );
         if ( pString )
         {
-            if ( AnscSizeOfString((const char*)pString) < *pUlSize)
-            {
-                AnscCopyString(pValue, (char*)pString);
-
-                AnscFreeMemory(pString);
-
-                return 0;
-            }
-            else
-            {
-                *pUlSize = AnscSizeOfString((const char*)pString)+1;
-
-                AnscFreeMemory(pString);
-                
-                return 1;
-            }
+            int ret = update_pValue(pValue,pUlSize, (char*)pString);
+            AnscFreeMemory(pString);
+            return ret;
         }
         else
         {
@@ -921,47 +919,19 @@ Client3_GetParamStringValue
         CosaDmlDhcpv6cGetInfo(pDhcpc, pCxtLink->InstanceNumber, &pDhcpc->Info);
 
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpc->Info.DUID) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpc->Info.DUID);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpc->Info.DUID)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpc->Info.DUID);
     }
-
 
     if( AnscEqualString(ParamName, "SupportedOptions", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpc->Info.SupportedOptions) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpc->Info.SupportedOptions);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpc->Info.SupportedOptions)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpc->Info.SupportedOptions);
     }
 
     if( AnscEqualString(ParamName, "RequestedOptions", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpc->Cfg.RequestedOptions) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpc->Cfg.RequestedOptions);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpc->Cfg.RequestedOptions)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpc->Cfg.RequestedOptions);
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -1251,7 +1221,12 @@ Client3_SetParamStringValue
             return FALSE;
         }
 
-        AnscCopyString((char*)pDhcpc->Cfg.Alias, pString);
+        rc = STRCPY_S_NOCLOBBER((char*)pDhcpc->Cfg.Alias, sizeof(pDhcpc->Cfg.Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -1411,6 +1386,7 @@ Client3_Commit
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPCV6_FULL            pDhcpc            = (PCOSA_DML_DHCPCV6_FULL)pCxtLink->hContext;
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
+    errno_t    rc = -1;
 
     if ( pCxtLink->bNew )
     {
@@ -1427,7 +1403,8 @@ Client3_Commit
             DHCPV6_CLIENT_SET_DEFAULTVALUE(pDhcpc);
             
             if ( pDhcpv6->AliasOfClient[0] )
-                AnscCopyString( (char*)pDhcpc->Cfg.Alias, pDhcpv6->AliasOfClient );
+                rc = STRCPY_S_NOCLOBBER( (char*)pDhcpc->Cfg.Alias, sizeof(pDhcpc->Cfg.Alias), pDhcpv6->AliasOfClient );
+                ERR_CHK(rc);
         }
     }
     else
@@ -1478,9 +1455,13 @@ Client3_Rollback
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCxtLink          = (PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT)hInsContext;
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
     PCOSA_DML_DHCPCV6_FULL            pDhcpc            = (PCOSA_DML_DHCPCV6_FULL)pCxtLink->hContext;
+    errno_t     rc = -1;
 
     if ( pDhcpv6->AliasOfClient[0] )
-        AnscCopyString( (char*)pDhcpc->Cfg.Alias, pDhcpv6->AliasOfClient );
+    {
+        rc = STRCPY_S_NOCLOBBER( (char*)pDhcpc->Cfg.Alias, sizeof(pDhcpc->Cfg.Alias), pDhcpv6->AliasOfClient );
+        ERR_CHK(rc);
+    }
 
     if ( !pCxtLink->bNew )
     {
@@ -1890,50 +1871,19 @@ Server2_GetParamStringValue
     if( AnscEqualString(ParamName, "SourceAddress", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpcServer->SourceAddress) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpcServer->SourceAddress);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpcServer->SourceAddress)+1;
-            return 1;
-        }
-
-        return 0;
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpcServer->SourceAddress);
     }
 
     if( AnscEqualString(ParamName, "DUID", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpcServer->DUID) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpcServer->DUID);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpcServer->DUID)+1;
-            return 1;
-        }
-        return 0;
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpcServer->DUID);
     }
 
     if( AnscEqualString(ParamName, "InformationRefreshTime", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpcServer->InformationRefreshTime) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpcServer->InformationRefreshTime);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpcServer->InformationRefreshTime)+1;
-            return 1;
-        }
-        return 0;
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpcServer->InformationRefreshTime);
     }
 
 
@@ -2411,33 +2361,14 @@ SentOption1_GetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpSentOption->Alias) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpSentOption->Alias);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpSentOption->Alias)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpSentOption->Alias);
     }
 
     if( AnscEqualString(ParamName, "Value", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpSentOption->Value) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpSentOption->Value);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpSentOption->Value)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpSentOption->Value);
     }
-
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
@@ -2640,14 +2571,25 @@ SentOption1_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT         pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPCV6_SENT            pDhcpSentOption   = (PCOSA_DML_DHCPCV6_SENT)pCxtLink->hContext;
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCxtDhcpcLink     = (PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT)pCxtLink->hParentTable;
+    errno_t   rc = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* save update to backup */
-        AnscCopyString(pCxtDhcpcLink->AliasOfSent, (char*)pDhcpSentOption->Alias);
+        rc = STRCPY_S_NOCLOBBER(pCxtDhcpcLink->AliasOfSent, sizeof(pCxtDhcpcLink->AliasOfSent), (char*)pDhcpSentOption->Alias);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
-        AnscCopyString((char*)pDhcpSentOption->Alias, pString);
+        rc = STRCPY_S_NOCLOBBER((char*)pDhcpSentOption->Alias, sizeof(pDhcpSentOption->Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         return TRUE;
     }
@@ -2655,7 +2597,12 @@ SentOption1_SetParamStringValue
     if( AnscEqualString(ParamName, "Value", TRUE) )
     {
         /* save update to backup */
-        AnscCopyString((char*)pDhcpSentOption->Value, pString);
+        rc = STRCPY_S_NOCLOBBER((char*)pDhcpSentOption->Value, sizeof(pDhcpSentOption->Value), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         return TRUE;
     }
@@ -2826,6 +2773,7 @@ SentOption1_Commit
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCxtDhcpcLink     = (PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT)pCxtLink->hParentTable;
     PCOSA_DML_DHCPCV6_FULL            pDhcpClient       = (PCOSA_DML_DHCPCV6_FULL)pCxtDhcpcLink->hContext;
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
+    errno_t  rc = -1;
 
     if ( pCxtLink->bNew )
     {
@@ -2842,7 +2790,8 @@ SentOption1_Commit
             DHCPV6_SENTOPTION_SET_DEFAULTVALUE(pDhcpSentOption);
 
             if ( pCxtDhcpcLink->AliasOfSent[0] )
-                AnscCopyString( (char*)pDhcpSentOption->Alias, pCxtDhcpcLink->AliasOfSent );
+                rc = STRCPY_S_NOCLOBBER( (char*)pDhcpSentOption->Alias, sizeof(pDhcpSentOption->Alias), pCxtDhcpcLink->AliasOfSent );
+                ERR_CHK(rc);
         }
     }
     else
@@ -2894,9 +2843,13 @@ SentOption1_Rollback
     PCOSA_DML_DHCPCV6_SENT            pDhcpSentOption   = (PCOSA_DML_DHCPCV6_SENT)pCxtLink->hContext;
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCxtDhcpcLink     = (PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT)pCxtLink->hParentTable;
     PCOSA_DML_DHCPCV6_FULL            pDhcpc            = (PCOSA_DML_DHCPCV6_FULL)pCxtDhcpcLink->hContext;
+    errno_t  rc = -1;
 
     if ( pCxtDhcpcLink->AliasOfSent[0] )
-        AnscCopyString( (char*)pDhcpSentOption->Alias, pCxtDhcpcLink->AliasOfSent );
+    {
+        rc = STRCPY_S_NOCLOBBER( (char*)pDhcpSentOption->Alias, sizeof(pDhcpSentOption->Alias), pCxtDhcpcLink->AliasOfSent );
+        ERR_CHK(rc);
+    }
 
     if ( !pCxtLink->bNew )
     {
@@ -3312,31 +3265,13 @@ ReceivedOption_GetParamStringValue
     if( AnscEqualString(ParamName, "Value", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpcRecv->Value) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpcRecv->Value);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpcRecv->Value)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpcRecv->Value);
     }
 
     if( AnscEqualString(ParamName, "Server", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpcRecv->Server) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpcRecv->Server);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpcRecv->Server)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpcRecv->Server);
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -3525,76 +3460,31 @@ dhcp6c_mapt_mape_GetParamStringValue
     if( AnscEqualString(ParamName, "MapTransportMode", TRUE) )
     {
         commonSyseventGet(SYSEVENT_MAP_TRANSPORT_MODE, temp, sizeof(temp));
-        if ( AnscSizeOfString(temp) < *pUlSize)
-        {
-            AnscCopyString(pValue, temp);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(temp)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, temp);
     }
 
     if( AnscEqualString(ParamName, "MapBRPrefix", TRUE) )
     {
         commonSyseventGet(SYSEVENT_MAP_BR_IPV6_PREFIX, temp, sizeof(temp));
-        if ( AnscSizeOfString(temp) < *pUlSize)
-        {
-            AnscCopyString(pValue, temp);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(temp)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, temp);
     }
 
     if( AnscEqualString(ParamName, "MapRuleIPv4Prefix", TRUE) )
     {
         commonSyseventGet(SYSEVENT_MAP_RULE_IPADDRESS, temp, sizeof(temp));
-        if ( AnscSizeOfString(temp) < *pUlSize)
-        {
-            AnscCopyString(pValue, temp);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(temp)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, temp);
     }
 
     if( AnscEqualString(ParamName, "MapRuleIPv6Prefix", TRUE) )
     {
         commonSyseventGet(SYSEVENT_MAP_RULE_IPV6_ADDRESS, temp, sizeof(temp));
-        if ( AnscSizeOfString(temp) < *pUlSize)
-        {
-            AnscCopyString(pValue, temp);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(temp)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, temp);
     }
 
     if( AnscEqualString(ParamName, "MapIpv4Address", TRUE) )
     {
         commonSyseventGet(SYSEVENT_MAPT_IPADDRESS, temp, sizeof(temp));
-        if ( AnscSizeOfString(temp) < *pUlSize)
-        {
-            AnscCopyString(pValue, temp);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(temp)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, temp);
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -4755,22 +4645,13 @@ Pool1_GetParamStringValue
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = (PCOSA_DML_DHCPSV6_POOL_FULL)pCxtLink->hContext;
     PUCHAR                            pString           = NULL;
-    
+    errno_t   rc = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Cfg.Alias) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Cfg.Alias);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Cfg.Alias)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pPool->Cfg.Alias);
     }
 
     if( AnscEqualString(ParamName, "Interface", TRUE) )
@@ -4798,7 +4679,8 @@ Pool1_GetParamStringValue
         {
             if ( AnscSizeOfString((const char*)pString) < *pUlSize)
             {
-                AnscCopyString(pValue,(char*) pString);
+                rc = strcpy_s(pValue, *pUlSize, (char*) pString);
+                ERR_CHK(rc);
 #if defined (MULTILAN_FEATURE)
 #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
                 AnscFreeMemory(pString);
@@ -4830,121 +4712,49 @@ Pool1_GetParamStringValue
     if( AnscEqualString(ParamName, "DUID", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Cfg.DUID) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Cfg.DUID);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Cfg.DUID)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pPool->Cfg.DUID);
     }
 
     if( AnscEqualString(ParamName, "VendorClassID", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Cfg.VendorClassID) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Cfg.VendorClassID);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Cfg.VendorClassID)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pPool->Cfg.VendorClassID);
     }
 
     if( AnscEqualString(ParamName, "UserClassID", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Cfg.UserClassID) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Cfg.UserClassID);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Cfg.UserClassID)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pPool->Cfg.UserClassID);
     }
 
     if( AnscEqualString(ParamName, "SourceAddress", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Cfg.SourceAddress) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Cfg.SourceAddress);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Cfg.SourceAddress)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize,  (char*)pPool->Cfg.SourceAddress);
     }
 
     if( AnscEqualString(ParamName, "SourceAddressMask", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Cfg.SourceAddressMask) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Cfg.SourceAddressMask);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Cfg.SourceAddressMask)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize,  (char*)pPool->Cfg.SourceAddressMask);
     }
 
     if( AnscEqualString(ParamName, "IANAManualPrefixes", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Cfg.IANAManualPrefixes) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Cfg.IANAManualPrefixes);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Cfg.IANAManualPrefixes)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pPool->Cfg.IANAManualPrefixes); 
     }
 
     if( AnscEqualString(ParamName, "IANAPrefixes", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Info.IANAPrefixes) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Info.IANAPrefixes);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Info.IANAPrefixes)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pPool->Info.IANAPrefixes);
     }
 
     if( AnscEqualString(ParamName, "IAPDManualPrefixes", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Cfg.IAPDManualPrefixes) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Cfg.IAPDManualPrefixes);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Cfg.IAPDManualPrefixes)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pPool->Cfg.IAPDManualPrefixes);
     }
 
     if( AnscEqualString(ParamName, "IAPDPrefixes", TRUE) )
@@ -4962,46 +4772,19 @@ Pool1_GetParamStringValue
 	#endif
 #endif
 
-        if ( AnscSizeOfString((const char*)pPool->Info.IAPDPrefixes) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Info.IAPDPrefixes);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Info.IAPDPrefixes)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pPool->Info.IAPDPrefixes);
     }
 
     if( AnscEqualString(ParamName, "PrefixRangeBegin", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Cfg.PrefixRangeBegin) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Cfg.PrefixRangeBegin);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Cfg.PrefixRangeBegin)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pPool->Cfg.PrefixRangeBegin);
     }
 
     if( AnscEqualString(ParamName, "PrefixRangeEnd", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Cfg.PrefixRangeEnd) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Cfg.PrefixRangeEnd);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Cfg.PrefixRangeEnd)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pPool->Cfg.PrefixRangeEnd);
     }
 
     if( AnscEqualString(ParamName, "X_CISCO_StartAddress", TRUE) )
@@ -5010,31 +4793,13 @@ Pool1_GetParamStringValue
 
         CosaDmlDhcpv6sGetStartAddress(NULL, addr, sizeof(addr));
         /* collect value */
-        if ( AnscSizeOfString(addr) < *pUlSize)
-        {
-            AnscCopyString(pValue, addr);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(addr)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, addr);
     }
 
     if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_DNSServers", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pPool->Cfg.X_RDKCENTRAL_COM_DNSServers) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pPool->Cfg.X_RDKCENTRAL_COM_DNSServers);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pPool->Cfg.X_RDKCENTRAL_COM_DNSServers)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pPool->Cfg.X_RDKCENTRAL_COM_DNSServers);
     }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -5749,6 +5514,7 @@ Pool1_Commit
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = (PCOSA_DML_DHCPSV6_POOL_FULL)pCxtLink->hContext;
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
+    errno_t   rc = -1;
 
     if ( pCxtLink->bNew )
     {
@@ -5766,7 +5532,10 @@ Pool1_Commit
             DHCPV6_POOL_SET_DEFAULTVALUE(pPool);
             
             if ( pDhcpv6->AliasOfClient[0] )
-                AnscCopyString( (char*)pPool->Cfg.Alias, pDhcpv6->AliasOfPool );
+            {
+                rc = STRCPY_S_NOCLOBBER( (char*)pPool->Cfg.Alias, sizeof((char*)pPool->Cfg.Alias), pDhcpv6->AliasOfPool );
+                ERR_CHK(rc);
+            }
         }
     }
     else
@@ -5817,9 +5586,13 @@ Pool1_Rollback
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = (PCOSA_DML_DHCPSV6_POOL_FULL)pCxtLink->hContext;
+    errno_t   rc = -1;
 
     if ( pDhcpv6->AliasOfPool[0] )
-        AnscCopyString( (char*)pPool->Cfg.Alias, pDhcpv6->AliasOfPool );
+    {
+        rc = STRCPY_S_NOCLOBBER( (char*)pPool->Cfg.Alias, sizeof((char*)pPool->Cfg.Alias), pDhcpv6->AliasOfPool );
+        ERR_CHK(rc);
+    }
 
     if ( !pCxtLink->bNew )
     {
@@ -6353,31 +6126,13 @@ Client4_GetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString(pDhcpsClient->Alias) < *pUlSize)
-        {
-            AnscCopyString(pValue, pDhcpsClient->Alias);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(pDhcpsClient->Alias)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, pDhcpsClient->Alias);
     }
 
     if( AnscEqualString(ParamName, "SourceAddress", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpsClient->SourceAddress) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpsClient->SourceAddress);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpsClient->SourceAddress)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpsClient->SourceAddress);
     }
 
 
@@ -6565,12 +6320,18 @@ Client4_SetParamStringValue
     )
 {
     PCOSA_DML_DHCPSV6_CLIENT        pDhcpsClient    = (PCOSA_DML_DHCPSV6_CLIENT)hInsContext;
+    errno_t   rc = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* save update to backup */
-        AnscCopyString(pDhcpsClient->Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pDhcpsClient->Alias, sizeof(pDhcpsClient->Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
 
         return TRUE;
     }
@@ -6989,46 +6750,19 @@ IPv6Address2_GetParamStringValue
     if( AnscEqualString(ParamName, "IPAddress", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pIPv6Address->IPAddress) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pIPv6Address->IPAddress);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pIPv6Address->IPAddress)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pIPv6Address->IPAddress);
     }
 
     if( AnscEqualString(ParamName, "PreferredLifetime", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pIPv6Address->PreferredLifetime) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pIPv6Address->PreferredLifetime);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pIPv6Address->PreferredLifetime)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pIPv6Address->PreferredLifetime);
     }
 
     if( AnscEqualString(ParamName, "ValidLifetime", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pIPv6Address->ValidLifetime) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pIPv6Address->ValidLifetime);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pIPv6Address->ValidLifetime)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize,  (char*)pIPv6Address->ValidLifetime);
     }
 
 
@@ -7335,46 +7069,19 @@ IPv6Prefix1_GetParamStringValue
     if( AnscEqualString(ParamName, "Prefix", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pIPv6Prefix->Prefix) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pIPv6Prefix->Prefix);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pIPv6Prefix->Prefix)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pIPv6Prefix->Prefix);
     }
 
     if( AnscEqualString(ParamName, "PreferredLifetime", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pIPv6Prefix->PreferredLifetime) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pIPv6Prefix->PreferredLifetime);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pIPv6Prefix->PreferredLifetime)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pIPv6Prefix->PreferredLifetime);
     }
 
     if( AnscEqualString(ParamName, "ValidLifetime", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pIPv6Prefix->ValidLifetime) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pIPv6Prefix->ValidLifetime);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pIPv6Prefix->ValidLifetime)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pIPv6Prefix->ValidLifetime);
     }
 
 
@@ -7689,16 +7396,7 @@ Option3_GetParamStringValue
     if( AnscEqualString(ParamName, "Value", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pIPv6Option->Value) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pIPv6Option->Value);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pIPv6Option->Value)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pIPv6Option->Value);
     }
 
 
@@ -8184,46 +7882,19 @@ Option4_GetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpOption->Alias) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpOption->Alias);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpOption->Alias)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpOption->Alias);
     }
 
     if( AnscEqualString(ParamName, "Value", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpOption->Value) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpOption->Value);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpOption->Value)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpOption->Value);
     }
 
     if( AnscEqualString(ParamName, "PassthroughClient", TRUE) )
     {
         /* collect value */
-        if ( AnscSizeOfString((const char*)pDhcpOption->PassthroughClient) < *pUlSize)
-        {
-            AnscCopyString(pValue, (char*)pDhcpOption->PassthroughClient);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString((const char*)pDhcpOption->PassthroughClient)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, (char*)pDhcpOption->PassthroughClient);
     }
 
 
@@ -8654,6 +8325,7 @@ Option4_Commit
     PCOSA_DML_DHCPSV6_POOL_OPTION     pDhcpOption          = (PCOSA_DML_DHCPSV6_POOL_OPTION)pCxtLink->hContext;
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtPoolLink         = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)pCxtLink->hParentTable;
     PCOSA_DML_DHCPSV6_POOL_FULL       pPool                = (PCOSA_DML_DHCPSV6_POOL_FULL)pCxtPoolLink->hContext;
+    errno_t   rc = -1;
     
     if ( pCxtLink->bNew )
     {
@@ -8671,7 +8343,10 @@ Option4_Commit
             DHCPV6_POOLOPTION_SET_DEFAULTVALUE(pDhcpOption);
 
             if ( pCxtPoolLink->AliasOfOption[0] )
-                AnscCopyString( (char*)pDhcpOption->Alias, pCxtPoolLink->AliasOfOption );
+            {
+                rc = STRCPY_S_NOCLOBBER( (char*)pDhcpOption->Alias, sizeof((char*)pDhcpOption->Alias), pCxtPoolLink->AliasOfOption );
+                ERR_CHK(rc);
+            }
         }
     }
     else
@@ -8723,9 +8398,13 @@ Option4_Rollback
     PCOSA_DML_DHCPSV6_POOL_OPTION     pDhcpPoolOption   = (PCOSA_DML_DHCPSV6_POOL_OPTION)pCxtLink->hContext;
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtPoolLink      = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)pCxtLink->hParentTable;
     PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = (PCOSA_DML_DHCPSV6_POOL_FULL)pCxtPoolLink->hContext;
+    errno_t   rc = -1;
 
     if ( pCxtPoolLink->AliasOfOption[0] )
-        AnscCopyString( (char*)pDhcpPoolOption->Alias, pCxtPoolLink->AliasOfOption );
+    {
+        rc = STRCPY_S_NOCLOBBER( (char*)pDhcpPoolOption->Alias, sizeof((char*)pDhcpPoolOption->Alias), pCxtPoolLink->AliasOfOption );
+        ERR_CHK(rc);
+    }
 
     if ( !pCxtLink->bNew )
     {

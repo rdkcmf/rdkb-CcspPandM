@@ -826,6 +826,8 @@ CosaBridgingRegGetInfo
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
     BOOLEAN                         found = FALSE;
+    errno_t rc = -1;
+
     if ( !pPoamIrepFoBRGHA )
     {
         return ANSC_STATUS_FAILURE;
@@ -922,8 +924,8 @@ CosaBridgingRegGetInfo
             pDmlBridge->ulNextVLANPortInsNum = 1;
             pDmlBridge->Cfg.bAllowDelete = TRUE;
             pDmlBridge->Cfg.InstanceNumber = ulInstanceNumber;
-            AnscCopyString(pDmlBridge->Cfg.Alias, pAlias);
-
+            rc = strcpy_s(pDmlBridge->Cfg.Alias, sizeof(pDmlBridge->Cfg.Alias), pAlias);
+            ERR_CHK(rc);
             pCosaContext->InstanceNumber   = ulInstanceNumber;
             pCosaContext->bNew             = TRUE;
             pCosaContext->hContext         = (ANSC_HANDLE)pDmlBridge;
@@ -1050,7 +1052,8 @@ CosaBridgingRegGetInfo
                 }
 
                 pPort->Cfg.InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pPort->Cfg.Alias, pAlias);
+                rc = strcpy_s(pPort->Cfg.Alias, sizeof(pPort->Cfg.Alias), pAlias);
+                ERR_CHK(rc);
                 pPort->Cfg.bAllowDelete = TRUE;
                 pCosaContext2->InstanceNumber  = ulInstanceNumber;
                 pCosaContext2->hContext        = (ANSC_HANDLE)pPort;

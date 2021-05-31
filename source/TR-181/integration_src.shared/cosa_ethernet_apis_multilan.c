@@ -1337,6 +1337,7 @@ int _getMac(char* ifName, char* mac){
 
     struct ifreq ifr;
     int skfd=-1;
+    errno_t rc = -1;
     
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1345,7 +1346,13 @@ int _getMac(char* ifName, char* mac){
     if(skfd == -1)
        return -1;
 
-    AnscCopyString(ifr.ifr_name, ifName);
+    rc = strcpy_s(ifr.ifr_name, sizeof(ifr.ifr_name), ifName);
+    if(rc != EOK)
+    {
+       ERR_CHK(rc);
+       return -1;
+    }
+
     if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {
         if (errno == ENODEV) {
             close(skfd);
@@ -1372,13 +1379,20 @@ COSA_DML_IF_STATUS getIfStatus(const PUCHAR name, struct ifreq *pIfr)
     int skfd=-1;
     
     AnscTraceFlow(("%s...\n", __FUNCTION__));
+    errno_t rc = -1;
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
     /* CID: 56442 Argument cannot be negative*/
     if(skfd == -1)
        return -1;
 
-    AnscCopyString(ifr.ifr_name, (char*)name);
+    rc = strcpy_s(ifr.ifr_name, sizeof(ifr.ifr_name), (char*)name);
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        return -1;
+    }
+
     if (!isValid((char*)name)) {
         return -1;
     }
@@ -1445,11 +1459,18 @@ BOOLEAN getIfAvailability( const PUCHAR name )
     struct ifreq ifr;
     int skfd=-1;
     
+    errno_t rc = -1;
     AnscTraceFlow(("%s... name %s\n", __FUNCTION__,name));
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    AnscCopyString(ifr.ifr_name, (char *)name);
+    rc = strcpy_s(ifr.ifr_name, sizeof(ifr.ifr_name), (char *)name);
+    if(rc != EOK)
+    {
+       ERR_CHK(rc);
+       return -1;
+    }
+
     if (!isValid((char*)name)) {
         return -1;
     }

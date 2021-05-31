@@ -157,7 +157,12 @@ Pam_GetFirstIpInterfaceObjectName
     // Hard coded, RTian 09/20/2013
     {
         if(bUpstream) {
-            pulObjNameSize = sprintf(pIfObjName, "Device.IP.Interface.1.") + 1;
+            rc = sprintf_s(pIfObjName, *pulObjNameSize, "Device.IP.Interface.1.")
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
+            *pulObjNameSize = rc + 1;
             //        else pulObjNameSize = sprintf(pIfObjName, "Device.IP.Interface.4.") + 1;
 	    CcspTraceInfo(("[%s] -- Exit, defined _COSA_SIM_ pulObjNameSize: %d from \n", __FUNCTION__, pulObjNameSize));
 
@@ -302,13 +307,14 @@ Pam_GetFirstIpInterfaceObjectName
                 
                 if ( BufferSize < *pulObjNameSize )
                 {
-                    AnscCopyString(pIfObjName, Buffer);
-                    *pulObjNameSize = BufferSize;
+                    rc = strcpy_s(pIfObjName,*pulObjNameSize, Buffer);
+                    ERR_CHK(rc);
+                    *pulObjNameSize = BufferSize+1;
                     returnStatus    = ANSC_STATUS_SUCCESS;
                 }
                 else
                 {
-                    *pulObjNameSize = BufferSize;
+                    *pulObjNameSize = BufferSize+1;
                     returnStatus = ANSC_STATUS_MORE_DATA;
                 }
 
@@ -558,13 +564,18 @@ Pam_GetParamStringValue
         {
             if ( IpIfObjNameSize < *pulSize )
             {
-                AnscCopyString(pValue, IpIfObjName);
-                *pulSize = IpIfObjNameSize;
+                rc = strcpy_s(pValue, *pulSize, IpIfObjName);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return -1;
+                }
+                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else
             {
-                *pulSize = IpIfObjNameSize;
+                *pulSize = IpIfObjNameSize + 1;
                 return  1;
             }
         }
@@ -592,15 +603,19 @@ Pam_GetParamStringValue
 
             if ( IpIfObjNameSize < *pulSize )
             {
-                AnscCopyString(pValue, IpIfObjName);
-
+                rc = strcpy_s(pValue, *pulSize, IpIfObjName);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return -1;
+                }
 		CcspTraceInfo(("[%s] -- pValue: %s\n", __FUNCTION__, pValue));
-                *pulSize = IpIfObjNameSize;
+                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else
             {
-                *pulSize = IpIfObjNameSize;
+                *pulSize = IpIfObjNameSize + 1;
                 return  1;
             }
         }
@@ -645,14 +660,19 @@ Pam_GetParamStringValue
 
             if ( BufferSize < *pulSize )
             {
-                AnscCopyString(pValue, Buffer);
-                *pulSize = IpIfObjNameSize;
+                rc = strcpy_s(pValue, *pulSize, Buffer);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return -1;
+                }
+                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else
             {
                 _ansc_strncpy(pValue, Buffer, *pulSize);       
-                *pulSize = IpIfObjNameSize;
+                *pulSize = IpIfObjNameSize + 1;
                 return  1;
             }
         }
@@ -696,14 +716,19 @@ Pam_GetParamStringValue
 
             if ( BufferSize < *pulSize )
             {
-                AnscCopyString(pValue, Buffer);
-                *pulSize = IpIfObjNameSize;
+                rc = strcpy_s(pValue, *pulSize, Buffer);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return -1;
+                }
+                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else
             {
                 _ansc_strncpy(pValue, Buffer, *pulSize);
-                *pulSize = IpIfObjNameSize;
+                *pulSize = IpIfObjNameSize + 1;
                 return  1;
             }
         }
@@ -747,14 +772,19 @@ Pam_GetParamStringValue
 
             if ( BufferSize < *pulSize )
             {
-                AnscCopyString(pValue, Buffer);
-                *pulSize = IpIfObjNameSize;
+                rc = strcpy_s(pValue, *pulSize, Buffer);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return -1;
+                }
+                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else
             {
                 _ansc_strncpy(pValue, Buffer, *pulSize);       
-                *pulSize = IpIfObjNameSize;
+                *pulSize = IpIfObjNameSize + 1;
                 return  1;
             }
         }
@@ -798,14 +828,19 @@ Pam_GetParamStringValue
 
             if ( BufferSize < *pulSize )
             {
-                AnscCopyString(pValue, Buffer);
-                *pulSize = IpIfObjNameSize;
+                rc = strcpy_s(pValue, *pulSize, Buffer);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return -1;
+                }
+                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else
             {
                 _ansc_strncpy(pValue, Buffer, *pulSize);
-                *pulSize = IpIfObjNameSize;
+                *pulSize = IpIfObjNameSize + 1;
                 return  1;
             }
         }

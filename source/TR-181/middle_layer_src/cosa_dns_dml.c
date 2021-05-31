@@ -1337,26 +1337,42 @@ Server1_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer   = (PCOSA_DML_DNS_CLIENT_SERVER)pCosaContext->hContext;
+    errno_t   rc = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pDnsServer->Alias);
+        rc = strcpy_s(pValue, *pUlSize, pDnsServer->Alias);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Interface", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pDnsServer->Interface);
+        rc = strcpy_s(pValue, *pUlSize, pDnsServer->Interface);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "DNSServer", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pDnsServer->DNSServer);
+        rc = strcpy_s(pValue, *pUlSize, pDnsServer->DNSServer);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 
@@ -1556,12 +1572,18 @@ Server1_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer   = (PCOSA_DML_DNS_CLIENT_SERVER)pCosaContext->hContext;
+    errno_t   rc = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* save update to backup */
-        AnscCopyString(pDnsServer->Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pDnsServer->Alias, sizeof(pDnsServer->Alias), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
@@ -1570,7 +1592,12 @@ Server1_SetParamStringValue
        /* Note: Interface is only writable when Type is Static; */
         if ( COSA_DML_DNS_ADDR_SRC_Static  == pDnsServer->Type )
         {
-            AnscCopyString(pDnsServer->Interface, pString);
+            rc = STRCPY_S_NOCLOBBER(pDnsServer->Interface, sizeof(pDnsServer->Interface), pString);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
             return TRUE;
         }
 
@@ -1582,7 +1609,12 @@ Server1_SetParamStringValue
     {
         if(( COSA_DML_DNS_ADDR_SRC_Static  == pDnsServer->Type ) && pDnsServer->InstanceNumber <= 2)
         {
-            AnscCopyString(pDnsServer->DNSServer, pString);
+            rc = STRCPY_S_NOCLOBBER(pDnsServer->DNSServer, sizeof(pDnsServer->DNSServer),pString);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
             return TRUE;
         }
 
@@ -2987,19 +3019,30 @@ Forwarding_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DNS_RELAY_ENTRY       pForward     = (PCOSA_DML_DNS_RELAY_ENTRY)pCosaContext->hContext;
+    errno_t   rc = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
-        AnscCopyString(pValue, pForward->Alias);
-        *pUlSize = AnscSizeOfString(pValue);
+        rc = strcpy_s(pValue, *pUlSize, pForward->Alias);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
+        *pUlSize = AnscSizeOfString(pValue)+1;
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Interface", TRUE))
     {
-        AnscCopyString(pValue, pForward->Interface);
-        *pUlSize = AnscSizeOfString(pValue);
+        rc = strcpy_s(pValue, *pUlSize, pForward->Interface);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
+        *pUlSize = AnscSizeOfString(pValue)+1;
         return 0;
     }
 
@@ -3207,11 +3250,17 @@ Forwarding_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DNS_RELAY_ENTRY       pForward     = (PCOSA_DML_DNS_RELAY_ENTRY)pCosaContext->hContext;
+    errno_t   rc = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
-        AnscCopyString(pForward->Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pForward->Alias, sizeof(pForward->Alias), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -3220,7 +3269,12 @@ Forwarding_SetParamStringValue
        /* Note: Interface is only writable when Type is Static; */
         if ( COSA_DML_DNS_ADDR_SRC_Static  == pForward->Type )
         {
-            AnscCopyString(pForward->Interface, pString);
+            rc = STRCPY_S_NOCLOBBER(pForward->Interface, sizeof(pForward->Interface), pString);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
             return TRUE;
         }
 
@@ -3278,6 +3332,7 @@ Forwarding_Validate
     PCOSA_DML_DNS_RELAY_ENTRY       pForward2     = (PCOSA_DML_DNS_RELAY_ENTRY)NULL;
     PSLIST_HEADER                   pForwardHead  = (PSLIST_HEADER)&pMyObject->ForwardList;
     PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
+    errno_t  rc = -1;
 
     pLink = AnscSListGetFirstEntry(pForwardHead);
 
@@ -3292,7 +3347,12 @@ Forwarding_Validate
             ((ULONG)pForward2 != (ULONG)pForward) &&
              AnscEqualString(pForward2->Alias, pForward->Alias, TRUE))
         {
-            AnscCopyString(pReturnParamName, "Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
             *puLength = AnscSizeOfString("Alias");
 
             CcspTraceWarning(("Forwarding_Validate() failed.\n"));
@@ -3672,6 +3732,7 @@ NSLookupDiagnostics_GetParamStringValue
 {
     PCOSA_DATAMODEL_DIAG            pMyObject           = (PCOSA_DATAMODEL_DIAG)g_pCosaBEManager->hDiag;
     PDSLH_NSLOOKUP_INFO             pNSLookupDiagInfo   = pMyObject->hDiagNSLookInfo;
+    errno_t rc = -1;
 
     if ( !pNSLookupDiagInfo )
     {
@@ -3683,7 +3744,12 @@ NSLookupDiagnostics_GetParamStringValue
     {
         if ( AnscSizeOfString(pNSLookupDiagInfo->Interface) < *pUlSize )
         {
-            AnscCopyString(pValue, pNSLookupDiagInfo->Interface);
+            rc = strcpy_s(pValue, *pUlSize, pNSLookupDiagInfo->Interface);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
         }
         else
         {
@@ -3699,7 +3765,12 @@ NSLookupDiagnostics_GetParamStringValue
     {
         if ( AnscSizeOfString(pNSLookupDiagInfo->HostName) < *pUlSize )
         {
-            AnscCopyString(pValue, pNSLookupDiagInfo->HostName);
+            rc = strcpy_s(pValue, *pUlSize, pNSLookupDiagInfo->HostName);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
         }
         else
         {
@@ -3715,7 +3786,12 @@ NSLookupDiagnostics_GetParamStringValue
     {
         if ( AnscSizeOfString(pNSLookupDiagInfo->DNSServer) < *pUlSize )
         {
-            AnscCopyString(pValue, pNSLookupDiagInfo->DNSServer);
+            rc = strcpy_s(pValue, *pUlSize, pNSLookupDiagInfo->DNSServer);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
         }
         else
         {
@@ -3960,6 +4036,7 @@ NSLookupDiagnostics_SetParamStringValue
     PCOSA_DATAMODEL_DIAG            pMyObject           = (PCOSA_DATAMODEL_DIAG)g_pCosaBEManager->hDiag;
     PDSLH_NSLOOKUP_INFO             pNSLookupDiagInfo   = pMyObject->hDiagNSLookInfo;
     PDSLH_NSLOOKUP_INFO             pDiagInfo           = NULL;
+    errno_t    rc  = -1;
 
     if ( !pNSLookupDiagInfo )
     {
@@ -3978,7 +4055,12 @@ NSLookupDiagnostics_SetParamStringValue
         }
         
         pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
-        AnscCopyString(pNSLookupDiagInfo->Interface, pString);
+        rc = STRCPY_S_NOCLOBBER(pNSLookupDiagInfo->Interface, sizeof(pNSLookupDiagInfo->Interface), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -3993,7 +4075,12 @@ NSLookupDiagnostics_SetParamStringValue
         }
         
         pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
-        AnscCopyString(pNSLookupDiagInfo->HostName, pString);
+        rc = STRCPY_S_NOCLOBBER(pNSLookupDiagInfo->HostName, pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -4008,7 +4095,12 @@ NSLookupDiagnostics_SetParamStringValue
         }
         
         pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
-        AnscCopyString(pNSLookupDiagInfo->DNSServer, pString);
+        rc = STRCPY_S_NOCLOBBER(pNSLookupDiagInfo->DNSServer, pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -4060,6 +4152,7 @@ NSLookupDiagnostics_Validate
     ULONG                           i                  = 0;
     PCOSA_DATAMODEL_DIAG            pMyObject          = (PCOSA_DATAMODEL_DIAG)g_pCosaBEManager->hDiag;
     PDSLH_NSLOOKUP_INFO             pNSLookupDiagInfo  = pMyObject->hDiagNSLookInfo;
+    errno_t  rc = -1;
 
     if ( !pNSLookupDiagInfo )
     {
@@ -4102,7 +4195,8 @@ NSLookupDiagnostics_Validate
             }
             else
             {
-                AnscCopyString(pReturnParamName, "HostName");
+                rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "HostName");
+                ERR_CHK(rc);
                 pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
                 return FALSE;
             }
@@ -4118,7 +4212,8 @@ NSLookupDiagnostics_Validate
                 {
                     if ( *p != '.' )
                     {
-                        AnscCopyString(pReturnParamName, "HostName");
+                        rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "HostName");
+                        ERR_CHK(rc);
                         pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
                         return FALSE;
                     }
@@ -4127,7 +4222,8 @@ NSLookupDiagnostics_Validate
         }
         else
         {
-            AnscCopyString(pReturnParamName, "HostName");
+            rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "HostName");
+            ERR_CHK(rc);
             pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
             return FALSE;
         }
@@ -4136,7 +4232,8 @@ NSLookupDiagnostics_Validate
 
         if ( !pDomainName )
         {
-            AnscCopyString(pReturnParamName, "HostName");
+            rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "HostName");
+            ERR_CHK(rc);
             pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
             return FALSE;
         }
@@ -4156,20 +4253,23 @@ NSLookupDiagnostics_Validate
 
                 if ( !p )
                 {
-                    AnscCopyString(pReturnParamName, "HostName");
+                    rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "HostName");
+                    ERR_CHK(rc);
                     pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
                     return FALSE;
                 }
                 else if ( p[1] == '0' || p[1] == '.' )
                 {
-                    AnscCopyString(pReturnParamName, "HostName");
+                    rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "HostName");
+                    ERR_CHK(rc);
                     pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
                     return FALSE;
                 }
             }
             else
             {
-                AnscCopyString(pReturnParamName, "HostName");
+                rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "HostName");
+                ERR_CHK(rc);
                 pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
                 return FALSE;
             }
@@ -4178,7 +4278,8 @@ NSLookupDiagnostics_Validate
         {
             if ( pNSLookupDiagInfo->HostName[0] == '.')
             {
-                AnscCopyString(pReturnParamName, "HostName");
+                rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "HostName");
+                ERR_CHK(rc);
                 pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
                 return FALSE;
             }
@@ -4195,7 +4296,8 @@ NSLookupDiagnostics_Validate
     {
         if ( pNSLookupDiagInfo->Timeout < DSLH_NS_MIN_Timeout )
         {
-            AnscCopyString(pReturnParamName, "Timeout");
+            rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "Timeout");
+            ERR_CHK(rc);
             pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
             return FALSE;
         }
@@ -4205,7 +4307,8 @@ NSLookupDiagnostics_Validate
     {
         if ( pNSLookupDiagInfo->NumberOfRepetitions < DSLH_NS_MIN_NumberOfRepetitions )
         {
-            AnscCopyString(pReturnParamName, "NumberOfRepetitions");
+            rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "NumberOfRepetitions");
+            ERR_CHK(rc);
             pNSLookupDiagInfo->DiagnosticState = DSLH_DIAG_STATE_TYPE_None;
             return FALSE;
         }
@@ -4294,6 +4397,7 @@ NSLookupDiagnostics_Rollback
     PCOSA_DATAMODEL_DIAG            pMyObject          = (PCOSA_DATAMODEL_DIAG)g_pCosaBEManager->hDiag;
     PDSLH_NSLOOKUP_INFO             pNSLookupInfo      = pMyObject->hDiagNSLookInfo;
     PDSLH_NSLOOKUP_INFO             pNSLookupDiagInfo  = NULL;
+    errno_t   rc = -1;
 
     if ( !pNSLookupInfo )
     {
@@ -4308,9 +4412,12 @@ NSLookupDiagnostics_Rollback
 
         pNSLookupInfo->StructSize    = sizeof(DSLH_NSLOOKUP_INFO);
 
-        AnscCopyString(pNSLookupInfo->HostName,  pNSLookupDiagInfo->HostName);
-        AnscCopyString(pNSLookupInfo->Interface, pNSLookupDiagInfo->Interface);
-        AnscCopyString(pNSLookupInfo->DNSServer, pNSLookupDiagInfo->DNSServer);
+        rc = STRCPY_S_NOCLOBBER(pNSLookupInfo->HostName, sizeof(pNSLookupInfo->HostName), pNSLookupDiagInfo->HostName);
+        ERR_CHK(rc);
+        rc = STRCPY_S_NOCLOBBER(pNSLookupInfo->Interface, sizeof(pNSLookupInfo->Interface), pNSLookupDiagInfo->Interface);
+        ERR_CHK(rc);
+        rc = STRCPY_S_NOCLOBBER(pNSLookupInfo->DNSServer, sizeof(pNSLookupInfo->DNSServer), pNSLookupDiagInfo->DNSServer);
+        ERR_CHK(rc);
 
         pNSLookupInfo->bForced = FALSE;
         pNSLookupInfo->Timeout = pNSLookupDiagInfo->Timeout;
@@ -4759,6 +4866,7 @@ Result_GetParamStringValue
     )
 {
     PBBHM_NS_LOOKUP_ECHO_ENTRY      pEchoInfo          = (PBBHM_NS_LOOKUP_ECHO_ENTRY)hInsContext;
+    errno_t   rc = -1;
 
     if ( !pEchoInfo )
     {
@@ -4774,7 +4882,12 @@ Result_GetParamStringValue
         {
             if ( AnscSizeOfString(pEchoInfo->HostNameReturned) < *pUlSize )
             {
-                AnscCopyString(pValue, pEchoInfo->HostNameReturned);
+                rc = strcpy_s(pValue, *pUlSize, pEchoInfo->HostNameReturned);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return -1;
+                }
 
                 return 0;
             }
@@ -4795,7 +4908,12 @@ Result_GetParamStringValue
         {
             if ( AnscSizeOfString(pEchoInfo->IPAddresses) < *pUlSize )
             {
-                AnscCopyString(pValue, pEchoInfo->IPAddresses);
+                rc = strcpy_s(pValue, *pUlSize, pEchoInfo->IPAddresses);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return -1;
+                }
 
                 return 0;
             }
