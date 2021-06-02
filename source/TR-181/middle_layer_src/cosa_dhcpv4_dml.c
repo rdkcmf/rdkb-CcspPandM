@@ -6472,6 +6472,10 @@ Pool_SetParamUlongValue
             CcspTraceError(("MinAddress equals MaxAddress 0x%08x\n", ntohl(uValue)));
             return(FALSE);
 	}
+	if (ntohl(uValue) < ntohl(gw)) {
+            CcspTraceError(("MinAddress should be greater than gateway address\n"));
+            return(FALSE);
+	}
         if (Dhcpv4_Lan_MutexTryLock() != 0)
         {
             CcspTraceWarning(("%s not supported already macbinding blob update is inprogress \n",ParamName));
@@ -6527,9 +6531,9 @@ Pool_SetParamUlongValue
         g_GetParamValueString(g_pDslhDmlAgent, pFullName, strval, &size);
         mask = _ansc_inet_addr(strval);
 
-        if( ((pPool->Cfg.InstanceNumber == 1) && (is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)))) || (uValue < pPool->Cfg.MinAddress.Value))
+        if( ((pPool->Cfg.InstanceNumber == 1) && (is_invalid_unicast_ip_addr(ntohl(gw),ntohl(mask), ntohl(uValue)))) || (ntohl(uValue) < ntohl(pPool->Cfg.MinAddress.Value))){
             return(FALSE);
-
+		}
         if (ntohl(uValue) == ntohl(pPool->Cfg.MinAddress.Value)) {
             CcspTraceError(("MinAddress equals MaxAddress 0x%08x\n", ntohl(uValue)));
             return(FALSE);
@@ -6549,7 +6553,14 @@ Pool_SetParamUlongValue
         /*char buff[16] = {'\0'};
         snprintf(buff,sizeof(buff),"%ld",uValue);*/
 	char buff[INET_ADDRSTRLEN] = {'\0'};
-        inet_ntop(AF_INET, &(pPool->Cfg.MaxAddress.Value) , buff, INET_ADDRSTRLEN);
+	inet_ntop(AF_INET, &(pPool->Cfg.MaxAddress.Value) , buff, INET_ADDRSTRLEN);	
+		
+	if( pPool->Cfg.MaxAddress.Dot[3] < 2 ){
+		CcspTraceError(("Last octet of end ip is less than 2 \n"));	
+		Dhcpv4_Lan_MutexUnLock();
+		return(FALSE);
+	}
+
         char PartnerID[PARTNER_ID_LEN] = {0};
         if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
              UpdateJsonParam("Device.DHCPv4.Server.Pool.1.MaxAddress",PartnerID, buff, requestorStr, currentTime);
