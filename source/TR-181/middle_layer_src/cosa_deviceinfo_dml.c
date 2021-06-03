@@ -11980,6 +11980,140 @@ WiFiPasspoint_SetParamBoolValue
 
 #if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
 /**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        WiFiPsmDb_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+WiFiPsmDb_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+//#if defined(FEATURE_SUPPORT_WIFIDB)
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+	/* Collect Value */
+	char *strValue = NULL;
+	int retPsmGet = CCSP_SUCCESS;
+
+	retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WiFi-PSM-DB.Enable", NULL, &strValue);
+	if (retPsmGet == CCSP_SUCCESS) {
+	    *pBool = _ansc_atoi(strValue);
+	    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+	}
+	else
+	    *pBool = FALSE;
+	return TRUE;
+    }
+
+    return FALSE;
+/*#else
+    CcspTraceInfo(("WiFi-PSM-DB not supported \n"));
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pBool);
+    return FALSE;
+#endif*/
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        WiFiPsmDb_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+WiFiPsmDb_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+#if defined(FEATURE_SUPPORT_WIFIDB)
+    int   ret   = 0;
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+	char str[2];
+	int retPsmGet = CCSP_SUCCESS;
+
+	sprintf(str,"%d",bValue);
+	retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WiFi-PSM-DB.Enable", ccsp_string, str);
+	if (retPsmGet != CCSP_SUCCESS) {
+	    CcspTraceError(("Set failed for WiFi-PSM-DB \n"));
+	    return FALSE;
+	}
+	CcspTraceInfo(("Successfully set WiFi-PSM-DB \n"));
+        ret = CcspBaseIf_SendSignal_WithData(bus_handle, "WifiDbStatus" , str);
+        if ( ret != CCSP_SUCCESS ) {
+            CcspTraceError(("%s : WifiDbStatus send data failed,  ret value is %d\n",__FUNCTION__ ,ret));
+        }
+	return TRUE;
+    }
+    return FALSE;
+#else
+    CcspTraceInfo(("WiFi-PSM-DB not supported \n"));
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(bValue);
+    return FALSE;
+#endif
+}
+
+/**********************************************************************
     caller:     owner of this object
 
     prototype:
