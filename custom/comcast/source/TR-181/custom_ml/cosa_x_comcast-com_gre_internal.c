@@ -174,6 +174,8 @@ void callbackWCConfirmVap(tunnelSet_t *tunnelSet){
    pGreMyObject->GreTu[0].ChangeFlag |= GRETU_CF_PRIEP;
    strncpy(pGreMyObject->GreTu[0].SecondaryRemoteEndpoint, tunnelSet->set_sec_endpoint, SIZE_OF_IP);
    pGreMyObject->GreTu[0].ChangeFlag |= GRETU_CF_SECEP;
+   pGreMyObject->GreTu[0].Enable = tunnelSet->set_gre_enable;
+   pGreMyObject->GreTu[0].ChangeFlag |= GRETU_CF_ENABLE;
    pMyObject->bxfinitywifiEnable = tunnelSet->set_gre_enable;
    
    if(NULL != tunnelSet){
