@@ -80,8 +80,6 @@
 #include <utapi_util.h>
 #define _ERROR_ "NOT SUPPORTED"
 
-#define CAPTIVEPORTAL_EANBLE     "CaptivePortal_Enable"
-
 extern void* g_pDslhDmlAgent;
 
 //For PSM Access

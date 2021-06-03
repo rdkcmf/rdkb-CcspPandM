@@ -86,7 +86,7 @@
 
 #define _ERROR_ "NOT SUPPORTED"
 
-#define CAPTIVEPORTAL_EANBLE     "CaptivePortal_Enable"
+#define CAPTIVEPORTAL_ENABLE     "CaptivePortal_Enable"
 
 extern void* g_pDslhDmlAgent;
 
@@ -559,9 +559,9 @@ CosaDmlGetCaptivePortalEnable
         BOOL *pValue
     )
 {
-	char buf[5];
+	char buf[8];
         /* CID: 58774 Array compared against 0*/
-        if(!syscfg_get( NULL, CAPTIVEPORTAL_EANBLE , buf, sizeof(buf)))
+        if(!syscfg_get( NULL, CAPTIVEPORTAL_ENABLE , buf, sizeof(buf)))
 	{
     		if (strcmp(buf,"true") == 0)
 		{
@@ -611,7 +611,7 @@ CosaDmlSetCaptivePortalEnable
 			return ANSC_STATUS_FAILURE;
 		}
 	}
-	if (syscfg_set(NULL, CAPTIVEPORTAL_EANBLE , buf) != 0) {
+	if (syscfg_set(NULL, CAPTIVEPORTAL_ENABLE , buf) != 0) {
                      CcspTraceWarning(("syscfg_set failed to enable/disable captive portal\n"));
 		     return ANSC_STATUS_FAILURE;
              } else {
