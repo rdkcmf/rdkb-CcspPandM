@@ -79,6 +79,9 @@
 #include "cosa_deviceinfo_apis.h"
 #include "cosa_deviceinfo_internal.h"
 #include "ccsp/platform_hal.h"
+#ifdef _MACSEC_SUPPORT_
+#include "ccsp/ccsp_hal_ethsw.h"
+#endif
 #include <syscfg/syscfg.h>
 #include <sys/statvfs.h>
 
@@ -13351,7 +13354,7 @@ EthernetWAN_MACsec_GetParamStringValue
     {
         BOOL flag;
 
-        if ( RETURN_OK == platform_hal_GetMACsecOperationalStatus( 3, &flag )) {
+        if ( RETURN_OK == platform_hal_GetMACsecOperationalStatus( ETHWAN_DEF_INTF_NUM, &flag )) {
            AnscCopyString(pValue,  (TRUE == flag) ? "Enabled" : "Disabled" );
            *pUlSize = AnscSizeOfString( pValue );
 
