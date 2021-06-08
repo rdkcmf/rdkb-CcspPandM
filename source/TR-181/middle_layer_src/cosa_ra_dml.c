@@ -1288,6 +1288,7 @@ InterfaceSetting1_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RA_IF_FULL2           pRAInterface = (PCOSA_DML_RA_IF_FULL2)pCosaContext->hContext;
+    errno_t                         rc                      = -1;
 
     UNREFERENCED_PARAMETER(pUlSize);
     /* check the parameter name and return the corresponding value */
@@ -1295,7 +1296,12 @@ InterfaceSetting1_GetParamStringValue
     {
         CosaDmlRaIfGetCfg (pRAInterface, (PCOSA_DML_RA_IF_CFG)&pRAInterface->Cfg);
         /* collect value */
-        AnscCopyString(pValue, pRAInterface->Cfg.Alias);
+        rc = strcpy_s(pValue, *pUlSize, pRAInterface->Cfg.Alias);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1312,8 +1318,20 @@ InterfaceSetting1_GetParamStringValue
                 );
         if (pString)
         {
-            AnscCopyString(pValue, pString);
-            AnscCopyString(pRAInterface->Cfg.Interface, pString);
+            rc = strcpy_s(pValue, *pUlSize, pString);
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                AnscFreeMemory(pString);
+                return -1;
+            }
+            rc = STRCPY_S_NOCLOBBER(pRAInterface->Cfg.Interface, sizeof(pRAInterface->Cfg.Interface), pString);
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                AnscFreeMemory(pString);
+                return -1;
+            }
             AnscFreeMemory(pString);
         }
         
@@ -1321,7 +1339,12 @@ InterfaceSetting1_GetParamStringValue
 #endif
 
         CosaDmlRaIfGetCfg (pRAInterface, (PCOSA_DML_RA_IF_CFG)&pRAInterface->Cfg);
-        AnscCopyString(pValue, pRAInterface->Cfg.Interface);
+        rc = strcpy_s(pValue, *pUlSize, pRAInterface->Cfg.Interface);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1329,7 +1352,12 @@ InterfaceSetting1_GetParamStringValue
     {
         CosaDmlRaIfGetCfg (pRAInterface, (PCOSA_DML_RA_IF_CFG)&pRAInterface->Cfg);
         /* collect value */
-        AnscCopyString(pValue, pRAInterface->Cfg.ManualPrefixes);
+        rc = strcpy_s(pValue, *pUlSize, pRAInterface->Cfg.ManualPrefixes);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1342,8 +1370,12 @@ InterfaceSetting1_GetParamStringValue
                 pRAInterface->Cfg.InstanceNumber, 
                 (PCOSA_DML_RA_IF_INFO)&pRAInterface->Info
             );
-
-        AnscCopyString(pValue, pRAInterface->Info.Prefixes);
+        rc = strcpy_s(pValue, *pUlSize, pRAInterface->Info.Prefixes);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1716,6 +1748,7 @@ InterfaceSetting1_Validate
     PCOSA_DML_RA_IF_FULL2           pRAInterface2 = (PCOSA_DML_RA_IF_FULL2)NULL;
     PSLIST_HEADER                   pRAIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
+    errno_t                         rc                      = -1;
 
     pLink = AnscSListGetFirstEntry(pRAIFHead);
 
@@ -1730,8 +1763,13 @@ InterfaceSetting1_Validate
             ((ULONG)pRAInterface2 != (ULONG)pRAInterface) &&
              AnscEqualString(pRAInterface2->Cfg.Alias, pRAInterface->Cfg.Alias, TRUE))
         {
-            AnscCopyString(pReturnParamName, "Alias");
-            *puLength = AnscSizeOfString("Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
+            *puLength = AnscSizeOfString("Alias")+1;
 
             CcspTraceWarning(("InterfaceSetting1_Validate() failed.\n"));
             return FALSE;
@@ -2335,19 +2373,30 @@ Option5_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RA_OPTION             pOption      = (PCOSA_DML_RA_OPTION)pCosaContext->hContext;
+    errno_t                         rc                      = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pOption->Alias);
+        rc = strcpy_s(pValue, *pUlSize, pOption->Alias);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Value", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pOption->Value);
+        rc = strcpy_s(pValue, *pUlSize, pOption->Value);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -2629,6 +2678,7 @@ Option5_Validate
     PCOSA_DML_RA_OPTION             pRAOption     = (PCOSA_DML_RA_OPTION)pCosaContext->hContext;
     PCOSA_DML_RA_OPTION             pRAOption2    = (PCOSA_DML_RA_OPTION)NULL;
     PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
+    errno_t                         rc                      = -1;
 
     pLink = AnscSListGetFirstEntry(&pRAInterface->OptionList);
 
@@ -2643,8 +2693,13 @@ Option5_Validate
              ((ULONG)pRAOption2 != (ULONG)pRAOption) &&
              AnscEqualString(pRAOption2->Alias, pRAOption->Alias, TRUE))
         {
-            AnscCopyString(pReturnParamName, "Alias");
-            *puLength = AnscSizeOfString("Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
+            *puLength = AnscSizeOfString("Alias")+1;
 
             CcspTraceWarning(("RAOption_Validate() failed for Alias.\n"));            
             return FALSE;
@@ -2656,8 +2711,13 @@ Option5_Validate
             (pRAOption->bEnabled && pRAOption2->bEnabled) &&
              pRAOption->Tag == pRAOption2->Tag)
         {
-            AnscCopyString(pReturnParamName, "Tag");
-            *puLength = AnscSizeOfString("Tag");
+            rc = strcpy_s(pReturnParamName, *puLength, "Tag");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
+            *puLength = AnscSizeOfString("Tag")+1;
     
             CcspTraceWarning(("RAOption_Validate() failed for Tag.\n"));            
             return FALSE;

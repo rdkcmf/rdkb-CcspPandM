@@ -804,12 +804,18 @@ Router_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTER_FULL2          pRouter      = (PCOSA_DML_ROUTER_FULL2)pCosaContext->hContext;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRouter->Cfg.Alias);
+        rc = strcpy_s(pValue, *pUlSize, pRouter->Cfg.Alias);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1010,6 +1016,7 @@ Router_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTER_FULL2          pRouter      = (PCOSA_DML_ROUTER_FULL2)pCosaContext->hContext;
+    errno_t                         rc           = -1;
 
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
@@ -1017,7 +1024,12 @@ Router_SetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-         AnscCopyString(pRouter->Cfg.Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pRouter->Cfg.Alias, sizeof(pRouter->Cfg.Alias), pString);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -1071,6 +1083,7 @@ Router_Validate
     PCOSA_DML_ROUTER_FULL2          pRouter2      = (PCOSA_DML_ROUTER_FULL2)NULL;
     PSLIST_HEADER                   pRouterHead   = (PSLIST_HEADER)&pMyObject->RouterList;
     PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
+    errno_t                         rc            = -1;
 
     pLink = AnscSListGetFirstEntry(pRouterHead);
 
@@ -1085,8 +1098,13 @@ Router_Validate
             ((ULONG)pRouter2 != (ULONG)pRouter) &&
              AnscEqualString(pRouter2->Cfg.Alias, pRouter->Cfg.Alias, TRUE))
         {
-            AnscCopyString(pReturnParamName, "Alias");
-            *puLength = AnscSizeOfString("Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            if ( rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
+            *puLength = AnscSizeOfString("Alias")+1;
 
             CcspTraceWarning(("Router_Validate() failed.\n"));
             return FALSE;
@@ -2596,12 +2614,18 @@ IPv4Forwarding_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTING_V4_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V4_ENTRY)pCosaContext->hContext;
+    errno_t                         rc             = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRouterForward->Alias);
+        rc = strcpy_s(pValue, *pUlSize, pRouterForward->Alias);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -2621,9 +2645,13 @@ IPv4Forwarding_GetParamStringValue
         {
             if ( AnscSizeOfString(pString) < *pUlSize)
             {
-                AnscCopyString(pValue, pString);
-
+                rc = strcpy_s(pValue, *pUlSize, pString);
                 AnscFreeMemory(pString);
+                if ( rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return -1;
+                }
 
                 return 0;
             }
@@ -2882,6 +2910,7 @@ IPv4Forwarding_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTING_V4_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V4_ENTRY)pCosaContext->hContext;
+    errno_t                         rc             = -1;
 
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
@@ -2889,14 +2918,24 @@ IPv4Forwarding_SetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pRouterForward->Alias, pString);
+        rc = STRCPY_S_NOCLOBBER(pRouterForward->Alias, sizeof(pRouterForward->Alias), pString);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Interface", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pRouterForward->Interface, pString);
+        rc = STRCPY_S_NOCLOBBER(pRouterForward->Interface, sizeof(pRouterForward->Interface), pString);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -2949,6 +2988,7 @@ IPv4Forwarding_Validate
     PCOSA_DML_ROUTING_V4_ENTRY      pRouterForward  = (PCOSA_DML_ROUTING_V4_ENTRY)pCosaContext->hContext;
     PCOSA_DML_ROUTING_V4_ENTRY      pRouterForward2 = (PCOSA_DML_ROUTING_V4_ENTRY)NULL;
     PSINGLE_LINK_ENTRY              pLink           = (PSINGLE_LINK_ENTRY)NULL;
+    errno_t                         rc              = -1;
 
     pLink = AnscSListGetFirstEntry(&pRouter->ForwardList);
 
@@ -2963,8 +3003,13 @@ IPv4Forwarding_Validate
             ((ULONG)pRouterForward2 != (ULONG)pRouterForward) &&
              AnscEqualString(pRouterForward2->Alias, pRouterForward->Alias, TRUE))
         {
-            AnscCopyString(pReturnParamName, "Alias");
-            *puLength = AnscSizeOfString("Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            if ( rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
+            *puLength = AnscSizeOfString("Alias")+1;
 
             CcspTraceWarning(("IPv4Forwarding_Validate() failed.\n"));            
             return FALSE;
@@ -3769,26 +3814,42 @@ IPv6Forwarding_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward = (PCOSA_DML_ROUTING_V6_ENTRY)pCosaContext->hContext;
+    errno_t                         rc             = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRouterForward->Alias);
+        rc = strcpy_s(pValue, *pUlSize, pRouterForward->Alias);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "DestIPPrefix", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRouterForward->DestIPPrefix);
+        rc = strcpy_s(pValue, *pUlSize, pRouterForward->DestIPPrefix);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "NextHop", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRouterForward->NextHop);
+        rc = strcpy_s(pValue, *pUlSize, pRouterForward->NextHop);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -3808,9 +3869,14 @@ IPv6Forwarding_GetParamStringValue
         {
             if ( AnscSizeOfString(pString) < *pUlSize)
             {
-                AnscCopyString(pValue, pString);
-
+                rc = strcpy_s(pValue, *pUlSize, pString);
                 AnscFreeMemory(pString);
+                if ( rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return -1;
+                }
+
 
                 return 0;
             }
@@ -3832,7 +3898,12 @@ IPv6Forwarding_GetParamStringValue
     if( AnscEqualString(ParamName, "ExpirationTime", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRouterForward->ExpirationTime);
+        rc = strcpy_s(pValue, *pUlSize, pRouterForward->ExpirationTime);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -4164,6 +4235,7 @@ IPv6Forwarding_Validate
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward  = (PCOSA_DML_ROUTING_V6_ENTRY       )pCosaContext->hContext;
     PCOSA_DML_ROUTING_V6_ENTRY      pRouterForward2 = (PCOSA_DML_ROUTING_V6_ENTRY       )NULL;
     PSINGLE_LINK_ENTRY              pLink           = (PSINGLE_LINK_ENTRY               )NULL;
+    errno_t                         rc              = -1;
 
     pLink = AnscSListGetFirstEntry(&pRouter->IPv6ForwardList);
 
@@ -4178,8 +4250,13 @@ IPv6Forwarding_Validate
             ((ULONG)pRouterForward2 != (ULONG)pRouterForward) &&
              AnscEqualString(pRouterForward2->Alias, pRouterForward->Alias, TRUE))
         {
-            AnscCopyString(pReturnParamName, "Alias");
-            *puLength = AnscSizeOfString("Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
+            *puLength = AnscSizeOfString("Alias")+1;
 
             CcspTraceWarning(("IPv6Forwarding_Validate() failed.\n"));            
             return FALSE;
@@ -5326,12 +5403,18 @@ InterfaceSetting_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext   = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_RIP_IF_CFG           pRipIF         = (PCOSA_DML_RIP_IF_CFG)pCosaContext->hContext;
+    errno_t                         rc            = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRipIF->Alias);
+        rc = strcpy_s(pValue, *pUlSize, pRipIF->Alias);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -5341,24 +5424,47 @@ InterfaceSetting_GetParamStringValue
         if ((_ansc_strcmp(pRipIF->Alias, COSA_RIPD_IF1_NAME ) == 0 ) ||
             (_ansc_strcmp(pRipIF->Alias, "cpe" ) == 0 ) ||
             (_ansc_strcmp(pRipIF->Alias, "Ethernet" ) == 0 ) )
-            AnscCopyString(pValue, "Ethernet");
+        {
+            rc = strcpy_s(pValue, *pUlSize, "Ethernet");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+        }
         else
-            AnscCopyString(pValue, "Cable");
-
+        {
+            rc = strcpy_s(pValue, *pUlSize, "Cable");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "X_CISCO_COM_Md5KeyValue", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRipIF->X_CISCO_COM_Md5KeyValue);
+        rc = strcpy_s(pValue, *pUlSize, pRipIF->X_CISCO_COM_Md5KeyValue);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "X_CISCO_COM_SimplePassword", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pRipIF->X_CISCO_COM_SimplePassword);
+        rc = strcpy_s(pValue, *pUlSize, pRipIF->X_CISCO_COM_SimplePassword);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -6778,7 +6884,7 @@ InterfaceSetting3_GetParamStringValue
 {
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DML_ROUTEINFO_IF_INFO     pEntry   = (PCOSA_DML_ROUTEINFO_IF_INFO)hInsContext;
-
+    errno_t                         rc              = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Interface", TRUE) )
@@ -6794,36 +6900,67 @@ InterfaceSetting3_GetParamStringValue
                 );
         if (pString)
         {
-            AnscCopyString(pValue, pString);
-            AnscCopyString(pEntry->Interface, pString);
+            rc = strcpy_s(pValue, *pUlSize, pString);
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                AnscFreeMemory(pString);
+                return -1;
+            }
+            rc = STRCPY_S_NOCLOBBER(pEntry->Interface, sizeof(pEntry->Interface), pString);
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                AnscFreeMemory(pString);
+                return -1;
+            }
             AnscFreeMemory(pString);
         }
         
         return 0;
 #endif
-
-        AnscCopyString(pValue, pEntry->Interface);
+        rc = strcpy_s(pValue, *pUlSize, pEntry->Interface);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "SourceRouter", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->SourceRouter);
+        rc = strcpy_s(pValue, *pUlSize, pEntry->SourceRouter);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Prefix", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->Prefix);
+        rc = strcpy_s(pValue, *pUlSize, pEntry->Prefix);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "RouteLifetime", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->RouteLifetime);
+        rc = strcpy_s(pValue, *pUlSize, pEntry->RouteLifetime);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 

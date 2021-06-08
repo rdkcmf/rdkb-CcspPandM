@@ -683,6 +683,7 @@ CosaRaRegGetInfo
     ULONG                           ulUpperInstanceNumber   = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoRAHA )
     {
@@ -774,7 +775,8 @@ CosaRaRegGetInfo
             pRAInterface->ulNextOptionInsNum    = 1;
             
             pRAInterface->Cfg.InstanceNumber = ulInstanceNumber;
-            AnscCopyString(pRAInterface->Cfg.Alias, pAlias);
+            rc = strcpy_s(pRAInterface->Cfg.Alias, sizeof(pRAInterface->Cfg.Alias), pAlias);
+            ERR_CHK(rc);
 
             pCosaContext->InstanceNumber   = ulInstanceNumber;
             pCosaContext->bNew             = TRUE;
@@ -885,7 +887,8 @@ CosaRaRegGetInfo
                 }
 
                 pRAOption->InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pRAOption->Alias, pAlias);
+                rc = strcpy_s(pRAOption->Alias, sizeof(pRAOption->Alias), pAlias);
+                ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber  = ulInstanceNumber;
                 pSubCosaContext->hContext        = (ANSC_HANDLE)pRAOption;

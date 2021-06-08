@@ -306,6 +306,8 @@ PPP_GetParamStringValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(pUlSize);
+    errno_t      rc  =  -1;
+
     /* check the parameter name and return the corresponding value */
     if (AnscEqualString(ParamName, "SupportedNCPs", TRUE))
     {
@@ -313,31 +315,61 @@ PPP_GetParamStringValue
         
         CosaDmlPPPGetSupportedNCPs(NULL, &flag);
 
-        AnscCopyString(pValue, "");
+        pValue[0] = '\0';
 
         if (flag & COSA_DML_PPP_SUPPORTED_NCP_ATCP)
         {
-            AnscCatString(pValue, "ATCP,");
+            rc = strcat_s(pValue, *pUlSize,  "ATCP,");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+
         }
 
         if (flag & COSA_DML_PPP_SUPPORTED_NCP_IPCP)
         {
-            AnscCatString(pValue, "IPCP,");
+            rc = strcat_s(pValue, *pUlSize,  "IPCP,");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+
         }
 
         if (flag & COSA_DML_PPP_SUPPORTED_NCP_IPXCP)
         {
-            AnscCatString(pValue, "IPXCP,");
+            rc = strcat_s(pValue, *pUlSize,  "IPXCP,");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+
         }
 
         if (flag & COSA_DML_PPP_SUPPORTED_NCP_NBFCP)
         {
-            AnscCatString(pValue, "NBFCP,");
+            rc = strcat_s(pValue, *pUlSize,  "NBFCP,");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+
         }
 
         if (flag & COSA_DML_PPP_SUPPORTED_NCP_IPv6CP)
         {
-            AnscCatString(pValue, "IPv6CP,");
+            rc = strcat_s(pValue, *pUlSize,  "IPv6CP,");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+
         }
 
         return 0;
@@ -950,12 +982,19 @@ Interface3_GetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
     PUCHAR                          pString                 = NULL;
+    errno_t                         rc                      = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->Cfg.Alias);
+        rc = strcpy_s(pValue, *pUlSize,  pEntry->Cfg.Alias);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+
         return 0;
     }
 
@@ -963,7 +1002,13 @@ Interface3_GetParamStringValue
     {
         /* collect value */
         CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
-        AnscCopyString(pValue, pEntry->Info.Name);
+        rc = strcpy_s(pValue, *pUlSize,  pEntry->Info.Name);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+
         return 0;
     }
 
@@ -978,8 +1023,14 @@ Interface3_GetParamStringValue
         
         if ( pString )
         {
-            AnscCopyString(pValue, (char*)pString);
+            rc = strcpy_s(pValue, *pUlSize,  (char*)pString);
             AnscFreeMemory(pString);
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+
         }
         
         return 0;
@@ -988,14 +1039,21 @@ Interface3_GetParamStringValue
     if( AnscEqualString(ParamName, "Username", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->Cfg.Username);
+        rc = strcpy_s(pValue, *pUlSize,  pEntry->Cfg.Username);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Password", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, "");
+        pValue[0] = '\0';
+
         return 0;
     }
 
@@ -1250,12 +1308,19 @@ Interface3_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
+    errno_t                         rc                      = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pEntry->Cfg.Alias, pString);
+        rc = strcpy_s(pEntry->Cfg.Alias, sizeof(pEntry->Cfg.Alias), pString);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+
         return TRUE;
     }
 
@@ -1268,14 +1333,26 @@ Interface3_SetParamStringValue
     if( AnscEqualString(ParamName, "Username", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pEntry->Cfg.Username, pString);
+        rc = strcpy_s(pEntry->Cfg.Username, sizeof(pEntry->Cfg.Username), pString);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Password", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pEntry->Cfg.Password, pString);
+        rc = strcpy_s(pEntry->Cfg.Password, sizeof(pEntry->Cfg.Password), pString);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+
         return TRUE;
     }
 
@@ -1329,6 +1406,7 @@ Interface3_Validate
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2     = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_PPP_IF_FULL           pEntry2           = (PCOSA_DML_PPP_IF_FULL    )NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;
+    errno_t                         rc                      = -1;
 
     pSLinkEntry = AnscSListGetFirstEntry(pListHead);
 
@@ -1345,9 +1423,13 @@ Interface3_Validate
                  AnscEqualString(pEntry->Cfg.Alias, pEntry2->Cfg.Alias, TRUE) 
            )
         {
-            AnscCopyString(pReturnParamName, "Alias");
-
-            *puLength = AnscSizeOfString("Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
+            *puLength = AnscSizeOfString("Alias")+1;
             
             return FALSE;
         }
@@ -1658,19 +1740,30 @@ PPPoE_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
+    errno_t                         rc                      = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "ACName", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->Cfg.ACName);
+        rc = strcpy_s(pValue, *pUlSize, pEntry->Cfg.ACName);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "ServiceName", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->Cfg.ServiceName);
+        rc = strcpy_s(pValue, *pUlSize, pEntry->Cfg.ServiceName);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1860,19 +1953,30 @@ PPPoE_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
+    errno_t                         rc                      = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "ACName", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pEntry->Cfg.ACName, pString);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.ACName, sizeof(pEntry->Cfg.ACName), pString);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "ServiceName", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pEntry->Cfg.ServiceName, pString);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.ServiceName, sizeof(pEntry->Cfg.ServiceName), pString);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -2313,7 +2417,12 @@ IPCP_GetParamStringValue
     if( AnscEqualString(ParamName, "PassthroughDHCPPool", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pEntry->Cfg.PassthroughDHCPPool);
+        rc = strcpy_s(pValue, *pUlSize, pEntry->Cfg.PassthroughDHCPPool);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -2514,6 +2623,7 @@ IPCP_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
+    errno_t                         rc                      = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "PassthroughDHCPPool", TRUE))
@@ -2523,7 +2633,12 @@ IPCP_SetParamStringValue
         /*not supported*/
         return FALSE;
 #endif
-        AnscCopyString(pEntry->Cfg.PassthroughDHCPPool, pString);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.PassthroughDHCPPool, sizeof(pEntry->Cfg.PassthroughDHCPPool), pString);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 

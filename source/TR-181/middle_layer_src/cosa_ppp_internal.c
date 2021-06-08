@@ -393,6 +393,7 @@ CosaPPPIfRegGetInfo
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoPPPIf )
     {
@@ -444,8 +445,6 @@ CosaPPPIfRegGetInfo
             }
         }
 
-        if ( TRUE )
-        {
             pSlapVariable =
                 (PSLAP_VARIABLE)pPoamIrepFoPPPIfSp->GetRecord
                     (
@@ -460,7 +459,6 @@ CosaPPPIfRegGetInfo
 
                 SlapFreeVariable(pSlapVariable);
             }
-        }
 
         pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
 
@@ -481,7 +479,8 @@ CosaPPPIfRegGetInfo
             return ANSC_STATUS_RESOURCES;
         }
 
-        AnscCopyString(pEntry->Cfg.Alias, pAlias);
+        rc = strcpy_s(pEntry->Cfg.Alias, sizeof(pEntry->Cfg.Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->Cfg.InstanceNumber = ulInstanceNumber;
 

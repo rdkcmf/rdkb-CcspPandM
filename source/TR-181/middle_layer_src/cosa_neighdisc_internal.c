@@ -509,6 +509,7 @@ CosaNeighdiscRegGetInfo
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoNeighdiscHA )
     {
@@ -594,7 +595,9 @@ CosaNeighdiscRegGetInfo
             }
 
             pNeighdiscInterface->Cfg.InstanceNumber = ulInstanceNumber;
-            AnscCopyString(pNeighdiscInterface->Cfg.Alias, pAlias);
+
+            rc = strcpy_s(pNeighdiscInterface->Cfg.Alias, sizeof(pNeighdiscInterface->Cfg.Alias), pAlias);
+            ERR_CHK(rc);
 
             pCosaContext->InstanceNumber   = ulInstanceNumber;
             pCosaContext->bNew             = TRUE;

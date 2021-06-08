@@ -1175,12 +1175,18 @@ InterfaceSetting2_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_NEIGHDISC_IF_FULL     pNeighdiscInterface = (PCOSA_DML_NEIGHDISC_IF_FULL)pCosaContext->hContext;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
     {
         /* collect value */
-        AnscCopyString(pValue, pNeighdiscInterface->Cfg.Alias);
+        rc = strcpy_s(pValue, *pUlSize, pNeighdiscInterface->Cfg.Alias);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1196,14 +1202,31 @@ InterfaceSetting2_GetParamStringValue
                 );
         if (pString)
         {
-            AnscCopyString(pValue, pString);
-            AnscCopyString(pNeighdiscInterface->Cfg.Interface, pString);
+            rc = strcpy_s(pValue, *pUlSize, pString);
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                AnscFreeMemory(pString);
+                return -1;
+            }
+            rc = STRCPY_S_NOCLOBBER(pNeighdiscInterface->Cfg.Interface, sizeof(pNeighdiscInterface->Cfg.Interface), pString);
+            if ( rc != EOK)
+            {
+                ERR_CHK(rc);
+                AnscFreeMemory(pString);
+                return -1;
+            }
             AnscFreeMemory(pString);
         }
         
         return 0;
 #endif
-        AnscCopyString(pValue, pNeighdiscInterface->Cfg.Interface);
+        rc = strcpy_s(pValue, *pUlSize, pNeighdiscInterface->Cfg.Interface);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1527,6 +1550,7 @@ InterfaceSetting2_Validate
     PCOSA_DML_NEIGHDISC_IF_FULL           pNeighdiscInterface2 = (PCOSA_DML_NEIGHDISC_IF_FULL)NULL;
     PSLIST_HEADER                   pNeighdiscIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PSINGLE_LINK_ENTRY              pLink         = (PSINGLE_LINK_ENTRY)NULL;
+    errno_t                         rc            = -1;
 
     pLink = AnscSListGetFirstEntry(pNeighdiscIFHead);
 
@@ -1541,8 +1565,13 @@ InterfaceSetting2_Validate
             ((ULONG)pNeighdiscInterface2 != (ULONG)pNeighdiscInterface) &&
              AnscEqualString(pNeighdiscInterface2->Cfg.Alias, pNeighdiscInterface->Cfg.Alias, TRUE))
         {
-            AnscCopyString(pReturnParamName, "Alias");
-            *puLength = AnscSizeOfString("Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
+            *puLength = AnscSizeOfString("Alias")+1;
 
             CcspTraceWarning(("InterfaceSetting1_Validate() failed.\n"));
             return FALSE;
@@ -1551,24 +1580,39 @@ InterfaceSetting2_Validate
 
     if (!pNeighdiscInterface->Cfg.RetransTimer)
     {
-        AnscCopyString(pReturnParamName, "RetransTimer");
-        *puLength = AnscSizeOfString("RetransTimer");
+        rc = strcpy_s(pReturnParamName, *puLength, "RetransTimer");
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+        *puLength = AnscSizeOfString("RetransTimer")+1;
 
         return FALSE;
     }
 
     if (!pNeighdiscInterface->Cfg.RtrSolicitationInterval)
     {
-        AnscCopyString(pReturnParamName, "RtrSolicitationInterval");
-        *puLength = AnscSizeOfString("RtrSolicitationInterval");
+        rc = strcpy_s(pReturnParamName, *puLength, "RtrSolicitationInterval");
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+        *puLength = AnscSizeOfString("RtrSolicitationInterval")+1;
 
         return FALSE;
     }
 
     if (!pNeighdiscInterface->Cfg.MaxRtrSolicitations)
     {
-        AnscCopyString(pReturnParamName, "MaxRtrSolicitations");
-        *puLength = AnscSizeOfString("MaxRtrSolicitations");
+        rc = strcpy_s(pReturnParamName, *puLength, "MaxRtrSolicitations");
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+        *puLength = AnscSizeOfString("MaxRtrSolicitations")+1;
 
         return FALSE;
     }
@@ -1959,26 +2003,42 @@ NeighborTable_GetParamStringValue
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DML_NEIGHTABLE_INFO       pNbTblEntry = (PCOSA_DML_NEIGHTABLE_INFO)hInsContext;
-    
+    errno_t                         rc            = -1;
+
     /* check the parameter name and return the corresponding value */    
     if( AnscEqualString(ParamName, "Address", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pNbTblEntry->Address);
+        rc = strcpy_s(pValue, *pUlSize, pNbTblEntry->Address);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
    
     if( AnscEqualString(ParamName, "Interface", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pNbTblEntry->Interface);
+        rc = strcpy_s(pValue, *pUlSize,  pNbTblEntry->Interface);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "MACAddress", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pNbTblEntry->MACAddress);
+        rc = strcpy_s(pValue, *pUlSize,  pNbTblEntry->MACAddress);
+        if ( rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
