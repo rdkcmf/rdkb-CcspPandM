@@ -7302,7 +7302,6 @@ return 1;
 }
 int remove_interface(char* Inf_name)
 {
-	CcspTraceWarning((">>>>Debug Entered  : %s at line : %d  \n",__FUNCTION__, __LINE__ ));
 	char *token = NULL;char *pt;
 	char OutBuff[128],buf[128] ;
 	
@@ -7320,8 +7319,7 @@ int remove_interface(char* Inf_name)
 		}
    }
 	syscfg_set(NULL, "IPv6_Interface",OutBuff);
-	CcspTraceWarning((">>>>Debug  Value of  OutBuff : %s infname  : %s  buf : %s \n", OutBuff, Inf_name, buf ));
-    if (syscfg_commit( ) != 0) {
+	if (syscfg_commit( ) != 0) {
          CcspTraceError(("syscfg_commit failed\n"));
 		 return -1;
         }
@@ -7330,7 +7328,6 @@ int remove_interface(char* Inf_name)
 
 int append_interface(char* Inf_name)
 {
-	CcspTraceWarning((">>>>Debug Entered  : %s at line : %d  \n",__FUNCTION__, __LINE__ ));
 	char OutBuff[128],buf[128] ;
 	
 	memset(OutBuff,0,sizeof(OutBuff));
@@ -7341,7 +7338,6 @@ int append_interface(char* Inf_name)
 	strncpy(OutBuff, buf, sizeof(buf));
 	strcat(OutBuff,Inf_name);
 	strcat(OutBuff,",");
-	CcspTraceWarning((">>>>Debug  Value of  OutBuff : %s infname  : %s  buf : %s \n", OutBuff, Inf_name, buf ));
 	syscfg_set(NULL, "IPv6_Interface",OutBuff);
     if (syscfg_commit( ) != 0) {
          CcspTraceError(("syscfg_commit failed\n"));
@@ -7472,21 +7468,21 @@ int handle_MocaIpv6(char *status)
 
 	//checking Homeisolation is enabled and ipv6_moca_bridge is true
 	retPsmGet1 = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.HomeNetworkIsolation", NULL, &str);
-	CcspTraceWarning((">>>>Debug  str :%s\n", str ));
     if(retPsmGet1 == CCSP_SUCCESS) {
         HomeIsolationEnable = _ansc_atoi(str);
-        CcspTraceWarning((">>>>Debug Entered  : %s at line : %d  HomeIsolationEnable : %d str :%s\n",__FUNCTION__, __LINE__, HomeIsolationEnable, str ));
     }
 	syscfg_get( NULL, "ipv6_moca_bridge", mbuf, sizeof(mbuf));
 	syscfg_get( NULL, "IPv6_Interface", ipv6If, sizeof(ipv6If));
-	CcspTraceWarning((">>>>Debug Entered  : %s at line : %d  mbuf : %s, ipv6If : %s HomeIsolationEnable : %d \n",__FUNCTION__, __LINE__, mbuf, ipv6If, HomeIsolationEnable ));
 
     ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(str);
     retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.9.Name", NULL, &Inf_name);
     if(!retPsmGet)
     {
         retPsmGet = CCSP_SUCCESS;
-        Inf_name = "brlan10";		
+		if(NULL == Inf_name){
+			Inf_name = (char *)AnscAllocateMemory( (strlen("brlan10") + 1) );
+			strncpy(Inf_name, "brlan10", strlen("brlan10") +1);
+		}
     }
     if(strcmp((const char*)status, "ready") == 0)
     {
@@ -7495,7 +7491,6 @@ int handle_MocaIpv6(char *status)
             if( (strcmp(mbuf, "true") == 0) && (HomeIsolationEnable == 1))
             {
                 if (!strstr(ipv6If, Inf_name)) {
-                    CcspTraceWarning((">>>>Debug Entered  : %s at line : %d , Inf_name : %s \n",__FUNCTION__, __LINE__ , Inf_name));
                     append_interface(Inf_name);
                     GenAndUpdateIpv6PrefixIntoSysevent(Inf_name);
                     restart_zebra = 1;
@@ -7504,7 +7499,6 @@ int handle_MocaIpv6(char *status)
             else if ( (strcmp(mbuf, "false") == 0) || (HomeIsolationEnable == 0))
             {
                 if (strstr(ipv6If, Inf_name)){
-                    CcspTraceWarning((">>>>Debug Entered  : %s at line : %d Inf_name : %s  \n",__FUNCTION__, __LINE__ ,Inf_name ));
                     remove_interface(Inf_name);
                     restart_zebra = 1;
                 }
@@ -7540,7 +7534,6 @@ int handle_MocaIpv6(char *status)
         if ( (strcmp(mbuf, "false") == 0) || (HomeIsolationEnable == 0))
         {
             if (strstr(ipv6If, Inf_name)) {
-                CcspTraceWarning((">>>>Debug Entered  : %s at line : %d Inf_name : %s, ipv6If : %s  \n",__FUNCTION__, __LINE__ , Inf_name, ipv6If));
                 remove_interface(Inf_name);
                 restart_zebra = 1;
             }
@@ -7550,7 +7543,10 @@ int handle_MocaIpv6(char *status)
     {
         v_secure_system("sysevent set zebra-restart");
     }
+	if(NULL != Inf_name){
     ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(Inf_name);
+	Inf_name = NULL;
+	}
     return 0;
 
 }
