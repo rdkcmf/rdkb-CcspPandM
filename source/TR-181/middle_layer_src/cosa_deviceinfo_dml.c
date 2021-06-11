@@ -4181,7 +4181,7 @@ MACsecRequired_GetParamBoolValue
 #ifdef _MACSEC_SUPPORT_
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-        if ( RETURN_ERR == platform_hal_GetMACsecEnable( 3, pBool )) {
+        if ( RETURN_ERR == platform_hal_GetMACsecEnable( ETHWAN_DEF_INTF_NUM, pBool )) {
             return FALSE;
         }
         return TRUE;
@@ -4238,7 +4238,7 @@ MACsecRequired_SetParamBoolValue
 #ifdef _MACSEC_SUPPORT_
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-        if ( RETURN_ERR == platform_hal_SetMACsecEnable( 3, bValue )) {
+        if ( RETURN_ERR == platform_hal_SetMACsecEnable( ETHWAN_DEF_INTF_NUM, bValue )) {
             return FALSE;
         }
         return TRUE;

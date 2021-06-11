@@ -76,6 +76,9 @@
 #include "ccsp_dm_api.h"
 #include <arpa/inet.h>
 #include "platform_hal.h"
+#ifdef _MACSEC_SUPPORT_
+#include "ccsp_hal_ethsw.h"
+#endif
 #include "secure_wrapper.h"
 #include "cosa_drg_common.h"
 #include "ccsp_psm_helper.h"
@@ -2249,11 +2252,11 @@ CosaDmlDcSetFactoryReset
                 if(!syscfg_get(NULL, "PartnerID", partnerId, sizeof(partnerId))) {
                         if (strcmp( "comcast", partnerId ) == 0 ) {
                                 CcspTraceInfo(("MACsec enabled by factory reset\n"));
-                                platform_hal_SetMACsecEnable( 3, true );
+                                platform_hal_SetMACsecEnable( ETHWAN_DEF_INTF_NUM, true );
                         }
                         else {
                                 CcspTraceInfo(("MACsec disabled by factory reset\n"));
-                                platform_hal_SetMACsecEnable( 3, false );
+                                platform_hal_SetMACsecEnable( ETHWAN_DEF_INTF_NUM, false );
                         }
                 }
 #endif //_MACSEC_SUPPORT_
