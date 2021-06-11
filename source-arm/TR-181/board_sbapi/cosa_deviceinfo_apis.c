@@ -1977,7 +1977,7 @@ CosaDmlDiGetProcessorSpeed
     }
     fp = v_secure_popen("r", "rpcclient %s %s",urlPtr,out2);
 #else
-    fp = popen("cat /proc/cpuinfo", "r");
+    fp = v_secure_popen("r", "cat /proc/cpuinfo");
 #endif
     if (fp == NULL)
     {
