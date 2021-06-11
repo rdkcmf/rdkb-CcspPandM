@@ -619,6 +619,13 @@ CosaDmlDiGetSerialNumber
 
     if (platform_hal_GetSerialNumber(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
+
+    /* Remove trailing newline from Serial Number retrieved */
+    int len = strlen(pValue);
+    if ((len > 0) && (pValue[len-1] == '\n'))
+    {
+        pValue[len-1] = '\0';
+    }
 #endif
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
