@@ -15711,7 +15711,7 @@ RDKB_UIBranding_GetParamStringValue
         }
 	if( AnscEqualString(ParamName, "DefaultLanguage", TRUE))
         {
-            return  update_pValue(pValue,pulSize, pBindObj->DefaultLocalIPv4SubnetRange.ActiveValue);
+            return  update_pValue(pValue,pulSize, pBindObj->DefaultLanguage.ActiveValue);
         }
 	if( AnscEqualString(ParamName, "DefaultAdminIP", TRUE))
         {
