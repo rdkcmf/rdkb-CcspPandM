@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "5.9"
+      "version" : "5.10"
    },
 
    "comcast" : {
@@ -187,9 +187,9 @@
       "Device.Time.NTPServer3" : "",
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
-      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 
 
@@ -249,9 +249,9 @@
       "Device.Time.NTPServer3" : "",
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
-      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 
 
