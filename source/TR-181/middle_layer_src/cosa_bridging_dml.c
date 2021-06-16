@@ -2631,7 +2631,6 @@ Port_SetParamUlongValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_PORT_FULL         pPort            = (PCOSA_DML_BRG_PORT_FULL  )pCosaContext->hContext;
-    errno_t rc = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "DefaultUserPriority", TRUE) )
@@ -2645,12 +2644,7 @@ Port_SetParamUlongValue
     if( AnscEqualString(ParamName, "PriorityRegeneration", TRUE) )
     {
         /* Not supported here */
-        rc = STRCPY_S_NOCLOBBER((char*)pPort->Cfg.PriorityRegeneration, sizeof((char*)pPort->Cfg.PriorityRegeneration), "");
-        if(rc != EOK)
-        {
-            ERR_CHK(rc);
-            return FALSE;
-        }
+        pPort->Cfg.PriorityRegeneration[0] = '\0';
 
         return TRUE;
     }

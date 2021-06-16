@@ -2274,7 +2274,7 @@ SentOption_SetParamStringValue
     if( AnscEqualString(ParamName, "Value", TRUE))
     {
         /* save update to backup */
-        rc = STRCPY_S_NOCLOBBER((char*)pDhcpSendOption->Value, sizeof((char*)pDhcpSendOption->Value), pString);
+        rc = STRCPY_S_NOCLOBBER((char*)pDhcpSendOption->Value, sizeof(pDhcpSendOption->Value), pString);
         if(rc != EOK)
         {
            ERR_CHK(rc);

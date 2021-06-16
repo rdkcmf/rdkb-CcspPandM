@@ -10906,6 +10906,7 @@ ULONG*                      pUlSize
 {
         UNREFERENCED_PARAMETER(hInsContext);
         errno_t   rc = -1;
+        int ret;
         if( AnscEqualString(ParamName, "Status", TRUE) )
         {
             FILE *file1 = fopen("/nvram/rbus_support","r");
@@ -10918,7 +10919,8 @@ ULONG*                      pUlSize
                 if(rc != EOK)
                 {
                     ERR_CHK(rc);
-                    return -1;
+                    ret = -1;
+                    goto EXIT;
                 }
                 CcspTraceError((" Succeeded to GET\n" ));
                 *pUlSize = AnscSizeOfString( pValue )+1;
@@ -10929,7 +10931,8 @@ ULONG*                      pUlSize
                 if(rc != EOK)
                 {
                     ERR_CHK(rc);
-                    return -1;
+                    ret = -1;
+                    goto EXIT;
                 }
                 CcspTraceError((" succeeded to GET\n" ));
                 *pUlSize = AnscSizeOfString( pValue )+1;
@@ -10940,7 +10943,8 @@ ULONG*                      pUlSize
                 if(rc != EOK)
                 {
                     ERR_CHK(rc);
-                    return -1;
+                    ret = -1;
+                    goto EXIT;
                 }
                 CcspTraceError((" succeeded to GET\n" ));
                 *pUlSize = AnscSizeOfString( pValue )+1;
@@ -10951,7 +10955,8 @@ ULONG*                      pUlSize
                 if(rc != EOK)
                 {
                     ERR_CHK(rc);
-                    return -1;
+                    ret = -1;
+                    goto EXIT;
                 }
                 CcspTraceError((" succeeded to GET\n" ));
                 *pUlSize = AnscSizeOfString( pValue )+1;
@@ -10962,7 +10967,8 @@ ULONG*                      pUlSize
                 if(rc != EOK)
                 {
                     ERR_CHK(rc);
-                    return -1;
+                    ret = -1;
+                    goto EXIT;
                 }
                 CcspTraceError((" succeeded to GET\n" ));
                 *pUlSize = AnscSizeOfString( pValue )+1;
@@ -10973,18 +10979,22 @@ ULONG*                      pUlSize
                 if(rc != EOK)
                 {
                     ERR_CHK(rc);
-                    return -1;
+                    ret = -1;
+                    goto EXIT;
                 }
                 CcspTraceError((" succeeded to GET\n" ));
                 *pUlSize = AnscSizeOfString( pValue )+1;
             }
+            ret = 0;
+
+EXIT:
             if((file1)!=NULL)
                 fclose(file1);
             if((file2)!=NULL)
                 fclose(file2);
             if((file3)!=NULL)
                 fclose(file3);
-            return 0;
+            return ret;
         }
         CcspTraceError((" failed to GET\n" ));
         return -1;

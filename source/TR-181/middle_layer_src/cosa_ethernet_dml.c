@@ -1088,7 +1088,7 @@ Interface_Validate
                 AnscEqualString(pEthernetPortFull->Cfg.Alias, pMyObject->EthernetPortFullTable[ulIndex].Cfg.Alias, TRUE)
             )
         {
-            rc = strcpy_s(pReturnParamName,sizeof(pReturnParamName), "Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
             if(rc != EOK)
             {
                ERR_CHK(rc);
@@ -2753,7 +2753,7 @@ Link_Validate
                  AnscEqualString(pEntry->Cfg.Alias, pEntry2->Cfg.Alias, TRUE) 
            )
         {
-            rc = strcpy_s(pReturnParamName,sizeof(pReturnParamName), "Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
             if(rc != EOK)
             {
               ERR_CHK(rc);
@@ -4013,7 +4013,7 @@ VLANTermination_Validate
                  AnscEqualString(pEntry->Cfg.Alias, pEntry2->Cfg.Alias, TRUE) 
            )
         {
-            rc = strcpy_s(pReturnParamName,sizeof(pReturnParamName), "Alias");
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
             if(rc != EOK)
             {
                ERR_CHK(rc);
@@ -4033,7 +4033,7 @@ VLANTermination_Validate
            )
         {
             // We can not enable
-            rc = strcpy_s(pReturnParamName,sizeof(pReturnParamName), "VLANID");
+            rc = strcpy_s(pReturnParamName, *puLength, "VLANID");
             if(rc != EOK)
             {
               ERR_CHK(rc);

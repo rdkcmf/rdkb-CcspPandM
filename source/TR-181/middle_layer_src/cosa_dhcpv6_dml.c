@@ -1403,8 +1403,10 @@ Client3_Commit
             DHCPV6_CLIENT_SET_DEFAULTVALUE(pDhcpc);
             
             if ( pDhcpv6->AliasOfClient[0] )
+            {
                 rc = STRCPY_S_NOCLOBBER( (char*)pDhcpc->Cfg.Alias, sizeof(pDhcpc->Cfg.Alias), pDhcpv6->AliasOfClient );
                 ERR_CHK(rc);
+            }
         }
     }
     else
@@ -2790,8 +2792,10 @@ SentOption1_Commit
             DHCPV6_SENTOPTION_SET_DEFAULTVALUE(pDhcpSentOption);
 
             if ( pCxtDhcpcLink->AliasOfSent[0] )
+            {
                 rc = STRCPY_S_NOCLOBBER( (char*)pDhcpSentOption->Alias, sizeof(pDhcpSentOption->Alias), pCxtDhcpcLink->AliasOfSent );
                 ERR_CHK(rc);
+            }
         }
     }
     else
@@ -5533,7 +5537,7 @@ Pool1_Commit
             
             if ( pDhcpv6->AliasOfClient[0] )
             {
-                rc = STRCPY_S_NOCLOBBER( (char*)pPool->Cfg.Alias, sizeof((char*)pPool->Cfg.Alias), pDhcpv6->AliasOfPool );
+                rc = STRCPY_S_NOCLOBBER( (char*)pPool->Cfg.Alias, sizeof(pPool->Cfg.Alias), pDhcpv6->AliasOfPool );
                 ERR_CHK(rc);
             }
         }
@@ -5590,7 +5594,7 @@ Pool1_Rollback
 
     if ( pDhcpv6->AliasOfPool[0] )
     {
-        rc = STRCPY_S_NOCLOBBER( (char*)pPool->Cfg.Alias, sizeof((char*)pPool->Cfg.Alias), pDhcpv6->AliasOfPool );
+        rc = STRCPY_S_NOCLOBBER( (char*)pPool->Cfg.Alias, sizeof(pPool->Cfg.Alias), pDhcpv6->AliasOfPool );
         ERR_CHK(rc);
     }
 
@@ -8344,7 +8348,7 @@ Option4_Commit
 
             if ( pCxtPoolLink->AliasOfOption[0] )
             {
-                rc = STRCPY_S_NOCLOBBER( (char*)pDhcpOption->Alias, sizeof((char*)pDhcpOption->Alias), pCxtPoolLink->AliasOfOption );
+                rc = STRCPY_S_NOCLOBBER( (char*)pDhcpOption->Alias, sizeof(pDhcpOption->Alias), pCxtPoolLink->AliasOfOption );
                 ERR_CHK(rc);
             }
         }
@@ -8402,7 +8406,7 @@ Option4_Rollback
 
     if ( pCxtPoolLink->AliasOfOption[0] )
     {
-        rc = STRCPY_S_NOCLOBBER( (char*)pDhcpPoolOption->Alias, sizeof((char*)pDhcpPoolOption->Alias), pCxtPoolLink->AliasOfOption );
+        rc = STRCPY_S_NOCLOBBER( (char*)pDhcpPoolOption->Alias, sizeof(pDhcpPoolOption->Alias), pCxtPoolLink->AliasOfOption );
         ERR_CHK(rc);
     }
 
