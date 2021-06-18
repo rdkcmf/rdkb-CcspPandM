@@ -68,6 +68,7 @@
 
 #include "webconfig_framework.h"
 #include "secure_wrapper.h"
+#include "safec_lib_common.h"
 
 #define DEBUG_INI_NAME  "/etc/debug.ini"
 // With WAN boot time optimization, in few cases P&M initialization is further delayed
@@ -117,6 +118,7 @@ int  cmd_dispatch(int  command)
     parameterValStruct_t**          ppReturnVal        = NULL;
     ULONG                           ulReturnValCount   = 0;
     ULONG                           i                  = 0;
+    errno_t                         rc                 = -1;
 
     switch ( command )
     {
@@ -128,13 +130,11 @@ int  cmd_dispatch(int  command)
             {
                 char                            CName[256];
 
-                if ( g_Subsystem[0] != 0 )
+                rc = sprintf_s(CName, sizeof(CName), "%s%s", g_Subsystem, gpPnmStartCfg->ComponentId);
+                if(rc < EOK)
                 {
-                    _ansc_sprintf(CName, "%s%s", g_Subsystem, gpPnmStartCfg->ComponentId);
-                }
-                else
-                {
-                    _ansc_sprintf(CName, "%s", gpPnmStartCfg->ComponentId);
+                    ERR_CHK(rc);
+                    return -1;
                 }
 
                 ssp_PnmMbi_MessageBusEngage
@@ -525,6 +525,8 @@ int main(int argc, char* argv[])
     BOOL bDebugSlowChildProcess = FALSE;
     FILE *fp;
     int s, svalue = -1;
+    errno_t rc    = -1;
+    int     ret   = 0;
 
 #ifdef FEATURE_SUPPORT_RDKLOG
     RDK_LOGGER_INIT();
@@ -621,13 +623,23 @@ if(id != 0)
 
     display_info();
 
-    cmd_dispatch('e');
+    ret = cmd_dispatch('e');
+    if(ret != 0)
+    {
+      CcspTraceError(("exit ERROR %s:%d\n", __FUNCTION__, __LINE__));
+      exit(1);
+    }
 
     while ( cmdChar != 'q' )
     {
         cmdChar = getchar();
 
-        cmd_dispatch(cmdChar);
+        ret = cmd_dispatch(cmdChar);
+        if(ret != 0)
+        {
+          CcspTraceError(("exit ERROR %s:%d\n", __FUNCTION__, __LINE__));
+          exit(1);
+        }
     }
 #elif defined(_ANSC_LINUX)
     if ( bRunAsDaemon )
@@ -644,7 +656,14 @@ if(id != 0)
     }
     else
     {
-        sprintf(cmd, "%d", getpid());
+        rc = sprintf_s(cmd, sizeof(cmd),"%d", getpid());
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          CcspTraceError(("exit ERROR %s:%d\n", __FUNCTION__, __LINE__));
+          fclose(fd);
+          exit(1);
+        }
         fputs(cmd, fd);
         fclose(fd);
     }
@@ -685,7 +704,12 @@ if(id != 0)
 #endif
 #endif
 
-    cmd_dispatch('e');
+   ret = cmd_dispatch('e');
+   if(ret != 0)
+   {
+     CcspTraceError(("exit ERROR %s:%d\n", __FUNCTION__, __LINE__));
+     exit(1);
+   }
 
     syscfg_init();
     CcspTraceInfo(("PAM_DBG:-------Read Log Info\n"));
@@ -828,7 +852,12 @@ if(id != 0)
         {
             cmdChar = getchar();
 
-            cmd_dispatch(cmdChar);
+            ret = cmd_dispatch(cmdChar);
+            if(ret != 0)
+            {
+              CcspTraceError(("exit ERROR %s:%d\n", __FUNCTION__, __LINE__));
+              exit(1);
+            }
         }
     }
 #endif

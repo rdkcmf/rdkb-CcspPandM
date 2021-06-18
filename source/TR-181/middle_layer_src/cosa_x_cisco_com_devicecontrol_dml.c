@@ -1810,6 +1810,7 @@ LanMngm_AddEntry
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     PCOSA_DML_LAN_MANAGEMENT        pLanMngm    = NULL;
     BOOL                                      bridgeMode;
+    errno_t                         rc          = -1;
 
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&bridgeMode)) &&
        (TRUE == bridgeMode))
@@ -1832,7 +1833,14 @@ LanMngm_AddEntry
     if (pDevCtrl->ulLanMngmNextInsNum == 0)
         pDevCtrl->ulLanMngmNextInsNum = 1;
 
-    _ansc_sprintf(pLanMngm->Alias, "cpe-LanManamgement-%lu", pLinkObj->InstanceNumber);
+    rc = sprintf_s(pLanMngm->Alias, sizeof(pLanMngm->Alias),"cpe-LanManamgement-%lu", pLinkObj->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pLinkObj);
+      AnscFreeMemory(pLanMngm);
+      return NULL;
+    }
     pLinkObj->hContext      = (ANSC_HANDLE)pLanMngm;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;

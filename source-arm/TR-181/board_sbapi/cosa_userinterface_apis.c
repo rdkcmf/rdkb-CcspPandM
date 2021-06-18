@@ -80,6 +80,7 @@
 #include <syscfg/syscfg.h>
 #include "cosa_drg_common.h"
 #include "ccsp_custom.h"
+#include "safec_lib_common.h"
 
 COSA_DML_RA_CFG                     g_RaCfg = {0};
 
@@ -404,6 +405,7 @@ CosaDmlUserInterfaceSetCfg
 {
     UNREFERENCED_PARAMETER(hContext);
     char buf[10];
+    errno_t safec_rc = -1;
     memset(buf,0,sizeof(buf));
 
     if ( TRUE == pCfg->bPasswordLockoutEnable )
@@ -422,13 +424,20 @@ CosaDmlUserInterfaceSetCfg
 	}
      }
 
- sprintf(buf, "%lu",  pCfg->PasswordLockoutAttempts);
+ safec_rc = sprintf_s(buf, sizeof(buf), "%lu",  pCfg->PasswordLockoutAttempts);
+ if(safec_rc < EOK)
+ {
+    ERR_CHK(safec_rc);
+ }
 	if (syscfg_set(NULL, "PasswordLockoutAttempts", buf) != 0) {
                      AnscTraceWarning(("%s : PasswordLockoutAttempts syscfg_set failed\n",__FUNCTION__));
 	}
 
-memset(buf,0,sizeof(buf));
-sprintf(buf, "%lu",  pCfg->PasswordLockoutTime);
+safec_rc = sprintf_s(buf, sizeof(buf), "%lu",  pCfg->PasswordLockoutTime);
+if(safec_rc < EOK)
+{
+   ERR_CHK(safec_rc);
+}
 	 if (syscfg_set(NULL, "PasswordLockoutTime", buf) != 0) {
                      AnscTraceWarning(("%s : PasswordLockoutTime syscfg_set failed\n",__FUNCTION__));
 	}

@@ -2460,6 +2460,7 @@ AccessPolicy_AddEntry
     PSLIST_HEADER                   pPolicyHead       = (PSLIST_HEADER            )&pCosaDMSecurity->AccessPolicyList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy      = (PCOSA_DML_IA_POLICY2     )NULL;
+    errno_t                         rc                = -1;
 
     pDmlIAPolicy = (PCOSA_DML_IA_POLICY2)AnscAllocateMemory(sizeof(COSA_DML_IA_POLICY2));
 
@@ -2469,7 +2470,13 @@ AccessPolicy_AddEntry
     }
 
     /* Set the default policy name */
-    _ansc_sprintf(pDmlIAPolicy->Alias, "Policy%lu", pCosaDMSecurity->ulNextAPInstanceNum);
+    rc = sprintf_s(pDmlIAPolicy->Alias, sizeof(pDmlIAPolicy->Alias),"Policy%lu", pCosaDMSecurity->ulNextAPInstanceNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pDmlIAPolicy);
+      return NULL;
+    }
 
     AnscSListInitializeHeader(&pDmlIAPolicy->URLList    );
     AnscSListInitializeHeader(&pDmlIAPolicy->KeywordList);
@@ -2834,6 +2841,7 @@ AccessPolicy_GetParamStringValue
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy = (PCOSA_DML_IA_POLICY2     )pCosaContext->hContext;
     ULONG                           i            = 0;
     int                             pre_buf_size = 1023;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -2861,9 +2869,10 @@ AccessPolicy_GetParamStringValue
             */
             for ( i = 0; (i < pDmlIAPolicy->LanHost.MacCount) && (i < COSA_DML_IA_LH_MAX_MAC); i++ )
             {
-                _ansc_sprintf
+                rc = sprintf_s
                     (
-                        pValue, 
+                        pValue,
+                        *pUlSize,
                         "%02X:%02X:%02X:%02X:%02X:%02X",
                         pDmlIAPolicy->LanHost.MacList[i].Mac[0],
                         pDmlIAPolicy->LanHost.MacList[i].Mac[1],
@@ -2872,6 +2881,11 @@ AccessPolicy_GetParamStringValue
                         pDmlIAPolicy->LanHost.MacList[i].Mac[4],
                         pDmlIAPolicy->LanHost.MacList[i].Mac[5]
                     );
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  return -1;
+                }
 
                 if ( i < (ULONG)pDmlIAPolicy->LanHost.MacCount - 1 )
                 {
@@ -4342,6 +4356,7 @@ BlockedURL_AddEntry
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pDmlIAPolicy->URLList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2   = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_IA_POLICY_URL         pURL            = (PCOSA_DML_IA_POLICY_URL )NULL;
+    errno_t                         rc              = -1;
 
     pURL = (PCOSA_DML_IA_POLICY_URL)AnscAllocateMemory(sizeof(COSA_DML_IA_POLICY_URL));
 
@@ -4350,7 +4365,13 @@ BlockedURL_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pURL->Alias, "BlockedURL%lu", pDmlIAPolicy->ulNextURLInsNum);
+    rc = sprintf_s(pURL->Alias, sizeof(pURL->Alias),"BlockedURL%lu", pDmlIAPolicy->ulNextURLInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pURL);
+      return NULL;
+    }
 
     /* Update the middle layer cache */
     if ( TRUE )
@@ -5198,6 +5219,7 @@ BlockedKeyword_AddEntry
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER              )&pDmlIAPolicy->KeywordList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2   = (PCOSA_CONTEXT_LINK_OBJECT  )NULL;
     PCOSA_DML_IA_POLICY_KEYWORD     pKeyword        = (PCOSA_DML_IA_POLICY_KEYWORD)NULL;
+    errno_t                         rc              = -1;
 
     pKeyword = (PCOSA_DML_IA_POLICY_KEYWORD)AnscAllocateMemory(sizeof(COSA_DML_IA_POLICY_KEYWORD));
 
@@ -5206,7 +5228,13 @@ BlockedKeyword_AddEntry
         return NULL;
     }
     
-    _ansc_sprintf(pKeyword->Alias, "Keyword%lu", pDmlIAPolicy->ulNextKeyInsNum);
+    rc = sprintf_s(pKeyword->Alias, sizeof(pKeyword->Alias),"Keyword%lu", pDmlIAPolicy->ulNextKeyInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pKeyword);
+      return NULL;
+    }
 
     /* Update the middle layer cache */
     if ( TRUE )
@@ -6048,6 +6076,7 @@ BlockedApplication_AddEntry
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pDmlIAPolicy->AppList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2   = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_IA_POLICY_APP         pApp            = (PCOSA_DML_IA_POLICY_APP  )NULL;
+    errno_t                         rc              = -1;
 
     pApp = (PCOSA_DML_IA_POLICY_APP)AnscAllocateMemory(sizeof(COSA_DML_IA_POLICY_APP));
 
@@ -6056,7 +6085,13 @@ BlockedApplication_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pApp->Alias, "App%lu", pDmlIAPolicy->ulNextAppInsNum);
+    rc = sprintf_s(pApp->Alias, sizeof(pApp->Alias),"App%lu", pDmlIAPolicy->ulNextAppInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pApp);
+      return NULL;
+    }
 
     /* Update the middle layer cache */
     if ( TRUE )

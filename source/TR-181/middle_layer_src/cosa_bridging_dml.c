@@ -519,6 +519,7 @@ Bridge_AddEntry
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge        = (PCOSA_DML_BRG_FULL_ALL   )NULL;
     PCOSA_DML_BRG_VLAN_FULL         pVLAN           = (PCOSA_DML_BRG_VLAN_FULL  )NULL;
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )NULL;
+    errno_t                         rc              = -1;
 
     pDmlBridge = (PCOSA_DML_BRG_FULL_ALL)AnscAllocateMemory(sizeof(COSA_DML_BRG_FULL_ALL));
 
@@ -527,10 +528,23 @@ Bridge_AddEntry
         return NULL;
     }
 #if defined (MULTILAN_FEATURE)
-    _ansc_sprintf(pDmlBridge->Cfg.Alias, "cpe-Bridge%lu", pCosaDMBridging->ulNextBridgeInstance);
-    _ansc_sprintf(pDmlBridge->Cfg.name, "Bridge%lu", pCosaDMBridging->ulNextBridgeInstance);
+    rc = sprintf_s(pDmlBridge->Cfg.Alias, sizeof(pDmlBridge->Cfg.Alias), "cpe-Bridge%lu", pCosaDMBridging->ulNextBridgeInstance);
+    if(rc < EOK)
+    {
+       ERR_CHK(rc);
+    }
+    rc = sprintf_s(pDmlBridge->Cfg.name, sizeof(pDmlBridge->Cfg.name), "Bridge%lu", pCosaDMBridging->ulNextBridgeInstance);
+    if(rc < EOK)
+    {
+       ERR_CHK(rc);
+    }
+
 #else
-    _ansc_sprintf(pDmlBridge->Cfg.Alias, "Bridge%lu", pCosaDMBridging->ulNextBridgeInstance);
+    rc = sprintf_s(pDmlBridge->Cfg.Alias, sizeof(pDmlBridge->Cfg.Alias), "Bridge%lu", pCosaDMBridging->ulNextBridgeInstance);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+    }
 #endif
     pDmlBridge->Cfg.Std = COSA_DML_BRG_STD_8021Q_2005;
     pDmlBridge->Cfg.bAllowDelete = TRUE;
@@ -596,7 +610,11 @@ Bridge_AddEntry
 
     _ansc_memset(pVLAN, 0, sizeof(COSA_DML_BRG_VLAN_FULL));
 
-    _ansc_sprintf(pVLAN->Cfg.Alias, "cpe-VLAN%lu", pDmlBridge->ulNextVLANInsNum);
+    rc = sprintf_s(pVLAN->Cfg.Alias, sizeof(pVLAN->Cfg.Alias),"cpe-VLAN%lu", pDmlBridge->ulNextVLANInsNum);
+    if(rc < EOK)
+    {
+       ERR_CHK(rc);
+    }
     
     /* Update the middle layer cache */
     if ( TRUE )
@@ -1565,6 +1583,7 @@ Port_AddEntry
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge      = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pDmlBridge->PortList;
     PCOSA_DML_BRG_PORT_FULL         pPort           = (PCOSA_DML_BRG_PORT_FULL  )NULL;
+    errno_t                         rc              = -1;
 
     pPort = (PCOSA_DML_BRG_PORT_FULL)AnscAllocateMemory(sizeof(COSA_DML_BRG_PORT_FULL));
 
@@ -1573,7 +1592,13 @@ Port_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pPort->Cfg.Alias, "Port%lu", pDmlBridge->ulNextPortInsNum);
+    rc = sprintf_s(pPort->Cfg.Alias, sizeof(pPort->Cfg.Alias),"Port%lu", pDmlBridge->ulNextPortInsNum);
+    if(rc < EOK)
+    {
+       ERR_CHK(rc);
+       AnscFreeMemory(pPort);
+       return NULL;
+    }
 
     /* Update the middle layer cache */
     if ( TRUE )
@@ -1991,6 +2016,7 @@ Port_GetParamStringValue
     PUCHAR                          pLowerLayer      = NULL;
     char lowerLayer[1024] = {0};
     char path[64] = {0};
+    errno_t  rc   = -1;
       
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
@@ -2160,21 +2186,46 @@ Port_GetParamStringValue
                 switch (portList->Cfg.LinkType){
                   case COSA_DML_BRG_LINK_TYPE_EthVlan:
                   case COSA_DML_BRG_LINK_TYPE_Eth:
-                     sprintf(path, "%s", "Device.Ethernet.Interface.");
+                     rc = strcpy_s(path, sizeof(path), "Device.Ethernet.Interface.");
+                     if(rc != EOK)
+                     {
+                       ERR_CHK(rc);
+                       return -1;
+                     }
                      break;
                   #ifndef _CBR_PRODUCT_REQ_
                   case COSA_DML_BRG_LINK_TYPE_Moca:
-                     sprintf(path, "%s", "Device.MoCA.Interface.");
+                     rc = strcpy_s(path, sizeof(path), "Device.MoCA.Interface.");
+                     if(rc != EOK)
+                     {
+                       ERR_CHK(rc);
+                       return -1;
+                     }
                      break;
                   #endif
                   case COSA_DML_BRG_LINK_TYPE_WiFiSsid:
-                     sprintf(path, "%s", "Device.WiFi.SSID.");
+                     rc = strcpy_s(path, sizeof(path), "Device.WiFi.SSID.");
+                     if(rc != EOK)
+                     {
+                       ERR_CHK(rc);
+                       return -1;
+                     }
                      break;
                   case COSA_DML_BRG_LINK_TYPE_Bridge:
-                     sprintf(path, "%s", "Device.Bridging.Bridge.");
+                     rc = strcpy_s(path, sizeof(path), "Device.Bridging.Bridge.");
+                     if(rc != EOK)
+                     {
+                       ERR_CHK(rc);
+                       return -1;
+                     }
                      break;
                   case COSA_DML_BRG_LINK_TYPE_Gre: //$HL 07/15/2013
-                     sprintf(path, "%s", "Device.X_CISCO_COM_GRE.Interface.");
+                     rc = strcpy_s(path, sizeof(path), "Device.X_CISCO_COM_GRE.Interface.");
+                     if(rc != EOK)
+                     {
+                       ERR_CHK(rc);
+                       return -1;
+                     }
                      break;
                   case COSA_DML_BRG_LINK_TYPE_Usb:
                   case COSA_DML_BRG_LINK_TYPE_Hpna:
@@ -2185,7 +2236,6 @@ Port_GetParamStringValue
                      break;
                 }
 
-                path[strlen(path)] = '\0';
                 pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)path, (PUCHAR)portList->Cfg.LinkName);
                 
                 if (pLowerLayer && strlen((const char*)pLowerLayer) != 0) {
@@ -3446,6 +3496,7 @@ VLAN_AddEntry
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge      = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pDmlBridge->VLANList;
     PCOSA_DML_BRG_VLAN_FULL         pVLAN           = (PCOSA_DML_BRG_VLAN_FULL  )NULL;
+    errno_t                         rc              = -1;
 
 	// not support
 	return NULL;
@@ -3457,8 +3508,20 @@ VLAN_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pVLAN->Cfg.Alias, "cpe-VLAN%lu", pDmlBridge->ulNextVLANInsNum);
-    _ansc_sprintf(pVLAN->Info.Name, "cpe-VLAN%lu", pDmlBridge->ulNextVLANInsNum);
+    rc = sprintf_s(pVLAN->Cfg.Alias, sizeof(pVLAN->Cfg.Alias), "cpe-VLAN%lu", pDmlBridge->ulNextVLANInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pVLAN);
+      return NULL;
+    }
+    rc = sprintf_s(pVLAN->Info.Name, sizeof(pVLAN->Info.Name),"cpe-VLAN%lu", pDmlBridge->ulNextVLANInsNum);
+    if(rc < EOK)
+    {
+       ERR_CHK(rc);
+       AnscFreeMemory(pVLAN);
+       return NULL;
+    }
 
     /* Update the middle layer cache */
     if ( TRUE )
@@ -4400,6 +4463,7 @@ VLANPort_AddEntry
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge      = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER            )&pDmlBridge->VLANPortList;
     PCOSA_DML_BRG_VLANPORT_FULL     pVLANPort       = (PCOSA_DML_BRG_VLANPORT_FULL)NULL;
+    errno_t                         rc              = -1;
 
     pVLANPort = (PCOSA_DML_BRG_VLANPORT_FULL)AnscAllocateMemory(sizeof(COSA_DML_BRG_VLANPORT_FULL));
 
@@ -4408,7 +4472,13 @@ VLANPort_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pVLANPort->Cfg.Alias, "cpe-VLANPort%lu", pDmlBridge->ulNextVLANPortInsNum);
+    rc = sprintf_s(pVLANPort->Cfg.Alias, sizeof(pVLANPort->Cfg.Alias), "cpe-VLANPort%lu", pDmlBridge->ulNextVLANPortInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pVLANPort);
+      return NULL;
+    }
 
     /* Update the middle layer cache */
     if ( TRUE )
@@ -4726,6 +4796,7 @@ VLANPort_GetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge      = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hParentTable;
     PCOSA_DML_BRG_VLANPORT_FULL     pVLANPort       = (PCOSA_DML_BRG_VLANPORT_FULL)pCosaContext->hContext;
+    errno_t                         rc              = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE) )
@@ -4740,8 +4811,13 @@ VLANPort_GetParamStringValue
         /* collect value */
         if (pVLANPort->Cfg.VLANInsNum > 0)
         {
-            _ansc_sprintf(pValue, "Device.Bridging.Bridge.%lu.VLAN.%lu.",
+            rc = sprintf_s(pValue, *pUlSize, "Device.Bridging.Bridge.%lu.VLAN.%lu.",
                           pDmlBridge->Cfg.InstanceNumber, pVLANPort->Cfg.VLANInsNum);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              return -1;
+            }
         }
         else
         {
@@ -4755,8 +4831,13 @@ VLANPort_GetParamStringValue
         /* collect value */
         if (pVLANPort->Cfg.PortInsNum > 0)
         {
-            _ansc_sprintf(pValue, "Device.Bridging.Bridge.%lu.Port.%lu.",
+            rc = sprintf_s(pValue, *pUlSize,"Device.Bridging.Bridge.%lu.Port.%lu.",
                           pDmlBridge->Cfg.InstanceNumber, pVLANPort->Cfg.PortInsNum);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              return -1;
+            }
         }
         else
         {

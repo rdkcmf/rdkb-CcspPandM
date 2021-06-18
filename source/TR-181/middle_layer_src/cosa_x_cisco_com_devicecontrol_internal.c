@@ -72,6 +72,7 @@
 #include "cosa_x_cisco_com_devicecontrol_internal.h"
 #include "plugin_main_apis.h"
 #include "ccsp_psm_helper.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -165,6 +166,7 @@ CosaDeviceControlInitialize
     PSLAP_VARIABLE                  pSlapVariable   = NULL;
     PCOSA_DML_LAN_MANAGEMENT        pLanMngm        = NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pLmLinkObj      = NULL;
+    errno_t                         rc              = -1;
 
     /* Initiation all functions */
     CosaDmlDcInit(NULL, NULL);
@@ -257,7 +259,15 @@ CosaDeviceControlInitialize
                 pMyObject->ulLanMngmNextInsNum = 1;
             }
 
-            _ansc_sprintf(pLanMngm->Alias, "cpe-LanManagement-%d", (int)pLanMngm->InstanceNumber);
+            rc = sprintf_s(pLanMngm->Alias, sizeof(pLanMngm->Alias),"cpe-LanManagement-%d", (int)pLanMngm->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pLanMngm);
+              AnscFreeMemory(pLmLinkObj);
+              return ANSC_STATUS_FAILURE;
+            }
+
             CosaDmlLanMngm_SetValues(ulLmIdx, pLanMngm->InstanceNumber, pLanMngm->Alias);
         }
 
@@ -431,15 +441,15 @@ ULONG CosaDevCtrlReg_GetUserChangedParams(
     char *pSubSystemPrefix = NULL;
     const char* name_prefix = "UserChanged.";
     const int prefix_len = strlen(name_prefix);
+    errno_t   rc         = -1;
 
     pSubSystemPrefix = g_GetSubsystemPrefix(g_pDslhDmlAgent);
-    if ( pSubSystemPrefix && pSubSystemPrefix[0] != 0 )
+
+    rc = sprintf_s(psmName, sizeof(psmName),"%s%s", pSubSystemPrefix, CCSP_DBUS_PSM);
+    if(rc < EOK)
     {
-        sprintf(psmName, "%s%s", pSubSystemPrefix, CCSP_DBUS_PSM);
-    }
-    else
-    {
-        strcpy(psmName, CCSP_DBUS_PSM);
+       ERR_CHK(rc);
+       return -1;
     }
 
     int ret = CcspBaseIf_getParameterNames(g_MessageBusHandle, psmName, CCSP_DBUS_PATH_PSM,

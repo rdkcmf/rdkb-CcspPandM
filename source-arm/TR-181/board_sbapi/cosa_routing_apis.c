@@ -72,6 +72,7 @@
 #include "cosa_routing_internal.h"
 #include "dml_tr181_custom_cfg.h"
 #include "secure_wrapper.h"
+#include "safec_lib_common.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -261,6 +262,7 @@ static int utopia_save()
     FILE    *fileHandle  = NULL;
     char    oneLine[256] = {0};
     PCOUPLE_LINK  pLink   = NULL;
+    errno_t safec_rc = -1;
 
     if ( ( UserGetTickInSeconds() - lastTime ) < 0 )
     {
@@ -287,7 +289,11 @@ static int utopia_save()
     pLink = pHead;
     while ( pLink )
     {
-        sprintf(oneLine, " %s %s \n\0", pLink->name, pLink->value);
+        safec_rc = sprintf_s(oneLine, sizeof(oneLine), " %s %s \n", pLink->name, pLink->value);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         fputs( oneLine, fileHandle);
         pLink = pLink->next;
     }
@@ -312,6 +318,7 @@ static int Utopia_RawSet
     char    *pOneLine2   = NULL;
     PCOUPLE_LINK  pLink   = NULL;
     PCOUPLE_LINK  pLink2  = NULL;
+    errno_t safec_rc = -1;
     
     if ( !pHead )
         utopia_init();
@@ -320,11 +327,19 @@ static int Utopia_RawSet
 
     if ( domainname == NULL )
     {
-        _ansc_sprintf(fullname, "%s", pRecordName);
+        safec_rc = strcpy_s(fullname, sizeof(fullname), pRecordName);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
     }
     else
     {
-        _ansc_sprintf(fullname, "%s%s", domainname, pRecordName);
+        safec_rc = sprintf_s(fullname, sizeof(fullname), "%s%s", domainname, pRecordName);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
     }
 
     pLink = pHead;
@@ -452,7 +467,11 @@ static int Utopia_RawGet
 
     //UserAcquireLock(&gPsmLock);
 
-    _ansc_sprintf(fullname, "%s%s", domainname, pRecordName);
+    safec_rc = sprintf_s(fullname, sizeof(fullname), "%s%s", domainname, pRecordName);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     pLink = pHead;
     while( pLink )
@@ -799,6 +818,7 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
     FILE * fp                 = fopen(COSA_RIPD_CUR_CONF, "w+");
     char *pstaticRoute        = NULL;
     BOOL bTrueStaticIP        = TRUE;
+    errno_t safec_rc = -1;
 
     AnscTraceWarning(("CosaDmlGenerateRipdConfigFile -- starts.\n"));
 
@@ -919,9 +939,17 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
                     
                     if ( instance )
                     {
-                        _ansc_sprintf(buf1, "Device.X_CISCO_COM_TrueStaticIP.AdditionalSubnet.%lu.IPAddress", instance);
-                        _ansc_sprintf(buf2, "Device.X_CISCO_COM_TrueStaticIP.AdditionalSubnet.%lu.SubnetMask", instance);
-                        
+                        safec_rc = sprintf_s(buf1, sizeof(buf1), "Device.X_CISCO_COM_TrueStaticIP.AdditionalSubnet.%lu.IPAddress", instance);
+                        if(safec_rc < EOK)
+                        {
+                           ERR_CHK(safec_rc);
+                        }
+                        safec_rc = sprintf_s(buf2, sizeof(buf2), "Device.X_CISCO_COM_TrueStaticIP.AdditionalSubnet.%lu.SubnetMask", instance);
+                        if(safec_rc < EOK)
+                        {
+                           ERR_CHK(safec_rc);
+                        }
+
                         len = sizeof(Address);
                         ret = g_GetParamValueString(g_pDslhDmlAgent, buf1, Address, &len );
                         if ( ret != ANSC_STATUS_SUCCESS )
@@ -976,7 +1004,11 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
 
             len = sizeof(buf1);
             if (g_GetParamValueString(g_pDslhDmlAgent, "com.cisco.spvtg.ccsp.pam.Helper.FirstDownstreamIpInterface", buf1, &len ) == ANSC_STATUS_SUCCESS){
-                _ansc_strcpy(buf2, buf1);
+                safec_rc = strcpy_s(buf2, sizeof(buf2), buf1);
+                if(safec_rc != EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 _ansc_strcat(buf1, "IPv4Address.1.IPAddress");
                 _ansc_strcat(buf2, "IPv4Address.1.SubnetMask");   
                 
@@ -2317,6 +2349,7 @@ CosaDmlStaticRouteGetEntries
     CHAR            name[64]   = {0};
     CHAR            value[64]  = {0};
     UNREFERENCED_PARAMETER(hContext);
+    errno_t safec_rc  = -1;
     /* Initialize a Utopia Context */
     if (!Utopia_Init(&ctx))
     {
@@ -2330,7 +2363,11 @@ CosaDmlStaticRouteGetEntries
     /* Add the value ripadvertise for this entry from utapi */
     for ( i =0; i<ulCount; i++)
     {
-        _ansc_sprintf(name, "%s_RIPAdvertise", sroutes[i].name);
+        safec_rc = sprintf_s(name, sizeof(name), "%s_RIPAdvertise", sroutes[i].name);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         value[0] = '2';
         Utopia_RawSet( &ctx, "cosa_usgv2_", name, value );
     }
@@ -2357,8 +2394,11 @@ CosaDmlStaticRouteGetEntries
         pStaticRoute[i].DestIPAddress           =   _ansc_inet_addr(sroutes[i].dest_lan_ip);
         pStaticRoute[i].DestSubnetMask          =   _ansc_inet_addr(sroutes[i].netmask);
         pStaticRoute[i].GatewayIPAddress        =   _ansc_inet_addr(sroutes[i].gateway);    
-        _ansc_strcpy( pStaticRoute[i].Name, sroutes[i].name);
-        
+        safec_rc = strcpy_s( pStaticRoute[i].Name, sizeof(pStaticRoute[i].Name), sroutes[i].name);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
     }
 
     if ( sroutes )
@@ -2384,7 +2424,8 @@ CosaDmlStaticRouteGetEntryByName
     ULONG           ret        = 0;
     CHAR            name[64]   = {0};
     CHAR            value[64]  = {0};
-    UNREFERENCED_PARAMETER(hContext);    
+    UNREFERENCED_PARAMETER(hContext);
+    errno_t safec_rc = -1;
     /* Initialize a Utopia Context */
     if (!Utopia_Init(&ctx))
     {
@@ -2395,12 +2436,20 @@ CosaDmlStaticRouteGetEntryByName
     { 
         if (-1 != (index = Utopia_FindStaticRoute(count, sroutes, pEntry->Name)))
         {
-            _ansc_strcpy(pEntry->Name, sroutes[index-1].name );
+            safec_rc = strcpy_s(pEntry->Name, sizeof(pEntry->Name), sroutes[index-1].name );
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             pEntry->DestIPAddress = _ansc_inet_addr(sroutes[index-1].dest_lan_ip);
             pEntry->DestSubnetMask = _ansc_inet_addr(sroutes[index-1].netmask);
             pEntry->GatewayIPAddress = _ansc_inet_addr(sroutes[index-1].gateway);
 
-            _ansc_sprintf(name, "%s_RIPAdvertise", pEntry->Name);
+            safec_rc = sprintf_s(name, sizeof(name), "%s_RIPAdvertise", pEntry->Name);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             ret = Utopia_RawGet( &ctx, "cosa_usgv2_", name, value, sizeof(value) );
 
             if (ret == 0 )
@@ -2410,7 +2459,11 @@ CosaDmlStaticRouteGetEntryByName
                 pEntry->RIPAdvertise = FALSE;
                 
                 /* Add the value ripadvertise for this entry from utapi */
-                _ansc_sprintf(name, "%s_RIPAdvertise", pEntry->Name);
+                safec_rc = sprintf_s(name,sizeof(name), "%s_RIPAdvertise", pEntry->Name);
+                if(safec_rc < EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 if ( pEntry->RIPAdvertise )
                     value[0] = '1';
                 else
@@ -2446,6 +2499,7 @@ CosaDmlStaticRouteDelEntry
     CHAR            name[64]   = {0};
     CHAR            value[64]  = {0};
     ULONG           ret        = 0;
+    errno_t    safec_rc = -1;
 
     UNREFERENCED_PARAMETER(hContext);
     /* Initialize a Utopia Context */
@@ -2455,7 +2509,11 @@ CosaDmlStaticRouteDelEntry
     }
 
     /* Remove the value ripadvertise for this entry from utapi */
-    _ansc_sprintf(name, "%s_RIPAdvertise", pEntry->Name);
+    safec_rc = sprintf_s(name, sizeof(name), "%s_RIPAdvertise", pEntry->Name);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     ret = Utopia_RawSet( &ctx, "cosa_usgv2_", name, value );
     if ( ret != 0 )
         AnscTraceWarning(("CosaDmlStaticRouteDelEntry -- return fail from Utopia_RawSet().\n"));
@@ -2486,12 +2544,28 @@ CosaDmlStaticRouteAddEntry
     CHAR            value[64]  = {0};
     ULONG           ret        = 0;
     UNREFERENCED_PARAMETER(hContext);
+    errno_t safec_rc = -1;
 
-    _ansc_strcpy(staticRoute.name, pEntry->Name );
-    _ansc_strcpy(staticRoute.dest_lan_ip, _ansc_inet_ntoa(*((struct in_addr*)&pEntry->DestIPAddress)) );
-    _ansc_strcpy(staticRoute.netmask, _ansc_inet_ntoa(*((struct in_addr*)&pEntry->DestSubnetMask) ));
-    _ansc_strcpy(staticRoute.gateway, _ansc_inet_ntoa(*((struct in_addr*)&pEntry->GatewayIPAddress) ));
-
+    safec_rc = strcpy_s(staticRoute.name, sizeof(staticRoute.name), pEntry->Name );
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(staticRoute.dest_lan_ip, sizeof(staticRoute.dest_lan_ip), _ansc_inet_ntoa(*((struct in_addr*)&pEntry->DestIPAddress)) );
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(staticRoute.netmask, sizeof(staticRoute.netmask), _ansc_inet_ntoa(*((struct in_addr*)&pEntry->DestSubnetMask) ));
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(staticRoute.gateway, sizeof(staticRoute.gateway), _ansc_inet_ntoa(*((struct in_addr*)&pEntry->GatewayIPAddress) ));
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     /* Initialize a Utopia Context */
     if (!Utopia_Init(&ctx))
@@ -2503,7 +2577,11 @@ CosaDmlStaticRouteAddEntry
 
 
     /* Add the value ripadvertise for this entry from utapi */
-    _ansc_sprintf(name, "%s_RIPAdvertise", pEntry->Name);
+    safec_rc = sprintf_s(name, sizeof(name), "%s_RIPAdvertise", pEntry->Name);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     if ( pEntry->RIPAdvertise )
         value[0] = '1';
     else
@@ -2538,6 +2616,7 @@ CosaDmlStaticRouteSetEntry
     CHAR            value[64]  = {0};
     ULONG           ret        = 0;
     UNREFERENCED_PARAMETER(hContext);
+    errno_t safec_rc = -1;
     /* Initialize a Utopia Context */
     if (!Utopia_Init(&ctx))
     {
@@ -2548,10 +2627,26 @@ CosaDmlStaticRouteSetEntry
     { 
         if (-1 != (index = Utopia_FindStaticRoute(count, sroutes, pEntry->Name)))
         {
-            _ansc_strcpy(sroutes2.name, pEntry->Name );
-            _ansc_strcpy(sroutes2.dest_lan_ip, _ansc_inet_ntoa(*((struct in_addr*)&pEntry->DestIPAddress)));
-            _ansc_strcpy(sroutes2.netmask, _ansc_inet_ntoa(*((struct in_addr*)&pEntry->DestSubnetMask)));
-            _ansc_strcpy(sroutes2.gateway, _ansc_inet_ntoa(*((struct in_addr*)&pEntry->GatewayIPAddress)));
+            safec_rc = strcpy_s(sroutes2.name, sizeof(sroutes2.name), pEntry->Name );
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
+            safec_rc = strcpy_s(sroutes2.dest_lan_ip, sizeof(sroutes2.dest_lan_ip), _ansc_inet_ntoa(*((struct in_addr*)&pEntry->DestIPAddress)));
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
+            safec_rc = strcpy_s(sroutes2.netmask, sizeof(sroutes2.netmask), _ansc_inet_ntoa(*((struct in_addr*)&pEntry->DestSubnetMask)));
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
+            safec_rc = strcpy_s(sroutes2.gateway, sizeof(sroutes2.gateway), _ansc_inet_ntoa(*((struct in_addr*)&pEntry->GatewayIPAddress)));
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
 
             /* ??? how about dest_intf: INTERFACE_WAN */
 
@@ -2568,7 +2663,11 @@ CosaDmlStaticRouteSetEntry
 
     /* Update the value ripadvertise for this entry from utapi .
            Normally speaking, this name will not be changed. We need not update this value. */
-    _ansc_sprintf(name, "%s_RIPAdvertise", pEntry->Name);
+    safec_rc = sprintf_s(name, sizeof(name), "%s_RIPAdvertise", pEntry->Name);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     if ( pEntry->RIPAdvertise )
         value[0] = '1';
     else
@@ -2723,6 +2822,7 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
     char *delim = " \t\r\n", *saveptr;
     RouteInfo6_t *info6;
 	BOOL bFound = FALSE;
+    errno_t safec_rc = -1;
 
     if (!ifname || !infos || !numInfo)
         return -1;
@@ -2787,9 +2887,21 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 	
 		if (g_numRtInfo6 == 0 || bFound == FALSE)
 		{
-			_ansc_strcpy(result_arr[g_numRtInfo6].prefix, info6->prefix);
-			_ansc_strcpy(result_arr[g_numRtInfo6].gateway, info6->gateway);
-			_ansc_strcpy(result_arr[g_numRtInfo6].interface, info6->interface);
+			safec_rc = strcpy_s(result_arr[g_numRtInfo6].prefix, sizeof(result_arr[g_numRtInfo6].prefix), info6->prefix);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
+			safec_rc = strcpy_s(result_arr[g_numRtInfo6].gateway, sizeof(result_arr[g_numRtInfo6].gateway), info6->gateway);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
+			safec_rc = strcpy_s(result_arr[g_numRtInfo6].interface, sizeof(result_arr[g_numRtInfo6].interface), info6->interface);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 			g_numRtInfo6++;
 			entryCnt ++;
 		}
@@ -2856,9 +2968,21 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
 		 
 		 if (g_numRtInfo6 == 0 || bFound == FALSE)
 		 {
-			 _ansc_strcpy(result_arr[g_numRtInfo6].prefix, info6->prefix);
-			 _ansc_strcpy(result_arr[g_numRtInfo6].gateway, info6->gateway);
-			 _ansc_strcpy(result_arr[g_numRtInfo6].interface, info6->interface);
+			safec_rc = strcpy_s(result_arr[g_numRtInfo6].prefix, sizeof(result_arr[g_numRtInfo6].prefix), info6->prefix);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
+			safec_rc = strcpy_s(result_arr[g_numRtInfo6].gateway, sizeof(result_arr[g_numRtInfo6].gateway), info6->gateway);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
+			safec_rc = strcpy_s(result_arr[g_numRtInfo6].interface, sizeof(result_arr[g_numRtInfo6].interface), info6->interface);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 			 g_numRtInfo6++;
 			 entryCnt ++;
 		 }
@@ -3550,6 +3674,7 @@ CosaDmlRoutingGetNumberOfV4Entries
     char                            sys_buf[80]  = {0};
     int                             rc           = 0;
     UtopiaContext                   ctx;
+    errno_t  safec_rc  = -1;
     UNREFERENCED_PARAMETER(hContext);
     /* Initialize a Utopia Context */
     if(!Utopia_Init(&ctx))
@@ -3562,7 +3687,11 @@ CosaDmlRoutingGetNumberOfV4Entries
 
         for(uIndex = 0; uIndex < 256 ; uIndex++)
         {
-            sprintf(cmd_buf, "tr_routing_v4entry_%lu_alias", uIndex+1);
+            safec_rc = sprintf_s(cmd_buf, sizeof(cmd_buf), "tr_routing_v4entry_%lu_alias", uIndex+1);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             returnStatus = Utopia_RawGet(&ctx, NULL, cmd_buf, sys_buf, sizeof(sys_buf));
             
             if (returnStatus == 1)
@@ -3572,7 +3701,11 @@ CosaDmlRoutingGetNumberOfV4Entries
 
                 Router_Alias[r_count].InstanceNumber = uIndex+1;
 
-                sprintf(cmd_buf, "tr_routing_v4entry_%lu_name", uIndex+1);
+                safec_rc = sprintf_s(cmd_buf, sizeof(cmd_buf), "tr_routing_v4entry_%lu_name", uIndex+1);
+                if(safec_rc < EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 returnStatus = Utopia_RawGet(&ctx, NULL, cmd_buf, sys_buf, sizeof(sys_buf));
                 printf("name: %s\n", sys_buf);
 
@@ -3581,7 +3714,11 @@ CosaDmlRoutingGetNumberOfV4Entries
                     AnscCopyString(Router_Alias[r_count].Name, sys_buf);
                 }
                 
-                sprintf(cmd_buf, "tr_routing_v4entry_%lu_enabled", uIndex+1);
+                safec_rc = sprintf_s(cmd_buf, sizeof(cmd_buf), "tr_routing_v4entry_%lu_enabled", uIndex+1);
+                if(safec_rc < EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 returnStatus = Utopia_RawGet(&ctx, NULL, cmd_buf, sys_buf, sizeof(sys_buf));
 
                 if (returnStatus == 1)
@@ -3668,6 +3805,7 @@ CosaDmlRoutingGetV4Entry
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     int                             index        = 0;
     char                            buf[33]      = {0};
+    errno_t  safec_rc = -1;
     UNREFERENCED_PARAMETER(hContext);
     pEntry->Enable           = TRUE;
     pEntry->Status           = 2;
@@ -3684,10 +3822,14 @@ CosaDmlRoutingGetV4Entry
     AnscCopyString(pEntry->Interface, sroute[ulIndex].dest_intf );
     CcspTraceWarning(("-CosaDmlRoutingGetV4Entry %d interface is %s-\n", ulIndex, pEntry->Interface));
 
-    _ansc_sprintf(buf, "%s,%s",
+    safec_rc = sprintf_s(buf, sizeof(buf), "%s,%s",
             sroute[ulIndex].dest_lan_ip,
             sroute[ulIndex].netmask
             );
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     CcspTraceWarning(("-CosaDmlRoutingGetV4Entry %d name is %s-\n", ulIndex, buf));
 
     for(index = 0; index < Config_Num; index++)
@@ -3834,6 +3976,7 @@ CosaDmlRoutingAddV4Entry
     StaticRoute                     *new_route   = 0;
     UtopiaContext                   ctx;
     int                             err = 0;
+    errno_t  safec_rc = -1;
     UNREFERENCED_PARAMETER(hContext);    
     if (!pEntry)
     {
@@ -3856,24 +3999,36 @@ CosaDmlRoutingAddV4Entry
 
     sroute = new_route;
 
-    _ansc_sprintf(sroute[Num_V4Entry-1].dest_lan_ip, "%d.%d.%d.%d", 
+    safec_rc = sprintf_s(sroute[Num_V4Entry-1].dest_lan_ip, sizeof(sroute[Num_V4Entry-1].dest_lan_ip), "%d.%d.%d.%d", 
             pEntry->DestIPAddress.Dot[0],
             pEntry->DestIPAddress.Dot[1],
             pEntry->DestIPAddress.Dot[2],
             pEntry->DestIPAddress.Dot[3]
             );
-    _ansc_sprintf(sroute[Num_V4Entry-1].netmask, "%d.%d.%d.%d", 
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = sprintf_s(sroute[Num_V4Entry-1].netmask, sizeof(sroute[Num_V4Entry-1].netmask), "%d.%d.%d.%d", 
             pEntry->DestSubnetMask.Dot[0],
             pEntry->DestSubnetMask.Dot[1],
             pEntry->DestSubnetMask.Dot[2],
             pEntry->DestSubnetMask.Dot[3]
             );
-    _ansc_sprintf(sroute[Num_V4Entry-1].gateway, "%d.%d.%d.%d", 
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = sprintf_s(sroute[Num_V4Entry-1].gateway, sizeof(sroute[Num_V4Entry-1].gateway), "%d.%d.%d.%d", 
             pEntry->GatewayIPAddress.Dot[0],
             pEntry->GatewayIPAddress.Dot[1],
             pEntry->GatewayIPAddress.Dot[2],
             pEntry->GatewayIPAddress.Dot[3]
             );
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     strncpy(sroute[Num_V4Entry-1].dest_intf, pEntry->Interface, 9);
     
     sroute[Num_V4Entry-1].metric = pEntry->ForwardingMetric;
@@ -4112,6 +4267,7 @@ CosaDmlRoutingSetV4Entry
     int                             index = 0;
     int                             err = 0;
     UtopiaContext                   ctx;
+    errno_t  safec_rc  = -1;
 #if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
 #else
     int                             metric = 0;
@@ -4208,24 +4364,36 @@ CosaDmlRoutingSetV4Entry
         }
 
         CcspTraceWarning(("CosaDmlRoutingSetV4Entry add the new entry\n"));
-        _ansc_sprintf(sroute[uindex].dest_lan_ip, "%d.%d.%d.%d", 
+        safec_rc = sprintf_s(sroute[uindex].dest_lan_ip, sizeof(sroute[uindex].dest_lan_ip), "%d.%d.%d.%d", 
                 pEntry->DestIPAddress.Dot[0],
                 pEntry->DestIPAddress.Dot[1],
                 pEntry->DestIPAddress.Dot[2],
                 pEntry->DestIPAddress.Dot[3]
                 );
-        _ansc_sprintf(sroute[uindex].netmask, "%d.%d.%d.%d", 
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = sprintf_s(sroute[uindex].netmask, sizeof(sroute[uindex].netmask), "%d.%d.%d.%d", 
                 pEntry->DestSubnetMask.Dot[0],
                 pEntry->DestSubnetMask.Dot[1],
                 pEntry->DestSubnetMask.Dot[2],
                 pEntry->DestSubnetMask.Dot[3]
                 );
-        _ansc_sprintf(sroute[uindex].gateway, "%d.%d.%d.%d", 
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = sprintf_s(sroute[uindex].gateway, sizeof(sroute[uindex].gateway), "%d.%d.%d.%d", 
                 pEntry->GatewayIPAddress.Dot[0],
                 pEntry->GatewayIPAddress.Dot[1],
                 pEntry->GatewayIPAddress.Dot[2],
                 pEntry->GatewayIPAddress.Dot[3]
                 );
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         strncpy(sroute[uindex].dest_intf, pEntry->Interface, 9);
 #if defined (_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
         if(AnscSizeOfString(pEntry->Interface))
@@ -4954,6 +5122,7 @@ CosaDmlRipIfSetValues
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     char                            buf[64]      = {0};
     UtopiaContext                   Ctx;
+    errno_t safec_rc = -1;
 
     if ( (NULL == pAlias) || 
          (0 == ulInstanceNumber)|| (ulIndex >= g_NumOfRipEntry) )
@@ -4971,7 +5140,11 @@ CosaDmlRipIfSetValues
     CcspTraceWarning(("-----CosaDmlRipIfSetValues %d insNumber %d, alias %s\n", 
                 ulIndex, ulInstanceNumber, pAlias));
 
-    sprintf(buf, "%d", ulInstanceNumber);
+    safec_rc = sprintf_s(buf, sizeof(buf), "%d", ulInstanceNumber);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     if ( 0 == ulIndex )
     {
@@ -5107,6 +5280,7 @@ CosaDmlRipIfSetCfg
     BOOLEAN                         bRipEnable   = FALSE;
     char                            buf[64]      = {0};
     UtopiaContext                   Ctx;
+    errno_t   safec_rc = -1;
 
     if ( !pEntry ) 
     {
@@ -5129,7 +5303,11 @@ CosaDmlRipIfSetCfg
 
         /*  to set Device.Routing.RIP.InterfaceSetting. insnum */
         AnscZeroMemory(buf, 64);
-        sprintf(buf, "%d", pEntry->InstanceNumber);
+        safec_rc = sprintf_s(buf, sizeof(buf), "%d", pEntry->InstanceNumber);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         Utopia_RawSet(&Ctx, NULL, "tr_rip_insnum_lan", buf);    
 
         /*  to set Device.Routing.RIP.InterfaceSetting.{0}.Alias */
@@ -5137,12 +5315,20 @@ CosaDmlRipIfSetCfg
 
         /*  to set Device.Routing.RIP.InterfaceSetting.{0}.AcceptRA */
         AnscZeroMemory(buf, 64);                
-        sprintf(buf, "%d", pEntry->AcceptRA);        
+        safec_rc = sprintf_s(buf, sizeof(buf), "%d", pEntry->AcceptRA);        
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         syscfg_set(NULL, "rip_recv_lan", buf);
         
         /*  to set Device.Routing.RIP.InterfaceSetting.{0}.SendRA */
         AnscZeroMemory(buf, 64);                
-        sprintf(buf, "%d", pEntry->SendRA);        
+        safec_rc = sprintf_s(buf, sizeof(buf), "%d", pEntry->SendRA);        
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         syscfg_set(NULL, "rip_send_lan", buf);
     }
     else if ( 2 == pEntry->InstanceNumber )
@@ -5151,7 +5337,11 @@ CosaDmlRipIfSetCfg
 
         /*  to set Device.Routing.RIP.InterfaceSetting. insnum */
         AnscZeroMemory(buf, 64);
-        sprintf(buf, "%d", pEntry->InstanceNumber);
+        safec_rc = sprintf_s(buf, sizeof(buf), "%d", pEntry->InstanceNumber);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         Utopia_RawSet(&Ctx, NULL, "tr_rip_insnum_wan", buf);    
 
         /*  to set Device.Routing.RIP.InterfaceSetting.{1}.Alias */
@@ -5159,13 +5349,21 @@ CosaDmlRipIfSetCfg
 
         /*  to set Device.Routing.RIP.InterfaceSetting.{1}.AcceptRA */
         AnscZeroMemory(buf, 64);                
-        sprintf(buf, "%d", pEntry->AcceptRA);
+        safec_rc = sprintf_s(buf, sizeof(buf), "%d", pEntry->AcceptRA);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         
         syscfg_set(NULL, "rip_recv_wan", buf);
         
         /*  to set Device.Routing.RIP.InterfaceSetting.{1}.SendRA */
         AnscZeroMemory(buf, 64);                
-        sprintf(buf, "%d", pEntry->SendRA);
+        safec_rc = sprintf_s(buf, sizeof(buf), "%d", pEntry->SendRA);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         
         syscfg_set(NULL, "rip_send_wan", buf);
     }  
@@ -5468,15 +5666,28 @@ CosaDmlRouteInfoSetEnabled
 {
     UtopiaContext utctx = {0};
     char out[256] = {0};
-    
+    errno_t safec_rc = -1;
+	
     /*handle syscfg*/
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
 
     if (value)
-        sprintf(out, "1");
+    {
+        safec_rc = sprintf_s(out, sizeof(out), "1");
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+    }
     else
-        sprintf(out, "0");
+    {
+        safec_rc = sprintf_s(out, sizeof(out), "0");
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+    }
     Utopia_RawSet(&utctx,NULL,SYSCFG_FORMAT_IPV6_ROUTEINFO"_enabled",out);
 
     Utopia_Free(&utctx,1);                    
@@ -5536,7 +5747,7 @@ CosaDmlRouteInfoGetEnabled
 fe80:0:0:0:a00:27ff:fe10:d6ac 64 00 20:03:00:00:00:00:00:00:
 which means:
 route_src_addr, prefix_len, PreferredRouteFlag(%02x), prefix*/
-static int _routeinfo_get_prefix(char * in, int pref_len, char * out, int out_size)
+static int _routeinfo_get_prefix(char * in, int pref_len, char * out, unsigned int out_size)
 {
     char * str = NULL;
     char * p_token = NULL;
@@ -5546,6 +5757,7 @@ static int _routeinfo_get_prefix(char * in, int pref_len, char * out, int out_si
     int    i = 0;
     int    num = 0;
     char   addr_str[64] = {0};
+    errno_t safec_rc = -1;
     
     num = pref_len%8 ? (pref_len/8+1):pref_len/8 ;
     num = (num > 16) ? 16:num;
@@ -5561,7 +5773,12 @@ static int _routeinfo_get_prefix(char * in, int pref_len, char * out, int out_si
     }
 
     inet_ntop(AF_INET6, &addr6, addr_str, sizeof(addr_str));
-    safe_strcpy(out, addr_str, out_size);
+    safec_rc = strcpy_s(out, out_size, addr_str);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+       return -1;
+    }
     str = out + strlen(out);
     snprintf(str, sizeof(out_size)-strlen(out), "/%d", pref_len);
 
@@ -5578,6 +5795,7 @@ static int _routeinfo_get_lft(char * prefix, char * lft_str, int lft_str_size)
     char  * p_str = NULL;
     int   expire_time = 0;
     int   found = 0;
+    errno_t  safec_rc = -1;
 
     v_secure_system("ip -6 route show > " TMP_ROUTEINFO_OUTPUT);
 
@@ -5586,7 +5804,11 @@ static int _routeinfo_get_lft(char * prefix, char * lft_str, int lft_str_size)
     {
         while (fgets(line, sizeof(line), fp))
         {
-            sprintf(buf, "dev %s ", COSA_DML_ROUTEINFO_IFNAME);
+            safec_rc = sprintf_s(buf, sizeof(buf), "dev %s ", COSA_DML_ROUTEINFO_IFNAME);
+            if(safec_rc < EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             if (strstr(line, buf) && strstr(line, prefix) && strstr(line, "expires"))
             {
                 p_str = strstr(line, "expires");
@@ -5627,6 +5849,7 @@ CosaDmlRoutingGetRouteInfoIf
     int                         pref_len = 0;
     char                        prefix[64] = {0};
     char                        line[1024] = {0};
+    errno_t  safec_rc = -1;
     
     UNREFERENCED_PARAMETER(hContext);
     if (!fp)
@@ -5673,7 +5896,11 @@ CosaDmlRoutingGetRouteInfoIf
 
         pEntry1 = pEntry + num-1;
         
-        safe_strcpy(pEntry1->SourceRouter, route_addr, sizeof(pEntry1->SourceRouter));
+        safec_rc = strcpy_s(pEntry1->SourceRouter, sizeof(pEntry1->SourceRouter), route_addr);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         if (pref_route_flag == 0x00)
             pEntry1->PreferredRouteFlag = COSA_DML_ROUTEINFO_PRF_Medium;

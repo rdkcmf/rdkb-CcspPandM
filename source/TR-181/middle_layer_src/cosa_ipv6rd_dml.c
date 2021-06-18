@@ -71,6 +71,7 @@
 #include "cosa_ipv6rd_apis.h"
 #include "dml_tr181_custom_cfg.h"
 #include "cosa_deviceinfo_apis.h"
+#include "safec_lib_common.h"
 
 extern void* g_pDslhDmlAgent;
 
@@ -312,6 +313,7 @@ IPv6rdIF_AddEntry(
     PSLIST_HEADER               pListHead   = (PSLIST_HEADER)&pMyObject->IfList;
     PCOSA_DML_IPV6RD_IF         pEntry      = NULL;
     PCOSA_CONTEXT_LINK_OBJECT   pCosaContext = NULL;
+    errno_t                     rc           = -1;
 
     pEntry = (PCOSA_DML_IPV6RD_IF)AnscAllocateMemory(sizeof(COSA_DML_IPV6RD_IF));
     if (!pEntry)
@@ -321,11 +323,23 @@ IPv6rdIF_AddEntry(
 
 	/* Set default values here */
 	memset(pEntry, 0, sizeof(COSA_DML_IPV6RD_IF));
-    _ansc_sprintf(pEntry->Alias, "tun6rd%lu", pMyObject->ulIfNextInstance);
+    rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias),"tun6rd%lu", pMyObject->ulIfNextInstance);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pEntry);
+      return NULL;
+    }
 #if !CFG_TR181_NO_CosaDml_Ifname2Addr
 	CosaDml_Ifname2Addr(CFG_TR181_6rd_IfName, pEntry->AddressSource, sizeof(pEntry->AddressSource));
 #endif
-	_ansc_sprintf(pEntry->Status, "Disabled");
+    rc = strcpy_s(pEntry->Status, sizeof(pEntry->Status),"Disabled");
+    if(rc != EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pEntry);
+      return NULL;
+    }
 
     pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
     if (!pCosaContext)
@@ -444,6 +458,7 @@ IPv6rdIF_GetParamStringValue(
     PCOSA_DML_IPV6RD_IF             pEntry = (PCOSA_DML_IPV6RD_IF)NULL;
     PUCHAR path = NULL;
     char tmp[128];
+    errno_t  rc = -1;
 
     if (!pLinkObject)
         return FALSE;
@@ -483,7 +498,13 @@ IPv6rdIF_GetParamStringValue(
         {
             if (path[_ansc_strlen((char*)path) - 1] == '.')
                 path[_ansc_strlen((char*)path) - 1] = '\0';
-            _ansc_sprintf(tmp, "%s.IPv4Address.", path);
+            rc = sprintf_s(tmp, sizeof(tmp),"%s.IPv4Address.", path);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(path);
+              return -1;
+            }
             AnscFreeMemory(path); /*RDKB-6740, CID-33386, free unused resource before exit*/
             path = NULL;
             path = CosaUtilGetFullPathNameByKeyword((PUCHAR)tmp, (PUCHAR)"IPAddress", (PUCHAR)pEntry->AddressSource);
@@ -601,6 +622,7 @@ IPv6rdIF_SetParamStringValue(
     ULONG addlen;
     char tmp[128];
     ANSC_STATUS ret=ANSC_STATUS_FAILURE;
+    errno_t     rc = -1;
 
     if (!pLinkObject)
         return FALSE;
@@ -656,7 +678,12 @@ IPv6rdIF_SetParamStringValue(
         }
 
         addlen = sizeof(v4addr);
-        _ansc_sprintf(tmp, "%sIPAddress", wrapped_inputparam);
+        rc = sprintf_s(tmp, sizeof(tmp),"%sIPAddress", wrapped_inputparam);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
         if (g_GetParamValueString(g_pDslhDmlAgent, tmp, v4addr, &addlen) != 0)
         {
             CcspTraceWarning(("IPv6rdIF_SetParamStringValue: fail to get %s\n", tmp));

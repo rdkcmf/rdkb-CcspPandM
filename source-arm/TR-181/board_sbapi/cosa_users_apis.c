@@ -72,7 +72,9 @@
 #include "secure_wrapper.h"
 #include <openssl/hmac.h>
 #include <syscfg/syscfg.h>
+#include "safec_lib_common.h"
 
+#define SIZE_OF_HASHPASSWORD  32
 /* Changing SNO as 256 bytes from 64 bytes due to HAL layer access more than 64 byets*/
 char SerialNumber[256] = {'\0'};
 #if ( defined _COSA_SIM_ )
@@ -594,8 +596,13 @@ ANSC_STATUS
         char saltText[128] = {'\0'}, hashedmd[128] = {'\0'};
         int  iIndex = 0, Key_len = 0, salt_len = 0, hashedmd_len = 0;
         HMAC_CTX ctx;
+        errno_t safec_rc = -1;
 			
-        _ansc_sprintf(saltText, "%s", SerialNumber);
+        safec_rc = strcpy_s(saltText, sizeof(saltText), SerialNumber);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         Key_len = strlen(pString);
 	
@@ -629,9 +636,10 @@ user_validatepwd
 {
    CcspTraceWarning(("%s, Entered to validate password\n",__FUNCTION__));
    char fromDB[128]={'\0'};
-   char val[32] = {'\0'};
    char getHash[128]= {'\0'};
    int isDefault=0;
+   errno_t safec_rc = -1;
+   char *v;
    if(!strcmp(pEntry->Username,"admin"))
    {
 
@@ -666,23 +674,12 @@ user_validatepwd
    hash_userPassword(pString,getHash); 
    CcspTraceWarning(("%s, Compare passwords\n",__FUNCTION__));
    
-   if (strcmp(getHash, pEntry->HashedPassword) == 0)
-   {
-     if(isDefault == 1)
-     {
-        strcpy(val,"Default_PWD");
-     }
-     else
-     {
-        strcpy(val,"Good_PWD");
-     }
-   }
-   else
-   {
-     strcpy(val,"Invalid_PWD");
-
-   }
-   AnscCopyString(hashpassword,val);
+    v = strcmp(getHash, pEntry->HashedPassword) ? "Invalid_PWD" : (isDefault == 1 ? "Default_PWD" : "Good_PWD");
+    safec_rc = strcpy_s(hashpassword, SIZE_OF_HASHPASSWORD, v);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
    }
 #if defined(_COSA_FOR_BCI_)
    if(!strcmp(pEntry->Username,"cusadmin"))
@@ -712,23 +709,12 @@ user_validatepwd
    hash_userPassword(pString,getHash);
    CcspTraceWarning(("%s, Compare passwords\n",__FUNCTION__));
 
-   if (strcmp(getHash, pEntry->HashedPassword) == 0)
-   {
-     if(isDefault == 1)
-     {
-        strcpy(val,"Default_PWD");
-     }
-     else
-     {
-        strcpy(val,"Good_PWD");
-     }
-   }
-   else
-   {
-     strcpy(val,"Invalid_PWD");
-
-   }
-   AnscCopyString(hashpassword,val);
+    v = strcmp(getHash, pEntry->HashedPassword) ? "Invalid_PWD" : (isDefault == 1 ? "Default_PWD" : "Good_PWD");
+    safec_rc = strcpy_s(hashpassword, SIZE_OF_HASHPASSWORD, v);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
    }
 #endif
 
@@ -824,7 +810,12 @@ CosaDmlUserResetPassword
    {
      #if defined(_HUB4_PRODUCT_REQ_) || defined(INTEL_PUMA7) && defined(_XB7_PRODUCT_REQ_) || defined(_PLATFORM_RASPBERRYPI_)
          //TODO: Avoid the hardcoded password . This change will be done as part of CMXB7-1766
-         strcpy(defPassword,"password");
+         errno_t safec_rc = -1;
+         safec_rc = strcpy_s(defPassword,sizeof(defPassword),"password");
+         if(safec_rc != EOK)
+         {
+            ERR_CHK(safec_rc);
+         }
      #else
          FILE *ptr;
          if ((ptr=v_secure_popen("r", "/usr/bin/configparamgen jx lkiprgpkmqfk:3"))!=NULL)

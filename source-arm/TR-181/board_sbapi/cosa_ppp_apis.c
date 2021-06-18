@@ -69,6 +69,7 @@
 #include "cosa_ppp_apis.h"
 #include "cosa_ppp_internal.h"
 #include "plugin_main_apis.h"
+#include "safec_lib_common.h"
 
 #if ( defined _COSA_SIM_ )
 
@@ -407,9 +408,22 @@ CosaDmlPppInit
 {
     UNREFERENCED_PARAMETER(hDml);
     UNREFERENCED_PARAMETER(phContext);
-    _ansc_strcpy(g_ppp_info.ifname, "ppp0");
-    _ansc_strcpy(g_ppp_info.lower_ifname,INTERFACE);
-    _ansc_strcpy(g_ppp_info.ut_alias_name, "PPP_Interface_tr_alias");
+    errno_t safec_rc = -1;
+    safec_rc = strcpy_s(g_ppp_info.ifname, sizeof(g_ppp_info.ifname), "ppp0");
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(g_ppp_info.lower_ifname, sizeof(g_ppp_info.lower_ifname),INTERFACE);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(g_ppp_info.ut_alias_name, sizeof(g_ppp_info.ut_alias_name), "PPP_Interface_tr_alias");
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     get_wan_proto(&g_ppp_info.last_wan_proto);
 
@@ -443,6 +457,7 @@ CosaDmlPppIfGetNumberOfEntries
 static int ml_cfg_2_be_struct(UtopiaContext * p_ctx, PCOSA_DML_PPP_IF_CFG p_in, wanInfo_t * p_out)
 {
     char buf[128] = {0};
+    errno_t safec_rc = -1;
     
     /*No chance to set InstanceNumber*/
     wan_ppp_t  * p_ppp = &p_out->ppp;
@@ -509,8 +524,16 @@ static int ml_cfg_2_be_struct(UtopiaContext * p_ctx, PCOSA_DML_PPP_IF_CFG p_in, 
     
     p_ppp->max_idle_time = p_in->IdleDisconnectTime;
     
-    safe_strcpy(p_ppp->username, p_in->Username, sizeof(p_ppp->username));    
-    safe_strcpy(p_ppp->password, p_in->Password, sizeof(p_ppp->password));    
+    safec_rc = strcpy_s(p_ppp->username, sizeof(p_ppp->username), p_in->Username);    
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(p_ppp->password, sizeof(p_ppp->password), p_in->Password);    
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     
     if (p_in->ConnectionTrigger == COSA_DML_PPP_CONN_TRIGGER_OnDemand)
         p_ppp->conn_method = CONNECT_ON_DEMAND;
@@ -519,7 +542,11 @@ static int ml_cfg_2_be_struct(UtopiaContext * p_ctx, PCOSA_DML_PPP_IF_CFG p_in, 
     /*backend don't support manual*/
     
     UTOPIA_SET(p_ctx, UtopiaValue_WAN_PPPoEAccessConcentratorName, p_in->ACName);    
-    safe_strcpy(p_ppp->service_name, p_in->ServiceName, sizeof(p_ppp->service_name));    
+    safec_rc = strcpy_s(p_ppp->service_name, sizeof(p_ppp->service_name), p_in->ServiceName);    
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     return 0;
 }
@@ -527,12 +554,17 @@ static int ml_cfg_2_be_struct(UtopiaContext * p_ctx, PCOSA_DML_PPP_IF_CFG p_in, 
 static int be_struct_2_ml_cfg(UtopiaContext * p_ctx,  wanInfo_t * p_in, PCOSA_DML_PPP_IF_CFG p_out)
 {
     wan_ppp_t * p_ppp = &p_in->ppp;
+    errno_t safec_rc = -1;
     
     Utopia_RawGet(p_ctx, NULL, g_ppp_info.ut_alias_name, p_out->Alias, sizeof(p_out->Alias));
 
     if (!strlen(p_out->Alias)) {
         /*if alias is empty, set a default one*/
-        safe_strcpy(p_out->Alias, "Interface1", sizeof(p_out->Alias));
+        safec_rc = strcpy_s(p_out->Alias, sizeof(p_out->Alias), "Interface1");
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
         Utopia_RawSet(p_ctx, NULL, g_ppp_info.ut_alias_name, p_out->Alias);        
     }
 
@@ -543,15 +575,27 @@ static int be_struct_2_ml_cfg(UtopiaContext * p_ctx,  wanInfo_t * p_in, PCOSA_DM
         p_out->bEnabled = FALSE;
 
     p_out->LinkType =    COSA_DML_PPP_LINK_TYPE_PPP;
-    safe_strcpy(p_out->LinkName, g_ppp_info.ifname, sizeof(p_out->LinkName));
+    safec_rc = strcpy_s(p_out->LinkName, sizeof(p_out->LinkName), g_ppp_info.ifname);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     
     /*not supported*/
     p_out->AutoDisconnectTime = p_out->WarnDisconnectDelay = 0;
 
     p_out->IdleDisconnectTime = p_ppp->max_idle_time;
     
-    safe_strcpy(p_out->Username, p_ppp->username, sizeof(p_out->Username) );
-    safe_strcpy(p_out->Password, p_ppp->password, sizeof(p_out->Password) );
+    safec_rc = strcpy_s(p_out->Username, sizeof(p_out->Username), p_ppp->username );
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(p_out->Password, sizeof(p_out->Password), p_ppp->password );
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     
     /*default*/
     p_out->MaxMRUSize = 1492;
@@ -569,8 +613,11 @@ static int be_struct_2_ml_cfg(UtopiaContext * p_ctx,  wanInfo_t * p_in, PCOSA_DM
     memset(p_out->ACName, 0, sizeof(p_out->ACName));
     UTOPIA_GET(p_ctx, UtopiaValue_WAN_PPPoEAccessConcentratorName, p_out->ACName, sizeof(p_out->ACName));        
 
-    safe_strcpy(p_out->ServiceName, p_ppp->service_name, sizeof(p_out->ServiceName));
-    
+    safec_rc = strcpy_s(p_out->ServiceName, sizeof(p_out->ServiceName), p_ppp->service_name);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }   
     return 0;
 }
 
@@ -665,6 +712,7 @@ static void be_struct_2_ml_info(UtopiaContext * p_ctx, wanInfo_t * p_in, PCOSA_D
     UNREFERENCED_PARAMETER(p_ctx);
     char buf[128] = {0};
     FILE * fp = NULL;
+    errno_t safec_rc = -1;
         
     if (p_in->wan_proto == PPPOE)
     {
@@ -695,7 +743,11 @@ static void be_struct_2_ml_info(UtopiaContext * p_ctx, wanInfo_t * p_in, PCOSA_D
     else 
         p_out->Status = COSA_DML_IF_STATUS_Down;
 
-    safe_strcpy(p_out->Name, g_ppp_info.ifname, sizeof(p_out->Name));
+    safec_rc = strcpy_s(p_out->Name, sizeof(p_out->Name), g_ppp_info.ifname);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     
     p_out->LastChange = g_ppp_info.last_change;
 

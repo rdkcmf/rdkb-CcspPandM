@@ -65,6 +65,7 @@
 **************************************************************************/
 
 #include "cosa_dns_internal.h"
+#include "safec_lib_common.h"
 
 
 #if (defined(_COSA_SIM_))
@@ -1011,6 +1012,7 @@ CosaDmlDnsInit
     INT                 rc = -1;
     CHAR                key_buf[64] = {'\0'};
     char                *st = NULL;
+    errno_t             safec_rc = -1;
 
     ulogf(ULOG_SYSTEM, UL_DHCP, "%s:g_DnsClientServerNum %d\n", __FUNCTION__, g_DnsClientServerNum);
     CcspTraceInfo(("CosaDmlDnsInit\n"));
@@ -1102,7 +1104,11 @@ CosaDmlDnsInit
                 strncpy(sDns[2], g_wan_info.wstatic.dns_ipaddr3, IPADDR_SZ );
                 for(j = 0; j < 3; j++)
                 {
-                    sprintf( tmpBuff, "nameserver%d", j+1);
+                    safec_rc = sprintf_s( tmpBuff, sizeof(tmpBuff),"nameserver%d", j+1);
+                    if(safec_rc < EOK)
+                    {
+                        ERR_CHK(safec_rc);
+                    }
                     //syscfg_get(NULL, sDns[j],tmpBuff, IPHOSTNAME_SZ);
                    // ulogf(ULOG_SYSTEM, UL_DHCP, "%s, sDns%d %s\n", __FUNCTION__,j, sDns[j] );
                     if( !strcmp( sDns[j], str_val ) )
@@ -1130,7 +1136,11 @@ CosaDmlDnsInit
     g_dns_relay_forwarding[g_CountDnsRelays].Status   = COSA_DML_DNS_STATUS_Enabled;
     
     g_CountDnsRelays++;
-    sprintf(count, "%d", g_CountDnsRelays);
+    safec_rc = sprintf_s(count, sizeof(count), "%d", g_CountDnsRelays);
+    if(safec_rc < EOK)
+    {
+        ERR_CHK(safec_rc);
+    }
     Utopia_RawSet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_dhcp_count", count);
 
     /*Populate the Global structure for an DNS forwarding Static entries */
@@ -1151,13 +1161,21 @@ CosaDmlDnsInit
             return NULL;
         }
         memset(buf, 0, sizeof(buf));
-        sprintf(key_buf, "tr_dns_relay_forwarding_instance_%d", i+1);
+        safec_rc = sprintf_s(key_buf, sizeof(key_buf), "tr_dns_relay_forwarding_instance_%d", i+1);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
         key_buf[strlen(key_buf)] = '\0';
 	Utopia_RawGet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, key_buf, buf, sizeof(buf) );
         pForward->InstanceNumber = atoi(buf);
 
         memset(key_buf, 0, sizeof(key_buf));
-        sprintf(key_buf, "tr_dns_relay_forwarding_alias_%d", i+1);
+        safec_rc = sprintf_s(key_buf, sizeof(key_buf), "tr_dns_relay_forwarding_alias_%d", i+1);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
         key_buf[strlen(key_buf)] = '\0';
 	Utopia_RawGet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, key_buf, pForward->Alias, sizeof(pForward->Alias));
 
@@ -1171,7 +1189,11 @@ CosaDmlDnsInit
         pForward->Type = COSA_DML_DNS_ADDR_SRC_Static;
         memset(buf, 0, sizeof(buf));
         memset(key_buf, 0, sizeof(key_buf));
-        sprintf(key_buf, "tr_dns_relay_forwarding_enable_%d", i+1);
+        safec_rc = sprintf_s(key_buf, sizeof(key_buf), "tr_dns_relay_forwarding_enable_%d", i+1);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
         Utopia_RawGet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, key_buf, buf, sizeof(buf) );
         if ( AnscEqualString(buf, "true", TRUE) )
             pForward->Status = COSA_DML_DNS_STATUS_Enabled;
@@ -1427,6 +1449,7 @@ CosaDmlDnsClientSetServerValues
     CHAR            alias_str[64];
     CHAR            name_str[64];
     UtopiaContext   ctx;
+    errno_t         rc = -1;
 
     //ulogf(ULOG_SYSTEM, UL_DHCP, "%s: ulIndex %d, instance %d, Alias %s\n", __FUNCTION__, ulIndex, ulInstanceNumber, pAlias);
         
@@ -1443,7 +1466,13 @@ CosaDmlDnsClientSetServerValues
     g_dns_client_server[ulIndex].InstanceNumber = ulInstanceNumber;
     AnscCopyString(g_dns_client_server[ulIndex].Alias, pAlias);
     
-    sprintf(inst_str, "%d", ulInstanceNumber);
+    rc = sprintf_s(inst_str, sizeof(inst_str), "%d", ulInstanceNumber);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
+
     Utopia_RawSet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_client_server_instance", inst_str);
     Utopia_RawSet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_client_server_alias", pAlias);    
         
@@ -1491,6 +1520,7 @@ CosaDmlDnsClientAddServer
     int i = 0;
     UtopiaContext   ctx;
     CHAR            sBuff[IPADDR_SZ];
+    errno_t         rc = -1;
    
     ulogf(ULOG_SYSTEM, UL_DHCP, "%s:g_StaticDnsClientServerNum %d\n", __FUNCTION__, g_StaticDnsClientServerNum);
     
@@ -1519,7 +1549,11 @@ CosaDmlDnsClientAddServer
             ulogf(ULOG_SYSTEM, UL_DHCP, "%s: i %d, conflict pEntry->InstanceNumber %d, with g_.InstanceNumber %d\n", 
                   __FUNCTION__, i, pEntry->InstanceNumber, g_dns_client_server[i].InstanceNumber );
             pEntry->InstanceNumber += 1;
-            sprintf(pEntry->Alias, "Server%d", pEntry->InstanceNumber);            
+            rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias), "Server%d", pEntry->InstanceNumber);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
         }
     }
     g_dns_client_server[g_DnsClientServerNum].InstanceNumber  = pEntry->InstanceNumber;  
@@ -1535,11 +1569,15 @@ CosaDmlDnsClientAddServer
     g_dns_client_server[g_DnsClientServerNum].DNSServer.Value = pEntry->DNSServer.Value;
    
 #if (defined (_COSA_DRG_TPG_))
-    sprintf (sBuff, "%d.%d.%d.%d", 
+    rc = sprintf_s (sBuff, sizeof(sBuff), "%d.%d.%d.%d",
                         (pEntry->DNSServer.Value >> 24) & 0xFF,
                         (pEntry->DNSServer.Value >> 16) & 0xFF,
                         (pEntry->DNSServer.Value >> 8) & 0xFF,           
                         pEntry->DNSServer.Value & 0xFF );
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
 #endif
                         
     switch ( g_StaticDnsClientServerNum )
@@ -1712,6 +1750,7 @@ CosaDmlDnsClientSetServer
     int             i = 0;
     char            cmd[80];
     CHAR            ipBuff[IPADDR_SZ];
+    errno_t         rc = -1;
     
     ulogf(ULOG_SYSTEM, UL_DHCP, "%s:\n", __FUNCTION__);
 
@@ -1734,11 +1773,15 @@ CosaDmlDnsClientSetServer
             AnscCopyMemory(&g_dns_client_server[i], pEntry, sizeof(COSA_DML_DNS_CLIENT_SERVER) ); //??not before
             AnscCopyString(g_wan_info.domainname, g_dns_client_server[i].Interface ); 
 #if (defined (_COSA_DRG_TPG_))           
-            sprintf (ipBuff, "%d.%d.%d.%d", 
+            rc = sprintf_s (ipBuff, sizeof(ipBuff), "%d.%d.%d.%d",
                         (g_dns_client_server[i].DNSServer.Value >> 24) & 0xFF,
                         (g_dns_client_server[i].DNSServer.Value >> 16) & 0xFF,
                         (g_dns_client_server[i].DNSServer.Value >> 8) & 0xFF,                    
                         g_dns_client_server[i].DNSServer.Value & 0xFF );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
 #endif
 
            
@@ -2003,6 +2046,7 @@ CosaDmlDnsRelayGetServers
     char          *pToken;
     FILE          *fp;
     char          *st = NULL;
+    errno_t       safec_rc = -1;
     if(!Utopia_Init(&pCtx))
     {
         CcspTraceWarning(("Device.DNS: Error in initializing context!!! \n" ));
@@ -2035,8 +2079,11 @@ CosaDmlDnsRelayGetServers
         {
             CcspTraceWarning(("Device.DNS: file read error!!!\n"));
             g_CountDhcp--;
-            memset(buf, 0, sizeof(buf));
-            sprintf(buf, "%d", g_CountDhcp);
+            safec_rc = sprintf_s(buf, sizeof(buf), "%d", g_CountDhcp);
+            if(safec_rc < EOK)
+            {
+                ERR_CHK(rc);
+            }
             Utopia_RawSet(&pCtx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_forwarding_dhcp_instance_1", buf);
             Utopia_Free(&pCtx, 0);
             return NULL;
@@ -2141,6 +2188,7 @@ CosaDmlDnsRelaySetServerValues
     INT         rc = -1;
     CHAR        inst_str[64] = {'\0'};
     CHAR        buf[64] = {'\0'};
+    errno_t     safec_rc = -1;
 
     CcspTraceWarning(("\n\n ********************set server values********************************************** \n\n"));
     if(ulIndex > g_CountDnsRelays)
@@ -2154,19 +2202,52 @@ CosaDmlDnsRelaySetServerValues
     g_dns_relay_forwarding[ulIndex].InstanceNumber = ulInstanceNumber;
     AnscCopyString(g_dns_relay_forwarding[ulIndex].Alias, pAlias);
 
-    sprintf(inst_str, "%d", ulInstanceNumber);
+    safec_rc = sprintf_s(inst_str, sizeof(inst_str), "%d", ulInstanceNumber);
+    if(safec_rc < EOK)
+    {
+        ERR_CHK(safec_rc);
+        return ANSC_STATUS_FAILURE;
+    }
     if(ulIndex == 0)
-        sprintf(buf, "tr_dns_relay_forwarding_dhcp_instance_%d", ulIndex+1);
+    {
+        safec_rc = sprintf_s(buf, sizeof(buf), "tr_dns_relay_forwarding_dhcp_instance_%d", ulIndex+1);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+            return ANSC_STATUS_FAILURE;
+        }
+    }
     else
-        sprintf(buf, "tr_dns_relay_forwarding_instance_%d", ulIndex+1);
+    {
+        safec_rc = sprintf_s(buf, sizeof(buf), "tr_dns_relay_forwarding_instance_%d", ulIndex+1);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+            return ANSC_STATUS_FAILURE;
+        }
+    }
     buf[strlen(buf)] = '\0';
     Utopia_RawSet(&pCtx, COSA_DNS_SYSCFG_NAMESPACE, buf, inst_str);
 
     memset(buf, 0, sizeof(buf));
     if(ulIndex == 0)
-        sprintf(buf, "tr_dns_relay_forwarding_dhcp_alias_%d", ulIndex+1);
+    {
+        safec_rc = sprintf_s(buf, sizeof(buf), "tr_dns_relay_forwarding_dhcp_alias_%d", ulIndex+1);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+            return ANSC_STATUS_FAILURE;
+        }
+    }
     else
-        sprintf(buf, "tr_dns_relay_forwarding_alias_%d", ulIndex+1);
+    {
+        safec_rc = sprintf_s(buf, sizeof(buf), "tr_dns_relay_forwarding_alias_%d", ulIndex+1);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+            return ANSC_STATUS_FAILURE;
+        }
+    }
     buf[strlen(buf)] = '\0';
     Utopia_RawSet(&pCtx, COSA_DNS_SYSCFG_NAMESPACE, buf, pAlias);
 
@@ -2214,6 +2295,7 @@ CosaDmlDnsRelayAddServer
     INT           i = 0;
     INT           g_CountStatic = 0;
     CHAR          count[64] = {'\0'};
+    errno_t       safec_rc = -1;
 
     if ( !pEntry )
     {
@@ -2231,7 +2313,11 @@ CosaDmlDnsRelayAddServer
         if ( g_dns_relay_forwarding[i].InstanceNumber == pEntry->InstanceNumber  )
         {
             pEntry->InstanceNumber += 1;
-            sprintf(pEntry->Alias, "Forwarding%d", pEntry->InstanceNumber);
+            safec_rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias), "Forwarding%d", pEntry->InstanceNumber);
+            if(safec_rc < EOK)
+            {
+                ERR_CHK(safec_rc);
+            }
             break;
         }
     }
@@ -2269,8 +2355,12 @@ CosaDmlDnsRelayAddServer
     }
     Utopia_RawGet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_count", count, sizeof(count));
     g_CountStatic = atoi(count);
-    memset(count, 0, sizeof(count));
-    sprintf(count, "%d", g_CountStatic+1);
+    safec_rc = sprintf_s(count, sizeof(count), "%d", g_CountStatic+1);
+    if(safec_rc < EOK)
+    {
+        ERR_CHK(safec_rc);
+        return ANSC_STATUS_FAILURE;
+    }
     Utopia_RawSet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_count", count);
 
     Utopia_Free(&ctx, 1);
@@ -2316,6 +2406,7 @@ CosaDmlDnsRelayDelServer
     CHAR cmd[64] = {'\0'};
     CHAR inst_str[64] = {'\0'};
     UtopiaContext ctx;
+    errno_t safec_rc = -1;
 
     CcspTraceWarning(("\n\n ******************************del obj ****************************** \n\n" ));
     if (!Utopia_Init(&ctx))
@@ -2335,11 +2426,19 @@ CosaDmlDnsRelayDelServer
         {
             if( g_dns_relay_forwarding[i].Type == COSA_DML_DNS_ADDR_SRC_Static){
                 g_CountStatic--;
-                sprintf(count, "%d", g_CountStatic);
+                safec_rc = sprintf_s(count, sizeof(count), "%d", g_CountStatic);
+                if(safec_rc < EOK)
+                {
+                    ERR_CHK(safec_rc);
+                }
                 Utopia_RawSet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_count", count);
             }else{
                 g_CountDhcp--;
-                sprintf(count, "%d", g_CountDhcp);
+                safec_rc = sprintf_s(count, sizeof(count), "%d", g_CountDhcp);
+                if(safec_rc < EOK)
+                {
+                    ERR_CHK(safec_rc);
+                }
                 Utopia_RawSet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_dhcp_count", count);
             }
             for(j = i; j < g_CountDnsRelays; j++)
@@ -2348,22 +2447,42 @@ CosaDmlDnsRelayDelServer
                                 &g_dns_relay_forwarding[j+1], sizeof(COSA_DML_DNS_RELAY_ENTRY));
                 if(g_CountDhcp == 0){
                     memset(buf, 0, sizeof(buf));
-                    sprintf(buf, "tr_dns_relay_forwarding_dhcp_instance_%d", i+1);
+                    safec_rc = sprintf_s(buf, sizeof(buf), "tr_dns_relay_forwarding_dhcp_instance_%d", i+1);
+                    if(safec_rc < EOK)
+                    {
+                        ERR_CHK(safec_rc);
+                    }
                     buf[strlen(buf)] = '\0';
                     Utopia_RawSet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, buf, "");
                     memset(buf, 0, sizeof(buf));
-                    sprintf(buf, "tr_dns_relay_forwarding_dhcp_alias_%d", i+1);
+                    safec_rc = sprintf_s(buf, sizeof(buf), "tr_dns_relay_forwarding_dhcp_alias_%d", i+1);
+                    if(safec_rc < EOK)
+                    {
+                        ERR_CHK(safec_rc);
+                    }
                     buf[strlen(buf)] = '\0';
                     Utopia_RawSet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, buf, "");
                 }else{
                     memset(buf, 0, sizeof(buf));
-                    sprintf(buf, "tr_dns_relay_forwarding_instance_%d", j+1);
+                    safec_rc = sprintf_s(buf, sizeof(buf), "tr_dns_relay_forwarding_instance_%d", j+1);
+                    if(safec_rc < EOK)
+                    {
+                        ERR_CHK(safec_rc);
+                    }
                     buf[strlen(buf)] = '\0';
-                    sprintf(inst_str, "%d", g_dns_relay_forwarding[j+1].InstanceNumber);
+                    safec_rc = sprintf_s(inst_str, sizeof(inst_str),  "%d", g_dns_relay_forwarding[j+1].InstanceNumber);
+                    if(safec_rc < EOK)
+                    {
+                        ERR_CHK(safec_rc);
+                    }
                     Utopia_RawSet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, buf, inst_str);
 
                     memset(buf, 0, sizeof(buf));
-                    sprintf(buf, "tr_dns_relay_forwarding_alias_%d", j+1);
+                    safec_rc = sprintf_s(buf, sizeof(buf), "tr_dns_relay_forwarding_alias_%d", j+1);
+                    if(safec_rc < EOK)
+                    {
+                        ERR_CHK(safec_rc);
+                    }
                     buf[strlen(buf)] = '\0';
                     Utopia_RawSet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, buf, g_dns_relay_forwarding[j+1].Alias);
                 }
@@ -2422,6 +2541,7 @@ CosaDmlDnsRelaySetServer
     CHAR         key_buf[64] = {'\0'};
     CHAR         buf[64] = {'\0'};
     CHAR         cmd[64] = {'\0'};
+    errno_t      safec_rc = -1;
 
     if( (!pEntry) )
     {
@@ -2467,9 +2587,20 @@ CosaDmlDnsRelaySetServer
             }
             memset(key_buf, 0, sizeof(key_buf));
             if(i == 0)
-                sprintf(key_buf, "tr_dns_relay_forwarding_dhcp_alias_%d", i+1);
+            {
+                safec_rc = sprintf_s(key_buf, sizeof(key_buf), "tr_dns_relay_forwarding_dhcp_alias_%d", i+1);
+                if(safec_rc < EOK)
+                {
+                    ERR_CHK(safec_rc);
+                }
+            }
             else
-                sprintf(key_buf, "tr_dns_relay_forwarding_alias_%d", i+1);
+            {
+                safec_rc = sprintf_s(key_buf, sizeof(key_buf)"tr_dns_relay_forwarding_alias_%d", i+1);
+                {
+                    ERR_CHK(safec_rc);
+                }
+            }
             key_buf[strlen(key_buf)] = '\0';
             Utopia_RawSet(&ctx, COSA_DNS_SYSCFG_NAMESPACE, key_buf, g_dns_relay_forwarding[i].Alias);
     
@@ -2831,13 +2962,22 @@ CosaDmlDnsClientSetServerValues
     UNREFERENCED_PARAMETER(pAlias);
     char inst_str[10];
     char inst_num[32];
+    errno_t safec_rc = -1;
     UtopiaContext ctx;
    
     if (Utopia_Init(&ctx))
     {
 
-        sprintf(inst_num, "dns_client_server_instance_%lu", ulIndex);
-        sprintf(inst_str, "%lu", ulInstanceNumber);
+        safec_rc = sprintf_s(inst_num, sizeof(inst_num), "dns_client_server_instance_%lu", ulIndex);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
+        safec_rc = sprintf_s(inst_str, sizeof(inst_str), "%lu", ulInstanceNumber);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
         Utopia_RawSet(&ctx, NULL, inst_num, inst_str);
         Utopia_Free(&ctx, 1); 
     }

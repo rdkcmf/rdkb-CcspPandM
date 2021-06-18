@@ -67,7 +67,7 @@
 #include "utctx/utctx_api.h"
 #include <utapi.h>
 #include "dml_tr181_custom_cfg.h" 
-
+#include "safec_lib_common.h"
 COSA_DML_DDNS_SERVICE g_DdnsService[10] = 
 {
     {FALSE, 1, "DdnsService1", "dyndns", "admin1", "admin1", "cisco.com", "", COSA_DML_DDNS_STATE_Idle, "", FALSE, FALSE},
@@ -625,8 +625,13 @@ static int saveID(char* Namespace, char* ServiceName, ULONG ulInstanceNumber,cha
     UtopiaContext utctx;
     char idStr[COSA_DML_SERVICE_NAME_LENGTH+10];
     Utopia_Init(&utctx);
+    errno_t safec_rc = -1;
 
-    sprintf(idStr,"%s,%u", pAlias,ulInstanceNumber);
+    safec_rc = sprintf_s(idStr,sizeof(idStr),"%s,%u", pAlias,ulInstanceNumber);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     Utopia_RawSet(&utctx, DDNS_NAMESPACE, ServiceName,idStr);
     
     Utopia_Free(&utctx,TRUE); 
@@ -976,6 +981,7 @@ CosaDmlDdnsInit
     char    username[32]={0};
     char    password[32]={0};
     char    hostname[256]={0};
+    errno_t safec_rc = -1;
     BOOLEAN enabled = FALSE;
 
     if ( UtGetBool("ddns_enable", &g_bEnabled) != ANSC_STATUS_SUCCESS )
@@ -985,11 +991,31 @@ CosaDmlDdnsInit
 
     for (i=0; i<g_DdnsServiceNum; i++)
     {
-        sprintf(service_name_path, "ddns_service%lu", i+1);
-        sprintf(username_path, "ddns_username%lu", i+1);
-        sprintf(password_path, "ddns_password%lu", i+1);
-        sprintf(hostname_path, "ddns_hostname%lu", i+1);
-        sprintf(enabled_path, "ddns_enable%lu", i+1);
+        safec_rc = sprintf_s(service_name_path, sizeof(service_name_path), "ddns_service%lu", i+1);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = sprintf_s(username_path, sizeof(username_path), "ddns_username%lu", i+1);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = sprintf_s(password_path, sizeof(password_path), "ddns_password%lu", i+1);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = sprintf_s(hostname_path, sizeof(hostname_path), "ddns_hostname%lu", i+1);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = sprintf_s(enabled_path, sizeof(enabled_path), "ddns_enable%lu", i+1);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
 
         _ansc_memset(service_name, 0, sizeof(service_name));
 

@@ -71,6 +71,7 @@
 #include "plugin_main_apis.h"
 #include "secure_wrapper.h"
 #include "cosa_drg_common.h"
+#include "safec_lib_common.h"
 
 #if ( defined _COSA_SIM_ )
 
@@ -327,6 +328,8 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
     int year_miss = 0;
 	char *timestamp;
 	time_t now;
+    errno_t safec_rc = -1;
+    unsigned int MessageLen;
 
     while( (c = fgetc(fd)) != EOF){
         if( c == '\n')
@@ -400,8 +403,13 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
 
              p[i].pMessage = malloc((((len + 4) >> 2) <<2));
              if(p[i].pMessage != NULL){
+                MessageLen = (((len + 4) >> 2) <<2); //Destination max size(MessageLen) should be unsigned for non safec platform
                 //strncpy(p[i].pMessage, tmp, sizeof(p[i].pMessage) - 1);
-                strcpy(p[i].pMessage, tmp);
+                safec_rc = strcpy_s(p[i].pMessage, MessageLen, tmp);
+                if(safec_rc != EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
              }
         }else{
              goto CONTINUE;

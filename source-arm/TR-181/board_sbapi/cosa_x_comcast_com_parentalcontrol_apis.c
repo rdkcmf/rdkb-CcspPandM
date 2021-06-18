@@ -1347,6 +1347,7 @@ ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
     char eTime_block_days[64];
 	int sRet = 0,eRet = 0;
     ULONG nCount = 0;
+    errno_t safec_rc = -1;
     AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
 	nCount = g_NrBlkURL;
     ResetInsBuf();
@@ -1392,7 +1393,11 @@ ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
 						 if(strstr(blkurl.end_time,"23:59"))
 						 {
 							 AnscTraceWarning(("<<< %s -- 1 del rule %s ...\n", __FUNCTION__,blkurl.site));
-							 strcpy(blkurl.end_time,tmp.end_time);
+							 safec_rc = strcpy_s(blkurl.end_time,sizeof(blkurl.end_time),tmp.end_time);
+							 if(safec_rc != EOK)
+							 {
+								 ERR_CHK(safec_rc);
+							 }
 							 SetDelIndex(TIndex,tmp.ins_num);
 							 Utopia_GetNumberOfBlkURL(&ctx, &g_NrBlkURL);
 						 }
@@ -1402,7 +1407,11 @@ ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
 						 if(strstr(blkurl.start_time,"00:00"))
 						 {
 							 AnscTraceWarning(("<<< %s -- 2 del rule %s ...\n", __FUNCTION__,blkurl.site));
-							 strcpy(blkurl.start_time,tmp.start_time);
+							 safec_rc = strcpy_s(blkurl.start_time,sizeof(blkurl.start_time),tmp.start_time);
+							 if(safec_rc != EOK)
+							 {
+								 ERR_CHK(safec_rc);
+							 }
 							 SetDelIndex(TIndex,tmp.ins_num);
 							 Utopia_GetNumberOfBlkURL(&ctx, &g_NrBlkURL);
 						 }
@@ -1427,8 +1436,16 @@ ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
 		 AnscTraceWarning(("%s -- blkurl.start_time = %s...\n", __FUNCTION__, blkurl.start_time));
 		 AnscTraceWarning(("%s -- blkurl.end_time = %s...\n", __FUNCTION__, blkurl.end_time));
 
-		 strcpy(start_time, blkurl.start_time);
-		 strcpy(end_time, blkurl.end_time);
+		 safec_rc = strcpy_s(start_time, sizeof(start_time), blkurl.start_time);
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
+		 safec_rc = strcpy_s(end_time, sizeof(end_time), blkurl.end_time);
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
 		 sRet = ConvUTCToLocal(start_time, blkurl.start_time);
 		 eRet = ConvUTCToLocal(end_time, blkurl.end_time);
 		 memset(eTime_block_days,0,64);
@@ -1467,6 +1484,7 @@ ANSC_STATUS CosaDmlBlkURL_Migration()
 	int sRet = 0,eRet = 0;
 	int                             InsNum                 = 0;
 	char eTime_block_days[64];
+	errno_t safec_rc = -1;
     AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
 for(index = 0;index < g_NrBlkURL; index++)
     {
@@ -1503,8 +1521,16 @@ for(index = 0;index < g_NrBlkURL; index++)
 		 Utopia_Free(&ctx, !rc);
 		 continue;
 	 }
-     strcpy(start_time, blkurl.start_time);
-     strcpy(end_time, blkurl.end_time);
+     safec_rc = strcpy_s(start_time, sizeof(start_time), blkurl.start_time);
+     if(safec_rc != EOK)
+     {
+        ERR_CHK(safec_rc);
+     }
+     safec_rc = strcpy_s(end_time, sizeof(end_time), blkurl.end_time);
+     if(safec_rc != EOK)
+     {
+        ERR_CHK(safec_rc);
+     }
      sRet = ConvLocalToUTC(start_time, blkurl.start_time);
      eRet = ConvLocalToUTC(end_time, blkurl.end_time);
      AnscTraceWarning(("%s -- Converted blkurl.start_time = %s sRet = %d ...\n", __FUNCTION__, blkurl.start_time,sRet));
@@ -1512,7 +1538,11 @@ for(index = 0;index < g_NrBlkURL; index++)
 	 if(!strcmp(blkurl.end_time,"00:00"))
 	 {
 		 AnscTraceWarning(("%s -- inside if blkurl.end_time = %s eRet = %d ...\n", __FUNCTION__, blkurl.end_time,eRet));
-		 strcpy(blkurl.end_time,"23:59");
+		 safec_rc = strcpy_s(blkurl.end_time, sizeof(blkurl.end_time),"23:59");
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
 		rc = Utopia_SetBlkURLByIndex(&ctx, index, &blkurl);
         if (rc != 0)
 	    {
@@ -1530,10 +1560,16 @@ for(index = 0;index < g_NrBlkURL; index++)
 		 AnscTraceWarning(("%s -- Converted block_days for first rule = %s  ...\n", __FUNCTION__, blkurl.block_days));
 		 AnscTraceWarning(("%s -- Converted block_days for Second rule = %s ...\n", __FUNCTION__,eTime_block_days));
 		 // split rule timings
-		 memset(rb_end_time,0,25);
-		 strcpy(rb_end_time,blkurl.end_time);
-		 memset(blkurl.end_time,0,64);
-		 strcpy(blkurl.end_time,"23:59");
+		 safec_rc = strcpy_s(rb_end_time,sizeof(rb_end_time), blkurl.end_time);
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
+		 safec_rc = strcpy_s(blkurl.end_time,sizeof(blkurl.end_time),"23:59");
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
 		 AnscTraceWarning(("%d -- Converted blkurl.end_time = %s ...\n", __LINE__,blkurl.end_time));
 		 rc = Utopia_SetBlkURLByIndex(&ctx, index, &blkurl);
 		 if (rc != 0)
@@ -1542,12 +1578,23 @@ for(index = 0;index < g_NrBlkURL; index++)
                 Utopia_Free(&ctx, 0);
 				return ANSC_STATUS_FAILURE;
 			}
-			memset(blkurl.end_time,0,64);
-		    strcpy(blkurl.end_time,rb_end_time);
+		    safec_rc = strcpy_s(blkurl.end_time,sizeof(blkurl.end_time),rb_end_time);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		 	AnscTraceWarning(("%d -- Converted blkurl.end_time = %s ...\n", __LINE__,blkurl.end_time));
-		    strcpy(blkurl.start_time,"00:00");
+		    safec_rc = strcpy_s(blkurl.start_time,sizeof(blkurl.start_time),"00:00");
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		    AnscTraceWarning(("%d -- Converted blkurl.start_time = %s ...\n", __LINE__,blkurl.start_time));
-		    strcpy(blkurl.block_days,eTime_block_days);
+		    safec_rc = strcpy_s(blkurl.block_days,sizeof(blkurl.block_days),eTime_block_days);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		    AnscTraceWarning(("%d -- Converted eTime_block_days = %s ...\n", __LINE__,eTime_block_days));
 		    AnscTraceWarning(("%d -- Converted blkurl.block_days = %s ...\n", __LINE__,blkurl.block_days));
 
@@ -1675,6 +1722,7 @@ CosaDmlBlkURL_AddEntry(COSA_DML_BLOCKEDURL *pEntry)
     int rc = -1;
     UtopiaContext ctx;
     blkurl_t blkurl;
+    errno_t safec_rc = -1;
     
     if (!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -1683,11 +1731,29 @@ CosaDmlBlkURL_AddEntry(COSA_DML_BLOCKEDURL *pEntry)
     blkurl.always_block = pEntry->AlwaysBlock;
     
     if(pEntry->BlockMethod == BLOCK_METHOD_URL)
-        _ansc_strcpy(blkurl.block_method, "URL");
+    {
+        safec_rc = strcpy_s(blkurl.block_method, sizeof(blkurl.block_method), "URL");
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+    }
     else if(pEntry->BlockMethod == BLOCK_METHOD_KEYWORD)
-        _ansc_strcpy(blkurl.block_method, "KEYWD");
+    {
+        safec_rc = strcpy_s(blkurl.block_method, sizeof(blkurl.block_method), "KEYWD");
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+    }
     else
-        _ansc_strcpy(blkurl.block_method, "");
+    {
+        safec_rc = strcpy_s(blkurl.block_method, sizeof(blkurl.block_method), "");
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+    }
 
     _ansc_strncpy(blkurl.alias, pEntry->Alias, sizeof(blkurl.alias));
     _ansc_strncpy(blkurl.site, pEntry->Site, sizeof(blkurl.site));
@@ -2098,6 +2164,7 @@ ANSC_STATUS CosaDmlMSServ_RollbackUTCtoLocal()
     char end_time[25];
 	char eTime_block_days[64];
 	int sRet = 0,eRet = 0;
+    errno_t safec_rc = -1;
     ResetInsBuf();
 AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
 for(index = 0;index < g_NrMSServs; index++)
@@ -2137,7 +2204,11 @@ for(index = 0;index < g_NrMSServs; index++)
 							 if(strstr(ms_serv.end_time,"23:59"))
 							 {
 								 AnscTraceWarning(("<<< %s -- copy end time and del rule %d ...\n", __FUNCTION__,TIndex));
-								 strcpy(ms_serv.end_time,tmp.end_time);
+								 safec_rc = strcpy_s(ms_serv.end_time,sizeof(ms_serv.end_time),tmp.end_time);
+								 if(safec_rc != EOK)
+								 {
+									ERR_CHK(safec_rc);
+								 }
 								 SetDelIndex(TIndex,tmp.ins_num);
 								 Utopia_GetNumberOfMSServ(&ctx, &g_NrMSServs);
 							 }
@@ -2147,7 +2218,11 @@ for(index = 0;index < g_NrMSServs; index++)
 							 if(strstr(ms_serv.start_time,"00:00"))
 							 {
 								 AnscTraceWarning(("<<< %s -- copy start time and del rule %d ...\n", __FUNCTION__,TIndex));
-								 strcpy(ms_serv.start_time,tmp.start_time);
+								 safec_rc = strcpy_s(ms_serv.start_time,sizeof(ms_serv.start_time),tmp.start_time);
+								 if(safec_rc != EOK)
+								 {
+									 ERR_CHK(safec_rc);
+								 }
 								 SetDelIndex(TIndex,tmp.ins_num);
 								 Utopia_GetNumberOfMSServ(&ctx, &g_NrMSServs);
 							 }
@@ -2171,8 +2246,16 @@ for(index = 0;index < g_NrMSServs; index++)
 		 AnscTraceWarning(("%s -- ms_serv.start_time = %s...\n", __FUNCTION__, ms_serv.start_time));
 		 AnscTraceWarning(("%s -- ms_serv.end_time = %s...\n", __FUNCTION__, ms_serv.end_time));
 
-		 strcpy(start_time, ms_serv.start_time);
-		 strcpy(end_time, ms_serv.end_time);
+		 safec_rc = strcpy_s(start_time, sizeof(start_time), ms_serv.start_time);
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
+		 safec_rc = strcpy_s(end_time, sizeof(end_time), ms_serv.end_time);
+		 if(safec_rc != EOK)
+		 {
+			ERR_CHK(safec_rc);
+		 }
 		 sRet = ConvUTCToLocal(start_time, ms_serv.start_time);
 		 eRet = ConvUTCToLocal(end_time, ms_serv.end_time);
 		 memset(eTime_block_days,0,64);
@@ -2206,6 +2289,7 @@ ANSC_STATUS CosaDmlMSServ_Migration()
 	int sRet = 0,eRet = 0;
 	int InsNum                 = 0;
 	char eTime_block_days[64];
+    errno_t safec_rc = -1;
     AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
 for(index = 0;index < g_NrMSServs; index++)
     {
@@ -2240,8 +2324,16 @@ for(index = 0;index < g_NrMSServs; index++)
 		 Utopia_Free(&ctx, !rc);
 		 continue;
 	 }
-     strcpy(start_time, ms_serv.start_time);
-     strcpy(end_time, ms_serv.end_time);
+     safec_rc = strcpy_s(start_time, sizeof(start_time), ms_serv.start_time);
+     if(safec_rc != EOK)
+     {
+        ERR_CHK(safec_rc);
+     }
+	 safec_rc = strcpy_s(end_time, sizeof(end_time), ms_serv.end_time);
+     if(safec_rc != EOK)
+     {
+        ERR_CHK(safec_rc);
+     }
      sRet = ConvLocalToUTC(start_time, ms_serv.start_time);
      eRet = ConvLocalToUTC(end_time, ms_serv.end_time);
      AnscTraceWarning(("%s -- Converted ms_serv.start_time = %s...\n", __FUNCTION__, ms_serv.start_time));
@@ -2249,7 +2341,11 @@ for(index = 0;index < g_NrMSServs; index++)
 	 if(!strcmp(ms_serv.end_time,"00:00"))
 	 {
 		 AnscTraceWarning(("%s -- inside if ms_serv.end_time = %s eRet = %d ...\n", __FUNCTION__, ms_serv.end_time,eRet));
-		 strcpy(ms_serv.end_time,"23:59");
+		 safec_rc = strcpy_s(ms_serv.end_time, sizeof(ms_serv.end_time),"23:59");
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
 		rc = Utopia_SetMSServByIndex(&ctx, index, &ms_serv);
         if (rc != 0)
 	    {
@@ -2268,10 +2364,16 @@ for(index = 0;index < g_NrMSServs; index++)
 		 AnscTraceWarning(("%s -- Converted block_days for first rule = %s  ...\n", __FUNCTION__, ms_serv.block_days));
 		 AnscTraceWarning(("%s -- Converted block_days for Second rule = %s ...\n", __FUNCTION__,eTime_block_days));
 		 // split rule timings
-		 memset(rb_end_time,0,25);
-		 strcpy(rb_end_time,ms_serv.end_time);
-		 memset(ms_serv.end_time,0,64);
-		 strcpy(ms_serv.end_time,"23:59");
+		 safec_rc = strcpy_s(rb_end_time, sizeof(rb_end_time), ms_serv.end_time);
+		 if(safec_rc != EOK)
+		 {
+			ERR_CHK(safec_rc);
+		 }
+		 safec_rc = strcpy_s(ms_serv.end_time, sizeof(ms_serv.end_time), "23:59");
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
 		 AnscTraceWarning(("%d -- Converted ms_serv.end_time = %s ...\n", __LINE__,ms_serv.end_time));
 		 rc = Utopia_SetMSServByIndex(&ctx, index, &ms_serv);
 		 if (rc != 0)
@@ -2280,12 +2382,23 @@ for(index = 0;index < g_NrMSServs; index++)
                 Utopia_Free(&ctx, 0);
 				return ANSC_STATUS_FAILURE;
 			}
-			memset(ms_serv.end_time,0,64);
-		    strcpy(ms_serv.end_time,rb_end_time);
+			safec_rc = strcpy_s(ms_serv.end_time, sizeof(ms_serv.end_time),rb_end_time);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		 	AnscTraceWarning(("%d -- Converted ms_serv.end_time = %s ...\n", __LINE__,ms_serv.end_time));
-		    strcpy(ms_serv.start_time,"00:00");
+			safec_rc = strcpy_s(ms_serv.start_time, sizeof(ms_serv.start_time),"00:00");
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		    AnscTraceWarning(("%d -- Converted ms_serv.start_time = %s ...\n", __LINE__,ms_serv.start_time));
-		    strcpy(ms_serv.block_days,eTime_block_days);
+			safec_rc = strcpy_s(ms_serv.block_days, sizeof(ms_serv.block_days), eTime_block_days);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		    AnscTraceWarning(("%d -- Converted eTime_block_days = %s ...\n", __LINE__,eTime_block_days));
 		    AnscTraceWarning(("%d -- Converted ms_serv.block_days = %s ...\n", __LINE__,ms_serv.block_days));
 
@@ -2387,6 +2500,7 @@ CosaDmlMSServ_AddEntry(COSA_DML_MS_SERV *pEntry)
     int rc = -1;
     UtopiaContext ctx;
     ms_serv_t ms_serv;
+    errno_t safec_rc = -1;
     
     if (!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -2406,13 +2520,25 @@ CosaDmlMSServ_AddEntry(COSA_DML_MS_SERV *pEntry)
     switch(pEntry->Protocol)
     {
         case PROTO_TCP:
-            _ansc_strcpy(ms_serv.protocol, "TCP");
+            safec_rc = strcpy_s(ms_serv.protocol, sizeof(ms_serv.protocol), "TCP");
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             break;
         case PROTO_UDP:
-            _ansc_strcpy(ms_serv.protocol, "UDP");
+            safec_rc = strcpy_s(ms_serv.protocol, sizeof(ms_serv.protocol), "UDP");
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             break;
         case PROTO_BOTH:
-            _ansc_strcpy(ms_serv.protocol, "BOTH");
+            safec_rc = strcpy_s(ms_serv.protocol, sizeof(ms_serv.protocol), "BOTH");
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             break;
     }
 
@@ -2473,6 +2599,7 @@ CosaDmlMSServ_SetConf(ULONG ins, COSA_DML_MS_SERV *pEntry)
     UtopiaContext ctx;
     ms_serv_t ms_serv;
     int rc =  -1;
+    errno_t safec_rc = -1;
 
     if ((index = MSServ_InsGetIndex(ins)) == -1 || !Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -2494,13 +2621,25 @@ CosaDmlMSServ_SetConf(ULONG ins, COSA_DML_MS_SERV *pEntry)
     switch(pEntry->Protocol)
     {
         case PROTO_TCP:
-            _ansc_strcpy(ms_serv.protocol, "TCP");
+            safec_rc = strcpy_s(ms_serv.protocol, sizeof(ms_serv.protocol), "TCP");
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             break;
         case PROTO_UDP:
-            _ansc_strcpy(ms_serv.protocol, "UDP");
+            safec_rc = strcpy_s(ms_serv.protocol, sizeof(ms_serv.protocol), "UDP");
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             break;
         case PROTO_BOTH:
-            _ansc_strcpy(ms_serv.protocol, "BOTH");
+            safec_rc = strcpy_s(ms_serv.protocol, sizeof(ms_serv.protocol), "BOTH");
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
             break;
     }
     
@@ -2780,6 +2919,7 @@ ANSC_STATUS CosaDmlMDDev_RollbackUTCtoLocal()
     char end_time[25];
 	char eTime_block_days[64];
 	int sRet = 0,eRet = 0;
+    errno_t safec_rc = -1;
     ResetInsBuf();
 	AnscTraceWarning(("<<< %s --  g_NrBlkURL %d ...\n", __FUNCTION__,g_NrBlkURL));
     AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
@@ -2820,7 +2960,11 @@ for(index = 0;index < g_NrMDDevs; index++)
 							 if(strstr(md_dev.end_time,"23:59"))
 							 {
 								 AnscTraceWarning(("<<< %s -- copy end time and del rule %d ...\n", __FUNCTION__,TIndex));
-								 strcpy(md_dev.end_time,tmp.end_time);
+								 safec_rc = strcpy_s(md_dev.end_time,sizeof(md_dev.end_time),tmp.end_time);
+								 if(safec_rc != EOK)
+								 {
+									 ERR_CHK(safec_rc);
+								 }
 							     SetDelIndex(TIndex,tmp.ins_num);
 								 Utopia_GetNumberOfMDDev(&ctx, &g_NrMDDevs);
 							 }
@@ -2830,7 +2974,11 @@ for(index = 0;index < g_NrMDDevs; index++)
 							 if(strstr(md_dev.start_time,"00:00"))
 							 {
 								 AnscTraceWarning(("<<< %s -- copy start time and del rule %d ...\n", __FUNCTION__,TIndex));
-								 strcpy(md_dev.start_time,tmp.start_time);
+								 safec_rc = strcpy_s(md_dev.start_time,sizeof(md_dev.start_time),tmp.start_time);
+								 if(safec_rc != EOK)
+								 {
+									 ERR_CHK(safec_rc);
+								 }
 								 SetDelIndex(TIndex,tmp.ins_num);
 								 Utopia_GetNumberOfMDDev(&ctx, &g_NrMDDevs);
 							 }
@@ -2854,8 +3002,16 @@ for(index = 0;index < g_NrMDDevs; index++)
 		 AnscTraceWarning(("%s -- md_dev.start_time = %s...\n", __FUNCTION__, md_dev.start_time));
 		 AnscTraceWarning(("%s -- md_dev.end_time = %s...\n", __FUNCTION__, md_dev.end_time));
 
-		 strcpy(start_time, md_dev.start_time);
-		 strcpy(end_time, md_dev.end_time);
+		 safec_rc = strcpy_s(start_time, sizeof(start_time), md_dev.start_time);
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
+		 safec_rc = strcpy_s(end_time, sizeof(end_time), md_dev.end_time);
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
 		 sRet = ConvUTCToLocal(start_time, md_dev.start_time);
 		 eRet = ConvUTCToLocal(end_time, md_dev.end_time);
 		 memset(eTime_block_days,0,64);
@@ -2889,6 +3045,7 @@ ANSC_STATUS CosaDmlMDDev_Migration()
 	int sRet = 0,eRet = 0;
 	int                             InsNum                 = 0;
 	char eTime_block_days[64];
+    errno_t safec_rc = -1;
 AnscTraceWarning(("<<< %s -- ...\n", __FUNCTION__));
 for(index = 0;index < g_NrMDDevs; index++)
 {
@@ -2923,8 +3080,16 @@ for(index = 0;index < g_NrMDDevs; index++)
 		 continue;
 	 }
 	 
-     strcpy(start_time, md_dev.start_time);
-     strcpy(end_time, md_dev.end_time);
+     safec_rc = strcpy_s(start_time, sizeof(start_time),md_dev.start_time);
+     if(safec_rc != EOK)
+     {
+         ERR_CHK(safec_rc);
+     }
+     safec_rc = strcpy_s(end_time, sizeof(end_time), md_dev.end_time);
+     if(safec_rc != EOK)
+     {
+         ERR_CHK(safec_rc);
+     }
      sRet = ConvLocalToUTC(start_time, md_dev.start_time);
      eRet = ConvLocalToUTC(end_time, md_dev.end_time);
      AnscTraceWarning(("%s -- Converted md_dev.start_time = %s...\n", __FUNCTION__, md_dev.start_time));
@@ -2933,7 +3098,11 @@ for(index = 0;index < g_NrMDDevs; index++)
 	 if(!strcmp(md_dev.end_time,"00:00"))
 	 {
 		 AnscTraceWarning(("%s -- inside if md_dev.end_time = %s eRet = %d ...\n", __FUNCTION__, md_dev.end_time,eRet));
-		 strcpy(md_dev.end_time,"23:59");
+		 safec_rc = strcpy_s(md_dev.end_time,sizeof(md_dev.end_time),"23:59");
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
 		rc = Utopia_SetMDDevByIndex(&ctx, index, &md_dev);
         if (rc != 0)
 	    {
@@ -2952,10 +3121,16 @@ for(index = 0;index < g_NrMDDevs; index++)
 		 AnscTraceWarning(("%s -- Converted block_days for first rule = %s  ...\n", __FUNCTION__, md_dev.block_days));
 		 AnscTraceWarning(("%s -- Converted block_days for Second rule = %s ...\n", __FUNCTION__,eTime_block_days));
 		 // split rule timings
-		 memset(rb_end_time,0,25);
-		 strcpy(rb_end_time,md_dev.end_time);
-		 memset(md_dev.end_time,0,64);
-		 strcpy(md_dev.end_time,"23:59");
+		 safec_rc = strcpy_s(rb_end_time,sizeof(rb_end_time),md_dev.end_time);
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
+		 safec_rc = strcpy_s(md_dev.end_time,sizeof(md_dev.end_time),"23:59");
+		 if(safec_rc != EOK)
+		 {
+			 ERR_CHK(safec_rc);
+		 }
 		 AnscTraceWarning(("%d -- Converted md_dev.end_time = %s ...\n", __LINE__,md_dev.end_time));
 		 rc = Utopia_SetMDDevByIndex(&ctx, index, &md_dev);
 		 if (rc != 0)
@@ -2964,12 +3139,23 @@ for(index = 0;index < g_NrMDDevs; index++)
                 Utopia_Free(&ctx, 0);
 				return ANSC_STATUS_FAILURE;
 			}
-			memset(md_dev.end_time,0,64);
-		    strcpy(md_dev.end_time,rb_end_time);
+		    safec_rc = strcpy_s(md_dev.end_time,sizeof(md_dev.end_time),rb_end_time);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		 	AnscTraceWarning(("%d -- Converted md_dev.end_time = %s ...\n", __LINE__,md_dev.end_time));
-		    strcpy(md_dev.start_time,"00:00");
+		    safec_rc = strcpy_s(md_dev.start_time,sizeof(md_dev.start_time),"00:00");
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		    AnscTraceWarning(("%d -- Converted md_dev.start_time = %s ...\n", __LINE__,md_dev.start_time));
-		    strcpy(md_dev.block_days,eTime_block_days);
+		    safec_rc = strcpy_s(md_dev.block_days,sizeof(md_dev.block_days),eTime_block_days);
+			if(safec_rc != EOK)
+			{
+				ERR_CHK(safec_rc);
+			}
 		    AnscTraceWarning(("%d -- Converted eTime_block_days = %s ...\n", __LINE__,eTime_block_days));
 		    AnscTraceWarning(("%d -- Converted md_dev.block_days = %s ...\n", __LINE__,md_dev.block_days));
 

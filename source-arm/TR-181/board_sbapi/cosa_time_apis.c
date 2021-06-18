@@ -73,9 +73,11 @@
 #include "cosa_time_apis.h"
 #include "cJSON.h"
 #include "secure_wrapper.h"
+#include "safec_lib_common.h"
 
 #define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
 #define BOOTSTRAP_INFO_FILE             "/nvram/bootstrap.json"
+#define MAX_COSATIMEOFFSET_SIZE   256
 
 ANSC_STATUS
 CosaNTPInitJournal
@@ -587,6 +589,7 @@ CosaDmlTimeSetCfg
     UtopiaContext ctx;
     char buf[32] = {0};
     int rc = 0;
+    errno_t  safec_rc = -1;
     UNREFERENCED_PARAMETER(hContext);
     if (!pTimeCfg)
         return ANSC_STATUS_FAILURE;
@@ -602,7 +605,11 @@ CosaDmlTimeSetCfg
        rc = Utopia_Set_DeviceTime_LocalTZ(&ctx, (char*)&(pTimeCfg->LocalTimeZone));
 
        /*set city index */
-       sprintf(buf,"%lu",pTimeCfg->cityIndex);
+       safec_rc = sprintf_s(buf, sizeof(buf), "%lu",pTimeCfg->cityIndex);
+       if(safec_rc < EOK)
+       {
+          ERR_CHK(safec_rc);
+       }
        rc = Utopia_RawSet(&ctx, NULL, "ntp_cityindex", buf);
 
        /*Set NTP Server 1 to SysCfg */
@@ -853,7 +860,7 @@ struct tm *pLcltime, temp;
 #else
     struct tm *pLcltime;
 #ifdef _XF3_PRODUCT_REQ_
-    char timeOffset[256];
+    char timeOffset[MAX_COSATIMEOFFSET_SIZE];
     int offset;
     t = time(NULL);
     CosaDmlTimeGetTimeOffset((ANSC_HANDLE)NULL, timeOffset);
@@ -885,6 +892,7 @@ CosaDmlTimeGetTimeOffset
 {
     UNREFERENCED_PARAMETER(hContext);
     char offset_value[100]={0};
+    errno_t safec_rc = -1;
     memset(offset_value,0,sizeof(offset_value));
     if(!access("/nvram/ETHWAN_ENABLE", 0))
     {
@@ -894,12 +902,19 @@ CosaDmlTimeGetTimeOffset
              CcspTraceWarning(("%s: offset_value received from ipv4-timeoffset is %s \n", __FUNCTION__,offset_value));
              if ( offset_value[0] == '@' )
              {
-                strcpy(pTimeOffset,offset_value+1);
+                safec_rc = strcpy_s(pTimeOffset, MAX_COSATIMEOFFSET_SIZE, offset_value+1 );
+                if(safec_rc != EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
              }
              else
              {
-                strcpy(pTimeOffset,offset_value);
-
+                safec_rc = strcpy_s(pTimeOffset, MAX_COSATIMEOFFSET_SIZE, offset_value );
+                if(safec_rc != EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
              }
              return ANSC_STATUS_SUCCESS;       
         }
@@ -973,6 +988,7 @@ CosaNTPInitJournal
         char PartnerID[PARTNER_ID_LEN] = {0};
         ULONG size = PARTNER_ID_LEN - 1;
         int len;
+        errno_t safec_rc = -1;
         if (!pTimeCfg)
         {
                 CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
@@ -1042,7 +1058,11 @@ CosaNTPInitJournal
                                 else
                                 {
                                         CcspTraceWarning(( "Reading Deafult PartnerID Values \n" ));
-                                        strcpy(PartnerID, "comcast");
+                                        safec_rc = strcpy_s(PartnerID, PARTNER_ID_LEN, "comcast");
+                                        if(safec_rc != EOK)
+                                        {
+                                            ERR_CHK(safec_rc);
+                                        }
                                         FillPartnerIDNTPJournal(json, PartnerID, pTimeCfg);
                                 }
                         }

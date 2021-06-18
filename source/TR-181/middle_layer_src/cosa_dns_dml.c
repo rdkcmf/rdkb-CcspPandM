@@ -70,6 +70,7 @@
 /*#include "cosa_diagnostic_apis.h"*/
 #include "cosa_dns_dml.h"
 #include "cosa_dns_internal.h"
+#include "safec_lib_common.h"
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -807,6 +808,7 @@ Server1_AddEntry
     PSLIST_HEADER                   pSrvHead     = (PSLIST_HEADER)&pMyObject->ServerList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_DNS_CLIENT_SERVER     pDnsServer   = (PCOSA_DML_DNS_CLIENT_SERVER)NULL;
+    errno_t                         rc           = -1;
 
     CcspTraceInfo(("Server1_AddEntry...\n"));
 
@@ -817,7 +819,13 @@ Server1_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pDnsServer->Alias, "Server%lu", pMyObject->ulNextServerInsNum);
+    rc = sprintf_s(pDnsServer->Alias, sizeof(pDnsServer->Alias),"Server%lu", pMyObject->ulNextServerInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pDnsServer);
+      return NULL;
+    }
 
     pDnsServer->Type = COSA_DML_DNS_ADDR_SRC_Static;
         
@@ -2448,6 +2456,7 @@ Forwarding_AddEntry
     PSLIST_HEADER                   pForwardHead = (PSLIST_HEADER)&pMyObject->ForwardList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_DNS_RELAY_ENTRY       pForward     = (PCOSA_DML_DNS_RELAY_ENTRY)NULL;
+    errno_t                         rc           = -1;
 
     CcspTraceInfo(("Forwarding_AddEntry...\n"));
 
@@ -2458,7 +2467,13 @@ Forwarding_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pForward->Alias, "Forwarding%lu", pMyObject->ulNextForwardInsNum);
+    rc = sprintf_s(pForward->Alias, sizeof(pForward->Alias),"Forwarding%lu", pMyObject->ulNextForwardInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pForward);
+      return NULL;
+    }
 
     pForward->Type = COSA_DML_DNS_ADDR_SRC_Static;
 

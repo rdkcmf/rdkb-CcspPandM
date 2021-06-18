@@ -71,6 +71,7 @@
 
 #include "ssp_global.h"
 #include "ccsp_psm_helper.h"
+#include "safec_lib_common.h"
 
 
 ANSC_HANDLE                 bus_handle         = NULL;
@@ -105,10 +106,20 @@ void* CbrRemoveParam_Thread(void* arg)
     int  instance = 16;
     int  inst_value = 15;
     int retPsmSet = CCSP_SUCCESS;
+    errno_t rc  = -1;
 
-     memset(recName, 0, sizeof(recName));
-     sprintf(recName, BssMax, instance);
-     sprintf(strValue,"%d", inst_value);
+     rc = sprintf_s(recName, sizeof(recName), BssMax, instance);
+     if(rc < EOK)
+     {
+        ERR_CHK(rc);
+     }
+
+     rc = sprintf_s(strValue, sizeof(strValue), "%d", inst_value);
+     if(rc < EOK)
+     {
+        ERR_CHK(rc);
+     }
+
      retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, strValue);
      if (retPsmSet != CCSP_SUCCESS) {
               CcspTraceWarning(("%s: PSM Set record failed %s \n", __FUNCTION__, g_Subsystem));
@@ -162,6 +173,8 @@ void* BwgRemoveParam_Thread(void* arg)
     int count = 3, instance = 16;
     int i = 0, inst_value = 15;
     int retPsmSet = CCSP_SUCCESS;
+    errno_t rc  = -1;
+
     CcspTraceWarning(("%s: PSM_Del record %s \n", __FUNCTION__, g_Subsystem));
 
     system("touch /tmp/BwgRemoveFlag");
@@ -188,58 +201,102 @@ void* BwgRemoveParam_Thread(void* arg)
       
     for (i = 1; i <= count; i++)
     {
-        memset(recName, 0, sizeof(recName));
-        sprintf(recName, AllowDelete_2, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        rc = sprintf_s(recName, sizeof(recName), AllowDelete_2, count);
+        if(rc < EOK) {
+          ERR_CHK(rc);
+        } else {
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
 
-        memset(recName, 0, sizeof(recName));
-        sprintf(recName, Pvid, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        rc = sprintf_s(recName, sizeof(recName), Pvid, count);
+        if(rc < EOK) {
+          ERR_CHK(rc);
+        } else {
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
         
-        memset(recName, 0, sizeof(recName));
-        sprintf(recName, PriorityTag_2, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        rc = sprintf_s(recName, sizeof(recName), PriorityTag_2, count);
+        if(rc < EOK){
+          ERR_CHK(rc);
+        } else{
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
+
+        rc = sprintf_s(recName, sizeof(recName), Enable_2, count);
+        if(rc < EOK){
+          ERR_CHK(rc);
+        } else {
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
+
+        rc = sprintf_s(recName, sizeof(recName), Alias_3, count);
+        if(rc < EOK){
+          ERR_CHK(rc);
+        } else {
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
+
+        rc = sprintf_s(recName, sizeof(recName), Name_2, count);
+        if(rc < EOK){
+          ERR_CHK(rc);
+        } else {
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
+
+        rc = sprintf_s(recName, sizeof(recName), LinkName, count);
+        if(rc < EOK){
+          ERR_CHK(rc);
+        } else {
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
+
+        rc = sprintf_s(recName, sizeof(recName), LinkType, count);
+        if(rc < EOK){
+          ERR_CHK(rc);
+        } else {
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
     
-        memset(recName, 0, sizeof(recName));
-        sprintf(recName, Enable_2, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        rc = sprintf_s(recName, sizeof(recName), Management, count);
+        if(rc < EOK){
+          ERR_CHK(rc);
+        } else {
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
 
-        memset(recName, 0, sizeof(recName)); 
-        sprintf(recName, Alias_3, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
-        
-        memset(recName, 0, sizeof(recName)); 
-        sprintf(recName, Name_2, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        rc = sprintf_s(recName, sizeof(recName), Mode, count);
+        if(rc < EOK){
+          ERR_CHK(rc);
+        } else {
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
 
-        memset(recName, 0, sizeof(recName)); 
-        sprintf(recName, LinkName, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        rc = sprintf_s(recName, sizeof(recName), InstanceNum_3, count);
+        if(rc < EOK){
+          ERR_CHK(rc);
+        } else {
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
 
-        memset(recName, 0, sizeof(recName)); 
-        sprintf(recName, LinkType, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
-    
-        memset(recName, 0, sizeof(recName)); 
-        sprintf(recName, Management, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
-        
-        memset(recName, 0, sizeof(recName)); 
-        sprintf(recName, Mode, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
-     
-        memset(recName, 0, sizeof(recName)); 
-        sprintf(recName, InstanceNum_3, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
-
-        memset(recName, 0, sizeof(recName)); 
-        sprintf(recName, Upstream, count);
-        PSM_Del_Record(bus_handle,g_Subsystem,recName);
-
+        rc = sprintf_s(recName, sizeof(recName), Upstream, count);
+        if(rc < EOK){
+          ERR_CHK(rc);
+        } else {
+          PSM_Del_Record(bus_handle,g_Subsystem,recName);
+        }
      }
-     memset(recName, 0, sizeof(recName)); 
-     sprintf(recName, BssMax, instance);
-     sprintf(strValue,"%d", inst_value);
+
+     rc = sprintf_s(recName, sizeof(recName), BssMax, instance);
+     if(rc < EOK)
+     {
+       ERR_CHK(rc);
+     }
+     rc = sprintf_s(strValue, sizeof(strValue), "%d", inst_value);
+     if(rc < EOK)
+     {
+       ERR_CHK(rc);
+     }
+
      retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, strValue);
      if (retPsmSet != CCSP_SUCCESS) {
               CcspTraceWarning(("%s: PSM Set record failed %s \n", __FUNCTION__, g_Subsystem));
@@ -262,6 +319,7 @@ ssp_PnmMbi_MessageBusEngage
     CCSP_Base_Func_CB           cb                 = {0};
     
     char PsmName[256];
+    errno_t                     rc                 = -1;
 
     /* CID: 67630, 144419  Dereference after null check*/
     if ( ! component_id || ! path )
@@ -288,13 +346,10 @@ ssp_PnmMbi_MessageBusEngage
         return returnStatus;
     }
 
-    if ( g_Subsystem[0] != 0 )
+    rc = sprintf_s(PsmName, sizeof(PsmName), "%s%s", g_Subsystem, CCSP_DBUS_PSM);
+    if(rc < EOK)
     {
-        _ansc_sprintf(PsmName, "%s%s", g_Subsystem, CCSP_DBUS_PSM);
-    }
-    else
-    {
-        AnscCopyString(PsmName, CCSP_DBUS_PSM);
+      ERR_CHK(rc);
     }
 
     /* Wait for PSM */

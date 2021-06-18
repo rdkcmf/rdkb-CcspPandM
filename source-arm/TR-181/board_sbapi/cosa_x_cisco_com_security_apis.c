@@ -62,6 +62,7 @@
 
 #include "cosa_x_cisco_com_security_apis.h"
 #include "secure_wrapper.h"
+#include "safec_lib_common.h"
 
 #ifdef _COSA_SIM_
 
@@ -199,22 +200,58 @@ CosaDmlSecurityGetConfig
         PCOSA_DML_SECURITY_CFG      pCfg
     )
 {
-
+    errno_t safec_rc = -1;
     pCfg->ApplyFirewallSettings  = g_SecurityConfig.ApplyFirewallSettings;
     pCfg->CleanLog               = g_SecurityConfig.CleanLog;
     pCfg->TriggerEmailLog        = g_SecurityConfig.TriggerEmailLog;
     pCfg->EmailEnable            = g_SecurityConfig.EmailEnable;
     pCfg->EmailParentalControlBreach = g_SecurityConfig.EmailParentalControlBreach;
     pCfg->EmailAlertsOrWarnings = g_SecurityConfig.EmailAlertsOrWarnings;
-    _ansc_strcpy(pCfg->FilterWebTraffic, g_SecurityConfig.FilterWebTraffic);
-    _ansc_strcpy(pCfg->TrafficDetect, g_SecurityConfig.TrafficDetect);
-    _ansc_strcpy(pCfg->FilterLanTraffic, g_SecurityConfig.FilterLanTraffic);
-    _ansc_strcpy(pCfg->AllowPassthrough, g_SecurityConfig.AllowPassthrough);
-    _ansc_strcpy(pCfg->EmailSendTo, g_SecurityConfig.EmailSendTo);
-    _ansc_strcpy(pCfg->EmailServer, g_SecurityConfig.EmailServer);
-    _ansc_strcpy(pCfg->EmailUserName, g_SecurityConfig.EmailUserName);
-    _ansc_strcpy(pCfg->EmailPassword, g_SecurityConfig.EmailPassword);
-    _ansc_strcpy(pCfg->EmailFromAddress, g_SecurityConfig.EmailFromAddress);
+    safec_rc = strcpy_s(pCfg->FilterWebTraffic, sizeof(pCfg->FilterWebTraffic), g_SecurityConfig.FilterWebTraffic);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(pCfg->TrafficDetect, sizeof(pCfg->TrafficDetect), g_SecurityConfig.TrafficDetect);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(pCfg->FilterLanTraffic, sizeof(pCfg->FilterLanTraffic), g_SecurityConfig.FilterLanTraffic);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(pCfg->AllowPassthrough, sizeof(pCfg->AllowPassthrough), g_SecurityConfig.AllowPassthrough);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(pCfg->EmailSendTo, sizeof(pCfg->EmailSendTo), g_SecurityConfig.EmailSendTo);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(pCfg->EmailServer, sizeof(pCfg->EmailServer), g_SecurityConfig.EmailServer);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(pCfg->EmailUserName, sizeof(pCfg->EmailUserName), g_SecurityConfig.EmailUserName);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(pCfg->EmailPassword, sizeof(pCfg->EmailPassword), g_SecurityConfig.EmailPassword);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(pCfg->EmailFromAddress, sizeof(pCfg->EmailFromAddress), g_SecurityConfig.EmailFromAddress);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     pCfg->EmailFirewallBreach   = g_SecurityConfig.EmailFirewallBreach;
 
 #if 1
@@ -2345,13 +2382,18 @@ int safe_strcpy(char * dst, char * src, int dst_size);
 static int be_struct_2_middle_layer(iap_entry_t * p_in, PCOSA_DML_IA_POLICY p_out)
 {
     int i = 0;
+    errno_t safec_rc = -1;
 
     if (!p_in || !p_out)
         return -1;
 
     p_out->InstanceNumber = p_in->tr_inst_num;
-    safe_strcpy(p_out->Alias, p_in->policyname, sizeof(p_out->Alias));
-     
+    safec_rc = strcpy_s(p_out->Alias, sizeof(p_out->Alias), p_in->policyname);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+	
     p_out->bEnabled = p_in->enabled;
 
     p_out->LanHost.bUseLanHosts = p_in->lanhosts_set;
@@ -2406,6 +2448,7 @@ static int be_struct_2_middle_layer(iap_entry_t * p_in, PCOSA_DML_IA_POLICY p_ou
 static int middle_layer_2_be_struct(PCOSA_DML_IA_POLICY p_in, iap_entry_t * p_out, BOOL * p_alias_changed)
 {
     int i = 0;
+    errno_t safec_rc = -1;
 
     p_out->tr_inst_num = p_in->InstanceNumber;
 
@@ -2416,7 +2459,11 @@ static int middle_layer_2_be_struct(PCOSA_DML_IA_POLICY p_in, iap_entry_t * p_ou
     else 
     {
         *p_alias_changed = TRUE;
-        safe_strcpy(p_out->policyname, p_in->Alias, sizeof(p_out->policyname));
+        safec_rc = strcpy_s(p_out->policyname, sizeof(p_out->policyname), p_in->Alias);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
     }
     
     p_out->enabled = p_in->bEnabled;
@@ -2433,11 +2480,14 @@ static int middle_layer_2_be_struct(PCOSA_DML_IA_POLICY p_in, iap_entry_t * p_ou
         memset(p_out->lanhosts.maclist, 0, MACADDR_SZ * p_out->lanhosts.mac_count);
         for (i=0; i<p_out->lanhosts.mac_count; i++)
         {
-            _ansc_sprintf(p, "%02x:%02x:%02x:%02x:%02x:%02x",
+            safec_rc = sprintf_s(p, MACADDR_SZ * p_out->lanhosts.mac_count, "%02x:%02x:%02x:%02x:%02x:%02x",
                           p_in->LanHost.MacList[i].Mac[0],p_in->LanHost.MacList[i].Mac[1],
                           p_in->LanHost.MacList[i].Mac[2],p_in->LanHost.MacList[i].Mac[3],
                           p_in->LanHost.MacList[i].Mac[4],p_in->LanHost.MacList[i].Mac[5]);
-
+            if(safec_rc < EOK)
+            {
+                ERR_CHK(safec_rc);
+            }
             p += MACADDR_SZ;
         }
     }
@@ -2453,7 +2503,11 @@ static int middle_layer_2_be_struct(PCOSA_DML_IA_POLICY p_in, iap_entry_t * p_ou
         for (i=0; i<p_out->lanhosts.ip_count; i++)
         {
             /*there is a gap between firewall.c and definition of lanhosts.iplist, firewall.c only want the last octect*/
-            _ansc_sprintf(p, "%d", p_in->LanHost.IpList[i].Ip.Dot[3]);
+            safec_rc = sprintf_s(p, IPADDR_SZ * p_out->lanhosts.ip_count, "%d", p_in->LanHost.IpList[i].Ip.Dot[3]);
+            if(safec_rc < EOK)
+            {
+                ERR_CHK(safec_rc);
+            }
             p+= IPADDR_SZ;
         }
             
@@ -2893,14 +2947,23 @@ CosaDmlIaSetPolicyValues
     UtopiaContext ctx ;
     iap_entry_t * p_iap = NULL;
     char  old_name[128] = {0};
-    
+    errno_t safec_rc = -1;
+
     g_iaps[ulIndex].tr_inst_num = ulInstanceNumber;
     
     if (!AnscEqualString(g_iaps[ulIndex].policyname, pAlias, TRUE))
     {
         alias_changed = TRUE;
-        safe_strcpy(old_name, g_iaps[ulIndex].policyname, sizeof(old_name));
-        safe_strcpy(g_iaps[ulIndex].policyname, pAlias, sizeof(g_iaps[ulIndex].policyname));
+        safec_rc = strcpy_s(old_name, sizeof(old_name), g_iaps[ulIndex].policyname);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = strcpy_s(g_iaps[ulIndex].policyname, sizeof(g_iaps[ulIndex].policyname), pAlias);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
     }
 
     if(!Utopia_Init(&ctx))
@@ -3038,6 +3101,7 @@ CosaDmlIaAddPolicy
     iap_entry_t iap;
     UtopiaContext ctx ;
     BOOL          alias_changed = 0;
+    errno_t safec_rc = -1;
 
     memset(&iap, 0, sizeof(iap_entry_t));
     middle_layer_2_be_struct(pEntry, &iap, &alias_changed);
@@ -3046,8 +3110,16 @@ CosaDmlIaAddPolicy
     iap.allow_access = 1;
 
     iap.tod.day = 127;
-    strcpy(iap.tod.start_time,"00:00");
-    strcpy(iap.tod.stop_time,"23:59");
+    safec_rc = strcpy_s(iap.tod.start_time,sizeof(iap.tod.start_time),"00:00");
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(iap.tod.stop_time,sizeof(iap.tod.stop_time),"23:59");
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     iap.tod.all_day = TRUE;
 
 
@@ -3179,13 +3251,18 @@ CosaDmlIaSetPolicy
     UtopiaContext ctx ;    
     BOOL          alias_changed = 0;
     char          old_name[128] = {0};
+    errno_t safec_rc = -1;
 
     p_iap = find_ia_policy(ulInstanceNumber);
 
     if (!p_iap)
         return ANSC_STATUS_CANT_FIND;
     
-    safe_strcpy(old_name, p_iap->policyname, sizeof(old_name));
+    safec_rc = strcpy_s(old_name, sizeof(old_name), p_iap->policyname);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     middle_layer_2_be_struct(pEntry, p_iap, &alias_changed);
 
     if(!Utopia_Init(&ctx))
@@ -3261,6 +3338,7 @@ CosaDmlIaSetPolicy
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 void  be_struct_2_ml_schedule(iap_entry_t * p_iap, PCOSA_DML_IA_POLICY_SCH pEntry)
 {
+    errno_t safec_rc = -1;
     if (!p_iap || !pEntry)
         return;
 
@@ -3277,14 +3355,24 @@ void  be_struct_2_ml_schedule(iap_entry_t * p_iap, PCOSA_DML_IA_POLICY_SCH pEntr
     pEntry->IncludeSaturday   = (p_iap->tod.day&DAY_SAT) ? TRUE:FALSE ;    
 
     pEntry->AllDay            = (p_iap->tod.all_day)     ? TRUE:FALSE;
-    safe_strcpy(pEntry->StartTime, p_iap->tod.start_time, sizeof(pEntry->StartTime));
-    safe_strcpy(pEntry->EndTime, p_iap->tod.stop_time, sizeof(pEntry->EndTime));
+    safec_rc = strcpy_s(pEntry->StartTime, sizeof(pEntry->StartTime), p_iap->tod.start_time);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(pEntry->EndTime, sizeof(pEntry->EndTime), p_iap->tod.stop_time);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     return;
 }
 
 void  ml_schedule_2_be_struct(PCOSA_DML_IA_POLICY_SCH pEntry, iap_entry_t * p_iap)
 {
+    errno_t safec_rc = -1;
+
     if (!pEntry || !p_iap)
         return;
 
@@ -3302,8 +3390,16 @@ void  ml_schedule_2_be_struct(PCOSA_DML_IA_POLICY_SCH pEntry, iap_entry_t * p_ia
     /*if all_day is true, the start_time&stop_time doesn't take effect*/
     p_iap->tod.all_day = (pEntry->AllDay) ? TRUE:FALSE;
 
-    safe_strcpy(p_iap->tod.start_time, pEntry->StartTime, sizeof(p_iap->tod.start_time));
-    safe_strcpy(p_iap->tod.stop_time, pEntry->EndTime, sizeof(p_iap->tod.stop_time));
+    safec_rc = strcpy_s(p_iap->tod.start_time,sizeof(p_iap->tod.start_time), pEntry->StartTime);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(p_iap->tod.stop_time,sizeof(p_iap->tod.stop_time), pEntry->EndTime);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     return;
 }
@@ -3503,7 +3599,8 @@ CosaDmlIaPolicyGetUrl
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     char * p_url = NULL;
     iap_entry_t * p_iap = NULL;
-    
+    errno_t safec_rc = -1; 
+ 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
     if (!p_iap)
@@ -3513,10 +3610,18 @@ CosaDmlIaPolicyGetUrl
         return ANSC_STATUS_CANT_FIND;
     
     pUrl->InstanceNumber = p_iap->block.url_tr_inst_num[ulIndex];
-    safe_strcpy(pUrl->Alias, p_iap->block.url_tr_alias, sizeof(pUrl->Alias));
+    safec_rc = strcpy_s(pUrl->Alias, sizeof(pUrl->Alias), p_iap->block.url_tr_alias);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     p_url = p_iap->block.url_list + URL_SZ*ulIndex;
-    safe_strcpy(pUrl->Url, p_url, sizeof(pUrl->Url));
+    safec_rc = strcpy_s(pUrl->Url, sizeof(pUrl->Url), p_url);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     return ANSC_STATUS_SUCCESS;
 #endif
@@ -3575,6 +3680,7 @@ CosaDmlIaPolicyGetUrlByInsNum
     int i = 0;
     char * p_url = NULL;
     iap_entry_t * p_iap = NULL;
+    errno_t safec_rc = -1;
     
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -3597,9 +3703,16 @@ CosaDmlIaPolicyGetUrlByInsNum
         return ANSC_STATUS_CANT_FIND;
 
     pUrl->InstanceNumber = p_iap->block.url_tr_inst_num[i];
-    safe_strcpy(pUrl->Alias, p_iap->block.url_tr_alias + i*TR_ALIAS_SZ, sizeof(pUrl->Alias));
-
-    safe_strcpy(pUrl->Url, p_url, sizeof(pUrl->Url));
+    safec_rc = strcpy_s(pUrl->Alias, sizeof(pUrl->Alias), p_iap->block.url_tr_alias + i*TR_ALIAS_SZ);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(pUrl->Url, sizeof(pUrl->Url), p_url);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     return ANSC_STATUS_SUCCESS;
     
@@ -3661,6 +3774,7 @@ CosaDmlIaPolicySetUrlValues
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     /*the two instance number are all sane, no need to validate*/
     iap_entry_t * p_iap = NULL;
+    errno_t safec_rc = -1;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -3668,8 +3782,11 @@ CosaDmlIaPolicySetUrlValues
         return ANSC_STATUS_CANT_FIND;
 
     p_iap->block.url_tr_inst_num[ulIndex] = ulInstanceNumber;
-    safe_strcpy(p_iap->block.url_tr_alias + TR_ALIAS_SZ*ulIndex, pAlias, TR_ALIAS_SZ);
-
+    safec_rc = strcpy_s(p_iap->block.url_tr_alias + TR_ALIAS_SZ*ulIndex, TR_ALIAS_SZ, pAlias);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     if (TRUE) 
     {
         UtopiaContext ctx ;
@@ -3730,6 +3847,7 @@ CosaDmlIaPolicyAddUrl
     char * p_url = NULL;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;
+    errno_t safec_rc = -1;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -3746,14 +3864,22 @@ CosaDmlIaPolicyAddUrl
     if (B.url_tr_alias)
     {
         char * p = B.url_tr_alias+(B.url_count-1)*TR_ALIAS_SZ;
-        safe_strcpy(p, pUrl->Alias, TR_ALIAS_SZ);
+        safec_rc = strcpy_s(p, TR_ALIAS_SZ, pUrl->Alias);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
     }
     
     B.url_list = realloc(B.url_list, B.url_count*URL_SZ);
     if (B.url_list)
     {
         p_url = B.url_list + URL_SZ*(B.url_count-1);
-        safe_strcpy(p_url, pUrl->Url, URL_SZ);
+        safec_rc = strcpy_s(p_url, URL_SZ, pUrl->Url);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
     }
 
     if(!Utopia_Init(&ctx))
@@ -3914,6 +4040,7 @@ CosaDmlIaPolicySetUrl
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;
+    errno_t safec_rc = -1;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -3935,12 +4062,23 @@ CosaDmlIaPolicySetUrl
     /*now i strore index of url_list*/
     p = B.url_tr_alias + TR_ALIAS_SZ*i;
     if (!AnscEqualString(p, pUrl->Alias, TRUE))
-        safe_strcpy(p, pUrl->Alias, TR_ALIAS_SZ);
-    
+    {
+        safec_rc = strcpy_s(p, TR_ALIAS_SZ, pUrl->Alias);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+    }
     p = B.url_list + URL_SZ*i;
     if (!AnscEqualString(p, pUrl->Url, TRUE))
-        safe_strcpy(p, pUrl->Url, URL_SZ);
-
+    {
+        safec_rc = strcpy_s(p, URL_SZ, pUrl->Url);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+    }
+	
     if (!Utopia_AddInternetAccessPolicy (&ctx, p_iap))
         Utopia_Free(&ctx, 1);
     else 
@@ -4052,6 +4190,7 @@ CosaDmlIaPolicyGetKeyword
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
+    errno_t safec_rc = -1;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -4063,10 +4202,18 @@ CosaDmlIaPolicyGetKeyword
     pKeyword->InstanceNumber = B.keyword_tr_inst_num[ulIndex];
 
     p = B.keyword_tr_alias + TR_ALIAS_SZ*ulIndex;
-    safe_strcpy(pKeyword->Alias, p, sizeof(pKeyword->Alias));
+    safec_rc = strcpy_s(pKeyword->Alias, sizeof(pKeyword->Alias), p);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     p = B.keyword_list + IAP_KEYWORD_SZ*ulIndex;
-    safe_strcpy(pKeyword->Keyword, p, sizeof(pKeyword->Keyword));
+    safec_rc = strcpy_s(pKeyword->Keyword, sizeof(pKeyword->Keyword), p);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     return ANSC_STATUS_SUCCESS;
     
@@ -4128,6 +4275,7 @@ CosaDmlIaPolicyGetKeywordByInsNum
     int i = 0;
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
+    errno_t safec_rc = -1;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -4147,10 +4295,18 @@ CosaDmlIaPolicyGetKeywordByInsNum
     memset(pKeyword, 0, sizeof(*pKeyword));
     
     p = B.keyword_tr_alias + TR_ALIAS_SZ*i;
-    safe_strcpy(pKeyword->Alias, p, sizeof(pKeyword->Alias));
+    safec_rc = strcpy_s(pKeyword->Alias, sizeof(pKeyword->Alias), p);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     p = B.keyword_list + IAP_KEYWORD_SZ*i;
-    safe_strcpy(pKeyword->Keyword, p, sizeof(pKeyword->Keyword));
+    safec_rc = strcpy_s(pKeyword->Keyword, sizeof(pKeyword->Keyword), p);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     return ANSC_STATUS_SUCCESS;
     
@@ -4214,6 +4370,7 @@ CosaDmlIaPolicySetKeywordValues
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
+    errno_t safec_rc = -1;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -4223,7 +4380,11 @@ CosaDmlIaPolicySetKeywordValues
     B.keyword_tr_inst_num[ulIndex] = ulInstanceNumber;
     
     p = B.keyword_tr_alias + TR_ALIAS_SZ*ulIndex;
-    safe_strcpy(p, pAlias, TR_ALIAS_SZ);
+    safec_rc = strcpy_s(p, TR_ALIAS_SZ, pAlias);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     if (TRUE) 
     {
@@ -4290,6 +4451,7 @@ CosaDmlIaPolicyAddKeyword
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;
+    errno_t safec_rc = -1;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
 
@@ -4306,14 +4468,22 @@ CosaDmlIaPolicyAddKeyword
     if (B.keyword_tr_alias) 
     {
         p = B.keyword_tr_alias + (B.keyword_count-1)*TR_ALIAS_SZ;
-        safe_strcpy(p, pKeyword->Alias, TR_ALIAS_SZ);
+        safec_rc = strcpy_s(p, TR_ALIAS_SZ, pKeyword->Alias);
+        if(safec_rc != EOK)
+        {
+          ERR_CHK(safec_rc);
+        }
     }
     
     B.keyword_list = realloc(B.keyword_list, B.keyword_count*IAP_KEYWORD_SZ);
     if (B.keyword_list)
     {
         p = B.keyword_list + (B.keyword_count-1)*IAP_KEYWORD_SZ;
-        safe_strcpy(p, pKeyword->Keyword, IAP_KEYWORD_SZ);
+        safec_rc = strcpy_s(p, IAP_KEYWORD_SZ, pKeyword->Keyword);
+        if(safec_rc != EOK)
+        {
+          ERR_CHK(safec_rc);
+        }
     }
 
     if(!Utopia_Init(&ctx))
@@ -4479,6 +4649,7 @@ CosaDmlIaPolicySetKeyword
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;
+    errno_t safec_rc = -1;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
 
@@ -4496,10 +4667,18 @@ CosaDmlIaPolicySetKeyword
 
     /*now i stores the index for block.keyword_list*/
     p = B.keyword_list + IAP_KEYWORD_SZ*i;
-    safe_strcpy(p, pKeyword->Keyword, IAP_KEYWORD_SZ);
-    
+    safec_rc = strcpy_s(p, IAP_KEYWORD_SZ, pKeyword->Keyword);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }    
+
     p = B.keyword_tr_alias + TR_ALIAS_SZ*i;
-    safe_strcpy(p, pKeyword->Alias, TR_ALIAS_SZ);
+    safec_rc = strcpy_s(p, TR_ALIAS_SZ, pKeyword->Alias);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -4593,13 +4772,18 @@ BOOL isWellKnownService (const char *name)
 
 void middle_layer_2_be_app(PCOSA_DML_IA_POLICY_APP pApp, appentry_t * p_app )
 {
+    errno_t safec_rc = -1;
     if (!pApp || !p_app)
         return;
     
     memset(p_app, 0, sizeof(appentry_t));
 
     /*Alias is the p_app->name*/
-    safe_strcpy(p_app->name, pApp->Alias, sizeof(p_app->name));
+    safec_rc = strcpy_s(p_app->name, sizeof(p_app->name), pApp->Alias);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     p_app->wellknown  = pApp->IsWellKnown = isWellKnownService(p_app->name);
     p_app->proto      = pApp->Protocol - 1;
@@ -4611,12 +4795,17 @@ void middle_layer_2_be_app(PCOSA_DML_IA_POLICY_APP pApp, appentry_t * p_app )
 
 void be_block_app_2_middle_layer(blockentry_t * p_b, PCOSA_DML_IA_POLICY_APP pApp, ULONG ulIndex)
 {
+    errno_t safec_rc = -1;
     if (!p_b || !pApp)
         return;
 
     pApp->InstanceNumber = p_b->app_tr_inst_num[ulIndex];
 
-    safe_strcpy(pApp->Alias, p_b->app_list[ulIndex].name, sizeof(pApp->Alias));
+    safec_rc = strcpy_s(pApp->Alias, sizeof(pApp->Alias), p_b->app_list[ulIndex].name);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     
     pApp->IsWellKnown = p_b->app_list[ulIndex].wellknown = isWellKnownService(pApp->Alias);
 
@@ -4857,6 +5046,7 @@ CosaDmlIaPolicySetAppValues
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     char * p = NULL;
     iap_entry_t * p_iap = NULL;
+    errno_t safec_rc = -1;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
     
@@ -4866,8 +5056,11 @@ CosaDmlIaPolicySetAppValues
     B.app_tr_inst_num[ulIndex] = ulInstanceNumber;
 
     p = B.app_list[ulIndex].name;
-    safe_strcpy(p, pAlias, sizeof(B.app_list[ulIndex].name));
-
+    safec_rc = strcpy_s(p, sizeof(B.app_list[ulIndex].name), pAlias);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     if (TRUE) 
     {
@@ -5110,6 +5303,7 @@ CosaDmlIaPolicySetBlockedApp
     iap_entry_t * p_iap = NULL;
     UtopiaContext ctx ;    
     appentry_t *  p_app = NULL;
+    errno_t safec_rc = -1;
 
     p_iap = find_ia_policy(ulPolicyInstanceNumber);
 
@@ -5127,7 +5321,11 @@ CosaDmlIaPolicySetBlockedApp
 
     /*i stores index for block.app_list*/
     p = B.app_list[i].name;
-    safe_strcpy(p, pApp->Alias, sizeof(B.app_list[i].name));
+    safec_rc = strcpy_s(p, sizeof(B.app_list[i].name), pApp->Alias);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     p_app = B.app_list + i;
 
@@ -5231,7 +5429,10 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
     while(-1 != getline(&line, &len, fp)){
         /*CID: 57783 Dereference before null check*/
         if(!line)
+        {
+           fclose(fp);
            return;
+        }
 
         if(0 == anlz_line(line, *entry + *count))
             (*count)++;        
@@ -5250,10 +5451,11 @@ void get_log_entry(char* fName, PCOSA_DML_IA_LOG_ENTRY *entry, unsigned long *co
 }
 
 static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
-    struct dirent ptr;
+    struct dirent ptr = {0};
     PCOSA_DML_IA_LOG_ENTRY entry = NULL;
 
     *count = 0;
+    errno_t safec_rc = -1;
         /* Check log time format */
 		/* Old timestemp not include year, 
  		 * add year to support it */
@@ -5279,10 +5481,20 @@ static PCOSA_DML_IA_LOG_ENTRY _get_log(ULONG *count){
                     /* this is a temp log file, Get current year */
                     if(strstr(year, "9999") != NULL)
                     {
-                        sprintf(year, " %04d", ptime->tm_year + 1900); 
+                        safec_rc = sprintf_s(year, sizeof(year), " %04d", ptime->tm_year + 1900); 
+                        if(safec_rc < EOK)
+                        {
+                           ERR_CHK(safec_rc);
+                        }
                     }else
+                    {
                         // below line would give garbage time value as ptr is not set
-                        sprintf(year, " %c%c%c%c", ptr.d_name[0], ptr.d_name[1], ptr.d_name[2], ptr.d_name[3]);
+                        safec_rc = sprintf_s(year, sizeof(year), " %c%c%c%c", ptr.d_name[0], ptr.d_name[1], ptr.d_name[2], ptr.d_name[3]);
+                        if(safec_rc < EOK)
+                        {
+                           ERR_CHK(safec_rc);
+                        }
+                    }
                 }
                 strncat(entry[tmp].OccuranceTime, year, 5);
             }   
@@ -5598,34 +5810,58 @@ static int gen_email_files(const email_notification_t *emailSetting)
     if(emailSetting->bParentalControlBreach) 
     {
         fp = fopen("/var/.email_pclog", "w");
-        fclose(fp);
+        if(fp)
+        {
+           fclose(fp);
+        }
     }   
     else
-        remove("/var/.email_pclog");
+    {
+        if(remove("/var/.email_pclog") != 0)
+            printf("Unable to delete a file /var/.email_pclog");
+    }
 
     if(emailSetting->bAlertsWarnings)
     {
         fp = fopen("/var/.email_awlog", "w");
-        fclose(fp);
+        if(fp)
+        {
+           fclose(fp);
+        }
     }
     else
-        remove("/var/.email_awlog");
+    {
+        if(remove("/var/.email_awlog") != 0)
+            printf("Unable to delete a file /var/.email_awlog");
+    }
 
     if(emailSetting->bFirewallBreach)
     {
         fp = fopen("/var/.email_fwlog", "w");
-        fclose(fp);
+        if(fp)
+        {
+           fclose(fp);
+        }
     }
     else
-        remove("/var/.email_fwlog");
+    {
+        if(remove("/var/.email_fwlog") != 0)
+            printf("Unable to delete a file /var/.email_fwlog");
+    }
 
     if(emailSetting->bSendLogs)
     {
         fp = fopen("/var/.email_alllog", "w");
-        fclose(fp);
+        if(fp)
+        {
+           fclose(fp);
+        }
     }
     else
-        remove("/var/.email_alllog");
+    {
+        if(remove("/var/.email_alllog") != 0)
+            printf("Unable to delete a file /var/.email_alllog");
+    }
     
     if(gen_ssmtp_cfg_file(emailSetting->server, emailSetting->from_addr, emailSetting->password) != 0)
     {
@@ -5641,7 +5877,10 @@ static int gen_email_files(const email_notification_t *emailSetting)
     }
 
     fp = fopen("/var/.email_ready", "w");
-    fclose(fp);
+    if(fp)
+    {
+       fclose(fp);
+    }
 
     return 0;
 }
@@ -5683,6 +5922,7 @@ CosaDmlSecurityGetConfig
     int rc = -1;
     UtopiaContext ctx;
     email_notification_t emailSetting;
+    errno_t safec_rc = -1;
 
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
@@ -5696,11 +5936,31 @@ CosaDmlSecurityGetConfig
         pCfg->EmailSendLogs = emailSetting.bSendLogs;
         pCfg->TriggerEmailLog = FALSE; //always return FALSE
 
-        _ansc_strcpy(pCfg->EmailSendTo, emailSetting.send_to);
-        _ansc_strcpy(pCfg->EmailServer, emailSetting.server);
-        _ansc_strcpy(pCfg->EmailUserName, emailSetting.username);
-        _ansc_strcpy(pCfg->EmailPassword, emailSetting.password);
-        _ansc_strcpy(pCfg->EmailFromAddress, emailSetting.from_addr);
+        safec_rc = strcpy_s(pCfg->EmailSendTo, sizeof(pCfg->EmailSendTo), emailSetting.send_to);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = strcpy_s(pCfg->EmailServer, sizeof(pCfg->EmailServer), emailSetting.server);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = strcpy_s(pCfg->EmailUserName, sizeof(pCfg->EmailUserName), emailSetting.username);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = strcpy_s(pCfg->EmailPassword, sizeof(pCfg->EmailPassword), emailSetting.password);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+        safec_rc = strcpy_s(pCfg->EmailFromAddress, sizeof(pCfg->EmailFromAddress), emailSetting.from_addr);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
     }
 
     Utopia_Free(&ctx, 0);
@@ -5749,6 +6009,7 @@ CosaDmlSecuritySetConfig
     int rc = -1;
     int ret = 0;
     UtopiaContext ctx;
+    errno_t safec_rc = -1;
     email_notification_t emailSetting, defaultEmailSetting;
      char logFilePath[MAX_PATH_LEN] = "";
     
@@ -5761,20 +6022,47 @@ CosaDmlSecuritySetConfig
     emailSetting.bFirewallBreach = pCfg->EmailFirewallBreach;
     emailSetting.bSendLogs= pCfg->EmailSendLogs;
 
-    _ansc_strcpy(emailSetting.send_to, pCfg->EmailSendTo);
-    _ansc_strcpy(emailSetting.server, pCfg->EmailServer);
-    _ansc_strcpy(emailSetting.username, pCfg->EmailUserName);
-    _ansc_strcpy(emailSetting.password, pCfg->EmailPassword);
+    safec_rc = strcpy_s(emailSetting.send_to, sizeof(emailSetting.send_to), pCfg->EmailSendTo);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(emailSetting.server, sizeof(emailSetting.server), pCfg->EmailServer);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(emailSetting.username, sizeof(emailSetting.username), pCfg->EmailUserName);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = strcpy_s(emailSetting.password, sizeof(emailSetting.password), pCfg->EmailPassword);
+    if(safec_rc != EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
 
     if(!_ansc_strcmp(pCfg->EmailFromAddress, ""))
     {
         rc = Utopia_GetEmailNotificationSetting(&ctx, &defaultEmailSetting);
         if(!rc)
-            _ansc_strcpy(emailSetting.from_addr, defaultEmailSetting.from_addr);
+        {
+            safec_rc = strcpy_s(emailSetting.from_addr, sizeof(emailSetting.from_addr), defaultEmailSetting.from_addr);
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
+        }
     }
     else
-        _ansc_strcpy(emailSetting.from_addr, pCfg->EmailFromAddress);
-
+    {
+        safec_rc = strcpy_s(emailSetting.from_addr, sizeof(emailSetting.from_addr), pCfg->EmailFromAddress);
+        if(safec_rc != EOK)
+        {
+           ERR_CHK(safec_rc);
+        }
+    }
     rc = Utopia_SetEmailNotificationSetting(&ctx, &emailSetting);
     
     if(!rc)

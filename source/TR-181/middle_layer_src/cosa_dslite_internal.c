@@ -21,6 +21,7 @@
 #include "poam_irepfo_interface.h"
 #include "sys_definitions.h"
 #include "slap_vho_exported_api.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -280,6 +281,7 @@ CosaDsliteBackendGetInfo
     PCOSA_CONTEXT_LINK_OBJECT       pDsliteCxtLink    = NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pDsliteCxtLink2   = NULL;
     BOOL                            bNeedSave         = FALSE;
+    errno_t                         rc                = -1;
 
     /* Get Device.DSLite.InterfaceSetting.{i} */
     CosaDmlDsliteGetNumberOfEntries(NULL, &tunnelCount);
@@ -321,7 +323,15 @@ CosaDsliteBackendGetInfo
 
             pCosaDslite->InstanceNumber    = pMyObject->maxInstanceOfDslite;
             pDsliteCxtLink->InstanceNumber = pCosaDslite->InstanceNumber;
-            _ansc_sprintf( pCosaDslite->alias, "Dslite.Tunnel.%lu", pCosaDslite->InstanceNumber);
+            rc = sprintf_s( pCosaDslite->alias, sizeof(pCosaDslite->alias),"Dslite.Tunnel.%lu", pCosaDslite->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pCosaDslite);
+              AnscFreeMemory(pDsliteCxtLink);
+              break;
+            }
+
             returnStatus = CosaDmlDsliteSetInsNum
                             (
                                 NULL,
@@ -646,6 +656,7 @@ CosaDsliteRegSetDsliteInfo
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY)NULL;
     PSLAP_VARIABLE                  pSlapVariable     = NULL;
     char                            FolderName[16]    = {0};
+    errno_t                         rc                = -1;
 
 
     if ( !pPoamIrepFoDslite )
@@ -723,7 +734,13 @@ CosaDsliteRegSetDsliteInfo
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%lu", pCosaDslite->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%lu", pCosaDslite->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          returnStatus = ANSC_STATUS_FAILURE;
+          goto  EXIT1;
+        }
 
         pPoamIrepFoEnumDslite =
             pPoamIrepFoDslite->AddFolder

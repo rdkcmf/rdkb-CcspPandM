@@ -78,6 +78,7 @@
 #include "plugin_main_apis.h"
 #include "poam_irepfo_interface.h"
 #include "sys_definitions.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -403,6 +404,7 @@ CosaDhcpv4BackendGetDhcpv4Info
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink2         = NULL;
 
     BOOL                            bNeedSave         = FALSE;
+    errno_t                         rc                = -1;
 #ifndef FEATURE_RDKB_WAN_MANAGER
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pClientCxtLink    = NULL;    
     PCOSA_DML_DHCPC_FULL            pDhcpc            = NULL;
@@ -410,6 +412,7 @@ CosaDhcpv4BackendGetDhcpv4Info
     PCOSA_DML_DHCP_OPT              pSendOption       = NULL;
     ULONG                           clientCount       = 0;
     PCOSA_CONTEXT_DHCPC_LINK_OBJECT pClientCxtLink2   = NULL;    
+
     /* Get DHCPv4.Client.{i} */
     clientCount = CosaDmlDhcpcGetNumberOfEntries(NULL);
     for ( ulIndex = 0; ulIndex < clientCount; ulIndex++ )
@@ -450,7 +453,15 @@ CosaDhcpv4BackendGetDhcpv4Info
             pDhcpc->Cfg.InstanceNumber     = pDhcpv4->maxInstanceOfClient;
             pClientCxtLink->InstanceNumber = pDhcpc->Cfg.InstanceNumber;
             
-            _ansc_sprintf(pDhcpc->Cfg.Alias, "DHCPv4%lu", pDhcpc->Cfg.InstanceNumber);
+            rc = sprintf_s(pDhcpc->Cfg.Alias, sizeof(pDhcpc->Cfg.Alias), "DHCPv4%lu", pDhcpc->Cfg.InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pDhcpc);
+              AnscFreeMemory(pClientCxtLink);
+              returnStatus = ANSC_STATUS_FAILURE;
+              break;
+            }
 
             returnStatus = CosaDmlDhcpcSetValues
                             (
@@ -554,7 +565,15 @@ CosaDhcpv4BackendGetDhcpv4Info
 
                 pReqOption->InstanceNumber = pClientCxtLink->maxInstanceOfReq;
         
-                _ansc_sprintf( pReqOption->Alias, "ReqOption%lu", pReqOption->InstanceNumber );
+                rc = sprintf_s( pReqOption->Alias, sizeof(pReqOption->Alias), "ReqOption%lu", pReqOption->InstanceNumber );
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  AnscFreeMemory(pReqOption);
+                  AnscFreeMemory(pCxtLink);
+                  returnStatus = ANSC_STATUS_FAILURE;
+                  break;
+                }
         
                 returnStatus = CosaDmlDhcpcSetReqOptionValues
                                 (
@@ -662,7 +681,15 @@ CosaDhcpv4BackendGetDhcpv4Info
                 bNeedSave                        = TRUE;
                 pSendOption->InstanceNumber = pClientCxtLink->maxInstanceOfSend;
 
-                _ansc_sprintf( pSendOption->Alias, "SentOption%lu", pSendOption->InstanceNumber );
+                rc = sprintf_s( pSendOption->Alias,sizeof(pSendOption->Alias), "SentOption%lu", pSendOption->InstanceNumber );
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  AnscFreeMemory(pSendOption);
+                  AnscFreeMemory(pCxtLink);
+                  returnStatus = ANSC_STATUS_FAILURE;
+                  break;
+                }
         
                 returnStatus = CosaDmlDhcpcSetSentOptionValues
                                 (
@@ -768,7 +795,15 @@ CosaDhcpv4BackendGetDhcpv4Info
             pPool->Cfg.InstanceNumber    = pDhcpv4->maxInstanceOfPool;
             pPoolCxtLink->InstanceNumber = pPool->Cfg.InstanceNumber; 
              
-            _ansc_sprintf(pPool->Cfg.Alias, "DHCPv4%lu", pPool->Cfg.InstanceNumber);
+            rc = sprintf_s(pPool->Cfg.Alias, sizeof(pPool->Cfg.Alias),"DHCPv4%lu", pPool->Cfg.InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pPool);
+              AnscFreeMemory(pPoolCxtLink);
+              returnStatus = ANSC_STATUS_FAILURE;
+              break;
+            }
 
             returnStatus = CosaDmlDhcpsSetPoolValues
                             (
@@ -873,7 +908,15 @@ CosaDhcpv4BackendGetDhcpv4Info
                 bNeedSave                        = TRUE;
                 pStaticAddr->InstanceNumber = pPoolCxtLink->maxInstanceOfStaticAddress;
         
-                _ansc_sprintf( pStaticAddr->Alias, "StaticAddress%lu", pStaticAddr->InstanceNumber );
+                rc = sprintf_s( pStaticAddr->Alias, sizeof(pStaticAddr->Alias), "StaticAddress%lu", pStaticAddr->InstanceNumber );
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  AnscFreeMemory(pStaticAddr);
+                  AnscFreeMemory(pCxtLink);
+                  returnStatus = ANSC_STATUS_FAILURE;
+                  break;
+                }
         
                 returnStatus = CosaDmlDhcpsSetSaddrValues
                                 (
@@ -981,7 +1024,15 @@ CosaDhcpv4BackendGetDhcpv4Info
                 bNeedSave                        = TRUE;
                 pOption->InstanceNumber = pPoolCxtLink->maxInstanceOfOption;
         
-                _ansc_sprintf( pOption->Alias, "Option%lu", pOption->InstanceNumber );
+                rc = sprintf_s( pOption->Alias, sizeof(pOption->Alias),"Option%lu", pOption->InstanceNumber );
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  AnscFreeMemory(pOption);
+                  AnscFreeMemory(pCxtLink);
+                  returnStatus = ANSC_STATUS_FAILURE;
+                  break;
+                }
         
                 returnStatus = CosaDmlDhcpsSetOptionValues
                                 (
@@ -2488,6 +2539,7 @@ CosaDhcpv4RegSetDhcpv4Info
     PCOSA_DML_DHCPS_POOL_FULL       pDhcpv4Pool       = NULL;
     PCOSA_DML_DHCPS_SADDR           pDhcpv4StaticAddress  = NULL;
     PCOSA_DML_DHCPSV4_OPTION        pDhcpv4Option         = NULL;
+    errno_t                         rc                    = -1;
 
     if ( !pPoamIrepFoDhcpv4 )
     {
@@ -2619,7 +2671,12 @@ CosaDhcpv4RegSetDhcpv4Info
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%lu", pCosaDhcpcContext->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%lu", pCosaDhcpcContext->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          goto EXIT1;
+        }
 
         pPoamIrepFoEnumClient =
             pPoamIrepFoClient->AddFolder
@@ -2736,7 +2793,12 @@ CosaDhcpv4RegSetDhcpv4Info
                 continue;
             }
             
-            _ansc_sprintf(FolderName, "%lu", pCosaReqOptionContext->InstanceNumber);
+            rc = sprintf_s(FolderName, sizeof(FolderName),"%lu", pCosaReqOptionContext->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              goto EXIT1;
+            }
         
             pPoamIrepFoEnumReqOpt =
                 pPoamIrepFoReqOpt->AddFolder
@@ -2861,7 +2923,12 @@ SentOption:
                 continue;
             }
         
-            _ansc_sprintf(FolderName, "%lu", pCosaSendOptionContext->InstanceNumber);
+            rc = sprintf_s(FolderName, sizeof(FolderName),"%lu", pCosaSendOptionContext->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              goto EXIT1;
+            }
         
             pPoamIrepFoEnumSndOpt =
                 pPoamIrepFoSndOpt->AddFolder
@@ -2997,7 +3064,12 @@ ClientEnd:
             continue;
         }
 
-        _ansc_sprintf(FolderName, "%lu", pCosaPoolContext->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%lu", pCosaPoolContext->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          goto EXIT1;
+        }
 
         pPoamIrepFoEnumPool =
             pPoamIrepFoPool->AddFolder
@@ -3113,7 +3185,12 @@ ClientEnd:
                 continue;
             }
             
-            _ansc_sprintf(FolderName, "%lu", pCosaStaticAddressContext->InstanceNumber);
+            rc = sprintf_s(FolderName, sizeof(FolderName),"%lu", pCosaStaticAddressContext->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              goto EXIT1;
+            }
         
             pPoamIrepFoEnumStaticAddress =
                 pPoamIrepFoStaticAddress->AddFolder
@@ -3236,7 +3313,12 @@ ClientEnd:
                 continue;
             }
             
-            _ansc_sprintf(FolderName, "%lu", pCosaOptionContext->InstanceNumber);
+            rc = sprintf_s(FolderName, sizeof(FolderName),"%lu", pCosaOptionContext->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              goto EXIT1;
+            }
 
             pPoamIrepFoEnumOption =
                 pPoamIrepFoOption->AddFolder

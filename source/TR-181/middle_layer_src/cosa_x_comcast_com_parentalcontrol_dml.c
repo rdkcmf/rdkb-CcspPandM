@@ -447,6 +447,7 @@ PcBlkURL_AddEntry
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     COSA_DML_BLOCKEDURL             *pBlkUrl    = NULL;
+    errno_t                         rc          = -1;
 
     AnscTraceWarning(("%s...\n", __FUNCTION__));
 
@@ -467,7 +468,14 @@ PcBlkURL_AddEntry
     if (pParCtrl->ulBlkUrlNextInsNum == 0)
         pParCtrl->ulBlkUrlNextInsNum = 1;
 
-    _ansc_sprintf(pBlkUrl->Alias, "cpe-BlockedURL-%d", (int)pLinkObj->InstanceNumber);
+    rc = sprintf_s(pBlkUrl->Alias, sizeof(pBlkUrl->Alias),"cpe-BlockedURL-%d", (int)pLinkObj->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pLinkObj);
+      AnscFreeMemory(pBlkUrl);
+      return NULL;
+    }
     pLinkObj->hContext      = (ANSC_HANDLE)pBlkUrl;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
@@ -694,14 +702,11 @@ BOOL is_url(char *buff)
     if(buff[len-1] == '.')
         return FALSE;
 
-    //Needs to allocate memory for full length + NULL charecter
-    str=(char*)malloc(sizeof(char)*( len + 1 ));
-    if( NULL == str )
-    {
-        return FALSE;
+    str = strdup(buff);
+    if (! str) {
+       return FALSE;
     }
-    memset(str, 0, sizeof(char)*( len + 1 ));
-    strcpy(str,buff);
+
     token=strtok(str,delim);
     while(token!=NULL)
     {
@@ -788,11 +793,9 @@ PcBlkURL_SetParamStringValue
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
-        len=_ansc_strlen(strValue);
-        blockdays=(char *) malloc(sizeof(char)*(len+1));
-        if(blockdays != NULL)
-        {
-            strcpy(blockdays, strValue);
+        blockdays = strdup(strValue);
+        if (! blockdays) {
+           return FALSE;
         }
         token = strtok(blockdays, delimiter);
         if((!token) || (strValue[len-1]==','))
@@ -964,6 +967,7 @@ PcTrustedUser_AddEntry
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     COSA_DML_TRUSTEDUSER             *pTrustedUser    = NULL;
+    errno_t                         rc          = -1;
 
     pLinkObj = AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
     if (!pLinkObj)
@@ -982,7 +986,14 @@ PcTrustedUser_AddEntry
     if (pParCtrl->ulTrustedUserNextInsNum == 0)
         pParCtrl->ulTrustedUserNextInsNum = 1;
 
-    _ansc_sprintf(pTrustedUser->Alias, "cpe-TrustedUser-%d", (int)pLinkObj->InstanceNumber);
+    rc = sprintf_s(pTrustedUser->Alias, sizeof(pTrustedUser->Alias),"cpe-TrustedUser-%d", (int)pLinkObj->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pTrustedUser);
+      AnscFreeMemory(pLinkObj);
+      return NULL;
+    }
     pLinkObj->hContext      = (ANSC_HANDLE)pTrustedUser;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
@@ -1287,6 +1298,7 @@ MSServ_AddEntry
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     COSA_DML_MS_SERV             *pMSServ    = NULL;
+    errno_t                      rc          = -1;
 
     pLinkObj = AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
     if (!pLinkObj)
@@ -1305,7 +1317,14 @@ MSServ_AddEntry
     if (pParCtrl->ulMSServNextInsNum == 0)
         pParCtrl->ulMSServNextInsNum = 1;
 
-    _ansc_sprintf(pMSServ->Alias, "cpe-MSService-%d", (int)pLinkObj->InstanceNumber);
+    rc = sprintf_s(pMSServ->Alias, sizeof(pMSServ->Alias),"cpe-MSService-%d", (int)pLinkObj->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pMSServ);
+      AnscFreeMemory(pLinkObj);
+      return NULL;
+    }
     pLinkObj->hContext      = (ANSC_HANDLE)pMSServ;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
@@ -1530,11 +1549,9 @@ MSServ_SetParamStringValue
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
-        len=_ansc_strlen(strValue);
-        blockdays=(char *) malloc(sizeof(char)*(len+1));
-        if(blockdays != NULL)
-        {
-            strcpy(blockdays, strValue);
+        blockdays = strdup(strValue);
+        if (! blockdays) {
+            return FALSE;
         }
         token = strtok(blockdays, delimiter);
         if((!token) || (strValue[len-1]==','))
@@ -1726,6 +1743,7 @@ MSTrustedUser_AddEntry
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     COSA_DML_MS_TRUSTEDUSER             *pMSTrustedUser    = NULL;
+    errno_t                              rc                = -1;
 
     pLinkObj = AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
     if (!pLinkObj)
@@ -1744,7 +1762,15 @@ MSTrustedUser_AddEntry
     if (pParCtrl->ulMSTrustedUserNextInsNum == 0)
         pParCtrl->ulMSTrustedUserNextInsNum = 1;
 
-    _ansc_sprintf(pMSTrustedUser->Alias, "cpe-MSTrustedUser-%d", (int)pLinkObj->InstanceNumber);
+    rc = sprintf_s(pMSTrustedUser->Alias, sizeof(pMSTrustedUser->Alias),"cpe-MSTrustedUser-%d", (int)pLinkObj->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pMSTrustedUser);
+      AnscFreeMemory(pLinkObj);
+      return NULL;
+    }
+
     pLinkObj->hContext      = (ANSC_HANDLE)pMSTrustedUser;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
@@ -2049,6 +2075,7 @@ MDDev_AddEntry
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     COSA_DML_MD_DEV             *pMDDev    = NULL;
+    errno_t                      rc         = -1;
 
     pLinkObj = AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
     if (!pLinkObj)
@@ -2071,7 +2098,14 @@ MDDev_AddEntry
             pMDDev->InstanceNumber = pParCtrl->ulMDDevNextInsNum;
         }
 
-    _ansc_sprintf(pMDDev->Alias, "cpe-MDDevice-%d", (int)pLinkObj->InstanceNumber);
+    rc = sprintf_s(pMDDev->Alias, sizeof(pMDDev->Alias),"cpe-MDDevice-%d", (int)pLinkObj->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pMDDev);
+      AnscFreeMemory(pLinkObj);
+      return NULL;
+    }
     pLinkObj->hContext      = (ANSC_HANDLE)pMDDev;
     pLinkObj->hParentTable  = NULL;
     pLinkObj->bNew          = TRUE;
@@ -2309,11 +2343,9 @@ MDDev_SetParamStringValue
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
-        len=_ansc_strlen(strValue);
-        blockdays=(char *) malloc(sizeof(char)*(len+1));
-        if(blockdays != NULL)
-        {
-            strcpy(blockdays, strValue);
+        blockdays = strdup(strValue);
+        if (! blockdays) {
+            return FALSE;
         }
         token = strtok(blockdays, delimiter);
         if((!token) || (strValue[len-1]==','))

@@ -69,6 +69,7 @@
 #if !defined(DDNS_BROADBANDFORUM)
 #include "cosa_x_cisco_com_ddns_internal.h"
 #include "cosa_x_cisco_com_security_apis.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -164,6 +165,7 @@ CosaDdnsInitialize
     PSLAP_VARIABLE                  pSlapVariable   = (PSLAP_VARIABLE           )NULL;
     ULONG                           ulServiceCount  = 0;
     ULONG                           ulIndex         = 0;
+    errno_t                         rc              = -1;
     
     returnStatus = CosaDmlDdnsInit(NULL, NULL);
 
@@ -309,7 +311,14 @@ CosaDdnsInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pDdnsService->Alias, "DdnsService%lu", pCosaContext->InstanceNumber);
+                rc = sprintf_s(pDdnsService->Alias, sizeof(pDdnsService->Alias),"DdnsService%lu", pCosaContext->InstanceNumber);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  AnscFreeMemory(pDdnsService);
+                  AnscFreeMemory(pCosaContext);
+                  continue;
+                }
 
                 returnStatus = 
                     CosaDmlDdnsServiceSetValues

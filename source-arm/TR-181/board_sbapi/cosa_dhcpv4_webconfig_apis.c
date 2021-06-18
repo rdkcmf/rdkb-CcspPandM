@@ -19,6 +19,7 @@
 #include "cosa_dhcpv4_webconfig_apis.h"
 #include "webconfig_framework.h"
 #include "plugin_main_apis.h"
+#include "safec_lib_common.h"
 #include <syscfg/syscfg.h>
 #define MACADDR_SZ          18
 #define MIN 60
@@ -502,6 +503,7 @@ int Dhcpv4_StaticClients_Synchronize()
     ULONG count = 0;
     ULONG ulIndex2 = 0;
     int numOfHost = 0;
+    errno_t rc = -1;
 
     if (!pDhcpv4)
         return -1;
@@ -577,7 +579,14 @@ int Dhcpv4_StaticClients_Synchronize()
             }
             pStaticAddr->InstanceNumber = pCxtPoolLink->maxInstanceOfStaticAddress;
 
-            _ansc_sprintf( pStaticAddr->Alias, "StaticAddress%lu", pStaticAddr->InstanceNumber );
+            rc = sprintf_s( pStaticAddr->Alias, sizeof(pStaticAddr->Alias), "StaticAddress%lu", pStaticAddr->InstanceNumber );
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+                AnscFreeMemory(pStaticAddr);
+                AnscFreeMemory(pCxtLink);
+                break;
+            }
 
             returnStatus = CosaDmlDhcpsSetSaddrValues
                 (

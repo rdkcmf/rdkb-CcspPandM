@@ -69,6 +69,7 @@
 **************************************************************************/
 #define _XOPEN_SOURCE 700
 #include <string.h>
+#include <strings.h>
 #include "secure_wrapper.h"
 #include "cosa_apis.h"
 #include "cosa_dhcpv4_apis.h"
@@ -78,6 +79,7 @@
 #include "secure_wrapper.h"
 #include "utapi/utapi.h"
 #include "utapi/utapi_util.h"
+#include "safec_lib_common.h"
 
 #if ( defined _COSA_SIM_ )
 
@@ -179,7 +181,11 @@ extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 // PSM access MACRO
 #define _PSM_WRITE_PARAM(_PARAM_NAME) { \
-        _ansc_sprintf(param_name, _PARAM_NAME, instancenum); \
+        errno_t rc = -1; \
+        rc = sprintf_s(param_name, sizeof(param_name), _PARAM_NAME, instancenum); \
+        if(rc < EOK) { \
+            ERR_CHK(rc); \
+        } \
         retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value); \
         if (retPsmSet != CCSP_SUCCESS) { \
             AnscTraceFlow(("%s Error %d writing %s %s\n", __FUNCTION__, retPsmSet, param_name, param_value));\
@@ -193,8 +199,12 @@ extern char g_Subsystem[32];
     }
 
 #define _PSM_READ_PARAM(_PARAM_NAME) { \
+        errno_t rc = -1; \
         _ansc_memset(param_name, 0, sizeof(param_name)); \
-        _ansc_sprintf(param_name, _PARAM_NAME, instancenum); \
+        rc = sprintf_s(param_name, sizeof(param_name), _PARAM_NAME, instancenum); \
+        if(rc < EOK) { \
+            ERR_CHK(rc); \
+        } \
         retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value); \
         if (retPsmGet != CCSP_SUCCESS) { \
             AnscTraceFlow(("%s Error %d reading %s %s\n", __FUNCTION__, retPsmGet, param_name, param_value));\
@@ -205,7 +215,11 @@ extern char g_Subsystem[32];
     }
 
 #define _PSM_WRITE_TBL_PARAM(_PARAM_NAME) { \
-        _ansc_sprintf(param_name, _PARAM_NAME, tblInstancenum, instancenum); \
+        errno_t rc = -1; \
+        rc = sprintf_s(param_name, sizeof(param_name), _PARAM_NAME, tblInstancenum, instancenum); \
+        if(rc < EOK) { \
+            ERR_CHK(rc); \
+        } \
         retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value); \
         if (retPsmSet != CCSP_SUCCESS) { \
             AnscTraceFlow(("%s Error %d writing %s %s\n", __FUNCTION__, retPsmSet, param_name, param_value));\
@@ -221,8 +235,12 @@ extern char g_Subsystem[32];
     }
 
 #define _PSM_READ_TBL_PARAM(_PARAM_NAME) { \
+        errno_t rc = -1; \
         _ansc_memset(param_name, 0, sizeof(param_name)); \
-        _ansc_sprintf(param_name, _PARAM_NAME, tblInstancenum, instancenum); \
+        rc = sprintf_s(param_name, sizeof(param_name), _PARAM_NAME, tblInstancenum, instancenum); \
+        if(rc < EOK) { \
+            ERR_CHK(rc); \
+        } \
         retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value); \
         if (retPsmGet != CCSP_SUCCESS) { \
             AnscTraceFlow(("%s Error %d reading %s %s\n", __FUNCTION__, retPsmGet, param_name, param_value));\
@@ -251,6 +269,7 @@ int find_arp_entry(char *ipaddr, char *ifname, unsigned char *pMac)
 	struct in_addr ina;
     unsigned char zeroMac[6]={0,0,0,0,0,0};
 	int rv, s;
+	errno_t rc = -1;
 	
 	s = socket(AF_INET, SOCK_DGRAM, 0);
 	if(s < 0)
@@ -261,7 +280,8 @@ int find_arp_entry(char *ipaddr, char *ifname, unsigned char *pMac)
 	sin->sin_family = AF_INET;
 	ina.s_addr = inet_addr(ipaddr);
 	memcpy(&sin->sin_addr, (char *)&ina, sizeof(struct in_addr));
-	strcpy(arpreq.arp_dev, ifname);
+	rc = strcpy_s(arpreq.arp_dev, sizeof(arpreq.arp_dev), ifname);
+	ERR_CHK(rc);
 	rv = ioctl(s, SIOCGARP, &arpreq);
 	close(s);
 	if((rv < 0)||memcmp(zeroMac,arpreq.arp_ha.sa_data,6)==0)
@@ -561,22 +581,29 @@ int usg_get_cpe_associate_interface(char *pMac, char ifname[64])
 
     unsigned char macArray[6];
     LM_cmd_common_result_t result;
+    errno_t rc = -1;
 
     memset(&result, 0, sizeof(result));
     mac_string_to_array(pMac, macArray);
 
     if(lm_get_host_by_mac((char*)macArray, &result) == -1){ // failed to get wifi interface from Lm_Hosts
 #ifdef CONFIG_SYSTEM_MOCA
-        if(usg_cpe_from_moca(pMac))
-            sprintf(ifname,"Device.MoCA.Interface.1");
-        else
+        if(usg_cpe_from_moca(pMac)){
+            rc = strcpy_s(ifname, 64, "Device.MoCA.Interface.1");
+            ERR_CHK(rc);
+        }
+        else {
 #endif
-            sprintf(ifname,"Device.Ethernet.Interface.x");
+            rc = strcpy_s(ifname, 64, "Device.Ethernet.Interface.x");
+            ERR_CHK(rc);
+        }
     }else{
         if(result.result == 0) 
             AnscCopyString(ifname, result.data.host.l1IfName);
-        else 
-            sprintf(ifname, "Device.Ethernet.Interface.x"); // failed to get result, default value
+        else{
+            rc = strcpy_s(ifname, 64, "Device.Ethernet.Interface.x"); // failed to get result, default value
+            ERR_CHK(rc);
+        }
     }
     return(0);
 }
@@ -779,9 +806,14 @@ static void deleteDHCPv4ServerPoolOptionPSM(ULONG poolInstanceNumber, ULONG inst
 {
     int retPsmSet = CCSP_SUCCESS;
     char param_path[256] = {0};    
+    errno_t rc = -1;
     
     // borrowing PSM_DHCPV4_SERVER_POOL_i here for Option_i
-    _ansc_sprintf(param_path, PSM_DHCPV4_SERVER_POOL_OPTION PSM_DHCPV4_SERVER_POOL_i, poolInstanceNumber, instanceNumber);
+    rc = sprintf_s(param_path, sizeof(param_path), PSM_DHCPV4_SERVER_POOL_OPTION PSM_DHCPV4_SERVER_POOL_i, poolInstanceNumber, instanceNumber);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
 
     AnscTraceFlow(("%s: deleting %s\n", __FUNCTION__, param_path));
     //printf("%s: deleting %s\n", __FUNCTION__,  param_path);
@@ -801,9 +833,14 @@ static void deleteDHCPv4ServerPoolOptionPSM(ULONG poolInstanceNumber, ULONG inst
 static void deleteDHCPv4ServerPoolPSM(ULONG instanceNumber)
 {
     int retPsmSet = CCSP_SUCCESS;
-    char param_path[256] = {0};    
+    char param_path[256] = {0};
+    errno_t rc = -1;
     
-    _ansc_sprintf(param_path, PSM_DHCPV4_SERVER_POOL PSM_DHCPV4_SERVER_POOL_i, instanceNumber);
+    rc = sprintf_s(param_path, sizeof(param_path), PSM_DHCPV4_SERVER_POOL PSM_DHCPV4_SERVER_POOL_i, instanceNumber);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+    }
 
     AnscTraceFlow(("%s: deleting %s\n", __FUNCTION__, param_path));
     retPsmSet = PSM_Del_Record(bus_handle, g_Subsystem, param_path);
@@ -823,6 +860,7 @@ static BOOLEAN writeDHCPv4ServerPoolOptionToPSM(ULONG tblInstancenum, PCOSA_DML_
     char param_value[256] = {0};
     ULONG instancenum = pNewOption->InstanceNumber;
     BOOLEAN dhcpServerRestart = FALSE;
+    errno_t rc = -1;
 
     memset(param_value, 0, sizeof(param_value));
     memset(param_name, 0, sizeof(param_name));
@@ -831,14 +869,8 @@ static BOOLEAN writeDHCPv4ServerPoolOptionToPSM(ULONG tblInstancenum, PCOSA_DML_
     if (pNewOption->bEnabled != pOldOption->bEnabled)
     {
         //printf("%s: write bEnabled\n", __FUNCTION__);
-        if(pNewOption->bEnabled)
-        {
-            _ansc_sprintf(param_value, "TRUE");
-        }
-        else
-        {
-            _ansc_sprintf(param_value, "FALSE");
-        }
+        rc = strcpy_s(param_value, sizeof(param_value), ((pNewOption->bEnabled) ? "TRUE" : "FALSE"));
+        ERR_CHK(rc);
         _PSM_WRITE_TBL_PARAM(PSM_DHCPV4_SERVER_POOL_OPTION_ENABLE);
         dhcpServerRestart = TRUE;
         pOldOption->bEnabled = pNewOption->bEnabled;
@@ -847,7 +879,8 @@ static BOOLEAN writeDHCPv4ServerPoolOptionToPSM(ULONG tblInstancenum, PCOSA_DML_
     if (strcmp(pNewOption->Alias, pOldOption->Alias) != 0)
     {
         //printf("%s: write Alias\n", __FUNCTION__);
-        _ansc_sprintf(param_value, "%s", pNewOption->Alias);
+        rc = strcpy_s(param_value, sizeof(param_value), pNewOption->Alias);
+        ERR_CHK(rc);
         _PSM_WRITE_TBL_PARAM(PSM_DHCPV4_SERVER_POOL_OPTION_ALIAS);
         AnscCopyString(pOldOption->Alias, pNewOption->Alias);
     }
@@ -855,7 +888,11 @@ static BOOLEAN writeDHCPv4ServerPoolOptionToPSM(ULONG tblInstancenum, PCOSA_DML_
     if (pNewOption->Tag != pOldOption->Tag)
     {
         //printf("%s: write Tag %d\n", __FUNCTION__, pNewOption->Tag);
-        _ansc_sprintf(param_value, "%lu", pNewOption->Tag );
+        rc = sprintf_s(param_value, sizeof(param_value), "%lu", pNewOption->Tag );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
         _PSM_WRITE_TBL_PARAM(PSM_DHCPV4_SERVER_POOL_OPTION_TAG);
         pOldOption->Tag = pNewOption->Tag;
         dhcpServerRestart = TRUE;
@@ -865,8 +902,16 @@ static BOOLEAN writeDHCPv4ServerPoolOptionToPSM(ULONG tblInstancenum, PCOSA_DML_
     if(!AnscEqualString((char*)pNewOption->Value, (char*)pOldOption->Value, TRUE))
     {
         //printf("%s: write Value %s\n", __FUNCTION__, pNewOption->Value);
-        _ansc_sprintf(param_name, PSM_DHCPV4_SERVER_POOL_OPTION_VALUE, tblInstancenum, instancenum); 
-        _ansc_sprintf(param_value, "%s", pNewOption->Value);
+        rc = sprintf_s(param_name, sizeof(param_name), PSM_DHCPV4_SERVER_POOL_OPTION_VALUE, tblInstancenum, instancenum); 
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
+        rc = sprintf_s(param_value, sizeof(param_value), "%s", pNewOption->Value);
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
         retPsmSet = PSM_Set_Record_Value2(bus_handle, g_Subsystem, param_name, ccsp_byte, param_value); 
         if (retPsmSet != CCSP_SUCCESS) { 
             AnscTraceFlow(("%s Error %d writing %s %s\n", __FUNCTION__, retPsmSet, param_name, param_value));
@@ -891,20 +936,15 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
     char param_value[256] = {0};
     ULONG instancenum = pNewCfg->InstanceNumber;
     BOOLEAN dhcpServerRestart = FALSE;
+    errno_t rc = -1;
 
     memset(param_value, 0, sizeof(param_value));
     memset(param_name, 0, sizeof(param_name));
 
     if (pNewCfg->bEnabled != pOldCfg->bEnabled)
     {
-        if(pNewCfg->bEnabled)
-        {
-            _ansc_sprintf(param_value, "TRUE");
-        }
-        else
-        {
-            _ansc_sprintf(param_value, "FALSE");
-        }
+        rc = strcpy_s(param_value, sizeof(param_value), ((pNewCfg->bEnabled) ? "TRUE" : "FALSE"));
+        ERR_CHK(rc);
         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_ENABLE);
         dhcpServerRestart = TRUE;
         pOldCfg->bEnabled = pNewCfg->bEnabled;
@@ -912,7 +952,8 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
     
     if (strcmp(pNewCfg->Alias, pOldCfg->Alias) != 0)
     {
-        _ansc_sprintf(param_value, "%s", pNewCfg->Alias);
+        rc = strcpy_s(param_value, sizeof(param_value), pNewCfg->Alias);
+        ERR_CHK(rc);
         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_ALIAS);
         AnscCopyString(pOldCfg->Alias, pNewCfg->Alias);
     }
@@ -923,7 +964,8 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
         int strLength = strlen("Device.IP.Interface.");
         instStr = &(pNewCfg->Interface[strLength]);
         AnscTraceFlow(("%s: instStr %s\n", __FUNCTION__, instStr));
-        _ansc_sprintf(param_value, "%s", instStr);
+        rc = strcpy_s(param_value, sizeof(param_value), instStr);
+        ERR_CHK(rc);
         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_INTERFACE);
         AnscCopyString(pOldCfg->Interface, pNewCfg->Interface);
         dhcpServerRestart = TRUE;
@@ -931,8 +973,12 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
 
     if (pNewCfg->MinAddress.Value != pOldCfg->MinAddress.Value)
     {
-        _ansc_sprintf(param_value, "%d.%d.%d.%d", 
+        rc = sprintf_s(param_value, sizeof(param_value), "%d.%d.%d.%d",
             pNewCfg->MinAddress.Dot[0], pNewCfg->MinAddress.Dot[1], pNewCfg->MinAddress.Dot[2], pNewCfg->MinAddress.Dot[3]);
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_MINADDRESS);
         pOldCfg->MinAddress.Value = pNewCfg->MinAddress.Value;
         dhcpServerRestart = TRUE;
@@ -940,8 +986,12 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
 
     if (pNewCfg->MaxAddress.Value != pOldCfg->MaxAddress.Value)
     {
-        _ansc_sprintf(param_value, "%d.%d.%d.%d", 
+        rc = sprintf_s(param_value, sizeof(param_value), "%d.%d.%d.%d",
             pNewCfg->MaxAddress.Dot[0], pNewCfg->MaxAddress.Dot[1],pNewCfg->MaxAddress.Dot[2],pNewCfg->MaxAddress.Dot[3]);
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_MAXADDRESS);
         pOldCfg->MaxAddress.Value = pNewCfg->MaxAddress.Value;
         dhcpServerRestart = TRUE;
@@ -949,8 +999,12 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
 
     if (pNewCfg->SubnetMask.Value != pOldCfg->SubnetMask.Value)
     {
-        _ansc_sprintf(param_value, "%d.%d.%d.%d", 
+        rc = sprintf_s(param_value, sizeof(param_value), "%d.%d.%d.%d",
             pNewCfg->SubnetMask.Dot[0], pNewCfg->SubnetMask.Dot[1],pNewCfg->SubnetMask.Dot[2],pNewCfg->SubnetMask.Dot[3]);
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_SUBNETMASK);
         pOldCfg->SubnetMask.Value = pNewCfg->SubnetMask.Value;
         dhcpServerRestart = TRUE;
@@ -1010,7 +1064,8 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
         
     if (strcmp(pNewCfg->DomainName, pOldCfg->DomainName) != 0)
     {
-        _ansc_sprintf(param_value, "%s", pNewCfg->DomainName);
+        rc = strcpy_s(param_value, sizeof(param_value), pNewCfg->DomainName);
+        ERR_CHK(rc);
         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_DOMAINNAME);
         AnscCopyString(pOldCfg->DomainName, pNewCfg->DomainName);
         dhcpServerRestart = TRUE;
@@ -1018,7 +1073,11 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
 
     if (pNewCfg->LeaseTime != pOldCfg->LeaseTime)
     {
-        _ansc_sprintf(param_value, "%d", pNewCfg->LeaseTime );
+        rc = sprintf_s(param_value, sizeof(param_value), "%d", pNewCfg->LeaseTime );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_LEASETIME);
         pOldCfg->LeaseTime = pNewCfg->LeaseTime;
         dhcpServerRestart = TRUE;
@@ -1026,7 +1085,11 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
 
     if (pNewCfg->Order != pOldCfg->Order)
     {
-        _ansc_sprintf(param_value, "%lu", pNewCfg->Order );
+        rc = sprintf_s(param_value, sizeof(param_value), "%lu", pNewCfg->Order );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_ORDER);
         pOldCfg->Order = pNewCfg->Order;
         dhcpServerRestart = TRUE;
@@ -1034,7 +1097,11 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
 
     if (pNewCfg->X_CISCO_COM_TimeOffset != pOldCfg->X_CISCO_COM_TimeOffset)
     {
-        _ansc_sprintf(param_value, "%d", pNewCfg->X_CISCO_COM_TimeOffset );
+        rc = sprintf_s(param_value, sizeof(param_value), "%d", pNewCfg->X_CISCO_COM_TimeOffset );
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
         _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_LEASETIME);
         pOldCfg->X_CISCO_COM_TimeOffset = pNewCfg->X_CISCO_COM_TimeOffset;
         dhcpServerRestart = TRUE;
@@ -1049,6 +1116,7 @@ static void getDHCPv4ServerPoolParametersFromPSM(ULONG instancenum, PCOSA_DML_DH
     char *param_value= NULL;
     char param_name[256]= {0};
     PCOSA_DML_DHCPS_POOL_CFG pPoolCfg = &(pPool->Cfg); 
+    errno_t rc = -1;
 
     pPoolCfg->InstanceNumber = instancenum; 
 
@@ -1102,7 +1170,11 @@ static void getDHCPv4ServerPoolParametersFromPSM(ULONG instancenum, PCOSA_DML_DH
     if (retPsmGet == CCSP_SUCCESS)
     {
         //AnscCopyString(pPoolCfg->Interface, param_value); 
-        _ansc_sprintf(pPoolCfg->Interface, "Device.IP.Interface.%s", param_value);
+        rc = sprintf_s(pPoolCfg->Interface, sizeof(pPoolCfg->Interface), "Device.IP.Interface.%s", param_value);
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
     }
 
@@ -1258,6 +1330,7 @@ static void readDHCPv4ServerPoolFromPSM()
     PCOSA_DML_DHCPSV4_OPTION          pOption = NULL;
     char param_name[256]= {0};
     unsigned int i=0, j=0;
+    errno_t rc = -1;
 
     AnscSListInitializeHeader(&g_dhcpv4_server_pool_list);
     retPsmGet = PsmGetNextLevelInstances(bus_handle, g_Subsystem, PSM_DHCPV4_SERVER_POOL, &poolCnt, &poolList);
@@ -1294,8 +1367,13 @@ static void readDHCPv4ServerPoolFromPSM()
             
 
             // find optionList and SAddrList
-            _ansc_memset(param_name, 0, sizeof(param_name));
-            _ansc_sprintf(param_name, PSM_DHCPV4_SERVER_POOL_STATICADDRESS, poolList[i]);
+            rc = sprintf_s(param_name, sizeof(param_name), PSM_DHCPV4_SERVER_POOL_STATICADDRESS, poolList[i]);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+                continue;
+            }
+
             retPsmGet1 = PsmGetNextLevelInstances(bus_handle, g_Subsystem, param_name, &saddrCnt, &saddrList);
             if ( retPsmGet1 == CCSP_SUCCESS && saddrList != NULL )
             {
@@ -1308,8 +1386,12 @@ static void readDHCPv4ServerPoolFromPSM()
                 AnscTraceFlow(("%s: Can't find DHCPv4 Server Pool SADDR entry %s\n", __FUNCTION__, param_name));
             }
 
-            _ansc_memset(param_name, 0, sizeof(param_name));
-            _ansc_sprintf(param_name, PSM_DHCPV4_SERVER_POOL_OPTION, (ULONG)poolList[i]);
+            rc = sprintf_s(param_name, sizeof(param_name), PSM_DHCPV4_SERVER_POOL_OPTION, (ULONG)poolList[i]);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+                continue;
+            }
             retPsmGet1 = PsmGetNextLevelInstances(bus_handle, g_Subsystem, param_name, &optionCnt, &optionList);
             if ( retPsmGet1 == CCSP_SUCCESS && optionList != NULL )
             {
@@ -1517,19 +1599,24 @@ CosaDmlDhcpcGetCfg
 {
     UNREFERENCED_PARAMETER(hContext);
 	char ifname[32];
+	errno_t rc = -1;
   
     if ( !pCfg )
     {
         return ANSC_STATUS_FAILURE;
     }
     
-	sprintf(pCfg->Alias,"eRouter");
+	rc = strcpy_s(pCfg->Alias, sizeof(pCfg->Alias), "eRouter");
+	ERR_CHK(rc);
 	pCfg->bEnabled = TRUE;
 	pCfg->InstanceNumber = 1;
 	if(dhcpv4c_get_ert_ifname(ifname))
 		pCfg->Interface[0] = 0;
 	else
-		sprintf(pCfg->Interface,"%s", ifname);
+	{
+		rc = strcpy_s(pCfg->Interface, sizeof(pCfg->Interface), ifname);
+		ERR_CHK(rc);
+	}
 	pCfg->PassthroughEnable = TRUE;
 	pCfg->PassthroughDHCPPool[0] = 0;
       
@@ -1685,6 +1772,7 @@ CosaDmlDhcpcSetSentOptionValues
     UtopiaContext   ctx;
     CHAR            inst_str[64];    
     ULONG           i = 0;
+    errno_t         rc = -1;
     
     ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: ulClientInstanceNumber %d,ulIndex %d, ulInstanceNumber %d\n", 
           __FUNCTION__, ulClientInstanceNumber, ulIndex, ulInstanceNumber);
@@ -1709,14 +1797,22 @@ CosaDmlDhcpcSetSentOptionValues
 
             if( !_ansc_strncmp(CH_g_dhcpv4_client[i].Cfg.Interface, COSA_DML_DHCPV4_CLIENT_IFNAME, _ansc_strlen(COSA_DML_DHCPV4_CLIENT_IFNAME)))
             {                
-                sprintf(inst_str, "%lu", ulInstanceNumber);
+                rc = sprintf_s(inst_str, sizeof(inst_str), "%lu", ulInstanceNumber);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_instance_wan", inst_str);
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_alias_wan", pAlias);
             }
             #ifdef _COSA_DRG_TPG_
             else if ( !_ansc_strncmp(CH_g_dhcpv4_client[i].Cfg.Interface, "lan0", _ansc_strlen("lan0")))
             {
-                sprintf(inst_str, "%d", ulInstanceNumber);
+                rc = sprintf_s(inst_str, sizeof(inst_str), "%d", ulInstanceNumber);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_instance_lan", inst_str);
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_alias_lan", pAlias);
             }
@@ -1724,7 +1820,11 @@ CosaDmlDhcpcSetSentOptionValues
             else
             {
                 ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: not " COSA_DML_DHCPV4_CLIENT_IFNAME " nor lan0, New Interface %s\n", __FUNCTION__, CH_g_dhcpv4_client[i].Cfg.Interface);
-                sprintf(inst_str, "%lu", ulInstanceNumber);
+                rc = sprintf_s(inst_str, sizeof(inst_str), "%lu", ulInstanceNumber);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_instance_unknown", inst_str);
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_alias_unknown", pAlias);
                 //return ANSC_STATUS_FAILURE;
@@ -1909,6 +2009,7 @@ CosaDmlDhcpsEnable
     int retPsmSet = CCSP_SUCCESS;
     char param_name[256] = {0};
     char param_value[256] = {0};
+    errno_t safec_rc = -1;
     memset(param_value, 0, sizeof(param_value));
     memset(param_name, 0, sizeof(param_name));
 
@@ -1916,7 +2017,12 @@ CosaDmlDhcpsEnable
         AnscCopyString(param_value, PSM_ENABLE_STRING_TRUE);
     else
         AnscCopyString(param_value, PSM_ENABLE_STRING_FALSE);
-    _ansc_sprintf(param_name, PSM_DHCPV4_SERVER_ENABLE);
+    safec_rc = strcpy_s(param_name, sizeof(param_name), PSM_DHCPV4_SERVER_ENABLE);
+    if(safec_rc != EOK)
+    {
+        ERR_CHK(safec_rc);
+        return ANSC_STATUS_FAILURE;
+    }
     retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
     if (retPsmSet != CCSP_SUCCESS) {
         AnscTraceFlow(("%s Error %d writing %s %s\n", __FUNCTION__, retPsmSet, param_name, param_value));
@@ -1960,9 +2066,14 @@ CosaDmlDhcpsGetState
     int retPsmGet = CCSP_SUCCESS;
     char param_name[256] = {0};
     char* param_value = NULL;
-    memset(param_name, 0, sizeof(param_name));
+    errno_t safec_rc = -1;
 
-    _ansc_sprintf(param_name, PSM_DHCPV4_SERVER_ENABLE);
+    safec_rc = strcpy_s(param_name, sizeof(param_name), PSM_DHCPV4_SERVER_ENABLE);
+    if(safec_rc != EOK)
+    {
+        ERR_CHK(safec_rc);
+        return FALSE;
+    }
     retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value);
     if (retPsmGet != CCSP_SUCCESS) {
         AnscTraceFlow(("%s Error %d writing %s %s\n", __FUNCTION__, retPsmGet, param_name, param_value));
@@ -2129,13 +2240,19 @@ CosaDmlDhcpsSetPoolValues
         char param_name[256] = {0};
         char param_value[256] = {0};
         ULONG instancenum = ulInstanceNumber;
+        errno_t safec_rc = -1;
         pPoolCfg = &(pPool->Cfg);
         memset(param_value, 0, sizeof(param_value));
         memset(param_name, 0, sizeof(param_name));
     
         if (strcmp(pAlias, pPoolCfg->Alias) != 0)
         {
-            _ansc_sprintf(param_value, "%s", pAlias);
+            safec_rc = strcpy_s(param_value, sizeof(param_value), pAlias);
+            if(safec_rc != EOK)
+            {
+                ERR_CHK(safec_rc);
+                return ANSC_STATUS_FAILURE;
+            }
             _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_ALIAS);
             AnscCopyString(pPoolCfg->Alias, pAlias);
         }
@@ -3263,6 +3380,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
     UtopiaContext utctx;
     ULONG currClientPool = 50;
     ULONG tempIPAddr=0;
+    errno_t rc = -1;
 
     AnscTraceFlow(("Entered Inside %s\n", __FUNCTION__));
 #if 0
@@ -3428,7 +3546,8 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
 		// This check is to prevent P&M crash
 		if(pVClass != NULL)
                 {
-			sprintf((char*)pEntry->ClassId, "%s", pVClass);
+			rc = strcpy_s((char*)pEntry->ClassId, sizeof(pEntry->ClassId), pVClass);
+			ERR_CHK(rc);
 		}
 
 		/* for client content */
@@ -3965,6 +4084,7 @@ CosaDhcpInitJournal
         char PartnerID[PARTNER_ID_LEN] = {0};
         ULONG size = PARTNER_ID_LEN - 1;
         int len;
+        errno_t rc = -1;
         if (!pPoolCfg)
         {
                 CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
@@ -4034,7 +4154,14 @@ CosaDhcpInitJournal
                                 else
                                 {
                                         CcspTraceWarning(( "Reading Deafult PartnerID Values \n" ));
-                                        strcpy(PartnerID, "comcast");
+                                        rc = strcpy_s(PartnerID, sizeof(PartnerID), "comcast");
+                                        if(rc != EOK)
+                                        {
+                                            ERR_CHK(rc);
+                                            cJSON_Delete(json);
+                                            free(data);
+                                            return ANSC_STATUS_FAILURE;
+                                        }
                                         FillPartnerIDJournal(json, PartnerID, pPoolCfg);
                                 }
                         }

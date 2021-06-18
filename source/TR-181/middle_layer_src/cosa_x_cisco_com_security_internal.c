@@ -67,6 +67,7 @@
 **************************************************************************/
 
 #include "cosa_x_cisco_com_security_internal.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -170,6 +171,7 @@ CosaSecurityInitialize
     ULONG                           ulIndex             = 0;
     ULONG                           ulSubIndex          = 0;
     char                            FolderName[32]      = {0};
+    errno_t                         rc                  = -1;
 
     returnStatus = CosaDmlIaInit(NULL, NULL);
 
@@ -312,13 +314,20 @@ CosaSecurityInitialize
 
     if ( TRUE )
     {
-        _ansc_sprintf
+        rc = sprintf_s
                 (
-                    FolderName, 
+                    FolderName,
+                    sizeof(FolderName),
                     "%s%d", 
                     COSA_DML_RR_NAME_IA_NextInsNunmber, 
                     0
                 );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          returnStatus = ANSC_STATUS_FAILURE;
+          goto  EXIT;
+        }
 
         pPoamIrepFoNextIns = 
             (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoIA->GetFolder
@@ -413,7 +422,14 @@ CosaSecurityInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pDmlIAPolicy->Alias, "DmlIAPolicy%lu", pMyObject->ulNextAPInstanceNum);
+                rc = sprintf_s(pDmlIAPolicy->Alias, sizeof(pDmlIAPolicy->Alias),"DmlIAPolicy%lu", pMyObject->ulNextAPInstanceNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  AnscFreeMemory(pDmlIAPolicy);
+                  AnscFreeMemory(pCosaContext);
+                  continue;
+                }
 
                 returnStatus = 
                     CosaDmlIaSetPolicyValues
@@ -459,13 +475,21 @@ CosaSecurityInitialize
 
         if ( TRUE )
         {
-            _ansc_sprintf
+            rc = sprintf_s
                 (
-                    FolderName, 
+                    FolderName,
+                    sizeof(FolderName),
                     "%s%lu", 
                     COSA_DML_RR_NAME_IA_URL_NextInsNunmber, 
                     pDmlIAPolicy->InstanceNumber
                 );
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pDmlIAPolicy);
+              AnscFreeMemory(pCosaContext);
+              continue;
+            }
 
             pPoamIrepFoNextIns = 
                 (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoIA->GetFolder
@@ -550,7 +574,14 @@ CosaSecurityInitialize
                     }
 
                     /* Generate Alias */
-                    _ansc_sprintf(pURL->Alias, "BlockedURL%lu", pCosaContext2->InstanceNumber);
+                    rc = sprintf_s(pURL->Alias, sizeof(pURL->Alias),"BlockedURL%lu", pCosaContext2->InstanceNumber);
+                    if(rc < EOK)
+                    {
+                      ERR_CHK(rc);
+                      AnscFreeMemory(pURL);
+                      AnscFreeMemory(pCosaContext2);
+                      continue;
+                    }
 
                     /* TODO: Set InstanceNumber Alias back */
                     returnStatus =
@@ -591,13 +622,19 @@ CosaSecurityInitialize
 
         if ( TRUE )
         {
-            _ansc_sprintf
+            rc = sprintf_s
                 (
-                    FolderName, 
+                    FolderName,
+                    sizeof(FolderName),
                     "%s%lu", 
                     COSA_DML_RR_NAME_IA_KEYWORD_NextInsNunmber, 
                     pDmlIAPolicy->InstanceNumber
                 );
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              continue;
+            }
 
             pPoamIrepFoNextIns = 
                 (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoIA->GetFolder
@@ -682,7 +719,14 @@ CosaSecurityInitialize
                     }
 
                     /* Generate Alias */
-                    _ansc_sprintf(pKeyword->Alias, "BlockedKeyword%lu", pCosaContext2->InstanceNumber);
+                    rc = sprintf_s(pKeyword->Alias, sizeof(pKeyword->Alias),"BlockedKeyword%lu", pCosaContext2->InstanceNumber);
+                    if(rc < EOK)
+                    {
+                       ERR_CHK(rc);
+                       AnscFreeMemory(pKeyword);
+                       AnscFreeMemory(pCosaContext2);
+                       continue;
+                    }
 
                     /* TODO: Set InstanceNumber Alias back */
                     returnStatus = 
@@ -723,13 +767,19 @@ CosaSecurityInitialize
 
         if ( TRUE )
         {
-            _ansc_sprintf
+            rc = sprintf_s
                 (
-                    FolderName, 
+                    FolderName,
+                    sizeof(FolderName),
                     "%s%lu", 
                     COSA_DML_RR_NAME_IA_APP_NextInsNunmber, 
                     pDmlIAPolicy->InstanceNumber
                 );
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              continue;
+            }
 
             pPoamIrepFoNextIns = 
                 (PPOAM_IREP_FOLDER_OBJECT)pPoamIrepFoIA->GetFolder
@@ -814,7 +864,14 @@ CosaSecurityInitialize
                     }
 
                     /* Generate Alias */
-                    _ansc_sprintf(pApp->Alias, "BlockedApp%lu", pCosaContext2->InstanceNumber);
+                    rc = sprintf_s(pApp->Alias, sizeof(pApp->Alias),"BlockedApp%lu", pCosaContext2->InstanceNumber);
+                    if(rc < EOK)
+                    {
+                      ERR_CHK(rc);
+                      AnscFreeMemory(pApp);
+                      AnscFreeMemory(pCosaContext2);
+                      continue;
+                    }
 
                     /* TODO: Set InstanceNumber Alias back */
                     returnStatus = 
@@ -1483,6 +1540,7 @@ CosaSecurityIARegAddInfo
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFo       = (PPOAM_IREP_FOLDER_OBJECT )NULL;
     PSLAP_VARIABLE                  pSlapVariable     = (PSLAP_VARIABLE           )NULL;
     char                            FolderName[32]    = {0};
+    errno_t                         rc                = -1;
 
     if ( !pPoamIrepFoIA || !pPoamIrepFoUpper )
     {
@@ -1505,7 +1563,13 @@ CosaSecurityIARegAddInfo
         }
     }
 
-    _ansc_sprintf(FolderName, "%s%lu", pNextInsNumName, ulUpperInsNum);
+    rc = sprintf_s(FolderName, sizeof(FolderName),"%s%lu", pNextInsNumName, ulUpperInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      returnStatus = ANSC_STATUS_FAILURE;
+      goto  EXIT1;
+    }
 
     if ( TRUE )
     {
@@ -1561,7 +1625,13 @@ CosaSecurityIARegAddInfo
 
     if ( TRUE )
     {
-        _ansc_sprintf(FolderName, "%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        rc = sprintf_s(FolderName, sizeof(FolderName),"%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          returnStatus = ANSC_STATUS_FAILURE;
+          goto  EXIT1;
+        }
 
         pPoamIrepFo =
             pPoamIrepFoUpper->AddFolder

@@ -69,6 +69,7 @@
 
 #include "ansc_platform.h"
 #include "cosa_ppp_dml.h"
+#include "safec_lib_common.h"
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -501,6 +502,7 @@ Interface3_AddEntry
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->IfList;
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL    )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+    errno_t                         rc                      = -1;
 
 #ifdef _COSA_DRG_CNS_
     return NULL;
@@ -512,7 +514,11 @@ Interface3_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Cfg.Alias, "Interface%lu", pMyObject->ulIfNextInstance);
+    rc = sprintf_s(pEntry->Cfg.Alias, sizeof(pEntry->Cfg.Alias),"Interface%lu", pMyObject->ulIfNextInstance);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+    }
 
     /* Update the cache */
     pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
@@ -2220,32 +2226,45 @@ IPCP_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_PPP_IF_FULL           pEntry                  = (PCOSA_DML_PPP_IF_FULL)pContextLinkObject->hContext;
+    errno_t                         rc                      = -1;
 
     CosaDmlPppIfGetInfo(NULL, pEntry->Cfg.InstanceNumber, &pEntry->Info);
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "LocalIPAddress", TRUE))
     {
         /* collect value */
-        _ansc_sprintf(pValue,
+        rc = sprintf_s(pValue,
+                       *pUlSize,
                         "%u.%u.%u.%u",
                         pEntry->Info.LocalIPAddress.Dot[0],
                         pEntry->Info.LocalIPAddress.Dot[1],
                         pEntry->Info.LocalIPAddress.Dot[2],
                         pEntry->Info.LocalIPAddress.Dot[3]
                      );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "RemoteIPAddress", TRUE))
     {
         /* collect value */
-        _ansc_sprintf(pValue,
+        rc = sprintf_s(pValue,
+                       *pUlSize,
                         "%u.%u.%u.%u",
                         pEntry->Info.RemoteIPAddress.Dot[0],
                         pEntry->Info.RemoteIPAddress.Dot[1],
                         pEntry->Info.RemoteIPAddress.Dot[2],
                         pEntry->Info.RemoteIPAddress.Dot[3]
                      );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return -1;
+        }
         return 0;
     }
 
@@ -2253,15 +2272,25 @@ IPCP_GetParamStringValue
     {
         /* collect value */
         if (!pEntry->Info.DNSServers[1].Value)
-            _ansc_sprintf(pValue,
+        {
+            rc = sprintf_s(pValue,
+                          *pUlSize,
                           "%u.%u.%u.%u",
                           pEntry->Info.DNSServers[0].Dot[0],
                           pEntry->Info.DNSServers[0].Dot[1],
                           pEntry->Info.DNSServers[0].Dot[2],
                           pEntry->Info.DNSServers[0].Dot[3]
                           );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
+        }
         else
-            _ansc_sprintf(pValue,
+        {
+            rc = sprintf_s(pValue,
+                          *pUlSize,
                           "%u.%u.%u.%u,%u.%u.%u.%u",
                           pEntry->Info.DNSServers[0].Dot[0],
                           pEntry->Info.DNSServers[0].Dot[1],
@@ -2272,6 +2301,12 @@ IPCP_GetParamStringValue
                           pEntry->Info.DNSServers[1].Dot[2],
                           pEntry->Info.DNSServers[1].Dot[3]
                           );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
+        }
         return 0;
     }
 

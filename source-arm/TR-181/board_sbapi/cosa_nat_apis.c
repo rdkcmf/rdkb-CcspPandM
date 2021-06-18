@@ -79,6 +79,7 @@
 #include "cosa_nat_internal.h"
 #include "plugin_main_apis.h"
 #include "dml_tr181_custom_cfg.h"
+#include "safec_lib_common.h"
 
 #if defined (MULTILAN_FEATURE)
 #define MAX_QUERY 1024
@@ -1167,15 +1168,23 @@ saveID
 {
     char keyStr[1024] = {0};
     char idStr[1024] = {0};
-
+    errno_t  safec_rc = -1;
+	
     if ( proto < 0 )
     {
         proto = 0;
     }
 
-    _ansc_sprintf(keyStr, "%d,%d", external_port, proto);
-    _ansc_sprintf(idStr,"%s,%u", pAlias,ulInstanceNumber);
-
+    safec_rc = sprintf_s(keyStr, sizeof(keyStr), "%d,%d", external_port, proto);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+    safec_rc = sprintf_s(idStr, sizeof(idStr), "%s,%u", pAlias,ulInstanceNumber);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     Utopia_RawSet(utctx,COSA_NAT_ID_SYSCFG_NAMESPACE,keyStr,idStr);
 
     return 0;
@@ -1195,13 +1204,18 @@ loadID
     char idStr[1024] = {0};
     char* instNumString;
     int rv;
+    errno_t safec_rc = -1;
 
     if ( proto < 0 )
     {
         proto = 0;
     }
 
-    _ansc_sprintf(keyStr, "%d,%d", external_port, proto);
+    safec_rc = sprintf_s(keyStr, sizeof(keyStr), "%d,%d", external_port, proto);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
     rv =Utopia_RawGet(utctx, COSA_NAT_ID_SYSCFG_NAMESPACE, keyStr, idStr, sizeof(idStr));
     if (rv == -1 || idStr[0] == '\0') {
         return -1;
@@ -1224,14 +1238,19 @@ unsetID
     )
 {
     char keyStr[1024] = {0};
+    errno_t safec_rc = -1;
 
     if ( proto < 0 )
     {
         proto = 0;
     }
 
-    _ansc_sprintf(keyStr, "%d,%d", external_port, proto);
-
+    safec_rc = sprintf_s(keyStr, sizeof(keyStr), "%d,%d", external_port, proto);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+	
     Utopia_RawSet(utctx, COSA_NAT_ID_SYSCFG_NAMESPACE, keyStr, "");
 
     return 0;
@@ -1248,13 +1267,16 @@ saveIDPt
         ULONG ulInstanceNumber
     )
 {
-    char keyStr[1024] = {0};
     char idStr[1024] = {0};
 
-    _ansc_sprintf(keyStr, "%s", pAlias);
-    _ansc_sprintf(idStr,  "%u", ulInstanceNumber);
 
-    Utopia_RawSet(utctx,COSA_NAT_ID_SYSCFG_NAMESPACE,keyStr,idStr);
+    errno_t safec_rc = sprintf_s(idStr,  sizeof(idStr), "%u", ulInstanceNumber);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+	
+    Utopia_RawSet(utctx,COSA_NAT_ID_SYSCFG_NAMESPACE,pAlias,idStr);
 
     return 0;
 }
@@ -1267,13 +1289,11 @@ loadIDPt
         ULONG* pulInstanceNumber
     )
 {
-    char keyStr[1024] = {0};
     char idStr[1024] = {0};
     int rv;
 
-    _ansc_sprintf(keyStr, "%s", pAlias);
 
-    rv =Utopia_RawGet(utctx, COSA_NAT_ID_SYSCFG_NAMESPACE, keyStr, idStr, sizeof(idStr));
+    rv =Utopia_RawGet(utctx, COSA_NAT_ID_SYSCFG_NAMESPACE, pAlias, idStr, sizeof(idStr));
 
     if (rv == -1 || idStr[0] == '\0')
     {
@@ -1292,11 +1312,8 @@ unsetIDPt
         char* pAlias
     )
 {
-    char keyStr[1024] = {0};
 
-    _ansc_sprintf(keyStr, "%s", pAlias);
-
-    Utopia_RawSet(utctx, COSA_NAT_ID_SYSCFG_NAMESPACE, keyStr, "");
+    Utopia_RawSet(utctx, COSA_NAT_ID_SYSCFG_NAMESPACE, pAlias, "");
 
     return 0;
 }
@@ -1926,13 +1943,19 @@ ANSC_STATUS _AddPortMapping(
     portFwdSingle_t         singleInfo;
     portFwdRange_t           rangeInfo;
     int                             rc;
+    errno_t                 safec_rc = -1;
 
     if ( pEntry->ExternalPortEndRange == pEntry->ExternalPort && pEntry->PublicIP.Value == 0 )
     {
-        sprintf(singleInfo.dest_ip, "%d.%d.%d.%d", pEntry->InternalClient.Dot[0],\
+        safec_rc = sprintf_s(singleInfo.dest_ip, sizeof(singleInfo.dest_ip), "%d.%d.%d.%d", pEntry->InternalClient.Dot[0],\
               pEntry->InternalClient.Dot[1],\
               pEntry->InternalClient.Dot[2],\
               pEntry->InternalClient.Dot[3]);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+           return ANSC_STATUS_FAILURE;
+        }
 
         singleInfo.enabled = pEntry->bEnabled;
 		singleInfo.prevRuleEnabledState = pEntry->bEnabled;
@@ -1953,14 +1976,24 @@ ANSC_STATUS _AddPortMapping(
     }
     else
     {
-        sprintf(rangeInfo.dest_ip, "%d.%d.%d.%d", pEntry->InternalClient.Dot[0],\
+        safec_rc = sprintf_s(rangeInfo.dest_ip, sizeof(rangeInfo.dest_ip), "%d.%d.%d.%d", pEntry->InternalClient.Dot[0],\
               pEntry->InternalClient.Dot[1],\
               pEntry->InternalClient.Dot[2],\
               pEntry->InternalClient.Dot[3]);
-        sprintf(rangeInfo.public_ip, "%d.%d.%d.%d", pEntry->PublicIP.Dot[0],\
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+           return ANSC_STATUS_FAILURE;
+        }
+        safec_rc = sprintf_s(rangeInfo.public_ip, sizeof(rangeInfo.public_ip), "%d.%d.%d.%d", pEntry->PublicIP.Dot[0],\
               pEntry->PublicIP.Dot[1],\
               pEntry->PublicIP.Dot[2],\
               pEntry->PublicIP.Dot[3]);
+        if(safec_rc < EOK)
+        {
+           ERR_CHK(safec_rc);
+           return ANSC_STATUS_FAILURE;
+        }
         rangeInfo.enabled = pEntry->bEnabled;
 		rangeInfo.prevRuleEnabledState = pEntry->bEnabled;		
         rangeInfo.end_port = pEntry->ExternalPortEndRange;
@@ -2058,13 +2091,31 @@ int _Check_PT_parameter(PCOSA_DML_NAT_PTRIGGER pPortTrigger)
 static inline void _sent_syslog_pm_sb(char *opt, UCHAR protocol, USHORT external, USHORT external_end, USHORT internal, UCHAR ip[4], BOOLEAN active)
 {
     char extPort[30], intPort[20];
+    errno_t safec_rc = -1;
     if(external_end == 0)
-        sprintf(extPort, "ExternelPort %d", external);
+    {
+        safec_rc = sprintf_s(extPort, sizeof(extPort), "ExternelPort %d", external);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
+    }
     else
-        sprintf(extPort, "ExternelPort(s) %d~%d", external, external_end);
-    
+    {
+        safec_rc = sprintf_s(extPort, sizeof(extPort), "ExternelPort(s) %d~%d", external, external_end);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
+    }
     if(internal != 0)
-        sprintf(intPort, "InternelPort %d",internal); 
+    {
+        safec_rc = sprintf_s(intPort, sizeof(intPort), "InternelPort %d",internal); 
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
+    }
     else
         intPort[0]='\0';
 
@@ -2085,13 +2136,32 @@ static inline void _sent_syslog_pt_sb(char *opt, UCHAR protocol, USHORT trigger_
 static inline void _sent_syslog_pm_u(char *opt, protocol_t protocol, int external, int external_end, int internal, char *ip, boolean_t active)
 {
     char extPort[30], intPort[20];
+    errno_t safec_rc = -1;
     if(external_end == 0)
-        sprintf(extPort, "ExternelPort %d", external);
+    {
+        safec_rc = sprintf_s(extPort, sizeof(extPort), "ExternelPort %d", external);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
+    }
     else
-        sprintf(extPort, "ExternelPort(s) %d~%d", external, external_end);
-    
+    {
+        safec_rc = sprintf_s(extPort, sizeof(extPort), "ExternelPort(s) %d~%d", external, external_end);
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
+    }
+
     if(internal != 0)
-        sprintf(intPort, "InternelPort %d",internal); 
+    {
+        safec_rc = sprintf_s(intPort, sizeof(intPort), "InternelPort %d",internal); 
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+        }
+    }
     else
         intPort[0]='\0';
 
@@ -2450,7 +2520,7 @@ CosaDmlNatGetPortMapping
      }
 
 #if 0
-
+    errno_t safec_rc = -1;
     if ( PortFwdDynCount != 0 )
     {
         for (i = 0; i < PortFwdDynCount; i++, ulIndex++)
@@ -2483,7 +2553,11 @@ CosaDmlNatGetPortMapping
                 pNatPMapping->Protocol = U_2_SB_PF_PROTOCOL(dynInfo.protocol);
                 pNatPMapping->RemoteHost.Value =  inet_addr(dynInfo.external_host);
                 pNatPMapping->Status = (dynInfo.enabled ? COSA_DML_NAT_STATUS_Enabled : COSA_DML_NAT_STATUS_Disabled);
-                strcpy(pNatPMapping->Alias, tmp.Alias);
+                safec_rc = strcpy_s(pNatPMapping->Alias,sizeof(pNatPMapping->Alias), tmp.Alias);
+                if(safec_rc != EOK)
+                {
+                   ERR_CHK(safec_rc);
+                }
                 if ( TRUE )
                 {
                     char* pCh    = NULL;
@@ -3512,6 +3586,7 @@ CosaDmlNatSetPortMapping
     int                 PortFwdDynCount = 0;
     ULONG                       ulIndex = 0;
     portMapDyn_t                dynInfo;
+    errno_t              safec_rc = -1;
     /* Check if it is a dynPortFwd */
     Utopia_GetDynPortMappingCount(&PortFwdDynCount);
     PortFwdDynCount = (PortFwdDynCount < g_NatPortFwdDynInstanceNumCount ? PortFwdDynCount : g_NatPortFwdDynInstanceNumCount);
@@ -3547,13 +3622,19 @@ CosaDmlNatSetPortMapping
         dynInfo.protocol = SB_2_U_PF_PPOTOCOL(pEntry->Protocol);
 
         AnscCopyString(dynInfo.name, pEntry->Description);
-        _ansc_sprintf(dynInfo.internal_host,
+        safec_rc = sprintf_s(dynInfo.internal_host, sizeof(dynInfo.internal_host),
                         "%u.%u.%u.%u",
                         pEntry->InternalClient.Dot[0],
                         pEntry->InternalClient.Dot[1],
                         pEntry->InternalClient.Dot[2],
                         pEntry->InternalClient.Dot[3]
                      );
+        if(safec_rc < EOK)
+        {
+            ERR_CHK(safec_rc);
+            Utopia_Free(&Ctx, 0);
+            return ANSC_STATUS_FAILURE;
+        }
 
         rc = s_UpdateDynPortMapping(ulIndex + 1, &dynInfo);
         if ( rc != UT_SUCCESS )

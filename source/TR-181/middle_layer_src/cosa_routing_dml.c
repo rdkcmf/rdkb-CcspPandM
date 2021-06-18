@@ -477,6 +477,7 @@ Router_AddEntry
     PSLIST_HEADER                   pRouterHead  = (PSLIST_HEADER)&pMyObject->RouterList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_ROUTER_FULL2          pRouter      = (PCOSA_DML_ROUTER_FULL2)NULL;
+    errno_t                         rc           = -1;
 
     pRouter = (PCOSA_DML_ROUTER_FULL2)AnscAllocateMemory(sizeof(COSA_DML_ROUTER_FULL2));
 
@@ -485,7 +486,13 @@ Router_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pRouter->Cfg.Alias, "Router%lu", pMyObject->ulNextRouterInsNum);
+    rc = sprintf_s(pRouter->Cfg.Alias, sizeof(pRouter->Cfg.Alias),"Router%lu", pMyObject->ulNextRouterInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pRouter);
+      return NULL;
+    }
 
     AnscSListInitializeHeader(&pRouter->ForwardList);
     
@@ -1352,6 +1359,7 @@ X_CISCO_COM_StaticIPv4Forwarding_AddEntry
     PSLIST_HEADER                   pListHead       = (PSLIST_HEADER       )&pMyObject->StaticRoute;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink        = NULL;
     PCOSA_DML_STATICROUTE_CFG       pEntry          = NULL;
+    errno_t                         rc              = -1;
     
     pEntry  = (PCOSA_DML_STATICROUTE_CFG)AnscAllocateMemory( sizeof(COSA_DML_STATICROUTE_CFG) );
     if ( !pEntry )
@@ -1374,7 +1382,13 @@ X_CISCO_COM_StaticIPv4Forwarding_AddEntry
     *pInsNumber                    = pCxtLink->InstanceNumber;
 
     /* We give a permenant name here*/
-    _ansc_sprintf(pEntry->Name, "StaticRoute_%x_%lu", (UINT)pEntry, pCxtLink->InstanceNumber );
+    rc = sprintf_s(pEntry->Name, sizeof(pEntry->Name),"StaticRoute_%x_%lu", (UINT)pEntry, pCxtLink->InstanceNumber );
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pCxtLink);
+      goto EXIT1;
+    }
 
     pCxtLink->hContext       = (ANSC_HANDLE)pEntry;
     pCxtLink->hParentTable   = (ANSC_HANDLE)pMyObject;
@@ -2202,6 +2216,7 @@ IPv4Forwarding_AddEntry
     PCOSA_DML_ROUTER_FULL2          pRouter         = (PCOSA_DML_ROUTER_FULL2)pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_ROUTING_V4_ENTRY      pRouterForward  = (PCOSA_DML_ROUTING_V4_ENTRY)NULL;
+    errno_t                         rc              = -1;
 
 
     pRouterForward = (PCOSA_DML_ROUTING_V4_ENTRY)AnscAllocateMemory(sizeof(COSA_DML_ROUTING_V4_ENTRY));
@@ -2211,7 +2226,13 @@ IPv4Forwarding_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pRouterForward->Alias, "IPv4Forwarding%lu", pRouter->ulNextForwardInsNum);
+    rc = sprintf_s(pRouterForward->Alias, sizeof(pRouterForward->Alias),"IPv4Forwarding%lu", pRouter->ulNextForwardInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pRouterForward);
+      return NULL;
+    }
 
     /* Update the middle layer data */
     if ( TRUE )
@@ -3192,6 +3213,7 @@ IPv6Forwarding_AddEntry
     PCOSA_DML_ROUTER_FULL2          pRouter         = (PCOSA_DML_ROUTER_FULL2        )pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext = (PCOSA_CONTEXT_LINK_OBJECT     )NULL;
     PCOSA_DML_ROUTING_V6_ENTRY      pEntry          = (PCOSA_DML_ROUTING_V6_ENTRY    )NULL;
+    errno_t                         rc              = -1;
 
     pEntry = (PCOSA_DML_ROUTING_V6_ENTRY)AnscAllocateMemory(sizeof(COSA_DML_ROUTING_V6_ENTRY));
 
@@ -3200,7 +3222,13 @@ IPv6Forwarding_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Alias, "IPv6Forwarding%lu", pRouter->ulNextIPv6ForwardInsNum);
+    rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias),"IPv6Forwarding%lu", pRouter->ulNextIPv6ForwardInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pEntry);
+      return NULL;
+    }
 
     /* Update the middle layer data */
     if ( TRUE )
@@ -3393,7 +3421,7 @@ IPv6Forwarding_Synchronize
     ULONG                           entryCount    = 0;
     ULONG                           i             = 0;
     BOOL                            bFound        = FALSE;
-    
+    errno_t                         rc            = -1;
  
     entryCount                      = CosaDmlRoutingGetNumberOfV6Entries(NULL);
     
@@ -3485,7 +3513,14 @@ IPv6Forwarding_Synchronize
             pCxtLink->bNew       = FALSE;
 
 			/* Generate Alias */
-			_ansc_sprintf(pEntry->Alias, "IPv6Forwarding%lu", pCxtLink->InstanceNumber);
+            rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias),"IPv6Forwarding%lu", pCxtLink->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pEntry);
+              returnStatus =  ANSC_STATUS_FAILURE;
+              goto EXIT1;
+            }
 			
 			CosaDmlRoutingSetV6EntryValues(NULL,i,pEntry->InstanceNumber,pEntry->Alias);
             CosaSListPushEntryByInsNum(&pRouter->IPv6ForwardList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);

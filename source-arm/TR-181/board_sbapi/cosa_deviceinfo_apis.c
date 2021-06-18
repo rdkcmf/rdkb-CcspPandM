@@ -100,7 +100,7 @@
 #include "cosa_deviceinfo_internal.h"
 #include "cosa_drg_common.h"
 #include <syscfg/syscfg.h>
-
+#include "safec_lib_common.h"
 #define DEVICE_PROPERTIES    "/etc/device.properties"
 #define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
 #define BOOTSTRAP_INFO_FILE		"/nvram/bootstrap.json"
@@ -108,6 +108,7 @@
 #define RFC_STORE_FILE       "/opt/secure/RFC/tr181store.json"
 #define CUSTOM_DATA_MODEL_ENABLED "custom_data_model_enabled"
 #define SYSTEMD "systemd"
+#define MAX_TIME_FORMAT     5
 
 static int writeToJson(char *data, char *file);
 
@@ -213,6 +214,7 @@ static char* mapArgsToSSHOption(char *revSSHConfig) {
 
 	char* value = NULL;
 	char* option = NULL;
+	errno_t rc = -1;
 
         if (!revSSHConfig)
             return NULL;
@@ -221,14 +223,26 @@ static char* mapArgsToSSHOption(char *revSSHConfig) {
 
 	if (option) {
 		if ((value = strstr(revSSHConfig, "idletimeout="))) {
-			sprintf(option, " -I %s -f -N -y -T",
+			rc = sprintf_s(option, 125, " -I %s -f -N -y -T",
 					value + strlen("idletimeout="));
+			if(rc < EOK)
+			{
+				ERR_CHK(rc);
+			}
 		} else if ((value = strstr(revSSHConfig, "sshport=")) && !(value =
 				strstr(revSSHConfig, "revsshport="))) {
 			value = strstr(revSSHConfig, "sshport=");
-			sprintf(option, " -p %s", value + strlen("sshport="));
+			rc = sprintf_s(option, 125, " -p %s", value + strlen("sshport="));
+			if(rc < EOK)
+			{
+				ERR_CHK(rc);
+			}
 		} else if ((value = strstr(revSSHConfig, "revsshport="))) {
-			sprintf(option, " -R %s:[CM_IP]:22", value + strlen("revsshport="));
+			rc = sprintf_s(option, 125, " -R %s:[CM_IP]:22", value + strlen("revsshport="));
+			if(rc < EOK)
+			{
+				ERR_CHK(rc);
+			}
 		} else {
                         // Sanity check do not include unrecognised options
 			free(option);
@@ -249,6 +263,7 @@ static char* findUntilFirstDelimiter(char* input) {
 	char* option = NULL;
     unsigned int inputMsgSize = 0;
     char *st = NULL;
+    errno_t rc = -1;
 
         if (!input)
             return NULL;
@@ -261,11 +276,8 @@ static char* findUntilFirstDelimiter(char* input) {
         tempStr = (char*) strtok_r(tempCopy, ";", &st);
         if (option)
         {
-            if (tempStr) {
-                sprintf(option, "%s", tempStr);
-            } else {
-                sprintf(option, "%s", input);
-            }
+            rc = strcpy_s(option, 125, (tempStr ? tempStr : input));
+            ERR_CHK(rc);
         }
     }
 	return option;
@@ -282,6 +294,7 @@ static char* getHostLogin(char *tempStr) {
 	char* hostLogin = NULL;
 	unsigned int inputMsgSize = 0;
 	char tempCopy[256] = { "\0" };
+	errno_t rc = -1;
 
     if (!tempStr)
         return NULL;
@@ -324,7 +337,11 @@ static char* getHostLogin(char *tempStr) {
 
 		hostLogin = (char*) calloc(255, sizeof(char));
 		if (hostLogin) {
-			sprintf(hostLogin, " %s@%s", user, hostIp);
+			rc = sprintf_s(hostLogin, 255, " %s@%s", user, hostIp);
+			if(rc < EOK)
+			{
+				ERR_CHK(rc);
+			}
 		}
 	}
 
@@ -375,6 +392,7 @@ CosaDmlDiGetManufacturerOUI
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    errno_t rc = -1;
  /*
     UCHAR strMaceMG[128];
     memset(strMaceMG,0,128);
@@ -413,9 +431,21 @@ CosaDmlDiGetManufacturerOUI
     }
 */
 #if defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_)
-        sprintf(pValue, "%s%c", CONFIG_VENDOR_ID, '\0');
+        rc = sprintf_s(pValue, *pulSize, "%s%c", CONFIG_VENDOR_ID, '\0');
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+            *pulSize = 0;
+            return ANSC_STATUS_FAILURE;
+        }
 #else
-        sprintf(pValue, "%06X%c", CONFIG_VENDOR_ID, '\0');
+        rc = sprintf_s(pValue, *pulSize, "%06X%c", CONFIG_VENDOR_ID, '\0');
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+            *pulSize = 0;
+            return ANSC_STATUS_FAILURE;
+        }
 #endif
         *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
@@ -467,11 +497,17 @@ CosaDmlDiGetModelName
 
     UCHAR model[128];
     char temp[2];
+    errno_t rc = -1;
 
     memset(model,0,128);
     plat_GetFlashValue("model", model);
     
-    sprintf(temp, "%x%x",model[0],model[1]);
+    rc = sprintf_s(temp, sizeof(temp), "%x%x",model[0], model[1]);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     
     if((0 == strcmp(temp,"f4c"))||(0 == strcmp(temp,"3916")))
     {
@@ -573,7 +609,12 @@ CosaDmlDiGetSerialNumber
 
 #ifdef _COSA_DRG_TPG_
     plat_GetFlashValue("unitsn", unitsn);
-    sprintf(pValue, "%c%c%c%c%c%c%c",unitsn[0],unitsn[1],unitsn[2],unitsn[3],unitsn[4],unitsn[5],unitsn[6]);
+    rc = sprintf_s(pValue, *pulSize, "%c%c%c%c%c%c%c",unitsn[0],unitsn[1],unitsn[2],unitsn[3],unitsn[4],unitsn[5],unitsn[6]);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
 #elif (_COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_)
 
     if (platform_hal_GetSerialNumber(pValue) != RETURN_OK )
@@ -604,9 +645,15 @@ CosaDmlDiGetHardwareVersion
 #elif _COSA_DRG_TPG_
 //Replace this with syscfg if we are pulling this from Cable modem later on 
     UCHAR hwVersion[128];
+    errno_t rc = -1;
     memset(hwVersion,0,128);    
     plat_GetFlashValue("hwid", hwVersion);
-    sprintf(pValue, "%X%X",hwVersion[0],hwVersion[1]);
+    rc = sprintf_s(pValue, *pulSize, "%X%X",hwVersion[0],hwVersion[1]);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 #endif  
@@ -664,6 +711,7 @@ CosaDmlDiGetProvisioningCode
     UtopiaContext ctx;
     int rc = -1;
     char temp[64];
+    errno_t rc = -1;
 
     if (!Utopia_Init(&ctx))
         return ERR_UTCTX_INIT;
@@ -678,7 +726,12 @@ CosaDmlDiGetProvisioningCode
 // Provisioning Code sent to ACS is Serial Number of the device
 #ifdef _COSA_DRG_TPG_
     plat_GetFlashValue("unitsn", unitsn);
-    sprintf(pValue, "%c%c%c%c%c%c%c",unitsn[0],unitsn[1],unitsn[2],unitsn[3],unitsn[4],unitsn[5],unitsn[6]);
+    rc = sprintf_s(pValue, *pulSize, "%c%c%c%c%c%c%c",unitsn[0],unitsn[1],unitsn[2],unitsn[3],unitsn[4],unitsn[5],unitsn[6]);
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
 #elif (_COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_)
 
     if (platform_hal_GetSerialNumber(pValue) != RETURN_OK )
@@ -865,6 +918,7 @@ CosaDmlDiGetFirstUseDate
     UtopiaContext ctx;
     int rc = -1;
     char firstUseDate[64];
+    errno_t safec_rc = -1;
 
     if (!Utopia_Init(&ctx))
         return ERR_UTCTX_INIT;
@@ -875,7 +929,15 @@ CosaDmlDiGetFirstUseDate
 
     //    fprintf(stderr, "<RT> rc=%d, First Use Date = '%s'\n", rc, firstUseDate);
 
-    if(rc || firstUseDate[0] == '\0') _ansc_sprintf(firstUseDate, "2013-11-22T00:00:00");
+    if(rc || firstUseDate[0] == '\0')
+    {
+        safec_rc = strcpy_s(firstUseDate, sizeof(firstUseDate), "2013-11-22T00:00:00");
+        if(rc != EOK)
+        {
+            ERR_CHK(safec_rc);
+            return ANSC_STATUS_FAILURE;
+        }
+    }
 
     AnscCopyString(pValue,firstUseDate);
     *pulSize = AnscSizeOfString(pValue);
@@ -1111,6 +1173,7 @@ isValidInput
     )
 {
     ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
+    errno_t rc = -1;
 
 	/*
 	  * Validate input/params 
@@ -1157,7 +1220,12 @@ isValidInput
 
     if(ANSC_STATUS_SUCCESS == returnStatus)
     {
-        sprintf(wrapped_inputparam,"'%s'",inputparam);
+        rc = sprintf_s(wrapped_inputparam, sizeof_wrapped_inputparam, "'%s'",inputparam);
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
     }
 	
 	return returnStatus;
@@ -1406,6 +1474,7 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
     char                        status[32];
     char                        buf[400];
     char                        state[64];
+    errno_t                     rc = -1;
     
     dir = opendir("/proc");
         
@@ -1471,7 +1540,12 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
             i++;
             pid = atoi(name);
             p_proc->Pid = pid;
-            sprintf(status, "/proc/%lu/stat", pid);
+            rc = sprintf_s(status, sizeof(status), "/proc/%lu/stat", pid);
+            if(rc < EOK)
+            {
+                ERR_CHK(rc);
+                continue;
+            }
                 
             if ( !(fp = fopen(status, "r")) )
             {   
@@ -1829,9 +1903,14 @@ CosaDmlDiGetProcessorSpeed
     while(fgets(line, MAX_LINE_SIZE, fp) != NULL )
     {
         int procSpeed;
+        errno_t rc = -1;
         procSpeed = atoi (line);
         procSpeed = procSpeed / 1000;
-        sprintf (line, "%d", procSpeed);
+        rc = sprintf_s (line, sizeof(line), "%d", procSpeed);
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+        }
         AnscCopyString(pValue, line);
     }
 
@@ -1867,6 +1946,7 @@ CosaDmlDiGetProcessorSpeed
     char out2[100]={0};
     FILE *fp1=NULL;
     char *urlPtr = NULL;
+    errno_t rc = -1;
 
     fp1 = fopen("/etc/device.properties", "r");
     if (fp1 == NULL)
@@ -1889,7 +1969,12 @@ CosaDmlDiGetProcessorSpeed
         }
     }
     fclose(fp1);
-    sprintf(out2,"\"cat /proc/cpuinfo\"");
+    rc = sprintf_s(out2, sizeof(out2), "\"cat /proc/cpuinfo\"");
+    if(rc < EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     fp = v_secure_popen("r", "rpcclient %s %s",urlPtr,out2);
 #else
     fp = popen("cat /proc/cpuinfo", "r");
@@ -2126,6 +2211,7 @@ int setXOpsReverseSshArgs(char* pString) {
     int inputMsgSize = 0;
     int hostloglen = 0;
     char *st = NULL;
+    errno_t rc = -1;
 #ifdef ENABLE_SHORTS
     char* value = NULL;
 
@@ -2151,7 +2237,8 @@ int setXOpsReverseSshArgs(char* pString) {
         hostLogin = getHostLogin(pString);
         if (!hostLogin) {
             AnscTraceWarning(("Warning !!! Target host for establishing reverse SSH tunnel is missing !!!\n"));
-            strcpy(reverseSSHArgs,"");
+            rc = strcpy_s(reverseSSHArgs, sizeof(reverseSSHArgs), "");
+            ERR_CHK(rc);
             return 1;
         }
 
@@ -2210,14 +2297,26 @@ int setXOpsReverseSshArgs(char* pString) {
         tempStr = (char*) strtok_r(tempCopy, ";", &st);
         while (NULL != tempStr) {
             if((value = strstr(tempStr, "type="))) {
-                sprintf(ip_version_number, "%s",value + strlen("type="));
+                rc = sprintf_s(ip_version_number, sizeof(ip_version_number), "%s",value + strlen("type="));
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
             } else if ((value = strstr(tempStr, "callbackport="))) {
-                sprintf(callbackport, "%s",value + strlen("callbackport="));
+                rc = sprintf_s(callbackport, sizeof(callbackport), "%s",value + strlen("callbackport="));
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
             } else if((value = strstr(tempStr, "host="))) {
                 if(NULL == host) {
-                    host = (char*) calloc(strlen(value), sizeof(char));
+                    host = (char*) calloc(strlen(value)+1, sizeof(char));
                 }
-                sprintf(host, "%s",value + strlen("host="));
+                rc = sprintf_s(host, strlen(value)+1, "%s",value + strlen("host="));
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
             } else if((value = strstr(tempStr, "rows="))) {
                 rows=atoi(value + strlen("rows="));
             } else if((value = strstr(tempStr, "columns="))) {
@@ -2308,11 +2407,17 @@ CosaDmlDiGetSyndicationPartnerId
     FILE *deviceFilePtr = NULL;
     char *pPartnerId = NULL;
     const char partnerStr[] = "PARTNER_ID";
+    errno_t rc = -1;
 
     if (!pValue || !pulSize || *pulSize >= PARTNER_ID_LEN)
         return ANSC_STATUS_FAILURE;
 
-    strcpy(pValue, "comcast"); // Set the default to comcast in case the partner id is not set in props file
+    rc = STRCPY_S_NOCLOBBER(pValue, *pulSize, "comcast"); // Set the default to comcast in case the partner id is not set in props file
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     *pulSize = AnscSizeOfString(pValue);
     retVal = ANSC_STATUS_SUCCESS;
 
@@ -2821,33 +2926,70 @@ CosaDmlDiUniqueTelemetryIdInit
 // Convert time interval(in miniutes) to days, hours and minutes.
 void ConvertTime(int time, char day[], char hour[], char mins[]) {
         int d = 0, h = 0, m = 0;
+        errno_t rc = -1;
 
         d = (time / (60*24));
         h = ((time % (60*24)) / 60);
         m = ((time % (60*24)) % 60);
 
         if(d > 0) {
-                sprintf(day, "*/%d", d);
-                sprintf(hour, "%d", h);
-                sprintf(mins, "%d", m);
+                rc = sprintf_s(day, MAX_TIME_FORMAT, "*/%d", d);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
+                rc = sprintf_s(hour, MAX_TIME_FORMAT, "%d", h);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
+                rc = sprintf_s(mins, MAX_TIME_FORMAT, "%d", m);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
         }
         else if(h > 0) {
-                sprintf(day, "*");
-                sprintf(hour, "*/%d", h);
-                sprintf(mins, "%d", m);
+                rc = sprintf_s(day, MAX_TIME_FORMAT, "*");
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
+                rc = sprintf_s(hour, MAX_TIME_FORMAT, "*/%d", h);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
+                rc = sprintf_s(mins, MAX_TIME_FORMAT, "%d", m);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
 
         }
         else {
-                sprintf(day, "*");
-                sprintf(hour, "*");
-                sprintf(mins, "*/%d", m);
+                rc = sprintf_s(day, MAX_TIME_FORMAT, "*");
+                if(rc < EOK)
+                {
+                     ERR_CHK(rc);
+                }
+                rc = sprintf_s(hour, MAX_TIME_FORMAT, "*");
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
+                rc = sprintf_s(mins, MAX_TIME_FORMAT, "*/%d", m);
+                if(rc < EOK)
+                {
+                    ERR_CHK(rc);
+                }
         }
 
 }
 
 //Handle UniqueTelemetry Cron Job
 void UniqueTelemetryCronJob(BOOL enable, INT timeInterval, char* tagString) {
-        char day[5] = {0}, hour[5]={0}, mins[5] = {0};
+        char day[MAX_TIME_FORMAT] = {0}, hour[MAX_TIME_FORMAT]={0}, mins[MAX_TIME_FORMAT] = {0};
 
         if(enable) {       //Add unique_telemetry_id Cron job to job list
             if( timeInterval != 0 && strlen(tagString) > 0) {
@@ -2875,6 +3017,7 @@ CosaDmlDiUiBrandingInit
 	char PartnerID[PARTNER_ID_LEN] = {0};
 	ULONG size = PARTNER_ID_LEN - 1;
 	int len;
+	errno_t rc = -1;
 	if (!PUiBrand)
 	{
 		CcspTraceWarning(("%s-%d : NULL param\n" , __FUNCTION__, __LINE__ ));
@@ -2948,7 +3091,14 @@ CosaDmlDiUiBrandingInit
 				else
 				{
 					CcspTraceWarning(( "Reading Deafult PartnerID Values \n" ));
-					strcpy(PartnerID, "comcast");
+					rc = strcpy_s(PartnerID, sizeof(PartnerID), "comcast");
+					if(rc != EOK)
+					{
+						ERR_CHK(rc);
+						cJSON_Delete(json);
+						free(data);
+						return ANSC_STATUS_FAILURE;
+					}
 					FillPartnerIDValues(json, PartnerID, PUiBrand, hContext);
 				}
 			}
@@ -3787,8 +3937,13 @@ void CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong)
 void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uValue)
 {
 	char buf[8] = { 0 };
+	errno_t rc = -1;
 	
-	sprintf(buf,"%lu",uValue);
+	rc = sprintf_s(buf, sizeof(buf), "%lu", uValue);
+	if(rc < EOK)
+	{
+		ERR_CHK(rc);
+	}
 	if ( syscfg_set( NULL,"DeferFWDownloadReboot",buf)!= 0 ) 
 	{
 		CcspTraceWarning(("syscfg_set failed\n"));
@@ -3813,13 +3968,15 @@ void* RebootDevice_thread(void* buff)
 	char* source = NULL;
 	int router, wifi, voip, dect, moca, all;
     int delay_time = 0;
+	errno_t rc = -1;
 
 	pthread_detach(pthread_self());
 	
 	memset(pValue,0,sizeof(pValue));
 	if(buff)
 	{
-		strcpy(pValue,buff);
+		rc = strcpy_s(pValue, sizeof(pValue), buff);
+		ERR_CHK(rc);
 		free(buff);		
 	}
 
@@ -3857,7 +4014,8 @@ void* RebootDevice_thread(void* buff)
 		source_str[i] = '\0';
 	}
 	else{
-		strcpy(source_str,"webpa-reboot");
+		rc = strcpy_s(source_str, sizeof(source_str), "webpa-reboot");
+		ERR_CHK(rc);
 	}
 
 	CcspTraceInfo(("reboot source - %s\n",source_str));
@@ -3956,10 +4114,11 @@ void* RebootDevice_thread(void* buff)
 void CosaDmlDiSet_RebootDevice(char* pValue)
 {
 	pthread_t tid;
+	errno_t rc = -1;
 
 	char* buff = (char*) malloc(strlen(pValue)+1);
-	memset(buff,0,strlen(pValue)+1);
-	strcpy(buff,pValue);
+	rc = strcpy_s(buff, strlen(pValue)+1, pValue);
+	ERR_CHK(rc);
 	pthread_create(&tid, NULL, &RebootDevice_thread, (void*) buff); 
     
 }
@@ -3975,6 +4134,7 @@ FirmwareDownloadAndFactoryReset(void* arg)
     char line[512];
     char *token;
     char *val;
+    errno_t rc = -1;
     if((fp = fopen("/tmp/FactoryReset.txt", "r")) == NULL)
     {
         CcspTraceInfo(( "/tmp/FactoryReset.txt doesnot exist go for snmp reboot .\n"));
@@ -3998,11 +4158,13 @@ FirmwareDownloadAndFactoryReset(void* arg)
                     val[new_line] = '\0';
                     if(0 == strcmp(token,"Url"))
                     {
-                        strcpy(URL,val);
+                        rc = strcpy_s(URL, sizeof(URL), val);
+                        ERR_CHK(rc);
                     }
                     else if(0 == strcmp(token,"Image"))
                     {
-                        strcpy(Imagename,val);
+                        rc = strcpy_s(Imagename, sizeof(Imagename), val);
+                        ERR_CHK(rc);
                     }
                 }
             }
@@ -4101,10 +4263,16 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 		if(  ( !IsSourceValid ) && IsDelayValid ) 
 		{
 			char   tmpCharBuffer [ 256 ] = { 0 };
+			errno_t rc = -1;
 			char *subStringForDelay  = NULL,
 			     *subStringForDummy  = NULL;
 
-			strcpy( tmpCharBuffer,	pValue );
+			rc = strcpy_s( tmpCharBuffer, sizeof(tmpCharBuffer), pValue );
+			if(rc != EOK)
+			{
+				ERR_CHK(rc);
+				return FALSE;
+			}
 			subStringForDelay       = strtok_r( tmpCharBuffer, " ", &st );
 			subStringForDummy   = strtok_r( NULL, " ", &st );
 
@@ -4131,10 +4299,16 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 		else if(  IsSourceValid  && ( !IsDelayValid ) ) 
 		{
 			char   tmpCharBuffer [ 256 ] = { 0 };
+			errno_t rc = -1;
 			char *subStringForSource = NULL,
 			     *subStringForDummy  = NULL;
 
-			strcpy( tmpCharBuffer,	pValue );
+			rc = strcpy_s( tmpCharBuffer, sizeof(tmpCharBuffer), pValue );
+			if(rc != EOK)
+			{
+				ERR_CHK(rc);
+				return FALSE;
+			}
 			subStringForSource   = strtok_r( tmpCharBuffer, " ", &st );
 			subStringForDummy   = strtok_r( NULL, " ", &st );
 
@@ -4161,10 +4335,16 @@ CosaDmlDi_ValidateRebootDeviceParam( char *pValue )
 		 else if(  IsSourceValid && IsDelayValid ) 
 		{
 			char   tmpCharBuffer [ 256 ] = { 0 };
+			errno_t rc = -1;
 			char *subStringForDelay 	 = NULL,
 				*subStringForSource 	 = NULL,
 				*subStringForDummy  = NULL;
-			strcpy( tmpCharBuffer,	pValue );
+			rc = strcpy_s( tmpCharBuffer, sizeof(tmpCharBuffer), pValue );
+			if(rc != EOK)
+			{
+				ERR_CHK(rc);
+				return FALSE;
+			}
 			subStringForDelay   = strtok_r( tmpCharBuffer, " ", &st );
 			if ( (strcasestr(subStringForDelay, "delay="))  || (strcasestr(subStringForDelay, "source=")) )
 			{

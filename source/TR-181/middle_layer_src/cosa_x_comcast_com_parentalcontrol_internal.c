@@ -37,6 +37,7 @@
 #include "cosa_x_comcast_com_parentalcontrol_internal.h"
 #include "plugin_main_apis.h"
 #include <syscfg/syscfg.h>
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
     BOOL                            bMigration         = FALSE;
@@ -110,6 +111,7 @@ CosaParentalControlInitialize
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoMDDev   = NULL;
     COSA_DML_MD_DEV             *pMDDev;
     PCOSA_CONTEXT_LINK_OBJECT       pMDDevLinkObj      = NULL;
+    errno_t                         rc                 = -1;
 	FILE *fp = NULL;
 	#ifdef UTC_ENABLE
     if ( (fp=fopen("/nvram/UTC_ENABLE", "r")) == NULL )
@@ -230,7 +232,14 @@ CosaParentalControlInitialize
                 pParCtrl->ulBlkUrlNextInsNum = 1;
             }
 
-            _ansc_sprintf(pBlkUrl->Alias, "cpe-BlockedURL-%d", (int)pBlkUrl->InstanceNumber);
+            rc = sprintf_s(pBlkUrl->Alias, sizeof(pBlkUrl->Alias),"cpe-BlockedURL-%d", (int)pBlkUrl->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pBlkUrl);
+              AnscFreeMemory(pBlkUrlLinkObj);
+              return ANSC_STATUS_FAILURE;
+            }
             CosaDmlBlkURL_SetValues(ulBlkUrlIdx, pBlkUrl->InstanceNumber, pBlkUrl->Alias);
         }
 
@@ -324,7 +333,15 @@ CosaParentalControlInitialize
                 pParCtrl->ulTrustedUserNextInsNum = 1;
             }
 
-            _ansc_sprintf(pTrustedUser->Alias, "cpe-TrustedUser-%d", (int)pTrustedUser->InstanceNumber);
+            rc = sprintf_s(pTrustedUser->Alias, sizeof(pTrustedUser->Alias),"cpe-TrustedUser-%d", (int)pTrustedUser->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pTrustedUser);
+              AnscFreeMemory(pTrustedUserLinkObj);
+              return ANSC_STATUS_FAILURE;
+            }
+
             CosaDmlTrustedUser_SetValues(ulTrustedUserIdx, pTrustedUser->InstanceNumber, pTrustedUser->Alias);
         }
 
@@ -433,7 +450,14 @@ CosaParentalControlInitialize
                 pParCtrl->ulMSServNextInsNum = 1;
             }
 
-            _ansc_sprintf(pMSServ->Alias, "cpe-MSService-%d", (int)pMSServ->InstanceNumber);
+            rc = sprintf_s(pMSServ->Alias, sizeof(pMSServ->Alias),"cpe-MSService-%d", (int)pMSServ->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pMSServ);
+              AnscFreeMemory(pMSServLinkObj);
+              return ANSC_STATUS_FAILURE;
+            }
             CosaDmlMSServ_SetValues(ulMSServIdx, pMSServ->InstanceNumber, pMSServ->Alias);
         }
 
@@ -527,7 +551,14 @@ CosaParentalControlInitialize
                 pParCtrl->ulMSTrustedUserNextInsNum = 1;
             }
 
-            _ansc_sprintf(pMSTrustedUser->Alias, "cpe-MSTrustedUser-%d", (int)pMSTrustedUser->InstanceNumber);
+            rc = sprintf_s(pMSTrustedUser->Alias, sizeof(pMSTrustedUser->Alias),"cpe-MSTrustedUser-%d", (int)pMSTrustedUser->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pMSTrustedUser);
+              AnscFreeMemory(pMSTrustedUserLinkObj);
+              return ANSC_STATUS_FAILURE;
+            }
             CosaDmlMSTrustedUser_SetValues(ulMSTrustedUserIdx, pMSTrustedUser->InstanceNumber, pMSTrustedUser->Alias);
         }
 
@@ -638,7 +669,14 @@ CosaParentalControlInitialize
                 pParCtrl->ulMDDevNextInsNum = 1;
             }
 
-            _ansc_sprintf(pMDDev->Alias, "cpe-MDDevice-%d", (int)pMDDev->InstanceNumber);
+            rc = sprintf_s(pMDDev->Alias, sizeof(pMDDev->Alias),"cpe-MDDevice-%d", (int)pMDDev->InstanceNumber);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              AnscFreeMemory(pMDDev);
+              AnscFreeMemory(pMDDevLinkObj);
+              return ANSC_STATUS_FAILURE;
+            }
             CosaDmlMDDev_SetValues(ulMDDevIdx, pMDDev->InstanceNumber, pMDDev->Alias);
         }
 

@@ -7,6 +7,7 @@
 #include "poam_irepfo_interface.h"
 #include "slap_vho_exported_api.h"
 #include "sys_definitions.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -83,6 +84,7 @@ CosaDynamicDnsInitialize
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoDynamicDnsServer = NULL;
     COSA_DML_DDNS_SERVER            *pDynamicDnsServer;
     PCOSA_CONTEXT_LINK_OBJECT       pDynamicDnsServerLinkObj = NULL;
+    errno_t                         rc                       = -1;
 
     AnscSListInitializeHeader(&pMyObject->DDNSClientList);
     pMyObject->DDNSClientNextInsNum = 1;
@@ -170,7 +172,14 @@ CosaDynamicDnsInitialize
              {
                  pMyObject->DDNSClientNextInsNum = 1;
              }
-             _ansc_sprintf(pDynamicDnsClient->Alias, "cpe-ddns-client-%d", (int)pDynamicDnsClient->InstanceNumber);
+             rc = sprintf_s(pDynamicDnsClient->Alias, sizeof(pDynamicDnsClient->Alias),"cpe-ddns-client-%d", (int)pDynamicDnsClient->InstanceNumber);
+             if(rc < EOK)
+             {
+               ERR_CHK(rc);
+               AnscFreeMemory(pDynamicDnsClientLinkObj);
+               AnscFreeMemory(pDynamicDnsClient);
+               return ANSC_STATUS_FAILURE;
+             }
              CosaDmlDynamicDns_Client_SetValues(ulDynamicDnsClientIdx, pDynamicDnsClient->InstanceNumber, pDynamicDnsClient->Alias);
          }
 
@@ -272,7 +281,14 @@ CosaDynamicDnsInitialize
              {
                  pMyObject->DDNSHostNextInsNum = 1;
              }
-             _ansc_sprintf(pDynamicDnsHost->Alias, "cpe-ddns-host-%d", (int)pDynamicDnsHost->InstanceNumber);
+             rc = sprintf_s(pDynamicDnsHost->Alias, sizeof(pDynamicDnsHost->Alias),"cpe-ddns-host-%d", (int)pDynamicDnsHost->InstanceNumber);
+             if(rc < EOK)
+             {
+               ERR_CHK(rc);
+               AnscFreeMemory(pDynamicDnsHostLinkObj);
+               AnscFreeMemory(pDynamicDnsHost);
+               return ANSC_STATUS_FAILURE;
+             }
              CosaDmlDynamicDns_Host_SetValues(ulDynamicDnsHostIdx, pDynamicDnsHost->InstanceNumber, pDynamicDnsHost->Alias);
          }
 
@@ -377,7 +393,14 @@ CosaDynamicDnsInitialize
              {
                  pMyObject->DDNSServerNextInsNum = 1;
              }
-             _ansc_sprintf(pDynamicDnsServer->Alias, "cpe-ddns-server-%d", (int)pDynamicDnsServer->InstanceNumber);
+             rc = sprintf_s(pDynamicDnsServer->Alias, sizeof(pDynamicDnsServer->Alias),"cpe-ddns-server-%d", (int)pDynamicDnsServer->InstanceNumber);
+             if(rc < EOK)
+             {
+               ERR_CHK(rc);
+               AnscFreeMemory(pDynamicDnsServerLinkObj);
+               AnscFreeMemory(pDynamicDnsServer);
+               return ANSC_STATUS_FAILURE;
+             }
              CosaDmlDynamicDns_Server_SetValues(ulDynamicDnsServerIdx, pDynamicDnsServer->InstanceNumber, pDynamicDnsServer->Alias);
          }
 

@@ -81,6 +81,7 @@
 #include "cosa_apis.h"
 #include "syscfg/syscfg.h"
 #include "cosa_ipv6rd_apis.h"
+#include "safec_lib_common.h"
 
 #if defined(_COSA_BCM_MIPS_) || defined(_ENABLE_DSL_SUPPORT_)
 #define INTERFACE "erouter0"
@@ -1149,6 +1150,7 @@ CosaDml_IPv6rdInit(
         )
 {
     COSA_DML_IPV6RD_IF *ifconf;
+    errno_t rc = -1;
 
     if (g_ipv6rd_sim_conf) {
         return ANSC_STATUS_FAILURE;
@@ -1165,16 +1167,23 @@ CosaDml_IPv6rdInit(
     ifconf = &g_ipv6rd_sim_conf->ifconfs[0];
     ifconf->InstanceNumber = 1;
     ifconf->Enable = TRUE;
-    _ansc_sprintf(ifconf->Alias, "tun6rd1");
-    _ansc_sprintf(ifconf->BorderRelayIPv4Addr, "100.1.24.2");
+    rc = strcpy_s(ifconf->Alias, sizeof(ifconf->Alias), "tun6rd1");
+    ERR_CHK(rc);
+    rc = strcpy_s(ifconf->BorderRelayIPv4Addr, sizeof(ifconf->BorderRelayIPv4Addr), "100.1.24.2");
+    ERR_CHK(rc);
     ifconf->AllTrafficToBorderRelay = FALSE;
-    _ansc_sprintf(ifconf->SPIPv6Prefix, "2001:db8::/32");
+    rc = strcpy_s(ifconf->SPIPv6Prefix, sizeof(ifconf->SPIPv6Prefix), "2001:db8::/32");
+    ERR_CHK(rc);
     ifconf->IPv4MaskLength = 8;
-    _ansc_sprintf(ifconf->AddressSource, ""); // internal choose
+    rc = strcpy_s(ifconf->AddressSource, sizeof(ifconf->AddressSource), ""); // internal choose
+    ERR_CHK(rc);
 
-    _ansc_sprintf(ifconf->Status, "Enabled");
-    _ansc_sprintf(ifconf->TunnelInterface, "");
-    _ansc_sprintf(ifconf->TunneledInterface, "");
+    rc = strcpy_s(ifconf->Status, sizeof(ifconf->Status), "Enabled");
+    ERR_CHK(rc);
+    rc = strcpy_s(ifconf->TunnelInterface, sizeof(ifconf->TunnelInterface), "");
+    ERR_CHK(rc);
+    rc = strcpy_s(ifconf->TunneledInterface, sizeof(ifconf->TunneledInterface), "");
+    ERR_CHK(rc);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -1260,6 +1269,7 @@ CosaDml_IPv6rdGetEntry(
         )
 {
     COSA_DML_IPV6RD_IF *ifconf;
+    errno_t rc = -1;
 
     if ((ifconf = get_ifconf_by_insnum(ulInstanceNumber)) == NULL) {
         return ANSC_STATUS_FAILURE;
@@ -1273,12 +1283,16 @@ CosaDml_IPv6rdGetEntry(
     memset(pEntry, 0, sizeof(COSA_DML_IPV6RD_IF));
     pEntry->InstanceNumber = ifconf->InstanceNumber;
     pEntry->Enable = ifconf->Enable;
-    _ansc_sprintf(pEntry->Alias, "%s", ifconf->Alias); 
-    _ansc_sprintf(pEntry->BorderRelayIPv4Addr, "%s", ifconf->BorderRelayIPv4Addr); 
+    rc = strcpy_s(pEntry->Alias, sizeof(pEntry->Alias), ifconf->Alias);
+    ERR_CHK(rc);
+    rc = strcpy_s(pEntry->BorderRelayIPv4Addr, sizeof(pEntry->BorderRelayIPv4Addr), ifconf->BorderRelayIPv4Addr);
+    ERR_CHK(rc);
     pEntry->AllTrafficToBorderRelay = ifconf->AllTrafficToBorderRelay;
-    _ansc_sprintf(pEntry->SPIPv6Prefix, "%s", ifconf->SPIPv6Prefix); 
+    rc = strcpy_s(pEntry->SPIPv6Prefix, sizeof(pEntry->SPIPv6Prefix), ifconf->SPIPv6Prefix);
+    ERR_CHK(rc);
     pEntry->IPv4MaskLength = ifconf->IPv4MaskLength;
-    _ansc_sprintf(pEntry->AddressSource, "%s", ifconf->AddressSource); 
+    rc = strcpy_s(pEntry->AddressSource, sizeof(pEntry->AddressSource), ifconf->AddressSource);
+    ERR_CHK(rc);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -1291,6 +1305,7 @@ CosaDml_IPv6rdSetEntry(
         )
 {
     COSA_DML_IPV6RD_IF *ifconf;
+    errno_t rc = -1;
 
     if ((ifconf = get_ifconf_by_insnum(ulInstanceNumber)) == NULL) {
         return ANSC_STATUS_FAILURE;
@@ -1302,12 +1317,16 @@ CosaDml_IPv6rdSetEntry(
 
     /* not all field need to save */
     ifconf->Enable = pEntry->Enable;
-    _ansc_sprintf(ifconf->Alias, "%s", pEntry->Alias);
-    _ansc_sprintf(ifconf->BorderRelayIPv4Addr, "%s", pEntry->BorderRelayIPv4Addr);
+    rc = strcpy_s(ifconf->Alias, sizeof(ifconf->Alias), pEntry->Alias);
+    ERR_CHK(rc);
+    rc = strcpy_s(ifconf->BorderRelayIPv4Addr, sizeof(ifconf->BorderRelayIPv4Addr), pEntry->BorderRelayIPv4Addr);
+    ERR_CHK(rc);
     ifconf->AllTrafficToBorderRelay = pEntry->AllTrafficToBorderRelay;
-    _ansc_sprintf(ifconf->SPIPv6Prefix, "%s", pEntry->SPIPv6Prefix);
+    rc = strcpy_s(ifconf->SPIPv6Prefix, sizeof(ifconf->SPIPv6Prefix), pEntry->SPIPv6Prefix);
+    ERR_CHK(rc);
     ifconf->IPv4MaskLength = pEntry->IPv4MaskLength;
-    _ansc_sprintf(ifconf->AddressSource, "%s", pEntry->AddressSource);
+    rc = strcpy_s(ifconf->AddressSource, sizeof(ifconf->AddressSource), pEntry->AddressSource);
+    ERR_CHK(rc);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -1318,6 +1337,8 @@ CosaDml_IPv6rdAddEntry(
         PCOSA_DML_IPV6RD_IF     pEntry
         )
 {
+    errno_t rc = -1;
+
     if (!g_ipv6rd_sim_conf) {
         return ANSC_STATUS_FAILURE;
     }
@@ -1334,7 +1355,12 @@ CosaDml_IPv6rdAddEntry(
 
     /* If and Alias is not provide try to generate a default one */
     if (pEntry->Alias[0] == '\0') {
-        _ansc_sprintf(pEntry->Alias, "tun6rd%lu", pEntry->InstanceNumber);
+        rc = sprintf_s(pEntry->Alias, sizeof(pEntry->Alias), "tun6rd%lu", pEntry->InstanceNumber);
+        if(rc < EOK)
+        {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
         if (get_ifconf_by_alias(pEntry->Alias) != NULL) {
             return ANSC_STATUS_FAILURE;
         }

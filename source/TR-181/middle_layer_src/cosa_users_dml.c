@@ -77,6 +77,7 @@
 #if     CFG_USE_CCSP_SYSLOG
     #include <ccsp_syslog.h>
 #endif
+#include "safec_lib_common.h"
 
 
 void* ResetFailedAttepmts(void* arg)
@@ -103,10 +104,8 @@ void* ResetFailedAttepmts(void* arg)
 #if defined(_COSA_FOR_BCI_)
 	if( AnscEqualString(pEntry->Username, "cusadmin", TRUE) )
 	{
-		memset(buf,0,sizeof(buf));
-		sprintf(buf, "%d", 0);
 
-		if (syscfg_set(NULL, "NumOfFailedAttempts_2", buf) != 0) 
+		if (syscfg_set(NULL, "NumOfFailedAttempts_2", "0") != 0)
 		{
 			CcspTraceInfo(("syscfg_set failed\n"));
 		} 
@@ -329,6 +328,7 @@ User_AddEntry
     PCOSA_DATAMODEL_USERS           pUsers            = (PCOSA_DATAMODEL_USERS)g_pCosaBEManager->hUsers;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = NULL;
     PCOSA_DML_USER                  pUser             = NULL;
+    errno_t                         rc                = -1;
     
     pUser  = (PCOSA_DML_USER)AnscAllocateMemory( sizeof(COSA_DML_USER) );
     if ( !pUser )
@@ -357,7 +357,13 @@ User_AddEntry
     pCxtLink->InstanceNumber = pUser->InstanceNumber;
     *pInsNumber              = pUser->InstanceNumber;
 
-    _ansc_sprintf( pUser->Username, "User%lu", pUser->InstanceNumber);
+    rc = sprintf_s( pUser->Username, sizeof(pUser->Username),"User%lu", pUser->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pCxtLink);
+      goto EXIT1;
+    }
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pUsers->UserList, pCxtLink);
@@ -923,9 +929,14 @@ User_SetParamIntValue
 		if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
 		{
 			char buf[16]={0};
+			errno_t  rc = -1;
 
-			memset(buf,0,sizeof(buf));
-			sprintf(buf, "%d", iValue);
+			rc = sprintf_s(buf, sizeof(buf),"%d", iValue);
+			if(rc < EOK)
+			{
+				ERR_CHK(rc);
+				return FALSE;
+			}
 
 			if (syscfg_set(NULL, "PasswordLoginCounts_2", buf) != 0) 
 			{
@@ -1011,8 +1022,13 @@ User_SetParamUlongValue
 	#if defined(_COSA_FOR_BCI_)
 		if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
 		{
-			memset(buf,0,sizeof(buf));
-			sprintf(buf, "%lu", uValue);
+			errno_t rc = -1;
+			rc = sprintf_s(buf, sizeof(buf),"%lu", uValue);
+			if(rc < EOK)
+			{
+				ERR_CHK(rc);
+				return FALSE;
+			}
 			
 			if (syscfg_set(NULL, "NumOfFailedAttempts_2", buf) != 0) 
 			{

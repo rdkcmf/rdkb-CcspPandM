@@ -71,6 +71,7 @@
 #include "cosa_ra_apis.h"
 #include "cosa_ra_dml.h"
 #include "cosa_ra_internal.h"
+#include "safec_lib_common.h"
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -833,6 +834,7 @@ InterfaceSetting1_AddEntry
     PSLIST_HEADER                   pRAIFHead     = (PSLIST_HEADER)&pMyObject->InterfaceList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_RA_IF_FULL2           pRAInterface  = (PCOSA_DML_RA_IF_FULL2)NULL;
+    errno_t                         rc            = -1;
     
     UNREFERENCED_PARAMETER(hInsContext);
 
@@ -848,7 +850,13 @@ InterfaceSetting1_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pRAInterface->Cfg.Alias, "Interface%d", (int)pMyObject->ulNextInterfaceInsNum); 
+    rc = sprintf_s(pRAInterface->Cfg.Alias, sizeof(pRAInterface->Cfg.Alias),"Interface%d", (int)pMyObject->ulNextInterfaceInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pRAInterface);
+      return NULL;
+    }
 
     AnscSListInitializeHeader(&pRAInterface->OptionList);
     
@@ -2004,6 +2012,7 @@ Option5_AddEntry
     PCOSA_DML_RA_IF_FULL2           pRAInterface     = (PCOSA_DML_RA_IF_FULL2)pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_RA_OPTION             pRAOption        = (PCOSA_DML_RA_OPTION)NULL;
+    errno_t                         rc               = -1;
 
     pRAOption = (PCOSA_DML_RA_OPTION)AnscAllocateMemory(sizeof(COSA_DML_RA_OPTION));
 
@@ -2012,7 +2021,13 @@ Option5_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pRAOption->Alias, "RAOption%d", (int)pRAInterface->ulNextOptionInsNum);
+    rc = sprintf_s(pRAOption->Alias, sizeof(pRAOption->Alias),"RAOption%d", (int)pRAInterface->ulNextOptionInsNum);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pRAOption);
+      return NULL;
+    }
 
     /* Update the middle layer data */
     if ( TRUE )

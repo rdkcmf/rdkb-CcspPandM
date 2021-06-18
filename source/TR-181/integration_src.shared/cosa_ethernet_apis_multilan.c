@@ -76,7 +76,7 @@
 #include "linux/if.h"
 #include "linux/sockios.h"
 #include <sys/ioctl.h>
-
+#include "safec_lib_common.h"
 
 /**********************************************************************
                     HELPER FUNCTION PROTOTYPES
@@ -173,6 +173,7 @@ CosaDmlEthLinkLoadPsm
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = 0;
     SLAP_VARIABLE                   SlapValue       = {0};
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -212,12 +213,17 @@ CosaDmlEthLinkLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_Enable,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -249,12 +255,17 @@ CosaDmlEthLinkLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_Alias,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -272,7 +283,11 @@ CosaDmlEthLinkLoadPsm
             }
             else
             {
-                _ansc_strcpy(pEthLink->Cfg.Alias, SlapValue.Variant.varString);
+                rc = strcpy_s(pEthLink->Cfg.Alias, sizeof(pEthLink->Cfg.Alias), SlapValue.Variant.varString);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                }
             }
 
             SlapCleanVariable(&SlapValue);
@@ -282,12 +297,17 @@ CosaDmlEthLinkLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_PriorityTagging,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+               ERR_CHK(rc);
+            }
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -315,12 +335,18 @@ CosaDmlEthLinkLoadPsm
         {
             SlapInitVariable(&SlapValue);
 
-            _ansc_sprintf
+            rc = sprintf_s
                 (
                     pParamPath,
+                    sizeof(pParamPath),
                     DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_LowerLayerType,
                     pInstArray[ulIndex]
                 );
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+            }
+
 
             iReturnValue =
                 PSM_Get_Record_Value
@@ -351,12 +377,17 @@ CosaDmlEthLinkLoadPsm
             {
                 SlapInitVariable(&SlapValue);
 
-                _ansc_sprintf
+                rc = sprintf_s
                     (
                         pParamPath,
+                        sizeof(pParamPath),
                         DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_LowerLayerInstNum,
                         pInstArray[ulIndex]
                     );
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                }
 
                 iReturnValue =
                     PSM_Get_Record_Value
@@ -411,12 +442,17 @@ CosaDmlEthLinkLoadPsm
             {
                 SlapInitVariable(&SlapValue);
 
-                _ansc_sprintf
+                rc = sprintf_s
                     (
                         pParamPath,
+                        sizeof(pParamPath),
                         DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
                         pInstArray[ulIndex]
                     );
+                if(rc < EOK)
+                {
+                   ERR_CHK(rc);
+                }
 
                 iReturnValue =
                     PSM_Get_Record_Value
@@ -448,12 +484,17 @@ CosaDmlEthLinkLoadPsm
             {
                 SlapInitVariable(&SlapValue);
 
-                _ansc_sprintf
+                rc = sprintf_s
                     (
                         pParamPath,
+                        sizeof(pParamPath),
                         DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2netType,
                         pInstArray[ulIndex]
                     );
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                }
 
                 iReturnValue =
                     PSM_Get_Record_Value
@@ -486,12 +527,17 @@ CosaDmlEthLinkLoadPsm
                  */
                 SlapInitVariable(&SlapValue);
 
-                _ansc_sprintf
+                rc = sprintf_s
                     (
                         pParamPath,
+                        sizeof(pParamPath),
                         DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
                         (int)pEthLink->Cfg.LinkInstNum
                     );
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                }
 
                 iReturnValue =
                     PSM_Get_Record_Value
@@ -509,7 +555,11 @@ CosaDmlEthLinkLoadPsm
                 }
                 else
                 {
-                    _ansc_strcpy(pEthLink->StaticInfo.Name, SlapValue.Variant.varString);
+                    rc = strcpy_s(pEthLink->StaticInfo.Name, sizeof(pEthLink->StaticInfo.Name), SlapValue.Variant.varString);
+                    if(rc != EOK)
+                    {
+                       ERR_CHK(rc);
+                    }
                 }
 
                 SlapCleanVariable(&SlapValue);
@@ -550,20 +600,30 @@ CosaDmlEthLinkSavePsm
     char                            pParamPath[64]  = {0};
     unsigned int                    RecordType      = ccsp_string;
     char                            RecordValue[64] = {0};
+    errno_t                         rc        = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     if ( TRUE )     /* Enable */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_Enable,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_boolean;
-        _ansc_strcpy(RecordValue, pCfg->bEnabled ? PSM_TRUE : PSM_FALSE);
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), (pCfg->bEnabled ? PSM_TRUE : PSM_FALSE));
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -583,15 +643,24 @@ CosaDmlEthLinkSavePsm
 
     if ( TRUE )     /* Alias */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_Alias,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_string;
-        _ansc_strcpy(RecordValue, pCfg->Alias);
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), pCfg->Alias);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -611,16 +680,24 @@ CosaDmlEthLinkSavePsm
 
     if ( TRUE )     /* PriorityTagging */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_PriorityTagging,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_boolean;
-        _ansc_strcpy(RecordValue, pCfg->bPriorityTagging ? PSM_TRUE : PSM_FALSE);
-
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), (pCfg->bPriorityTagging ? PSM_TRUE : PSM_FALSE));
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+        }
         iReturnValue =
             PSM_Set_Record_Value2
                 (
@@ -639,15 +716,24 @@ CosaDmlEthLinkSavePsm
 
     if ( TRUE )     /* l2net */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2net,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_unsignedInt;
-        _ansc_sprintf(RecordValue, "%lu", pCfg->LinkInstNum);
+        rc = sprintf_s(RecordValue,sizeof(RecordValue), "%lu", pCfg->LinkInstNum);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -667,16 +753,24 @@ CosaDmlEthLinkSavePsm
 
     if ( TRUE )     /* l2netType */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i DMSB_TR181_PSM_EthLink_l2netType,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         RecordType = ccsp_string;
-        _ansc_strcpy(RecordValue, CosaUtilGetLinkTypeStr(pCfg->LinkType));
-
+        rc = strcpy_s(RecordValue, sizeof(RecordValue), CosaUtilGetLinkTypeStr(pCfg->LinkType));
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+        }
         iReturnValue =
             PSM_Set_Record_Value2
                 (
@@ -707,17 +801,23 @@ CosaDmlEthLinkDelPsm
     UNREFERENCED_PARAMETER(pEthContext);
     int                             iReturnValue    = CCSP_SUCCESS;
     char                            pParamPath[64]  = {0};
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     if ( TRUE )     /* Enable */
     {
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pParamPath,
+                sizeof(pParamPath),
                 DMSB_TR181_PSM_EthLink_Root DMSB_TR181_PSM_EthLink_i,
                 (int)pCfg->InstanceNumber
             );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         iReturnValue =
             PSM_Del_Record
@@ -817,6 +917,7 @@ CosaDmlEthLinkSetValues
     PDMSB_TR181_ETH_CONTEXT         pEthContext     = (PDMSB_TR181_ETH_CONTEXT)hContext;
     PSINGLE_LINK_ENTRY              pSLinkEntry;
     PDMSB_TR181_ETH_LINK            pEthLink;
+    errno_t                         rc        =  -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -827,7 +928,12 @@ CosaDmlEthLinkSetValues
         pEthLink = ACCESS_DMSB_TR181_ETH_LINK(pSLinkEntry);
 
         /* Instance number cannot be changed! */
-        _ansc_strcpy(pEthLink->Cfg.Alias, pAlias);
+        rc = strcpy_s(pEthLink->Cfg.Alias, sizeof(pEthLink->Cfg.Alias), pAlias);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+          return  ANSC_STATUS_FAILURE;
+        }
 
         CosaDmlEthLinkSavePsm(pEthContext, &pEthLink->Cfg);
     }
@@ -848,6 +954,7 @@ CosaDmlEthLinkAddEntry
     int                             iReturnValue    = CCSP_SUCCESS;
     PDMSB_TR181_ETH_CONTEXT         pEthContext     = (PDMSB_TR181_ETH_CONTEXT)hContext;
     PDMSB_TR181_ETH_LINK            pEthLink;
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -880,12 +987,18 @@ CosaDmlEthLinkAddEntry
                  */
                 SlapInitVariable(&SlapValue);
 
-                _ansc_sprintf
+                rc = sprintf_s
                     (
                         pParamPath,
+                        sizeof(pParamPath),
                         DMSB_TR181_PSM_l2net_Root DMSB_TR181_PSM_l2net_i DMSB_TR181_PSM_l2net_name,
                         (int)pEthLink->Cfg.LinkInstNum
                     );
+                if(rc < EOK)
+                {
+                   ERR_CHK(rc);
+                }
+
 
                 iReturnValue =
                     PSM_Get_Record_Value
@@ -903,7 +1016,11 @@ CosaDmlEthLinkAddEntry
                 }
                 else
                 {
-                    _ansc_strcpy(pEthLink->StaticInfo.Name, SlapValue.Variant.varString);
+                    rc = strcpy_s(pEthLink->StaticInfo.Name, sizeof(pEthLink->StaticInfo.Name), SlapValue.Variant.varString);
+                    if(rc != EOK)
+                    {
+                       ERR_CHK(rc);
+                    }
                 }
 
                 SlapCleanVariable(&SlapValue);
@@ -964,6 +1081,7 @@ CosaDmlEthLinkSetCfg
 {
     PDMSB_TR181_ETH_CONTEXT         pEthContext     = (PDMSB_TR181_ETH_CONTEXT)hContext;
     PDMSB_TR181_ETH_LINK            pEthLink;
+    errno_t                         rc              = -1;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -1011,7 +1129,11 @@ CosaDmlEthLinkSetCfg
         }
 
         /* Update the name -- just copy LinkName to Name field */
-        _ansc_strcpy(pEthLink->StaticInfo.Name, pCfg->LinkName);
+        rc = strcpy_s(pEthLink->StaticInfo.Name, sizeof(pEthLink->StaticInfo.Name), pCfg->LinkName);
+        if(rc != EOK)
+        {
+          ERR_CHK(rc);
+        }
 
         /* Save the configuraton */
         AnscCopyMemory(&pEthLink->Cfg, pCfg, sizeof(pEthLink->Cfg));

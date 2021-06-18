@@ -79,6 +79,7 @@
 #define BUFLEN_6 6
 #endif
 #endif
+#include "safec_lib_common.h"
 
 ANSC_STATUS
 COSAGetParamValueByPathName
@@ -677,6 +678,7 @@ Interface_GetParamStringValue
 {
     PCOSA_DML_ETH_PORT_FULL         pEthernetPortFull = (PCOSA_DML_ETH_PORT_FULL)hInsContext;
     char assocDeviceMacList[(17 * ETH_INTERFACE_MAX_ASSOC_DEVICES) + 1];
+    errno_t rc = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -752,9 +754,10 @@ Interface_GetParamStringValue
         }
 #endif
 #endif
-        _ansc_sprintf
+        rc = sprintf_s
             (
                 pValue,
+                *pUlSize,
                 "%02x:%02x:%02x:%02x:%02x:%02x",
                 pEthernetPortFull->StaticInfo.MacAddress[0],
                 pEthernetPortFull->StaticInfo.MacAddress[1],
@@ -763,7 +766,11 @@ Interface_GetParamStringValue
                 pEthernetPortFull->StaticInfo.MacAddress[4],
                 pEthernetPortFull->StaticInfo.MacAddress[5]
             );
-
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return -1;
+        }
         return 0;
     }
 
@@ -1832,6 +1839,7 @@ Link_AddEntry
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->EthernetLinkList;
     PCOSA_DML_ETH_LINK_FULL         pEntry                  = (PCOSA_DML_ETH_LINK_FULL  )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+    errno_t                         rc                      = -1;
 
 #if defined(_COSA_DRG_CNS_) || defined(_COSA_DRG_TPG_)
     return NULL;
@@ -1843,7 +1851,13 @@ Link_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Cfg.Alias, "Link%lu", pMyObject->ulEthernetLinkNextInstance);
+    rc = sprintf_s(pEntry->Cfg.Alias, sizeof(pEntry->Cfg.Alias),"Link%lu", pMyObject->ulEthernetLinkNextInstance);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pEntry);
+      return NULL;
+    }
 
     /* Update the cache */
     pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
@@ -2212,6 +2226,7 @@ Link_GetParamStringValue
     PCOSA_DATAMODEL_ETHERNET        pMyObject               = (PCOSA_DATAMODEL_ETHERNET )g_pCosaBEManager->hEthernet;
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ETH_LINK_FULL         pEntry                  = (PCOSA_DML_ETH_LINK_FULL)pContextLinkObject->hContext;
+    errno_t                         rc                      = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -2306,9 +2321,10 @@ Link_GetParamStringValue
 	fflush(stdout);
 	*/
 	
-        _ansc_sprintf
+        rc = sprintf_s
         (
             pValue,
+            *pUlSize,
             "%02x:%02x:%02x:%02x:%02x:%02x",
             pEntry->StaticInfo.MacAddress[0],
             pEntry->StaticInfo.MacAddress[1],
@@ -2317,6 +2333,11 @@ Link_GetParamStringValue
             pEntry->StaticInfo.MacAddress[4],
             pEntry->StaticInfo.MacAddress[5]
         );
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return -1;
+        }
         return 0;
     }
 
@@ -2521,6 +2542,7 @@ Link_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pContextLinkObject      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_ETH_LINK_FULL         pEntry                  = (PCOSA_DML_ETH_LINK_FULL)pContextLinkObject->hContext;
+    errno_t                         rc                      = -1;
     
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
@@ -2578,7 +2600,12 @@ Link_SetParamStringValue
             }
 
             /* Retrieve LinkName */
-            _ansc_sprintf(ucEntryParamName, "%s.%s", pString, "Name");
+            rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName),"%s.Name", pString);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              return FALSE;
+            }
 #if defined (MULTILAN_FEATURE)
             ulEntryNameLen = sizeof(ucEntryNameValue);
             if ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen))
@@ -3235,6 +3262,7 @@ VLANTermination_AddEntry
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->EthernetVlanTerminationList;
     PCOSA_DML_ETH_VLAN_TERMINATION_FULL pEntry              = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL  )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+    errno_t                         rc                      = -1;
 
     pEntry = (PCOSA_DML_ETH_VLAN_TERMINATION_FULL)AnscAllocateMemory(sizeof(COSA_DML_ETH_VLAN_TERMINATION_FULL));
     if (!pEntry)
@@ -3242,8 +3270,21 @@ VLANTermination_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->StaticInfo.Name, "cpe-vlan-termination%lu", pMyObject->ulEthernetVlanTerminationNextInstance);
-    _ansc_sprintf(pEntry->Cfg.Alias, "cpe-vlan-termination%lu", pMyObject->ulEthernetVlanTerminationNextInstance);
+    rc = sprintf_s(pEntry->StaticInfo.Name, sizeof(pEntry->StaticInfo.Name),"cpe-vlan-termination%lu", pMyObject->ulEthernetVlanTerminationNextInstance);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pEntry);
+      return NULL;
+    }
+
+    rc = sprintf_s(pEntry->Cfg.Alias, sizeof(pEntry->Cfg.Alias),"cpe-vlan-termination%lu", pMyObject->ulEthernetVlanTerminationNextInstance);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pEntry);
+      return NULL;
+    }
 
     pEntry->DynamicInfo.Status = COSA_DML_IF_STATUS_NotPresent;
 

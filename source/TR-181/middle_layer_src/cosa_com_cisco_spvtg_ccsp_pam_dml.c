@@ -76,6 +76,7 @@
 #include "ansc_platform.h"
 #include "plugin_main_apis.h"
 #include "cosa_com_cisco_spvtg_ccsp_pam_dml.h"
+#include "safec_lib_common.h"
 
 #define PAM_FIRST_IP_INTERFACE      "PAM_FIRST_IP_INTERFACE"
 #define PAM_MAX_IP_INTERFACE_NUM    (256)
@@ -147,6 +148,7 @@ Pam_GetFirstIpInterfaceObjectName
     BOOL                            bLowerLayerUpstream = FALSE;
     char*                           EnvIndex            = NULL;
     ULONG                           ulEnvIndex          = PAM_MAX_IP_INTERFACE_NUM;
+    errno_t                         rc                  = -1;
 
 
    CcspTraceInfo(("[%s] -- Enter \n", __FUNCTION__));
@@ -197,7 +199,14 @@ Pam_GetFirstIpInterfaceObjectName
         }
         else
         {
-            _ansc_sprintf(pObjName, "Device.IP.Interface.%lu.LowerLayers", ulInstNum);
+            rc = sprintf_s(pObjName, sizeof(pObjName), "Device.IP.Interface.%lu.LowerLayers", ulInstNum);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              returnStatus = ANSC_STATUS_FAILURE;
+              break;
+            }
+
             /*CcspTraceInfo(("Checking %s...\n", pObjName));*/
 
             LowerLayersSize = sizeof(LowerLayers);
@@ -227,8 +236,20 @@ Pam_GetFirstIpInterfaceObjectName
                     LowerLayers[ulLen - 1] = '\0';
                 }
 
-                _ansc_strcpy (pObjName, LowerLayers);
-                _ansc_sprintf(Buffer, "%s.LowerLayers", LowerLayers);
+                rc = strcpy_s(pObjName, sizeof(pObjName), LowerLayers);
+                if(rc != EOK)
+                {
+                  ERR_CHK(rc);
+                  returnStatus = ANSC_STATUS_FAILURE;
+                  break;
+                }
+                rc = sprintf_s(Buffer, sizeof(Buffer), "%s.LowerLayers", LowerLayers);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  returnStatus = ANSC_STATUS_FAILURE;
+                  break;
+                }
             
                 CcspTraceDebug(("Checking %s...\n", Buffer));
                 
@@ -251,7 +272,13 @@ Pam_GetFirstIpInterfaceObjectName
              *  Note, not all error cases are covered well here, which happened to help to pass the test
              *  on DRG -- LowerLayers parameter of IP.Interface on top of Bridge.1 is not actually correct.  
              */
-            _ansc_sprintf(Buffer, "%s.Upstream", pObjName);
+            rc = sprintf_s(Buffer, sizeof(Buffer), "%s.Upstream", pObjName);
+            if(rc < EOK)
+            {
+              ERR_CHK(rc);
+              returnStatus = ANSC_STATUS_FAILURE;
+              break;
+            }
             bLowerLayerUpstream = CosaGetParamValueBool(Buffer);
             
             if ( bUpstream == bLowerLayerUpstream )
@@ -264,7 +291,13 @@ Pam_GetFirstIpInterfaceObjectName
                          ulInstNum
                     ));
 
-                _ansc_sprintf(Buffer, "Device.IP.Interface.%lu.", ulInstNum);
+                rc = sprintf_s(Buffer, sizeof(Buffer), "Device.IP.Interface.%lu.", ulInstNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  returnStatus = ANSC_STATUS_FAILURE;
+                  break;
+                }
                 BufferSize = _ansc_strlen(Buffer);
                 
                 if ( BufferSize < *pulObjNameSize )
@@ -502,6 +535,7 @@ Pam_GetParamStringValue
     ULONG                           ulInstNum           = 0;
     char                            Buffer[128]         = {0};
     ULONG                           BufferSize          = 0;
+    errno_t                         rc                  = -1;
 
     UNREFERENCED_PARAMETER(hInsContext);
 
@@ -589,7 +623,12 @@ Pam_GetParamStringValue
             }
             else
             {
-                _ansc_sprintf(Buffer, "%lu.", ulInstNum);
+                rc = sprintf_s(Buffer, sizeof(Buffer), "%lu.", ulInstNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  return -1;
+                }
                 _ansc_strcat(IpIfObjName, Buffer);
                 _ansc_strcat(IpIfObjName, "IPAddress");
             }
@@ -635,7 +674,12 @@ Pam_GetParamStringValue
             }
             else
             {
-                _ansc_sprintf(Buffer, "%lu.", ulInstNum);
+                rc = sprintf_s(Buffer, sizeof(Buffer), "%lu.", ulInstNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  return -1;
+                }
                 _ansc_strcat(IpIfObjName, Buffer);
                 _ansc_strcat(IpIfObjName, "SubnetMask");
             }
@@ -681,7 +725,12 @@ Pam_GetParamStringValue
             }
             else
             {
-                _ansc_sprintf(Buffer, "%lu.", ulInstNum);
+                rc = sprintf_s(Buffer, sizeof(Buffer), "%lu.", ulInstNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  return -1;
+                }
                 _ansc_strcat(IpIfObjName, Buffer);
                 _ansc_strcat(IpIfObjName, "IPAddress");
             }
@@ -727,7 +776,12 @@ Pam_GetParamStringValue
             }
             else
             {
-                _ansc_sprintf(Buffer, "%lu.", ulInstNum);
+                rc = sprintf_s(Buffer, sizeof(Buffer), "%lu.", ulInstNum);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                  return -1;
+                }
                 _ansc_strcat(IpIfObjName, Buffer);
                 _ansc_strcat(IpIfObjName, "SubnetMask");
             }

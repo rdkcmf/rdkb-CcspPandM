@@ -472,6 +472,7 @@ Client3_AddEntry
     PCOSA_DATAMODEL_DHCPV6          pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
     PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCxtLink        = NULL;
     PCOSA_DML_DHCPCV6_FULL            pDhcpc          = NULL;
+    errno_t                           rc              = -1;
 
 #if (defined _COSA_DRG_CNS_)  || (defined _COSA_DRG_TPG_)
     /*not supported*/
@@ -507,7 +508,13 @@ Client3_AddEntry
     pCxtLink->InstanceNumber   = pDhcpc->Cfg.InstanceNumber;
     *pInsNumber                = pDhcpc->Cfg.InstanceNumber;
 
-    _ansc_sprintf( (char*)pDhcpc->Cfg.Alias, "Client%lu", pDhcpc->Cfg.InstanceNumber);
+    rc = sprintf_s( (char*)pDhcpc->Cfg.Alias,sizeof(pDhcpc->Cfg.Alias),"Client%lu", pDhcpc->Cfg.InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pCxtLink);
+      goto EXIT1;
+    }
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pDhcpv6->ClientList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -1316,6 +1323,7 @@ Client3_Validate
     PSINGLE_LINK_ENTRY                pSListEntry       = NULL;
     PCOSA_DML_DHCPCV6_FULL            pDhcpc2           = NULL;
     BOOL                              bFound            = FALSE;
+    errno_t                           rc                = -1;
     UNREFERENCED_PARAMETER(puLength);
     /*  only for Alias */
     if ( pDhcpv6->AliasOfClient[0] )
@@ -1335,7 +1343,12 @@ Client3_Validate
                     continue;
                 }
 
-                _ansc_strcpy(pReturnParamName, "Alias");
+                rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "Alias");
+                if(rc != EOK)
+                {
+                  ERR_CHK(rc);
+                  return FALSE;
+                }
 
                 bFound = TRUE;
                 
@@ -2071,6 +2084,7 @@ SentOption1_AddEntry
         PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT pCxtDhcpcLink        = (PCOSA_CONTEXT_DHCPCV6_LINK_OBJECT)hInsContext;
         PCOSA_CONTEXT_LINK_OBJECT         pCxtLink             = NULL;
         PCOSA_DML_DHCPCV6_SENT            pDhcpSentOption      = NULL;
+        errno_t                           rc                   = -1;
         
         pDhcpSentOption  = (PCOSA_DML_DHCPCV6_SENT)AnscAllocateMemory( sizeof(COSA_DML_DHCPCV6_SENT) );
         if ( !pDhcpSentOption )
@@ -2099,7 +2113,13 @@ SentOption1_AddEntry
         pCxtLink->InstanceNumber       = pDhcpSentOption->InstanceNumber;
         *pInsNumber                    = pDhcpSentOption->InstanceNumber;
     
-        _ansc_sprintf( (char*)pDhcpSentOption->Alias, "SentOption%lu", pDhcpSentOption->InstanceNumber);
+        rc = sprintf_s( (char*)pDhcpSentOption->Alias, sizeof(pDhcpSentOption->Alias), "SentOption%lu", pDhcpSentOption->InstanceNumber);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          AnscFreeMemory(pCxtLink);
+          goto EXIT1;
+        }
     
         /* Put into our list */
         CosaSListPushEntryByInsNum(&pCxtDhcpcLink->SentOptionList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -2689,6 +2709,7 @@ SentOption1_Validate
         PCOSA_DML_DHCPCV6_SENT            pDhcpSentOption2  = NULL;
         PSINGLE_LINK_ENTRY                pSListEntry       = NULL;
         BOOL                              bFound            = FALSE;
+        errno_t                           rc                = -1;
     
         /* Parent hasn't set, we don't permit child is set.*/
         if ( pCxtDhcpcLink->bNew )
@@ -2718,7 +2739,12 @@ SentOption1_Validate
                         continue;
                     }
     
-                    _ansc_strcpy(pReturnParamName, "Alias");
+                    rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Alias");
+                    if(rc != EOK)
+                    {
+                      ERR_CHK(rc);
+                      return FALSE;
+                    }
                     *puLength = AnscSizeOfString("Alias");
     
                     bFound = TRUE;
@@ -2734,7 +2760,12 @@ SentOption1_Validate
                         continue;
                     }
     
-                    _ansc_strcpy(pReturnParamName, "Tag");
+                    rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "Tag");
+                    if(rc != EOK)
+                    {
+                      ERR_CHK(rc);
+                      return FALSE;
+                    }
                     *puLength = AnscSizeOfString("Tag");
     
                     bFound = TRUE;
@@ -4319,6 +4350,7 @@ Pool1_AddEntry
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6           = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
     PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtLink          = NULL;
     PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = NULL;
+    errno_t                           rc                = -1;
 #ifndef MULTILAN_FEATURE
         /* We just have one Pool. Not permit to add/delete. */
         return NULL;
@@ -4356,7 +4388,13 @@ Pool1_AddEntry
     pCxtLink->InstanceNumber  = pPool->Cfg.InstanceNumber;
     *pInsNumber               = pPool->Cfg.InstanceNumber;
 
-    _ansc_sprintf( (char*)pPool->Cfg.Alias, "Pool%lu", pPool->Cfg.InstanceNumber);
+    rc = sprintf_s( (char*)pPool->Cfg.Alias, sizeof(pPool->Cfg.Alias),"Pool%lu", pPool->Cfg.InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pCxtLink);
+      goto EXIT1;
+    }
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pDhcpv6->PoolList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -5679,6 +5717,7 @@ Pool1_Validate
         PSINGLE_LINK_ENTRY                pSListEntry       = NULL;
         PCOSA_DML_DHCPSV6_POOL_FULL       pPool2            = NULL;
         BOOL                              bFound            = FALSE;
+        errno_t                           rc                = -1;
 
         UNREFERENCED_PARAMETER(puLength);           
         /*  only for Alias */
@@ -5699,7 +5738,12 @@ Pool1_Validate
                         continue;
                     }
     
-                    _ansc_strcpy(pReturnParamName, "Alias");
+                    rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength, "Alias");
+                    if(rc != EOK)
+                    {
+                      ERR_CHK(rc);
+                      return FALSE;
+                    }
                     
                     bFound = TRUE;
                     
@@ -7856,6 +7900,7 @@ Option4_AddEntry
     PCOSA_CONTEXT_LINK_OBJECT         pCxtLink             = NULL;
     PCOSA_DML_DHCPSV6_POOL_OPTION     pDhcpOption          = NULL;
     PCOSA_DATAMODEL_DHCPV6            pDhcpv6              = (PCOSA_DATAMODEL_DHCPV6)g_pCosaBEManager->hDhcpv6;
+    errno_t                           rc                   = -1;
 #ifndef MULTILAN_FEATURE
 	/* We just have two option:DNS, domain. Not permit to add/delete. */
 	return NULL;
@@ -7887,7 +7932,13 @@ Option4_AddEntry
     pCxtLink->InstanceNumber           = pDhcpOption->InstanceNumber; 
     *pInsNumber                        = pDhcpOption->InstanceNumber;
 
-    _ansc_sprintf( (char*)pDhcpOption->Alias, "Option%lu", pDhcpOption->InstanceNumber);
+    rc = sprintf_s( (char*)pDhcpOption->Alias, sizeof(pDhcpOption->Alias), "Option%lu", pDhcpOption->InstanceNumber);
+    if(rc < EOK)
+    {
+      ERR_CHK(rc);
+      AnscFreeMemory(pCxtLink);
+      goto EXIT1;
+    }
 
     /* Put into our list */
     CosaSListPushEntryByInsNum(&pCxtPoolLink->OptionList, (PCOSA_CONTEXT_LINK_OBJECT)pCxtLink);
@@ -8541,6 +8592,7 @@ Option4_Validate
     PCOSA_DML_DHCPSV6_POOL_OPTION     pDhcpPoolOption2  = NULL;
     PSINGLE_LINK_ENTRY                pSListEntry       = NULL;
     BOOL                              bFound            = FALSE;
+    errno_t                           rc                = -1;
 
     UNREFERENCED_PARAMETER(puLength);
 
@@ -8572,7 +8624,12 @@ Option4_Validate
                     continue;
                 }
 
-                _ansc_strcpy(pReturnParamName, "Alias");
+                rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Alias");
+                if(rc != EOK)
+                {
+                  ERR_CHK(rc);
+                  return FALSE;
+                }
 
                 bFound = TRUE;
 
@@ -8587,7 +8644,12 @@ Option4_Validate
                     continue;
                 }
 
-                _ansc_strcpy(pReturnParamName, "Tag");
+                rc = STRCPY_S_NOCLOBBER(pReturnParamName, *puLength,"Tag");
+                if(rc != EOK)
+                {
+                  ERR_CHK(rc);
+                  return FALSE;
+                }
 
                 bFound = TRUE;
 

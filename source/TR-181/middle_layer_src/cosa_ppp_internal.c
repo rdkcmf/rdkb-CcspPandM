@@ -70,6 +70,7 @@
 #ifndef FEATURE_RDKB_XDSL_PPP_MANAGER
 
 #include "cosa_ppp_internal.h"
+#include "safec_lib_common.h"
 
 extern void * g_pDslhDmlAgent;
 
@@ -164,6 +165,7 @@ CosaPPPInitialize
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext        = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     ULONG                           ulEntryCount        = 0;
     ULONG                           ulIndex             = 0;
+    errno_t                         rc                  = -1;
 
     /* Initiation all functions */
     
@@ -282,7 +284,11 @@ CosaPPPInitialize
                 }
 
                 /* Generate Alias */
-                _ansc_sprintf(pEntry->Cfg.Alias, "Interface%lu", pCosaContext->InstanceNumber);
+                rc = sprintf_s(pEntry->Cfg.Alias, sizeof(pEntry->Cfg.Alias),"Interface%lu", pCosaContext->InstanceNumber);
+                if(rc < EOK)
+                {
+                  ERR_CHK(rc);
+                }
 
                 CosaDmlPppIfSetValues
                 (

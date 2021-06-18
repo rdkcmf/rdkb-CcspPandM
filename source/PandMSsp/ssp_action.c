@@ -85,6 +85,8 @@
 #include "ssp_global.h"
 #include "ccsp_trace.h"
 #include "dm_pack_create_func.h"
+#include "safec_lib_common.h"
+
 extern ULONG                                       g_ulAllocatedSizePeak;
 
 extern  PDSLH_CPE_CONTROLLER_OBJECT     pDslhCpeController;
@@ -185,6 +187,7 @@ ssp_engage_pnm
     ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     char                            CrName[256]     = {0};
     PCCSP_DM_XML_CFG_LIST           pXmlCfgList     = NULL;
+    errno_t                         rc        = -1;
 
     g_pComponent_Common_Dm->Health = CCSP_COMMON_COMPONENT_HEALTH_Yellow;
 
@@ -202,13 +205,11 @@ ssp_engage_pnm
     pDslhCpeController->SetDbusHandle((ANSC_HANDLE)pDslhCpeController, bus_handle);
     pDslhCpeController->Engage((ANSC_HANDLE)pDslhCpeController);
 
-    if ( g_Subsystem[0] != 0 )
+    rc = sprintf_s(CrName, sizeof(CrName), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+    if(rc < EOK)
     {
-        _ansc_sprintf(CrName, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
-    }
-    else
-    {
-        _ansc_sprintf(CrName, "%s", CCSP_DBUS_INTERFACE_CR);
+       ERR_CHK(rc);
+       return ANSC_STATUS_FAILURE;
     }
 
     returnStatus = CcspComponentLoadDmXmlList(pStartCfg->DmXmlCfgFileName, &pXmlCfgList);
@@ -256,22 +257,27 @@ ssp_cancel_pnm
 	int                             nRet  = 0;
     char                            CrName[256];
     char                            CpName[256];
+    errno_t                         rc = -1;
 
     if( pDslhCpeController == NULL)
     {
         return ANSC_STATUS_SUCCESS;
     }
 
-    if ( g_Subsystem[0] != 0 )
+    rc = sprintf_s(CrName, sizeof(CrName), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+    if(rc < EOK)
     {
-        _ansc_sprintf(CrName, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
-        _ansc_sprintf(CpName, "%s%s", g_Subsystem, pStartCfg->ComponentName);
+       ERR_CHK(rc);
+       return ANSC_STATUS_FAILURE;
     }
-    else
+
+    rc = sprintf_s(CpName, sizeof(CpName), "%s%s", g_Subsystem, pStartCfg->ComponentName);
+    if(rc < EOK)
     {
-        _ansc_sprintf(CrName, "%s", CCSP_DBUS_INTERFACE_CR);
-        _ansc_sprintf(CpName, "%s", pStartCfg->ComponentName);
+       ERR_CHK(rc);
+       return ANSC_STATUS_FAILURE;
     }
+
     /* unregister component */
     nRet = CcspBaseIf_unregisterComponent(bus_handle, CrName, CpName );  
     AnscTrace("unregisterComponent returns %d\n", nRet);
