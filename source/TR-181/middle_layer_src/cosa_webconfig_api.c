@@ -21,6 +21,12 @@
 #include "webconfig_framework.h"
 #include "base64.h"
 
+t_cache pf_cache[PORTMAP_CACHE_SIZE];
+t_cache pf_cache_bkup[PORTMAP_CACHE_SIZE];
+
+t_cache dmz_cache[DMZ_CACHE_SIZE];
+t_cache dmz_cache_bkup[DMZ_CACHE_SIZE];
+
 int pf_cache_size = 0;
 int pf_cache_size_bkup = 0;
 

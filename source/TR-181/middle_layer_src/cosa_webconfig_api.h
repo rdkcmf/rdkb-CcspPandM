@@ -77,12 +77,11 @@ typedef struct {
     char val[VAL_BLOCK_SIZE];
 } t_cache;
 
-t_cache pf_cache[PORTMAP_CACHE_SIZE]; 
+extern t_cache pf_cache[PORTMAP_CACHE_SIZE];
+extern t_cache pf_cache_bkup[PORTMAP_CACHE_SIZE];
 
-t_cache pf_cache_bkup[PORTMAP_CACHE_SIZE]; 
-
-t_cache dmz_cache[DMZ_CACHE_SIZE];
-t_cache dmz_cache_bkup[DMZ_CACHE_SIZE];
+extern t_cache dmz_cache[DMZ_CACHE_SIZE];
+extern t_cache dmz_cache_bkup[DMZ_CACHE_SIZE];
 
 
 uint32_t getBlobVersion(char* subdoc);
