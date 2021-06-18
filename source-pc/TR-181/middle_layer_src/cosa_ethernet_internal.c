@@ -864,14 +864,14 @@ CosaEthPortGetAssocDevices
     )
 {
     int     i = 0,j = 0;
-    char macAddr[MACADDR_SZ+1];
+    char macAddr[MACADDR_SZ];
     int size = 0;
 
     maclist[0] = '\0';
 
     for(j=0; j < numMacAddr; j++)
     {
-        memset(macAddr,0,(MACADDR_SZ+1));
+        memset(macAddr,0,sizeof(macAddr));
         if(i > 0)
             strcat(maclist, ",");
         sprintf(macAddr, "%02x:%02x:%02x:%02x:%02x:%02x", mac[i], mac[i+1], mac[i+2], mac[i+3], mac[i+4], mac[i+5]);
