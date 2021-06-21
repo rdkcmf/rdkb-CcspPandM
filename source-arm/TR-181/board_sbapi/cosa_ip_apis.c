@@ -950,8 +950,8 @@ IPIF_getEntry_for_Ipv6Addr
             continue;
         }
 
-       memset(buf, 0, 256);
-       memset(buf1, 0, 256);
+       memset(buf, 0, sizeof(buf));
+       memset(buf1, 0, sizeof(buf1));
 
        if(!strncmp(p_v6addr->v6addr, "fe80", 4)){
                safec_rc = sprintf_s(buf, sizeof(buf), SYSCFG_FORMAT_NORMAL_V6ADDR"_inet6_link_inst_num", g_ipif_names[ulIndex]);
