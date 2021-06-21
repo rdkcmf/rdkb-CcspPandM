@@ -17,3 +17,7 @@
 # limitations under the License.
 ##########################################################################
 SUBDIRS = TR-181 PandMSsp
+
+if WITH_GTEST_SUPPORT
+SUBDIRS += test
+endif
