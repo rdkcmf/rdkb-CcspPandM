@@ -344,9 +344,16 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
         return 0;
     }
     i = *entry_count;
+
+    /*
+       As long as the pointer to the line buffer and the variable holding its
+       size are not modified between calls to getline() there's no need to free
+       the line buffer after every call to getline() (the buffer will be reused
+       and automatically resized as required by getline()).
+    */
     while(0 < (len = getline( &line, &LineNum, fd))){
         if(len < LOG_LINE_MIN_SIZE )
-            goto CONTINUE;
+            continue;
 
         p[i].Tag[0] = '\0';
 
@@ -380,13 +387,13 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
         //Get Level
         if(NULL != (tmp = strstr(line, user))){
              if(1 != sscanf(tmp, "%*[^.].%63s", LevelStr)){
-                 goto CONTINUE;
+                 continue;
              }else{
                  p[i].Level = _Level_str2num(LevelStr);
                  strncpy(p[i].Tag, user, sizeof(p[i].Tag));
              }
         }else{
-             goto CONTINUE;
+             continue;
         }
 
         //Get Log information
@@ -412,10 +419,12 @@ static int _getLogInfo(FILE* fd, PCOSA_DML_DIAGNOSTICS_ENTRY *info, int *entry_c
                 }
              }
         }else{
-             goto CONTINUE;
+             continue;
         }
         i++;
-CONTINUE:
+    }
+
+    if(line){
         free(line);
         line = NULL;
     }
