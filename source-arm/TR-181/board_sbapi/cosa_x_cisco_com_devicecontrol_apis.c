@@ -2151,14 +2151,18 @@ CosaDmlDcSetFactoryReset
        // system("rm -f /nvram/TLVData.bin"); //Need to remove TR69 TLV data.
 	//	system("rm -f /nvram/reverted"); //Need to remove redirection reverted flag
 	//	system("restoreAllDBs"); //Perform factory reset on other components
-#if defined (_HUB4_PRODUCT_REQ_)
+#if defined (_HUB4_PRODUCT_REQ_) || defined(_SR300_PRODUCT_REQ_)
 	CcspTraceWarning(("[%s]:Restoring Voice to factory default ...\n",__FUNCTION__));
 	int ret = -1;
 	char* faultParam = NULL;
 	errno_t safec_rc = -1;
 	componentStruct_t **        ppVoiceComponent = NULL;
 	int                         size = 0;
+#ifdef FEATURE_RDKB_TELCOVOICE_MANAGER
+        parameterValStruct_t    val = { "Device.Services.VoiceService.1.X_RDK_FactoryReset", "true", ccsp_boolean};
+#else
 	parameterValStruct_t    val = { "Device.Services.VoiceService.1.X_RDK-Central_COM_VoiceProcessState", "FactoryDefault", ccsp_string};
+#endif
     CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 	safec_rc = sprintf_s(dst_pathname_cr, sizeof(dst_pathname_cr),"%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
 	if(safec_rc < EOK)
@@ -2189,7 +2193,11 @@ CosaDmlDcSetFactoryReset
 
 	   if (ret != CCSP_SUCCESS && faultParam)
 	   {
+#ifdef FEATURE_RDKB_TELCOVOICE_MANAGER
+		CcspTraceError(("[%s]:Setting X_RDK_FactoryReset returned error '%s'  ...\n",__FUNCTION__,faultParam));
+#else
 		CcspTraceError(("[%s]:Setting X_RDK-Central_COM_VoiceProcessState returned error '%s'  ...\n",__FUNCTION__,faultParam));
+#endif
 		bus_info->freefunc(faultParam);
 	   }
 	}
