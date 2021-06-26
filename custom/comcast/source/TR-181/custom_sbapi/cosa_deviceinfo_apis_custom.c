@@ -707,7 +707,7 @@ CosaDmlGetCloudUIReachableStatus
     return returnStatus;
 }
 
-#if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_)
+#if defined(INTEL_PUMA7) || defined(_XB6_PRODUCT_REQ_) || defined(_CBR2_PRODUCT_REQ_)
 ANSC_STATUS
 CosaDmlSetLED
     (

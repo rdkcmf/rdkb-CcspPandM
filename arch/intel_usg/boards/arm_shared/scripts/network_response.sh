@@ -55,6 +55,7 @@ export PATH=$PATH:/fss/gw
 source /etc/utopia/service.d/log_capture_path.sh
 ATOM_RPC_IP=`cat /etc/device.properties | grep ATOM_ARPING_IP | cut -f 2 -d"="`
 BOX_TYPE=`cat /etc/device.properties | grep BOX_TYPE | cut -f 2 -d"="`
+MODEL_NUM=`cat /etc/device.properties | grep MODEL_NUM  | cut -f2 -d=`
 
 if [ "x$TRIGGER_STATE" != "xOnlyForNoRf" ]
 then
@@ -320,7 +321,7 @@ then
 		# 302 means : URL is redirected by the server
 		# 200 means : Successful GET
 
-		if [ $responseCode -eq 204 ]
+		if [ $responseCode -eq 204 ] && [ "$MODEL_NUM"  != "CGA4332COM" ]
 		then
 			echo_t "Network Response: Already $RESPONSE has been available with 204 response code."
 			echo $responseCode > $RESPONSE_1
@@ -397,6 +398,13 @@ then
 			#	solid=0
 			#	/usr/bin/SetLED $white $solid		#Set LED to Solid White
 			#fi
+ 
+                        if [ "$MODEL_NUM" = "CGA4332COM" ]; then
+			        echo_t "Network Response: Setting Online LED to solid white .."
+				white=0
+				solid=0
+				/usr/bin/SetLED $white $solid		#Set LED to Solid White
+			fi
 
 			isUnitActivated=`syscfg get unit_activated`
 			if [ "$isUnitActivated" = "" ]
@@ -449,6 +457,13 @@ then
         			blink=1
 					interval=1
         			/usr/bin/SetLED $white $blink $interval     #Set LED to Blink White per second
+    			fi
+
+                        if [ "$MODEL_NUM" = "CGA4332COM" ]; then
+        			white=0
+        			blink=1
+				interval=5
+        			/usr/bin/SetLED $white $blink $interval     #Set LED to Blink White 5x per second
     			fi
 
 				unitActivated=`syscfg get unit_activated`
