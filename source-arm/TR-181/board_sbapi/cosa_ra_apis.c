@@ -469,11 +469,8 @@ CosaDmlRaIfSetCfg
                     return ANSC_STATUS_FAILURE;
                 }
 
-		out[0] = pCfg->bAdvManagedFlag?'1':'0';
-		Utopia_RawSet(&utctx,NULL,"router_managed_flag",out);
-		
-		out[0] = pCfg->bAdvOtherConfigFlag?'1':'0';
-		Utopia_RawSet(&utctx,NULL,"router_other_flag",out);
+		Utopia_RawSet(&utctx, NULL, "router_managed_flag", pCfg->bAdvManagedFlag ? "1" : "0");
+		Utopia_RawSet(&utctx, NULL, "router_other_flag", pCfg->bAdvOtherConfigFlag ? "1" : "0");
 
 		Utopia_Free(&utctx,1);
 		
