@@ -1250,7 +1250,7 @@ DDNSServer_Validate
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_DDNS_SERVER           *pDDNSServer = (COSA_DML_DDNS_SERVER*)pLinkObj->hContext;
     char validateBuf[1024] = {0};
-    errno_t rc             = -1
+    errno_t rc             = -1;
 
     if(pDDNSServer->Enable && !CosaDmlDynamicDns_GetEnable())
     {
