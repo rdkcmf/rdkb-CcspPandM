@@ -87,6 +87,14 @@
 extern void * g_pDslhDmlAgent;
 extern COSARepopulateTableProc g_COSARepopulateTable;
 
+#ifdef FEATURE_RDKB_WAN_MANAGER
+extern ANSC_HANDLE bus_handle;
+#define ETHERNET_INTERFACE_OBJECT "Device.Ethernet.Interface."
+#define ETH_COMPONENT_NAME "eRT.com.cisco.spvtg.ccsp.ethagent"
+#define ETH_DBUS_PATH "/com/cisco/spvtg/ccsp/ethagent"
+static ANSC_STATUS RdkBus_GetParamValues( char *pComponent, char *pBus, char *pParamName, char *pReturnVal );
+#endif
+
 /**********************************************************************
 
     prototype:
@@ -114,6 +122,20 @@ CosaGetParamValueUlong
         char*                       pParamName
     )
 {
+#ifdef FEATURE_RDKB_WAN_MANAGER
+    char acTmpReturnValue[256] = {0};
+    ULONG result = 0;
+    if (strstr(pParamName, ETHERNET_INTERFACE_OBJECT))
+    {
+        if (ANSC_STATUS_FAILURE == RdkBus_GetParamValues(ETH_COMPONENT_NAME, ETH_DBUS_PATH, pParamName, acTmpReturnValue))
+        {
+            CcspTraceError(("[%s][%d]Failed to get param value\n", __FUNCTION__, __LINE__));
+            return 0;
+        }
+        result = strtoul(acTmpReturnValue, NULL, 10);
+        return result;
+    }
+#endif
     /* we should look up CR to find right component.
             if it's P&M component, we just call the global variable 
             Currently, we suppose all the parameter is from P&M. */
@@ -158,6 +180,20 @@ CosaGetParamValueString
         PULONG                      pulSize
     )
 {
+#ifdef FEATURE_RDKB_WAN_MANAGER
+    char acTmpReturnValue[1024] = {0};
+    if (strstr(pParamName, ETHERNET_INTERFACE_OBJECT))
+    {
+        if (ANSC_STATUS_FAILURE == RdkBus_GetParamValues(ETH_COMPONENT_NAME, ETH_DBUS_PATH, pParamName, acTmpReturnValue))
+        {
+            CcspTraceError(("[%s][%d]Failed to get param value\n", __FUNCTION__, __LINE__));
+            return -1;
+        }
+        strncpy(pBuffer, acTmpReturnValue, strlen(acTmpReturnValue));
+        *pulSize = strlen(acTmpReturnValue) + 1;
+        return 0;
+    }
+#endif
     /* we should look up CR to find right component.
             if it's P&M component, we just call the global variable 
             Currently, we suppose all the parameter is from P&M. */
@@ -194,6 +230,21 @@ CosaGetParamValueBool
         char*                       pParamName
     )
 {
+#ifdef FEATURE_RDKB_WAN_MANAGER
+    char acTmpReturnValue[256] = {0};
+    if (strstr(pParamName, ETHERNET_INTERFACE_OBJECT))
+    {
+        if (ANSC_STATUS_FAILURE == RdkBus_GetParamValues(ETH_COMPONENT_NAME, ETH_DBUS_PATH, pParamName, acTmpReturnValue))
+        {
+            CcspTraceError(("[%s][%d]Failed to get param value\n", __FUNCTION__, __LINE__));
+            return FALSE;
+        }
+        if (!(strcmp(acTmpReturnValue, "true")))
+            return TRUE;
+        else
+            return FALSE;
+    }
+#endif
     /* we should look up CR to find right component.
             if it's P&M component, we just call the global variable 
             Currently, we suppose all the parameter is from P&M. */
@@ -329,3 +380,47 @@ CosaCOSARepopulateTable
     return g_COSARepopulateTable(g_pDslhDmlAgent, objName);
 }
 
+#ifdef FEATURE_RDKB_WAN_MANAGER
+static ANSC_STATUS RdkBus_GetParamValues( char *pComponent, char *pBus, char *pParamName, char *pReturnVal )
+{
+    parameterValStruct_t   **retVal;
+    char                   *ParamName[1];
+    int                    ret               = 0,
+                           nval;
+
+    //Assign address for get parameter name
+    ParamName[0] = pParamName;
+
+    ret = CcspBaseIf_getParameterValues(
+                                    bus_handle,
+                                    pComponent,
+                                    pBus,
+                                    ParamName,
+                                    1,
+                                    &nval,
+                                    &retVal);
+
+    //Copy the value
+    if( CCSP_SUCCESS == ret )
+    {
+        if( NULL != retVal[0]->parameterValue )
+        {
+            memcpy( pReturnVal, retVal[0]->parameterValue, strlen( retVal[0]->parameterValue ) + 1 );
+        }
+
+        if( retVal )
+        {
+            free_parameterValStruct_t (bus_handle, nval, retVal);
+        }
+
+        return ANSC_STATUS_SUCCESS;
+    }
+
+    if( retVal )
+    {
+       free_parameterValStruct_t (bus_handle, nval, retVal);
+    }
+
+    return ANSC_STATUS_FAILURE;
+}
+#endif
