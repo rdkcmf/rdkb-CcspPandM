@@ -922,7 +922,7 @@ CosaIpRegGetInfo
             pIPInterface->ulNextIPV6PreInsNum = 1;
             
             pIPInterface->Cfg.InstanceNumber = ulInstanceNumber;
-            rc = strcpy_s(pIPInterface->Cfg.Alias, sizeof(pIPInterface->Cfg.Alias), pAlias);
+            rc = strcpy_s(pIPInterface->Cfg.Alias, sizeof(pIPInterface->Cfg.Alias), pAlias ? pAlias : "");
             ERR_CHK(rc);
 
             pCosaContext->InstanceNumber   = ulInstanceNumber;
@@ -1041,7 +1041,7 @@ CosaIpRegGetInfo
                 }
 
                 pIPv4Addr->InstanceNumber = ulInstanceNumber;
-                rc = strcpy_s(pIPv4Addr->Alias, sizeof(pIPv4Addr->Alias), pAlias);
+                rc = strcpy_s(pIPv4Addr->Alias, sizeof(pIPv4Addr->Alias), pAlias ? pAlias : "");
                 ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber  = ulInstanceNumber;
@@ -1079,7 +1079,7 @@ CosaIpRegGetInfo
                 }
 
                 pIPv6Addr->InstanceNumber = ulInstanceNumber;
-                rc = strcpy_s(pIPv6Addr->Alias, sizeof(pIPv6Addr->Alias), pAlias);
+                rc = strcpy_s(pIPv6Addr->Alias, sizeof(pIPv6Addr->Alias), pAlias ? pAlias : "");
                 ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber  = ulInstanceNumber;
@@ -1118,7 +1118,7 @@ CosaIpRegGetInfo
                 }
 
                 pIPv6Pre->InstanceNumber = ulInstanceNumber;
-                rc = strcpy_s(pIPv6Pre->Alias, sizeof(pIPv6Pre->Alias), pAlias);
+                rc = strcpy_s(pIPv6Pre->Alias, sizeof(pIPv6Pre->Alias),pAlias ? pAlias : "");
                 ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber  = ulInstanceNumber;

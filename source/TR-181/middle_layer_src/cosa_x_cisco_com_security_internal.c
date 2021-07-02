@@ -1256,7 +1256,7 @@ CosaSecurityIARegGetInfo
             pDmlIAPolicy->ulNextAppInsNum = 1;
 
             pDmlIAPolicy->InstanceNumber = ulInstanceNumber;
-            rc = STRCPY_S_NOCLOBBER(pDmlIAPolicy->Alias, sizeof(pDmlIAPolicy->Alias), pAlias);
+            rc = STRCPY_S_NOCLOBBER(pDmlIAPolicy->Alias, sizeof(pDmlIAPolicy->Alias), pAlias ? pAlias : "");
             ERR_CHK(rc);
 
             pCosaContext->InstanceNumber   = ulInstanceNumber;
@@ -1369,7 +1369,7 @@ CosaSecurityIARegGetInfo
                 }
 
                 pURL->InstanceNumber = ulInstanceNumber;
-                rc = STRCPY_S_NOCLOBBER(pURL->Alias, sizeof(pURL->Alias), pAlias);
+                rc = STRCPY_S_NOCLOBBER(pURL->Alias, sizeof(pURL->Alias), pAlias ? pAlias : "");
                 ERR_CHK(rc);
 
                 pCosaContext2->InstanceNumber   = ulInstanceNumber;
@@ -1404,7 +1404,7 @@ CosaSecurityIARegGetInfo
                 }
 
                 pKeyword->InstanceNumber = ulInstanceNumber;
-                rc = STRCPY_S_NOCLOBBER(pKeyword->Alias, sizeof(pKeyword->Alias), pAlias);
+                rc = STRCPY_S_NOCLOBBER(pKeyword->Alias, sizeof(pKeyword->Alias), pAlias ? pAlias : "");
                 ERR_CHK(rc);
 
                 pCosaContext2->InstanceNumber   = ulInstanceNumber;
@@ -1439,7 +1439,7 @@ CosaSecurityIARegGetInfo
                 }
 
                 pApp->InstanceNumber = ulInstanceNumber;
-                rc = STRCPY_S_NOCLOBBER(pApp->Alias, sizeof(pApp->Alias), pAlias);
+                rc = STRCPY_S_NOCLOBBER(pApp->Alias, sizeof(pApp->Alias), pAlias ? pAlias : "");
                 ERR_CHK(rc);
 
                 pCosaContext2->InstanceNumber   = ulInstanceNumber;

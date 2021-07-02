@@ -596,7 +596,7 @@ CosaNeighdiscRegGetInfo
 
             pNeighdiscInterface->Cfg.InstanceNumber = ulInstanceNumber;
 
-            rc = strcpy_s(pNeighdiscInterface->Cfg.Alias, sizeof(pNeighdiscInterface->Cfg.Alias), pAlias);
+            rc = strcpy_s(pNeighdiscInterface->Cfg.Alias, sizeof(pNeighdiscInterface->Cfg.Alias), pAlias ? pAlias : "");
             ERR_CHK(rc);
 
             pCosaContext->InstanceNumber   = ulInstanceNumber;

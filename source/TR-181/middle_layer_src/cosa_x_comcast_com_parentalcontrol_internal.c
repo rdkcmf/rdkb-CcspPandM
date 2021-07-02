@@ -821,7 +821,7 @@ CosaPcReg_BlkUrlGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
@@ -1125,7 +1125,7 @@ CosaPcReg_TrustedUserGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
@@ -1429,7 +1429,7 @@ CosaPcReg_MSServGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
@@ -1734,7 +1734,7 @@ CosaPcReg_MSTrustedUserGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
@@ -2038,7 +2038,7 @@ CosaPcReg_MDDevGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;

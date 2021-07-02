@@ -384,7 +384,7 @@ CosaIPv6rdIfRegGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        rc = strcpy_s(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        rc = strcpy_s(pEntry->Alias, sizeof(pEntry->Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;

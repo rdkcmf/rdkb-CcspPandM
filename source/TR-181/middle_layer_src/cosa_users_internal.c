@@ -709,7 +709,7 @@ CosaUsersRegGetUserInfo
 
         /* save alias and instanceNumber */
         pCosaUser->InstanceNumber = uInstanceNumber;
-        rc = strcpy_s(pCosaUser->Username, sizeof(pCosaUser->Username), pAliasUser);
+        rc = strcpy_s(pCosaUser->Username, sizeof(pCosaUser->Username), pAliasUser ? pAliasUser : "");
         ERR_CHK(rc);
 
         /* Create one link point */
