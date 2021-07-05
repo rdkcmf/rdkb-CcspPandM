@@ -279,7 +279,13 @@ CosaDmlNeighdiscIfSetValues
 {
     UNREFERENCED_PARAMETER(hContext);
     g_neighdisc_interfaces[ulIndex].Cfg.InstanceNumber = ulInstanceNumber;
-    AnscCopyString(g_neighdisc_interfaces[ulIndex].Cfg.Alias, pAlias);
+    errno_t rc = -1;
+    rc = strcpy_s(g_neighdisc_interfaces[ulIndex].Cfg.Alias,sizeof(g_neighdisc_interfaces[ulIndex].Cfg.Alias), pAlias);
+    if (rc != EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
 
     return ANSC_STATUS_SUCCESS;
 }

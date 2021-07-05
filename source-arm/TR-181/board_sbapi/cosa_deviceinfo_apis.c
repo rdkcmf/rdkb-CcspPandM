@@ -378,8 +378,12 @@ CosaDmlDiGetManufacturer
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    AnscCopyString(pValue, CONFIG_VENDOR_NAME);
-    *pulSize = AnscSizeOfString(pValue);
+    errno_t rc = strcpy_s(pValue, *pulSize, CONFIG_VENDOR_NAME);
+    if ( rc != EOK) {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
+    *pulSize = AnscSizeOfString(pValue)+1;
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -447,7 +451,7 @@ CosaDmlDiGetManufacturerOUI
             return ANSC_STATUS_FAILURE;
         }
 #endif
-        *pulSize = AnscSizeOfString(pValue);
+        *pulSize = AnscSizeOfString(pValue)+1;
         return ANSC_STATUS_SUCCESS;
 
 }
@@ -511,11 +515,19 @@ CosaDmlDiGetModelName
     
     if((0 == strcmp(temp,"f4c"))||(0 == strcmp(temp,"3916")))
     {
-        AnscCopyString(pValue, "DRG 3916");
+        rc = strcpy_s(pValue, *pulSize, "DRG 3916");
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
     }
     else
     {
-        AnscCopyString(pValue, "UnKNOWN");
+        rc = strcpy_s(pValue, *pulSize, "UnKNOWN");
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
     }
     return ANSC_STATUS_SUCCESS;
 
@@ -531,8 +543,12 @@ CosaDmlDiGetDescription
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    AnscCopyString(pValue, CONFIG_TI_GW_DESCRIPTION);
-    *pulSize = AnscSizeOfString(pValue);
+    errno_t rc = strcpy_s(pValue, *pulSize, CONFIG_TI_GW_DESCRIPTION);
+    if ( rc != EOK) {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
+    *pulSize = AnscSizeOfString(pValue)+1;
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -545,6 +561,7 @@ CosaDmlDiGetProductClass
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    errno_t                         rc              = -1;
 /*    char val[64] = {0};
     char param_name[256] = {0};
 
@@ -563,35 +580,63 @@ CosaDmlDiGetProductClass
 */
 #if defined(_CBR_PRODUCT_REQ_)
 	{
-		AnscCopyString(pValue, "CBR");
+                rc = strcpy_s(pValue, *pulSize, "CBR");
+                if ( rc != EOK) {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 	}
 #elif defined(_XB8_PRODUCT_REQ_)
     {
-         AnscCopyString(pValue, "XB8");
+        rc = strcpy_s(pValue, *pulSize, "XB8");
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
     }
 #elif defined(_XB7_PRODUCT_REQ_)
     {
-         AnscCopyString(pValue, "XB7");
+        rc = strcpy_s(pValue, *pulSize, "XB7");
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
     }
 #elif defined(_XB6_PRODUCT_REQ_)
     {
-         AnscCopyString(pValue, "XB6");
+        rc = strcpy_s(pValue, *pulSize, "XB6");
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
     }
 #elif defined( _XF3_PRODUCT_REQ_)
 	{
-		AnscCopyString(pValue, "XF3");
+                rc = strcpy_s(pValue, *pulSize, "XF3");
+                if ( rc != EOK) {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 	}
 #elif defined( _HUB4_PRODUCT_REQ_)
         {
-                AnscCopyString(pValue, "HOMEHUB4");
+                rc = strcpy_s(pValue, *pulSize, "HOMEHUB4");
+                if ( rc != EOK) {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
         }
 #else
 	{
-		AnscCopyString(pValue, "XB3");
+                rc = strcpy_s(pValue, *pulSize, "XB3");
+                if ( rc != EOK) {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 	}
 #endif
 
-    *pulSize = AnscSizeOfString(pValue);
+    *pulSize = AnscSizeOfString(pValue) +1;
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -661,7 +706,7 @@ CosaDmlDiGetHardwareVersion
         ERR_CHK(rc);
         return ANSC_STATUS_FAILURE;
     }
-    *pulSize = AnscSizeOfString(pValue);
+    *pulSize = AnscSizeOfString(pValue)+1;
     return ANSC_STATUS_SUCCESS;
 #endif  
 }
@@ -891,6 +936,7 @@ COSADmlUploadLogsStatus
     UNREFERENCED_PARAMETER(Context);
 	FILE *ptr_file;
 	char buf[50];
+        errno_t                         rc              = -1;
 
 	ptr_file =fopen("/tmp/upload_log_status","r");
 
@@ -899,15 +945,24 @@ COSADmlUploadLogsStatus
 		if (fgets(buf,50, ptr_file)!=NULL)
 		{
 			strip_line(buf);
-			AnscCopyString(pValue, buf);
-			*pUlSize = AnscSizeOfString(pValue);
+                        rc = strcpy_s(pValue, *pUlSize, buf);
+                        if ( rc != EOK) {
+                            ERR_CHK(rc);
+                            fclose(ptr_file);
+                            return ANSC_STATUS_FAILURE;
+                        }
+			*pUlSize = AnscSizeOfString(pValue)+1;
 		}
 		fclose(ptr_file);
 	}
 	else
 	{
-		AnscCopyString(pValue, "Not triggered");
-		*pUlSize = AnscSizeOfString(pValue);
+                rc = strcpy_s(pValue, *pUlSize, "Not triggered");
+                if ( rc != EOK) {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
+		*pUlSize = AnscSizeOfString(pValue)+1;
 	}
 	
 	return ANSC_STATUS_SUCCESS;
@@ -946,8 +1001,12 @@ CosaDmlDiGetFirstUseDate
         }
     }
 
-    AnscCopyString(pValue,firstUseDate);
-    *pulSize = AnscSizeOfString(pValue);
+    rc = strcpy_s(pValue, *pulSize, firstUseDate);
+    if ( rc != EOK) {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
+    *pulSize = AnscSizeOfString(pValue)+1;
     
     return ANSC_STATUS_SUCCESS;
 }
@@ -1149,8 +1208,13 @@ CosaDmlGetTCPImplementation
     UNREFERENCED_PARAMETER(hContext);
     char value[25];
     FILE *fp;
+    errno_t                         rc              = -1;
 
-    AnscCopyString(pValue, _ERROR_);
+    rc = strcpy_s(pValue, *pulSize, _ERROR_);
+    if ( rc != EOK) {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     memset(value,0,sizeof(value));
 
     fp = popen("cat /proc/sys/net/ipv4/tcp_congestion_control", "r");
@@ -1162,11 +1226,16 @@ CosaDmlGetTCPImplementation
    
     while(fgets(value, sizeof(value), fp) != NULL)
     {
-        AnscCopyString(pValue ,value);
+        rc = strcpy_s(pValue, *pulSize, value);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            pclose(fp);
+            return ANSC_STATUS_FAILURE;
+        }
     }
 
     pclose(fp);
-    *pulSize = AnscSizeOfString(pValue);
+    *pulSize = AnscSizeOfString(pValue)+1;
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1252,8 +1321,13 @@ CosaDmlDiGetFirmwareUpgradeStartTime
     UNREFERENCED_PARAMETER(hContext);
     char value[25] = {0};
     FILE *fp;
+    errno_t                         rc              = -1;
 
-    AnscCopyString(pValue, _START_TIME_12AM_);
+    rc = strcpy_s(pValue, *pulSize, _START_TIME_12AM_);
+    if ( rc != EOK) {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
 
     fp = popen("cat /nvram/.FirmwareUpgradeStartTime", "r");
     if (fp == NULL)
@@ -1265,7 +1339,12 @@ CosaDmlDiGetFirmwareUpgradeStartTime
     {
         while(fgets(value, sizeof(value), fp) != NULL)
         {
-            AnscCopyString(pValue ,value);
+            rc = strcpy_s(pValue, *pulSize, value);
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                pclose(fp);
+                return ANSC_STATUS_FAILURE;
+            }
         }
     }
 
@@ -1290,7 +1369,12 @@ CosaDmlDiGetFirmwareUpgradeStartTime
     UNREFERENCED_PARAMETER(hContext);
     char value[25];
     FILE *fp;
-    AnscCopyString(pValue, _ERROR_);
+    errno_t                         rc              = -1;
+    rc = strcpy_s(pValue, *pulSize, _ERROR_);
+    if ( rc != EOK) {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     memset(value,0,sizeof(value));
     fp = popen("cat /nvram/.FirmwareUpgradeStartTime", "r");
     if (fp == NULL)
@@ -1300,7 +1384,12 @@ CosaDmlDiGetFirmwareUpgradeStartTime
     }
     while(fgets(value, sizeof(value), fp) != NULL)
     {
-        AnscCopyString(pValue ,value);
+        rc = strcpy_s(pValue, *pulSize, value);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            pclose(fp);
+            return ANSC_STATUS_FAILURE;
+        }
     }
     pclose(fp);
     *pulSize = AnscSizeOfString(pValue);
@@ -1320,8 +1409,13 @@ CosaDmlDiGetFirmwareUpgradeEndTime
     UNREFERENCED_PARAMETER(hContext);
     char value[25] = {0};
     FILE *fp;
+    errno_t                         rc              = -1;
 
-    AnscCopyString(pValue, _END_TIME_3AM_);
+    rc = strcpy_s(pValue, *pulSize, _END_TIME_3AM_);
+    if ( rc != EOK) {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
 
     fp = popen("cat /nvram/.FirmwareUpgradeEndTime", "r");
     if (fp == NULL)
@@ -1333,7 +1427,12 @@ CosaDmlDiGetFirmwareUpgradeEndTime
     {
         while(fgets(value, sizeof(value), fp) != NULL)
         {
-            AnscCopyString(pValue ,value);
+            rc = strcpy_s(pValue, *pulSize, value);
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                pclose(fp);
+                return ANSC_STATUS_FAILURE;
+            }
         }
     }
 
@@ -1357,7 +1456,13 @@ CosaDmlDiGetFirmwareUpgradeEndTime
     UNREFERENCED_PARAMETER(hContext);
     char value[25];
     FILE *fp;
-    AnscCopyString(pValue, _ERROR_);
+    errno_t                         rc              = -1;
+
+    rc = strcpy_s(pValue, *pulSize, _ERROR_);
+    if ( rc != EOK) {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     memset(value,0,sizeof(value));
     fp = popen("cat /nvram/.FirmwareUpgradeEndTime", "r");
     if (fp == NULL)
@@ -1367,7 +1472,12 @@ CosaDmlDiGetFirmwareUpgradeEndTime
     }
     while(fgets(value, sizeof(value), fp) != NULL)
     {
-        AnscCopyString(pValue ,value);
+        rc = strcpy_s(pValue, *pulSize, value);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            pclose(fp);
+            return ANSC_STATUS_FAILURE;
+        }
     }
     pclose(fp);
     *pulSize = AnscSizeOfString(pValue);
@@ -1876,7 +1986,13 @@ CosaDmlDiGetAdvancedServices
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    AnscCopyString(pValue, "");
+    errno_t                         rc              = -1;
+
+    rc = strcpy_s(pValue, *pulSize, "");
+    if ( rc != EOK) {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     *pulSize = 0;
     return ANSC_STATUS_SUCCESS;
 }
@@ -1894,6 +2010,7 @@ CosaDmlDiGetProcessorSpeed
     #define MAX_LINE_SIZE   30
     char line[MAX_LINE_SIZE];
     FILE *fp;
+    errno_t rc = -1;
 
     memset(line, 0, sizeof(line));
 
@@ -1910,7 +2027,6 @@ CosaDmlDiGetProcessorSpeed
     while(fgets(line, MAX_LINE_SIZE, fp) != NULL )
     {
         int procSpeed;
-        errno_t rc = -1;
         procSpeed = atoi (line);
         procSpeed = procSpeed / 1000;
         rc = sprintf_s (line, sizeof(line), "%d", procSpeed);
@@ -1918,7 +2034,8 @@ CosaDmlDiGetProcessorSpeed
         {
             ERR_CHK(rc);
         }
-        AnscCopyString(pValue, line);
+        rc = strcpy_s(pValue, *pulSize, line);
+        ERR_CHK(rc);
     }
 
     pclose(fp);
@@ -1943,7 +2060,8 @@ CosaDmlDiGetProcessorSpeed
         {
             *pcur = '\0';
         }
-        AnscCopyString(pValue, line);
+        rc = strcpy_s(pValue, *pulSize, line);
+        ERR_CHK(rc);
     }
 
 #endif
@@ -1953,7 +2071,6 @@ CosaDmlDiGetProcessorSpeed
     char out2[100]={0};
     FILE *fp1=NULL;
     char *urlPtr = NULL;
-    errno_t rc = -1;
 
     fp1 = fopen("/etc/device.properties", "r");
     if (fp1 == NULL)
@@ -1999,7 +2116,8 @@ CosaDmlDiGetProcessorSpeed
         pcur = strstr(line, ":");
         pcur++;
         while(*pcur == ' ') pcur++;           
-        AnscCopyString(pValue, pcur);   
+        rc = strcpy_s(pValue, *pulSize, pcur);
+        ERR_CHK(rc);
        }     
     }
 #endif
@@ -2356,8 +2474,14 @@ ANSC_STATUS getXOpsReverseSshArgs
     ) 
 {
     UNREFERENCED_PARAMETER(hContext);
-    AnscCopyString(pValue, reverseSSHArgs);
-    *pulSize = AnscSizeOfString(pValue);
+    errno_t                         rc              = -1;
+
+    rc = strcpy_s(pValue, *pulSize, reverseSSHArgs);
+    if ( rc != EOK) {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
+    *pulSize = AnscSizeOfString(pValue) +1;
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2435,7 +2559,8 @@ CosaDmlDiGetSyndicationPartnerId
         {
             if ((pPartnerId = strstr(fileContent, partnerStr)) != NULL)
             { 
-                AnscCopyString(pValue ,pPartnerId+sizeof(partnerStr));
+                rc = strcpy_s(pValue, *pulSize, pPartnerId+sizeof(partnerStr));
+                ERR_CHK(rc);
                 *pulSize = AnscSizeOfString(pValue);
                 break;
             }
@@ -2455,6 +2580,7 @@ CosaDmlDiGetSyndicationTR69CertLocation
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    errno_t                         rc              = -1;
 	char val[ 256 ] = {0};
 	
 	if ( PsmGet( DMSB_TR181_PSM_Syndication_Tr069CertLocation, val, sizeof( val ) ) != 0 ) 
@@ -2465,7 +2591,11 @@ CosaDmlDiGetSyndicationTR69CertLocation
 	}
 	else 
 	{
-		AnscCopyString( pValue, val );
+                rc = strcpy_s(pValue, 512, val);      // here pValue size is 512 getting from calling function
+                if ( rc != EOK) {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
 	}
 
     return ANSC_STATUS_SUCCESS;
@@ -2785,6 +2915,7 @@ CosaDmlDiWiFiTelemetryInit
   )
  {
     char val[256] = {0};
+    errno_t                         rc              = -1;
 
     if (!PWiFi_Telemetry)
     {
@@ -2828,66 +2959,46 @@ CosaDmlDiWiFiTelemetryInit
 
     if (PsmGet(DMSB_TR181_PSM_WHIX_NormalizedRssiList, val, sizeof(val)) != 0)
     {
-            AnscCopyString(PWiFi_Telemetry->NormalizedRssiList, "1,2");
+        rc = strcpy_s(PWiFi_Telemetry->NormalizedRssiList, sizeof(PWiFi_Telemetry->NormalizedRssiList), "1,2");
+        ERR_CHK(rc);
     }
     else
     {
-        if (val[0] != '\0' )
-        {
-            AnscCopyString(PWiFi_Telemetry->NormalizedRssiList, val);
-        }
-        else
-        {
-            AnscCopyString(PWiFi_Telemetry->NormalizedRssiList, "1,2");
-        }
+        rc = strcpy_s(PWiFi_Telemetry->NormalizedRssiList, sizeof(PWiFi_Telemetry->NormalizedRssiList), ((val[0] != '\0') ?  val : "1,2"));
+        ERR_CHK(rc);
     }
 
     if (PsmGet(DMSB_TR181_PSM_WHIX_CliStatList, val, sizeof(val)) != 0)
     {
-            AnscCopyString(PWiFi_Telemetry->CliStatList,"1,2");
+        rc = strcpy_s(PWiFi_Telemetry->CliStatList, sizeof(PWiFi_Telemetry->CliStatList), "1,2");
+        ERR_CHK(rc);
     }
     else
     {
-        if (val[0] != '\0' )
-        {
-            AnscCopyString(PWiFi_Telemetry->CliStatList, val);
-        }
-        else
-        {
-            AnscCopyString(PWiFi_Telemetry->CliStatList,"1,2");
-        }
+        rc = strcpy_s(PWiFi_Telemetry->CliStatList, sizeof(PWiFi_Telemetry->CliStatList), ((val[0] != '\0') ?  val : "1,2"));
+        ERR_CHK(rc);
     }
 
     if (PsmGet(DMSB_TR181_PSM_WHIX_TxRxRateList, val, sizeof(val)) != 0)
     {
-            AnscCopyString(PWiFi_Telemetry->TxRxRateList, "1,2");
+        rc = strcpy_s(PWiFi_Telemetry->TxRxRateList, sizeof(PWiFi_Telemetry->TxRxRateList), "1,2");
+        ERR_CHK(rc);
     }
     else
     {
-        if (val[0] != '\0' )
-        {
-            AnscCopyString(PWiFi_Telemetry->TxRxRateList, val);
-        }
-        else
-        {
-            AnscCopyString(PWiFi_Telemetry->TxRxRateList,"1,2");
-        }
+        rc = strcpy_s(PWiFi_Telemetry->TxRxRateList, sizeof(PWiFi_Telemetry->TxRxRateList), ((val[0] != '\0') ?  val : "1,2"));
+        ERR_CHK(rc);
     }
 
     if (PsmGet(DMSB_TR181_PSM_WIFI_TELEMETRY_SNRList, val, sizeof(val)) != 0)
     {
-            AnscCopyString(PWiFi_Telemetry->SNRList, "1,2");
+        rc = strcpy_s(PWiFi_Telemetry->SNRList, sizeof(PWiFi_Telemetry->SNRList), "1,2");
+        ERR_CHK(rc);
     }
     else
     {
-        if (val[0] != '\0' )
-        {
-            AnscCopyString(PWiFi_Telemetry->SNRList, val);
-        }
-        else
-        {
-            AnscCopyString(PWiFi_Telemetry->SNRList,"1,2");
-        }
+        rc = strcpy_s(PWiFi_Telemetry->SNRList, sizeof(PWiFi_Telemetry->SNRList), ((val[0] != '\0') ?  val : "1,2"));
+        ERR_CHK(rc);
     }
 
     return ANSC_STATUS_SUCCESS;
@@ -2900,6 +3011,7 @@ CosaDmlDiUniqueTelemetryIdInit
   )
 {
     char buf[256] = {0};
+    errno_t                         rc              = -1;
 
     PUniqueTelemetryId->Enable = FALSE;
     memset(PUniqueTelemetryId->TagString, 0, sizeof(PUniqueTelemetryId->TagString));
@@ -2916,7 +3028,8 @@ CosaDmlDiUniqueTelemetryIdInit
     if (syscfg_get(NULL, "unique_telemetry_tag", buf,  sizeof(buf) ) == 0)
     {
             /*CID: 64386 Array compared against 0*/
-    	    AnscCopyString(PUniqueTelemetryId->TagString, buf);
+            rc = STRCPY_S_NOCLOBBER(PUniqueTelemetryId->TagString, sizeof(PUniqueTelemetryId->TagString), buf);
+            ERR_CHK(rc);
     }
 
     memset(buf, 0, sizeof(buf));
@@ -3143,6 +3256,7 @@ CosaDmlDiUiBrandingInit
 void FillParamBool(cJSON *partnerObj, char *key, COSA_BOOTSTRAP_BOOL *paramData)
 {
     cJSON *paramObj = cJSON_GetObjectItem( partnerObj, key);
+    errno_t                         rc              = -1;
     if ( paramObj != NULL )
     {
         cJSON *paramObjVal = cJSON_GetObjectItem(paramObj, "ActiveValue");
@@ -3168,7 +3282,8 @@ void FillParamBool(cJSON *partnerObj, char *key, COSA_BOOTSTRAP_BOOL *paramData)
             valuestr = paramObjVal->valuestring;
         if (valuestr != NULL)
         {
-            AnscCopyString(paramData->UpdateSource, valuestr);
+            rc = STRCPY_S_NOCLOBBER(paramData->UpdateSource, sizeof(paramData->UpdateSource), valuestr);
+            ERR_CHK(rc);
             valuestr = NULL;
         }
         else
@@ -3186,6 +3301,7 @@ void FillParamBool(cJSON *partnerObj, char *key, COSA_BOOTSTRAP_BOOL *paramData)
 void FillParamString(cJSON *partnerObj, char *key, COSA_BOOTSTRAP_STR *paramData)
 {
     cJSON *paramObj = cJSON_GetObjectItem( partnerObj, key);
+    errno_t                         rc              = -1;
     if ( paramObj != NULL )
     {
         cJSON *paramObjVal = cJSON_GetObjectItem(paramObj, "ActiveValue");
@@ -3194,7 +3310,8 @@ void FillParamString(cJSON *partnerObj, char *key, COSA_BOOTSTRAP_STR *paramData
             valuestr = paramObjVal->valuestring;
         if (valuestr != NULL)
         {
-            AnscCopyString(paramData->ActiveValue, valuestr);
+            rc = STRCPY_S_NOCLOBBER(paramData->ActiveValue, sizeof(paramData->ActiveValue), valuestr);
+            ERR_CHK(rc);
             valuestr = NULL;
         }
         else
@@ -3207,7 +3324,8 @@ void FillParamString(cJSON *partnerObj, char *key, COSA_BOOTSTRAP_STR *paramData
             valuestr = paramObjVal->valuestring;
         if (valuestr != NULL)
         {
-            AnscCopyString(paramData->UpdateSource, valuestr);
+            rc = STRCPY_S_NOCLOBBER(paramData->UpdateSource, sizeof(paramData->UpdateSource), valuestr);
+            ERR_CHK(rc);
             valuestr = NULL;
         }
         else
@@ -3225,6 +3343,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 {
 		cJSON *partnerObj = NULL;
 		char buf[64] = {0};
+        errno_t rc   = -1;
 		
 		PCOSA_DATAMODEL_DEVICEINFO pDeviceInfo = (PCOSA_DATAMODEL_DEVICEINFO)hContext;
 
@@ -3321,7 +3440,8 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 
 						if (DefaultPassword[0] != '\0')
 						{
-							AnscCopyString(PUiBrand->LocalUI.DefaultLoginPassword.ActiveValue, DefaultPassword);
+                                                        rc = STRCPY_S_NOCLOBBER(PUiBrand->LocalUI.DefaultLoginPassword.ActiveValue, sizeof(PUiBrand->LocalUI.DefaultLoginPassword.ActiveValue), DefaultPassword);
+                                                        ERR_CHK(rc);
 						}
 						else
 						{
@@ -3408,7 +3528,8 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				            valuestr = paramObjVal->valuestring;
 				        if (valuestr != NULL)
 				        {
-				            AnscCopyString(PUiBrand->AllowEthernetWAN.UpdateSource, valuestr);
+                                            rc = STRCPY_S_NOCLOBBER(PUiBrand->AllowEthernetWAN.UpdateSource, sizeof(PUiBrand->AllowEthernetWAN.UpdateSource), valuestr);
+                                            ERR_CHK(rc);
 				            valuestr = NULL;
 				        }
 				        else
@@ -3430,7 +3551,8 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
                                             valuestr = paramObjVal->valuestring;
                                         if (valuestr != NULL)
                                         {
-                                            AnscCopyString(pDeviceInfo->SyndicatonFlowControl.Enable.UpdateSource, valuestr);
+                                            rc = STRCPY_S_NOCLOBBER(pDeviceInfo->SyndicatonFlowControl.Enable.UpdateSource, sizeof(pDeviceInfo->SyndicatonFlowControl.Enable.UpdateSource), valuestr);
+                                            ERR_CHK(rc);
                                             valuestr = NULL;
                                         }
                                         else
@@ -3485,7 +3607,8 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
                                             valuestr = paramObjVal->valuestring;
                                         if (valuestr != NULL)
                                         {
-                                            AnscCopyString(pDeviceInfo->SyndicatonFlowControl.InitialForwardedMark.UpdateSource, valuestr);
+                                            rc = STRCPY_S_NOCLOBBER(pDeviceInfo->SyndicatonFlowControl.InitialForwardedMark.UpdateSource, sizeof(pDeviceInfo->SyndicatonFlowControl.InitialForwardedMark.UpdateSource), valuestr);
+                                            ERR_CHK(rc);
                                             valuestr = NULL;
                                         }
                                         else
@@ -3528,7 +3651,8 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
                                             valuestr = paramObjVal->valuestring;
                                         if (valuestr != NULL)
                                         {
-                                            AnscCopyString(pDeviceInfo->SyndicatonFlowControl.InitialOutputMark.UpdateSource, valuestr);
+                                            rc = STRCPY_S_NOCLOBBER(pDeviceInfo->SyndicatonFlowControl.InitialOutputMark.UpdateSource, sizeof(pDeviceInfo->SyndicatonFlowControl.InitialOutputMark.UpdateSource), valuestr);
+                                            ERR_CHK(rc);
                                             valuestr = NULL;
                                         }
                                         else
@@ -3550,7 +3674,8 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
                                             valuestr = paramObjVal->valuestring;
                                         if (valuestr != NULL)
                                         {
-                                            AnscCopyString(pDeviceInfo->TR69CertLocation.UpdateSource, valuestr);
+                                            rc = STRCPY_S_NOCLOBBER(pDeviceInfo->TR69CertLocation.UpdateSource, sizeof(pDeviceInfo->TR69CertLocation.UpdateSource), valuestr);
+                                            ERR_CHK(rc);
                                             valuestr = NULL;
                                         }
                                         else
@@ -3596,7 +3721,8 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
                                                     valuestr = paramObjVal->valuestring;
                                                 if (valuestr != NULL)
                                                 {
-                                                    AnscCopyString(pDeviceInfo->bWANsideSSHEnable.UpdateSource, valuestr);
+                                                    rc = STRCPY_S_NOCLOBBER(pDeviceInfo->bWANsideSSHEnable.UpdateSource, sizeof(pDeviceInfo->bWANsideSSHEnable.UpdateSource), valuestr);
+                                                    ERR_CHK(rc);
                                                     valuestr = NULL;
                                                 }
                                                 else
@@ -4411,6 +4537,7 @@ CosaDmlDiSyndicationFlowControlInit
   )
 {
     char buf[64] = {0};
+    errno_t                         rc              = -1;
     /* CID: 73135 Array compared against 0*/
     if(!syscfg_get(NULL,"SyndicationFlowControlEnable",buf, sizeof(buf)))
     {
@@ -4429,7 +4556,8 @@ CosaDmlDiSyndicationFlowControlInit
     {
         if (buf[0] != '\0')
         {
-            AnscCopyString(pSyndicatonFlowControl->InitialForwardedMark.ActiveValue, buf);
+            rc = STRCPY_S_NOCLOBBER(pSyndicatonFlowControl->InitialForwardedMark.ActiveValue, sizeof(pSyndicatonFlowControl->InitialForwardedMark.ActiveValue), buf);
+            ERR_CHK(rc);
         }
     }
     memset(buf, 0, sizeof(buf));
@@ -4437,7 +4565,8 @@ CosaDmlDiSyndicationFlowControlInit
     {
         if (buf[0] != '\0')
         {
-            AnscCopyString(pSyndicatonFlowControl->InitialOutputMark.ActiveValue, buf);
+            rc = STRCPY_S_NOCLOBBER(pSyndicatonFlowControl->InitialOutputMark.ActiveValue, sizeof(pSyndicatonFlowControl->InitialOutputMark.ActiveValue), buf);
+            ERR_CHK(rc);
         }
     }
 

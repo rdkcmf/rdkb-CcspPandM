@@ -1696,7 +1696,7 @@ CosaDmlNatGetDmz
     /*ANSC_IPV4_ADDRESS               InternalIP      = {0};
       char*                           pInternalIPStr  = NULL;*/
     UtopiaContext                   Ctx;
-
+    errno_t                         safec_rc        = -1;
     if ( !pDmlDmz )
     {
         CcspTraceWarning(("CosaDmlNatGetDmz pDmlDmz is NULL!\n"));
@@ -1776,13 +1776,16 @@ CosaDmlNatGetDmz
         pInternalIPStr = SlapVcoIp4AddrToString(NULL, InternalIP.Value);
         */
         if (strlen(pDmz->dest_ip)){
-            AnscCopyString(pDmlDmz->InternalIP, pDmz->dest_ip);  /* Todo Get Lan !!!!!!  */
+            safec_rc = strcpy_s(pDmlDmz->InternalIP,sizeof(pDmlDmz->InternalIP), pDmz->dest_ip);  /* Todo Get Lan !!!!!!  */
+            ERR_CHK(safec_rc);
         }else{
-            AnscCopyString(pDmlDmz->InternalIP, "0.0.0.0");
+            safec_rc = strcpy_s(pDmlDmz->InternalIP,sizeof(pDmlDmz->InternalIP), "0.0.0.0");
+            ERR_CHK(safec_rc);
         }
 
         if (strlen(pDmz->dest_ipv6)){
-            AnscCopyString(pDmlDmz->IPv6Host, pDmz->dest_ipv6);
+            safec_rc = strcpy_s(pDmlDmz->IPv6Host,sizeof(pDmlDmz->IPv6Host), pDmz->dest_ipv6);
+            ERR_CHK(safec_rc);
         }else{
             //CISCOXB3-5927 : ip6 table is not getting restored
             memset(pDmlDmz->IPv6Host ,0 ,sizeof(pDmlDmz->IPv6Host));
@@ -1830,7 +1833,7 @@ CosaDmlNatSetDmz
     ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     dmz_t*                          pDmz            = (dmz_t*           )NULL;
     ULONG                           rc              = 0;
-
+    errno_t                         safec_rc        = -1;
     UtopiaContext                   Ctx;
 
     if ( !pDmlDmz )
@@ -1865,8 +1868,10 @@ CosaDmlNatSetDmz
     InternalIP.Value = SlapVcoStringToIp4Addr(NULL, pDmlDmz->InternalIP);
     pDmz->dest_ip = InternalIP.Dot[3];
     */
-    AnscCopyString(pDmz->dest_ip, pDmlDmz->InternalIP);
-    AnscCopyString(pDmz->dest_ipv6, pDmlDmz->IPv6Host);
+    safec_rc = strcpy_s(pDmz->dest_ip,sizeof(pDmz->dest_ip), pDmlDmz->InternalIP);
+    ERR_CHK(safec_rc);
+    safec_rc = strcpy_s(pDmz->dest_ipv6,sizeof(pDmz->dest_ipv6), pDmlDmz->IPv6Host);
+    ERR_CHK(safec_rc);
 
     rc = Utopia_SetDMZSettings(&Ctx, *pDmz);
 
@@ -2421,6 +2426,7 @@ CosaDmlNatGetPortMapping
     portFwdRange_t         rangeInfo;
     int                    PortFwdDynCount = 0;
     ULONG                  rc;
+    errno_t                safec_rc = -1;
 /*  portMapDyn_t           dynInfo ={0};
     ANSC_IPV4_ADDRESS      nat_lan;  
     COSA_DML_NAT_PMAPPING  tmp ={0};
@@ -2481,7 +2487,8 @@ CosaDmlNatGetPortMapping
         pNatPMapping->Status = (rangeInfo.enabled ? COSA_DML_NAT_STATUS_Enabled : COSA_DML_NAT_STATUS_Disabled);
         pNatPMapping->InternalClient.Value = inet_addr(rangeInfo.dest_ip);
         pNatPMapping->InstanceNumber = rangeInfo.rule_id;
-        AnscCopyString(pNatPMapping->Description, rangeInfo.name);
+        safec_rc = strcpy_s(pNatPMapping->Description,sizeof(pNatPMapping->Description), rangeInfo.name);
+        ERR_CHK(safec_rc);
         pNatPMapping->X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Static;
         Utopia_Free(&Ctx, 0);
         return ANSC_STATUS_SUCCESS;
@@ -2503,7 +2510,8 @@ CosaDmlNatGetPortMapping
         pNatPMapping->Status = (singleInfo.enabled ? COSA_DML_NAT_STATUS_Enabled : COSA_DML_NAT_STATUS_Disabled);
         pNatPMapping->InternalClient.Value = inet_addr(singleInfo.dest_ip);
         pNatPMapping->InstanceNumber = singleInfo.rule_id;
-        AnscCopyString(pNatPMapping->Description, singleInfo.name);
+        safec_rc = strcpy_s(pNatPMapping->Description,sizeof(pNatPMapping->Description), singleInfo.name);
+        ERR_CHK(safec_rc);
         pNatPMapping->X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Static;
         Utopia_Free(&Ctx, 0);
         return ANSC_STATUS_SUCCESS;
@@ -2634,6 +2642,7 @@ CosaDmlNatGetPortMappings
     ULONG                          rc;
     int                              i;
     int                      allCount = 0;
+    errno_t                  safec_rc = -1;
 //    ANSC_IPV4_ADDRESS             nat_lan;  
      if (!pulCount)
     {
@@ -2751,8 +2760,10 @@ CosaDmlNatGetPortMappings
             pNatPMapping[ulIndex].InternalClient.Value = inet_addr(singleInfo[i].dest_ip);
             pNatPMapping[ulIndex].InstanceNumber = singleInfo[i].rule_id;
             pNatPMapping[ulIndex].X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Static;
-            AnscCopyString(pNatPMapping[ulIndex].Description, singleInfo[i].name);
-            AnscCopyString(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6, singleInfo[i].dest_ipv6);
+            safec_rc = strcpy_s(pNatPMapping[ulIndex].Description,sizeof(pNatPMapping[ulIndex].Description), singleInfo[i].name);
+            ERR_CHK(safec_rc);
+            safec_rc = strcpy_s(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6,sizeof(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6), singleInfo[i].dest_ipv6);
+            ERR_CHK(safec_rc);
         }
         free(singleInfo);
         singleInfo = NULL;
@@ -2775,8 +2786,10 @@ CosaDmlNatGetPortMappings
             pNatPMapping[ulIndex].InternalClient.Value = inet_addr(rangeInfo[i].dest_ip);
             pNatPMapping[ulIndex].InstanceNumber = rangeInfo[i].rule_id;
             pNatPMapping[ulIndex].X_CISCO_COM_Origin = COSA_DML_NAT_PMAPPING_Origin_Static;
-            AnscCopyString(pNatPMapping[ulIndex].Description, rangeInfo[i].name);
-            AnscCopyString(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6, rangeInfo[i].dest_ipv6);
+            safec_rc = strcpy_s(pNatPMapping[ulIndex].Description,sizeof(pNatPMapping[ulIndex].Description), rangeInfo[i].name);
+            ERR_CHK(safec_rc);
+            safec_rc = strcpy_s(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6,sizeof(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6), rangeInfo[i].dest_ipv6);
+            ERR_CHK(safec_rc);
         }
         free(rangeInfo);
         rangeInfo = NULL;

@@ -1300,17 +1300,21 @@ Service_GetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
     PUCHAR                          pLowerLayer      = NULL;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "AssociatedConnection", TRUE))
     {
         /* collect value */
-        /* AnscCopyString(pValue, pDdnsService->AssociatedConnection); */
         pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)"Device.IP.Interface.", (PUCHAR)CFG_TR181_Ddns_IfName);
         if ( pLowerLayer != NULL )
         {
-            AnscCopyString(pValue, (char*)pLowerLayer);
+            rc = strcpy_s(pValue, *pUlSize, (char*)pLowerLayer);
             AnscFreeMemory(pLowerLayer);
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return -1;
+            }
         }
         return 0;
     }
@@ -1318,40 +1322,55 @@ Service_GetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pDdnsService->Alias);
-
+        rc = strcpy_s(pValue, *pUlSize, pDdnsService->Alias);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Domain", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pDdnsService->Domain);
-
+        rc = strcpy_s(pValue, *pUlSize, pDdnsService->Domain);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Password", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pDdnsService->Password);
-
+        rc = strcpy_s(pValue, *pUlSize, pDdnsService->Password);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Username", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pDdnsService->Username);
-
+        rc = strcpy_s(pValue, *pUlSize, pDdnsService->Username);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "MXHostName", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pDdnsService->Mail_exch);
-
+        rc = strcpy_s(pValue, *pUlSize, pDdnsService->Mail_exch);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1534,25 +1553,42 @@ Service_SetParamUlongValue
     /* check the parameter name and set the corresponding value */
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
+    errno_t                         rc           = -1;
 	
 	if( AnscEqualString(ParamName, "ServiceName", TRUE))
     {
         /* collect value */
         if ( uValue == 1 )
         {
-			AnscCopyString(pDdnsService->ServiceName, "dyndns");
+            rc = STRCPY_S_NOCLOBBER(pDdnsService->ServiceName, sizeof(pDdnsService->ServiceName), "dyndns");
+            if ( rc != EOK) {
+               ERR_CHK(rc);
+               return FALSE;
+            }
         }
         else if ( uValue == 2 )
         {
-			AnscCopyString(pDdnsService->ServiceName, "tzo");
+            rc = STRCPY_S_NOCLOBBER(pDdnsService->ServiceName, sizeof(pDdnsService->ServiceName), "tzo");
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return FALSE;
+            }
         }
 		else if ( uValue == 3 )
         {
-			AnscCopyString(pDdnsService->ServiceName, "changeip");
+            rc = STRCPY_S_NOCLOBBER(pDdnsService->ServiceName, sizeof(pDdnsService->ServiceName), "changeip");
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return FALSE;
+            }
         }
 		else if ( uValue == 4 )
         {
-			AnscCopyString(pDdnsService->ServiceName, "afraid");
+            rc = STRCPY_S_NOCLOBBER(pDdnsService->ServiceName, sizeof(pDdnsService->ServiceName), "afraid");
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return FALSE;
+            }
         }
         else
         {
@@ -1611,6 +1647,7 @@ Service_SetParamStringValue
 
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DDNS_SERVICE          pDdnsService = (PCOSA_DML_DDNS_SERVICE   )pCosaContext->hContext;
+    errno_t                         rc           = -1;
 
     /* check if pString doesn't hold null or whitespaces */
     if(AnscValidStringCheck((PUCHAR)pString) != TRUE)
@@ -1622,7 +1659,11 @@ Service_SetParamStringValue
         if ( sizeof(pDdnsService->AssociatedConnection) > AnscSizeOfString(pString))
         {
             /* save update to backup */
-            AnscCopyString(pDdnsService->AssociatedConnection, pString);
+            rc = STRCPY_S_NOCLOBBER(pDdnsService->AssociatedConnection, sizeof(pDdnsService->AssociatedConnection), pString);
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             return TRUE;
         }
         else
@@ -1637,7 +1678,11 @@ Service_SetParamStringValue
         if ( sizeof(pDdnsService->Alias) > AnscSizeOfString(pString))
         {
             /* save update to backup */
-            AnscCopyString(pDdnsService->Alias, pString);
+            rc = STRCPY_S_NOCLOBBER(pDdnsService->Alias, sizeof(pDdnsService->Alias), pString);
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             return TRUE;
         }
         else
@@ -1653,7 +1698,11 @@ Service_SetParamStringValue
         if ( sizeof(pDdnsService->Domain) > AnscSizeOfString(pString))
         {
             /* save update to backup */
-            AnscCopyString(pDdnsService->Domain, pString);
+            rc = STRCPY_S_NOCLOBBER(pDdnsService->Domain, sizeof(pDdnsService->Domain), pString);
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             return TRUE;
         }
         else
@@ -1668,7 +1717,11 @@ Service_SetParamStringValue
         if ( sizeof(pDdnsService->Password) > AnscSizeOfString(pString))
         {
             /* save update to backup */
-            AnscCopyString(pDdnsService->Password, pString);
+            rc = STRCPY_S_NOCLOBBER(pDdnsService->Password, sizeof(pDdnsService->Password), pString);
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             return TRUE;
         }
         else
@@ -1683,7 +1736,11 @@ Service_SetParamStringValue
         if ( sizeof(pDdnsService->Username) > AnscSizeOfString(pString))
         {
             /* save update to backup */
-            AnscCopyString(pDdnsService->Username, pString);
+            rc = STRCPY_S_NOCLOBBER(pDdnsService->Username, sizeof(pDdnsService->Username), pString);
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             return TRUE;
         }
         else
@@ -1698,7 +1755,11 @@ Service_SetParamStringValue
         if ( sizeof(pDdnsService->Mail_exch) > AnscSizeOfString(pString))
         {
             /* save update to backup */
-            AnscCopyString(pDdnsService->Mail_exch, pString);
+            rc = STRCPY_S_NOCLOBBER(pDdnsService->Mail_exch, sizeof(pDdnsService->Mail_exch), pString);
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             return TRUE;
         }
         else
@@ -1849,6 +1910,7 @@ Service_Validate
     PCOSA_DML_DDNS_SERVICE          pDdnsService2   = (PCOSA_DML_DDNS_SERVICE   )NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry     = (PSINGLE_LINK_ENTRY       )NULL;
     BOOL                            bResult         = FALSE;
+    errno_t                         rc              = -1;
 
     pSLinkEntry = AnscSListGetFirstEntry(pListHead);
 
@@ -1865,8 +1927,9 @@ Service_Validate
                  AnscEqualString(pDdnsService2->Alias, pDdnsService->Alias, TRUE) 
            )
         {
-            AnscCopyString(pReturnParamName, "Alias");
 
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            ERR_CHK(rc);
             *puLength = AnscSizeOfString("Alias");
              
             return FALSE;
@@ -1876,7 +1939,8 @@ Service_Validate
 	//Check whether Domain string contains repeated word or not
 	if( TRUE == Service_IsDomainStringHaveRepeatedWord( pDdnsService->Domain ) )
 	{
-		AnscCopyString(pReturnParamName, "Domain");
+                rc = strcpy_s(pReturnParamName, *puLength, "Domain");
+                ERR_CHK(rc);
 		
 		*puLength = AnscSizeOfString("Domain");
 		 
@@ -1892,8 +1956,8 @@ Service_Validate
 
         if ( bResult == FALSE )
         {
-            AnscCopyString(pReturnParamName, "AssociatedConnection");
-
+            rc = strcpy_s(pReturnParamName, *puLength, "AssociatedConnection");
+            ERR_CHK(rc);
             *puLength = AnscSizeOfString(pReturnParamName);
 
             return FALSE;

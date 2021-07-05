@@ -305,19 +305,21 @@ void apply_dmz_ToDML(t_cache *tmp_dmz_cache)
 	PCOSA_DATAMODEL_NAT             pNat         = (PCOSA_DATAMODEL_NAT)g_pCosaBEManager->hNat;
 	PCOSA_DML_NAT_DMZ               pDmlDmz         = &pNat->Dmz;
 	int index = 0;
-
+	errno_t                         rc     = -1;
 	pDmlDmz->bEnabled = atoi(tmp_dmz_cache[index++].val);
 	if (pDmlDmz->bEnabled == FALSE)
 	{
 		/* keep sync between webui and snmp */
-		AnscCopyString(pDmlDmz->InternalIP, "0.0.0.0");
+		rc = strcpy_s(pDmlDmz->InternalIP,sizeof(pDmlDmz->InternalIP), "0.0.0.0");
+		ERR_CHK(rc);
 		//CISCOXB3-5927 : ip6 table is not getting restored
 		memset(pDmlDmz->IPv6Host ,0 ,sizeof(pDmlDmz->IPv6Host));
 	}
 	else if (pDmlDmz->bEnabled == TRUE)
 	{
                 /* CID: 158833 Array compared against 0*/
-	 	AnscCopyString( pDmlDmz->InternalIP, tmp_dmz_cache[index].val);
+	 	rc = strcpy_s( pDmlDmz->InternalIP,sizeof(pDmlDmz->InternalIP), tmp_dmz_cache[index].val);
+	 	ERR_CHK(rc);
 	}
 
 #if CFG_USE_CCSP_SYSLOG

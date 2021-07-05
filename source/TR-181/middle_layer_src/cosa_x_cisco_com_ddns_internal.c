@@ -488,6 +488,7 @@ CosaDdnsRegGetDdnsInfo
     ULONG                           ulInstanceNumber  = 0;
     char*                           pFolderName       = NULL;
     char*                           pAlias            = NULL;
+    errno_t                         rc                = -1;
 
     if ( !pPoamIrepFoDdns )
     {
@@ -591,17 +592,14 @@ CosaDdnsRegGetDdnsInfo
         pDdnsService->InstanceNumber = ulInstanceNumber;
         if(pAlias) /*RDKB-6744, CID-33330, use only after null check*/
         {
-            AnscCopyString(pDdnsService->Alias, pAlias);
+            rc = strcpy_s(pDdnsService->Alias, sizeof(pDdnsService->Alias), pAlias);
+            ERR_CHK(rc);
+            AnscFreeMemory(pAlias);
+            pAlias = NULL;
         }
         else
         {
-            AnscCopyString(pDdnsService->Alias, "");
-        }
-
-        if(pAlias) /*RDKB-6744, CID-33330,free only after null check*/
-        {
-            AnscFreeMemory(pAlias);
-            pAlias = NULL;
+            pDdnsService->Alias[0] = '\0';
         }
 
         pCosaContext->InstanceNumber   = ulInstanceNumber;

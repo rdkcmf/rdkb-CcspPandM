@@ -68,6 +68,7 @@
 
 #include "ansc_platform.h"
 #include "cosa_x_cisco_com_mld_dml.h"
+#include "safec_lib_common.h"
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -1055,19 +1056,28 @@ Group1_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
 
     PCOSA_DML_MLD_GROUP            pMldGroupEntry = (PCOSA_DML_MLD_GROUP)hInsContext;
-    
+    errno_t                        rc             = -1;
+
     /* check the parameter name and return the corresponding value */    
     if( AnscEqualString(ParamName, "GroupAddress", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMldGroupEntry->GroupAddress);
+        rc = strcpy_s(pValue, *pUlSize, pMldGroupEntry->GroupAddress);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
    
     if( AnscEqualString(ParamName, "Interfaces", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMldGroupEntry->Interfaces);
+        rc = strcpy_s(pValue, *pUlSize, pMldGroupEntry->Interfaces);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 

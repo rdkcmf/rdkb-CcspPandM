@@ -949,7 +949,7 @@ CosaRoutingRegGetInfo
     ULONG                           ulUpperInstanceNumber   = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
-
+    errno_t                         rc                      = -1;
     if ( !pPoamIrepFoRouterHA )
     {
         return ANSC_STATUS_FAILURE;
@@ -1044,7 +1044,8 @@ CosaRoutingRegGetInfo
             pRouter->ulNextIPv6ForwardInsNum = 1;
             
             pRouter->Cfg.InstanceNumber = ulInstanceNumber;
-            AnscCopyString(pRouter->Cfg.Alias, pAlias);
+            rc = strcpy_s(pRouter->Cfg.Alias,sizeof(pRouter->Cfg.Alias), pAlias);
+            ERR_CHK(rc);
 
             pCosaContext->InstanceNumber   = ulInstanceNumber;
             pCosaContext->bNew             = TRUE;
@@ -1163,7 +1164,8 @@ CosaRoutingRegGetInfo
                 }
 
                 pRouterForward->InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pRouterForward->Alias, pAlias);
+                rc = strcpy_s(pRouterForward->Alias,sizeof(pRouterForward->Alias),pAlias);
+                ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber   = ulInstanceNumber;
                 pSubCosaContext->hContext         = (ANSC_HANDLE)pRouterForward;
@@ -1246,7 +1248,8 @@ CosaRoutingRegGetInfo
                 }
 
                 pRouterIPv6Forward->InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pRouterIPv6Forward->Alias, pAlias);
+                rc = strcpy_s(pRouterIPv6Forward->Alias,sizeof(pRouterIPv6Forward->Alias), pAlias);
+                ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber   = ulInstanceNumber;
                 pSubCosaContext->hContext         = (ANSC_HANDLE)pRouterIPv6Forward;
@@ -1281,7 +1284,8 @@ CosaRoutingRegGetInfo
                 }
 
                 pRipIF->InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pRipIF->Alias, pAlias);
+                rc = strcpy_s(pRipIF->Alias,sizeof(pRipIF->Alias), pAlias);
+                ERR_CHK(rc);
 
                 pCosaContext2->InstanceNumber   = ulInstanceNumber;
                 pCosaContext2->hContext         = (ANSC_HANDLE)pRipIF;

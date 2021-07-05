@@ -374,12 +374,14 @@ CosaDmlIpInit
         PANSC_HANDLE                phContext
     )
 {
+    errno_t rc = -1;
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     ANSC_STATUS                     returnStatus;
     int i;
     for(i = 0; i < COSA_USG_IF_NUM; i++)
     {
-        AnscCopyString((char *)g_ipif_names[i], G_USG_IF_NAME(i));
+        rc = strcpy_s((char *)g_ipif_names[i],sizeof(g_ipif_names[i]), G_USG_IF_NAME(i));
+        ERR_CHK(rc);
         gDmsbIpIfUpstream[i] = g_usg_if_cfg[i].bUpstream;
     }
     g_ipif_num               = COSA_USG_IF_NUM;
@@ -391,9 +393,12 @@ CosaDmlIpInit
         return  returnStatus;
     }
 #elif defined(_COSA_DRG_TPG_)
-    AnscCopyString((char *)g_ipif_names[0], "lan0");
-    AnscCopyString((char *)g_ipif_names[1], "wan0");
-    AnscCopyString((char *)g_ipif_names[2], "lo");
+    rc = strcpy_s((char *)g_ipif_names[0],sizeof(g_ipif_names[0]), "lan0");
+    ERR_CHK(rc);
+    rc = strcpy_s((char *)g_ipif_names[1],sizeof(g_ipif_names[1]), "wan0");
+    ERR_CHK(rc);
+    rc = strcpy_s((char *)g_ipif_names[2],sizeof(g_ipif_names[2]), "lo");
+    ERR_CHK(rc);
     g_ipif_num = 3;
 #endif
 
@@ -1965,7 +1970,7 @@ CosaDmlIpIfGetEntry
 {
 
     int i;
-
+    errno_t safec_rc = -1;
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     if ( ulIndex >= (COSA_USG_IF_NUM - 1) )
@@ -2030,17 +2035,18 @@ CosaDmlIpIfGetEntry
     }
 
     pEntry->Info.LastChange  =  AnscGetTickInSeconds();
-    AnscCopyString(pEntry->Info.Name, (char *)g_ipif_names[ulIndex]);  
+    safec_rc = strcpy_s(pEntry->Info.Name, sizeof(pEntry->Info.Name), (char *)g_ipif_names[ulIndex]);
+    ERR_CHK(safec_rc);
 
     pEntry->Cfg.LinkType            = G_USG_IF_LINKTYPE(i);
-    AnscCopyString(pEntry->Cfg.LinkName, (char *)g_ipif_names[ulIndex]);  
+    safec_rc = strcpy_s(pEntry->Cfg.LinkName, sizeof(pEntry->Cfg.LinkName), (char *)g_ipif_names[ulIndex]);
+    ERR_CHK(safec_rc);
 
     if (TRUE)
     {
         char buf[256]= {0};
         char out[COSA_DML_IF_NAME_LENGTH]= {0};
         UtopiaContext utctx;
-        errno_t safec_rc = -1;
 
         /*we can't use InstanceNumber to set a alias name to IP.Interface, because different interfaces will have a same instanceNumber when in BYOI or Primary mode*/
         /*CID: 54740 Unchecked return value*/
@@ -2082,7 +2088,7 @@ CosaDmlIpIfGetEntry
     }
 
     /* not support */
-    AnscCopyString(pEntry->Cfg.RouterName, "");  
+    pEntry->Cfg.RouterName[0] = '\0';
 
     /*copy middle layer pEntry to backend buffer*/
     AnscCopyMemory(&g_ipif_be_bufs[ulIndex].Cfg, &pEntry->Cfg, sizeof(pEntry->Cfg));
@@ -2299,7 +2305,8 @@ CosaDmlIpIfSetCfg
             Utopia_RawSet(&utctx,NULL,buf,pCfg->Alias);
             Utopia_Free(&utctx,1);
 
-            AnscCopyString(p_be_buf_cfg->Alias, pCfg->Alias);
+            safec_rc = strcpy_s(p_be_buf_cfg->Alias,sizeof(p_be_buf_cfg->Alias), pCfg->Alias);
+            ERR_CHK(safec_rc);
         }
     #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
         if (pCfg->MaxMTUSize != p_be_buf_cfg->MaxMTUSize)
@@ -2971,7 +2978,8 @@ CosaDmlIpIfSetV4Addr
             Utopia_RawSet(&utctx,NULL,buf,pEntry->Alias);
             Utopia_Free(&utctx,1);
 
-            AnscCopyString(p_be_buf->Alias, pEntry->Alias);
+            safec_rc = strcpy_s(p_be_buf->Alias,sizeof(p_be_buf->Alias), pEntry->Alias);
+            ERR_CHK(safec_rc);
         }
 
         /*for IPaddr and netmask, it's middle layer's responsibility to check if the AddressingType is Static. Remember we only set these params in Static AddressingType*/

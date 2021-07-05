@@ -442,7 +442,9 @@ CosaDmlEthPortSetValues
 {
     UNREFERENCED_PARAMETER(hContext);
     g_EthEntries[ulIndex].instanceNumber=ulInstanceNumber;
-    AnscCopyString(g_EthEntries[ulIndex].Alias, pAlias);
+    errno_t rc = -1;
+    rc = strcpy_s(g_EthEntries[ulIndex].Alias,sizeof(g_EthEntries[ulIndex].Alias), pAlias);
+    ERR_CHK(rc);
     saveID(g_EthIntSInfo[ulIndex].Name, pAlias, ulInstanceNumber);
 
     return ANSC_STATUS_SUCCESS;
@@ -457,7 +459,7 @@ CosaDmlEthPortSetCfg
 {
     COSA_DML_ETH_PORT_CFG origCfg;
     PCosaEthInterfaceInfo pEthIf = (PCosaEthInterfaceInfo  )NULL;
-
+    errno_t rc = -1;
     UNREFERENCED_PARAMETER(hContext);
 
     /*RDKB-6838, CID-32984, null check before use*/
@@ -487,7 +489,8 @@ CosaDmlEthPortSetCfg
     
     if ( !AnscEqualString(pCfg->Alias, pEthIf->Alias, TRUE) )
     {
-        AnscCopyString(pEthIf->Alias, pCfg->Alias);
+        rc = strcpy_s(pEthIf->Alias,sizeof(pEthIf->Alias), pCfg->Alias);
+        ERR_CHK(rc);
         saveID(pEthIf->sInfo->Name, pCfg->Alias, pCfg->InstanceNumber);
     }
     
@@ -502,6 +505,7 @@ CosaDmlEthPortGetCfg
     )
 {
     PCosaEthInterfaceInfo pEthIf = (PCosaEthInterfaceInfo  )NULL;
+    errno_t rc = -1;
     UNREFERENCED_PARAMETER(hContext);
 
     /*RDKB-6838, CID-33167, null check before use*/
@@ -520,7 +524,8 @@ CosaDmlEthPortGetCfg
 
     pEthIf->control->getCfg(pEthIf, pCfg);
     
-    AnscCopyString(pCfg->Alias, pEthIf->Alias);
+    rc = strcpy_s(pCfg->Alias,sizeof(pCfg->Alias), pEthIf->Alias);
+    ERR_CHK(rc);
 
     pCfg->InstanceNumber = pEthIf->instanceNumber;
 
@@ -925,7 +930,12 @@ CosaDmlEthVlanTerminationValidateCfg
             if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
                  ( AnscSizeOfString((const char*)ucEntryNameValue) != 0                                        ) )
             {
-                AnscCopyString(pCfg->EthLinkName, ucEntryNameValue);
+                rc = strcpy_s(pCfg->EthLinkName,sizeof(pCfg->EthLinkName), ucEntryNameValue);
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return FALSE;
+                }
             }
             else
             {
@@ -940,7 +950,12 @@ CosaDmlEthVlanTerminationValidateCfg
     {
         if (!pCfg->VLANID && pEntry && pCfg->VLANID != pEntry->Cfg.VLANID)
         {
-            AnscCopyString(pReturnParamName, "VLANID");
+            rc = strcpy_s(pReturnParamName,*puLength, "VLANID");
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             *puLength = AnscSizeOfString("VLANID");
             return FALSE;
         }
@@ -948,12 +963,22 @@ CosaDmlEthVlanTerminationValidateCfg
         {
             if (pEntry && strcmp(pCfg->LowerLayers, pEntry->Cfg.LowerLayers))
             {
-                AnscCopyString(pReturnParamName, "LowerLayers");
+                rc = strcpy_s(pReturnParamName,*puLength, "LowerLayers");
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return FALSE;
+                }
                 *puLength = AnscSizeOfString("LowerLayers");
             }
             else
             {
-                AnscCopyString(pReturnParamName, "Enable");
+                rc = strcpy_s(pReturnParamName,*puLength, "Enable");
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return FALSE;
+                }
                 *puLength = AnscSizeOfString("Enable");
             }
             return FALSE;
@@ -1915,6 +1940,7 @@ static int loadID(char* ifName, char* pAlias, ULONG* ulInstanceNumber) {
     char idStr[COSA_DML_IF_NAME_LENGTH+10] = {0};
     char* instNumString;
     int rv;
+    errno_t rc = -1;
     /*CID: 70909 Unchecked return value*/
     if(!Utopia_Init(&utctx))
         return -1;
@@ -1927,7 +1953,13 @@ static int loadID(char* ifName, char* pAlias, ULONG* ulInstanceNumber) {
     instNumString=idStr + AnscSizeOfToken(idStr, ",", sizeof(idStr))+1;
     *(instNumString-1)='\0';
 
-    AnscCopyString(pAlias, idStr);
+    rc = strcpy_s(pAlias, COSA_DML_IF_NAME_LENGTH, idStr);   // Here pAlias having the size is COSA_DML_IF_NAME_LENGTH(512 bytes) from calling funtion
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        return -1;
+    }
+
     *ulInstanceNumber = AnscGetStringUlong(instNumString);
     Utopia_Free(&utctx, 0);
 

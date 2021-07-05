@@ -504,6 +504,7 @@ CosaDevCtrlReg_GetLanMngmInfo(
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoLm )
     {
@@ -537,8 +538,6 @@ CosaDevCtrlReg_GetLanMngmInfo(
             continue;
         }
 
-        if ( TRUE )
-        {
             pSlapVariable =
                 (PSLAP_VARIABLE)pPoamIrepFoLmSp->GetRecord
                     (
@@ -553,10 +552,7 @@ CosaDevCtrlReg_GetLanMngmInfo(
 
                 SlapFreeVariable(pSlapVariable);
             }
-        }
 
-        if ( TRUE )
-        {
             pSlapVariable =
                 (PSLAP_VARIABLE)pPoamIrepFoLmSp->GetRecord
                     (
@@ -571,7 +567,6 @@ CosaDevCtrlReg_GetLanMngmInfo(
 
                 SlapFreeVariable(pSlapVariable);
             }
-        }
 
         pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
 
@@ -592,7 +587,8 @@ CosaDevCtrlReg_GetLanMngmInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        AnscCopyString(pEntry->Alias, pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
 
@@ -639,8 +635,6 @@ CosaDevCtrlReg_AddLanMngmInfo(
         pPoamIrepFoLm->EnableFileSync((ANSC_HANDLE)pPoamIrepFoLm, FALSE);
     }
 
-    if ( TRUE )
-    {
         SlapAllocVariable(pSlapVariable);
 
         if ( !pSlapVariable )
@@ -649,10 +643,7 @@ CosaDevCtrlReg_AddLanMngmInfo(
 
             goto  EXIT1;
         }
-    }
 
-    if ( TRUE )
-    {
         returnStatus = 
             pPoamIrepFoLm->DelRecord
                 (
@@ -676,10 +667,7 @@ CosaDevCtrlReg_AddLanMngmInfo(
 
         SlapCleanVariable(pSlapVariable);
         SlapInitVariable (pSlapVariable);
-    }
 
-    if ( TRUE )
-    {
         pPoamIrepFoLmSp =
             pPoamIrepFoLm->AddFolder
                 (
@@ -695,8 +683,6 @@ CosaDevCtrlReg_AddLanMngmInfo(
             goto  EXIT1;
         }
 
-        if ( TRUE )
-        {
             pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_uint32;
             pSlapVariable->Variant.varUint32 = pEntry->InstanceNumber;
 
@@ -713,10 +699,7 @@ CosaDevCtrlReg_AddLanMngmInfo(
 
             SlapCleanVariable(pSlapVariable);
             SlapInitVariable (pSlapVariable);
-        }
 
-        if ( TRUE )
-        {
             pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_string;
             pSlapVariable->Variant.varString = AnscCloneString(pEntry->Alias);
 
@@ -733,11 +716,9 @@ CosaDevCtrlReg_AddLanMngmInfo(
 
             SlapCleanVariable(pSlapVariable);
             SlapInitVariable (pSlapVariable);
-        }
 
         pCosaContext->hPoamIrepUpperFo = (ANSC_HANDLE)pPoamIrepFoLm;
         pCosaContext->hPoamIrepFo      = (ANSC_HANDLE)pPoamIrepFoLmSp;
-    }
 
 EXIT1:
     
@@ -771,8 +752,6 @@ CosaDevCtrlReg_DelLanMngmInfo(
         pPoamIrepUpperFo->EnableFileSync((ANSC_HANDLE)pPoamIrepUpperFo, FALSE);
     }
 
-    if ( TRUE )
-    {
         pPoamIrepFo->Close((ANSC_HANDLE)pPoamIrepFo);
         
         pPoamIrepUpperFo->DelFolder
@@ -784,7 +763,6 @@ CosaDevCtrlReg_DelLanMngmInfo(
         pPoamIrepUpperFo->EnableFileSync((ANSC_HANDLE)pPoamIrepUpperFo, TRUE);
 
         AnscFreeMemory(pPoamIrepFo);
-    }
 
     return ANSC_STATUS_SUCCESS;
 }

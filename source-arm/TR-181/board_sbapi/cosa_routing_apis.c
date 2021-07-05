@@ -1245,6 +1245,7 @@ CosaDmlRipIfGetCfg
     )
 {
     PCOSA_DML_RIPD_CONF pConf       = &CosaDmlRIPCurrentConfig;
+    errno_t             rc          = -1;
     UNREFERENCED_PARAMETER(hContext);
     if ( (ulIndex+1) > g_NumOfRipIFs )
     {
@@ -1266,11 +1267,14 @@ CosaDmlRipIfGetCfg
 
         pEntry->X_CISCO_COM_AuthenticationType   = pConf->If1AuthenticateType;                      
         pEntry->X_CISCO_COM_Md5KeyID             = pConf->If1KeyID;                           
-        AnscCopyString(pEntry->X_CISCO_COM_Md5KeyValue, pConf->If1Md5KeyValue);
-        AnscCopyString(pEntry->X_CISCO_COM_SimplePassword, pConf->If1SimplePassword);
-        
-        AnscCopyString(pEntry->Alias, pConf->If1Alias);
-        AnscCopyString(pEntry->Interface, pConf->If1Name);  
+        rc = strcpy_s(pEntry->X_CISCO_COM_Md5KeyValue,sizeof(pEntry->X_CISCO_COM_Md5KeyValue), pConf->If1Md5KeyValue);
+        ERR_CHK(rc);
+        rc = strcpy_s(pEntry->X_CISCO_COM_SimplePassword,sizeof(pEntry->X_CISCO_COM_SimplePassword), pConf->If1SimplePassword);
+        ERR_CHK(rc);
+        rc = strcpy_s(pEntry->Alias,sizeof(pEntry->Alias), pConf->If1Alias);
+        ERR_CHK(rc);
+        rc = strcpy_s(pEntry->Interface,sizeof(pEntry->Interface), pConf->If1Name);
+        ERR_CHK(rc);
     }
     else
     {
@@ -1416,6 +1420,7 @@ CosaDmlRipIfSetCfg
     )
 {
     PCOSA_DML_RIPD_CONF pConf       = &CosaDmlRIPCurrentConfig;
+    errno_t             rc          = -1;
     UNREFERENCED_PARAMETER(hContext);
 
     AnscTraceWarning(("CosaDmlRipIfSetCfg -- starts.\n"));
@@ -1433,17 +1438,27 @@ CosaDmlRipIfSetCfg
 	pEntry->Status =( (pEntry->Enable) && (pEntry->SendRA == TRUE || pEntry->AcceptRA == TRUE)) ? 2 : 1;
         pConf->If1AuthenticateType = pEntry->X_CISCO_COM_AuthenticationType;                      
         pConf->If1KeyID            = pEntry->X_CISCO_COM_Md5KeyID;                           
-        AnscCopyString(pConf->If1Md5KeyValue, pEntry->X_CISCO_COM_Md5KeyValue );
-        AnscCopyString(pConf->If1SimplePassword, pEntry->X_CISCO_COM_SimplePassword );
+        rc = strcpy_s(pConf->If1Md5KeyValue,sizeof(pConf->If1Md5KeyValue), pEntry->X_CISCO_COM_Md5KeyValue );
+        ERR_CHK(rc);
+        rc = strcpy_s(pConf->If1SimplePassword,sizeof(pConf->If1SimplePassword), pEntry->X_CISCO_COM_SimplePassword );
+        ERR_CHK(rc);
 
         //this is for true static ip feature.
-        AnscCopyString(pConf->If1Alias, pEntry->Alias);
+        rc = strcpy_s(pConf->If1Alias,sizeof(pConf->If1Alias), pEntry->Alias);
+        ERR_CHK(rc);
         if ((_ansc_strcmp(pEntry->Alias, COSA_RIPD_IF1_NAME ) == 0 ) ||
             (_ansc_strcmp(pEntry->Alias, "cpe" ) == 0 ) ||
             (_ansc_strcmp(pEntry->Alias, "Ethernet" ) == 0 ) )
-            AnscCopyString(pConf->If1Name, COSA_RIPD_IF1_NAME);
+        {
+            rc = strcpy_s(pConf->If1Name,sizeof(pConf->If1Name), COSA_RIPD_IF1_NAME);
+            ERR_CHK(rc);
+        }
+            
         else
-            AnscCopyString(pConf->If1Name, COSA_RIPD_IF2_NAME);
+        {
+            rc = strcpy_s(pConf->If1Name,sizeof(pConf->If1Name), COSA_RIPD_IF2_NAME);
+            ERR_CHK(rc);
+        }
 
     }
     else
@@ -1627,8 +1642,9 @@ CosaDmlRoutingRouterSetCfg
     UNREFERENCED_PARAMETER(hContext);
     g_RouterFull.Cfg.InstanceNumber = pCfg->InstanceNumber;  
     g_RouterFull.Cfg.bEnabled       = pCfg->bEnabled;        
-
-    AnscCopyString(g_RouterFull.Cfg.Alias, pCfg->Alias);
+    errno_t          rc             = -1;
+    rc = strcpy_s(g_RouterFull.Cfg.Alias,sizeof(g_RouterFull.Cfg.Alias), pCfg->Alias);
+    ERR_CHK(rc);
 
     return returnStatus;
 }
@@ -1671,8 +1687,9 @@ CosaDmlRoutingRouterGetCfg
     UNREFERENCED_PARAMETER(hContext);
     pCfg->InstanceNumber = g_RouterFull.Cfg.InstanceNumber; 
     pCfg->bEnabled       = g_RouterFull.Cfg.bEnabled;
-
-    AnscCopyString(pCfg->Alias, g_RouterFull.Cfg.Alias);
+    errno_t           rc = -1;
+    rc = strcpy_s(pCfg->Alias,sizeof(pCfg->Alias), g_RouterFull.Cfg.Alias);
+    ERR_CHK(rc);
     
     return returnStatus;
 }
@@ -1807,9 +1824,11 @@ CosaDmlRoutingGetV4Entry
     pEntry->DestIPAddress.Value    = g_RouterFull.V4ForwardList[ulIndex].DestIPAddress.Value;
     pEntry->DestSubnetMask.Value   = g_RouterFull.V4ForwardList[ulIndex].DestSubnetMask.Value;
     pEntry->GatewayIPAddress.Value = g_RouterFull.V4ForwardList[ulIndex].GatewayIPAddress.Value;
-    
-    AnscCopyString(pEntry->Alias, g_RouterFull.V4ForwardList[ulIndex].Alias);
-    AnscCopyString(pEntry->Interface, g_RouterFull.V4ForwardList[ulIndex].Interface);
+    errno_t                     rc = -1;
+    rc = strcpy_s(pEntry->Alias,sizeof(pEntry->Alias), g_RouterFull.V4ForwardList[ulIndex].Alias);
+    ERR_CHK(rc);
+    rc = strcpy_s(pEntry->Interface,sizeof(pEntry->Interface), g_RouterFull.V4ForwardList[ulIndex].Interface);
+    ERR_CHK(rc);
     
     return returnStatus;
 }
@@ -1861,7 +1880,9 @@ CosaDmlRoutingSetV4EntryValues
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     UNREFERENCED_PARAMETER(hContext);
     g_RouterFull.V4ForwardList[ulIndex].InstanceNumber = ulInstanceNumber;
-    AnscCopyString(g_RouterFull.V4ForwardList[ulIndex].Alias, pAlias);
+    errno_t rc = -1;
+    rc = strcpy_s(g_RouterFull.V4ForwardList[ulIndex].Alias,sizeof(g_RouterFull.V4ForwardList[ulIndex].Alias), pAlias);
+    ERR_CHK(rc);
         
     return returnStatus;
 }
@@ -1902,7 +1923,7 @@ CosaDmlRoutingAddV4Entry
     )
 {
     ULONG                           ulIndex = 0;
-
+    errno_t                         rc      = -1;
     ulIndex = g_RouterFull.ulNumOfForward;
     UNREFERENCED_PARAMETER(hContext);
     if ( ulIndex >= 10 )
@@ -1920,9 +1941,10 @@ CosaDmlRoutingAddV4Entry
     g_RouterFull.V4ForwardList[ulIndex].DestSubnetMask.Value   = pEntry->DestSubnetMask.Value;
     g_RouterFull.V4ForwardList[ulIndex].GatewayIPAddress.Value = pEntry->GatewayIPAddress.Value;
     
-    AnscCopyString(g_RouterFull.V4ForwardList[ulIndex].Alias, pEntry->Alias);
-    AnscCopyString(g_RouterFull.V4ForwardList[ulIndex].Interface, pEntry->Interface);
-
+    rc = STRCPY_S_NOCLOBBER(g_RouterFull.V4ForwardList[ulIndex].Alias,sizeof(g_RouterFull.V4ForwardList[ulIndex].Alias), pEntry->Alias);
+    ERR_CHK(rc);
+    rc = STRCPY_S_NOCLOBBER(g_RouterFull.V4ForwardList[ulIndex].Interface,sizeof(g_RouterFull.V4ForwardList[ulIndex].Interface), pEntry->Interface);
+    ERR_CHK(rc);
     g_RouterFull.ulNumOfForward++;
 
     return ANSC_STATUS_SUCCESS;
@@ -2023,7 +2045,7 @@ CosaDmlRoutingSetV4Entry
 {
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i       = 0;
-
+    errno_t                         rc      = -1;
      for ( i = 0; i < g_RouterFull.ulNumOfForward; i++ )
     {
         if ( g_RouterFull.V4ForwardList[i].InstanceNumber == pEntry->InstanceNumber )
@@ -2038,8 +2060,10 @@ CosaDmlRoutingSetV4Entry
             g_RouterFull.V4ForwardList[i].DestSubnetMask.Value   = pEntry->DestSubnetMask.Value;
             g_RouterFull.V4ForwardList[i].GatewayIPAddress.Value = pEntry->GatewayIPAddress.Value;
             
-            AnscCopyString(g_RouterFull.V4ForwardList[i].Alias, pEntry->Alias);
-            AnscCopyString(g_RouterFull.V4ForwardList[i].Interface, pEntry->Interface);
+            rc = STRCPY_S_NOCLOBBER(g_RouterFull.V4ForwardList[i].Alias,sizeof(g_RouterFull.V4ForwardList[i].Alias), pEntry->Alias);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(g_RouterFull.V4ForwardList[i].Interface,sizeof(g_RouterFull.V4ForwardList[i].Interface), pEntry->Interface);
+            ERR_CHK(rc);
 
             return ANSC_STATUS_SUCCESS;
         }
@@ -2123,8 +2147,9 @@ CosaDmlRoutingSetV6EntryValues
 {
     UNREFERENCED_PARAMETER(hContext);
     g_RouterFull.V6ForwardList[ulIndex].InstanceNumber = ulInstanceNumber;
-    
-    AnscCopyString(g_RouterFull.V6ForwardList[ulIndex].Alias, pAlias);
+    errno_t rc = -1;
+    rc = STRCPY_S_NOCLOBBER(g_RouterFull.V6ForwardList[ulIndex].Alias,sizeof(g_RouterFull.V6ForwardList[ulIndex].Alias), pAlias);
+    ERR_CHK(rc);
     
     return ANSC_STATUS_SUCCESS;
 }
@@ -3729,7 +3754,8 @@ CosaDmlRoutingGetNumberOfV4Entries
             if (returnStatus == 1)
             {
                 CcspTraceWarning(("returnStatus %d Instance %d, \tAlias '%s'\n", returnStatus, uIndex+1, sys_buf)); 
-                AnscCopyString(Router_Alias[r_count].Alias, sys_buf);
+                safec_rc = strcpy_s(Router_Alias[r_count].Alias,sizeof(Router_Alias[r_count].Alias), sys_buf);
+                ERR_CHK(safec_rc);
 
                 Router_Alias[r_count].InstanceNumber = uIndex+1;
 
@@ -3743,7 +3769,8 @@ CosaDmlRoutingGetNumberOfV4Entries
 
                 if (returnStatus == 1)
                 {
-                    AnscCopyString(Router_Alias[r_count].Name, sys_buf);
+                    safec_rc = strcpy_s(Router_Alias[r_count].Name,sizeof(Router_Alias[r_count].Name), sys_buf);
+                    ERR_CHK(safec_rc);
                 }
                 
                 safec_rc = sprintf_s(cmd_buf, sizeof(cmd_buf), "tr_routing_v4entry_%lu_enabled", uIndex+1);
@@ -3851,7 +3878,8 @@ CosaDmlRoutingGetV4Entry
     pEntry->ForwardingMetric       = sroute[ulIndex].metric;
     pEntry->InstanceNumber         = 0;
 
-    AnscCopyString(pEntry->Interface, sroute[ulIndex].dest_intf );
+    safec_rc = strcpy_s(pEntry->Interface,sizeof(pEntry->Interface), sroute[ulIndex].dest_intf );
+    ERR_CHK(safec_rc);
     CcspTraceWarning(("-CosaDmlRoutingGetV4Entry %d interface is %s-\n", ulIndex, pEntry->Interface));
 
     safec_rc = sprintf_s(buf, sizeof(buf), "%s,%s",
@@ -3873,7 +3901,8 @@ CosaDmlRoutingGetV4Entry
         pEntry->InstanceNumber   = Router_Alias[index].InstanceNumber;
         pEntry->Enable           = (Router_Alias[index].Enabled)?TRUE:FALSE;
         pEntry->Status           = (Router_Alias[index].Enabled)?2:1;
-        AnscCopyString(pEntry->Alias, Router_Alias[index].Alias);
+        safec_rc = strcpy_s(pEntry->Alias,sizeof(pEntry->Alias), Router_Alias[index].Alias);
+        ERR_CHK(safec_rc);
 
         break;
     }
@@ -3931,6 +3960,7 @@ CosaDmlRoutingSetV4EntryValues
     char                            cmd[80]      = {0};
     char                            buf[33]      = {0};
     UtopiaContext                   ctx;
+    errno_t                         safec_rc = -1;
     UNREFERENCED_PARAMETER(hContext);
     if (ulInstanceNumber == 0 || pAlias == NULL)
         return ANSC_STATUS_FAILURE;
@@ -3961,7 +3991,8 @@ CosaDmlRoutingSetV4EntryValues
     Router_Alias[Config_Num].Index          = ulIndex;
     Router_Alias[Config_Num].InstanceNumber = ulInstanceNumber;
     Router_Alias[Config_Num].Used           = TRUE;
-    AnscCopyString(Router_Alias[Config_Num].Alias, pAlias);
+    safec_rc = strcpy_s(Router_Alias[Config_Num].Alias,sizeof(Router_Alias[Config_Num].Alias), pAlias);
+    ERR_CHK(safec_rc);
 
     Config_Num++;
     
@@ -4068,7 +4099,8 @@ CosaDmlRoutingAddV4Entry
     Router_Alias[Config_Num].InstanceNumber = pEntry->InstanceNumber;
     Router_Alias[Config_Num].Index          = Num_V4Entry-1;
     Router_Alias[Config_Num].Used           = TRUE;
-    AnscCopyString(Router_Alias[Config_Num].Alias, pEntry->Alias);
+    safec_rc = strcpy_s(Router_Alias[Config_Num].Alias,sizeof(Router_Alias[Config_Num].Alias), pEntry->Alias);
+    ERR_CHK(safec_rc);
     
     CcspTraceWarning(("---CosaDmlRoutingAddV4Entry ip is %s\n", sroute[Num_V4Entry-1].dest_lan_ip));
     CcspTraceWarning(("---CosaDmlRoutingAddV4Entry mask is %s\n", sroute[Num_V4Entry-1].netmask));

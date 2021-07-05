@@ -317,12 +317,18 @@ CosaDmlDhcpv6cSetValues
         char*                       pAlias
     )
 {
+    errno_t                         rc              = -1;
+
     if ( ulIndex >= sizeof(g_dhcpv6_client)/sizeof(COSA_DML_DHCPCV6_FULL) )
         return ANSC_STATUS_SUCCESS;
 
     g_dhcpv6_client[ulIndex].Cfg.InstanceNumber  = ulInstanceNumber;
-    AnscCopyString(g_dhcpv6_client[ulIndex].Cfg.Alias, pAlias);
-    
+    rc = STRCPY_S_NOCLOBBER(g_dhcpv6_client[ulIndex].Cfg.Alias, sizeof(g_dhcpv6_client[ulIndex].Cfg.Alias), pAlias);
+    if ( rc != EOK )
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -533,12 +539,18 @@ CosaDmlDhcpv6cSetSentOptionValues
         char*                       pAlias
     )
 {
+    errno_t                         rc              = -1;
     if ( ulIndex+1 > sizeof(g_dhcpv6_client_sent)/sizeof(COSA_DML_DHCPCV6_SENT) )
         return ANSC_STATUS_SUCCESS;
 
     g_dhcpv6_client_sent[ulIndex].InstanceNumber  = ulInstanceNumber;
-    AnscCopyString( g_dhcpv6_client_sent[ulIndex].Alias, pAlias);
 
+    rc = STRCPY_S_NOCLOBBER(g_dhcpv6_client_sent[ulIndex].Alias, sizeof(g_dhcpv6_client_sent[ulIndex].Alias), pAlias);
+    if ( rc != EOK )
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -669,12 +681,17 @@ CosaDmlDhcpv6sSetPoolValues
         char*                       pAlias
     )
 {
+    errno_t                         rc              = -1;
     if ( ulIndex+1 > sizeof(g_dhcpv6_server_pool)/sizeof(COSA_DML_DHCPSV6_POOL_FULL) )
         return ANSC_STATUS_FAILURE;
 
     g_dhcpv6_server_pool[ulIndex].Cfg.InstanceNumber  = ulInstanceNumber;
-    AnscCopyString(g_dhcpv6_server_pool[ulIndex].Cfg.Alias, pAlias);
-
+    rc = STRCPY_S_NOCLOBBER(g_dhcpv6_server_pool[ulIndex].Cfg.Alias, sizeof(g_dhcpv6_server_pool[ulIndex].Cfg.Alias), pAlias);
+    if ( rc != EOK )
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -926,12 +943,18 @@ CosaDmlDhcpv6sSetOptionValues
         char*                       pAlias
     )
 {
+    errno_t                         rc              = -1;
     if ( ulIndex+1 > sizeof(g_dhcpv6_server_pool_option)/sizeof(COSA_DML_DHCPSV6_POOL_OPTION) )
         return ANSC_STATUS_FAILURE;
 
     g_dhcpv6_server_pool_option[ulIndex].InstanceNumber  = ulInstanceNumber;
-    AnscCopyString(g_dhcpv6_server_pool_option[ulIndex].Alias, pAlias);
 
+    rc = STRCPY_S_NOCLOBBER(g_dhcpv6_server_pool_option[ulIndex].Alias, sizeof(g_dhcpv6_server_pool_option[ulIndex].Alias), pAlias);
+    if ( rc != EOK )
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2969,8 +2992,13 @@ CosaDmlDhcpv6cSetSentOptionValues
         return ANSC_STATUS_SUCCESS;
 
     g_sent_options[ulIndex].InstanceNumber  = ulInstanceNumber;
-    AnscCopyString( (char*)g_sent_options[ulIndex].Alias, pAlias);
 
+    rc = STRCPY_S_NOCLOBBER((char*)g_sent_options[ulIndex].Alias, sizeof(g_sent_options[ulIndex].Alias), pAlias);
+    if ( rc != EOK )
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
 
@@ -5577,13 +5605,19 @@ CosaDmlDhcpv6sSetPoolValues
 {
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
+    errno_t                         rc              = -1;
 
     if ( ulIndex+1 > uDhcpv6ServerPoolNum )
         return ANSC_STATUS_FAILURE;
 
     sDhcpv6ServerPool[ulIndex].Cfg.InstanceNumber  = ulInstanceNumber;
-    AnscCopyString((char*)sDhcpv6ServerPool[ulIndex].Cfg.Alias, pAlias);
 
+    rc = STRCPY_S_NOCLOBBER((char*)sDhcpv6ServerPool[ulIndex].Cfg.Alias, sizeof(sDhcpv6ServerPool[ulIndex].Cfg.Alias), pAlias);
+    if ( rc != EOK )
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     if (!Utopia_Init(&utctx))
         return ANSC_STATUS_FAILURE;
     SETI_INTO_UTOPIA(DHCPV6S_NAME, "pool", ulIndex, "", 0, "instancenumber", ulInstanceNumber)
@@ -6302,12 +6336,16 @@ void _cosa_dhcpsv6_get_client()
             }
             
             g_dhcps6v_clientcontent[Index].pOption[g_dhcps6v_clientcontent[Index].NumberofOption-1].Tag = _ansc_atoi(pTmp3);
-            AnscCopyString( (char*)g_dhcps6v_clientcontent[Index].pOption[g_dhcps6v_clientcontent[Index].NumberofOption-1].Value, pTmp1 );
+
+            rc = STRCPY_S_NOCLOBBER( (char*)g_dhcps6v_clientcontent[Index].pOption[g_dhcps6v_clientcontent[Index].NumberofOption-1].Value, sizeof(g_dhcps6v_clientcontent[Index].pOption[g_dhcps6v_clientcontent[Index].NumberofOption-1].Value), pTmp1);
+            ERR_CHK(rc);
         }else if ( _ansc_strcmp(pTmp1, "Unicast") == 0 )
         {
           /* CID: 61618 Explicit null dereferenced*/
-          if (g_dhcps6v_client)
-            AnscCopyString((char*)g_dhcps6v_client[Index].SourceAddress, pTmp3);
+          if (g_dhcps6v_client) {
+            rc = STRCPY_S_NOCLOBBER((char*)g_dhcps6v_client[Index].SourceAddress, sizeof(g_dhcps6v_client[Index].SourceAddress), pTmp3);
+            ERR_CHK(rc);
+          }
         }else if ( _ansc_strcmp(pTmp1, "Addr") == 0 )
         {
             g_dhcps6v_clientcontent[Index].NumberofIPv6Address++;
@@ -6333,7 +6371,9 @@ void _cosa_dhcpsv6_get_client()
                 continue;
             }
             
-            AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].IPAddress, pTmp3);
+
+            rc = STRCPY_S_NOCLOBBER((char*)g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].IPAddress, sizeof(g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].IPAddress), pTmp3);
+            ERR_CHK(rc);
         }else if ( _ansc_strcmp(pTmp1, "Timestamp") == 0 )
         {
             timeStamp = atoi(pTmp3);
@@ -6358,7 +6398,9 @@ void _cosa_dhcpsv6_get_client()
                          t2.tm_hour, t2.tm_min, t2.tm_sec, '\0');
                 }
 
-                AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].PreferredLifetime, buf);               
+
+                rc = STRCPY_S_NOCLOBBER((char*)g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].PreferredLifetime, sizeof(g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].PreferredLifetime), buf);
+                ERR_CHK(rc);
             }
         }else if ( _ansc_strcmp(pTmp1, "Valid") == 0 )
         {
@@ -6380,7 +6422,9 @@ void _cosa_dhcpsv6_get_client()
                          t2.tm_hour, t2.tm_min, t2.tm_sec, '\0');
                 }
 
-                AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].ValidLifetime, buf);               
+
+                rc = STRCPY_S_NOCLOBBER((char*)g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].ValidLifetime, sizeof(g_dhcps6v_clientcontent[Index].pIPv6Address[g_dhcps6v_clientcontent[Index].NumberofIPv6Address-1].ValidLifetime), buf);
+                ERR_CHK(rc);
             }
         }else if ( _ansc_strcmp(pTmp1, "pdPrefix") == 0 )
         {
@@ -6407,7 +6451,8 @@ void _cosa_dhcpsv6_get_client()
                 continue;
             }
             
-            AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].Prefix, pTmp3);
+            rc = STRCPY_S_NOCLOBBER((char*)g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].Prefix, sizeof(g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].Prefix), pTmp3);
+            ERR_CHK(rc);
 
         }else if ( _ansc_strcmp(pTmp1, "pdTimestamp") == 0 )
         {
@@ -6432,7 +6477,8 @@ void _cosa_dhcpsv6_get_client()
                          t2.tm_hour, t2.tm_min, t2.tm_sec, '\0');
                 }
 
-                AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].PreferredLifetime, buf);               
+                rc = STRCPY_S_NOCLOBBER((char*)g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].PreferredLifetime, sizeof(g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].PreferredLifetime), buf);
+                ERR_CHK(rc);
             }
 
         }else if ( _ansc_strcmp(pTmp1, "pdValid") == 0 )
@@ -6455,7 +6501,8 @@ void _cosa_dhcpsv6_get_client()
                          t2.tm_hour, t2.tm_min, t2.tm_sec, '\0');
                 }
 
-                AnscCopyString ((char*)g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].ValidLifetime, buf);               
+                rc = STRCPY_S_NOCLOBBER((char*)g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].ValidLifetime, sizeof(g_dhcps6v_clientcontent[Index].pIPv6Prefix[g_dhcps6v_clientcontent[Index].NumberofIPv6Prefix-1].ValidLifetime), buf);
+                ERR_CHK(rc);
             }
 
         }else
@@ -6778,13 +6825,16 @@ CosaDmlDhcpv6sSetOptionValues
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx             = {0};
     ULONG                           Index   =  0;
+    errno_t                         rc      = -1;
 
     for( Index = 0 ; Index < uDhcpv6ServerPoolNum; Index++ )
     {
         if ( sDhcpv6ServerPool[Index].Cfg.InstanceNumber == ulPoolInstanceNumber )
         {
             sDhcpv6ServerPoolOption[Index][ulIndex].InstanceNumber = ulInstanceNumber;
-            AnscCopyString( (char*)sDhcpv6ServerPoolOption[Index][ulIndex].Alias, pAlias);
+
+            rc = STRCPY_S_NOCLOBBER((char*)sDhcpv6ServerPoolOption[Index][ulIndex].Alias, sizeof(sDhcpv6ServerPoolOption[Index][ulIndex].Alias), pAlias);
+            ERR_CHK(rc);
 
             if (!Utopia_Init(&utctx))
                 return ANSC_STATUS_FAILURE;

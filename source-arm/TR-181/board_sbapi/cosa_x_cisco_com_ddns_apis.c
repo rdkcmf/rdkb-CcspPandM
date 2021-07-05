@@ -289,12 +289,19 @@ CosaDmlDdnsGetService
     UNREFERENCED_PARAMETER(hContext);
     pService->bEnabled = g_DdnsService[ulIndex].bEnabled;
     pService->InstanceNumber = g_DdnsService[ulIndex].InstanceNumber;
-    AnscCopyString(pService->Alias, g_DdnsService[ulIndex].Alias);
-    AnscCopyString(pService->ServiceName, g_DdnsService[ulIndex].ServiceName);
-    AnscCopyString(pService->Username, g_DdnsService[ulIndex].Username);
-    AnscCopyString(pService->Password, g_DdnsService[ulIndex].Password);
-    AnscCopyString(pService->Domain, g_DdnsService[ulIndex].Domain);
-    AnscCopyString(pService->AssociatedConnection, g_DdnsService[ulIndex].AssociatedConnection);
+    errno_t rc = -1;
+    rc = strcpy_s(pService->Alias,sizeof(pService->Alias), g_DdnsService[ulIndex].Alias);
+    ERR_CHK(rc);
+    rc = strcpy_s(pService->ServiceName,sizeof(pService->ServiceName), g_DdnsService[ulIndex].ServiceName);
+    ERR_CHK(rc);
+    rc = strcpy_s(pService->Username,sizeof(pService->Username), g_DdnsService[ulIndex].Username);
+    ERR_CHK(rc);
+    rc = strcpy_s(pService->Password,sizeof(pService->Password), g_DdnsService[ulIndex].Password);
+    ERR_CHK(rc);
+    rc = strcpy_s(pService->Domain,sizeof(pService->Domain), g_DdnsService[ulIndex].Domain);
+    ERR_CHK(rc);
+    rc = strcpy_s(pService->AssociatedConnection,sizeof(pService->AssociatedConnection), g_DdnsService[ulIndex].AssociatedConnection);
+    ERR_CHK(rc);
     pService->ConnectionState = g_DdnsService[ulIndex].ConnectionState;
 
     return ANSC_STATUS_SUCCESS;
@@ -343,7 +350,9 @@ CosaDmlDdnsServiceSetValues
 {
     UNREFERENCED_PARAMETER(hContext);
     g_DdnsService[ulIndex].InstanceNumber = ulInstanceNumber;
-    AnscCopyString(g_DdnsService[ulIndex].Alias, pAlias);
+    errno_t rc = -1;
+    rc = STRCPY_S_NOCLOBBER(g_DdnsService[ulIndex].Alias,sizeof(g_DdnsService[ulIndex].Alias), pAlias);
+    ERR_CHK(rc);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -388,18 +397,25 @@ CosaDmlDdnsGetServiceByInstNum
 {
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           ulIndex = 0;
+    errno_t                         rc      = -1;
 
     for ( ulIndex = 0; ulIndex < g_DdnsServiceNum; ulIndex++ )
     {
         if ( g_DdnsService[ulIndex].InstanceNumber == ulInstanceNumber )
         {
             pService->bEnabled = g_DdnsService[ulIndex].bEnabled;
-            AnscCopyString(pService->Alias, g_DdnsService[ulIndex].Alias);
-            AnscCopyString(pService->ServiceName, g_DdnsService[ulIndex].ServiceName);
-            AnscCopyString(pService->Username, g_DdnsService[ulIndex].Username);
-            AnscCopyString(pService->Password, g_DdnsService[ulIndex].Password);
-            AnscCopyString(pService->Domain, g_DdnsService[ulIndex].Domain);
-            AnscCopyString(pService->AssociatedConnection, g_DdnsService[ulIndex].AssociatedConnection);
+            rc = strcpy_s(pService->Alias,sizeof(pService->Alias), g_DdnsService[ulIndex].Alias);
+            ERR_CHK(rc);
+            rc = strcpy_s(pService->ServiceName,sizeof(pService->ServiceName), g_DdnsService[ulIndex].ServiceName);
+            ERR_CHK(rc);
+            rc = strcpy_s(pService->Username,sizeof(pService->Username), g_DdnsService[ulIndex].Username);
+            ERR_CHK(rc);
+            rc = strcpy_s(pService->Password,sizeof(pService->Password), g_DdnsService[ulIndex].Password);
+            ERR_CHK(rc);
+            rc = strcpy_s(pService->Domain,sizeof(pService->Domain), g_DdnsService[ulIndex].Domain);
+            ERR_CHK(rc);
+            rc = strcpy_s(pService->AssociatedConnection,sizeof(pService->AssociatedConnection), g_DdnsService[ulIndex].AssociatedConnection);
+            ERR_CHK(rc);
             pService->ConnectionState = g_DdnsService[ulIndex].ConnectionState;
         }
     }
@@ -444,12 +460,19 @@ CosaDmlDdnsAddService
     UNREFERENCED_PARAMETER(hContext);
     g_DdnsService[g_DdnsServiceNum].bEnabled = pService->bEnabled;
     g_DdnsService[g_DdnsServiceNum].InstanceNumber = pService->InstanceNumber;
-    AnscCopyString(g_DdnsService[g_DdnsServiceNum].Alias, pService->Alias);
-    AnscCopyString(g_DdnsService[g_DdnsServiceNum].ServiceName, pService->ServiceName);
-    AnscCopyString(g_DdnsService[g_DdnsServiceNum].Username, pService->Username);
-    AnscCopyString(g_DdnsService[g_DdnsServiceNum].Password, pService->Password);
-    AnscCopyString(g_DdnsService[g_DdnsServiceNum].Domain, pService->Domain);
-    AnscCopyString(g_DdnsService[g_DdnsServiceNum].AssociatedConnection, pService->AssociatedConnection);
+    errno_t rc = -1;
+    rc = STRCPY_S_NOCLOBBER(g_DdnsService[g_DdnsServiceNum].Alias,sizeof(g_DdnsService[g_DdnsServiceNum].Alias), pService->Alias);
+    ERR_CHK(rc);
+    rc = STRCPY_S_NOCLOBBER(g_DdnsService[g_DdnsServiceNum].ServiceName,sizeof(g_DdnsService[g_DdnsServiceNum].ServiceName), pService->ServiceName);
+    ERR_CHK(rc);
+    rc = STRCPY_S_NOCLOBBER(g_DdnsService[g_DdnsServiceNum].Username,sizeof(g_DdnsService[g_DdnsServiceNum].Username), pService->Username);
+    ERR_CHK(rc);
+    rc = STRCPY_S_NOCLOBBER(g_DdnsService[g_DdnsServiceNum].Password,sizeof(g_DdnsService[g_DdnsServiceNum].Password), pService->Password);
+    ERR_CHK(rc);
+    rc = STRCPY_S_NOCLOBBER(g_DdnsService[g_DdnsServiceNum].Domain,sizeof(g_DdnsService[g_DdnsServiceNum].Domain), pService->Domain);
+    ERR_CHK(rc);
+    rc = STRCPY_S_NOCLOBBER(g_DdnsService[g_DdnsServiceNum].AssociatedConnection,sizeof(g_DdnsService[g_DdnsServiceNum].AssociatedConnection), pService->AssociatedConnection);
+    ERR_CHK(rc);
     g_DdnsService[g_DdnsServiceNum].ConnectionState = pService->ConnectionState;
 
     g_DdnsServiceNum++;
@@ -493,6 +516,7 @@ CosaDmlDdnsDelService
 {
     ULONG                           i = 0;
     ULONG                           j = 0;
+    errno_t                         rc = -1;
     UNREFERENCED_PARAMETER(hContext);
 
     for ( i = 0; i < g_DdnsServiceNum; i++ )
@@ -502,12 +526,18 @@ CosaDmlDdnsDelService
             for ( j = i; j < g_DdnsServiceNum; j++ )
             {
                 g_DdnsService[j].bEnabled = g_DdnsService[j + 1].bEnabled;
-                AnscCopyString(g_DdnsService[j].Alias,       g_DdnsService[j + 1].Alias);
-                AnscCopyString(g_DdnsService[j].ServiceName, g_DdnsService[j + 1].ServiceName);
-                AnscCopyString(g_DdnsService[j].Username,    g_DdnsService[j + 1].Username);
-                AnscCopyString(g_DdnsService[j].Password,    g_DdnsService[j + 1].Password);
-                AnscCopyString(g_DdnsService[j].Domain,      g_DdnsService[j + 1].Domain);
-                AnscCopyString(g_DdnsService[j].AssociatedConnection, g_DdnsService[j + 1].AssociatedConnection);
+                rc = STRCPY_S_NOCLOBBER(g_DdnsService[j].Alias,sizeof(g_DdnsService[j].Alias), g_DdnsService[j + 1].Alias);
+                ERR_CHK(rc);
+                rc = STRCPY_S_NOCLOBBER(g_DdnsService[j].ServiceName,sizeof(g_DdnsService[j].ServiceName), g_DdnsService[j + 1].ServiceName);
+                ERR_CHK(rc);
+                rc = STRCPY_S_NOCLOBBER(g_DdnsService[j].Username,sizeof(g_DdnsService[j].Username), g_DdnsService[j + 1].Username);
+                ERR_CHK(rc);
+                rc = STRCPY_S_NOCLOBBER(g_DdnsService[j].Password,sizeof(g_DdnsService[j].Password), g_DdnsService[j + 1].Password);
+                ERR_CHK(rc);
+                rc = STRCPY_S_NOCLOBBER(g_DdnsService[j].Domain,sizeof(g_DdnsService[j].Domain), g_DdnsService[j + 1].Domain);
+                ERR_CHK(rc);
+                rc = STRCPY_S_NOCLOBBER(g_DdnsService[j].AssociatedConnection,sizeof(g_DdnsService[j].AssociatedConnection), g_DdnsService[j + 1].AssociatedConnection);
+                ERR_CHK(rc);
                 g_DdnsService[j].ConnectionState = g_DdnsService[j + 1].ConnectionState;
             }
 
@@ -565,11 +595,16 @@ CosaDmlDdnsSetService
         if ( g_DdnsService[i].InstanceNumber == pService->InstanceNumber )
         {
             g_DdnsService[i].bEnabled = pService->bEnabled;
-            AnscCopyString(g_DdnsService[i].ServiceName, pService->ServiceName);
-            AnscCopyString(g_DdnsService[i].Username,    pService->Username   );
-            AnscCopyString(g_DdnsService[i].Password,    pService->Password   );
-            AnscCopyString(g_DdnsService[i].Domain,      pService->Domain     );
-            AnscCopyString(g_DdnsService[i].AssociatedConnection, pService->AssociatedConnection);
+            rc = STRCPY_S_NOCLOBBER(g_DdnsService[i].ServiceName,sizeof(g_DdnsService[i].ServiceName), pService->ServiceName);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(g_DdnsService[i].Username,sizeof(g_DdnsService[i].Username), pService->Username);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(g_DdnsService[i].Password,sizeof(g_DdnsService[i].Password), pService->Password);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(g_DdnsService[i].Domain,sizeof(g_DdnsService[i].Domain), pService->Domain);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(g_DdnsService[i].AssociatedConnection,sizeof(g_DdnsService[i].AssociatedConnection), pService->AssociatedConnection);
+            ERR_CHK(rc);
 
             return ANSC_STATUS_SUCCESS;
         }
@@ -1033,30 +1068,42 @@ CosaDmlDdnsInit
         if (AnscEqualString(service_name, "dyndns", FALSE))
         {
             g_DdnsService[0].bEnabled = enabled;
-            AnscCopyString(g_DdnsService[0].Username, username);
-            AnscCopyString(g_DdnsService[0].Password, password);
-            AnscCopyString(g_DdnsService[0].Domain, hostname);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[0].Username,sizeof(g_DdnsService[0].Username), username);
+            ERR_CHK(safec_rc);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[0].Password,sizeof(g_DdnsService[0].Password), password);
+            ERR_CHK(safec_rc);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[0].Domain,sizeof(g_DdnsService[0].Domain), hostname);
+            ERR_CHK(safec_rc);
         }
         else if (AnscEqualString(service_name, "tzo", FALSE))
         {
             g_DdnsService[1].bEnabled = enabled;
-            AnscCopyString(g_DdnsService[1].Username, username);
-            AnscCopyString(g_DdnsService[1].Password, password);
-            AnscCopyString(g_DdnsService[1].Domain, hostname);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[1].Username,sizeof(g_DdnsService[1].Username), username);
+            ERR_CHK(safec_rc);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[1].Password,sizeof(g_DdnsService[1].Password), password);
+            ERR_CHK(safec_rc);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[1].Domain,sizeof(g_DdnsService[1].Domain), hostname);
+            ERR_CHK(safec_rc);
         }
         else if (AnscEqualString(service_name, "changeip", FALSE))
         {
             g_DdnsService[2].bEnabled = enabled;
-            AnscCopyString(g_DdnsService[2].Username, username);
-            AnscCopyString(g_DdnsService[2].Password, password);
-            AnscCopyString(g_DdnsService[2].Domain, hostname);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[2].Username,sizeof(g_DdnsService[2].Username), username);
+            ERR_CHK(safec_rc);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[2].Password,sizeof(g_DdnsService[2].Password), password);
+            ERR_CHK(safec_rc);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[2].Domain,sizeof(g_DdnsService[2].Domain), hostname);
+            ERR_CHK(safec_rc);
         }
         else if (AnscEqualString(service_name, "afraid", FALSE))
         {
             g_DdnsService[3].bEnabled = enabled;
-            AnscCopyString(g_DdnsService[3].Username, username);
-            AnscCopyString(g_DdnsService[3].Password, password);
-            AnscCopyString(g_DdnsService[3].Domain, hostname);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[3].Username,sizeof(g_DdnsService[3].Username), username);
+            ERR_CHK(safec_rc);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[3].Password,sizeof(g_DdnsService[3].Password), password);
+            ERR_CHK(safec_rc);
+            safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[3].Domain,sizeof(g_DdnsService[3].Domain), hostname);
+            ERR_CHK(safec_rc);
         }
     }
 
@@ -1320,12 +1367,17 @@ CosaDmlDdnsGetInfo
     return ANSC_STATUS_SUCCESS;
 #endif
     CosaDmlDdnsInit(NULL, NULL);
+    errno_t rc = -1;
 
     pInfo->bEnabled  = g_DdnsService[ulInstanceNumber-1].bEnabled;
-    AnscCopyString(pInfo->ServiceName, g_DdnsService[ulInstanceNumber-1].ServiceName);
-    AnscCopyString(pInfo->Username, g_DdnsService[ulInstanceNumber-1].Username);
-    AnscCopyString(pInfo->Password, g_DdnsService[ulInstanceNumber-1].Password);
-    AnscCopyString(pInfo->Domain, g_DdnsService[ulInstanceNumber-1].Domain);
+    rc = strcpy_s(pInfo->ServiceName,sizeof(pInfo->ServiceName), g_DdnsService[ulInstanceNumber-1].ServiceName);
+    ERR_CHK(rc);
+    rc = strcpy_s(pInfo->Username,sizeof(pInfo->Username), g_DdnsService[ulInstanceNumber-1].Username);
+    ERR_CHK(rc);
+    rc = strcpy_s(pInfo->Password,sizeof(pInfo->Password), g_DdnsService[ulInstanceNumber-1].Password);
+    ERR_CHK(rc);
+    rc = strcpy_s(pInfo->Domain,sizeof(pInfo->Domain), g_DdnsService[ulInstanceNumber-1].Domain);
+    ERR_CHK(rc);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -1420,12 +1472,16 @@ CosaDmlDdnsGetService
     return ANSC_STATUS_SUCCESS;
 #endif
     CosaDmlDdnsInit(NULL, NULL);
-
+    errno_t rc = -1;
     pService->bEnabled  = g_DdnsService[ulIndex].bEnabled;
-    AnscCopyString(pService->ServiceName, g_DdnsService[ulIndex].ServiceName);
-    AnscCopyString(pService->Username, g_DdnsService[ulIndex].Username);
-    AnscCopyString(pService->Password, g_DdnsService[ulIndex].Password);
-    AnscCopyString(pService->Domain, g_DdnsService[ulIndex].Domain);
+    rc = strcpy_s(pService->ServiceName,sizeof(pService->ServiceName), g_DdnsService[ulIndex].ServiceName);
+    ERR_CHK(rc);
+    rc = strcpy_s(pService->Username,sizeof(pService->Username), g_DdnsService[ulIndex].Username);
+    ERR_CHK(rc);
+    rc = strcpy_s(pService->Password,sizeof(pService->Password), g_DdnsService[ulIndex].Password);
+    ERR_CHK(rc);
+    rc = strcpy_s(pService->Domain,sizeof(pService->Domain), g_DdnsService[ulIndex].Domain);
+    ERR_CHK(rc);
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -1474,7 +1530,9 @@ CosaDmlDdnsServiceSetValues
     UNREFERENCED_PARAMETER(hContext);
     CcspTraceInfo(("------CosaDmlDdnsServiceSetValues...\n"));
     g_DdnsService[ulIndex].InstanceNumber = ulInstanceNumber;
-    AnscCopyString(g_DdnsService[ulIndex].Alias, pAlias);
+    errno_t rc = -1;
+    rc = STRCPY_S_NOCLOBBER(g_DdnsService[ulIndex].Alias,sizeof(g_DdnsService[ulIndex].Alias), pAlias);
+    ERR_CHK(rc);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1519,20 +1577,28 @@ CosaDmlDdnsGetServiceByInstNum
     UNREFERENCED_PARAMETER(hContext);
     CcspTraceInfo(("------CosaDmlDdnsGetServiceByInstNum...\n"));
     ULONG                           ulIndex = 0;
+    errno_t                         rc      = -1;
 
     for ( ulIndex = 0; ulIndex < g_DdnsServiceNum; ulIndex++ )
     {
         if ( g_DdnsService[ulIndex].InstanceNumber == ulInstanceNumber )
         {
             pService->bEnabled = g_DdnsService[ulIndex].bEnabled;
-            AnscCopyString(pService->Alias, g_DdnsService[ulIndex].Alias);
-            AnscCopyString(pService->ServiceName, g_DdnsService[ulIndex].ServiceName);
-            AnscCopyString(pService->Username, g_DdnsService[ulIndex].Username);
-            AnscCopyString(pService->Password, g_DdnsService[ulIndex].Password);
-            AnscCopyString(pService->Domain, g_DdnsService[ulIndex].Domain);
-            AnscCopyString(pService->AssociatedConnection, g_DdnsService[ulIndex].AssociatedConnection);
+            rc = STRCPY_S_NOCLOBBER(pService->Alias,sizeof(pService->Alias), g_DdnsService[ulIndex].Alias);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(pService->ServiceName,sizeof(pService->ServiceName), g_DdnsService[ulIndex].ServiceName);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(pService->Username,sizeof(pService->Username), g_DdnsService[ulIndex].Username);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(pService->Password,sizeof(pService->Password), g_DdnsService[ulIndex].Password);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(pService->Domain,sizeof(pService->Domain), g_DdnsService[ulIndex].Domain);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(pService->AssociatedConnection,sizeof(pService->AssociatedConnection), g_DdnsService[ulIndex].AssociatedConnection);
+            ERR_CHK(rc);
             pService->ConnectionState = g_DdnsService[ulIndex].ConnectionState;
-            AnscCopyString(pService->Mail_exch, g_DdnsService[ulIndex].Mail_exch);
+            rc = STRCPY_S_NOCLOBBER(pService->Mail_exch,sizeof(pService->Mail_exch), g_DdnsService[ulIndex].Mail_exch);
+            ERR_CHK(rc);
             pService->Backup_mx  = g_DdnsService[ulIndex].Backup_mx;
             pService->Wildcard   = g_DdnsService[ulIndex].Wildcard;
         }
@@ -1730,12 +1796,16 @@ CosaDmlDdnsSetService
     }
     return ANSC_STATUS_SUCCESS;
 #endif
+    errno_t rc = -1;
     if (AnscEqualString(pService->ServiceName, "dyndns", TRUE))
     {
         g_DdnsService[0].bEnabled = pService->bEnabled;
-        AnscCopyString(g_DdnsService[0].Domain, pService->Domain);
-        AnscCopyString(g_DdnsService[0].Password, pService->Password);
-        AnscCopyString(g_DdnsService[0].Username, pService->Username);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[0].Domain,sizeof(g_DdnsService[0].Domain), pService->Domain);
+        ERR_CHK(rc);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[0].Password,sizeof(g_DdnsService[0].Password), pService->Password);
+        ERR_CHK(rc);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[0].Username,sizeof(g_DdnsService[0].Username), pService->Username);
+        ERR_CHK(rc);
 
         UtSetBool("ddns_enable1", g_DdnsService[0].bEnabled);
         UtSetString("ddns_hostname1", g_DdnsService[0].Domain);
@@ -1746,9 +1816,12 @@ CosaDmlDdnsSetService
     else if (AnscEqualString(pService->ServiceName, "tzo", TRUE))
     {
         g_DdnsService[1].bEnabled = pService->bEnabled;
-        AnscCopyString(g_DdnsService[1].Domain, pService->Domain);
-        AnscCopyString(g_DdnsService[1].Password, pService->Password);
-        AnscCopyString(g_DdnsService[1].Username, pService->Username);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[1].Domain,sizeof(g_DdnsService[1].Domain), pService->Domain);
+        ERR_CHK(rc);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[1].Password,sizeof(g_DdnsService[1].Password), pService->Password);
+        ERR_CHK(rc);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[1].Username,sizeof(g_DdnsService[1].Username), pService->Username);
+        ERR_CHK(rc);
 
         UtSetBool("ddns_enable2", g_DdnsService[1].bEnabled);
         UtSetString("ddns_hostname2", g_DdnsService[1].Domain);
@@ -1759,9 +1832,12 @@ CosaDmlDdnsSetService
     else if (AnscEqualString(pService->ServiceName, "changeip", TRUE))
     {
         g_DdnsService[2].bEnabled = pService->bEnabled;
-        AnscCopyString(g_DdnsService[2].Domain, pService->Domain);
-        AnscCopyString(g_DdnsService[2].Password, pService->Password);
-        AnscCopyString(g_DdnsService[2].Username, pService->Username);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[2].Domain,sizeof(g_DdnsService[2].Domain), pService->Domain);
+        ERR_CHK(rc);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[2].Password,sizeof(g_DdnsService[2].Password), pService->Password);
+        ERR_CHK(rc);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[2].Username,sizeof(g_DdnsService[2].Username), pService->Username);
+        ERR_CHK(rc);
 
         UtSetBool("ddns_enable3", g_DdnsService[2].bEnabled);
         UtSetString("ddns_hostname3", g_DdnsService[2].Domain);
@@ -1772,9 +1848,12 @@ CosaDmlDdnsSetService
     else if (AnscEqualString(pService->ServiceName, "afraid", TRUE))
     {
         g_DdnsService[3].bEnabled = pService->bEnabled;
-        AnscCopyString(g_DdnsService[3].Domain, pService->Domain);
-        AnscCopyString(g_DdnsService[3].Password, pService->Password);
-        AnscCopyString(g_DdnsService[3].Username, pService->Username);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[3].Domain,sizeof(g_DdnsService[3].Domain), pService->Domain);
+        ERR_CHK(rc);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[3].Password,sizeof(g_DdnsService[3].Password), pService->Password);
+        ERR_CHK(rc);
+        rc = STRCPY_S_NOCLOBBER(g_DdnsService[3].Username,sizeof(g_DdnsService[3].Username), pService->Username);
+        ERR_CHK(rc);
 
         UtSetBool("ddns_enable4", g_DdnsService[3].bEnabled);
         UtSetString("ddns_hostname4", g_DdnsService[3].Domain);

@@ -411,7 +411,8 @@ CosaDmlFileTransferSetCfg
         }
 
         RecordType = ccsp_string;
-        AnscCopyString(RecordValue, (char*)pCfg->FileName);
+        safec_rc = strcpy_s(RecordValue,sizeof(RecordValue), (char*)pCfg->FileName);
+        ERR_CHK(safec_rc);
 
         iReturnValue =
             PSM_Set_Record_Value2
@@ -597,7 +598,8 @@ CosaDmlFileTransferGetCfg
         }
         else
         {
-            AnscCopyString((char*)pCfg->FileName, SlapValue.Variant.varString);
+            safec_rc = strcpy_s((char*)pCfg->FileName,sizeof(pCfg->FileName), SlapValue.Variant.varString);
+            ERR_CHK(safec_rc);
         }
 
         SlapCleanVariable(&SlapValue);

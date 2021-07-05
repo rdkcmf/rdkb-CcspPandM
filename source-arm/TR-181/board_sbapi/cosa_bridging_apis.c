@@ -926,6 +926,7 @@ CosaDmlBrgGetEntry
     UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     //CcspTraceInfo(("------CosaDmlBrgGetEntry, ulIndex:%d...\n", ulIndex));
+    errno_t rc = -1;
     PBRIDGE pBridge = (PBRIDGE)AnscSListGetEntryByIndex(&g_Bridgings.bridgeList,ulIndex);
     if (!pBridge)
     {
@@ -936,9 +937,11 @@ CosaDmlBrgGetEntry
     //loadID(pBridge->hwid, &pBridge->instanceNumber, pBridge->alias);
     //CcspTraceInfo(("------In CosaDmlBrgGetEntry, name:%s, instanceNumber:%d,alias:%s\n", pBridge->hwid, pBridge->instanceNumber, pBridge->alias));
     pEntry->Cfg.bEnabled = pBridge->bEnabled;
-    AnscCopyString(pEntry->Cfg.Alias, pBridge->alias);
+    rc = strcpy_s(pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias), pBridge->alias);
+    ERR_CHK(rc);
 #if defined (MULTILAN_FEATURE)
-    AnscCopyString(pEntry->Cfg.name, pBridge->name);
+    rc = strcpy_s(pEntry->Cfg.name,sizeof(pEntry->Cfg.name), pBridge->name);
+    ERR_CHK(rc);
 #endif
     pEntry->Cfg.InstanceNumber = pBridge->instanceNumber;
     pEntry->Cfg.Std = pBridge->standard;
@@ -997,6 +1000,7 @@ CosaDmlBrgSetValues
 {
     UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
+    errno_t rc = -1;
     AnscTraceFlow(("<HL> %s Index=%d instancenum=%d\n",__FUNCTION__,ulIndex,ulInstanceNumber));
 
     CcspTraceInfo(("------CosaDmlBrgSetValues...\n"));
@@ -1006,9 +1010,11 @@ CosaDmlBrgSetValues
         AnscTraceFlow(("<HL> %s index=%d not found \n",__FUNCTION__,ulIndex));
         return ANSC_STATUS_CANT_FIND;
     }
-    AnscCopyString( pBridge->alias, pAlias);
+    rc = strcpy_s(pBridge->alias,sizeof(pBridge->alias), pAlias);
+    ERR_CHK(rc);
 #if defined (MULTILAN_FEATURE)
-    AnscCopyString( pBridge->name, pName);
+    rc = strcpy_s(pBridge->name,sizeof(pBridge->name), pName);
+    ERR_CHK(rc);
 #endif
     pBridge->instanceNumber = ulInstanceNumber;
     CcspTraceInfo(("------CosaDmlBrgSetValues, Alias:%s, instanceNum:%d...\n", pBridge->alias, pBridge->instanceNumber));
@@ -1061,6 +1067,7 @@ CosaDmlBrgAddEntry
     //$HL 4/15/2013
     PBRIDGE pBridge = NULL;
     pBridge = (PBRIDGE)AnscAllocateMemory(sizeof (BRIDGE));
+    errno_t rc = -1;
 
     AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
     if (!pBridge)
@@ -1094,9 +1101,11 @@ CosaDmlBrgAddEntry
     
     pBridge->bEnabled = pEntry->bEnabled;
     pBridge->standard = pEntry->Std;
-    AnscCopyString(pBridge->alias, pEntry->Alias);
+    rc = strcpy_s(pBridge->alias,sizeof(pBridge->alias), pEntry->Alias);
+    ERR_CHK(rc);
 #if defined (MULTILAN_FEATURE)
-    AnscCopyString(pBridge->name, pEntry->name);
+    rc = strcpy_s(pBridge->name,sizeof(pBridge->name), pEntry->name);
+    ERR_CHK(rc);
 #endif
     pBridge->status = COSA_DML_BRG_STATUS_Disabled;
 
@@ -1104,7 +1113,8 @@ CosaDmlBrgAddEntry
     pBridge->numOfPorts = 0;
     pBridge->bUpstream = TRUE;
     pBridge->bAllowDelete = pEntry->bAllowDelete ;
-    AnscCopyString(pBridge->type, DMSB_L2_TYPE_BRIDGE);
+    rc = strcpy_s(pBridge->type,sizeof(pBridge->type), DMSB_L2_TYPE_BRIDGE);
+    ERR_CHK(rc);
 
     if (g_Bridgings.bridgeList.Depth == 0) {
         AnscSListPushEntry(&g_Bridgings.bridgeList, &pBridge->Linkage);
@@ -1217,6 +1227,7 @@ CosaDmlBrgSetCfg
     UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     int bEvent = 0;
+    errno_t rc = -1;
     AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
 
     CcspTraceInfo(("------CosaDmlBrgSetCfg...\n"));
@@ -1226,9 +1237,11 @@ CosaDmlBrgSetCfg
     }
     
     pBridge->standard = pCfg->Std;  //TODO: what impact should this have on the bridge? Maybe need another bridge function? Automatically set AFT to all? Set standard on all ports?
-    AnscCopyString(pBridge->alias, pCfg->Alias);
+    rc = strcpy_s(pBridge->alias,sizeof(pBridge->alias), pCfg->Alias);
+    ERR_CHK(rc);
 #if defined (MULTILAN_FEATURE)
-    AnscCopyString(pBridge->name, pCfg->name);
+    rc = strcpy_s(pBridge->name,sizeof(pBridge->name), pCfg->name);
+    ERR_CHK(rc);
 #endif
     //saveID(BRIDGE_ID_NAMESPACE, pBridge->hwid, pBridge->instanceNumber, pBridge->alias);
     CcspTraceInfo(("------CosaDmlBrgSetCfg...,name:%s,instancenum:%d,alias:%s\n",pBridge->hwid,pBridge->instanceNumber,pBridge->alias));
@@ -1285,6 +1298,7 @@ CosaDmlBrgGetCfg
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     CcspTraceInfo(("------CosaDmlBrgGetCfg...\n"));
     PBRIDGE pBridge = getBridge(pCfg->InstanceNumber);
+    errno_t rc = -1;
     AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
 
     if (pBridge == NULL) {
@@ -1293,9 +1307,11 @@ CosaDmlBrgGetCfg
         return ANSC_STATUS_CANT_FIND;
     }
 
-    AnscCopyString(pCfg->Alias, pBridge->alias);
+    rc = strcpy_s(pCfg->Alias,sizeof(pCfg->Alias), pBridge->alias);
+    ERR_CHK(rc);
 #if defined (MULTILAN_FEATURE)
-    AnscCopyString(pCfg->name, pBridge->name);
+    rc = strcpy_s(pCfg->name,sizeof(pCfg->name), pBridge->name);
+    ERR_CHK(rc);
 #endif
     pCfg->InstanceNumber = pBridge->instanceNumber;
     pCfg->Std = pBridge->standard;
@@ -1512,11 +1528,15 @@ CosaDmlBrgPortGetEntry
     pBPort->control->getState(pBPort, &pEntry->Info.PortState);
     pBPort->control->getStatus(pBPort,&pEntry->Info.Status);
 
+    errno_t rc =-1;
     if (pEntry->Cfg.PriorityRegeneration)
         pEntry->Cfg.PriorityRegeneration[0] = '\0'; //not supported for now
-    AnscCopyString(pEntry->Cfg.LinkName, pBPort->linkName);
-    AnscCopyString(pEntry->Cfg.Alias, pBPort->alias);
-    AnscCopyString(pEntry->Info.Name, pBPort->name);
+    rc = strcpy_s(pEntry->Cfg.LinkName,sizeof(pEntry->Cfg.LinkName), pBPort->linkName);
+    ERR_CHK(rc);
+    rc = strcpy_s(pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias), pBPort->alias);
+    ERR_CHK(rc);
+    rc = strcpy_s(pEntry->Info.Name,sizeof(pEntry->Info.Name), pBPort->name);
+    ERR_CHK(rc);
     return ANSC_STATUS_SUCCESS;
 #endif
 }
@@ -1566,6 +1586,7 @@ CosaDmlBrgPortSetValues
     UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     PBRIDGE pBridge = getBridge(ulBrgInstanceNumber);
+    errno_t rc      = -1;
     CcspTraceInfo(("------CosaDmlBrgPortSetValues...\n"));
     AnscTraceFlow(("<HL> %s\n",__FUNCTION__));
     if (pBridge == NULL) {
@@ -1579,7 +1600,8 @@ CosaDmlBrgPortSetValues
             ulBrgInstanceNumber,ulIndex));
         return ANSC_STATUS_CANT_FIND;
     }
-    AnscCopyString(pBPort->alias, pAlias);
+    rc = strcpy_s(pBPort->alias,sizeof(pBPort->alias), pAlias);
+    ERR_CHK(rc);
     pBPort->instanceNumber = ulInstanceNumber;
     CcspTraceInfo(("------CosaDmlBrgPortSetValues, We are trying to save instancenum %d:%s...\n", pBPort->instanceNumber, pBPort->alias));
     //$HL 4//15/2013
@@ -1725,6 +1747,7 @@ CosaDmlBrgPortSetCfg
 //    CcspTraceInfo(("------CosaDmlBrgPortSetCfg...\n"));
 //    AnscTraceFlow(("<HL> %s\n",__FUNCTION__)); 
     PBRIDGE pBridge = getBridge(ulBrgInstanceNumber);
+    errno_t rc      = -1;
     if (pBridge == NULL) {
         AnscTraceFlow(("<HL>%s cannot find the birdge inst=%d\n",__FUNCTION__,ulBrgInstanceNumber ));
         return ANSC_STATUS_CANT_FIND;
@@ -1753,19 +1776,22 @@ CosaDmlBrgPortSetCfg
     pBPort->bAllowDelete = pCfg->bAllowDelete;
     if (pBPort->bMgt)
     {
-        AnscCopyString(pBPort->name, pBridge->name);
+        rc = strcpy_s(pBPort->name,sizeof(pBPort->name), pBridge->name);
+        ERR_CHK(rc);
         pBPort->control = &g_SWBrPCtl;
     }
     else
     {
         pBPort->control = &g_lanEthBrPCtl;
-        AnscCopyString(pBPort->name,pCfg->LinkName);
+        rc = strcpy_s(pBPort->name,sizeof(pBPort->name),pCfg->LinkName);
+        ERR_CHK(rc);
     }
 
     pBPort->control->setAFT(pBPort, pCfg->AcceptableFrameTypes);
     pBPort->control->setEnabled(pBPort, pCfg->bEnabled);
     
-    AnscCopyString(pBPort->alias,pCfg->Alias);
+    rc = strcpy_s(pBPort->alias,sizeof(pBPort->alias),pCfg->Alias);
+    ERR_CHK(rc);
     //$HL 4/16/2013
     _Psm_SetBPort(pBridge->l2InstanceNumber,pCfg->InstanceNumber,pBPort);
     return ANSC_STATUS_SUCCESS;
@@ -1812,6 +1838,7 @@ CosaDmlBrgPortGetCfg
     CcspTraceInfo(("------CosaDmlBrgPortGetCfg...\n"));
     AnscTraceFlow(("<HL> %s\n",__FUNCTION__));
     PBRIDGE pBridge = getBridge(ulBrgInstanceNumber);
+    errno_t rc      = -1;
     if (pBridge == NULL) {
         return ANSC_STATUS_CANT_FIND;
     }
@@ -1839,8 +1866,10 @@ CosaDmlBrgPortGetCfg
     pCfg->mode = pBPort->mode;
     pCfg->bUpstream = pBPort->bUpstream;
     pCfg->PriorityRegeneration[0] = '\0'; //not supported for now
-    AnscCopyString(pCfg->LinkName, pBPort->linkName);
-    AnscCopyString(pCfg->Alias, pBPort->alias);
+    rc = strcpy_s(pCfg->LinkName,sizeof(pCfg->LinkName), pBPort->linkName);
+    ERR_CHK(rc);
+    rc = strcpy_s(pCfg->Alias,sizeof(pCfg->Alias), pBPort->alias);
+    ERR_CHK(rc);
     return ANSC_STATUS_SUCCESS;
 #endif
 }
@@ -1893,10 +1922,12 @@ CosaDmlBrgPortGetInfo
     if (pBPort == NULL) {
         return ANSC_STATUS_CANT_FIND;
     }
+    errno_t rc = -1;
     pInfo->LastChange = pBPort->control->getLastChanged(pBPort);                    // Backend does not support for now
     pBPort->control->getState(pBPort, &pInfo->PortState);
     pBPort->control->getStatus(pBPort, &pInfo->Status);
-    AnscCopyString(pInfo->Name, pBPort->name);
+    rc = strcpy_s(pInfo->Name,sizeof(pInfo->Name), pBPort->name);
+    ERR_CHK(rc);
     return ANSC_STATUS_SUCCESS;
 #endif
 }
@@ -2093,6 +2124,7 @@ CosaDmlBrgVlanSetValues
     UNREFERENCED_PARAMETER(hContext);
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     PBRIDGE pBridge = getBridge(ulBrgInstanceNumber);
+    errno_t rc      = -1;
     CcspTraceInfo(("------CosaDmlBrgPortSetValues...\n"));
     AnscTraceFlow(("<HL> %s\n",__FUNCTION__));
     if (pBridge == NULL) {
@@ -2106,7 +2138,8 @@ CosaDmlBrgVlanSetValues
             ulBrgInstanceNumber,ulIndex));
         return ANSC_STATUS_CANT_FIND;
     }
-    AnscCopyString(pVLAN->alias, pAlias);
+    rc = strcpy_s(pVLAN->alias,sizeof(pVLAN->alias), pAlias);
+    ERR_CHK(rc);
     pVLAN->instanceNumber = ulInstanceNumber;
     CcspTraceInfo(("------CosaDmlBrgPortSetValues, We are trying to save instancenum %d:%s...\n", 
         pVLAN->instanceNumber, pVLAN->alias));
@@ -2127,6 +2160,7 @@ ANSC_STATUS CosaDmlBrgVlanGetEntry
 #if defined _COSA_DRG_TPG_ || _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 //    CcspTraceInfo(("------CosaDmlBrgVlanGetEntry...\n"));
     PBRIDGE pBridge = getBridge(ulBrgInstanceNumber);
+    errno_t rc      = -1;
     AnscTraceFlow(("<HL> %s ulIndex=%d\n",__FUNCTION__,ulIndex));
     if (pBridge == NULL) {
         AnscTraceFlow(("<HL> %s Bridge not found ulBrgInstanceNumber=%d, ulIndex=%d\n",__FUNCTION__,
@@ -2150,8 +2184,10 @@ ANSC_STATUS CosaDmlBrgVlanGetEntry
     // TODO: need to fix after bridge needs to support multi-VLANs
     pEntry->Cfg.bEnabled = pBridge->bEnabled; 
     pEntry->Cfg.VLANID = pBridge->vlanid;
-    AnscCopyString(pEntry->Cfg.Alias, pBVlan->alias);
-    AnscCopyString(pEntry->Info.Name, pBridge->name);
+    rc = strcpy_s(pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias), pBVlan->alias);
+    ERR_CHK(rc);
+    rc = strcpy_s(pEntry->Info.Name,sizeof(pEntry->Info.Name), pBridge->name);
+    ERR_CHK(rc);
     return ANSC_STATUS_SUCCESS;
 #endif
 }   
@@ -2169,6 +2205,7 @@ CosaDmlBrgVlanSetCfg
     AnscTraceFlow(("------%s...\n", __func__));
     PBRIDGE pBridge = getBridge(ulBrgInstanceNumber);
     PBRIDGE_VLAN curVlan = NULL;
+    errno_t rc = -1;
     if (pBridge == NULL) {
         return ANSC_STATUS_CANT_FIND;
     }
@@ -2181,7 +2218,8 @@ CosaDmlBrgVlanSetCfg
         return ANSC_STATUS_CANT_FIND;
     }
     _COSA_UpdateBrVLANID(pBridge,pCfg->VLANID);
-    AnscCopyString(curVlan->alias, pCfg->Alias);
+    rc = strcpy_s(curVlan->alias,sizeof(curVlan->alias), pCfg->Alias);
+    ERR_CHK(rc);
     _Psm_SetBVlan(ulBrgInstanceNumber, curVlan->instanceNumber, curVlan);
     return ANSC_STATUS_SUCCESS;
 #endif
@@ -2474,7 +2512,8 @@ static ANSC_STATUS _COSA_GetNewBrName(PBRIDGE pBridge)
         if (found == FALSE)
         {
             g_brInfo.nxtBrId = brId + 1;
-            AnscCopyString(pBridge->name,param_name);
+            rc = strcpy_s(pBridge->name,sizeof(pBridge->name),param_name);
+            ERR_CHK(rc);
             return ANSC_STATUS_SUCCESS;   
         }
     }
@@ -2676,7 +2715,13 @@ static ANSC_STATUS _COSA_AddToken(char *token, char *pStr)
     char *result = NULL;
     char buf[256]={0};
     char *st = NULL;
-    AnscCopyString(buf,pStr);
+    errno_t rc = -1;
+    rc = strcpy_s(buf,sizeof(buf),pStr);
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     if (AnscSizeOfString(buf)) 
     {
         AnscTraceFlow(("<HL> %s str=%s token=%s\n",__FUNCTION__,buf,token));
@@ -2706,6 +2751,7 @@ static ANSC_STATUS _COSA_DelToken(char *token, char *pStr)
     char *pBuf = &buf[0];
     int find = 0;
     char *st = NULL;
+    errno_t rc = -1;
     if (pStr == NULL)
         return ANSC_STATUS_FAILURE;
     AnscTraceFlow(("<HL> %s str=%s token=%s\n",__FUNCTION__,pStr,token));
@@ -2729,8 +2775,12 @@ static ANSC_STATUS _COSA_DelToken(char *token, char *pStr)
     if (find == 1) 
     {
         AnscTraceFlow(("<HL> %s old str=%s new Str=%s after remove:%s\n",__FUNCTION__,pStr,pBuf,token));
-        _ansc_memset(pStr,0,sizeof(*pStr));
-        AnscCopyString(pStr,pBuf);
+        rc = strcpy_s(pStr,256,pBuf);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
         return ANSC_STATUS_SUCCESS;
     }
     AnscTraceFlow(("<HL> %s Not Found token in Buffer=%s\n",__FUNCTION__,pBuf));
@@ -2744,6 +2794,7 @@ static ANSC_STATUS _Psm_GetDefaultSetting()
     ULONG data1=0, data2=0;
     AnscTraceFlow(("<HL> %s \n",__FUNCTION__));
     retPsmGet = PSM_Get_Record_Value2(bus_handle, g_Subsystem, "dmsb.bridgeVlanRange", NULL, &param_value);
+    errno_t rc = -1;
     if (retPsmGet == CCSP_SUCCESS) 
     {
         AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading dmsb.bridgeVlanRange\n", __FUNCTION__));
@@ -2776,13 +2827,20 @@ static ANSC_STATUS _Psm_GetDefaultSetting()
     if (retPsmGet == CCSP_SUCCESS) 
     {
         AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading dmsb.BridgeNamePrefix\n", __FUNCTION__));
-        AnscCopyString(g_brInfo.bridgeNamePrefix,param_value);
+        rc = strcpy_s(g_brInfo.bridgeNamePrefix, sizeof(g_brInfo.bridgeNamePrefix), param_value);
+        ERR_CHK(rc);
         strcat(g_brInfo.bridgeNamePrefix,"%d");
+        
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(param_value);
     }
     else 
     {
-        AnscCopyString(g_brInfo.bridgeNamePrefix,DMSB_BRG_NAME_PREFIX);
+        rc = strcpy_s(g_brInfo.bridgeNamePrefix,sizeof(g_brInfo.bridgeNamePrefix),DMSB_BRG_NAME_PREFIX);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
     }
     AnscTraceFlow(("<HL>%s bridgeNamePrefix=%s\n", __FUNCTION__,
             g_brInfo.bridgeNamePrefix));
@@ -2796,9 +2854,17 @@ static ANSC_STATUS _Psm_GetBPortMemberList(char *param_name, char *list)
     char *param_value= NULL;
     AnscTraceFlow(("<HL> %s path=%s value=%s\n",__FUNCTION__,param_name,param_value));
     retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value);
+    errno_t rc = -1;
     if (retPsmGet == CCSP_SUCCESS) {
         if (param_value!=NULL)
-            AnscCopyString(list, param_value); 
+        {
+            rc = strcpy_s(list,256, param_value);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return ANSC_STATUS_FAILURE;
+            }
+        }
         else
             list[0]='\0';        
         AnscTraceFlow(("%s: retPsmGet == CCSP_SUCCESS reading %s=%s\n", __FUNCTION__,param_name,list));
@@ -3147,18 +3213,24 @@ static ANSC_STATUS _Psm_SetBr(ULONG instancenum,PBRIDGE pBridge)
 
     if (pBridge->numOfPorts==0)
     {
-        AnscCopyString(param_value," ");
+        rc = strcpy_s(param_value, sizeof(param_value), " ");
+        ERR_CHK(rc);
         _PSM_SET_BR(_PSM_BRIDGE_TML_SW_MEMBERS);
-        AnscCopyString(param_value," ");
+        rc = strcpy_s(param_value, sizeof(param_value), " ");
+        ERR_CHK(rc);
         _PSM_SET_BR(_PSM_BRIDGE_TML_ETH_MEMBERS);
-        AnscCopyString(param_value," ");
+        rc = strcpy_s(param_value, sizeof(param_value), " ");
+        ERR_CHK(rc);
         _PSM_SET_BR(_PSM_BRIDGE_TML_MOCA_MEMBERS);
-        AnscCopyString(param_value," ");
+        rc = strcpy_s(param_value, sizeof(param_value), " ");
+        ERR_CHK(rc);
         //$HL 07/15/2013
         _PSM_SET_BR(_PSM_BRIDGE_TML_GRE_MEMBERS);
-        AnscCopyString(param_value," ");
+        rc = strcpy_s(param_value, sizeof(param_value), " ");
+        ERR_CHK(rc);
         _PSM_SET_BR(_PSM_BRIDGE_TML_WIFI_MEMBERS);
-        AnscCopyString(param_value," ");
+        rc = strcpy_s(param_value, sizeof(param_value), " ");
+        ERR_CHK(rc);
         _PSM_SET_BR(_PSM_BRIDGE_TML_LINK_MEMBERS);
     }
     return ANSC_STATUS_SUCCESS;

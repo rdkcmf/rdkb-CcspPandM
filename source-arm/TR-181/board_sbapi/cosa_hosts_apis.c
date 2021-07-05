@@ -171,12 +171,14 @@ CosaDmlHostsInit
     PCOSA_DML_HOST_ENTRY            pEntry       = NULL;
 
     pEntry = (PCOSA_DML_HOST_ENTRY)g_user_Entrys;
+    errno_t                         rc           = -1;
 
     /*Copy first entry */
     AnscCopyMemory(pEntry, &g_user_entrys1, sizeof(COSA_DML_HOST_ENTRY));
     pEntry++;
     /* Copy flexible string */
-    AnscCopyString( (PUCHAR)pEntry, "VerizonJerryServerUser123456" );
+    rc = strcpy_s( (PUCHAR)pEntry,sizeof(COSA_DML_HOST_ENTRY), "VerizonJerryServerUser123456" );
+    ERR_CHK(rc);
 
     /* move pEntry */
     pEntry = (PCOSA_DML_HOST_ENTRY)((PUCHAR)pEntry + _ansc_strlen("VerizonJerryServerUser123456"));
@@ -185,7 +187,8 @@ CosaDmlHostsInit
     AnscCopyMemory(pEntry, &g_user_entrys2, sizeof(COSA_DML_HOST_ENTRY));
     pEntry++;
     /* Copy flexible string */
-    AnscCopyString( (PUCHAR)pEntry, "CiscoSamaPCUser1234567890" );
+    rc = strcpy_s( (PUCHAR)pEntry, sizeof(COSA_DML_HOST_ENTRY), "CiscoSamaPCUser1234567890" );
+    ERR_CHK(rc);
 
     return returnStatus;
 }

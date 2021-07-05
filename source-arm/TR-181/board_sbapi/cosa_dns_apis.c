@@ -307,10 +307,11 @@ CosaDmlDnsClientSetServerValues
 {
     UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
+    errno_t                         rc           = -1;
 
     g_DnsServerFull[ulIndex].InstanceNumber = ulInstanceNumber;
-    AnscCopyString(g_DnsServerFull[ulIndex].Alias, pAlias);
-        
+    rc = strcpy_s(g_DnsServerFull[ulIndex].Alias,sizeof(g_DnsServerFull[ulIndex].Alias), pAlias);
+    ERR_CHK(rc);        
     return returnStatus;
 }
 
@@ -357,10 +358,11 @@ CosaDmlDnsClientAddServer
     g_DnsServerFull[g_NumOfDnsServers].Status          = pEntry->Status;        
     g_DnsServerFull[g_NumOfDnsServers].Type            = pEntry->Type;      
     g_DnsServerFull[g_NumOfDnsServers].DNSServer.Value = pEntry->DNSServer.Value;             
-
-    AnscCopyString(g_DnsServerFull[g_NumOfDnsServers].Alias, pEntry->Alias);
-    AnscCopyString(g_DnsServerFull[g_NumOfDnsServers].Interface, pEntry->Interface);  
-
+    errno_t rc = -1;
+    rc = strcpy_s(g_DnsServerFull[g_NumOfDnsServers].Alias,sizeof(g_DnsServerFull[g_NumOfDnsServers].Alias), pEntry->Alias);
+    ERR_CHK(rc);
+    rc = strcpy_s(g_DnsServerFull[g_NumOfDnsServers].Interface,sizeof(g_DnsServerFull[g_NumOfDnsServers].Interface), pEntry->Interface);
+    ERR_CHK(rc);
     g_NumOfDnsServers++;
 
     return ANSC_STATUS_SUCCESS;
@@ -458,7 +460,7 @@ CosaDmlDnsClientSetServer
 {
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
-    
+    errno_t                         rc = -1;
     for ( i = 0; i < g_NumOfDnsServers; i++)
     {
         if ( g_DnsServerFull[i].InstanceNumber == pEntry->InstanceNumber )
@@ -469,8 +471,10 @@ CosaDmlDnsClientSetServer
             g_DnsServerFull[i].Type            = pEntry->Type;      
             g_DnsServerFull[i].DNSServer.Value = pEntry->DNSServer.Value;             
             
-            AnscCopyString(g_DnsServerFull[i].Alias, pEntry->Alias);
-            AnscCopyString(g_DnsServerFull[i].Interface, pEntry->Interface);  
+            rc = strcpy_s(g_DnsServerFull[i].Alias,sizeof(g_DnsServerFull[i].Alias), pEntry->Alias);
+            ERR_CHK(rc);
+            rc = strcpy_s(g_DnsServerFull[i].Interface,sizeof(g_DnsServerFull[i].Interface), pEntry->Interface);
+            ERR_CHK(rc);
  
             return ANSC_STATUS_SUCCESS;
         }
@@ -706,9 +710,10 @@ CosaDmlDnsRelaySetServerValues
 {
     UNREFERENCED_PARAMETER(hContext);
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-
+    errno_t                         rc           = -1;
     g_DnsRelayFull[ulIndex].InstanceNumber = ulInstanceNumber;
-    AnscCopyString(g_DnsRelayFull[ulIndex].Alias, pAlias);
+    rc = strcpy_s(g_DnsRelayFull[ulIndex].Alias,sizeof(g_DnsRelayFull[ulIndex].Alias), pAlias);
+    ERR_CHK(rc);
         
     return returnStatus;
 }
@@ -757,9 +762,11 @@ CosaDmlDnsRelayAddServer
     g_DnsRelayFull[g_NumOfDnsRelays].Status          = pEntry->Status;        
     g_DnsRelayFull[g_NumOfDnsRelays].Type            = pEntry->Type;      
     g_DnsRelayFull[g_NumOfDnsRelays].DNSServer.Value = pEntry->DNSServer.Value;             
-
-    AnscCopyString(g_DnsRelayFull[g_NumOfDnsRelays].Alias, pEntry->Alias);
-    AnscCopyString(g_DnsRelayFull[g_NumOfDnsRelays].Interface, pEntry->Interface);  
+    errno_t                                          = -1;
+    rc = strcpy_s(g_DnsRelayFull[g_NumOfDnsRelays].Alias,sizeof(g_DnsRelayFull[g_NumOfDnsRelays].Alias), pEntry->Alias);
+    ERR_CHK(rc);
+    rc = strcpy_s(g_DnsRelayFull[g_NumOfDnsRelays].Interface,sizeof(g_DnsRelayFull[g_NumOfDnsRelays].Interface), pEntry->Interface);
+    ERR_CHK(rc);
 
     g_NumOfDnsRelays++;
 
@@ -858,6 +865,7 @@ CosaDmlDnsRelaySetServer
 {
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
+    errno_t                         rc = -1;
 
     for ( i = 0; i < g_NumOfDnsRelays; i++)
     {
@@ -869,8 +877,10 @@ CosaDmlDnsRelaySetServer
             g_DnsRelayFull[i].Type            = pEntry->Type;      
             g_DnsRelayFull[i].DNSServer.Value = pEntry->DNSServer.Value;             
             
-            AnscCopyString(g_DnsRelayFull[i].Alias, pEntry->Alias);
-            AnscCopyString(g_DnsRelayFull[i].Interface, pEntry->Interface);  
+            rc = strcpy_s(g_DnsRelayFull[i].Alias,sizeof(g_DnsRelayFull[i].Alias), pEntry->Alias);
+            ERR_CHK(rc);
+            rc = strcpy_s(g_DnsRelayFull[i].Interface,sizeof(g_DnsRelayFull[i].Interface), pEntry->Interface);
+            ERR_CHK(rc);
  
             return ANSC_STATUS_SUCCESS;
         }
@@ -1078,7 +1088,8 @@ CosaDmlDnsInit
             //snprintf(tmpBuff, sizeof(tmpBuff),  "tr_dns_client_server_alias_%d", g_DnsClientServerNum+1);
             //syscfg_get(NULL, tmpBuff, sAlias, sizeof(sAlias));
             syscfg_get(NULL, "tr_dns_client_server_alias", sAlias,  sizeof(sAlias) );
-            AnscCopyString(g_dns_client_server[g_DnsClientServerNum].Alias, sAlias );
+            safec_rc = strcpy_s(g_dns_client_server[g_DnsClientServerNum].Alias,sizeof(g_dns_client_server[g_DnsClientServerNum].Alias), sAlias);
+            ERR_CHK(safec_rc);
             //ulogf(ULOG_SYSTEM, UL_DHCP, "%s, Alias %s \n", __FUNCTION__, g_dns_client_server[ g_DnsClientServerNum ].Alias );
             
             /* status */
@@ -1092,7 +1103,8 @@ CosaDmlDnsInit
             //TODO:
             if ( Utopia_GetWANConnectionInfo (&ctx, &wanInfo) == SUCCESS )
             {
-               AnscCopyString(g_dns_client_server[g_DnsClientServerNum].Interface, wanInfo.ifname);
+               safec_rc = strcpy_s(g_dns_client_server[g_DnsClientServerNum].Interface,sizeof(g_dns_client_server[g_DnsClientServerNum].Interface), wanInfo.ifname);
+               ERR_CHK(safec_rc);
             }
             /* type */
             g_dns_client_server[ g_DnsClientServerNum ].Type = COSA_DML_DNS_ADDR_SRC_DHCP;
@@ -1116,14 +1128,15 @@ CosaDmlDnsInit
                         //ulogf(ULOG_SYSTEM, UL_DHCP, "%s, sDns %d: %s\n", __FUNCTION__, j, sDns[j] );
                         g_dns_client_server[ g_DnsClientServerNum ].Type = COSA_DML_DNS_ADDR_SRC_Static;
                         g_wan_info.wan_proto = STATIC;
-                        AnscCopyString( g_wan_info.domainname, g_dns_client_server[g_DnsClientServerNum].Interface );
+                        safec_rc = strcpy_s(g_wan_info.domainname,sizeof(g_wan_info.domainname), g_dns_client_server[g_DnsClientServerNum].Interface);
+                        ERR_CHK(safec_rc);
                         g_StaticDnsClientServerNum++;
                     }
                 }
             }
             
-            AnscCopyString( g_dns_client_server[ g_DnsClientServerNum ].Alias, sAlias); 
-
+            safec_rc = strcpy_s(g_dns_client_server[ g_DnsClientServerNum ].Alias,sizeof(g_dns_client_server[ g_DnsClientServerNum ].Alias), sAlias);
+            ERR_CHK(safec_rc);
             g_DnsClientServerNum++;          
         }
     }
@@ -1464,8 +1477,12 @@ CosaDmlDnsClientSetServerValues
     }
  
     g_dns_client_server[ulIndex].InstanceNumber = ulInstanceNumber;
-    AnscCopyString(g_dns_client_server[ulIndex].Alias, pAlias);
-    
+    rc = strcpy_s(g_dns_client_server[ulIndex].Alias,sizeof(g_dns_client_server[ulIndex].Alias), pAlias);
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
     rc = sprintf_s(inst_str, sizeof(inst_str), "%d", ulInstanceNumber);
     if(rc < EOK)
     {
@@ -1560,9 +1577,12 @@ CosaDmlDnsClientAddServer
     g_dns_client_server[g_DnsClientServerNum].bEnabled        = pEntry->bEnabled = TRUE;        
     g_dns_client_server[g_DnsClientServerNum].Status          = pEntry->Status = COSA_DML_DNS_STATUS_Enabled;        
     g_dns_client_server[g_DnsClientServerNum].Type            = pEntry->Type = COSA_DML_DNS_ADDR_SRC_Static;
-    AnscCopyString(g_dns_client_server[g_DnsClientServerNum].Interface,INTERFACE );
-    AnscCopyString(pEntry->Interface,INTERFACE );
-    AnscCopyString(g_wan_info.domainname,INTERFACE );
+    rc = strcpy_s(g_dns_client_server[g_DnsClientServerNum].Interface,sizeof(g_dns_client_server[g_DnsClientServerNum].Interface),INTERFACE);
+    ERR_CHK(rc);
+    rc = strcpy_s(pEntry->Interface,sizeof(pEntry->Interface),INTERFACE);
+    ERR_CHK(rc);
+    rc = strcpy_s(g_wan_info.domainname,sizeof(g_wan_info.domainname),INTERFACE);
+    ERR_CHK(rc);
     
     g_wan_info.wan_proto = STATIC;
         
@@ -1594,8 +1614,10 @@ CosaDmlDnsClientAddServer
         default:
             break;
     }
-    AnscCopyString(g_dns_client_server[g_DnsClientServerNum].Alias, pEntry->Alias);
-    AnscCopyString(g_dns_client_server[g_DnsClientServerNum].Interface, pEntry->Interface);  
+    rc = strcpy_s(g_dns_client_server[g_DnsClientServerNum].Alias,sizeof(g_dns_client_server[g_DnsClientServerNum].Alias), pEntry->Alias);
+    ERR_CHK(rc);
+    rc = strcpy_s(g_dns_client_server[g_DnsClientServerNum].Interface,sizeof(g_dns_client_server[g_DnsClientServerNum].Interface), pEntry->Interface);
+    ERR_CHK(rc);
     if (CosaDmlDnsClientSetServerValues (
         hContext, 
         g_DnsClientServerNum, 
@@ -1771,7 +1793,8 @@ CosaDmlDnsClientSetServer
         {
            //AnscCopyString(g_dns_client_server[i].Interface, pEntry->Interface);  //Before
             AnscCopyMemory(&g_dns_client_server[i], pEntry, sizeof(COSA_DML_DNS_CLIENT_SERVER) ); //??not before
-            AnscCopyString(g_wan_info.domainname, g_dns_client_server[i].Interface ); 
+            rc = strcpy_s(g_wan_info.domainname,sizeof(g_wan_info.domainname), g_dns_client_server[i].Interface);
+            ERR_CHK(rc);
 #if (defined (_COSA_DRG_TPG_))           
             rc = sprintf_s (ipBuff, sizeof(ipBuff), "%d.%d.%d.%d",
                         (g_dns_client_server[i].DNSServer.Value >> 24) & 0xFF,
@@ -2071,7 +2094,8 @@ CosaDmlDnsRelayGetServers
             g_dns_relay_forwarding[0].InstanceNumber = atoi(buf);
             memset(str_val, 0, sizeof(str_val));
             Utopia_RawGet(&pCtx, COSA_DNS_SYSCFG_NAMESPACE, "tr_dns_relay_forwarding_dhcp_alias_1", str_val, sizeof(str_val) );
-            AnscCopyString(g_dns_relay_forwarding[0].Alias, str_val);
+            safec_rc = strcpy_s(g_dns_relay_forwarding[0].Alias,sizeof(g_dns_relay_forwarding[0].Alias), str_val);
+            ERR_CHK(safec_rc);
         }
         fp = fopen("/tmp/udhcp.log", "r");
         /*fp = fopen("/mnt/appdata0/udhcp.log", "r");*/	/*Used for Unit testing*/
@@ -2100,7 +2124,8 @@ CosaDmlDnsRelayGetServers
                 pToken = strtok_r(NULL, ":", &st);
                 if(pToken) strncpy(str_val, pToken+1, strlen(pToken)-1);
                 str_val[strlen(pToken)-1] = '\0';
-                AnscCopyString(g_dns_relay_forwarding[0].Interface, str_val);
+                safec_rc = strcpy_s(g_dns_relay_forwarding[0].Interface, sizeof(g_dns_relay_forwarding[0].Interface),str_val);
+                ERR_CHK(safec_rc);
             }
             else if(strstr(line, "dns server"))
             {
@@ -2200,7 +2225,12 @@ CosaDmlDnsRelaySetServerValues
         return ANSC_STATUS_FAILURE;
     }
     g_dns_relay_forwarding[ulIndex].InstanceNumber = ulInstanceNumber;
-    AnscCopyString(g_dns_relay_forwarding[ulIndex].Alias, pAlias);
+    safec_rc = strcpy_s(g_dns_relay_forwarding[ulIndex].Alias,sizeof(g_dns_relay_forwarding[ulIndex].Alias), pAlias);
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        return ANSC_STATUS_FAILURE;
+    }
 
     safec_rc = sprintf_s(inst_str, sizeof(inst_str), "%d", ulInstanceNumber);
     if(safec_rc < EOK)
@@ -2326,9 +2356,11 @@ CosaDmlDnsRelayAddServer
     g_dns_relay_forwarding[g_CountDnsRelays].Status          = pEntry->Status = COSA_DML_DNS_STATUS_Enabled;
     g_dns_relay_forwarding[g_CountDnsRelays].Type            = pEntry->Type = COSA_DML_DNS_ADDR_SRC_Static;
     g_dns_relay_forwarding[g_CountDnsRelays].DNSServer.Value = pEntry->DNSServer.Value;
-    AnscCopyString(pEntry->Interface, "");	/*If an empty string is specified, the CPE MUST use its routing policy, if necessary*/
-    AnscCopyString(g_dns_relay_forwarding[g_CountDnsRelays].Interface, pEntry->Interface);
-    AnscCopyString(g_dns_relay_forwarding[g_CountDnsRelays].Alias, pEntry->Alias);
+    pEntry->Interface[0] = '\0';	/*If an empty string is specified, the CPE MUST use its routing policy, if necessary*/
+    safec_rc = strcpy_s(g_dns_relay_forwarding[g_CountDnsRelays].Interface,sizeof(g_dns_relay_forwarding[g_CountDnsRelays].Interface), pEntry->Interface);
+    ERR_CHK(safec_rc);
+    safec_rc = strcpy_s(g_dns_relay_forwarding[g_CountDnsRelays].Alias,sizeof(g_dns_relay_forwarding[g_CountDnsRelays].Alias), pEntry->Alias);
+    ERR_CHK(safec_rc);
 
     if (CosaDmlDnsRelaySetServerValues(
         hContext,
@@ -2560,7 +2592,8 @@ CosaDmlDnsRelaySetServer
         {
             if( pEntry->Type != COSA_DML_DNS_ADDR_SRC_Static){
                 g_dns_relay_forwarding[i].bEnabled = pEntry->bEnabled;
-                AnscCopyString(g_dns_relay_forwarding[i].Alias, pEntry->Alias);
+                safec_rc = strcpy_s(g_dns_relay_forwarding[i].Alias,sizeof(g_dns_relay_forwarding[i].Alias), pEntry->Alias);
+                ERR_CHK(safec_rc);
             }else {
                 AnscCopyMemory(&g_dns_relay_forwarding[i], pEntry, sizeof(COSA_DML_DNS_RELAY_ENTRY));
             }
@@ -2871,6 +2904,7 @@ CosaDmlDnsClientGetServers
     ULONG j;    
     PCOSA_DML_DNS_CLIENT_SERVER pServer = NULL;
     *pulCount = 0;
+    errno_t rc = -1;
     if (Utopia_Init(&ctx)){
         if(SUCCESS == Utopia_GetDNSServer(&ctx, &dns)){
             for(i = DNS_CLIENT_NAMESERVER_CNT -1; i >= 0 && (dns.dns_server[i][0] == 0) ; i--);
@@ -2886,7 +2920,8 @@ CosaDmlDnsClientGetServers
                     switch (af){
                     case DNS_FAMILY_IPV4:
                             /*inet_pton(AF_INET, dns.dns_server[i], &(pServer[i].DNSServer));*/
-                            AnscCopyString(pServer[i].DNSServer, dns.dns_server[j]);
+                            rc = strcpy_s(pServer[i].DNSServer,sizeof(pServer[i].DNSServer), dns.dns_server[j]);
+                            ERR_CHK(rc);
                             pServer[i].Order          = 1 + i;
                             pServer[i].InstanceNumber = 1 + i;
                             pServer[i].bEnabled       = TRUE;
@@ -2894,7 +2929,8 @@ CosaDmlDnsClientGetServers
                             i++;
                             break;
                     case DNS_FAMILY_IPV6:
-                            AnscCopyString(pServer[i].DNSServer, dns.dns_server[j]);
+                            rc = strcpy_s(pServer[i].DNSServer,sizeof(pServer[i].DNSServer), dns.dns_server[j]);
+                            ERR_CHK(rc);
                             pServer[i].Order          = 1 + i;
                             pServer[i].InstanceNumber = 1 + i;
                             pServer[i].bEnabled       = TRUE;

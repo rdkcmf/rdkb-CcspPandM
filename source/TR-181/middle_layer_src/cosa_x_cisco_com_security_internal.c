@@ -1163,6 +1163,7 @@ CosaSecurityIARegGetInfo
     ULONG                           ulUpperInstanceNumber   = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoIAHA )
     {
@@ -1196,8 +1197,6 @@ CosaSecurityIARegGetInfo
 
         if ( _ansc_strstr(pFolderName, "InternetAccessPolicy") )
         {
-            if ( TRUE )
-            {
                 pSlapVariable =
                     (PSLAP_VARIABLE)pPoamIrepFoIASp->GetRecord
                         (
@@ -1212,10 +1211,7 @@ CosaSecurityIARegGetInfo
 
                     SlapFreeVariable(pSlapVariable);
                 }
-            }
 
-            if ( TRUE )
-            {
                 pSlapVariable =
                     (PSLAP_VARIABLE)pPoamIrepFoIASp->GetRecord
                         (
@@ -1230,7 +1226,6 @@ CosaSecurityIARegGetInfo
 
                     SlapFreeVariable(pSlapVariable);
                 }
-            }
 
             pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
 
@@ -1261,7 +1256,8 @@ CosaSecurityIARegGetInfo
             pDmlIAPolicy->ulNextAppInsNum = 1;
 
             pDmlIAPolicy->InstanceNumber = ulInstanceNumber;
-            AnscCopyString(pDmlIAPolicy->Alias, pAlias);
+            rc = STRCPY_S_NOCLOBBER(pDmlIAPolicy->Alias, sizeof(pDmlIAPolicy->Alias), pAlias);
+            ERR_CHK(rc);
 
             pCosaContext->InstanceNumber   = ulInstanceNumber;
             pCosaContext->bNew             = TRUE;
@@ -1274,8 +1270,6 @@ CosaSecurityIARegGetInfo
         }
         else
         {
-            if ( TRUE )
-            {
                 pSlapVariable =
                     (PSLAP_VARIABLE)pPoamIrepFoIASp->GetRecord
                         (
@@ -1321,10 +1315,7 @@ CosaSecurityIARegGetInfo
 
                     continue;
                 }
-            }
 
-            if ( TRUE )
-            {
                 pSlapVariable =
                     (PSLAP_VARIABLE)pPoamIrepFoIASp->GetRecord
                         (
@@ -1339,10 +1330,7 @@ CosaSecurityIARegGetInfo
 
                     SlapFreeVariable(pSlapVariable);
                 }
-            }
 
-            if ( TRUE )
-            {
                 pSlapVariable =
                     (PSLAP_VARIABLE)pPoamIrepFoIASp->GetRecord
                         (
@@ -1357,7 +1345,6 @@ CosaSecurityIARegGetInfo
 
                     SlapFreeVariable(pSlapVariable);
                 }
-            }
 
             if ( _ansc_strstr(pFolderName, "URL") )
             {
@@ -1382,7 +1369,8 @@ CosaSecurityIARegGetInfo
                 }
 
                 pURL->InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pURL->Alias, pAlias);
+                rc = STRCPY_S_NOCLOBBER(pURL->Alias, sizeof(pURL->Alias), pAlias);
+                ERR_CHK(rc);
 
                 pCosaContext2->InstanceNumber   = ulInstanceNumber;
                 pCosaContext2->hContext         = (ANSC_HANDLE)pURL;
@@ -1416,7 +1404,8 @@ CosaSecurityIARegGetInfo
                 }
 
                 pKeyword->InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pKeyword->Alias, pAlias);
+                rc = STRCPY_S_NOCLOBBER(pKeyword->Alias, sizeof(pKeyword->Alias), pAlias);
+                ERR_CHK(rc);
 
                 pCosaContext2->InstanceNumber   = ulInstanceNumber;
                 pCosaContext2->hContext         = (ANSC_HANDLE)pKeyword;
@@ -1450,7 +1439,8 @@ CosaSecurityIARegGetInfo
                 }
 
                 pApp->InstanceNumber = ulInstanceNumber;
-                AnscCopyString(pApp->Alias, pAlias);
+                rc = STRCPY_S_NOCLOBBER(pApp->Alias, sizeof(pApp->Alias), pAlias);
+                ERR_CHK(rc);
 
                 pCosaContext2->InstanceNumber   = ulInstanceNumber;
                 pCosaContext2->hContext         = (ANSC_HANDLE)pApp;
@@ -1551,8 +1541,6 @@ CosaSecurityIARegAddInfo
         pPoamIrepFoIA->EnableFileSync((ANSC_HANDLE)pPoamIrepFoIA, FALSE);
     }
 
-    if ( TRUE )
-    {
         SlapAllocVariable(pSlapVariable);
 
         if ( !pSlapVariable )
@@ -1561,7 +1549,6 @@ CosaSecurityIARegAddInfo
 
             goto  EXIT1;
         }
-    }
 
     rc = sprintf_s(FolderName, sizeof(FolderName),"%s%lu", pNextInsNumName, ulUpperInsNum);
     if(rc < EOK)
@@ -1571,8 +1558,6 @@ CosaSecurityIARegAddInfo
       goto  EXIT1;
     }
 
-    if ( TRUE )
-    {
         pPoamIrepFo = 
             pPoamIrepFoIA->GetFolder
                 (
@@ -1590,7 +1575,6 @@ CosaSecurityIARegAddInfo
                         0
                     );
         }
-    }
 
     if ( pPoamIrepFo != NULL )
     {
@@ -1623,8 +1607,6 @@ CosaSecurityIARegAddInfo
         pPoamIrepFo = NULL;
     }
 
-    if ( TRUE )
-    {
         rc = sprintf_s(FolderName, sizeof(FolderName),"%s%lu%lu", pPreffix, ulUpperInsNum, pCosaContext->InstanceNumber);
         if(rc < EOK)
         {
@@ -1668,8 +1650,6 @@ CosaSecurityIARegAddInfo
             SlapInitVariable (pSlapVariable);
         }
 
-        if ( TRUE )
-        {
             pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_uint32;
             pSlapVariable->Variant.varUint32 = pCosaContext->InstanceNumber;
 
@@ -1686,10 +1666,7 @@ CosaSecurityIARegAddInfo
 
             SlapCleanVariable(pSlapVariable);
             SlapInitVariable (pSlapVariable);
-        }
 
-        if ( TRUE )
-        {
             pSlapVariable->Syntax            = SLAP_VAR_SYNTAX_string;
             pSlapVariable->Variant.varString = AnscCloneString(pAlias);
 
@@ -1706,10 +1683,8 @@ CosaSecurityIARegAddInfo
 
             SlapCleanVariable(pSlapVariable);
             SlapInitVariable (pSlapVariable);
-        }
 
         pCosaContext->hPoamIrepFo = (ANSC_HANDLE)pPoamIrepFo;
-    }
 
 EXIT1:
     
@@ -1773,8 +1748,6 @@ CosaSecurityIARegDelInfo
         pPoamIrepUpperFo->EnableFileSync((ANSC_HANDLE)pPoamIrepUpperFo, FALSE);
     }
 
-    if ( TRUE )
-    {
         pPoamIrepFo->Close((ANSC_HANDLE)pPoamIrepFo);
         
         pPoamIrepUpperFo->DelFolder
@@ -1786,7 +1759,6 @@ CosaSecurityIARegDelInfo
         pPoamIrepUpperFo->EnableFileSync((ANSC_HANDLE)pPoamIrepUpperFo, TRUE);
 
         AnscFreeMemory(pPoamIrepFo);
-    }
 
     return ANSC_STATUS_SUCCESS;
 }

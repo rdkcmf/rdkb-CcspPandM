@@ -706,7 +706,7 @@ User_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_USER                  pUser             = (PCOSA_DML_USER)pCxtLink->hContext;
-
+    errno_t                         rc                = -1;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Username", TRUE))
     {
@@ -718,7 +718,12 @@ User_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pUser->Username) < *pUlSize)
         {
-            AnscCopyString(pValue, pUser->Username);
+            rc = strcpy_s(pValue,*pUlSize,pUser->Username);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -732,7 +737,7 @@ User_GetParamStringValue
     {
         /* collect value */
         /* This is a hidden parameter, so return EMPTY */
-        AnscCopyString(pValue,"");
+        pValue[0] = '\0';        
         return 0;
     }
 
@@ -741,7 +746,12 @@ User_GetParamStringValue
         /* collect value */
         if ( AnscSizeOfString(pUser->Language) < *pUlSize)
         {
-            AnscCopyString(pValue, pUser->Language);
+            rc = strcpy_s(pValue,*pUlSize, pUser->Language);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -765,20 +775,40 @@ User_GetParamStringValue
             ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
             if( AnscEqualString(pUser->Username, "admin",TRUE) )
             {
-               AnscCopyString(pValue,pUser->HashedPassword);
+               rc = strcpy_s(pValue,*pUlSize, pUser->HashedPassword);
+               if(rc != EOK)
+               {
+                   ERR_CHK(rc);
+                   return -1;
+               }
                return 0;
             }
 #if defined(_COSA_FOR_BCI_)
             if( AnscEqualString(pUser->Username, "cusadmin",TRUE) )
             {
-               AnscCopyString(pValue,pUser->HashedPassword);
+               rc = strcpy_s(pValue,*pUlSize, pUser->HashedPassword);
+               if(rc != EOK)
+               {
+                   ERR_CHK(rc);
+                   return -1;
+               }
                return 0;
             }
 #endif
-            AnscCopyString(pValue, pUser->Password);
+            rc = strcpy_s(pValue,*pUlSize, pUser->Password);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             if( AnscEqualString(pUser->Username, "mso", TRUE) )
             {
-            AnscCopyString(pUser->Password, "Invalid_PWD");
+                rc = strcpy_s(pUser->Password,sizeof(pUser->Password), "Invalid_PWD");
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return -1;
+                }
             returnStatus = CosaDmlUserSetCfg(NULL, pUser);
 
                if ( returnStatus != ANSC_STATUS_SUCCESS)
@@ -798,7 +828,12 @@ User_GetParamStringValue
      {
         if ( AnscSizeOfString(pUser->X_RDKCENTRAL_COM_ComparePassword) < *pUlSize)
         {
-            AnscCopyString(pValue, pUser->X_RDKCENTRAL_COM_ComparePassword);
+            rc = strcpy_s(pValue,*pUlSize, pUser->X_RDKCENTRAL_COM_ComparePassword);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
             return 0;
         }
         else
@@ -1159,7 +1194,7 @@ User_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_USER                  pUser             = (PCOSA_DML_USER)pCxtLink->hContext;
-
+    errno_t                         rc                = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Username", TRUE))
@@ -1167,8 +1202,18 @@ User_SetParamStringValue
         return FALSE;    /* In USG, webgui username is not allowed to change */
 #if 0
         PCOSA_DATAMODEL_USERS           pUsers            = (PCOSA_DATAMODEL_USERS)g_pCosaBEManager->hUsers;
-        AnscCopyString(pUsers->AliasOfUser, pUser->Username);
-        AnscCopyString(pUser->Username, pString);
+        rc = strcpy(pUsers->AliasOfUser,sizeof(pUsers->AliasOfUser), pUser->Username);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+        rc = strcpy(pUser->Username,sizeof(pUser->Username), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         
         return TRUE;
 #endif
@@ -1182,26 +1227,30 @@ User_SetParamStringValue
 		unsigned int ret=0;
 
 		ret = mso_validatepwd(pString);
-
 		if ( ret == Invalid_PWD )
 		{
-			AnscCopyString(pUser->Password, "Invalid_PWD");
+			rc = strcpy_s(pUser->Password,sizeof(pUser->Password), "Invalid_PWD");
+			ERR_CHK(rc);
 		}
 		else if ( ret == Good_PWD )
 		{
-			AnscCopyString(pUser->Password, "Good_PWD");
+			rc = strcpy_s(pUser->Password,sizeof(pUser->Password), "Good_PWD");
+			ERR_CHK(rc);
 		}
 		else if ( ret == Unique_PWD )
 		{
-			AnscCopyString(pUser->Password, "Unique_PWD");
+			rc = strcpy_s(pUser->Password,sizeof(pUser->Password), "Unique_PWD");
+			ERR_CHK(rc);
 		}
 		else if ( ret == Expired_PWD )
 		{
-			AnscCopyString(pUser->Password, "Expired_PWD");
+			rc = strcpy_s(pUser->Password,sizeof(pUser->Password), "Expired_PWD");
+			ERR_CHK(rc);
 		}
 		else
 		{
-			AnscCopyString(pUser->Password, "TimeError");
+			rc = strcpy_s(pUser->Password,sizeof(pUser->Password), "TimeError");
+			ERR_CHK(rc);
 		}
 
 	}
@@ -1237,7 +1286,9 @@ User_SetParamStringValue
 	else
 	{
         	/* save update to backup */
-       		 AnscCopyString(pUser->Password, pString);
+            rc = strcpy_s(pUser->Password,sizeof(pUser->Password), pString);
+            ERR_CHK(rc);
+
 	}
     #if CFG_USE_CCSP_SYSLOG
         /* Bad practice to use platform dependent and will be rectified -- CCSP_TRACE should be used */
@@ -1254,15 +1305,24 @@ User_SetParamStringValue
     {
        char resultBuffer[32]= {'\0'};
        user_validatepwd(NULL,pString,pUser,resultBuffer);
-       AnscCopyString(pUser->X_RDKCENTRAL_COM_ComparePassword, resultBuffer);
+       rc = strcpy_s(pUser->X_RDKCENTRAL_COM_ComparePassword,sizeof(pUser->X_RDKCENTRAL_COM_ComparePassword), resultBuffer);
+       if(rc != EOK)
+       {
+           ERR_CHK(rc);
+           return FALSE;
+       }
        return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Language", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pUser->Language, pString);
-
+        rc = strcpy_s(pUser->Language,sizeof(pUser->Language), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -1388,7 +1448,7 @@ User_Commit
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_USER                  pUser             = (PCOSA_DML_USER)pCxtLink->hContext;
     PCOSA_DATAMODEL_USERS           pUsers            = (PCOSA_DATAMODEL_USERS)g_pCosaBEManager->hUsers;
-
+    errno_t                         rc                = -1;
     if ( pCxtLink->bNew )
     {
         returnStatus = CosaDmlUserAddEntry(NULL, pUser );
@@ -1404,7 +1464,10 @@ User_Commit
             USERS_USER_SET_DEFAULTVALUE(pUser);
             
             if ( pUsers->AliasOfUser[0] )
-                AnscCopyString( pUser->Username, pUsers->AliasOfUser );
+            {
+                rc = strcpy_s(pUser->Username,sizeof(pUser->Username), pUsers->AliasOfUser);
+                ERR_CHK(rc);
+            }
         }
     }
     else
@@ -1456,9 +1519,12 @@ User_Rollback
     PCOSA_DATAMODEL_USERS           pUsers            = (PCOSA_DATAMODEL_USERS)g_pCosaBEManager->hUsers;
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_USER                  pUser             = (PCOSA_DML_USER)pCxtLink->hContext;
-
+    errno_t                         rc                = -1;
     if ( pUsers->AliasOfUser[0] )
-        AnscCopyString( pUser->Username, pUsers->AliasOfUser );
+    {
+        rc = strcpy_s(pUser->Username,sizeof(pUser->Username), pUsers->AliasOfUser);
+        ERR_CHK(rc);
+    }
 
     if ( !pCxtLink->bNew )
     {

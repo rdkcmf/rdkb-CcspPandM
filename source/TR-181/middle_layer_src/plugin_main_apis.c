@@ -136,6 +136,7 @@
 #if  CFG_USE_Common_Util
 #include "cosa_common_util.h"
 #endif
+
 static void CheckAndSetRebootReason();
 
 #if defined(_PLATFORM_RASPBERRYPI_)
@@ -712,8 +713,8 @@ CosaBackEndManagerRemove
 
 static void CheckAndSetRebootReason()
 {
-  
     int value = -1;
+
     if(fopen("/var/tmp/lastrebootreason","r")==NULL)
     {
         char rebootReason[64] = "unknown";
@@ -739,11 +740,7 @@ static void CheckAndSetRebootReason()
             }
             else
             {
-                char buf[64] = {'\0'};
-                if(syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", buf, sizeof(buf))==0)
-                {
-                    AnscCopyString(rebootReason,buf);
-                }
+                syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", rebootReason, sizeof(rebootReason));
             }
                 // reset counter to 0 for both known and unknown reason
                 if(-1 == setRebootCounter())
