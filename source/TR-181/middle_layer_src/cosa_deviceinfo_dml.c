@@ -8695,6 +8695,63 @@ EncryptCloudUpload_GetParamBoolValue
     return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        UploadLogsOnUnscheduledReboot_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+UploadLogsOnUnscheduledReboot_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Disable", TRUE))
+    {
+        char value[8];
+
+        if(!syscfg_get(NULL,"UploadLogsOnUnscheduledRebootDisable",value, sizeof(value)))
+        {
+             if (strcmp(value, "true") == 0)
+                 *pBool = TRUE;
+             else
+                 *pBool = FALSE;
+             return TRUE;
+        } else {
+            return FALSE;
+        }     
+    }
+    return FALSE;
+}
+
 ULONG
 SyndicationFlowControl_GetParamStringValue
     (
@@ -9851,6 +9908,64 @@ EncryptCloudUpload_SetParamBoolValue
     }
     return FALSE;
 }
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        UploadLogsOnUnscheduledReboot_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+UploadLogsOnUnscheduledReboot_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if (IsBoolSame(hInsContext, ParamName, bValue, UploadLogsOnUnscheduledReboot_GetParamBoolValue))
+        return TRUE;
+
+    if( AnscEqualString(ParamName, "Disable", TRUE))
+    {
+        if ( bValue == TRUE)
+        {
+            syscfg_set(NULL, "UploadLogsOnUnscheduledRebootDisable", "true");
+        }
+        else
+        {
+            syscfg_set(NULL, "UploadLogsOnUnscheduledRebootDisable", "false");
+        }
+        syscfg_commit();
+        return TRUE;
+    }
+    return FALSE;
+}
+
 
 /**********************************************************************
 

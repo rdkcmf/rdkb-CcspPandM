@@ -2259,6 +2259,38 @@
 			</parameters>   
 
 		</object>
+		
+		<object>
+                                  
+			<name>UploadLogsOnUnscheduledReboot</name>
+                                  
+			<objectType>object</objectType>
+                                 
+			<functions>
+
+				<func_GetParamBoolValue>UploadLogsOnUnscheduledReboot_GetParamBoolValue</func_GetParamBoolValue>
+
+				<func_SetParamBoolValue>UploadLogsOnUnscheduledReboot_SetParamBoolValue</func_SetParamBoolValue>
+
+			</functions>
+                                  
+			<parameters>
+
+				<parameter>
+     
+					<name>Disable</name>
+            
+					<type>boolean</type>
+                        
+					<syntax>bool</syntax>
+
+					<writable>true</writable>
+
+				</parameter>
+
+			</parameters>   
+
+		</object>
 
                 <object>
                         <name>MEMSWAP</name>
