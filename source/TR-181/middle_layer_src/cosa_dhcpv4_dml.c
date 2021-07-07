@@ -6065,7 +6065,7 @@ Pool_GetParamStringValue
     {
         /* collect value */        
 #if 0
-        if ( CosaDmlGetIpaddrString(pValue, pUlSize, (PULONG)&pPool->Cfg.ReservedAddresses[0], COSA_DML_DHCP_MAX_RESERVED_ADDRESSES ) )
+        if ( CosaDmlGetIpaddrString(pValue, pUlSize, &pPool->Cfg.ReservedAddresses[0], COSA_DML_DHCP_MAX_RESERVED_ADDRESSES ) )
         {
             return 0;
         }
@@ -6080,7 +6080,7 @@ Pool_GetParamStringValue
     if( AnscEqualString(ParamName, "DNSServers", TRUE))
     {
         /* collect value */
-        if ( CosaDmlGetIpaddrString((PUCHAR)pValue, pUlSize, (PULONG)&pPool->Cfg.DNSServers[0].Value, COSA_DML_DHCP_MAX_ENTRIES ) )
+        if ( CosaDmlGetIpaddrString((PUCHAR)pValue, pUlSize, &pPool->Cfg.DNSServers[0].Value, COSA_DML_DHCP_MAX_ENTRIES ) )
         {
             return 0;
         }
@@ -6111,7 +6111,7 @@ Pool_GetParamStringValue
 
     if( AnscEqualString(ParamName, "IPRouters", TRUE))
     {
-        PULONG pTmpAddr;
+        uint32_t *pTmpAddr;
         if(pPool->Cfg.InstanceNumber == 1)
         {
             memset(&tmpCfg, 0, sizeof(tmpCfg));

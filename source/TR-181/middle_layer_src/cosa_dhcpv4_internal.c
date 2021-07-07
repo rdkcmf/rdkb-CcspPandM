@@ -3647,13 +3647,13 @@ CosaDmlGetIpaddrString
     (
         PUCHAR pString, 
         PULONG pulStrLength, 
-        PULONG pIPAddr, 
+        uint32_t *pIPAddr, 
         ULONG  MaxNumber
     )
 {        
     UCHAR              *pTmpString      = pString;
     ULONG               n               = 0;
-    PULONG              pIPAddr2        = pIPAddr;
+    uint32_t           *pIPAddr2        = pIPAddr;
 
     if ( !pString || !pulStrLength || !pIPAddr || !MaxNumber )
         return FALSE;

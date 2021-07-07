@@ -340,7 +340,7 @@ CosaDmlGetIpaddrString
     (
         PUCHAR pString, 
         PULONG pulStrLength, 
-        PULONG pIPAddr, 
+        uint32_t *pIPAddr, 
         ULONG  MaxNumber
     );
 

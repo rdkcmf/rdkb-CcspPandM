@@ -317,28 +317,28 @@ ANSC_STATUS
 CosaDmlDcSetWanStaticIPAddress
     (
         ANSC_HANDLE                 hContext,
-        ULONG                       ipAddr
+        uint32_t                    ipAddr
     );
 
 ANSC_STATUS
 CosaDmlDcSetWanStaticSubnetMask
     (
         ANSC_HANDLE                 hContext,
-        ULONG                       ipAddr
+        uint32_t                    ipAddr
     );
 
 ANSC_STATUS
 CosaDmlDcSetWanStaticGatewayIP
     (
         ANSC_HANDLE                 hContext,
-        ULONG                       ipAddr
+        uint32_t                    ipAddr
     );
 
 ANSC_STATUS
 CosaDmlDcSetWanSecondIPAddr
     (
         ANSC_HANDLE                 hContext,
-        ULONG                       ipAddr
+        uint32_t                    ipAddr
     );
 
 ANSC_STATUS
@@ -352,14 +352,14 @@ ANSC_STATUS
 CosaDmlDcSetWanBackupDefaultGateway
     (
         ANSC_HANDLE                 hContext,
-        ULONG                       ipAddr
+        uint32_t                    ipAddr
     );
 
 ANSC_STATUS
 CosaDmlDcSetWanNameServer
     (
         ANSC_HANDLE                 hContext,
-        ULONG                       ipAddr,
+        uint32_t                    ipAddr,
         int                         nameServerNo
     );
 
@@ -403,15 +403,6 @@ CosaDmlDcSetRenewWan
     (
         ANSC_HANDLE                 hContext,
         BOOLEAN                     pFlag
-    );
-
-
-
-ANSC_STATUS
-CosaDmlDcSetWanBackupDefaultGateway
-    (
-        ANSC_HANDLE                 hContext,
-        ULONG                       ipAddr
     );
 
 ANSC_STATUS
