@@ -8214,8 +8214,8 @@ Control_SetParamStringValue
            }
            else
            {
-                /*RDKB-28133 : any string is getting set to XconfSelector TR 181 apart from prod, ci, automation*/
-                if( (strcasecmp(pString, "prod") == 0) || (strcasecmp(pString, "ci") == 0) || (strcasecmp(pString, "automation") == 0) )
+                /*RDKB-28133 : any string is getting set to XconfSelector TR 181 apart from prod, ci, automation, local*/
+                if( (strcasecmp(pString, "prod") == 0) || (strcasecmp(pString, "ci") == 0) || (strcasecmp(pString, "automation") == 0) || (strcasecmp(pString, "local") == 0) )
                 {
                     if (syscfg_set(NULL, "XconfSelector", pString) != 0)
                     {
@@ -8235,7 +8235,7 @@ Control_SetParamStringValue
                 }
                 else
                 {
-                    CcspTraceInfo(("[%s] XconfSelector value should 'prod' , 'ci'  or 'automation' \n",__FUNCTION__));
+                    CcspTraceInfo(("[%s] XconfSelector value should 'prod' , 'ci' , 'automation' , 'local' \n",__FUNCTION__));
                     bReturnValue = FALSE;
                 }
            }
