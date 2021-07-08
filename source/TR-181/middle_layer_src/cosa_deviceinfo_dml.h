@@ -1952,6 +1952,22 @@ ActiveMeasurements_RFC_SetParamBoolValue
     );
 
 BOOL
+WPA3_Personal_Transition_RFC_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+WPA3_Personal_Transition_RFC_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+BOOL
 DLCaStore_RFC_GetParamBoolValue
     (
         ANSC_HANDLE                 hInsContext,
