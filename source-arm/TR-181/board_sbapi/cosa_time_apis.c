@@ -882,6 +882,75 @@ struct tm *pLcltime, temp;
     return ANSC_STATUS_SUCCESS;
 }
 
+static int hexToInt(char s[])
+{
+    int hexdigit, i, num;
+    bool inputIsValid;
+    i=0;
+    if(s[i] == '0') {
+        ++i;
+        if(s[i] == 'x' || s[i] == 'X'){
+            ++i;
+        }
+    }
+    num = 0;
+    inputIsValid = true;
+    for(; inputIsValid == true; ++i) {
+        if(s[i] >= '0' && s[i] <= '9') {
+            hexdigit = s[i] - '0';
+        } else if(s[i] >= 'a' && s[i] <= 'f') {
+            hexdigit = s[i] - 'a' + 10;
+        } else if(s[i] >= 'A' && s[i] <= 'F') {
+            hexdigit = s[i] - 'A' + 10;
+        } else {
+            inputIsValid = false;
+        }
+        if(inputIsValid == true) {
+            num = 16 * num + hexdigit;
+        }
+    }
+    return num;
+}
+
+ANSC_STATUS getTimeOffset(char *name, char **timeOffset, int version)
+{
+    char offset_value[100]={0};
+    char tempStr[100] = {0};
+    errno_t safec_rc = -1;
+    memset(offset_value,0,sizeof(offset_value));
+    commonSyseventGet(name, offset_value, sizeof(offset_value));
+    if ( (*timeOffset != NULL) && ('\0' != offset_value[0] ) && ( 0 != strlen(offset_value) ) ) 
+    {
+         CcspTraceWarning(("%s: offset_value received from %s is %s \n", __FUNCTION__, name, offset_value));
+         if ( offset_value[0] == '@' )
+         {
+            safec_rc = strcpy_s(*timeOffset, MAX_COSATIMEOFFSET_SIZE, offset_value+1 );
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
+         }
+         else
+         {
+            //hex to int conversion is only for ipv6-timeoffset
+            if(version == 6)
+            {
+	    	sprintf(tempStr, "%d", hexToInt(offset_value));
+                safec_rc = strcpy_s(*timeOffset, MAX_COSATIMEOFFSET_SIZE, tempStr );
+            }
+            else
+            {
+             	safec_rc = strcpy_s(*timeOffset, MAX_COSATIMEOFFSET_SIZE, offset_value );
+            }
+            if(safec_rc != EOK)
+            {
+               ERR_CHK(safec_rc);
+            }
+         }
+         return ANSC_STATUS_SUCCESS;
+    }
+    return ANSC_STATUS_FAILURE;
+}
 
 ANSC_STATUS
 CosaDmlTimeGetTimeOffset
@@ -891,38 +960,32 @@ CosaDmlTimeGetTimeOffset
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    char offset_value[100]={0};
     errno_t safec_rc = -1;
-    memset(offset_value,0,sizeof(offset_value));
-    if(!access("/nvram/ETHWAN_ENABLE", 0))
+    if(access("/nvram/ETHWAN_ENABLE", 0))
     {
-        commonSyseventGet("ipv4-timeoffset", offset_value, sizeof(offset_value));
-        if ( ('\0' != offset_value[0] ) && ( 0 != strlen(offset_value) ) ) 
-        {
-             CcspTraceWarning(("%s: offset_value received from ipv4-timeoffset is %s \n", __FUNCTION__,offset_value));
-             if ( offset_value[0] == '@' )
-             {
-                safec_rc = strcpy_s(pTimeOffset, MAX_COSATIMEOFFSET_SIZE, offset_value+1 );
-                if(safec_rc != EOK)
-                {
-                   ERR_CHK(safec_rc);
-                }
-             }
-             else
-             {
-                safec_rc = strcpy_s(pTimeOffset, MAX_COSATIMEOFFSET_SIZE, offset_value );
-                if(safec_rc != EOK)
-                {
-                   ERR_CHK(safec_rc);
-                }
-             }
-             return ANSC_STATUS_SUCCESS;       
-        }
+	if( platform_hal_getTimeOffSet(pTimeOffset) == RETURN_OK )
+	{
+	    CcspTraceWarning(("%s: pTimeOffset is %s \n", __FUNCTION__,pTimeOffset));
+	    return ANSC_STATUS_SUCCESS;
+	}
 
     }
-    
-    platform_hal_getTimeOffSet(pTimeOffset);
-
+    if(ANSC_STATUS_SUCCESS == getTimeOffset("ipv6-timeoffset", &pTimeOffset, 6))
+    {
+        CcspTraceWarning(("%s: pTimeOffset is %s \n", __FUNCTION__,pTimeOffset));
+        return ANSC_STATUS_SUCCESS;
+    }
+    if(ANSC_STATUS_SUCCESS == getTimeOffset("ipv4-timeoffset", &pTimeOffset, 4))
+    {
+        CcspTraceWarning(("%s: pTimeOffset is %s \n", __FUNCTION__,pTimeOffset));
+        return ANSC_STATUS_SUCCESS;
+    }
+    safec_rc = sprintf_s(pTimeOffset, MAX_COSATIMEOFFSET_SIZE, "%d",0);
+    if(safec_rc < EOK)
+    {
+       ERR_CHK(safec_rc);
+    }
+   
     return ANSC_STATUS_SUCCESS;
 }
 
