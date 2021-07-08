@@ -93,8 +93,8 @@ typedef struct _CosaEthInt
     char Alias[COSA_DML_IF_NAME_LENGTH];
     ULONG instanceNumber;
     ULONG LastChange;
-    struct _EthCtlFn* control;
-    void* hwid;
+    const struct _EthCtlFn* control;
+    const void *hwid;
     COSA_DML_ETH_STATS LastStats;
 } CosaEthInterfaceInfo, *PCosaEthInterfaceInfo;
 
