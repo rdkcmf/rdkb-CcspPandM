@@ -3440,7 +3440,7 @@
         <object>
             <name>X_RDKCENTRAL-COM_EthernetWAN</name>
             <objectType>object</objectType>
-            <functions>
+          <!--  <functions>
                 <func_GetParamStringValue>EthernetWAN_GetParamStringValue</func_GetParamStringValue>
             </functions>
             <parameters>
@@ -3449,7 +3449,7 @@
                     <type>string(32)</type>
                     <syntax>string</syntax>
                 </parameter>
-            </parameters>
+	    </parameters> -->
 <?ifdef _MACSEC_SUPPORT_?>
             <objects>
                <object>
