@@ -1710,6 +1710,14 @@ void getpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1Inde
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAAmount", pEntry->Cfg.IANAAmount)
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "StartAddress", pEntry->Cfg.StartAddress)
     GETI_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "X_RDKCENTRAL_COM_DNSServersEnabled", pEntry->Cfg.X_RDKCENTRAL_COM_DNSServersEnabled)
+    char l_cSecWebUI_Enabled[8] = {0};
+    syscfg_get(NULL, "SecureWebUI_Enable", l_cSecWebUI_Enabled, sizeof(l_cSecWebUI_Enabled));
+    if (!strncmp(l_cSecWebUI_Enabled, "true", 4)){
+        pEntry->Cfg.X_RDKCENTRAL_COM_DNSServersEnabled = 1;
+    }
+    else {
+        pEntry->Cfg.X_RDKCENTRAL_COM_DNSServersEnabled = 0;
+    }
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "X_RDKCENTRAL_COM_DNSServers", pEntry->Cfg.X_RDKCENTRAL_COM_DNSServers)
 
     Utopia_Free(&utctx,0);
@@ -4482,7 +4490,9 @@ OPTIONS:
                                                    }
                                                    else
                                                    {
-						       fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dns_str);
+                                                       if ( '\0' != dns_str[ 0 ] ){
+							      fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dns_str);
+						       } 
                                                    }
 					   }
 					
