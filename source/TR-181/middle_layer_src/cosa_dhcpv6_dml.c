@@ -4059,11 +4059,9 @@ Server3_Rollback
     *  Pool1_AddEntry
     *  Pool1_DelEntry
     *  Pool1_GetParamBoolValue
-    *  Pool1_GetParamIntValue
     *  Pool1_GetParamUlongValue
     *  Pool1_GetParamStringValue
     *  Pool1_SetParamBoolValue
-    *  Pool1_SetParamIntValue
     *  Pool1_SetParamUlongValue
     *  Pool1_SetParamStringValue
     *  Pool1_Validate
@@ -4456,61 +4454,6 @@ Pool1_GetParamBoolValue
     {
         /* collect value */
         *pBool   =  pDhcpc->Cfg.X_RDKCENTRAL_COM_DNSServersEnabled;
-
-        return TRUE;
-    }
-
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
-    return FALSE;
-}
-
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        BOOL
-        Pool1_GetParamIntValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                int*                        pInt
-            );
-
-    description:
-
-        This function is called to retrieve integer parameter value; 
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                int*                        pInt
-                The buffer of returned integer value;
-
-    return:     TRUE if succeeded.
-
-**********************************************************************/
-BOOL
-Pool1_GetParamIntValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        int*                        pInt
-    )
-{
-    PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = (PCOSA_DML_DHCPSV6_POOL_FULL)pCxtLink->hContext;
-
-    /* check the parameter name and return the corresponding value */
-
-    if( AnscEqualString(ParamName, "LeaseTime", TRUE) )
-    {
-        /* collect value */
-        *pInt  = pPool->Cfg.LeaseTime;
 
         return TRUE;
     }
@@ -4957,77 +4900,6 @@ Pool1_SetParamBoolValue
     return FALSE;
 }
 
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        BOOL
-        Pool1_SetParamIntValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                int                         iValue
-            );
-
-    description:
-
-        This function is called to set integer parameter value; 
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                int                         iValue
-                The updated integer value;
-
-    return:     TRUE if succeeded.
-
-**********************************************************************/
-BOOL
-Pool1_SetParamIntValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        int                         iValue
-    )
-{
-    PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = (PCOSA_DML_DHCPSV6_POOL_FULL)pCxtLink->hContext;
-
-    /* check the parameter name and set the corresponding value */
-
-    if( AnscEqualString(ParamName, "LeaseTime", TRUE) )
-    {
-        /*  enter only valid values 
-            UNITS
-            seconds=iValue;(min-120 max-999)
-            minutes=iValue/60;
-            hours=iValue/3600;
-            days=iValue/86400;
-            weeks=iValue/604800;
-            forever=-1;
-        */
-        if((iValue>=0) && (iValue<MINSECS))
-            return FALSE;
-        if((iValue%WEEKS==0)  ||
-            (iValue%DAYS==0)  ||
-            (iValue%HOURS==0) ||
-            (iValue%MIN==0)   ||
-            (iValue<=MAXSECS) ||
-            (iValue==-1)){
-                /* save update to backup */
-                pPool->Cfg.LeaseTime= iValue;
-                return TRUE;
-	}
-    }
-
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
-    return FALSE;
-}
 
 /**********************************************************************  
 

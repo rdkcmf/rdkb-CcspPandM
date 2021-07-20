@@ -647,11 +647,9 @@ Server3_Rollback
     *  Pool1_AddEntry
     *  Pool1_DelEntry
     *  Pool1_GetParamBoolValue
-    *  Pool1_GetParamIntValue
     *  Pool1_GetParamUlongValue
     *  Pool1_GetParamStringValue
     *  Pool1_SetParamBoolValue
-    *  Pool1_SetParamIntValue
     *  Pool1_SetParamUlongValue
     *  Pool1_SetParamStringValue
     *  Pool1_Validate
@@ -696,14 +694,6 @@ Pool1_GetParamBoolValue
     );
 
 BOOL
-Pool1_GetParamIntValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        int*                        pInt
-    );
-
-BOOL
 Pool1_GetParamUlongValue
     (
         ANSC_HANDLE                 hInsContext,
@@ -726,14 +716,6 @@ Pool1_SetParamBoolValue
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
         BOOL                        bValue
-    );
-
-BOOL
-Pool1_SetParamIntValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        int                         value
     );
 
 BOOL

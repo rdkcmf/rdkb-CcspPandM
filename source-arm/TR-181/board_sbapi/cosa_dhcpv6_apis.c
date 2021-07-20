@@ -3648,9 +3648,7 @@ static int format_dibbler_option(char *option)
 }
 #endif
 
-#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_COSA_BCM_MIPS_)
-// adding new logics to handle pd-class
-static int remove_single_quote (char *buf)
+int remove_single_quote (char *buf)
 {
   int i = 0;
   int j = 0;
@@ -3666,6 +3664,9 @@ static int remove_single_quote (char *buf)
 }
 
 
+
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_COSA_BCM_MIPS_)
+// adding new logics to handle pd-class
 static int get_ipv6_tpmode (int *tpmod)
 {
   char buf[16] = { 0 };
@@ -4250,26 +4251,34 @@ void __cosa_dhcpsv6_refresh_config()
 
                 /*we need get two time values */
                 {
-                    if (sDhcpv6ServerPool[Index].Cfg.LeaseTime <= -1 ) {
-                        T1 = T2 = preferedTime = validTime = 0xFFFFFFFF;
-                    }else{
-                        T1           = (sDhcpv6ServerPool[Index].Cfg.LeaseTime)/2;
-                        T2           = (ULONG)((sDhcpv6ServerPool[Index].Cfg.LeaseTime)*80.0/100);
-                        preferedTime = (sDhcpv6ServerPool[Index].Cfg.LeaseTime);
-                        validTime    = (sDhcpv6ServerPool[Index].Cfg.LeaseTime);
-                    }
+				char s_iapd_pretm[32] = {0};
+				char s_iapd_vldtm[32] = {0};
+				ULONG  iapd_pretm, iapd_vldtm =0;
+				
+				commonSyseventGet(COSA_DML_DHCPV6C_PREF_PRETM_SYSEVENT_NAME, s_iapd_pretm, sizeof(s_iapd_pretm));
+				commonSyseventGet(COSA_DML_DHCPV6C_PREF_VLDTM_SYSEVENT_NAME, s_iapd_vldtm, sizeof(s_iapd_vldtm));
+							
+				sscanf(s_iapd_pretm, "%lu", &iapd_pretm);
+				sscanf(s_iapd_vldtm, "%lu", &iapd_vldtm);
+				
+				if (sDhcpv6ServerPool[Index].Cfg.LeaseTime <= -1 ) {
+					T1 = T2 = preferedTime = validTime = 0xFFFFFFFF;
+				}else{
+					T1           = iapd_pretm/2;
+					T2           = (ULONG)(iapd_pretm*80.0/100);
+					preferedTime = iapd_pretm;
+					validTime    = iapd_vldtm;
+				}
 
-                    fprintf(fp, "       T1 %lu\n", T1);
-                    fprintf(fp, "       T2 %lu\n", T2);
-                    fprintf(fp, "       prefered-lifetime %lu\n", preferedTime);
-                    fprintf(fp, "       valid-lifetime %lu\n", validTime);
-                }
-                
+				fprintf(fp, "       T1 %lu\n", T1);
+				fprintf(fp, "       T2 %lu\n", T2);
+				fprintf(fp, "       prefered-lifetime %lu\n", iapd_pretm);
+				fprintf(fp, "       valid-lifetime %lu\n", iapd_vldtm);			
+			}	              
                 fprintf(fp, "   }\n");
-            }
-
+		}
             AnscFreeMemory(pTmp3);
-        }
+       }
 
 OPTIONS:
         /* For options */
@@ -7951,6 +7960,7 @@ dhcpv6c_dbg_thrd(void * in)
             now action only supports "add", "del"*/
             
             p = msg+strlen("dibbler-client");
+
             while(isblank(*p)) p++;
 
             fprintf(stderr, "%s -- %d !!! get event from v6 client: %s \n", __FUNCTION__, __LINE__,p);
@@ -7964,8 +7974,7 @@ dhcpv6c_dbg_thrd(void * in)
                         (PUCHAR)"Device.IP.Interface.",
                         (PUCHAR)"Name",
                         (PUCHAR)COSA_DML_DHCPV6_CLIENT_IFNAME
-                        );
-
+                        );				   
                 if (!strncmp(action, "add", 3))
                 {
                     CcspTraceInfo(("%s: add\n", __func__));
@@ -7998,11 +8007,26 @@ dhcpv6c_dbg_thrd(void * in)
                         {
                              commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME,       v6addr);
                         }
+						if (iana_iaid[0] != '\0') {
+							remove_single_quote(iana_iaid);
                         commonSyseventSet(COSA_DML_DHCPV6C_ADDR_IAID_SYSEVENT_NAME,  iana_iaid);
+						}
+						if (iana_t1[0] != '\0') {
+							remove_single_quote(iana_t1);
                         commonSyseventSet(COSA_DML_DHCPV6C_ADDR_T1_SYSEVENT_NAME,    iana_t1);
+						}
+						if (iana_t2[0] != '\0') {
+							remove_single_quote(iana_t2);
                         commonSyseventSet(COSA_DML_DHCPV6C_ADDR_T2_SYSEVENT_NAME,    iana_t2);
+						}
+						if (iana_pretm[0] != '\0') {
+							remove_single_quote(iana_pretm);
                         commonSyseventSet(COSA_DML_DHCPV6C_ADDR_PRETM_SYSEVENT_NAME, iana_pretm);
+						}
+						if (iana_vldtm[0] != '\0') {
+							remove_single_quote(iana_vldtm);
                         commonSyseventSet(COSA_DML_DHCPV6C_ADDR_VLDTM_SYSEVENT_NAME, iana_vldtm);
+						}
 
                         if(pString)
                         {
@@ -8151,11 +8175,26 @@ dhcpv6c_dbg_thrd(void * in)
 				}
 			}
 #endif
+                        if (iapd_iaid[0] != '\0') {
+							remove_single_quote(iapd_iaid);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_IAID_SYSEVENT_NAME,  iapd_iaid);
+						}
+						if (iapd_t1[0] != '\0') {
+							remove_single_quote(iapd_t1);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_T1_SYSEVENT_NAME,    iapd_t1);
+						}
+						if (iapd_t2[0] != '\0') {
+							remove_single_quote(iapd_t2);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_T2_SYSEVENT_NAME,    iapd_t2);
+						}
+						if (iapd_pretm[0] != '\0') {
+							remove_single_quote(iapd_pretm);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_PRETM_SYSEVENT_NAME, iapd_pretm);
+						}
+						if (iapd_vldtm[0] != '\0') {
+							remove_single_quote(iapd_vldtm);
                         commonSyseventSet(COSA_DML_DHCPV6C_PREF_VLDTM_SYSEVENT_NAME, iapd_vldtm);
+						}
 
 #if defined (MULTILAN_FEATURE)
                         ULONG idx = 0;
@@ -8274,8 +8313,8 @@ dhcpv6c_dbg_thrd(void * in)
                         char dns_server[256] = {'\0'};
                         char ipv6_lan_prefix[256] = {'\0'};
                         int prefix_unset_timeout = 100;
-                        sscanf(iapd_pretm, "'%d'", &hub4_preferred_lft);
-                        sscanf(iapd_vldtm, "'%d'", &hub4_valid_lft);
+                        sscanf(iapd_pretm, "%d", &hub4_preferred_lft);
+                        sscanf(iapd_vldtm, "%d", &hub4_valid_lft);
                         ipc_dhcpv6_data_t dhcpv6_data;
                         memset(&dhcpv6_data, 0, sizeof(ipc_dhcpv6_data_t));
 

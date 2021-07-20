@@ -9927,11 +9927,9 @@
                 <func_AddEntry>Pool1_AddEntry</func_AddEntry>
                 <func_DelEntry>Pool1_DelEntry</func_DelEntry>
                 <func_GetParamBoolValue>Pool1_GetParamBoolValue</func_GetParamBoolValue>
-                <func_GetParamIntValue>Pool1_GetParamIntValue</func_GetParamIntValue>
                 <func_GetParamUlongValue>Pool1_GetParamUlongValue</func_GetParamUlongValue>
                 <func_GetParamStringValue>Pool1_GetParamStringValue</func_GetParamStringValue>
                 <func_SetParamBoolValue>Pool1_SetParamBoolValue</func_SetParamBoolValue>
-                <func_SetParamIntValue>Pool1_SetParamIntValue</func_SetParamIntValue>
                 <func_SetParamUlongValue>Pool1_SetParamUlongValue</func_SetParamUlongValue>
                 <func_SetParamStringValue>Pool1_SetParamStringValue</func_SetParamStringValue>
                 <func_Validate>Pool1_Validate</func_Validate>
@@ -10067,12 +10065,6 @@
               <name>IAPDPrefixes</name>
               <type>string</type>
               <syntax>string</syntax>
-            </parameter>
-            <parameter>
-              <name>LeaseTime</name>
-              <type>int[-1:]</type>
-              <syntax>int</syntax>
-              <writable>true</writable>
             </parameter>
             <parameter>
               <name>IAPDAddLength</name>

@@ -3804,11 +3804,9 @@ Server3_Rollback
     *  Pool1_AddEntry
     *  Pool1_DelEntry
     *  Pool1_GetParamBoolValue
-    *  Pool1_GetParamIntValue
     *  Pool1_GetParamUlongValue
     *  Pool1_GetParamStringValue
     *  Pool1_SetParamBoolValue
-    *  Pool1_SetParamIntValue
     *  Pool1_SetParamUlongValue
     *  Pool1_SetParamStringValue
     *  Pool1_Validate
@@ -4192,62 +4190,6 @@ Pool1_GetParamBoolValue
         return TRUE;
     }
 
-
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
-    return FALSE;
-}
-
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        BOOL
-        Pool1_GetParamIntValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                int*                        pInt
-            );
-
-    description:
-
-        This function is called to retrieve integer parameter value; 
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                int*                        pInt
-                The buffer of returned integer value;
-
-    return:     TRUE if succeeded.
-
-**********************************************************************/
-BOOL
-Pool1_GetParamIntValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        int*                        pInt
-    )
-{
-    ANSC_STATUS                       returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = (PCOSA_DML_DHCPSV6_POOL_FULL)pCxtLink->hContext;
-
-    /* check the parameter name and return the corresponding value */
-
-    if( AnscEqualString(ParamName, "LeaseTime", TRUE) )
-    {
-        /* collect value */
-        *pInt  = pPool->Cfg.LeaseTime;
-
-        return TRUE;
-    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
@@ -4769,62 +4711,6 @@ Pool1_SetParamBoolValue
         return TRUE;
     }
 
-
-    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
-    return FALSE;
-}
-
-/**********************************************************************  
-
-    caller:     owner of this object 
-
-    prototype: 
-
-        BOOL
-        Pool1_SetParamIntValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                int                         iValue
-            );
-
-    description:
-
-        This function is called to set integer parameter value; 
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                int                         iValue
-                The updated integer value;
-
-    return:     TRUE if succeeded.
-
-**********************************************************************/
-BOOL
-Pool1_SetParamIntValue
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       ParamName,
-        int                         iValue
-    )
-{
-    ANSC_STATUS                       returnStatus      = ANSC_STATUS_SUCCESS;
-    PCOSA_CONTEXT_POOLV6_LINK_OBJECT  pCxtLink          = (PCOSA_CONTEXT_POOLV6_LINK_OBJECT)hInsContext;
-    PCOSA_DML_DHCPSV6_POOL_FULL       pPool             = (PCOSA_DML_DHCPSV6_POOL_FULL)pCxtLink->hContext;
-
-    /* check the parameter name and set the corresponding value */
-
-    if( AnscEqualString(ParamName, "LeaseTime", TRUE) )
-    {
-        /* save update to backup */
-        pPool->Cfg.LeaseTime= iValue;
-
-        return TRUE;
-    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
