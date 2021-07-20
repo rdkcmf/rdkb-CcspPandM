@@ -3987,10 +3987,13 @@ TR069support_GetParamBoolValue
                 *pBool = FALSE;
             else
                 *pBool = TRUE;
-        } else 
+        }
+        else {
+           //Returning as TRUE which was the behaviour prior to the coverity fix CID: 71587
+           *pBool = TRUE;
            return FALSE;
-        
-         return TRUE;
+        }
+        return TRUE;
     }
 
     return FALSE;
