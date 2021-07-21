@@ -215,6 +215,34 @@ CosaDmlDiSetEnableMoCAforXi5Flag
     return ANSC_STATUS_SUCCESS;
 }
 
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+/* * CosaDmlDiIsCMHighSplitDiplexerMode() */
+static unsigned char CosaDmlDiIsCMHighSplitDiplexerMode( void )
+{
+    token_t    se_token;
+    int        se_fd = s_sysevent_connect(&se_token);
+    char acDiplexerMode[16] = {0};
+
+    if ( se_fd < 0 )
+    {
+        CcspTraceWarning(("%s -- failed to connect to sysevent!\n", __FUNCTION__));
+        return FALSE;
+    }
+
+    if( ( 0 == sysevent_get( se_fd, se_token, "cm_diplexer_mode", acDiplexerMode,sizeof(acDiplexerMode) ) ) &&
+        ( acDiplexerMode != '\0' )
+        ( 0 == strcmp( acDiplexerMode, "high_split" ) ) )
+    {
+        sysevent_close(se_fd, se_token);
+        return TRUE;
+    }
+
+    sysevent_close(se_fd, se_token);
+
+    return FALSE;
+}
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+
 /* CosaDmlDiCheckAndEnableMoCA() */
 void CosaDmlDiCheckAndEnableMoCA( void )
 {
@@ -261,7 +289,11 @@ void CosaDmlDiCheckAndEnableMoCA( void )
 		free_parameterValStruct_t ( bus_handle, nval, valStrMoCAEnable );
 		
 		/* If MoCA disabled then we have to enable when this case */
-		if( bNeedtoEnablMoCA )
+		if( ( bNeedtoEnablMoCA ) 
+#if defined (_CM_HIGHSPLIT_SUPPORTED_)
+            && ( FALSE == CosaDmlDiIsCMHighSplitDiplexerMode() ) 
+#endif /* * _CM_HIGHSPLIT_SUPPORTED_ */
+          )
 		{
 			ret = CcspBaseIf_setParameterValues(  bus_handle,
 												  compo,
