@@ -72,6 +72,11 @@
 #include "cosa_routing_internal.h"
 #include "dml_tr181_custom_cfg.h"
 #include "secure_wrapper.h"
+
+#if defined (_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_) || defined (_CBR2_PRODUCT_REQ_)
+#include "cosa_drg_common.h"
+#endif
+
 #include "safec_lib_common.h"
 
 extern void* g_pDslhDmlAgent;
@@ -815,6 +820,9 @@ ULONG CosaDmlGetBitsNumFromNetMask(char * Address)
 void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
 {
     PCOSA_DML_RIPD_CONF pConf = &CosaDmlRIPCurrentConfig;
+    #if defined (_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_) || defined (_CBR2_PRODUCT_REQ_)
+    FILE * pFile              = NULL;
+    #endif
     FILE * fp                 = fopen(COSA_RIPD_CUR_CONF, "w+");
     char *pstaticRoute        = NULL;
     BOOL bTrueStaticIP        = TRUE;
@@ -823,7 +831,9 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
     AnscTraceWarning(("CosaDmlGenerateRipdConfigFile -- starts.\n"));
 
     bTrueStaticIP  = g_GetParamValueBool(g_pDslhDmlAgent, "Device.X_CISCO_COM_TrueStaticIP.Enable");
-    
+    #if defined (_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_) || defined (_CBR2_PRODUCT_REQ_)
+	commonSyseventSet("ripd_conf-status","empty");
+    #endif
     if (fp)
     {
         /*we need this to get IANA IAPD info from dibbler*/
@@ -841,7 +851,12 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
             fprintf(fp, "key chain %s\n", pConf->If1KeyChainName);
             fprintf(fp, " key %lu\n", pConf->If1KeyID);
             fprintf(fp, "  key-string %s\n", pConf->If1Md5KeyValue);
-        }
+	}
+        #if defined (_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_) || defined (_CBR2_PRODUCT_REQ_)	
+	if (( pConf->If1Md5KeyValue == NULL )  || (_ansc_strlen(pConf->If1Md5KeyValue) == 0 )){
+            AnscTraceWarning(("Static IP: MD5 Key Values are Empty"));
+	}
+	#endif
         fprintf(fp, "!\n");
 
         if ( pConf->Enable && pConf->If1Enable && (_ansc_strlen(pConf->If1Name) > 0 ) )
@@ -859,6 +874,11 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
                     fprintf(fp, " ip rip authentication mode text\n");
                     fprintf(fp, " ip rip authentication string %s\n",pConf->If1SimplePassword);
                 }
+	#if defined (_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_) || defined (_CBR2_PRODUCT_REQ_)
+		else {
+		    AnscTraceWarning(("Static IP: Unknown RIP Authentication Mode\n"));
+		}
+	#endif
             }
             fprintf(fp, " ip rip split-horizon\n");
             fprintf(fp, "!\n");
@@ -879,6 +899,11 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
                     fprintf(fp, " ip rip authentication mode text\n");
                     fprintf(fp, " ip rip authentication string %s\n",pConf->If1SimplePassword);
                 }
+	#if defined (_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_) || defined (_CBR2_PRODUCT_REQ_)
+		else {
+		    AnscTraceWarning(("Static IP: Unknown RIP Authentication Mode\n"));
+		}
+	#endif
             }
             fprintf(fp, " ip rip split-horizon\n"); 
             fprintf(fp, "!\n");
@@ -1029,7 +1054,14 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
         fclose(fp);
 
     }
-
+	#if defined (_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_) || defined (_CBR2_PRODUCT_REQ_)
+	pFile=fopen("/tmp/pam_ripd_config_completed","a+");
+	    if(pFile)
+	    {
+	        fclose(pFile);
+	    }
+	commonSyseventSet("ripd_conf-status","ready");
+	#endif
     AnscTraceWarning(("CosaDmlGenerateRipdConfigFile -- exits.\n"));
 
     return;
