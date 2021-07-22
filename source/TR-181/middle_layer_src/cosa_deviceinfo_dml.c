@@ -13246,6 +13246,7 @@ ReverseSSH_SetParamStringValue
     return FALSE;
 }
 
+#if 0
 /***********************************************************************
 
  APIs for Object:
@@ -13336,7 +13337,7 @@ EthernetWAN_GetParamStringValue
     return -1;
 }
 
-
+#endif
 /***********************************************************************
 
  APIs for Object:
