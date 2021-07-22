@@ -72,6 +72,7 @@
 #include "webconfig_framework.h"
 #include "secure_wrapper.h"
 #include "safec_lib_common.h"
+#include "telemetry_busmessage_sender.h"
 
 #define DEBUG_INI_NAME  "/etc/debug.ini"
 // With WAN boot time optimization, in few cases P&M initialization is further delayed
@@ -720,6 +721,7 @@ if(id != 0)
 #endif
 #endif
 
+   t2_init("CcspPandM");
    ret = cmd_dispatch('e');
    if(ret != 0)
    {

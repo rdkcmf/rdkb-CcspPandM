@@ -118,6 +118,7 @@
 #include "cosa_x_cisco_com_rlog_internal.h"
 #include "cosa_x_cisco_com_hotspot_internal.h"
 #include "libHotspotApi.h"
+#include <telemetry_busmessage_sender.h>
 
 #ifdef DSLITE_FEATURE_SUPPORT
 #include "cosa_dslite_apis.h"
@@ -753,6 +754,7 @@ static void CheckAndSetRebootReason()
         if (NULL != fpBootLogFile)
         {
             fprintf(fpBootLogFile, "Received reboot_reason as:%s\n", rebootReason);
+	    t2_event_s("rdkb_rebootreason_split", rebootReason);
             fclose(fpBootLogFile);
         }
         else

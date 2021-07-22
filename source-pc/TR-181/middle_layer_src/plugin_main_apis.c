@@ -112,6 +112,7 @@
 #if  CFG_USE_Common_Util
 #include "cosa_common_util.h"
 #endif
+#include <telemetry_busmessage_sender.h>
 
 //LNT_EMU - PSM ACCESS
 extern ANSC_HANDLE bus_handle;
@@ -640,6 +641,7 @@ static void CheckAndSetRebootReason()
         if (NULL != fpBootLogFile)
         {
             fprintf(fpBootLogFile, "Received reboot_reason as:%s\n", rebootReason);
+	    t2_event_s("rdkb_rebootreason_split", rebootReason);
             fclose(fpBootLogFile);
         }
         else
