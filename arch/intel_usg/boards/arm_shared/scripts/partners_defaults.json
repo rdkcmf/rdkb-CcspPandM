@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "7.0"
+      "version" : "8.0"
    },
 
    "comcast" : {
@@ -437,7 +437,15 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config-shaw.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
-      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-shaw.xdp.comcast.net/api/v1/device/{mac}/config"
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-shaw.xdp.comcast.net/api/v1/device/{mac}/config",
+      "override" : {
+      "CGM4331COM" : {
+                "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CMVoiceImageSelect" : "pc20genband"
+        },
+        "TG4482A" : {
+                "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CMVoiceImageSelect" : "pc20genband"
+        }
+      }
    },
 
 "videotron" : {
