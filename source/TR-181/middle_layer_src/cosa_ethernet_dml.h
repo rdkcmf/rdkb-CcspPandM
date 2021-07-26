@@ -113,7 +113,7 @@ Ethernet_GetParamStringValue
         char*                       pValue,
         ULONG*                      pUlSize
     );
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
 /***********************************************************************
 
  APIs for Object:
@@ -278,7 +278,7 @@ Stats_GetParamStringValue
         char*                       pValue,
         ULONG*                      pUlSize
     );
-
+#endif // #ifndef FEATURE_RDKB_WAN_MANAGER
 /***********************************************************************
 
  APIs for Object:

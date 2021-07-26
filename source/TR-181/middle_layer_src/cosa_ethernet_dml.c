@@ -334,7 +334,7 @@ Ethernet_GetParamStringValue
 
     return -1;
 }
-
+#ifndef FEATURE_RDKB_WAN_MANAGER
 /***********************************************************************
 
  APIs for Object:
@@ -1710,7 +1710,7 @@ Stats_GetParamStringValue
 
     return -1;
 }
-
+#endif // #ifndef FEATURE_RDKB_WAN_MANAGER 
 /***********************************************************************
 
  APIs for Object:

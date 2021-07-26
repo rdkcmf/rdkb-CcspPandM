@@ -89,6 +89,11 @@
 //$HL 4/30/2013
 #include "ccsp_psm_helper.h"
 
+#if defined (FEATURE_RDKB_WAN_MANAGER)
+#define ETH_AGENT_COMPONENT_NAME                "eRT.com.cisco.spvtg.ccsp.ethagent"
+#define ETH_AGENT_DBUS_PATH                     "/com/cisco/spvtg/ccsp/ethagent"
+#endif 
+
 ANSC_STATUS
 COSAGetParamValueByPathName
     (
@@ -870,6 +875,50 @@ CosaUtilConstructLowerLayers
     return  ANSC_STATUS_SUCCESS;
 }
 
+#if defined (FEATURE_RDKB_WAN_MANAGER)
+ANSC_STATUS EthAgent_getParams(char *pComponent, char *pBus, char *pParamName, char *pReturnVal)
+{
+    parameterValStruct_t **retVal;
+    char *ParamName[1];
+    int ret = 0, nval;
+
+    //Assign address for get parameter name
+    ParamName[0] = pParamName;
+
+    ret = CcspBaseIf_getParameterValues(
+        bus_handle,
+        pComponent,
+        pBus,
+        ParamName,
+        1,
+        &nval,
+        &retVal);
+
+    //Copy the value
+    if (CCSP_SUCCESS == ret)
+    {
+        CcspTraceWarning(("%s parameterValue[%s]\n", __FUNCTION__, retVal[0]->parameterValue));
+
+        if (NULL != retVal[0]->parameterValue)
+        {
+            memcpy(pReturnVal, retVal[0]->parameterValue, strlen(retVal[0]->parameterValue) + 1);
+        }
+
+        if (retVal)
+        {
+            free_parameterValStruct_t(bus_handle, nval, retVal);
+        }
+
+        return ANSC_STATUS_SUCCESS;
+    }
+    if (retVal)
+    {
+        free_parameterValStruct_t(bus_handle, nval, retVal);
+    }
+
+    return ANSC_STATUS_FAILURE;
+}
+#endif
 
 /*
  *  Retrieve the parameter Name of the LowerLayer
@@ -887,6 +936,7 @@ CosaUtilGetLowerLayerName
     char                            pParamPath[256] = {0};
     ULONG                           ParamPathLen    = sizeof(pParamPath);
 
+    UNREFERENCED_PARAMETER(pBufLen);
     returnStatus = CosaUtilConstructLowerLayers(LinkType, InstNumber, pParamPath, &ParamPathLen);
 
     if ( returnStatus != ANSC_STATUS_SUCCESS )
@@ -898,8 +948,11 @@ CosaUtilGetLowerLayerName
         _ansc_strcat(pParamPath, ".Name");
     }
 
+#if defined (FEATURE_RDKB_WAN_MANAGER)
+    returnStatus = EthAgent_getParams( ETH_AGENT_COMPONENT_NAME, ETH_AGENT_DBUS_PATH, pParamPath, pParamValueBuf);
+#else
     returnStatus = CosaGetParamValueString(pParamPath, pParamValueBuf, pBufLen);
-
+#endif
     if ( returnStatus == ANSC_STATUS_SUCCESS )
     {
         AnscTraceFlow(("CosaUtilGetLowerLayerName -- value %s\n", pParamValueBuf));

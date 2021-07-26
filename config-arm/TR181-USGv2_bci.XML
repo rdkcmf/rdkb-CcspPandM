@@ -3639,6 +3639,7 @@
 
       <parameters>
 
+<?ifndef FEATURE_RDKB_WAN_MANAGER?>
         <parameter>
 
           <name>InterfaceNumberOfEntries</name>
@@ -3648,6 +3649,7 @@
           <syntax>uint32</syntax>
 
         </parameter>
+<?endif?>
 
         <parameter>
 
@@ -3672,7 +3674,7 @@
       </parameters>
 
       <objects>
-
+<?ifndef FEATURE_RDKB_WAN_MANAGER?>
         <object>
 
           <name>Interface</name>
@@ -4082,6 +4084,7 @@
           </objects>
 
         </object>
+<?endif?>
 
         <object>
 
