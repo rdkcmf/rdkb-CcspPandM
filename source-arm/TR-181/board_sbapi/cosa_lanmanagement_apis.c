@@ -295,13 +295,19 @@ ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Ula(char *ula_prefix, char *ula) {
         openCommonSyseventConnection();
     }
 
+    if ((ula_prefix == NULL) || (ula == NULL))
+    {
+        AnscTraceWarning(("NULL value seen for ula_prefix or ula \n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
     if( generate_ipv6_eui_address(eui_address, sizeof(eui_address)) != 0 )
     {
         AnscTraceWarning(("%s generate_ipv6_eui_address failure \n", __FUNCTION__));
         return ANSC_STATUS_FAILURE;
     }
 
-    if(strlen(ula_prefix) == 0)
+    if((strlen(ula_prefix) == 0) || strncmp(ula_prefix, "undefined",strlen("undefined")) == 0)
     {
         if (generateIpv6LanPrefix(generated_lan_prefix, sizeof(generated_lan_prefix)) != 0)
         {
