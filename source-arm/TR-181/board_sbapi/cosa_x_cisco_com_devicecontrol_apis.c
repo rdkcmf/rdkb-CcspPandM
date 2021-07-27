@@ -1987,7 +1987,7 @@ void* resetWiFi(void* arg)
 		CcspTraceError(("FactoryReset:%s SettingX_CISCO_COM_FactoryReset returned error for param '%s'  ...\n",__FUNCTION__,faultParam));  
 		bus_info->freefunc(faultParam);
 	}
-#if defined (_XB6_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_) || defined(_HUB4_PRODUCT_REQ_)
+#if defined (_XB6_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_) || (defined(_HUB4_PRODUCT_REQ_) && !defined(_SR300_PRODUCT_REQ_))
 	faultParam = NULL;
 	parameterValStruct_t val1 = { "Device.WiFi.X_CISCO_COM_FactoryResetRadioAndAp", "1,2;1,2", ccsp_string};
 	ret = CcspBaseIf_setParameterValues
