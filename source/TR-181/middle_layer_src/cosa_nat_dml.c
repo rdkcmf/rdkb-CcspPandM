@@ -1749,7 +1749,11 @@ PortMapping_DelEntry
         AnscFreeMemory(pPMappingCxtLink->hContext);
         AnscFreeMemory(pPMappingCxtLink);
     }
-
+#ifdef _BWG_PRODUCT_REQ_
+    //CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: START
+    UpdateList(NULL);
+    //CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: END
+#endif
     return returnStatus;
 }
 
@@ -2685,6 +2689,11 @@ PortMapping_Commit
                 NAT_PORTMAPPING_SET_DEFAULTVALUE(pNatPMapping);
            }
         }
+#ifdef _BWG_PRODUCT_REQ_
+        //CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: START
+        UpdateList(NULL);
+        //CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: END
+#endif
     }
 
     AnscZeroMemory( pNat->AliasOfPortMapping, sizeof(pNat->AliasOfPortMapping) );

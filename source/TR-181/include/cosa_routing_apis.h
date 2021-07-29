@@ -328,8 +328,13 @@ COSA_PRI_ROUTER_FULL, *PCOSA_PRI_ROUTER_FULL;
 #define COSA_ZEBRA_TMP_CONF     "./zebra_tmp.conf"
 #define COSA_ZEBRA_CUR_CONF     "./zebra.conf"
 #else
+#if defined (_BWG_PRODUCT_REQ_)
+#define COSA_RIPD_TMP_CONF      "/var/ripd_tmp.conf"
+#define COSA_RIPD_CUR_CONF      "/var/ripd.conf"
+#else
 #define COSA_RIPD_TMP_CONF      "/etc/ripd_tmp.conf"
 #define COSA_RIPD_CUR_CONF      "/etc/ripd.conf"
+#endif
 #define COSA_ZEBRA_TMP_CONF     "/etc/zebra_tmp.conf"
 #define COSA_ZEBRA_CUR_CONF     "/etc/zebra.conf"
 #endif

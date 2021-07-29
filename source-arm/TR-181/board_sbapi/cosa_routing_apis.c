@@ -1168,9 +1168,23 @@ CosaDmlRipSetCfg
     AnscTraceWarning(("CosaDmlRIPCurrentConfig.DefaultMetric :%lu\n", CosaDmlRIPCurrentConfig.DefaultMetric));
 #endif
 
-    CosaDmlSaveRipdConfiguration();
-    CosaDmlGenerateRipdConfigFile(NULL);
-    CosaRipdOperation("restart");
+#if defined (_BWG_PRODUCT_REQ_)
+    if(!pCfg->Enable)
+    {
+        CosaRipdOperation("stop");
+        CosaDmlSaveRipdConfiguration();
+    }
+    else
+    {
+        CosaDmlSaveRipdConfiguration();
+        CosaDmlGenerateRipdConfigFile(NULL);
+        CosaRipdOperation("restart");
+    }
+#else
+        CosaDmlSaveRipdConfiguration();
+        CosaDmlGenerateRipdConfigFile(NULL);
+        CosaRipdOperation("restart");
+#endif
 
     AnscTraceWarning(("CosaDmlRipSetCfg -- exits.\n"));
     return returnStatus;
@@ -1482,9 +1496,23 @@ CosaDmlRipIfSetCfg
     AnscTraceWarning(("pConf->If1Name :%s\n", pConf->If1Name));
 #endif
 
-    CosaDmlSaveRipdConfiguration();
-    CosaDmlGenerateRipdConfigFile(NULL);
-    CosaRipdOperation("restart");
+#if defined (_BWG_PRODUCT_REQ_)
+    if(!pConf->If1Enable)
+    {
+        CosaRipdOperation("stop");
+        CosaDmlSaveRipdConfiguration();
+    }
+    else
+    {
+        CosaDmlSaveRipdConfiguration();
+        CosaDmlGenerateRipdConfigFile(NULL);
+        CosaRipdOperation("restart");
+    }
+#else
+        CosaDmlSaveRipdConfiguration();
+        CosaDmlGenerateRipdConfigFile(NULL);
+        CosaRipdOperation("restart");
+#endif
 
     AnscTraceWarning(("CosaDmlRipIfSetCfg -- exits.\n"));
 

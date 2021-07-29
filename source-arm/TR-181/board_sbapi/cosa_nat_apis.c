@@ -81,6 +81,13 @@
 #include "dml_tr181_custom_cfg.h"
 #include "safec_lib_common.h"
 
+#ifdef _BWG_PRODUCT_REQ_
+//CGWTDETS-8800 : Usable Statics will no longer support 1-1 NAT :: START
+#define max_size 3   //Max size of Exclusion list
+//CGWTDETS-8800 : Usable Statics will no longer support 1-1 NAT :: END
+#endif
+
+
 #if defined (MULTILAN_FEATURE)
 #define MAX_QUERY 1024
 #define IP_INTERFACE_COUNT_DML "Device.IP.InterfaceNumberOfEntries"
@@ -92,6 +99,11 @@
 PFN_COSA_DML_NAT_GEN   g_nat_pportmapping_callback = NULL;
 
 extern void* g_pDslhDmlAgent;
+
+#ifdef _BWG_PRODUCT_REQ_
+int updateExclusionList(char* ip, int index, int action);
+void handleExclusion(int count);
+#endif
 
 #ifdef _HUB4_PRODUCT_REQ_
 #ifdef FEATURE_MAPT
@@ -2647,6 +2659,9 @@ CosaDmlNatGetPortMappings
     ULONG                          rc;
     int                              i;
     int                      allCount = 0;
+#ifdef _BWG_PRODUCT_REQ_
+    int nat_count = 0;  //used to track total number of NAT entries
+#endif
     errno_t                  safec_rc = -1;
 //    ANSC_IPV4_ADDRESS             nat_lan;  
      if (!pulCount)
@@ -2798,7 +2813,19 @@ CosaDmlNatGetPortMappings
             ERR_CHK(safec_rc);
             safec_rc = strcpy_s(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6,sizeof(pNatPMapping[ulIndex].X_CISCO_COM_InternalClientV6), rangeInfo[i].dest_ipv6);
             ERR_CHK(safec_rc);
+#ifdef _BWG_PRODUCT_REQ_
+            //CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: START
+            if(strcmp("0.0.0.0",rangeInfo[i].public_ip))
+            {
+                updateExclusionList(rangeInfo[i].public_ip,nat_count+1,1);
+                nat_count++;
+            }
+            //CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: END
+#endif
         }
+#ifdef _BWG_PRODUCT_REQ_
+        handleExclusion(nat_count);
+#endif
         free(rangeInfo);
         rangeInfo = NULL;
     }
@@ -2913,7 +2940,13 @@ CosaDmlNatAddPortMapping
 {
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext                   Ctx;
-
+#ifdef _BWG_PRODUCT_REQ_
+    char ip[256];
+    int i=0,nat_count=0; //used to track the number of NAT entries
+    int             ulPortFwdRangeCount = 0;
+    portFwdRange_t           *rangeInfo = NULL;
+    int                              rc = 0;
+#endif
     if (!pEntry)
     {
         return ANSC_STATUS_FAILURE;
@@ -2938,6 +2971,25 @@ CosaDmlNatAddPortMapping
         syslog_systemlog("PortMapping", LOG_ERR, "%s Error initializing context\n", __FUNCTION__);
         return ANSC_STATUS_FAILURE;
     }
+#ifdef _BWG_PRODUCT_REQ_
+    //CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: START
+    rc = Utopia_GetPortForwardingRange(&Ctx, &ulPortFwdRangeCount, &rangeInfo);
+    if ( rc != SUCCESS )
+    {
+        CcspTraceWarning(("Utopia_GetPortForwardingRange failed rc %d in %s\n", rc, __FUNCTION__));
+        ulPortFwdRangeCount = 0;
+        rangeInfo = NULL;
+    }
+
+    for(i=0;i<ulPortFwdRangeCount;i++)
+    {
+        if(strcmp("0.0.0.0",rangeInfo[i].public_ip))
+        {
+            nat_count++;
+        }
+    }
+    //CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: END
+#endif
     if( ANSC_STATUS_SUCCESS == _AddPortMapping(&Ctx, pEntry))
     {
         Utopia_Free(&Ctx, 1);
@@ -2954,6 +3006,28 @@ CosaDmlNatAddPortMapping
 #endif        
 #endif        
         _sent_syslog_pm_sb("ADD", pEntry->Protocol, pEntry->ExternalPort, pEntry->ExternalPortEndRange, pEntry->InternalPort, pEntry->InternalClient.Dot,pEntry->bEnabled);
+
+#ifdef _BWG_PRODUCT_REQ_
+        //CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: START
+        if(rc == SUCCESS)
+        {
+        sprintf(ip, "%d.%d.%d.%d", pEntry->PublicIP.Dot[0],\
+              pEntry->PublicIP.Dot[1],\
+              pEntry->PublicIP.Dot[2],\
+              pEntry->PublicIP.Dot[3]);
+
+        if(strcmp("0.0.0.0",ip))
+        {
+            updateExclusionList(ip,nat_count+1,1);
+            handleExclusion(nat_count+1);
+        }
+
+        }
+        if(ulPortFwdRangeCount > 0)
+            free(rangeInfo);
+
+        //CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: END
+#endif
         return ANSC_STATUS_SUCCESS;
     }
     else
@@ -2963,6 +3037,61 @@ CosaDmlNatAddPortMapping
         return ANSC_STATUS_FAILURE;
     }
 }
+
+
+#ifdef _BWG_PRODUCT_REQ_
+//CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: START
+ANSC_STATUS UpdateList(ANSC_HANDLE hContext)
+{
+    UNREFERENCED_PARAMETER(hContext);
+    int count=0,i=0, j=0, nat_count=0; //used to track totalcount and nat count values
+    ULONG rc = 0;
+    UtopiaContext Ctx;
+    portFwdRange_t *rangeInfo = NULL;
+    if (!Utopia_Init(&Ctx))
+    {
+        CcspTraceWarning(("%s Error initializing context\n", __FUNCTION__));
+        syslog_systemlog("PortMapping", LOG_NOTICE, "%s Error initializing context\n", __FUNCTION__);
+        return ANSC_STATUS_FAILURE;
+    }
+    rc = Utopia_GetPortForwardingRange(&Ctx, &count, &rangeInfo);
+    if ( rc != SUCCESS )
+    {
+        CcspTraceWarning(("Utopia_GetPortForwardingRange failed rc %lu in %s\n", rc, __FUNCTION__));
+        count = 0;
+        rangeInfo = NULL;
+    }
+    if(rc == SUCCESS)
+    {
+    for(i=0;i<count;i++)
+    {
+         if(strcmp("0.0.0.0",rangeInfo[i].public_ip))
+         {
+             updateExclusionList(rangeInfo[i].public_ip,nat_count+1,1);
+             nat_count++;
+         }
+    }
+    }
+    //CGWTDETS-8800 : Usable Statics will no longer support 1-1 NAT :: START
+    if(nat_count < max_size )
+    {
+        for(j=nat_count;j<max_size;j++)
+        {
+            updateExclusionList("0.0.0.0",j+1,1);
+        }
+    }
+    //CGWTDETS-8800 : Usable Statics will no longer support 1-1 NAT :: END
+    if(count > 0)
+        free(rangeInfo);
+
+    handleExclusion(nat_count);
+
+    Utopia_Free(&Ctx,1);
+    return ANSC_STATUS_SUCCESS;
+}
+//CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: END
+#endif
+
 
 #ifdef _HUB4_PRODUCT_REQ_
 #ifdef FEATURE_MAPT

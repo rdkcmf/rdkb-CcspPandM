@@ -298,6 +298,12 @@ CosaDmlNatDelPortMapping
         ULONG                       ulInstanceNumber
     );
 
+#ifdef _BWG_PRODUCT_REQ_
+//CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: START
+ANSC_STATUS UpdateList(ANSC_HANDLE hContext);
+//CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: END
+#endif
+
 /*
 Description:
     The API re-configures the designated port mapping entry.

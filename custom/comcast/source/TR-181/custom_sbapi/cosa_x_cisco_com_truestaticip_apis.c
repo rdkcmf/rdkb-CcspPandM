@@ -78,6 +78,9 @@
 #include <utapi/utapi.h>
 #include <utapi/utapi_util.h>
 #include <stdlib.h>
+#ifdef _BWG_PRODUCT_REQ_
+#include <arpa/inet.h>
+#endif
 #include "cosa_drg_common.h"
 #include "secure_wrapper.h"
 #include "messagebus_interface_helper.h"
@@ -86,6 +89,242 @@
 extern void* g_pDslhDmlAgent;
 
 static int iBlockedURLInsNum = 0;
+
+#ifdef _BWG_PRODUCT_REQ_
+//CGWTDETS-8800 : Usable Statics will no longer support 1-1 NAT :: START
+BOOLEAN g_tsip_enable = FALSE;
+char g_tsip_ip[64] = {0};
+char g_tsip_subnet[64] = {0};
+char tsip_ip_nat[64] = {0}; //used to take the backup of TSIP IP
+char tsip_subnet_nat[64] = {0}; //used to take the backup of TSIP subnet
+
+
+//CGWTDETS-8800 : Usable Statics will no longer support 1-1 NAT :: END
+
+static int convert_ip_address_to_bytes(char* ip_address, struct sockaddr_in* ipv4,  int* ip_family)
+{
+    AnscTraceWarning(("%s starts !!!\n", __FUNCTION__));
+    if (inet_pton(AF_INET, ip_address, &(ipv4->sin_addr)))
+    {
+        *ip_family = AF_INET;
+    }
+    else
+    {
+         *ip_family = -1;
+    }
+
+    AnscTraceWarning(("%s exits !!!\n", __FUNCTION__));
+    return 0;
+}
+
+static int convert_subnet_to_num(char *subnet)
+{
+    int i = 0;
+    int n = 0;
+    struct in_addr addr;
+    uint32_t mask = 0;
+    int bits = sizeof( uint32_t)*8;
+    AnscTraceWarning(("%s starts !!!\n", __FUNCTION__));
+
+    memset(&addr, 0, sizeof(addr));
+
+    if(inet_aton(subnet, &addr) == 0)
+    {
+        printf("netmask is wrong\n");
+        return -1;
+    }
+
+    mask = addr.s_addr;
+    for(i=bits-1; i>=0; --i)
+    {
+        if(mask &(0x01<<i))
+            n++;
+    }
+    AnscTraceWarning(("%s exits !!!\n", __FUNCTION__));
+    return n;
+}
+
+void ppWrite(const char *buffer)
+{
+    int fd;
+    uint32_t size;
+    AnscTraceWarning(("%s starts !!!\n", __FUNCTION__));
+
+    if( !buffer )
+    {
+         return;
+    }
+    printf("Set true static ip to pp:%s\n", buffer);
+    fd = open( "/proc/net/ti_pp", O_WRONLY );
+
+    if ( fd < 0 )
+    {
+         printf("%s,%d, %s open error\n", __FUNCTION__, __LINE__, buffer);
+         return;
+    }
+
+    size = strlen( buffer );
+
+#ifdef _BWG_PRODUCT_REQ_
+    if ( write( fd, buffer, size ) != (int)size )
+#else
+    if ( write( fd, buffer, size ) != size )
+#endif
+    {
+         printf("%s,%d, %s write error\n", __FUNCTION__, __LINE__, buffer);
+    }
+
+    close( fd );
+    AnscTraceWarning(("%s exits !!!\n", __FUNCTION__));
+    return;
+}
+
+void addStaticIP(char *ip, char* subnet)
+{
+    struct sockaddr_in ipv4;
+    int family = AF_INET;
+    char buf[256] = {0};
+    int  mask = 0;
+    AnscTraceWarning(("%s starts !!!\n", __FUNCTION__));
+
+    convert_ip_address_to_bytes(ip, &ipv4,  &family);
+    mask = convert_subnet_to_num(subnet);
+
+#ifdef _BWG_PRODUCT_REQ_
+    snprintf(buf, sizeof(buf), "set addStaticIP %lu %d %d", (ULONG)ipv4.sin_addr.s_addr, mask ,family);
+#else
+    snprintf(buf, sizeof(buf), "set addStaticIP %lu %d %d", ipv4.sin_addr.s_addr, mask ,family);
+#endif
+
+    ppWrite(buf);
+    AnscTraceWarning(("%s exits !!!\n", __FUNCTION__));
+    return;
+}
+
+void delStaticIP(char *ip)
+{
+    struct sockaddr_in ipv4;
+    int family = AF_INET;
+    char buf[256] = {0};
+#ifndef _BWG_PRODUCT_REQ_
+    int  mask = 0;
+#endif
+    AnscTraceWarning(("%s starts !!!\n", __FUNCTION__));
+
+    if(ip == NULL || 0 == strlen(ip)) {
+        return;
+    }
+    convert_ip_address_to_bytes(ip, &ipv4,  &family);
+#ifdef _BWG_PRODUCT_REQ_
+    snprintf(buf, sizeof(buf), "set deleteStaticIP %lu %d", (ULONG)ipv4.sin_addr.s_addr, family);
+#else
+    snprintf(buf, sizeof(buf), "set deleteStaticIP %lu %d", ipv4.sin_addr.s_addr, family);
+#endif
+
+    ppWrite(buf);
+}
+
+static void addTSIPExclude(char* ip, int index) {
+    struct sockaddr_in ipv4;
+    int family = AF_INET;
+    char buf[256] = {0};
+#ifndef _BWG_PRODUCT_REQ_
+    int  mask = 0;
+#endif
+    AnscTraceWarning(("%s starts !!!\n", __FUNCTION__));
+
+    if(ip == NULL || 0 == strlen(ip) || index < 0 || index > 3)
+        return;
+
+    convert_ip_address_to_bytes(ip, &ipv4,  &family);
+#ifdef _BWG_PRODUCT_REQ_
+    snprintf(buf, sizeof(buf), "set excludedStaticIPAddr %lu %d", (ULONG)ipv4.sin_addr.s_addr, index);
+#else
+    snprintf(buf, sizeof(buf), "set excludedStaticIPAddr %lu %d", ipv4.sin_addr.s_addr, index);
+#endif
+
+    AnscTraceWarning(("%s exits !!!\n", __FUNCTION__));
+    ppWrite(buf);
+}
+
+static void removeTSIPExclude(char* ip) {
+    struct sockaddr_in ipv4;
+    int family = AF_INET;
+    char buf[256] = {0};
+#ifndef _BWG_PRODUCT_REQ_
+    int  mask = 0;
+#endif
+    AnscTraceWarning(("%s starts !!!\n", __FUNCTION__));
+
+    if(ip == NULL || 0 == strlen(ip))
+        return;
+
+    convert_ip_address_to_bytes(ip, &ipv4,  &family);
+#ifdef _BWG_PRODUCT_REQ_
+    snprintf(buf, sizeof(buf), "set deleteExcludedStaticIPAddr %lu", (ULONG)ipv4.sin_addr.s_addr);
+#else
+    snprintf(buf, sizeof(buf), "set deleteExcludedStaticIPAddr %lu", ipv4.sin_addr.s_addr);
+#endif
+
+    AnscTraceWarning(("%s exits !!!\n", __FUNCTION__));
+    ppWrite(buf);
+}
+//CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: START
+int updateExclusionList(char* ip, int index, int action)
+{
+    AnscTraceWarning(("%s starts !!!\n", __FUNCTION__));
+ switch(action) {
+ case 1:
+      addTSIPExclude(ip,index);
+      break;
+ case 2:
+      removeTSIPExclude(ip);
+      break;
+ default:
+      break;
+ }
+    AnscTraceWarning(("%s exits !!!\n", __FUNCTION__));
+ return 0;
+}
+//CGWTDETS-8737 : Usable Statics will no longer support 1-1 NAT :: END
+/*
+ * 0: disable the feature
+ * 1: enable the feature
+ * */
+#define STATICIPMODE "staticIPMode"
+static void configStaticIPMode(int mode)
+{
+    char cmd[256] = {0};
+    snprintf(cmd, sizeof(cmd), STATICIPMODE" %d", mode);
+    ppWrite(cmd);
+    AnscTraceWarning(("%s exits !!!\n", __FUNCTION__));
+    return;
+}
+
+//CGWTDETS-8800 : Usable Statics will no longer support 1-1 NAT :: START
+void handleExclusion(int count)
+{
+    AnscTraceWarning(("%s starts !!!\n", __FUNCTION__));
+    if(count > 3)
+    {
+        g_tsip_enable = FALSE;
+        delStaticIP(g_tsip_ip);
+        memset(g_tsip_ip, 0, sizeof(g_tsip_ip));
+        memset(g_tsip_subnet, 0, sizeof(g_tsip_subnet));
+    }
+    else
+    {
+        g_tsip_enable = TRUE;
+        addStaticIP(tsip_ip_nat, tsip_subnet_nat);
+        addTSIPExclude(tsip_ip_nat, 0); //Only use index 0 for TSIP feature.
+        strncpy(g_tsip_ip, tsip_ip_nat, sizeof(g_tsip_ip));
+        strncpy(g_tsip_subnet, tsip_subnet_nat, sizeof(g_tsip_subnet));
+    }
+    AnscTraceWarning(("%s exits !!!\n", __FUNCTION__));
+}
+//CGWTDETS-8800 : Usable Statics will no longer support 1-1 NAT :: END
+
+#endif
 
 static void
 free_parameterValStruct
@@ -967,6 +1206,44 @@ CosaDmlTSIPApplyConfigFile
     return returnStatus;
 }
 
+#ifdef _BWG_PRODUCT_REQ_
+
+ANSC_STATUS setTSIPToPP(PCOSA_DML_TSIP_CFG  pCfg)
+{
+    AnscTraceWarning(("%s starts..g_tsip_enable=%d !!!\n", __FUNCTION__,pCfg->Enabled));
+
+    strncpy(tsip_ip_nat, pCfg->IPAddress, sizeof(tsip_ip_nat));
+    strncpy(tsip_subnet_nat, pCfg->SubnetMask, sizeof(tsip_subnet_nat));
+
+    if(g_tsip_enable != pCfg->Enabled)
+    {
+        configStaticIPMode(pCfg->Enabled?1:0);
+        g_tsip_enable = pCfg->Enabled;
+    }
+    /*disable the feature, it will automatically to delete all entries*/
+    if(pCfg->Enabled == FALSE)
+    {
+        memset(g_tsip_ip, 0, sizeof(g_tsip_ip));
+        memset(g_tsip_subnet, 0, sizeof(g_tsip_subnet));
+        return ANSC_STATUS_SUCCESS;
+    }
+
+    if(0 != strlen(g_tsip_ip))
+    {
+        delStaticIP(g_tsip_ip);
+        removeTSIPExclude(g_tsip_ip);
+    }
+    addStaticIP(pCfg->IPAddress, pCfg->SubnetMask);
+    addTSIPExclude(pCfg->IPAddress, 0); //Only use index 0 for TSIP feature.
+    strncpy(g_tsip_ip, pCfg->IPAddress, sizeof(g_tsip_ip));
+    strncpy(g_tsip_subnet, pCfg->SubnetMask, sizeof(g_tsip_subnet));
+    AnscTraceWarning(("%s exits !!!\n", __FUNCTION__));
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+#endif
+
 
 ANSC_STATUS
 CosaDmlTSIPSetCfg
@@ -992,6 +1269,10 @@ CosaDmlTSIPSetCfg
     if ( pCfg->bIPInfoChanged )
     {
         AnscTraceWarning(("True Static IP info changed, apply...\n"));
+
+        #ifdef _BWG_PRODUCT_REQ_
+            setTSIPToPP(pCfg);
+        #endif
 
 #if  defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_BCM_MIPS_)
 
@@ -1488,6 +1769,12 @@ CosaDmlTSIPGetCfg
 
         SlapCleanVariable(&SlapValue);
     }
+
+#ifdef _BWG_PRODUCT_REQ_
+    /* Adding setTSIPToPP() to set PP for True Static IP while boot up time */
+    AnscTraceWarning(("%s starts..g_tsip_enable=%d !!!\n", __FUNCTION__,pCfg->Enabled));
+    setTSIPToPP(pCfg);
+#endif
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -2092,6 +2379,10 @@ CosaDmlTSIPSubnetDelEntry
     /* Will change to Storing to PSM in Utopia script */
     sleep(3);
 
+#ifdef _BWG_PRODUCT_REQ_
+    delStaticIP(pSubnetEntry->IPAddress);
+#endif
+
     CosaDmlAdditionalSubnetDelPsm((ANSC_HANDLE)pMyObject, (ANSC_HANDLE)pSubnetEntry);
 
     TriggerOtherModule(hContext);
@@ -2137,6 +2428,17 @@ CosaDmlTSIPSubnetSetEntry
 
     /* Will change to Storing to PSM in Utopia script */
     sleep(3);
+
+#ifdef _BWG_PRODUCT_REQ_
+    if(pSubnetEntry->Enabled)
+    {
+        addStaticIP(pSubnetEntry->IPAddress, pSubnetEntry->SubnetMask);
+    }
+    else
+    {
+        delStaticIP(pSubnetEntry->IPAddress);
+    }
+#endif
 
     CosaDmlAdditionalSubnetSavePsm((ANSC_HANDLE)pMyObject, (ANSC_HANDLE)pSubnetEntry);
 

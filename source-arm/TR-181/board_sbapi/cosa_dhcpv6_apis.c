@@ -1823,7 +1823,7 @@ void _cosa_dhcpsv6_refresh_config();
 static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger);
 #define DHCPS6V_SERVER_RESTART_FIFO "/tmp/ccsp-dhcpv6-server-restart-fifo.txt"
 
-#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(_CBR_PRODUCT_REQ_) && ! defined(_BCI_FEATURE_REQ)
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(_CBR_PRODUCT_REQ_) && ! defined(_BWG_PRODUCT_REQ_) && ! defined(_BCI_FEATURE_REQ)
 
 #else
 ANSC_STATUS
@@ -2026,7 +2026,7 @@ CosaDmlDhcpv6Init
     SETI_INTO_UTOPIA(DHCPV6S_NAME,  "", 0, "", 0, "serverenable", g_dhcpv6_server)
     Utopia_Free(&utctx,1);
 
-#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(_CBR_PRODUCT_REQ_) && ! defined(_BCI_FEATURE_REQ) 
+#if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(_CBR_PRODUCT_REQ_) && ! defined(_BWG_PRODUCT_REQ_) && ! defined(_BCI_FEATURE_REQ) 
 
 #else
 
