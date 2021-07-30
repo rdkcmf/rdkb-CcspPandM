@@ -657,7 +657,7 @@ InterfaceSetting4_SetParamStringValue
     if( AnscEqualString(ParamName, "EndpointAddress", TRUE))
     {
         /* save update to backup */
-        rc = strcpy_s(pDsliteTunnel->addr_ipv6,sizeof(DsliteTunnel->addr_ipv6), pString);
+        rc = strcpy_s(pDsliteTunnel->addr_ipv6,sizeof(pDsliteTunnel->addr_ipv6), pString);
         if(rc != EOK)
         {
            ERR_CHK(rc);
