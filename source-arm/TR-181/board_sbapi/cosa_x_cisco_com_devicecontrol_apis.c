@@ -1884,7 +1884,7 @@ void* restoreAllDBs(void* arg)
 #endif
 #if (defined (_XB7_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)) || defined (_CBR2_PRODUCT_REQ_)
         v_secure_system("rm -f /data/macaddress_all_updated");
-        v_secure_system("rm -f /nvram/.bcmwifi*");
+        v_secure_system("rm -f /nvram/.bcmwifi_primary /nvram/.bcmwifi_rmCrashLogs /nvram/.bcmwifi_xhs_lnf_enabled");
         v_secure_system("touch /nvram/brcm_wifi_factory_reset");
 #endif
 #if defined (_COSA_BCM_ARM_) && !defined (_HUB4_PRODUCT_REQ_)
