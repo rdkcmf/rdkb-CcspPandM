@@ -1422,7 +1422,23 @@
                                      <writable>true</writable>
                                  </parameter>
                              </parameters>
-                        </object>
+                     </object>
+                     <object>
+                            <name>SHORTS</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>SHORTS_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>SHORTS_SetParamBoolValue</func_SetParamBoolValue>
+                             </functions>
+                             <parameters>
+                                 <parameter>
+                                     <name>Enable</name>
+                                     <type>boolean</type>
+                                     <syntax>bool</syntax>
+                                     <writable>true</writable>
+                                 </parameter>
+                             </parameters>
+                     </object>
                         <object>
                             <name>Telemetry</name>
                             <objectType>object</objectType>

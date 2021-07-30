@@ -2065,6 +2065,31 @@ DLCaStore_RFC_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+/***********************************************************************
+
+ APIs for Object:
+
+    DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SHORTS.Enable
+
+    *  SHORTS_GetParamBoolValue
+    *  SHORTS_SetParamBoolValue
+
+***********************************************************************/
+BOOL
+SHORTS_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+SHORTS_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
 
 /***********************************************************************
 

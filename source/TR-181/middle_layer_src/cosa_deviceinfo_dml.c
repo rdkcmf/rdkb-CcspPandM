@@ -7201,7 +7201,133 @@ NetworkProperties_GetParamStringValue
 	
     return -1;
 }
+/***********************************************************************
 
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SHORTS.Enable
+
+    *  SHORTS_SetParamBoolValue // Set args required for SHORTS
+    *  SHORTS_GetParamBoolValue // Get args set for SHORTS
+
+***********************************************************************/
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        SHORTS_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool,
+            );
+
+    description:
+
+        This function is called to retrieve boolean  parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+                BOOL*                       pBool,
+                The buffer of returned boolean value;
+
+     return:     TRUE if succeeded.
+
+
+**********************************************************************/
+BOOL
+SHORTS_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+        UNREFERENCED_PARAMETER(hInsContext);
+        if( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+                char buf[8]={0};
+                if (syscfg_get( NULL, "ShortsEnabled", buf, sizeof(buf)) == 0)
+                {
+                if (strncmp(buf, "true", sizeof(buf)) == 0)
+                      *pBool = TRUE;
+                else
+                     *pBool = FALSE;
+                }
+                else
+                {
+                         CcspTraceError(("%s syscfg_get failed  for SHORTSEnable\n",__FUNCTION__));
+                         *pBool = FALSE;
+                }
+                return TRUE;
+        }
+        return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        SHORTS_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+SHORTS_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+        if (IsBoolSame(hInsContext, ParamName, bValue, SHORTS_GetParamBoolValue))
+            return TRUE;
+        if ( AnscEqualString(ParamName, "Enable", TRUE))
+        {
+                if(syscfg_set(NULL, "ShortsEnabled", (bValue==TRUE)?"true":"false") != 0)
+                {
+                        CcspTraceError(("[%s] syscfg_set failed for SHORTS\n",__FUNCTION__));
+                        return FALSE;
+                }
+                if (syscfg_commit() != 0)
+                {
+                        AnscTraceWarning(("syscfg_commit failed for SHORTS param update\n"));
+                        return FALSE;
+                }
+                return TRUE;
+         }
+         return FALSE;
+}
 /* CodeBigFirst config download can be enabled/disabled               */
 /**********************************************************************
 
