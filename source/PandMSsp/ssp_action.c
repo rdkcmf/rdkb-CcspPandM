@@ -108,6 +108,7 @@ ssp_create_pnm
     /* Create component common data model object */
 
     g_pComponent_Common_Dm = (PCOMPONENT_COMMON_DM)AnscAllocateMemory(sizeof(COMPONENT_COMMON_DM));
+    errno_t rc = -1;
 
     if ( !g_pComponent_Common_Dm )
     {
@@ -131,7 +132,8 @@ ssp_create_pnm
         }
         else
         {
-            AnscCopyString(pPnmCcdIf->Name, CCSP_CCD_INTERFACE_NAME);
+            rc = strcpy_s(pPnmCcdIf->Name, sizeof(pPnmCcdIf->Name), CCSP_CCD_INTERFACE_NAME);
+            ERR_CHK(rc);
 
             pPnmCcdIf->InterfaceId              = CCSP_CCD_INTERFACE_ID;
             pPnmCcdIf->hOwnerContext            = NULL;

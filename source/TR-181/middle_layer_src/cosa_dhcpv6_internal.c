@@ -1083,6 +1083,7 @@ CosaDhcpv6RegGetDhcpv6Info
 #endif
     PCOSA_DML_DHCPSV6_POOL_FULL     pDhcpv6Pool       = NULL;
     PCOSA_DML_DHCPSV6_POOL_OPTION      pDhcpv6PoolOption = NULL;
+    errno_t  rc = -1;
 
     if ( !pPoamIrepFoDhcpv6 )
     {
@@ -1248,7 +1249,8 @@ CosaDhcpv6RegGetDhcpv6Info
 
         /* save alias and instanceNumber */
         pDhcpv6Client->Cfg.InstanceNumber = uInstanceNumber;
-        AnscCopyString( (char *)pDhcpv6Client->Cfg.Alias, pAliasClient );
+        rc = STRCPY_S_NOCLOBBER( (char *)pDhcpv6Client->Cfg.Alias, sizeof(pDhcpv6Client->Cfg.Alias), pAliasClient );
+        ERR_CHK(rc);
         if (pAliasClient)
         {
             AnscFreeMemory(pAliasClient);
@@ -1398,7 +1400,8 @@ CosaDhcpv6RegGetDhcpv6Info
 
             /* save alias and instanceNumber */
             pDhcpv6SntOpt->InstanceNumber = uInstanceNumber;
-            AnscCopyString((char *) pDhcpv6SntOpt->Alias, pAliasSentOption );
+            rc = STRCPY_S_NOCLOBBER((char *) pDhcpv6SntOpt->Alias, sizeof(pDhcpv6SntOpt->Alias), pAliasSentOption );
+            ERR_CHK(rc);
             if (pAliasSentOption)
             {
                 AnscFreeMemory(pAliasSentOption);
@@ -1568,7 +1571,8 @@ ClientEnd:
         
         /* save alias and instanceNumber */
         pDhcpv6Pool->Cfg.InstanceNumber = uInstanceNumber;
-        AnscCopyString((char *) pDhcpv6Pool->Cfg.Alias, pAliasPool );
+        rc = STRCPY_S_NOCLOBBER( (char *)pDhcpv6Pool->Cfg.Alias, sizeof(pDhcpv6Pool->Cfg.Alias), pAliasPool );
+        ERR_CHK(rc);
         if (pAliasPool)
         {
             AnscFreeMemory(pAliasPool);
@@ -1716,7 +1720,8 @@ ClientEnd:
             
             /* save alias and instanceNumber */
             pDhcpv6PoolOption->InstanceNumber = uInstanceNumber;
-            AnscCopyString((char *)pDhcpv6PoolOption->Alias, pAliasPoolOption );
+            rc = STRCPY_S_NOCLOBBER((char *)pDhcpv6PoolOption->Alias, sizeof(pDhcpv6PoolOption->Alias), pAliasPoolOption );
+            ERR_CHK(rc);
             if (pAliasPoolOption)
             {
                 AnscFreeMemory(pAliasPoolOption);

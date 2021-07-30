@@ -226,6 +226,31 @@ static const DEVICEINFO_SET_VALUE deviceinfo_set_table[] = {
     {  "captiveportal_failure" , CAPTIVEPORTALFAILURE }
 };
 
+static int update_pValue(char *pValue, PULONG pulSize, char *str)
+{
+    errno_t rc = -1;
+
+    if(!str)
+        return -1;
+
+    size_t len = strlen(str);
+    if ( len < *pulSize)
+    {
+        rc = strcpy_s( pValue, *pulSize, str);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+        return 0;
+    }
+
+    *pulSize = len+1;
+    return 1;
+
+}
+
+
 static BOOL AnscValidateInputString (char *pString) {
 
     char disallowed_chars[] = "<>%`|'";       /*To avoid command injection */
@@ -920,7 +945,12 @@ DeviceInfo_GetParamStringValue
                 return -1;
               }
 
-              AnscCopyString(pValue, sbuf);
+              rc = strcpy_s(pValue, *pulSize, sbuf);
+              if(rc != EOK)
+              {
+                ERR_CHK(rc);
+                return -1;
+              }
               *pulSize = strlen(sbuf)+1;
         }
         return 0;
@@ -932,8 +962,12 @@ DeviceInfo_GetParamStringValue
         /* CID: 57845 Array compared against 0*/
         if(!syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", buf, sizeof(buf)))
     	{
-    	     AnscCopyString(pValue,  buf);
-    		    
+    	     rc = strcpy_s(pValue, *pulSize, buf);
+    	     if(rc != EOK)
+    	     {
+    	         ERR_CHK(rc);
+    	         return -1;
+    	     }
     	}
 	else
 	{
@@ -945,7 +979,12 @@ DeviceInfo_GetParamStringValue
 
     if( AnscEqualString(ParamName, "X_RDK_RDKProfileName", TRUE))
     {
-            AnscCopyString(pValue, "RDKB");
+            rc = strcpy_s(pValue, *pulSize, "RDKB");
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
             return 0;
     }
 	
@@ -953,7 +992,12 @@ DeviceInfo_GetParamStringValue
 	
 	if( AnscEqualString(ParamName, "X_COMCAST-COM_EMS_MobileNumber", TRUE))
     {
-		AnscCopyString(pValue,  pMyObject->EMS_MobileNo);
+        rc = strcpy_s(pValue, *pulSize,  pMyObject->EMS_MobileNo);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
         return 0;
     }
 	
@@ -965,8 +1009,12 @@ DeviceInfo_GetParamStringValue
         /* CID: 57845 Array compared against 0*/
         if(!syscfg_get( NULL, "ems_server_url", buf, sizeof(buf)))
     	{
-    		AnscCopyString(pValue,  buf);
-    		    
+    		rc = strcpy_s(pValue, *pulSize,  buf);
+	    	if(rc != EOK)
+	    	{
+	    	    ERR_CHK(rc);
+	    	    return -1;
+	    	}
         }
         else
         {
@@ -981,7 +1029,12 @@ DeviceInfo_GetParamStringValue
                /* CID: 57845 Array compared against 0*/
                if(!syscfg_get( NULL, "router_name", buf, sizeof(buf)))
     		{
-    		    AnscCopyString(pValue,  buf);
+    		    rc = strcpy_s(pValue, *pulSize,  buf);
+    		    if(rc != EOK)
+    		    {
+    		        ERR_CHK(rc);
+    		        return -1;
+    		    }
     		}
 		else
 		{
@@ -1003,7 +1056,12 @@ DeviceInfo_GetParamStringValue
 	if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_CloudPersonalizationURL", TRUE))
 	{
 	   syscfg_get(NULL, "CloudPersonalizationURL", pMyObject->CloudPersonalizationURL, sizeof(pMyObject->CloudPersonalizationURL));
-	   AnscCopyString(pValue, pMyObject->CloudPersonalizationURL);
+	   rc = strcpy_s(pValue, *pulSize, pMyObject->CloudPersonalizationURL);
+	   if(rc != EOK)
+	   {
+	      ERR_CHK(rc);
+	      return -1;
+	   }
 	   return 0;
 	}
 	/*Changes for RDKB-5878 end*/
@@ -1012,11 +1070,21 @@ DeviceInfo_GetParamStringValue
     {
         if(access("/nvram/.device_onboarded", F_OK) != -1)
         {
-            AnscCopyString(pValue, "OnBoarded");
+            rc = strcpy_s(pValue, *pulSize, "OnBoarded");
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
         }
         else
         {
-            AnscCopyString(pValue, "NONE");
+            rc = strcpy_s(pValue, *pulSize, "NONE");
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
         }
         return 0;
     }
@@ -1477,6 +1545,7 @@ ULONG
  )
 {
     UNREFERENCED_PARAMETER(hInsContext);
+    errno_t   rc   = -1;
     /* Required for xPC sync */
     if( AnscEqualString(ParamName, "URL", TRUE))
     {
@@ -1487,8 +1556,13 @@ ULONG
         /* CID: 56488 Logically dead code*/
         if(!syscfg_get( NULL, "TelemetryEndpointURL", buf, sizeof(buf)))
         {
-            AnscCopyString(pValue, buf);
-            *pUlSize = AnscSizeOfString( pValue );
+            rc = strcpy_s(pValue, *pUlSize, buf);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+            *pUlSize = AnscSizeOfString( pValue )+1;
             return 0;
         }
         return -1;
@@ -1608,6 +1682,7 @@ AccountInfo_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
+    errno_t  rc = -1;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "AccountID", TRUE))
     {
@@ -1617,8 +1692,13 @@ AccountInfo_GetParamStringValue
            /*CID: 67589 Logically dead code*/
            if(!syscfg_get( NULL, "AccountID", buff, sizeof(buff)))
            {
-                AnscCopyString(pValue,  buff);
-                *pulSize = AnscSizeOfString( pValue );
+                rc = strcpy_s(pValue, *pulSize, buff);
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return -1;
+                }
+                *pulSize = AnscSizeOfString( pValue )+1;
                 return 0;
            }
            return -1;
@@ -2412,6 +2492,7 @@ WiFi_Telemetry_SetParamStringValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    errno_t   rc = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "NormalizedRssiList", TRUE))
@@ -2426,7 +2507,12 @@ WiFi_Telemetry_SetParamStringValue
         }
         CcspTraceInfo(("Successfully set  NormalizedRssiList in PSM \n"));
         /* save update to backup */
-        AnscCopyString(pMyObject->WiFi_Telemetry.NormalizedRssiList, pString);
+        rc = STRCPY_S_NOCLOBBER(pMyObject->WiFi_Telemetry.NormalizedRssiList, sizeof(pMyObject->WiFi_Telemetry.NormalizedRssiList), pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
@@ -2443,7 +2529,12 @@ WiFi_Telemetry_SetParamStringValue
         }
         CcspTraceInfo(("Successfully set  CliStatList in PSM \n"));
         /* save update to backup */
-        AnscCopyString( pMyObject->WiFi_Telemetry.CliStatList, pString );
+        rc = STRCPY_S_NOCLOBBER( pMyObject->WiFi_Telemetry.CliStatList, sizeof(pMyObject->WiFi_Telemetry.CliStatList), pString );
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
@@ -2460,7 +2551,12 @@ WiFi_Telemetry_SetParamStringValue
         }
         CcspTraceInfo(("Successfully set  TxRxRateList in PSM \n"));
         /* save update to backup */
-        AnscCopyString( pMyObject->WiFi_Telemetry.TxRxRateList, pString );
+        rc = STRCPY_S_NOCLOBBER( pMyObject->WiFi_Telemetry.TxRxRateList, sizeof(pMyObject->WiFi_Telemetry.TxRxRateList), pString );
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
@@ -2478,7 +2574,12 @@ WiFi_Telemetry_SetParamStringValue
         
         CcspTraceInfo(("Successfully set SNRList in PSM \n"));
     
-        AnscCopyString( pMyObject->WiFi_Telemetry.SNRList, pString );
+        rc = STRCPY_S_NOCLOBBER( pMyObject->WiFi_Telemetry.SNRList, sizeof(pMyObject->WiFi_Telemetry.SNRList), pString );
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
@@ -2595,21 +2696,32 @@ WiFi_Telemetry_GetParamStringValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    errno_t   rc = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "NormalizedRssiList", TRUE))
     {
         /* collect value */
-        AnscCopyString( pValue, pMyObject->WiFi_Telemetry.NormalizedRssiList);
-        *pulSize = AnscSizeOfString( pValue );
+        rc = strcpy_s( pValue, *pulSize, pMyObject->WiFi_Telemetry.NormalizedRssiList);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+        *pulSize = AnscSizeOfString( pValue )+1;
         return 0;
     }
 
     if( AnscEqualString(ParamName, "CliStatList", TRUE))
     {
         /* collect value */
-        AnscCopyString( pValue, pMyObject->WiFi_Telemetry.CliStatList);
-        *pulSize = AnscSizeOfString( pValue );
+        rc = strcpy_s( pValue, *pulSize, pMyObject->WiFi_Telemetry.CliStatList);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+        *pulSize = AnscSizeOfString( pValue )+1;
         return 0;
     }
 
@@ -2617,16 +2729,26 @@ WiFi_Telemetry_GetParamStringValue
     if( AnscEqualString(ParamName, "TxRxRateList", TRUE))
     {
         /* collect value */
-        AnscCopyString( pValue, pMyObject->WiFi_Telemetry.TxRxRateList);
-        *pulSize = AnscSizeOfString( pValue );
+        rc = strcpy_s( pValue, *pulSize, pMyObject->WiFi_Telemetry.TxRxRateList);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+        *pulSize = AnscSizeOfString( pValue )+1;
         return 0;
     }
 
     if( AnscEqualString(ParamName, "SNRList", TRUE))
     {
         /* collect value */
-        AnscCopyString( pValue, pMyObject->WiFi_Telemetry.SNRList);
-        *pulSize = AnscSizeOfString( pValue );
+        rc = strcpy_s( pValue, *pulSize, pMyObject->WiFi_Telemetry.SNRList);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
+        *pulSize = AnscSizeOfString( pValue )+1;
         return 0;
     }
 
@@ -2753,17 +2875,10 @@ UniqueTelemetryId_GetParamStringValue
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
-
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "TagString", TRUE))
     {
-	    if ( AnscSizeOfString( pMyObject->UniqueTelemetryId.TagString ) < *pUlSize )
-	    {
-		    AnscCopyString( pValue, pMyObject->UniqueTelemetryId.TagString );		
-		    return 0;
-	    }
-	    *pUlSize = AnscSizeOfString( pMyObject->UniqueTelemetryId.TagString ) + 1;
-	    return 1;
+        return  update_pValue(pValue,pUlSize, pMyObject->UniqueTelemetryId.TagString);
 	    /* CID: 64836 Structurally dead code*/
     }
 
@@ -2941,6 +3056,7 @@ UniqueTelemetryId_SetParamStringValue
 	)
 {
     PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    errno_t   rc  =  -1;
 
     if (IsStringSame(hInsContext, ParamName, strValue, UniqueTelemetryId_GetParamStringValue))
         return TRUE;
@@ -2960,7 +3076,12 @@ UniqueTelemetryId_SetParamStringValue
             }
             else
             {
-                AnscCopyString(pMyObject->UniqueTelemetryId.TagString, strValue);
+                rc = STRCPY_S_NOCLOBBER(pMyObject->UniqueTelemetryId.TagString, sizeof(pMyObject->UniqueTelemetryId.TagString),strValue);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return FALSE;
+                }
             }
         }
         return TRUE;
@@ -6702,16 +6823,7 @@ Process_GetParamStringValue
     if( AnscEqualString(ParamName, "Command", TRUE))
     {
         /* collect value */
-        if ( AnscSizeOfString(p_proc->Command) < *pUlSize)
-        {
-            AnscCopyString(pValue, p_proc->Command);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(p_proc->Command)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, p_proc->Command);
     }
 
 
@@ -8100,6 +8212,7 @@ Control_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
+    errno_t  rc  = -1;
     /* check the "XconfSelector" parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "XconfSelector", TRUE))
     {
@@ -8109,8 +8222,13 @@ Control_GetParamStringValue
            /* CID: 108145 Array compared against 0
              CID: 108121 Logically dead code*/
           if(!syscfg_get( NULL, "XconfSelector", buff, sizeof(buff))) {
-           AnscCopyString(pValue,  buff);
-           *pulSize = AnscSizeOfString( pValue );
+           rc = strcpy_s(pValue, *pulSize, buff);
+           if(rc != EOK)
+           {
+               ERR_CHK(rc);
+               return -1;
+           }
+           *pulSize = AnscSizeOfString( pValue )+1;
            return 0;
           }
           return -1;
@@ -8125,8 +8243,13 @@ Control_GetParamStringValue
          if(!syscfg_get( NULL, "XconfUrl", buff, sizeof(buff)))
          {
           /*CID: 108145 Array compared against 0*/
-          AnscCopyString(pValue,  buff);
-          *pulSize = AnscSizeOfString( pValue );
+          rc = strcpy_s(pValue, *pulSize, buff);
+          if(rc != EOK)
+          {
+              ERR_CHK(rc);
+              return -1;
+          }
+          *pulSize = AnscSizeOfString( pValue )+1;
           return 0;
          }
          return -1;
@@ -8587,29 +8710,11 @@ SyndicationFlowControl_GetParamStringValue
     PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL SyndicatonFlowControl = (PCOSA_DATAMODEL_RDKB_SYNDICATIONFLOWCONTROL)&(pMyObject->SyndicatonFlowControl);
     if( AnscEqualString(ParamName, "InitialForwardedMark", TRUE))
     {
-       if ( AnscSizeOfString(SyndicatonFlowControl->InitialForwardedMark.ActiveValue) < *pUlSize)
-        {
-            AnscCopyString( pValue, SyndicatonFlowControl->InitialForwardedMark.ActiveValue);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(SyndicatonFlowControl->InitialForwardedMark.ActiveValue)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, SyndicatonFlowControl->InitialForwardedMark.ActiveValue);
     }
     if( AnscEqualString(ParamName, "InitialOutputMark", TRUE))
     {
-        if ( AnscSizeOfString(SyndicatonFlowControl->InitialOutputMark.ActiveValue) < *pUlSize)
-        {
-            AnscCopyString( pValue, SyndicatonFlowControl->InitialOutputMark.ActiveValue);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(SyndicatonFlowControl->InitialOutputMark.ActiveValue)+1;
-            return 1;
-        }
+        return  update_pValue(pValue,pUlSize, SyndicatonFlowControl->InitialOutputMark.ActiveValue);
     }
     return -1;
 }
@@ -9576,6 +9681,7 @@ SyndicationFlowControl_SetParamBoolValue
 
     char * requestorStr = getRequestorString();
     char * currentTime = getTime();
+    errno_t   rc = -1;
 
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
 
@@ -9587,8 +9693,12 @@ SyndicationFlowControl_SetParamBoolValue
         {
             SyndicatonFlowControl->Enable.ActiveValue =bValue;
 
-            memset( SyndicatonFlowControl->Enable.UpdateSource, 0, sizeof( SyndicatonFlowControl->Enable.UpdateSource ));
-            AnscCopyString( SyndicatonFlowControl->Enable.UpdateSource, requestorStr );
+            rc = STRCPY_S_NOCLOBBER( SyndicatonFlowControl->Enable.UpdateSource, sizeof(SyndicatonFlowControl->Enable.UpdateSource), requestorStr );
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
 
             char *value = ( bValue ==TRUE ) ?  "true" : "false";
             char PartnerID[PARTNER_ID_LEN] = {0};
@@ -10301,13 +10411,19 @@ AutoExcluded_GetParamStringValue
     {
         /* collect value */
         char buf[64];
+        errno_t  rc = -1;
         memset(buf, 0 ,sizeof(buf));
         /* CID: 128900 Array compared against 0
            CID: 128898 Logically dead code*/
         if(!syscfg_get( NULL, "AutoExcludedURL", buf, sizeof(buf)))
         {
-            AnscCopyString(pValue, buf);
-            *pUlSize = AnscSizeOfString( pValue );
+            rc = strcpy_s(pValue, *pUlSize, buf);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+            *pUlSize = AnscSizeOfString( pValue )+1;
 
             return 0;
         }
@@ -10789,6 +10905,7 @@ ULONG*                      pUlSize
 )
 {
         UNREFERENCED_PARAMETER(hInsContext);
+        errno_t   rc = -1;
         if( AnscEqualString(ParamName, "Status", TRUE) )
         {
             FILE *file1 = fopen("/nvram/rbus_support","r");
@@ -10797,39 +10914,69 @@ ULONG*                      pUlSize
             CcspTraceError((" Entered GET Block \n" ));
             if(((file1)!=NULL) && ((file2)!=NULL))
             {
-                AnscCopyString(pValue,"Current - rbus ; after next boot - rbus");
+                rc = strcpy_s(pValue, *pUlSize, "Current - rbus ; after next boot - rbus");
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return -1;
+                }
                 CcspTraceError((" Succeeded to GET\n" ));
-                *pUlSize = AnscSizeOfString( pValue );
+                *pUlSize = AnscSizeOfString( pValue )+1;
             }
             else if(((file1)!=NULL) && ((file3)!=NULL))
             {
-                AnscCopyString(pValue,"Current - rbus ; after next boot - dbus");
+                rc = strcpy_s(pValue, *pUlSize, "Current - rbus ; after next boot - dbus");
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return -1;
+                }
                 CcspTraceError((" succeeded to GET\n" ));
-                *pUlSize = AnscSizeOfString( pValue );
+                *pUlSize = AnscSizeOfString( pValue )+1;
             }
             else if(((file1)==NULL) && ((file2)!=NULL))
             {
-                AnscCopyString(pValue,"Current - dbus ; after next boot - rbus");
+                rc = strcpy_s(pValue, *pUlSize, "Current - dbus ; after next boot - rbus");
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return -1;
+                }
                 CcspTraceError((" succeeded to GET\n" ));
-                *pUlSize = AnscSizeOfString( pValue );
+                *pUlSize = AnscSizeOfString( pValue )+1;
             }
             else if(((file1)==NULL) && ((file3)!=NULL))
             {
-                AnscCopyString(pValue,"Current - dbus ; after next boot - dbus");
+                rc = strcpy_s(pValue, *pUlSize, "Current - dbus ; after next boot - dbus");
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return -1;
+                }
                 CcspTraceError((" succeeded to GET\n" ));
-                *pUlSize = AnscSizeOfString( pValue );
+                *pUlSize = AnscSizeOfString( pValue )+1;
             }
             else if(((file1)==NULL) && ((file2)==NULL) && ((file3)==NULL))
             {
-                AnscCopyString(pValue,"Current - dbus ; after next boot - dbus");
+                rc = strcpy_s(pValue, *pUlSize, "Current - dbus ; after next boot - dbus");
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return -1;
+                }
                 CcspTraceError((" succeeded to GET\n" ));
-                *pUlSize = AnscSizeOfString( pValue );
+                *pUlSize = AnscSizeOfString( pValue )+1;
             }
             else if(((file1)!=NULL) && ((file2)==NULL) && ((file3)==NULL))
             {
-                AnscCopyString(pValue,"Current - rbus ; after next boot - rbus");
+                rc = strcpy_s(pValue, *pUlSize, "Current - rbus ; after next boot - rbus");
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return -1;
+                }
                 CcspTraceError((" succeeded to GET\n" ));
-                *pUlSize = AnscSizeOfString( pValue );
+                *pUlSize = AnscSizeOfString( pValue )+1;
             }
             if((file1)!=NULL)
                 fclose(file1);
@@ -13159,6 +13306,7 @@ ReverseSSH_GetParamStringValue
     UNREFERENCED_PARAMETER(hInsContext);
     char* activeStr = "ACTIVE";
     char* inActiveStr = "INACTIVE";
+    errno_t  rc = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "xOpsReverseSshArgs", TRUE))
@@ -13170,18 +13318,33 @@ ReverseSSH_GetParamStringValue
     if( AnscEqualString(ParamName, "xOpsReverseSshStatus", TRUE))
     {
         if (isRevSshActive()) {
-            AnscCopyString(pValue, activeStr);
-            *pulSize = AnscSizeOfString(pValue);
+            rc = strcpy_s(pValue, *pulSize, activeStr);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+            *pulSize = AnscSizeOfString(pValue)+1;
         } else {
-            AnscCopyString(pValue, inActiveStr);
-            *pulSize = AnscSizeOfString(pValue);
+            rc = strcpy_s(pValue, *pulSize, inActiveStr);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+            *pulSize = AnscSizeOfString(pValue)+1;
         }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "xOpsReverseSshTrigger", TRUE))
     {
-         AnscCopyString(pValue, "");
+         rc = strcpy_s(pValue, *pulSize, "");
+         if(rc != EOK)
+         {
+            ERR_CHK(rc);
+            return -1;
+         }
         return 0;
     }
 
@@ -13309,6 +13472,7 @@ EthernetWAN_GetParamStringValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(pUlSize);
+    errno_t     rc = -1;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "CurrentOperationalMode", TRUE))
     {
@@ -13321,17 +13485,32 @@ EthernetWAN_GetParamStringValue
         {
 			if( 0 == strcmp( buf, "true" ) )
 			{
-				AnscCopyString( pValue, "Ethernet");
+				rc = strcpy_s( pValue, *pUlSize, "Ethernet");
+				if(rc != EOK)
+				{
+					ERR_CHK(rc);
+					return -1;
+				}
 			}
 			else
 			{
-				AnscCopyString( pValue, "DOCSIS");
+				rc = strcpy_s( pValue, *pUlSize, "DOCSIS");
+				if(rc != EOK)
+				{
+					ERR_CHK(rc);
+					return -1;
+				}
 			}
         }
         else
         {
             CcspTraceError(("%s syscfg_get failed for eth_wan_enabled. so giving default as DOCSIS\n",__FUNCTION__));
-			AnscCopyString( pValue, "DOCSIS");
+			rc = strcpy_s( pValue, *pUlSize, "DOCSIS");
+			if(rc != EOK)
+			{
+				ERR_CHK(rc);
+				return -1;
+			}
         }
 		
         return 0;
@@ -13400,14 +13579,20 @@ EthernetWAN_MACsec_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
+    errno_t  rc = -1;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "OperationalStatus", TRUE))
     {
         BOOL flag;
 
         if ( RETURN_OK == platform_hal_GetMACsecOperationalStatus( ETHWAN_DEF_INTF_NUM, &flag )) {
-           AnscCopyString(pValue,  (TRUE == flag) ? "Enabled" : "Disabled" );
-           *pUlSize = AnscSizeOfString( pValue );
+           rc = strcpy_s(pValue, *pUlSize, ((TRUE == flag) ? "Enabled" : "Disabled") );
+           if(rc != EOK)
+           {
+              ERR_CHK(rc);
+              return -1;
+           }
+           *pUlSize = AnscSizeOfString( pValue )+1;
 
            return 0;
         }
@@ -13756,6 +13941,7 @@ CredDwnld_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
+    errno_t   rc  = -1;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Use", TRUE))
     {
@@ -13770,8 +13956,13 @@ CredDwnld_GetParamStringValue
         }
         else
         {
-            AnscCopyString(pValue, buf);
-            *pulSize = AnscSizeOfString(pValue);
+            rc = strcpy_s(pValue, *pulSize, buf);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
+            *pulSize = AnscSizeOfString(pValue)+1;
             return TRUE;
         }
     }
@@ -14496,6 +14687,7 @@ CDLDM_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
+    errno_t   rc = -1;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "CDLModuleUrl", TRUE))
     {
@@ -14506,8 +14698,13 @@ CDLDM_GetParamStringValue
            /*CID: 65305 Logically dead code*/
            if(!syscfg_get( NULL, "CDLModuleUrl", buff, sizeof(buff)))
            {
-                AnscCopyString(pValue,  buff);
-                *pulSize = AnscSizeOfString( pValue );
+                rc = strcpy_s(pValue, *pulSize, buff);
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return -1;
+                }
+                *pulSize = AnscSizeOfString( pValue )+1;
                 return 0;
            }
            return -1;
@@ -14643,13 +14840,19 @@ Syndication_GetParamStringValue
     )
 {
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    errno_t      rc  = -1;
 
     if( AnscEqualString(ParamName, "PartnerId", TRUE))
     {
         /* collect value */
         //CosaDmlDiGetSyndicationPartnerId(NULL, pValue,pulSize);
-        AnscCopyString( pValue, pMyObject->PartnerID);
-		*pulSize = AnscSizeOfString( pValue );	
+        rc = strcpy_s( pValue, *pulSize, pMyObject->PartnerID);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
+        *pulSize = AnscSizeOfString( pValue )+1;	
         return 0;
     }
 
@@ -14657,8 +14860,13 @@ Syndication_GetParamStringValue
     {
         /* collect value */
         CosaDmlDiGetSyndicationTR69CertLocation( hInsContext, pMyObject->TR69CertLocation.ActiveValue );
-	AnscCopyString( pValue, pMyObject->TR69CertLocation.ActiveValue );
-	*pulSize = AnscSizeOfString( pValue );
+        rc = strcpy_s( pValue, *pulSize, pMyObject->TR69CertLocation.ActiveValue );
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
+        *pulSize = AnscSizeOfString( pValue )+1;
 
         return 0;
     }
@@ -14676,17 +14884,8 @@ Syndication_GetParamStringValue
     }
     if( AnscEqualString(ParamName, "PauseScreenFileLocation", TRUE))
     {
-    	 /* collect value */
-	 if ( AnscSizeOfString(pMyObject->UiBrand.PauseScreenFileLocation.ActiveValue) < *pulSize)
-	 {
-		 AnscCopyString( pValue, pMyObject->UiBrand.PauseScreenFileLocation.ActiveValue);		
-		 return 0;
-	 }
-	 else
-	 {
-	 	 *pulSize = AnscSizeOfString(pMyObject->UiBrand.PauseScreenFileLocation.ActiveValue)+1;
-		 return 1;
-	 }
+        /* collect value */
+        return  update_pValue(pValue,pulSize, pMyObject->UiBrand.PauseScreenFileLocation.ActiveValue);
      }
 #if defined(_COSA_BCM_ARM_) && !defined(_CBR_PRODUCT_REQ_)
     if( AnscEqualString(ParamName, "CMVoiceImageSelect", TRUE))
@@ -14694,16 +14893,7 @@ Syndication_GetParamStringValue
 	char buf[64] = { 0 };
 	if(0 == syscfg_get(NULL, "CMVoiceImg", buf, sizeof(buf)))
 	{
-		if (AnscSizeOfString(buf) < *pulSize)
-		{
-			AnscCopyString( pValue, buf);
-			return 0;
-		}
-		else
-		{
-			*pulSize = AnscSizeOfString(buf)+1;
-			return 1;
-		}
+	    return  update_pValue(pValue,pulSize, buf);
 	}
 	else
 	{
@@ -15373,44 +15563,15 @@ RDKB_UIBranding_GetParamStringValue
 	
 	if( AnscEqualString(ParamName, "DefaultLocalIPv4SubnetRange", TRUE))
         {
-                if ( AnscSizeOfString(pBindObj->DefaultLocalIPv4SubnetRange.ActiveValue) < *pulSize)
-                {
-                        AnscCopyString( pValue, pBindObj->DefaultLocalIPv4SubnetRange.ActiveValue);
-                        return 0;
-                }
-                else
-                {
-                        *pulSize = AnscSizeOfString(pBindObj->DefaultLocalIPv4SubnetRange.ActiveValue)+1;
-                        return 1;
-                }
-
+            return  update_pValue(pValue,pulSize, pBindObj->DefaultLocalIPv4SubnetRange.ActiveValue);
         }
 	if( AnscEqualString(ParamName, "DefaultLanguage", TRUE))
         {
-                if ( AnscSizeOfString(pBindObj->DefaultLanguage.ActiveValue) < *pulSize)
-                {
-                        AnscCopyString( pValue, pBindObj->DefaultLanguage.ActiveValue);
-                        return 0;
-                }
-                else
-                {
-                        *pulSize = AnscSizeOfString(pBindObj->DefaultLanguage.ActiveValue)+1;
-                        return 1;
-                }
-
+            return  update_pValue(pValue,pulSize, pBindObj->DefaultLocalIPv4SubnetRange.ActiveValue);
         }
 	if( AnscEqualString(ParamName, "DefaultAdminIP", TRUE))
         {
-		if ( AnscSizeOfString(pBindObj->DefaultAdminIP.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->DefaultAdminIP.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->DefaultAdminIP.ActiveValue)+1;
-           		return 1;
-       		}
+            return  update_pValue(pValue,pulSize, pBindObj->DefaultAdminIP.ActiveValue);
 
         } 
 	
@@ -15507,95 +15668,36 @@ Footer_GetParamStringValue
     UNREFERENCED_PARAMETER(hInsContext);
 	PCOSA_DATAMODEL_DEVICEINFO		pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 	PCOSA_DATAMODEL_RDKB_UIBRANDING	pBindObj =	& pMyObject->UiBrand;
-        ULONG strSize;
+
 	if( AnscEqualString(ParamName, "PartnerLink", TRUE))
 	{
 		/* collect value */
-                strSize = AnscSizeOfString(pBindObj->Footer.PartnerLink.ActiveValue);
-		 if ( strSize < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->Footer.PartnerLink.ActiveValue);
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = strSize+1;
-           		return 1;
-       		}
+	    return  update_pValue(pValue,pulSize, pBindObj->Footer.PartnerLink.ActiveValue);
 	}
 
 	if( AnscEqualString(ParamName, "UserGuideLink", TRUE))
 	{
-		 if ( AnscSizeOfString(pBindObj->Footer.UserGuideLink.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->Footer.UserGuideLink.ActiveValue);
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->Footer.UserGuideLink.ActiveValue)+1;
-           		return 1;
-       		}
+		return  update_pValue(pValue,pulSize, pBindObj->Footer.UserGuideLink.ActiveValue);
 	}
 	
 	if( AnscEqualString(ParamName, "CustomerCentralLink", TRUE))
 	{
-		if ( AnscSizeOfString(pBindObj->Footer.CustomerCentralLink.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->Footer.CustomerCentralLink.ActiveValue);
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->Footer.CustomerCentralLink.ActiveValue)+1;
-           		return 1;
-       		}
-
+	    return  update_pValue(pValue,pulSize, pBindObj->Footer.CustomerCentralLink.ActiveValue);
 	}
 
 	if( AnscEqualString(ParamName, "PartnerText", TRUE))
 	{
-		if ( AnscSizeOfString(pBindObj->Footer.PartnerText.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->Footer.PartnerText.ActiveValue);
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->Footer.PartnerText.ActiveValue)+1;
-           		return 1;
-       		}
-
+	    return  update_pValue(pValue,pulSize, pBindObj->Footer.PartnerText.ActiveValue);
 	}
 
 	if( AnscEqualString(ParamName, "UserGuideText", TRUE))
 	{
-		if ( AnscSizeOfString(pBindObj->Footer.UserGuideText.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->Footer.UserGuideText.ActiveValue);
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->Footer.UserGuideText.ActiveValue)+1;
-           		return 1;
-       		}
-
+	    return  update_pValue(pValue,pulSize, pBindObj->Footer.UserGuideText.ActiveValue);
 	}
 
 	if( AnscEqualString(ParamName, "CustomerCentralText", TRUE))
 	{
-		if ( AnscSizeOfString(pBindObj->Footer.CustomerCentralText.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->Footer.CustomerCentralText.ActiveValue);
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->Footer.CustomerCentralText.ActiveValue)+1;
-           		return 1;
-       		}
-
+	    return  update_pValue(pValue,pulSize, pBindObj->Footer.CustomerCentralText.ActiveValue);
 	}
 	return -1;
 
@@ -15867,59 +15969,22 @@ Connection_GetParamStringValue
 
 	if( AnscEqualString(ParamName, "MSOmenu", TRUE))
 	{
-		if ( AnscSizeOfString(pBindObj->Connection.MSOmenu.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->Connection.MSOmenu.ActiveValue);
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->Connection.MSOmenu.ActiveValue)+1;
-           		return 1;
-       		}
+	    return  update_pValue(pValue,pulSize, pBindObj->Connection.MSOmenu.ActiveValue);
 	}
 
 	if( AnscEqualString(ParamName, "MSOinfo", TRUE))
 	{
-		if ( AnscSizeOfString(pBindObj->Connection.MSOinfo.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->Connection.MSOinfo.ActiveValue);	
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->Connection.MSOinfo.ActiveValue)+1;
-           		return 1;
-       		}
-		
+	    return  update_pValue(pValue,pulSize, pBindObj->Connection.MSOinfo.ActiveValue);
 	}
 	
 	if( AnscEqualString(ParamName, "StatusTitle", TRUE))
 	{
-		if ( AnscSizeOfString(pBindObj->Connection.StatusTitle.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->Connection.StatusTitle.ActiveValue);
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->Connection.StatusTitle.ActiveValue)+1;
-           		return 1;
-       		}
+	    return  update_pValue(pValue,pulSize, pBindObj->Connection.StatusTitle.ActiveValue);
 	}
 	
 	if( AnscEqualString(ParamName, "StatusInfo", TRUE))
 	{
-		if ( AnscSizeOfString(pBindObj->Connection.StatusInfo.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->Connection.StatusInfo.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->Connection.StatusInfo.ActiveValue)+1;
-           		return 1;
-       		}
+	    return  update_pValue(pValue,pulSize, pBindObj->Connection.StatusInfo.ActiveValue);
 	}
 	
 	return -1;
@@ -16116,16 +16181,7 @@ NetworkDiagnosticTools_GetParamStringValue
 
 	if( AnscEqualString(ParamName, "ConnectivityTestURL", TRUE))
 	{
-		if ( AnscSizeOfString(pBindObj->NDiagTool.ConnectivityTestURL.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->NDiagTool.ConnectivityTestURL.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->NDiagTool.ConnectivityTestURL.ActiveValue)+1;
-           		return 1;
-       		}
+	    return  update_pValue(pValue,pulSize, pBindObj->NDiagTool.ConnectivityTestURL.ActiveValue);
 	}
 	
 	return -1;
@@ -16265,6 +16321,7 @@ WiFiPersonalization_SetParamBoolValue
    char *value = ( bValue ==TRUE ) ?  "true" : "false";
    char * requestorStr = getRequestorString();
    char * currentTime = getTime();
+   errno_t  rc = -1;
 
    IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
 
@@ -16278,9 +16335,12 @@ WiFiPersonalization_SetParamBoolValue
 			{
 				pBindObj->WifiPersonal.Support.ActiveValue = bValue;
 
-                                memset( pBindObj->WifiPersonal.Support.UpdateSource, 0, sizeof( pBindObj->WifiPersonal.Support.UpdateSource ));
-                                AnscCopyString( pBindObj->WifiPersonal.Support.UpdateSource, requestorStr );
-
+                                rc = STRCPY_S_NOCLOBBER( pBindObj->WifiPersonal.Support.UpdateSource, sizeof(pBindObj->WifiPersonal.Support.UpdateSource), requestorStr );
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 				return TRUE;
 			}	
 
@@ -16294,9 +16354,12 @@ WiFiPersonalization_SetParamBoolValue
 			{
 				pBindObj->WifiPersonal.SMSsupport.ActiveValue = bValue;
 
-                                memset( pBindObj->WifiPersonal.SMSsupport.UpdateSource, 0, sizeof( pBindObj->WifiPersonal.SMSsupport.UpdateSource ));
-                                AnscCopyString( pBindObj->WifiPersonal.SMSsupport.UpdateSource, requestorStr );
-
+                                rc = STRCPY_S_NOCLOBBER( pBindObj->WifiPersonal.SMSsupport.UpdateSource, sizeof(pBindObj->WifiPersonal.SMSsupport.UpdateSource), requestorStr );
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 				return TRUE;
 			}
 			
@@ -16310,9 +16373,12 @@ WiFiPersonalization_SetParamBoolValue
 			{
 				pBindObj->WifiPersonal.MyAccountAppSupport.ActiveValue = bValue;
 
-                                memset( pBindObj->WifiPersonal.MyAccountAppSupport.UpdateSource, 0, sizeof( pBindObj->WifiPersonal.MyAccountAppSupport.UpdateSource ));
-                                AnscCopyString( pBindObj->WifiPersonal.MyAccountAppSupport.UpdateSource, requestorStr );
-
+                                rc = STRCPY_S_NOCLOBBER( pBindObj->WifiPersonal.MyAccountAppSupport.UpdateSource, sizeof(pBindObj->WifiPersonal.MyAccountAppSupport.UpdateSource), requestorStr );
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
 				return TRUE;
 			}
 
@@ -16337,72 +16403,26 @@ WiFiPersonalization_GetParamStringValue
 	
 	 if( AnscEqualString(ParamName, "PartnerHelpLink", TRUE))
         {
-		if ( AnscSizeOfString(pBindObj->WifiPersonal.PartnerHelpLink.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->WifiPersonal.PartnerHelpLink.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->WifiPersonal.PartnerHelpLink.ActiveValue)+1;
-           		return 1;
-       		}
-
+	        return  update_pValue(pValue,pulSize, pBindObj->WifiPersonal.PartnerHelpLink.ActiveValue);
         } 
 	if( AnscEqualString(ParamName, "MSOLogo", TRUE))
         {
-		if ( AnscSizeOfString(pBindObj->WifiPersonal.MSOLogo.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->WifiPersonal.MSOLogo.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->WifiPersonal.MSOLogo.ActiveValue)+1;
-           		return 1;
-       		}
+	        return  update_pValue(pValue,pulSize, pBindObj->WifiPersonal.MSOLogo.ActiveValue);
 
         } 
 	if( AnscEqualString(ParamName, "Title", TRUE))
         {
-		if ( AnscSizeOfString(pBindObj->WifiPersonal.Title.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->WifiPersonal.Title.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->WifiPersonal.Title.ActiveValue)+1;
-           		return 1;
-       		}
+	        return  update_pValue(pValue,pulSize, pBindObj->WifiPersonal.Title.ActiveValue);
 
         } 
 	if( AnscEqualString(ParamName, "WelcomeMessage", TRUE))
         {
-		if ( AnscSizeOfString(pBindObj->WifiPersonal.WelcomeMessage.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->WifiPersonal.WelcomeMessage.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->WifiPersonal.WelcomeMessage.ActiveValue)+1;
-           		return 1;
-       		}
+	        return  update_pValue(pValue,pulSize, pBindObj->WifiPersonal.WelcomeMessage.ActiveValue);
 
         } 
 	if( AnscEqualString(ParamName, "WelcomeMessage_fre", TRUE))
         {
-		if ( AnscSizeOfString(pBindObj->WifiPersonal.WelcomeMessage_fre.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->WifiPersonal.WelcomeMessage_fre.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->WifiPersonal.WelcomeMessage_fre.ActiveValue)+1;
-           		return 1;
-       		}
+	        return  update_pValue(pValue,pulSize, pBindObj->WifiPersonal.WelcomeMessage_fre.ActiveValue);
 
         } 
 	 return -1;
@@ -16505,58 +16525,21 @@ LocalUI_GetParamStringValue
 	
 	 if( AnscEqualString(ParamName, "MSOLogo", TRUE))
         {
-		if ( AnscSizeOfString(pBindObj->LocalUI.MSOLogo.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->LocalUI.MSOLogo.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->LocalUI.MSOLogo.ActiveValue)+1;
-           		return 1;
-       		}
+	        return  update_pValue(pValue,pulSize, pBindObj->LocalUI.MSOLogo.ActiveValue);
 
         } 
 	if( AnscEqualString(ParamName, "DefaultLoginUsername", TRUE))
         {
-		if ( AnscSizeOfString(pBindObj->LocalUI.DefaultLoginUsername.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->LocalUI.DefaultLoginUsername.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->LocalUI.DefaultLoginUsername.ActiveValue)+1;
-           		return 1;
-       		}
-
+	        return  update_pValue(pValue,pulSize, pBindObj->LocalUI.DefaultLoginUsername.ActiveValue);
         } 
 	if( AnscEqualString(ParamName, "DefaultLoginPassword", TRUE))
         {
-		if ( AnscSizeOfString(pBindObj->LocalUI.DefaultLoginPassword.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->LocalUI.DefaultLoginPassword.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->LocalUI.DefaultLoginPassword.ActiveValue)+1;
-           		return 1;
-       		}
+	        return  update_pValue(pValue,pulSize, pBindObj->LocalUI.DefaultLoginPassword.ActiveValue);
 
         } 
 	if( AnscEqualString(ParamName, "MSOLogoTitle", TRUE))
         {
-		if ( AnscSizeOfString(pBindObj->LocalUI.MSOLogoTitle.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->LocalUI.MSOLogoTitle.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->LocalUI.MSOLogoTitle.ActiveValue)+1;
-           		return 1;
-       		}
+	        return  update_pValue(pValue,pulSize, pBindObj->LocalUI.MSOLogoTitle.ActiveValue);
 
         } 
 	 return -1;
@@ -16640,17 +16623,7 @@ HelpTip_GetParamStringValue
 	
 	 if( AnscEqualString(ParamName, "NetworkName", TRUE))
         {
-		if ( AnscSizeOfString(pBindObj->HelpTip.NetworkName.ActiveValue) < *pulSize)
-       		{
-           		AnscCopyString( pValue, pBindObj->HelpTip.NetworkName.ActiveValue);		
-            		return 0;
-       		}
-       		else
-       		{
-           		*pulSize = AnscSizeOfString(pBindObj->HelpTip.NetworkName.ActiveValue)+1;
-           		return 1;
-       		}
-
+	        return  update_pValue(pValue,pulSize, pBindObj->HelpTip.NetworkName.ActiveValue);
         } 
 	 return -1;
 }
@@ -16694,44 +16667,17 @@ CloudUI_GetParamStringValue
 
     if( AnscEqualString(ParamName, "brandname", TRUE))
     {
-        if ( AnscSizeOfString(pBindObj->CloudUI.brandname.ActiveValue) < *pulSize)
-            {
-                AnscCopyString( pValue, pBindObj->CloudUI.brandname.ActiveValue);
-                    return 0;
-            }
-            else
-            {
-                *pulSize = AnscSizeOfString(pBindObj->CloudUI.brandname.ActiveValue)+1;
-                return 1;
-            }
+        return  update_pValue(pValue,pulSize, pBindObj->CloudUI.brandname.ActiveValue);
     }
 
     if( AnscEqualString(ParamName, "productname", TRUE))
     {
-        if ( AnscSizeOfString(pBindObj->CloudUI.productname.ActiveValue) < *pulSize)
-            {
-                AnscCopyString( pValue, pBindObj->CloudUI.productname.ActiveValue);
-                    return 0;
-            }
-            else
-            {
-                *pulSize = AnscSizeOfString(pBindObj->CloudUI.productname.ActiveValue)+1;
-                return 1;
-            }
+        return  update_pValue(pValue,pulSize, pBindObj->CloudUI.productname.ActiveValue);
     }
 
     if( AnscEqualString(ParamName, "link", TRUE))
     {
-        if ( AnscSizeOfString(pBindObj->CloudUI.link.ActiveValue) < *pulSize)
-            {
-                AnscCopyString( pValue, pBindObj->CloudUI.link.ActiveValue);
-                    return 0;
-            }
-            else
-            {
-                *pulSize = AnscSizeOfString(pBindObj->CloudUI.link.ActiveValue)+1;
-                return 1;
-            }
+        return  update_pValue(pValue,pulSize, pBindObj->CloudUI.link.ActiveValue);
     }
      return -1;
 }
@@ -17064,27 +17010,43 @@ RPC_GetParamStringValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    errno_t  rc  = -1;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "RebootDevice", TRUE) )
     {
         /* collect value */
-		AnscCopyString(pValue,"");
+        rc = strcpy_s(pValue, *pulSize, "");
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "FirmwareDownloadStartedNotification", TRUE))
     {
 	/* collect value */
-	AnscCopyString( pValue, pMyObject->FirmwareDownloadStartedNotification);
-	*pulSize = AnscSizeOfString( pValue );
+	rc = strcpy_s( pValue, *pulSize, pMyObject->FirmwareDownloadStartedNotification);
+	if(rc != EOK)
+	{
+		ERR_CHK(rc);
+		return -1;
+	}
+	*pulSize = AnscSizeOfString( pValue )+1;
 	return 0;
     }
 
     if( AnscEqualString(ParamName, "DeviceManageableNotification", TRUE))
     {
 	/* collect value */
-	AnscCopyString( pValue, pMyObject->DeviceManageableNotification);
-	*pulSize = AnscSizeOfString( pValue );
+	rc = strcpy_s( pValue, *pulSize, pMyObject->DeviceManageableNotification);
+	if(rc != EOK)
+	{
+		ERR_CHK(rc);
+		return -1;
+	}
+	*pulSize = AnscSizeOfString( pValue )+1;
 	return 0;
     }
 
@@ -17738,6 +17700,7 @@ Tile_GetParamStringValue
  )
 {
     UNREFERENCED_PARAMETER(hInsContext);
+    errno_t  rc  = -1;
     if( AnscEqualString(ParamName, "ReportingURL", TRUE))
     {
         /* collect value */
@@ -17747,8 +17710,13 @@ Tile_GetParamStringValue
 
         if( buf != NULL )
         {
-            AnscCopyString(pValue, buf);
-            *pUlSize = AnscSizeOfString(pValue); 
+            rc = strcpy_s(pValue, *pUlSize, buf);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
+            *pUlSize = AnscSizeOfString(pValue)+1; 
             return 0;
         }
     }
@@ -17973,6 +17941,7 @@ BOOL TileMac_GetParamStringValue
     char lastRebootReason[64]={0};
     static bool disc = false;
     char res[8] = {0};
+    errno_t  rc = -1;
 
     /* Get last reboot reason. If factory reset, enable BLE discovery and get tilemacs info.*/
     syscfg_get( NULL, "X_RDKCENTRAL-COM_LastRebootReason", lastRebootReason, sizeof(lastRebootReason));
@@ -17992,13 +17961,23 @@ BOOL TileMac_GetParamStringValue
 
            CcspTraceInfo(("BLE: Discovery is Set to True..... \n"));
 
-           AnscCopyString(pStr, "https://tile-adapter-prod.codebig2.net/api/v2/bte/device/tilealert");
+           rc = strcpy_s(pStr, sizeof(pStr), "https://tile-adapter-prod.codebig2.net/api/v2/bte/device/tilealert");
+           if(rc != EOK)
+           {
+              ERR_CHK(rc);
+              return FALSE;
+           }
            syscfg_set(NULL, "TileReportingURL", pStr);
            syscfg_commit();
 
            CcspTraceInfo(("BLE: Tile Reporting URL is Set..... \n"));
 
-           AnscCopyString(cmd, "/bin/systemctl restart ble");
+           rc = strcpy_s(cmd, sizeof(cmd), "/bin/systemctl restart ble");
+           if(rc != EOK)
+           {
+              ERR_CHK(rc);
+              return FALSE;
+           }
            //system(cmd);
            v_secure_system("%s",cmd);
            
@@ -18020,12 +17999,22 @@ BOOL TileMac_GetParamStringValue
             fclose(fp);
     } else {
             CcspTraceError(("BLE: Cannot open /tmp/tiles.inf file. \n"));
-            AnscCopyString(pValue, "Cannot Open File");
-            *pUlSize = AnscSizeOfString(pValue);
+            rc = strcpy_s(pValue, *pUlSize, "Cannot Open File");
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return FALSE;
+            }
+            *pUlSize = AnscSizeOfString(pValue)+1;
             return TRUE;
     }
-    AnscCopyString(pValue, buf1);
-    *pUlSize = AnscSizeOfString(pValue);
+    rc = strcpy_s(pValue, *pUlSize, buf1);
+    if(rc != EOK)
+    {
+        ERR_CHK(rc);
+        return FALSE;
+    }
+    *pUlSize = AnscSizeOfString(pValue)+1;
 
     /* Restore the discovery state to false */
     if(disc == true)
@@ -19212,8 +19201,12 @@ HwHealthTestPTREnable_SetParamBoolValue
             if(strcmp(version, "0002"))
             {
                 char cmd[128] = {0};
-                memset(cmd, 0, sizeof(cmd));
-                AnscCopyString(cmd, "/usr/bin/hwselftest_cronjobscheduler.sh true &");
+                rc = strcpy_s(cmd, sizeof(cmd), "/usr/bin/hwselftest_cronjobscheduler.sh true &");
+                if(rc != EOK)
+                {
+                   ERR_CHK(rc);
+                   return FALSE;
+                }
                 CcspTraceInfo(("\nExecuting command: %s\n", cmd));
                 v_secure_system("/usr/bin/hwselftest_cronjobscheduler.sh true &");
             }
@@ -19541,6 +19534,7 @@ Telemetry_GetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* p
                                ULONG* pUlSize) {
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(pUlSize);
+    errno_t   rc  = -1;
     /* Required for xPC sync */
     if (AnscEqualString(ParamName, "ConfigURL", TRUE)) {
         /* collect value */
@@ -19549,7 +19543,12 @@ Telemetry_GetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* p
         /* CID: 63245 Logically dead code*/
         if(!syscfg_get(NULL, "T2ConfigURL", buf, sizeof(buf)))
         {
-            AnscCopyString(pValue, buf);
+            rc = strcpy_s(pValue, *pUlSize, buf);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
             return 0;
         }
         return -1;
@@ -19561,7 +19560,12 @@ Telemetry_GetParamStringValue (ANSC_HANDLE hInsContext, char* ParamName, char* p
         /* CID: 68487 Array compared against 0*/
         if(!syscfg_get(NULL, "T2Version", buf, sizeof(buf)))
         {
-            AnscCopyString(pValue, buf);
+            rc = strcpy_s(pValue, *pUlSize, buf);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
             return 0;
         }
         return -1;
@@ -20077,6 +20081,7 @@ ULONG
 {
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(pUlSize);
+    errno_t  rc = -1;
     /* Required for xPC sync */
     if( AnscEqualString(ParamName, "LocalFqdn", TRUE))
     {
@@ -20085,7 +20090,12 @@ ULONG
          /*CID: 59203 Array compared against 0*/
         if(!syscfg_get( NULL, "SecureWebUI_LocalFqdn", buf, sizeof(buf)))
         {
-            AnscCopyString(pValue, buf);
+            rc = strcpy_s(pValue, *pUlSize, buf);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
             return 0;
         }
         return -1;
@@ -20771,6 +20781,7 @@ Generic_GetParamStringValue
     }
 
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    errno_t   rc  = -1;
 
     if (pMyObject->pRfcStore == NULL)
     {
@@ -20790,9 +20801,13 @@ Generic_GetParamStringValue
     char *strValue = Generic_GetParamJsonValue();
     if (strValue)
     {
-        AnscCopyString( pValue, strValue );
-        if ( pUlSize )
-            *pUlSize = AnscSizeOfString( pValue );
+        rc = strcpy_s( pValue, *pUlSize, strValue );
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return -1;
+        }
+        *pUlSize = AnscSizeOfString( pValue )+1;
         CcspTraceWarning(("param = %s, value = %s\n", ParamName, pValue));
         return 0;
     }
@@ -20947,7 +20962,7 @@ Generic_SetParamStringValue
    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
    char   prevValue[512];
-   ULONG  UlSize;
+   ULONG  UlSize = sizeof(prevValue);
 
    // Call parameter specific handling if required for any new parameter below...
    if ( StartsWith(g_currentParamFullName, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.BLE.Tile.") )

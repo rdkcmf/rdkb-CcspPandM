@@ -1194,6 +1194,7 @@ CosaDhcpv4RegGetDhcpv4Info
     PCOSA_DML_DHCPS_POOL_FULL       pDhcpv4Pool       = NULL;
     PCOSA_DML_DHCPS_SADDR           pDhcpv4StaticAddr = NULL;
     PCOSA_DML_DHCPSV4_OPTION        pDhcpv4Option     = NULL;
+    errno_t    rc = -1;
 
     if ( !pPoamIrepFoDhcpv4 )
     {
@@ -1371,7 +1372,8 @@ CosaDhcpv4RegGetDhcpv4Info
 
         /* save alias and instanceNumber */
         pDhcpv4Client->Cfg.InstanceNumber = uInstanceNumber;
-        AnscCopyString( pDhcpv4Client->Cfg.Alias, pAliasClient );
+        rc = STRCPY_S_NOCLOBBER( pDhcpv4Client->Cfg.Alias, sizeof(pDhcpv4Client->Cfg.Alias), pAliasClient );
+        ERR_CHK(rc);
 
         /* Create one link point */
         pCosaDhcpcContext = (PCOSA_CONTEXT_DHCPC_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_DHCPC_LINK_OBJECT));
@@ -1515,7 +1517,8 @@ CosaDhcpv4RegGetDhcpv4Info
 
             /* save alias and instanceNumber */
             pDhcpv4ReqOpt->InstanceNumber = uInstanceNumber;
-            AnscCopyString( pDhcpv4ReqOpt->Alias, pAliasReqOption );
+            rc = STRCPY_S_NOCLOBBER( pDhcpv4ReqOpt->Alias, sizeof(pDhcpv4ReqOpt->Alias), pAliasReqOption );
+            ERR_CHK(rc);
 
             /* Create one link */
             pCosaReqOptionContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
@@ -1676,7 +1679,8 @@ SentOption:
 
             /* save alias and instanceNumber */
             pDhcpv4SndOpt->InstanceNumber = uInstanceNumber;
-            AnscCopyString( pDhcpv4SndOpt->Alias, pAliasSendOption );
+            rc = STRCPY_S_NOCLOBBER( pDhcpv4SndOpt->Alias, sizeof(pDhcpv4SndOpt->Alias), pAliasSendOption );
+            ERR_CHK(rc);
 
             pCosaSendOptionContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
             if ( !pCosaSendOptionContext )
@@ -1861,8 +1865,9 @@ ClientEnd:
         
         /* save alias and instanceNumber */
         pDhcpv4X_COM_CISCO_SAddr->InstanceNumber = uInstanceNumber;
-        AnscCopyString( pDhcpv4X_COM_CISCO_SAddr->Alias, pAliasX_COM_CISCO_SAddr );
-
+        rc = STRCPY_S_NOCLOBBER( pDhcpv4X_COM_CISCO_SAddr->Alias, sizeof(pDhcpv4X_COM_CISCO_SAddr->Alias), pAliasX_COM_CISCO_SAddr );
+        ERR_CHK(rc);
+ 
         pCosaX_COM_CISCO_SAddrContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
         if ( !pCosaX_COM_CISCO_SAddrContext )
         {
@@ -2026,7 +2031,8 @@ ClientEnd:
         
         /* save alias and instanceNumber */
         pDhcpv4Pool->Cfg.InstanceNumber = uInstanceNumber;
-        AnscCopyString( pDhcpv4Pool->Cfg.Alias, pAliasPool );
+        rc = STRCPY_S_NOCLOBBER( pDhcpv4Pool->Cfg.Alias, sizeof(pDhcpv4Pool->Cfg.Alias), pAliasPool );
+        ERR_CHK(rc);
 
         pCosaPoolContext = (PCOSA_CONTEXT_POOL_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_POOL_LINK_OBJECT));
         if ( !pCosaPoolContext )
@@ -2169,7 +2175,8 @@ ClientEnd:
             
             /* save alias and instanceNumber */
             pDhcpv4StaticAddr->InstanceNumber = uInstanceNumber;
-            AnscCopyString( pDhcpv4StaticAddr->Alias, pAliasStaticAddr );
+            rc = STRCPY_S_NOCLOBBER( pDhcpv4StaticAddr->Alias, sizeof(pDhcpv4StaticAddr->Alias), pAliasStaticAddr );
+            ERR_CHK(rc);
     
             pCosaStaticAddrContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
             if ( !pCosaStaticAddrContext )
@@ -2328,7 +2335,8 @@ ClientEnd:
             
             /* save alias and instanceNumber */
             pDhcpv4Option->InstanceNumber = uInstanceNumber;
-            AnscCopyString( pDhcpv4Option->Alias, pAliasOption );
+            rc = STRCPY_S_NOCLOBBER( pDhcpv4Option->Alias, sizeof(pDhcpv4Option->Alias), pAliasOption );
+            ERR_CHK(rc);
 
             pCosaOptionContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
             if ( !pCosaOptionContext )
