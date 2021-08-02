@@ -2195,7 +2195,9 @@ LanMngm_Validate
     UNREFERENCED_PARAMETER(puLength);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_LAN_MANAGEMENT        pLanMngm    = (PCOSA_DML_LAN_MANAGEMENT)pLinkObj->hContext;
+    ULONG lanSubnetMask                         = 0;
 
+    lanSubnetMask = htonl(pLanMngm->LanSubnetMask.Value);
     /* check subnetmask */
     /* Subnet mask MUST accept ONLY the following IP addresses: */
     /* 255.255.255.0, 255.255.0.0, 255.0.0.0, 255.255.255.128, 255.255.255.252 */
@@ -2228,7 +2230,9 @@ LanMngm_Validate
        pLanMngm->LanSubnetMask.Value != 0xC0FFFFFF &&   //26
        pLanMngm->LanSubnetMask.Value != 0xE0FFFFFF &&   //27
        pLanMngm->LanSubnetMask.Value != 0xF0FFFFFF &&   //28
-       pLanMngm->LanSubnetMask.Value != 0xF8FFFFFF )   //29
+       pLanMngm->LanSubnetMask.Value != 0xF8FFFFFF &&   //29
+       pLanMngm->LanSubnetMask.Value != 0xFCFFFFFF &&   //30
+       pLanMngm->LanSubnetMask.Value != 0xFEFFFFFF )   //31
 #else
     if(pLanMngm->LanSubnetMask.Value != 0xFF000000 &&   //8
        pLanMngm->LanSubnetMask.Value != 0xFF800000 &&   //9
@@ -2270,7 +2274,7 @@ LanMngm_Validate
     /* gateway IP address should be private address,*/
     /* range: 10.0.0.0 to 10.255.255.254, 172.16.0.0 to 172.31.255.255, 192.168.0.0 to 192.168.255.255  */
     if(((pLanMngm->LanIPAddress.Value & pLanMngm->LanSubnetMask.Value) == pLanMngm->LanIPAddress.Value) || 
-       ((pLanMngm->LanIPAddress.Value | pLanMngm->LanSubnetMask.Value) == 0xFFFFFFFF)){
+       (((pLanMngm->LanIPAddress.Value | pLanMngm->LanSubnetMask.Value) == 0xFFFFFFFF) && (lanSubnetMask != 0xFFFFFFFE))){
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Modified LanIPAddress doesn't meet the conditions,reverting back to old value  ...\n"));
         goto RET_ERR;
     }else if(pLanMngm->LanIPAddress.Dot[0] == 10 ){
