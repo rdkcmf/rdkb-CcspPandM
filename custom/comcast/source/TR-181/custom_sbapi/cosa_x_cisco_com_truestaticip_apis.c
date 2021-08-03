@@ -272,8 +272,9 @@ CosaDmlTSIPLoadMappingFile
             *pSeparator++ = '\0';
             ulType =_ansc_atoi(pType);
             pMapping[ulIndex].Type = ulType;
-            rc = strcpy_s(pMapping[ulIndex++].FullPath, sizeof(pMapping[ulIndex].FullPath), pSeparator);
+            rc = strcpy_s(pMapping[ulIndex].FullPath, sizeof(pMapping[ulIndex].FullPath), pSeparator);
             ERR_CHK(rc);
+            ulIndex++;
             AnscFreeMemory(pEntryToken);
         }
 

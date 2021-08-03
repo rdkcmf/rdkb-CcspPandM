@@ -357,6 +357,7 @@ Firewall_GetParamStringValue
         if(rc != EOK)
         {
            ERR_CHK(rc);
+           AnscFreeMemory(pFirewallCfg);
            return -1;
         }
         AnscFreeMemory(pFirewallCfg);
