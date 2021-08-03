@@ -88,7 +88,7 @@ BOOL CosaIpifGetSetSupported(char * pParamName);
 
 #include <net/if.h>
 
-ANSC_STATUS COSAGetParamValueByPathName(parameterValStruct_t *val, ULONG *parameterValueLength);
+ANSC_STATUS COSAGetParamValueByPathName(void* bus_handle,parameterValStruct_t *val, ULONG *parameterValueLength);
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -1722,6 +1722,7 @@ Interface2_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
     errno_t                         rc           = -1;
+    ANSC_STATUS                     rc1          = ANSC_STATUS_SUCCESS;
 #ifndef MULTILAN_FEATURE
 #ifndef _COSA_SIM_
     if (!CosaIpifGetSetSupported(ParamName))
@@ -1813,7 +1814,6 @@ Interface2_SetParamStringValue
                 {
                     pIPInterface->Cfg.LinkInstNum = (ULONG)AnscString2Int(&pString[ulIndex]);
                 }
-
                 /* Retrieve LinkName */
                 rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName),"%s.Name", pString);
                 if(rc < EOK)
@@ -1823,29 +1823,38 @@ Interface2_SetParamStringValue
                 }
 #if defined (MULTILAN_FEATURE)
                 ulEntryNameLen = sizeof(ucEntryNameValue);
-                if ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen))
+                rc = CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen);
+                if ( 0 == rc )
 #else
-		varStruct.parameterName  = ucEntryParamName;
+                varStruct.parameterName  = ucEntryParamName;
                 varStruct.parameterValue = ucEntryNameValue;
-
-                if ( ANSC_STATUS_SUCCESS == 
-                        COSAGetParamValueByPathName(&varStruct, &size) )
+                AnscTraceInfo(("%s:calling COSAGetParamValueByPathName with varStruct.parameterName = %s varStruct.parameterValue=%s\n",__FUNCTION__,varStruct.parameterName,varStruct.parameterValue));
+                rc1 = COSAGetParamValueByPathName(g_MessageBusHandle,&varStruct, &size);
+                if ( ANSC_STATUS_SUCCESS == rc1 || rc1 == ANSC_STATUS_DISCARD )
 #endif
                 {
-                    rc = STRCPY_S_NOCLOBBER(pIPInterface->Cfg.LinkName, sizeof(pIPInterface->Cfg.LinkName), ucEntryNameValue);
-                    if(rc != EOK)
+                    if(rc1 == ANSC_STATUS_DISCARD)
                     {
-                        ERR_CHK(rc);
-                        return FALSE;
+#ifndef MULTILAN_FEATURE
+                       rc = CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &size);
+#endif
                     }
-
+                    if (rc == 0)
+                    {
+                       rc = STRCPY_S_NOCLOBBER(pIPInterface->Cfg.LinkName, sizeof(pIPInterface->Cfg.LinkName), ucEntryNameValue);
+                       if(rc != EOK)
+                       {
+                          ERR_CHK(rc);
+                          return FALSE;
+                       }
+                    }
                 }
                 else
                 {
+                    AnscTraceInfo(("CosaGetParamValueString/COSAGetParamValueByPathName returned failure and assigning LinkName variable to NULLL\n"));
                     pIPInterface->Cfg.LinkName[0] = '\0';
                 }
             }
-
             return  TRUE;
         }
     }
