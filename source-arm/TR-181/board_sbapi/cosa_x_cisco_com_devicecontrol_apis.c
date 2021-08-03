@@ -1882,7 +1882,7 @@ void* restoreAllDBs(void* arg)
         v_secure_system("rm -f /nvram/.FirmwareUpgradeEndTime");
         v_secure_system("rm -f /nvram/.FirmwareUpgradeStartTime");
 #endif
-#if defined (_XB7_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
+#if (defined (_XB7_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)) || defined (_CBR2_PRODUCT_REQ_)
         v_secure_system("rm -f /data/macaddress_all_updated");
         v_secure_system("rm -f /nvram/.bcmwifi*");
         v_secure_system("touch /nvram/brcm_wifi_factory_reset");
