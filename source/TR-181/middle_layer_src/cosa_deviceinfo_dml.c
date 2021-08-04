@@ -72,7 +72,6 @@
 #include "ansc_platform.h"
 #include "cosa_deviceinfo_dml.h"
 #include "dml_tr181_custom_cfg.h"
-#include "cimplog.h"
 #include "safec_lib_common.h"
 #include "secure_wrapper.h"
 #include "cosa_drg_common.h"
