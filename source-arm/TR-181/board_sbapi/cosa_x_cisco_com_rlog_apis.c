@@ -133,7 +133,7 @@ RLog_SaveConf(const PCOSA_DML_RLOG conf)
     return 0;
 }
 
-#if !defined(INTEL_PUMA7)
+#if !defined(INTEL_PUMA7) && !defined(_XF3_PRODUCT_REQ_)
 static int 
 RLog_GetLevel(void)
 {
@@ -161,8 +161,8 @@ RLog_GetLevel(void)
 static int
 RLog_Restart(PCOSA_DML_RLOG conf)
 {
-#if !defined(INTEL_PUMA7)
-    int err, level;
+#if !defined(INTEL_PUMA7) && !defined(_XF3_PRODUCT_REQ_)
+    int err = 0, level;
     level = RLog_GetLevel();
 #endif
 #if 0 /* no PID file in current version */
@@ -175,21 +175,21 @@ RLog_Restart(PCOSA_DML_RLOG conf)
     if (conf->Enable && strlen(conf->Host) > 0)
     {
         CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
-        #if !defined(INTEL_PUMA7) 
+        #if !defined(INTEL_PUMA7) && !defined(_XF3_PRODUCT_REQ_) //XF3 doesnt have syslogd
         if (conf->Port == 0 || conf->Port > 65535)
             err = vsystem("syslogd -l %d -R %s -L", level, conf->Host);
         else
             err = vsystem("syslogd -l %d -R %s:%d -L", level, conf->Host, conf->Port);
-	#endif
+        #endif
     }
     else
-    {       
+    {
         CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
-        #if !defined(INTEL_PUMA7)
+        #if !defined(INTEL_PUMA7) && !defined(_XF3_PRODUCT_REQ_) //XF3 doesnt have syslogd
         err = vsystem("syslogd -l %d", level);
         #endif
     }
-#if !defined(INTEL_PUMA7)
+#if !defined(INTEL_PUMA7) && !defined(_XF3_PRODUCT_REQ_)
     if (err != 0)
         return -1;
 #endif
