@@ -89,7 +89,7 @@ extern COSARepopulateTableProc g_COSARepopulateTable;
 
 #ifdef FEATURE_RDKB_WAN_MANAGER
 extern ANSC_HANDLE bus_handle;
-#define ETHERNET_INTERFACE_OBJECT "Device.Ethernet.Interface."
+#define ETHERNET_INTERFACE_OBJECT "Device.Ethernet.Interface"
 #define ETH_COMPONENT_NAME "eRT.com.cisco.spvtg.ccsp.ethagent"
 #define ETH_DBUS_PATH "/com/cisco/spvtg/ccsp/ethagent"
 static ANSC_STATUS RdkBus_GetParamValues( char *pComponent, char *pBus, char *pParamName, char *pReturnVal );
@@ -191,7 +191,7 @@ CosaGetParamValueString
         }
         strncpy(pBuffer, acTmpReturnValue, strlen(acTmpReturnValue));
         *pulSize = strlen(acTmpReturnValue) + 1;
-        return 0;
+        return 1;
     }
 #endif
     /* we should look up CR to find right component.
