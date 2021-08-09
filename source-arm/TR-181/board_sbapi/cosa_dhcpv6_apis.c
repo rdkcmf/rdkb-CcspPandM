@@ -7162,9 +7162,24 @@ void CosaDmlDhcpv6sRebootServer()
     }
 
     fd = open(DHCPV6S_SERVER_PID_FILE, O_RDONLY);
+/* dibbler-server process start fix for HUB4 and ADA */
+#if defined (_HUB4_PRODUCT_REQ_)
+    FILE *fp_bin = NULL;
+    char binbuff[64] = {0};
+    fp_bin = v_secure_popen("r","ps|grep %s|grep -v grep", SERVER_BIN);
+    _get_shell_output(fp_bin, binbuff, sizeof(binbuff));
+    if ((fd < 0) || (!strstr(binbuff, SERVER_BIN))) {
+#else
     if (fd < 0) {
+#endif
         BOOL isBridgeMode = FALSE;
         char out[128] = {0};
+
+/* dibbler-server process start fix for HUB4 and ADA */
+#if defined (_HUB4_PRODUCT_REQ_)
+        if(fd >= 0)
+            close(fd);
+#endif
         /*CID: 66130 Unchecked return value*/
         if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&isBridgeMode)) &&
            ( TRUE == isBridgeMode ))
