@@ -18240,7 +18240,10 @@ PeriodicBeacon_SetParamBoolValue
         BOOL                        bValue
     )
 {
-          CcspTraceInfo(("PeriodicBeacon_SetParamBoolValue \n"));
+    CcspTraceInfo(("PeriodicBeacon_SetParamBoolValue \n"));
+    UNREFERENCED_PARAMETER(hInsContext);
+    pthread_t tid;
+	
     if (IsBoolSame(hInsContext, ParamName, bValue, PeriodicBeacon_GetParamBoolValue))
         return TRUE;
 
@@ -18257,6 +18260,8 @@ PeriodicBeacon_SetParamBoolValue
             syscfg_set(NULL, "BLEPeriodicBeacon", "false");
             syscfg_commit();
         }
+		
+        pthread_create(&tid, NULL, handleBleRestart, NULL);
         return TRUE;
     }
 
@@ -18723,6 +18728,34 @@ Cmd_GetParamStringValue
     return FALSE;
 }
 
+static bool isTileDiscoveryEnabled()
+{
+    int ret = false;
+    char buffDiscovery[8] = {'\0'};
+    char bufflimitBeacon[8] = {'\0'};
+
+    if (syscfg_get(NULL, "BLEDiscovery", buffDiscovery, sizeof(buffDiscovery)) != 0)
+    {
+        CcspTraceError(("Error getting BLE.Discovery RFC \n"));
+    }
+    if (syscfg_get(NULL, "limit_beacon_detection", bufflimitBeacon, sizeof(bufflimitBeacon)) != 0)
+    {
+        CcspTraceError(("Error getting LimitBeaconDetection \n"));
+    }
+
+    if ((strcmp(buffDiscovery, "true") == 0) && (strcmp(bufflimitBeacon, "false") == 0))
+    {
+        ret = true;
+    }
+    else
+    {
+        memset(buffDiscovery, '\0', sizeof(buffDiscovery));
+        memset(bufflimitBeacon, '\0', sizeof(bufflimitBeacon));
+    }
+
+    return ret;
+}
+
 static int write_hashedID_to_file(const cJSON *cjson)
 {
     int ret = FALSE;
@@ -18757,12 +18790,12 @@ static int write_hashedID_to_file(const cJSON *cjson)
 
                 fprintf(fp,"%s\n",hashed_id_buf);
             }
+            fclose(fp);	   
         }
 
         if(ret != FALSE)
         {
             CcspTraceInfo(("Successfully write hashed ids to /tmp/hashed_id file. \n"));
-            fclose(fp);
         }
     }
 
@@ -18782,6 +18815,11 @@ Cmd_SetParamStringValue
     int index;
     if( AnscEqualString(ParamName, "Request", TRUE))
     {
+         if(!isTileDiscoveryEnabled())
+         {
+             CcspTraceInfo(("Ignoring Ring request. Discovery or Tile Beacon detection is off.\n"));
+             return TRUE;;
+         }
 
          CcspTraceInfo(("***************************\n"));
          CcspTraceInfo(("The Json string=%s\n",pString));
@@ -18795,6 +18833,11 @@ Cmd_SetParamStringValue
                  cmd = cJSON_GetObjectItem(cjson, "code")->valuestring;
                  if(strcmp(cmd,"MEP_TOA_OPEN_CHANNEL") == 0)
                  {
+                        // If hashed_id file exists, it means there's running ring process.
+                        if(access("/tmp/hashed_id", F_OK) != -1){
+                            CcspTraceInfo(("Already previous ring request in progress.\n"));
+                            return TRUE;
+                        }
                         if ( cJSON_GetObjectItem(cjson, "hashed_ids") != NULL )
                             write_hashedID_to_file(cjson);
 
