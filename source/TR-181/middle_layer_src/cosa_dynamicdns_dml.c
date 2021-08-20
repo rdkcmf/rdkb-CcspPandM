@@ -49,14 +49,13 @@ DynamicDNS_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(puLong);
     char supportedServices[1024] = {0};
     errno_t rc = -1;
     if (AnscEqualString(ParamName, "SupportedServices", TRUE))
     {
         if (!CosaDmlDynamicDns_GetsupportedServices(supportedServices))
         {
-            rc =strcpy_s(pValue, *pUlSize, supportedServices);
+            rc =strcpy_s(pValue, *puLong, supportedServices);
             if(rc != EOK)
             {
                ERR_CHK(rc);
