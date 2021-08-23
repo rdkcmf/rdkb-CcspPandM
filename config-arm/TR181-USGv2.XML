@@ -1583,7 +1583,6 @@
                 </parameter>
               </parameters>
             </object>
-<?ifndef BCI?>
 			<object>
               <name>RPC</name>
               <objectType>object</objectType>
@@ -1642,7 +1641,6 @@
                 </parameter>
               </parameters>
             </object>
-<?endif?>
 		</objects>
 		</object>
         <object>
@@ -3246,7 +3244,6 @@
                         </parameters>
 
                 </object>
-<?ifndef BCI?>
 		<object>
 		        <name>ManageableNotification</name>
 		        <objectType>object</objectType>
@@ -3263,7 +3260,6 @@
 			        </parameter>
 		        </parameters>
                 </object>
-<?endif?>
                                 <object>
                                     <name>Snmpv3DHKickstart</name>
                                     <objectType>object</objectType>

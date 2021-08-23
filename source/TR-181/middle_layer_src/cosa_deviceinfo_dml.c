@@ -17286,7 +17286,7 @@ CloudUI_SetParamStringValue
 }
 
 
-#ifndef _COSA_FOR_BCI_
+#if !defined(_COSA_FOR_BCI_) || defined(_CBR2_PRODUCT_REQ_)
 /***********************************************************************
 
  APIs for Object:
