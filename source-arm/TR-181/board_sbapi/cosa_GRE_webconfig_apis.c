@@ -155,13 +155,18 @@ BOOL unpackAndProcessHotspotData(char* pString)
 
             sequenceDetails->multiCompExecData->isMaster = 1 ;
             sequenceDetails->multiCompExecData->comp_exec_data = (void*) td ;
+            CcspTraceWarning(("DEBUG : master data %p\n",sequenceDetails->multiCompExecData->comp_exec_data));
 
 
             sequenceDetails->multiCompExecData++;
             sequenceDetails->multiCompExecData->isMaster =0 ;
 
 	        strncpy(sequenceDetails->multiCompExecData->CompName,"CcspWifiSsp",sizeof(sequenceDetails->multiCompExecData->CompName)-1);
+            CcspTraceWarning(("DEBUG : wifi_encoded_data %p\n",wifi_encoded_data));
+
             sequenceDetails->multiCompExecData->comp_exec_data = (void*) wifi_encoded_data ;
+
+            CcspTraceWarning(("DEBUG : sequenceDetails->multiCompExecData->comp_exec_data pointer is %p\n",sequenceDetails->multiCompExecData->comp_exec_data));
 
             sequenceDetails->multiCompExecData--;
 
