@@ -4098,11 +4098,7 @@ static token_t sysevent_token_global;
 #ifdef _COSA_INTEL_USG_ARM_
 void __cosa_dhcpsv6_refresh_config()
 {
-#if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
     FILE * fp = fopen(SERVER_CONF_LOCATION, "w+");
-#else
-    FILE * fp = fopen(TMP_SERVER_CONF, "w+");
-#endif
     PCHAR pTmp1 = NULL;
     PCHAR pTmp2 = NULL;
     PCHAR pTmp3 = NULL;
