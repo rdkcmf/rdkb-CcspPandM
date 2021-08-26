@@ -11594,8 +11594,14 @@ IPv6onLnF_GetParamBoolValue
             /* collect value */
             char buf[128];
 	    char Inf_name[32];
+
+            syscfg_get( NULL, "iot_brname", Inf_name, sizeof(Inf_name));
+            if ( (Inf_name[0] == '\0') && (strlen(Inf_name)) == 0 )
+            {
+                syscfg_get( NULL, "iot_ifname", Inf_name, sizeof(Inf_name));
+
+            }
 	
-	    syscfg_get( NULL, "iot_ifname", Inf_name, sizeof(Inf_name));
 	    if( Inf_name != NULL )
             {
             
