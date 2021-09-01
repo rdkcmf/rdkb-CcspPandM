@@ -889,10 +889,15 @@ struct tm *pLcltime, temp;
     return ANSC_STATUS_SUCCESS;
 }
 
+#define VALUE_ALREADY_IN_DECIMAL       -1
+#define INVALID_TIME_OFFSET_VAL         0
+
 static int hexToInt(char s[])
 {
     int hexdigit, i, num;
     bool inputIsValid;
+    bool hexDigitFound = false ;
+
     i=0;
     if(s[i] == '0') {
         ++i;
@@ -900,23 +905,51 @@ static int hexToInt(char s[])
             ++i;
         }
     }
+    else if ( s[i] == '-' )
+    {
+        ++i;
+        if ( s[i] == '\0' )
+        {
+            return INVALID_TIME_OFFSET_VAL ;
+        }
+    }
     num = 0;
     inputIsValid = true;
     for(; inputIsValid == true; ++i) {
-        if(s[i] >= '0' && s[i] <= '9') {
+        if ( s[i] == '\0' )
+        {   
+            break;
+        }
+        else if(s[i] >= '0' && s[i] <= '9') {
             hexdigit = s[i] - '0';
         } else if(s[i] >= 'a' && s[i] <= 'f') {
+            hexDigitFound = true;
             hexdigit = s[i] - 'a' + 10;
         } else if(s[i] >= 'A' && s[i] <= 'F') {
+            hexDigitFound = true;
             hexdigit = s[i] - 'A' + 10;
         } else {
             inputIsValid = false;
+            break;
         }
-        if(inputIsValid == true) {
+        if(inputIsValid == true ) {
             num = 16 * num + hexdigit;
         }
+
     }
-    return num;
+         
+    if (inputIsValid == false )
+    {
+        return INVALID_TIME_OFFSET_VAL ;
+    }
+    else if (hexDigitFound == false)
+    {
+        return VALUE_ALREADY_IN_DECIMAL ;
+    }
+    else
+    {
+        return num;
+    }
 }
 
 ANSC_STATUS getTimeOffset(char *name, char **timeOffset, int version)
@@ -924,14 +957,34 @@ ANSC_STATUS getTimeOffset(char *name, char **timeOffset, int version)
     char offset_value[100]={0};
     char tempStr[100] = {0};
     errno_t safec_rc = -1;
+    int decimal_Conv_Value = 0 ;
     memset(offset_value,0,sizeof(offset_value));
     commonSyseventGet(name, offset_value, sizeof(offset_value));
     if ( (*timeOffset != NULL) && ('\0' != offset_value[0] ) && ( 0 != strlen(offset_value) ) ) 
     {
-         CcspTraceWarning(("%s: offset_value received from %s is %s \n", __FUNCTION__, name, offset_value));
-         if ( offset_value[0] == '@' )
-         {
-            safec_rc = strcpy_s(*timeOffset, MAX_COSATIMEOFFSET_SIZE, offset_value+1 );
+        CcspTraceWarning(("%s: offset_value received from %s is %s \n", __FUNCTION__, name, offset_value));
+        if ( offset_value[0] == '@' )
+        {
+            if( version == 6)
+            {
+
+                decimal_Conv_Value = hexToInt(offset_value+1) ;
+
+                if ( decimal_Conv_Value == VALUE_ALREADY_IN_DECIMAL )
+                {
+                    safec_rc = strcpy_s(*timeOffset, MAX_COSATIMEOFFSET_SIZE, offset_value+1 );
+                }
+                else
+                {
+                    sprintf(tempStr, "%d", decimal_Conv_Value);
+                    safec_rc = strcpy_s(*timeOffset, MAX_COSATIMEOFFSET_SIZE, tempStr );   
+                }
+
+            }
+            else
+            {
+                safec_rc = strcpy_s(*timeOffset, MAX_COSATIMEOFFSET_SIZE, offset_value+1 );
+            }
             if(safec_rc != EOK)
             {
                ERR_CHK(safec_rc);
@@ -942,8 +995,17 @@ ANSC_STATUS getTimeOffset(char *name, char **timeOffset, int version)
             //hex to int conversion is only for ipv6-timeoffset
             if(version == 6)
             {
-	    	sprintf(tempStr, "%d", hexToInt(offset_value));
-                safec_rc = strcpy_s(*timeOffset, MAX_COSATIMEOFFSET_SIZE, tempStr );
+                    decimal_Conv_Value = hexToInt(offset_value) ;
+
+                    if ( decimal_Conv_Value == VALUE_ALREADY_IN_DECIMAL )
+                    {
+                        safec_rc = strcpy_s(*timeOffset, MAX_COSATIMEOFFSET_SIZE, offset_value );
+                    }
+                    else
+                    {
+                        sprintf(tempStr, "%d", decimal_Conv_Value);
+                        safec_rc = strcpy_s(*timeOffset, MAX_COSATIMEOFFSET_SIZE, tempStr );   
+                    }
             }
             else
             {
