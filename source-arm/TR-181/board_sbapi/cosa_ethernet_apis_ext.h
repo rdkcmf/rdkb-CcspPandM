@@ -47,7 +47,11 @@
 #define SWITCH_PORT_0_NAME "sw_1"
 #define SWITCH_PORT_1_NAME "sw_2"
 #define SWITCH_PORT_2_NAME "sw_3"
+#if defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)
+#define SWITCH_PORT_3_NAME "eth1"
+#else
 #define SWITCH_PORT_3_NAME "sw_4"
+#endif
 
 // Original Code Assumed Four Physical Ethernet Ports. Set to that for backwards compatibility. 
 #if !(defined (ETH_8_PORTS) || defined (ETH_6_PORTS) || defined (ETH_4_PORTS) || defined (ETH_2_PORTS) )
