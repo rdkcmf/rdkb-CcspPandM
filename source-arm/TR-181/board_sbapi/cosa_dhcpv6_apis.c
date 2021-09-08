@@ -7052,6 +7052,14 @@ int dhcpv6_assign_global_ip(char * prefix, char * intfName, char * ipAddr)
         return 1;
     }
 
+#ifdef _HUB4_PRODUCT_REQ_
+    if(strncmp(intfName, COSA_DML_DHCPV6_SERVER_IFNAME, strlen(intfName)) == 0)
+    {
+        snprintf(ipAddr, 128, "%s1", globalIP);
+        return 0;
+    }
+#endif
+
     j = i-2;
     k = 0;
     while( j>0 ){
@@ -8363,6 +8371,15 @@ dhcpv6c_dbg_thrd(void * in)
                                 CcspTraceInfo(("Assign global ip error \n"));
                             }
                             else {
+#ifdef _HUB4_PRODUCT_REQ_
+                                CcspTraceInfo(("%s Going to set [%s] address on brlan0 interface \n", __FUNCTION__, globalIP));
+                                v_secure_system("ip -6 addr add %s/64 dev %s valid_lft %d preferred_lft %d",
+                                                globalIP, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
+                                commonSyseventSet("lan_ipaddr_v6", globalIP);
+                                // send an event to wanmanager that Global-prefix is set
+                                commonSyseventSet("lan_prefix_set", globalIP);
+                            }
+#else
                                 commonSyseventSet("lan_ipaddr_v6", globalIP);
                                 v_secure_system("ip -6 addr add %s/64 dev %s valid_lft %d preferred_lft %d", globalIP, 
                                                 COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
@@ -8375,6 +8392,7 @@ dhcpv6c_dbg_thrd(void * in)
                             }
                             // send an event to wanmanager that Global-prefix is set
                             commonSyseventSet("lan_prefix_set", globalIP);
+#endif
                         }
 #else
 #if defined(_HUB4_PRODUCT_REQ_) 
@@ -8395,18 +8413,14 @@ dhcpv6c_dbg_thrd(void * in)
                     if(ret != 0) {
                         CcspTraceInfo(("Assign global ip error \n"));
                     }
-                    else {
-                        commonSyseventSet("lan_ipaddr_v6", globalIP);
+                    else
+                    {
+                        CcspTraceInfo(("%s Going to set [%s] address on brlan0 interface \n", __FUNCTION__, globalIP));
                         v_secure_system("ip -6 addr add %s/64 dev %s valid_lft %s preferred_lft %s", globalIP, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
+                        commonSyseventSet("lan_ipaddr_v6", globalIP);
+                        // send an event to Sky-pro app manager that Global-prefix is set
+                        commonSyseventSet("lan_prefix_set", globalIP);
                     }
-                    if(strlen(v6pref) > 0) {
-                        char v6pref_addr[128] = {0};
-                        strncpy(v6pref_addr, v6pref, (strlen(v6pref)-5));
-                        CcspTraceInfo(("Going to set ::1 address on brlan0 interface \n"));
-                        v_secure_system("ip -6 addr add %s::1/64 dev %s valid_lft %s preferred_lft %s", v6pref_addr, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
-                    }
-                    // send an event to Sky-pro app manager that Global-prefix is set
-                    commonSyseventSet("lan_prefix_set", globalIP);
 #endif
 #endif // FEATURE_RDKB_WAN_MANAGER
                         // not the best place to add route, just to make it work
@@ -8429,9 +8443,11 @@ dhcpv6c_dbg_thrd(void * in)
                         
                         /*We need get a global ip addres */
 #if defined(_COSA_BCM_ARM_) || defined(INTEL_PUMA7)
+#ifndef _HUB4_PRODUCT_REQ_
                         /*this is for tchxb6*/
                         CcspTraceWarning((" %s dhcpv6_assign_global_ip to brlan0 \n", __FUNCTION__));
                         ret = dhcpv6_assign_global_ip(v6pref, "brlan0", globalIP);
+#endif
 #elif defined _COSA_BCM_MIPS_
                         ret = dhcpv6_assign_global_ip(v6pref, COSA_DML_DHCPV6_SERVER_IFNAME, globalIP);
 #else
