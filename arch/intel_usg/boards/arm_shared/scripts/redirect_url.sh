@@ -60,7 +60,7 @@ echo_t "Redirect URL : Restarting firewall"
 sysevent set firewall-restart
 
 if [ -e "/usr/bin/onboarding_log" ]; then
-    uptime=`cat /proc/uptime | awk '{ print $1 }' | cut -d"." -f1`
+    uptime=$(cut -d. -f1 /proc/uptime)
     /usr/bin/onboarding_log "RDKB_FIREWALL_RESTART:$uptime"
 fi
 
