@@ -443,7 +443,7 @@ DeviceInfo_SetParamBoolValue_Custom
 		printf("Wi-Fi SSID and Passphrase are not configured,setting ConfigureWiFi to true ...\n");
 		pMyObject->bWiFiConfigued = bValue;
 
-		char buf[5];
+		char buf[8];
                     /* CID: 92407 Array compared against 0*/
 		if(!syscfg_get( NULL, "CaptivePortal_Enable" , buf, sizeof(buf))) {
 		    if (strcmp(buf,"true") == 0)
