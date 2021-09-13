@@ -230,7 +230,7 @@ X_CISCO_COM_DeviceControl_GetParamBoolValue
             return FALSE;
         return TRUE;
     }
-#if !defined(_CBR_PRODUCT_REQ_)
+#if !defined(_CBR_PRODUCT_REQ_) && !defined (_BWG_PRODUCT_REQ_)
     if (AnscEqualString(ParamName, "TelnetEnable", TRUE))
     {
         if (CosaDmlDcGetTelnetEnable(NULL, pBool) != ANSC_STATUS_SUCCESS)
@@ -896,7 +896,7 @@ X_CISCO_COM_DeviceControl_SetParamBoolValue
 
         return TRUE;
     }
-#if !defined(_CBR_PRODUCT_REQ_)
+#if !defined(_CBR_PRODUCT_REQ_) && !defined (_BWG_PRODUCT_REQ_)
     if (AnscEqualString(ParamName, "TelnetEnable", TRUE))
     {
         pMyObject->TelnetEnable = bValue;

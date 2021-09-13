@@ -454,7 +454,7 @@ void* WebServRestart( void *arg )
 #if 0
 static int TelnetdConfig(int enable)
 {
-#if defined(_CBR_PRODUCT_REQ_)
+#if defined(_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_)
     return 0;
 #endif
     if (enable)
@@ -2752,7 +2752,7 @@ CosaDmlDcGetTelnetEnable
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    #if defined(_CBR_PRODUCT_REQ_)
+    #if defined(_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_)
         return ANSC_STATUS_FAILURE;
     #endif
 
@@ -2818,7 +2818,7 @@ CosaDmlDcSetTelnetEnable
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    #if defined(_CBR_PRODUCT_REQ_)
+    #if defined(_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_)
         return ANSC_STATUS_FAILURE;
     #endif
     char buf[5];
