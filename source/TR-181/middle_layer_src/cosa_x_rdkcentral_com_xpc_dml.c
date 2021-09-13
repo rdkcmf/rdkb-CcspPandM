@@ -39,6 +39,7 @@
 #include "ccsp_trace.h"
 #include "ansc_platform.h"
 #include "ccsp_base_api.h"
+#include "dslh_definitions_database.h"
 #include "messagebus_interface_helper.h"
 
 extern void* g_pDslhDmlAgent;
@@ -77,7 +78,7 @@ SnmpOnboardReboot_SetParamBoolValue
     if (AnscEqualString(ParamName, "Enable", TRUE))
     {
         CcspTraceInfo(("Write ID is %ld \n", GET_CURRENT_WRITE_ENTITY()));
-        if( GET_CURRENT_WRITE_ENTITY() == CCSP_COMPONENT_ID_XPC )
+        if( GET_CURRENT_WRITE_ENTITY() == DSLH_MPA_ACCESS_CONTROL_XPC )
         {
             if(bValue == pMyObject->bEnable)
                     return TRUE;
