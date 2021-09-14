@@ -124,6 +124,9 @@ void Send_Notification_Task(char* delay, char* startTime, char* download_status,
 void set_firmware_download_start_time(char *start_time);
 char* get_firmware_download_start_time();
 void *handleBleRestart(void *arg);
+#if (defined _COSA_INTEL_XB3_ARM_)
+BOOL CMRt_Isltn_Enable(BOOL status);
+#endif
 
 #define MAX_ALLOWABLE_STRING_LEN  256
 
@@ -8616,6 +8619,21 @@ Feature_GetParamBoolValue
            return TRUE;
     }
 #endif
+#if (defined _COSA_INTEL_XB3_ARM_)
+    if( AnscEqualString(ParamName, "CMRouteIsolationEnable", TRUE))
+    {
+	   char value[8] = {0};
+           syscfg_get(NULL, "CMRouteIsolation_Enable", value, sizeof(value));
+           if( value[0] != '\0' )
+           {
+               if (strcmp(value, "true") == 0)
+                   *pBool = TRUE;
+               else
+                   *pBool = FALSE;
+           }
+           return TRUE;
+    }
+#endif
     return FALSE;
 }
 
@@ -10103,8 +10121,153 @@ Feature_SetParamBoolValue
             return TRUE;
     }
 #endif
+#if (defined _COSA_INTEL_XB3_ARM_)
+    if( AnscEqualString(ParamName, "CMRouteIsolationEnable", TRUE))
+    {
+       CcspTraceInfo(("CM Route Isolation Enable:%s\n",bValue?"true":"false"));
+       
+       if( CMRt_Isltn_Enable(bValue) == TRUE )
+       {
+          if (syscfg_set(NULL, "CMRouteIsolation_Enable", bValue?"true":"false") != 0)
+          {
+             AnscTraceWarning(("syscfg_set CMRouteIsolationEnable failed\n"));
+	     return FALSE;
+          }
+          else
+          {  
+             if (syscfg_commit() != 0)
+             {  
+                AnscTraceWarning(("syscfg_commit CMRouteIsolationEnable failed\n"));
+		return FALSE;
+             }
+          }
+          return TRUE;
+       }
+       else {
+            CcspTraceWarning(("%s: CMRouteIsolationEnable failed\n", __func__));
+	    return FALSE;
+       }
+    }
+#endif
     return FALSE;
 }
+
+#if (defined _COSA_INTEL_XB3_ARM_)
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL CMRt_Isltn_Enable
+            (
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to configure/deconfigure CM Wan0
+	Route isolation.
+
+    argument:   BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL CMRt_Isltn_Enable(BOOL status)
+{
+    /* if Enable is true and wan0 is not configured earlier,
+     * handle it here */	
+    if (status == TRUE) 
+    {
+       if (access( "/tmp/wan0_configured", F_OK ) != 0)
+       {
+	  ipv6_addr_info_t * p_v6addr = NULL;
+          int  v6addr_num = 0, i;
+	  int rc = -1; 
+	  rc = CosaUtilGetIpv6AddrInfo("wan0", &p_v6addr, &v6addr_num);     
+	  if (0 == rc)
+	  {	  
+	     for(i = 0; i < v6addr_num; i++ )
+	     {
+                if ((p_v6addr[i].scope == IPV6_ADDR_SCOPE_GLOBAL)
+		     && (strncmp(p_v6addr[i].v6addr, "fd", 2) != 0) 
+		     && (strncmp(p_v6addr[i].v6addr, "fc", 2) != 0))
+	        {
+		    break;
+	        }
+	     }
+	     if(strlen(p_v6addr[i].v6addr))
+             {		     
+	        _write_sysctl_file("/proc/sys/net/ipv6/conf/wan0/accept_ra_table", 1024);
+	        v_secure_system( "ip -6 rule add from %s lookup cmwan && "
+                                 "ip -6 rule add from all oif wan0 table cmwan && "
+                                 "ip -6 route del default dev wan0 && "
+                                 "touch /tmp/wan0_configured ",p_v6addr[i].v6addr);
+	     }
+	     else
+	     {
+		CcspTraceError(("WAN0 IPv6 null,Unable to configure route table cmwan\n"));
+		if(p_v6addr)
+                   free(p_v6addr);
+		return FALSE;
+	     }
+
+	     if(p_v6addr)
+                free(p_v6addr);
+
+	  }
+	  else
+          {
+                /* ??? we can't be empty, either the box management is ipv4 only or
+                rare conditon of wan0 is empty. can't taken any action for now
+                */
+                CcspTraceError(("WAN0 IPv6 empty,Unable to configure route table cmwan\n"));
+                return FALSE;
+	   }
+	}
+	else
+	  CcspTraceInfo(("CM Route Isolation already configured"));
+
+        /* check to ensure, we are properly configured, partial configuration 
+	 * may lead to indefinite behaviour,revert to original state
+	 * and return false if not properly configured*/  
+	if (access( "/tmp/wan0_configured", F_OK ) != 0)
+	{
+           CcspTraceError(("CM Route Isolation Enable failed for wan0,Reset tables and rules\n"));		
+	   _write_sysctl_file("/proc/sys/net/ipv6/conf/wan0/accept_ra_table", 254);
+           v_secure_system("ip -6 rule del lookup cmwan && "
+			   "ip -6 rule del from all oif wan0 lookup cmwan && "
+                           "ip -6 route del default dev wan0 table cmwan && "
+                           "sysevent set wan-stop && "
+                           "sysevent set wan-start ");
+	   return FALSE;
+	 }
+	 else
+	  return TRUE;
+     }
+     else /*disable case*/
+     {
+        if (access( "/tmp/wan0_configured", F_OK ) == 0)
+    	{
+           /* After deleting and adding back to the original table, default
+	      route for wan0 come as second entry, do restart wan at end to bring 
+	      back to original state
+	   */		
+           CcspTraceInfo(("Reset Route table and routing rules for wan0\n"));
+	   _write_sysctl_file("/proc/sys/net/ipv6/conf/wan0/accept_ra_table", 254);
+	   v_secure_system("ip -6 rule del from all oif wan0 lookup cmwan && "
+                           "ip -6 rule del lookup cmwan && "
+			   "ip -6 route del default dev wan0 table cmwan && "
+                           "rm /tmp/wan0_configured && "
+			   "sysevent set wan-stop && "
+			   "sysevent set wan-start ");
+    	}
+	return TRUE;
+     }
+}
+#endif
 
 #define BS_SOURCE_WEBPA_STR "webpa"
 #define BS_SOURCE_RFC_STR "rfc"

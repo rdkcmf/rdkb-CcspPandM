@@ -1764,6 +1764,14 @@
                                 <writable>true</writable>
                             </parameter>
 <?endif?>
+<?ifdef _COSA_INTEL_XB3_ARM_?>
+		            <parameter>
+                                <name>CMRouteIsolationEnable</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+			    </parameter>
+<?endif?>
 <?ifdef BCI | COSA_FOR_BCI?>
                             <parameter>
                               <name>OneToOneNAT</name>
