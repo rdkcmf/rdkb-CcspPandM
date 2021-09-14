@@ -9229,7 +9229,7 @@ WPA3_Personal_Transition_RFC_SetParamBoolValue
         }
         ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
                 dst_pathname_cr,
-                "Device.WiFi.",
+                "Device.WiFi.X_CISCO_COM_ResetRadios",
                 g_Subsystem,        /* prefix */
                 &ppComponents,
                 &size);
@@ -12066,7 +12066,7 @@ WiFiInterworking_SetParamBoolValue
 
 		ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
 				dst_pathname_cr,
-				"Device.WiFi.",
+				"Device.WiFi.X_CISCO_COM_ResetRadios",
 				g_Subsystem,        /* prefix */
 				&ppComponents,
 				&size);
@@ -12266,7 +12266,7 @@ WiFiPasspoint_SetParamBoolValue
 
         ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
                 dst_pathname_cr,
-                "Device.WiFi.",
+                "Device.WiFi.X_CISCO_COM_ResetRadios",
                 g_Subsystem,        /* prefix */
                 &ppComponents,
                 &size);

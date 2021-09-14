@@ -1263,7 +1263,7 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 	ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
 		    dst_pathname_cr,
 //		    "Device.WiFi.Radio.",
-                    "Device.WiFi.",
+                    "Device.WiFi.X_CISCO_COM_ResetRadios",
 		    g_Subsystem,        /* prefix */
 		    &ppComponents,
 		    &size);
