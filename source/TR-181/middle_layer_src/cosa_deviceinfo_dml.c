@@ -21377,132 +21377,6 @@ XHFW_SetParamBoolValue (ANSC_HANDLE hInsContext, char* ParamName, BOOL bValue)
 }
 #endif
 
-/**
- *  RFC Features NonRootSupport
-*/
-/**********************************************************************
-    caller:     owner of this object
-    prototype:
-        BOOL
-        NonRootSupport_GetParamBoolValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                BOOL*                       pBool
-            );
-    description:
-        This function is called to retrieve Boolean parameter value;
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-                char*                       ParamName,
-                The parameter name;
-                BOOL*                       pBool
-                The buffer of returned boolean value;
-    return:     TRUE if succeeded.
-**********************************************************************/
-BOOL
-NonRootSupport_GetParamBoolValue
-(
- ANSC_HANDLE                 hInsContext,
- char*                       ParamName,
- BOOL*                       pBool
- )
-{
-    UNREFERENCED_PARAMETER(hInsContext);
-    char buf[8];
-	/* check the parameter name and return the corresponding value */
-    if( AnscEqualString(ParamName, "Enable", TRUE))
-    {
-        /* collect value */
-        /* CID: 139337 Array compared against 0*/
-        if(!syscfg_get( NULL, "NonRootSupport", buf, sizeof(buf)))
-        {
-          if (strcmp(buf, "true") == 0)
-            *pBool = TRUE;
-          else
-            *pBool = FALSE;
-        } else 
-             return FALSE;
-
-        return TRUE;                
-     }
-    return FALSE;
-}
-/**********************************************************************
-    caller:     owner of this object
-    prototype:
-        BOOL
-        NonRootSupport_SetParamBoolValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                BOOL*                       bValue
-            );
-    description:
-        This function is called to set Boolean parameter value;
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-                char*                       ParamName,
-                The parameter name;
-                BOOL*                       bValue
-                The buffer with updated value
-    return:     TRUE if succeeded.
-**********************************************************************/
-BOOL
-NonRootSupport_SetParamBoolValue
-(
- ANSC_HANDLE                 hInsContext,
- char*                       ParamName,
- BOOL                        bValue
- )
-{
-  UNREFERENCED_PARAMETER(hInsContext);
-  char buf[8] = {0};
-  char *boxType = NULL, *atomIp = NULL;
-  errno_t rc = -1;
-  if( AnscEqualString(ParamName, "Enable", TRUE))
-  {
-     rc = strcpy_s(buf, sizeof(buf), (bValue ? "true" : "false"));
-     if(rc != EOK){
-        ERR_CHK(rc);
-        return FALSE;
-     }
-
-     /* collect value */
-     if (syscfg_set(NULL, "NonRootSupport", buf) != 0) {
-          AnscTraceWarning(("syscfg_set failed\n"));
-          return FALSE;
-     }
-     else
-     {
-          if (syscfg_commit() != 0) {
-              AnscTraceWarning(("syscfg_commit failed\n"));
-              return FALSE;
-          }
-          boxType=getenv("BOX_TYPE");
-          if(boxType != NULL)
-          {
-              if(strcmp(boxType, "XB3") ==0)
-              {
-                  atomIp=getenv("ATOM_ARPING_IP");
-                  if(atomIp != NULL)
-                  {
-                     v_secure_system("rpcclient %s \"syscfg set NonRootSupport '%s'; syscfg commit\"", atomIp, buf);
-                  }
-              } 
-          }
-
-       if( bValue )
-           commonSyseventSet("NonRootSupport", "1");
-       else
-           commonSyseventSet("NonRootSupport", "0");
-          return TRUE;
-     }
-  }
-  CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
-  return FALSE;
-}
-
 static void Replace_AllOccurrence(char *str, int size, char ch, char Newch)
 {
   int i=0;
@@ -21527,6 +21401,7 @@ NonRootSupport_GetParamStringValue
 {
   UNREFERENCED_PARAMETER(hInsContext);
   #define APPARMOR_BLOCKLIST_FILE "/opt/secure/Apparmor_blocklist"
+  #define BLOCKLIST_FILE "/opt/secure/Blocklist_file.txt"
   #define SIZE_LEN 32
   char *buf = NULL;
   FILE *fp = NULL;
@@ -21549,6 +21424,25 @@ NonRootSupport_GetParamStringValue
       else {
          CcspTraceWarning(("%s does not exist\n", APPARMOR_BLOCKLIST_FILE));
          strncpy(pValue,"Apparmorblocklist is empty",SIZE_LEN);
+      }
+  }
+  //Blocklist RFC
+  if( AnscEqualString( ParamName, "Blocklist", TRUE) )
+  {
+      fp = fopen(BLOCKLIST_FILE,"r");
+      if(fp!=NULL) {
+         read = getdelim( &buf, &len, '\0', fp);
+         if (read != -1) {
+             AnscCopyString(pValue, buf);
+             *pUlSize = AnscSizeOfString(pValue);
+             Replace_AllOccurrence( pValue, *pUlSize, '\n', ',');
+             CcspTraceWarning(("Blocklist processes:%s\n", pValue));
+         }
+         return 0;
+      }
+      else if((fp == NULL) || (isspace(buf[0])) || (buf == NULL)) {
+         CcspTraceWarning(("Blocklist file does not exist or no process to be blocklisted\n"));
+         strncpy(pValue,"No blocklisted process",SIZE_LEN);
       }
   }
   return -1;
@@ -21622,7 +21516,9 @@ NonRootSupport_SetParamStringValue
   UNREFERENCED_PARAMETER(hInsContext);
   #define APPARMOR_BLOCKLIST_FILE "/opt/secure/Apparmor_blocklist"
   #define TMP_FILE "/opt/secure/Apparmor_blocklist_bck.txt"
+  #define BLOCKLIST_FILE "/opt/secure/Blocklist_file.txt"
   #define SIZE 128
+  #define MAX_SIZE 1024
   FILE *fptr = NULL;
   FILE *tmp_fptr = NULL;
   char buf[SIZE] = {0};
@@ -21666,6 +21562,21 @@ NonRootSupport_SetParamStringValue
         return FALSE;
      }
      return TRUE;
+  }
+
+  //Blocklist RFC
+  if( AnscEqualString(ParamName, "Blocklist", TRUE))
+  {
+      char buf[MAX_SIZE] = {'\0'};
+      snprintf(buf,sizeof(buf),"%s",pValue);
+      fptr = fopen(BLOCKLIST_FILE,"w+");
+      if(!fptr){
+      CcspTraceError(("%s failed to open /opt/secure/Blocklist_file.txt file \n",__FUNCTION__));
+      return FALSE;
+      }
+      fprintf(fptr, "%s\n", buf);
+      fclose(fptr);
+      return TRUE;
   }
   CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
   return FALSE;
