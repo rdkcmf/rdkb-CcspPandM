@@ -132,8 +132,6 @@
 #define  WIFI_CLIENTS_MAC_FILE                      "/var/tmp/wifi_clients_mac"
 #define  LAN_NOT_RESTART_FLAG                        "/var/tmp/lan_not_restart"
 
-#define WRAPPER_LOGFILE "/tmp/libsys.txt"
-
 #define COSA_DHCP4_SYSCFG_NAMESPACE NULL
 
 // defind PSM paramaters
@@ -3800,23 +3798,12 @@ CosaDmlDhcpsPing
     FILE *fp = NULL;
 
     /*ping -w 2 -c 1 fe80::225:2eff:fe7d:5b5 */
-#ifdef OVERCOMMIT_DISABLED
-    int ret = 0;
-    ret = v_secure_system("ping -W 1 -c 1 %s > " WRAPPER_LOGFILE, _ansc_inet_ntoa(*((struct in_addr*)&(pDhcpsClient->IPAddress))) ); 
-    if(ret != 0) {
-        CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
-    }
-    else {
-        fp = fopen (WRAPPER_LOGFILE, "r");
-    }
-#else
     fp = v_secure_popen("r","ping -W 1 -c 1 %s", _ansc_inet_ntoa(*((struct in_addr*)&(pDhcpsClient->IPAddress))) );
-#endif
     if ( _get_shell_output2(fp, "0 packets received"))
     {
         /*1 packets transmitted, 0 packets received, 100% packet loss*/
         return ANSC_STATUS_FAILURE;
-    } 
+    }
     else
     {
         /*1 packets transmitted, 1 packets received, 0% packet loss*/
@@ -3832,23 +3819,12 @@ CosaDmlDhcpsARPing
 {
     FILE *fp = NULL;
 
-#ifdef OVERCOMMIT_DISABLED
-    int ret = 0;
-     ret = v_secure_system("arping -I %s -c 2 -f -w 1 %s > " WRAPPER_LOGFILE, LAN_L3_IFNAME, _ansc_inet_ntoa(*((struct in_addr*)&(pDhcpsClient->IPAddress))) );
-    if(ret != 0) {
-        CcspTraceWarning(("%s Failure in executing command via v_secure_system. ret:[%d] ; LINE : %d \n", __FUNCTION__, ret, __LINE__));
-    }
-    else {
-        fp = fopen (WRAPPER_LOGFILE, "r");
-    }
-#else
     fp = v_secure_popen("r", "arping -I %s -c 2 -f -w 1 %s", LAN_L3_IFNAME, _ansc_inet_ntoa(*((struct in_addr*)&(pDhcpsClient->IPAddress))) );
-#endif
     if ( _get_shell_output2(fp, "Received 0 reply"))
     {
         /*1 packets transmitted, 0 packets received, 100% packet loss*/
         return ANSC_STATUS_FAILURE;
-    } 
+    }
     else
     {
         /*1 packets transmitted, 1 packets received, 0% packet loss*/
