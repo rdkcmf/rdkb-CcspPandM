@@ -113,12 +113,12 @@ extern void* g_pDslhDmlAgent;
 
 static const int OK = 1 ;
 static const int NOK = 0 ;
-static char reverseSSHArgs[255] = { "\0" };
-const char* sshCommand = "/lib/rdk/startTunnel.sh";
+static char reverseSSHArgs[255];
+static const char* sshCommand = "/lib/rdk/startTunnel.sh";
 #ifdef ENABLE_SHORTS
 #define stunnelCommand "/lib/rdk/startStunnel.sh"
 #endif
-const char* rsshPidFile = "/var/tmp/rssh.pid";
+static const char* rsshPidFile = "/var/tmp/rssh.pid";
 
 
 static int
@@ -174,7 +174,7 @@ static char* mapArgsToSSHOption(char *revSSHConfig) {
  */
 static char* findUntilFirstDelimiter(char* input) {
 
-        char tempCopy[255] = { "\0" };
+        char tempCopy[255] = { 0 };
         char *tempStr;
         char* option = NULL;
         char *st = NULL;
@@ -202,7 +202,7 @@ static char* getHostLogin(char *tempStr) {
         char* hostLogin = NULL;
 
         int inputMsgSize = strlen(tempStr);
-        char tempCopy[255] = { "\0" };
+        char tempCopy[255] = { 0 };
         strncpy(tempCopy, tempStr, inputMsgSize);
 
         if ((value = strstr(tempStr, "host="))) {
@@ -1154,7 +1154,7 @@ void setLastRebootReason(char* reason)
 
 int setXOpsReverseSshArgs(char* pString) {
 
-    char tempCopy[255] = { "\0" };
+    char tempCopy[255] = { 0 };
     char* tempStr;
     char* option;
     char* hostLogin = NULL;
@@ -1164,8 +1164,8 @@ int setXOpsReverseSshArgs(char* pString) {
 
     //For stunnel Path socat connection capability to loopback ips 127.0.0.1 and [::1] only
     const char* localIP = "127.0.0.1";
-    char ip_version_number[4] = { "\0" };
-    char callbackport[8] = { "\0" };
+    char ip_version_number[4] = { 0 };
+    char callbackport[8] = { 0 };
     char* host = NULL;
     int rows = 0;
     int columns = 0;

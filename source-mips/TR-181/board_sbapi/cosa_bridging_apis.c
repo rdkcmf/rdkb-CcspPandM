@@ -2289,9 +2289,8 @@ static char *_COSA_GetInterfaceTypeStr(COSA_DML_BRG_LINK_TYPE linktype)
         case COSA_DML_BRG_LINK_TYPE_Bridge:
             return("Bridge");
         default:
-            return("\0");    
+            return("");    
     }
-    return("");
 }
 
 
