@@ -9087,6 +9087,208 @@ DLCaStore_RFC_GetParamBoolValue
     prototype:
 
         BOOL
+        WPA3_Personal_Transition_RFC_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value for
+		WPA3 Transition RFC;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+WPA3_Personal_Transition_RFC_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+
+    if (!ParamName || !pBool)
+        return FALSE;
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+       /* Collect Value */
+       char *strValue = NULL;
+       int retPsmGet = CCSP_SUCCESS;
+
+
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WPA3_Personal_Transition.Enable", NULL, &strValue);
+        if (retPsmGet == CCSP_SUCCESS) {
+            *pBool = _ansc_atoi(strValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        }
+        else
+            *pBool = FALSE;
+
+         return TRUE;
+    }
+    return FALSE;
+}
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        WPA3_Personal_Transition_RFC_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value for
+		WPA3 Transition RFC;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+WPA3_Personal_Transition_RFC_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if (IsBoolSame(hInsContext, ParamName, bValue, WPA3_Personal_Transition_RFC_GetParamBoolValue))
+        return TRUE;
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char str[2];
+        char secMode[64];
+        int retPsmGet = CCSP_SUCCESS;
+        errno_t rc  = -1;
+        int ret = -1;
+        int size = 0;
+        componentStruct_t ** ppComponents = NULL;
+        char* faultParam = NULL;
+        char dst_pathname_cr[64]  =  {0};
+
+        CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+
+        rc = sprintf_s(str, sizeof(str),"%d",bValue);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
+        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WPA3_Personal_Transition.Enable", ccsp_string, str);
+        if (retPsmGet != CCSP_SUCCESS) {
+            CcspTraceError(("Set failed for WPA3 Transition RFC Enable \n"));
+            return FALSE;
+        }
+        CcspTraceInfo(("Successfully set WPA3 Transition RFC Enable \n"));
+
+        memset(secMode, '\0', sizeof(secMode));
+        rc = sprintf_s(secMode, sizeof(secMode),"%s",(bValue == TRUE) ? "WPA3-Personal-Transition" : "WPA2-Personal");;
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
+
+       /* calling the DML code to set the security modes accordingly */
+        rc = sprintf_s(dst_pathname_cr, sizeof(dst_pathname_cr),"%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+        if(rc < EOK)
+        {
+          ERR_CHK(rc);
+          return FALSE;
+        }
+        ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
+                dst_pathname_cr,
+                "Device.WiFi.",
+                g_Subsystem,        /* prefix */
+                &ppComponents,
+                &size);
+
+        if ( ret == CCSP_SUCCESS && size == 1)
+        {
+            parameterValStruct_t    val[] = 
+            {
+                { "Device.WiFi.AccessPoint.1.Security.ModeEnabled", secMode, ccsp_string},
+                { "Device.WiFi.AccessPoint.2.Security.ModeEnabled", secMode, ccsp_string},
+                { "Device.WiFi.AccessPoint.3.Security.ModeEnabled", secMode, ccsp_string},
+                { "Device.WiFi.AccessPoint.4.Security.ModeEnabled", secMode, ccsp_string},
+                { "Device.WiFi.AccessPoint.7.Security.ModeEnabled", secMode, ccsp_string},
+                { "Device.WiFi.AccessPoint.8.Security.ModeEnabled", secMode, ccsp_string},
+                { "Device.WiFi.AccessPoint.15.Security.ModeEnabled", secMode, ccsp_string},
+                { "Device.WiFi.AccessPoint.16.Security.ModeEnabled", secMode, ccsp_string},
+                { "Device.WiFi.AccessPoint.1.Security.X_RDKCENTRAL-COM_TransitionDisable", "false", ccsp_boolean},
+                { "Device.WiFi.AccessPoint.2.Security.X_RDKCENTRAL-COM_TransitionDisable", "false", ccsp_boolean},
+                { "Device.WiFi.AccessPoint.3.Security.X_RDKCENTRAL-COM_TransitionDisable", "false", ccsp_boolean},
+                { "Device.WiFi.AccessPoint.4.Security.X_RDKCENTRAL-COM_TransitionDisable", "false", ccsp_boolean},
+                { "Device.WiFi.AccessPoint.7.Security.X_RDKCENTRAL-COM_TransitionDisable", "false", ccsp_boolean},
+                { "Device.WiFi.AccessPoint.8.Security.X_RDKCENTRAL-COM_TransitionDisable", "false", ccsp_boolean},
+                { "Device.WiFi.AccessPoint.15.Security.X_RDKCENTRAL-COM_TransitionDisable", "false", ccsp_boolean},
+                { "Device.WiFi.AccessPoint.16.Security.X_RDKCENTRAL-COM_TransitionDisable", "false", ccsp_boolean},
+                { "Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean},
+                { "Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean},
+            };
+
+            ret = CcspBaseIf_setParameterValues
+                (
+                 bus_handle,
+                 ppComponents[0]->componentName,
+                 ppComponents[0]->dbusPath,
+                 0, 0x0,
+                 val,
+                 18,
+                 TRUE,
+                 &faultParam
+                );
+
+            if (ret != CCSP_SUCCESS && faultParam)
+            {
+                AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
+                bus_info->freefunc(faultParam);
+            }
+            free_componentStruct_t(bus_handle, size, ppComponents);
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
         DLCaStore_RFC_SetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,
