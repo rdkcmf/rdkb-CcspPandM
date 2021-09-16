@@ -1608,6 +1608,22 @@
                                     <writable>true</writable>
                                 </parameter>
                             </parameters>
+		        </object>
+                        <object>
+			    <name>collectd</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>Collectd_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>Collectd_SetParamBoolValue</func_SetParamBoolValue>
+                            </functions>
+                            <parameters>
+                                <parameter>
+                                    <name>Enable</name>
+                                    <type>boolean</type>
+                                    <syntax>bool</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                            </parameters>
                         </object>
                         <object>
                             <name>EncryptCloudUpload</name>

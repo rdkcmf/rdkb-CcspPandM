@@ -12130,6 +12130,139 @@ TDK_SetParamBoolValue
     caller:     owner of this object
 
     prototype:
+
+        BOOL
+        Collectd_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Collectd_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char value[8];
+        syscfg_get(NULL,"CollectdEnable",value, sizeof(value));
+        if( value != NULL )
+        {
+             if (strcmp(value, "true") == 0)
+                 *pBool = TRUE;
+             else
+                 *pBool = FALSE;
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        COllectd_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+Collectd_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        if ( bValue == TRUE)
+        {
+            if(syscfg_set(NULL, "CollectdEnable", "true") != 0)
+	    {
+                AnscTraceWarning(("CollectdEnable : Enabling Collectd using syscfg_set failed!!!\n"));
+            }
+            else
+            {
+                if(syscfg_commit() != 0)
+                {	
+                    AnscTraceWarning(("CollectdEnable : syscfg_commit failed!!! \n"));
+       	        }
+            }
+        }
+        else
+        {
+            if(syscfg_set(NULL, "CollectdEnable", "false") != 0)
+            {
+                AnscTraceWarning(("CollectdEnable : Disabling Collectd using syscfg_set failed!!!\n"));
+            }
+            else
+            {
+                if(syscfg_commit() != 0)
+                {
+                        AnscTraceWarning(("CollectdEnable : syscfg_commit failed!!! \n"));
+                }
+            }
+        }
+        
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
         BOOL
         WANLinkHeal_GetParamBoolValue
             (
