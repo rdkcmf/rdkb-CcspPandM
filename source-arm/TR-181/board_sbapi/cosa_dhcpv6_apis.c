@@ -7136,15 +7136,20 @@ int dhcpv6_assign_global_ip(char * prefix, char * intfName, char * ipAddr)
 */
 void CosaDmlDhcpv6sRebootServer()
 {
-
+    char event_value[64] = {0};
 #ifdef FEATURE_RDKB_WAN_MANAGER
-    char prefix[64] = {0};
-    commonSyseventGet("ipv6_prefix", prefix, sizeof(prefix));
-    if (strlen(prefix) > 3)
+    commonSyseventGet("ipv6_prefix", event_value, sizeof(event_value));
+    if (strlen(event_value) > 3)
     {
         g_dhcpv6_server_prefix_ready = TRUE;
     }
+    memset(event_value,0,sizeof(event_value));
 #endif
+    commonSyseventGet("lan-status", event_value, sizeof(event_value));
+    if ( !strncmp(event_value, "started", strlen("started") ) )
+    {
+        g_lan_ready = TRUE;
+    }
     if (!g_dhcpv6_server_prefix_ready || !g_lan_ready)
         return;
 #if defined (MULTILAN_FEATURE)
