@@ -1754,7 +1754,7 @@ CosaDmlNatSetDmz
     AnscCopyString(pDmz->dest_ip, pDmlDmz->InternalIP);
     AnscCopyString(pDmz->dest_ipv6, pDmlDmz->IPv6Host);
 
-    rc = Utopia_SetDMZSettings(&Ctx, *pDmz);
+    rc = Utopia_SetDMZSettings(&Ctx, pDmz); //CID : 71892 Big parameter passed by value
 
     if ( rc != SUCCESS)
     {

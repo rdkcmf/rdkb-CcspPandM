@@ -1887,7 +1887,7 @@ CosaDmlNatSetDmz
     safec_rc = strcpy_s(pDmz->dest_ipv6,sizeof(pDmz->dest_ipv6), pDmlDmz->IPv6Host);
     ERR_CHK(safec_rc);
 
-    rc = Utopia_SetDMZSettings(&Ctx, *pDmz);
+    rc = Utopia_SetDMZSettings(&Ctx, pDmz); //CID : 71892 Big parameter passed by value
 
     if ( rc != SUCCESS)
     {
