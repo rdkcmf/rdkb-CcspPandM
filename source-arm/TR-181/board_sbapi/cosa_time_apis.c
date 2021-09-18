@@ -862,7 +862,7 @@ CosaDmlTimeGetLocalTime
 struct tm *pLcltime, temp;
    time(&t);
    t = t + getOffset();
-   localtime_r(&t, &temp);
+   gmtime_r(&t, &temp); // already adjusted for TZ with offset
    pLcltime = &temp;
 #else
     struct tm *pLcltime;
