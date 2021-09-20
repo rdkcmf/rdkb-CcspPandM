@@ -592,11 +592,11 @@ ANSC_STATUS
           CosaDmlDiGetSerialNumber(NULL,SerialNumber,&SerialNumberLength);
 	}
         char *convertTo = NULL;
-        char cmp[128] = {'\0'};
         char saltText[128] = {'\0'}, hashedmd[128] = {'\0'};
         int  iIndex = 0, Key_len = 0, salt_len = 0, hashedmd_len = 0;
         HMAC_CTX ctx;
         errno_t safec_rc = -1;
+        int hashedpassword_size = 128;
 			
         safec_rc = strcpy_s(saltText, sizeof(saltText), SerialNumber);
         if(safec_rc != EOK)
@@ -611,14 +611,19 @@ ANSC_STATUS
         HMAC_Init(	 &ctx, pString,  Key_len, EVP_sha256());
         HMAC_Update( &ctx, (unsigned char *)saltText, salt_len);
         HMAC_Final(  &ctx, (unsigned char *)hashedmd, (unsigned int *)&hashedmd_len );
-        convertTo = cmp;
+        convertTo = hashedpassword;
         for (iIndex = 0; iIndex < hashedmd_len; iIndex++) 
         {
-          sprintf(convertTo,"%02x", hashedmd[iIndex] & 0xff);
+          // Here hashedpassword size is 128 from calling function
+          safec_rc = sprintf_s(convertTo, hashedpassword_size,"%02x", hashedmd[iIndex] & 0xff);
+          if(safec_rc < EOK)
+          {
+            ERR_CHK(safec_rc);
+          }
           convertTo += 2;
+          hashedpassword_size -= 2;
         }
         HMAC_CTX_cleanup( &ctx );
-        AnscCopyString(hashedpassword,cmp);
         CcspTraceWarning(("%s, Returning success\n",__FUNCTION__));	
         return ANSC_STATUS_SUCCESS ;
 
@@ -733,6 +738,7 @@ user_hashandsavepwd
 {
   UNREFERENCED_PARAMETER(hContext);
   char setHash[128]= {'\0'};
+  errno_t rc = -1;
   CcspTraceWarning(("%s, Hash Password using the passed string\n",__FUNCTION__));
 
   hash_userPassword(pString,setHash);
@@ -753,7 +759,8 @@ user_hashandsavepwd
         }
         else
         {
-          AnscCopyString(pEntry->HashedPassword,setHash);
+          rc = strcpy_s(pEntry->HashedPassword,sizeof(pEntry->HashedPassword),setHash);
+          ERR_CHK(rc);
           CcspTraceWarning(("%s, Hash value is saved to syscfg\n",__FUNCTION__));
 	  syscfg_unset(NULL, "user_password_3");
 	  syscfg_commit();
@@ -780,7 +787,8 @@ user_hashandsavepwd
         }
         else
         {
-          AnscCopyString(pEntry->HashedPassword,setHash);
+          rc = strcpy_s(pEntry->HashedPassword,sizeof(pEntry->HashedPassword),setHash);
+          ERR_CHK(rc);
           CcspTraceWarning(("%s, Hash value is saved to syscfg\n",__FUNCTION__));
           syscfg_unset(NULL, "user_password_2");
           syscfg_commit();

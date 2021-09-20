@@ -711,6 +711,7 @@ CosaDmlTimeGetCfg
     int utc_enabled=0;
     char val[UTOPIA_TR181_PARAM_SIZE1];
     UNREFERENCED_PARAMETER(hContext);
+    errno_t safec_rc = -1;
 
     /*CID: 56962 Dereference after null check*/
     if (!pTimeCfg)
@@ -727,7 +728,8 @@ CosaDmlTimeGetCfg
        /* Fill Local TZ from SysCfg */
        if( (Utopia_Get_DeviceTime_LocalTZ(&ctx,val)) == UT_SUCCESS)
        {
-          AnscCopyString(pTimeCfg->LocalTimeZone,val);
+          safec_rc = strcpy_s(pTimeCfg->LocalTimeZone,sizeof(pTimeCfg->LocalTimeZone),val);
+          ERR_CHK(safec_rc);
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
@@ -738,7 +740,8 @@ CosaDmlTimeGetCfg
        /*Fill NTP Server 1 from SysCfg */
        if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,1)) == UT_SUCCESS)
        {
-          AnscCopyString(pTimeCfg->NTPServer1.ActiveValue,val);
+          safec_rc = strcpy_s(pTimeCfg->NTPServer1.ActiveValue,sizeof(pTimeCfg->NTPServer1.ActiveValue),val);
+          ERR_CHK(safec_rc);
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
@@ -746,7 +749,8 @@ CosaDmlTimeGetCfg
        /* Fill NTP Server 2 from Syscfg */
        if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,2)) == UT_SUCCESS)
        {
-          AnscCopyString(pTimeCfg->NTPServer2.ActiveValue,val);
+          safec_rc = strcpy_s(pTimeCfg->NTPServer2.ActiveValue,sizeof(pTimeCfg->NTPServer2.ActiveValue),val);
+          ERR_CHK(safec_rc);
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
@@ -754,7 +758,8 @@ CosaDmlTimeGetCfg
        /* Fill NTP Server 3 from Syscfg */
        if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,3)) == UT_SUCCESS)
        {
-          AnscCopyString(pTimeCfg->NTPServer3.ActiveValue,val);
+          safec_rc = strcpy_s(pTimeCfg->NTPServer3.ActiveValue,sizeof(pTimeCfg->NTPServer3.ActiveValue),val);
+          ERR_CHK(safec_rc);
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
@@ -762,7 +767,8 @@ CosaDmlTimeGetCfg
        /* Fill NTP Server 4 from Syscfg */
        if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,4)) == UT_SUCCESS)
        {
-          AnscCopyString(pTimeCfg->NTPServer4.ActiveValue,val);
+          safec_rc = strcpy_s(pTimeCfg->NTPServer4.ActiveValue,sizeof(pTimeCfg->NTPServer4.ActiveValue),val);
+          ERR_CHK(safec_rc);
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
@@ -770,7 +776,8 @@ CosaDmlTimeGetCfg
        /* Fill NTP Server 5 from Syscfg */
        if( (Utopia_Get_DeviceTime_NTPServer(&ctx,val,5)) == UT_SUCCESS)
        {
-          AnscCopyString(pTimeCfg->NTPServer5.ActiveValue,val);
+          safec_rc = strcpy_s(pTimeCfg->NTPServer5.ActiveValue,sizeof(pTimeCfg->NTPServer5.ActiveValue),val);
+          ERR_CHK(safec_rc);
           _ansc_memset(val,0,UTOPIA_TR181_PARAM_SIZE1);
           rc = 0;
        }
@@ -994,6 +1001,7 @@ CosaDmlTimeGetTimeOffset
 void FillParamUpdateSourceNTP(cJSON *partnerObj, char *key, char *paramUpdateSource)
 {
     cJSON *paramObj = cJSON_GetObjectItem( partnerObj, key);
+    errno_t rc = -1;
     if ( paramObj != NULL )
     {
         char *valuestr = NULL;
@@ -1002,7 +1010,8 @@ void FillParamUpdateSourceNTP(cJSON *partnerObj, char *key, char *paramUpdateSou
             valuestr = paramObjVal->valuestring;
         if (valuestr != NULL)
         {
-            AnscCopyString(paramUpdateSource, valuestr);
+            rc = strcpy_s(paramUpdateSource, 16, valuestr);
+            ERR_CHK(rc);
             valuestr = NULL;
         }
         else

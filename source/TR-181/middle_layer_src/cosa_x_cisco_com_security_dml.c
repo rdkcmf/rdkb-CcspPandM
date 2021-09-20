@@ -428,77 +428,105 @@ X_CISCO_COM_Security_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DATAMODEL_SECURITY        pCosaDMSecurity = (PCOSA_DATAMODEL_SECURITY)g_pCosaBEManager->hSecurity;
     PCOSA_DML_SECURITY_CFG          pSecurityCfg    = &pCosaDMSecurity->SecurityConfig;
+    errno_t                         rc              = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "FilterWebTraffic", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSecurityCfg->FilterWebTraffic);
-
+        rc = strcpy_s(pValue, *pUlSize, pSecurityCfg->FilterWebTraffic);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "TrafficDetect", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSecurityCfg->TrafficDetect);
-
+        rc = strcpy_s(pValue, *pUlSize, pSecurityCfg->TrafficDetect);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "FilterLanTraffic", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSecurityCfg->FilterLanTraffic);
-
+        rc = strcpy_s(pValue, *pUlSize, pSecurityCfg->FilterLanTraffic);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "AllowPassthrough", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSecurityCfg->AllowPassthrough);
-
+        rc = strcpy_s(pValue, *pUlSize, pSecurityCfg->AllowPassthrough);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "EmailSendTo", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSecurityCfg->EmailSendTo);
-
+        rc = strcpy_s(pValue, *pUlSize, pSecurityCfg->EmailSendTo);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "EmailServer", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSecurityCfg->EmailServer);
-
+        rc = strcpy_s(pValue, *pUlSize, pSecurityCfg->EmailServer);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "EmailUserName", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSecurityCfg->EmailUserName);
-
+        rc = strcpy_s(pValue, *pUlSize, pSecurityCfg->EmailUserName);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "EmailPassword", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSecurityCfg->EmailPassword);
-
+        rc = strcpy_s(pValue, *pUlSize, pSecurityCfg->EmailPassword);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "EmailFromAddress", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSecurityCfg->EmailFromAddress);
-
+        rc = strcpy_s(pValue, *pUlSize, pSecurityCfg->EmailFromAddress);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -2848,8 +2876,11 @@ AccessPolicy_GetParamStringValue
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pDmlIAPolicy->Alias);
-
+        rc = strcpy_s(pValue, *pUlSize, pDmlIAPolicy->Alias);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -3192,13 +3223,17 @@ AccessPolicy_SetParamStringValue
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy    = (PCOSA_DML_IA_POLICY2     )pCosaContext->hContext;
     char*                           pNext           = pString;
     USHORT                          ulCount         = 0;
+    errno_t                         rc              = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pDmlIAPolicy->Alias, pString);
-
+        rc = STRCPY_S_NOCLOBBER(pDmlIAPolicy->Alias, sizeof(pDmlIAPolicy->Alias), pString);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -3389,6 +3424,7 @@ AccessPolicy_Validate
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2     = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PCOSA_DML_IA_POLICY2            pSecurityIAPolicy = (PCOSA_DML_IA_POLICY2     )NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry       = (PSINGLE_LINK_ENTRY       )NULL;
+    errno_t                         rc                = -1;
 
     pSLinkEntry = AnscSListGetFirstEntry(pPolicyHead);
 
@@ -3405,8 +3441,8 @@ AccessPolicy_Validate
                  AnscEqualString(pSecurityIAPolicy->Alias, pDmlIAPolicy->Alias, TRUE) 
            )
         {
-            AnscCopyString(pReturnParamName, "Alias");
-
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            ERR_CHK(rc);
             *puLength = AnscSizeOfString("Alias");
              
             return FALSE;
@@ -3790,21 +3826,28 @@ Schedule_GetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy = (PCOSA_DML_IA_POLICY2     )pCosaContext->hContext;
     PCOSA_DML_IA_POLICY_SCH         pSchedule    = (PCOSA_DML_IA_POLICY_SCH  )&pDmlIAPolicy->Schedule;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "EndTime", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSchedule->EndTime);
-
+        rc = strcpy_s(pValue, *pUlSize, pSchedule->EndTime);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "StartTime", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pSchedule->StartTime);
-
+        rc = strcpy_s(pValue, *pUlSize, pSchedule->StartTime);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -4066,21 +4109,28 @@ Schedule_SetParamStringValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY2            pDmlIAPolicy = (PCOSA_DML_IA_POLICY2     )pCosaContext->hContext;
     PCOSA_DML_IA_POLICY_SCH         pSchedule    = (PCOSA_DML_IA_POLICY_SCH  )&pDmlIAPolicy->Schedule;
+    errno_t                         rc           = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "EndTime", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pSchedule->EndTime, pString);
-
+        rc = STRCPY_S_NOCLOBBER(pSchedule->EndTime, sizeof(pSchedule->EndTime), pString);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "StartTime", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pSchedule->StartTime, pString);
-
+        rc = STRCPY_S_NOCLOBBER(pSchedule->StartTime, sizeof(pSchedule->StartTime), pString);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -4678,21 +4728,28 @@ BlockedURL_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY_URL         pURL             = (PCOSA_DML_IA_POLICY_URL  )pCosaContext->hContext;
+    errno_t                         rc               = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pURL->Alias);
-
+        rc = strcpy_s(pValue, *pUlSize, pURL->Alias);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "URL", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pURL->Url);
-
+        rc = strcpy_s(pValue, *pUlSize, pURL->Url);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -4881,21 +4938,28 @@ BlockedURL_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY_URL         pURL             = (PCOSA_DML_IA_POLICY_URL  )pCosaContext->hContext;
+    errno_t                         rc               = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pURL->Alias, pString);
-
+        rc = STRCPY_S_NOCLOBBER(pURL->Alias, sizeof(pURL->Alias), pString);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "URL", TRUE))
     {
         /* collect value */
-        AnscCopyString(pURL->Url, pString);
-
+        rc = STRCPY_S_NOCLOBBER(pURL->Url, sizeof(pURL->Url), pString);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -4948,6 +5012,7 @@ BlockedURL_Validate
     PSLIST_HEADER                   pListHead        = (PSLIST_HEADER            )&pDmlIAPolicy->URLList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2    = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry      = (PSINGLE_LINK_ENTRY       )NULL;
+    errno_t                         rc               = -1;
 
     pSLinkEntry = AnscSListGetFirstEntry(pListHead);
 
@@ -4964,8 +5029,8 @@ BlockedURL_Validate
                  AnscEqualString(pURLEntry->Alias, pURL->Alias, TRUE) 
            )
         {
-            AnscCopyString(pReturnParamName, "Alias");
-
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            ERR_CHK(rc);
             *puLength = AnscSizeOfString("Alias");
              
             return FALSE;
@@ -5535,21 +5600,28 @@ BlockedKeyword_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT   )hInsContext;
     PCOSA_DML_IA_POLICY_KEYWORD     pKeyword         = (PCOSA_DML_IA_POLICY_KEYWORD )pCosaContext->hContext;
+    errno_t                         rc               = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pKeyword->Alias);
-
+        rc = strcpy_s(pValue, *pUlSize, pKeyword->Alias);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Keyword", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pKeyword->Keyword);
-
+        rc = strcpy_s(pValue, *pUlSize, pKeyword->Keyword);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -5738,21 +5810,28 @@ BlockedKeyword_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT   )hInsContext;
     PCOSA_DML_IA_POLICY_KEYWORD     pKeyword         = (PCOSA_DML_IA_POLICY_KEYWORD )pCosaContext->hContext;
+    errno_t                         rc               = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pKeyword->Alias, pString);
-
+        rc = STRCPY_S_NOCLOBBER(pKeyword->Alias, sizeof(pKeyword->Alias), pString);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Keyword", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pKeyword->Keyword, pString);
-
+        rc = STRCPY_S_NOCLOBBER(pKeyword->Keyword, sizeof(pKeyword->Keyword), pString);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -5805,6 +5884,7 @@ BlockedKeyword_Validate
     PSLIST_HEADER                   pListHead        = (PSLIST_HEADER              )&pDmlIAPolicy->KeywordList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2    = (PCOSA_CONTEXT_LINK_OBJECT  )NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry      = (PSINGLE_LINK_ENTRY         )NULL;
+    errno_t                         rc               = -1;
 
     pSLinkEntry = AnscSListGetFirstEntry(pListHead);
 
@@ -5821,8 +5901,8 @@ BlockedKeyword_Validate
                  AnscEqualString(pKeywordEntry->Alias, pKeyword->Alias, TRUE) 
            )
         {
-            AnscCopyString(pReturnParamName, "Alias");
-
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            ERR_CHK(rc);
             *puLength = AnscSizeOfString("Alias");
              
             return FALSE;
@@ -6422,13 +6502,17 @@ BlockedApplication_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY_APP         pApp             = (PCOSA_DML_IA_POLICY_APP  )pCosaContext->hContext;
+    errno_t                         rc               = -1;
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pApp->Alias);
-
+        rc = strcpy_s(pValue, *pUlSize, pApp->Alias);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -6660,13 +6744,17 @@ BlockedApplication_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IA_POLICY_APP         pApp             = (PCOSA_DML_IA_POLICY_APP  )pCosaContext->hContext;
+    errno_t                         rc               = -1;
 
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "Alias", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pApp->Alias, pString);
-
+        rc = STRCPY_S_NOCLOBBER(pApp->Alias, sizeof(pApp->Alias), pString);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
@@ -6719,6 +6807,7 @@ BlockedApplication_Validate
     PSLIST_HEADER                   pListHead        = (PSLIST_HEADER            )&pDmlIAPolicy->AppList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext2    = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry      = (PSINGLE_LINK_ENTRY       )NULL;
+    errno_t                         rc               = -1;
 
     pSLinkEntry = AnscSListGetFirstEntry(pListHead);
 
@@ -6735,8 +6824,8 @@ BlockedApplication_Validate
                  AnscEqualString(pAppEntry->Alias, pApp->Alias, TRUE) 
            )
         {
-            AnscCopyString(pReturnParamName, "Alias");
-
+            rc = strcpy_s(pReturnParamName, *puLength, "Alias");
+            ERR_CHK(rc);
             *puLength = AnscSizeOfString("Alias");
              
             return FALSE;
@@ -6745,8 +6834,8 @@ BlockedApplication_Validate
 
     if ( pApp->StartPortNumber > pApp->EndPortNumber )
     {
-        AnscCopyString(pReturnParamName, "EndPortNumber");
-
+        rc = strcpy_s(pReturnParamName, *puLength, "EndPortNumber");
+        ERR_CHK(rc);
         *puLength = AnscSizeOfString(pReturnParamName);
 
         return FALSE;
@@ -7259,38 +7348,51 @@ LogEntry_GetParamStringValue
 {
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DML_IA_LOG_ENTRY          pLogEntry         = (PCOSA_DML_IA_LOG_ENTRY   )hInsContext;
+    errno_t                         rc                = -1;
 
     /* check the parameter name and return the corresponding value */
 
     if( AnscEqualString(ParamName, "OccuranceTime", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pLogEntry->OccuranceTime);
-
+        rc = strcpy_s(pValue, *pUlSize, pLogEntry->OccuranceTime);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "User", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pLogEntry->User);
-
+        rc = strcpy_s(pValue, *pUlSize, pLogEntry->User);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Action", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pLogEntry->Action);
-
+        rc = strcpy_s(pValue, *pUlSize, pLogEntry->Action);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Description", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pLogEntry->Description);
-
+        rc = strcpy_s(pValue, *pUlSize, pLogEntry->Description);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 

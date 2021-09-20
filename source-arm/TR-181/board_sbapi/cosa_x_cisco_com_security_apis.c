@@ -512,7 +512,9 @@ CosaDmlIaGetPolicy
     pEntry->bEnabled = g_SecurityInternetAccess[ulIndex].bEnabled;
     pEntry->EnableLanHostMACAddresses = g_SecurityInternetAccess[ulIndex].EnableLanHostMACAddresses;
     pEntry->AllowLanHostMACAddresses = g_SecurityInternetAccess[ulIndex].AllowLanHostMACAddresses;
-    AnscCopyString(pEntry->Alias, g_SecurityInternetAccess[ulIndex].Name);
+    errno_t rc = -1;
+    rc = strcpy_s(pEntry->Alias,sizeof(pEntry->Alias), g_SecurityInternetAccess[ulIndex].Name);
+    ERR_CHK(rc);
 
     pEntry->LanHost.bUseLanHosts = g_SecurityInternetAccess[ulIndex].bUseLanHosts;
     pEntry->LanHost.MacCount     = g_SecurityInternetAccess[ulIndex].ulNumOfMac;
@@ -626,6 +628,7 @@ CosaDmlIaGetPolicyByInsNum
 {
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
+    errno_t                         rc = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
@@ -634,7 +637,8 @@ CosaDmlIaGetPolicyByInsNum
             pEntry->bEnabled = g_SecurityInternetAccess[i].bEnabled;
             pEntry->EnableLanHostMACAddresses = g_SecurityInternetAccess[i].EnableLanHostMACAddresses;
             pEntry->AllowLanHostMACAddresses = g_SecurityInternetAccess[i].AllowLanHostMACAddresses;
-            AnscCopyString(pEntry->Alias, g_SecurityInternetAccess[i].Name);
+            rc = strcpy_s(pEntry->Alias,sizeof(pEntry->Alias), g_SecurityInternetAccess[i].Name);
+            ERR_CHK(rc);
 
             pEntry->LanHost.bUseLanHosts = g_SecurityInternetAccess[i].bUseLanHosts;
             pEntry->LanHost.MacCount     = g_SecurityInternetAccess[i].ulNumOfMac;
@@ -690,7 +694,9 @@ CosaDmlIaAddPolicy
     g_SecurityInternetAccess[g_NumOfPolicies].bEnabled = pEntry->bEnabled;
     g_SecurityInternetAccess[g_NumOfPolicies].EnableLanHostMACAddresses = pEntry->EnableLanHostMACAddresses;
     g_SecurityInternetAccess[g_NumOfPolicies].AllowLanHostMACAddresses = pEntry->AllowLanHostMACAddresses;
-    AnscCopyString(g_SecurityInternetAccess[g_NumOfPolicies].Name, pEntry->Alias);
+    errno_t rc = -1;
+    rc = STRCPY_S_NOCLOBBER(g_SecurityInternetAccess[g_NumOfPolicies].Name,sizeof(g_SecurityInternetAccess[g_NumOfPolicies].Name), pEntry->Alias);
+    ERR_CHK(rc);
 
     g_SecurityInternetAccess[g_NumOfPolicies].bUseLanHosts = pEntry->LanHost.bUseLanHosts;
     g_SecurityInternetAccess[g_NumOfPolicies].ulNumOfMac   = pEntry->LanHost.MacCount;
@@ -810,6 +816,7 @@ CosaDmlIaSetPolicy
 {
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
+    errno_t                         rc = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
@@ -818,7 +825,8 @@ CosaDmlIaSetPolicy
             g_SecurityInternetAccess[i].bEnabled = pEntry->bEnabled;
             g_SecurityInternetAccess[i].EnableLanHostMACAddresses = pEntry->EnableLanHostMACAddresses;
             g_SecurityInternetAccess[i].AllowLanHostMACAddresses = pEntry->AllowLanHostMACAddresses;
-            AnscCopyString(g_SecurityInternetAccess[i].Name, pEntry->Alias);
+            rc = STRCPY_S_NOCLOBBER(g_SecurityInternetAccess[i].Name,sizeof(g_SecurityInternetAccess[i].Name), pEntry->Alias);
+            ERR_CHK(rc);
 
             g_SecurityInternetAccess[i].bUseLanHosts = pEntry->LanHost.bUseLanHosts;
             g_SecurityInternetAccess[i].ulNumOfMac   = pEntry->LanHost.MacCount;
@@ -1048,14 +1056,16 @@ CosaDmlIaPolicyGetUrl
 {
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
+    errno_t                         rc = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
         if ( g_SecurityInternetAccess[i].ulInstanceNumber == ulPolicyInstanceNumber )
         {
-            AnscCopyString(pUrl->Alias, g_SecurityInternetAccess[i].URLList[ulIndex].Alias);
-            AnscCopyString(pUrl->Url,   g_SecurityInternetAccess[i].URLList[ulIndex].Url  );
-
+            rc = STRCPY_S_NOCLOBBER(pUrl->Alias,sizeof(pUrl->Alias), g_SecurityInternetAccess[i].URLList[ulIndex].Alias);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(pUrl->Url,sizeof(pUrl->Url),     g_SecurityInternetAccess[i].URLList[ulIndex].Url  );
+            ERR_CHK(rc);
             return ANSC_STATUS_SUCCESS;
         }
     }
@@ -1111,6 +1121,7 @@ CosaDmlIaPolicyGetUrlByInsNum
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     ULONG                           j = 0;
+    errno_t                         rc = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
@@ -1120,8 +1131,10 @@ CosaDmlIaPolicyGetUrlByInsNum
             {
                 if ( g_SecurityInternetAccess[i].URLList[j].InstanceNumber == ulURLInstanceNumber )
                 {
-                    AnscCopyString(pUrl->Alias, g_SecurityInternetAccess[i].URLList[j].Alias);
-                    AnscCopyString(pUrl->Url,   g_SecurityInternetAccess[i].URLList[j].Url  );
+                    rc = STRCPY_S_NOCLOBBER(pUrl->Alias,sizeof(pUrl->Alias), g_SecurityInternetAccess[i].URLList[j].Alias);
+                    ERR_CHK(rc);
+                    rc = STRCPY_S_NOCLOBBER(pUrl->Url,sizeof(pUrl->Url),   g_SecurityInternetAccess[i].URLList[j].Url  );
+                    ERR_CHK(rc);
                 }
             }
 
@@ -1229,15 +1242,17 @@ CosaDmlIaPolicyAddUrl
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i       = 0;
     ULONG                           ulIndex = g_SecurityInternetAccess[i].ulNumOfUrl;
+    errno_t                         rc = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
         if ( g_SecurityInternetAccess[i].ulInstanceNumber == ulPolicyInstanceNumber )
         {
             g_SecurityInternetAccess[i].URLList[ulIndex].InstanceNumber = pUrl->InstanceNumber;
-            AnscCopyString(g_SecurityInternetAccess[i].URLList[ulIndex].Alias, pUrl->Alias);
-            AnscCopyString(g_SecurityInternetAccess[i].URLList[ulIndex].Url, pUrl->Url);
-
+            rc = STRCPY_S_NOCLOBBER(g_SecurityInternetAccess[i].URLList[ulIndex].Alias,sizeof(g_SecurityInternetAccess[i].URLList[ulIndex].Alias), pUrl->Alias);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(g_SecurityInternetAccess[i].URLList[ulIndex].Url,sizeof(g_SecurityInternetAccess[i].URLList[ulIndex].Url), pUrl->Url);
+            ERR_CHK(rc);
             g_SecurityInternetAccess[i].ulNumOfUrl++;
 
             return ANSC_STATUS_SUCCESS;
@@ -1370,6 +1385,7 @@ CosaDmlIaPolicySetUrl
     ULONG                           i       = 0;
     ULONG                           j       = 0;
     PCOSA_SECURITY_IA_POLICY2       pPolicy = NULL;
+    errno_t                         rc      = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
@@ -1381,8 +1397,10 @@ CosaDmlIaPolicySetUrl
             {
                 if ( pPolicy->URLList[j].InstanceNumber == pUrl->InstanceNumber )
                 {
-                    AnscCopyString(pPolicy->URLList[j].Alias, pUrl->Alias);
-                    AnscCopyString(pPolicy->URLList[j].Url, pUrl->Url);
+                    rc = STRCPY_S_NOCLOBBER(pPolicy->URLList[j].Alias,sizeof(pPolicy->URLList[j].Alias) pUrl->Alias);
+                    ERR_CHK(rc);
+                    rc = STRCPY_S_NOCLOBBER(pPolicy->URLList[j].Url,sizeof(pPolicy->URLList[j].Url) pUrl->Url);
+                    ERR_CHK(rc);
 
                     return ANSC_STATUS_SUCCESS;
                 }
@@ -1490,6 +1508,7 @@ CosaDmlIaPolicyGetKeyword
 {
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
+    errno_t                         rc = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
@@ -1497,8 +1516,10 @@ CosaDmlIaPolicyGetKeyword
         {
             pKeyword->InstanceNumber = g_SecurityInternetAccess[i].KeywordList[ulIndex].InstanceNumber;
 
-            AnscCopyString(pKeyword->Alias, g_SecurityInternetAccess[i].KeywordList[ulIndex].Alias);
-            AnscCopyString(pKeyword->Keyword, g_SecurityInternetAccess[i].KeywordList[ulIndex].Keyword);
+            rc = STRCPY_S_NOCLOBBER(pKeyword->Alias,sizeof(pKeyword->Alias), g_SecurityInternetAccess[i].KeywordList[ulIndex].Alias);
+            ERR_CHK(rc);
+            rc = STRCPY_S_NOCLOBBER(pKeyword->Keyword,sizeof(pKeyword->Keyword), g_SecurityInternetAccess[i].KeywordList[ulIndex].Keyword);
+            ERR_CHK(rc);
 
             return ANSC_STATUS_SUCCESS;
         }
@@ -1556,6 +1577,7 @@ CosaDmlIaPolicyGetKeywordByInsNum
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
     ULONG                           j = 0;
+    errno_t                         rc = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
@@ -1565,8 +1587,10 @@ CosaDmlIaPolicyGetKeywordByInsNum
             {
                 if ( g_SecurityInternetAccess[i].KeywordList[j].InstanceNumber == ulKeywordInstanceNumber )
                 {
-                    AnscCopyString(pKeyword->Alias,   g_SecurityInternetAccess[i].KeywordList[j].Alias);
-                    AnscCopyString(pKeyword->Keyword, g_SecurityInternetAccess[i].KeywordList[j].Keyword);
+                    rc = strcpy_s(pKeyword->Alias,sizeof(pKeyword->Alias),   g_SecurityInternetAccess[i].KeywordList[j].Alias);
+                    ERR_CHK(rc);
+                    rc = strcpy_s(pKeyword->Keyword,sizeof(pKeyword->Keyword), g_SecurityInternetAccess[i].KeywordList[j].Keyword);
+                    ERR_CHK(rc);
                 }
             }
 
@@ -1944,12 +1968,14 @@ CosaDmlIaPolicyGetApp
 {
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i = 0;
+    errno_t                         rc = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
         if ( g_SecurityInternetAccess[i].ulInstanceNumber == ulPolicyInstanceNumber )
         {
-            AnscCopyString(pApp->Alias, g_SecurityInternetAccess[i].AppList[ulIndex].Alias);
+            rc = strcpy_s(pApp->Alias,sizeof(pApp->Alias), g_SecurityInternetAccess[i].AppList[ulIndex].Alias);
+            ERR_CHK(rc);
             pApp->InstanceNumber  = g_SecurityInternetAccess[i].AppList[ulIndex].InstanceNumber;
             pApp->IsWellKnown     = g_SecurityInternetAccess[i].AppList[ulIndex].IsWellKnown;
             pApp->Protocol        = g_SecurityInternetAccess[i].AppList[ulIndex].Protocol;
@@ -2133,12 +2159,14 @@ CosaDmlIaPolicyAddApp
     UNREFERENCED_PARAMETER(hContext);
     ULONG                           i       = 0;
     ULONG                           ulIndex = g_SecurityInternetAccess[i].ulNumOfApp;
+    errno_t                         rc      = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
         if ( g_SecurityInternetAccess[i].ulInstanceNumber, ulPolicyInstanceNumber, TRUE )
         {
-            AnscCopyString(g_SecurityInternetAccess[i].AppList[ulIndex].Alias, pApp->Alias);
+            rc = STRCPY_S_NOCLOBBER(g_SecurityInternetAccess[i].AppList[ulIndex].Alias,sizeof(g_SecurityInternetAccess[i].AppList[ulIndex].Alias), pApp->Alias);
+            ERR_CHK(rc);
             g_SecurityInternetAccess[i].AppList[ulIndex].IsWellKnown     = pApp->IsWellKnown;
             g_SecurityInternetAccess[i].AppList[ulIndex].Protocol        = pApp->Protocol;
             g_SecurityInternetAccess[i].AppList[ulIndex].StartPortNumber = pApp->StartPortNumber;
@@ -2200,6 +2228,7 @@ CosaDmlIaPolicyDelBlockedApp
     ULONG                           i       = 0;
     ULONG                           j       = 0;
     ULONG                           k       = 0;
+    errno_t                         rc      = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
@@ -2213,7 +2242,8 @@ CosaDmlIaPolicyDelBlockedApp
                 {
                     for ( k = j; k < pPolicy->ulNumOfApp; k++ )
                     {
-                        AnscCopyString(pPolicy->AppList[k].Alias, pPolicy->AppList[k + 1].Alias);
+                        rc = strcpy_s(pPolicy->AppList[k].Alias,sizeof(pPolicy->AppList[k].Alias), pPolicy->AppList[k + 1].Alias);
+                        ERR_CHK(rc);
                         pPolicy->AppList[k].InstanceNumber  = pPolicy->AppList[k + 1].InstanceNumber;
                         pPolicy->AppList[k].IsWellKnown     = pPolicy->AppList[k + 1].IsWellKnown;
                         pPolicy->AppList[k].Protocol        = pPolicy->AppList[k + 1].Protocol;
@@ -2277,6 +2307,7 @@ CosaDmlIaPolicySetBlockedApp
     ULONG                           i       = 0;
     ULONG                           j       = 0;
     PCOSA_SECURITY_IA_POLICY2       pPolicy = NULL;
+    errno_t                         rc      = -1;
 
     for ( i = 0; i < g_NumOfPolicies; i++ )
     {
@@ -2288,7 +2319,8 @@ CosaDmlIaPolicySetBlockedApp
             {
                 if ( pPolicy->AppList[j].InstanceNumber == pApp->InstanceNumber )
                 {
-                    AnscCopyString(pPolicy->AppList[j].Alias, pApp->Alias);
+                    rc = strcpy_s(pPolicy->AppList[j].Alias,sizeof(pPolicy->AppList[j].Alias), pApp->Alias);
+                    ERR_CHK(rc);
                     pPolicy->AppList[j].InstanceNumber  = pApp->InstanceNumber;
                     pPolicy->AppList[j].IsWellKnown     = pApp->IsWellKnown;
                     pPolicy->AppList[j].Protocol        = pApp->Protocol;

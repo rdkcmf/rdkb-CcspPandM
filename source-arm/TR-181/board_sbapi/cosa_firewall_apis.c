@@ -62,6 +62,7 @@
 
 #include "cosa_firewall_apis.h"
 #include <syscfg/syscfg.h>
+#include "safec_lib_common.h"
 
 #define V4_BLOCKFRAGIPPKT   "v4_BlockFragIPPkts"
 #define V4_PORTSCANPROTECT  "v4_PortScanProtect"
@@ -152,8 +153,12 @@ CosaDmlFirewallGetConfig
     )
 {
     pCfg->FirewallLevel = g_FirewallConfig.FirewallLevel;
-    AnscCopyString(pCfg->Version,    g_FirewallConfig.Version);
-    AnscCopyString(pCfg->LastChange, g_FirewallConfig.LastChange);
+    errno_t rc = -1;
+
+    rc = strcpy_s(pCfg->Version,sizeof(pCfg->Version),g_FirewallConfig.Version);
+    ERR_CHK(rc);
+    rc = strcpy_s(pCfg->LastChange,sizeof(pCfg->LastChange), g_FirewallConfig.LastChange);
+    ERR_CHK(rc);
 
     return ANSC_STATUS_SUCCESS;
 }

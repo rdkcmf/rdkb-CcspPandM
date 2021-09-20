@@ -176,6 +176,7 @@ int fwSync = 0;
 #define HTTPD_DEF_CONF  "/etc/lighttpd.conf"
 #define HTTPD_PID       "/var/run/lighttpd.pid"
 #define RM_L2_PATH "rm -rf /nvram/dl"
+#define Device_Config_Ignore_size 1024
 
 static void configBridgeMode(int bEnable);
 static int curticket   = 1; /*The thread should be run with the ticket*/
@@ -571,7 +572,9 @@ CosaDmlDcGetMultiHomedHSDFlag
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    AnscCopyString(pValue, "Cisco");
+    errno_t rc = -1;
+    rc = strcpy_s(pValue,*pulSize, "Cisco");
+    ERR_CHK(rc);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
@@ -585,7 +588,9 @@ CosaDmlDcGetMultiHomedUIPageControl
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    AnscCopyString(pValue, "000000");
+    errno_t rc = -1;
+    rc = strcpy_s(pValue, *pulSize, "000000");
+    ERR_CHK(rc);
     *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
@@ -1331,7 +1336,7 @@ CosaDmlDcGetRebootDevice
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    AnscCopyString(pValue, "");
+    pValue[0] = '\0';
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1343,7 +1348,7 @@ CosaDmlDcGetFactoryReset
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    AnscCopyString(pValue, "");
+    pValue[0] = '\0';
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1355,7 +1360,8 @@ CosaDmlDcGetUserChangedFlags
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    AnscCopyString(pValue, "0");
+    pValue[0] = '0';
+    pValue[1] = '\0';
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1380,8 +1386,11 @@ CosaDmlDcGetDeviceConfigIgnore
         char*                       pValue
     )
 {
-   UNREFERENCED_PARAMETER(hContext);
-   AnscCopyString(pValue, " notRequire");/*need to modfiy @ivan*/
+    UNREFERENCED_PARAMETER(hContext);
+    errno_t rc = -1;
+	/* Below pValue size is 1024 bytes having from calling function */
+    rc = strcpy_s(pValue, Device_Config_Ignore_size, " notRequire");/*need to modfiy @ivan*/
+    ERR_CHK(rc);
     return ANSC_STATUS_SUCCESS;
 }
 

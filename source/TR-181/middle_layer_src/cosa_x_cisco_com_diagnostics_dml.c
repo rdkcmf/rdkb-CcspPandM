@@ -68,6 +68,7 @@
 
 #include "ansc_platform.h"
 #include "cosa_x_cisco_com_diagnostics_dml.h"
+#include "safec_lib_common.h"
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -427,19 +428,28 @@ Entry_GetParamStringValue
     )
 {
     PCOSA_DML_DIAGNOSTICS_ENTRY     pDiagEntry = (PCOSA_DML_DIAGNOSTICS_ENTRY)hInsContext;
-    
+    errno_t                         rc         = -1;
+
     /* check the parameter name and return the corresponding value */    
     if( AnscEqualString(ParamName, "Time", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pDiagEntry->Time);
+        rc = strcpy_s(pValue, *pUlSize, pDiagEntry->Time);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
    
     if( AnscEqualString(ParamName, "Tag", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pDiagEntry->Tag);
+        rc = strcpy_s(pValue, *pUlSize, pDiagEntry->Tag);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -448,7 +458,11 @@ Entry_GetParamStringValue
         /* collect value */
         if ( (_ansc_strlen(pDiagEntry->pMessage)+1) < *pUlSize )
         {
-            AnscCopyString(pValue, pDiagEntry->pMessage);
+            rc = strcpy_s(pValue, *pUlSize, pDiagEntry->pMessage);
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return -1;
+            }
         }
         else
         {
@@ -785,19 +799,28 @@ Eventlog_GetParamStringValue
     )
 {
     PCOSA_DML_DIAGNOSTICS_ENTRY pDiagEventlog = (PCOSA_DML_DIAGNOSTICS_ENTRY)hInsContext;
-    
+    errno_t                     rc            = -1;
+
     /* check the parameter name and return the corresponding value */    
     if( AnscEqualString(ParamName, "Time", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pDiagEventlog->Time);
+        rc = strcpy_s(pValue, *pUlSize, pDiagEventlog->Time);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
    
     if( AnscEqualString(ParamName, "Tag", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pDiagEventlog->Tag);
+        rc = strcpy_s(pValue, *pUlSize, pDiagEventlog->Tag);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -806,7 +829,11 @@ Eventlog_GetParamStringValue
         /* collect value */
         if ( (_ansc_strlen(pDiagEventlog->pMessage)+1) < *pUlSize )
         {
-            AnscCopyString(pValue, pDiagEventlog->pMessage);
+            rc = strcpy_s(pValue, *pUlSize, pDiagEventlog->pMessage);
+            if ( rc != EOK) {
+                ERR_CHK(rc);
+                return -1;
+            }
         }
         else
         {

@@ -68,6 +68,7 @@
 
 #include "cosa_x_cisco_com_filetransfer_dml.h"
 #include "dml_tr181_custom_cfg.h"
+#include "safec_lib_common.h"
 
 #ifdef   CONFIG_CISCO_FILE_TRANSFER
 
@@ -203,7 +204,7 @@ FileTransfer_GetParamStringValue
 {
     PCOSA_DATAMODEL_FILETRANSFER    pMyObject = (PCOSA_DATAMODEL_FILETRANSFER)g_pCosaBEManager->hFileTransfer;
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
-
+    errno_t                         rc        = -1;
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(pulSize);
 
@@ -211,21 +212,36 @@ FileTransfer_GetParamStringValue
     if( AnscEqualString(ParamName, "FileName", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue,  (char*)pCfg->FileName);
+        rc = strcpy_s(pValue,*pulSize, (char*)pCfg->FileName);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Username", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue,  (char*)pCfg->Username);
+        rc = strcpy_s(pValue,*pulSize, (char*)pCfg->Username);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Password", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue,  (char*)pCfg->Password);
+        rc = strcpy_s(pValue,*pulSize, (char*)pCfg->Password);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -347,26 +363,42 @@ FileTransfer_SetParamStringValue
 {
     PCOSA_DATAMODEL_FILETRANSFER    pMyObject = (PCOSA_DATAMODEL_FILETRANSFER)g_pCosaBEManager->hFileTransfer;
     PCOSA_DML_FILETRANSFER_CFG      pCfg      = (PCOSA_DML_FILETRANSFER_CFG)&pMyObject->Cfg;
+    errno_t                         rc        = -1;
     UNREFERENCED_PARAMETER(hInsContext);   
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "FileName", TRUE))
     {
         /* save update to backup */
-        AnscCopyString((char*)pCfg->FileName, pString);
+        rc = strcpy_s((char*)pCfg->FileName, sizeof(pCfg->FileName),pString);
+        if(rc != EOK)
+        {
+           ERR_CHK(rc);
+           return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Username", TRUE))
     {
         /* save update to backup */
-        AnscCopyString((char*)pCfg->Username, pString);
+        rc = strcpy_s((char*)pCfg->Username,sizeof(pCfg->Username), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Password", TRUE))
     {
         /* save update to backup */
-        AnscCopyString((char*)pCfg->Password, pString);
+        rc = strcpy_s((char*)pCfg->Password,sizeof(pCfg->Password), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 

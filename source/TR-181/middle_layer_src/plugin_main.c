@@ -91,7 +91,7 @@
 #endif
 #include "plugin_main_apis.h"
 //#include "cosa_moca_internal.h"
-
+#include "safec_lib_common.h"
 
 PCOSA_BACKEND_MANAGER_OBJECT g_pCosaBEManager;
 void *                       g_pDslhDmlAgent;
@@ -127,6 +127,7 @@ COSA_Init
     COSAGetInstanceNumberByIndexProc
                                     pGetInsNumberByIndexProc    = (COSAGetInstanceNumberByIndexProc  )NULL;
     COSAGetInterfaceByNameProc      pGetInterfaceByNameProc     = (COSAGetInterfaceByNameProc        )NULL;
+    errno_t                         rc                          = -1;
 
     if ( uMaxVersionSupported < THIS_PLUGIN_VERSION )
     {
@@ -364,15 +365,12 @@ COSA_Init
     g_GetSubsystemPrefix = (COSAGetSubsystemPrefixProc)pPlugInfo->AcquireFunction("COSAGetSubsystemPrefix");
     if ( g_GetSubsystemPrefix != NULL )
     {
-        char*   tmpSubsystemPrefix;
-        
-        if (( tmpSubsystemPrefix = g_GetSubsystemPrefix(g_pDslhDmlAgent) ))
-        {
-            AnscCopyString(g_SubSysPrefix_Irep, tmpSubsystemPrefix);
-        }
-
         /* retrieve the subsystem prefix */
         g_SubsystemPrefix = g_GetSubsystemPrefix(g_pDslhDmlAgent);
+        if (g_SubsystemPrefix) {
+            rc = STRCPY_S_NOCLOBBER(g_SubSysPrefix_Irep, sizeof(g_SubSysPrefix_Irep), g_SubsystemPrefix);
+            ERR_CHK(rc);
+        }
     }
 
     /* Create backend framework */

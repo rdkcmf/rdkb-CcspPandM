@@ -579,7 +579,7 @@ CosaUsersRegGetUserInfo
     BOOL                            bNew              = FALSE;
     char*                           pAliasUser        = NULL;
     char*                           pFolderName       = NULL;
-
+    errno_t                         rc                = -1;
 
     if ( !pPoamIrepFoUser )
     {
@@ -710,7 +710,8 @@ CosaUsersRegGetUserInfo
 
         /* save alias and instanceNumber */
         pCosaUser->InstanceNumber = uInstanceNumber;
-        AnscCopyString( pCosaUser->Username, pAliasUser );
+        rc = strcpy_s(pCosaUser->Username, sizeof(pCosaUser->Username), pAliasUser);
+        ERR_CHK(rc);
 
         /* Create one link point */
         pCosaUserContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));

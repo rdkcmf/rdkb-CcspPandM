@@ -732,6 +732,7 @@ CosaPcReg_BlkUrlGetInfo(
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoBlkUrl )
     {
@@ -820,7 +821,8 @@ CosaPcReg_BlkUrlGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        AnscCopyString(pEntry->Alias, pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
 
@@ -1034,6 +1036,7 @@ CosaPcReg_TrustedUserGetInfo(
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoTrustedUser )
     {
@@ -1122,7 +1125,8 @@ CosaPcReg_TrustedUserGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        AnscCopyString(pEntry->Alias, pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
 
@@ -1336,6 +1340,7 @@ CosaPcReg_MSServGetInfo(
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoMSServ )
     {
@@ -1424,7 +1429,8 @@ CosaPcReg_MSServGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        AnscCopyString(pEntry->Alias, pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
 
@@ -1639,6 +1645,7 @@ CosaPcReg_MSTrustedUserGetInfo(
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoMSTrustedUser )
     {
@@ -1727,7 +1734,8 @@ CosaPcReg_MSTrustedUserGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        AnscCopyString(pEntry->Alias, pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
 
@@ -1941,6 +1949,7 @@ CosaPcReg_MDDevGetInfo(
     ULONG                           ulInstanceNumber        = 0;
     char*                           pFolderName             = NULL;
     char*                           pAlias                  = NULL;
+    errno_t                         rc                      = -1;
 
     if ( !pPoamIrepFoMDDev )
     {
@@ -2029,7 +2038,8 @@ CosaPcReg_MDDevGetInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        AnscCopyString(pEntry->Alias, pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;
 

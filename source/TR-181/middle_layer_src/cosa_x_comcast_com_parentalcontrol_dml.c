@@ -570,38 +570,64 @@ PcBlkURL_GetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_BLOCKEDURL             *pBlkUrl    = (COSA_DML_BLOCKEDURL*)pLinkObj->hContext;
+    errno_t                         rc          =  -1;
+
     UNREFERENCED_PARAMETER(pUlSize);
     AnscTraceWarning(("%s -- param name = %s...\n", __FUNCTION__, ParamName));
 
     if (AnscEqualString(ParamName, "Site", TRUE))
     {
-        AnscCopyString(pValue, pBlkUrl->Site);
+        rc = strcpy_s(pValue, *pUlSize, pBlkUrl->Site);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "StartTime", TRUE))
     {
-        AnscCopyString(pValue, pBlkUrl->StartTime);
+        rc = strcpy_s(pValue, *pUlSize, pBlkUrl->StartTime);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "EndTime", TRUE))
     {
-        AnscCopyString(pValue, pBlkUrl->EndTime);
+        rc = strcpy_s(pValue, *pUlSize, pBlkUrl->EndTime);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
-        AnscCopyString(pValue, pBlkUrl->BlockDays);
+        rc = strcpy_s(pValue, *pUlSize, pBlkUrl->BlockDays);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 #ifdef CONFIG_CISCO_FEATURE_CISCOCONNECT
     if (AnscEqualString(ParamName, "MAC", TRUE))
     {
-        AnscCopyString(pValue, pBlkUrl->MAC);
+        rc = strcpy_s(pValue, *pUlSize, pBlkUrl->MAC);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "DeviceName", TRUE))
     {
-        AnscCopyString(pValue, pBlkUrl->DeviceName);
+        rc = strcpy_s(pValue, *pUlSize, pBlkUrl->DeviceName);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 #endif
@@ -1064,15 +1090,24 @@ PcTrustedUser_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_TRUSTEDUSER             *pTrustedUser    = (COSA_DML_TRUSTEDUSER*)pLinkObj->hContext;
+    errno_t                         rc                = -1;
 
     if (AnscEqualString(ParamName, "HostDescription", TRUE))
     {
-        AnscCopyString(pValue, pTrustedUser->HostDescription);
+        rc = strcpy_s(pValue, *pUlSize, pTrustedUser->HostDescription);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "IPAddress", TRUE))
     {
-        AnscCopyString(pValue, pTrustedUser->IPAddress);
+        rc = strcpy_s(pValue, *pUlSize, pTrustedUser->IPAddress);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1396,25 +1431,42 @@ MSServ_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_MS_SERV             *pMSServ    = (COSA_DML_MS_SERV*)pLinkObj->hContext;
+    errno_t                         rc          = -1;
 
     if (AnscEqualString(ParamName, "Description", TRUE))
     {
-        AnscCopyString(pValue, pMSServ->Description);
+        rc = strcpy_s(pValue, *pUlSize, pMSServ->Description);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "StartTime", TRUE))
     {
-        AnscCopyString(pValue, pMSServ->StartTime);
+        rc = strcpy_s(pValue, *pUlSize, pMSServ->StartTime);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "EndTime", TRUE))
     {
-        AnscCopyString(pValue, pMSServ->EndTime);
+        rc = strcpy_s(pValue, *pUlSize, pMSServ->EndTime);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
-        AnscCopyString(pValue, pMSServ->BlockDays);
+        rc = strcpy_s(pValue, *pUlSize, pMSServ->BlockDays);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1842,15 +1894,24 @@ MSTrustedUser_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_MS_TRUSTEDUSER             *pMSTrustedUser    = (COSA_DML_MS_TRUSTEDUSER*)pLinkObj->hContext;
+    errno_t                         rc          = -1;
 
     if (AnscEqualString(ParamName, "HostDescription", TRUE))
     {
-        AnscCopyString(pValue, pMSTrustedUser->HostDescription);
+        rc = strcpy_s(pValue, *pUlSize, pMSTrustedUser->HostDescription);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "IPAddress", TRUE))
     {
-        AnscCopyString(pValue, pMSTrustedUser->IPAddress);
+        rc = strcpy_s(pValue, *pUlSize, pMSTrustedUser->IPAddress);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -2177,30 +2238,51 @@ MDDev_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     COSA_DML_MD_DEV             *pMDDev    = (COSA_DML_MD_DEV*)pLinkObj->hContext;
+    errno_t                         rc          = -1;
 
     if (AnscEqualString(ParamName, "Description", TRUE))
     {
-        AnscCopyString(pValue, pMDDev->Description);
+        rc = strcpy_s(pValue, *pUlSize, pMDDev->Description);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "MACAddress", TRUE))
     {
-        AnscCopyString(pValue, pMDDev->MACAddress);
+        rc = strcpy_s(pValue, *pUlSize, pMDDev->MACAddress);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "StartTime", TRUE))
     {
-        AnscCopyString(pValue, pMDDev->StartTime);
+        rc = strcpy_s(pValue, *pUlSize, pMDDev->StartTime);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "EndTime", TRUE))
     {
-        AnscCopyString(pValue, pMDDev->EndTime);
+        rc = strcpy_s(pValue, *pUlSize, pMDDev->EndTime);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "BlockDays", TRUE))
     {
-        AnscCopyString(pValue, pMDDev->BlockDays);
+        rc = strcpy_s(pValue, *pUlSize, pMDDev->BlockDays);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -2483,38 +2565,63 @@ MDRed_GetParamStringValue
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     COSA_DML_MD_RED                 *pMDRed = &pParCtrl->MDRedirect;
     char IPv4[17] = "0"; 
+    errno_t                         rc        = -1;
 
     if (AnscEqualString(ParamName, "HTTP_Server_IP", TRUE))
     { 
         syscfg_get(NULL, "HTTP_Server_IP", IPv4, sizeof(IPv4));
-        AnscCopyString(pValue, IPv4);
+        rc = strcpy_s(pValue, *pUlSize, IPv4);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "HTTPS_Server_IP", TRUE))
     {
         syscfg_get(NULL, "HTTPS_Server_IP", IPv4, sizeof(IPv4));
-        AnscCopyString(pValue, IPv4);
+        rc = strcpy_s(pValue, *pUlSize, IPv4);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "Default_Server_IP", TRUE))
     {
         syscfg_get(NULL, "Default_Server_IP", IPv4, sizeof(IPv4));
-        AnscCopyString(pValue, IPv4);
+        rc = strcpy_s(pValue, *pUlSize, IPv4);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "HTTP_Server_IPv6", TRUE))
     {
-        AnscCopyString(pValue, pMDRed->HTTP_Server_IPv6);
+        rc = strcpy_s(pValue, *pUlSize, pMDRed->HTTP_Server_IPv6);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "HTTPS_Server_IPv6", TRUE))
     {
-        AnscCopyString(pValue, pMDRed->HTTPS_Server_IPv6);
+        rc = strcpy_s(pValue, *pUlSize, pMDRed->HTTP_Server_IPv6);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     if (AnscEqualString(ParamName, "Default_Server_IPv6", TRUE))
     {
-        AnscCopyString(pValue, pMDRed->Default_Server_IPv6);
+        rc = strcpy_s(pValue, *pUlSize, pMDRed->Default_Server_IPv6);
+        if ( rc != EOK) {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 

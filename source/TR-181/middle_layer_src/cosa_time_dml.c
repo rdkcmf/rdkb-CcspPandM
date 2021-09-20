@@ -70,6 +70,7 @@
 
 #include "ccsp_base_api.h"
 #include "messagebus_interface_helper.h"
+#include "safec_lib_common.h"
 
 extern ULONG g_currentBsUpdate;
 extern char * getRequestorString();
@@ -397,41 +398,67 @@ Time_GetParamStringValue
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
+    errno_t                         rc        = -1;
 
     CosaDmlTimeGetCfg(NULL, &pMyObject->TimeCfg);
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "NTPServer1", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer1.ActiveValue);
+        rc = strcpy_s(pValue,*pUlSize, pMyObject->TimeCfg.NTPServer1.ActiveValue);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "NTPServer2", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer2.ActiveValue);
+        rc = strcpy_s(pValue,*pUlSize, pMyObject->TimeCfg.NTPServer2.ActiveValue);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "NTPServer3", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer3.ActiveValue);
+        rc = strcpy_s(pValue,*pUlSize, pMyObject->TimeCfg.NTPServer3.ActiveValue);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "NTPServer4", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer4.ActiveValue);
+        rc = strcpy_s(pValue,*pUlSize, pMyObject->TimeCfg.NTPServer4.ActiveValue);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "NTPServer5", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMyObject->TimeCfg.NTPServer5.ActiveValue);
+        rc = strcpy_s(pValue,*pUlSize, pMyObject->TimeCfg.NTPServer5.ActiveValue);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -444,7 +471,12 @@ Time_GetParamStringValue
     if( AnscEqualString(ParamName, "LocalTimeZone", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, pMyObject->TimeCfg.LocalTimeZone);
+        rc = strcpy_s(pValue,*pUlSize, pMyObject->TimeCfg.LocalTimeZone);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -677,6 +709,7 @@ Time_SetParamStringValue
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_TIME            pMyObject = (PCOSA_DATAMODEL_TIME)g_pCosaBEManager->hTime;
     ANSC_STATUS ret=ANSC_STATUS_FAILURE;
+    errno_t rc = -1;
 
     char * requestorStr = getRequestorString();
     char * currentTime = getTime();
@@ -695,10 +728,20 @@ Time_SetParamStringValue
 	    return FALSE;
 
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer1.ActiveValue, wrapped_inputparam);
+        rc = strcpy_s(pMyObject->TimeCfg.NTPServer1.ActiveValue,sizeof(pMyObject->TimeCfg.NTPServer1.ActiveValue), wrapped_inputparam);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
     	CcspTraceWarning(("Service_NTP : Setting NTPServer as %s \n",pMyObject->TimeCfg.NTPServer1.ActiveValue)); 
 
-        AnscCopyString(pMyObject->TimeCfg.NTPServer1.UpdateSource, requestorStr);
+        rc = strcpy_s(pMyObject->TimeCfg.NTPServer1.UpdateSource,sizeof(pMyObject->TimeCfg.NTPServer1.UpdateSource), requestorStr);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         if( (PartnerID[ 0 ] != '\0') )
              UpdateJsonParam("Device.Time.NTPServer1",PartnerID, wrapped_inputparam, requestorStr, currentTime);
         return TRUE;
@@ -713,8 +756,18 @@ Time_SetParamStringValue
 	    return FALSE;
 
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer2.ActiveValue, wrapped_inputparam);
-        AnscCopyString(pMyObject->TimeCfg.NTPServer2.UpdateSource, requestorStr);
+        rc = strcpy_s(pMyObject->TimeCfg.NTPServer2.ActiveValue,sizeof(pMyObject->TimeCfg.NTPServer2.ActiveValue), wrapped_inputparam);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+        rc = strcpy_s(pMyObject->TimeCfg.NTPServer2.UpdateSource,sizeof(pMyObject->TimeCfg.NTPServer2.UpdateSource), requestorStr);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         if( (PartnerID[ 0 ] != '\0') )
              UpdateJsonParam("Device.Time.NTPServer2",PartnerID, wrapped_inputparam, requestorStr, currentTime);
         return TRUE;
@@ -729,8 +782,18 @@ Time_SetParamStringValue
 	    return FALSE;
 
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer3.ActiveValue, wrapped_inputparam);
-        AnscCopyString(pMyObject->TimeCfg.NTPServer3.UpdateSource, requestorStr);
+        rc = strcpy_s(pMyObject->TimeCfg.NTPServer3.ActiveValue,sizeof(pMyObject->TimeCfg.NTPServer3.ActiveValue), wrapped_inputparam);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+        rc = strcpy_s(pMyObject->TimeCfg.NTPServer3.UpdateSource,sizeof(pMyObject->TimeCfg.NTPServer3.UpdateSource), requestorStr);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         if( (PartnerID[ 0 ] != '\0') )
              UpdateJsonParam("Device.Time.NTPServer3",PartnerID, wrapped_inputparam, requestorStr, currentTime);
         return TRUE;
@@ -745,8 +808,18 @@ Time_SetParamStringValue
 	    return FALSE;
 
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer4.ActiveValue, wrapped_inputparam);
-        AnscCopyString(pMyObject->TimeCfg.NTPServer4.UpdateSource, requestorStr);
+        rc = strcpy_s(pMyObject->TimeCfg.NTPServer4.ActiveValue,sizeof(pMyObject->TimeCfg.NTPServer4.ActiveValue), wrapped_inputparam);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+        rc = strcpy_s(pMyObject->TimeCfg.NTPServer4.UpdateSource,sizeof(pMyObject->TimeCfg.NTPServer4.UpdateSource), requestorStr);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         if( (PartnerID[ 0 ] != '\0') )
              UpdateJsonParam("Device.Time.NTPServer4",PartnerID, wrapped_inputparam, requestorStr, currentTime);
         return TRUE;
@@ -761,8 +834,18 @@ Time_SetParamStringValue
 	    return FALSE;
 
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.NTPServer5.ActiveValue, wrapped_inputparam);
-        AnscCopyString(pMyObject->TimeCfg.NTPServer5.UpdateSource, requestorStr);
+        rc = strcpy_s(pMyObject->TimeCfg.NTPServer5.ActiveValue,sizeof(pMyObject->TimeCfg.NTPServer5.ActiveValue), wrapped_inputparam);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
+        rc = strcpy_s(pMyObject->TimeCfg.NTPServer5.UpdateSource,sizeof(pMyObject->TimeCfg.NTPServer5.UpdateSource), requestorStr);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         if( (PartnerID[ 0 ] != '\0') )
              UpdateJsonParam("Device.Time.NTPServer5",PartnerID, wrapped_inputparam, requestorStr, currentTime);
         return TRUE;
@@ -771,7 +854,12 @@ Time_SetParamStringValue
     if( AnscEqualString(ParamName, "LocalTimeZone", TRUE))
     {
         /* save update to backup */
-        AnscCopyString(pMyObject->TimeCfg.LocalTimeZone, pString);
+        rc = strcpy_s(pMyObject->TimeCfg.LocalTimeZone,sizeof(pMyObject->TimeCfg.LocalTimeZone), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 

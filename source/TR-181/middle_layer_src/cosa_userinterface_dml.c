@@ -719,22 +719,38 @@ RemoteAccess_GetParamStringValue
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
+    errno_t                         rc        = -1;
 
     if( AnscEqualString(ParamName, "SupportedProtocols", TRUE))
     {
-        AnscCopyString(pValue, pMyObject->RaCfg.SupportedProtocols);
+        rc = strcpy_s(pValue,*pUlSize, pMyObject->RaCfg.SupportedProtocols);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "StartIpV6", TRUE))
     {
-        AnscCopyString(pValue, pMyObject->RaCfg.StartIpV6);
+        rc = strcpy_s(pValue,*pUlSize, pMyObject->RaCfg.StartIpV6);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "EndIpV6", TRUE))
     {
-        AnscCopyString(pValue, pMyObject->RaCfg.EndIpV6);
+        rc = strcpy_s(pValue,*pUlSize, pMyObject->RaCfg.EndIpV6);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
     return -1;
@@ -1002,7 +1018,7 @@ RemoteAccess_SetParamStringValue
     /* check the parameter name and set the corresponding value */
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
     char* val = "x";
-    
+    errno_t                         rc = -1;
     /*for single computer startIpv6 and EndIpv6 will be equal;
     if its set to empty in UI, default value "x" is taken. */
     
@@ -1010,7 +1026,12 @@ RemoteAccess_SetParamStringValue
     {
         if((strcmp(pString,val)==0) || (is_Ipv6_address((PUCHAR)pString)))
         {
-            AnscCopyString(pMyObject->RaCfg.StartIpV6, pString);
+            rc = strcpy_s(pMyObject->RaCfg.StartIpV6,sizeof(pMyObject->RaCfg.StartIpV6), pString);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             return TRUE;
         }
     }
@@ -1018,7 +1039,12 @@ RemoteAccess_SetParamStringValue
     {
         if((strcmp(pString,val)==0) || (is_Ipv6_address((PUCHAR)pString)))
         {
-            AnscCopyString(pMyObject->RaCfg.EndIpV6, pString);
+            rc = strcpy_s(pMyObject->RaCfg.EndIpV6,sizeof(pMyObject->RaCfg.EndIpV6), pString);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return FALSE;
+            }
             return TRUE;
         }
     }
@@ -1279,26 +1305,41 @@ iprange_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_UI_IPRANGE_ENTRY      piprange      = (PCOSA_DML_UI_IPRANGE_ENTRY)pCosaContext->hContext;
-
+    errno_t                         rc           = -1;
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "StartIP", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, piprange->StartIP);
+        rc = strcpy_s(pValue,*pUlSize, piprange->StartIP);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "EndIP", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, piprange->EndIP);
+        rc = strcpy_s(pValue,*pUlSize, piprange->EndIP);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
     if( AnscEqualString(ParamName, "Desp", TRUE))
     {
         /* collect value */
-        AnscCopyString(pValue, piprange->Desp);
+        rc = strcpy_s(pValue,*pUlSize, piprange->Desp);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return -1;
+        }
         return 0;
     }
 
@@ -1316,26 +1357,41 @@ iprange_SetParamStringValue
 {
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_UI_IPRANGE_ENTRY      piprange      = (PCOSA_DML_UI_IPRANGE_ENTRY)pCosaContext->hContext;
-
+    errno_t                         rc           = -1;
     /* check the parameter name and set the corresponding value */
     if( AnscEqualString(ParamName, "StartIP", TRUE))
     {
         /* save update to backup */
-         AnscCopyString(piprange->StartIP, pString);
+        rc = strcpy_s(piprange->StartIP,sizeof(piprange->StartIP), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "EndIP", TRUE))
     {
         /* save update to backup */
-         AnscCopyString(piprange->EndIP, pString);
+        rc = strcpy_s(piprange->EndIP,sizeof(piprange->EndIP), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
     if( AnscEqualString(ParamName, "Desp", TRUE))
     {
         /* save update to backup */
-         AnscCopyString(piprange->Desp, pString);
+        rc = strcpy_s(piprange->Desp,sizeof(piprange->EndIP), pString);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return FALSE;
+        }
         return TRUE;
     }
 
