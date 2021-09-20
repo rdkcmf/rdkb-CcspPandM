@@ -1710,6 +1710,9 @@ IPIF_getEntry_for_Ipv6Pre
 
         if (Utopia_Init(&utctx))
         {
+            char val[256] = {0};
+            char namespace[256] = {0};
+
             need_write = 0;             
             safec_rc = sprintf_s(buf, sizeof(buf), SYSCFG_FORMAT_NORMAL_V6PREFIX"_inst_num", g_ipif_names[ulIndex], dhcpv6_pref);
             if(safec_rc < EOK)
@@ -1725,19 +1728,17 @@ IPIF_getEntry_for_Ipv6Pre
 
             /*This instance Number should be fixed to 1 because other place will refer it*/
             p_dml_v6pre->InstanceNumber = g_ipif_be_bufs[ulIndex].ulNumOfV6Pre + 1;
-            safec_rc = sprintf_s(p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias), "IPv6Prefix%lu", p_dml_v6pre->InstanceNumber );
-            if(safec_rc < EOK)
+
+            snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6PREFIX, (char *)g_ipif_names[ulIndex], (ULONG)p_dml_v6pre->InstanceNumber);
+            Utopia_RawGet(&utctx,namespace,"Alias",val,sizeof(val));
+            if(strlen(val))
+               safec_rc = strcpy_s(p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias), val);
+            else
+               safec_rc = sprintf_s(p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias), "IPv6Prefix%lu", p_dml_v6pre->InstanceNumber );
+
+            if(safec_rc != EOK)
             {
                ERR_CHK(safec_rc);
-            }
-            if ( p_dml_v6pre->InstanceNumber != 1 ) {
-                AnscTrace("The Instance Number is not 1, error ,DHCPv6 Server will not work.\n");
-                p_dml_v6pre->InstanceNumber = 1;
-                safec_rc = sprintf_s(p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias), "IPv6Prefix%lu", p_dml_v6pre->InstanceNumber );
-                if(safec_rc < EOK)
-                {
-                   ERR_CHK(safec_rc);
-                }
             }
 
             if (!p_dml_v6pre->InstanceNumber)
