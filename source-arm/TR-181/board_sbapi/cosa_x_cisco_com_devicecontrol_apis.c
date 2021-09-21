@@ -2272,15 +2272,41 @@ CosaDmlDcSetFactoryReset
 #ifdef _MACSEC_SUPPORT_
                 //TCXB7-1453
                 char partnerId[20];
-                if(!syscfg_get(NULL, "PartnerID", partnerId, sizeof(partnerId))) {
-                        if (strcmp( "comcast", partnerId ) == 0 ) {
-                                CcspTraceInfo(("MACsec enabled by factory reset\n"));
-                                platform_hal_SetMACsecEnable( ETHWAN_DEF_INTF_NUM, true );
+                BOOLEAN currentMacSecRequired = FALSE;
+
+                if(RETURN_OK == platform_hal_GetMACsecEnable( ETHWAN_DEF_INTF_NUM, &currentMacSecRequired ))
+                {
+                   if(!syscfg_get(NULL, "PartnerID", partnerId, sizeof(partnerId))) 
+                   {
+                        if (strcmp( "comcast", partnerId ) == 0 ) 
+                        {
+                           if( currentMacSecRequired != TRUE) 
+                           {
+                              CcspTraceInfo(("MACsec Required enabled by factory reset\n"));
+                              platform_hal_SetMACsecEnable( ETHWAN_DEF_INTF_NUM, true );
+                           }
+                           else
+                           {
+                              CcspTraceInfo(("MACsec Required already enabled not calling API"));
+                           }
+                        } 
+                        else 
+                        {
+                           if( currentMacSecRequired != FALSE) 
+                           {
+                              CcspTraceInfo(("MACsec Required disabled by factory reset\n"));
+                              platform_hal_SetMACsecEnable( ETHWAN_DEF_INTF_NUM, false);
+                          }
+                           else
+                           {
+                              CcspTraceInfo(("MACsec Required already disabled not calling API"));
+                           }
                         }
-                        else {
-                                CcspTraceInfo(("MACsec disabled by factory reset\n"));
-                                platform_hal_SetMACsecEnable( ETHWAN_DEF_INTF_NUM, false );
-                        }
+                   }
+                }
+                else
+                {
+                   CcspTraceInfo((" Unable to retrieve current MACsec Required config\n"));
                 }
 #endif //_MACSEC_SUPPORT_
 #ifdef COLUMBO_HWTEST
