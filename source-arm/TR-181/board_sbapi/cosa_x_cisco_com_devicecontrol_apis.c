@@ -3780,7 +3780,16 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
 		 acSetRadioString[ 8 ],
 		 acSetSSIDString[ 8 ];
 	errno_t safec_rc = -1;
-
+    int  sizevalCommit1 = 0;
+    int  sizeval = 0;
+    int  sizeval2 = 0;
+    int ulNumOfEntries=0;
+    parameterValStruct_t **valWifistatus;
+    char pWifiComponentName[64]="eRT.com.cisco.spvtg.ccsp.wifi";
+    char pComponentPath[64]="/com/cisco/spvtg/ccsp/wifi";
+    char *paramNames[]={"Device.WiFi.RadioNumberOfEntries"};
+    int nval;
+    
     checkTicket(pNotify->ticket);
 
 	/* 
@@ -3866,6 +3875,22 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
     guestnetDM = "Device.WiFi.SSID.5.Enable";
     
 #endif
+    ret = CcspBaseIf_getParameterValues(
+      bus_handle,
+      pWifiComponentName,
+      pComponentPath,
+      paramNames,
+      1,
+      &nval,
+      &valWifistatus);
+
+    if (CCSP_SUCCESS == ret) {
+        ulNumOfEntries = atoi(valWifistatus[0]->parameterValue);
+    }
+
+    if (valWifistatus) {
+        free_parameterValStruct_t (bus_handle, nval, valWifistatus);
+    }
     
     //Full bridge
  parameterValStruct_t           val[] = { 
@@ -3875,17 +3900,31 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
  {"Device.WiFi.Radio.1.Enable", acSetRadioString, ccsp_boolean}, 
  {"Device.WiFi.Radio.2.Enable", acSetRadioString, ccsp_boolean},
 #if !defined (_CBR_PRODUCT_REQ_) && !defined (_BWG_PRODUCT_REQ_) // CBR and BWG don't have XHS don't force here
- {"Device.WiFi.SSID.3.Enable", acSetRadioString, ccsp_boolean}
+ {"Device.WiFi.SSID.3.Enable", acSetRadioString, ccsp_boolean},
 #endif
+ {"Device.WiFi.Radio.3.Enable", acSetRadioString, ccsp_boolean}
 };
  
 // Pseudo bridge
  parameterValStruct_t val2[] = { 
  {"Device.WiFi.SSID.1.Enable", acSetSSIDString, ccsp_boolean}, 
- {"Device.WiFi.SSID.2.Enable", acSetSSIDString, ccsp_boolean}};
+ {"Device.WiFi.SSID.2.Enable", acSetSSIDString, ccsp_boolean},
+ {"Device.WiFi.SSID.17.Enable", acSetSSIDString, ccsp_boolean}};
 
 parameterValStruct_t valCommit1[] = {
- {"Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, {"Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean} };
+ {"Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, 
+ {"Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean},
+ {"Device.WiFi.Radio.3.X_CISCO_COM_ApplySetting", "true", ccsp_boolean} };
+
+    if (ulNumOfEntries < 3) {
+        sizeval         = (sizeof(val)/sizeof(*val)) - 1;
+        sizeval2        = (sizeof(val2)/sizeof(*val2)) - 1;
+        sizevalCommit1  = (sizeof(valCommit1)/sizeof(*valCommit1)) - 1;
+    } else {
+        sizeval         = sizeof(val)/sizeof(*val);
+        sizeval2        = sizeof(val2)/sizeof(*val2);
+        sizevalCommit1  = sizeof(valCommit1)/sizeof(*valCommit1);
+    }
 
 #ifdef _XF3_PRODUCT_REQ_
  parameterValStruct_t valCommit2[] = { {"Device.WiFi.X_CISCO_COM_ResetRadios", "true", ccsp_boolean} };
@@ -3899,7 +3938,7 @@ parameterValStruct_t valCommit1[] = {
                             ppComponents[0]->dbusPath,
                             0, 0x0,   /* session id and write id */
                             val, 
-                            sizeof(val)/sizeof(*val), 
+                            sizeval, 
                             TRUE,   /* no commit */
                             &faultParam
                     );      
@@ -3912,7 +3951,7 @@ parameterValStruct_t valCommit1[] = {
                                         ppComponents[0]->dbusPath,
                                         0, 0x0,   /* session id and write id */
                                         val2, 
-                                        sizeof(val2)/sizeof(*val2), 
+                                        sizeval2, 
                                         TRUE,   /* no commit */
                                         &faultParam
                                 );      
@@ -3932,7 +3971,7 @@ parameterValStruct_t valCommit1[] = {
                                 ppComponents[0]->dbusPath,
                                 0, 0x0,   /* session id and write id */
                                 valCommit1,
-                                2,
+                                sizevalCommit1,
                                 TRUE,   /* no commit */
                                 &faultParam
                         );
