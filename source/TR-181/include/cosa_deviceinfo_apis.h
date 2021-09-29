@@ -91,17 +91,6 @@
 
 enum
 {
-    CNS_FLASH_SerialNo = 1,
-    CNS_FLASH_Description,
-    CNS_FLASH_ModelNo,
-    CNS_FLASH_NP_ID,
-    CNS_FLASH_Version,
-    CNS_FLASH_MFG_Date,
-    CNS_FLASH_HW_Feature
-};
-
-enum
-{
     COSA_DML_PROC_STATUS_Running = 1,
     COSA_DML_PROC_STATUS_Sleeping,
     COSA_DML_PROC_STATUS_Stopped,

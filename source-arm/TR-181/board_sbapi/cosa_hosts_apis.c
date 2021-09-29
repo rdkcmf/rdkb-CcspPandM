@@ -240,56 +240,6 @@ CosaDmlHostsGetHosts
     return pHostEntry;
 }
 
-#elif ( defined _COSA_DRG_TPG_ )
-
-
-ANSC_STATUS
-CosaDmlHostsInit
-    (
-        ANSC_HANDLE                 hDml,
-        PANSC_HANDLE                phContext
-    )
-{
-    return ANSC_STATUS_SUCCESS;
-}
-
-/**********************************************************************
-
-    caller:     self
-
-    prototype:
-
-        PCOSA_DML_HOST_ENTRY
-        CosaDmlHostsGetHosts
-            (
-                ANSC_HANDLE                 hContext,
-                PULONG                      pulCount
-            );
-
-    description:
-
-        This routine is to retrieve the complete list of current hosts, which is a dynamic table.
-
-    argument:   ANSC_HANDLE                 hContext,
-                PULONG                      pulCount
-                To receive the actual number of entries.
-
-    return:     The pointer to the array of hosts, allocated by callee. If no entry is found, NULL is returned.
-
-**********************************************************************/
-PCOSA_DML_HOST_ENTRY
-CosaDmlHostsGetHosts
-    (
-        ANSC_HANDLE                 hContext,
-        PULONG                      pulCount
-    )
-{
-    *pulCount = 0;
-
-    return NULL;
-}
-
-
 #elif (defined(_COSA_INTEL_USG_ARM_ ) || defined(_COSA_BCM_MIPS_))
 #include <sys/socket.h>
 #include "lm_api.h"

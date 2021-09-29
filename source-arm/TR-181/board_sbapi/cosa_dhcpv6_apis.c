@@ -105,7 +105,7 @@ static int send_dhcp_data_to_wanmanager (ipc_dhcpv6_data_t *dhcpv6_data); /* Sen
 #define NO_OF_RETRY 90  /*No of times the file will poll for TLV config file*/
 #endif
 
-#if defined _COSA_SIM_  || defined _COSA_DRG_TPG_
+#if defined _COSA_SIM_
 
 COSA_DML_DHCPCV6_FULL  g_dhcpv6_client[] =
     {

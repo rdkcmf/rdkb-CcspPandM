@@ -2394,7 +2394,7 @@ void CosaDmlIaRemove()
 {
 }
 
-#elif (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _COSA_BCM_MIPS_)
+#elif (_COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_)
 
 #include <utctx.h>
 #include <utctx_api.h>

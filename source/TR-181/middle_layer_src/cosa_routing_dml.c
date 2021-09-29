@@ -6890,35 +6890,6 @@ InterfaceSetting3_GetParamStringValue
     if( AnscEqualString(ParamName, "Interface", TRUE) )
     {
         /* collect value */
-#ifdef _COSA_DRG_CNS_
-        PUCHAR                          pString = NULL;
-        pString = CosaUtilGetFullPathNameByKeyword
-            (
-                "Device.IP.Interface.",
-                "Name",
-                COSA_DML_ROUTEINFO_IFNAME
-                );
-        if (pString)
-        {
-            rc = strcpy_s(pValue, *pUlSize, pString);
-            if ( rc != EOK)
-            {
-                ERR_CHK(rc);
-                AnscFreeMemory(pString);
-                return -1;
-            }
-            rc = STRCPY_S_NOCLOBBER(pEntry->Interface, sizeof(pEntry->Interface), pString);
-            if ( rc != EOK)
-            {
-                ERR_CHK(rc);
-                AnscFreeMemory(pString);
-                return -1;
-            }
-            AnscFreeMemory(pString);
-        }
-        
-        return 0;
-#endif
         rc = strcpy_s(pValue, *pUlSize, pEntry->Interface);
         if ( rc != EOK)
         {

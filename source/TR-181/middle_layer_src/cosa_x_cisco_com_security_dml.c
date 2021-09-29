@@ -3292,17 +3292,6 @@ AccessPolicy_SetParamStringValue
 
             pDmlIAPolicy->LanHost.IpList[ulCount++].Ip.Value = _ansc_inet_addr(pString);
 
-#ifdef _COSA_DRG_CNS_
-                /*the ip address should fall in the subnet of lan interface*/
-                ANSC_IPV4_ADDRESS  addr = {0};
-                addr.Value = CosaUtilGetIfAddr("brlan0");
-
-                if (addr.Dot[0]!= pDmlIAPolicy->LanHost.IpList[ulCount-1].Ip.Dot[0] || 
-                    addr.Dot[1]!= pDmlIAPolicy->LanHost.IpList[ulCount-1].Ip.Dot[1] ||
-                    addr.Dot[2]!= pDmlIAPolicy->LanHost.IpList[ulCount-1].Ip.Dot[2])
-                    return FALSE;
-
-#endif
             pString = pNext;
         }
 
@@ -3342,28 +3331,6 @@ AccessPolicy_SetParamStringValue
 
             pDmlIAPolicy->LanHost.IprList[ulCount].EndIp.Value = _ansc_inet_addr(p_token);
 
-#ifdef _COSA_DRG_CNS_
-            /*the iprange should fall in the subnet of lan interface*/
-            ANSC_IPV4_ADDRESS  addr = {0};
-            addr.Value = CosaUtilGetIfAddr("brlan0");
-
-
-            if (addr.Dot[0]!= pDmlIAPolicy->LanHost.IprList[ulCount].StartIp.Dot[0] || 
-                addr.Dot[1]!= pDmlIAPolicy->LanHost.IprList[ulCount].StartIp.Dot[1] ||
-                addr.Dot[2]!= pDmlIAPolicy->LanHost.IprList[ulCount].StartIp.Dot[2])
-            {
-                AnscFreeMemory(dup_str);
-                return FALSE;
-            }
-
-            if (addr.Dot[0]!= pDmlIAPolicy->LanHost.IprList[ulCount].EndIp.Dot[0] || 
-                addr.Dot[1]!= pDmlIAPolicy->LanHost.IprList[ulCount].EndIp.Dot[1] ||
-                addr.Dot[2]!= pDmlIAPolicy->LanHost.IprList[ulCount].EndIp.Dot[2])
-            {
-                AnscFreeMemory(dup_str);
-                return FALSE;
-            }
-#endif
 
             ulCount++;
         }
@@ -6565,17 +6532,6 @@ BlockedApplication_SetParamBoolValue
     if( AnscEqualString(ParamName, "IsWellKnown", TRUE))
     {
         /* save update to backup */
-#ifdef _COSA_DRG_CNS_
-        #if 0
-        /*we only support limited well known services in backend*/
-        if (!isWellKnownService(pApp->Alias) && bValue)
-            return FALSE;
-        else if (isWellKnownService(pApp->Alias) && !bValue)
-            return FALSE;
-        #endif
-        return FALSE;
-        
-#endif
 
         pApp->IsWellKnown = bValue;
 

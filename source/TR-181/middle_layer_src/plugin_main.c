@@ -420,10 +420,6 @@ COSA_Async_Init
             pMoca->Remove(pMoca);
             g_pCosaBEManager->hMoCA = (ANSC_HANDLE)CosaMoCACreate();
         }
-#elif defined(_COSA_DRG_CNS_)
-        PCOSA_DATAMODEL_MOCA pMoca = g_pCosaBEManager->hMoCA;
-        pMoca->Remove(pMoca);
-        g_pCosaBEManager->hMoCA = (ANSC_HANDLE)CosaMoCACreate();
 #endif
 
     }
@@ -455,15 +451,6 @@ COSA_IsObjSupported
         /* all the objects/parameters under "UserInterface" will not be populated in Data Model Tree. */
         return FALSE;
     }
-
-#endif
-
-#if (defined(_COSA_DRG_CNS_))
-
-    if(AnscEqualString(pObjName, "Device.DNS.Client.", TRUE))
-    {
-        return FALSE;
-    }        
 
 #endif
 

@@ -78,7 +78,8 @@
  *   
  *
  */
-#if (defined(_COSA_SIM_)  ||   defined(_COSA_DRG_TPG_))
+#if defined(_COSA_SIM_)
+
 #define NEIGHDISC_INTERFACE_MAX_NUM 6
 
 COSA_DML_NEIGHDISC_IF_FULL g_neighdisc_interfaces[NEIGHDISC_INTERFACE_MAX_NUM] =

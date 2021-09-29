@@ -76,7 +76,7 @@
 
 extern void* g_pDslhDmlAgent;
 
-#if defined _COSA_SIM_  || defined _COSA_DRG_TPG_
+#if defined _COSA_SIM_
 
 COSA_DML_DHCPCV6_FULL  g_dhcpv6_client[] =
     {
