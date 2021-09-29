@@ -641,9 +641,8 @@ CosaDmlNeighdiscSetEnabled
 {
     g_neighdisc_enabled = bEnabled;
 
-    if( syscfg_set(NULL, "neigh_disc_enable", bEnabled ? "1" : "0") == 0)
+    if (syscfg_set_commit(NULL, "neigh_disc_enable", bEnabled ? "1" : "0") == 0)
     {
-        syscfg_commit();
         return ANSC_STATUS_SUCCESS;
     }
     return ANSC_STATUS_FAILURE;

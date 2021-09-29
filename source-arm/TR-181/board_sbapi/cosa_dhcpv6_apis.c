@@ -7409,11 +7409,7 @@ int remove_interface(char* Inf_name)
 			strcat(OutBuff,",");
 		}
    }
-	syscfg_set(NULL, "IPv6_Interface",OutBuff);
-	if (syscfg_commit( ) != 0) {
-         CcspTraceError(("syscfg_commit failed\n"));
-		 return -1;
-        }
+	syscfg_set_commit(NULL, "IPv6_Interface", OutBuff);
 	return 0;
 }
 
@@ -7428,11 +7424,7 @@ int append_interface(char* Inf_name)
 	strncpy(OutBuff, buf, sizeof(buf));
 	strcat(OutBuff,Inf_name);
 	strcat(OutBuff,",");
-	syscfg_set(NULL, "IPv6_Interface",OutBuff);
-    if (syscfg_commit( ) != 0) {
-         CcspTraceError(("syscfg_commit failed\n"));
-		 return -1;
-        }
+	syscfg_set_commit(NULL, "IPv6_Interface", OutBuff);
 	return 0;
 }
 /* This thread is added to handle the LnF interface IPv6 rule, because LnF is coming up late in XB6 devices. 

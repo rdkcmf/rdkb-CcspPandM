@@ -2396,8 +2396,7 @@ Port_SetParamBoolValue
         /* we are setting ethernet port 4(XB3) or 2(XB6) to VLAN*/
         if( (!strcmp(pPort->Info.Name, SWITCH_PORT_3_NAME) || !strcmp(pPort->Info.Name, SWITCH_PORT_1_NAME)) &&  pPort->Cfg.PVID == pvid)
         {
-            syscfg_set(NULL, SYSCFG_HOMESECURITY_ETH4_FLAG, bValue == TRUE ? "1" : "0");
-            syscfg_commit();
+            syscfg_set_commit(NULL, SYSCFG_HOMESECURITY_ETH4_FLAG, bValue == TRUE ? "1" : "0");
         }
     #endif
     

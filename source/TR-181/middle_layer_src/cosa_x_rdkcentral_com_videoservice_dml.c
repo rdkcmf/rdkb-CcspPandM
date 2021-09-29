@@ -130,16 +130,9 @@ VideoService_SetParamBoolValue
             CcspTraceWarning(("VIDEOSERVICE is DISABLED\n"));
         }
 
-        if (syscfg_set(NULL, "X_RDKCENTRAL-COM_VIDEOSERVICE", bval) != 0)
+        if (syscfg_set_commit(NULL, "X_RDKCENTRAL-COM_VIDEOSERVICE", bval) != 0)
         {
             AnscTraceWarning(("[VideoService] syscfg_set X_RDKCENTRAL-COM_VIDEOSERVICE failed!\n"));
-        }
-        else
-        {
-            if (syscfg_commit() != 0)
-            {
-                AnscTraceWarning(("[VideoService] syscfg_commit X_RDKCENTRAL-COM_VIDEOSERVICE failed!\n"));
-            }
         }
 
         return TRUE;

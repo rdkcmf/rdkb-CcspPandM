@@ -2139,7 +2139,7 @@ CosaDmlDiSetAndProcessDhcpServDetectionFlag
    )
 {
     UNREFERENCED_PARAMETER(hContext);
-	if ( syscfg_set( NULL, 
+	if ( syscfg_set_commit( NULL,
 					  "DhcpServDetectEnable", 
 					  ((*pValue == 1 ) ? "true" : "false") )!= 0 ) 
 	{
@@ -2148,12 +2148,6 @@ CosaDmlDiSetAndProcessDhcpServDetectionFlag
 	}
 	else 
 	{
-		if ( syscfg_commit( ) != 0 ) 
-		{
-			CcspTraceWarning(("syscfg_commit failed\n")); 
-			return ANSC_STATUS_FAILURE;
-		}
-
 		*pDhcpServDetectEnable = *pValue;
 
 		/* 
@@ -2184,85 +2178,38 @@ int getRebootCounter()
 
 int setRebootCounter()
 {
-           
-            int val = 0;
-            char buf[8];
-		    snprintf(buf,sizeof(buf),"%d",val);     
-        
-                if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0)) 
+                if ((syscfg_set_commit(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", "0") != 0)) 
 	            {
 			        AnscTraceWarning(("syscfg_set failed\n"));
 			        return -1;
 			    }
 		   	    else 
 		        {
-		         if (syscfg_commit() != 0) 
-		        {
-				    AnscTraceWarning(("syscfg_commit failed\n"));
-				     return -1;
-				
-			    }
-			
 			    return 0;
 		    }  
 }
 
 int setUnknownRebootReason()
 {
-   
-            int val = 0;
-            char buf[8];
-		    snprintf(buf,sizeof(buf),"%d",val);     
             OnboardLog("Device reboot due to reason unknown\n");
-                if ((syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", "unknown") != 0)) 
+                if ((syscfg_set_commit(NULL, "X_RDKCENTRAL-COM_LastRebootReason", "unknown") != 0))
 	            {
 			        AnscTraceWarning(("syscfg_set failed\n"));
 			        return -1;
 			    }
-		   	    else 
-		        {
-		         if (syscfg_commit() != 0) 
-		        {
-				    AnscTraceWarning(("syscfg_commit failed\n"));
-				     return -1;
-				
-			    }
-			
 			    return 0;
-		    }        
 }
 
 void setLastRebootReason(char* reason)
 {
-
-	int val = 1;
-	char buf[8];
-	snprintf(buf,sizeof(buf),"%d",val);
-
 	OnboardLog("Device reboot due to reason %s\n", reason);
 	if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootReason", reason) != 0)
 	{
 		AnscTraceWarning(("syscfg_set failed for Reason\n"));
 	}
-	else
-	{
-		if (syscfg_commit() != 0)
-		{
-			AnscTraceWarning(("syscfg_commit failed for Reason\n"));
-		}
-
-	}
-
-	if (syscfg_set(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", buf) != 0)
+	if (syscfg_set_commit(NULL, "X_RDKCENTRAL-COM_LastRebootCounter", "1") != 0)
 	{
 		AnscTraceWarning(("syscfg_set failed for Counter\n"));
-	}
-	else
-	{
-		if (syscfg_commit() != 0)
-		{
-			AnscTraceWarning(("syscfg_commit failed for Counter\n"));
-		}
 	}
 }
 // Check SHORTS RFC
@@ -2641,18 +2588,13 @@ ANSC_STATUS setPartnerId
     )
 {
 
-	if ((syscfg_set(NULL, "PartnerID", pValue) != 0)) 
+	if ((syscfg_set_commit(NULL, "PartnerID", pValue) != 0))
 	{
         AnscTraceWarning(("setPartnerId : syscfg_set failed\n"));
 		return ANSC_STATUS_FAILURE;
 	}
 	else 
 	{
-	        if (syscfg_commit() != 0) 
-			{
-				AnscTraceWarning(("setPartnerId : syscfg_commit failed\n"));
-				return ANSC_STATUS_FAILURE;
-			}
 		return ANSC_STATUS_SUCCESS;
 	}
 }
@@ -2661,18 +2603,13 @@ ANSC_STATUS setPartnerId
 ANSC_STATUS setCMVoiceImg(char* pValue)
 {
 
-        if ((syscfg_set(NULL, "CMVoiceImg", pValue) != 0))
+        if ((syscfg_set_commit(NULL, "CMVoiceImg", pValue) != 0))
         {
         	AnscTraceWarning(("setCMVoiceImg : syscfg_set failed\n"));
                 return ANSC_STATUS_FAILURE;
         }
         else
         {
-                if (syscfg_commit() != 0)
-                {
-                	AnscTraceWarning(("setCMVoiceImg : syscfg_commit failed\n"));
-                        return ANSC_STATUS_FAILURE;
-                }
                 return ANSC_STATUS_SUCCESS;
         }
 }
@@ -4187,20 +4124,13 @@ void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uVa
 	{
 		ERR_CHK(rc);
 	}
-	if ( syscfg_set( NULL,"DeferFWDownloadReboot",buf)!= 0 ) 
+	if ( syscfg_set_commit( NULL,"DeferFWDownloadReboot",buf)!= 0 ) 
 	{
 		CcspTraceWarning(("syscfg_set failed\n"));
 	}
 	else 
 	{
-		if ( syscfg_commit( ) != 0 ) 
-		{
-			CcspTraceWarning(("syscfg_commit failed\n")); 
-		}
-		else
-		{
 			*DeferFWDownloadReboot = 	uValue;
-		}
 	}
 }
 #endif
@@ -4331,21 +4261,18 @@ void* RebootDevice_thread(void* buff)
 		
     if (all) {
 
-		char buf[7] = {0};
+		char buf[12];
 		int rebootcount = 0;
-    	syscfg_get( NULL, "reboot_count", buf, sizeof(buf));
+		syscfg_get( NULL, "reboot_count", buf, sizeof(buf));
 		rebootcount = atoi(buf);
 		rebootcount++;
-		memset(buf,0,sizeof(buf));
-		rc = sprintf_s(buf,sizeof(buf),"%d",rebootcount);
-		if(rc < EOK) ERR_CHK(rc);
-		syscfg_set(NULL, "reboot_count", buf);
+		syscfg_set_u(NULL, "reboot_count", (unsigned long) rebootcount);
 
 		FILE *fp = NULL;
-		char buffer[50] = {0};
+		char buffer[50];
 		memset(buffer,0,sizeof(buffer));
-        fp = v_secure_popen("r", "date");
-		if( fp != NULL) {         
+		fp = v_secure_popen("r", "date");
+		if( fp != NULL) {
 		    while(fgets(buffer, sizeof(buffer), fp)!=NULL){
 			    buffer[strlen(buffer) - 1] = '\0';
 				syscfg_set(NULL, "latest_reboot_time", buffer);
@@ -4353,10 +4280,9 @@ void* RebootDevice_thread(void* buff)
 			v_secure_pclose(fp);
 		}
 
-		char tmp[7] = {0};
-		syscfg_get(NULL, "restore_reboot", tmp, sizeof(tmp));
+		syscfg_get(NULL, "restore_reboot", buf, sizeof(buf));
 
-		if(strcmp(tmp,"true") != 0)
+		if(strcmp(buf,"true") != 0)
 		{
 			if (syscfg_commit() != 0)
 			{
@@ -5043,16 +4969,9 @@ ApplyNTPPartnerDefaults()
                                  objItem = NULL;
                                  if ( objVal != NULL )
                                  {
-                                      if ( syscfg_set(NULL,name[i],objVal) != 0)
+                                      if ( syscfg_set_commit(NULL,name[i],objVal) != 0)
                                       {
                                            CcspTraceWarning(("syscfg_set failed for %s\n",name[i]));
-                                      }
-                                      else
-                                      {
-                                          if ( syscfg_commit( ) != 0 )
-                                          {
-                                               CcspTraceWarning(("syscfg_commit failed for %s\n",name[i]));
-                                          }
                                       }
                                       objVal = NULL;
                                  }
@@ -5084,14 +5003,9 @@ CosaDmlSetnewNTPEnable(BOOL bValue)
      if( bValue == TRUE)
      {
          AnscTraceWarning(("Enabling newNTP from RFC \n"));
-         if( 0 != syscfg_set(NULL, "new_ntp_enabled", "true"))
+         if( 0 != syscfg_set_commit(NULL, "new_ntp_enabled", "true"))
 	 {
              AnscTraceWarning(("syscfg_set failed for new_ntp_enabled\n"));
-             return ANSC_STATUS_FAILURE;
-         }
-         else if ( syscfg_commit( ) != 0 )
-         {
-             CcspTraceWarning(("syscfg_commit failed\n"));
              return ANSC_STATUS_FAILURE;
          } 
          if( ANSC_STATUS_SUCCESS != ApplyNTPPartnerDefaults() )
@@ -5100,17 +5014,11 @@ CosaDmlSetnewNTPEnable(BOOL bValue)
      else
      {
          AnscTraceWarning(("Disabling newNTP from RFC \n"));
-         if( 0 != syscfg_set(NULL, "new_ntp_enabled", "false"))
+         if( 0 != syscfg_set_commit(NULL, "new_ntp_enabled", "false"))
          {
              AnscTraceWarning(("syscfg_set failed for new_ntp_enabled\n"));
              return ANSC_STATUS_FAILURE;
          }
-         else if ( syscfg_commit( ) != 0 )
-         {
-             CcspTraceWarning(("syscfg_commit failed\n"));
-             return ANSC_STATUS_FAILURE;
-         }
-
      }
 
      commonSyseventSet("ntpd-restart", "");

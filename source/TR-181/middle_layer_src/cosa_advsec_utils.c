@@ -64,16 +64,9 @@ ANSC_STATUS CosaSetSysCfgUlong(char* setting, ULONG value)
        return ANSC_STATUS_FAILURE;
     }
 
-    if(ANSC_STATUS_SUCCESS != (ret=syscfg_set( NULL, setting, buf)))
+    if(ANSC_STATUS_SUCCESS != (ret=syscfg_set_commit( NULL, setting, buf)))
     {
         CcspTraceWarning(("syscfg_set failed\n"));
-    }
-    else
-    {
-        if (ANSC_STATUS_SUCCESS != (ret=syscfg_commit()))
-        {
-            CcspTraceWarning(("syscfg_commit failed\n"));
-        }
     }
 
     return ret;
@@ -97,19 +90,13 @@ ANSC_STATUS CosaGetSysCfgString(char* setting, char* pValue, PULONG pulSize )
 
 ANSC_STATUS CosaSetSysCfgString( char* setting, char* pValue )
 {
-        if ((syscfg_set(NULL, setting, pValue) != 0))
+        if ((syscfg_set_commit(NULL, setting, pValue) != 0))
         {
             AnscTraceWarning(("syscfg_set failed\n"));
             return ANSC_STATUS_FAILURE;
         }
         else
         {
-            if (syscfg_commit() != 0)
-            {
-                AnscTraceWarning(("setPartnerId : syscfg_commit failed\n"));
-                return ANSC_STATUS_FAILURE;
-            }
-
             return ANSC_STATUS_SUCCESS;
         }
 }

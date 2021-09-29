@@ -405,73 +405,40 @@ CosaDmlUserInterfaceSetCfg
 {
     UNREFERENCED_PARAMETER(hContext);
     char buf[10];
-    errno_t safec_rc = -1;
-    memset(buf,0,sizeof(buf));
+    BOOL security_header_enabled = TRUE;
 
-    if ( TRUE == pCfg->bPasswordLockoutEnable )
-    {
-
-	 if (syscfg_set(NULL, "PasswordLockoutEnable", "true") != 0) {
-                     AnscTraceWarning(("%s : syscfg_set failed\n",__FUNCTION__));
-	}
-
-     }
-     else
-     {
-
-		if (syscfg_set(NULL, "PasswordLockoutEnable", "false") != 0) {
-                    AnscTraceWarning(("%s :PasswordLockoutEnable syscfg_set failed\n",__FUNCTION__));
-	}
-     }
-
- safec_rc = sprintf_s(buf, sizeof(buf), "%lu",  pCfg->PasswordLockoutAttempts);
- if(safec_rc < EOK)
- {
-    ERR_CHK(safec_rc);
- }
-	if (syscfg_set(NULL, "PasswordLockoutAttempts", buf) != 0) {
-                     AnscTraceWarning(("%s : PasswordLockoutAttempts syscfg_set failed\n",__FUNCTION__));
-	}
-
-safec_rc = sprintf_s(buf, sizeof(buf), "%lu",  pCfg->PasswordLockoutTime);
-if(safec_rc < EOK)
-{
-   ERR_CHK(safec_rc);
-}
-	 if (syscfg_set(NULL, "PasswordLockoutTime", buf) != 0) {
-                     AnscTraceWarning(("%s : PasswordLockoutTime syscfg_set failed\n",__FUNCTION__));
-	}
-
-         if (syscfg_commit() != 0) {
-                           AnscTraceWarning(("syscfg_commit failed\n"));
-       }
-
-    char tmp[10];
-    memset(tmp,0,sizeof(tmp));
-    BOOL security_header_enabled = true;
-
-    if((syscfg_get( NULL, "HTTPSecurityHeaderEnable", tmp, sizeof(tmp)) == 0 ))
-    {
-       security_header_enabled = (!strcmp(tmp, "true")) ? TRUE : FALSE;
+    if (syscfg_set(NULL, "PasswordLockoutEnable", (pCfg->bPasswordLockoutEnable == TRUE) ? "true" : "false") != 0) {
+        AnscTraceWarning(("%s :PasswordLockoutEnable syscfg_set failed\n",__FUNCTION__));
     }
 
-    if (security_header_enabled != pCfg->bHTTPSecurityHeaderEnable)
-    {
-        memset(buf,0,sizeof(buf));
-        snprintf(buf,sizeof(buf),"%s",pCfg->bHTTPSecurityHeaderEnable ? "true" : "false");
+    if (syscfg_set_u(NULL, "PasswordLockoutAttempts", pCfg->PasswordLockoutAttempts) != 0) {
+        AnscTraceWarning(("%s : PasswordLockoutAttempts syscfg_set failed\n",__FUNCTION__));
+    }
 
-        if (syscfg_set(NULL, "HTTPSecurityHeaderEnable", buf) != 0)
+    if (syscfg_set_u(NULL, "PasswordLockoutTime", pCfg->PasswordLockoutTime) != 0) {
+        AnscTraceWarning(("%s : PasswordLockoutTime syscfg_set failed\n",__FUNCTION__));
+    }
+
+    if (syscfg_get(NULL, "HTTPSecurityHeaderEnable", buf, sizeof(buf)) == 0)
+    {
+        security_header_enabled = (strcmp(buf, "true") == 0) ? TRUE : FALSE;
+    }
+
+    if (pCfg->bHTTPSecurityHeaderEnable != security_header_enabled)
+    {
+        if (syscfg_set(NULL, "HTTPSecurityHeaderEnable", pCfg->bHTTPSecurityHeaderEnable ? "true" : "false") != 0)
         {
             AnscTraceWarning(("%s syscfg_set failed  for HTTPSecurityHeaderEnable\n",__FUNCTION__));
             return ANSC_STATUS_FAILURE;
         }
-        if (syscfg_commit() != 0)
-        {
-            AnscTraceWarning(("%s syscfg_commit failed for HTTPSecurityHeaderEnable\n",__FUNCTION__));
-            return ANSC_STATUS_FAILURE;
-        }
 
         system("/bin/sh /etc/webgui.sh &");
+    }
+
+    if (syscfg_commit() != 0)
+    {
+        AnscTraceWarning(("%s syscfg_commit failed\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
     }
 
     return ANSC_STATUS_SUCCESS;

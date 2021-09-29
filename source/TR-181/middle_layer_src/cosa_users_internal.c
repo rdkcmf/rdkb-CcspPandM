@@ -423,8 +423,7 @@ CosaUsersBackendGetUserInfo
 			returnStatus = ANSC_STATUS_FAILURE;
 			break;
 		}
-		syscfg_set(NULL, "PasswordLockoutAttempts", buff) ;
-		syscfg_commit() ;
+		syscfg_set_commit(NULL, "PasswordLockoutAttempts", buff);
            }
 
            memset(buff,0,sizeof(buff));

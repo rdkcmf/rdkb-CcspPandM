@@ -673,25 +673,18 @@ user_hashandsavepwd
   if(setHash[0] != '\0')
   {
      CcspTraceWarning(("%s, Set hash value to syscfg\n",__FUNCTION__));
-     if(syscfg_set(NULL,"hash_password_3",setHash) != 0)
+     if(syscfg_set_commit(NULL,"hash_password_3",setHash) != 0)
      {
         AnscTraceWarning(("syscfg_set failed\n"));
      } 
      else
      {
-        if (syscfg_commit() != 0) 
-        {
-           AnscTraceWarning(("syscfg_commit failed\n"));
-        }
-        else
-        {
           rc = strcpy_s(pEntry->HashedPassword,sizeof(pEntry->HashedPassword),setHash);
           ERR_CHK(rc);
           CcspTraceWarning(("%s, Hash value is saved to syscfg\n",__FUNCTION__));
 	  syscfg_unset(NULL, "user_password_3");
 	  syscfg_commit();
           return ANSC_STATUS_SUCCESS;
-        }
      }
   }
   }
@@ -701,25 +694,18 @@ user_hashandsavepwd
   if(setHash[0] != '\0')
   {
      CcspTraceWarning(("%s, Set hash value to syscfg\n",__FUNCTION__));
-     if(syscfg_set(NULL,"hash_password_2",setHash) != 0)
+     if(syscfg_set_commit(NULL,"hash_password_2",setHash) != 0)
      {
         AnscTraceWarning(("syscfg_set failed\n"));
      }
      else
      {
-        if (syscfg_commit() != 0)
-        {
-           AnscTraceWarning(("syscfg_commit failed\n"));
-        }
-        else
-        {
           rc = strcpy_s(pEntry->HashedPassword,sizeof(pEntry->HashedPassword),setHash);
           ERR_CHK(rc);
           CcspTraceWarning(("%s, Hash value is saved to syscfg\n",__FUNCTION__));
           syscfg_unset(NULL, "user_password_2");
           syscfg_commit();
           return ANSC_STATUS_SUCCESS;
-        }
      }
   }
   }

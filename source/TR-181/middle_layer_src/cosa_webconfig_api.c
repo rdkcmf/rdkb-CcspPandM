@@ -190,20 +190,11 @@ int setBlobVersion(char* subdoc,uint32_t version)
         system(cmd);
 
     }
- 	if(syscfg_set(NULL,buf,subdoc_ver) != 0)
+ 	if(syscfg_set_commit(NULL,buf,subdoc_ver) != 0)
  	{
         	CcspTraceError(("syscfg_set failed\n"));
         	return -1;
  	}
-	else
-     	{
-        	if (syscfg_commit() != 0)
-        	{
-           		CcspTraceError(("syscfg_commit failed\n"));
-                return -1;
-
-        	}
-    	}
      	
 	return 0;
      	 

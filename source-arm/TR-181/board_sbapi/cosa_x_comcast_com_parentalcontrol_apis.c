@@ -897,16 +897,9 @@ CosaDmlMDRed_GetConf(COSA_DML_MD_RED *pEntry)
 		/*Setting default value as it may break iptable rule*/
 		memset(ipv4, 0, sizeof(ipv4));
 		snprintf(ipv4,sizeof(ipv4),"127.0.0.1");
-		if (syscfg_set(NULL, "HTTP_Server_IP", ipv4) != 0) 
+		if (syscfg_set_commit(NULL, "HTTP_Server_IP", ipv4) != 0)
    		{
 			CcspTraceWarning(("syscfg_set failed\n"));
-   		}
-   		else 
-   		{
-	    	if (syscfg_commit() != 0) 
-			{
-		    	CcspTraceWarning(("syscfg_commit failed\n"));
-			}
    		}
 		AnscCopyString(pEntry->HTTP_Server_IP, ipv4);
 	}
@@ -923,16 +916,9 @@ CosaDmlMDRed_GetConf(COSA_DML_MD_RED *pEntry)
 		/*Setting default value as it may break iptable rule*/
 		memset(ipv4, 0, sizeof(ipv4));
 		snprintf(ipv4,sizeof(ipv4),"127.0.0.1");
-		if (syscfg_set(NULL, "HTTPS_Server_IP", ipv4) != 0) 
+		if (syscfg_set_commit(NULL, "HTTPS_Server_IP", ipv4) != 0)
    		{
 			CcspTraceWarning(("syscfg_set failed\n"));
-   		}
-   		else 
-   		{
-	    	if (syscfg_commit() != 0) 
-			{
-		    	CcspTraceWarning(("syscfg_commit failed\n"));
-			}
    		}
 		AnscCopyString(pEntry->HTTPS_Server_IP, ipv4);
 	
@@ -950,16 +936,9 @@ CosaDmlMDRed_GetConf(COSA_DML_MD_RED *pEntry)
 		/*Setting default value as it may break iptable rule*/
 		memset(ipv4, 0, sizeof(ipv4));
 		snprintf(ipv4,sizeof(ipv4),"127.0.0.1");
-		if (syscfg_set(NULL, "Default_Server_IP", ipv4) != 0) 
+		if (syscfg_set_commit(NULL, "Default_Server_IP", ipv4) != 0)
    		{
 			CcspTraceWarning(("syscfg_set failed\n"));
-   		}
-   		else 
-   		{
-	    	if (syscfg_commit() != 0) 
-			{
-		    	CcspTraceWarning(("syscfg_commit failed\n"));
-			}
    		}
 		AnscCopyString(pEntry->Default_Server_IP, ipv4);
 	
@@ -977,16 +956,9 @@ CosaDmlMDRed_GetConf(COSA_DML_MD_RED *pEntry)
 		/*Setting default value as it may break iptable rule*/
 		memset(ipv6, 0, sizeof(ipv6));
 		snprintf(ipv6,sizeof(ipv6),"::1");
-		if (syscfg_set(NULL, "HTTP_Server_IPv6", ipv6) != 0) 
+		if (syscfg_set_commit(NULL, "HTTP_Server_IPv6", ipv6) != 0)
    		{
 			CcspTraceWarning(("syscfg_set failed\n"));
-   		}
-   		else 
-   		{
-	    	if (syscfg_commit() != 0) 
-			{
-		    	CcspTraceWarning(("syscfg_commit failed\n"));
-			}
    		}
 		AnscCopyString(pEntry->HTTP_Server_IPv6, ipv6);
 	
@@ -1004,16 +976,9 @@ CosaDmlMDRed_GetConf(COSA_DML_MD_RED *pEntry)
 		/*Setting default value as it may break iptable rule*/
 		memset(ipv6, 0, sizeof(ipv6));
 		snprintf(ipv6,sizeof(ipv6),"::1");
-		if (syscfg_set(NULL, "HTTPS_Server_IPv6", ipv6) != 0) 
+		if (syscfg_set_commit(NULL, "HTTPS_Server_IPv6", ipv6) != 0)
    		{
 			CcspTraceWarning(("syscfg_set failed\n"));
-   		}
-   		else 
-   		{
-	    	if (syscfg_commit() != 0) 
-			{
-		    	CcspTraceWarning(("syscfg_commit failed\n"));
-			}
    		}
 		AnscCopyString(pEntry->HTTPS_Server_IPv6, ipv6);
 	
@@ -1031,16 +996,9 @@ CosaDmlMDRed_GetConf(COSA_DML_MD_RED *pEntry)
 		/*Setting default value as it may break iptable rule*/
 		memset(ipv6, 0, sizeof(ipv6));
 		snprintf(ipv6,sizeof(ipv6),"::1");
-		if (syscfg_set(NULL, "Default_Server_IPv6", ipv6) != 0) 
+		if (syscfg_set_commit(NULL, "Default_Server_IPv6", ipv6) != 0)
    		{
 			CcspTraceWarning(("syscfg_set failed\n"));
-   		}
-   		else 
-   		{
-	    	if (syscfg_commit() != 0) 
-			{
-		    	CcspTraceWarning(("syscfg_commit failed\n"));
-			}
    		}
 		AnscCopyString(pEntry->Default_Server_IPv6, ipv6);
 	
@@ -1052,98 +1010,18 @@ CosaDmlMDRed_GetConf(COSA_DML_MD_RED *pEntry)
 ANSC_STATUS
 CosaDmlMDRed_SetConf(COSA_DML_MD_RED *pEntry)
 {
-   char ipv4[17];
-   char ipv6[64];
-
-   /* HTTP_Server_IP */
-   memset(ipv4, 0, sizeof(ipv4));
-   snprintf(ipv4,sizeof(ipv4),"%s",pEntry->HTTP_Server_IP);
-   if (syscfg_set(NULL, "HTTP_Server_IP", ipv4) != 0) 
+   if ((syscfg_set(NULL, "HTTP_Server_IP", pEntry->HTTP_Server_IP) != 0) ||
+       (syscfg_set(NULL, "HTTPS_Server_IP", pEntry->HTTPS_Server_IP) != 0) ||
+       (syscfg_set(NULL, "Default_Server_IP", pEntry->Default_Server_IP) != 0) ||
+       (syscfg_set(NULL, "HTTP_Server_IPv6", pEntry->HTTP_Server_IPv6) != 0) ||
+       (syscfg_set(NULL, "HTTPS_Server_IPv6", pEntry->HTTPS_Server_IPv6) != 0) ||
+       (syscfg_set(NULL, "Default_Server_IPv6", pEntry->Default_Server_IPv6) != 0))
    {
-		CcspTraceWarning(("syscfg_set failed\n"));
+       CcspTraceWarning(("syscfg_set failed\n"));
    }
-   else 
+   if (syscfg_commit() != 0) 
    {
-	    if (syscfg_commit() != 0) 
-		{
-		    CcspTraceWarning(("syscfg_commit failed\n"));
-		}
-   }
-
-
-   /* HTTPS_Server_IP */
-   memset(ipv4, 0, sizeof(ipv4));
-   snprintf(ipv4,sizeof(ipv4),"%s",pEntry->HTTPS_Server_IP);
-   if (syscfg_set(NULL, "HTTPS_Server_IP", ipv4) != 0) 
-   {
-		CcspTraceWarning(("syscfg_set failed\n"));
-   }
-   else 
-   {
-	    if (syscfg_commit() != 0) 
-		{
-		    CcspTraceWarning(("syscfg_commit failed\n"));
-		}
-   }
-
-   /* Default_Server_IP */
-   memset(ipv4, 0, sizeof(ipv4));
-   snprintf(ipv4,sizeof(ipv4),"%s",pEntry->Default_Server_IP);
-   if (syscfg_set(NULL, "Default_Server_IP", ipv4) != 0) 
-   {
-		CcspTraceWarning(("syscfg_set failed\n"));
-   }
-   else 
-   {
-	    if (syscfg_commit() != 0) 
-		{
-		    CcspTraceWarning(("syscfg_commit failed\n"));
-		}
-   }
-
-   /* HTTP_Server_IPv6 */
-   memset(ipv6, 0, sizeof(ipv6));
-   snprintf(ipv6,sizeof(ipv6),"%s",pEntry->HTTP_Server_IPv6);
-   if (syscfg_set(NULL, "HTTP_Server_IPv6", ipv6) != 0) 
-   {
-		CcspTraceWarning(("syscfg_set failed\n"));
-   }
-   else 
-   {
-	    if (syscfg_commit() != 0) 
-		{
-		    CcspTraceWarning(("syscfg_commit failed\n"));
-		}
-   }
-
-   /* HTTPS_Server_IPv6 */
-   memset(ipv6, 0, sizeof(ipv6));
-   snprintf(ipv6,sizeof(ipv6),"%s",pEntry->HTTPS_Server_IPv6);
-   if (syscfg_set(NULL, "HTTPS_Server_IPv6", ipv6) != 0) 
-   {
-		CcspTraceWarning(("syscfg_set failed\n"));
-   }
-   else 
-   {
-	    if (syscfg_commit() != 0) 
-		{
-		    CcspTraceWarning(("syscfg_commit failed\n"));
-		}
-   }
-
-   /* Default_Server_IPv6 */
-   memset(ipv6, 0, sizeof(ipv6));
-   snprintf(ipv6,sizeof(ipv6),"%s",pEntry->Default_Server_IPv6);
-   if (syscfg_set(NULL, "Default_Server_IPv6", ipv6) != 0) 
-   {
-		CcspTraceWarning(("syscfg_set failed\n"));
-   }
-   else 
-   {
-	    if (syscfg_commit() != 0) 
-		{
-		    CcspTraceWarning(("syscfg_commit failed\n"));
-		}
+       CcspTraceWarning(("syscfg_commit failed\n"));
    }
 
    return ANSC_STATUS_SUCCESS;

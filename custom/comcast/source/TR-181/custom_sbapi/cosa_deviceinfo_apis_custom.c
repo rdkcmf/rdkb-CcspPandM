@@ -631,13 +631,8 @@ CosaDmlSetCaptivePortalEnable
 		value_string = "false";
 	}
 
-	if (syscfg_set(NULL, CAPTIVEPORTAL_ENABLE, value_string) != 0) {
+	if (syscfg_set_commit(NULL, CAPTIVEPORTAL_ENABLE, value_string) != 0) {
 		CcspTraceWarning(("syscfg_set failed to enable/disable captive portal\n"));
-		return ANSC_STATUS_FAILURE;
-	}
-
-	if (syscfg_commit() != 0) {
-		CcspTraceWarning(("syscfg_commit failed\n"));
 		return ANSC_STATUS_FAILURE;
 	}
 

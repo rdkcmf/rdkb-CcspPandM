@@ -357,12 +357,8 @@ DeviceInfo_GetParamStringValue_Custom
 #if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
 	   CosaDmlDiGetRouterIPv6Address(NULL, pValue,pulSize);
            #if defined(_COSA_FOR_BCI_)
-           if (syscfg_set(NULL, "wanIPv6Address",pValue) != 0) {
+           if (syscfg_set_commit(NULL, "wanIPv6Address",pValue) != 0) {
                AnscTraceWarning(("syscfg_set failed\n"));
-           } else {
-               if (syscfg_commit() != 0) {
-                   AnscTraceWarning(("syscfg_commit failed\n"));
-               }
            }
            #endif
 #endif
@@ -563,26 +559,18 @@ DeviceInfo_SetParamBoolValue_Custom
 
           if( bValue == TRUE) {
 
-             if (syscfg_set(NULL, "cloud_enable_flag", "1") != 0) {
+             if (syscfg_set_commit(NULL, "cloud_enable_flag", "1") != 0) {
                      AnscTraceWarning(("syscfg_set failed\n"));
              } else {
-
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
 			pMyObject->bCloudEnable = bValue;
 			CcspTraceWarning(("CaptivePortal:Enabling CloudUIEnable to start redirection to Cloud URL ...\n"));
              }
 
          } else {
 
-             if (syscfg_set(NULL, "cloud_enable_flag", "0") != 0) {
+             if (syscfg_set_commit(NULL, "cloud_enable_flag", "0") != 0) {
                      AnscTraceWarning(("syscfg_set failed\n"));
              }  else {
-
-                 if (syscfg_commit() != 0) {
-                     AnscTraceWarning(("syscfg_commit failed\n"));
-                 }
 			pMyObject->bCloudEnable = bValue;
 			CcspTraceWarning(("CaptivePortal:Disabling CloudUIEnable to stop redirection to Cloud URL ...\n"));
              }

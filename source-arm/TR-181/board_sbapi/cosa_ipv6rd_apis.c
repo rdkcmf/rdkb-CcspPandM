@@ -125,13 +125,12 @@ static struct ipv6rd_conf *g_ipv6rd_conf;
 static int 
 syscfg_get_bool(const char *key, BOOL *bvalue)
 {
-    char value[MAX_LINE];
+    char value[12];
 
-    bzero(value, sizeof(value));
     if (syscfg_get(NULL, key, value, sizeof(value)) != 0)
         return -1;
 
-    if (atoi(value) == 1) {
+    if (strcmp(value, "1") == 0) {
         *bvalue = TRUE;
     } else {
         *bvalue = FALSE;
@@ -143,21 +142,14 @@ syscfg_get_bool(const char *key, BOOL *bvalue)
 static int
 syscfg_set_bool(const char *key, BOOL bvalue)
 {
-    char value[MAX_LINE];
-
-    snprintf(value, sizeof(value), "%d", bvalue ? 1 : 0);
-    if (syscfg_set(NULL, key, value) != 0)
-        return -1;
-
-    return 0;
+    return syscfg_set(NULL, key, bvalue ? "1" : "0");
 }
 
 static int 
 syscfg_get_ulong(const char *key, ULONG *ulvalue)
 {
-    char value[MAX_LINE];
+    char value[12];
 
-    bzero(value, sizeof(value));
     if (syscfg_get(NULL, key, value, sizeof(value)) != 0)
         return -1;
 
@@ -168,13 +160,7 @@ syscfg_get_ulong(const char *key, ULONG *ulvalue)
 static int
 syscfg_set_ulong(const char *key, ULONG ulvalue)
 {
-    char value[MAX_LINE];
-
-    snprintf(value, sizeof(value), "%lu", ulvalue);
-    if (syscfg_set(NULL, key, value) != 0)
-        return -1;
-
-    return 0;
+    return syscfg_set_u(NULL, key, ulvalue);
 }
 
 static int 
