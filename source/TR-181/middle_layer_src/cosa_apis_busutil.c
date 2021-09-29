@@ -383,7 +383,7 @@ CosaCOSARepopulateTable
 #ifdef FEATURE_RDKB_WAN_MANAGER
 static ANSC_STATUS RdkBus_GetParamValues( char *pComponent, char *pBus, char *pParamName, char *pReturnVal )
 {
-    parameterValStruct_t   **retVal;
+    parameterValStruct_t   **retVal = NULL ;
     char                   *ParamName[1];
     int                    ret               = 0,
                            nval;
