@@ -89,7 +89,11 @@ extern COSARepopulateTableProc g_COSARepopulateTable;
 
 #ifdef FEATURE_RDKB_WAN_MANAGER
 extern ANSC_HANDLE bus_handle;
+#if defined(_PLATFORM_RASPBERRYPI_)
+#define ETHERNET_INTERFACE_OBJECT "Device.Ethernet.X_RDK_Interface."
+#else
 #define ETHERNET_INTERFACE_OBJECT "Device.Ethernet.Interface"
+#endif
 #define ETH_COMPONENT_NAME "eRT.com.cisco.spvtg.ccsp.ethagent"
 #define ETH_DBUS_PATH "/com/cisco/spvtg/ccsp/ethagent"
 static ANSC_STATUS RdkBus_GetParamValues( char *pComponent, char *pBus, char *pParamName, char *pReturnVal );
