@@ -1691,6 +1691,32 @@ MessageBusSource_SetParamBoolValue
 
  APIs for Object:
 
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Telemetry.MessageBusSource.Enable
+
+    *  MTLS_GetParamBoolValue
+    *  MTLS_SetParamBoolValue
+***********************************************************************/
+BOOL
+MTLS_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+MTLS_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+/***********************************************************************
+ *
+ APIs for Object:
+
     Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.FWUpdate.AutoExcluded
 
     *  AutoExcluded_GetParamBoolValue

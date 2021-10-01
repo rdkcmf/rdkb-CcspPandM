@@ -19504,6 +19504,135 @@ MessageBusSource_SetParamBoolValue
 
     prototype:
         BOOL
+        MTLS_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            )
+
+
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+MTLS_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+ UNREFERENCED_PARAMETER(hInsContext);
+ if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char value[8] = {'\0'};
+        if( syscfg_get(NULL, "T2mTLSEnable", value, sizeof(value)) == 0 )
+        {
+                 if (strcmp(value, "true") == 0)
+                     *pBool = TRUE;
+                 else
+                     *pBool = FALSE;
+
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceError(("syscfg_get failed for MTLS\n"));
+        }
+    }
+  return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        MTLS_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            )
+
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+MTLS_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+  if (IsBoolSame(hInsContext, ParamName, bValue, MTLS_GetParamBoolValue))
+        return TRUE;
+
+  if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8] = {'\0'};
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+        if( syscfg_set(NULL, "T2mTLSEnable", buf) != 0 )
+        {
+            CcspTraceError(("syscfg_set failed for MTLS\n"));
+        }
+        else
+        {
+            if( syscfg_commit() == 0 )
+            {
+                return TRUE;
+            }
+            else
+            {
+                 CcspTraceError(("syscfg_commit failed for MTLS\n"));
+            }
+        }
+
+    }
+  return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
         TR104_GetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,
