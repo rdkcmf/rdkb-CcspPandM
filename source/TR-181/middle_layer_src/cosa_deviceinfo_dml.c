@@ -14045,6 +14045,11 @@ Xconf_SetParamBoolValue
                            v_secure_system ("kill -9 `pidof cbr_firmwareDwnld.sh `");
                        }
                            status = v_secure_system("/etc/cbr_firmwareDwnld.sh &");
+#elif defined(_SE501_PRODUCT_REQ_)
+                        if(0 == v_secure_system("pidof se501_firmwareDwnld.sh"))  {
+                           v_secure_system ("kill -9 `pidof se501_firmwareDwnld.sh `");
+                       }
+                           status = v_secure_system("/etc/se501_firmwareDwnld.sh &");
 #elif defined(_SR300_PRODUCT_REQ_)
                         if(0 == v_secure_system("pidof sr300_firmwareDwnld.sh"))  {
                            v_secure_system ("kill -9 `pidof sr300_firmwareDwnld.sh `");
