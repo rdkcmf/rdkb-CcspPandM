@@ -22890,3 +22890,127 @@ SelfHeal_SetParamUlongValue
     return TRUE;
 }
 
+#if defined(FEATURE_RDKB_NFC_MANAGER)
+//NFC RFC :: NFC Feature should enable.
+
+/***********************************************************************
+
+   caller: owner of this object
+
+   prototype:
+
+       BOOL
+       NFC_GetParamBoolValue
+           (
+               ANSC_HANDLE                 hInsContext,
+               char*                       ParamName,
+               BOOL*                       pBool
+           );
+
+   description:
+
+       This function is called to retrieve Boolean parameter value;
+
+   argument:   ANSC_HANDLE                 hInsContext,
+               The instance handle;
+
+               char*                       ParamName,
+               The parameter name;
+
+               BOOL*                       pBool
+               The buffer of returned boolean value;
+
+   return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+NFC_GetParamBoolValue
+(
+ANSC_HANDLE                 hInsContext,
+char*                       ParamName,
+BOOL*                       pBool
+)
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Enable", TRUE) )
+    {
+        char nfc_status[8] = {0};
+        if(!syscfg_get(NULL,"nfc_enabled",nfc_status, sizeof(nfc_status)))
+        {
+            CcspTraceInfo(("nfc_enabled = %s \n", nfc_status));
+            if (strcmp(nfc_status, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+        }else{
+            CcspTraceError(("Failed to get `nfc_enabled` syscfg status \n"));
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        NFC_SetParamBoolValue
+        (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+        );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+NFC_SetParamBoolValue
+(
+ANSC_HANDLE                 hInsContext,
+char*                       ParamName,
+BOOL                        bValue
+)
+{
+    if (IsBoolSame(hInsContext, ParamName, bValue, NFC_GetParamBoolValue))
+    {
+        return TRUE;
+    }
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+
+       if ( bValue == TRUE)
+       {
+          syscfg_set(NULL, "nfc_enabled", "true");
+          //Start RdkNfcManager systemd service to start nfc services.
+          v_secure_system("systemctl start RdkNfcManager.service");
+       }
+       else
+       {
+          syscfg_set(NULL, "nfc_enabled", "false");
+          //Stop RdkNfcManager systemd service to stop nfc services.
+          v_secure_system("systemctl stop RdkNfcManager.service");
+       }
+       syscfg_commit();
+
+       return TRUE;
+    }
+    return FALSE;
+}
+#endif //FEATURE_RDKB_NFC_MANAGER
