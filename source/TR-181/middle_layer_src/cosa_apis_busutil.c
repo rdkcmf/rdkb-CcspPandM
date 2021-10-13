@@ -86,8 +86,13 @@
 
 extern void * g_pDslhDmlAgent;
 extern COSARepopulateTableProc g_COSARepopulateTable;
-
+// This below macro need to enable when ethernet interface 
+// tr181 is moved from pandm to Ethagent component.
 #ifdef FEATURE_RDKB_WAN_MANAGER
+#define ENABLE_ETHERNET_TR181_REMOTE_CALL
+#endif
+
+#ifdef ENABLE_ETHERNET_TR181_REMOTE_CALL
 extern ANSC_HANDLE bus_handle;
 #if defined(_PLATFORM_RASPBERRYPI_)
 #define ETHERNET_INTERFACE_OBJECT "Device.Ethernet.X_RDK_Interface."
@@ -126,7 +131,7 @@ CosaGetParamValueUlong
         char*                       pParamName
     )
 {
-#ifdef FEATURE_RDKB_WAN_MANAGER
+#ifdef ENABLE_ETHERNET_TR181_REMOTE_CALL
     char acTmpReturnValue[256] = {0};
     ULONG result = 0;
     if (strstr(pParamName, ETHERNET_INTERFACE_OBJECT))
@@ -184,7 +189,7 @@ CosaGetParamValueString
         PULONG                      pulSize
     )
 {
-#ifdef FEATURE_RDKB_WAN_MANAGER
+#ifdef ENABLE_ETHERNET_TR181_REMOTE_CALL
     char acTmpReturnValue[1024] = {0};
     if (strstr(pParamName, ETHERNET_INTERFACE_OBJECT))
     {
@@ -234,7 +239,7 @@ CosaGetParamValueBool
         char*                       pParamName
     )
 {
-#ifdef FEATURE_RDKB_WAN_MANAGER
+#ifdef ENABLE_ETHERNET_TR181_REMOTE_CALL
     char acTmpReturnValue[256] = {0};
     if (strstr(pParamName, ETHERNET_INTERFACE_OBJECT))
     {
@@ -384,7 +389,7 @@ CosaCOSARepopulateTable
     return g_COSARepopulateTable(g_pDslhDmlAgent, objName);
 }
 
-#ifdef FEATURE_RDKB_WAN_MANAGER
+#ifdef ENABLE_ETHERNET_TR181_REMOTE_CALL
 static ANSC_STATUS RdkBus_GetParamValues( char *pComponent, char *pBus, char *pParamName, char *pReturnVal )
 {
     parameterValStruct_t   **retVal = NULL ;

@@ -4040,7 +4040,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
     char str[IFNAME_SZ];    
     napt_mode_t napt;
 #if !defined(_CBR_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_)// MOCA is not present for TCCBR environment, HUB4 and RaspberryPi environment
-	parameterValStruct_t **valMoCAstatus;
+	parameterValStruct_t **valMoCAstatus = NULL;
 	char pMoCAComponentName[64]="eRT.com.cisco.spvtg.ccsp.moca";
 	char pComponentPath[64]="/com/cisco/spvtg/ccsp/moca";
 	char *paramNames[]={"Device.MoCA.Interface.1.Enable"};
