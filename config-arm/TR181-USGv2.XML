@@ -1814,6 +1814,22 @@
                             </parameters>
                         </object>
 <?endif?>
+                      <object>
+                          <name>WebUI</name>
+                          <objectType>object</objectType>
+                          <functions>
+                            <func_GetParamUlongValue>WebUI_GetParamUlongValue</func_GetParamUlongValue>
+                            <func_SetParamUlongValue>WebUI_SetParamUlongValue</func_SetParamUlongValue>
+                          </functions>
+                          <parameters>
+                            <parameter>
+                              <name>Enable</name>
+                              <type>string: Enable(1), Disable(0), MSOonly(2)</type>
+                              <syntax>uint32/mapped</syntax>
+                              <writable>true</writable>
+                            </parameter>
+                          </parameters>
+                      </object>
 <?ifndef BCI?>
                        <object>
                             <name>MocaAccountIsolation</name>

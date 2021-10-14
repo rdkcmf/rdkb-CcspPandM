@@ -545,6 +545,33 @@ ManageableNotification_SetParamBoolValue
 
  APIs for Object:
 
+    DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WebUI.Enable
+
+    *  WebUI_GetParamUlongValue
+    *  WebUI_SetParamUlongValue
+
+***********************************************************************/
+
+BOOL
+WebUI_GetParamUlongValue
+(
+    ANSC_HANDLE                 hInsContext,
+    char*                       ParamName,
+    ULONG*                      puLong
+);
+
+BOOL
+WebUI_SetParamUlongValue
+(
+    ANSC_HANDLE                 hInsContext,
+    char*                       ParamName,
+    ULONG                       uValue
+);
+
+/***********************************************************************
+
+ APIs for Object:
+
     Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Snmpv3DHKickstart.KickstartTable{i}.
 
     *  Snmpv3DHKickstart_GetParamBoolValue

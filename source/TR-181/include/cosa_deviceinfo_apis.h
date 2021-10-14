@@ -625,6 +625,7 @@ void CosaDmlDiGet_DeferFWDownloadReboot(ULONG* puLong);
 void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uValue);
 #endif
 void CosaDmlDiSet_RebootDevice(char* pValue);
+void CosaDmlDiSet_DisableRemoteManagement();
 BOOL CosaDmlDi_ValidateRebootDeviceParam(char *pValue);
 
 ANSC_STATUS

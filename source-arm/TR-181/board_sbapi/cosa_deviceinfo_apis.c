@@ -4085,6 +4085,58 @@ void CosaDmlDiSet_DeferFWDownloadReboot(ULONG* DeferFWDownloadReboot , ULONG uVa
 }
 #endif
 
+void* DisableRemoteManagement_thread(void* arg)
+{
+    UNREFERENCED_PARAMETER(arg);
+    int                         ret = -1;
+    int                         size = 0;
+    componentStruct_t **        ppComponents = NULL;
+    char*   faultParam = NULL;
+    extern char        g_Subsystem[32];
+    char   dst_pathname_cr[64]  =  {0};
+    errno_t safec_rc = -1;
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+    pthread_detach(pthread_self());
+	
+    safec_rc = sprintf_s(dst_pathname_cr, sizeof(dst_pathname_cr), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+    if(safec_rc < EOK)
+    {
+        ERR_CHK(safec_rc);
+    }
+
+    ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
+                dst_pathname_cr,
+                "Device.UserInterface.X_CISCO_COM_RemoteAccess.",
+                g_Subsystem,        /* prefix */
+                &ppComponents,
+                &size);
+
+    if ( ret == CCSP_SUCCESS && size == 1)
+    {
+	parameterValStruct_t val[ ] = { { "Device.UserInterface.X_CISCO_COM_RemoteAccess.HttpEnable", "false", ccsp_boolean},{ "Device.UserInterface.X_CISCO_COM_RemoteAccess.HttpsEnable", "false", ccsp_boolean} };
+	ret = CcspBaseIf_setParameterValues
+                    (
+                     bus_handle,
+                     ppComponents[0]->componentName,
+                     ppComponents[0]->dbusPath,
+                     0, 0x0,  
+                     val,
+                     2,
+                     TRUE,   
+                     &faultParam
+                    );
+	if (ret != CCSP_SUCCESS && faultParam)
+        {   
+          	AnscTraceError(("Error:Failed to SetValue for param '%s'\n", faultParam));
+                bus_info->freefunc(faultParam);
+        }
+
+        free_componentStruct_t(bus_handle, size, ppComponents);
+        CcspTraceInfo(("Successfully set for Disable Remote Management \n"));
+    }
+    return NULL;
+}
+
 void* RebootDevice_thread(void* buff)
 {
 	char pValue[128],source_str[64];
@@ -4232,6 +4284,13 @@ void* RebootDevice_thread(void* buff)
     }
     return NULL;
 	
+}
+
+void CosaDmlDiSet_DisableRemoteManagement()
+{
+	pthread_t tid;
+    	pthread_create(&tid, NULL, &DisableRemoteManagement_thread, NULL);
+        CcspTraceInfo(("Successfully pthread created for Disable Remote Management \n"));
 }
 
 void CosaDmlDiSet_RebootDevice(char* pValue)

@@ -12311,7 +12311,132 @@ IPv6onLnF_GetParamBoolValue
 
     return FALSE;
 }
+/**********************************************************************  
 
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        WebUI_GetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG*                      puLong
+            );
+
+    description:
+
+        This function is called to retrieve ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG*                      puLong
+                The buffer of returned ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+WebUI_GetParamUlongValue
+(
+    ANSC_HANDLE                 hInsContext,
+    char*                       ParamName,
+    ULONG*                      puLong
+)
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    char buf[8] = {0};
+
+    if( AnscEqualString(ParamName, "Enable", TRUE) )
+    {
+        syscfg_get( NULL, "WebUIEnable", buf, sizeof(buf));
+        if( 0 == strlen(buf) )
+        {
+             *puLong = 1; // default value of WebUIEnable
+        }
+        else
+        {
+             *puLong = atol(buf);
+        }
+        return TRUE;
+    }
+    AnscTraceWarning(("%s is invalid argument!\n", ParamName));
+    return FALSE;
+}
+    
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        WebUI_SetParamUlongValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                ULONG                       uValue
+            );
+
+    description:
+
+        This function is called to set ULONG parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                ULONG                       uValue
+                The updated ULONG value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+WebUI_SetParamUlongValue
+(
+    ANSC_HANDLE                 hInsContext,
+    char*                       ParamName,
+    ULONG                       uValue
+)
+{
+
+    UNREFERENCED_PARAMETER(hInsContext);
+    /* check the parameter name and set the corresponding value */
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+	char buf[8]={0};
+	snprintf(buf,sizeof(buf),"%lu",uValue);
+	if (syscfg_set(NULL, "WebUIEnable", buf) != 0) 
+	{
+		CcspTraceWarning(("syscfg_set failed to set WebUIEnable \n"));
+		return FALSE;
+	}
+	else 
+	{
+		if (syscfg_commit() != 0) 
+		{
+			CcspTraceWarning(("syscfg_commit failed to set WebUIEnable \n"));
+			return FALSE;
+		}
+	}
+	if(uValue == 0 || uValue == 2)
+	{
+		CosaDmlDiSet_DisableRemoteManagement();
+	}
+	return TRUE;
+    } 
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
  #if defined (FEATURE_SUPPORT_INTERWORKING)
 /**********************************************************************
 
