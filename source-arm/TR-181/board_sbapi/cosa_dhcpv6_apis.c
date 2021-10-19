@@ -8018,7 +8018,9 @@ dhcpv6c_dbg_thrd(void * in)
 #endif
 	char cmd[100];
 
+#ifndef FEATURE_RDKB_WAN_AGENT
     commonSyseventSet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME,       v6pref);
+#endif
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_CBR_PRODUCT_REQ_)
 #else
 			char out1[100]; 
