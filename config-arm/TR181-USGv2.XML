@@ -2128,6 +2128,22 @@
                                 </object>
                             </objects>
                         </object>
+                      <object>
+                          <name>UPnPxPKI</name>
+                          <objectType>object</objectType>
+                          <functions>
+                               <func_GetParamBoolValue>UPnPxPKI_GetParamBoolValue</func_GetParamBoolValue>
+                               <func_SetParamBoolValue>UPnPxPKI_SetParamBoolValue</func_SetParamBoolValue>
+                          </functions>
+                          <parameters>
+                              <parameter>
+                                  <name>Enable</name>
+                                  <type>boolean</type>
+                                  <syntax>bool</syntax>
+                                  <writable>true</writable>
+                              </parameter>
+                          </parameters>
+                      </object>
 <?ifdef COLUMBO_HWTEST & !BCI?>
                         <object>
                             <name>hwHealthTest</name>
