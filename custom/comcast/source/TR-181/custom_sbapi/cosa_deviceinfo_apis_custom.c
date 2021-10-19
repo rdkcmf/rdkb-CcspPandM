@@ -87,6 +87,8 @@
 #define _ERROR_ "NOT SUPPORTED"
 
 #define CAPTIVEPORTAL_ENABLE     "CaptivePortal_Enable"
+#define WEB_CONF_ENABLE         "eRT.com.cisco.spvtg.ccsp.webpa.WebConfigRfcEnable"
+#define WEB_CONF_FILE           "/nvram/hotspot_blob"
 
 extern void* g_pDslhDmlAgent;
 
@@ -532,11 +534,28 @@ CosaDmlDiSetXfinityWiFiEnable
 {
     pthread_t thread_xfinity_wifi = 0;
     BOOL *pValue = NULL;
-    
-    /*CID: 61742 Wrong sizeof argument*/
-    pValue =  AnscAllocateMemory(sizeof(BOOL));    
-    if (pValue != NULL)
+
+    FILE *fptr = NULL;
+    char val[16] = {0};
+    char rec[128] = {0};
+ 
+    memset(rec, '\0', sizeof(rec));
+    memset(val, '\0', sizeof(val));
+    fptr = fopen(WEB_CONF_FILE, "r");
+    snprintf(rec, sizeof(rec), "%s",  WEB_CONF_ENABLE);
+    if((PsmGet(rec, val, sizeof(val)) == 0 && atoi(val) == TRUE) && (NULL != fptr))
     {
+        AnscTraceWarning(("%s: webconfig enabled \n", __FUNCTION__));
+        fclose(fptr);
+        return ANSC_STATUS_SUCCESS;
+    }
+    else
+    {
+        AnscTraceWarning(("%s: webconfig disabled using legacy \n", __FUNCTION__));
+        /*CID: 61742 Wrong sizeof argument*/
+        pValue =  AnscAllocateMemory(sizeof(BOOL));
+        if (pValue != NULL)
+        {
            *pValue = value;
             pthread_create
             (
@@ -545,12 +564,17 @@ CosaDmlDiSetXfinityWiFiEnable
              XfinityWifiThread,
              (void*)pValue
             );
+            if(fptr != NULL)
+             fclose(fptr);
             return ANSC_STATUS_SUCCESS;
-     }
-     else
-     {
+        }
+        else
+        {
+            if(fptr != NULL)
+             fclose(fptr);
             return ANSC_STATUS_FAILURE;
-     }
+        }
+    }
 }
 #endif
 
