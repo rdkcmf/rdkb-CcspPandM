@@ -7865,6 +7865,7 @@ dhcpv6c_dbg_thrd(void * in)
             char v6addr[64] = {0};
             char v6pref[128] = {0};
             char v6Tpref[128] = {0};
+            char preflen[12] = {0};
             int pref_len = 0;
             
             char iana_t1[32]    = {0};
@@ -7909,9 +7910,9 @@ dhcpv6c_dbg_thrd(void * in)
 
             fprintf(stderr, "%s -- %d !!! get event from v6 client: %s \n", __FUNCTION__, __LINE__,p);
 
-            if (sscanf(p, "%63s %63s %s %s %s %s %s %63s %d %s %s %s %s %s", 
+            if (sscanf(p, "%63s %63s %s %s %s %s %s %63s %s %s %s %s %s %s", 
                        action, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
-                       v6pref, &pref_len, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm ) == 14)
+                       v6pref, preflen, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm ) == 14)
             {
                 pString = (char*)CosaUtilGetFullPathNameByKeyword
                     (
@@ -7940,17 +7941,12 @@ dhcpv6c_dbg_thrd(void * in)
 				sleep(5);
 			  }
 		     	
+                    remove_single_quote(v6addr);
                     /*for now we only support one address, one prefix notify, if need multiple addr/prefix, must modify dibbler-client code*/
                     if (strncmp(v6addr, "::", 2) != 0) 
-                    {
-                        if (strncmp(v6addr, "''", 2) == 0)
-                        {
-                            commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME, "");
-                        }
-                        else
-                        {
-                             commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME,       v6addr);
-                        }
+                    {                      
+			commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME,       v6addr);
+                      
 						if (iana_iaid[0] != '\0') {
 							remove_single_quote(iana_iaid);
                         commonSyseventSet(COSA_DML_DHCPV6C_ADDR_IAID_SYSEVENT_NAME,  iana_iaid);
@@ -7978,7 +7974,9 @@ dhcpv6c_dbg_thrd(void * in)
                             g_COSARepopulateTable(g_pDslhDmlAgent, objName);
                         }
                     }
-                    
+		    remove_single_quote(v6pref);
+                    remove_single_quote(preflen);
+                    pref_len=atoi(preflen);
                     if (strncmp(v6pref, "::", 2) != 0)
                     {
 			memset(v6Tpref,0,sizeof(v6Tpref));
