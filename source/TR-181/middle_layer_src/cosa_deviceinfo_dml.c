@@ -151,7 +151,7 @@ BOOL CMRt_Isltn_Enable(BOOL status);
     }                                                                                                                                             \
     if(found == 1)                                                                                                                                \
     {                                                                                                                                             \
-        CcspTraceWarning(("Do NOT allow override of param: %s bsUpdate = %d, requestor = %s\n", paramName, g_currentBsUpdate, requestorStr));     \
+        CcspTraceWarning(("Do NOT allow override of param: %s bsUpdate = %lu, requestor = %s\n", paramName, g_currentBsUpdate, requestorStr));     \
         return FALSE;                                                                                                                             \
     }                                                                                                                                             \
 })
@@ -168,7 +168,7 @@ BOOL CMRt_Isltn_Enable(BOOL status);
       ERR_CHK(rc);                                                                                                                                 \
       if((rc == EOK) && (!ind))                                                                                                                    \
       {                                                                                                                                            \
-        CcspTraceWarning(("Do NOT allow override of param: %s requestor = %d updateSource = %s\n", paramName, g_currentWriteEntity, UpdateSource));  \
+        CcspTraceWarning(("Do NOT allow override of param: %s requestor = %lu updateSource = %s\n", paramName, g_currentWriteEntity, UpdateSource));  \
         return FALSE;                                                                                                                              \
       }                                                                                                                                            \
    }                                                                                                                                               \
@@ -308,7 +308,7 @@ static unsigned long long GetAvailableSpace_tmp()
     if(statvfs("/tmp", &sfs) != -1)
     {
         result = (unsigned long long)sfs.f_bsize * sfs.f_bavail;
-        CcspTraceInfo(("%lu space left in tmp\n", result));
+        CcspTraceInfo(("%llu space left in tmp\n", result));
     }
     return result;
 }
@@ -1789,14 +1789,14 @@ AccountInfo_SetParamStringValue
                     CcspTraceInfo(("[%s] Account ID is alphanumeric...!!", __FUNCTION__));
                     if (syscfg_set(NULL, "AccountID", pString) != 0)
                     {
-                        CcspTraceError(("syscfg_set failed for AccountID \n", __FUNCTION__));
+                        CcspTraceError(("%s:syscfg_set failed for AccountID \n", __FUNCTION__));
                         bReturnValue = FALSE;
                     }
                     else
                     {
                         if (syscfg_commit() != 0)
                         {
-                             CcspTraceError(("syscfg_commit failed for AccountID \n", __FUNCTION__));
+                             CcspTraceError(("%s:syscfg_commit failed for AccountID \n", __FUNCTION__));
                              bReturnValue = FALSE;
                         }
                         bReturnValue = TRUE;
@@ -3854,7 +3854,7 @@ KickstartTable_GetEntry
     CcspTraceInfo(("KickstartTable_GetEntry: nIndex = %lu, *pInsNumber = %lu\n", nIndex, *pInsNumber));
     if( pKickstart )
     {
-        CcspTraceInfo(("KickstartTable_GetEntry: TableNumberOfEntries = %lu\n", pKickstart->TableNumberOfEntries));
+        CcspTraceInfo(("KickstartTable_GetEntry: TableNumberOfEntries = %u\n", pKickstart->TableNumberOfEntries));
         pKickstartTable = pKickstart->KickstartTable;
         CcspTraceInfo(("KickstartTable_GetEntry: pKickstartTable = 0x%lx\n", (long unsigned)pKickstartTable));
 
@@ -15858,14 +15858,14 @@ CDLDM_SetParamStringValue
     {
            if (syscfg_set(NULL, "CDLModuleUrl", pString) != 0)
            {
-                  CcspTraceError(("syscfg_set failed for CDLModuleUrl \n", __FUNCTION__));
+                  CcspTraceError(("%s:syscfg_set failed for CDLModuleUrl \n", __FUNCTION__));
                   bReturnValue = FALSE;
            }
            else
            {
                   if (syscfg_commit() != 0)
                   {
-                        CcspTraceError(("syscfg_commit failed for CDLModuleUrl \n", __FUNCTION__));
+                        CcspTraceError(("%s:syscfg_commit failed for CDLModuleUrl \n", __FUNCTION__));
                         bReturnValue = FALSE;
                   }
                   bReturnValue = TRUE;
@@ -16822,7 +16822,7 @@ Footer_SetParamStringValue
     if((ParamName == NULL) || (pString == NULL))
         return FALSE;
 
-    CcspTraceWarning(("%s: writeID=%d, bsUpdate=%d\n", __FUNCTION__, g_currentWriteEntity, g_currentBsUpdate));
+    CcspTraceWarning(("%s: writeID=%lu, bsUpdate=%lu\n", __FUNCTION__, g_currentWriteEntity, g_currentBsUpdate));
     IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
     if(AnscValidateInputString(pString) != TRUE)
         return FALSE;

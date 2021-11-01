@@ -4128,7 +4128,7 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
                    }
                    else
                    {
-                       CcspTraceError(("CcspBaseIf_getParameterValues failed to get MoCA status return vaule = %d\n",ret));
+                       CcspTraceError(("CcspBaseIf_getParameterValues failed to get MoCA status return vaule = %lu\n",ret));
 		   }
 		   if(valMoCAstatus){
 			free_parameterValStruct_t (bus_handle, nval, valMoCAstatus);

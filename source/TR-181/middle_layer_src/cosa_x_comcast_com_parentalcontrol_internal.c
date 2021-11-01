@@ -134,7 +134,7 @@ CosaParentalControlInitialize
 
     /* ManagedSites.BlockedURL.{i}. */
     ulBlkUrlCnt = CosaDmlBlkURL_GetNumberOfEntries();
-	AnscTraceWarning(("%s -- ulBlkUrlCnt = %d ...\n", __FUNCTION__,ulBlkUrlCnt));
+	AnscTraceWarning(("%s -- ulBlkUrlCnt = %lu ...\n", __FUNCTION__,ulBlkUrlCnt));
 	#ifdef UTC_ENABLE
 	
 	if(bMigration == TRUE)
@@ -145,7 +145,7 @@ CosaParentalControlInitialize
 		{
 			AnscTraceWarning(("%s -- Success CosaDmlBlkURL_Migration ...\n", __FUNCTION__));
 		    ulBlkUrlCnt = CosaDmlBlkURL_GetNumberOfEntries();
-			AnscTraceWarning(("%s -- ulBlkUrlCnt = %d ...\n", __FUNCTION__,ulBlkUrlCnt));
+			AnscTraceWarning(("%s -- ulBlkUrlCnt = %lu ...\n", __FUNCTION__,ulBlkUrlCnt));
 		}
 		else
 		{

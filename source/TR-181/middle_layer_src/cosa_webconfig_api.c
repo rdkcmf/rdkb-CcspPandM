@@ -55,7 +55,7 @@ int  get_base64_decodedbuffer(char *pString, char **buffer, int *size)
         return -1;
 
     *size = b64_decode( (const uint8_t*)pString, strlen(pString), (uint8_t *)decodeMsg );
-    CcspTraceWarning(("base64 decoded data contains %d bytes\n",size));
+    CcspTraceWarning(("base64 decoded data contains %d bytes\n",*size));
 
     getCurrentTime(endPtr);
     CcspTraceWarning(("Base64 decode Elapsed time : %ld ms\n", timeValDiff(startPtr, endPtr)));
@@ -706,7 +706,7 @@ pErr Process_PF_WebConfigRequest(void *Data)
     	portmappingdoc_t *rpm = (portmappingdoc_t *) Data ;
 
 
-    	CcspTraceWarning(("rpm->entries_count is %ld\n", rpm->entries_count));
+        CcspTraceWarning(("rpm->entries_count is %d\n", rpm->entries_count));
     	CcspTraceWarning(("Portmap configurartion recieved\n"));
 
 

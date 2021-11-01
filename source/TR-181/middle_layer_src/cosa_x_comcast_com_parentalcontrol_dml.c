@@ -401,11 +401,11 @@ PcBlkURL_GetEntryCount
     COSA_DATAMODEL_PARENTALCONTROL  *pParCtrl = (COSA_DATAMODEL_PARENTALCONTROL*)g_pCosaBEManager->hParentalControl;
     ULONG                           ulCount;
 
-    AnscTraceWarning(("%s -- pParCtrl = 0x%lX\n", __FUNCTION__, pParCtrl));
+    AnscTraceWarning(("%s -- pParCtrl = 0x%p\n", __FUNCTION__, pParCtrl));
 
     ulCount = AnscSListQueryDepth(&pParCtrl->BlkUrlList);
 
-    AnscTraceWarning(("%s -- ulCount = %d...\n", __FUNCTION__, ulCount));
+    AnscTraceWarning(("%s -- ulCount = %lu...\n", __FUNCTION__, ulCount));
 
     return ulCount;
 }
@@ -423,7 +423,7 @@ PcBlkURL_GetEntry
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry = NULL;
 
-    AnscTraceWarning(("%s -- nIndex = %d...\n", __FUNCTION__, nIndex));
+    AnscTraceWarning(("%s -- nIndex = %lu...\n", __FUNCTION__, nIndex));
 
     pSLinkEntry = AnscQueueGetEntryByIndex((ANSC_HANDLE)&pParCtrl->BlkUrlList, nIndex);
     

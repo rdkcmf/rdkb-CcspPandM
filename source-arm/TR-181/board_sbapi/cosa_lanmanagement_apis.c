@@ -297,7 +297,7 @@ ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Ula(char *ula_prefix, char *ula) {
 
     if ((ula_prefix == NULL) || (ula == NULL))
     {
-        AnscTraceWarning(("NULL value seen for ula_prefix or ula \n", __FUNCTION__));
+        AnscTraceWarning(("%s:NULL value seen for ula_prefix or ula \n", __FUNCTION__));
         return ANSC_STATUS_FAILURE;
     }
 

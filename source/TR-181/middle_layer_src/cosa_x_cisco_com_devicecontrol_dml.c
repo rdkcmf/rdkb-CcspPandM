@@ -445,7 +445,7 @@ X_CISCO_COM_DeviceControl_GetParamUlongValue
         else {
             *puLong = NONE_MODE;
         }
-        CcspTraceWarning(("-----DeviceControl_GetParamUlongValue, puLong:%u\n", *puLong));
+        CcspTraceWarning(("-----DeviceControl_GetParamUlongValue, puLong:%lu\n", *puLong));
         return TRUE;
     }
 
@@ -2117,7 +2117,7 @@ LanMngm_SetParamUlongValue
         }*/
 
         pLanMngm->LanMode = uValuepUlong;
-        CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Setting new LanMode value (bridge-dhcp(1),bridge-static(2),router(3),full-bridge-static(4)) as (%d)...\n",
+        CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Setting new LanMode value (bridge-dhcp(1),bridge-static(2),router(3),full-bridge-static(4)) as (%lu)...\n",
         		uValuepUlong ));	
         return TRUE;
     }

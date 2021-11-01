@@ -1359,7 +1359,7 @@ ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
        /*CID: 55473 Unchecked return value*/
 	 if(!Utopia_Init(&ctx))
             return ANSC_STATUS_FAILURE;
-     AnscTraceWarning(("<<< %s -- Call GetBlkURLByIndex %d ...\n", __FUNCTION__,index));
+     AnscTraceWarning(("<<< %s -- Call GetBlkURLByIndex %lu ...\n", __FUNCTION__,index));
 	 if(ChkDelIndex(index))
 	 {
 		 Utopia_Free(&ctx, !rc);
@@ -1377,7 +1377,7 @@ ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
 		 if(ChkDelIndex(TIndex))
 		  continue;
 	 
-	 AnscTraceWarning(("<<< %s --  TIndex %d ...\n", __FUNCTION__,TIndex));
+	 AnscTraceWarning(("<<< %s --  TIndex %lu ...\n", __FUNCTION__,TIndex));
 	 
 		 Utopia_GetBlkURLByIndex(&ctx, TIndex, &tmp);
 		 if(!strcmp(tmp.site,blkurl.site))
@@ -1458,7 +1458,7 @@ ANSC_STATUS CosaDmlBlkURL_RollbackUTCtoLocal()
 	 }
 	 else
 	 {
-		AnscTraceWarning(("%s --else nCount = %d index = %d...\n", __FUNCTION__, nCount,index));
+		AnscTraceWarning(("%s --else nCount = %lu index = %lu...\n", __FUNCTION__, nCount,index));
 	 }
      Utopia_Free(&ctx, !rc);
      if (rc != 0)

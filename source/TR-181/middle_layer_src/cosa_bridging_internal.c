@@ -482,7 +482,7 @@ CosaBridgingInitialize
                 {  
                     AnscFreeMemory(pPort);
                     returnStatus = ANSC_STATUS_RESOURCES;
-                    AnscTraceFlow(("<$HL> %s bridge instance:%d cannot allocate any memory for pCosaContext2\n",__FUNCTION__,
+                    AnscTraceFlow(("<$HL> %s bridge instance:%lu cannot allocate any memory for pCosaContext2\n",__FUNCTION__,
                         pDmlBridge->Cfg.InstanceNumber));
                     AnscFreeMemory(pPort);
                     goto EXIT;
@@ -623,7 +623,7 @@ CosaBridgingInitialize
                 if ( !pCosaContext3 )
                 {  
                     returnStatus = ANSC_STATUS_RESOURCES;
-                    AnscTraceFlow(("<$HL> %s bridge instance:%d cannot allocate any memory for pCosaContext3\n",__FUNCTION__,
+                    AnscTraceFlow(("<$HL> %s bridge instance:%lu cannot allocate any memory for pCosaContext3\n",__FUNCTION__,
                         pDmlBridge->Cfg.InstanceNumber));
                     AnscFreeMemory(pVLAN);
                     goto EXIT;

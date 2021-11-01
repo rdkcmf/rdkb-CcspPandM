@@ -144,7 +144,7 @@ CosaDmlIpIfMlanFindByInstNum
         }
     }
 
-    AnscTraceWarning(("%s -- failed to find %d!\n", __FUNCTION__, ulInstNum));
+    AnscTraceWarning(("%s -- failed to find %lu!\n", __FUNCTION__, ulInstNum));
 
     return  NULL;
 }
@@ -191,7 +191,7 @@ CosaDmlIpIfMlanLoadPsm
 
         if ( !pIpIf )
         {
-            AnscTraceWarning(("%s -- insufficient resources, IpIf instance %d\n", __FUNCTION__, ulIndex));
+            AnscTraceWarning(("%s -- insufficient resources, IpIf instance %lu\n", __FUNCTION__, ulIndex));
             return  ANSC_STATUS_RESOURCES;
         }
         else
@@ -1248,7 +1248,7 @@ CosaDmlIpIfMlanSetValues
     {
         AnscTraceWarning
             ((
-                "%s -- cannot find the interface, index = %d, InstanceNumber = %d, alias = ''\n",
+                "%s -- cannot find the interface, index = %lu, InstanceNumber = %lu, alias = '%s'\n",
                 __FUNCTION__,
                 ulIndex,
                 ulInstanceNumber,
@@ -1286,7 +1286,7 @@ CosaDmlIpIfMlanAddEntry
 
         if ( !pIpIf )
         {
-            AnscTraceWarning(("%s -- insufficient resources, IpIf instance %d\n", __FUNCTION__, pEntry->Cfg.InstanceNumber));
+            AnscTraceWarning(("%s -- insufficient resources, IpIf instance %lu\n", __FUNCTION__, pEntry->Cfg.InstanceNumber));
             return  ANSC_STATUS_RESOURCES;
         }
         else
@@ -1993,7 +1993,7 @@ CosaDmlIpIfMlanSetV4Addr
 
     AnscTraceFlow
         ((
-            "%s -- instance number %d, address %u.%u.%u.%u, subnet mask %u.%u.%u.%u\n",
+            "%s -- instance number %lu, address %u.%u.%u.%u, subnet mask %u.%u.%u.%u\n",
             __FUNCTION__,
             ulIpIfInstanceNumber,
             pEntry->IPAddress.Dot[0], pEntry->IPAddress.Dot[1],

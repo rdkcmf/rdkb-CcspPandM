@@ -1290,7 +1290,7 @@ CosaDmlRipIfGetCfg
     AnscTraceWarning(("pEntry->X_CISCO_COM_ReceiveVersion :%d\n", pEntry->X_CISCO_COM_ReceiveVersion));
     AnscTraceWarning(("pEntry->X_CISCO_COM_SendVersion :%d\n",pEntry->X_CISCO_COM_SendVersion));
     AnscTraceWarning(("pEntry->Status :%d\n", pEntry->Status));
-    AnscTraceWarning(("pEntry->X_CISCO_COM_Neighbor :0X%x\n", pEntry->X_CISCO_COM_Neighbor));
+    AnscTraceWarning(("pEntry->X_CISCO_COM_Neighbor :0X%lx\n", pEntry->X_CISCO_COM_Neighbor));
 
     AnscTraceWarning(("pEntry->X_CISCO_COM_AuthenticationType :%lu\n", pEntry->X_CISCO_COM_AuthenticationType));    
     AnscTraceWarning(("pEntry->X_CISCO_COM_Md5KeyID :%lu\n", pEntry->X_CISCO_COM_Md5KeyID));
@@ -1463,7 +1463,7 @@ CosaDmlRipIfSetCfg
     }
     else
     {
-        AnscTraceWarning(("This RIP interface is wrong:%d.", pEntry->InstanceNumber));
+        AnscTraceWarning(("This RIP interface is wrong:%lu.", pEntry->InstanceNumber));
     }
 
 #if 1
@@ -1473,7 +1473,7 @@ CosaDmlRipIfSetCfg
     
     AnscTraceWarning(("pConf->If1SendEnable :%s\n", pConf->If1SendEnable?"TRUE":"FALSE"));
     AnscTraceWarning(("pConf->If1ReceiveEnable :%s\n", pConf->If1ReceiveEnable?"TRUE":"FALSE"));
-    AnscTraceWarning(("pConf->If1Neighbor :0X%x\n", pConf->If1Neighbor));
+    AnscTraceWarning(("pConf->If1Neighbor :0X%lx\n", pConf->If1Neighbor));
     AnscTraceWarning(("pConf->If1AuthenticateType :%lu\n", pConf->If1AuthenticateType));
     AnscTraceWarning(("pConf->If1KeyID :%lu\n", pConf->If1KeyID));
     AnscTraceWarning(("pConf->If1Md5KeyValue :%s\n", pConf->If1Md5KeyValue));
@@ -3753,7 +3753,7 @@ CosaDmlRoutingGetNumberOfV4Entries
             
             if (returnStatus == 1)
             {
-                CcspTraceWarning(("returnStatus %d Instance %d, \tAlias '%s'\n", returnStatus, uIndex+1, sys_buf)); 
+                CcspTraceWarning(("returnStatus %lu Instance %lu, \tAlias '%s'\n", returnStatus, uIndex+1, sys_buf));
                 safec_rc = strcpy_s(Router_Alias[r_count].Alias,sizeof(Router_Alias[r_count].Alias), sys_buf);
                 ERR_CHK(safec_rc);
 
@@ -3880,7 +3880,7 @@ CosaDmlRoutingGetV4Entry
 
     safec_rc = strcpy_s(pEntry->Interface,sizeof(pEntry->Interface), sroute[ulIndex].dest_intf );
     ERR_CHK(safec_rc);
-    CcspTraceWarning(("-CosaDmlRoutingGetV4Entry %d interface is %s-\n", ulIndex, pEntry->Interface));
+    CcspTraceWarning(("-CosaDmlRoutingGetV4Entry %lu interface is %s-\n", ulIndex, pEntry->Interface));
 
     safec_rc = sprintf_s(buf, sizeof(buf), "%s,%s",
             sroute[ulIndex].dest_lan_ip,
@@ -3890,7 +3890,7 @@ CosaDmlRoutingGetV4Entry
     {
        ERR_CHK(safec_rc);
     }
-    CcspTraceWarning(("-CosaDmlRoutingGetV4Entry %d name is %s-\n", ulIndex, buf));
+    CcspTraceWarning(("-CosaDmlRoutingGetV4Entry %lu name is %s-\n", ulIndex, buf));
 
     for(index = 0; index < Config_Num; index++)
     {
@@ -3969,7 +3969,7 @@ CosaDmlRoutingSetV4EntryValues
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;
     
-    CcspTraceWarning(("CosaDmlRoutingSetV4EntryValues %d entry,  instance number %d, alias %s", 
+    CcspTraceWarning(("CosaDmlRoutingSetV4EntryValues %lu entry,  instance number %lu, alias %s", 
                 ulIndex, ulInstanceNumber, pAlias));
     snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_alias", ulInstanceNumber );
     Utopia_RawSet(&ctx, NULL, cmd, pAlias);
@@ -4235,7 +4235,7 @@ CosaDmlRoutingDelV4Entry
     if (pEntry->InstanceNumber == 0)
         return ANSC_STATUS_FAILURE;
 
-    CcspTraceWarning(("CosaDmlRoutingDelV4Entry entry, %d\n", pEntry->InstanceNumber));
+    CcspTraceWarning(("CosaDmlRoutingDelV4Entry entry, %lu\n", pEntry->InstanceNumber));
     /* Initialize a Utopia Context */
     if(!Utopia_Init(&ctx))
         return ANSC_STATUS_FAILURE;

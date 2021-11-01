@@ -219,7 +219,7 @@ CosaIPv6rdInitialize(
         }
         else
         {
-            CcspTraceWarning(("%s: Should not go here!!\n"));
+            CcspTraceWarning(("%s: Should not go here!!\n", __func__));
             pEntry->InstanceNumber = pMyObject->ulIfNextInstance;
 
             pMyObject->ulIfNextInstance++;

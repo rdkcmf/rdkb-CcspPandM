@@ -338,6 +338,7 @@ CosaBackEndManagerInitialize
     AnscTraceWarning(("  CosaNeighdiscCreate done!\n"));
     pMyObject->hMld           = (ANSC_HANDLE)CosaMldCreate();
     AnscTraceWarning(("  CosaMldCreate done!\n"));
+
 #ifdef INTEL_GRE_HOTSPOT
     pMyObject->hIGRE           = (ANSC_HANDLE)CosaGRECreate();
     AnscTraceWarning(("  CosaIGRECreate done!\n"));
@@ -350,7 +351,7 @@ CosaBackEndManagerInitialize
     */
 
     returnStatus = CosaDmlMlanInit((ANSC_HANDLE)pMyObject, &pMyObject->hMultiLan);
-    AnscTraceWarning(("  CosaDmlMlanInit -- status %d!\n", returnStatus));
+    AnscTraceWarning(("  CosaDmlMlanInit -- status %lu!\n", returnStatus));
 
 #if !defined(INTEL_PUMA7) && !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
     printf("pnm-status is renamed to bring-lan and set in PSM for XB3\n");
@@ -383,7 +384,7 @@ if(id != 0)
     AnscTraceWarning(("  CosaUpnpCreate done!\n"));
 
     pMyObject->hParentalControl = (ANSC_HANDLE)TR181_ParentalControlCreate();
-    AnscTraceWarning(("  CosaParentalControlCreate done - hParentalControl = 0x%X!\n", pMyObject->hParentalControl));
+    AnscTraceWarning(("  CosaParentalControlCreate done - hParentalControl = 0x%p!\n", pMyObject->hParentalControl));
 #endif
     pMyObject->hRLog          = (ANSC_HANDLE)CosaRLogCreate();
     AnscTraceWarning(("  CosaRLogCreate done!\n"));

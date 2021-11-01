@@ -1095,7 +1095,7 @@ Server1_Synchronize
 
             CcspTraceInfo
                 ((
-                    "Server1_Synchronize -- new entry %s with instance number %d.\n",
+                    "Server1_Synchronize -- new entry %s with instance number %lu.\n",
                     pDnsServer2->DNSServer,
                     pDnsServer2->InstanceNumber
                 ));
@@ -2777,7 +2777,7 @@ Forwarding_Synchronize
 
             CcspTraceInfo
                 ((
-                    "Forwarding_Synchronize -- new entry %d.%d.%d.%d with instance number %d.\n",
+                    "Forwarding_Synchronize -- new entry %d.%d.%d.%d with instance number %lu.\n",
                     pForward2->DNSServer.Dot[0], pForward2->DNSServer.Dot[1],
                     pForward2->DNSServer.Dot[2], pForward2->DNSServer.Dot[3],
                     pForward2->InstanceNumber

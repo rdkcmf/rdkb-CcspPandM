@@ -331,7 +331,7 @@ CosaDdnsInitialize
 
                 if ( returnStatus != ANSC_STATUS_SUCCESS )
                 {
-                    CcspTraceWarning(("!!! CosaDmlDdnsServiceSetValues index: %d-- fail !!!\n", ulIndex));
+                    CcspTraceWarning(("!!! CosaDmlDdnsServiceSetValues index: %lu-- fail !!!\n", ulIndex));
                     
                     AnscFreeMemory(pDdnsService);
                     AnscFreeMemory(pCosaContext);

@@ -5746,7 +5746,7 @@ Client4_Synchronize
 
             if ( returnStatus )
             {
-                CcspTraceWarning(( "Client4_Synchronize -- CosaDmlDhcpv6sGetIPv6Address() error %d.\n", returnStatus));
+                CcspTraceWarning(( "Client4_Synchronize -- CosaDmlDhcpv6sGetIPv6Address() error %lu.\n", returnStatus));
             }
             
             returnStatus = CosaDmlDhcpv6sGetIPv6Prefix
@@ -5760,7 +5760,7 @@ Client4_Synchronize
             
             if ( returnStatus )
             {
-                CcspTraceWarning(( "Client4_Synchronize -- CosaDmlDhcpv6sGetIPv6Prefix() error %d.\n", returnStatus));
+                CcspTraceWarning(( "Client4_Synchronize -- CosaDmlDhcpv6sGetIPv6Prefix() error %lu.\n", returnStatus));
             }
 
             returnStatus = CosaDmlDhcpv6sGetIPv6Option
@@ -5774,7 +5774,7 @@ Client4_Synchronize
             
             if ( returnStatus )
             {
-                CcspTraceWarning(( "Client4_Synchronize -- CosaDmlDhcpv6sGetIPv6Option() error %d.\n", returnStatus));
+                CcspTraceWarning(( "Client4_Synchronize -- CosaDmlDhcpv6sGetIPv6Option() error %lu.\n", returnStatus));
             }
             
         }

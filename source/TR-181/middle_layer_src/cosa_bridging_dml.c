@@ -1448,7 +1448,7 @@ Port_GetEntryCount
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_BRG_FULL_ALL          pDmlBridge   = (PCOSA_DML_BRG_FULL_ALL   )pCosaContext->hContext;
     //$HL 4/27/2013
-    AnscTraceFlow(("<HL >%s bridge instance = %d get num of port entries=%d\n", 
+    AnscTraceFlow(("<HL >%s bridge instance = %lu get num of port entries=%d\n",
            __FUNCTION__,pDmlBridge->Cfg.InstanceNumber, AnscSListQueryDepth(&pDmlBridge->PortList)));
     return AnscSListQueryDepth(&pDmlBridge->PortList);
 }
@@ -5226,12 +5226,12 @@ VLANPort_SetParamStringValue
                  brInsNum > 0 && vlanInsNum > 0)
         {
             pVLANPort->Cfg.VLANInsNum = vlanInsNum;
-            AnscTraceFlow(("%s: %s='%s' success %u %u\n", __func__, ParamName, pString, brInsNum, vlanInsNum));
+            AnscTraceFlow(("%s: %s='%s' success %lu %lu\n", __func__, ParamName, pString, brInsNum, vlanInsNum));
             return TRUE;
         }
         else // invalid format
         {
-            AnscTraceFlow(("%s: %s='%s' error %u %u\n", __func__, ParamName, pString, brInsNum, vlanInsNum));
+            AnscTraceFlow(("%s: %s='%s' error %lu %lu\n", __func__, ParamName, pString, brInsNum, vlanInsNum));
             return FALSE;
         }
     }
@@ -5249,12 +5249,12 @@ VLANPort_SetParamStringValue
                  brInsNum > 0 && portInsNum > 0)
         {
             pVLANPort->Cfg.PortInsNum = portInsNum;
-            AnscTraceFlow(("%s: %s='%s' success %u %u\n", __func__, ParamName, pString, brInsNum, portInsNum));
+            AnscTraceFlow(("%s: %s='%s' success %lu %lu\n", __func__, ParamName, pString, brInsNum, portInsNum));
             return TRUE;
         }
         else // invalid format
         {
-            AnscTraceFlow(("%s: %s='%s' error %u %u\n", __func__, ParamName, pString, brInsNum, portInsNum));
+            AnscTraceFlow(("%s: %s='%s' error %lu %lu\n", __func__, ParamName, pString, brInsNum, portInsNum));
             return FALSE;
         }
     }

@@ -1729,7 +1729,7 @@ CosaDmlNatGetDmz
 
     if ( rc != SUCCESS)
     {
-        CcspTraceWarning(("Utopia_GetDMZSettings failed rc %d in %s\n", rc, __FUNCTION__));
+        CcspTraceWarning(("Utopia_GetDMZSettings failed rc %lu in %s\n", rc, __FUNCTION__));
         AnscFreeMemory(pDmz);
         Utopia_Free(&Ctx, 0);
         return ANSC_STATUS_FAILURE;
@@ -1877,7 +1877,7 @@ CosaDmlNatSetDmz
 
     if ( rc != SUCCESS)
     {
-        CcspTraceWarning(("Utopia_SetDMZSettings failed rc %d in %s\n", rc, __FUNCTION__));
+        CcspTraceWarning(("Utopia_SetDMZSettings failed rc %lu in %s\n", rc, __FUNCTION__));
 
         returnStatus = ANSC_STATUS_FAILURE;
     }
@@ -2520,7 +2520,7 @@ CosaDmlNatGetPortMapping
     rc = Utopia_GetDynPortMappingCount(&PortFwdDynCount);
     if(rc != SUCCESS){
         PortFwdDynCount = 0;
-        CcspTraceWarning(("Utopia_GetDynPortMappingCount failed rc %d in %s\n", rc, __FUNCTION__));
+        CcspTraceWarning(("Utopia_GetDynPortMappingCount failed rc %lu in %s\n", rc, __FUNCTION__));
     }
      else
      {
@@ -2683,7 +2683,7 @@ CosaDmlNatGetPortMappings
     rc = Utopia_GetPortForwardingRange(&Ctx, &PortFwdRangeCount, &rangeInfo);
     if ( rc != SUCCESS )
     {
-        CcspTraceWarning(("Utopia_GetPortForwardingRange failed rc %d in %s\n", rc, __FUNCTION__));
+        CcspTraceWarning(("Utopia_GetPortForwardingRange failed rc %lu in %s\n", rc, __FUNCTION__));
         PortFwdRangeCount = 0;
         rangeInfo = NULL;
     }
@@ -2691,7 +2691,7 @@ CosaDmlNatGetPortMappings
     rc = Utopia_GetPortForwarding(&Ctx, &PortFwdSingleCount, &singleInfo);
     if ( rc != SUCCESS )
     {
-        CcspTraceWarning(("Utopia_GetPortForwarding failed rc %d in %s\n", rc, __FUNCTION__));
+        CcspTraceWarning(("Utopia_GetPortForwarding failed rc %lu in %s\n", rc, __FUNCTION__));
         PortFwdSingleCount = 0;
         singleInfo = NULL;
     }
@@ -2700,7 +2700,7 @@ CosaDmlNatGetPortMappings
     rc = Utopia_GetDynPortMappingCount(&PortFwdDynCount);
     if(rc != SUCCESS){
         PortFwdDynCount = 0;
-        CcspTraceWarning(("Utopia_GetDynPortMappingCount failed rc %d in %s\n", rc, __FUNCTION__));
+        CcspTraceWarning(("Utopia_GetDynPortMappingCount failed rc %lu in %s\n", rc, __FUNCTION__));
     }
      else
      {
@@ -2731,7 +2731,7 @@ CosaDmlNatGetPortMappings
     pNatPMapping = AnscAllocateMemory(sizeof(COSA_DML_NAT_PMAPPING)*(allCount));
     if(pNatPMapping == NULL)
     {
-        CcspTraceWarning((" AnscAllocateMemory failed rc %d in %s\n", rc, __FUNCTION__));
+        CcspTraceWarning((" AnscAllocateMemory failed rc %lu in %s\n", rc, __FUNCTION__));
         /*RDKB,CID-33473, CID-32920; free unused resource before return*/
         if(rangeInfo) 
             free(rangeInfo);
@@ -3312,7 +3312,7 @@ CosaDmlNatDelPortMapping
         }
         else
         {
-            CcspTraceWarning(("%s Error DelPortForwardingByRuleId rc %d\n", __FUNCTION__, rc));
+            CcspTraceWarning(("%s Error DelPortForwardingByRuleId rc %lu\n", __FUNCTION__, rc));
             _sent_syslog_pm_u("DELETE FAILED", singleInfo.protocol, singleInfo.external_port, 0, \
                     singleInfo.internal_port, singleInfo.dest_ip, singleInfo.enabled);
             Utopia_Free(&Ctx, 0);
@@ -3346,7 +3346,7 @@ CosaDmlNatDelPortMapping
         }
         else
         {
-            CcspTraceWarning(("%s Error DelPortForwardingRangeByRuleId rc %d\n", __FUNCTION__, rc));
+            CcspTraceWarning(("%s Error DelPortForwardingRangeByRuleId rc %lu\n", __FUNCTION__, rc));
             _sent_syslog_pm_u("DELETE FAILED", rangeInfo.protocol, rangeInfo.start_port, rangeInfo.end_port,\
                     rangeInfo.internal_port, rangeInfo.dest_ip, rangeInfo.enabled);
             Utopia_Free(&Ctx, 0);
@@ -3510,7 +3510,7 @@ CosaDmlNatSetPortMapping
     {
         rc = Utopia_DelPortForwardingRangeByRuleId(&Ctx, pEntry->InstanceNumber);
         if(rc != SUCCESS){ 
-            CcspTraceWarning((" Utopia_DelPortForwardingRangeByRuleId failed rc %d in %s\n", rc, __FUNCTION__));
+            CcspTraceWarning((" Utopia_DelPortForwardingRangeByRuleId failed rc %lu in %s\n", rc, __FUNCTION__));
             _sent_syslog_pm_sb("EDIT FAILED", pEntry->Protocol, pEntry->ExternalPort, pEntry->ExternalPortEndRange, pEntry->InternalPort, pEntry->InternalClient.Dot,pEntry->bEnabled);
             Utopia_Free(&Ctx, 0);
             return ANSC_STATUS_FAILURE;
@@ -3543,7 +3543,7 @@ CosaDmlNatSetPortMapping
     {
        rc = Utopia_DelPortForwardingByRuleId(&Ctx, pEntry->InstanceNumber);
        if(rc != SUCCESS){
-            CcspTraceWarning((" Utopia_DelPortForwardingByRuleId failed rc %d in %s\n", rc, __FUNCTION__));
+            CcspTraceWarning((" Utopia_DelPortForwardingByRuleId failed rc %lu in %s\n", rc, __FUNCTION__));
             _sent_syslog_pm_sb("EDIT FAILED", pEntry->Protocol, pEntry->ExternalPort, pEntry->ExternalPortEndRange, pEntry->InternalPort, pEntry->InternalClient.Dot,pEntry->bEnabled);
             Utopia_Free(&Ctx, 0);
             return ANSC_STATUS_FAILURE;
@@ -4285,7 +4285,7 @@ CosaDmlNatAddPortTrigger
 
     if ( rc != SUCCESS )
     {
-        CcspTraceWarning(("CosaDmlNatAddPortTrigger failed rc %d in %s\n", rc, __FUNCTION__));
+        CcspTraceWarning(("CosaDmlNatAddPortTrigger failed rc %lu in %s\n", rc, __FUNCTION__));
         Utopia_Free(&Ctx, 0);
         _sent_syslog_pt_sb("ADD FAILED", pEntry->TriggerProtocol, pEntry->TriggerPortStart, pEntry->TriggerPortEnd, pEntry->ForwardPortStart, pEntry->ForwardPortEnd, pEntry->bEnabled);
         returnStatus = ANSC_STATUS_FAILURE;

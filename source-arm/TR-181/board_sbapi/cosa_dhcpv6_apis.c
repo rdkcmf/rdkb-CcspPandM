@@ -1709,7 +1709,7 @@ void getpool_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG table1Inde
 #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
     GETS_FROM_UTOPIA(uniqueName, table1Name, table1Index, "", 0, "IANAInterfacePrefixes", pEntry->Info.IANAPrefixes)
  #if defined(_BCI_FEATURE_REQ)
-    CcspTraceInfo(("%s table1Name: %s, table1Index: %d, get IANAInterfacePrefixes: %s\n",
+    CcspTraceInfo(("%s table1Name: %s, table1Index: %lu, get IANAInterfacePrefixes: %s\n",
                   __func__, table1Name, table1Index, pEntry->Info.IANAPrefixes));
 
     if ( _ansc_strcmp((const char*)table1Name, "pool") == 0 && table1Index == 0 &&
@@ -3935,7 +3935,7 @@ static int divide_ipv6_prefix()
 
     if ((enabled_iface_num % iface_prefix_num) != 0 ) {
         used_sub_prefix_num += 1;
-        CcspTraceInfo(("[%s] added one to used_sub_prefix_num: %d\n",
+        CcspTraceInfo(("[%s] added one to used_sub_prefix_num: %lu\n",
                        __FUNCTION__, used_sub_prefix_num ));
     }
     if (used_sub_prefix_num < sub_prefix_num) {
@@ -3974,7 +3974,7 @@ static int get_pd_pool(pd_pool_t *pool)
       remove_single_quote(evt_val);
       rc = STRCPY_S_NOCLOBBER(pool->start, sizeof(pool->start), evt_val);
       ERR_CHK(rc);
-      CcspTraceInfo(("[%s] pool->start: %d\n", __FUNCTION__, pool->start));
+      CcspTraceInfo(("[%s] pool->start: %s\n", __FUNCTION__, pool->start));
     }
     else  {
       CcspTraceWarning(("[%s] sysevent_get for ipv6_subprefix-start is NULL\n",  __FUNCTION__));
@@ -3987,7 +3987,7 @@ static int get_pd_pool(pd_pool_t *pool)
       remove_single_quote(evt_val);
       rc = STRCPY_S_NOCLOBBER(pool->end, sizeof(pool->end), evt_val);
       ERR_CHK(rc);
-      CcspTraceInfo(("[%s] pool->end: %d\n", __FUNCTION__, pool->end));
+      CcspTraceInfo(("[%s] pool->end: %s\n", __FUNCTION__, pool->end));
     }
     else {
       CcspTraceWarning(("[%s] sysevent_get for ipv6_subprefix-end is NULL\n",  __FUNCTION__));
@@ -5000,7 +5000,7 @@ void __cosa_dhcpsv6_refresh_config()
        if (sDhcpv6ServerPool[Index].Cfg.PrefixRangeBegin[0] == '\0'  &&
            sDhcpv6ServerPool[Index].Cfg.PrefixRangeEnd[0] == '\0')
          {
-           CcspTraceInfo(("%s Skip Index: %d, iface: %s, entry. Invalid PrefixRangeBegin: %s,  PrefixRangeEnd: %s, LeaseTime: %d\n",
+           CcspTraceInfo(("%s Skip Index: %lu, iface: %s, entry. Invalid PrefixRangeBegin: %s,  PrefixRangeEnd: %s, LeaseTime: %lu\n",
                           __func__, Index, COSA_DML_DHCPV6_SERVER_IFNAME, sDhcpv6ServerPool[Index].Cfg.PrefixRangeBegin,
                           sDhcpv6ServerPool[Index].Cfg.PrefixRangeEnd, sDhcpv6ServerPool[Index].Cfg.LeaseTime));
             continue;
@@ -5181,7 +5181,7 @@ void __cosa_dhcpsv6_refresh_config()
             AnscFreeMemory(pTmp3);
 
 #ifdef CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION
-            CcspTraceInfo(("[%s]  %d - See if need to emit pd-class, sDhcpv6ServerPool[Index].Cfg.IAPDEnable: %d, Index: %d\n",
+            CcspTraceInfo(("[%s]  %d - See if need to emit pd-class, sDhcpv6ServerPool[Index].Cfg.IAPDEnable: %d, Index: %lu\n",
                            __FUNCTION__, __LINE__, sDhcpv6ServerPool[Index].Cfg.IAPDEnable, Index));
 
             if (sDhcpv6ServerPool[Index].Cfg.IAPDEnable) {

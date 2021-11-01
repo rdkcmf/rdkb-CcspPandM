@@ -903,7 +903,7 @@ CosaDmlGRETunnelLoadConf
 
         if ( !pGRETunnel )
         {
-            AnscTraceWarning(("%s -- insufficient resources, GRE Tunnel instance %d\n", __FUNCTION__, ulIndex));
+            AnscTraceWarning(("%s -- insufficient resources, GRE Tunnel instance %lu\n", __FUNCTION__, ulIndex));
             return  ANSC_STATUS_RESOURCES;
         }
         else
@@ -1019,7 +1019,7 @@ CosaDmlGRETunnelLoadConf
                 pGRETunnelIf = (PDMSB_TR181_GRE_TUNNEL_IF)AnscAllocateMemory(sizeof(DMSB_TR181_GRE_TUNNEL_IF));
                 if ( !pGRETunnelIf )
                 {
-                    AnscTraceWarning(("%s -- insufficient resources, GRE Tunnel Interface instance %d\n", __FUNCTION__, ulIfIndex));
+                    AnscTraceWarning(("%s -- insufficient resources, GRE Tunnel Interface instance %lu\n", __FUNCTION__, ulIfIndex));
                     return  ANSC_STATUS_RESOURCES;
                 }
                 else
@@ -1349,7 +1349,7 @@ CosaDmlGRETunnelFindByInstNum
             return  pGRETunnel;
         }
     }
-    AnscTraceWarning(("%s -- failed to find %d!\n", __FUNCTION__, ulInstNum));
+    AnscTraceWarning(("%s -- failed to find %lu!\n", __FUNCTION__, ulInstNum));
     return  NULL;
 }
 /**********************************************************************
@@ -1403,7 +1403,7 @@ CosaDmlGRETunnelIfFindByInstNum
             return  pGRETunnelIf;
         }
     }
-    AnscTraceWarning(("%s -- failed to find %d!\n", __FUNCTION__, ulInstNum));
+    AnscTraceWarning(("%s -- failed to find %lu!\n", __FUNCTION__, ulInstNum));
     return  NULL;
 }
 
@@ -1702,7 +1702,7 @@ CosaDmlGRETunnelAddEntry
 
         if ( !pGRETunnel )
         {
-            AnscTraceWarning(("%s -- insufficient resources, GRE Tunnel instance %d\n", __FUNCTION__, pEntry->Cfg.TunnelInstanceNumber));
+            AnscTraceWarning(("%s -- insufficient resources, GRE Tunnel instance %lu\n", __FUNCTION__, pEntry->Cfg.TunnelInstanceNumber));
             return  ANSC_STATUS_RESOURCES;
         }
         else
@@ -1772,7 +1772,7 @@ CosaDmlGRETunnelIfAddEntry
         pGRETunnelIf = (PDMSB_TR181_GRE_TUNNEL_IF)AnscAllocateMemory(sizeof(DMSB_TR181_GRE_TUNNEL_IF));
         if ( !pGRETunnelIf )
         {
-            AnscTraceWarning(("%s -- insufficient resources, GRE Tunnel Interface instance %d\n", __FUNCTION__, ulGRETunnelInstanceNumber));
+            AnscTraceWarning(("%s -- insufficient resources, GRE Tunnel Interface instance %lu\n", __FUNCTION__, ulGRETunnelInstanceNumber));
             return  ANSC_STATUS_RESOURCES;
         }
         else
@@ -2572,7 +2572,7 @@ CosaDmlGRETunnelIfDelEntry
         pIfLinkObj = CosaDmlGRETunnelIfFindByInstNum(pGRETunnel, pInterface->Cfg.IfInstanceNumber);
         if(pIfLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find GRE Tunnel Interface instance %d\n", __FUNCTION__, pInterface->Cfg.IfInstanceNumber));
+            AnscTraceFlow(("%s: can't find GRE Tunnel Interface instance %lu\n", __FUNCTION__, pInterface->Cfg.IfInstanceNumber));
             return ANSC_STATUS_CANT_FIND;
         }
         AnscSListPopEntryByLink(&pGRETunnel->InterfaceTR181List, &pIfLinkObj->Linkage);

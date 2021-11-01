@@ -1400,7 +1400,7 @@ static void readDHCPv4ServerPoolFromPSM()
             retPsmGet1 = PsmGetNextLevelInstances(bus_handle, g_Subsystem, param_name, &optionCnt, &optionList);
             if ( retPsmGet1 == CCSP_SUCCESS && optionList != NULL )
             {
-                AnscTraceFlow(("%s: found %lu DHCPv4 Server Pool OPTION entry %s\n", __FUNCTION__, optionCnt, param_name));
+                AnscTraceFlow(("%s: found %u DHCPv4 Server Pool OPTION entry %s\n", __FUNCTION__, optionCnt, param_name));
                 //printf("%s: found %d DHCPv4 Server Pool OPTION entry %s\n", __FUNCTION__, optionCnt, param_name);
 
                 for(j=0; j< optionCnt; j++)
@@ -2140,7 +2140,7 @@ CosaDmlDhcpsGetPool
 {
 
     UNREFERENCED_PARAMETER(hContext);
-    AnscTraceFlow(("%s: ulIndex = %d\n", __FUNCTION__, ulIndex));
+    AnscTraceFlow(("%s: ulIndex = %lu\n", __FUNCTION__, ulIndex));
 
     if(ulIndex == 0){
         // ulIndex start from 0 for the 1st pool
@@ -2170,11 +2170,11 @@ CosaDmlDhcpsGetPool
         PCOSA_DML_DHCPS_POOL_CFG pPoolCfg = NULL;
         PCOSA_DML_DHCPS_POOL_INFO pPoolInfo = NULL;
 
-        AnscTraceFlow(("%s: getting DHCPv4 Server pool index %d\n", __FUNCTION__, ulIndex));
+        AnscTraceFlow(("%s: getting DHCPv4 Server pool index %lu\n", __FUNCTION__, ulIndex));
         pPoolLinkObj = (PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ)AnscSListGetEntryByIndex(&g_dhcpv4_server_pool_list,ulIndex-1);
         if(pPoolLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool index %d\n", __FUNCTION__, ulIndex));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool index %lu\n", __FUNCTION__, ulIndex));
             return ANSC_STATUS_CANT_FIND;
         }
         pPool = &(pPoolLinkObj->SPool);
@@ -2182,7 +2182,7 @@ CosaDmlDhcpsGetPool
         // need to copy Cfg and Info
         pPoolCfg = &(pPool->Cfg);
         pPoolInfo = &(pPool->Info);
-        AnscTraceFlow(("%s:found index %d, instancenum %d\n", __FUNCTION__, ulIndex, pPoolCfg->InstanceNumber));
+        AnscTraceFlow(("%s:found index %lu, instancenum %lu\n", __FUNCTION__, ulIndex, pPoolCfg->InstanceNumber));
         AnscCopyMemory(&(pEntry->Cfg), pPoolCfg, sizeof(COSA_DML_DHCPS_POOL_CFG));
         AnscCopyMemory(&(pEntry->Info), pPoolInfo, sizeof(COSA_DML_DHCPS_POOL_INFO));
 
@@ -2202,7 +2202,7 @@ CosaDmlDhcpsSetPoolValues
 {
 
     UNREFERENCED_PARAMETER(hContext);
-    AnscTraceFlow(("%s: ulIndex = %d, ulInstanceNumber %d\n", __FUNCTION__, ulIndex, ulInstanceNumber));
+    AnscTraceFlow(("%s: ulIndex = %lu, ulInstanceNumber %lu\n", __FUNCTION__, ulIndex, ulInstanceNumber));
 
     if(ulIndex == 0){
         int rc = -1;
@@ -2232,11 +2232,11 @@ CosaDmlDhcpsSetPoolValues
         PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ pPoolLinkObj=NULL;
         PCOSA_DML_DHCPS_POOL_FULL pPool=NULL;
         PCOSA_DML_DHCPS_POOL_CFG pPoolCfg = NULL;
-        AnscTraceFlow(("%s: getting DHCPv4 Server pool index %d\n", __FUNCTION__, ulIndex));
+        AnscTraceFlow(("%s: getting DHCPv4 Server pool index %lu\n", __FUNCTION__, ulIndex));
         pPoolLinkObj = (PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ)AnscSListGetEntryByIndex(&g_dhcpv4_server_pool_list,ulIndex-1);
         if(pPoolLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool index %d\n", __FUNCTION__, ulIndex));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool index %lu\n", __FUNCTION__, ulIndex));
             return ANSC_STATUS_CANT_FIND;
         }
 
@@ -2279,14 +2279,14 @@ static PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ find_dhcpv4_pool_by_instancenum(ULONG 
     {
         if(curPoolLinkObj->SPool.Cfg.InstanceNumber == instancenum)
         {
-            AnscTraceFlow(("%s: found DHCPv4 Server Pool for instance number %d\n", __FUNCTION__, instancenum));
+            AnscTraceFlow(("%s: found DHCPv4 Server Pool for instance number %lu\n", __FUNCTION__, instancenum));
             return curPoolLinkObj;
         }
 
         curPoolLinkObj = (PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ)curPoolLinkObj->Linkage.Next;
     }
 
-    AnscTraceFlow(("%s:DHCPv4 Server Pool not found for instance number %d\n", __FUNCTION__, instancenum));
+    AnscTraceFlow(("%s:DHCPv4 Server Pool not found for instance number %lu\n", __FUNCTION__, instancenum));
     return NULL;
 
 }
@@ -2324,7 +2324,7 @@ CosaDmlDhcpsAddPool
         DHCPV4_POOL_SET_DEFAULTVALUE(pPool);
 
         pPool->Cfg.InstanceNumber = pEntry->Cfg.InstanceNumber;
-        AnscTraceFlow(("%s: AnscSListPushEntryAtBack instancenum = %d\n", __FUNCTION__, pPool->Cfg.InstanceNumber));
+        AnscTraceFlow(("%s: AnscSListPushEntryAtBack instancenum = %lu\n", __FUNCTION__, pPool->Cfg.InstanceNumber));
         AnscSListPushEntryAtBack(&g_dhcpv4_server_pool_list, &pPoolLinkObj->Linkage);
         
         // Write CFG values to PSM
@@ -2356,23 +2356,23 @@ CosaDmlDhcpsDelPool
     PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ pPoolLinkObj = find_dhcpv4_pool_by_instancenum(ulInstanceNumber);
     if(pPoolLinkObj == NULL)
     {
-        AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, ulInstanceNumber));
+        AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %lu\n", __FUNCTION__, ulInstanceNumber));
         return ANSC_STATUS_CANT_FIND;
     }
 
     if(AnscSListQueryDepth( &pPoolLinkObj->StaticAddressList ) != 0)
     {
-        AnscTraceFlow(("%s:DHCPv4 server pool %d is not empty, %d static addresses\n", __FUNCTION__, ulInstanceNumber, AnscSListQueryDepth( &pPoolLinkObj->StaticAddressList )));
+        AnscTraceFlow(("%s:DHCPv4 server pool %lu is not empty, %d static addresses\n", __FUNCTION__, ulInstanceNumber, AnscSListQueryDepth( &pPoolLinkObj->StaticAddressList )));
         return ANSC_STATUS_CANT_FIND;
     }
 
     if(AnscSListQueryDepth( &pPoolLinkObj->OptionList ) != 0)
     {
-        AnscTraceFlow(("%s:DHCPv4 server pool %d is not empty, %d options\n", __FUNCTION__, ulInstanceNumber, AnscSListQueryDepth( &pPoolLinkObj->OptionList )));
+        AnscTraceFlow(("%s:DHCPv4 server pool %lu is not empty, %d options\n", __FUNCTION__, ulInstanceNumber, AnscSListQueryDepth( &pPoolLinkObj->OptionList )));
         return ANSC_STATUS_CANT_FIND;
     }
 
-    AnscTraceFlow(("%s:pop link instancenum = %d\n", __FUNCTION__, pPoolLinkObj->SPool.Cfg.InstanceNumber));
+    AnscTraceFlow(("%s:pop link instancenum = %lu\n", __FUNCTION__, pPoolLinkObj->SPool.Cfg.InstanceNumber));
     AnscSListPopEntryByLink(&g_dhcpv4_server_pool_list, &pPoolLinkObj->Linkage);
 
     deleteDHCPv4ServerPoolPSM(ulInstanceNumber);
@@ -2393,7 +2393,7 @@ CosaDmlDhcpsSetPoolCfg
 {
 
     UNREFERENCED_PARAMETER(hContext);
-    AnscTraceFlow(("%s: pCfg->InstanceNumber =%d\n", __FUNCTION__, pCfg->InstanceNumber));
+    AnscTraceFlow(("%s: pCfg->InstanceNumber =%lu\n", __FUNCTION__, pCfg->InstanceNumber));
 
     if(pCfg->InstanceNumber == 1){
         int rc = -1;
@@ -2440,7 +2440,7 @@ CosaDmlDhcpsSetPoolCfg
 
         if(pPoolLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, pCfg->InstanceNumber));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %lu\n", __FUNCTION__, pCfg->InstanceNumber));
             return ANSC_STATUS_CANT_FIND;
         }
 
@@ -2481,7 +2481,7 @@ CosaDmlDhcpsGetPoolCfg
 {
    
     UNREFERENCED_PARAMETER(hContext);
-    AnscTraceFlow(("%s: pCfg->InstanceNumber =%d\n", __FUNCTION__, pCfg->InstanceNumber));
+    AnscTraceFlow(("%s: pCfg->InstanceNumber =%lu\n", __FUNCTION__, pCfg->InstanceNumber));
  
     if(pCfg->InstanceNumber == 1){
         int rc = -1;
@@ -2508,7 +2508,7 @@ CosaDmlDhcpsGetPoolCfg
 
         if(pPoolLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, pCfg->InstanceNumber));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %lu\n", __FUNCTION__, pCfg->InstanceNumber));
             return ANSC_STATUS_CANT_FIND;
         }
 
@@ -2528,7 +2528,7 @@ CosaDmlDhcpsGetPoolInfo
 {
 
     UNREFERENCED_PARAMETER(hContext);
-    AnscTraceFlow(("%s: ulInstanceNumber =%d\n", __FUNCTION__, ulInstanceNumber));
+    AnscTraceFlow(("%s: ulInstanceNumber =%lu\n", __FUNCTION__, ulInstanceNumber));
     errno_t                         rc              = -1;
    
     if(ulInstanceNumber == 1) {
@@ -2563,7 +2563,7 @@ CosaDmlDhcpsGetPoolInfo
 
         if(pPoolLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, ulInstanceNumber));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %lu\n", __FUNCTION__, ulInstanceNumber));
             return ANSC_STATUS_CANT_FIND;
         }
 
@@ -2884,7 +2884,7 @@ CosaDmlDhcpsGetNumberOfOption
         PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ pPoolLinkObj = find_dhcpv4_pool_by_instancenum(ulPoolInstanceNumber);
         if(pPoolLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, ulPoolInstanceNumber));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %lu\n", __FUNCTION__, ulPoolInstanceNumber));
             //printf("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, ulPoolInstanceNumber);
             return ANSC_STATUS_CANT_FIND;
         }
@@ -2922,14 +2922,14 @@ CosaDmlDhcpsGetOption
         PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ pPoolLinkObj = find_dhcpv4_pool_by_instancenum(ulPoolInstanceNumber);
         if(pPoolLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, ulPoolInstanceNumber));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %lu\n", __FUNCTION__, ulPoolInstanceNumber));
             return ANSC_STATUS_CANT_FIND;
         }
         
         pPoolOptionLinkObj = (PCOSA_DML_DHCPSV4_OPTION_LINK_OBJ)AnscSListGetEntryByIndex(&(pPoolLinkObj->OptionList),ulIndex);
         if(pPoolOptionLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool option index %d\n", __FUNCTION__, ulIndex));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool option index %lu\n", __FUNCTION__, ulIndex));
             //printf("%s: can't find DHCPv4 server pool option index %d\n", __FUNCTION__, ulIndex);
             return ANSC_STATUS_CANT_FIND;
         }
@@ -2972,7 +2972,7 @@ CosaDmlDhcpsGetOptionbyInsNum
         PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ pPoolLinkObj = find_dhcpv4_pool_by_instancenum(ulPoolInstanceNumber);
         if(pPoolLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, ulPoolInstanceNumber));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %lu\n", __FUNCTION__, ulPoolInstanceNumber));
             return ANSC_STATUS_CANT_FIND;
         }
 
@@ -2981,7 +2981,7 @@ CosaDmlDhcpsGetOptionbyInsNum
         {
             if(curPoolOptionLinkObj->SPoolOption.InstanceNumber == pEntry->InstanceNumber)
             {
-                AnscTraceFlow(("%s: found DHCPv4 Server Pool Option for instance number %d\n", __FUNCTION__, pEntry->InstanceNumber));
+                AnscTraceFlow(("%s: found DHCPv4 Server Pool Option for instance number %lu\n", __FUNCTION__, pEntry->InstanceNumber));
                 //printf("%s: found DHCPv4 Server Pool Option for instance number %d\n", __FUNCTION__, pEntry->InstanceNumber);
                 break;
             }
@@ -2991,7 +2991,7 @@ CosaDmlDhcpsGetOptionbyInsNum
 
         if(curPoolOptionLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool option instance %d\n", __FUNCTION__, pEntry->InstanceNumber));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool option instance %lu\n", __FUNCTION__, pEntry->InstanceNumber));
             return ANSC_STATUS_CANT_FIND;
         }
         
@@ -3036,7 +3036,7 @@ CosaDmlDhcpsSetOptionValues
 
         if(pPoolLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, ulPoolInstanceNumber));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %lu\n", __FUNCTION__, ulPoolInstanceNumber));
             return ANSC_STATUS_CANT_FIND;
         }
         
@@ -3045,7 +3045,7 @@ CosaDmlDhcpsSetOptionValues
         {
             if(curPoolOptionLinkObj->SPoolOption.InstanceNumber == ulInstanceNumber)
             {
-                AnscTraceFlow(("%s: found DHCPv4 Server Pool Option for instance number %d\n", __FUNCTION__, ulInstanceNumber));
+                AnscTraceFlow(("%s: found DHCPv4 Server Pool Option for instance number %lu\n", __FUNCTION__, ulInstanceNumber));
                 //printf("%s: found DHCPv4 Server Pool Option for instance number %d\n", __FUNCTION__, ulInstanceNumber);
                 break;
             }
@@ -3055,7 +3055,7 @@ CosaDmlDhcpsSetOptionValues
 
         if(curPoolOptionLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool option instance %d\n", __FUNCTION__, ulInstanceNumber));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool option instance %lu\n", __FUNCTION__, ulInstanceNumber));
             return ANSC_STATUS_CANT_FIND;
         }
 
@@ -3119,7 +3119,7 @@ CosaDmlDhcpsAddOption
         PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ pPoolLinkObj = find_dhcpv4_pool_by_instancenum(ulPoolInstanceNumber);
         if(pPoolLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, ulPoolInstanceNumber));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %lu\n", __FUNCTION__, ulPoolInstanceNumber));
             //printf("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, ulPoolInstanceNumber);
             return ANSC_STATUS_CANT_FIND;
         }
@@ -3141,7 +3141,7 @@ CosaDmlDhcpsAddOption
             DHCPV4_POOLOPTION_SET_DEFAULTVALUE(pPoolOption);
 
             pPoolOption->InstanceNumber = pEntry->InstanceNumber;
-            AnscTraceFlow(("%s: AnscSListPushEntryAtBack instancenum = %d\n", __FUNCTION__, pPoolOption->InstanceNumber));
+            AnscTraceFlow(("%s: AnscSListPushEntryAtBack instancenum = %lu\n", __FUNCTION__, pPoolOption->InstanceNumber));
             AnscSListPushEntryAtBack(&(pPoolLinkObj->OptionList), &pOptionLinkObj->Linkage);
 
             // Write Option to PSM and update to new option value
@@ -3178,11 +3178,11 @@ CosaDmlDhcpsDelOption
         return ANSC_STATUS_SUCCESS;
     }   
 
-    AnscTraceFlow(("SBAPI->CosaDmlDhcpsDelPool:Pool %d, Instance %d",ulPoolInstanceNumber, ulInstanceNumber));
+    AnscTraceFlow(("SBAPI->CosaDmlDhcpsDelPool:Pool %lu, Instance %lu",ulPoolInstanceNumber, ulInstanceNumber));
     PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ pPoolLinkObj = find_dhcpv4_pool_by_instancenum(ulPoolInstanceNumber);
     if(pPoolLinkObj == NULL)
     {
-        AnscTraceFlow(("%s: can't find DHCPv4 server pool %d\n", __FUNCTION__, ulPoolInstanceNumber));
+        AnscTraceFlow(("%s: can't find DHCPv4 server pool %lu\n", __FUNCTION__, ulPoolInstanceNumber));
         return ANSC_STATUS_CANT_FIND;
     }
     // find option
@@ -3191,7 +3191,7 @@ CosaDmlDhcpsDelOption
     {
         if(curPoolOptionLinkObj->SPoolOption.InstanceNumber == ulInstanceNumber)
         {
-            AnscTraceFlow(("%s: found DHCPv4 Server Pool Option for instance number %d\n", __FUNCTION__, ulInstanceNumber));
+            AnscTraceFlow(("%s: found DHCPv4 Server Pool Option for instance number %lu\n", __FUNCTION__, ulInstanceNumber));
             break;
         }
 
@@ -3200,11 +3200,11 @@ CosaDmlDhcpsDelOption
 
     if(curPoolOptionLinkObj == NULL)
     {
-        AnscTraceFlow(("%s: can't find DHCPv4 server pool option instance %d\n", __FUNCTION__, ulInstanceNumber));
+        AnscTraceFlow(("%s: can't find DHCPv4 server pool option instance %lu\n", __FUNCTION__, ulInstanceNumber));
         return ANSC_STATUS_CANT_FIND;
     }
     
-    AnscTraceFlow(("%s:pop link instancenum = %d\n", __FUNCTION__, curPoolOptionLinkObj->SPoolOption.InstanceNumber));
+    AnscTraceFlow(("%s:pop link instancenum = %lu\n", __FUNCTION__, curPoolOptionLinkObj->SPoolOption.InstanceNumber));
     //printf("%s:pop link instancenum = %d\n", __FUNCTION__, curPoolOptionLinkObj->SPoolOption.InstanceNumber);
     AnscSListPopEntryByLink(&(pPoolLinkObj->OptionList), &curPoolOptionLinkObj->Linkage);
 
@@ -3249,7 +3249,7 @@ CosaDmlDhcpsSetOption
         PCOSA_DML_DHCPS_POOL_FULL_LINK_OBJ pPoolLinkObj = find_dhcpv4_pool_by_instancenum(ulPoolInstanceNumber);
         if(pPoolLinkObj == NULL)
         {
-            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %d\n", __FUNCTION__, ulPoolInstanceNumber));
+            AnscTraceFlow(("%s: can't find DHCPv4 server pool instance %lu\n", __FUNCTION__, ulPoolInstanceNumber));
             return ANSC_STATUS_CANT_FIND;
         }
         else
@@ -3264,7 +3264,7 @@ CosaDmlDhcpsSetOption
             {
                 if(curPoolOptionLinkObj->SPoolOption.InstanceNumber == pEntry->InstanceNumber)
                 {
-                    AnscTraceFlow(("%s: found DHCPv4 Server Pool Option for instance number %d\n", __FUNCTION__, pEntry->InstanceNumber));
+                    AnscTraceFlow(("%s: found DHCPv4 Server Pool Option for instance number %lu\n", __FUNCTION__, pEntry->InstanceNumber));
                     //printf("%s: found DHCPv4 Server Pool Option for instance number %d\n", __FUNCTION__, pEntry->InstanceNumber);
                     break;
                 }
@@ -3274,7 +3274,7 @@ CosaDmlDhcpsSetOption
 
             if(curPoolOptionLinkObj == NULL)
             {
-                AnscTraceFlow(("%s: can't find DHCPv4 server pool option instance %d\n", __FUNCTION__, pEntry->InstanceNumber));
+                AnscTraceFlow(("%s: can't find DHCPv4 server pool option instance %lu\n", __FUNCTION__, pEntry->InstanceNumber));
                 return ANSC_STATUS_CANT_FIND;
             }
     
@@ -3339,7 +3339,7 @@ int sbapi_get_dhcpv4_active_number(int index, ULONG minAddress, ULONG maxAddress
         if((ipaddr < _ansc_ntohl(minAddress)) || (ipaddr > _ansc_ntohl(maxAddress)))
         {
             //not in pool range, go next
-            AnscTraceFlow(("%s: IP=%x, is not in subnet of %x, and %x\n", __FUNCTION__, ipaddr, _ansc_ntohl(minAddress), _ansc_ntohl(maxAddress)));
+            AnscTraceFlow(("%s: IP=%x, is not in subnet of %x, and %x\n", __FUNCTION__, (unsigned int)ipaddr, (unsigned int)_ansc_ntohl(minAddress), (unsigned int)_ansc_ntohl(maxAddress)));
             continue;
         }
 		if(!find_arp_entry(ip, LAN_L3_IFNAME,(unsigned char*)mac))
@@ -3496,7 +3496,7 @@ int _cosa_get_dhcps_client(ULONG instancenum, UCHAR *ifName, ULONG minAddress, U
         tempIPAddr = _ansc_ntohl((ULONG)_ansc_inet_addr(pIP));
         if((tempIPAddr < _ansc_ntohl(minAddress)) || (tempIPAddr > _ansc_ntohl(maxAddress)))
         {
-            AnscTraceFlow(("%s: IP=%x, is not in subnet between %x, and %x\n", __FUNCTION__, tempIPAddr, _ansc_ntohl(minAddress), _ansc_ntohl(maxAddress)));
+            AnscTraceFlow(("%s: IP=%x, is not in subnet between %x, and %x\n", __FUNCTION__, (unsigned int)tempIPAddr, (unsigned int)_ansc_ntohl(minAddress), (unsigned int)_ansc_ntohl(maxAddress)));
             continue;
         }
 

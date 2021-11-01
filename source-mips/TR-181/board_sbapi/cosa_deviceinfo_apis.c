@@ -278,7 +278,7 @@ void CosaDmlDiCheckAndEnableMoCA( void )
 											 );
 		if( ret != CCSP_Message_Bus_OK )
 		{
-			CcspTraceError(("%s MoCA-Get %s Failed ret %d\n", __FUNCTION__, ret));
+			CcspTraceError(("%s MoCA-Get Failed ret %d\n", __FUNCTION__, ret));
 			return;
 		}
 		

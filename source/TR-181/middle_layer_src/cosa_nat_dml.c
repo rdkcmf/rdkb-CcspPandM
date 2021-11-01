@@ -2923,7 +2923,7 @@ X_RDK_PortMapping_SetParamStringValue
 		{
 
 
-			CcspTraceWarning(("rpm->entries_count is %ld\n", rpm->entries_count));
+			CcspTraceWarning(("rpm->entries_count is %u\n", rpm->entries_count));
 			CcspTraceWarning(("rpm->subdoc_name is %s\n", rpm->subdoc_name));
 			CcspTraceWarning(("rpm->version is %lu\n", (unsigned long)rpm->version));
 			CcspTraceWarning(("rpm->transaction_id is %d\n", rpm->transaction_id));

@@ -1707,7 +1707,7 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
                 
             if ( !name )
             {
-                CcspTraceWarning(("Failed to get process %d information!\n", pid));
+                CcspTraceWarning(("Failed to get process %lu information!\n", pid));
                 continue;
             }                  
 
@@ -1715,7 +1715,7 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
 
             if (read_proc_stat(name, p_proc->Command, state, (int*)&p_proc->Size, (int*)&p_proc->Priority, (int*)&p_proc->CPUTime ))
             {
-                CcspTraceWarning(("Failed to parse process %d information!\n", pid));
+                CcspTraceWarning(("Failed to parse process %lu information!\n", pid));
                 continue;
             }
             i++;
@@ -1769,7 +1769,7 @@ void COSADmlGetProcessInfo(PCOSA_DATAMODEL_PROCSTATUS p_info)
     p_info->ProcessNumberOfEntries = i;
 
     fprintf(stderr,"\n %s %d  ProcessNumberOfEntries:%lu",__func__,__LINE__,p_info->ProcessNumberOfEntries);
-    CcspTraceWarning(("\n %s %d  ProcessNumberOfEntries:%d\n",__func__,__LINE__,p_info->ProcessNumberOfEntries));
+    CcspTraceWarning(("\n %s %d  ProcessNumberOfEntries:%lu\n",__func__,__LINE__,p_info->ProcessNumberOfEntries));
 
     if ( dir != NULL )
     {
@@ -1856,8 +1856,8 @@ ULONG COSADmlGetCpuUsage()
        - time[0].IrqTime - time[0].SoftirqTime - time[0].GuestTime;
     IdleTime = time[1].IdleTime - time[0].IdleTime;
         
-    CcspTraceWarning(("UsedTime = %ul\n", UsedTime));
-    CcspTraceWarning(("IdleTime = %ul\n", IdleTime));
+    CcspTraceWarning(("UsedTime = %lu\n", UsedTime));
+    CcspTraceWarning(("IdleTime = %lu\n", IdleTime));
         
     CPUUsage = (UsedTime *100 / (UsedTime + IdleTime)) / CPUNum ;
 
@@ -2004,7 +2004,7 @@ ULONG COSADmlGetMaxWindowSize()
     while(fgets(value, 10, fp) != NULL)
     {
        winSize = AnscString2Int(value);
-       CcspTraceWarning(("********MaxWindowSize is '%d\n", winSize)); 
+       CcspTraceWarning(("********MaxWindowSize is '%lu\n", winSize));
     }
     pclose(fp);
 

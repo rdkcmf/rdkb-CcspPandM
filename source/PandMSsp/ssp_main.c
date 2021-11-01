@@ -176,7 +176,7 @@ int  cmd_dispatch(int  command)
 
             for ( i = 0; i < ulReturnValCount; i++ )
             {
-                CcspTraceWarning(("Parameter %d name: %s value: %s \n", i+1, ppReturnVal[i]->parameterName, ppReturnVal[i]->parameterValue));
+                CcspTraceWarning(("Parameter %lu name: %s value: %s \n", i+1, ppReturnVal[i]->parameterName, ppReturnVal[i]->parameterValue));
             }
 
 

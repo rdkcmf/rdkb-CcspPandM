@@ -2288,7 +2288,7 @@ Link_GetParamStringValue
 
             if ( returnStatus != ANSC_STATUS_SUCCESS )
             {
-                AnscTraceWarning(("%s -- failed to retrieve LowerLayer name parameter, error code %d\n", __FUNCTION__, returnStatus));
+                AnscTraceWarning(("%s -- failed to retrieve LowerLayer name parameter, error code %lu\n", __FUNCTION__, returnStatus));
             }
 			else
 			{

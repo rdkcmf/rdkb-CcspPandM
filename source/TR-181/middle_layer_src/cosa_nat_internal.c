@@ -694,7 +694,7 @@ CosaNatRegGetNatInfo
 
     /* enumerate PortTrigger.{i} */
     ulEntryCount = pPoamIrepFoNatPt->GetFolderCount((ANSC_HANDLE)pPoamIrepFoNatPt);
-    CcspTraceWarning(("!!!!!! ulEntryCount for PortTrigger: %d !!!!!!\n", ulEntryCount));
+    CcspTraceWarning(("!!!!!! ulEntryCount for PortTrigger: %lu !!!!!!\n", ulEntryCount));
 
     for ( ulIndex = 0; ulIndex < ulEntryCount; ulIndex++ )
     {
@@ -788,7 +788,7 @@ CosaNatRegGetNatInfo
         rc = strcpy_s(pCosaNatPt->Alias, sizeof(pCosaNatPt->Alias), pAliasNat);
         ERR_CHK(rc);
 
-        CcspTraceWarning(("!!!!!! pCosaNatPt->InstanceNumber: %d, pCosaNatPt->Alias: %s !!!!!!\n", pCosaNatPt->InstanceNumber, pCosaNatPt->Alias));
+        CcspTraceWarning(("!!!!!! pCosaNatPt->InstanceNumber: %lu, pCosaNatPt->Alias: %s !!!!!!\n", pCosaNatPt->InstanceNumber, pCosaNatPt->Alias));
 
         /* Create one link point */
         pCosaNatPtContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
@@ -1242,9 +1242,9 @@ CosaNatSyncPortTrigger
             }
 
             /* copy new content which should include InstanceNumber and Alias */
-            CcspTraceWarning(("!!!!!!!! Ready to copy 2 &pPortTrigger[%d]->InsNumber: %d !!!!!!!!\n", i, pPortTrigger[i].InstanceNumber));
+            CcspTraceWarning(("!!!!!!!! Ready to copy 2 &pPortTrigger[%lu]->InsNumber: %lu !!!!!!!!\n", i, pPortTrigger[i].InstanceNumber));
             AnscCopyMemory(pPtEntry, &pPortTrigger[i], sizeof(COSA_DML_NAT_PTRIGGER)); /* pOriAlias is NULL, no deep copy needed */
-            CcspTraceWarning(("!!!!!!!! After copy 2 pPtEntry->InsNumber: %d !!!!!!!!\n", pPtEntry->InstanceNumber));
+            CcspTraceWarning(("!!!!!!!! After copy 2 pPtEntry->InsNumber: %lu !!!!!!!!\n", pPtEntry->InstanceNumber));
 
             pCxtLink->hContext       = (ANSC_HANDLE)pPtEntry;
             pCxtLink->InstanceNumber = pPtEntry->InstanceNumber;

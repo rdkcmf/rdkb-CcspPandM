@@ -1366,7 +1366,7 @@ Interface2_GetParamStringValue
         {
             CcspTraceDebug
                 ((
-                    "%s -- LowerLayers, IpIf %d, LinkName is %s, EthLink %d, IfType %d\n",
+                    "%s -- LowerLayers, IpIf %lu, LinkName is %s, EthLink %lu, IfType %d\n",
                     __FUNCTION__,
                     pIPInterface->Cfg.InstanceNumber,
                     pIPInterface->Cfg.LinkName,
@@ -1765,7 +1765,7 @@ Interface2_SetParamStringValue
  
            AnscTraceWarning
                 ((
-                    "%s -- IpIf %d, LinkName is %s, EthLink %d, LowerLayers %s\n",
+                    "%s -- IpIf %lu, LinkName is %s, EthLink %lu, LowerLayers %s\n",
                     __FUNCTION__,
                     pIPInterface->Cfg.InstanceNumber,
                     pIPInterface->Info.Name,

@@ -442,7 +442,7 @@ CosaSecurityInitialize
 
                 if ( returnStatus != ANSC_STATUS_SUCCESS )
                 {
-                    CcspTraceWarning(("!!! CosaDmlIaSetPolicyValues index: %d-- fail !!!\n", ulIndex));
+                    CcspTraceWarning(("!!! CosaDmlIaSetPolicyValues index: %lu-- fail !!!\n", ulIndex));
 
                     AnscFreeMemory(pDmlIAPolicy);
                     AnscFreeMemory(pCosaContext);
@@ -596,7 +596,7 @@ CosaSecurityInitialize
 
                     if ( returnStatus != ANSC_STATUS_SUCCESS )
                     {
-                        CcspTraceWarning(("!!! CosaDmlIaPolicySetUrlValues index: %d-- fail !!!\n", ulSubIndex));
+                        CcspTraceWarning(("!!! CosaDmlIaPolicySetUrlValues index: %lu-- fail !!!\n", ulSubIndex));
 
                         AnscFreeMemory(pURL);
                         AnscFreeMemory(pCosaContext2);
@@ -741,7 +741,7 @@ CosaSecurityInitialize
 
                     if ( returnStatus != ANSC_STATUS_SUCCESS )
                     {
-                        CcspTraceWarning(("!!! CosaDmlIaPolicySetKeywordValues index: %d-- fail !!!\n", ulSubIndex));
+                        CcspTraceWarning(("!!! CosaDmlIaPolicySetKeywordValues index: %lu-- fail !!!\n", ulSubIndex));
 
                         AnscFreeMemory(pKeyword);
                         AnscFreeMemory(pCosaContext2);
@@ -886,7 +886,7 @@ CosaSecurityInitialize
 
                     if ( returnStatus != ANSC_STATUS_SUCCESS )
                     {
-                        CcspTraceWarning(("!!! CosaDmlIaPolicySetAppValues index: %d-- fail !!!\n", ulSubIndex));
+                        CcspTraceWarning(("!!! CosaDmlIaPolicySetAppValues index: %lu-- fail !!!\n", ulSubIndex));
 
                         AnscFreeMemory(pApp);
                         AnscFreeMemory(pCosaContext2);

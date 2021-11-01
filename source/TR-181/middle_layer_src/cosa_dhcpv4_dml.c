@@ -102,7 +102,7 @@ CosaDmlDhcpsARPing
     if ( g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_firmware ||                                                                                     \
          (g_currentBsUpdate == DSLH_CWMP_BS_UPDATE_rfcUpdate && !AnscEqualString(requestorStr, BS_SOURCE_RFC_STR, TRUE)))                         \
     {                                                                                                                                             \
-       CcspTraceWarning(("Do NOT allow override of param: %s bsUpdate = %d, requestor = %s\n", paramName, g_currentBsUpdate, requestorStr));      \
+       CcspTraceWarning(("Do NOT allow override of param: %s bsUpdate = %lu, requestor = %s\n", paramName, g_currentBsUpdate, requestorStr));      \
        return FALSE;                                                                                                                              \
     }                                                                                                                                             \
 })
@@ -111,7 +111,7 @@ CosaDmlDhcpsARPing
 #define IS_UPDATE_ALLOWED_IN_JSON(paramName, requestorStr, UpdateSource) ({                                                                                \
    if (AnscEqualString(requestorStr, BS_SOURCE_RFC_STR, TRUE) && AnscEqualString(UpdateSource, BS_SOURCE_WEBPA_STR, TRUE))                         \
    {                                                                                                                                               \
-      CcspTraceWarning(("Do NOT allow override of param: %s requestor = %d updateSource = %s\n", paramName, g_currentWriteEntity, UpdateSource));  \
+      CcspTraceWarning(("Do NOT allow override of param: %s requestor = %lu updateSource = %s\n", paramName, g_currentWriteEntity, UpdateSource));  \
       return FALSE;                                                                                                                                \
    }                                                                                                                                               \
 })
@@ -3942,7 +3942,7 @@ Server_SetParamStringValue
             }
             if (NULL != pStaticClients)
             {
-                CcspTraceWarning(("pStaticClients->entries_count is %ld\n", pStaticClients->entries_count));
+                CcspTraceWarning(("pStaticClients->entries_count is %u\n", pStaticClients->entries_count));
                 CcspTraceWarning(("pStaticClients->subdoc_name is %s\n", pStaticClients->subdoc_name));
                 CcspTraceWarning(("pStaticClients->version is %lu\n", (unsigned long)pStaticClients->version));
                 CcspTraceWarning(("pStaticClients->transaction_id is %d\n", pStaticClients->transaction_id));
@@ -4032,7 +4032,7 @@ Server_SetParamStringValue
             if (NULL != pLanInfo)
             {
 		        pLanInfo->entries_count = 1;// Assigned 1 by default.
-                CcspTraceWarning(("pLanInfo->entries_count is %ld\n", pLanInfo->entries_count));
+                CcspTraceWarning(("pLanInfo->entries_count is %u\n", pLanInfo->entries_count));
                 CcspTraceWarning(("pLanInfo->subdoc_name is %s\n", pLanInfo->subdoc_name));
                 CcspTraceWarning(("pLanInfo->version is %lu\n", (unsigned long)pLanInfo->version));
                 CcspTraceWarning(("pLanInfo->transaction_id is %d\n", pLanInfo->transaction_id));
@@ -5529,7 +5529,7 @@ Pool_DelEntry
            */
     if(pPool->Cfg.InstanceNumber == 1)
     {
-        AnscTraceFlow(("%s: pool instance %d is not allowed to delete\n", __FUNCTION__, pPool->Cfg.InstanceNumber));
+        AnscTraceFlow(("%s: pool instance %lu is not allowed to delete\n", __FUNCTION__, pPool->Cfg.InstanceNumber));
         return ANSC_STATUS_FAILURE;
     }
 
@@ -5537,7 +5537,7 @@ Pool_DelEntry
     {
         if(!pPool->Cfg.bAllowDelete)
         {
-            AnscTraceFlow(("%s: pool instance %d is not allowed to delete\n", __FUNCTION__, pPool->Cfg.InstanceNumber));
+            AnscTraceFlow(("%s: pool instance %lu is not allowed to delete\n", __FUNCTION__, pPool->Cfg.InstanceNumber));
             return ANSC_STATUS_FAILURE;
         }
 
@@ -6103,7 +6103,7 @@ Pool_GetParamStringValue
 			    (signed) (pPool->Cfg.DomainName[3]), sizeof(pPool->Cfg.DomainName)));
 	  bValidDomainName = validateNFixDomainName(pPool->Cfg.DomainName, sizeof(pPool->Cfg.DomainName));
 	  snprintf(pValue,sizeof(pPool->Cfg.DomainName),"%s", pPool->Cfg.DomainName);
-	  CcspTraceWarning(("%s: DomainName: %s, InstanceNumber: %d, bValidDomainName: %d\n", 
+	  CcspTraceWarning(("%s: DomainName: %s, InstanceNumber: %lu, bValidDomainName: %d\n",
 			    __FUNCTION__, pValue, pPool->Cfg.InstanceNumber, bValidDomainName));
 	}
         return 0;
@@ -6442,7 +6442,7 @@ Pool_SetParamUlongValue
             return(FALSE);
 
 	if (ntohl(uValue) == ntohl(pPool->Cfg.MaxAddress.Value)) {
-            CcspTraceError(("MinAddress equals MaxAddress 0x%08x\n", ntohl(uValue)));
+            CcspTraceError(("MinAddress equals MaxAddress 0x%08u\n", (unsigned int)ntohl(uValue)));
             return(FALSE);
 	}
 	if (ntohl(uValue) < ntohl(gw)) {
@@ -6512,7 +6512,7 @@ Pool_SetParamUlongValue
             return(FALSE);
 		}
         if (ntohl(uValue) == ntohl(pPool->Cfg.MinAddress.Value)) {
-            CcspTraceError(("MinAddress equals MaxAddress 0x%08x\n", ntohl(uValue)));
+            CcspTraceError(("MinAddress equals MaxAddress 0x%08u\n", (unsigned int)ntohl(uValue)));
             return(FALSE);
 	}
         if (Dhcpv4_Lan_MutexTryLock() != 0)
@@ -6898,7 +6898,7 @@ Pool_Commit
     }
     else
     {
-        AnscTraceFlow(("%s: valid pool, pPool->Cfg.InstanceNumber = %d\n", __FUNCTION__, pPool->Cfg.InstanceNumber));
+        AnscTraceFlow(("%s: valid pool, pPool->Cfg.InstanceNumber = %lu\n", __FUNCTION__, pPool->Cfg.InstanceNumber));
     }
 
     if (Dhcpv4_Lan_MutexTryLock() != 0)
@@ -7348,7 +7348,7 @@ StaticAddress_DelEntry
         return ANSC_STATUS_FAILURE;
     }
 
-    AnscTraceFlow(("%s: pool instance %d, addr instance %d\n", __FUNCTION__, pDhcsPool->Cfg.InstanceNumber, pDhcpStaticAddress->InstanceNumber));    
+    AnscTraceFlow(("%s: pool instance %lu, addr instance %lu\n", __FUNCTION__, pDhcsPool->Cfg.InstanceNumber, pDhcpStaticAddress->InstanceNumber));
     if ( !pCxtLink->bNew )
     {
         returnStatus = CosaDmlDhcpsDelSaddr( NULL, pDhcsPool->Cfg.InstanceNumber, pDhcpStaticAddress->InstanceNumber );
@@ -8490,7 +8490,7 @@ Option1_DelEntry
     PCOSA_DML_DHCPSV4_OPTION          pDhcpOption          = (PCOSA_DML_DHCPSV4_OPTION)pCxtLink->hContext;
 
 
-    AnscTraceFlow(("%s: pool instance %d, option instance %d\n", __FUNCTION__, pDhcpPool->Cfg.InstanceNumber, pDhcpOption->InstanceNumber));    
+    AnscTraceFlow(("%s: pool instance %lu, option instance %lu\n", __FUNCTION__, pDhcpPool->Cfg.InstanceNumber, pDhcpOption->InstanceNumber));
     //printf("%s: pool instance %d, option instance %d\n", __FUNCTION__, pDhcpPool->Cfg.InstanceNumber, pDhcpOption->InstanceNumber);
     if(pDhcpPool->Cfg.InstanceNumber == 1)
     {

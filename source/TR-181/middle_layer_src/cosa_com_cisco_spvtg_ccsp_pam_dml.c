@@ -290,7 +290,7 @@ Pam_GetFirstIpInterfaceObjectName
             {
                 CcspTraceDebug
                     ((
-                         "Found the lowest %s layer %s for IP interface Device.IP.Interface.%d.\n",
+                         "Found the lowest %s layer %s for IP interface Device.IP.Interface.%lu.\n",
                          bUpstream ? "upstream" : "downstream",
                          LowerLayers,
                          ulInstNum
@@ -323,7 +323,7 @@ Pam_GetFirstIpInterfaceObjectName
         }
     }
 
-    CcspTraceInfo(("[%s] -- Exit returnStatus: %d\n", __FUNCTION__, returnStatus));
+    CcspTraceInfo(("[%s] -- Exit returnStatus: %lu\n", __FUNCTION__, returnStatus));
     return  returnStatus;
 }
 
@@ -545,7 +545,7 @@ Pam_GetParamStringValue
 
     UNREFERENCED_PARAMETER(hInsContext);
 
-    CcspTraceInfo(("[%s] -- '%s', pValue addr: 0x%x, pulSize addr: 0x%x \n", __FUNCTION__, ParamName, pValue, pulSize));
+    CcspTraceInfo(("[%s] -- '%s', pValue addr: 0x%s, pulSize addr: 0x%ln \n", __FUNCTION__, ParamName, pValue, pulSize));
 
 
     IpIfObjNameSize = sizeof(IpIfObjName) - 1;
@@ -599,7 +599,7 @@ Pam_GetParamStringValue
         {
 
 	  //	  CcspTraceInfo(("Pam_GetParamStringValue -- '%s' Pam_GetFirstIpInterfaceObjectName ret success\n", ParamName));
-	  CcspTraceInfo(("[%s] -- '%s' IpIfObjNameSize: %d, pulSize: %d\n", __FUNCTION__, ParamName, IpIfObjNameSize, *pulSize));
+	  CcspTraceInfo(("[%s] -- '%s' IpIfObjNameSize: %lu, pulSize: %lu\n", __FUNCTION__, ParamName, IpIfObjNameSize, *pulSize));
 
             if ( IpIfObjNameSize < *pulSize )
             {

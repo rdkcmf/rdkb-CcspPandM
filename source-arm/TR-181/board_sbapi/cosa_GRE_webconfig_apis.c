@@ -246,7 +246,7 @@ static void checkComponentHealthStatus(char *compName, char * dbusPath, char *st
         parameterNames[0] = param_name;
 
         snprintf(wifi_comp_id, sizeof(wifi_comp_id), "eRT.%s", compName);
-        CcspTraceInfo(("param_name is %s,dbusPath is %s,wifi_comp_id is %s\n", parameterNames,dbusPath,wifi_comp_id));
+        CcspTraceInfo(("param_name is %p,dbusPath is %s,wifi_comp_id is %s\n", parameterNames,dbusPath,wifi_comp_id));
 
         ret = CcspBaseIf_getParameterValues(bus_handle, wifi_comp_id, dbusPath,  parameterNames, 1, &val_size, &parameterval);
         CcspTraceInfo(("ret = %d val_size = %d\n",ret,val_size));

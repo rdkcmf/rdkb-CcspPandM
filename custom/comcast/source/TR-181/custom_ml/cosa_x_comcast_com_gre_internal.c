@@ -85,7 +85,7 @@ CosaGreInitialize
     ifCnt = CosaDml_GreIfGetNumberOfEntries();
     nextIns = 1;
 
-	CcspTraceInfo(( "%s %d - GreIfCount:%d\n", __FUNCTION__, __LINE__, ifCnt ));
+	CcspTraceInfo(( "%s %d - GreIfCount:%lu\n", __FUNCTION__, __LINE__, ifCnt ));
 
     for (i = 0; i < ifCnt; i++)
     {

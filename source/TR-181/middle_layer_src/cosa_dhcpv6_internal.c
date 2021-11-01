@@ -537,7 +537,7 @@ CosaDhcpv6BackendGetDhcpv6Info
         }
         else
         {
-            CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6cGetServerCfg() return error:%d.\n", returnStatus));
+            CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6cGetServerCfg() return error:%lu.\n", returnStatus));
         }
  
         /* We begin treat DHCPv6.Client.{i}.SentOption.{i} */
@@ -673,7 +673,7 @@ CosaDhcpv6BackendGetDhcpv6Info
         }
         else
         {
-            CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6cGetReceivedOptionCfg() return error:%d.\n", returnStatus));
+            CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6cGetReceivedOptionCfg() return error:%lu.\n", returnStatus));
         }
         
     }
@@ -917,7 +917,7 @@ CosaDhcpv6BackendGetDhcpv6Info
         }
         else
         {
-            CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6cGetServerCfg() return error:%d.\n", returnStatus));
+            CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6cGetServerCfg() return error:%lu.\n", returnStatus));
         }
 
         /* The following three tables are static table. We can get them one by one
@@ -950,7 +950,7 @@ CosaDhcpv6BackendGetDhcpv6Info
             }
             else
             {
-                CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6sGetIPv6Address() return error:%d.\n", returnStatus));
+                CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6sGetIPv6Address() return error:%lu.\n", returnStatus));
             }
 
             /* DHCPv6.Server.{i}.Pool.{i}.Client.{i}.IPv6Prefix. */
@@ -970,7 +970,7 @@ CosaDhcpv6BackendGetDhcpv6Info
             }
             else
             {
-                CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6sGetIPv6Prefix() return error:%d.\n", returnStatus));
+                CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6sGetIPv6Prefix() return error:%lu.\n", returnStatus));
             }
 
             /* DHCPv6.Server.{i}.Pool.{i}.Client.{i}.Option. */
@@ -990,7 +990,7 @@ CosaDhcpv6BackendGetDhcpv6Info
             }
             else
             {
-                CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6sGetIPv6Option() return error:%d.\n", returnStatus));
+                CcspTraceWarning(("CosaDhcpv6BackendGetDhcpv6Info -- CosaDmlDhcpv6sGetIPv6Option() return error:%lu.\n", returnStatus));
             }
 
         }

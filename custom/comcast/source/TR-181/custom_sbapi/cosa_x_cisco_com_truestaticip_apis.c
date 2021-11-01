@@ -205,7 +205,7 @@ CosaDmlTSIPLoadMappingFile
         return ANSC_STATUS_FAILURE;
     }
 
-    AnscTraceWarning(("!!!!!! CosaDmlTSIPLoadMappingFile 2 len=%d !!!!!!\n", len));
+    AnscTraceWarning(("!!!!!! CosaDmlTSIPLoadMappingFile 2 len=%lu !!!!!!\n", len));
 
     fseek(fpMapping, 0L, SEEK_SET);
     pBuffer = (char*)AnscAllocateMemory(len + 1);
@@ -1565,7 +1565,7 @@ CosaDmlAdditionalSubnetLoadPsm
 
         if ( !pSubnetEntry )
         {
-            AnscTraceWarning(("%s -- insufficient resources, Subnet instance %d\n", __FUNCTION__, ulIndex));
+            AnscTraceWarning(("%s -- insufficient resources, Subnet instance %lu\n", __FUNCTION__, ulIndex));
             return  ANSC_STATUS_RESOURCES;
         }
         else

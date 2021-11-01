@@ -169,7 +169,7 @@ CosaDmlEthLinkFindByInstNum
         }
     }
 
-    AnscTraceWarning(("%s -- failed to find %d!\n", __FUNCTION__, ulInstNum));
+    AnscTraceWarning(("%s -- failed to find %lu!\n", __FUNCTION__, ulInstNum));
 
     return  NULL;
 }
@@ -215,7 +215,7 @@ CosaDmlEthLinkLoadPsm
 
         if ( !pEthLink )
         {
-            AnscTraceWarning(("%s -- insufficient resources, EthLink instance %d\n", __FUNCTION__, ulIndex));
+            AnscTraceWarning(("%s -- insufficient resources, EthLink instance %lu\n", __FUNCTION__, ulIndex));
             return  ANSC_STATUS_RESOURCES;
         }
         else
@@ -448,7 +448,7 @@ CosaDmlEthLinkLoadPsm
 
                 if ( returnStatus != ANSC_STATUS_SUCCESS )
                 {
-                    AnscTraceWarning(("%s -- failed to retrieve LowerLayer name parameter, error code %d\n", __FUNCTION__, returnStatus));
+                    AnscTraceWarning(("%s -- failed to retrieve LowerLayer name parameter, error code %lu\n", __FUNCTION__, returnStatus));
                 }
             }
         }
@@ -984,7 +984,7 @@ CosaDmlEthLinkAddEntry
 
         if ( !pEthLink )
         {
-            AnscTraceWarning(("%s -- insufficient resources, EthLink instance %d\n", __FUNCTION__, pEntry->Cfg.InstanceNumber));
+            AnscTraceWarning(("%s -- insufficient resources, EthLink instance %lu\n", __FUNCTION__, pEntry->Cfg.InstanceNumber));
             return  ANSC_STATUS_RESOURCES;
         }
         else
