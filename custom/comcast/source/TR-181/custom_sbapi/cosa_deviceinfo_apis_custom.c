@@ -133,23 +133,27 @@ Local_CosaDmlGetParamValueByPathName
 
     ANSC_STATUS retval = ANSC_STATUS_FAILURE;
     parameterValStruct_t varStruct;
-    char outdata[80];
+    char outdata[80] = {0};
     ULONG size;
-    outdata[0] = '\0';
+    errno_t rc = -1;
 
     varStruct.parameterName = (char*)pathName;
     varStruct.parameterValue = outdata;
 
-    size = sizeof(outdata);
+    size = sizeof(outdata) - 1;
     retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
-    
     if ( retval != ANSC_STATUS_SUCCESS) 
     {
         return ANSC_STATUS_FAILURE;
     }
     else 
     {
-        AnscCopyString(pValue, outdata);
+        rc = STRCPY_S_NOCLOBBER(pValue, *pulSize, outdata);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
         *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
     }
@@ -356,7 +360,6 @@ CosaDmlDiGetCMIPAddress
     ANSC_STATUS retStatus;
     ULONG  pulSizeCopy = 0;
     pulSizeCopy = *pulSize;
-
     retStatus = Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.IPv6Address", pValue, pulSize);
     if(!(*pulSize))
     {
