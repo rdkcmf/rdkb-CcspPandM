@@ -212,6 +212,8 @@ static int UtSetBool(const char *path, BOOLEAN val)
     *  CosaDmlDynamicDns_SetEnable
 ***********************************************************************/
 
+static int g_NrDynamicDnsClient =  0;
+
 BOOL
 CosaDmlDynamicDns_GetEnable()
 {
@@ -271,12 +273,15 @@ CosaDmlDynamicDns_SetEnable
            return -1;
        }
        syscfg_set(NULL, "dynamic_dns_enable", buf);
-       if(bValue == FALSE)
-       {
-          syscfg_set(NULL, "arddnsclient_1::enable", buf);
-          syscfg_set(NULL, "ddns_host_enable_1", buf);
-       }
+       syscfg_set(NULL, "arddnsclient_1::enable", buf);
+       syscfg_set(NULL, "ddns_host_enable_1", buf);
        syscfg_commit();
+
+       if (bValue == TRUE && g_NrDynamicDnsClient != 0) {
+           CcspTraceInfo(("%s Going to invoke script from CosaDmlDynamicDns_SetEnable() \n", __FUNCTION__));
+           v_secure_system("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart &");
+       }
+
        return 0;
    }
    return -1;
@@ -295,8 +300,6 @@ CosaDmlDynamicDns_SetEnable
     *  CosaDmlDynamicDns_Client_GetConf
     *  CosaDmlDynamicDns_Client_SetConf
 ***********************************************************************/
-
-static int g_NrDynamicDnsClient =  0;
 
 static int
 DynamicDns_Client_InsGetIndex
@@ -418,7 +421,7 @@ CosaDmlDynamicDns_Client_AddEntry
     if (CosaDmlDynamicDns_GetEnable() && pEntry->Enable == TRUE)
     {
         CcspTraceInfo(("%s Going to restart dynamic dns service",__FUNCTION__));
-        vsystem("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart");
+        v_secure_system("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart &");
     }
 
     return (rc != 0) ? ANSC_STATUS_FAILURE : ANSC_STATUS_SUCCESS;
@@ -517,7 +520,7 @@ CosaDmlDynamicDns_Client_SetConf
     if (isUserconfChanged == TRUE)
     {
         CcspTraceInfo(("%s Going to restart dynamic dns service",__FUNCTION__));
-        vsystem("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart");
+        v_secure_system("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart &");
     }
 
     return (rc != 0) ? ANSC_STATUS_FAILURE : ANSC_STATUS_SUCCESS;
@@ -763,7 +766,7 @@ CosaDmlDynamicDns_Host_SetConf
     if (CosaDmlDynamicDns_GetEnable() && (g_DDNSHost[index].Enable == TRUE) && (isHostchanged == TRUE))
     {
         CcspTraceInfo(("%s Going to restart dynamic dns service",__FUNCTION__));
-        vsystem("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart");
+        v_secure_system("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart &");
     }
     return ANSC_STATUS_SUCCESS;
 }
