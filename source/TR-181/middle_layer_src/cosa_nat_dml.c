@@ -80,6 +80,7 @@
 #include "safec_lib_common.h"
 #include "cosa_nat_apis.h"
 #include "base64.h"
+#include "cosa_x_comcast_com_parentalcontrol_apis.h"
 
 #if     CFG_USE_CCSP_SYSLOG
     #include <ccsp_syslog.h>
@@ -1110,6 +1111,13 @@ X_CISCO_COM_DMZ_SetParamStringValue
             }
         }
         else{
+            // return FALSE if address is not of "a.b.c.d" form
+            ANSC_STATUS ret;
+            char wrapstring[256] = {0};
+            ret = isValidIP(4, pString, wrapstring, sizeof(wrapstring));
+            if(ANSC_STATUS_SUCCESS != ret)
+                return FALSE;
+
             dmzHost = (ULONG)_ansc_inet_addr(pString);
             if(FALSE == CosaDmlNatChkPortMappingClient(dmzHost)){
                 return FALSE;   /* dmz host not in local lan network */
