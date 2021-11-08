@@ -71,6 +71,7 @@
 #include "cosa_dhcpv4_webconfig_apis.h"
 #include "safec_lib_common.h"
 #include "syscfg/syscfg.h"
+#include <arpa/inet.h>
 
 static int ifWanRestart = 0;
 
@@ -2200,6 +2201,10 @@ LanMngm_Validate
 {
     UNREFERENCED_PARAMETER(pReturnParamName);
     UNREFERENCED_PARAMETER(puLength);
+    struct in_addr wan_ipaddr, wan_netmask;
+    char wan_ipaddr_buf[32] = {0};
+    char wan_netmask_buf[32] = {0};
+    bool isPrivate = FALSE;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_LAN_MANAGEMENT        pLanMngm    = (PCOSA_DML_LAN_MANAGEMENT)pLinkObj->hContext;
     ULONG lanSubnetMask                         = 0;
@@ -2255,13 +2260,80 @@ LanMngm_Validate
         CcspTraceWarning(("RDKB_LAN_CONFIG_CHANGED: Modified LanIPAddress doesn't meet the conditions,reverting back to old value  ...\n"));
         goto RET_ERR;
     }else if(pLanMngm->LanIPAddress.Dot[0] == 10 ){
-        return TRUE;
+        isPrivate = TRUE;
     }else if(pLanMngm->LanIPAddress.Dot[0] == 172 && pLanMngm->LanIPAddress.Dot[1] >= 16 && pLanMngm->LanIPAddress.Dot[1] <= 31){
-        return TRUE;
+        isPrivate = TRUE;
     }
     else if(pLanMngm->LanIPAddress.Dot[0] == 192 && pLanMngm->LanIPAddress.Dot[1] == 168)
     {
-        return TRUE;
+        isPrivate = TRUE;
+    }
+
+    if(isPrivate == TRUE)
+    {
+        char evt_name[] = "current_wan_ipaddr";
+        char evt_wan_mask[]= "ipv4_wan_subnet";
+        uint32_t subnet_mask = 0;
+        char *str = NULL;
+
+        if ( commonSyseventGet( evt_name, wan_ipaddr_buf, sizeof(wan_ipaddr_buf)) == 0 )
+        {
+            if ( (wan_ipaddr_buf != NULL) && (strcmp(wan_ipaddr_buf , "0.0.0.0") == 0 ) )
+            {
+                CcspTraceWarning(("wan IP not configured\n"));
+                return TRUE;
+            }
+        }
+
+        if (inet_aton(wan_ipaddr_buf, &wan_ipaddr) == 0)
+        {
+            CcspTraceWarning(("Invalid wan IP address \n"));
+            return TRUE;
+        }
+
+        if (commonSyseventGet( evt_wan_mask, wan_netmask_buf, sizeof(wan_netmask_buf)) == 0)
+        {
+            if ( (wan_netmask_buf != NULL) && ((strcmp(wan_netmask_buf ,"0.0.0.0") == 0 ) || (strcmp(wan_netmask_buf ,"0") == 0)))
+            {
+                CcspTraceWarning(("wan_netmask IP not configured\n"));
+                return TRUE;
+            }
+        }
+
+        str = strstr(wan_netmask_buf,".");
+        if(str == NULL)
+        {
+            char *end_ptr = NULL;
+            int prefix = (int)strtol(wan_netmask_buf,&end_ptr,10);
+            if(*end_ptr)
+                return TRUE;
+
+            if(prefix < 0 || prefix > 32)
+            {
+                CcspTraceWarning(("Invalid wan_netmask address \n"));
+                return TRUE;
+            }
+            wan_netmask.s_addr = htonl(~((1 << (32 - prefix)) - 1));
+        }
+        else if (inet_aton(wan_netmask_buf, &wan_netmask) == 0){
+                 CcspTraceWarning(("Invalid wan_netmask address \n"));
+                return TRUE;
+        }
+
+        if(ntohl(wan_netmask.s_addr) < ntohl(pLanMngm->LanSubnetMask.Value))
+            subnet_mask = ntohl(wan_netmask.s_addr);
+        else
+            subnet_mask = ntohl(pLanMngm->LanSubnetMask.Value);
+
+        if ( (ntohl(wan_ipaddr.s_addr) & subnet_mask) == (subnet_mask & ntohl(pLanMngm->LanIPAddress.Value)))
+        {
+            CcspTraceWarning(("Avoiding Same IPv4 address for both lan and wan ip subnet address\n"));
+            return FALSE;
+        }
+        else
+        {
+            return TRUE;
+        }
     }
 
 RET_ERR:
