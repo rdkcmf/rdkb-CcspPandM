@@ -1170,6 +1170,7 @@ Interface2_GetParamUlongValue
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
     PCOSA_DML_IP_IF_INFO            p            = NULL;
+    long uptime1                                 = 0;
 
 #if defined (_INTEL_MAX_MTU_PROPOSED_FEATURE_)
     PCOSA_DATAMODEL_IP              pMyObject    = (PCOSA_DATAMODEL_IP)g_pCosaBEManager->hIP;
@@ -1196,7 +1197,8 @@ Interface2_GetParamUlongValue
     if( AnscEqualString(ParamName, "LastChange", TRUE))
     {
         /* collect value */
-        *puLong = AnscGetTimeIntervalInSeconds(pIPInterface->Info.LastChange, AnscGetTickInSeconds());
+        get_uptime(&uptime1);
+        *puLong = AnscGetTimeIntervalInSeconds(pIPInterface->Info.LastChange, uptime1);
         return TRUE;
     }
 

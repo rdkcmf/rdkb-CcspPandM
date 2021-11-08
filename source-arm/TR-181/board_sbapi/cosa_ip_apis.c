@@ -1957,6 +1957,7 @@ CosaDmlIpIfGetEntry
 {
 
     int i;
+    long uptime2 = 0;
     errno_t safec_rc = -1;
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -2021,7 +2022,8 @@ CosaDmlIpIfGetEntry
         }
     }
 
-    pEntry->Info.LastChange  =  AnscGetTickInSeconds();
+    get_uptime(&uptime2);
+    pEntry->Info.LastChange  =  uptime2;
     safec_rc = strcpy_s(pEntry->Info.Name, sizeof(pEntry->Info.Name), (char *)g_ipif_names[ulIndex]);
     ERR_CHK(safec_rc);
 

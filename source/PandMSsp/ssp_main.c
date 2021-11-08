@@ -46,6 +46,7 @@
 #include "ssp_global.h"
 #include "stdlib.h"
 #include "ccsp_dm_api.h"
+#include "cosa_ip_apis.h"
 #include <sys/sysinfo.h>
 #ifdef USE_PCD_API_EXCEPTION_HANDLING
 #include "pcdapi.h"
@@ -104,7 +105,7 @@ CcspBaseIf_deadlock_detection_log_print
 time_t start_t, end_t;
 double diff_t;
 
-static void get_uptime(long *uptime)
+void get_uptime(long *uptime)
 {
     struct sysinfo info;
     sysinfo( &info );

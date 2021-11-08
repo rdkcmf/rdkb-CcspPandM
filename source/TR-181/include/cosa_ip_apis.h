@@ -417,6 +417,8 @@ CosaDmlIpInit
         PANSC_HANDLE                phContext
     );
 
+void get_uptime(long *uptime);
+
 /*
  *  IP Interface
  */
