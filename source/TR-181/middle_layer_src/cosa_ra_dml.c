@@ -1732,6 +1732,13 @@ InterfaceSetting1_Validate
             CcspTraceWarning(("InterfaceSetting1_Validate() failed.\n"));
             return FALSE;
         }
+
+        if (!(pRAInterface2->Cfg.AdvLinkMTU == 0) && !(pRAInterface2->Cfg.AdvLinkMTU >= 1280))
+        {
+            CcspTraceWarning(("InterfaceSetting1_Validate() failed due to AdvLinkMTU value.\n"));
+            return FALSE;
+        }
+
     }
 
     return TRUE;

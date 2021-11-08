@@ -104,6 +104,7 @@ typedef struct ZebraRaConf_s {
     int             lifetime;
 	int             managedFlag;
 	int             otherFlag;
+    int             mtu;
     RtPrefer_t      preference;
 } ZebraRaConf_t;
 
@@ -236,6 +237,9 @@ static int ParseZebraRaConf(ZebraRaConf_t *conf)
 			conf->managedFlag = 1;
 		} else if (strstr(line, "other-config-flag") != NULL) {
 			conf->otherFlag = 1;
+        } else if (strstr(line, "mtu") != NULL) {
+            if (sscanf(line, "ipv6 nd mtu %d", &conf->mtu) != 1)
+                goto BAD_FORMAT;
         } else if (strstr(line, "router-preference") != NULL) {
             if (sscanf(line, "ipv6 nd router-preference %s", sVal[0]) != 1)
                 goto BAD_FORMAT;
@@ -285,7 +289,7 @@ static int LoadRaInterface(PCOSA_DML_RA_IF_FULL raif)
     raif->Cfg.bAdvOtherConfigFlag   = raConf.otherFlag;
     raif->Cfg.bAdvMobileAgentFlag   = FALSE;
     raif->Cfg.bAdvNDProxyFlag       = FALSE;
-    raif->Cfg.AdvLinkMTU            = 0;
+    raif->Cfg.AdvLinkMTU            = raConf.mtu;
     raif->Cfg.AdvReachableTime      = 0;
     raif->Cfg.AdvRetransTimer       = 0;
     raif->Cfg.AdvCurHopLimit        = 0;
@@ -445,9 +449,10 @@ CosaDmlRaIfSetCfg
 {
     UNREFERENCED_PARAMETER(hContext);
     UtopiaContext utctx = {0};
-    char out[8] = {0};
+    char out[16] = {0};
 	unsigned int  managedFlag = 0;
 	unsigned int  otherFlag   = 0;
+    unsigned int  mtu   = 0;
 	
     fprintf(stderr, "%s: Only support O/M flags. NOT SUPPORTED other flags FOR NOW!!\n", __FUNCTION__);
 	
@@ -462,8 +467,14 @@ CosaDmlRaIfSetCfg
 		if ( out[0] == '1' )
 			otherFlag = 1;
 
+        memset(out, 0, sizeof(out));
+        Utopia_RawGet(&utctx,NULL,"router_mtu",out,sizeof(out));
+        sscanf(out, "%d", &mtu);
+        memset(out, 0, sizeof(out));
+
 		if ( ( !(pCfg->bAdvManagedFlag)     == !managedFlag ) && 
-			 ( !(pCfg->bAdvOtherConfigFlag) == !otherFlag   ) )
+			 ( !(pCfg->bAdvOtherConfigFlag) == !otherFlag   ) &&
+             ( (pCfg->AdvLinkMTU) == mtu) )
                 {
                     Utopia_Free(&utctx,0);
                     return ANSC_STATUS_FAILURE;
@@ -471,6 +482,11 @@ CosaDmlRaIfSetCfg
 
 		Utopia_RawSet(&utctx, NULL, "router_managed_flag", pCfg->bAdvManagedFlag ? "1" : "0");
 		Utopia_RawSet(&utctx, NULL, "router_other_flag", pCfg->bAdvOtherConfigFlag ? "1" : "0");
+
+        out[0] = 0;
+        sprintf(out, "%ld", pCfg->AdvLinkMTU);
+        Utopia_RawSet(&utctx,NULL,"router_mtu",out);
+        memset(out, 0, sizeof(out));
 
 		Utopia_Free(&utctx,1);
 		
