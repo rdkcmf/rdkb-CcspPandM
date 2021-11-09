@@ -3958,6 +3958,7 @@ static BOOL _Find_IPv4_LAN_DML(ULONG client, ULONG *dml_ip_instance, ULONG *dml_
     ULONG addr_inst_num = 0;
     ULONG val_len = 0;
     ULONG ipaddr = 0xffffffff, netmask = 0xffffffff;
+    errno_t rc = -1;
 
     char str[MAX_QUERY];
     inet_ntop(AF_INET, &client, str, INET_ADDRSTRLEN);
@@ -3972,31 +3973,38 @@ static BOOL _Find_IPv4_LAN_DML(ULONG client, ULONG *dml_ip_instance, ULONG *dml_
         {
             /* Get ethernet link object */
             snprintf(ip_instance, sizeof(ip_instance), "%s%lu", IP_INTERFACE_DML, ip_inst_num);
-            snprintf(name, sizeof(name), "%s.LowerLayers", ip_instance);
+            rc = sprintf_s(name, sizeof(name), "%s.LowerLayers", ip_instance);
+            if(rc < EOK) ERR_CHK(rc);
             val_len = sizeof(param_val);
             if ( (0 == g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len)) && _ansc_strstr(param_val, "Device.Ethernet.Link"))
             {
                 /* See if lower layer is a bridge (all LANs are bridges currenctly) */
-                snprintf(name, sizeof(name), "%s.LowerLayers", param_val);
+                rc = sprintf_s(name, sizeof(name), "%s.LowerLayers", param_val);
+                if(rc < EOK) ERR_CHK(rc);
                 val_len = sizeof(param_val);
                 if ( (0 == g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len)) && _ansc_strstr(param_val, "Device.Bridging.Bridge"))
                 {
                     /* Now iterate through each IPv4 address */
-                    snprintf(name, sizeof(name), "%s.IPv4AddressNumberOfEntries", ip_instance);
+                    rc = sprintf_s(name, sizeof(name), "%s.IPv4AddressNumberOfEntries", ip_instance);
+                    if(rc < EOK) ERR_CHK(rc);
                     ip_address_count = g_GetParamValueUlong(g_pDslhDmlAgent, name);
                     for (j=0; j<ip_address_count; j++)
                     {
-                        snprintf(name, sizeof(name), "%s.IPv4Address.", ip_instance); 
+                        rc = sprintf_s(name, sizeof(name), "%s.IPv4Address.", ip_instance);
+                        if(rc < EOK) ERR_CHK(rc);
                         addr_inst_num = g_GetInstanceNumberByIndex(g_pDslhDmlAgent, name, j);
                         if (addr_inst_num)
                         {
-                            snprintf(addr_instance, sizeof(addr_instance), "%s.IPv4Address.%lu", ip_instance, addr_inst_num);
+                            rc = sprintf_s(addr_instance, sizeof(addr_instance), "%s.IPv4Address.%lu", ip_instance, addr_inst_num);
+                            if(rc < EOK) ERR_CHK(rc);
                             /* Get IPv4 address and netmask */
-                            snprintf(name, sizeof(name), "%s.IPAddress", addr_instance);
+                            rc = sprintf_s(name, sizeof(name), "%s.IPAddress", addr_instance);
+                            if(rc < EOK) ERR_CHK(rc);
                             val_len = sizeof(ip_addr);
                             if (g_GetParamValueString(g_pDslhDmlAgent, name, ip_addr, &val_len)) 
                                 continue; 
-                            snprintf(name, sizeof(name), "%s.SubnetMask", addr_instance);
+                            rc = sprintf_s(name, sizeof(name), "%s.SubnetMask", addr_instance);
+                            if(rc < EOK) ERR_CHK(rc);
                             val_len = sizeof(ip_netmask);
                             if (g_GetParamValueString(g_pDslhDmlAgent, name, ip_netmask, &val_len)) 
                                 continue; 
@@ -4042,6 +4050,7 @@ static BOOL validateClientIPAddress(ULONG client_ip_address)
     ULONG dml_ip_inst_num = 0;
     ULONG dhcp_ip_address_start = 0xffffffff;
     ULONG dhcp_ip_address_end = 0xffffffff;
+    errno_t rc = -1;
 
     /* Find the IP instance */
     if(_Find_IPv4_LAN_DML(client_ip_address, &dml_ip_inst_num, NULL) && dml_ip_inst_num)
@@ -4057,14 +4066,17 @@ static BOOL validateClientIPAddress(ULONG client_ip_address)
             if(pool_inst_num)
             {
                  snprintf(pool_instance, sizeof(pool_instance), "%s%lu", DHCPV4_SERVER_POOL_DML, pool_inst_num);
-                 snprintf(name, sizeof(name), "%s.Interface", pool_instance);
+                 rc = sprintf_s(name, sizeof(name), "%s.Interface", pool_instance);
+                 if(rc < EOK) ERR_CHK(rc);
                  val_len = sizeof(param_val);
                 if((0 == g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len)) && _ansc_strstr(param_val, ip_instance))
                 {
-                    snprintf(name, sizeof(name), "%s.Enable", pool_instance);
+                    rc = sprintf_s(name, sizeof(name), "%s.Enable", pool_instance);
+                    if(rc < EOK) ERR_CHK(rc);
                     if(g_GetParamValueBool(g_pDslhDmlAgent, name))
                     {
-                        snprintf(name, sizeof(name), "%s.MinAddress", pool_instance);
+                        rc = sprintf_s(name, sizeof(name), "%s.MinAddress", pool_instance);
+                        if(rc < EOK) ERR_CHK(rc);
                         val_len = sizeof(param_val);
                         if(g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len))
                             continue;
@@ -4072,7 +4084,8 @@ static BOOL validateClientIPAddress(ULONG client_ip_address)
                         inet_pton(AF_INET, param_val, &dhcp_ip_address_end);
                         dhcp_ip_address_start = htonl(dhcp_ip_address_end);
 
-                        snprintf(name, sizeof(name), "%s.MaxAddress", pool_instance);
+                        rc = sprintf_s(name, sizeof(name), "%s.MaxAddress", pool_instance);
+                        if(rc < EOK) ERR_CHK(rc);
                         val_len = sizeof(param_val);
                         if(g_GetParamValueString(g_pDslhDmlAgent, name, param_val, &val_len))
                             continue;

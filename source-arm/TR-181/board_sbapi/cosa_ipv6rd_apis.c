@@ -552,12 +552,14 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
     char buf[64];
     char *ptr;
     char addrsource[16];
+    errno_t rc = -1;
 #if defined(USE_SYSTEM)
     char cmd[MAX_LINE];
 #endif
 
     /* if AddressSource is not specified, use wan0's ipv4 address (which is from ISP) */
-    snprintf(addrsource, sizeof(addrsource), "%s", ifconf->AddressSource);
+    rc = sprintf_s(addrsource, sizeof(addrsource), "%s", ifconf->AddressSource);
+    if(rc < EOK) ERR_CHK(rc);
     if (addrsource[0] == '\0') {
         if (ifname_to_ipaddr(INTERFACE, addrsource, sizeof(addrsource)) != 0) {
             syslog(LOG_ERR, "%s: Local address can't determined", __FUNCTION__);
@@ -589,7 +591,8 @@ IPv6rd_TunnelAdd(const COSA_DML_IPV6RD_IF *ifconf)
 #endif
 
     /* to generate 6rd address for 6rd tunnel */
-	snprintf(buf, sizeof(buf), "%s", ifconf->SPIPv6Prefix);
+	rc = sprintf_s(buf, sizeof(buf), "%s", ifconf->SPIPv6Prefix);
+	if(rc < EOK) ERR_CHK(rc);
 	if ((ptr = strchr(buf, '/')) == NULL) {
 		syslog(LOG_ERR, "%s: invalid SPIPv6Prefix", __FUNCTION__);
 		return -1;

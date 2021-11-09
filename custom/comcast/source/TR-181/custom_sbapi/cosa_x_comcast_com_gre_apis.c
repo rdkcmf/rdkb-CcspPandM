@@ -606,13 +606,15 @@ CosaDml_GreIfSetEnable(ULONG ins, BOOL enable)
     char psmRec[MAX_GRE_PSM_REC + 1];
     char greNetworkInterface[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sEnable", greNetworkInterface);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sEnable", greNetworkInterface);
+    if(rc < EOK) ERR_CHK(rc);
 
     if (g_SetParamValueBool(tmpPath, enable) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
@@ -632,13 +634,15 @@ CosaDml_GreIfGetStatus(ULONG ins, COSA_DML_GRE_STATUS *st)
     ULONG size = sizeof(status);
     char greNetworkInterface[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (ins != 1 || !st)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sStatus", greNetworkInterface);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sStatus", greNetworkInterface);
+    if(rc < EOK) ERR_CHK(rc);
 
     if (g_GetParamValueString(g_pDslhDmlAgent, tmpPath, status, &size) != 0)
         return ANSC_STATUS_FAILURE;
@@ -660,13 +664,15 @@ CosaDml_GreIfGetLastchange(ULONG ins, ULONG *time)
 {
     char greNetworkInterface[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (ins != 1 || !time)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sLastChange", greNetworkInterface);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sLastChange", greNetworkInterface);
+    if(rc < EOK) ERR_CHK(rc);
 
     *time = g_GetParamValueUlong(g_pDslhDmlAgent, tmpPath);
 
@@ -931,13 +937,15 @@ CosaDml_GreIfGetConnEndpoint(ULONG ins, char *ep, ULONG size)
 {
     char greNetworkInterface[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (ins != 1 || !ep)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sRemoteEndpoint", greNetworkInterface);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sRemoteEndpoint", greNetworkInterface);
+    if(rc < EOK) ERR_CHK(rc);
 
     if (g_GetParamValueString(g_pDslhDmlAgent, tmpPath, ep, &size) != 0)
         return ANSC_STATUS_FAILURE;
@@ -964,6 +972,7 @@ CosaDml_GreIfSetKeyGenPolicy(ULONG ins, COSA_DML_KEY_ID_GEN_POLICY policy)
     char *mode;
     char greNetworkInterface[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
@@ -984,7 +993,8 @@ CosaDml_GreIfSetKeyGenPolicy(ULONG ins, COSA_DML_KEY_ID_GEN_POLICY policy)
 
     if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sKeyMode", greNetworkInterface);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sKeyMode", greNetworkInterface);
+    if(rc < EOK) ERR_CHK(rc);
 
     if (g_SetParamValueString(tmpPath, mode) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
@@ -1017,13 +1027,15 @@ CosaDml_GreIfSetKeyId(ULONG ins, const char *keyId)
     char psmRec[MAX_GRE_PSM_REC + 1];
     char greNetworkInterface[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sKey", greNetworkInterface);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sKey", greNetworkInterface);
+    if(rc < EOK) ERR_CHK(rc);
 
     if (g_SetParamValueString(tmpPath, (char *)keyId) != 0)
         return ANSC_STATUS_FAILURE;
@@ -1054,13 +1066,15 @@ CosaDml_GreIfSetUseSeqNum(ULONG ins, BOOL enable)
     char psmRec[MAX_GRE_PSM_REC + 1];
     char greNetworkInterface[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sSequenceNumberEnabled", greNetworkInterface);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sSequenceNumberEnabled", greNetworkInterface);
+    if(rc < EOK) ERR_CHK(rc);
 
     if (g_SetParamValueBool(tmpPath, enable) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
@@ -1091,13 +1105,15 @@ CosaDml_GreIfSetUseChecksum(ULONG ins, BOOL enable)
     char psmRec[MAX_GRE_PSM_REC + 1];
     char greNetworkInterface[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sChecksumEnabled", greNetworkInterface);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sChecksumEnabled", greNetworkInterface);
+    if(rc < EOK) ERR_CHK(rc);
 
     if (g_SetParamValueBool(tmpPath, enable) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
@@ -1130,14 +1146,17 @@ CosaDml_GreIfSetDSCPMarkPolicy(ULONG ins, INT dscp)
     char greNetworkInterface[256];
     char tmpPath[256];
     char tmp2Path[256];
+    errno_t rc = -1;
 
     if (ins != 1)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRE_PARAM_GREIF, ins, greNetworkInterface, sizeof(greNetworkInterface)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sTOSMode", greNetworkInterface);
-    snprintf(tmp2Path, sizeof(tmp2Path), "%sTOS", greNetworkInterface);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sTOSMode", greNetworkInterface);
+    if(rc < EOK) ERR_CHK(rc);
+    rc = sprintf_s(tmp2Path, sizeof(tmp2Path), "%sTOS", greNetworkInterface);
+    if(rc < EOK) ERR_CHK(rc);
 
     if (dscp >= 0) {
         if (g_SetParamValueString(tmpPath, "Static") != ANSC_STATUS_SUCCESS

@@ -2939,7 +2939,8 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
             snprintf(info6->prefix, sizeof(info6->prefix), "%s", prefix);
 
         /* record the interface */
-        snprintf(info6->interface, sizeof(info6->interface), "%s", ifname);
+        safec_rc = sprintf_s(info6->interface, sizeof(info6->interface), "%s", ifname);
+        if(safec_rc < EOK) ERR_CHK(safec_rc);
 
         /* key/val pairs */
         while ((key = strtok_r(NULL, delim, &saveptr)) != NULL
@@ -3020,7 +3021,8 @@ Route6_GetRouteTable(const char *ifname, RouteInfo6_t infos[], int *numInfo)
             snprintf(info6->prefix, sizeof(info6->prefix), "%s", prefix);
 
         /* record the interface */
-        snprintf(info6->interface, sizeof(info6->interface), "%s", ifname);
+        safec_rc = sprintf_s(info6->interface, sizeof(info6->interface), "%s", ifname);
+        if(safec_rc < EOK) ERR_CHK(safec_rc);
 
         /* key/val pairs */
         while ((key = strtok_r(NULL, delim, &saveptr)) != NULL
@@ -3391,6 +3393,7 @@ Route6_SaveParams(const RouteAlias6_t *alias6)
 {
 	char key[256], val[256];
 	UtopiaContext ctx;
+	errno_t rc = -1;
 
 	if (!alias6)
 		return -1;
@@ -3398,7 +3401,8 @@ Route6_SaveParams(const RouteAlias6_t *alias6)
 	if (!Utopia_Init(&ctx))
 		return -1;
 
-    snprintf(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_INS);
+    rc = sprintf_s(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_INS);
+    if( rc < EOK ) ERR_CHK(rc);
     snprintf(val, sizeof(val), "%lu", alias6->insNum);
     if (!Utopia_RawSet(&ctx, NULL, key, val))
 	{
@@ -3406,14 +3410,16 @@ Route6_SaveParams(const RouteAlias6_t *alias6)
         return -1;
     }
 
-    snprintf(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_ALIAS);
+    rc = sprintf_s(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_ALIAS);
+    if( rc < EOK ) ERR_CHK(rc);
     if (!Utopia_RawSet(&ctx, NULL, key, (char*)alias6->alias))
 	{
 		Utopia_Free(&ctx, 0);
         return -1;
     }
 
-    snprintf(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_ENABLED);
+    rc = sprintf_s(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_ENABLED);
+    if( rc < EOK ) ERR_CHK(rc);
     if (!Utopia_RawSet(&ctx, NULL, key, alias6->enabled ? "1" : "0"))
 	{
 		Utopia_Free(&ctx, 0);
@@ -3989,6 +3995,7 @@ CosaDmlRoutingSetV4EntryValues
     char                            buf[33]      = {0};
     UtopiaContext                   ctx;
     errno_t                         safec_rc = -1;
+    errno_t                         rc       = -1;
     UNREFERENCED_PARAMETER(hContext);
     if (ulInstanceNumber == 0 || pAlias == NULL)
         return ANSC_STATUS_FAILURE;
@@ -4003,12 +4010,13 @@ CosaDmlRoutingSetV4EntryValues
     Utopia_RawSet(&ctx, NULL, cmd, pAlias);
 
     snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_name", ulInstanceNumber);
-    snprintf(buf, sizeof(buf), "%s %s %s %d", 
+    rc = sprintf_s(buf, sizeof(buf), "%s %s %s %d", 
             sroute[ulIndex].dest_lan_ip,
             sroute[ulIndex].netmask,
             sroute[ulIndex].gateway,
             sroute[ulIndex].metric
             );
+    if( rc < EOK ) ERR_CHK(rc);
     Utopia_RawSet(&ctx, NULL, cmd, buf);
 
     snprintf(cmd, sizeof(cmd), "tr_routing_v4entry_%lu_enabled", ulInstanceNumber);
@@ -4666,6 +4674,8 @@ CosaDmlRoutingAddV6Entry
     RouteInfo6_t *info6;
     RouteAlias6_t *alias6;
     UNREFERENCED_PARAMETER(hContext);
+    errno_t rc = -1;
+
     if (!pEntry)
         return ANSC_STATUS_FAILURE;
 
@@ -4684,7 +4694,8 @@ CosaDmlRoutingAddV6Entry
     /* I.   RouteInfo6_t{} */
     bzero(info6, sizeof(RouteInfo6_t));
     snprintf(info6->prefix, sizeof(info6->prefix), "%s", pEntry->DestIPPrefix);
-    snprintf(info6->gateway, sizeof(info6->gateway), "%s", pEntry->NextHop);
+    rc = sprintf_s(info6->gateway, sizeof(info6->gateway), "%s", pEntry->NextHop);
+    if( rc < EOK ) ERR_CHK(rc);
 
 #if defined(USE_TR181_PATH)
     char key[256];
@@ -4705,9 +4716,9 @@ CosaDmlRoutingAddV6Entry
 	    }
 	}
 #else
-    snprintf(info6->interface, sizeof(info6->interface), "%s", pEntry->Interface);
+    rc = sprintf_s(info6->interface, sizeof(info6->interface), "%s", pEntry->Interface);
+    if( rc < EOK ) ERR_CHK(rc);
 #endif
-
     snprintf(info6->proto, sizeof(info6->proto), "%s", Route6_Origin2Proto(pEntry->Origin));
     info6->metric = pEntry->ForwardingMetric;
 
@@ -4727,7 +4738,8 @@ CosaDmlRoutingAddV6Entry
     Route6_GenerateName(info6->prefix, info6->gateway, 
             info6->interface, alias6->name, sizeof(alias6->name));
     alias6->insNum = pEntry->InstanceNumber;
-    snprintf(alias6->alias, sizeof(alias6->alias), "%s", pEntry->Alias);
+    rc = sprintf_s(alias6->alias, sizeof(alias6->alias), "%s", pEntry->Alias);
+    if( rc < EOK ) ERR_CHK(rc);
     alias6->enabled = pEntry->Enable;
 
     /* IV.  PSM params */
@@ -4751,6 +4763,7 @@ CosaDmlRoutingDelV6Entry
     char key[256];
     RouteInfo6_t *info6;
     RouteAlias6_t *alias6;
+    errno_t rc = -1;
     UNREFERENCED_PARAMETER(hContext);
     if (!pEntry)
         return ANSC_STATUS_FAILURE;
@@ -4766,13 +4779,16 @@ CosaDmlRoutingDelV6Entry
 		return ANSC_STATUS_FAILURE;
 
     /* PSM params */
-    snprintf(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_INS);
+    rc = sprintf_s(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_INS);
+    if( rc < EOK ) ERR_CHK(rc);
     syscfg_unset(NULL, key);
 
-    snprintf(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_ALIAS);
+    rc = sprintf_s(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_ALIAS);
+    if( rc < EOK ) ERR_CHK(rc);
     syscfg_unset(NULL, key);
 
-    snprintf(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_ENABLED);
+    rc = sprintf_s(key, sizeof(key), "%s.%s.%s", TR_RT6_PREF, alias6->name, RT6_ENABLED);
+    if( rc < EOK ) ERR_CHK(rc);
     syscfg_unset(NULL, key);
 
     syscfg_commit();
@@ -4797,6 +4813,7 @@ CosaDmlRoutingSetV6Entry
 {
     RouteInfo6_t *info6;
     RouteAlias6_t *alias6;
+    errno_t rc = -1;
     UNREFERENCED_PARAMETER(hContext);
     if (!pEntry)
         return ANSC_STATUS_FAILURE;
@@ -4814,7 +4831,8 @@ CosaDmlRoutingSetV6Entry
 
     /* RouteInfo6_t{} */
     snprintf(info6->prefix, sizeof(info6->prefix), "%s", pEntry->DestIPPrefix);
-    snprintf(info6->gateway, sizeof(info6->gateway), "%s", pEntry->NextHop);
+    rc = sprintf_s(info6->gateway, sizeof(info6->gateway), "%s", pEntry->NextHop);
+    if( rc < EOK ) ERR_CHK(rc);
 
 #if defined(USE_TR181_PATH)
     char key[256];
@@ -4835,9 +4853,9 @@ CosaDmlRoutingSetV6Entry
 		}
     }
 #else
-	snprintf(info6->interface, sizeof(info6->interface), "%s", pEntry->Interface);
+	rc = sprintf_s(info6->interface, sizeof(info6->interface), "%s", pEntry->Interface);
+	if( rc < EOK ) ERR_CHK(rc);
 #endif
-
     snprintf(info6->proto, sizeof(info6->proto), "%s", Route6_Origin2Proto(pEntry->Origin));
     info6->metric = pEntry->ForwardingMetric;
 
@@ -4855,7 +4873,8 @@ CosaDmlRoutingSetV6Entry
             alias6->name, sizeof(alias6->name));
     if (alias6->insNum != pEntry->InstanceNumber)
             CcspTraceWarning(("%s: instance num not match !!\n", __FUNCTION__));
-    snprintf(alias6->alias, sizeof(alias6->alias), "%s", pEntry->Alias);
+    rc = sprintf_s(alias6->alias, sizeof(alias6->alias), "%s", pEntry->Alias);
+    if( rc < EOK ) ERR_CHK(rc);
     alias6->enabled = pEntry->Enable;
 
     /* PSM params */

@@ -1436,6 +1436,7 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 	componentStruct_t **        ppComponents = NULL;
 	char*   faultParam = NULL;
 	errno_t  safec_rc = -1;
+	errno_t  rc       = -1;
 
 	safec_rc = sprintf_s(dst_pathname_cr, sizeof(dst_pathname_cr), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
 	if(safec_rc < EOK)
@@ -1482,7 +1483,8 @@ CosaDmlDcRebootWifi(ANSC_HANDLE   hContext)
 			wifiresetcount = atoi(buf);
 			wifiresetcount++;
 			memset(buf,0,sizeof(buf));
-			snprintf(buf,sizeof(buf),"%d",wifiresetcount);
+			rc = sprintf_s(buf,sizeof(buf),"%d",wifiresetcount);
+			if( rc < EOK ) ERR_CHK(rc);
 			syscfg_set(NULL, "wifi_reset_count", buf);
 
 			FILE *fp = NULL;
@@ -1617,6 +1619,7 @@ CosaDmlDcSetRebootDevice
     UNREFERENCED_PARAMETER(hContext);
     int router, wifi, voip, dect, moca, all, delay;
     int delay_time = 0;
+    errno_t rc = -1;
 
     router = wifi = voip = dect = moca = all = delay = 0;
     if (strstr(pValue, "Router") != NULL) {
@@ -1656,7 +1659,8 @@ CosaDmlDcSetRebootDevice
 		rebootcount = atoi(buf);
 		rebootcount++;
 		memset(buf,0,sizeof(buf));
-		snprintf(buf,sizeof(buf),"%d",rebootcount);
+		rc = sprintf_s(buf,sizeof(buf),"%d",rebootcount);
+		if( rc < EOK ) ERR_CHK(rc);
 	syscfg_set(NULL, "reboot_count", buf);
 
 		FILE *fp = NULL;

@@ -346,7 +346,10 @@ int GreTunnelIf_hotspot_update_circuit_id(ULONG tuIns, int ins, int queuestart) 
 #endif
 		memset(outdata,0,sizeof(outdata));
 
-        snprintf(paramname, sizeof(paramname),"%s.%s", curInt, "SSID");
+        rc = sprintf_s(paramname, sizeof(paramname),"%s.%s", curInt, "SSID");
+       if(rc < EOK) {
+           ERR_CHK(rc);
+       }
         size = sizeof(outdata);
         retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
         if ( retval != ANSC_STATUS_SUCCESS)
@@ -658,14 +661,16 @@ CosaDml_GreTunnelIfGetEnable(ULONG tuIns, ULONG ins, BOOL *enable)
 ANSC_STATUS
 CosaDml_GreTunnelSetEnable(ULONG tuIns, BOOL enable)
 {
-	char psmRec[MAX_GRE_PSM_REC + 1];
+    char psmRec[MAX_GRE_PSM_REC + 1];
     char greNetworkTunnel[256];
     char tmpPath[256];
+    errno_t rc = -1;
 	if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
     if (GrePsmGetStr(GRETU_PARAM_GRETU, tuIns, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sEnable", greNetworkTunnel);	//Device.X_CISCO_COM_GRE.Interface.1.Enable
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sEnable", greNetworkTunnel);    //Device.X_CISCO_COM_GRE.Interface.1.Enable
+    if(rc < EOK)  ERR_CHK(rc);
     if (g_SetParamValueBool(tmpPath, enable) != ANSC_STATUS_SUCCESS) {
 		fprintf(stderr, "Set %s   fail\n", tmpPath);		
         //return ANSC_STATUS_FAILURE;
@@ -693,6 +698,7 @@ CosaDml_GreTunnelIfSetEnable(ULONG tuIns, ULONG ins, BOOL enable)
     char psmRec[MAX_GRE_PSM_REC + 1];
     char greNetworkTunnel[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
 	if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
@@ -703,7 +709,10 @@ CosaDml_GreTunnelIfSetEnable(ULONG tuIns, ULONG ins, BOOL enable)
     if (GreTunnelIfPsmGetStr(GRETU_PARAM_GRETU, tuIns, ins, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
 	//greNetworkTunnel:	Device.X_CISCO_COM_GRE.Tunnel.1.
-    snprintf(tmpPath, sizeof(tmpPath), "%sEnable", greNetworkTunnel);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sEnable", greNetworkTunnel);
+    if(rc < EOK) {
+       ERR_CHK(rc);
+    }
     if (g_SetParamValueBool(tmpPath, enable) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
@@ -723,12 +732,16 @@ CosaDml_GreTunnelGetStatus(ULONG tuIns, COSA_DML_GRE_STATUS *st)
     ULONG size = sizeof(status);
     char greNetworkTunnel[256];
     char tmpPath[256];
+    errno_t rc = -1;
     if (!st)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRETU_PARAM_GRETU, tuIns, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sStatus", greNetworkTunnel);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sStatus", greNetworkTunnel);
+    if(rc < EOK) {
+       ERR_CHK(rc);
+    }
     if (g_GetParamValueString(g_pDslhDmlAgent, tmpPath, status, &size) != 0)
         return ANSC_STATUS_FAILURE;
     if (strcmp(status, "Up") == 0)
@@ -750,13 +763,17 @@ CosaDml_GreTunnelIfGetStatus(ULONG tuIns, ULONG ins, COSA_DML_GRE_STATUS *st)
     ULONG size = sizeof(status);
     char greNetworkTunnel[256];
     char tmpPath[256];
+    errno_t rc = -1;
     if (!st)
         return ANSC_STATUS_FAILURE;
 
 	//TODO: need IF status instead of Tunnel status
     if (GrePsmGetStr(GRETU_PARAM_GRETU, tuIns, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sStatus", greNetworkTunnel);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sStatus", greNetworkTunnel);
+    if(rc < EOK) {
+       ERR_CHK(rc);
+    }
 
     if (g_GetParamValueString(g_pDslhDmlAgent, tmpPath, status, &size) != 0)
         return ANSC_STATUS_FAILURE;
@@ -778,12 +795,16 @@ CosaDml_GreTunnelGetLastchange(ULONG tuIns, ULONG *time)
 {
 	char greNetworkTunnel[256];
     char tmpPath[256];
+    errno_t rc = -1;
     if (!time)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRETU_PARAM_GRETU, tuIns, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sLastChange", greNetworkTunnel);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sLastChange", greNetworkTunnel);
+    if(rc < EOK) {
+        ERR_CHK(rc);
+    }
 
     *time = g_GetParamValueUlong(g_pDslhDmlAgent, tmpPath);
     return ANSC_STATUS_SUCCESS;
@@ -798,6 +819,7 @@ CosaDml_GreTunnelIfGetLastchange(ULONG tuIns, ULONG ins, ULONG *time)
     UNREFERENCED_PARAMETER(ins);
 	char greNetworkTunnel[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (!time)
         return ANSC_STATUS_FAILURE;
@@ -805,8 +827,10 @@ CosaDml_GreTunnelIfGetLastchange(ULONG tuIns, ULONG ins, ULONG *time)
 	//TODO: need to get IF change time instead of Tunnel change time
     if (GrePsmGetStr(GRETU_PARAM_GRETU, tuIns, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sLastChange", greNetworkTunnel);
-
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sLastChange", greNetworkTunnel);
+    if(rc < EOK) {
+       ERR_CHK(rc);
+    }
     *time = g_GetParamValueUlong(g_pDslhDmlAgent, tmpPath);
 
     return ANSC_STATUS_SUCCESS;
@@ -1148,13 +1172,17 @@ CosaDml_GreTunnelGetConnEndpoint(ULONG tuIns, char *ep, ULONG size)
 {
 	char greNetworkTunnel[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (!ep)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRETU_PARAM_GRETU, tuIns, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sRemoteEndpoint", greNetworkTunnel);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sRemoteEndpoint", greNetworkTunnel);
+    if(rc < EOK) {
+       ERR_CHK(rc);
+    }
 
     if (g_GetParamValueString(g_pDslhDmlAgent, tmpPath, ep, &size) != 0)
         return ANSC_STATUS_FAILURE;
@@ -1182,6 +1210,7 @@ CosaDml_GreTunnelSetKeyGenPolicy(ULONG tuIns, COSA_DML_KEY_ID_GEN_POLICY policy)
     char *mode;
     char greNetworkTunnel[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
@@ -1202,8 +1231,10 @@ CosaDml_GreTunnelSetKeyGenPolicy(ULONG tuIns, COSA_DML_KEY_ID_GEN_POLICY policy)
 
     if (GrePsmGetStr(GRETU_PARAM_GRETU, tuIns, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sKeyMode", greNetworkTunnel);
-
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sKeyMode", greNetworkTunnel);
+    if(rc < EOK) {
+       ERR_CHK(rc);
+    }
     if (g_SetParamValueString(tmpPath, mode) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
@@ -1235,13 +1266,17 @@ CosaDml_GreTunnelSetKeyId(ULONG tuIns, const char *keyId)
     char psmRec[MAX_GRE_PSM_REC + 1];
     char greNetworkTunnel[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRETU_PARAM_GRETU, tuIns, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sKey", greNetworkTunnel);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sKey", greNetworkTunnel);
+    if(rc < EOK) {
+       ERR_CHK(rc);
+    }
 
     if (g_SetParamValueString(tmpPath, (char *)keyId) != 0)
         return ANSC_STATUS_FAILURE;
@@ -1272,14 +1307,17 @@ CosaDml_GreTunnelSetUseSeqNum(ULONG tuIns, BOOL enable)
     char psmRec[MAX_GRE_PSM_REC + 1];
     char greNetworkTunnel[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRETU_PARAM_GRETU, tuIns, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sSequenceNumberEnabled", greNetworkTunnel);
-
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sSequenceNumberEnabled", greNetworkTunnel);
+    if(rc < EOK) {
+        ERR_CHK(rc);
+    }
     if (g_SetParamValueBool(tmpPath, enable) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
 
@@ -1309,13 +1347,17 @@ CosaDml_GreTunnelSetUseChecksum(ULONG tuIns, BOOL enable)
     char psmRec[MAX_GRE_PSM_REC + 1];
     char greNetworkTunnel[256];
     char tmpPath[256];
+    errno_t rc = -1;
 
     if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRETU_PARAM_GRETU, tuIns, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sChecksumEnabled", greNetworkTunnel);
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sChecksumEnabled", greNetworkTunnel);
+    if(rc < EOK) {
+       ERR_CHK(rc);
+    }
 
     if (g_SetParamValueBool(tmpPath, enable) != ANSC_STATUS_SUCCESS)
         return ANSC_STATUS_FAILURE;
@@ -1349,15 +1391,21 @@ CosaDml_GreTunnelSetDSCPMarkPolicy(ULONG tuIns, INT dscp)
     char greNetworkTunnel[256];
     char tmpPath[256];
     char tmp2Path[256];
+    errno_t rc = -1;
 
     if (tuIns != 1)
         return ANSC_STATUS_FAILURE;
 
     if (GrePsmGetStr(GRETU_PARAM_GRETU, tuIns, greNetworkTunnel, sizeof(greNetworkTunnel)) != 0)
         return ANSC_STATUS_FAILURE;
-    snprintf(tmpPath, sizeof(tmpPath), "%sTOSMode", greNetworkTunnel);
-    snprintf(tmp2Path, sizeof(tmp2Path), "%sTOS", greNetworkTunnel);
-
+    rc = sprintf_s(tmpPath, sizeof(tmpPath), "%sTOSMode", greNetworkTunnel);
+    if(rc < EOK) {
+       ERR_CHK(rc);
+    }
+    rc = sprintf_s(tmp2Path, sizeof(tmp2Path), "%sTOS", greNetworkTunnel);
+    if(rc < EOK) {
+       ERR_CHK(rc);
+    }
     if (dscp >= 0) {
         if (g_SetParamValueString(tmpPath, "Static") != ANSC_STATUS_SUCCESS
                 || g_SetParamValueUlong(tmp2Path, dscp << 2) != ANSC_STATUS_SUCCESS) {

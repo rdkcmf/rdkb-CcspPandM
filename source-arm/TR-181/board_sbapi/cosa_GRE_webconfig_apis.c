@@ -22,6 +22,7 @@
 
 #include "cosa_GRE_webconfig_apis.h"
 #include "ccsp_psm_helper.h"
+#include "safec_lib_common.h"
 
 #define RDKB_WIFI_COMPONENT_NAME                  "com.cisco.spvtg.ccsp.wifi"
 #define RDKB_WIFI_DBUS_PATH                       "/com/cisco/spvtg/ccsp/wifi"
@@ -38,6 +39,7 @@ BOOL unpackAndProcessHotspotData(char* pString)
     char * wifi_encoded_data = NULL;
     int size =0;
     int retval = 0;
+    errno_t rc = -1;
     msgpack_unpack_return unpack_ret = MSGPACK_UNPACK_SUCCESS;
 
     retval = get_base64_decodedbuffer(pString, &decodeMsg, &size);
@@ -187,7 +189,8 @@ BOOL unpackAndProcessHotspotData(char* pString)
             execDataHotspot->multiCompRequest =1 ;
 
             memset(filename,0,sizeof(filename));
-            snprintf(filename,sizeof(filename),"/tmp/.%s%u",execDataHotspot->subdoc_name,execDataHotspot->version);
+            rc = sprintf_s(filename,sizeof(filename),"/tmp/.%s%u",execDataHotspot->subdoc_name,execDataHotspot->version);
+            if(rc < EOK) ERR_CHK(rc);
             fp = fopen(filename,"w") ;
             if (fp != NULL )
             {

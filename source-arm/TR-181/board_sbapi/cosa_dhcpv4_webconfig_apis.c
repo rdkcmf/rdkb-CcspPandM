@@ -350,6 +350,7 @@ int Dhcpv4_StaticClients_BackupFromDb(Dhcpv4_Cache_t *pCache, int *pNumOfParam)
     int numOfHost = 0;
     int numOfParam = 0;
     int index = 0;
+    errno_t rc = -1;
     if (!pCache || !pNumOfParam)
         return -1;
    
@@ -379,14 +380,16 @@ int Dhcpv4_StaticClients_BackupFromDb(Dhcpv4_Cache_t *pCache, int *pNumOfParam)
             ++numOfParam;
         }
 
-        snprintf(pCache[numOfParam].cmd,sizeof(pCache[numOfParam].cmd),"%s%d",DHCPV4_STATIC_HOSTS_INSNUM,index + 1);
+        rc = sprintf_s(pCache[numOfParam].cmd,sizeof(pCache[numOfParam].cmd),"%s%d",DHCPV4_STATIC_HOSTS_INSNUM,index + 1);
+        if(rc < EOK) ERR_CHK(rc);
         syscfg_get(NULL,pCache[numOfParam].cmd,pCache[numOfParam].val,sizeof(pCache[numOfParam].val));
         if (pCache[numOfParam].val[0] != 0)
         {
             ++numOfParam;
         }
 
-        snprintf(pCache[numOfParam].cmd,sizeof(pCache[numOfParam].cmd),"%s%d",DHCPV4_STATIC_HOST_ALIAS,index + 1);
+        rc = sprintf_s(pCache[numOfParam].cmd,sizeof(pCache[numOfParam].cmd),"%s%d",DHCPV4_STATIC_HOST_ALIAS,index + 1);
+        if(rc < EOK) ERR_CHK(rc);
         syscfg_get(NULL,pCache[numOfParam].cmd,pCache[numOfParam].val,sizeof(pCache[numOfParam].val));
         if (pCache[numOfParam].val[0] != 0)
         {
@@ -400,7 +403,8 @@ int Dhcpv4_StaticClients_BackupFromDb(Dhcpv4_Cache_t *pCache, int *pNumOfParam)
             ++numOfParam;
         }
      
-        snprintf(pCache[numOfParam].cmd,sizeof(pCache[numOfParam].cmd),"%s%s",DHCPV4_COMMENTS,hostInfo);
+        rc = sprintf_s(pCache[numOfParam].cmd,sizeof(pCache[numOfParam].cmd),"%s%s",DHCPV4_COMMENTS,hostInfo);
+        if(rc < EOK) ERR_CHK(rc);
         syscfg_get(NULL,pCache[numOfParam].cmd,pCache[numOfParam].val,sizeof(pCache[numOfParam].val));
         if (pCache[numOfParam].val[0] != 0)
         {

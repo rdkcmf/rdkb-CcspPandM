@@ -5919,8 +5919,10 @@ CosaDmlDhcpv6sGetIAPDPrefixes2
     commonSyseventGet("ipv6_subprefix-end", end, sizeof(end));
     commonSyseventGet("ipv6_pd-length", pd_len, sizeof(pd_len));
 
-    if(start[0] != '\0' && end[0] != '\0' && pd_len[0] != '\0')
-        snprintf(pd_pool, sizeof(pd_pool), "%s-%s/%s", start, end, pd_len);
+    if(start[0] != '\0' && end[0] != '\0' && pd_len[0] != '\0'){
+        rc = sprintf_s(pd_pool, sizeof(pd_pool), "%s-%s/%s", start, end, pd_len);
+        if(rc < EOK) ERR_CHK(rc);
+    }
     
     size = strlen(pd_pool); 
 
