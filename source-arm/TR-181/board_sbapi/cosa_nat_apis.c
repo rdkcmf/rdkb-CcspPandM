@@ -1155,7 +1155,7 @@ static BOOL g_NatOne2OneEnable;
 
 ANSC_IPV4_ADDRESS  g_NatLanIP = {{0}};
 
-/*
+#if defined _DT_WAN_Manager_Enable_
 static ULONG
 saveID
     (
@@ -1228,7 +1228,9 @@ loadID
 
     return 0;
 }
+#endif
 
+/*
 static ULONG
 unsetID
     (
@@ -2634,6 +2636,9 @@ CosaDmlNatGetPortMappings
     portFwdSingle_t         *singleInfo = NULL;
     portFwdRange_t           *rangeInfo = NULL;
 //    portMapDyn_t                dynInfo;
+#if defined _DT_WAN_Manager_Enable_
+    portMapDyn_t                dynInfo;
+#endif
 //    lanSetting_t                    lan;
     ULONG                       ulIndex = 0;
     int            PortFwdSingleCount = 0;
@@ -2707,7 +2712,11 @@ CosaDmlNatGetPortMappings
         CcspTraceWarning(("DynPortMappingCount is %d, we are not adding entry to TR-181/database since these are dynamic entries %s\n", PortFwdDynCount, __FUNCTION__));
      }
 
+#if defined _DT_WAN_Manager_Enable_
+    allCount = PortFwdSingleCount + PortFwdRangeCount + PortFwdDynCount;
+#else
     allCount = PortFwdSingleCount + PortFwdRangeCount ;
+#endif
     if (allCount == 0)
     {
         Utopia_Free(&Ctx, 0);
@@ -2720,8 +2729,7 @@ CosaDmlNatGetPortMappings
         return NULL;
     }
 
-// Commenting out DynCount as we are not going to show dynamic rules added as part of PartMapping table in TR-181
-#if 0
+#if defined _DT_WAN_Manager_Enable_
     if ( g_NatPortFwdDynInstanceNum )
     {
         AnscFreeMemory(g_NatPortFwdDynInstanceNum);
@@ -2795,8 +2803,7 @@ CosaDmlNatGetPortMappings
         rangeInfo = NULL;
     }
 
-// Commenting out Dynamic Portmappings as we are not going to show dynamic rules added as part of PartMapping table in TR-181
-#if 0
+#if defined _DT_WAN_Manager_Enable_
     if ( PortFwdDynCount != 0 )
     {
         g_NatPortFwdDynInstanceNum = AnscAllocateMemory(sizeof(ULONG)*PortFwdDynCount);
@@ -2832,24 +2839,7 @@ CosaDmlNatGetPortMappings
 
             if ( TRUE )
             {
-                char* pCh    = NULL;
-                char* pStart = dynInfo.internal_host;
-                ULONG j;
-
-                for ( j = 0; j < IPV4_ADDRESS_SIZE; j++ )
-                {
-                    pCh = _ansc_strchr(pStart, '.');
-                    if ( pCh )
-                    {
-                        *pCh = 0;
-                        pNatPMapping[ulIndex].InternalClient.Dot[j] = _ansc_atoi(pStart);
-                        pStart = pCh + 1;
-                    }
-                    else
-                    {
-                        pNatPMapping[ulIndex].InternalClient.Dot[j] = _ansc_atoi(pStart);
-                    }
-                }
+                AnscCopyString(pNatPMapping[ulIndex].InternalClient, dynInfo.internal_host);
             }
 
             AnscCopyString(pNatPMapping[ulIndex].Description, dynInfo.name);
