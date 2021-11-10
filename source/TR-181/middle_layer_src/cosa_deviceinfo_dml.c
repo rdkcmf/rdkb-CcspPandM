@@ -200,6 +200,12 @@ BOOL CMRt_Isltn_Enable(BOOL status);
 static const char *atomIp = ATOM_IP;
 #endif
 
+#ifdef _COSA_INTEL_XB3_ARM_
+    #define BLOCKLIST_FILE "/nvram/Blocklist_XB3.txt"
+#else
+    #define BLOCKLIST_FILE "/opt/secure/Blocklist_file.txt"
+#endif
+
 #if defined(_PLATFORM_RASPBERRYPI_)
 int sock;
 int id = 0;
@@ -21913,7 +21919,6 @@ NonRootSupport_GetParamStringValue
 {
   UNREFERENCED_PARAMETER(hInsContext);
   #define APPARMOR_BLOCKLIST_FILE "/opt/secure/Apparmor_blocklist"
-  #define BLOCKLIST_FILE "/opt/secure/Blocklist_file.txt"
   #define SIZE_LEN 32
   char *buf = NULL;
   FILE *fp = NULL;
@@ -22028,7 +22033,6 @@ NonRootSupport_SetParamStringValue
   UNREFERENCED_PARAMETER(hInsContext);
   #define APPARMOR_BLOCKLIST_FILE "/opt/secure/Apparmor_blocklist"
   #define TMP_FILE "/opt/secure/Apparmor_blocklist_bck.txt"
-  #define BLOCKLIST_FILE "/opt/secure/Blocklist_file.txt"
   #define SIZE 128
   #define MAX_SIZE 1024
   FILE *fptr = NULL;
@@ -22038,6 +22042,7 @@ NonRootSupport_SetParamStringValue
   char *sub_string = NULL;
   char *sp = NULL;
   char tmp[SIZE] = {0};
+  char *boxType = NULL, *atomIp = NULL;
   if( AnscEqualString( ParamName, "ApparmorBlocklist", TRUE) )
   {
      fptr = fopen(APPARMOR_BLOCKLIST_FILE,"r");
@@ -22082,8 +22087,20 @@ NonRootSupport_SetParamStringValue
       char buf[MAX_SIZE] = {'\0'};
       snprintf(buf,sizeof(buf),"%s",pValue);
       fptr = fopen(BLOCKLIST_FILE,"w+");
+      boxType=getenv("BOX_TYPE");
+      if(boxType != NULL)
+      {
+         if(strcmp(boxType, "XB3") ==0)
+         {
+            atomIp=getenv("ATOM_ARPING_IP");
+            if(atomIp != NULL)
+            {
+               v_secure_system("/usr/bin/rpcclient %s \"echo '%s' > /nvram/Blocklist_XB3.txt\"", atomIp, buf);
+            }
+         }
+      }
       if(!fptr){
-      CcspTraceError(("%s failed to open /opt/secure/Blocklist_file.txt file \n",__FUNCTION__));
+      CcspTraceError(("%s failed to open %s file \n",__FUNCTION__,BLOCKLIST_FILE));
       return FALSE;
       }
       fprintf(fptr, "%s\n", buf);
