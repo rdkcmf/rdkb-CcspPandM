@@ -3175,6 +3175,24 @@
 
 		</object>
 <?endif?>
+<?ifdef FEATURE_OFF_CHANNEL_SCAN_5G?>
+        <object>
+            <name>OffChannelScan</name>
+            <objectType>object</objectType>
+            <functions>
+                <func_GetParamBoolValue>off_channel_scan_GetParamBoolValue</func_GetParamBoolValue>
+                <func_SetParamBoolValue>off_channel_scan_SetParamBoolValue</func_SetParamBoolValue>
+            </functions>
+            <parameters>
+                    <parameter>
+                        <name>Enable</name>
+                        <type>boolean</type>
+                        <syntax>bool</syntax>
+                        <writable>true</writable>
+                    </parameter>
+            </parameters>
+        </object>
+<?endif?>
 <?ifdef FEATURE_SUPPORT_PASSPOINT?>
 		<object>
 			<name>WiFi-Passpoint</name>

@@ -12926,6 +12926,67 @@ WiFiPasspoint_SetParamBoolValue
 }
 #endif
 
+
+#if defined (FEATURE_OFF_CHANNEL_SCAN_5G)
+BOOL
+off_channel_scan_GetParamBoolValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL*                       pBool
+ )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* Collect Value */
+        char *strValue = NULL;
+        int retPsmGet = CCSP_SUCCESS;
+
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDK_RFC.Feature.OffChannelScan.Enable", NULL, &strValue);
+        if (retPsmGet == CCSP_SUCCESS)
+        {
+            *pBool = _ansc_atoi(strValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        }
+        else
+        {
+            *pBool = FALSE;
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL
+off_channel_scan_SetParamBoolValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL                        bValue
+ )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char str[8];
+        int retPsmGet = CCSP_SUCCESS;
+
+        sprintf(str,"%d",bValue);
+        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDK_RFC.Feature.OffChannelScan.Enable", ccsp_string, str);
+        if (retPsmGet != CCSP_SUCCESS)
+        {
+            CcspTraceError(("Set failed for 5G off channel scan RFC  \n"));
+            return FALSE;
+        }
+
+        CcspTraceInfo(("Successfully set 5g off channel scan RFC \n"));
+        return TRUE;
+    }
+    return FALSE;
+}
+#endif // (FEATURE_OFF_CHANNEL_SCAN_5G)
+
 #if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
 /**********************************************************************
 
