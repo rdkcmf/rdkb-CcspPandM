@@ -101,6 +101,7 @@
 #include "cosa_drg_common.h"
 #include <syscfg/syscfg.h>
 #include "safec_lib_common.h"
+#include "ansc_string_util.h"
 #define DEVICE_PROPERTIES    "/etc/device.properties"
 #define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
 #define BOOTSTRAP_INFO_FILE		"/nvram/bootstrap.json"
@@ -1304,64 +1305,64 @@ isValidInput
 {
     ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
     errno_t rc = -1;
-
-	/*
+    int i=0,count=0;
+         /*
 	  * Validate input/params 
 	  * sizeof_wrapped_inputparam it should always greater that ( lengthof_inputparam  + 2 ) because
 	  * we are adding 2 extra charecters here. so we need to have extra bytes 
 	  * in copied(wrapped_inputparam) string
-	  */ 
-	if( sizeof_wrapped_inputparam <= ( lengthof_inputparam  + 2 ) )
-	{
-            return ANSC_STATUS_FAILURE;
-	}
-        int port = 0;
-        int i = 0;
-        int count =0;
-        char* tok;
-        char *host = strdup(inputparam);
-        if (! host) {
-            return ANSC_STATUS_FAILURE;
+	  */      
+    if( sizeof_wrapped_inputparam <= ( lengthof_inputparam  + 2 ) )
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+    while(inputparam[i]!='\0')
+    {
+        if(inputparam[i]==':')
+            count++;
+        i++;
+    }
+    if((strchr(inputparam,'.')) && (count < 2))
+    {
+        if(is_ValidIpAddressv4_port((PUCHAR)inputparam))
+        {
+            returnStatus = ANSC_STATUS_SUCCESS;
         }
-        else {
-            tok = strtok(host, ":");
-            while(tok != NULL) {
-                if (count == 0 ) { 
-                    while(host[i] != '\0') {
-                        if(((host[i] >='A') &&(host[i]<='Z')) || ((host[i]>='a') && (host[i]<='z')) || ((host[i] >= '0') && (host[i] <= '9')) || (host[i] == '.') || (host[i] == '-') || (host[i] == '_'))
-                            i++;
-                        else
-                            return ANSC_STATUS_FAILURE;
-                    }
-                }
-                else if(count == 1 ) {
-                    port = _ansc_atoi(tok);
-                    if ((port <= 0) || (port > 65535))
-                        return ANSC_STATUS_FAILURE;
-                }
-                else {
-                    return ANSC_STATUS_FAILURE;
-                }
-                tok = strtok (NULL, ":");
-                count++;
-            }
-        free(host);
+        else if(is_ValidHost((PUCHAR)inputparam))
+        {
+            returnStatus = ANSC_STATUS_SUCCESS;
         }
+        else
+            returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strchr(inputparam,'['))
+    {
+        if(is_ValidIpAddressv6_port((PUCHAR)inputparam))
+	    returnStatus = ANSC_STATUS_SUCCESS;
+        else
+	    returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strchr(inputparam,':'))
+    {
+        if(is_Ipv6_address((PUCHAR)inputparam))      
+            returnStatus = ANSC_STATUS_SUCCESS;
+        else
+            returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else
+        returnStatus = ANSC_STATUS_FAILURE;   
 
     if(ANSC_STATUS_SUCCESS == returnStatus)
     {
-        rc = sprintf_s(wrapped_inputparam, sizeof_wrapped_inputparam, "'%s'",inputparam);
-        if(rc < EOK)
-        {
-            ERR_CHK(rc);
-            return ANSC_STATUS_FAILURE;
-        }
-    }
-	
-	return returnStatus;
-
+         rc = sprintf_s(wrapped_inputparam, sizeof_wrapped_inputparam, "'%s'",inputparam);
+         if(rc < EOK)
+         {
+             ERR_CHK(rc);
+             return ANSC_STATUS_FAILURE;
+         }
+    }   
+  return returnStatus;
 }
-
 /* Maitenance window can be customized for bci routers */
 #if defined(_COSA_BCM_MIPS_) || defined(_PLATFORM_RASPBERRYPI_)
 ANSC_STATUS
