@@ -410,7 +410,8 @@ then
 			#	/usr/bin/SetLED $white $solid		#Set LED to Solid White
 			#fi
  
-                        if [ "$MODEL_NUM" = "CGA4332COM" ]; then
+                        if [ "$MODEL_NUM" = "CGA4332COM" ] || [ "$BOX_TYPE" = "XB6" ]
+                        then
 			        echo_t "Network Response: Setting Online LED to solid white .."
 				white=0
 				solid=0
@@ -512,9 +513,13 @@ else
 	syscfg commit
 
     if [ "$BOX_TYPE" = "XB6" ]; then
-        white=0
-        solid=0
-        /usr/bin/SetLED $white $solid       #Set LED to Solid White
+#        white=0
+#        solid=0
+#        /usr/bin/SetLED $white $solid       #Set LED to Solid White
+         # RDKB-38922: Check network status to confirm unit is with proper bootfile.
+         # Based on response received, LED behavior should be altered to blinkng white or solid white
+         /etc/network_led_check.sh &
+         echo_t "LED status script triggered"
     fi
 
 	if [ ! -e "$REVERT_FLAG" ]
