@@ -3431,7 +3431,8 @@
                                             </parameters>
                                         </object>
                                     </objects>
-                                </object>
+			    	 </object>
+<?ifndef _XB8_PRODUCT_REQ_?>
                 <object>
  				 <name>TR069support</name>
  				 <objectType>object</objectType>
@@ -3447,7 +3448,8 @@
  					<writable>true</writable>
  					</parameter>
  				  </parameters>
-				 </object>
+		</object>
+<?endif?>
                 <object>
                                 <name>newNTP</name>
                                  <objectType>object</objectType>

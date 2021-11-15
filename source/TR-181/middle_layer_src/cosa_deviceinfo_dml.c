@@ -4095,6 +4095,8 @@ KickstartTable_SetParamStringValue
     return:     TRUE if succeeded.
 
 **********************************************************************/
+//TR069 support is removed for XB8 (RDKB-32781)
+#ifndef _XB8_PRODUCT_REQ_
 BOOL
 TR069support_GetParamBoolValue
     (
@@ -4190,6 +4192,7 @@ TR069support_SetParamBoolValue
 
     return FALSE;
 }
+#endif
 
 /**********************************************************************
 
