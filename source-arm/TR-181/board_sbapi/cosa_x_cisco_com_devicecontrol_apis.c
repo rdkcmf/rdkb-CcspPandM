@@ -2007,7 +2007,11 @@ void* resetWiFi(void* arg)
 	}
 #if defined (_XB6_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_) || (defined(_HUB4_PRODUCT_REQ_) && !defined(_SR300_PRODUCT_REQ_))
 	faultParam = NULL;
+#if defined (_TRI_BAND_WIFI_)
+	parameterValStruct_t val1 = { "Device.WiFi.X_CISCO_COM_FactoryResetRadioAndAp", "1,2,3;1,2,17", ccsp_string};
+#else
 	parameterValStruct_t val1 = { "Device.WiFi.X_CISCO_COM_FactoryResetRadioAndAp", "1,2;1,2", ccsp_string};
+#endif
 	ret = CcspBaseIf_setParameterValues
 		(
 			bus_handle,
