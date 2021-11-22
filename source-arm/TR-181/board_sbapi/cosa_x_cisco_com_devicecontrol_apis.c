@@ -84,6 +84,8 @@
 #include "ccsp_psm_helper.h"
 #include "safec_lib_common.h"
 
+#include "cosa_deviceinfo_apis.h"
+
 #if defined (_XB6_PRODUCT_REQ_) || defined (_XB7_PRODUCT_REQ_)
 #define LED_SOLID 0
 #define LED_BLINK 1
@@ -177,6 +179,7 @@ int fwSync = 0;
 #define HTTPD_PID       "/var/run/lighttpd.pid"
 #define RM_L2_PATH "rm -rf /nvram/dl"
 #define Device_Config_Ignore_size 1024
+
 
 static void configBridgeMode(int bEnable);
 static int curticket   = 1; /*The thread should be run with the ticket*/
@@ -288,7 +291,22 @@ static int UtSetBool(const char *path, BOOLEAN val)
     return ANSC_STATUS_SUCCESS;
 }
 */
-
+BOOLEAN GetPartnerIdFromFile(char *partnerId,int bufferSize){
+	BOOLEAN fileReadStatus	=	TRUE;
+	FILE *resFile = (FILE *)fopen(PARTNERID_FILE,"r");
+	memset(partnerId, 0, bufferSize);
+	if(resFile ==	NULL){
+		fileReadStatus = FALSE;
+	}
+	else
+	{		
+		if(fgets(partnerId, bufferSize, resFile)	==	NULL){
+			fileReadStatus = FALSE;
+		}
+		fclose(resFile);			
+	}
+	return fileReadStatus;
+}
 static int UtGetUlong(const char *path, ULONG *pVal)
 {
     UtopiaContext ctx;
@@ -2272,14 +2290,32 @@ CosaDmlDcSetFactoryReset
 			}
 		}
 
+        char partnerId[20];
+        int retVal = 0 ;
+        
+	memset(partnerId,0,sizeof(partnerId));
+        retVal = syscfg_get(NULL, "PartnerID", partnerId, sizeof(partnerId)) ;
+
+        if ( !retVal  && ( strcmp(partnerId,"test-partner") == 0 ) && (access(PARTNERID_FILE, F_OK) != 0))
+        {
+            CcspTraceInfo(("Setting test-partner as partner ID\n"));
+            setTempPartnerId( partnerId );
+        } 
+
 #ifdef _MACSEC_SUPPORT_
                 //TCXB7-1453
-                char partnerId[20];
-                BOOLEAN currentMacSecRequired = FALSE;
+                
+		BOOLEAN currentMacSecRequired = FALSE;
+		BOOLEAN fileReadStatus = FALSE;
+                char tempPartnerIdBuffer[20];
 
                 if(RETURN_OK == platform_hal_GetMACsecEnable( ETHWAN_DEF_INTF_NUM, &currentMacSecRequired ))
                 {
-                   if(!syscfg_get(NULL, "PartnerID", partnerId, sizeof(partnerId))) 
+		   fileReadStatus	=	GetPartnerIdFromFile(tempPartnerIdBuffer,sizeof(tempPartnerIdBuffer));
+		   if(fileReadStatus 	== 	TRUE){
+		       strcpy(partnerId,tempPartnerIdBuffer);
+	           }
+	           if(strlen(partnerId) > 0)
                    {
                         if (strcmp( "comcast", partnerId ) == 0 ) 
                         {
@@ -2306,11 +2342,11 @@ CosaDmlDcSetFactoryReset
                            }
                         }
                    }
-                }
-                else
-                {
+               }
+               else
+               {
                    CcspTraceInfo((" Unable to retrieve current MACsec Required config\n"));
-                }
+               }
 #endif //_MACSEC_SUPPORT_
 #ifdef COLUMBO_HWTEST
                 /*

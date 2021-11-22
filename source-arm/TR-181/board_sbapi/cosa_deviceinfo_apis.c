@@ -2775,8 +2775,6 @@ ANSC_STATUS setCMVoiceImg(char* pValue)
 }
 #endif
 
-#define PARTNERID_FILE  "/nvram/.partner_ID"
-
 ANSC_STATUS activatePartnerId()
 {
 	pthread_t tid;

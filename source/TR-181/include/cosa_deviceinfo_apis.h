@@ -83,6 +83,8 @@
 #define MAX_SECURITYNUM_LEN         128
 #define MAX_SECURITYNAME_LEN        18      // includes room for NULL terminator
 
+#define PARTNERID_FILE  "/nvram/.partner_ID"
+
 /**********************************************************************
                 STRUCTURE AND CONSTANT DEFINITIONS
 **********************************************************************/
