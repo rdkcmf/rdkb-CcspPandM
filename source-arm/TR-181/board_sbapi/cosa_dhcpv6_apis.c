@@ -3696,8 +3696,7 @@ int CosaDmlDHCPv6sGetDNS(char* Dns, char* output, int outputLen)
 
     return 0;
 }
-#if defined(_XB6_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)
-static int format_dibbler_option(char *option)
+int format_dibbler_option(char *option)
 {
     if (option == NULL)
         return -1;
@@ -3712,7 +3711,6 @@ static int format_dibbler_option(char *option)
 
     return 0;
 }
-#endif
 
 int remove_single_quote (char *buf)
 {
@@ -4846,26 +4844,31 @@ OPTIONS:
 				   }
 				   else
 				   {
-					   ret = CosaDmlDHCPv6sGetDNS((char *)g_recv_options[Index4].Value, dnsStr, sizeof(dnsStr) );
-					   
+#if defined(_COSA_BCM_ARM_)
+					   ret=commonSyseventGet("wan6_ns", dnsStr, sizeof(dnsStr));
+#else
+                       ret = CosaDmlDHCPv6sGetDNS((char *)g_recv_options[Index4].Value, dnsStr, sizeof(dnsStr) );
+#endif
 					   if ( !ret )
-					   {
-                                                   if ( '\0' != dnsStr[ 0 ] )
-                                                   {
-							// Check device is in captive portal mode or not
-						       if ( 1 == isInCaptivePortal )
-						       {
-				   
-							   fprintf(fp, "#	 option %s %s\n", tagList[Index3].cmdstring, dnsStr);
-						       }
-						       else
-						       { 
-							   fprintf(fp, "	option %s %s\n", tagList[Index3].cmdstring, dnsStr);
-						       }
-                                                   }
-				   		}
-					}
-                }
+                       {
+                           if ( '\0' != dnsStr[ 0 ] )
+                           {
+#if defined(_COSA_BCM_ARM_)
+                               format_dibbler_option(dnsStr);
+#endif
+                               // Check device is in captive portal mode or not
+                               if ( 1 == isInCaptivePortal )
+                               {
+                                   fprintf(fp, "#	 option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+                               }
+                               else
+                               {
+                                   fprintf(fp, "    option %s %s\n", tagList[Index3].cmdstring, dnsStr);
+                               }
+                           }
+                       }
+                   }
+               }
                 else if ( g_recv_options[Index4].Tag == 24 )
                 { //domain
                     pServerOption =    CosaDmlDhcpv6sGetStringFromHex((char *)g_recv_options[Index4].Value);
@@ -6095,7 +6098,7 @@ CosaDmlDhcpv6sSetPoolCfg
 	if( bNeedZebraRestart )
 	{
         CcspTraceWarning(("%s Restarting Zebra Process\n", __FUNCTION__));
-        v_secure_system("sysevent set zebra-restart");
+        v_secure_system("killall zebra && sysevent set zebra-restart");
 	}
 
     return ANSC_STATUS_SUCCESS;
