@@ -73,7 +73,7 @@ fi
 
 CAPTIVEPORTAL_ENABLED=`syscfg get CaptivePortal_Enable`
 echo_t "Network Response : CaptivePortal enabled val is $CAPTIVEPORTAL_ENABLED"
-
+recheckRevert=0
 # Function to check if RF CP should be shown
 # return true if RF CP should be shown
 # return false if RF CP shouldn't be shown
@@ -133,7 +133,16 @@ elif [ "$1" = "recheck" ]
 then
   # this argument is passed by the caller while in a loop 
   # to check RF signal. Hence no need to do initial checks.
-  RF_SIGNAL_STATUS=`dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CableRfSignalStatus | grep value | cut -f3 -d : | cut -f2 -d" "`
+  ethWanEnabled=`syscfg get eth_wan_enabled`
+  if [ "$ethWanEnabled" = "true" ]
+  then
+      # Forcefully set RF signal status flag as true as eth wan mode would have
+      # got enabled as part of auto WAN feature.
+      echo_t "Network Response: RF CP recheck eth_wan_enabled is true"
+      RF_SIGNAL_STATUS="true"
+  else
+     RF_SIGNAL_STATUS=`dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CableRfSignalStatus | grep value | cut -f3 -d : | cut -f2 -d" "`
+  fi
   echo_t "Network Response: RF CP recheck RF_SIGNAL_STATUS: $RF_SIGNAL_STATUS"
   if [ "$RF_SIGNAL_STATUS" = "false" ]
   then
@@ -148,6 +157,7 @@ then
       dbValue=`syscfg get rf_captive_portal`
       if [ "$dbValue" = "true" ]
       then
+          recheckRevert=1
           syscfg set rf_captive_portal false
           syscfg commit
       fi
@@ -182,7 +192,8 @@ rfCpInterface()
      needRevert=0 
      needRevert=`sysevent get norf_webgui`
      
-     if [ "$needRevert" = "1" ]
+     echo_t "Network Response : needRevert - $needRevert, recheckRevert - $recheckRevert" 
+     if [ "$needRevert" = "1" ] || [ "$recheckRevert" = "1" ]
      then
         echo_t "Network Response: Restart services to come out from RF CP based on norf_webgui"
         /etc/revert_redirect.sh rfcp &
