@@ -134,7 +134,6 @@
 #define PSM_ENABLE_STRING_TRUE  "TRUE"
 #define PSM_ENABLE_STRING_FALSE "FALSE"        
 
-#define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
 #define BOOTSTRAP_INFO_FILE             "/nvram/bootstrap.json"
 
 #ifndef FEATURE_RDKB_WAN_MANAGER
