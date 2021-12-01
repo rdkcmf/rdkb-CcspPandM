@@ -545,9 +545,13 @@ CosaDmlDiSetXfinityWiFiEnable
     memset(val, '\0', sizeof(val));
     fptr = fopen(WEB_CONF_FILE, "r");
     snprintf(rec, sizeof(rec), "%s",  WEB_CONF_ENABLE);
-    if((PsmGet(rec, val, sizeof(val)) == 0 && atoi(val) == TRUE) && (NULL != fptr))
+    if((PsmGet(rec, val, sizeof(val)) != 0)){
+        AnscTraceError(("%s Failed to get psm value for Webconfig \n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+    if((strcmp(val, "true") == 0) && (NULL != fptr))
     {
-        AnscTraceWarning(("%s: webconfig enabled \n", __FUNCTION__));
+        AnscTraceWarning(("%s: webconfig enabled...legacy hotspot not used... \n", __FUNCTION__));
         fclose(fptr);
         return ANSC_STATUS_SUCCESS;
     }

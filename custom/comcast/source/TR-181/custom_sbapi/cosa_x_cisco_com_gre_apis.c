@@ -115,6 +115,9 @@
 #define CGRE_PARAM_TOSMODE      CGRE_OBJ_GREIF "%lu.tosmode"
 #define CGRE_PARAM_TOS          CGRE_OBJ_GREIF "%lu.tos"
 
+#define WEB_CONF_ENABLE         "eRT.com.cisco.spvtg.ccsp.webpa.WebConfigRfcEnable"
+#define WEB_CONF_FILE           "/nvram/hotspot_blob"
+
 extern void* g_pDslhDmlAgent;
 
 static int sysevent_fd;
@@ -488,16 +491,36 @@ CosaDml_CGreIfSetCfg(ULONG ins, COSA_DML_CGRE_IF *greIf)
     char val[64];
     char rec[128], old[16];
 
+    FILE *fptr = NULL;
+
     /* 
      * "force restart"
      * 1. Enable is set to TRUE
      * 2. Enable was already TRUE
      */
+    snprintf(rec, sizeof(rec), "%s",  WEB_CONF_ENABLE);
+    if((CGre_PsmGet(rec, val, sizeof(val)) != 0)){
+        AnscTraceError(("%s Failed to get psm value for Webconfig \n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    fptr = fopen(WEB_CONF_FILE, "r");
+    
+    if((strcmp(val, "true") == 0) && (NULL != fptr)){
+        AnscTraceWarning(("%s: webconfig enabled...legacy hotspot cannot be used...\n", __FUNCTION__));
+        fclose(fptr);
+        return ANSC_STATUS_SUCCESS;
+    }
+    if(fptr != NULL)
+        fclose(fptr);
+
+    memset(rec, '\0', sizeof(rec));
+    memset(val, '\0', sizeof(val));
     if ((greIf->ChangeFlag & COSA_DML_CGRE_CF_ENABLE) && greIf->Enable == TRUE) {
         snprintf(rec, sizeof(rec), CGRE_PARAM_ENABLE, ins);
         if (CGre_PsmGet(rec, old, sizeof(old)) == 0 && atoi(old) == 1)
             evt = "gre-forceRestart";
-        }
+    }
 
     if (greIf->ChangeFlag) {
         if (CGre_SaveConf(ins, greIf) != 0)
