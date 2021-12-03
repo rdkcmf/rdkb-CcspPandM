@@ -26,7 +26,10 @@
 #define RDKB_WIFI_COMPONENT_NAME                  "com.cisco.spvtg.ccsp.wifi"
 #define RDKB_WIFI_DBUS_PATH                       "/com/cisco/spvtg/ccsp/wifi"
 #define WEBCONFIG_ENABLE                          "eRT.com.cisco.spvtg.ccsp.webpa.WebConfigRfcEnable"
+
+extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
+
 BOOL unpackAndProcessHotspotData(char* pString)
 {
 
