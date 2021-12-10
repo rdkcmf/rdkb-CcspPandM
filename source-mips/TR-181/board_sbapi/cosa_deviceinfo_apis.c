@@ -935,7 +935,7 @@ CosaDmlDiGetFirmwareBuildTime
         if (strncmp(line, "FSSTAMP", strlen("FSSTAMP")) != 0)
             continue;
 
-        snprintf(pValue, pulSize, "%s", line);
+        snprintf(pValue, *pulSize, "%s", line);
         *pulSize = AnscSizeOfString(pValue);
         if(pValue[*pulSize-1] == '\n') pValue[--(*pulSize)] = '\0';
         fclose(fp);
