@@ -1606,6 +1606,10 @@ IPIF_getEntry_for_Ipv6Pre
             }
         }
 
+        _get_datetime_lfts((char *)p_dml_v6pre->PreferredLifetime, sizeof(p_dml_v6pre->PreferredLifetime),
+                           (char *)p_dml_v6pre->ValidLifetime, sizeof(p_dml_v6pre->ValidLifetime),
+                           p_v6addr, ulIndex);
+
         if (!p_dml_v6pre->Origin)
         {
             continue;
@@ -1664,12 +1668,6 @@ IPIF_getEntry_for_Ipv6Pre
         p_dml_v6pre->bOnlink = p_ra[ra_index].onlink;
         p_dml_v6pre->bAutonomous  = p_ra[ra_index].autoconf;
 #endif
-
-        _get_datetime_lfts((char *)p_dml_v6pre->PreferredLifetime, sizeof(p_dml_v6pre->PreferredLifetime),
-                           (char *)p_dml_v6pre->ValidLifetime, sizeof(p_dml_v6pre->ValidLifetime),
-                           p_v6addr, ulIndex);
-
-
 
         g_ipif_be_bufs[ulIndex].ulNumOfV6Pre++;        
     }
@@ -1806,17 +1804,6 @@ IPIF_getEntry_for_Ipv6Pre
         p_dml_v6pre->bOnlink = TRUE;
         p_dml_v6pre->bAutonomous  = TRUE;
 
-        /*todo: get 2 Lifetimes*/
-        safec_rc = strcpy_s(p_dml_v6pre->PreferredLifetime, sizeof(p_dml_v6pre->PreferredLifetime), "0001-01-01T00:00:00Z");
-        if(safec_rc != EOK)
-        {
-           ERR_CHK(safec_rc);
-        }
-        safec_rc = strcpy_s(p_dml_v6pre->ValidLifetime, sizeof(p_dml_v6pre->ValidLifetime), "0001-01-01T00:00:00Z");
-        if(safec_rc != EOK)
-        {
-           ERR_CHK(safec_rc);
-        }
         g_ipif_be_bufs[ulIndex].ulNumOfV6Pre++;        
     }while(0);
 
