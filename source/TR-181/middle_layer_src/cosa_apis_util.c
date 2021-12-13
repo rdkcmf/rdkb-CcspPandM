@@ -878,7 +878,7 @@ CosaUtilConstructLowerLayers
 #if defined (FEATURE_RDKB_WAN_MANAGER)
 ANSC_STATUS EthAgent_getParams(char *pComponent, char *pBus, char *pParamName, char *pReturnVal)
 {
-    parameterValStruct_t **retVal;
+    parameterValStruct_t **retVal = NULL;
     char *ParamName[1];
     int ret = 0, nval;
 
