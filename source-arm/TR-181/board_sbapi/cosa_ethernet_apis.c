@@ -1653,7 +1653,11 @@ static int getIfStats2(const PUCHAR pName, PCOSA_DML_ETH_STATS pStats)
     char *tok, *delim = ": \t\r\n", *sp, *ptr;
     int idx;
 
+#ifdef _HUB4_PRODUCT_REQ_
+    if ((fp = fopen("/proc/net/dev_extstats", "rb")) == NULL)
+#else
     if ((fp = fopen("/proc/net/dev", "rb")) == NULL)
+#endif /* _HUB4_PRODUCT_REQ_ */
         return -1;
 
     /* skip head line */
@@ -1694,6 +1698,29 @@ static int getIfStats2(const PUCHAR pName, PCOSA_DML_ETH_STATS pStats)
             case 13:
                 pStats->DiscardPacketsSent = (ULONG)atol(tok);
                 break;
+#ifdef _HUB4_PRODUCT_REQ_
+            case 9:
+                pStats->MulticastPacketsReceived = (ULONG)atol(tok);
+                break;
+            case 18:
+                pStats->MulticastPacketsSent = (ULONG)atol(tok);
+                break;
+            case 21:
+                pStats->UnicastPacketsReceived = (ULONG)atol(tok);
+                break;
+            case 22:
+                pStats->UnicastPacketsSent = (ULONG)atol(tok);
+                break;
+            case 23:
+                pStats->BroadcastPacketsReceived = (ULONG)atol(tok);
+                break;
+            case 24:
+                pStats->BroadcastPacketsSent = (ULONG)atol(tok);
+                break;
+            case 25:
+                pStats->UnknownProtoPacketsReceived = (ULONG)atol(tok);
+                break;
+#endif /* _HUB4_PRODUCT_REQ_ */
             default:
                 break;
             }
