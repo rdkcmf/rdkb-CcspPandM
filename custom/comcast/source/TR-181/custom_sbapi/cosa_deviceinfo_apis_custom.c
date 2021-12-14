@@ -254,8 +254,8 @@ CosaDmlDiGetRouterIPAddress
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-	unsigned int UIntIP = (unsigned int)CosaUtilGetIfAddr("erouter0");
-	errno_t rc = -1;
+    unsigned int UIntIP = (unsigned int)CosaUtilGetIfAddr("erouter0");
+    errno_t rc = -1;
 #if defined (_XB6_PRODUCT_REQ_) ||  defined (_COSA_BCM_ARM_)
 	rc = sprintf_s(pValue, *pulSize, "%d.%d.%d.%d",(UIntIP & 0xff),((UIntIP >> 8) & 0xff),((UIntIP >> 16) & 0xff),(UIntIP >> 24));
 	if(rc < EOK)

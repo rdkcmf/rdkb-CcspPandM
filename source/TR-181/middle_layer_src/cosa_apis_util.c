@@ -74,6 +74,7 @@
 #include "cosa_apis.h"
 #include "plugin_main_apis.h"
 #include "safec_lib_common.h"
+#include "cosa_drg_common.h"
 
 #ifdef _ANSC_LINUX
 #include <stdio.h>
@@ -141,6 +142,14 @@ ULONG CosaUtilGetIfAddr (char *netdev)
     errno_t rc;
     int fd;
 
+#if defined (FEATURE_SUPPORT_MAPT_NAT46)
+    char  maptConfig[8] = {0};
+
+    if (!commonSyseventGet ("mapt_config_flag", maptConfig, sizeof(maptConfig)))
+    {
+       if (strncmp(maptConfig, "set", 3) || strncmp(netdev, "erouter0", 8))
+       {
+#endif
     rc = strcpy_s(ifr.ifr_name, sizeof(ifr.ifr_name), netdev);
     if (rc != EOK)
     {
@@ -172,6 +181,14 @@ ULONG CosaUtilGetIfAddr (char *netdev)
     {
         perror("CosaUtilGetIfAddr failed to open socket.");
     }
+#if defined (FEATURE_SUPPORT_MAPT_NAT46)
+       }
+    }
+    else
+    {
+        CcspTraceError(("%s: Failed - sysevent get mapt_config_flag", __FUNCTION__));
+    }
+#endif
 
     return value;
 }

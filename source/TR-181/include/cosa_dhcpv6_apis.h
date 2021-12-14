@@ -74,6 +74,7 @@
 
 #include "cosa_apis.h"
 #include "cosa_dhcpv4_apis.h"
+#include "cosa_mapt_apis.h"
 #include "dml_tr181_custom_cfg.h"
 
 /**********************************************************************
@@ -118,7 +119,7 @@
  *  DHCP Client
  */
 
-#ifdef _HUB4_PRODUCT_REQ_
+#if defined (_HUB4_PRODUCT_REQ_) || defined (FEATURE_SUPPORT_MAPT_NAT46)
 #define SYSEVENT_MAPT_CONFIG_FLAG "mapt_config_flag"
 #define SYSEVENT_MAPT_RATIO "mapt_ratio"
 #define SYSEVENT_MAP_RULE_IPADDRESS "map_rule_ip_address"

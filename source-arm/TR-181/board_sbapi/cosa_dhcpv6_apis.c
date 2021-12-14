@@ -7960,11 +7960,15 @@ dhcpv6c_dbg_thrd(void * in)
             char psid[8] = {0};
             char isFMR[8] = {0};
 #endif
+#if defined (FEATURE_SUPPORT_MAPT_NAT46)
+            unsigned char  opt95_dBuf[BUFLEN_256] = {0};
+            char  pdV6pref[BUFLEN_64] = {0};
+#endif
             /*the format is :
              add 2000::ba7a:1ed4:99ea:cd9f :: 0 t1
              action, address, prefix, pref_len 3600
             now action only supports "add", "del"*/
-            
+ 
             p = msg+strlen("dibbler-client");
 
             while(isblank(*p)) p++;
@@ -7982,7 +7986,12 @@ dhcpv6c_dbg_thrd(void * in)
              * dataLen = 22 : MAPT 1:1
              * dataLen = 14 : NON-MAPT */
             if((dataLen == 25) || (dataLen == 22) || (dataLen == 14))
-#else // FEATURE_MAPT
+#elif defined (FEATURE_SUPPORT_MAPT_NAT46)
+            if (sscanf(p, "%63s %63s %s %s %s %s %s %63s %d %s %s %s %s %s %s",
+                       action, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
+                       v6pref, &pref_len, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm,
+                       opt95_dBuf ) == 15)
+#else
             if (sscanf(p, "%63s %63s %s %s %s %s %s %63s %d %s %s %s %s %s", 
                        action, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
                        v6pref, &pref_len, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm ) == 14)
@@ -7993,7 +8002,7 @@ dhcpv6c_dbg_thrd(void * in)
                         (PUCHAR)"Device.IP.Interface.",
                         (PUCHAR)"Name",
                         (PUCHAR)COSA_DML_DHCPV6_CLIENT_IFNAME
-                        );				   
+                        ); 
                 if (!strncmp(action, "add", 3))
                 {
                     CcspTraceInfo(("%s: add\n", __func__));
@@ -8062,6 +8071,11 @@ dhcpv6c_dbg_thrd(void * in)
 #endif
                     if (strncmp(v6pref, "::", 2) != 0)
                     {
+#if defined (FEATURE_SUPPORT_MAPT_NAT46)
+                    rc = sprintf_s(pdV6pref, BUFLEN_64, "%s/%d", v6pref, pref_len);
+                    ERR_CHK(rc);
+#endif
+			memset(v6Tpref,0,sizeof(v6Tpref));
 			strncpy(v6Tpref,v6pref,sizeof(v6Tpref));
                         /*We just delegate longer and equal 64bits. Use zero to fill in the slot naturally. */
 #if defined (MULTILAN_FEATURE)
@@ -8553,10 +8567,33 @@ dhcpv6c_dbg_thrd(void * in)
                                 ERR_CHK(rc);
                             }
                             commonSyseventSet("lan_prefix_v6", cmd);
-			    
-			    CcspTraceWarning(("%s: setting lan-restart\n", __FUNCTION__));
+ 
+                            CcspTraceWarning(("%s: setting lan-restart\n", __FUNCTION__));
                             commonSyseventSet("lan-restart", "1");
                         }
+#endif
+
+#ifdef FEATURE_SUPPORT_MAPT_NAT46
+                       /*
+                        * Parses option-95 response, apply mapt configuration and set
+                        * appropriate events.
+                        */
+                       {
+                          char maptEnable[BUFLEN_8] = {0};
+
+                          if (!syscfg_get(NULL, "MAPT_Enable", maptEnable, sizeof(maptEnable)) &&
+                              !strncmp(maptEnable, "true", 4))
+                          {
+                              CcspTraceWarning(("%s: Enabling mapt configuration\n", __FUNCTION__));
+
+                              if (CosaDmlMaptProcessOpt95Response(pdV6pref, opt95_dBuf)
+                                                              != ANSC_STATUS_SUCCESS)
+                              {
+                                  CcspTraceError(("%s: Failed to enable mapt configuration\n",
+                                                   __FUNCTION__));
+                              }
+                          }
+                       }
 #endif
                    }
                 }

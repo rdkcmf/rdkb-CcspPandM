@@ -225,9 +225,10 @@ do
 	sleep 2
 	#Check if WAN got an IP
 	EROUTER_IP=`ifconfig $WAN_INTERFACE | grep "inet addr" | cut -d":" -f2 | cut -d" " -f1`
+        EROUTER_IP6=`ifconfig $WAN_INTERFACE | grep inet6 | grep Global`
 
 	#If WAN has v4 just get out of the loop
-	if [ "$EROUTER_IP" != "" ] 
+	if [ "$EROUTER_IP" != "" ] || [ "$EROUTER_IP6" != "" ]
 	then
 		HAS_IP=1
 	fi
@@ -340,12 +341,15 @@ then
 		   # Check v4Count. This variable will be incremented only when we have IPv6 for erouter0
 		   # Try curl command for 3 times in v4 mode. If all 3 fails, try curl command for 3 times in v6 mode
 		   # only if erouter0 has an IPv6.
-		   if [ $v4Count -lt 3 ]
+		   has_ipv4=`ifconfig $WAN_INTERFACE | grep "inet addr" | cut -d":" -f2 | cut -d" " -f1`
+		   has_ipv6=`ifconfig $WAN_INTERFACE | grep inet6 | grep Global`
+
+		   if [ "$has_ipv4" != "" ] && [ $v4Count -lt 3 ]
 		   then
 		      echo_t "Network Response: Executing command for ipv4"
 		      curl -4 -w '%{http_code}\n' --interface $WAN_INTERFACE $URL_1 --connect-timeout 30 -m 30 > $RESPONSE_1
-		      has_ipv6=`ifconfig $WAN_INTERFACE | grep inet6 | grep Global`
-		      if [ "$has_ipv6" != "" ]
+		      
+                      if [ "$has_ipv6" != "" ]
 		      then
 		         echo_t "Network Response: Increment count as we have ipv6 ip"
 		         v4Count=`expr $v4Count + 1`
@@ -360,7 +364,7 @@ then
 		   else
 		      # We will come into this else condition, only if erouter0 has IPv6 and 
 		      # curl command failed 3 times for IPv4
-		      if [ $v6Count -lt 3 ]
+		      if [ "$has_ipv6" != "" ] && [ $v6Count -lt 3 ]
 		      then
 		         echo_t "Network Response: Executing command for ipv6"
 		         curl -6 -w '%{http_code}\n' --interface $WAN_INTERFACE $URL_1 --connect-timeout 30 -m 30 > $RESPONSE_1

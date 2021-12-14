@@ -113,6 +113,18 @@ fi
 
 AM_CONDITIONAL(CCSP_PLATFORM_BCM, test "x$CCSP_PLATFORM" = xbcm)
 
+AC_ARG_ENABLE([maptsupport],
+             AS_HELP_STRING([--enable-maptsupport],[enable mapt support (default is no)]),
+             [
+              case "${enableval}" in
+               yes) MAPT_SUPPORT_ENABLED=true;;
+               no)  MAPT_SUPPORT_ENABLED=false;;
+               *) AC_MSG_ERROR([bad value ${enableval} for --enable-maptsupport ]);;
+              esac
+             ],
+             [echo "mapt is disabled"])
+AM_CONDITIONAL(FEATURE_SUPPORT_MAPT_NAT46, test "x$MAPT_SUPPORT_ENABLED" = xtrue)
+
 SYSTEMD_CFLAGS=" "
 SYSTEMD_LDFLAGS=" "
 AC_ARG_ENABLE([notify],

@@ -127,7 +127,9 @@ if [ "$1" != "rfcp" ]
                # Check v4Count. This variable will be incremented only when we have IPv6 for erouter0
                # Try curl command for 3 times in v4 mode. If all 3 fails, try curl command for 3 times in v6 mode
                        # only if erouter0 has an IPv6.
-               if [ $v4Count -lt 3 ]
+               
+               has_ipv4=`ifconfig $WAN_INTERFACE | grep "inet addr" | cut -d":" -f2 | cut -d" " -f1`
+               if [ "$has_ipv4" != "" ] && [ $v4Count -lt 3 ]
                then
                   echo_t "Revert Redirect: Executing command for ipv4"
                   curl -4 -v --interface erouter0 --data "SSID_1=$SSID_1&Password_1=$Password_1&Mobile_Number=$Mobile_Number&SSID_2=$SSID_2&Password_2=$Password_2&CM_MAC=$CM_MAC&CM_IP=$CM_IP" $Server_URL
