@@ -2016,24 +2016,6 @@
                                     <syntax>string</syntax>
                                     <writable>true</writable>
                                 </parameter>
-                                <parameter>
-                                    <name>TokenEndpoint</name>
-                                    <type>string(255)</type>
-                                    <syntax>string</syntax>
-                                    <writable>true</writable>
-                                </parameter>
-                                <parameter>
-                                    <name>ClientId</name>
-                                    <type>string(15)</type>
-                                    <syntax>string</syntax>
-                                    <writable>true</writable>
-                                </parameter>
-                                <parameter>
-                                    <name>ClientSecret</name>
-                                    <type>string(127)</type>
-                                    <syntax>string</syntax>
-                                    <writable>true</writable>
-                                </parameter>
                             </parameters>
                         </object>
 			<object>

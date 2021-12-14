@@ -7781,14 +7781,6 @@ OAUTH_GetParamStringValue
     {
         retval = 0;
     }
-    else if( AnscEqualString(ParamName, "TokenEndpoint", TRUE) == TRUE )
-    {
-        retval = 0;
-    }
-    else if( AnscEqualString(ParamName, "ClientId", TRUE) == TRUE )
-    {
-        retval = 0;
-    }
     else
     {
         CcspTraceError(("[%s] Unrecognized param name %s\n", __FUNCTION__, ParamName));
@@ -7866,14 +7858,6 @@ OAUTH_SetParamStringValue
         bParamNameGood = TRUE;
     }
     else if( AnscEqualString(ParamName, "ServerUrl", TRUE) )
-    {
-        bParamNameGood = TRUE;
-    }
-    else if( AnscEqualString(ParamName, "TokenEndpoint", TRUE) )
-    {
-        bParamNameGood = TRUE;
-    }
-    else if( AnscEqualString(ParamName, "ClientId", TRUE) )
     {
         bParamNameGood = TRUE;
     }
