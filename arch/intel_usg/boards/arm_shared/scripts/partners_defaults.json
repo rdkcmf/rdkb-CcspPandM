@@ -311,9 +311,9 @@
       "Device.Time.NTPServer3" : "",
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.X_RDK_WebConfig.URL" : "https://cpe-config-cox.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
-      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-cox.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 
 
@@ -373,9 +373,9 @@
       "Device.Time.NTPServer3" : "",
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.X_RDK_WebConfig.URL" : "https://cpe-config-rogers.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
-      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-rogers.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 
 
@@ -435,9 +435,9 @@
       "Device.Time.NTPServer3" : "ntp2.shawcable.net",
       "Device.Time.NTPServer4" : "ntp3.shawcable.net",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.X_RDK_WebConfig.URL" : "https://cpe-config-shaw.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
-      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-shaw.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 
 "videotron" : {
@@ -496,9 +496,9 @@
       "Device.Time.NTPServer3" : "ntp003.videotron.ca",
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.X_RDK_WebConfig.URL" : "https://cpe-config-videotron.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
-      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-videotron.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 "axb3retail" : {
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink" : "http://www.surfboard.com",
@@ -555,9 +555,9 @@
       "Device.Time.NTPServer3" : "",
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
-      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile.xdp.comcast.net/api/v1/device/{mac}/config"
   },
    "unknown" : {
 
@@ -614,9 +614,9 @@
       "Device.Time.NTPServer3" : "",
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
-      "Device.X_RDK_WebConfig.URL" : "",
+      "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
-      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 
     "test-partner" : {
