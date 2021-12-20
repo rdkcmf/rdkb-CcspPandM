@@ -110,7 +110,7 @@
 #define SYSTEMD "systemd"
 #define MAX_TIME_FORMAT     5
 
-#define MAX_PROCESS_NUMBER 200
+#define MAX_PROCESS_NUMBER 300
 
 static int writeToJson(char *data, char *file);
 
