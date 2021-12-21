@@ -824,4 +824,154 @@ BOOL GreTunnelStat_GetParamUlongValue ( ANSC_HANDLE hInsContext, char* ParamName
 	return FALSE;
 }
 
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        XfinityHealthCheck_GetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int*                        pInt
+            );
+
+    description:
+
+        This function is called to retrieve integer parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int*                        pInt
+                The buffer of returned integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+XfinityHealthCheck_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    )
+{
+
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Cadence", TRUE))
+    {
+        char value[8] = {'\0'};
+        int itr, days = 0;
+        if( syscfg_get(NULL, "XfinityHealthCheckCadence", value, sizeof(value)) == 0 )
+        {
+            for(itr=0; value[itr]!='\0'; itr++)
+                days = days*10 + value[itr] - 48;
+            *pInt = days;
+            return true;
+        }
+        else
+        {
+            CcspTraceError(("syscfg_get failed for XfinityHealthCheckEnable\n"));
+        }
+    }
+    return FALSE;
+
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        XfinityHealthCheck_SetParamIntValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                int                         iValue
+            );
+
+    description:
+
+        This function is called to set integer parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                int                         iValue
+                The updated integer value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+XfinityHealthCheck_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         value
+    )
+{
+    char buf1[16]={0};
+    char buf2[16]={0};
+    errno_t rc1 = -1;
+    errno_t rc2 = -1;
+    UNREFERENCED_PARAMETER(hInsContext);
+
+    if (AnscEqualString(ParamName, "Cadence", TRUE))
+    {
+        if(value<1 || value>1000)
+        {
+            AnscTraceWarning(("Cadence must be between 1 and 1000\n"));
+            return FALSE;
+        }
+        rc1 = sprintf_s(buf1, sizeof(buf1), "%d", value);
+        if(rc1 < EOK)
+        {
+            ERR_CHK(rc1);
+            return FALSE;
+        }
+        rc2 = sprintf_s(buf2, sizeof(buf2), "%d", value-1);
+        if(rc2 < EOK)
+        {
+            ERR_CHK(rc2);
+            return FALSE;
+        }
+
+        if (syscfg_set(NULL, "XfinityHealthCheckCadence", buf1) != 0 || syscfg_set(NULL, "XfinityHealthCheckRemDays", buf2) != 0 )
+        {
+            AnscTraceWarning(("syscfg_set failed\n"));
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                AnscTraceWarning(("syscfg_commit failed\n"));
+                return FALSE;
+            }
+            else
+            {
+                AnscTraceWarning(("syscfg_commit success\n"));
+            }
+        }
+
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 #endif

@@ -1737,6 +1737,12 @@
                                 <writable>true</writable>
                             </parameter>
                             <parameter>
+                                <name>XfinityHealthCheck</name>
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
                                 <name>CodebigSupport</name>
                                 <type>boolean</type>
                                 <syntax>bool</syntax>
@@ -17347,6 +17353,22 @@
         <objectType>object</objectType>
 
         <objects>
+            <object>
+                <name>XfinityHealthCheck</name>
+                <objectType>object</objectType>
+                <functions>
+                    <func_GetParamIntValue>XfinityHealthCheck_GetParamIntValue</func_GetParamIntValue>
+                    <func_SetParamIntValue>XfinityHealthCheck_SetParamIntValue</func_SetParamIntValue>
+                </functions>
+                <parameters>
+                    <parameter>
+                        <name>Cadence</name>
+                        <type>int</type>
+                        <syntax>int</syntax>
+                        <writable>true</writable>
+                    </parameter>
+                </parameters>
+            </object>
             <object>
                 <name>Tunnel</name>
                 <objectType>staticTable</objectType>

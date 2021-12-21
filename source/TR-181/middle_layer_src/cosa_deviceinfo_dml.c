@@ -8615,6 +8615,23 @@ Feature_GetParamBoolValue
      return TRUE;   
     }
 #endif
+    if( AnscEqualString(ParamName, "XfinityHealthCheck", TRUE))
+    {
+        char value[8] = {'\0'};
+        if( syscfg_get(NULL, "XfinityHealthCheckEnable", value, sizeof(value)) == 0 )
+        {
+            if (strcmp(value, "true") == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceError(("syscfg_get failed for XfinityHealthCheckEnable\n"));
+            return FALSE;
+        }
+    }
     if( AnscEqualString(ParamName, "CodebigSupport", TRUE))
     {
          char value[8];
@@ -10029,6 +10046,44 @@ Feature_SetParamBoolValue
         return TRUE;
     }
 
+  if( AnscEqualString(ParamName, "XfinityHealthCheck", TRUE))
+    {
+        char buf[8] = {'\0'};
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+        if( syscfg_set(NULL, "XfinityHealthCheckEnable", buf) != 0 || syscfg_set(NULL, "XfinityHealthCheckDone", "false") != 0 )
+        {
+            CcspTraceError(("syscfg_set failed for XfinityHealthCheckEnable \n"));
+        }
+        else
+        {
+            char value[8] = {'\0'};
+            int i,days = 0;
+            if( syscfg_get(NULL, "XfinityHealthCheckCadence", value, sizeof(value)) == 0 )
+            {
+                for(i=0; value[i]!='\0'; i++)
+                    days = days*10 + value[i] - 48;
+            }
+            if(days == 0)
+            {
+                char buf1[2] = {'7','\0'};
+                char buf2[2] = {'6','\0'};
+                if (syscfg_set(NULL, "XfinityHealthCheckCadence", buf1) != 0 || syscfg_set(NULL, "XfinityHealthCheckRemDays", buf2) != 0 )
+                {
+                    AnscTraceWarning(("syscfg_set failed\n"));
+                    return FALSE;
+                }
+            }
+            if( syscfg_commit() == 0 )
+            {
+                return TRUE;
+            }
+            else
+            {
+                 CcspTraceError(("syscfg_commit failed for XfinityHealthCheckEnable \n"));
+            }
+        }
+        return FALSE;
+    }
 
     if( AnscEqualString(ParamName, "ContainerSupport", TRUE))
     {
