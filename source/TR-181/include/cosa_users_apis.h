@@ -67,6 +67,8 @@
 #include "cosa_apis.h"
 #include "cosa_users_dml.h"
 
+#define STR_SZ 64
+#define PWD_SZ 128
 
 typedef  enum
 _COSA_DML_USER_PERMISSION
@@ -85,8 +87,8 @@ struct _COSA_DML_USER
     BOOLEAN                         bEnabled;
 
     BOOLEAN                         RemoteAccessCapable;
-    char                            Username[64];
-    char                            Password[64];
+    char                            Username[STR_SZ];
+    char                            Password[PWD_SZ];
     char                            Language[16];
     char                            NumOfFailedAttempts;
     char                            X_RDKCENTRAL_COM_ComparePassword[32];
