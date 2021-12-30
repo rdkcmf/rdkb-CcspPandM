@@ -123,6 +123,7 @@ _COSA_DML_FIREWALL_CFG2
     BOOLEAN                         IPSecPassthrough;
     BOOLEAN                         PPTPPassthrough;
     BOOLEAN                         L2TPPassthrough;
+    BOOLEAN                         SSLPassthrough;
     BOOLEAN                         FilterHTTP;
     BOOLEAN                         FilterHTTPV6;
     BOOLEAN                         FilterHTTPs;

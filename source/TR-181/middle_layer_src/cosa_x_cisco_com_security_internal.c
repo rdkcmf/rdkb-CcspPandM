@@ -225,6 +225,7 @@ CosaSecurityInitialize
         pMyObject->FirewallConfig.IPSecPassthrough = pFirewallCfg->IPSecPassthrough;
         pMyObject->FirewallConfig.L2TPPassthrough = pFirewallCfg->L2TPPassthrough;
         pMyObject->FirewallConfig.PPTPPassthrough = pFirewallCfg->PPTPPassthrough;
+        pMyObject->FirewallConfig.SSLPassthrough = pFirewallCfg->SSLPassthrough;
         pMyObject->FirewallConfig.WebBlockActiveX = pFirewallCfg->WebBlockActiveX;
         pMyObject->FirewallConfig.WebBlockCookies = pFirewallCfg->WebBlockCookies;
         pMyObject->FirewallConfig.WebBlockJava = pFirewallCfg->WebBlockJava;

@@ -1186,6 +1186,13 @@ Firewall1_GetParamBoolValue
         return TRUE;
     }
 
+    if (strcmp(ParamName, "SSLPassthrough") == 0)
+    {
+        /* collect value */
+        *pBool = pFirewallCfg->SSLPassthrough;
+         return TRUE;
+    }
+
     if (strcmp(ParamName, "FilterNATRedirection") == 0)
     {
         /* collect value */
@@ -1610,6 +1617,13 @@ Firewall1_SetParamBoolValue
         pCosaDMSecurity->FirewallConfig.IPSecPassthrough = bValue;
 
         return TRUE;
+    }
+
+    if (strcmp(ParamName, "SSLPassthrough") == 0)
+    {
+        /* save update to backup */
+        pCosaDMSecurity->FirewallConfig.SSLPassthrough = bValue;
+         return TRUE;
     }
 
     if (strcmp(ParamName, "FilterNATRedirection") == 0)
