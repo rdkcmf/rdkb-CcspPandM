@@ -931,21 +931,28 @@ RemoteAccess_SetParamUlongValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
-    
+
     /*for single computer startIp and EndIp will be equal;
     if its set to empty in UI, default value 255.255.255.255 is taken. */
-    
+    struct in_addr Ipv4Addr;
+
     if( AnscEqualString(ParamName, "StartIp", TRUE))
     {
-        pMyObject->RaCfg.StartIp.Value = uValue;
-        return TRUE;
-
+        Ipv4Addr.s_addr = uValue;
+        if(inet_addr(inet_ntoa(Ipv4Addr)))
+        {
+            pMyObject->RaCfg.StartIp.Value = uValue;
+            return TRUE;
+        }
     }
     if( AnscEqualString(ParamName, "EndIp", TRUE))
     {
-        pMyObject->RaCfg.EndIp.Value = uValue;
-        return TRUE;
-
+        Ipv4Addr.s_addr = uValue;
+        if(inet_addr(inet_ntoa(Ipv4Addr)))
+        {
+            pMyObject->RaCfg.EndIp.Value = uValue;
+            return TRUE;
+        }
     }
 
     if( AnscEqualString(ParamName, "HttpPort", TRUE))
