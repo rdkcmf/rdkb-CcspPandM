@@ -70,6 +70,9 @@
 #include "utapi/utapi.h"
 #include "utapi/utapi_util.h"
 #include "ccsp_psm_helper.h"
+#ifdef _HUB4_PRODUCT_REQ_
+#include "platform_hal.h"
+#endif
 
 #define PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE  "dmsb.lanmanagemententry.lanulaenable"
 #define PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE "dmsb.lanmanagemententry.lanipv6enable"
@@ -142,9 +145,17 @@ int generate_ipv6_eui_address(char *eui, int eui_len) {
     char tmp[8] = {0};
     int idx = 0;
     int idj = 0;
+#ifdef _HUB4_PRODUCT_REQ_
+    BOOLEAN baseMac = FALSE;
+#endif
 
     if (iface_get_hwaddr(LAN_BRIDGE, macStr, sizeof(macStr)) != 0) {
         fprintf(stderr, "get the mac of %s error!\n", LAN_BRIDGE);
+#ifdef _HUB4_PRODUCT_REQ_
+        if (platform_hal_GetBaseMacAddress(macStr) == 0)
+            baseMac = TRUE;
+        else
+#endif
         return ANSC_STATUS_FAILURE;
     }
 
@@ -152,7 +163,18 @@ int generate_ipv6_eui_address(char *eui, int eui_len) {
         tmp[0] = '\0';
         strncpy(tmp, &macStr[idx], 2);
         mac[idj] = strtol(tmp, NULL, 16);
+#ifdef _HUB4_PRODUCT_REQ_
+        if(baseMac)
+        {
+            idx+=2;
+            if(idj == 5)
+                mac[5]+=1;
+        }
+        else
+            idx+=3;
+#else
         idx+=3;
+#endif
         idj+=1;
     }
    
