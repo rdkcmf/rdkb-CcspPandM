@@ -242,8 +242,8 @@ CosaEthInterfaceInfo g_EthEntries[] =
         {g_EthIntSInfo + 3, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 3, {0}},
         {g_EthIntSInfo + 4, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 4, {0}},
         {g_EthIntSInfo + 5, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 5, {0}},
-        {g_EthIntSInfo + 8, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
-        {g_EthIntSInfo + 9, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
+        {g_EthIntSInfo + 6, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}},
+        {g_EthIntSInfo + 7, {'\0'}, 0, 0, &ifFuncs, NULL,          {0}}
 #elif defined(ETH_8_PORTS)
         {g_EthIntSInfo + 0, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 0, {0}},
         {g_EthIntSInfo + 1, {'\0'}, 0, 0, &swFuncs, g_PortIDs + 1, {0}},
