@@ -5598,7 +5598,6 @@ CosaDmlIaGetLogEntries
     if((!commonSyseventGet("FW_LOG_FILE_PATH_V2", fw_log_path, sizeof(fw_log_path))) &&\
         (fw_log_path[0] == '\0')){
 #endif
-        syscfg_init();
         syscfg_get(NULL, "FW_LOG_FILE_PATH", fw_log_path, sizeof(fw_log_path));
         if(fw_log_path[0] == '\0'){
             return NULL;
@@ -5690,7 +5689,6 @@ CosaDmlIaGetALLLogEntries
         if((!commonSyseventGet("FW_LOG_FILE_PATH_V2", fw_log_path, sizeof(fw_log_path))) &&\
             (fw_log_path[0] == '\0')){
 #endif
-            syscfg_init();
             syscfg_get(NULL, "FW_LOG_FILE_PATH", fw_log_path, sizeof(fw_log_path));
             if(fw_log_path[0] == '\0'){
                 return ANSC_STATUS_FAILURE;

@@ -1309,8 +1309,6 @@ static void CosaEthWanTelementryLogger(void)
     char isEthEnabled[64]={'\0'};
     int res;
 
-    if(0 == syscfg_init())
-    {
         if( 0 == syscfg_get( NULL, "eth_wan_enabled", isEthEnabled, sizeof(isEthEnabled)) && (isEthEnabled[0] != '\0' && strncmp(isEthEnabled, "true", strlen("true")) == 0))
         {
             res = pthread_create(&ethwantelementrylogger_tid, NULL, EthWan_TelementryLogger_Thread, NULL);
@@ -1323,5 +1321,5 @@ static void CosaEthWanTelementryLogger(void)
                 AnscTraceWarning(("CosaEthWanTelementryLogger EthWan_TelementryLogger_Thread Created\n"));
             }
         }
-    }
+
 }

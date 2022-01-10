@@ -129,7 +129,6 @@ CosaParentalControlInitialize
     CosaDmlMngSites_GetConf(&pParCtrl->ManagedSites);
     CosaDmlMngServs_GetConf(&pParCtrl->ManagedServs);
     CosaDmlMngDevs_GetConf(&pParCtrl->ManagedDevs);
-    syscfg_init();
     CosaDmlMDRed_GetConf(&pParCtrl->MDRedirect);
 
     /* ManagedSites.BlockedURL.{i}. */

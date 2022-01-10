@@ -357,8 +357,6 @@ CosaDmlIpInit
     }
 #endif
 
-    syscfg_init();
-    
     return ANSC_STATUS_SUCCESS;
 }
 

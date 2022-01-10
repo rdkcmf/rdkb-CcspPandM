@@ -691,7 +691,6 @@ if(id != 0)
      exit(1);
    }
 
-    syscfg_init();
     // printf("Calling Docsis\n");
 
     // ICC_init();

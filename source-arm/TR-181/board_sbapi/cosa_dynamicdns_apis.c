@@ -219,8 +219,7 @@ CosaDmlDynamicDns_GetEnable()
 {
    char buf[8] = {0};
 
-   if ((!syscfg_init()) &&
-       (!syscfg_get(NULL, "dynamic_dns_enable", buf, sizeof(buf))))
+   if (!syscfg_get(NULL, "dynamic_dns_enable", buf, sizeof(buf)))
    {
        return (strcmp(buf, "1") == 0);
    }
@@ -236,8 +235,7 @@ CosaDmlDynamicDns_GetsupportedServices
     char buf[128] = {0};
     errno_t rc = -1;
 
-    if ((!syscfg_init()) &&
-        (!syscfg_get( NULL, "ddns_service_providers_list", buf, sizeof(buf))))
+    if (!syscfg_get( NULL, "ddns_service_providers_list", buf, sizeof(buf)))
     {
         /* destination buffer supportedServices is declared as an array size of 1024 bytes in the calling func. */
         rc = strcpy_s(supportedServices, 1024, buf);
@@ -260,8 +258,6 @@ CosaDmlDynamicDns_SetEnable
    char buf[8] = {0};
    errno_t rc = -1;
 
-   if (!syscfg_init())
-   {
        syscfg_get(NULL, "dslite_enable", buf, sizeof(buf));
        if((strcmp(buf, "1") == 0) && bValue == TRUE){
            return -1;
@@ -283,8 +279,6 @@ CosaDmlDynamicDns_SetEnable
        }
 
        return 0;
-   }
-   return -1;
 }
 
 /***********************************************************************
@@ -546,8 +540,7 @@ CosaDmlDynamicDns_GetClientStatus()
    char buf[8] = {0};
    unsigned long pVal = 6;
 
-   if ((!syscfg_init()) &&
-       (!syscfg_get(NULL, "ddns_client_Status", buf, sizeof(buf))))
+   if (!syscfg_get(NULL, "ddns_client_Status", buf, sizeof(buf)))
    {
        if(buf[0] != '\0')
        {
@@ -563,8 +556,7 @@ CosaDmlDynamicDns_GetClientLastError()
    char buf[8] = {0};
    unsigned long pVal = 1;
 
-   if ((!syscfg_init()) &&
-       (!syscfg_get(NULL, "ddns_client_Lasterror", buf, sizeof(buf))))
+   if (!syscfg_get(NULL, "ddns_client_Lasterror", buf, sizeof(buf)))
    {
       if(buf[0] != '\0')
        {
@@ -796,8 +788,7 @@ CosaDmlDynamicDns_GetHostLastUpdate
     char buf[128] = {0};
     errno_t rc = -1;
 
-    if ((!syscfg_init()) &&
-        (!syscfg_get( NULL, "ddns_host_lastupdate_1", buf, sizeof(buf))))
+    if (!syscfg_get( NULL, "ddns_host_lastupdate_1", buf, sizeof(buf)))
     {
         /* destination buffer lastUpdate is defined as array size of 256 bytes in calling func. */
         rc = strcpy_s(lastUpdate, 256, buf);
@@ -833,8 +824,7 @@ void CosaInitializeTr181DdnsServiceProviderList()
     char service_list[128] = {0};
     errno_t rc = -1;
 
-    if ((!syscfg_init()) &&
-        (!syscfg_get( NULL, "ddns_service_providers_list", service_list, sizeof(service_list))))
+    if (!syscfg_get( NULL, "ddns_service_providers_list", service_list, sizeof(service_list)))
     {
         ULONG index = 0;
         char enable_path[sizeof(SYSCFG_SERVER_ENABLE_KEY) + 1] = {0};

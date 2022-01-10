@@ -703,11 +703,6 @@ CosaDml_IPv6rdInit(
         return ANSC_STATUS_FAILURE;
     }
 
-    if (syscfg_init() != 0) {
-        syslog(LOG_ERR, "%s: syscfg_init error", __FUNCTION__);
-        return ANSC_STATUS_FAILURE;
-    }
-
     /* load config from config file (PSM for coas2.0) */
     if ((g_ipv6rd_conf = load_ipv6rd_conf()) == NULL) {
         syslog(LOG_ERR, "%s: load config error", __FUNCTION__);

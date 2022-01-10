@@ -425,7 +425,6 @@ CosaDmlPppInit
 
     get_wan_proto(&g_ppp_info.last_wan_proto);
 
-    syscfg_init();
     return ANSC_STATUS_SUCCESS;
 }
 

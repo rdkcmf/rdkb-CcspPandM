@@ -210,8 +210,6 @@ CosaDmlDiGetRouterMacAddress
     char wanPhyName[32] = {0};
     char out_value[32] = {0};
 
-    syscfg_init();
-
     if (syscfg_get(NULL, "wan_physical_ifname", out_value, sizeof(out_value)) == 0)
     {
        strncpy(wanPhyName, out_value, sizeof(wanPhyName));

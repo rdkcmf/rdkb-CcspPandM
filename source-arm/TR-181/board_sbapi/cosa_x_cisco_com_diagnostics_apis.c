@@ -500,9 +500,7 @@ CosaDmlDiagnosticsGetEntry
     
     LOGFILE[0] = '\0';
     UNREFERENCED_PARAMETER(hContext);
-    /* Get log file name from sysevent since 1.6.1 */
-    //syscfg_init();
-    //syscfg_get(NULL, "SYS_LOG_FILE", LOGFILE, sizeof(LOGFILE));
+    
     if( (!commonSyseventGet("SYS_LOG_FILE_V2", LOGFILE, sizeof(LOGFILE))) \
         && (LOGFILE[0] == '\0'))
         return ANSC_STATUS_FAILURE;
@@ -540,9 +538,6 @@ CosaDmlDiagnosticsGetEventlog
     *pulCount = 0;
     *ppDiagnosticsEntry = NULL;
     LOGFILE[0] = '\0'; 
-    /* Get log file name from sysevent since 1.6.1 */
-    //syscfg_init();
-    //syscfg_get(NULL, "EVT_LOG_FILE", LOGFILE, sizeof(LOGFILE));
     
     UNREFERENCED_PARAMETER(hContext);
     if( (!commonSyseventGet("EVT_LOG_FILE_V2", LOGFILE, sizeof(LOGFILE))) \
