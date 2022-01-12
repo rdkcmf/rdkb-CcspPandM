@@ -1830,7 +1830,11 @@
                           <parameters>
                             <parameter>
                               <name>Enable</name>
-                              <type>string: Enable(1), Disable(0), MSOonly(2)</type>
+<?ifndef _HUB4_PRODUCT_REQ_ & _SR300_PRODUCT_REQ_?>
+			      <type>string: Enable(1), Disable(0), MSOonly(2)</type>
+<?else?>
+			      <type>string: Enable(1), Disable(0)</type>
+<?endif?>
                               <syntax>uint32/mapped</syntax>
                               <writable>true</writable>
                             </parameter>
