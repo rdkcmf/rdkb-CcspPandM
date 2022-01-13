@@ -42,7 +42,6 @@
 #include "cosa_x_cisco_com_hotspot_apis.h"
 #include "dhcpsnooper.h"
 #include "cosa_ethernet_dml.h"
-#include "safec_lib_common.h"
 
 #define FIRST_SSID_INS  5
 
@@ -440,7 +439,6 @@ CosaDml_HsSsidAssoDevGetEntryByIndex(ULONG ssidIns, ULONG idx, COSA_DML_HOTSPOT_
     cli = &hsssid->clis[idx];
 
 #if defined(_INTEL_BUG_FIXES_) || defined(DUAL_CORE_XB3)
-    errno_t rc = -1;
     strncpy(curInt,hsssid->path,sizeof(curInt));
     //Trim off the trailing dot if it exists
     size = strnlen(curInt,sizeof(curInt));
@@ -449,8 +447,7 @@ CosaDml_HsSsidAssoDevGetEntryByIndex(ULONG ssidIns, ULONG idx, COSA_DML_HOTSPOT_
     inst = atoi(strrchr(curInt,'.')+1);
 
     size = sizeof(outdata);
-    rc = sprintf_s(paramname, sizeof(paramname), "Device.WiFi.AccessPoint.%d.AssociatedDevice.%lu.SignalStrength", inst, idx+1);
-    if(rc < EOK)  ERR_CHK(rc);
+    snprintf(paramname, sizeof(paramname), "Device.WiFi.AccessPoint.%d.AssociatedDevice.%lu.SignalStrength", inst, idx+1);
     if (ANSC_STATUS_SUCCESS == COSAGetParamValueByPathName(bus_handle, &varStruct, &size)) {
         rssi = atoi(varStruct.parameterValue);
     } else {

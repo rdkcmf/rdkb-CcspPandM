@@ -2938,7 +2938,7 @@ CosaDeriveSyndicationPartnerID(char *Partner_ID)
 			 	}
 			}
 	}
-	strncpy(Partner_ID,PartnerID, PARTNER_ID_LEN);
+	strncpy(Partner_ID,PartnerID,sizeof(PartnerID));
 	return ANSC_STATUS_SUCCESS;
 }
 
@@ -4289,8 +4289,7 @@ void* RebootDevice_thread(void* buff)
 		rebootcount = atoi(buf);
 		rebootcount++;
 		memset(buf,0,sizeof(buf));
-		rc = sprintf_s(buf,sizeof(buf),"%d",rebootcount);
-		if(rc < EOK) ERR_CHK(rc);
+		snprintf(buf,sizeof(buf),"%d",rebootcount);
 		syscfg_set(NULL, "reboot_count", buf);
 
 		FILE *fp = NULL;
@@ -5294,12 +5293,10 @@ CosaDmlSetRadiusGreyListEnable
     char                 dbusPath[256]  = "/com/cisco/spvtg/ccsp/wifi";
     char*                faultParam     = NULL;
     int                  ret            = 0;
-    errno_t              rc             = -1;
     CCSP_MESSAGE_BUS_INFO *bus_info               = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
     char str[2] = {0};
 
-    rc = sprintf_s(str, sizeof(str), "%d", bValue);
-    if(rc < EOK) ERR_CHK(rc);
+    snprintf(str, sizeof(str), "%d", bValue);
     if (PSM_Set_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent),
                               "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.RadiusGreyList.Enable",
                               ccsp_string, str) == CCSP_SUCCESS)
@@ -5357,11 +5354,9 @@ CosaDmlSetNativeHostapdState
     char                 dbusPath[256]  = "/com/cisco/spvtg/ccsp/wifi";
     char*                faultParam     = NULL;
     int                  ret            = 0;
-    errno_t              rc             = -1;
     CCSP_MESSAGE_BUS_INFO *bus_info               = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
-    rc = sprintf_s(str, sizeof(str), "%d", bValue);
-    if(rc < EOK) ERR_CHK(rc);
+    snprintf(str, sizeof(str), "%d", bValue);
     if (PSM_Set_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent),
                               "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Control.DisableNativeHostapd",
                               ccsp_string, str) == CCSP_SUCCESS)
@@ -5414,11 +5409,9 @@ BOOL CosaDmlSetDFS(BOOL bValue)
     char                 dbusPath[256]  = "/com/cisco/spvtg/ccsp/wifi";
     char*                faultParam     = NULL;
     int                  ret            = 0;
-    errno_t              rc             = -1;
     CCSP_MESSAGE_BUS_INFO *bus_info               = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
-    rc = sprintf_s(str, sizeof(str), "%d", bValue);
-    if(rc < EOK) ERR_CHK(rc);
+    snprintf(str, sizeof(str), "%d", bValue);
     if (PSM_Set_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent),
                               "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.DFS.Enable",
                               ccsp_string, str) == CCSP_SUCCESS)
@@ -5470,11 +5463,9 @@ BOOL CosaDmlSetDFSatBootUp(BOOL bValue)
     char                 dbusPath[256]  = "/com/cisco/spvtg/ccsp/wifi";
     char*                faultParam     = NULL;
     int                  ret            = 0;
-    errno_t              rc             = -1;
     CCSP_MESSAGE_BUS_INFO *bus_info               = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
-    rc = sprintf_s(str, sizeof(str), "%d", bValue);
-    if(rc < EOK) ERR_CHK(rc);
+    snprintf(str, sizeof(str), "%d", bValue);
     if (PSM_Set_Record_Value2(g_MessageBusHandle, g_GetSubsystemPrefix(g_pDslhDmlAgent),
                               "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.DFSatBootUp.Enable",
                               ccsp_string, str) == CCSP_SUCCESS)

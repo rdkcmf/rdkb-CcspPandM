@@ -2852,7 +2852,7 @@ static ANSC_STATUS _Psm_GetBPortMemberList(char *param_name, char *list)
 {
     int retPsmGet = CCSP_SUCCESS;
     char *param_value= NULL;
-    AnscTraceFlow(("<HL> %s path=%s value=%s\n",__FUNCTION__,param_name, (param_value == NULL) ? "NULL" : param_value ));
+    AnscTraceFlow(("<HL> %s path=%s value=%s\n",__FUNCTION__,param_name,param_value));
     retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, param_name, NULL, &param_value);
     errno_t rc = -1;
     if (retPsmGet == CCSP_SUCCESS) {
@@ -2880,7 +2880,7 @@ static ANSC_STATUS _Psm_GetBPortMemberList(char *param_name, char *list)
 static ANSC_STATUS _Psm_SetBPortMemberList(char *param_name, char *param_value)
 {
     int retPsmGet = CCSP_SUCCESS;
-    AnscTraceFlow(("<HL> %s path=%s value=%s\n",__FUNCTION__,param_name, (param_value == NULL) ? "NULL" : param_value ));
+    AnscTraceFlow(("<HL> %s path=%s value=%s\n",__FUNCTION__,param_name,param_value));
     retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, param_name, ccsp_string, param_value);
     if (retPsmGet == CCSP_SUCCESS) {
         AnscTraceFlow(("%s: retPsmSet == CCSP_SUCCESS writing %s=%s\n", __FUNCTION__,param_name,param_value));

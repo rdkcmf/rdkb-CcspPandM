@@ -68,7 +68,7 @@
 #include "cosa_gre_apis.h"
 #include "ccsp_psm_helper.h"
 #include "sys_definitions.h"
-#include "safec_lib_common.h"
+
 
 #define DMSB_GRE_TUNNEL "dmsb.gre.tunnel."
 #define GRE_INTERFACE   "interface."
@@ -451,7 +451,7 @@ int GRE_hotspot_update_circuit_ids(int tunnelInst, int queuestart) {
         /*If the value of SSID from the above is NULL assign default SSID name */
         if(strlen(varStruct.parameterValue)==0)
         {
-            strncpy(varStruct.parameterValue, DEFAULT_WIFI, strlen(DEFAULT_WIFI)+1 );
+            strncpy(varStruct.parameterValue, DEFAULT_WIFI, sizeof(DEFAULT_WIFI));
         }
 
         circuitSave += snprintf(circuitid + circuitSave, sizeof(circuitid) - circuitSave, "%s;", varStruct.parameterValue);
@@ -2291,11 +2291,9 @@ CosaDmlGRETunnelIfGetInfo
 
         if (pGRETunnelIf)
         {
-            errno_t rc = -1;
             AnscCopyMemory(pEntry, &pGRETunnelIf->Info, sizeof(pGRETunnelIf->Info));
             /* Retrieve  Interface Name */
-            rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s.%s", pGRETunnelIf->Cfg.LowerLayers, "Name");
-            if(rc < EOK) ERR_CHK(rc);
+            _ansc_snprintf(ucEntryParamName, sizeof(ucEntryParamName), "%s.%s", pGRETunnelIf->Cfg.LowerLayers, "Name");
             ulEntryNameLen = sizeof(ucEntryNameValue);
 
             if ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen))

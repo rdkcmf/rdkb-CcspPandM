@@ -146,7 +146,7 @@ static void checkComponentHealthStatus(char * compName, char * dbusPath, char *s
 	parameterValStruct_t **parameterval = NULL;
 	char *parameterNames[1] = {};
 	char tmp[MAX_PARAMETERNAME_LEN];
-	char str[MAX_PARAMETERNAME_LEN/2];
+	char str[MAX_PARAMETERNAME_LEN/2];     
 	char l_Subsystem[MAX_PARAMETERNAME_LEN/2] = { 0 };
 	errno_t  rc = -1;
 
@@ -159,8 +159,7 @@ static void checkComponentHealthStatus(char * compName, char * dbusPath, char *s
 	parameterNames[0] = tmp;
 
 	strncpy(l_Subsystem, "eRT.",sizeof(l_Subsystem));
-	rc = sprintf_s(str, sizeof(str), "%s%s", l_Subsystem, compName);
-	if(rc < EOK) ERR_CHK(rc);
+	snprintf(str, sizeof(str), "%s%s", l_Subsystem, compName);
 	CcspTraceDebug(("str is:%s\n", str));
 
 	ret = CcspBaseIf_getParameterValues(bus_handle, str, dbusPath,  parameterNames, 1, &val_size, &parameterval);
@@ -369,7 +368,7 @@ void* connect_parodus(void* arg)
                         .client_url = NULL
                       };
                       
-    CcspTraceInfo(("Configurations => service_name : %s parodus_url : %s client_url : %s\n", cfg.service_name, cfg.parodus_url, (cfg.client_url == NULL) ? "NULL" : cfg.client_url ));
+    CcspTraceInfo(("Configurations => service_name : %s parodus_url : %s client_url : %s\n", cfg.service_name, cfg.parodus_url, cfg.client_url ));
 
     while(1)
     {

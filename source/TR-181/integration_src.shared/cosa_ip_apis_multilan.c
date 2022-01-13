@@ -2365,8 +2365,7 @@ CosaDmlIpIfMlanGetV6Addr2
         snprintf(evt_name, sizeof(evt_name), "multinet_%d-name", l2_instnum);
         commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
 
-        rc = sprintf_s(evt_name, sizeof(evt_name), "ipv6_%s-addr", evt_value);
-        if(rc < EOK)   ERR_CHK(rc);
+        snprintf(evt_name, sizeof(evt_name), "ipv6_%s-addr", evt_value);
         commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
         if (evt_value[0] != '\0') {
             strncpy(pEntry->IP6Address, evt_value, sizeof(pEntry->IP6Address));
@@ -2451,8 +2450,7 @@ CosaDmlIpIfMlanGetV6Addr2
         snprintf(evt_name, sizeof(evt_name), "multinet_%d-name", l2_instnum);
         commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
 
-        rc = sprintf_s(evt_name, sizeof(evt_name), "ipv6_%s-addr", evt_value);
-        if(rc < EOK)  ERR_CHK(rc);
+        snprintf(evt_name, sizeof(evt_name), "ipv6_%s-addr", evt_value);
         commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
         if (evt_value[0] != '\0') {
             strncpy(pEntry->IP6Address, evt_value, sizeof(pEntry->IP6Address));
@@ -2654,8 +2652,7 @@ CosaDmlIpIfMlanGetV6Prefix2
         snprintf(evt_name, sizeof(evt_name), "multinet_%d-name", l2_instnum);
         commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
 
-        rc = sprintf_s(evt_name, sizeof(evt_name), "ipv6_%s-prefix", evt_value);
-        if(rc < EOK)   ERR_CHK(rc);
+        snprintf(evt_name, sizeof(evt_name), "ipv6_%s-prefix", evt_value);
         commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
         if (evt_value[0] != '\0') {
             strncpy(pEntry->Prefix, evt_value, sizeof(pEntry->Prefix));
@@ -2743,8 +2740,7 @@ CosaDmlIpIfMlanGetV6Prefix2
         snprintf(evt_name, sizeof(evt_name), "multinet_%d-name", l2_instnum);
         commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
 
-        rc = sprintf_s(evt_name, sizeof(evt_name), "ipv6_%s-prefix", evt_value);
-        if(rc < EOK)  ERR_CHK(rc);
+        snprintf(evt_name, sizeof(evt_name), "ipv6_%s-prefix", evt_value);
         commonSyseventGet(evt_name, evt_value, sizeof(evt_value));
         if (evt_value[0] != '\0') {
             strncpy(pEntry->Prefix, evt_value, sizeof(pEntry->Prefix));

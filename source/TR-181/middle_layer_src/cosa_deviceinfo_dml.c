@@ -13042,10 +13042,8 @@ WiFiPsmDb_SetParamBoolValue
     {
 	char str[2];
 	int retPsmGet = CCSP_SUCCESS;
-	errno_t rc    = -1;
 
-	rc = sprintf_s(str, sizeof(str),"%d",bValue);
-	if(rc < EOK) ERR_CHK(rc);
+	sprintf(str,"%d",bValue);
 	retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WiFi-PSM-DB.Enable", ccsp_string, str);
 	if (retPsmGet != CCSP_SUCCESS) {
 	    CcspTraceError(("Set failed for WiFi-PSM-DB \n"));
