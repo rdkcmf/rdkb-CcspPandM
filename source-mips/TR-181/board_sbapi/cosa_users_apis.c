@@ -629,7 +629,7 @@ user_validatepwd
    if(fromDB[0] == '\0')
    {
      CcspTraceWarning(("%s, No hashed password, calculate it\n",__FUNCTION__));
-     #if defined(_HUB4_PRODUCT_REQ_) || defined(INTEL_PUMA7) && defined(_XB7_PRODUCT_REQ_)
+     #if defined(_HUB4_PRODUCT_REQ_)
          user_hashandsavepwd(hContext,pEntry->Password,pEntry);
      #else
          FILE *ptr;
@@ -653,7 +653,7 @@ user_validatepwd
    }
    hash_userPassword(pString,getHash);
    CcspTraceWarning(("%s, Compare passwords\n",__FUNCTION__));
-   
+ 
    if (strcmp(getHash, pEntry->HashedPassword) == 0)
    {
      if(isDefault == 1)
@@ -808,8 +808,8 @@ CosaDmlUserResetPassword
    FILE *ptr;
    if(!strcmp(pEntry->Username,"admin"))
    {
-     #if defined(_HUB4_PRODUCT_REQ_) || defined(INTEL_PUMA7) && defined(_XB7_PRODUCT_REQ_)
-         //TODO: Avoid the hardcoded password . This change will be done as part of CMXB7-1766
+     #if defined(_HUB4_PRODUCT_REQ_)
+         //TODO: Avoid the hardcoded password.
          strcpy(defPassword,"password");
      #else
          if ((ptr=v_secure_popen("r", "/usr/bin/configparamgen jx lkiprgpkmqfk:3"))!=NULL)
