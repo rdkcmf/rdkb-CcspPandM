@@ -8313,15 +8313,17 @@ dhcpv6c_dbg_thrd(void * in)
                             }
 #else
                                 commonSyseventSet("lan_ipaddr_v6", globalIP);
-                                v_secure_system("ip -6 addr add %s/64 dev %s valid_lft %d preferred_lft %d", globalIP, 
+
+                                /*v_secure_system("ip -6 addr add %s/64 dev %s valid_lft %d preferred_lft %d", globalIP, 
                                                 COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
-                            }
-                            if(strlen(v6pref) > 0) {
+                            */
+			}
+                        /*    if(strlen(v6pref) > 0) {
                                 char v6pref_addr[128] = {0};
                                 strncpy(v6pref_addr, v6pref, (strlen(v6pref)-5));
                                 v_secure_system("ip -6 addr add %s::1/64 dev %s valid_lft %d preferred_lft %d",
                                                 v6pref_addr, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
-                            }
+                            } */
                             // send an event to wanmanager that Global-prefix is set
                             commonSyseventSet("lan_prefix_set", globalIP);
 #endif
