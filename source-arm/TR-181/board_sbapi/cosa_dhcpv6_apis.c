@@ -8021,6 +8021,10 @@ dhcpv6c_dbg_thrd(void * in)
 #endif
 	char cmd[100];
 
+    	char lan_v6_pref[100];
+        memset(lan_v6_pref,0,sizeof(lan_v6_pref));
+        snprintf(lan_v6_pref,sizeof(lan_v6_pref),"%s/64",v6Tpref);
+        commonSyseventSet("lan_prefix",lan_v6_pref);
 #ifndef FEATURE_RDKB_WAN_AGENT
     commonSyseventSet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME,       v6pref);
 #endif
@@ -8031,6 +8035,8 @@ dhcpv6c_dbg_thrd(void * in)
             		char interface_name[32] = {0};	
                         char out[128] = {0};
                         FILE *fp = NULL; 
+
+                            
 			if(pref_len < 64)
 			{
 			    memset(out,0,sizeof(out));
@@ -8045,6 +8051,8 @@ dhcpv6c_dbg_thrd(void * in)
                                 fp = v_secure_popen("r","syscfg get IPv6_Interface");
                                 _get_shell_output(fp, out, sizeof(out));
 				pt = out;
+
+
 				while((token = strtok_r(pt, ",", &pt)))
 				 {
 			 
