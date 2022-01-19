@@ -1869,6 +1869,9 @@ int CosaDmlDhcpv6sRestartOnLanStarted(void * arg)
     UNREFERENCED_PARAMETER(arg);
     CcspTraceWarning(("%s -- lan status is started. \n", __FUNCTION__));
     g_lan_ready = TRUE;
+#if defined(_HUB4_PRODUCT_REQ_)
+    g_dhcpv6_server_prefix_ready = TRUE; // To start dibbler server while lan-statues value is 'started'
+#endif
 
 #if defined(_CBR_PRODUCT_REQ_)
     // TCCBR-3353: dibbler-server is failing because brlan's IP address is "tentative".
