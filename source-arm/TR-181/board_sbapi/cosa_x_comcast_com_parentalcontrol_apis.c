@@ -1272,8 +1272,8 @@ int blkIns[250];
 int dCnt = 0;
 void ResetInsBuf()
 {
-	memset(dIndx,0,250);
-	memset(blkIns,0,250);
+	memset(dIndx,0, sizeof(dIndx));
+	memset(blkIns,0, sizeof(blkIns));
 	dCnt = 0;
 }
 int SetDelIndex(int ind,int ins)

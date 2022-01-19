@@ -497,13 +497,14 @@ int set_portmap_conf(portmappingdoc_t *rpm)
             		spf_count++;
             		snprintf(pf_cache[count].cmd,BLOCK_SIZE,ALIAS_SPF"%d",spf_count);
             		rc = strcpy_s(alias_pre, sizeof(alias_pre),ALIAS_PRE_SPF);
-					if(rc != EOK)
-					{
-						ERR_CHK(rc);
-						return -1;
-					}
-            		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s%lu",alias_pre,i);
-            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_EXT_PORT,alias_pre,i);
+			if(rc != EOK)
+			{
+				ERR_CHK(rc);
+				return -1;
+			}
+			snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s%lu",alias_pre,i);
+			rc = sprintf_s(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_EXT_PORT,alias_pre,i);
+			if(rc < EOK) ERR_CHK(rc);
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s",rpm->entries[j].external_port);
 
         	}
@@ -511,18 +512,20 @@ int set_portmap_conf(portmappingdoc_t *rpm)
         	{
            		pfr_count++;
            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,ALIAS_PFR"%d",pfr_count);
-					rc = strcpy_s(alias_pre, sizeof(alias_pre),ALIAS_PRE_PFR);
-					if(rc != EOK)
-					{
-						ERR_CHK(rc);
-						return -1;
-					}
+			rc = strcpy_s(alias_pre, sizeof(alias_pre),ALIAS_PRE_PFR);
+			if(rc != EOK)
+			{
+				ERR_CHK(rc);
+				return -1;
+			}
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s%lu",alias_pre,i);
-            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_EXT_PORT_RANGE,alias_pre,i);
+            		rc = sprintf_s(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_EXT_PORT_RANGE,alias_pre,i);
+			if(rc < EOK) ERR_CHK(rc);
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s %s",rpm->entries[j].external_port,rpm->entries[j].external_port_end_range);
             		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_PFR_PUBLIC_IP,alias_pre,i);
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s","0.0.0.0");
-            		snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_PFR_INT_RANGE,alias_pre,i);
+            		rc = sprintf_s(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_PFR_INT_RANGE,alias_pre,i);
+			if(rc < EOK) ERR_CHK(rc);
             		snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"%s","0");
         	}
 
@@ -555,11 +558,13 @@ int set_portmap_conf(portmappingdoc_t *rpm)
             {
                 return INVALID_PROTOCOL ;
             }
-        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_INT_PORT,alias_pre,i);
+        	rc = sprintf_s(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_INT_PORT,alias_pre,i);
+        	if(rc < EOK) ERR_CHK(rc);
         	snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"0");
         	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_IPV6,alias_pre,i);
         	snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"x");
-        	snprintf(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_PREV_STATE,alias_pre,i);
+        	rc = sprintf_s(pf_cache[count].cmd,BLOCK_SIZE,"%s%lu"ALIAS_POS_PREV_STATE,alias_pre,i);
+        	if(rc < EOK) ERR_CHK(rc);
         	snprintf(pf_cache[count++].val,VAL_BLOCK_SIZE,"1");
 
     	}
@@ -581,7 +586,7 @@ void init_pf_cache(t_cache *tmp_pf_cache)
     	int spf_count = 0;
     	int pfr_count = 0;
     	char alias_pre[8];
-
+    	errno_t rc = -1;
         char buf[8] = {0} ;
         snprintf(pf_param_name,sizeof(pf_param_name),"%s::%s",COSA_NAT_SYSCFG_NAMESPACE,PORT_FORWARD_ENABLED_KEY);
 
@@ -637,7 +642,8 @@ void init_pf_cache(t_cache *tmp_pf_cache)
 			memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
 			snprintf(tmp_pf_cache[i++].cmd,BLOCK_SIZE,"%s"ALIAS_POS_IPV6,alias_pre);
 			memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
-			snprintf(tmp_pf_cache[i++].cmd,BLOCK_SIZE,"%s"ALIAS_POS_PREV_STATE,alias_pre);
+			rc = sprintf_s(tmp_pf_cache[i++].cmd,BLOCK_SIZE,"%s"ALIAS_POS_PREV_STATE,alias_pre);
+			if(rc < EOK) ERR_CHK(rc);
 		}
 
 
@@ -664,7 +670,8 @@ void init_pf_cache(t_cache *tmp_pf_cache)
 			memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
 			snprintf(tmp_pf_cache[i++].cmd,BLOCK_SIZE,"%s"ALIAS_PFR_PUBLIC_IP,alias_pre);
 			memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
-			snprintf(tmp_pf_cache[i++].cmd,BLOCK_SIZE,"%s"ALIAS_PFR_INT_RANGE,alias_pre);
+			rc = sprintf_s(tmp_pf_cache[i++].cmd,BLOCK_SIZE,"%s"ALIAS_PFR_INT_RANGE,alias_pre);
+			if(rc < EOK) ERR_CHK(rc);
 			memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
 			snprintf(tmp_pf_cache[i++].cmd,BLOCK_SIZE,"%s"ALIAS_POS_IP,alias_pre);
 			memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
@@ -678,7 +685,8 @@ void init_pf_cache(t_cache *tmp_pf_cache)
 			memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
 			snprintf(tmp_pf_cache[i++].cmd,BLOCK_SIZE,"%s"ALIAS_POS_IPV6,alias_pre);
 			memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
-			snprintf(tmp_pf_cache[i++].cmd,BLOCK_SIZE,"%s"ALIAS_POS_PREV_STATE,alias_pre);
+			rc = sprintf_s(tmp_pf_cache[i++].cmd,BLOCK_SIZE,"%s"ALIAS_POS_PREV_STATE,alias_pre);
+			if(rc < EOK) ERR_CHK(rc);
 		}
 
 

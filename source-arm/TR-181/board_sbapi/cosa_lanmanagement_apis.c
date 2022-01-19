@@ -73,6 +73,7 @@
 #ifdef _HUB4_PRODUCT_REQ_
 #include "platform_hal.h"
 #endif
+#include "safec_lib_common.h"
 
 #define PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE  "dmsb.lanmanagemententry.lanulaenable"
 #define PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE "dmsb.lanmanagemententry.lanipv6enable"
@@ -312,6 +313,7 @@ ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Ula(char *ula_prefix, char *ula) {
     char lan_prefix[64]  = {0};
     char lan_address[64] = {0};
     char generated_lan_prefix[64]  = {0};
+    errno_t rc = -1;
 
     if(commonSyseventFd == -1) {
         openCommonSyseventConnection();
@@ -336,20 +338,22 @@ ANSC_STATUS CosaDmlLanMngm_SetLanIpv6Ula(char *ula_prefix, char *ula) {
             AnscTraceWarning(("%s generateIpv6LanPrefix failure \n", __FUNCTION__));
             return ANSC_STATUS_FAILURE;
         }
-        snprintf(lan_address, sizeof(lan_address), "%s:%s", generated_lan_prefix, eui_address);
+        rc = sprintf_s(lan_address, sizeof(lan_address), "%s:%s", generated_lan_prefix, eui_address);
+        if(rc < EOK) ERR_CHK(rc);
         strncpy(lan_prefix, generated_lan_prefix, sizeof(lan_prefix));
         strncpy(ula_prefix, generated_lan_prefix, strlen(generated_lan_prefix));
     }
     else
     {
-        snprintf(lan_address, sizeof(lan_address), "%s:%s", ula_prefix, eui_address);
+        rc = sprintf_s(lan_address, sizeof(lan_address), "%s:%s", ula_prefix, eui_address);
+        if(rc < EOK) ERR_CHK(rc);
         strncpy(lan_prefix, ula_prefix, sizeof(lan_prefix));
     }
     if ((IsValid_ULAAddress(lan_address) == 1))
     {
         strncpy(lan_prefix, ula_prefix, sizeof(lan_prefix));
         strcat(lan_prefix, "::/64");
-        strncpy(ula, lan_address, sizeof(lan_address));
+        strncpy(ula, lan_address, strlen(lan_address)+1);
         sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_ADDRESS, lan_address, 0);
         sysevent_set(commonSyseventFd, commonSyseventToken, SYSEVENT_ULA_PREFIX, lan_prefix, 0);
 #if defined (_HUB4_PRODUCT_REQ_)
