@@ -622,7 +622,7 @@ void _get_shell_output3(FILE *fp, char *buf, int len)
     }
 }
 
-#define RIPD_PID_FILE "/var/ripd.pid"
+#define RIPD_PID_FILE "/var/tmp/ripd.pid"
 static int CosaRipdOperation(char * arg)
 {
     char *base = basename(COSA_RIPD_BIN);
