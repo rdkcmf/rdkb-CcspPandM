@@ -838,8 +838,6 @@ void CosaDmlGenerateRipdConfigFile(ANSC_HANDLE  hContext )
     {
         /*we need this to get IANA IAPD info from dibbler*/
         fprintf(fp, "!\n");
-        fprintf(fp, "hostname Router\n");
-        fprintf(fp, "!password cisco\n");
         fprintf(fp, "!log stdout\n");
         fprintf(fp, "!\n");
         fprintf(fp, "! debug rip events\n");
