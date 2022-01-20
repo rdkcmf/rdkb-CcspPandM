@@ -7997,6 +7997,63 @@ StaticAddress_Validate
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(pReturnParamName);
     UNREFERENCED_PARAMETER(puLength);
+    PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    PCOSA_DML_DHCPS_SADDR           pDhcpStaAddr      = (PCOSA_DML_DHCPS_SADDR)pCxtLink->hContext;
+    ULONG                           ipaddr;
+
+    char buf[64]={0}, hostCount[5]={0}, insNum[5]={0}, entry[64]={0};
+
+    syscfg_get(NULL, "dhcp_num_static_hosts", hostCount, sizeof(hostCount));
+
+    for (int host=1; host<=atoi(hostCount); host++)
+    {
+               snprintf(entry,sizeof(entry),"dhcp_static_host_%d", host);
+               if(syscfg_get(NULL, entry, buf, sizeof(buf)) == 0)
+               {
+                   snprintf(entry,sizeof(entry),"dhcp_static_host_insNum_%d", host);
+                   syscfg_get(NULL, entry, insNum, sizeof(insNum));
+                   if (pDhcpStaAddr->InstanceNumber != (ULONG )atoi(insNum))
+                   {
+                           char ip_addr_str[16]={0};
+                           UINT chAddr[7] = {0};
+                           int i=0;
+                           _ansc_sscanf
+                                           (
+                                       buf,
+                                       "%x:%x:%x:%x:%x:%x,%s,",
+                                       chAddr,
+                                       chAddr+1,
+                                       chAddr+2,
+                                       chAddr+3,
+                                       chAddr+4,
+                                       chAddr+5,
+                                       ip_addr_str
+                                           );
+
+               for (i=0;i<=(int)strlen(ip_addr_str);i++){
+                              if (ip_addr_str[i] == ',')
+                    ip_addr_str[i] = '\0';
+               }
+                           ipaddr = (ULONG)_ansc_inet_addr(ip_addr_str);
+                               if (pDhcpStaAddr->Yiaddr.Value == ipaddr)
+                                {
+                                    CcspTraceWarning(("%s: Static IP Address already exists in the list; cannot add duplicate \n", __FUNCTION__));
+                                    return FALSE;
+                                }
+
+                if (pDhcpStaAddr->Chaddr[0] == chAddr[0] &&
+                    pDhcpStaAddr->Chaddr[1] == chAddr[1] &&
+                    pDhcpStaAddr->Chaddr[2] == chAddr[2] &&
+                    pDhcpStaAddr->Chaddr[3] == chAddr[3] &&
+                    pDhcpStaAddr->Chaddr[4] == chAddr[4] &&
+                    pDhcpStaAddr->Chaddr[5] == chAddr[5])
+                    {
+                        CcspTraceWarning(("%s: MAC address already exists in the list; cannot add duplicate \n", __FUNCTION__));
+                        return FALSE;
+                    }
+                   }
+               }
+    }
 #if 0 /*removed by song*/
     /* Parent hasn't set, we don't permit child is set.*/
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
@@ -8208,6 +8265,7 @@ StaticAddress_Rollback
     PCOSA_CONTEXT_LINK_OBJECT       pCxtLink          = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_DHCPS_SADDR           pDhcpStaAddr      = (PCOSA_DML_DHCPS_SADDR)pCxtLink->hContext;
     PCOSA_CONTEXT_POOL_LINK_OBJECT  pCxtPoolLink      = (PCOSA_CONTEXT_POOL_LINK_OBJECT)pCxtLink->hParentTable;
+    PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtPoolLink->hContext;
     errno_t  rc = -1;
 
     if ( pCxtPoolLink->AliasOfStaAddr[0] )
@@ -8215,8 +8273,6 @@ StaticAddress_Rollback
         rc = STRCPY_S_NOCLOBBER( pDhcpStaAddr->Alias, sizeof(pDhcpStaAddr->Alias), pCxtPoolLink->AliasOfStaAddr );
         ERR_CHK(rc);
     }
-#if 0/*Removed by song*/
-    PCOSA_DML_DHCPS_POOL_FULL       pPool             = (PCOSA_DML_DHCPS_POOL_FULL)pCxtPoolLink->hContext;
     if ( !pCxtLink->bNew )
     {
         CosaDmlDhcpsGetSaddrbyInsNum(NULL, pPool->Cfg.InstanceNumber, pDhcpStaAddr);
@@ -8227,7 +8283,6 @@ StaticAddress_Rollback
     }
 
     AnscZeroMemory( pCxtPoolLink->AliasOfStaAddr, sizeof(pCxtPoolLink->AliasOfStaAddr) );
-#endif    
     return returnStatus;
 }
 
