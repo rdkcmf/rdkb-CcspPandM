@@ -797,7 +797,6 @@ Interface_GetParamStringValue
 				ERR_CHK(rc);
 				return -1;
 			}
-			*pUlSize = AnscSizeOfString(assocDeviceMacList);
 			return 0;
 		}
 		else

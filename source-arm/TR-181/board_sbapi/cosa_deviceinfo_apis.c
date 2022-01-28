@@ -428,7 +428,6 @@ CosaDmlDiGetManufacturer
         ERR_CHK(rc);
         return ANSC_STATUS_FAILURE;
     }
-    *pulSize = AnscSizeOfString(pValue)+1;
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -460,7 +459,6 @@ CosaDmlDiGetManufacturerOUI
             return ANSC_STATUS_FAILURE;
         }
 #endif
-        *pulSize = AnscSizeOfString(pValue)+1;
         return ANSC_STATUS_SUCCESS;
 
 }
@@ -475,12 +473,12 @@ CosaDmlDiGetCMTSMac
     )
 {
    UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pulSize);
    if ( platform_hal_getCMTSMac(pValue) != RETURN_OK){
         CcspTraceWarning(("Unable to fetch the CMTS MAC \n"));
         return ANSC_STATUS_FAILURE;
         }
     else {
-            *pulSize = AnscSizeOfString(pValue); 
             return ANSC_STATUS_SUCCESS;
 
          }
@@ -497,12 +495,12 @@ CosaDmlDiGetModelName
     )
 {
     UNREFERENCED_PARAMETER(hContext); 
+    UNREFERENCED_PARAMETER(pulSize);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 
     if ( platform_hal_GetModelName(pValue) != RETURN_OK)
         return ANSC_STATUS_FAILURE;
     else {
-        *pulSize = AnscSizeOfString(pValue); 
         return ANSC_STATUS_SUCCESS;
     }
 
@@ -523,7 +521,6 @@ CosaDmlDiGetDescription
         ERR_CHK(rc);
         return ANSC_STATUS_FAILURE;
     }
-    *pulSize = AnscSizeOfString(pValue)+1;
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -619,7 +616,6 @@ CosaDmlDiGetProductClass
 	}
 #endif
 
-    *pulSize = AnscSizeOfString(pValue) +1;
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -632,6 +628,7 @@ CosaDmlDiGetSerialNumber
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pulSize);
     UCHAR unitsn[128];
     memset(unitsn,0,sizeof(unitsn));
 
@@ -647,7 +644,6 @@ CosaDmlDiGetSerialNumber
         pValue[len-1] = '\0';
     }
 #endif
-    *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -660,12 +656,12 @@ CosaDmlDiGetHardwareVersion
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pulSize);
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_    
 
     if (platform_hal_GetHardwareVersion(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
-        *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
     }
 
@@ -684,7 +680,6 @@ CosaDmlDiGetSoftwareVersion
     if (platform_hal_GetSoftwareVersion(pValue, *pulSize) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
-        *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
     }     
 }
@@ -747,10 +742,12 @@ CosaDmlDiGetProvisioningCode
     }
 #elif (_COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_)
 
+    UNREFERENCED_PARAMETER (pulSize);
     if (platform_hal_GetSerialNumber(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
+#else
+    UNREFERENCED_PARAMETER (pulSize);
 #endif
-    *pulSize = AnscSizeOfString(pValue);
     return ANSC_STATUS_SUCCESS; 
 }
 
@@ -912,7 +909,6 @@ COSADmlUploadLogsStatus
                             fclose(ptr_file);
                             return ANSC_STATUS_FAILURE;
                         }
-			*pUlSize = AnscSizeOfString(pValue)+1;
 		}
 		fclose(ptr_file);
 	}
@@ -923,7 +919,6 @@ COSADmlUploadLogsStatus
                     ERR_CHK(rc);
                     return ANSC_STATUS_FAILURE;
                 }
-		*pUlSize = AnscSizeOfString(pValue)+1;
 	}
 	
 	return ANSC_STATUS_SUCCESS;
@@ -967,7 +962,6 @@ CosaDmlDiGetFirstUseDate
         ERR_CHK(rc);
         return ANSC_STATUS_FAILURE;
     }
-    *pulSize = AnscSizeOfString(pValue)+1;
     
     return ANSC_STATUS_SUCCESS;
 }
@@ -1024,7 +1018,6 @@ CosaDmlDiGetBootloaderVersion
     if (platform_hal_GetBootloaderVersion(pValue, *pulSize) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
-        *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
     }
 }
@@ -1046,7 +1039,6 @@ CosaDmlDiGetFirmwareName
     if (platform_hal_GetFirmwareName(pValue, *pulSize) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
-        *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
     }
 }
@@ -1077,7 +1069,6 @@ CosaDmlDiGetFirmwareBuildTime
 		{
 			value_token = strtok_r(NULL, "\"", &st); 
 			snprintf(pValue, *pulSize, "%s", value_token);
-			*pulSize = AnscSizeOfString(pValue);
 		
 			fclose(fp);
 			return ANSC_STATUS_SUCCESS;
@@ -1099,10 +1090,10 @@ CosaDmlDiGetBaseMacAddress
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pulSize);
     if ( platform_hal_GetBaseMacAddress(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
-        *pulSize = AnscSizeOfString(pValue);
         return ANSC_STATUS_SUCCESS;
     }
 }
@@ -1116,10 +1107,10 @@ CosaDmlDiGetHardware
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pulSize);
     if ( platform_hal_GetHardware(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
-        *pulSize = AnscSizeOfString(pValue); 
         return ANSC_STATUS_SUCCESS;
     }
 }
@@ -1133,10 +1124,10 @@ CosaDmlDiGetHardware_MemUsed
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pulSize);
     if ( platform_hal_GetHardware_MemUsed(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
-        *pulSize = AnscSizeOfString(pValue); 
         return ANSC_STATUS_SUCCESS;
     }
 }
@@ -1150,10 +1141,10 @@ CosaDmlDiGetHardware_MemFree
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+    UNREFERENCED_PARAMETER(pulSize);
     if ( platform_hal_GetHardware_MemFree(pValue) != RETURN_OK )
         return ANSC_STATUS_FAILURE;
     else {
-        *pulSize = AnscSizeOfString(pValue); 
         return ANSC_STATUS_SUCCESS;
     }
 }
@@ -1196,7 +1187,6 @@ CosaDmlGetTCPImplementation
     }
 
     pclose(fp);
-    *pulSize = AnscSizeOfString(pValue)+1;
     return ANSC_STATUS_SUCCESS;
 }
 
