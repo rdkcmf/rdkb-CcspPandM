@@ -346,8 +346,8 @@ CosaDmlGatewayV4GetBlockFragIPPkts
     BOOL                        *pValue
 )
 {
-    char buf[64];
-    memset(buf, 0, sizeof(buf));
+    char buf[8];
+
     syscfg_get( NULL, V4_BLOCKFRAGIPPKT, buf, sizeof(buf));
     *pValue = (strcmp(buf, "1") == 0);
 
@@ -381,10 +381,11 @@ CosaDmlGatewayV4GetPortScanProtect
     BOOL                        *pValue
 )
 {
-    char buf[64];
-    memset(buf, 0, sizeof(buf));
+    char buf[8];
+
     syscfg_get( NULL, V4_PORTSCANPROTECT, buf, sizeof(buf));
     *pValue = (strcmp(buf, "1") == 0);
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -415,10 +416,11 @@ CosaDmlGatewayV4GetIPFloodDetect
    BOOL                        *pValue
 )
 {
-    char buf[64];
-    memset(buf, 0, sizeof(buf));
+    char buf[8];
+
     syscfg_get( NULL, V4_IPFLOODDETECT, buf, sizeof(buf));
     *pValue = (strcmp(buf, "1") == 0);
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -554,10 +556,11 @@ CosaDmlGatewayV6GetBlockFragIPPkts
     BOOL                        *pValue
 )
 {
-    char buf[64];
-    memset(buf, 0, sizeof(buf));
+    char buf[8];
+
     syscfg_get( NULL, V6_BLOCKFRAGIPPKT, buf, sizeof(buf));
     *pValue = (strcmp(buf, "1") == 0);
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -588,10 +591,11 @@ CosaDmlGatewayV6GetPortScanProtect
     BOOL                        *pValue
 )
 {
-    char buf[64];
-    memset(buf, 0, sizeof(buf));
+    char buf[8];
+
     syscfg_get( NULL, V6_PORTSCANPROTECT, buf, sizeof(buf));
     *pValue = (strcmp(buf, "1") == 0);
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -622,12 +626,12 @@ CosaDmlGatewayV6GetIPFloodDetect
     BOOL                        *pValue
 )
 {
-    char buf[64];
-    memset(buf, 0, sizeof(buf));
+    char buf[8];
+
     syscfg_get( NULL, V6_IPFLOODDETECT, buf, sizeof(buf));
     *pValue = (strcmp(buf, "1") == 0);
-    return ANSC_STATUS_SUCCESS;
 
+    return ANSC_STATUS_SUCCESS;
 }
 
 /**********************************************************************
