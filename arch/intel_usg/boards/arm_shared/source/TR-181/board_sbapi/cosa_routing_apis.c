@@ -2552,7 +2552,8 @@ CosaDmlStaticRouteSetEntry
 
 
 ULONG g_NumOfRipEntry = 2;
-int safe_strcpy(char * dst, char * src, int dst_size);
+char *safe_strcpy (char *dst, char *src, size_t dst_size);
+
 /**
  * IPv6 Forwarding:
  *

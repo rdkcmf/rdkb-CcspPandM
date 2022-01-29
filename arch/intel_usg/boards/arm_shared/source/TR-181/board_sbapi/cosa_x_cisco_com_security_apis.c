@@ -2288,7 +2288,7 @@ void CosaDmlIaRemove()
 
 int g_iap_num;
 iap_entry_t * g_iaps ;
-int safe_strcpy(char * dst, char * src, int dst_size);
+char *safe_strcpy (char *dst, char *src, size_t dst_size);
 
 static void print_iap();
 #ifdef _COSA_INTEL_USG_ARM_

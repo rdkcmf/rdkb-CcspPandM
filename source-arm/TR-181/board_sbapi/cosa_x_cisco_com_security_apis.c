@@ -2408,7 +2408,6 @@ void CosaDmlIaRemove()
 
 int g_iap_num;
 iap_entry_t * g_iaps ;
-int safe_strcpy(char * dst, char * src, int dst_size);
 
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 static int be_struct_2_middle_layer(iap_entry_t * p_in, PCOSA_DML_IA_POLICY p_out)

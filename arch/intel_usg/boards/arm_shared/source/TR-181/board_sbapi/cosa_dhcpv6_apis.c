@@ -1039,14 +1039,22 @@ static PCOUPL_LINK pHead = NULL;
 static ULONG       lastTime  = 0;
 static  USER_LOCK                   gPsmLock;
 
-int safe_strcpy(char * dst, char * src, int dst_size)
+char *safe_strcpy (char *dst, char *src, size_t dst_size)
 {
-    if (!dst || !src) return -1;
+    size_t len;
 
-    memset(dst, 0, dst_size);
-    _ansc_strncpy(dst, src, _ansc_strlen(src)<=dst_size-1 ? _ansc_strlen(src):dst_size-1 );
+    if (dst_size == 0)
+        return dst;
 
-    return 0;
+    len = strlen (src);
+
+    if (len >= dst_size)
+    {
+        dst[dst_size - 1] = 0;
+        return memcpy (dst, src, dst_size - 1);
+    }
+
+    return memcpy (dst, src, len + 1);
 }
 
 void _get_shell_output(FILE *fp, char *buf, int len)
@@ -1634,8 +1642,6 @@ void getpooloption_from_utopia( PUCHAR uniqueName, PUCHAR table1Name, ULONG tabl
 
 static int _prepare_client_conf(PCOSA_DML_DHCPCV6_CFG       pCfg);
 static int _dibbler_client_operation(char * arg);
-
-int safe_strcpy(char * dst, char * src, int dst_size);
 
 static COSA_DML_DHCPCV6_FULL  g_dhcpv6_client;
 

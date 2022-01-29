@@ -184,7 +184,7 @@ CosaUtilGetStaticRouteTable
     );
 
 int CosaUtilGetIpv6AddrInfo (char * ifname, ipv6_addr_info_t ** pp_info, int * num);
-int safe_strcpy(char * dst, char * src, int dst_size);
+char *safe_strcpy (char *dst, char *src, size_t dst_size);
 int  __v6addr_mismatch(char * addr1, char * addr2, int pref_len);
 int  __v6addr_mismatches_v6pre(char * v6addr,char * v6pre);
 int  __v6pref_mismatches(char * v6pref1,char * v6pref2);

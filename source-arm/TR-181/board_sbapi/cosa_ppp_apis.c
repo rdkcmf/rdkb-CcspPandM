@@ -344,8 +344,6 @@ CosaPPPApiRemove(ANSC_HANDLE  hContext)
 #define INTERFACE "wan0"
 #endif
 
-int safe_strcpy(char * dst, char * src, int dst_size);
-
 struct 
 {
     wanInfo_t             wan;
