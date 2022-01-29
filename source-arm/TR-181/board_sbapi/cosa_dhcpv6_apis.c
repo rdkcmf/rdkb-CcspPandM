@@ -1523,44 +1523,44 @@ ULONG g_dhcpv6s_refresh_count = 0;
 fprintf(stderr,"%s -- %d !!!!!!!!!!!!!!!!!!\n", __FUNCTION__, __LINE__);
 
 #define SETS_INTO_UTOPIA( uniqueName, table1Name, table1Index, table2Name, table2Index, parameter, value ) \
-{  \
-    CHAR  Namespace[128] = {0}; \
-    _ansc_snprintf(Namespace, sizeof(Namespace)-1, "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
-    Utopia_RawSet(&utctx,Namespace,parameter,(char*)value);  \
+{ \
+    char Namespace[128]; \
+    snprintf(Namespace, sizeof(Namespace), "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
+    Utopia_RawSet(&utctx, Namespace, parameter, (char *) value); \
 } \
 
 #define SETI_INTO_UTOPIA( uniqueName, table1Name, table1Index, table2Name, table2Index, parameter, value ) \
-{  \
-    CHAR  Namespace[128]  = {0}; \
-    CHAR  Value[12]  = {0}; \
-    _ansc_snprintf(Namespace, sizeof(Namespace)-1, "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
-    _ansc_snprintf(Value, sizeof(Value) -1, "%lu", (ULONG)value ); \
-    Utopia_RawSet(&utctx,Namespace,parameter,Value);  \
+{ \
+    char Namespace[128]; \
+    char Value[12]; \
+    snprintf(Namespace, sizeof(Namespace), "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
+    snprintf(Value, sizeof(Value), "%lu", (ULONG) value ); \
+    Utopia_RawSet(&utctx, Namespace, parameter, Value); \
 } \
 
 #define UNSET_INTO_UTOPIA( uniqueName, table1Name, table1Index, table2Name, table2Index, parameter ) \
-{  \
-    CHAR  Namespace[128]  = {0}; \
-    _ansc_snprintf(Namespace, sizeof(Namespace)-1, "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
-    syscfg_unset(Namespace,parameter);  \
+{ \
+    char Namespace[128]; \
+    snprintf(Namespace, sizeof(Namespace), "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
+    syscfg_unset(Namespace, parameter); \
 } \
 
 #define GETS_FROM_UTOPIA( uniqueName, table1Name, table1Index, table2Name, table2Index, parameter, out ) \
-{  \
-    CHAR  Namespace[128] = {0}; \
-    _ansc_snprintf(Namespace, sizeof(Namespace)-1, "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
-    Utopia_RawGet(&utctx,Namespace, parameter, (char*)out,sizeof(out));  \
+{ \
+    char Namespace[128]; \
+    snprintf(Namespace, sizeof(Namespace), "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
+    Utopia_RawGet(&utctx, Namespace, parameter, (char *) out, sizeof(out)); \
 } \
 
 #define GETI_FROM_UTOPIA( uniqueName, table1Name, table1Index, table2Name, table2Index, parameter, out ) \
-{  \
-    CHAR  Namespace[128] = {0}; \
-    CHAR  Value[12]  = {0}; \
-    _ansc_snprintf(Namespace, sizeof(Namespace)-1, "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
-    Utopia_RawGet(&utctx,Namespace, parameter,Value,sizeof(Value));  \
-    if ( strcmp(Value,"4294967295") == 0) out = -1; \
-    else if ( Value[0] ) out = atoi(Value); \
-}  \
+{ \
+    char Namespace[128]; \
+    char Value[12] = {0}; \
+    snprintf(Namespace, sizeof(Namespace), "%s%s%lu%s%lu", uniqueName, table1Name, (ULONG)table1Index, table2Name, (ULONG)table2Index ); \
+    Utopia_RawGet(&utctx, Namespace, parameter, Value, sizeof(Value)); \
+    if (strcmp(Value, "4294967295") == 0) out = -1; \
+    else if (Value[0]) out = atoi(Value); \
+} \
 
 
 /* set a ulong type value into utopia */
