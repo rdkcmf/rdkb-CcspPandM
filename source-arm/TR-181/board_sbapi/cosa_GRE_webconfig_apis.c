@@ -23,6 +23,7 @@
 #include "cosa_GRE_webconfig_apis.h"
 #include "ccsp_psm_helper.h"
 #include "safec_lib_common.h"
+#include <rbus.h>
 
 #define RDKB_WIFI_COMPONENT_NAME                  "com.cisco.spvtg.ccsp.wifi"
 #define RDKB_WIFI_DBUS_PATH                       "/com/cisco/spvtg/ccsp/wifi"
@@ -30,6 +31,7 @@
 
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
+extern int gBroadcastSubscribed;
 
 BOOL unpackAndProcessHotspotData(char* pString)
 {
@@ -264,6 +266,13 @@ static void checkComponentHealthStatus(char *compName, char * dbusPath, char *st
         *retStatus = ret;
 } 
 
+int checkIfSubscribedToBroadcast()
+{
+    if (gBroadcastSubscribed)
+        return 0;
+    else
+        return -1;
+}
 void* initialize_hotspot_webconfig(void *arg)
 {
     (void)(arg);
@@ -290,6 +299,17 @@ void* initialize_hotspot_webconfig(void *arg)
 
     // adding 5 sec delay so that in boot up wifi is ready to receive the requests
     sleep(5);
+
+    if(RBUS_ENABLED == rbus_checkStatus()) 
+    {   
+        while ( 0 != checkIfSubscribedToBroadcast())
+        {
+            CcspTraceWarning(("Waiting for slave component to subscribe broadcast event \n"));
+            sleep(30);
+        }
+        
+        CcspTraceWarning(("Slave component subscribed to broadcast event,sending hotspot blob\n"));
+    }
     char *blob = NULL ;
     FILE *fp;
 
@@ -312,7 +332,6 @@ void* initialize_hotspot_webconfig(void *arg)
 
         fclose(fp);
     }
-
    return NULL;
 }
 
@@ -340,8 +359,8 @@ void wbInitializeHotspot()
             CcspTraceWarning(("%s : WebConfig RFC is not enabled, returning\n",__FUNCTION__));
             return;
     }
-    else if( access("/tmp/pam_initialized_bootup", F_OK ) == 0 ) {
-            CcspTraceWarning(("%s :Component is coming up after crash , not initializing hotspot using webconfig\n",__FUNCTION__));
+    else if( access("/tmp/.hotspot_blob_executed", F_OK ) == 0 ) {
+            CcspTraceWarning(("%s :hotspot_blob already executed in bootup, not executing again\n",__FUNCTION__));
             return;
     }
     else if (access(HOTSPOT_BLOB_FILE, F_OK ) != 0 )
