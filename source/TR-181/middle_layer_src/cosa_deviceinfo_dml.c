@@ -1467,7 +1467,6 @@ TelemetryEndpoint_GetParamBoolValue
 **********************************************************************/
 BOOL
 TelemetryEndpoint_SetParamBoolValue
-
 (
  ANSC_HANDLE                 hInsContext,
  char*                       ParamName,
@@ -1479,28 +1478,15 @@ TelemetryEndpoint_SetParamBoolValue
 
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-
-        char buf[8];
-        memset (buf, 0, sizeof(buf));
-
-        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
-
-        if (syscfg_set(NULL, "TelemetryEndpointEnabled", buf) != 0)
+        if (syscfg_set_commit (NULL, "TelemetryEndpointEnabled", bValue ? "true" : "false") != 0)
         {
             CcspTraceError(("syscfg_set TelemetryEndpointEnabled failed\n"));
+            return FALSE;
         }
-        else
-        {
-            if (syscfg_commit() != 0)
-            {
-                CcspTraceError(("syscfg_commit TelemetryEndpointEnabled failed\n"));
-            }
-            else
-            {
-                return TRUE;
-            }
-        }
+
+        return TRUE;
     }
+
     return FALSE;
 }
 
