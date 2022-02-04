@@ -6064,8 +6064,7 @@ Pool_GetParamStringValue
 
     if (strcmp(ParamName, "DNSServers") == 0)
     {
-        /* collect value */
-        if ( CosaDmlGetIpaddrString((PUCHAR)pValue, pUlSize, &pPool->Cfg.DNSServers[0].Value, COSA_DML_DHCP_MAX_ENTRIES ) )
+        if ( CosaDmlGetIpaddrString(pValue, pUlSize, &pPool->Cfg.DNSServers[0].Value, COSA_DML_DHCP_MAX_ENTRIES ) )
         {
             return 0;
         }
@@ -6107,8 +6106,7 @@ Pool_GetParamStringValue
         else
             pTmpAddr = &pPool->Cfg.IPRouters[0].Value;
 
-        /* collect value */
-        if ( CosaDmlGetIpaddrString((PUCHAR)pValue, pUlSize, pTmpAddr, COSA_DML_DHCP_MAX_ENTRIES ) )
+        if ( CosaDmlGetIpaddrString(pValue, pUlSize, pTmpAddr, COSA_DML_DHCP_MAX_ENTRIES ) )
         {
             return 0;
         }

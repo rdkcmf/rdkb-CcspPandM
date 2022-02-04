@@ -3640,47 +3640,52 @@ CosaDmlSetIpaddr
 
 EXIT:
     return bReturn;
-}                                                 
-    
-BOOL 
+}
+
+BOOL
 CosaDmlGetIpaddrString
     (
-        PUCHAR pString, 
-        PULONG pulStrLength, 
-        uint32_t *pIPAddr, 
-        ULONG  MaxNumber
+        char *pString,
+        ULONG *pulStrLength,
+        uint32_t *pIPAddr,
+        ULONG MaxNumber
     )
-{        
-    UCHAR              *pTmpString      = pString;
-    ULONG               n               = 0;
-    uint32_t           *pIPAddr2        = pIPAddr;
+{
+    char *p = pString;
+    unsigned char *a;
+    ULONG i;
 
-    if ( !pString || !pulStrLength || !pIPAddr || !MaxNumber )
+    if (!pString || !pulStrLength)
         return FALSE;
-    
-    while( pIPAddr2[n] && ( n < MaxNumber ) && ( (*pulStrLength- (pTmpString - pString)) > 15 ) )
-    {
-        AnscCopyString((char *)pTmpString, _ansc_inet_ntoa( *((struct in_addr*)&(pIPAddr2[n]))) );
-    
-        pTmpString[AnscSizeOfString((const char *)pTmpString)] = ',';
-    
-        pTmpString = &pTmpString[AnscSizeOfString((const char *)pTmpString)];
-        
-        n++;
-    }
-    
-    if ( pTmpString != pString )
-    {
-        pTmpString[AnscSizeOfString((const char *)pTmpString) -1] = 0;
-    }
-    
-    if ( (*pulStrLength - (pTmpString - pString)) <= 15 )
-    {
-        *pulStrLength = MaxNumber * 16 + 1;
-        
+
+    *p = 0;
+
+    if (!pIPAddr)
+        return FALSE;
+
+    /*
+       The output buffer needs 16 chars for each IP address (15 for the address
+       and 1 for either a comma or a nul terminator). However, while the string
+       is being created, the final address may temporarily be followed by both
+       a comma and a nul terminator (the final comma will be removed before the
+       function returns) so require a buffer big enough to handle that.
+    */
+    if (*pulStrLength < ((MaxNumber * 16) + 1)) {
+        *pulStrLength = (MaxNumber * 16) + 1;
         return FALSE;
     }
-    
+
+    for (i = 0; i < MaxNumber; i++) {
+        if (pIPAddr[i] == 0)
+            break;
+        a = (unsigned char *) &pIPAddr[i];
+        p += sprintf(p, "%d.%d.%d.%d,", a[0], a[1], a[2], a[3]);
+    }
+
+    /* drop trailing comma */
+    if (p != pString)
+        p[-1] = 0;
+
     return TRUE;
 }
 

@@ -317,16 +317,4 @@ CosaDmlSetIpaddr
         ULONG MaxNumber 
     );
 
-BOOL 
-CosaDmlGetIpaddrString
-    (
-        PUCHAR pString, 
-        PULONG pulStrLength, 
-        PULONG pIPAddr, 
-        ULONG  MaxNumber
-    );
-
-
 #endif
-
-

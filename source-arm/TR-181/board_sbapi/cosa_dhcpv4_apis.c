@@ -927,9 +927,6 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
     BOOLEAN dhcpServerRestart = FALSE;
     errno_t rc = -1;
 
-    memset(param_value, 0, sizeof(param_value));
-    memset(param_name, 0, sizeof(param_name));
-
     if (pNewCfg->bEnabled != pOldCfg->bEnabled)
     {
         rc = strcpy_s(param_value, sizeof(param_value), ((pNewCfg->bEnabled) ? "TRUE" : "FALSE"));
@@ -1016,7 +1013,7 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
     {
         ULONG bufSize = sizeof(param_value);
             
-        if(CosaDmlGetIpaddrString((PUCHAR)param_value, &bufSize, &(pNewCfg->DNSServers[0].Value), COSA_DML_DHCP_MAX_ENTRIES ))
+        if(CosaDmlGetIpaddrString(param_value, &bufSize, &(pNewCfg->DNSServers[0].Value), COSA_DML_DHCP_MAX_ENTRIES ))
         {
             _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_DNSSERVERS);
         }
@@ -1042,7 +1039,7 @@ static BOOLEAN writeDHCPv4ServerPoolCFGToPSM(PCOSA_DML_DHCPS_POOL_CFG pNewCfg, P
     {
         ULONG bufSize = sizeof(param_value);
             
-        if ( CosaDmlGetIpaddrString((PUCHAR)param_value, &bufSize, &(pNewCfg->IPRouters[0].Value), COSA_DML_DHCP_MAX_ENTRIES ) )
+        if ( CosaDmlGetIpaddrString(param_value, &bufSize, &(pNewCfg->IPRouters[0].Value), COSA_DML_DHCP_MAX_ENTRIES ) )
         {
             _PSM_WRITE_PARAM(PSM_DHCPV4_SERVER_POOL_IPROUTERS);
         }
