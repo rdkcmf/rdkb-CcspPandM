@@ -959,7 +959,8 @@ XfinityHealthCheck_SetParamIntValue
             return FALSE;
         }
 
-        if (syscfg_set(NULL, "XfinityHealthCheckCadence", buf1) != 0 || syscfg_set(NULL, "XfinityHealthCheckRemDays", buf2) != 0 )
+        if (syscfg_set(NULL, "XfinityHealthCheckCadence", buf1) != 0 ||
+            syscfg_set(NULL, "XfinityHealthCheckRemDays", buf2) != 0 )
         {
             AnscTraceWarning(("syscfg_set failed\n"));
         }

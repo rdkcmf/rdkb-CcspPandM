@@ -285,14 +285,14 @@ int clear_pf_cache_DB(t_cache *tmp_pf_cache)
         	}
         	memset(tmp_pf_cache[i].cmd,0,BLOCK_SIZE);
         	memset(tmp_pf_cache[i].val,0,VAL_BLOCK_SIZE);
-        	if (syscfg_commit() != 0)
-        	{
-            		CcspTraceError(("syscfg_commit failed apply_cache_ToDB\n"));
-                    return SYSCFG_FAILURE;
-
-        	} 
-
     	}
+
+        if (syscfg_commit() != 0)
+        {
+                CcspTraceError(("syscfg_commit failed apply_cache_ToDB\n"));
+                return SYSCFG_FAILURE;
+        }
+
     	system("sysevent set firewall-restart");
 
     return 0;

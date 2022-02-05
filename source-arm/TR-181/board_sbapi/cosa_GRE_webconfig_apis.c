@@ -375,18 +375,11 @@ void wbInitializeHotspot()
     else {
 
             /*
-            if(syscfg_set(NULL,"hotspot_version","0000") != 0)
+            if(syscfg_set_commit(NULL,"hotspot_version","0000") != 0)
             {
                 CcspTraceError(("syscfg_set for hotspot_version failed\n"));
             }
-            else
-            {
-                if (syscfg_commit() != 0)
-                {
-                    CcspTraceError(("syscfg_commit failed during committing hotspot_version\n"));
-
-                }
-            } */
+            */
             memset(cmd,0,sizeof(cmd));
             snprintf(cmd,sizeof(cmd),"touch %s",HOTSPOT_VERSION_IGNORE);
             system(cmd);

@@ -1915,21 +1915,13 @@ int COSADmlSetMemoryStatus(char * ParamName, ULONG val)
             char buf[10];
 	    memset(buf,0,sizeof(buf));
 	    snprintf(buf,sizeof(buf),"%lu",val);            		    
-	    if ((syscfg_set(NULL, "MinMemoryThreshold_Value", buf) != 0)) 
+	    if ((syscfg_set_commit(NULL, "MinMemoryThreshold_Value", buf) != 0)) 
 	    {
 	        CcspTraceWarning(("syscfg_set failed\n"));
 	        return -1;
 	    }
-	    else 
-	    {
-	        if (syscfg_commit() != 0) 
-	        {
-		    CcspTraceWarning(("syscfg_commit failed\n"));
-		    return -1;
-	        }
-			
-	       return 0;
-	     } 
+
+	    return 0;
      }
     return 0; 
 }
@@ -3451,16 +3443,9 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 					if ( strcmp(paramObjVal->valuestring, "true") != 0)
 					{
 						//to prevent traffic being redirected to lan ip
-						if(syscfg_set(NULL, "CaptivePortal_Enable", "false") == 0)
+						if (syscfg_set_commit(NULL, "CaptivePortal_Enable", "false") == 0)
                                                 {
-						   if ( syscfg_commit() == 0)
-						   {
-							   CcspTraceWarning(("%s - CaptivePortal_Enable set to false\n", __FUNCTION__));
-						   }
-						   else
-						   {
-							   CcspTraceWarning(("syscfg_commit failed for CaptivePortal_Enable\n"));
-						   }
+						    CcspTraceWarning(("%s - CaptivePortal_Enable set to false\n", __FUNCTION__));
 					        }
 						else
 						{
@@ -3575,16 +3560,9 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 						syscfg_get( NULL, "AllowEthernetWAN", buf, sizeof(buf));
 						if (buf[0] == '\0')
 						{
-							if (syscfg_set(NULL, "AllowEthernetWAN", AllowEthernetWAN) == 0)
+							if (syscfg_set_commit(NULL, "AllowEthernetWAN", AllowEthernetWAN) == 0)
 							{
-							   if (syscfg_commit() == 0)
-							   {
-								CcspTraceWarning(("%s - AllowEthernetWAN is %s\n", __FUNCTION__,AllowEthernetWAN));
-							   }
-							   else
-							   {
-								CcspTraceWarning(("syscfg_commit failed for AllowEthernetWAN\n"));
-							   }
+                                                            CcspTraceWarning(("%s - AllowEthernetWAN is %s\n", __FUNCTION__,AllowEthernetWAN));
 							}
                                                         else
                                                         {
@@ -3653,16 +3631,9 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 						syscfg_get( NULL, "DSCP_InitialForwardedMark", buf, sizeof(buf));
 						if (buf[0] == '\0')
 						{
-							if(syscfg_set(NULL, "DSCP_InitialForwardedMark", InitialForwardedMark) == 0)
+							if(syscfg_set_commit(NULL, "DSCP_InitialForwardedMark", InitialForwardedMark) == 0)
 							{
-							    if(syscfg_commit() == 0)
-							    {
-								    CcspTraceWarning(("%s - InitialForwardedMark is %s\n", __FUNCTION__,InitialForwardedMark));
-							    }
-							    else
-							    {
-								    CcspTraceWarning(("syscfg_commit failed for InitialForwardedMark\n"));		 
-							    }
+							    CcspTraceWarning(("%s - InitialForwardedMark is %s\n", __FUNCTION__,InitialForwardedMark));
 							}
 							else
 							{
@@ -3709,8 +3680,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 						syscfg_get( NULL, "DSCP_InitialOutputMark", buf, sizeof(buf));
 						if (buf[0] == '\0')
 						{
-							syscfg_set(NULL, "DSCP_InitialOutputMark", InitialOutputMark);
-							syscfg_commit();
+							syscfg_set_commit(NULL, "DSCP_InitialOutputMark", InitialOutputMark);
 							CcspTraceWarning(("%s - InitialOutputMark is %s\n", __FUNCTION__,InitialOutputMark));
 							InitialOutputMark = NULL;
 						}
@@ -4855,9 +4825,8 @@ CosaDmlDiSet_SyndicationFlowControl_Enable
     char bValue
   )
 {
-    if(syscfg_set(NULL, "SyndicationFlowControlEnable", ((bValue == TRUE ) ? "true" : "false"))==0)
+    if (syscfg_set_commit(NULL, "SyndicationFlowControlEnable", ((bValue == TRUE ) ? "true" : "false")) == 0)
     {
-        syscfg_commit();
         v_secure_system("sysevent set firewall-restart");
         return ANSC_STATUS_SUCCESS;
     }
@@ -4873,9 +4842,8 @@ CosaDmlDiSet_SyndicationFlowControl_InitialForwardedMark
     char *pString
   )
 {
-    if(syscfg_set(NULL, "DSCP_InitialForwardedMark", pString)==0)
+    if (syscfg_set_commit(NULL, "DSCP_InitialForwardedMark", pString) == 0)
     {
-        syscfg_commit();
         return ANSC_STATUS_SUCCESS;
     }
     else
@@ -4890,9 +4858,8 @@ CosaDmlDiSet_SyndicationFlowControl_InitialOutputMark
     char *pString
   )
 {
-    if(syscfg_set(NULL, "DSCP_InitialOutputMark", pString)==0)
+    if (syscfg_set_commit(NULL, "DSCP_InitialOutputMark", pString) == 0)
     {
-        syscfg_commit();
         return ANSC_STATUS_SUCCESS;
     }
     else

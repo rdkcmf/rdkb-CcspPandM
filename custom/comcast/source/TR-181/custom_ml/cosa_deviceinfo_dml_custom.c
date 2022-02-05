@@ -528,25 +528,17 @@ DeviceInfo_SetParamBoolValue_Custom
 #if 0 
 	  if( bValue == TRUE) {
 
-             if (syscfg_set(NULL, "cloud_capable_flag", "1") != 0) {
+             if (syscfg_set_commit(NULL, "cloud_capable_flag", "1") != 0) {
                      AnscTraceWarning(("syscfg_set failed\n"));
              } else {
-
-                    if (syscfg_commit() != 0) {
-                            AnscTraceWarning(("syscfg_commit failed\n"));
-                    }
 		    pMyObject->bCloudCapable = bValue;
              }
 
          } else {
 
-             if (syscfg_set(NULL, "cloud_capable_flag", "0") != 0) {
+             if (syscfg_set_commit(NULL, "cloud_capable_flag", "0") != 0) {
                      AnscTraceWarning(("syscfg_set failed\n"));
              }  else {
-
-                 if (syscfg_commit() != 0) {
-                     AnscTraceWarning(("syscfg_commit failed\n"));
-                 }
 		  pMyObject->bCloudCapable = bValue;
              }
          }
