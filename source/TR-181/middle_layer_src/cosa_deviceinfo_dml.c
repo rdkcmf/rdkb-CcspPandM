@@ -22223,7 +22223,7 @@ NonRootSupport_SetParamStringValue
   {
      fptr = fopen(APPARMOR_BLOCKLIST_FILE,"r");
      tmp_fptr = fopen(TMP_FILE,"w+");
-     if( (!pValue) || (strlen(pValue) == 0) || (tmp_fptr == NULL) ) {
+     if( (!pValue) || (strstr(pValue,":") == NULL) || (tmp_fptr == NULL) ) {
          CcspTraceError(("Failed to open the file or invalid argument\n"));
          return FALSE;
      }
