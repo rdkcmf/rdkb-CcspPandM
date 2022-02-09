@@ -7542,11 +7542,22 @@ int handle_MocaIpv6(char *status)
     if(retPsmGet1 == CCSP_SUCCESS) {
         HomeIsolationEnable = _ansc_atoi(str);
     }
+    else
+    {
+        CcspTraceError(("%s PSM_Get_Record_Value2 failed for dmsb.l2net.HomeNetworkIsolation \n",__FUNCTION__));
+        return -1;
+    }
+    
 	syscfg_get( NULL, "ipv6_moca_bridge", mbuf, sizeof(mbuf));
 	syscfg_get( NULL, "IPv6_Interface", ipv6If, sizeof(ipv6If));
 
     ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(str);
     retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.l2net.9.Name", NULL, &Inf_name);
+    if(retPsmGet != CCSP_SUCCESS )
+    {
+        CcspTraceError(("%s PSM_Get_Record_Value2 failed for dmsb.l2net.9.Name \n",__FUNCTION__));
+        return -1;
+    }
     if(!retPsmGet)
     {
         retPsmGet = CCSP_SUCCESS;
@@ -7557,7 +7568,7 @@ int handle_MocaIpv6(char *status)
     }
     if(strcmp((const char*)status, "ready") == 0)
     {
-        if( mbuf != NULL )
+        if(( mbuf != NULL ) && ( ipv6If != NULL ) && ( Inf_name != NULL ))
         {
             if( (strcmp(mbuf, "true") == 0) && (HomeIsolationEnable == 1))
             {
