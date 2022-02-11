@@ -2143,4 +2143,33 @@ UseXPKI_SetParamBoolValue
         BOOL                        bValue
     );
 
+#if defined(FEATURE_MAPT) || defined(FEATURE_SUPPORT_MAPT_NAT46)
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable
+
+    *  MAPT_DeviceInfo_GetParamBoolValue
+    *  MAPT_DeviceInfo_SetParamBoolValue
+***********************************************************************/
+
+
+BOOL
+MAPT_DeviceInfo_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+	
+BOOL
+MAPT_DeviceInfo_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+#endif
 #endif

@@ -187,7 +187,8 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config"
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "true"
    },
 
 
@@ -249,7 +250,8 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config"
+      "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "true"
    },
 
 

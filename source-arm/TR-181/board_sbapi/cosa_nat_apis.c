@@ -80,6 +80,7 @@
 #include "plugin_main_apis.h"
 #include "dml_tr181_custom_cfg.h"
 #include "safec_lib_common.h"
+#include "secure_wrapper.h"
 
 #ifdef _BWG_PRODUCT_REQ_
 //CGWTDETS-8800 : Usable Statics will no longer support 1-1 NAT :: START
@@ -1289,6 +1290,99 @@ CosaDmlNatGetLanIP
 
     return (rc == SUCCESS) ? ANSC_STATUS_SUCCESS : ANSC_STATUS_FAILURE;
 }
+
+
+#if defined(FEATURE_MAPT) || defined(FEATURE_SUPPORT_MAPT_NAT46)
+/**********************************************************************
+
+    caller:     self
+
+    prototype:
+
+        ANSC_STATUS
+        CosaDmlNatGetActiveIPv4TcpInternalPorts
+            (
+                int*                       nports
+            )
+        Description:
+            This routine is to retrieve the info of Number of ActiveIPv4TcpInternalPorts.
+
+        Arguments:
+            nports is the pointer to return the port info.
+
+        Return:
+            Success/Failure.
+
+**********************************************************************/
+
+ANSC_STATUS
+CosaDmlNatGetActiveIPv4TcpInternalPorts
+    (
+        int*                       nports
+    )
+{
+    FILE *fp = NULL;
+    char buffer[20] = {0};
+
+    if ((fp = v_secure_popen("r","conntrack -L -p TCP | wc -l")))
+    {
+        if (fgets(buffer, sizeof(buffer), fp))
+        {
+            buffer[strlen(buffer) - 1] = '\0';
+        }
+        v_secure_pclose(fp);
+    }
+
+    *nports = _ansc_atoi(buffer);
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+/**********************************************************************
+
+    caller:     self
+
+    prototype:
+
+        ANSC_STATUS
+        CosaDmlNatGetActiveIPv4UdpInternalPorts
+            (
+               int*                       nports
+            )
+        Description:
+            This routine is to retrieve the info of Number of ActiveIPv4UdpInternalPorts.
+
+        Arguments:
+            nports is the pointer to return the port info.
+
+        Return:
+            Success/Failure.
+
+**********************************************************************/
+
+ANSC_STATUS
+CosaDmlNatGetActiveIPv4UdpInternalPorts
+    (
+        int*                       nports
+    )
+{
+    FILE *fp = NULL;
+    char buffer[20] = {0};
+
+    if ((fp = v_secure_popen("r","conntrack -L -p UDP | wc -l")))
+    {
+        if (fgets(buffer, sizeof(buffer), fp))
+        {
+            buffer[strlen(buffer) - 1] = '\0';
+        }
+        v_secure_pclose(fp);
+    }
+
+    *nports = _ansc_atoi(buffer);
+
+    return ANSC_STATUS_SUCCESS;
+}
+#endif
 
 /**********************************************************************
 

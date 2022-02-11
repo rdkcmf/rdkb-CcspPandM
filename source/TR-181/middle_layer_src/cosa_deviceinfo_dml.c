@@ -20326,6 +20326,137 @@ UPnPxPKI_SetParamBoolValue
   return FALSE;
 }
 
+#if defined(FEATURE_MAPT) || defined(FEATURE_SUPPORT_MAPT_NAT46)
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        MAPT_DeviceInfo_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            )
+
+
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+
+**********************************************************************/
+
+BOOL
+MAPT_DeviceInfo_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char value[8] = {'\0'};
+        if( syscfg_get(NULL, "MAPT_Enable", value, sizeof(value)) == 0 )
+        {
+		if (strcmp(value, "true") == 0)
+			*pBool = TRUE;
+		else
+			*pBool = FALSE;
+		return TRUE;
+	}
+        else
+        {
+            CcspTraceError(("syscfg_get failed for MAPT_Enable\n"));
+        }
+    }
+  return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        MAPT_DeviceInfo_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            )
+
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+MAPT_DeviceInfo_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+  if (IsBoolSame(hInsContext, ParamName, bValue, MAPT_DeviceInfo_GetParamBoolValue))
+        return TRUE;
+
+  if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char buf[8] = {'\0'};
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+        if( syscfg_set(NULL, "MAPT_Enable", buf) != 0 )
+        {
+            CcspTraceError(("syscfg_set failed for MAPT_Enable \n"));
+        }
+        else
+        {
+            if( syscfg_commit() == 0 )
+            {
+#ifdef FEATURE_MAPT
+                v_secure_system("sysevent set MAPT_Enable %s", buf);
+#endif
+                return TRUE;
+            }
+            else
+            {
+                 CcspTraceError(("syscfg_commit failed for MAPT_Enable \n"));
+            }
+        }
+    }
+  return FALSE;
+}
+#endif
+
 /**********************************************************************
 
     caller:     owner of this object

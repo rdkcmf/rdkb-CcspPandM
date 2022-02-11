@@ -1840,6 +1840,24 @@
                             </parameter>
                           </parameters>
                       </object>
+<?ifdef FEATURE_SUPPORT_MAPT_NAT46 | FEATURE_MAPT?>
+                        <object>
+                            <name>MAP-T</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>MAPT_DeviceInfo_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>MAPT_DeviceInfo_SetParamBoolValue</func_SetParamBoolValue>
+                            </functions>
+                            <parameters>
+                                <parameter>
+                                    <name>Enable</name>
+                                    <type>boolean</type>
+                                    <syntax>bool</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                            </parameters>
+                        </object>
+<?endif?>
 <?ifndef BCI?>
                        <object>
                             <name>MocaAccountIsolation</name>
@@ -9287,6 +9305,32 @@
 
         </parameter>
 -->
+<?ifdef FEATURE_SUPPORT_MAPT_NAT46 | FEATURE_MAPT?>
+        <parameter>
+
+          <name>X_RDK_NumberActiveIPv4TcpInternalPorts</name>
+
+          <type>unsignedInt</type>
+
+          <syntax>uint32</syntax>
+
+          <writable>false</writable>
+
+        </parameter>
+
+        <parameter>
+
+          <name>X_RDK_NumberActiveIPv4UdpInternalPorts</name>
+
+          <type>unsignedInt</type>
+
+          <syntax>uint32</syntax>
+
+          <writable>false</writable>
+
+        </parameter>
+<?endif?>
+
         <parameter>
 
           <name>PortMappingNumberOfEntries</name>

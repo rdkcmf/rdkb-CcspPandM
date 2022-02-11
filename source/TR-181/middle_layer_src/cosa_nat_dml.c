@@ -279,6 +279,10 @@ NAT_GetParamUlongValue
     PCOSA_DML_NAT                   pNat         = &pMyObject->Nat;
 
     CosaDmlNatGet(NULL, pNat);
+#if defined(FEATURE_MAPT) || defined(FEATURE_SUPPORT_MAPT_NAT46)
+//#if defined (_XB6_PRODUCT_REQ_) || defined (_XB7_PRODUCT_REQ_)
+    int nports=0;
+#endif
 
     /* check the parameter name and return the corresponding value */
     if( AnscEqualString(ParamName, "X_CISCO_COM_TCPTimeout", TRUE))
@@ -304,6 +308,27 @@ NAT_GetParamUlongValue
 
         return TRUE;
     }
+
+#if defined(FEATURE_MAPT) || defined(FEATURE_SUPPORT_MAPT_NAT46)
+//if defined (_XB6_PRODUCT_REQ_) || defined (_XB7_PRODUCT_REQ_)
+    if( AnscEqualString(ParamName, "X_RDK_NumberActiveIPv4TcpInternalPorts", TRUE))
+    {
+       nports=0;
+       CosaDmlNatGetActiveIPv4TcpInternalPorts(&nports);
+       *puLong = nports;
+
+       return TRUE; 
+    }
+       
+    if( AnscEqualString(ParamName, "X_RDK_NumberActiveIPv4UdpInternalPorts", TRUE))
+    {
+       nports=0;
+       CosaDmlNatGetActiveIPv4UdpInternalPorts(&nports);
+       *puLong = nports;
+
+       return TRUE;        
+    }
+#endif
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
