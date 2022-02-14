@@ -21907,7 +21907,103 @@ mTlsLogUpload_SetParamBoolValue
     CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
     return FALSE;
 }        
-        
+/**
+ *  RFC Feature mTlsCrashdumpUpload
+*/
+/**********************************************************************
+    caller:     owner of this object
+    prototype:
+        BOOL
+        mTlsCrashdumpUpload_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+    description:
+        This function is called to retrieve Boolean parameter value;
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+                char*                       ParamName,
+                The parameter name;
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+    return:     TRUE if succeeded.
+**********************************************************************/
+BOOL
+mTlsCrashdumpUpload_GetParamBoolValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL*                       pBool
+ )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( (pBool != NULL) && (AnscEqualString(ParamName, "Enable", TRUE)))
+    {
+        char value[8] = {'\0'};
+        if( syscfg_get(NULL, "mTlsCrashdumpUpload_Enable", value, sizeof(value)) == 0 ) {
+            
+            if (strncmp(value, "true", sizeof(value)) == 0)
+                 *pBool = TRUE;
+            else
+                 *pBool = FALSE;
+
+            return TRUE;
+        } else {
+              CcspTraceError(("syscfg_get failed for MessageBusSource\n"));
+          }
+        }
+    return FALSE;
+}
+/**********************************************************************
+    caller:     owner of this object
+    prototype:
+        BOOL
+        mTlsCrashdumpUpload_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+    description:
+        This function is called to set Boolean parameter value;
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+                char*                       ParamName,
+                The parameter name;
+                BOOL                        bValue
+                The buffer with updated value
+    return:     TRUE if succeeded.
+**********************************************************************/
+BOOL
+mTlsCrashdumpUpload_SetParamBoolValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL                        bValue
+ )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        if (syscfg_set(NULL, "mTlsCrashdumpUpload_Enable", (bValue==FALSE)?"false":"true") != 0) {
+            AnscTraceWarning(("syscfg_set failed\n"));
+            return FALSE;
+        }
+        else
+        {
+            if (syscfg_commit() != 0) {
+                AnscTraceWarning(("syscfg_commit failed\n"));
+                return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
 /**
  *  RFC Feature XHFW
 */
