@@ -19974,7 +19974,7 @@ TR104_GetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         char value[8] = {'\0'};
-        if( syscfg_get(NULL, "TR104Enable", value, sizeof(value)) == 0 )
+        if( syscfg_get(NULL, "TR104enable", value, sizeof(value)) == 0 )
         {
 		/* CID: 71977 Array compared against 0*/
 		if (strcmp(value, "true") == 0)
@@ -19985,7 +19985,7 @@ TR104_GetParamBoolValue
 	}
         else
         {
-            CcspTraceError(("syscfg_get failed for TR104Enable\n"));
+            CcspTraceError(("syscfg_get failed for TR104enable\n"));
         }
     }
   return FALSE;
@@ -20037,9 +20037,9 @@ TR104_SetParamBoolValue
     {
         char buf[8] = {'\0'};
         snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
-        if( syscfg_set(NULL, "TR104Enable", buf) != 0 )
+        if( syscfg_set(NULL, "TR104enable", buf) != 0 )
         {
-            CcspTraceError(("syscfg_set failed for TR104Enable \n"));
+            CcspTraceError(("syscfg_set failed for TR104enable \n"));
         }
         else
         {
@@ -20049,7 +20049,7 @@ TR104_SetParamBoolValue
             }
             else
             {
-                 CcspTraceError(("syscfg_commit failed for TR104Enable \n"));
+                 CcspTraceError(("syscfg_commit failed for TR104enable \n"));
             }
         }
     }

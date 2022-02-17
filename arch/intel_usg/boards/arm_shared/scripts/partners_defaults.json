@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "8.0"
+      "version" : "8.1"
    },
 
    "comcast" : {
@@ -52,6 +52,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "xFi" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "xfinity.com/myxfi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "XHS",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.ManagementServer.EnableCWMP" : "false",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
@@ -64,9 +65,8 @@
       "Device.Time.NTPServer4" : "time4.xfinity.com",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile.xdp.comcast.net/api/v1/device/{mac}/config"
-  },
+},
 
  "RDKM" : {
 
@@ -113,6 +113,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "RDKM" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "XHS",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.ManagementServer.EnableCWMP" : "false",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
@@ -125,9 +126,8 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : ""
-  },
+},
 
    "sky-italia" : {
 
@@ -174,6 +174,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "Wifi" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "https://assistenza.sky.it/sky-wifi-fibra/sky-wifi-app/guida-impostazioni-avanzate",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "XHS",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.ManagementServer.EnableCWMP" : "false",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
@@ -186,7 +187,6 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 
@@ -236,6 +236,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "WiFi" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "www.sky.com",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "XHS",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.ManagementServer.EnableCWMP" : "false",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
@@ -248,7 +249,6 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 
@@ -298,6 +298,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "Panoramic Wifi" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "wifi.cox.com",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "CHL",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
       "Device.ManagementServer.EnableCWMP" : "true",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
@@ -310,7 +311,6 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config-cox.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-cox.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 
@@ -360,6 +360,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "Ignite WiFi" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "ignitewifi.rogers.com",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "RSHM",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
       "Device.ManagementServer.EnableCWMP" : "true",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "1",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
@@ -372,7 +373,6 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config-rogers.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-rogers.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 
@@ -422,6 +422,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "BlueCurve Home" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "internet.shaw.ca",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "SHS",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
       "Device.ManagementServer.EnableCWMP" : "true",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
@@ -434,7 +435,6 @@
       "Device.Time.NTPServer4" : "ntp3.shawcable.net",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config-shaw.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-shaw.xdp.comcast.net/api/v1/device/{mac}/config",
       "override" : {
       "CGM4331COM" : {
@@ -491,6 +491,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "Helix Fi" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "helixfi.videotron.com",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "VLHS",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
       "Device.ManagementServer.EnableCWMP" : "false",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
@@ -503,7 +504,6 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config-videotron.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "true",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-videotron.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 "axb3retail" : {
@@ -550,6 +550,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.ManagementServer.EnableCWMP" : "true",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
@@ -562,7 +563,6 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile.xdp.comcast.net/api/v1/device/{mac}/config"
   },
    "unknown" : {
@@ -609,6 +609,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.ManagementServer.EnableCWMP" : "false",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "00000000",
@@ -621,7 +622,6 @@
       "Device.Time.NTPServer4" : "",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile.xdp.comcast.net/api/v1/device/{mac}/config"
    },
 
@@ -672,6 +672,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.productname" : "xFi" ,
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.CloudUI.link" : "xfinity.com/myxfi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" : "XHS",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.ManagementServer.EnableCWMP" : "false",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.StartupIPMode" : "0",
       "Device.X_RDKCENTRAL-COM_EthernetWAN_MTA.IPv4PrimaryDhcpServerOptions" : "FFFFFFFF",
@@ -684,8 +685,7 @@
       "Device.Time.NTPServer4" : "time4.xfinity.com",
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.TR104.Enable" : "false",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile.xdp.comcast.net/api/v1/device/{mac}/config"
-  }
+   }
 
 }
