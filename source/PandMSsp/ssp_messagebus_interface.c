@@ -92,7 +92,6 @@ BOOLEAN waitConditionReady
         char*                           src_component_id
     );
 
-#ifdef _ANSC_LINUX
 
 #if defined(_CBR_PRODUCT_REQ_)
 
@@ -1194,7 +1193,6 @@ path_message_func
     dbus_message_unref (reply);
     return DBUS_HANDLER_RESULT_HANDLED;
 }
-#endif
 #endif
 
 int
