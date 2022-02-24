@@ -4424,6 +4424,16 @@ CosaDmlLanMngm_SetConf(ULONG ins, PCOSA_DML_LAN_MANAGEMENT pLanMngm)
 	{
 		fprintf(stderr,"Running in different Modes \n");
 	}
+	if (DmSetBool("Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", 1) != ANSC_STATUS_SUCCESS) {
+		fprintf(stderr, "%s: set WiFi.Radio.1.X_CISCO_COM_ApplySetting Enable error\n", __FUNCTION__);
+	} else {
+		fprintf(stderr, "%s: set WiFi.Radio.1.X_CISCO_COM_ApplySetting Enable OK\n", __FUNCTION__);
+	}
+	if (DmSetBool("Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", 1) != ANSC_STATUS_SUCCESS) {
+		fprintf(stderr, "%s: set WiFi.Radio.2.X_CISCO_COM_ApplySetting Enable error\n", __FUNCTION__);
+	} else {
+		fprintf(stderr, "%s: set WiFi.Radio.2.X_CISCO_COM_ApplySetting Enable OK\n", __FUNCTION__);
+	}
 	sleep(1);
 	vsystem("/bin/sh /etc/webgui.sh &");
 #endif
