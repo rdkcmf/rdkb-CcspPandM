@@ -85,6 +85,7 @@
 #include "safec_lib_common.h"
 
 #include "cosa_deviceinfo_apis.h"
+#include "ansc_string_util.h"
 
 #if defined (_XB6_PRODUCT_REQ_) || defined (_XB7_PRODUCT_REQ_)
 #define LED_SOLID 0
@@ -1200,7 +1201,11 @@ CosaDmlDcSetWanNameServer
     {
        ERR_CHK(safec_rc);
     }
-
+    if(is_PrivateIp((PUCHAR)buf))
+    {
+        CcspTraceWarning(("Device.X_CISCO_COM_DeviceControl.NameServer: Error in Accepting private ip range \n"));
+        return ANSC_STATUS_FAILURE;
+    }
     Utopia_Set(&utctx, nameServerNo == 1 ? UtopiaValue_WAN_NameServer1 : UtopiaValue_WAN_NameServer2, buf);
 	
     Utopia_Free(&utctx, 1);

@@ -232,14 +232,17 @@ TrueStaticIP_SetParamStringValue
         if(is_IpAddress((unsigned char*)pString))
         {
             /* save update to backup */
-            rc = STRCPY_S_NOCLOBBER(pTSIP->IPAddress, sizeof(pTSIP->IPAddress), pString);
-            if(rc != EOK)
+            if(!(is_PrivateIp((PUCHAR)pString)))
             {
-                ERR_CHK(rc);
-                return FALSE;
+                rc = STRCPY_S_NOCLOBBER(pTSIP->IPAddress, sizeof(pTSIP->IPAddress), pString);
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return FALSE;
+                }
+                pTSIP->bIPInfoChanged = TRUE;
+                return TRUE;
             }
-            pTSIP->bIPInfoChanged = TRUE;
-            return TRUE;
         }
     }
 
@@ -247,18 +250,22 @@ TrueStaticIP_SetParamStringValue
     {
         /* In binary representation, the value should be consecutive number of 1's and 0's
            eg: 255.255.255.224*/
-        mask = ntohl(inet_addr(pString));
-        if(0==(mask & (~mask >> 1)))
+        in_addr_t subnet_addr = inet_addr(pString);
+        if (subnet_addr)
         {
-            /* save update to backup */
-            rc = STRCPY_S_NOCLOBBER(pTSIP->SubnetMask, sizeof(pTSIP->SubnetMask), pString);
-            if(rc != EOK)
+            mask = ntohl(subnet_addr);
+            if(0==(mask & (~mask >> 1)))
             {
-                ERR_CHK(rc);
-                return FALSE;
+                /* save update to backup */
+                rc = STRCPY_S_NOCLOBBER(pTSIP->SubnetMask, sizeof(pTSIP->SubnetMask), pString);
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return FALSE;
+                }
+                pTSIP->bIPInfoChanged = TRUE;
+                return TRUE;
             }
-            pTSIP->bIPInfoChanged = TRUE;
-            return TRUE;
         }
     }
 
@@ -598,30 +605,37 @@ Subnet_SetParamStringValue
     {
         if(is_IpAddress((unsigned char*)pString))
         {
-            /* save update to backup */
-            rc = STRCPY_S_NOCLOBBER(pSubnet->IPAddress, sizeof(pSubnet->IPAddress), pString);
-            if(rc != EOK)
+            if(!(is_PrivateIp((PUCHAR)pString)))
             {
-                ERR_CHK(rc);
-                return FALSE;
+                /* save update to backup */
+                rc = STRCPY_S_NOCLOBBER(pSubnet->IPAddress, sizeof(pSubnet->IPAddress), pString);
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return FALSE;
+                }
+                return TRUE;
             }
-            return TRUE;
         }
     }
 
     if( AnscEqualString(ParamName, "SubnetMask", TRUE))
     {
-        mask = ntohl(inet_addr(pString));
-        if(0==(mask & (~mask >> 1)))
+        in_addr_t subnet_addr = inet_addr(pString);
+        if((subnet_addr) && (AnscIsValidIpString(pString)))
         {
-            /* save update to backup */
-            rc = STRCPY_S_NOCLOBBER(pSubnet->SubnetMask, sizeof(pSubnet->SubnetMask), pString);
-            if(rc != EOK)
+            mask = ntohl(subnet_addr);
+            if(0==(mask & (~mask >> 1)))
             {
-                ERR_CHK(rc);
-                return FALSE;
+                /* save update to backup */
+                rc = STRCPY_S_NOCLOBBER(pSubnet->SubnetMask, sizeof(pSubnet->SubnetMask), pString);
+                if(rc != EOK)
+                {
+                    ERR_CHK(rc);
+                    return FALSE;
+                }
+                return TRUE;
             }
-            return TRUE;
         }
     }
 
