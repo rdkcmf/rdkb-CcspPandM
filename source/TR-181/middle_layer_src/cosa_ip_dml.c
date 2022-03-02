@@ -1334,7 +1334,6 @@ Interface2_GetParamStringValue
     UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_IP_IF_FULL2           pIPInterface = (PCOSA_DML_IP_IF_FULL2)pCosaContext->hContext;
-    PUCHAR                          pLowerLayer             = NULL;
     errno_t                         rc           = -1;
 
     /* check the parameter name and return the corresponding value */
@@ -1384,6 +1383,7 @@ Interface2_GetParamStringValue
             {
                 /* Link instance number/LinkName is invalid*/
                 char* linkTypePath = CosaUtilGetLinkTypePath(pIPInterface->Cfg.LinkType);
+                unsigned char *pLowerLayer;
 
                 if (( pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)linkTypePath, (PUCHAR)pIPInterface->Cfg.LinkName) ))
                 {
@@ -1394,6 +1394,8 @@ Interface2_GetParamStringValue
                       AnscFreeMemory(pLowerLayer);
                       return -1;
                     }
+
+                    AnscFreeMemory(pLowerLayer);
                 }
                 else
                 {
@@ -1427,12 +1429,7 @@ Interface2_GetParamStringValue
             return -1;
         }
 
-    }
-
-    /*RDKB-, CID-33002, free unused resource before exit*/
-    if(pLowerLayer)
-    {
-        AnscFreeMemory(pLowerLayer);
+        return 0;
     }
 
     if( AnscEqualString(ParamName, "Router", TRUE))
