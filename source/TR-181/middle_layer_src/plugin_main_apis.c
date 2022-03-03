@@ -383,7 +383,7 @@ if(id != 0)
     AnscTraceWarning(("  CosaLanManagementCreate done!\n"));
 #if !defined(_PLATFORM_IPQ_)
     //pMyObject->hMoCA          = (ANSC_HANDLE)CosaMoCACreate();
-    AnscTraceWarning(("  CosaMoCACreate done!\n"));
+    //AnscTraceWarning(("  CosaMoCACreate done!\n"));
     pMyObject->hUpnp          = (ANSC_HANDLE)CosaUpnpCreate();
     AnscTraceWarning(("  CosaUpnpCreate done!\n"));
 
