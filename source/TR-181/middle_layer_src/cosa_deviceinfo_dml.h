@@ -572,6 +572,32 @@ WebUI_SetParamUlongValue
 
  APIs for Object:
 
+	Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CognitiveMotionDetection.Enable
+
+    *  CognitiveMotionDetection_GetParamBoolValue
+    *  CognitiveMotionDetection_SetParamBoolValue
+***********************************************************************/
+#ifdef FEATURE_COGNITIVE_WIFIMOTION
+BOOL
+CognitiveMotionDetection_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+CognitiveMotionDetection_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+#endif
+/***********************************************************************
+
+ APIs for Object:
+
     Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Snmpv3DHKickstart.KickstartTable{i}.
 
     *  Snmpv3DHKickstart_GetParamBoolValue

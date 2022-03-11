@@ -176,6 +176,9 @@ BOOL CMRt_Isltn_Enable(BOOL status);
 
 #define DEVICE_PROPS_FILE  "/etc/device.properties"
 #define SYSTEMCTL_CMD "systemctl start lxydnld.service &"
+#ifdef FEATURE_COGNITIVE_WIFIMOTION
+#define COGNITIVE_WIFIMOTION_CFG "wifimotion_enabled"
+#endif
 // CredDwnld_Use String is restricted to true/false
 #define MAX_USE_LEN 8
 // Box type will be XB3
@@ -12662,6 +12665,169 @@ WebUI_SetParamUlongValue
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        CognitiveMotionDetection_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            )
+
+
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+#ifdef FEATURE_COGNITIVE_WIFIMOTION
+BOOL
+CognitiveMotionDetection_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    char buf[6] = { 0 };
+
+    UNREFERENCED_PARAMETER(hInsContext);
+    /* RDKB-38634: TR-181 implementation
+     * DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CognitiveMotionDetection.Enable
+     */
+    if(AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        if (syscfg_get(NULL, COGNITIVE_WIFIMOTION_CFG, buf, sizeof(buf)) != 0)
+        {
+            *pBool = FALSE;
+            return TRUE;
+        }
+
+        if (!strncmp(buf, "true", 4))
+        {
+            *pBool = TRUE;
+        }
+        else if (!strncmp(buf, "false", 5))
+        {
+            *pBool = FALSE;
+        }
+        else
+        {
+            CcspTraceWarning(("syscfg_get: value of %s is invalid!\n", COGNITIVE_WIFIMOTION_CFG));
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+        BOOL
+        CognitiveMotionDetection_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            )
+
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+CognitiveMotionDetection_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    char buf[6] = { 0 };
+
+    UNREFERENCED_PARAMETER(hInsContext);
+    /* RDKB-38634: TR-181 implementation
+     * DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CognitiveMotionDetection.Enable
+     */
+    if(AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char *value = (bValue == TRUE) ? "true" : "false";
+
+        syscfg_get(NULL, COGNITIVE_WIFIMOTION_CFG, buf, sizeof(buf));
+
+        if (!strncmp(buf, value, strlen(value)))
+        {
+            return TRUE;
+        }
+
+        if (syscfg_set(NULL, COGNITIVE_WIFIMOTION_CFG, value) != 0)
+        {
+            CcspTraceWarning(("syscfg_set failed to set %s\n", COGNITIVE_WIFIMOTION_CFG));
+            return FALSE;
+        }
+
+        if (syscfg_commit() != 0)
+        {
+            CcspTraceWarning(("syscfg_commit failed to commit %s\n", COGNITIVE_WIFIMOTION_CFG));
+            return FALSE;
+        }
+
+        if (bValue == TRUE)
+        {
+            v_secure_system("systemctl start systemd-cognitive_wifimotion.service");
+        }
+        else
+        {
+            v_secure_system("systemctl stop systemd-cognitive_wifimotion.service");
+        }
+
+        return TRUE;
+    }
+
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+#endif // FEATURE_COGNITIVE_WIFIMOTION
+
  #if defined (FEATURE_SUPPORT_INTERWORKING)
 /**********************************************************************
 

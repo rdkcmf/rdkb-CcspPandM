@@ -714,6 +714,17 @@ if(id != 0)
     CcspTraceInfo(("PAM_DBG:----------------------touch /tmp/pam_initialized-------------------\n"));
     v_secure_system("touch " PAM_INIT_FILE " ; touch " PAM_INIT_FILE_BOOTUP);
 
+#ifdef FEATURE_COGNITIVE_WIFIMOTION
+    char value[6] = { 0 };
+    if (syscfg_get(NULL, "wifimotion_enabled", value, sizeof(value)) == 0)
+    {
+        if (!strncmp(value, "true", 4))
+        {
+            v_secure_system("systemctl start systemd-cognitive_wifimotion.service");
+        }
+    }
+#endif
+
 #if !defined(_COSA_INTEL_XB3_ARM_)
     char buf[64] = {'\0'};
     if(syscfg_get( NULL, "EnableTR69Binary", buf, sizeof(buf))==0)
