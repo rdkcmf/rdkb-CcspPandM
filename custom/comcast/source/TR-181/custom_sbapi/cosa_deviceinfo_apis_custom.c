@@ -618,42 +618,30 @@ CosaDmlSetCaptivePortalEnable
         BOOL value
     )
 {
+	char *value_string;
 
-	char buf[10];
-	memset(buf,0,sizeof(buf));
-	errno_t rc = -1;
 	if (value)
 	{
-		rc = strcpy_s(buf, sizeof(buf), "true");
-		if(rc != EOK)
-		{
-			ERR_CHK(rc);
-			return ANSC_STATUS_FAILURE;
-		}
 		CcspTraceWarning(("CaptivePortal: Enabling Captive Portal switch ...\n"));		
+		value_string = "true";
 	}
 	else
 	{
 		CcspTraceWarning(("CaptivePortal: Disabling Captive Portal switch ...\n"));		
-		rc = strcpy_s(buf, sizeof(buf), "false");
-		if(rc != EOK)
-		{
-			ERR_CHK(rc);
-			return ANSC_STATUS_FAILURE;
-		}
+		value_string = "false";
 	}
-	if (syscfg_set(NULL, CAPTIVEPORTAL_ENABLE , buf) != 0) {
-                     CcspTraceWarning(("syscfg_set failed to enable/disable captive portal\n"));
-		     return ANSC_STATUS_FAILURE;
-             } else {
 
-                    if (syscfg_commit() != 0) {
-                            CcspTraceWarning(("syscfg_commit failed\n"));
-		     return ANSC_STATUS_FAILURE;
-                    }
-	  }
+	if (syscfg_set(NULL, CAPTIVEPORTAL_ENABLE, value_string) != 0) {
+		CcspTraceWarning(("syscfg_set failed to enable/disable captive portal\n"));
+		return ANSC_STATUS_FAILURE;
+	}
 
-    v_secure_system("sh /etc/restart_services.sh %s",buf);
+	if (syscfg_commit() != 0) {
+		CcspTraceWarning(("syscfg_commit failed\n"));
+		return ANSC_STATUS_FAILURE;
+	}
+
+	v_secure_system("sh /etc/restart_services.sh %s", value_string);
     /*commonSyseventSet("dhcp-server-restart", "");
     commonSyseventSet("firewall-restart", "");
     commonSyseventSet("zebra-restart", ""); */
