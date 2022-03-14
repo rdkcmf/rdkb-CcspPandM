@@ -483,7 +483,7 @@ static void Utopia_Free(UtopiaContext * ctx, ULONG commit)
 
 #endif
 
-#elif ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_))
+#elif defined(_COSA_INTEL_USG_ARM_)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2249,7 +2249,7 @@ CosaDmlRoutingGetRouteInfoIf
     return pEntry;
 }
 
-#elif ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_))
+#elif defined(_COSA_INTEL_USG_ARM_)
 
 #include <stdio.h>
 #include <stdlib.h>

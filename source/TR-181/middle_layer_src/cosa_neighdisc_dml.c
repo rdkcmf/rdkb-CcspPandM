@@ -376,10 +376,6 @@ NeighborDiscovery_SetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE) )
     {
         /* save update to backup */
-#ifdef _COSA_DRG_CNS_
-    /*not supported*/
-    return FALSE;
-#endif
 
         pEntry->bEnabled = bValue; 
 
@@ -801,10 +797,6 @@ InterfaceSetting2_AddEntry
     PCOSA_DML_NEIGHDISC_IF_FULL     pNeighdiscInterface  = (PCOSA_DML_NEIGHDISC_IF_FULL)NULL;
     errno_t                         rc                   = -1;
 
-#ifdef _COSA_DRG_CNS_
-    /*not supported*/
-    return NULL;
-#endif
 
     pNeighdiscInterface = (PCOSA_DML_NEIGHDISC_IF_FULL)AnscAllocateMemory(sizeof(COSA_DML_NEIGHDISC_IF_FULL));
 
@@ -905,11 +897,6 @@ InterfaceSetting2_DelEntry
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
     PCOSA_DML_NEIGHDISC_IF_FULL     pNeighdiscInterface  = (PCOSA_DML_NEIGHDISC_IF_FULL)pCosaContext->hContext;
 
-#ifdef _COSA_DRG_CNS_
-    /*not supported*/
-    return ANSC_STATUS_FAILURE;
-        
-#endif
 
     if (!pCosaContext->bNew)
         CosaDmlNeighdiscIfDelEntry(NULL, pNeighdiscInterface->Cfg.InstanceNumber);
@@ -1193,34 +1180,6 @@ InterfaceSetting2_GetParamStringValue
     if( AnscEqualString(ParamName, "Interface", TRUE) )
     {
         /* collect value */
-#ifdef _COSA_DRG_CNS_
-        pString = CosaUtilGetFullPathNameByKeyword
-            (
-                "Device.IP.Interface.",
-                "Name",
-                COSA_DML_NEIGHDISC_IFNAME
-                );
-        if (pString)
-        {
-            rc = strcpy_s(pValue, *pUlSize, pString);
-            if ( rc != EOK)
-            {
-                ERR_CHK(rc);
-                AnscFreeMemory(pString);
-                return -1;
-            }
-            rc = STRCPY_S_NOCLOBBER(pNeighdiscInterface->Cfg.Interface, sizeof(pNeighdiscInterface->Cfg.Interface), pString);
-            if ( rc != EOK)
-            {
-                ERR_CHK(rc);
-                AnscFreeMemory(pString);
-                return -1;
-            }
-            AnscFreeMemory(pString);
-        }
-        
-        return 0;
-#endif
         rc = strcpy_s(pValue, *pUlSize, pNeighdiscInterface->Cfg.Interface);
         if ( rc != EOK)
         {
@@ -1280,10 +1239,6 @@ InterfaceSetting2_SetParamBoolValue
     if( AnscEqualString(ParamName, "Enable", TRUE) )
     {
         /* save update to backup */
-#ifdef _COSA_DRG_CNS_
-    /*not supported*/
-        return FALSE;
-#endif
 
         pNeighdiscInterface ->Cfg.bEnabled = bValue;
         return TRUE;
@@ -1292,9 +1247,6 @@ InterfaceSetting2_SetParamBoolValue
     if( AnscEqualString(ParamName, "NUDEnable", TRUE) )
     {
         /* save update to backup */
-#ifdef _COSA_DRG_CNS_
-        return FALSE;
-#endif
         pNeighdiscInterface ->Cfg.bNUDEnable = bValue;
         return TRUE;
     }
@@ -1302,9 +1254,6 @@ InterfaceSetting2_SetParamBoolValue
     if( AnscEqualString(ParamName, "RSEnable", TRUE) )
     {
         /* save update to backup */
-#ifdef _COSA_DRG_CNS_
-        return FALSE;
-#endif
         pNeighdiscInterface ->Cfg.bRSEnable = bValue;
         return TRUE;
     }
@@ -1487,10 +1436,6 @@ InterfaceSetting2_SetParamStringValue
     if( AnscEqualString(ParamName, "Interface", TRUE) )
     {
         /* save update to backup */
-#ifdef _COSA_DRG_CNS_
-        /*not supported*/
-        return FALSE;
-#endif
 
         len = (_ansc_strlen(pString) > sizeof(pNeighdiscInterface->Cfg.Interface)-1 ? sizeof(pNeighdiscInterface->Cfg.Interface)-1 : _ansc_strlen(pString));
         

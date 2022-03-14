@@ -145,26 +145,6 @@ ANSC_STATUS lSwBrConfirmStructureUpdate(struct bridge* bridge, PBRIDGE_PORT pBPo
 ANSC_STATUS lSwBrAddVlan(struct bridge *bridge, PCOSA_DML_BRG_VLAN_CFG pEntry);
 ANSC_STATUS lSwBrRemoveVlan(struct bridge *bridge, ULONG vlanId);
 
-#ifdef _COSA_DRG_TPG_
-//hwid typedefs and functions
-
-
-
-//Lan switch bridge port functions, assume hwid from ethernet module.
-ANSC_STATUS lanSwBrPCtlSetEnabled(PBRIDGE_PORT port, BOOLEAN enable);
-ANSC_STATUS lanSwBrPCtlGetEnabled(PBRIDGE_PORT port, BOOLEAN* enabled);
-ANSC_STATUS lanSwBrPCtlSetMgtPort(PBRIDGE_PORT port, BOOLEAN isMgt);
-ANSC_STATUS lanSwBrPCtlGetStatus(PBRIDGE_PORT port, PCOSA_DML_IF_STATUS status);
-ANSC_STATUS lanSwBrPCtlGetAFT(PBRIDGE_PORT port, PCOSA_DML_BRG_PORT_AFT aft);
-ANSC_STATUS lanSwBrPCtlSetAFT(PBRIDGE_PORT port, COSA_DML_BRG_PORT_AFT aft);
-uint32_t lanSwBrPCtlGetLastChanged(PBRIDGE_PORT port);
-ANSC_STATUS lanSwBrPCtlSetLowerLink(PBRIDGE_PORT port, char* name, COSA_DML_BRG_LINK_TYPE type);
-ANSC_STATUS lanSwBrPCtlGetState(PBRIDGE_PORT port, PCOSA_DML_BRG_PORT_STATE state);
-ANSC_STATUS lanSwBrPCtlGetStats(PBRIDGE_PORT port, PCOSA_DML_IF_STATS stats);
-ANSC_STATUS lanSwBrPCtlAddToVlan(PBRIDGE_PORT port, ULONG vlanId, BOOLEAN untagged);
-ANSC_STATUS lanSwBrPCtlRemoveFromVlan(PBRIDGE_PORT port, ULONG vlanId);
-
-#endif //_COSA_DRG_TPG_
 
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 //Linux interface functions and hwid structure

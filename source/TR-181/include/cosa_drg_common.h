@@ -60,10 +60,6 @@ int getOSStats(char* iface, POSStats stats);
 extern int commonSyseventFd;
 extern token_t commonSyseventToken;
 
-#ifdef _COSA_DRG_TPG_
-extern int gLanSwDev;
-extern int gWanSwDev;
-#endif
 
 int commonSyseventSet(char* key, char* value);
 int commonSyseventGet(char* key, char* value, int valLen);

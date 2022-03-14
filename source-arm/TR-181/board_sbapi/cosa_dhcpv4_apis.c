@@ -83,10 +83,6 @@
 
 #if ( defined _COSA_SIM_ )
 
-#elif ( defined _COSA_DRG_TPG_ )
-
-#undef _COSA_SIM_
-
 #elif (defined _COSA_INTEL_USG_ARM_) || (defined  _COSA_BCM_MIPS_)
 
 #undef _COSA_SIM_
@@ -642,11 +638,7 @@ static ANSC_STATUS CosaDmlDhcpcScan()
                 fp = NULL;
             }
 
-            #ifdef _COSA_DRG_TPG_
-            fp = fopen("/tmp/udhcp_lan.log", "r"); 
-            #else
                 return ANSC_STATUS_SUCCESS;
-            #endif
 
         }
         pEntry = &CH_g_dhcpv4_client[ulIndex];
@@ -1811,18 +1803,6 @@ CosaDmlDhcpcSetSentOptionValues
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_instance_wan", inst_str);
                 Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_alias_wan", pAlias);
             }
-            #ifdef _COSA_DRG_TPG_
-            else if ( !_ansc_strncmp(CH_g_dhcpv4_client[i].Cfg.Interface, "lan0", _ansc_strlen("lan0")))
-            {
-                rc = sprintf_s(inst_str, sizeof(inst_str), "%d", ulInstanceNumber);
-                if(rc < EOK)
-                {
-                    ERR_CHK(rc);
-                }
-                Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_instance_lan", inst_str);
-                Utopia_RawSet(&ctx, COSA_DHCP4_SYSCFG_NAMESPACE, "tr_dhcp4_sent_alias_lan", pAlias);
-            }
-            #endif
             else
             {
                 ULOGF(ULOG_SYSTEM, UL_DHCP, "%s: not " COSA_DML_DHCPV4_CLIENT_IFNAME " nor lan0, New Interface %s\n", __FUNCTION__, CH_g_dhcpv4_client[i].Cfg.Interface);

@@ -116,17 +116,5 @@ PCosaEthInterfaceInfo getIF(const ULONG instanceNumber);
 PCosaEthLinkInfo getLink(const ULONG ulInstanceNumber);
 PCOSA_DML_ETH_VLAN_TERMINATION_FULL getVlanTermination(const ULONG ulInstanceNumber);
 
-#ifdef _COSA_DRG_TPG_
-typedef struct _swPortID {
-    int unit;
-    int port;
-} SwitchPortID, *PSwitchPortID;
-
-int getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg);
-int setSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg);
-int ethGetSwitchStats(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_STATS pStats);
-int getSwitchStats(PSwitchPortID swID, PCOSA_DML_IF_STATS pStats);
-int getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDinfo);
-#endif
 
 #endif

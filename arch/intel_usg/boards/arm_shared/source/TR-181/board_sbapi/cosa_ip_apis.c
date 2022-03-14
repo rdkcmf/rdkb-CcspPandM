@@ -72,7 +72,7 @@
 
 extern void* g_pDslhDmlAgent;
 
-#if ( defined(_COSA_INTEL_USG_ARM_) || defined(_COSA_DRG_TPG_))
+#if defined(_COSA_INTEL_USG_ARM_)
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <ctype.h>
@@ -355,11 +355,6 @@ CosaDmlIpInit
     {
         return  returnStatus;
     }
-#elif defined(_COSA_DRG_TPG_)
-    AnscCopyString((char *)g_ipif_names[0], "lan0");
-    AnscCopyString((char *)g_ipif_names[1], "wan0");
-    AnscCopyString((char *)g_ipif_names[2], "lo");
-    g_ipif_num = 3;
 #endif
 
     syscfg_init();
@@ -2567,8 +2562,6 @@ CosaDmlIpIfSetV4Addr
 
         if (pEntry->SubnetMask.Value != p_be_buf->SubnetMask.Value)
         {
-            /*in CNS, we can only change brlan0 and lo interfaces' netmask.
-              in TPG, actually we don't have a chance to go here: TPG's lan/wan ip interface are dynamic*/
             if (strstr((char *)g_ipif_names[ulIpIfInstanceNumber-1], "lan"))
             {
                 Utopia_Init(&utctx);

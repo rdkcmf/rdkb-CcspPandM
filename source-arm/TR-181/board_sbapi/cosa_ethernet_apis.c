@@ -99,7 +99,7 @@
 
 #ifdef _COSA_SIM_
 /*Removed code for simulator, because this is usg platform*/
-#elif  (_COSA_INTEL_USG_ARM_ || _COSA_DRG_TPG_ || _COSA_BCM_MIPS_)
+#elif  (_COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_)
 
 #include "cosa_ethernet_apis_ext.h"
 #include "cosa_drg_common.h"
@@ -407,20 +407,6 @@ CosaDmlEthPortGetEntry
         g_EthEntries[ulIndex].control->getCfg(g_EthEntries + ulIndex, &pEntry->Cfg);
         AnscCopyMemory(&pEntry->StaticInfo, &g_EthIntSInfo[ulIndex], sizeof(COSA_DML_ETH_PORT_SINFO));
         g_EthEntries[ulIndex].control->getDInfo(g_EthEntries + ulIndex, &pEntry->DynamicInfo);
-    }
-    else
-    {
-        return ANSC_STATUS_FAILURE;
-    }
-
-    return ANSC_STATUS_SUCCESS;
-#endif
-#ifdef _COSA_DRG_TPG_
-    if (ulIndex >= 0 && ulIndex < g_EthernetIntNum)
-    {
-        g_EthEntries[ulIndex].control->getCfg(g_EthEntries+ulIndex,&pEntry->Cfg);
-        AnscCopyMemory(&pEntry->StaticInfo, g_EthIntSInfo+ulIndex, sizeof(COSA_DML_ETH_PORT_SINFO));
-        g_EthEntries[ulIndex].control->getDInfo(g_EthEntries+ulIndex,&pEntry->DynamicInfo);
     }
     else
     {
@@ -1202,133 +1188,6 @@ return ret;
                         HELPER ROUTINES
 **********************************************************************/
 
-#ifdef _COSA_DRG_TPG_ 
-#include "utapi/utapi.h"
-
-int getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg){
-    PSwitchPortID swID = (PSwitchPortID)eth->hwid;
-    uint32_t enabled,speed,duplex,an;
-    uint32_t swDev;
-    if(swID->unit==0) {
-        swDev = gLanSwDev;
-    } else {
-        swDev = gWanSwDev;
-    }
-
-    if(swcfg_get_link(swDev, swID->port,&enabled,NULL,&an,&speed,&duplex,NULL,NULL)){
-        return -1;
-    }
-
-    pcfg->bEnabled = enabled ? TRUE : FALSE;
-
-    if (an) {
-        pcfg->DuplexMode = COSA_DML_ETH_DUPLEX_Auto;
-        pcfg->MaxBitRate = -1;
-    } else {
-        pcfg->DuplexMode = duplex ? COSA_DML_ETH_DUPLEX_Full : COSA_DML_ETH_DUPLEX_Half;
-        pcfg->MaxBitRate = speed;
-    }
-
-    return 0;
-}
-
-int setSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg) {
-    PSwitchPortID swID = (PSwitchPortID)eth->hwid;
-    uint32_t enabled,speed,duplex,an;
-    uint32_t swDev;
-    int rv;
-    if(swID->unit==0) {
-        swDev = gLanSwDev;
-    } else {
-        swDev = gWanSwDev;
-    }
-
-    enabled = pcfg->bEnabled == TRUE ? 1 : pcfg->bEnabled == FALSE ? 0 : -1;
-    speed = (uint32_t)pcfg->MaxBitRate;
-    duplex = pcfg->DuplexMode == COSA_DML_ETH_DUPLEX_Full ? 1 : pcfg->DuplexMode == COSA_DML_ETH_DUPLEX_Half ? 0 : -1; 
-    if (duplex == -1) {
-        an = 1;
-    } else {
-        an = 0;
-    }
-
-    rv = swcfg_set_link(swDev, swID->port, enabled, an, speed, duplex, -1);
-
-    if (rv) {
-        return ANSC_STATUS_FAILURE;
-    }
-
-    return ANSC_STATUS_SUCCESS;
-}
-
-int ethGetSwitchStats(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_STATS pStats){
-    PSwitchPortID swID = (PSwitchPortID)eth->hwid;
-
-    getSwitchStats(swID, (PCOSA_DML_IF_STATS)pStats);
-
-    return 0;
-}
-
-int getSwitchStats(PSwitchPortID swID, PCOSA_DML_IF_STATS pStats) {
-    uint32_t swDev;
-    portMib_t mibs;
-
-    if(swID->unit==0) {
-        swDev = gLanSwDev;
-    } else {
-        swDev = gWanSwDev;
-    }
-
-    _ansc_memset(&mibs,0,sizeof(mibs));
-    _ansc_memset(pStats,0,sizeof(*pStats));
-
-    swcfg_lib_mibs_get_rx(swDev,swID->port,&mibs);
-    swcfg_lib_mibs_get_tx(swDev,swID->port,&mibs);
-
-    pStats->BroadcastPacketsReceived = (ULONG)mibs.rxBroadcastPackets;
-    pStats->BroadcastPacketsSent = (ULONG)mibs.txBroadcastPackets;
-    pStats->BytesReceived = (ULONG)mibs.rxOctets;
-    pStats->BytesSent = (ULONG)mibs.txOctets;
-    pStats->DiscardPacketsReceived = (ULONG)mibs.rxDropPackets; //TODO: check mapping
-    pStats->DiscardPacketsSent = (ULONG)mibs.txDropPackets; //TODO: check mapping
-    pStats->ErrorsReceived = (ULONG)(mibs.rxSymbolErrors + mibs.rxAlignmentErrors + mibs.rxFCSErrors + mibs.rxInRangeErrors + mibs.rxOutOfRangeErrors); //TODO: check mapping
-    pStats->ErrorsSent = (ULONG)mibs.txCollisions; //TODO: check mapping
-    pStats->MulticastPacketsReceived = (ULONG)mibs.rxMulticastPackets;
-    pStats->MulticastPacketsSent = (ULONG)mibs.txMulticastPackets;
-    pStats->PacketsReceived = (ULONG)(mibs.rxUnicastPackets + mibs.rxMulticastPackets + mibs.rxBroadcastPackets); //TODO: check mapping
-    pStats->PacketsSent = (ULONG)(mibs.txUnicastPackets + mibs.txMulticastPackets + mibs.txBroadcastPackets); //TODO: check mapping
-    pStats->UnicastPacketsReceived = (ULONG)mibs.rxUnicastPackets;
-    pStats->UnicastPacketsSent = (ULONG)mibs.txUnicastPackets;
-    pStats->UnknownProtoPacketsReceived = 0;     //Unsupported
-
-    return 0;
-}
-
-int getSwitchDInfo(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_DINFO pDinfo){
-    PSwitchPortID swID = (PSwitchPortID)eth->hwid;
-    uint32_t swDev;
-    int rv;
-    uint32_t status = 0;
-    if(swID->unit==0) {
-        swDev = gLanSwDev;
-    } else {
-        swDev = gWanSwDev;
-    }
-
-    rv = swcfg_get_link(swDev,swID->port,NULL, &status,NULL,NULL,NULL,NULL,NULL);
-
-    pDinfo->Status = status ? COSA_DML_IF_STATUS_Up : COSA_DML_IF_STATUS_Down;
-
-    if(!rv) 
-        rv = Utopia_GetEthAssocDevices(swID->unit, swID->port, pDinfo->AssocDevices, &pDinfo->AssocDevicesCount);
-
-    if (rv) {
-        return ANSC_STATUS_FAILURE;
-    }
-    return ANSC_STATUS_SUCCESS;
-}
-
-#endif
 
 #if defined _COSA_INTEL_USG_ARM_ || _COSA_BCM_MIPS_
 int puma6_getSwitchCfg(PCosaEthInterfaceInfo eth, PCOSA_DML_ETH_PORT_CFG pcfg)
