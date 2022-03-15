@@ -2742,37 +2742,7 @@
                                 </parameter>
                              </parameters>
                 </object>
-
-              	<object>
-                        <name>PeriodicFWCheck</name>
-                        <objectType>object</objectType>
-
-                        <functions>
-
-                                <func_GetParamBoolValue>PeriodicFWCheck_GetParamBoolValue</func_GetParamBoolValue>
-
-                                <func_SetParamBoolValue>PeriodicFWCheck_SetParamBoolValue</func_SetParamBoolValue>
-
-                        </functions>
-
-                        <parameters>
-
-                                <parameter>
-
-                                        <name>Enable</name>
-
-                                        <type>boolean</type>
-
-                                        <syntax>bool</syntax>
-
-                                        <writable>true</writable>
-
-                                </parameter>
-
-                        </parameters>
-
-                </object>
-<?ifndef BCI?>
+ <?ifndef BCI?>
               	<object>
                         <name>AllowOpenPorts</name>
 
