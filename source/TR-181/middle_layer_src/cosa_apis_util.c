@@ -90,6 +90,7 @@
 #include "ccsp_psm_helper.h"
 
 #if defined (FEATURE_RDKB_WAN_MANAGER)
+extern ANSC_HANDLE bus_handle;
 #define ETH_AGENT_COMPONENT_NAME                "eRT.com.cisco.spvtg.ccsp.ethagent"
 #define ETH_AGENT_DBUS_PATH                     "/com/cisco/spvtg/ccsp/ethagent"
 #endif 
