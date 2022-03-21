@@ -1958,6 +1958,7 @@ void* backuplogs(void *thread)
 		s = pthread_join(thread_id, &ret);
 		if (!s)
 			CcspTraceWarning(("FactoryReset:%s WiFi reset is now completed\n",__FUNCTION__));
+
 	}
 	pthread_detach(pthread_self());
 
@@ -2404,6 +2405,12 @@ CosaDmlDcSetFactoryReset
 	      }else
 		pthread_create(&logs, NULL, &backuplogs, NULL);
 	}
+#ifdef RDK_ONEWIFI
+	if( (factory_reset_mask & FR_ROUTER) && (factory_reset_mask & FR_WIFI)){
+		CcspTraceWarning(("FactoryReset:%d  case is both WIFI and Router removing DB\n",__LINE__));
+		v_secure_system("rm -f /nvram/wifi/rdkb-wifi.db"); //Need to remove wifi-db for Onewifi
+	}
+#endif
     return ANSC_STATUS_SUCCESS;
 }
 
