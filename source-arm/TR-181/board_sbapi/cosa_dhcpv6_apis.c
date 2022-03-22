@@ -93,6 +93,10 @@ extern char g_Subsystem[32];
  * @return 0 on success else returned -1
  */
 static int send_dhcp_data_to_wanmanager (ipc_dhcpv6_data_t *dhcpv6_data); /* Send data to wanmanager using nanomsg. */
+#ifdef WAN_FAILOVER_SUPPORTED
+pthread_t Ipv6Handle_tid;
+void *Ipv6ModeHandler_thrd(void *data);
+#endif
 #endif//FEATURE_RDKB_WAN_MANAGER
 #if defined(_HUB4_PRODUCT_REQ_) || defined(FEATURE_RDKB_WAN_MANAGER)
 #define SYSEVENT_FIELD_IPV6_PREFIXVLTIME  "ipv6_prefix_vldtime"
@@ -2058,6 +2062,11 @@ CosaDmlDhcpv6Init
 
 #endif
 
+#if defined(FEATURE_RDKB_WAN_MANAGER)
+#ifdef WAN_FAILOVER_SUPPORTED
+     pthread_create(&Ipv6Handle_tid, NULL, Ipv6ModeHandler_thrd, NULL);
+#endif
+#endif
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -8690,5 +8699,88 @@ static int send_dhcp_data_to_wanmanager (ipc_dhcpv6_data_t *dhcpv6_data)
     nn_close (sock);
     return ret;
 }
+#ifdef WAN_FAILOVER_SUPPORTED
+void SwitchToGlobalIpv6()
+{
+    CcspTraceInfo(("%s started\n",__FUNCTION__));
+    commonSyseventSet("routeunset-ula","");
+    commonSyseventSet("ula_ipv6_enabled","0");
+    commonSyseventSet("mode_switched","GLOBAL_IPV6");
+    commonSyseventSet("disable_old_prefix_ra","true");
+    commonSyseventSet("zebra-restart","");
+    commonSyseventSet("firewall-restart","");
+}
+
+void SwitchToULAIpv6()
+{
+
+    CcspTraceInfo(("%s started\n",__FUNCTION__));
+    commonSyseventSet("routeset-ula","");
+    commonSyseventSet("ula_ipv6_enabled","1");
+    commonSyseventSet("mode_switched","ULA_IPV6");
+    commonSyseventSet("disable_old_prefix_ra","true");
+    commonSyseventSet("zebra-restart","");
+    commonSyseventSet("firewall-restart","");
+
+}
+
+/** Switching  between Primary and Secondary Wan for LTE Backup **/
+void Switch_ipv6_mode(char *ifname, int length)
+{
+    char default_wan_ifname[64];
+    memset(default_wan_ifname, 0, sizeof(default_wan_ifname));
+    commonSyseventGet("wan_ifname", default_wan_ifname, sizeof(default_wan_ifname));
+    if (ifname)
+    {
+        if(strncmp(ifname,default_wan_ifname,length) != 0)
+        {
+            SwitchToULAIpv6(); //Secondary Wan
+        }
+        else
+        {
+            SwitchToGlobalIpv6(); //Primary Wan
+        }
+    }
+}
+
+void *Ipv6ModeHandler_thrd(void *data)
+{
+    UNREFERENCED_PARAMETER(data);
+    int sysevent_fd;
+    token_t sysevent_token;
+    async_id_t interface_asyncid;
+    int err;
+    char name[64] = {0}, val[64] = {0};
+
+    CcspTraceWarning(("%s started\n",__FUNCTION__));
+    sysevent_fd = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "Ipv6ModeHandler", &sysevent_token);
+    sysevent_set_options(sysevent_fd, sysevent_token, "current_wan_ifname", TUPLE_FLAG_EVENT);
+    sysevent_setnotification(sysevent_fd, sysevent_token, "current_wan_ifname",  &interface_asyncid);
+    while(1)
+    {
+        async_id_t getnotification_asyncid;
+        memset(name,0,sizeof(name));
+        memset(val,0,sizeof(val));
+        int namelen = sizeof(name);
+        int vallen  = sizeof(val);
+        err = sysevent_getnotification(sysevent_fd, sysevent_token, name, &namelen,  val, &vallen, &getnotification_asyncid);
+        if (err)
+        {
+            CcspTraceWarning(("sysevent_getnotification failed with error: %d %s\n", err,__FUNCTION__));
+            CcspTraceWarning(("sysevent_getnotification failed name: %s val : %s\n", name,val));
+            if ( 0 != v_secure_system("pidof syseventd")) {
+                CcspTraceWarning(("%s syseventd not running ,breaking the receive notification loop \n",__FUNCTION__));
+                break;
+            }
+        }
+        else
+        {
+            CcspTraceWarning(("%s Recieved notification event  %s\n",__FUNCTION__,name));
+            Switch_ipv6_mode(val,vallen);
+        }
+    }
+    return NULL;
+}
+#endif
 #endif //FEATURE_RDKB_WAN_MANAGER
 #endif
