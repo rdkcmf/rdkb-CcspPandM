@@ -5924,7 +5924,6 @@ Pool_GetParamStringValue
     PUCHAR                          pString           = NULL;
     COSA_DML_DHCPS_POOL_CFG tmpCfg;
     BOOL bValidDomainName;
-    errno_t  rc  =   -1;
 
     /* check the parameter name and return the corresponding value */
     if (strcmp(ParamName, "Alias") == 0)
@@ -5955,64 +5954,53 @@ Pool_GetParamStringValue
                 AnscFreeMemory(pString);
                 return ret;
             }
-            else
-            {
-                return 0;
-            }
+
+            *pValue = 0;
+            return 0;
         }
         else
         {
             //pPool->Cfg.Interface is instance number for other pool
             //_ansc_sprintf(pValue,"Device.IP.Interface.%s", pPool->Cfg.Interface);
             // pPool->Cfg.Interface is full path name
-            rc = strcpy_s(pValue, *pUlSize, pPool->Cfg.Interface);
-            if(rc != EOK)
-            {
-               ERR_CHK(rc);
-               return -1;
-            }
-            return 0;
+            return update_pValue(pValue, pUlSize, pPool->Cfg.Interface);
         }
-
     }
 
+#if 0
+    /* Not Supported */
     if (strcmp(ParamName, "VendorClassID") == 0)
     {
-        /* collect value */
-#if 0
         return  update_pValue(pValue,pUlSize, pPool->Cfg.VendorClassID);
-#endif
-        pValue[0] = '\0'; /* Not Supported */
     }
+#endif
 
+#if 0
+    /* Not Supported */
     if (strcmp(ParamName, "ClientID") == 0)
     {
-        /* collect value */
-#if 0
         return  update_pValue(pValue,pUlSize, pPool->Cfg.ClientID);
-#endif
-        pValue[0] = '\0'; /* Not Supported */
     }
+#endif
 
+#if 0
+    /* Not Supported */
     if (strcmp(ParamName, "UserClassID") == 0)
     {
-        /* collect value */
-#if 0
         return  update_pValue(pValue,pUlSize, pPool->Cfg.UserClassID);
-#endif
-        pValue[0] = '\0'; /* Not Supported */
     }
+#endif
 
+#if 0
+    /* Not Supported */
     if (strcmp(ParamName, "Chaddr") == 0)
     {
-        /* collect value */
-#if 0
-        if ( AnscSizeOfString(pPool->Cfg.Chaddr) < *pUlSize)
+        if (*pUlSize < 18)
         {
             _ansc_sprintf
                 (
-                    pValue, 
-                    "%2x:%2x:%2x:%2x:%2x:%2x", 
+                    pValue,
+                    "%2x:%2x:%2x:%2x:%2x:%2x",
                     pPool->Cfg.Chaddr[0],
                     pPool->Cfg.Chaddr[1],
                     pPool->Cfg.Chaddr[2],
@@ -6020,28 +6008,27 @@ Pool_GetParamStringValue
                     pPool->Cfg.Chaddr[4],
                     pPool->Cfg.Chaddr[5]
                 );
-            
+
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pPool->Cfg.Chaddr)+1;
+            *pUlSize = 18;
             return 1;
         }
-#endif
-        pValue[0] = '\0'; /* Not Supported */
     }
+#endif
 
+#if 0
+    /* Not Supported */
     if (strcmp(ParamName, "ChaddrMask") == 0)
     {
-        /* collect value */
-#if 0
-        if ( AnscSizeOfString(pPool->Cfg.ChaddrMask) < *pUlSize)
+        if (*pUlSize < 18)
         {
             _ansc_sprintf
                 (
-                    pValue, 
-                    "%2x:%2x:%2x:%2x:%2x:%2x", 
+                    pValue,
+                    "%2x:%2x:%2x:%2x:%2x:%2x",
                     pPool->Cfg.ChaddrMask[0],
                     pPool->Cfg.ChaddrMask[1],
                     pPool->Cfg.ChaddrMask[2],
@@ -6049,22 +6036,21 @@ Pool_GetParamStringValue
                     pPool->Cfg.ChaddrMask[4],
                     pPool->Cfg.ChaddrMask[5]
                 );
-            
+
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pPool->Cfg.ChaddrMask)+1;
+            *pUlSize = 18;
             return 1;
         }
-#endif
-        pValue[0] = '\0'; /* Not Supported */
     }
+#endif
 
+#if 0
+    /* Not Supported */
     if (strcmp(ParamName, "ReservedAddresses") == 0)
     {
-        /* collect value */        
-#if 0
         if ( CosaDmlGetIpaddrString(pValue, pUlSize, &pPool->Cfg.ReservedAddresses[0], COSA_DML_DHCP_MAX_RESERVED_ADDRESSES ) )
         {
             return 0;
@@ -6073,9 +6059,8 @@ Pool_GetParamStringValue
         {
             return 1;
         }
-#endif
-        pValue[0] = '\0'; /* Not Supported */
     }
+#endif
 
     if (strcmp(ParamName, "DNSServers") == 0)
     {
@@ -6199,35 +6184,34 @@ Pool_SetParamBoolValue
         return TRUE;
     }
 
+#if 0
     if (strcmp(ParamName, "VendorClassIDExclude") == 0)
     {
-        /* save update to backup */
         return FALSE; /* Not supported */
-        /* CID: 60425 Structurally dead code*/
     }
+#endif
 
+#if 0
     if (strcmp(ParamName, "ClientIDExclude") == 0)
     {
-        /* save update to backup */
         return FALSE; /* Not supported */
-        /* CID: 60425 Structurally dead code*/
     }
+#endif
 
+#if 0
     if (strcmp(ParamName, "UserClassIDExclude") == 0)
     {
-        /* save update to backup */
         return FALSE; /* Not supported */
-        /* CID: 60425 Structurally dead code*/
     }
+#endif
 
+#if 0
     if (strcmp(ParamName, "ChaddrExclude") == 0)
     {
-        /* save update to backup */
         return FALSE; /* Not supported */
-        /* CID: 60425 Structurally dead code*/
     }
+#endif
 
-    /* check the parameter name and set the corresponding value */
     if (strcmp(ParamName, "DNSServersEnabled") == 0)
     {
         /* save update to backup */
@@ -6393,13 +6377,12 @@ Pool_SetParamUlongValue
         return TRUE;
     }
 
+#if 0
     if (strcmp(ParamName, "VendorClassIDMode") == 0)
     {
-        /* save update to backup */
         return FALSE; /* Not supported */
-
-         /* CID: 68759 Structurally dead code*/
     }
+#endif
 
     char * requestorStr = getRequestorString();
     char * currentTime = getTime();
@@ -6730,47 +6713,47 @@ Pool_SetParamStringValue
         return TRUE;
     }
 
+#if 0
     if (strcmp(ParamName, "VendorClassID") == 0)
     {
-            /* save update to backup */
         return FALSE; /* Not supported */
-        /*CID: 56152 Structurally dead code*/
     }
+#endif
 
+#if 0
     if (strcmp(ParamName, "ClientID") == 0)
     {
-        /* save update to backup */
         return FALSE; /* Not supported */
-        /*CID: 56152 Structurally dead code*/
     }
+#endif
 
+#if 0
     if (strcmp(ParamName, "UserClassID") == 0)
     {
-        /* save update to backup */
         return FALSE; /* Not supported */
-        /*CID: 56152 Structurally dead code*/
     }
+#endif
 
+#if 0
     if (strcmp(ParamName, "Chaddr") == 0)
     {
-        /* save update to backup */
         return FALSE; /* Not supported */
-        /*CID: 56152 Structurally dead code*/
     }
+#endif
 
+#if 0
     if (strcmp(ParamName, "ChaddrMask") == 0)
     {
-        /* save update to backup */
         return FALSE; /* Not supported */
-        /*CID: 56152 Structurally dead code*/
     }
+#endif
 
+#if 0
     if (strcmp(ParamName, "ReservedAddresses") == 0)
     {
-        /* save update to backup */
         return FALSE; /* Not supported */
-        /*CID: 56152 Structurally dead code*/
     }
+#endif
 
     if (strcmp(ParamName, "DNSServers") == 0)
     {
