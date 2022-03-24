@@ -156,28 +156,24 @@ CosaDmlDhcpsARPing
  }
  
 ***********************************************************************/
-static int update_pValue(char *pValue, PULONG pulSize, char *str)
-{
-    errno_t rc = -1;
 
-    if(!str)
+static int update_pValue (char *pValue, PULONG pulSize, char *str)
+{
+    if (!str)
         return -1;
 
     size_t len = strlen(str);
-    if ( len < *pulSize)
+
+    if (len < *pulSize)
     {
-        rc = strcpy_s( pValue, *pulSize, str);
-        if(rc != EOK)
-        {
-            ERR_CHK(rc);
-            return -1;
-        }
+        memcpy(pValue, str, len + 1);
         return 0;
     }
 
-    *pulSize = len+1;
+    *pulSize = len + 1;
     return 1;
 }
+
 /***********************************************************************
 
  APIs for Object:
