@@ -294,22 +294,16 @@ CosaDmlDynamicDns_SetEnable
         BOOL  bValue
     )
 {
-   char buf[8] = {0};
-   errno_t rc = -1;
+       if (bValue == TRUE) {
+           char buf[4];
+           syscfg_get(NULL, "dslite_enable", buf, sizeof(buf));
+           if (strcmp(buf, "1") == 0)
+               return -1;
+       }
 
-       syscfg_get(NULL, "dslite_enable", buf, sizeof(buf));
-       if((strcmp(buf, "1") == 0) && bValue == TRUE){
-           return -1;
-       }
-       rc = strcpy_s(buf, sizeof(buf), ((bValue == FALSE) ? "0" : "1"));
-       if(rc != EOK)
-       {
-           ERR_CHK(rc);
-           return -1;
-       }
-       syscfg_set(NULL, "dynamic_dns_enable", buf);
-       syscfg_set(NULL, "arddnsclient_1::enable", buf);
-       syscfg_set(NULL, "ddns_host_enable_1", buf);
+       syscfg_set(NULL, "dynamic_dns_enable", (bValue == TRUE) ? "1" : "0");
+       syscfg_set("arddnsclient_1", "enable", (bValue == TRUE) ? "1" : "0");
+       syscfg_set(NULL, "ddns_host_enable_1", (bValue == TRUE) ? "1" : "0");
        syscfg_commit();
 
        if (bValue == TRUE && g_NrDynamicDnsClient != 0) {

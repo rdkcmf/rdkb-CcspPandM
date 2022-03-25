@@ -2383,7 +2383,7 @@ WiFi_Telemetry_SetParamIntValue
     /* check the parameter name and set the corresponding value */
     if (strcmp(ParamName, "LogInterval") == 0)
     {
-        char str[10];
+        char str[12];
         int retPsmGet = CCSP_SUCCESS;
 
         /* Updating the LogInterval  in PSM database  */
@@ -2406,7 +2406,7 @@ WiFi_Telemetry_SetParamIntValue
 
     if (strcmp(ParamName, "ChUtilityLogInterval") == 0)
     {
-        char str[10];
+        char str[12];
         int retPsmGet = CCSP_SUCCESS;
 
         /* Updating the ChUtilityLogInterval  in PSM database  */
@@ -6995,10 +6995,8 @@ HTTPSConfigDownload_SetParamBoolValue
     if (strcmp(ParamName, "Enabled") == 0)
     {
         char *strValue = NULL;
-        char str[2];
         int retPsmGet = CCSP_SUCCESS;
         BOOL getVal = 0;
-        errno_t rc = -1;
 
         retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_RFC.Feature.HTTPSConfigDownload.Enabled", NULL, &strValue);
         if (retPsmGet == CCSP_SUCCESS)
@@ -7009,13 +7007,7 @@ HTTPSConfigDownload_SetParamBoolValue
 
         if(getVal != bValue)
         {
-            rc = sprintf_s(str, sizeof(str),"%d",bValue);
-            if(rc < EOK)
-            {
-              ERR_CHK(rc);
-              return FALSE;
-            }
-            retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_RFC.Feature.HTTPSConfigDownload.Enabled", ccsp_string, str);
+            retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_RFC.Feature.HTTPSConfigDownload.Enabled", ccsp_string, bValue ? "1" : "0");
             if (retPsmGet != CCSP_SUCCESS)
             {
                 CcspTraceError(("Set failed for HTTPSConfigDownloadEnabled \n"));
@@ -9256,17 +9248,9 @@ ActiveMeasurements_RFC_SetParamBoolValue
 
     if (strcmp(ParamName, "Enable") == 0)
     {
-       char str[2];
        int retPsmGet = CCSP_SUCCESS;
-       errno_t rc  = -1;
 
-       rc = sprintf_s(str, sizeof(str),"%d",bValue);
-       if(rc < EOK)
-       {
-         ERR_CHK(rc);
-         return FALSE;
-       }
-       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WifiClient.ActiveMeasurements.Enable", ccsp_string, str);
+       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WifiClient.ActiveMeasurements.Enable", ccsp_string, bValue ? "1" : "0");
        if (retPsmGet != CCSP_SUCCESS) {
            CcspTraceError(("Set failed for Active Measurement RFC enable \n"));
            return FALSE;
@@ -9384,38 +9368,25 @@ WPA3_Personal_Transition_RFC_SetParamBoolValue
 
     if (strcmp(ParamName, "Enable") == 0)
     {
-        char str[2];
-        char secMode[64];
+        char *secMode;
         int retPsmGet = CCSP_SUCCESS;
         errno_t rc  = -1;
         int ret = -1;
         int size = 0;
         componentStruct_t ** ppComponents = NULL;
         char* faultParam = NULL;
-        char dst_pathname_cr[64]  =  {0};
+        char dst_pathname_cr[64];
 
         CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
-        rc = sprintf_s(str, sizeof(str),"%d",bValue);
-        if(rc < EOK)
-        {
-          ERR_CHK(rc);
-          return FALSE;
-        }
-        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WPA3_Personal_Transition.Enable", ccsp_string, str);
+        retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WPA3_Personal_Transition.Enable", ccsp_string, bValue ? "1" : "0");
         if (retPsmGet != CCSP_SUCCESS) {
             CcspTraceError(("Set failed for WPA3 Transition RFC Enable \n"));
             return FALSE;
         }
         CcspTraceInfo(("Successfully set WPA3 Transition RFC Enable \n"));
 
-        memset(secMode, '\0', sizeof(secMode));
-        rc = sprintf_s(secMode, sizeof(secMode),"%s",(bValue == TRUE) ? "WPA3-Personal-Transition" : "WPA2-Personal");;
-        if(rc < EOK)
-        {
-          ERR_CHK(rc);
-          return FALSE;
-        }
+        secMode = bValue ? "WPA3-Personal-Transition" : "WPA2-Personal";
 
        /* calling the DML code to set the security modes accordingly */
         rc = sprintf_s(dst_pathname_cr, sizeof(dst_pathname_cr),"%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
@@ -10112,20 +10083,12 @@ EasyConnect_SetParamBoolValue
     if (IsBoolSame(hInsContext, ParamName, bValue, EasyConnect_GetParamBoolValue))
         return TRUE;
 
-    errno_t rc = -1;
 
     if (strcmp(ParamName, "Enable") == 0)
     {
-       char str[2];
        int retPsmGet = CCSP_SUCCESS;
 
-       rc = sprintf_s(str, sizeof(str),"%d",bValue);
-       if(rc < EOK)
-       {
-         ERR_CHK(rc);
-         return FALSE;
-       }
-       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.Enable", ccsp_string, str);
+       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.Enable", ccsp_string, bValue ? "1" : "0");
        if (retPsmGet != CCSP_SUCCESS) {
            CcspTraceError(("Set failed for EasyConnect support \n"));
            return FALSE;
@@ -10136,16 +10099,9 @@ EasyConnect_SetParamBoolValue
 
     if (strcmp(ParamName, "EnableAPISecurity") == 0)
     {
-       char str[2];
        int retPsmGet = CCSP_SUCCESS;
 
-       rc = sprintf_s(str, sizeof(str),"%d",bValue);
-       if(rc < EOK)
-       {
-         ERR_CHK(rc);
-         return FALSE;
-       }
-       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.EnableAPISecurity", ccsp_string, str);
+       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.EnableAPISecurity", ccsp_string, bValue ? "1" : "0");
        if (retPsmGet != CCSP_SUCCESS) {
            CcspTraceError(("Set failed for EasyConnect APISecurity support \n"));
            return FALSE;
@@ -13436,11 +13392,8 @@ WiFiPsmDb_SetParamBoolValue
     {
 	char str[2];
 	int retPsmGet = CCSP_SUCCESS;
-	errno_t rc    = -1;
 
-	rc = sprintf_s(str, sizeof(str),"%d",bValue);
-	if(rc < EOK) ERR_CHK(rc);
-	retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WiFi-PSM-DB.Enable", ccsp_string, str);
+	retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WiFi-PSM-DB.Enable", ccsp_string, bValue ? "1" : "0");
 	if (retPsmGet != CCSP_SUCCESS) {
 	    CcspTraceError(("Set failed for WiFi-PSM-DB \n"));
 	    return FALSE;
