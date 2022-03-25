@@ -19,8 +19,8 @@
 //#include "ssp_global.h"
 #include "ansc_platform.h"
 #include "ccsp_base_api.h"
-#include <libparodus.h>
-#include "cJSON.h"
+#include <libparodus/libparodus.h>
+#include <cjson/cJSON.h>
 #include <sysevent/sysevent.h>
 #include <syscfg/syscfg.h>
 #include <math.h>

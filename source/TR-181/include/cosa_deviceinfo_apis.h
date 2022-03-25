@@ -66,7 +66,7 @@
 
 #include "cosa_apis.h"
 #include "plugin_main_apis.h"
-#include "cJSON.h"
+#include <cjson/cJSON.h>
 #ifdef FEATURE_SUPPORT_ONBOARD_LOGGING
 
 #define LOGGING_MODULE           "PAM"

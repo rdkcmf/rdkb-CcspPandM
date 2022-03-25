@@ -117,7 +117,7 @@
 #include "dmsb_tr181_psm_definitions.h"
 
 #include "lm_api.h"
-#include "cJSON.h"
+#include <cjson/cJSON.h>
 
 #undef COSA_DML_DHCP_LEASES_FILE
 #undef COSA_DML_DHCP_OPTIONS_FILE

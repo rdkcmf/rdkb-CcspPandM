@@ -71,7 +71,7 @@
 **************************************************************************/
 
 #include "cosa_time_apis.h"
-#include "cJSON.h"
+#include <cjson/cJSON.h>
 #include "secure_wrapper.h"
 #include "safec_lib_common.h"
 
