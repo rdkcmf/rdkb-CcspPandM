@@ -106,9 +106,6 @@ COSA_DATAMODEL_USERS,  *PCOSA_DATAMODEL_USERS;
     AnscZeroMemory((pUser)->HashedPassword, sizeof((pUser)->HashedPassword) ); \
     (pUser)->AccessPermission = COSA_DML_USER_PERMISSION_HomeUser; \
 
-#define GET_RANDOM_STRING(ulValue, tmpBuff)                                            \
-    (_ansc_ultoa((AnscGetTickInSeconds()<<6)|(((ULONG)(ulValue))&0x3F), tmpBuff, 10))  \
-
 /*
     Function declaration 
 */ 
