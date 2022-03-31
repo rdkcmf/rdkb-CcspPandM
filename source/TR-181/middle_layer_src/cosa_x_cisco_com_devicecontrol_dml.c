@@ -2089,6 +2089,11 @@ LanMngm_SetParamUlongValue
 
     if (AnscEqualString(ParamName, "LanMode", TRUE))
     {
+        #if defined(RDKB_EXTENDER)
+            CcspTraceWarning(("LanMode setting to Bridge/Router Mode is not supported\n"));
+            return FALSE;
+        #endif
+
 	#if !defined(_PLATFORM_RASPBERRYPI_)
 	//RDKB-27656 : Bridge Mode must not set to true using WEBPA & dmcli in ETHWAN mode
 	#if 0
