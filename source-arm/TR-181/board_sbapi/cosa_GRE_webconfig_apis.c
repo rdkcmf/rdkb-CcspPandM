@@ -168,8 +168,12 @@ BOOL unpackAndProcessHotspotData(char* pString)
             sequenceDetails->multiCompExecData++;
             sequenceDetails->multiCompExecData->isMaster =0 ;
 
-	        strncpy(sequenceDetails->multiCompExecData->CompName,"CcspWifiSsp",sizeof(sequenceDetails->multiCompExecData->CompName)-1);
-            CcspTraceWarning(("DEBUG : wifi_encoded_data %p\n",wifi_encoded_data));
+#if defined (RDK_ONEWIFI)
+            strncpy(sequenceDetails->multiCompExecData->CompName,"OneWifi",sizeof(sequenceDetails->multiCompExecData->CompName)-1);
+#else
+            strncpy(sequenceDetails->multiCompExecData->CompName,"CcspWifiSsp",sizeof(sequenceDetails->multiCompExecData->CompName)-1);
+#endif
+	    CcspTraceWarning(("DEBUG : wifi_encoded_data %p\n",wifi_encoded_data));
 
             sequenceDetails->multiCompExecData->comp_exec_data = (void*) wifi_encoded_data ;
 
