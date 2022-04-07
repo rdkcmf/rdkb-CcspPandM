@@ -9351,6 +9351,135 @@ WPA3_Personal_Transition_RFC_SetParamBoolValue
     prototype:
 
         BOOL
+        ErrorsReceived_RFC_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value for
+		ErrorsReceived RFC;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+ErrorsReceived_RFC_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+
+    if (!ParamName || !pBool)
+        return FALSE;
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+       /* Collect Value */
+       char *strValue = NULL;
+       int retPsmGet = CCSP_SUCCESS;
+
+        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, "DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.ErrorsReceived.Enable", NULL, &strValue);
+        if (retPsmGet == CCSP_SUCCESS) {
+            *pBool = _ansc_atoi(strValue);
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+        }
+        else
+            *pBool = FALSE;
+
+         return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        ErrorsReceived_RFC_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value for
+		ErrorsReceived RFC;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+ErrorsReceived_RFC_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if (IsBoolSame(hInsContext, ParamName, bValue, ErrorsReceived_RFC_GetParamBoolValue))
+        return TRUE;
+    
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+       char str[2];
+       int retPsmGet = CCSP_SUCCESS;
+       errno_t rc  = -1;
+
+       rc = sprintf_s(str, sizeof(str),"%d",bValue);
+       if(rc < EOK)
+       {
+         ERR_CHK(rc);
+         return FALSE;
+       }
+       retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.ErrorsReceived.Enable", ccsp_string, str);
+       if (retPsmGet != CCSP_SUCCESS) {
+           CcspTraceError(("Set failed for ErrorsReceived RFC enable \n"));
+           return FALSE;
+       }
+       CcspTraceInfo(("Successfully set ErrorsReceived RFC enable \n"));
+       return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
         DLCaStore_RFC_GetParamBoolValue
             (
                 ANSC_HANDLE                 hInsContext,

@@ -2050,6 +2050,24 @@ WPA3_Personal_Transition_RFC_SetParamBoolValue
         char*                       ParamName,
         BOOL                        bValue
     );
+
+BOOL
+ErrorsReceived_RFC_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+ErrorsReceived_RFC_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
 BOOL
 DLCaStore_RFC_GetParamBoolValue
     (
