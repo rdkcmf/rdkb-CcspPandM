@@ -137,6 +137,10 @@
 #include "cosa_common_util.h"
 #endif
 
+#if defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED)
+#include "cosa_rbus_handler_apis.h"
+#endif
+
 static void CheckAndSetRebootReason();
 
 #if defined(_PLATFORM_RASPBERRYPI_)
@@ -368,7 +372,6 @@ if(id != 0)
     send(sock , lxcevt , strlen(lxcevt) , 0 );
 }
 #endif
-
    system("sysevent set pnm-status up");
 #endif
 
@@ -390,7 +393,10 @@ if(id != 0)
     pMyObject->hRLog          = (ANSC_HANDLE)CosaRLogCreate();
     AnscTraceWarning(("  CosaRLogCreate done!\n"));
 
-
+#if defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED)
+    // Device Control Networking Mode init
+    devCtrlRbusInit();
+#endif
 
 #if !defined(HOTSPOT_DISABLE)
 //#ifdef CONFIG_CISCO_HOTSPOT
