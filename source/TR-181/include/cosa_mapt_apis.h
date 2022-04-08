@@ -112,10 +112,10 @@
 
 #define SYSCFG_UPNP_IGD_ENABLED         "upnp_igd_enabled"
 #define SYSCFG_DMZ_ENABLED              "dmz_enabled"
-#define SYSCFG_MGMT_HTTP_ENABLED        "mgmt_wan_httpaccess_ert"
-#define SYSCFG_MGMT_HTTPS_ENABLED       "mgmt_wan_httpsaccess"
 #define SYSCFG_PORT_FORWARDING_ENABLED  "CosaNAT::port_forward_enabled"
 #define SYSCFG_PORT_TRIGGERING_ENABLED  "CosaNAT::port_trigger_enabled"
+#define SYSCFG_MGMT_HTTPS_ENABLED       "mgmt_wan_httpsaccess"
+#define SYSCFG_MGMT_HTTP_ENABLED        "mgmt_wan_httpaccess"
 
 /*
  * Data type Macro definitions

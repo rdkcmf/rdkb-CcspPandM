@@ -83,6 +83,7 @@
 #include "syscfg.h"
 #include "ccsp_psm_helper.h"
 #include "sys_definitions.h"
+//#include "ccsp_custom.h"
 #include "cosa_mapt_apis.h"
 #include "plugin_main_apis.h"
 #include "secure_wrapper.h"
@@ -1290,16 +1291,36 @@ CosaDmlMaptDisplayFeatureStatus
   }
   *(PUINT32)isEnabled = 0;
 
-  if ( !(ret|=syscfg_get(NULL, SYSCFG_MGMT_HTTP_ENABLED, isEnabled, sizeof(isEnabled))) )
   {
-       if ( '1' == isEnabled[0] )
-       {
-            MAPT_LOG_INFO("MAP-T_enabled_User_Remote_Mgt_http_enabled");
-       }
-       else
-       {
-            MAPT_LOG_INFO("MAP-T_enabled_User_Remote_Mgt_http_disabled");
-       }
+     RETURN_STATUS ret2 = STATUS_SUCCESS;
+
+     if ( !(ret2=syscfg_get(NULL, SYSCFG_MGMT_HTTP_ENABLED, isEnabled, sizeof(isEnabled))) )
+     {
+          if ( '1' == isEnabled[0] )
+          {
+               MAPT_LOG_INFO("MAP-T_enabled_User_Remote_Mgt_http_enabled");
+          }
+          else
+          {
+               MAPT_LOG_INFO("MAP-T_enabled_User_Remote_Mgt_http_disabled");
+          }
+     }
+//#if defined(CONFIG_CCSP_WAN_MGMT_ACCESS)
+     else
+     if ( ret2 &&
+          !(ret2=syscfg_get(NULL, SYSCFG_MGMT_HTTP_ENABLED"_ert", isEnabled, sizeof(isEnabled))) )
+     {
+          if ( '1' == isEnabled[0] )
+          {
+               MAPT_LOG_INFO("MAP-T_enabled_User_Remote_Mgt_http_enabled");
+          }
+          else
+          {
+               MAPT_LOG_INFO("MAP-T_enabled_User_Remote_Mgt_http_disabled");
+          }
+     }
+//#endif
+     ret |= ret2;
   }
   *(PUINT32)isEnabled = 0;
 
