@@ -1950,7 +1950,7 @@ void* restoreAllDBs(void* arg)
 #else
 	v_secure_system("restoreAllDBs"); //Perform factory reset on other components
 #endif
-#if defined (INTEL_PUMA7) || (defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_))
+#if defined (INTEL_PUMA7) || (defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)) || defined (_CBR_PRODUCT_REQ_) || defined (_HUB4_PRODUCT_REQ_)
 	v_secure_system("rm -rf /opt/secure/Apparmor_blocklist");
 #endif
 	return NULL;
