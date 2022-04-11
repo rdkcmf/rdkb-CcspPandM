@@ -114,6 +114,7 @@ ScheduleCron()
         days_in_sec=$((Rebootday*86400))        
         date_part="$(( `date +%s`+$days_in_sec ))"
         date_final=`date -d @${date_part} +"%d"`
+        date_month=`date -d @${date_part} +"%m"`
         echo_t "Auto Reboot is scheduled at date: $date_final"
         # Dump existing cron jobs to a file & add new job
         crontab -l -c $CRONTAB_DIR > $CRONFILE_BK
@@ -122,7 +123,7 @@ ScheduleCron()
         if [ "$Rebootday" = "0" ]; then
                 echo_t "Auto Reboot in next Maintienance window $cronPattern"     
         else           
-                cronPattern="$rand_min $rand_hr $date_final * *"
+                cronPattern="$rand_min $rand_hr $date_final $date_month *"
                 echo_t "[ScheduleAutoReboot.sh] AutoReboot scheduled cron $cronPattern"  
         fi
 

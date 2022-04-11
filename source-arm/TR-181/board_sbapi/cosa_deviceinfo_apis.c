@@ -4973,9 +4973,9 @@ CosaDmlScheduleAutoReboot(int ConfiguredUpTime, BOOL bValue)
     int RebootDay = 0;
     if( bValue )
     {
-        if((1 > ConfiguredUpTime || ConfiguredUpTime > 30))
+        if((1 > ConfiguredUpTime || ConfiguredUpTime > 365))
         {
-            ConfiguredUpTime = 10;
+            ConfiguredUpTime = 120;
         }    
         int DeviceUptime = CosaDmlDiGetUpTime(NULL)/(3600*24);
         CcspTraceInfo(("%s Device uptime in days %d \n",__FUNCTION__, DeviceUptime ));

@@ -22738,12 +22738,19 @@ AutoReboot_GetParamBoolValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);  
-    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
-
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
         CcspTraceInfo(("[%s :] AutoReboot Getparam Enable value\n",__FUNCTION__));
-        *pBool = pMyObject->AutoReboot.Enable;
+        char value[8] = {'\0'};
+        if( syscfg_get(NULL, "AutoReboot", value, sizeof(value)) == 0 )
+        {
+            *pBool = (strcmp(value, "true") == 0) ? TRUE : FALSE;
+            return TRUE;
+        }
+        else
+        {
+            CcspTraceError(("syscfg_get failed for AutoReboot.Enable\n"));
+        } 
         return TRUE;
     }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -22790,13 +22797,22 @@ AutoReboot_SetParamBoolValue
 {   
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_DEVICEINFO  pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
-
     if( AnscEqualString(ParamName, "Enable", TRUE))
     {
-        if( pMyObject->AutoReboot.Enable == bValue)
+        if (IsBoolSame(hInsContext, ParamName, bValue, AutoReboot_GetParamBoolValue))
         {
             CcspTraceInfo(("[%s:] AutoReboot Set current and previous values are same\n", __FUNCTION__ ));
             return TRUE;
+        }
+        char buf[8] = { '\0' };
+        snprintf(buf, sizeof(buf), "%s", bValue ? "true" : "false");
+        if (syscfg_set(NULL, "AutoReboot", buf) != 0)
+        {
+            CcspTraceError(("syscfg_set failed for AutoReboot.Enable\n"));
+        }
+        else
+        {
+            syscfg_commit();
         }
         CcspTraceInfo(("[%s:] AutoReboot Set param Enable value %d\n", __FUNCTION__, bValue));
         pMyObject->AutoReboot.Enable = bValue;
@@ -22851,7 +22867,7 @@ AutoReboot_SetParamIntValue
     if( AnscEqualString(ParamName, "UpTime", TRUE))
     {
         CcspTraceInfo(("[%s:] AutoReboot Set uptime \n", __FUNCTION__ ));
-        if((1 > iValue || iValue > 30))
+        if((1 > iValue || iValue > 365))
         {
             CcspTraceWarning(("The value is not in the expected range. keeping the previous value \n"));
             return TRUE;
@@ -22910,13 +22926,13 @@ AutoReboot_GetParamIntValue
 {
     UNREFERENCED_PARAMETER(hInsContext);
     /* check the parameter name and set the corresponding value */   
-    const int DEFAULT_UPTIME = 10;
+    const int DEFAULT_UPTIME = 120;
     PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
 
     if( AnscEqualString(ParamName, "UpTime", TRUE))
     {
         *iValue = pMyObject->AutoReboot.UpTime;
-        if( (1 > *iValue || *iValue > 30) )
+        if( (1 > *iValue || *iValue > 365) )
         {
             *iValue  = DEFAULT_UPTIME;
             pMyObject->AutoReboot.UpTime=DEFAULT_UPTIME;  

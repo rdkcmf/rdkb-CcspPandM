@@ -2247,7 +2247,7 @@
                                 </parameter>
                                    <parameter>
                                         <name>UpTime</name>
-                                        <type>int[1:30]</type>
+                                        <type>int[1:365]</type>
                                         <syntax>int</syntax>
                                         <writable>true</writable>
                                 </parameter>

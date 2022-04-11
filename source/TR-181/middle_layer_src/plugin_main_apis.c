@@ -180,6 +180,7 @@ ANSC_STATUS CosaGreTunnelRemove( ANSC_HANDLE hThisObject );
 ANSC_HANDLE CosaGreCreate(VOID);
 ANSC_STATUS CosaGreRemove(ANSC_HANDLE hThisObject);
 void initparodusTask();
+static void SetAutoreboot( ANSC_HANDLE  hThisObject);
 
 /**********************************************************************
 
@@ -453,7 +454,7 @@ if(id != 0)
     printf("Calling PARODUS!\n");
     CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PARODUS call!\n")); 
     initparodusTask();
-
+    SetAutoreboot((ANSC_HANDLE)pMyObject->hDeviceInfo);
     return returnStatus;
 }
 
@@ -766,4 +767,27 @@ static void CheckAndSetRebootReason()
         CcspTraceWarning(("/var/tmp/lastrebootreason File exists\n"));
     }
 }
-        
+
+static void SetAutoreboot( ANSC_HANDLE  hThisObject)
+{
+     PCOSA_DATAMODEL_DEVICEINFO      pMyObject    = (PCOSA_DATAMODEL_DEVICEINFO)hThisObject;
+    char buf[8];
+    int defualtConfigureDays=120;
+    if(!syscfg_get( NULL, "AutoReboot", buf, sizeof(buf)))
+    {
+         if( buf != NULL )
+         {
+            if( 0 == strcmp( buf, "true"))
+            {
+                pMyObject->AutoReboot.Enable = TRUE;
+                CcspTraceWarning(("Auto reboot parameter value during bootup %s \n", buf));
+                CosaDmlScheduleAutoReboot(defualtConfigureDays, TRUE);
+            }
+            else
+            {
+                pMyObject->AutoReboot.Enable = FALSE;
+                CcspTraceWarning(("No need to schedule as default value is set to %s \n", buf));
+            }
+         }
+    }
+}
