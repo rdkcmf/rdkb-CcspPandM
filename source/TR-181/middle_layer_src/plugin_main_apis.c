@@ -311,12 +311,20 @@ CosaBackEndManagerInitialize
     AnscTraceWarning(("  CosaSecurityCreate done!\n"));
     pMyObject->hIP            = (ANSC_HANDLE)CosaIPCreate();
     AnscTraceWarning(("  CosaIPCreate done!\n"));
+#ifdef FEATURE_RDKB_DHCP_MANAGER
+    AnscTraceWarning(("  CosaDhcpv4Create not done will be created from dhcp manager!\n"));
+#else
     pMyObject->hDhcpv4        = (ANSC_HANDLE)CosaDhcpv4Create();
     AnscTraceWarning(("  CosaDhcpv4Create done!\n"));
+#endif
     pMyObject->hHosts         = (ANSC_HANDLE)CosaHostsCreate();
     AnscTraceWarning(("  CosaHostsCreate done!\n"));
+#ifdef FEATURE_RDKB_DHCP_MANAGER
+    AnscTraceWarning(("  CosaDNSCreate not done will be created from dhcp manager!\n"));
+#else
     pMyObject->hDNS           = (ANSC_HANDLE)CosaDNSCreate();
     AnscTraceWarning(("  CosaDNSCreate done!\n"));
+#endif
     pMyObject->hRouting       = (ANSC_HANDLE)CosaRoutingCreate();
     AnscTraceWarning(("  CosaRoutingCreate done!\n"));
     pMyObject->hBridging      = (ANSC_HANDLE)CosaBridgingCreate();
@@ -327,8 +335,13 @@ CosaBackEndManagerInitialize
     pMyObject->hPPP           = (ANSC_HANDLE)CosaPPPCreate();
     AnscTraceWarning(("  CosaPPPCreate done!\n"));
 #endif
+
+#ifdef FEATURE_RDKB_DHCP_MANAGER
+    AnscTraceWarning(("  CosaDhcpv6Create not done will be created from dhcp manager!\n"));
+#else
     pMyObject->hDhcpv6        = (ANSC_HANDLE)CosaDhcpv6Create();
     AnscTraceWarning(("  CosaDhcpv6Create done!\n"));
+#endif
     pMyObject->hDeviceControl  = (ANSC_HANDLE)CosaDeviceControlCreate();
     AnscTraceWarning(("  CosaDeviceControlCreate done!\n"));
     pMyObject->hIPv6rd        = (ANSC_HANDLE)CosaIPv6rdCreate();
