@@ -463,6 +463,19 @@ CosaDmlDynamicDns_Client_GetConf
     return CosaDmlDynamicDns_Client_GetEntryByIndex(index, pEntry);
 }
 
+/* Reset sysevent variable ddns_return_status{DnIdx} to NULL */
+void reset_ddns_return_status()
+{
+    char server[128]={0};
+    if (!syscfg_get( NULL, "arddnsclient_1::Server", server, sizeof(server)))
+    {
+        char buf[32]={0};
+        int pos=strlen(server)-1;
+        snprintf(buf,sizeof(buf),"ddns_return_status%s",server+pos);
+        commonSyseventSet(buf,"");
+    }
+}
+
 ANSC_STATUS
 CosaDmlDynamicDns_Client_SetConf
     (
@@ -520,6 +533,7 @@ CosaDmlDynamicDns_Client_SetConf
     if (isUserconfChanged == TRUE)
     {
         CcspTraceInfo(("%s Going to restart dynamic dns service",__FUNCTION__));
+        reset_ddns_return_status();
         v_secure_system("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart &");
     }
 
@@ -766,6 +780,7 @@ CosaDmlDynamicDns_Host_SetConf
     if (CosaDmlDynamicDns_GetEnable() && (g_DDNSHost[index].Enable == TRUE) && (isHostchanged == TRUE))
     {
         CcspTraceInfo(("%s Going to restart dynamic dns service",__FUNCTION__));
+        reset_ddns_return_status();
         v_secure_system("/etc/utopia/service.d/service_dynamic_dns.sh dynamic_dns-restart &");
     }
     return ANSC_STATUS_SUCCESS;
