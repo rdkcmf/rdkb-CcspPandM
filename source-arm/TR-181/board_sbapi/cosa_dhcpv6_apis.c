@@ -105,6 +105,15 @@ void *Ipv6ModeHandler_thrd(void *data);
 #define SYSEVENT_FIELD_IPV6_ULA_ADDRESS   "ula_address"
 #endif
 
+#ifdef RDKB_EXTENDER_ENABLED
+typedef enum deviceMode
+{
+    DEVICE_MODE_ROUTER,
+    DEVICE_MODE_EXTENDER
+}deviceMode;
+#endif
+
+
 #if defined (INTEL_PUMA7)
 //Intel Proposed RDKB Generic Bug Fix from XB6 SDK
 #define NO_OF_RETRY 90  /*No of times the file will poll for TLV config file*/
@@ -1888,6 +1897,26 @@ int CosaDmlDhcpv6sRestartOnLanStarted(void * arg)
     // TCCBR-3353: dibbler-server is failing because brlan's IP address is "tentative".
     // Add a delay so the IP address has time to become "prefered".
     sleep(2);
+#endif
+
+#ifdef RDKB_EXTENDER_ENABLED
+    {
+        char buf[8] ={0};
+        int deviceMode = 0;
+        
+        memset(buf,0,sizeof(buf));
+        if (0 == syscfg_get(NULL, "Device_Mode", buf, sizeof(buf)))
+        {
+            deviceMode = atoi(buf);
+        }
+
+        CcspTraceWarning(("%s -- %d Device Mode %d \n", __FUNCTION__, __LINE__,deviceMode));
+        //dont start dibbler server in extender mode.
+        if (deviceMode == DEVICE_MODE_EXTENDER)
+        {
+            return 0;
+        }
+    }
 #endif
 
 #if defined(_HUB4_PRODUCT_REQ_)
