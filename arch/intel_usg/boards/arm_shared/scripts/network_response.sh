@@ -101,19 +101,28 @@ then
   enableRFCaptivePortal=`syscfg get enableRFCaptivePortal`
   if [ "$enableRFCaptivePortal" = "true" ]
   then
-      ethWanEnabled=`syscfg get eth_wan_enabled`
-      if [ "$ethWanEnabled" = "true" ]
-      then
-          noRfCp=0
-      else
-        RF_SIGNAL_STATUS=`dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CableRfSignalStatus | grep value | cut -f3 -d : | cut -f2 -d" "`
-        if [ "$RF_SIGNAL_STATUS" = "false" ]
+		ethWanEnabled=`syscfg get eth_wan_enabled`
+        if [ "$ethWanEnabled" = "true" ]
         then
-           noRfCp=1
+			noRfCp=0
         else
-           noRfCp=0
-        fi
-     fi
+			currentWanIf=`sysevent get current_wan_ifname`
+			defaultWanIf=`sysevent get wan_ifname`
+			#Bring no captive portal up/down for erouter0
+			if [ "$currentWanIf" == "$defaultWanIf" ]
+			then
+				RF_SIGNAL_STATUS=`dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CableRfSignalStatus | grep value | cut -f3 -d : | cut -f2 -d" "`
+				if [ "$RF_SIGNAL_STATUS" = "false" ]
+				then
+					noRfCp=1
+				else
+					noRfCp=0
+				fi
+			else
+				#LTE wan interface is available no need to bring no RF captive portal
+				noRfCp=0
+			fi
+		fi
   else
      echo_t "INFO:network_Response.sh - RF captive portal is disabled"
      noRfCp=0
