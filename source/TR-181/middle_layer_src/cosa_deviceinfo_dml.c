@@ -15994,6 +15994,12 @@ Syndication_GetParamStringValue
         /* collect value */
         return  update_pValue(pValue,pulSize, pMyObject->UiBrand.PauseScreenFileLocation.ActiveValue);
      }
+//Prash
+    if( AnscEqualString(ParamName, "MeshRedirectorURL", TRUE))
+    {        
+        /* collect value */
+        return  update_pValue(pValue,pulSize, pMyObject->MeshRedirectorURL.ActiveValue);
+    }
 #if defined(_COSA_BCM_ARM_) && !defined(_CBR_PRODUCT_REQ_)
     if( AnscEqualString(ParamName, "CMVoiceImageSelect", TRUE))
     {
@@ -16192,6 +16198,42 @@ Syndication_SetParamStringValue
             return FALSE;
         }
 	  
+     }
+//Prash
+    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
+    {   
+        /* check the parameter name and set the corresponding value */
+        if ( !(rc = strcmp_s("MeshRedirectorURL", strlen("MeshRedirectorURL"), ParamName, &ind)) )
+        {   
+            if(!(ind))
+            {   
+                IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pMyObject->MeshRedirectorURL.UpdateSource);
+
+                if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.MeshRedirectorURL",PartnerID, pString, requestorStr, currentTime))
+                {
+                        rc = STRCPY_S_NOCLOBBER(pMyObject->MeshRedirectorURL.ActiveValue, sizeof(pMyObject->MeshRedirectorURL.ActiveValue), pString);
+                        if(rc != EOK)
+                        {
+                             AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                             return FALSE;
+                        }
+
+                        rc = STRCPY_S_NOCLOBBER(pMyObject->MeshRedirectorURL.UpdateSource, sizeof(pMyObject->MeshRedirectorURL.UpdateSource), requestorStr);
+                        if(rc != EOK)
+                        {
+                             AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                             return FALSE;
+                        }
+                        return TRUE;
+                }
+            }
+
+        }
+        else if(rc != EOK)
+        {   
+            AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+            return FALSE;
+        }
      }
      return FALSE;
 }

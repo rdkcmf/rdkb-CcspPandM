@@ -103,6 +103,7 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
 	CHAR 		DeviceManageableNotification[64];
 	BOOL            CustomDataModelEnabled;
 	COSA_BOOTSTRAP_STR 		TR69CertLocation;
+	COSA_BOOTSTRAP_STR 		MeshRedirectorURL; //Prash
 	CHAR 		PartnerID[64];
 	COSA_BOOTSTRAP_BOOL		bWANsideSSHEnable;
 

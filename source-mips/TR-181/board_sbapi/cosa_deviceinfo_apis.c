@@ -2682,6 +2682,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 		char *customerCentralText = NULL;
 		char *wifiTitle = NULL;
 		char *wifiWelcomeMessage = NULL;
+		char *MeshRedirectorURL = NULL;		
 		char buf[64] = {0};
 		PCOSA_DATAMODEL_DEVICEINFO pDeviceInfo = (PCOSA_DATAMODEL_DEVICEINFO)hContext;
 		partnerObj = cJSON_GetObjectItem( json, partnerID );
@@ -3286,6 +3287,27 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 				{
 					CcspTraceWarning(("%s - PauseScreenFileLocation Object is NULL\n", __FUNCTION__ ));
 				}
+//Prash
+                                if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.MeshRedirectorURL") != NULL )
+                                {
+                                        MeshRedirectorURL = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.MeshRedirectorURL")->valuestring;
+
+                                        if (MeshRedirectorURL != NULL)
+                                        {
+                                                AnscCopyString(pDeviceInfo->MeshRedirectorURL, MeshRedirectorURL);
+                                                MeshRedirectorURL = NULL;
+                                        }
+                                        else
+                                        {
+                                                CcspTraceWarning(("%s - MeshRedirectorURL Value is NULL\n", __FUNCTION__ ));
+                                        }
+
+                                }
+
+                                else
+                                {
+                                        CcspTraceWarning(("%s - MeshRedirectorURL Object is NULL\n", __FUNCTION__ ));
+                                }
 
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.HelpTip.NetworkName") != NULL )
 				{
