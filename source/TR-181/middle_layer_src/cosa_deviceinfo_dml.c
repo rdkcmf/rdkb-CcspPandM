@@ -8435,6 +8435,140 @@ Control_GetParamStringValue
 
     return -1;
 }
+/**
+ *  RFC Feature for CrashUpload S3signing url
+*/
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ULONG
+        CrashUpload_GetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pValue,
+                ULONG*                      pulSize
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pValue
+                The buffer of returned string value;
+
+                ULONG*                      pulSize
+                The buffer of returned string size;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+ULONG
+    CrashUpload_GetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pValue,
+ ULONG*                      pulSize
+ )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pulSize);
+    errno_t   rc   = -1;
+
+    if( AnscEqualString(ParamName, "S3SigningUrl", TRUE))
+    {
+        /* collect value */
+        char buf[64] = {'\0'};
+        memset(buf, 0 ,sizeof(buf));
+        if(!syscfg_get( NULL, "CrashUpload_S3SigningUrl", buf, sizeof(buf)))
+        {
+            rc = strcpy_s(pValue, *pulSize, buf);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return -1;
+            }
+            return 0;
+        }
+        return -1;
+    }
+    /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return -1;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        CrashUpload_SetParamStringValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                char*                       pString
+            );
+
+    description:
+
+        This function is called to set string parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                       pString
+                The updated String value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+    CrashUpload_SetParamStringValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ char*                       pString
+ )
+{
+    if (IsStringSame(hInsContext, ParamName, pString, CrashUpload_GetParamStringValue))
+        return TRUE;
+
+    if( AnscEqualString(ParamName, "S3SigningUrl", TRUE))
+    {
+        if (syscfg_set(NULL, "CrashUpload_S3SigningUrl", pString) != 0)
+        {
+            CcspTraceError(("syscfg_set failed\n"));
+
+        }
+        else
+        {
+            if (syscfg_commit() != 0)
+            {
+                CcspTraceError(("syscfg_commit failed\n"));
+
+            }
+
+            return TRUE;
+        }
+    }
+
+/* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
+    return FALSE;
+}
 
 /**********************************************************************
 
