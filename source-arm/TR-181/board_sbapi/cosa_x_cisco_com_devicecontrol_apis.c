@@ -1582,8 +1582,12 @@ void* CosaDmlDcRestartRouter(void* arg)
 {
     pthread_detach(pthread_self());
     v_secure_system("sysevent set lan-stop");
-
-	sleep(3);
+#if defined(_SR300_PRODUCT_REQ_)
+    /*Increase sleep time in ADA to allow wifi hal API's for FR to execute before reboot*/
+    sleep(5);
+#else
+    sleep(3);
+#endif
     v_secure_system("sysevent set lan_restarted true");
     v_secure_system("sysevent set forwarding-restart");
 #if 0
