@@ -570,7 +570,6 @@ Pam_GetParamStringValue
                    ERR_CHK(rc);
                    return -1;
                 }
-                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else
@@ -610,7 +609,6 @@ Pam_GetParamStringValue
                    return -1;
                 }
 		CcspTraceInfo(("[%s] -- pValue: %s\n", __FUNCTION__, pValue));
-                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else
@@ -666,12 +664,10 @@ Pam_GetParamStringValue
                    ERR_CHK(rc);
                    return -1;
                 }
-                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else
             {
-                _ansc_strncpy(pValue, Buffer, *pulSize);       
                 *pulSize = IpIfObjNameSize + 1;
                 return  1;
             }
@@ -722,7 +718,6 @@ Pam_GetParamStringValue
                    ERR_CHK(rc);
                    return -1;
                 }
-                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else
@@ -778,7 +773,6 @@ Pam_GetParamStringValue
                    ERR_CHK(rc);
                    return -1;
                 }
-                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else
@@ -834,7 +828,6 @@ Pam_GetParamStringValue
                    ERR_CHK(rc);
                    return -1;
                 }
-                *pulSize = IpIfObjNameSize + 1;
                 return  0;
             }
             else

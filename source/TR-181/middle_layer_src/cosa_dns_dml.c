@@ -3030,7 +3030,6 @@ Forwarding_GetParamStringValue
            ERR_CHK(rc);
            return -1;
         }
-        *pUlSize = AnscSizeOfString(pValue)+1;
         return 0;
     }
 
@@ -3042,7 +3041,6 @@ Forwarding_GetParamStringValue
            ERR_CHK(rc);
            return -1;
         }
-        *pUlSize = AnscSizeOfString(pValue)+1;
         return 0;
     }
 
