@@ -65,7 +65,7 @@
 
         01/30/2011    initial revision.
         06/15/2012    add IPv4 address utils
-        06/15/2012    add vsystem(), chomp()
+        06/15/2012    add vsystem()
 
 **********************************************************************/
 
@@ -2052,17 +2052,6 @@ int vsystem(const char *fmt, ...)
 
     fprintf(stderr, "%s: %s\n", __FUNCTION__, cmd);
     return system(cmd);
-}
-
-void chomp(char *line)
-{
-    if (!line || strlen(line) < 1)
-        return;
-
-    if (line[strlen(line) - 1] == '\n')
-        line[strlen(line) - 1] = '\0';
-
-    return;
 }
 
 int get_if_hwaddr(const char *ifname, char *mac, size_t size)
