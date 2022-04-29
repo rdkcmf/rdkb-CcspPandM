@@ -74,9 +74,7 @@
 #else
 #define OnboardLog(...)
 #endif
-#if defined(_ANSC_LINUX)
-    #include <sys/sysinfo.h>
-#endif
+#include <sys/sysinfo.h>
 
 #include "cm_hal.h"
 

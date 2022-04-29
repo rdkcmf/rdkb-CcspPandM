@@ -67,9 +67,7 @@
 #include "cosa_apis.h"
 #include "plugin_main_apis.h"
 
-#if defined(_ANSC_LINUX)
-    #include <sys/sysinfo.h>
-#endif
+#include <sys/sysinfo.h>
 
 
 #define CONFIG_AVAHI_DAEMON_FILENAME    "/var/tmp/avahi/avahi-daemon.conf"
