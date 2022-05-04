@@ -654,6 +654,19 @@ EvtDispterHandleEventAsync(void)
     }
 }
 
+int executeCmd(char *cmd)
+{
+	int l_iSystem_Res;
+	l_iSystem_Res = system(cmd);
+    if (0 != l_iSystem_Res && ECHILD != errno)
+    {
+        CcspTraceError(("%s: %s command didnt execute successfully\n", __FUNCTION__,cmd));
+        return l_iSystem_Res;
+    }
+    return 0;
+}
+
+
 #ifdef _HUB4_PRODUCT_REQ_
 void* RegenerateUla(void *arg)
 {

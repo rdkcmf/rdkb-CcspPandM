@@ -81,6 +81,7 @@ extern void* g_pDslhDmlAgent;
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 
+extern int executeCmd(char *cmd);
 #include "ipc_msg.h"
 #if defined SUCCESS
 #undef SUCCESS
@@ -3425,6 +3426,7 @@ static int CosaDmlDHCPv6sTriggerRestart(BOOL OnlyTrigger)
  */
 static int _dibbler_server_operation(char * arg)
 {
+    char cmd[256] = {0};	
     ULONG Index  = 0;
     int fd = 0;
     
@@ -3440,7 +3442,11 @@ static int _dibbler_server_operation(char * arg)
         if (fd >= 0) {
             CcspTraceInfo(("%s:%d stop dibbler.\n",__FUNCTION__, __LINE__));
             //fprintf(stderr, "%s -- %d stop\n", __FUNCTION__, __LINE__);
-            v_secure_system(SERVER_BIN " stop >/dev/null");
+	    //dibbler stop seems to be hanging intermittently with v_secure_system
+	    //replacing with system call
+            //v_secure_system(SERVER_BIN " stop >/dev/null");
+	    snprintf(cmd,sizeof(cmd), "%s stop >/dev/null", SERVER_BIN);
+	    executeCmd(cmd);
             close(fd);
         }else{
             //this should not happen.
@@ -3487,7 +3493,9 @@ static int _dibbler_server_operation(char * arg)
                 g_dhcpv6_server_started = TRUE;
             #endif
 
-            v_secure_system(SERVER_BIN " start");
+            //v_secure_system(SERVER_BIN " start");
+	    snprintf(cmd,sizeof(cmd), "%s start", SERVER_BIN);
+	    executeCmd(cmd);
         }
     }
     else if (!strncmp(arg, "restart", 7))
