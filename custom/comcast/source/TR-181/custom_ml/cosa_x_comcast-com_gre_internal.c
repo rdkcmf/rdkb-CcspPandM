@@ -56,6 +56,7 @@
 #include "libHotspotApi.h"
 #include "cosa_deviceinfo_internal.h"
 #define SIZE_OF_IP 16
+#define POLL_CIRCUIT_ID_SLEEP 3
 
 int hotspot_update_circuit_ids(int,int);
 extern void* g_pDslhDmlAgent;
@@ -155,9 +156,35 @@ CosaGreTunnelRemove
     return ANSC_STATUS_SUCCESS;
 }
 
+void* update_circuitID_thread(void* arg)
+{
+    UNREFERENCED_PARAMETER(arg);
+    static BOOL running=0;
+    int ret=-1;
+    if(!running)
+    {
+        running=1;
+        CcspTraceInfo(("%s:hotspot_update_circuit_ids starting\n", __FUNCTION__));
+        ret = hotspot_update_circuit_ids(1, 1);
+        while (ret < 0)
+        {
+            sleep(POLL_CIRCUIT_ID_SLEEP);
+            CcspTraceWarning(("%s:Retrying hotspot_update_circuit_ids\n", __FUNCTION__));
+            ret = hotspot_update_circuit_ids(1, 1);
+        }
+        running=0;
+    }
+    else
+    {
+        CcspTraceWarning(("%s: already hotspot_update_circuit_ids is running\n", __FUNCTION__));
+        return NULL;
+    }
+    return NULL;
+}
+
 void callbackWCConfirmVap(tunnelSet_t *tunnelSet){
 
-   int ret = 0;
+   pthread_t circuitid_thread;
 
    CcspTraceWarning(("HOTSPOT_LIB: Entering '%s'\n", __FUNCTION__));
 
@@ -182,11 +209,14 @@ void callbackWCConfirmVap(tunnelSet_t *tunnelSet){
        free(tunnelSet);
        tunnelSet = NULL;
    }
-  
-   ret = hotspot_update_circuit_ids(1,1);
-   if( ret < 0) {
-    CcspTraceWarning(("%s Failed hotspot_update_circuit_ids '%d'\n", __FUNCTION__, ret ));
-   }
 
+   if(0 != pthread_create(&circuitid_thread, NULL, update_circuitID_thread, NULL))
+   {
+       CcspTraceError(("%s: Error in creating update_circuitID_thread \n", __FUNCTION__));
+   }
+   else
+   {
+       pthread_detach(circuitid_thread);
+   }
 }
 #endif

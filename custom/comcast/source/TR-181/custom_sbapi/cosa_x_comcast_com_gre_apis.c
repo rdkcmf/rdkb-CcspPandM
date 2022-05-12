@@ -360,6 +360,7 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
         size = sizeof(outdata);
         retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
         if ((!(strcmp(varStruct.parameterValue,""))) || ( retval != ANSC_STATUS_SUCCESS)) {
+            CcspTraceError(("could not fetch proper SSID name\n"));
             pthread_mutex_unlock(&circuitid_lock);
             return -1;
         }
@@ -381,6 +382,7 @@ int hotspot_update_circuit_ids(int greinst, int queuestart) {
         size = sizeof(outdata);
         retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
         if ( retval != ANSC_STATUS_SUCCESS) {
+            CcspTraceError(("could not fetch Security Mode\n"));
             pthread_mutex_unlock(&circuitid_lock);
             return -1;
         }
