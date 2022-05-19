@@ -2683,6 +2683,7 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 		char *wifiTitle = NULL;
 		char *wifiWelcomeMessage = NULL;
 		char *MeshRedirectorURL = NULL;		
+                char *AdvsecRedirectorURL = NULL;
 		char buf[64] = {0};
 		PCOSA_DATAMODEL_DEVICEINFO pDeviceInfo = (PCOSA_DATAMODEL_DEVICEINFO)hContext;
 		partnerObj = cJSON_GetObjectItem( json, partnerID );
@@ -3307,6 +3308,25 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
                                 else
                                 {
                                         CcspTraceWarning(("%s - MeshRedirectorURL Object is NULL\n", __FUNCTION__ ));
+                                }
+
+                                if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.AdvsecRedirectorURL") != NULL )
+                                {
+                                        AdvsecRedirectorURL = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.AdvsecRedirectorURL")->valuestring;
+
+                                        if (AdvsecRedirectorURL != NULL)
+                                        {
+                                                AnscCopyString(pDeviceInfo->AdvsecRedirectorURL, AdvsecRedirectorURL);
+                                                AdvsecRedirectorURL = NULL;
+                                        }
+                                        else
+                                        {
+                                                CcspTraceWarning(("%s - AdvsecRedirectorURL Value is NULL\n", __FUNCTION__ ));
+                                        }
+                                }
+                                else
+                                {
+                                        CcspTraceWarning(("%s - AdvsecRedirectorURL Object is NULL\n", __FUNCTION__ ));
                                 }
 
 				if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.HelpTip.NetworkName") != NULL )

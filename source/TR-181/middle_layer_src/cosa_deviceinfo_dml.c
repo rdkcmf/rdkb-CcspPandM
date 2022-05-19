@@ -72,6 +72,7 @@
 #include <syscfg/syscfg.h>
 #include "ansc_platform.h"
 #include "cosa_deviceinfo_dml.h"
+#include "cosa_advsec_utils.h"
 #include "dml_tr181_custom_cfg.h"
 #include "safec_lib_common.h"
 #include "secure_wrapper.h"
@@ -112,6 +113,7 @@ extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
 extern void* g_pDslhDmlAgent;
 static BOOL g_clearDB = false;
+static char *g_AdvSecDefaultEndpointURL = "Advsecurity_DefaultEndpointURL";
 
 #ifdef _MACSEC_SUPPORT_
     INT platform_hal_GetMACsecEnable(INT ethPort, BOOLEAN *pFlag);
@@ -238,6 +240,78 @@ static const DEVICEINFO_SET_VALUE deviceinfo_set_table[] = {
     { "factory_reset",	FACTORYRESET },
     {  "captiveportal_failure" , CAPTIVEPORTALFAILURE }
 };
+
+static int urlStartsWith(const char *haystack, const char *needle)
+{
+   if(strncmp(haystack, needle, strlen(needle)) == 0)
+       return 0;
+   return 1;
+}
+
+ANSC_STATUS isValidUrl( char *inputparam )
+{
+    ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
+
+    if(urlStartsWith(inputparam, "https://"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+// To check for possible command injection
+    if(strstr(inputparam, ";"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, "&"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, "&&"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, "|"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, "||"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, "<"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, ">"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, "`"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, "'"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, "\\"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, "!"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, "$("))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+    else if(strstr(inputparam, "\n"))
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+
+    return returnStatus;
+}
 
 static int update_pValue (char *pValue, PULONG pulSize, char *str)
 {
@@ -16300,6 +16374,11 @@ Syndication_GetParamStringValue
         /* collect value */
         return  update_pValue(pValue,pulSize, pMyObject->MeshRedirectorURL.ActiveValue);
     }
+    if( AnscEqualString(ParamName, "AdvsecRedirectorURL", TRUE))
+    {
+        /* collect value */
+        return update_pValue(pValue, pulSize, pMyObject->AdvsecRedirectorURL.ActiveValue);
+    }
 #if defined(_COSA_BCM_ARM_) && !defined(_CBR_PRODUCT_REQ_)
     if( AnscEqualString(ParamName, "CMVoiceImageSelect", TRUE))
     {
@@ -16665,6 +16744,55 @@ Syndication_SetParamStringValue
         }
         else if(rc != EOK)
         {   
+            AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+            return FALSE;
+        }
+     }
+
+     if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))
+     {
+        /* check the parameter name and set the corresponding value */
+        if ( !(rc = strcmp_s("AdvsecRedirectorURL", strlen("AdvsecRedirectorURL"), ParamName, &ind)) )
+        {
+            if(!(ind))
+            {
+                IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pMyObject->AdvsecRedirectorURL.UpdateSource);
+
+                if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.AdvsecRedirectorURL",PartnerID, pString, requestorStr, currentTime))
+                {
+                    if ( ANSC_STATUS_SUCCESS == isValidUrl(pString))
+                    {
+                        retValue = CosaSetSysCfgString(g_AdvSecDefaultEndpointURL, pString);
+                        if ( ANSC_STATUS_SUCCESS != retValue )
+                        {
+                            AnscTraceError(("Setting Syscfg Advsec Default EndPointURL is failed"));
+                            return retValue;
+                        }
+
+                        rc = STRCPY_S_NOCLOBBER(pMyObject->AdvsecRedirectorURL.ActiveValue, sizeof(pMyObject->AdvsecRedirectorURL.ActiveValue), pString);
+                        if(rc != EOK)
+                        {
+                             AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                             return FALSE;
+                        }
+
+                        rc = STRCPY_S_NOCLOBBER(pMyObject->AdvsecRedirectorURL.UpdateSource, sizeof(pMyObject->AdvsecRedirectorURL.UpdateSource), requestorStr);
+                        if(rc != EOK)
+                        {
+                             AnscTraceWarning(("RDK_LOG_WARN, safeclib strcpy_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+                             return FALSE;
+                        }
+                        return TRUE;
+                    }
+                    else
+                    {
+                        AnscTraceError(("Setting Advsec Default EndPointURL: [%s] is Invalid URL\n", pString))
+                    }
+                }
+            }
+        }
+        else if(rc != EOK)
+        {
             AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
             return FALSE;
         }

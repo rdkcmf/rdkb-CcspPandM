@@ -3668,6 +3668,31 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
                                 {
                                         CcspTraceWarning(("%s - MeshRedirectorURL Object is NULL\n", __FUNCTION__ ));
                                 }
+
+                                paramObj = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.AdvsecRedirectorURL");
+                                if ( paramObj != NULL )
+                                {
+                                        CcspTraceWarning(("%s - AdvsecRedirectorURL Object is found\n", __FUNCTION__ ));
+                                        char *valuestr = NULL;
+                                        paramObjVal = cJSON_GetObjectItem(paramObj, "ActiveValue");
+                                        if (paramObjVal)
+                                            valuestr = paramObjVal->valuestring;
+                                        if (valuestr != NULL)
+                                        {
+                                            rc = STRCPY_S_NOCLOBBER(pDeviceInfo->AdvsecRedirectorURL.ActiveValue, sizeof(pDeviceInfo->AdvsecRedirectorURL.ActiveValue), valuestr);
+                                            ERR_CHK(rc);
+                                            valuestr = NULL;
+                                        }
+                                        else
+                                        {
+                                            CcspTraceWarning(("%s - AdvsecRedirectorURL.ActiveValue is NULL\n", __FUNCTION__ ));
+                                        }
+                                }
+                                else
+                                {
+                                        CcspTraceWarning(("%s - AdvsecRedirectorURL Object is NULL\n", __FUNCTION__ ));
+                                }
+
 //RDKB-42418
                                 paramObj = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL");
                                 if ( paramObj != NULL )

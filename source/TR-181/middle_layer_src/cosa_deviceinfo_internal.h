@@ -108,6 +108,7 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
         COSA_BOOTSTRAP_STR              LogUploadURL;
         COSA_BOOTSTRAP_STR              TelemetryURL;
         COSA_BOOTSTRAP_STR              CrashPortalURL;
+	COSA_BOOTSTRAP_STR              AdvsecRedirectorURL;
 	CHAR 		PartnerID[64];
 	COSA_BOOTSTRAP_BOOL		bWANsideSSHEnable;
 
