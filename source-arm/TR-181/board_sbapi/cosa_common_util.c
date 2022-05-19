@@ -65,17 +65,22 @@
 #include <utapi.h>
 #include "cosa_common_util.h"
 #include "cosa_apis_util.h"
+#include "secure_wrapper.h"
+
 #ifdef _HUB4_PRODUCT_REQ_
-#include "cosa_lanmanagement_apis.h"
 #include "ccsp_psm_helper.h"
+
+extern ANSC_HANDLE bus_handle;
+
+#include "cosa_lanmanagement_apis.h"
 
 #define PSM_LANMANAGEMENTENTRY_LAN_ULA_ENABLE  "dmsb.lanmanagemententry.lanulaenable"
 #define PSM_LANMANAGEMENTENTRY_LAN_IPV6_ENABLE "dmsb.lanmanagemententry.lanipv6enable"
 #define PSM_LANMANAGEMENTENTRY_LAN_ULA  "dmsb.lanmanagemententry.lanula"
 #define PSM_LANMANAGEMENTENTRY_LAN_ULA_PREFIX  "dmsb.lanmanagemententry.lanulaprefix"
-
-extern ANSC_HANDLE bus_handle;
 extern void* g_pDslhDmlAgent;
+
+
 void ValidUlaHandleEventAsync(void);
 #endif
 
@@ -365,6 +370,7 @@ static async_id_t async_id[4];
 #else
 static async_id_t async_id[3];
 #endif
+
 static short server_port;
 static char  server_ip[19];
 #ifdef _HUB4_PRODUCT_REQ_
@@ -451,6 +457,7 @@ EvtDispterEventInits(void)
     }
 
 #endif
+   
     return(EVENT_OK);
 }
 
@@ -463,7 +470,7 @@ EvtDispterEventListen(void)
     int     ret = EVENT_TIMEOUT;
     fd_set  rfds;
     int     retval;
-
+    
     FD_ZERO(&rfds);
     FD_SET(se_fd, &rfds);
 
@@ -501,10 +508,14 @@ EvtDispterEventListen(void)
             }
             else if(!strcmp(name_str, "wan-status"))
             {
-                if (!strncmp(value_str, "started", 7)) 
+                if (!strncmp(value_str, "started", 7))
+                {
                     ret = EVENT_WAN_STARTED;
+                }
                 else if (!strncmp(value_str, "stopped", 7)) 
+                {
                     ret = EVENT_WAN_STOPPED;
+                }
             }
             else if(!strcmp(name_str, "ipv4_wan_ipaddr"))
             {
@@ -530,7 +541,7 @@ EvtDispterEventListen(void)
 #endif
         } else {
             CcspTraceWarning(("Received msg that is not a SE_MSG_NOTIFICATION (%d)\n", msg_type));
-	    if ( 0 != system("pidof syseventd")) {
+	    if (  0 != v_secure_system("pidof syseventd")) {
 
            	CcspTraceWarning(("%s syseventd not running ,breaking the receive notification loop \n",__FUNCTION__));
 		ret = EVENT_HANDLE_EXIT;
@@ -555,7 +566,6 @@ EvtDispterEventClose(void)
 #ifdef _HUB4_PRODUCT_REQ_
     sysevent_rmnotification(se_fd, token, async_id[3]);
 #endif
-
     /* close this session with syseventd */
     sysevent_close(se_fd, token);
 
@@ -685,7 +695,7 @@ EvtDispterHandleEventAsync(void)
 int executeCmd(char *cmd)
 {
 	int l_iSystem_Res;
-	l_iSystem_Res = system(cmd);
+	l_iSystem_Res = v_secure_system("%s",cmd);
     if (0 != l_iSystem_Res && ECHILD != errno)
     {
         CcspTraceError(("%s: %s command didnt execute successfully\n", __FUNCTION__,cmd));
@@ -758,7 +768,7 @@ void* RegenerateUla(void *arg)
     }
     else
     {
-        system("killall zebra");
+        v_secure_system("killall zebra");
     }
 
     if(pIpv6_enable != NULL)

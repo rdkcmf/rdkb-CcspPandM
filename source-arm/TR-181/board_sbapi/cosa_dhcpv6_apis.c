@@ -74,6 +74,7 @@
 #include "autoconf.h"
 #include "secure_wrapper.h"
 #include "safec_lib_common.h"
+#include "cosa_common_util.h"
 #include <ccsp_psm_helper.h>
 #include <sys/stat.h>
 
@@ -105,7 +106,7 @@ void *Ipv6ModeHandler_thrd(void *data);
 #define SYSEVENT_FIELD_IPV6_ULA_ADDRESS   "ula_address"
 #endif
 
-#ifdef RDKB_EXTENDER_ENABLED
+#if defined(RDKB_EXTENDER_ENABLED) || defined(WAN_FAILOVER_SUPPORTED)
 typedef enum deviceMode
 {
     DEVICE_MODE_ROUTER,
@@ -7815,7 +7816,206 @@ static void *InterfaceEventHandler_thrd(void *data)
 }
 #endif
 
-static void *
+#if defined (RDKB_EXTENDER_ENABLED) || defined (WAN_FAILOVER_SUPPORTED)
+
+#define CELLULAR_IFNAME "cellular_ifname"
+#define SYSEVENT_CM_WAN_V6_IPADDR_PREV "cellular_wan_v6_ip_prev"
+#define SYSEVENT_CM_WAN_V6_GWADDR   "cellular_wan_v6_gw"
+#define SYSEVENT_CM_WAN_V6_GWADDR_PREV   "cellular_wan_v6_gw_prev"
+
+void AssignIpv6Addr(char* ifname , char* ipv6Addr)
+{      
+       CcspTraceWarning(("%s -- : %s , %s\n", __FUNCTION__, ifname,ipv6Addr));
+    v_secure_system("ip -6 addr add %s dev %s", ipv6Addr,ifname);
+}
+
+void DelIpv6Addr(char* ifname , char* ipv6Addr)
+{
+    CcspTraceWarning(("%s -- : %s , %s\n", __FUNCTION__, ifname,ipv6Addr));
+    v_secure_system("ip -6 addr del %s dev %s", ipv6Addr,ifname);
+}
+
+void SetV6Route(char* ifname , char* route_addr,int metric_val)
+{
+    CcspTraceWarning(("%s -- : %s , %s\n", __FUNCTION__, ifname,route_addr));
+    if ( 0 == metric_val )
+        v_secure_system("ip -6 route add default via %s dev %s ", route_addr,ifname);
+    else
+        v_secure_system("ip -6 route add default via %s dev %s metric %d", route_addr,ifname,metric_val);
+
+}
+void UnSetV6Route(char* ifname , char* route_addr,int metric_val)
+{
+    CcspTraceWarning(("%s -- : %s , %s\n", __FUNCTION__, ifname,route_addr));
+    if ( 0 == metric_val )
+        v_secure_system("ip -6 route del default via %s dev %s", route_addr,ifname);
+    else
+        v_secure_system("ip -6 route del default via %s dev %s metric %d", route_addr,ifname,metric_val);
+
+}
+#endif
+
+#ifdef WAN_FAILOVER_SUPPORTED
+
+#define MESH_WAN_IFNAME "dmsb.Mesh.WAN.Interface.Name"
+#define MESH_WAN_WAN_IPV6ADDR "MeshWANInterface_UlaAddr"
+#define MESH_REMWAN_WAN_IPV6ADDR "MeshRemoteWANInterface_UlaAddr"
+
+int Get_Device_Mode()
+{
+    int deviceMode = 0;
+    char buf[8]= {0};
+    memset(buf,0,sizeof(buf));
+    if ( 0 == syscfg_get(NULL, "Device_Mode", buf, sizeof(buf)))
+    {   
+        if (buf[0] != '\0' && strlen(buf) != 0 )
+            deviceMode = atoi(buf);
+    }
+    return deviceMode;
+
+}
+
+void getMeshWanIfName(char *mesh_wan_ifname,int size)
+{
+    char* val=NULL;
+    if (PSM_Get_Record_Value2(bus_handle, g_Subsystem,MESH_WAN_IFNAME , NULL, &val) != CCSP_SUCCESS )
+    {
+        return;
+    }
+    if (val)
+    {
+        snprintf(mesh_wan_ifname,size,"%s",val);
+        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(val);
+
+    }
+    CcspTraceWarning(("%s :Mesh WAN IfName is (%s)\n", __FUNCTION__,mesh_wan_ifname));   
+    return;      
+}
+
+void delRemoteWanIpv6Route()
+{
+    if (DEVICE_MODE_ROUTER == Get_Device_Mode())
+    {
+        char mesh_wan_ifname[32] = {0};
+        char ipv6_address[128] = {0};
+        getMeshWanIfName(mesh_wan_ifname,sizeof(mesh_wan_ifname));
+        if (mesh_wan_ifname[0] != '\0') 
+        {
+            memset(ipv6_address,0,sizeof(ipv6_address));
+                commonSyseventGet(MESH_WAN_WAN_IPV6ADDR, ipv6_address, sizeof(ipv6_address));
+                if( '\0' != ipv6_address[0] ) 
+                {
+                    UnSetV6Route(mesh_wan_ifname,strtok(ipv6_address,"/"),1025);
+                    commonSyseventSet("remotewan_routeset", "false");
+                }
+        }
+    }
+}
+void addRemoteWanIpv6Route()
+{
+    if (DEVICE_MODE_ROUTER == Get_Device_Mode())
+    {
+        char mesh_wan_status[8] = {0};
+
+        commonSyseventGet("mesh_wan_linkstatus", mesh_wan_status, sizeof(mesh_wan_status));
+
+            if(strncmp(mesh_wan_status,"up",2) == 0 )
+            {
+                char mesh_wan_ifname[32] = {0};
+                char ipv6_address[128] = {0};
+                getMeshWanIfName(mesh_wan_ifname,sizeof(mesh_wan_ifname));
+                if (mesh_wan_ifname[0] != '\0') 
+                {
+                    memset(ipv6_address,0,sizeof(ipv6_address));
+
+                    commonSyseventGet(MESH_WAN_WAN_IPV6ADDR, ipv6_address, sizeof(ipv6_address));
+                    if( '\0' != ipv6_address[0] ) 
+                    {
+                        SetV6Route(mesh_wan_ifname,strtok(ipv6_address,"/"),1025);
+                        commonSyseventSet("remotewan_routeset", "true");
+                    }
+                }
+            }
+
+    }
+}
+void addIpv6toRemoteWan()
+{                    
+    if (DEVICE_MODE_ROUTER == Get_Device_Mode())
+    {
+        char mesh_wan_ifname[32] = {0};
+        char ipv6_address[128] = {0};
+        getMeshWanIfName(mesh_wan_ifname,sizeof(mesh_wan_ifname));
+        if (mesh_wan_ifname[0] != '\0') 
+        {
+                memset(ipv6_address,0,sizeof(ipv6_address));
+                commonSyseventGet(MESH_REMWAN_WAN_IPV6ADDR, ipv6_address, sizeof(ipv6_address));
+                if( '\0' != ipv6_address[0] ) 
+                {
+                    AssignIpv6Addr(mesh_wan_ifname,ipv6_address); 
+                }
+        }
+    }
+}
+
+void delIpv6toRemoteWan()
+{
+    if (DEVICE_MODE_ROUTER == Get_Device_Mode())
+    {
+        char mesh_wan_ifname[32] = {0};
+        char ipv6_address[128] = {0};
+        getMeshWanIfName(mesh_wan_ifname,sizeof(mesh_wan_ifname));
+        if (mesh_wan_ifname[0] != '\0') 
+        {
+                memset(ipv6_address,0,sizeof(ipv6_address));
+                commonSyseventGet(MESH_REMWAN_WAN_IPV6ADDR, ipv6_address, sizeof(ipv6_address));
+                if( '\0' != ipv6_address[0] ) 
+                {
+                    DelIpv6Addr(mesh_wan_ifname,ipv6_address); 
+                } 
+            }
+    }
+}
+#endif
+
+
+#if defined (RDKB_EXTENDER_ENABLED)
+void configureLTEIpv6(char* v6addr)
+{
+    CcspTraceWarning(("%s -- ENTRY:\n", __FUNCTION__));
+
+    char cellular_ifname_val[32]={0};
+    char addr[128]={0};
+    CcspTraceWarning(("%s -- v6addr: %s\n", __FUNCTION__, v6addr));
+
+    memset(cellular_ifname_val,0,sizeof(cellular_ifname_val));
+    commonSyseventGet(CELLULAR_IFNAME, cellular_ifname_val, sizeof(cellular_ifname_val));
+    CcspTraceWarning(("%s -- cellular_ifname_val: %s\n", __FUNCTION__, cellular_ifname_val));
+
+    memset(addr,0,sizeof(addr));
+    commonSyseventGet(SYSEVENT_CM_WAN_V6_IPADDR_PREV, addr, sizeof(addr));
+    DelIpv6Addr(cellular_ifname_val , addr);
+
+    #if 0
+    memset(addr,0,sizeof(addr));
+    commonSyseventGet(SYSEVENT_CM_WAN_V6_GWADDR_PREV, addr, sizeof(addr));
+    UnSetV6Route(cellular_ifname_val,strtok(addr,"/"));
+    #endif 
+    memset(addr,0,sizeof(addr));
+    AssignIpv6Addr(cellular_ifname_val,v6addr);
+    commonSyseventSet(SYSEVENT_CM_WAN_V6_IPADDR_PREV, v6addr);
+
+    #if 0
+    memset(addr,0,sizeof(addr));
+    commonSyseventGet(SYSEVENT_CM_WAN_V6_GWADDR, addr, sizeof(addr));
+    commonSyseventSet(SYSEVENT_CM_WAN_V6_GWADDR_PREV, addr);
+    SetV6Route(cellular_ifname_val,strtok(addr,"/"));
+    #endif
+    CcspTraceWarning(("%s -- EXIT:\n", __FUNCTION__));
+}
+#endif
+
+static void * 
 dhcpv6s_dbg_thrd(void * in)
 {
     UNREFERENCED_PARAMETER(in);
@@ -8086,7 +8286,14 @@ dhcpv6c_dbg_thrd(void * in)
                         }
                         else
                         {
-                             commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME,       v6addr);
+                            CcspTraceInfo(("%s: COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME set v6addr \n", __func__));
+
+                             commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME,v6addr);
+
+                             #ifdef RDKB_EXTENDER_ENABLED
+                                remove_single_quote(v6addr);
+                                configureLTEIpv6(v6addr);
+                             #endif
                         }
 						if (iana_iaid[0] != '\0') {
 							remove_single_quote(iana_iaid);
@@ -8835,14 +9042,19 @@ void *Ipv6ModeHandler_thrd(void *data)
     UNREFERENCED_PARAMETER(data);
     int sysevent_fd;
     token_t sysevent_token;
-    async_id_t interface_asyncid;
+    async_id_t async_id_wanfailover[3];
     int err;
     char name[64] = {0}, val[64] = {0};
+    char tmpBuf[32] ={0};
 
     CcspTraceWarning(("%s started\n",__FUNCTION__));
     sysevent_fd = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "Ipv6ModeHandler", &sysevent_token);
     sysevent_set_options(sysevent_fd, sysevent_token, "current_wan_ifname", TUPLE_FLAG_EVENT);
-    sysevent_setnotification(sysevent_fd, sysevent_token, "current_wan_ifname",  &interface_asyncid);
+    sysevent_setnotification(sysevent_fd, sysevent_token, "current_wan_ifname",  &async_id_wanfailover[0]);
+    sysevent_set_options(sysevent_fd, sysevent_token, "mesh_wan_linkstatus", TUPLE_FLAG_EVENT);
+    sysevent_setnotification(sysevent_fd, sysevent_token, "mesh_wan_linkstatus",  &async_id_wanfailover[1]);
+    sysevent_set_options(sysevent_fd, sysevent_token, "phylink_wan_state", TUPLE_FLAG_EVENT);
+    sysevent_setnotification(sysevent_fd, sysevent_token, "phylink_wan_state",  &async_id_wanfailover[2]);
     while(1)
     {
         async_id_t getnotification_asyncid;
@@ -8863,7 +9075,37 @@ void *Ipv6ModeHandler_thrd(void *data)
         else
         {
             CcspTraceWarning(("%s Recieved notification event  %s\n",__FUNCTION__,name));
-            Switch_ipv6_mode(val,vallen);
+            if(!strcmp(name, "mesh_wan_linkstatus"))
+            {
+                if (!strncmp(val, "up", 2))
+                {
+                    addIpv6toRemoteWan();
+                }
+                else if (!strncmp(val, "down", 4))
+                {
+                    delIpv6toRemoteWan();
+                }
+            }
+            else if(!strcmp(name, "phylink_wan_state"))
+            {
+                if (!strncmp(val, "up", 2))
+                {
+                    sysevent_get(sysevent_fd, sysevent_token, "remotewan_routeset", tmpBuf, sizeof(tmpBuf));
+                    if (strcmp(tmpBuf,"true") == 0 )
+                        delRemoteWanIpv6Route();
+                }
+            }
+            else if(!strcmp(name, "current_wan_ifname"))
+            {
+                memset(tmpBuf,0,sizeof(tmpBuf));
+                sysevent_get(sysevent_fd, sysevent_token, "wan_ifname", tmpBuf, sizeof(tmpBuf));
+                if (strcmp(val,tmpBuf) != 0 )
+                {
+                    _dibbler_server_operation("stop");
+                    addRemoteWanIpv6Route();
+                } 
+                Switch_ipv6_mode(val,vallen);
+            }
         }
     }
     return NULL;
