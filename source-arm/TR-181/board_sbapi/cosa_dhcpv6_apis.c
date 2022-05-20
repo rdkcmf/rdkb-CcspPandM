@@ -2663,6 +2663,7 @@ CosaDmlDhcpv6cGetEnabled
 	{
 		dibblerEnabled = TRUE;
 	}
+	CcspTraceWarning(("dibbler_client_enable %d\n", dibblerEnabled));
 #endif
 
 #if defined (FEATURE_RDKB_WAN_MANAGER)
@@ -8284,6 +8285,49 @@ dhcpv6c_dbg_thrd(void * in)
                            ipv6_prefix           // xx:xx::/yy
                          */
                         v_secure_system("sysevent set ipv6_prefix %s ",v6pref);
+#if defined(FEATURE_RDKB_WAN_MANAGER)
+                        // Disabled sending ipv6 info to wan manager for comcast platforms
+                        // Later we should enable if needed.
+                        if (0)
+                        {
+                            /*
+                             * Send data to wanmanager.
+                             */
+
+                            char dns_server[256] = {'\0'};
+                            //char ipv6_lan_prefix[256] = {'\0'};
+                            //int prefix_unset_timeout = 100;
+                            sscanf(iapd_pretm, "%d", &hub4_preferred_lft);
+                            sscanf(iapd_vldtm, "%d", &hub4_valid_lft);
+                            ipc_dhcpv6_data_t dhcpv6_data;
+                            memset(&dhcpv6_data, 0, sizeof(ipc_dhcpv6_data_t));
+
+                            strncpy(dhcpv6_data.ifname, CFG_TR181_DHCPv6_CLIENT_IfName, sizeof(dhcpv6_data.ifname));
+                            if(strlen(v6pref) == 0) {
+                                dhcpv6_data.isExpired = TRUE;
+                            } else {
+                                dhcpv6_data.isExpired = FALSE;
+                                dhcpv6_data.prefixAssigned = TRUE;
+                                strncpy(dhcpv6_data.sitePrefix, v6pref, sizeof(dhcpv6_data.sitePrefix));
+                                strncpy(dhcpv6_data.pdIfAddress, "", sizeof(dhcpv6_data.pdIfAddress));
+                                /** DNS servers. **/
+                                commonSyseventGet(SYSEVENT_FIELD_IPV6_DNS_SERVER, dns_server, sizeof(dns_server));
+                                if (strlen(dns_server) != 0)
+                                {
+                                    dhcpv6_data.dnsAssigned = TRUE;
+                                    sscanf (dns_server, "%s %s", dhcpv6_data.nameserver, dhcpv6_data.nameserver1);
+                                }
+                                dhcpv6_data.prefixPltime = hub4_preferred_lft;
+                                dhcpv6_data.prefixVltime = hub4_valid_lft;
+                                dhcpv6_data.maptAssigned = FALSE;
+                                dhcpv6_data.mapeAssigned = FALSE;
+                                dhcpv6_data.prefixCmd = 0;
+                            }
+                            if (send_dhcp_data_to_wanmanager(&dhcpv6_data) != ANSC_STATUS_SUCCESS) {
+                                CcspTraceError(("[%s-%d] Failed to send dhcpv6 data to wanmanager!!! \n", __FUNCTION__, __LINE__));
+                            }
+                        }
+#endif
 
                         CosaDmlDHCPv6sTriggerRestart(FALSE);
 #if defined(_COSA_BCM_ARM_) || defined(INTEL_PUMA7)
