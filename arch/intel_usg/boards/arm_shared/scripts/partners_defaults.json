@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "8.8"
+      "version" : "8.9"
    },
 
    "comcast" : {
@@ -71,7 +71,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal" : "https://ssr.ccp.xcal.tv/cgi-bin/upload_dump.cgi",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.r53.xcal.tv"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv"
 },
 
  "RDKM" : {
@@ -138,7 +138,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal" : "https://ssr.ccp.xcal.tv/cgi-bin/upload_dump.cgi",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.r53.xcal.tv"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv"
 },
 
    "sky-italia" : {
@@ -205,7 +205,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal" : "https://ssr.ccp.xcal.tv/cgi-bin/upload_dump.cgi",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.r53.xcal.tv"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv"
    },
 
 
@@ -347,7 +347,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal" : "https://ssr.ccp.xcal.tv/cgi-bin/upload_dump.cgi",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.r53.xcal.tv"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv"
    },
 
 
@@ -415,7 +415,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal" : "https://ssr.ccp.xcal.tv/cgi-bin/upload_dump.cgi",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.r53.xcal.tv"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv"
    },
 
 
@@ -483,7 +483,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal" : "https://ssr.ccp.xcal.tv/cgi-bin/upload_dump.cgi",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.r53.xcal.tv",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv",
       "override" : {
       "CGM4140COM" : {
                 "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CMVoiceImageSelect" : "pc15mgcp"
@@ -558,7 +558,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal" : "https://ssr.ccp.xcal.tv/cgi-bin/upload_dump.cgi",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.r53.xcal.tv"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv"
    },
 "axb3retail" : {
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink" : "http://www.surfboard.com",
@@ -623,7 +623,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal" : "https://ssr.ccp.xcal.tv/cgi-bin/upload_dump.cgi",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.r53.xcal.tv"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv"
   },
    "unknown" : {
 
@@ -688,7 +688,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal" : "https://ssr.ccp.xcal.tv/cgi-bin/upload_dump.cgi",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.r53.xcal.tv"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv"
    },
 
     "test-partner" : {
@@ -757,7 +757,7 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal" : "https://ssr.ccp.xcal.tv/cgi-bin/upload_dump.cgi",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.r53.xcal.tv"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv"
    }
 
 }
