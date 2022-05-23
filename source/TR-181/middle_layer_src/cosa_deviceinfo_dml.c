@@ -22495,23 +22495,42 @@ NonRootSupport_GetParamStringValue
 {
   UNREFERENCED_PARAMETER(hInsContext);
   #define APPARMOR_BLOCKLIST_FILE "/opt/secure/Apparmor_blocklist"
+  #define APPARMOR_PROFILE_DIR "/etc/apparmor.d"
   #define SIZE_LEN 32
   char *buf = NULL;
   FILE *fp = NULL;
   size_t len = 0;
   ssize_t read = 0;
+  DIR *dir=NULL;
+  struct dirent *entry=NULL;
+  char tmp[64]={0};
+  char *sptr=NULL;
   /* check the parameter name and return the corresponding value */
   if( AnscEqualString( ParamName, "ApparmorBlocklist", TRUE) )
   {
       fp = fopen(APPARMOR_BLOCKLIST_FILE,"r");
       if(fp != NULL) {
-         read = getdelim( &buf, &len, '\0', fp);
-         if (read != -1) {
-             AnscCopyString(pValue, buf);
-             *pUlSize = AnscSizeOfString(pValue);
-             Replace_AllOccurrence( pValue, *pUlSize, '\n', ',');
-             CcspTraceWarning(("Apparmor profile configuration:%s\n", pValue));
+         while((read = getline(&buf, &len, fp)) != -1) {
+             dir = opendir(APPARMOR_PROFILE_DIR);
+             if( (dir == NULL) ) {
+                   CcspTraceError(("Failed to open the %s directory: profiles does not exist\n", APPARMOR_PROFILE_DIR));
+                   fclose(fp);
+                   return FALSE;
+             }
+             strncpy(tmp,buf,sizeof(tmp));
+             strtok_r(buf,":",&sptr);
+             entry = readdir(dir);
+             while(entry != NULL && buf != NULL) {
+                   if(strstr(entry->d_name, buf) != NULL )  {
+                      strncat(pValue,tmp,strlen(tmp));
+                   }
+             entry = readdir(dir);
+             }
          }
+         fclose(fp);
+         closedir(dir);
+         Replace_AllOccurrence( pValue, AnscSizeOfString(pValue), '\n', ',');
+         CcspTraceWarning(("Apparmor profile configuration:%s\n", pValue));
          return 0;
       }
       else {
