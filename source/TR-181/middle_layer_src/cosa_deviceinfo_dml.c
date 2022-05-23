@@ -22239,6 +22239,106 @@ BOOL
 }
 
 /**
+***  RFC Feature LnFUseXPKI
+**/
+/**********************************************************************
+    caller:     owner of this object
+    prototype:
+        BOOL
+        LnFUseXPKI_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+    description:
+        This function is called to retrieve Boolean parameter value;
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+                char*                       ParamName,
+                The parameter name;
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+    return:     TRUE if succeeded.
+**********************************************************************/
+BOOL
+LnFUseXPKI_GetParamBoolValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL*                       pBool
+ )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( (pBool != NULL) && (AnscEqualString(ParamName, "Enable", TRUE)))
+    {
+        char value[8];
+        memset(value, 0, sizeof(value));
+        if( syscfg_get(NULL, "LnFUseXPKI_Enable", value, sizeof(value)) == 0 ) {
+
+            if (strncmp(value, "true", sizeof(value)) == 0)
+                *pBool = TRUE;
+            else
+                *pBool = FALSE;
+
+            return TRUE;
+        } else {
+              CcspTraceError(("syscfg_get failed for MessageBusSource\n"));
+        }
+    }
+    return FALSE;
+}
+/**********************************************************************
+    caller:     owner of this object
+    prototype:
+        BOOL
+        LnFUseXPKI_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+    description:
+        This function is called to set Boolean parameter value;
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+                char*                       ParamName,
+                The parameter name;
+                BOOL                        bValue
+                The buffer with updated value
+    return:     TRUE if succeeded.
+**********************************************************************/
+BOOL
+LnFUseXPKI_SetParamBoolValue
+(
+ ANSC_HANDLE                 hInsContext,
+ char*                       ParamName,
+ BOOL                        bValue
+ )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        /* collect value */
+        if (syscfg_set(NULL, "LnFUseXPKI_Enable", (bValue==FALSE)?"false":"true") != 0) {
+            AnscTraceWarning(("syscfg_set failed\n"));
+            return FALSE;
+        }
+        else
+        {
+            if (syscfg_commit() != 0) {
+                AnscTraceWarning(("syscfg_commit failed\n"));
+                return FALSE;
+            }
+            return TRUE;
+        }
+    }
+    CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
+    return FALSE;
+}
+
+
+/**
 ***  RFC Feature UseXPKI
 **/
 /**********************************************************************

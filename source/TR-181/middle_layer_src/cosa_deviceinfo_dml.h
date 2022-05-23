@@ -2187,6 +2187,32 @@ UseXPKI_SetParamBoolValue
         BOOL                        bValue
     );
 
+/***********************************************************************
+
+ APIs for Object:
+
+    Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.LnFUseXPKI.Enable
+
+    *  LnFUseXPKI_GetParamBoolValue
+    *  LnFUseXPKI_SetParamBoolValue
+***********************************************************************/
+BOOL
+LnFUseXPKI_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+LnFUseXPKI_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
 #if defined(FEATURE_MAPT) || defined(FEATURE_SUPPORT_MAPT_NAT46)
 /***********************************************************************
 

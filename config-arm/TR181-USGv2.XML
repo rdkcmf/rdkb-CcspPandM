@@ -3613,6 +3613,22 @@
                             <writable>true</writable>
                         </parameter>
                     </parameters>
+               </object>
+               <object>
+                    <name>LnFUseXPKI</name>
+                    <objectType>object</objectType>
+                    <functions>
+                        <func_GetParamBoolValue>LnFUseXPKI_GetParamBoolValue</func_GetParamBoolValue>
+                        <func_SetParamBoolValue>LnFUseXPKI_SetParamBoolValue</func_SetParamBoolValue>
+                    </functions>
+                    <parameters>
+                        <parameter>
+                            <name>Enable</name>
+                            <type>boolean</type>
+                            <syntax>bool</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                    </parameters>
                 </object>
                 <object>
                         <name>MTLS</name>
