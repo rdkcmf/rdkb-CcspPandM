@@ -104,6 +104,10 @@ _COSA_DATAMODEL_DEVICEINFO_CLASS_CONTENT
 	BOOL            CustomDataModelEnabled;
 	COSA_BOOTSTRAP_STR 		TR69CertLocation;
 	COSA_BOOTSTRAP_STR 		MeshRedirectorURL; //Prash
+        COSA_BOOTSTRAP_STR              XconfURL;
+        COSA_BOOTSTRAP_STR              LogUploadURL;
+        COSA_BOOTSTRAP_STR              TelemetryURL;
+        COSA_BOOTSTRAP_STR              CrashPortalURL;
 	CHAR 		PartnerID[64];
 	COSA_BOOTSTRAP_BOOL		bWANsideSSHEnable;
 
