@@ -74,6 +74,26 @@ fi
 CAPTIVEPORTAL_ENABLED=`syscfg get CaptivePortal_Enable`
 echo_t "Network Response : CaptivePortal enabled val is $CAPTIVEPORTAL_ENABLED"
 recheckRevert=0
+
+# Function to check if wan_fail_over is enabled or not
+# return 1 if wan_fail_over is enabled
+# return 0 if wan_fail_over is disabled
+checkForWanFailOver()
+{
+	echo_t "Network Response: checkForWanFailOver"
+	currentWanIf=`sysevent get current_wan_ifname`
+	defaultWanIf=`sysevent get wan_ifname`
+	if [ "$currentWanIf" == "$defaultWanIf" ]
+	then
+		echo_t "Network Response: checkForWanFailOver : disabled"
+		return 0
+	else
+		#LTE wan interface is available
+		echo_t "Network Response: checkForWanFailOver : enabled"
+		return 1
+	fi
+}
+
 # Function to check if RF CP should be shown
 # return true if RF CP should be shown
 # return false if RF CP shouldn't be shown
@@ -105,22 +125,28 @@ then
         if [ "$ethWanEnabled" = "true" ]
         then
 			noRfCp=0
+			echo_t "Network Response: RF CP ethWan is enabled"
         else
-			currentWanIf=`sysevent get current_wan_ifname`
-			defaultWanIf=`sysevent get wan_ifname`
-			#Bring no captive portal up/down for erouter0
-			if [ "$currentWanIf" == "$defaultWanIf" ]
-			then
+			echo_t "Network Response: RF CP ethWan is disabled"
+			checkForWanFailOver
+			wfoStatus=$? 
+			echo_t "Network Response: RF CP wan fail over status : $wfoStatus"
+			if [ "$wfoStatus" = "0" ]
+     		then
+			 	echo_t "Network Response: RF CP wan_fail_over is disabled"
 				RF_SIGNAL_STATUS=`dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CableRfSignalStatus | grep value | cut -f3 -d : | cut -f2 -d" "`
 				if [ "$RF_SIGNAL_STATUS" = "false" ]
 				then
 					noRfCp=1
+					echo_t "Network Response: RF CP wan_fail_over is disabled and RF is down"
 				else
 					noRfCp=0
+					echo_t "Network Response: RF CP wan_fail_over is disabled and RF is up"
 				fi
 			else
 				#LTE wan interface is available no need to bring no RF captive portal
 				noRfCp=0
+				echo_t "Network Response: RF CP wan_fail_over is enabled and bring down noRfCp"
 			fi
 		fi
   else
@@ -150,7 +176,20 @@ then
       echo_t "Network Response: RF CP recheck eth_wan_enabled is true"
       RF_SIGNAL_STATUS="true"
   else
-     RF_SIGNAL_STATUS=`dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CableRfSignalStatus | grep value | cut -f3 -d : | cut -f2 -d" "`
+		echo_t "Network Response: RF CP recheck eth_wan_enabled is false"
+		checkForWanFailOver
+		wfoStatus=$? 
+		echo_t "Network Response: RF CP recheck wan fail over status : $wfoStatus"
+		if [ "$wfoStatus" = "0" ]
+		then
+			echo_t "Network Response: RF CP recheck wan_fail_over is disabled"
+			RF_SIGNAL_STATUS=`dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CableRfSignalStatus | grep value | cut -f3 -d : | cut -f2 -d" "`
+		else
+			#LTE wan interface is available no need to bring no RF captive portal
+			# Forcefully set RF signal status flag as true
+			echo_t "Network Response: RF CP recheck wan_fail_over is enabled"
+			RF_SIGNAL_STATUS="true"
+		fi 
   fi
   echo_t "Network Response: RF CP recheck RF_SIGNAL_STATUS: $RF_SIGNAL_STATUS"
   if [ "$RF_SIGNAL_STATUS" = "false" ]
