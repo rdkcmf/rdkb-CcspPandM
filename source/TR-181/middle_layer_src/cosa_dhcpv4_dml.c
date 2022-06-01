@@ -7846,14 +7846,14 @@ StaticAddress_SetParamStringValue
     /* check the parameter name and set the corresponding value */
     if (strcmp(ParamName, "Alias") == 0)
     {
-        safec_rc = STRCPY_S_NOCLOBBER(pPoolLink->AliasOfStaAddr, sizeof(pPoolLink->AliasOfStaAddr), pDhcpStaticAddress->Alias);
+        safec_rc = STRCPY_S_NOCLOBBER(pDhcpStaticAddress->Alias, sizeof(pDhcpStaticAddress->Alias), pString);
         if(safec_rc != EOK)
         {
             ERR_CHK(safec_rc);
             return FALSE;
         }
 
-        safec_rc = STRCPY_S_NOCLOBBER(pDhcpStaticAddress->Alias, sizeof(pDhcpStaticAddress->Alias), pString);
+        safec_rc = STRCPY_S_NOCLOBBER(pPoolLink->AliasOfStaAddr, sizeof(pPoolLink->AliasOfStaAddr), pDhcpStaticAddress->Alias);
         if(safec_rc != EOK)
         {
             ERR_CHK(safec_rc);
