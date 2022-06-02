@@ -12745,6 +12745,124 @@ WebUI_SetParamUlongValue
     caller:     owner of this object
 
     prototype:
+
+        BOOL
+        WebUIRemoteMgtOption_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+WebUIRemoteMgtOption_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        char value[8] = {0};
+	/* collect value */
+        if (syscfg_get(NULL,"WebUIRemoteMgtOptionEnable",value, sizeof(value)) == 0)
+        {
+             if (strncmp(value, "true", sizeof(value)) == 0)
+                     *pBool = TRUE;
+             else
+                     *pBool = FALSE;
+        }
+        else
+        {
+             CcspTraceError(("%s syscfg_get failed  for WebUIRemoteMgtOptionEnable\n",__FUNCTION__));
+             *pBool = TRUE;
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        WebUIRemoteMgtOption_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+WebUIRemoteMgtOption_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    if (IsBoolSame(hInsContext, ParamName, bValue, WebUIRemoteMgtOption_GetParamBoolValue))
+        return TRUE;
+
+    if( AnscEqualString(ParamName, "Enable", TRUE))
+    {
+        if(syscfg_set(NULL, "WebUIRemoteMgtOptionEnable", (bValue==TRUE)?"true":"false") != 0)
+        {
+            CcspTraceError(("[%s] syscfg_set failed for RemoteMgtOptionEnable\n",__FUNCTION__));
+            return FALSE;
+        }
+	if (syscfg_commit() != 0)
+	{
+        	AnscTraceWarning(("syscfg_commit failed for RemoteMgtOptionEnable param update\n"));
+                return FALSE;
+	}
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
         BOOL
         CognitiveMotionDetection_GetParamBoolValue
             (
