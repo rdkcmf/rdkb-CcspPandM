@@ -2088,7 +2088,10 @@ CosaDmlDhcpv6Init
     /*register callback function to restart dibbler-server at right time*/
     CcspTraceWarning(("%s -- %d register lan-status to event dispatcher \n", __FUNCTION__, __LINE__));
     EvtDispterRgstCallbackForEvent("lan-status", CosaDmlDhcpv6sRestartOnLanStarted, NULL);
-
+#ifdef _HUB4_PRODUCT_REQ_
+    CcspTraceWarning(("%s -- %d register dibblerServer-restart to event dispatcher \n", __FUNCTION__, __LINE__));
+    EvtDispterRgstCallbackForEvent("dibblerServer-restart", CosaDmlDhcpv6sRestartOnLanStarted, NULL);
+#endif
 
 #endif
 

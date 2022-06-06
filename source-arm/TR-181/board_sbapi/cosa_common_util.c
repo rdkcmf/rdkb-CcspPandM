@@ -369,7 +369,7 @@ static short server_port;
 static char  server_ip[19];
 #ifdef _HUB4_PRODUCT_REQ_
 enum {EVENT_ERROR=-1, EVENT_OK, EVENT_TIMEOUT, EVENT_HANDLE_EXIT, EVENT_LAN_STARTED=0x10, EVENT_LAN_STOPPED, 
-        EVENT_WAN_STARTED=0x20, EVENT_WAN_STOPPED,EVENT_WAN_IPV4_RECD=0x30, EVENT_VALID_ULA_ADDRESS=0x40};
+        EVENT_WAN_STARTED=0x20, EVENT_WAN_STOPPED,EVENT_WAN_IPV4_RECD=0x30, EVENT_VALID_ULA_ADDRESS=0x40, EVENT_DIBBLER_SERVER_RESTART=0x50};
 #else
 enum {EVENT_ERROR=-1, EVENT_OK, EVENT_TIMEOUT, EVENT_HANDLE_EXIT, EVENT_LAN_STARTED=0x10, EVENT_LAN_STOPPED,
         EVENT_WAN_STARTED=0x20, EVENT_WAN_STOPPED,EVENT_WAN_IPV4_RECD=0x30};
@@ -443,6 +443,13 @@ EvtDispterEventInits(void)
     if (rc) {
        return(EVENT_ERROR);
     }
+	//register dibblerServer-restart event
+    sysevent_set_options(se_fd, token, "dibblerServer-restart", TUPLE_FLAG_EVENT);
+    rc = sysevent_setnotification(se_fd, token, "dibblerServer-restart", &async_id[0]);
+    if (rc) {
+       return(EVENT_ERROR);
+    }
+
 #endif
     return(EVENT_OK);
 }
@@ -512,6 +519,14 @@ EvtDispterEventListen(void)
                     ret = EVENT_VALID_ULA_ADDRESS;
                 }
             }
+            else if(!strcmp(name_str, "dibblerServer-restart"))
+            {
+                if (!strncmp(value_str, "restart", 7))
+                {
+                    ret = EVENT_DIBBLER_SERVER_RESTART;
+                }
+            }
+
 #endif
         } else {
             CcspTraceWarning(("Received msg that is not a SE_MSG_NOTIFICATION (%d)\n", msg_type));
@@ -574,6 +589,16 @@ EvtDispterCheckEvtStatus(int fd, token_t token)
                 returnStatus = ANSC_STATUS_FAILURE;
     }
 
+    /*dibblerServer-restart*/
+#ifdef _HUB4_PRODUCT_REQ_
+    if ( 0 == sysevent_get(fd, token, "dibblerServer-restart", evtValue, sizeof(evtValue)) && '\0' != evtValue[0])
+    {
+        if (0 == strncmp(evtValue, "restart", strlen("restart")))
+            if (ANSC_STATUS_SUCCESS != EvtDispterCallFuncByEvent("dibblerServer-restart"))
+                returnStatus = ANSC_STATUS_FAILURE;
+    }
+#endif
+
     /*ipv4_wan_ipaddr*/
     if ( 0 == sysevent_get(fd, token, "ipv4_wan_ipaddr", evtValue, sizeof(evtValue)) && '\0' != evtValue[0])
     {
@@ -620,6 +645,9 @@ EvtDispterEventHandler(void *arg)
 #ifdef _HUB4_PRODUCT_REQ_
             case EVENT_VALID_ULA_ADDRESS:
                 ValidUlaHandleEventAsync();
+                break;
+            case EVENT_DIBBLER_SERVER_RESTART:
+                EvtDispterCallFuncByEvent("dibblerServer-restart");
                 break;
 #endif
             default :
