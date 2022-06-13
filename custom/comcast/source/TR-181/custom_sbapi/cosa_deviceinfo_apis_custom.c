@@ -169,8 +169,14 @@ CosaDmlDiGetCMMacAddress
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-#ifndef _ENABLE_EPON_SUPPORT_ 
+#ifndef _ENABLE_EPON_SUPPORT_
+#ifdef _WNXL11BWL_PRODUCT_REQ_
+        s_get_interface_mac("eth0", pValue, 18);
+        *pulSize = AnscSizeOfString(pValue);
+        return ANSC_STATUS_SUCCESS;
+#else
 	return Local_CosaDmlGetParamValueByPathName("Device.X_CISCO_COM_CableModem.MACAddress", pValue, pulSize);
+#endif
 #else
 	return Local_CosaDmlGetParamValueByPathName("Device.DPoE.Mac_address",pValue, pulSize);
 #endif      
