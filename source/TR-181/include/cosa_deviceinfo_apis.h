@@ -516,13 +516,14 @@ CosaDmlDiGetProcessorSpeed
         char*                       pValue,
         ULONG*                      pulSize
     );
+
 ANSC_STATUS
 isValidInput
     (
         char                       *inputparam,
         char                       *wrapped_inputparam,
-    	int							lengthof_inputparam,
-    	int							sizeof_wrapped_inputparam    	
+        int                         lengthof_inputparam,
+        int                         sizeof_wrapped_inputparam
     );
 
 

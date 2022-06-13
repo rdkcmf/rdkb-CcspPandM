@@ -72,19 +72,11 @@
 #include "messagebus_interface_helper.h"
 #include "safec_lib_common.h"
 #include "cosa_time_apis.h"
+#include "cosa_deviceinfo_apis.h"
 
 extern ULONG g_currentBsUpdate;
 extern char * getRequestorString();
 extern char * getTime();
-
-ANSC_STATUS
-isValidInput
-    (
-        char                       *inputparam,
-        char                       *wrapped_inputparam,
-        int                         lengthof_inputparam,
-        int                         sizeof_wrapped_inputparam
-    );
 
 #define BS_SOURCE_WEBPA_STR "webpa"
 #define BS_SOURCE_RFC_STR "rfc"
