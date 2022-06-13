@@ -840,15 +840,6 @@ CosaDmlTimeGetState
     return ANSC_STATUS_SUCCESS;
 }
 
-#ifdef _XF3_PRODUCT_REQ_
-ANSC_STATUS
-CosaDmlTimeGetTimeOffset
-    (
-       ANSC_HANDLE                 hContext,
-       char                       *pTimeOffset
-    );
-#endif
-
 ANSC_STATUS
 CosaDmlTimeGetLocalTime
     (

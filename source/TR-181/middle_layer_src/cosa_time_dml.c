@@ -71,17 +71,11 @@
 #include "ccsp_base_api.h"
 #include "messagebus_interface_helper.h"
 #include "safec_lib_common.h"
+#include "cosa_time_apis.h"
 
 extern ULONG g_currentBsUpdate;
 extern char * getRequestorString();
 extern char * getTime();
-
-ANSC_STATUS
-CosaDmlTimeGetTimeOffset
-    (
-       ANSC_HANDLE                 hContext,
-       char                       *pTimeOffset
-    );
 
 ANSC_STATUS
 isValidInput

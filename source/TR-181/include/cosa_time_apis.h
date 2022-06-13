@@ -155,6 +155,13 @@ CosaDmlTimeGetLocalTime
        char                       *pCurrLocalTime
     );
 
+ANSC_STATUS
+CosaDmlTimeGetTimeOffset
+    (
+       ANSC_HANDLE                 hContext,
+       char                       *pTimeOffset
+    );
+
 extern ANSC_STATUS UpdateJsonParamLegacy
        (
                char*                       pKey,
