@@ -140,7 +140,7 @@ static int writeToJson(char *data, char *file);
 //#include "libplat_flash.h"
 #endif
 extern  ANSC_HANDLE             bus_handle;
- 
+
 #include <utctx.h>
 #include <utctx_api.h>
 #include <utapi.h>
@@ -2324,7 +2324,6 @@ bool isStunnelPortEnabled(char* pString){
         return FALSE;
 }
 int setXOpsReverseSshArgs(char* pString) {
-
     char tempCopy[512] = { "\0" };
     char* tempStr = NULL;
     char* option = NULL;
@@ -2431,7 +2430,6 @@ ANSC_STATUS getXOpsReverseSshArgs
 }
 
 int setXOpsReverseSshTrigger(char *input) {
-
     char *trigger = NULL;
     if (!input) {
         printf("Input args are empty \n");
@@ -3670,6 +3668,103 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
                                 {
                                         CcspTraceWarning(("%s - MeshRedirectorURL Object is NULL\n", __FUNCTION__ ));
                                 }
+//RDKB-42418
+                                paramObj = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL");
+                                if ( paramObj != NULL )
+                                {
+                                        CcspTraceWarning(("%s - XconfURL Object is found\n", __FUNCTION__ ));
+                                        char *valuestr = NULL;
+                                        paramObjVal = cJSON_GetObjectItem(paramObj, "ActiveValue");
+                                        if (paramObjVal)
+                                            valuestr = paramObjVal->valuestring;
+                                        if (valuestr != NULL)
+                                        {
+                                            rc = STRCPY_S_NOCLOBBER(pDeviceInfo->XconfURL.ActiveValue, sizeof(pDeviceInfo->XconfURL.ActiveValue), valuestr);
+                                            ERR_CHK(rc);
+                                            valuestr = NULL;
+                                        }
+                                        else
+                                        {
+                                            CcspTraceWarning(("%s - XconfURL.ActiveValue is NULL\n", __FUNCTION__ ));
+                                        }
+                                }
+                                else
+                                {
+                                        CcspTraceWarning(("%s - XconfURL Object is NULL\n", __FUNCTION__ ));
+                                }
+
+                                paramObj = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL");
+                                if ( paramObj != NULL )
+                                {
+                                        CcspTraceWarning(("%s - LogUploadURL Object is found\n", __FUNCTION__ ));
+                                        char *valuestr = NULL;
+                                        paramObjVal = cJSON_GetObjectItem(paramObj, "ActiveValue");
+                                        if (paramObjVal)
+                                            valuestr = paramObjVal->valuestring;
+                                        if (valuestr != NULL)
+                                        {
+                                            rc = STRCPY_S_NOCLOBBER(pDeviceInfo->LogUploadURL.ActiveValue, sizeof(pDeviceInfo->LogUploadURL.ActiveValue), valuestr);
+                                            ERR_CHK(rc);
+                                            valuestr = NULL;
+                                        }
+                                        else
+                                        {
+                                            CcspTraceWarning(("%s - LogUploadURL.ActiveValue is NULL\n", __FUNCTION__ ));
+                                        }
+                                }
+                                else
+                                {
+                                        CcspTraceWarning(("%s - LogUploadURL Object is NULL\n", __FUNCTION__ ));
+                                }
+
+                                paramObj = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry");
+                                if ( paramObj != NULL )
+                                {
+                                        CcspTraceWarning(("%s - Telemetry Object is found\n", __FUNCTION__ ));
+                                        char *valuestr = NULL;
+                                        paramObjVal = cJSON_GetObjectItem(paramObj, "ActiveValue");
+                                        if (paramObjVal)
+                                            valuestr = paramObjVal->valuestring;
+                                        if (valuestr != NULL)
+                                        {
+                                            rc = STRCPY_S_NOCLOBBER(pDeviceInfo->TelemetryURL.ActiveValue, sizeof(pDeviceInfo->TelemetryURL.ActiveValue), valuestr);
+                                            ERR_CHK(rc);
+                                            valuestr = NULL;
+                                        }
+                                        else
+                                        {
+                                            CcspTraceWarning(("%s - Telemetry.ActiveValue is NULL\n", __FUNCTION__ ));
+                                        }
+                                }
+                                else
+                                {
+                                        CcspTraceWarning(("%s - Telemetry Object is NULL\n", __FUNCTION__ ));
+                                }
+
+                                paramObj = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal");
+                                if ( paramObj != NULL )
+                                {
+                                        CcspTraceWarning(("%s - CrashPortal Object is found\n", __FUNCTION__ ));
+                                        char *valuestr = NULL;
+                                        paramObjVal = cJSON_GetObjectItem(paramObj, "ActiveValue");
+                                        if (paramObjVal)
+                                            valuestr = paramObjVal->valuestring;
+                                        if (valuestr != NULL)
+                                        {
+                                            rc = STRCPY_S_NOCLOBBER(pDeviceInfo->CrashPortalURL.ActiveValue, sizeof(pDeviceInfo->CrashPortalURL.ActiveValue), valuestr);
+                                            ERR_CHK(rc);
+                                            valuestr = NULL;
+                                        }
+                                        else
+                                        {
+                                            CcspTraceWarning(("%s - CrashPortal.ActiveValue is NULL\n", __FUNCTION__ ));
+                                        }
+                                }
+                                else
+                                {
+                                        CcspTraceWarning(("%s - CrashPortal Object is NULL\n", __FUNCTION__ ));
+                                }
+
 				//if WANsideSSH_Enable param  is not available in syscfg
 				//then read it from partners_defaults.json
 				pDeviceInfo->bWANsideSSHEnable.ActiveValue =  FALSE;
@@ -5435,105 +5530,4 @@ BOOL CosaDmlSetDFSatBootUp(BOOL bValue)
 
     CcspTraceError(("%s - %d - WiFi Component notification Failed\n", __FUNCTION__, __LINE__));
     return FALSE;
-}
-
-int Get_cJsonParam(char *Ret_String,int size,char * dml_parm)
-{
-        COSA_BOOTSTRAP_STR FillParam;
-        char *data = NULL;
-        cJSON *json = NULL;
-        FILE *fileRead = NULL;
-        cJSON *partnerObj = NULL;
-        errno_t rc = -1;
-        char PartnerID[PARTNER_ID_LEN] = {0};
-        int len;
-         fileRead = fopen( BOOTSTRAP_INFO_FILE, "r" );
-         if( fileRead == NULL )
-         {
-                 CcspTraceWarning(("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ ));
-                 return ANSC_STATUS_FAILURE;
-         }
-         /*CID: 135365 Time of check time of use*/
-
-         fseek( fileRead, 0, SEEK_END );
-         len = ftell( fileRead );
-         /*CID: 104478 Argument cannot be negative*/
-         if (len <0) {
-             CcspTraceWarning(("%s-%d : File size reads negative \n", __FUNCTION__, __LINE__));
-             fclose( fileRead );
-             return ANSC_STATUS_FAILURE;
-         }
-         fseek( fileRead, 0, SEEK_SET );
-         data = ( char* )malloc( sizeof(char) * (len + 1) );
-         if (data != NULL)
-         {
-                memset( data, 0, ( sizeof(char) * (len + 1) ));
-                /*CID: 104475 Ignoring number of bytes read*/
-                if(1 != fread( data, len, 1, fileRead )) {
-                   fclose( fileRead );
-                   return ANSC_STATUS_FAILURE;
-                }
-                /*CID:135575 String not null terminated*/
-                data[len] = '\0';
-         }
-         else
-         {
-                 CcspTraceWarning(("%s-%d : Memory allocation failed \n", __FUNCTION__, __LINE__));
-                 fclose( fileRead );
-                 return ANSC_STATUS_FAILURE;
-         }
-
-         fclose( fileRead );
-         if ( data == NULL )
-         {
-                CcspTraceWarning(("%s-%d : fileRead failed \n", __FUNCTION__, __LINE__));
-                return ANSC_STATUS_FAILURE;
-         }
-         else if ( strlen(data) != 0)
-         {
-                 json = cJSON_Parse( data );
-                 if( !json )
-                 {
-                         CcspTraceWarning((  "%s : json file parser error : [%d]\n", __FUNCTION__,__LINE__));
-                         free(data);
-                         return ANSC_STATUS_FAILURE;
-                 }
-                 else
-                 {
-                         if( CCSP_SUCCESS == getPartnerId(PartnerID) )
-                         {
-                                if ( PartnerID[0] != '\0' )
-                                {
-                                        CcspTraceWarning(("%s : Partner = %s \n", __FUNCTION__, PartnerID));
-                                        partnerObj = cJSON_GetObjectItem( json, PartnerID );
-                                        if( partnerObj != NULL)
-                                        {
-                                            CcspTraceWarning(("%s : *************** PartnerObj NOT NULL \n", __FUNCTION__));
-                                            FillParamString(partnerObj, dml_parm, &FillParam);
-                                            if(FillParam.ActiveValue)
-                                            {
-                                                rc = strcpy_s(Ret_String, size , FillParam.ActiveValue);
-                                                ERR_CHK(rc);
-                                            }
-                                        }
-                                }
-                        }
-                        else
-                        {
-                                CcspTraceWarning(("Failed to get Partner ID\n"));
-                        }
-                        cJSON_Delete(json);
-                }
-                free(data);
-                data = NULL;
-         }
-         else
-         {
-                CcspTraceWarning(("BOOTSTRAP_INFO_FILE %s is empty\n", BOOTSTRAP_INFO_FILE));
-                /*CID: 104438 Resource leak*/
-                free(data);
-                data = NULL;
-                return ANSC_STATUS_FAILURE;
-         }
-         return ANSC_STATUS_SUCCESS;
 }
