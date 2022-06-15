@@ -808,3 +808,5 @@ BOOL CosaDmlSetDFS(BOOL bValue);
 BOOL CosaDmlSetDFSatBootUp(BOOL bValue);
 
 #endif
+
+int Get_cJsonParam(char *Ret_String,int size,char * dml_parm);

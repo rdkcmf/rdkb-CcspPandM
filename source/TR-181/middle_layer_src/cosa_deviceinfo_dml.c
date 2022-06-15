@@ -16316,6 +16316,82 @@ Syndication_GetParamStringValue
 	}
     }
 #endif
+    if( AnscEqualString(ParamName, "XconfURL", TRUE))
+    {
+        char Xconf_URL[MAX_ALLOWABLE_STRING_LEN]={0};
+        if(Get_cJsonParam(Xconf_URL,MAX_ALLOWABLE_STRING_LEN,"Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL") != 0)
+        {
+            CcspTraceWarning(("Get_cJsonParam Fails \n"));
+            return -1;
+        }
+        else
+        {
+            rc = strcpy_s(pValue, *pulSize, Xconf_URL);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
+        }
+        return 0;
+    }
+    if( AnscEqualString(ParamName, "LogUploadURL", TRUE))
+    {
+        char LogUpload_URL[MAX_ALLOWABLE_STRING_LEN]={0};
+        if(Get_cJsonParam(LogUpload_URL,MAX_ALLOWABLE_STRING_LEN,"Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL") != 0)
+        {
+            CcspTraceWarning(("Get_cJsonParam Fails \n"));
+            return -1;
+        }
+        else
+        {
+            rc = strcpy_s(pValue, *pulSize, LogUpload_URL);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
+        }
+        return 0;
+    }
+    if( AnscEqualString(ParamName, "Telemetry", TRUE))
+    {
+        char Telemetry_URL[MAX_ALLOWABLE_STRING_LEN]={0};
+        if(Get_cJsonParam(Telemetry_URL,MAX_ALLOWABLE_STRING_LEN,"Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry") != 0)
+        {
+            CcspTraceWarning(("Get_cJsonParam Fails \n"));
+            return -1;
+        }
+        else
+        {
+            rc = strcpy_s(pValue, *pulSize, Telemetry_URL);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
+        }
+        return 0;
+    }
+    if( AnscEqualString(ParamName, "CrashPortal", TRUE))
+    {
+        char CrashPortal_URL[MAX_ALLOWABLE_STRING_LEN]={0};
+        if(Get_cJsonParam(CrashPortal_URL,MAX_ALLOWABLE_STRING_LEN,"Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal") != 0)
+        {
+            CcspTraceWarning(("Get_cJsonParam Fails \n"));
+            return -1;
+        }
+        else
+        {
+            rc = strcpy_s(pValue, *pulSize, CrashPortal_URL);
+            if(rc != EOK)
+            {
+               ERR_CHK(rc);
+               return -1;
+            }
+        }
+        return 0;
+    }
     return -1;
 }
 
@@ -16497,7 +16573,90 @@ Syndication_SetParamStringValue
             AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
             return FALSE;
         }
-	  
+
+        if ( !(rc = strcmp_s("XconfURL", strlen("XconfURL"), ParamName, &ind)) )
+        {
+           if(!(ind))
+           {
+              if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL",PartnerID, pString, requestorStr, currentTime))
+              {
+                  return TRUE;
+              }
+              else
+              {
+                  AnscTraceWarning(("RDK_LOG_WARN XconfURL, %s %s:%d\n",__FILE__,__FUNCTION__,__LINE__));
+                  return FALSE;
+              }
+           }
+        }
+        else if(rc != EOK)
+        {
+            AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+            return FALSE;
+        }
+        
+        if ( !(rc = strcmp_s("LogUploadURL", strlen("LogUploadURL"), ParamName, &ind)) )
+        {
+           if(!(ind))
+           {
+              if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL",PartnerID, pString, requestorStr, currentTime))
+              {
+                  return TRUE;
+              }
+              else
+              {
+                  AnscTraceWarning(("RDK_LOG_WARN LogUploadURL, %s %s:%d\n",__FILE__,__FUNCTION__,__LINE__));
+                  return FALSE;
+              }
+           }
+        }
+        else if(rc != EOK)
+        {
+            AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+            return FALSE;
+        }
+        
+        if ( !(rc = strcmp_s("Telemetry", strlen("Telemetry"), ParamName, &ind)) )
+        {
+           if(!(ind))
+           {
+              if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry",PartnerID, pString, requestorStr, currentTime))
+              {
+                  return TRUE;
+              }
+              else
+              {
+                  AnscTraceWarning(("RDK_LOG_WARN Telemetry, %s %s:%d\n",__FILE__,__FUNCTION__,__LINE__));
+                  return FALSE;
+              }
+           }
+        }
+        else if(rc != EOK)
+        {
+            AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+            return FALSE;
+        }
+        
+        if ( !(rc = strcmp_s("CrashPortal", strlen("CrashPortal"), ParamName, &ind)) )
+        {
+           if(!(ind))
+           {
+              if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal",PartnerID, pString, requestorStr, currentTime))
+              {
+                  return TRUE;
+              }
+              else
+              {
+                  AnscTraceWarning(("RDK_LOG_WARN CrashPortal, %s %s:%d\n",__FILE__,__FUNCTION__,__LINE__));
+                  return FALSE;
+              }
+           }
+        }
+        else if(rc != EOK)
+        {
+            AnscTraceWarning(("RDK_LOG_WARN, safeclib strcmp_s- %s %s:%d rc =%d \n",__FILE__, __FUNCTION__,__LINE__,rc));
+            return FALSE;
+        }	  
      }
 //Prash
     if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && ( PartnerID[ 0 ] != '\0'))

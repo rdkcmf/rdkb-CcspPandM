@@ -1130,6 +1130,30 @@
                 <syntax>string</syntax>
                 <writable>true</writable>
             </parameter>
+            <parameter>
+                <name>XconfURL</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>true</writable>
+            </parameter>
+            <parameter>
+                <name>LogUploadURL</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>true</writable>
+            </parameter>
+            <parameter>
+                <name>Telemetry</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>true</writable>
+            </parameter>
+            <parameter>
+                <name>CrashPortal</name>
+                <type>string</type>
+                <syntax>string</syntax>
+                <writable>true</writable>
+            </parameter>
         </parameters>
 	<objects>
         <object>
