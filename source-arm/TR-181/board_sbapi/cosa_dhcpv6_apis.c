@@ -9014,17 +9014,24 @@ static int send_dhcp_data_to_wanmanager (ipc_dhcpv6_data_t *dhcpv6_data)
 void SwitchToGlobalIpv6()
 {
     CcspTraceInfo(("%s started\n",__FUNCTION__));
-    commonSyseventSet("routeunset-ula","");
-    commonSyseventSet("ula_ipv6_enabled","0");
-    commonSyseventSet("mode_switched","GLOBAL_IPV6");
-    commonSyseventSet("disable_old_prefix_ra","true");
-    commonSyseventSet("zebra-restart","");
-    commonSyseventSet("firewall-restart","");
+    char buf[16] = {0};
+    memset(buf,0,sizeof(buf));
+    commonSyseventGet("ula_ipv6_enabled", buf, sizeof(buf));
+    if ( 1 == atoi(buf) )
+    {
+        CcspTraceInfo(("%s Switching mode to GLOBAL_IPV6\n",__FUNCTION__));
+
+        commonSyseventSet("routeunset-ula","");
+        commonSyseventSet("ula_ipv6_enabled","0");
+        commonSyseventSet("mode_switched","GLOBAL_IPV6");
+        commonSyseventSet("disable_old_prefix_ra","true");
+        commonSyseventSet("zebra-restart","");
+        commonSyseventSet("firewall-restart","");   
+    }
 }
 
 void SwitchToULAIpv6()
 {
-
     CcspTraceInfo(("%s started\n",__FUNCTION__));
     commonSyseventSet("routeset-ula","");
     commonSyseventSet("ula_ipv6_enabled","1");
@@ -9032,7 +9039,6 @@ void SwitchToULAIpv6()
     commonSyseventSet("disable_old_prefix_ra","true");
     commonSyseventSet("zebra-restart","");
     commonSyseventSet("firewall-restart","");
-
 }
 
 /** Switching  between Primary and Secondary Wan for LTE Backup **/
