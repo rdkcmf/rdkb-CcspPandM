@@ -97,7 +97,7 @@ extern ANSC_HANDLE bus_handle;
 #if defined(_PLATFORM_RASPBERRYPI_)
 #define ETHERNET_INTERFACE_OBJECT "Device.Ethernet.X_RDK_Interface."
 #else
-#define ETHERNET_INTERFACE_OBJECT "Device.Ethernet.Interface"
+#define ETHERNET_INTERFACE_OBJECT "Device.Ethernet.Interface."
 #endif
 #define ETH_COMPONENT_NAME "eRT.com.cisco.spvtg.ccsp.ethagent"
 #define ETH_DBUS_PATH "/com/cisco/spvtg/ccsp/ethagent"
@@ -147,7 +147,7 @@ CosaGetParamValueUlong
 #ifdef ENABLE_ETHERNET_TR181_REMOTE_CALL
     char acTmpReturnValue[256] = {0};
     ULONG result = 0;
-    if (strstr(pParamName, ETHERNET_INTERFACE_OBJECT))
+    if (strncmp(pParamName, ETHERNET_INTERFACE_OBJECT, strlen(ETHERNET_INTERFACE_OBJECT)) == 0)
     {
         if (ANSC_STATUS_FAILURE == RdkBus_GetParamValues(ETH_COMPONENT_NAME, ETH_DBUS_PATH, pParamName, acTmpReturnValue))
         {
@@ -217,7 +217,7 @@ CosaGetParamValueString
 {
 #ifdef ENABLE_ETHERNET_TR181_REMOTE_CALL
     char acTmpReturnValue[1024] = {0};
-    if (strstr(pParamName, ETHERNET_INTERFACE_OBJECT))
+    if (strncmp(pParamName, ETHERNET_INTERFACE_OBJECT, strlen(ETHERNET_INTERFACE_OBJECT)) == 0)
     {
         if (ANSC_STATUS_FAILURE == RdkBus_GetParamValues(ETH_COMPONENT_NAME, ETH_DBUS_PATH, pParamName, acTmpReturnValue))
         {
@@ -283,7 +283,7 @@ CosaGetParamValueBool
 {
 #ifdef ENABLE_ETHERNET_TR181_REMOTE_CALL
     char acTmpReturnValue[256] = {0};
-    if (strstr(pParamName, ETHERNET_INTERFACE_OBJECT))
+    if (strncmp(pParamName, ETHERNET_INTERFACE_OBJECT, strlen(ETHERNET_INTERFACE_OBJECT)) == 0)
     {
         if (ANSC_STATUS_FAILURE == RdkBus_GetParamValues(ETH_COMPONENT_NAME, ETH_DBUS_PATH, pParamName, acTmpReturnValue))
         {
