@@ -3953,10 +3953,14 @@ void* bridge_mode_wifi_notifier_thread(void* arg) {
  {"Device.WiFi.SSID.17.Enable", acSetSSIDString, ccsp_boolean}};
 
 parameterValStruct_t valCommit1[] = {
+#ifdef RDK_ONEWIFI
+ {"Device.WiFi.ApplyAccessPointSettings", "true", ccsp_boolean},
+ {"Device.WiFi.ApplyRadioSettings", "true", ccsp_boolean} };
+#else
  {"Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting", "true", ccsp_boolean}, 
  {"Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", ccsp_boolean},
  {"Device.WiFi.Radio.3.X_CISCO_COM_ApplySetting", "true", ccsp_boolean} };
-
+#endif
     if (ulNumOfEntries < 3) {
         sizeval         = (sizeof(val)/sizeof(*val)) - 1;
         sizeval2        = (sizeof(val2)/sizeof(*val2)) - 1;
