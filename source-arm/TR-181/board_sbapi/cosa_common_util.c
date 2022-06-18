@@ -388,7 +388,8 @@ EvtDispterWanIpAddrsCallback(char *ip_addrs)
     CcspTraceInfo(("EvtDispterWanIpAddrsCallback - erouter0 IP = %s\n",ip_addrs));
     vsystem("/usr/ccsp/pam/erouter0_ip_sync.sh %s &",ip_addrs);
 #endif
-#if defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
+// Restricting file access sec_pushown.sh to XB6 and CMXB7
+#if defined(_XB6_PRODUCT_REQ_) && !(defined(_XB7_PRODUCT_REQ_) && defined(_COSA_BCM_ARM_)) 
     CcspTraceInfo(("%s vsystem %d \n", __FUNCTION__,__LINE__));
     CcspTraceInfo(("EvtDispterWanIpAddrsCallback - erouter0 IP = %s\n",ip_addrs));
     vsystem("/usr/sbin/sec_pushown.sh --ip4 \"%s\"", ip_addrs);
