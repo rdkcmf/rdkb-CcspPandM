@@ -2,7 +2,7 @@
    "properties" : {
 
       "comments" : "MANDATORY: !!! Please increment below version value for any new parameter added in this partners_defaults.json !!!",
-      "version" : "8.10"
+      "version" : "8.11"
    },
 
    "comcast" : {
@@ -68,6 +68,9 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt.comcast.net:8080",
+      "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt.comcast.net:8080/issue", 
+      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt.comcast.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "false",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
@@ -137,6 +140,9 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "",
+      "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt.comcast.net:8080",
+      "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt.comcast.net:8080/issue",
+      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt.comcast.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "false",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
@@ -206,6 +212,9 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt.comcast.net:8080",
+      "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt.comcast.net:8080/issue",
+      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt.comcast.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "true",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
@@ -275,6 +284,9 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt.comcast.net:8080",
+      "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt.comcast.net:8080/issue",
+      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt.comcast.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "true",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xdp.eu-1.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.xdp.eu-1.xcal.tv/cgi-bin/sky-S3.cgi",
@@ -283,7 +295,17 @@
       "override" : {
         "SR300" : {
                 "Device.X_RDK_WebConfig.URL" : "https://cpe-config-sky-uk.wp.xdp.comcast.net/api/v1/device/{mac}/config",
-                "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-sky-uk.wp.xdp.comcast.net/api/v1/device/{mac}/config"
+                "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-sky-uk.wp.xdp.comcast.net/api/v1/device/{mac}/config",
+                "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt-eu.comcast.net:8080",
+                "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt-eu.comcast.net:8080/issue",
+                "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt-eu.comcast.net"		
+        },
+        "SR213" : {
+                "Device.X_RDK_WebConfig.URL" : "https://cpe-config-sky-uk.wp.xdp.comcast.net/api/v1/device/{mac}/config",
+                "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-sky-uk.wp.xdp.comcast.net/api/v1/device/{mac}/config",
+                "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt-eu.comcast.net:8080",
+                "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt-eu.comcast.net:8080/issue",
+                "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt-eu.comcast.net"
         }
       }
    },
@@ -350,6 +372,9 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config-cox.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-cox.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt.comcast.net:8080",
+      "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt.comcast.net:8080/issue",
+      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt.comcast.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "true",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
@@ -420,6 +445,9 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config-rogers.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-rogers.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt.comcast.net:8080",
+      "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt.comcast.net:8080/issue",
+      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt.comcast.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "false",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
@@ -490,6 +518,9 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config-shaw.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-shaw.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt.comcast.net:8080",
+      "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt.comcast.net:8080/issue",
+      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt.comcast.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "false",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
@@ -567,6 +598,9 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config-videotron.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile-videotron.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt.comcast.net:8080",
+      "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt.comcast.net:8080/issue",
+      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt.comcast.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "false",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
@@ -634,6 +668,9 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt.comcast.net:8080",
+      "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt.comcast.net:8080/issue",
+      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt.comcast.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "false",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
@@ -701,6 +738,9 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt.comcast.net:8080",
+      "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt.comcast.net:8080/issue",
+      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt.comcast.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "false",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
@@ -772,6 +812,9 @@
       "Device.Time.NTPServer5" : "",
       "Device.X_RDK_WebConfig.URL" : "https://cpe-config.xdp.comcast.net/api/v1/device/{mac}/config",
       "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" : "https://cpe-profile.xdp.comcast.net/api/v1/device/{mac}/config",
+      "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" : "https://fabric.xmidt.comcast.net:8080",
+      "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" : "https://issuer.xmidt.comcast.net:8080/issue",
+      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" : "fabric.xmidt.comcast.net",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MAP-T.Enable" : "false",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
