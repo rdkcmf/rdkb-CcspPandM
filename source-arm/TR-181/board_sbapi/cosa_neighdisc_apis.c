@@ -568,7 +568,6 @@ CosaDmlNeighdiscIfBERemove
 
 COSA_DML_NEIGHDISC_IF_FULL g_neighdisc_interface;
 static BOOLEAN g_neighdisc_enabled = TRUE ;
-int safe_strcpy(char * dst, char * src, int dst_size);
 
 
 #define RetransTimer_SYSCTL_FILE "/proc/sys/net/ipv6/neigh/"COSA_DML_NEIGHDISC_IFNAME"/retrans_time_ms"

@@ -1774,14 +1774,22 @@ int CosaUtilGetIpv6AddrInfo (char * ifname, ipv6_addr_info_t ** pp_info, int * p
 }
 #endif
 
-int safe_strcpy(char * dst, char * src, int dst_size)
+char *safe_strcpy (char *dst, char *src, size_t dst_size)
 {
-    if (!dst || !src) return -1;
+    size_t len;
 
-    memset(dst, 0, dst_size);
-    _ansc_strncpy(dst, src, _ansc_strlen(src) <= (UINT)(dst_size-1) ? _ansc_strlen(src): (UINT)(dst_size-1) );
+    if (dst_size == 0)
+        return dst;
 
-    return 0;
+    len = strlen (src);
+
+    if (len >= dst_size)
+    {
+        dst[dst_size - 1] = 0;
+        return memcpy (dst, src, dst_size - 1);
+    }
+
+    return memcpy (dst, src, len + 1);
 }
 
 int  __v6addr_mismatch(char * addr1, char * addr2, int pref_len)
