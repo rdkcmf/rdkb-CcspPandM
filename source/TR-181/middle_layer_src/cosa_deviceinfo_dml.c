@@ -22926,6 +22926,7 @@ NonRootSupport_GetParamStringValue
          read = getdelim( &buf, &len, '\0', fp);
          if (read != -1) {
              AnscCopyString(pValue, buf);
+             *pUlSize = AnscSizeOfString(pValue);
              Replace_AllOccurrence( pValue, *pUlSize, '\n', ',');
              CcspTraceWarning(("Blocklist processes:%s\n", pValue));
          }
