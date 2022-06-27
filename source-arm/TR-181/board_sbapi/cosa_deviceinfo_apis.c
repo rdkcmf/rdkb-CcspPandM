@@ -606,6 +606,14 @@ CosaDmlDiGetProductClass
                     return ANSC_STATUS_FAILURE;
                 }
         }
+#elif defined( _WNXL11BWL_PRODUCT_REQ_)
+	{
+                rc = strcpy_s(pValue, *pulSize, "XLE");
+                if ( rc != EOK) {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
+        }	
 #elif defined( _HUB4_PRODUCT_REQ_)
         {
                 rc = strcpy_s(pValue, *pulSize, "HOMEHUB4");
