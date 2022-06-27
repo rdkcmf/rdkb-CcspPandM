@@ -590,6 +590,14 @@ CosaDmlDiGetProductClass
                     return ANSC_STATUS_FAILURE;
                 }
 	}
+#elif defined( _SR213_PRODUCT_REQ_)
+        {
+                rc = strcpy_s(pValue, *pulSize, "HOMEHUB6");
+                if ( rc != EOK) {
+                    ERR_CHK(rc);
+                    return ANSC_STATUS_FAILURE;
+                }
+        }
 #elif defined( _SR300_PRODUCT_REQ_)
         {
                 rc = strcpy_s(pValue, *pulSize, "HOMEHUBADA");
