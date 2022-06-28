@@ -8388,7 +8388,11 @@ dhcpv6c_dbg_thrd(void * in)
             ERR_CHK(rc);
         }
         commonSyseventSet("lan_prefix",lan_v6_pref);
-#ifndef FEATURE_RDKB_WAN_AGENT
+/* The below sysevent is set in wanmanager interface state machine so
+ * not setting again. Once Interface state machine is used by all customers
+ * need to change the flag to FEATURE_RDKB_WAN_MANAGER.
+*/
+#ifndef _HUB4_PRODUCT_REQ_
     commonSyseventSet(COSA_DML_DHCPV6C_PREF_SYSEVENT_NAME,       v6pref);
 #endif
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_CBR_PRODUCT_REQ_)
@@ -8665,7 +8669,11 @@ dhcpv6c_dbg_thrd(void * in)
                         } else {
                             dhcpv6_data.isExpired = FALSE;
                             dhcpv6_data.prefixAssigned = TRUE;
-                            strncpy(dhcpv6_data.sitePrefix, v6pref, sizeof(dhcpv6_data.sitePrefix));
+                            rc = sprintf_s(dhcpv6_data.sitePrefix, sizeof(dhcpv6_data.sitePrefix), "%s/%d", v6Tpref, pref_len);
+                            if(rc < EOK)
+                            {
+                                ERR_CHK(rc);
+                            }
                             strncpy(dhcpv6_data.pdIfAddress, "", sizeof(dhcpv6_data.pdIfAddress));
                             /** DNS servers. **/
                             commonSyseventGet(SYSEVENT_FIELD_IPV6_DNS_SERVER, dns_server, sizeof(dns_server));
