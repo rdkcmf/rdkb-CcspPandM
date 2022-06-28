@@ -3606,6 +3606,8 @@ CosaDmlGetMocaHardwareStatus
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+
+#ifdef CONFIG_SYSTEM_MOCA
     static int ret = 0;
 
     if (ret) {
@@ -3619,6 +3621,9 @@ CosaDmlGetMocaHardwareStatus
     }
     
     return ret;
+#else
+    return 2;
+#endif
 }
 
 #define _CALC_NETWORK(ip, mask) ((ULONG)(ip) & (ULONG)(mask))

@@ -582,8 +582,9 @@ int usg_get_cpe_associate_interface(char *pMac, char ifname[64])
             rc = strcpy_s(ifname, 64, "Device.MoCA.Interface.1");
             ERR_CHK(rc);
         }
-        else {
+        else
 #endif
+        {
             rc = strcpy_s(ifname, 64, "Device.Ethernet.Interface.x");
             ERR_CHK(rc);
         }
