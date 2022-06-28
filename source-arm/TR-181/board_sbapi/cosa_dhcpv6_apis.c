@@ -2103,7 +2103,7 @@ CosaDmlDhcpv6Init
 #endif
 
 #if defined(FEATURE_RDKB_WAN_MANAGER)
-#ifdef WAN_FAILOVER_SUPPORTED
+#if defined (WAN_FAILOVER_SUPPORTED) && !defined (RDKB_EXTENDER_ENABLED)
      pthread_create(&Ipv6Handle_tid, NULL, Ipv6ModeHandler_thrd, NULL);
 #endif
 #endif
@@ -7434,6 +7434,48 @@ This thread can be generic to handle the operations depending on the interfaces.
 static pthread_t InfEvtHandle_tid;
 static int sysevent_fd_1;
 static token_t sysevent_token_1;
+
+#ifdef RDKB_EXTENDER_ENABLED
+#include <sys/stat.h>
+#define EXT_MODE_ROUTE_TABLE_NUM 12
+#define ULA_ROUTE_SET "/tmp/.ula_route_set"
+#define DEF_ULA_PREF_LEN 64
+
+void enable_Ula_IPv6(char* ifname)
+{
+    CcspTraceInfo(("%s : ENTRY\n",__FUNCTION__));
+    char *token_pref = NULL ;
+    char buf[128] = {0}, cmd[128] = {0} ;
+    char pref_rx[16];
+    char ipv6_addr[128]={0};
+    memset(buf,0,sizeof(buf));
+    commonSyseventGet("ula_ipv6_enabled", buf, sizeof(buf));
+    if ( 1 == atoi(buf) )
+    {
+        CcspTraceInfo(("%s : Enabling ula ipv6 on iface %s\n",__FUNCTION__,ifname));
+        memset(cmd,0,sizeof(cmd));
+        memset(buf,0,sizeof(buf));
+        int pref_len = DEF_ULA_PREF_LEN;
+        memset(pref_rx,0,sizeof(pref_rx));
+        commonSyseventGet("backup_wan_prefix_v6_len", pref_rx, sizeof(pref_rx));
+
+        if ( strlen(pref_rx) != 0 )
+                pref_len = atoi(pref_rx);
+
+        snprintf(cmd,sizeof(cmd),"%s_ipaddr_v6_ula",ifname);
+        commonSyseventGet(cmd, buf, sizeof(buf));
+        if (buf[0] != '\0' && strlen(buf) != 0 )
+        {
+            SetV6Route(ifname,buf,0);
+            token_pref = strtok(buf,"/");
+            memset(ipv6_addr,0,sizeof(ipv6_addr));
+            snprintf(ipv6_addr,sizeof(ipv6_addr),"%s:1/%d",token_pref,pref_len);
+            AssignIpv6Addr(ifname,ipv6_addr);
+        }
+    }
+}
+#endif
+
 void enable_IPv6(char* if_name)
 {
         FILE *fp = NULL;
@@ -7442,14 +7484,13 @@ void enable_IPv6(char* if_name)
 
     	char tbuff[100] = {0} , ipv6_addr[128] = {0} , cmd[128] = {0} ;
     	errno_t rc = -1;
-	fp = v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",if_name);
-	_get_shell_output(fp, tbuff, sizeof(tbuff));
+	    fp = v_secure_popen("r","sysctl net.ipv6.conf.%s.autoconf",if_name);
+	    _get_shell_output(fp, tbuff, sizeof(tbuff));
     	if(tbuff[strlen(tbuff)-1] == '0')
     	{
-            	v_secure_system("sysctl -w net.ipv6.conf.%s.autoconf=1",if_name);
-            	v_secure_system("ifconfig %s down;ifconfig %s up",if_name,if_name);
+            v_secure_system("sysctl -w net.ipv6.conf.%s.autoconf=1",if_name);
+            v_secure_system("ifconfig %s down;ifconfig %s up",if_name,if_name);
     	}
-
         rc = sprintf_s(cmd, sizeof(cmd), "%s_ipaddr_v6",if_name);
         if(rc < EOK)
         {
@@ -7461,6 +7502,13 @@ void enable_IPv6(char* if_name)
         v_secure_system("ip -6 route add %s dev %s table erouter", ipv6_addr, if_name);
     	#endif
     	v_secure_system("ip -6 rule add iif %s lookup erouter",if_name);
+
+        #ifdef RDKB_EXTENDER_ENABLED
+            if ( DEVICE_MODE_ROUTER == Get_Device_Mode() && access(ULA_ROUTE_SET, R_OK) == 0 )
+            {
+                enable_Ula_IPv6(if_name);
+            }
+        #endif
 
 }
 
@@ -7834,19 +7882,19 @@ static void *InterfaceEventHandler_thrd(void *data)
 
 void AssignIpv6Addr(char* ifname , char* ipv6Addr)
 {      
-       CcspTraceWarning(("%s -- : %s , %s\n", __FUNCTION__, ifname,ipv6Addr));
+    CcspTraceInfo(("%s : interface name=%s , ipv6 address=%s\n", __FUNCTION__, ifname,ipv6Addr));
     v_secure_system("ip -6 addr add %s dev %s", ipv6Addr,ifname);
 }
 
 void DelIpv6Addr(char* ifname , char* ipv6Addr)
 {
-    CcspTraceWarning(("%s -- : %s , %s\n", __FUNCTION__, ifname,ipv6Addr));
+    CcspTraceInfo(("%s : interface name=%s , ipv6 address=%s\n", __FUNCTION__, ifname,ipv6Addr));
     v_secure_system("ip -6 addr del %s dev %s", ipv6Addr,ifname);
 }
 
 void SetV6Route(char* ifname , char* route_addr,int metric_val)
 {
-    CcspTraceWarning(("%s -- : %s , %s\n", __FUNCTION__, ifname,route_addr));
+    CcspTraceInfo(("%s : interface name=%s ,route_addr=%s, metric_val=%d\n", __FUNCTION__, ifname,route_addr,metric_val));
     if ( 0 == metric_val )
         v_secure_system("ip -6 route add default via %s dev %s ", route_addr,ifname);
     else
@@ -7855,13 +7903,32 @@ void SetV6Route(char* ifname , char* route_addr,int metric_val)
 }
 void UnSetV6Route(char* ifname , char* route_addr,int metric_val)
 {
-    CcspTraceWarning(("%s -- : %s , %s\n", __FUNCTION__, ifname,route_addr));
+    CcspTraceInfo(("%s : interface name=%s ,route_addr=%s, metric_val=%d\n", __FUNCTION__, ifname,route_addr,metric_val));
     if ( 0 == metric_val )
         v_secure_system("ip -6 route del default via %s dev %s", route_addr,ifname);
     else
         v_secure_system("ip -6 route del default via %s dev %s metric %d", route_addr,ifname,metric_val);
 
 }
+
+void SetV6RouteTable(char* ifname , char* route_addr,int metric_val,int table_num)
+{
+    CcspTraceInfo(("%s: interface name=%s ,route_addr=%s,metric_val=%d, table_num=%d\n", __FUNCTION__, ifname,route_addr,metric_val,table_num));
+    if ( 0 == metric_val )
+        v_secure_system("ip -6 route add default via %s dev %s table %d", route_addr,ifname,table_num);
+    else
+        v_secure_system("ip -6 route add default via %s dev %s metric %d table %d", route_addr,ifname,metric_val,table_num);
+
+}
+void UnSetV6RouteFromTable(char* ifname , char* route_addr,int metric_val, int table_num)
+{
+    CcspTraceInfo(("%s: interface name=%s ,route_addr=%s,metric_val=%d, table_num=%d\n", __FUNCTION__, ifname,route_addr,metric_val,table_num));
+    if ( 0 == metric_val )
+        v_secure_system("ip -6 route del default via %s dev %s table %d", route_addr,ifname,table_num);
+    else
+        v_secure_system("ip -6 route del default via %s dev %s metric %d table %d", route_addr,ifname,metric_val,table_num);
+}
+
 #endif
 
 #ifdef WAN_FAILOVER_SUPPORTED
@@ -7989,38 +8056,55 @@ void delIpv6toRemoteWan()
 
 
 #if defined (RDKB_EXTENDER_ENABLED)
+
+
 void configureLTEIpv6(char* v6addr)
 {
-    CcspTraceWarning(("%s -- ENTRY:\n", __FUNCTION__));
+    CcspTraceInfo(("%s: Configuring LTE Ipv6:\n", __FUNCTION__));
 
     char cellular_ifname_val[32]={0};
     char addr[128]={0};
-    CcspTraceWarning(("%s -- v6addr: %s\n", __FUNCTION__, v6addr));
+    char buf[16] = {0};
 
+    CcspTraceInfo(("%s : v6addr: %s\n", __FUNCTION__, v6addr));
     memset(cellular_ifname_val,0,sizeof(cellular_ifname_val));
     commonSyseventGet(CELLULAR_IFNAME, cellular_ifname_val, sizeof(cellular_ifname_val));
-    CcspTraceWarning(("%s -- cellular_ifname_val: %s\n", __FUNCTION__, cellular_ifname_val));
+    CcspTraceInfo(("%s : cellular_ifname_val: %s\n", __FUNCTION__, cellular_ifname_val));
 
     memset(addr,0,sizeof(addr));
     commonSyseventGet(SYSEVENT_CM_WAN_V6_IPADDR_PREV, addr, sizeof(addr));
     DelIpv6Addr(cellular_ifname_val , addr);
-
-    #if 0
+    int deviceMode = -1 ;
+    deviceMode = Get_Device_Mode();
     memset(addr,0,sizeof(addr));
     commonSyseventGet(SYSEVENT_CM_WAN_V6_GWADDR_PREV, addr, sizeof(addr));
-    UnSetV6Route(cellular_ifname_val,strtok(addr,"/"));
-    #endif 
+    if ( DEVICE_MODE_EXTENDER == deviceMode )
+        UnSetV6RouteFromTable(cellular_ifname_val,strtok(addr,"/"),0,EXT_MODE_ROUTE_TABLE_NUM);  
+    else
+        UnSetV6Route(cellular_ifname_val,strtok(addr,"/"),0);  
+
     memset(addr,0,sizeof(addr));
     AssignIpv6Addr(cellular_ifname_val,v6addr);
     commonSyseventSet(SYSEVENT_CM_WAN_V6_IPADDR_PREV, v6addr);
-
-    #if 0
+    
     memset(addr,0,sizeof(addr));
     commonSyseventGet(SYSEVENT_CM_WAN_V6_GWADDR, addr, sizeof(addr));
     commonSyseventSet(SYSEVENT_CM_WAN_V6_GWADDR_PREV, addr);
-    SetV6Route(cellular_ifname_val,strtok(addr,"/"));
-    #endif
-    CcspTraceWarning(("%s -- EXIT:\n", __FUNCTION__));
+    if ( DEVICE_MODE_EXTENDER == deviceMode )
+        SetV6RouteTable(cellular_ifname_val,strtok(addr,"/"),0,EXT_MODE_ROUTE_TABLE_NUM);
+    else
+    {
+        SetV6Route(cellular_ifname_val,strtok(addr,"/"),0);
+        memset(buf,0,sizeof(buf));
+        commonSyseventGet("ula_ipv6_enabled", buf, sizeof(buf));  
+        if ((access(ULA_ROUTE_SET, R_OK)) != 0 && 1 == atoi(buf) )
+        {
+            CcspTraceInfo(("%s: ula enabled,creating ula ipv6 configuration in router mode of EXT device\n", __FUNCTION__));
+            commonSyseventSet("routeset-ula","");
+            creat(ULA_ROUTE_SET,S_IRUSR |S_IWUSR | S_IRGRP | S_IROTH);
+        }
+    }
+    CcspTraceInfo(("%s -- EXIT:\n", __FUNCTION__));
 }
 #endif
 
@@ -8295,12 +8379,17 @@ dhcpv6c_dbg_thrd(void * in)
                         }
                         else
                         {
-                            CcspTraceInfo(("%s: COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME set v6addr \n", __func__));
-
-                             commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME,v6addr);
+                            CcspTraceInfo(("%s: v6addr is %s ,pref_len is %d\n", __func__,v6addr,pref_len));
+                            commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME,v6addr);
 
                              #ifdef RDKB_EXTENDER_ENABLED
                                 remove_single_quote(v6addr);
+
+                                if(pref_len >= 64)
+                                    commonSyseventSet("ula_ipv6_enabled","1");
+                                else
+                                    commonSyseventSet("ula_ipv6_enabled","0");
+                                
                                 configureLTEIpv6(v6addr);
                              #endif
                         }
@@ -9010,7 +9099,7 @@ static int send_dhcp_data_to_wanmanager (ipc_dhcpv6_data_t *dhcpv6_data)
     nn_close (sock);
     return ret;
 }
-#ifdef WAN_FAILOVER_SUPPORTED
+#if defined (WAN_FAILOVER_SUPPORTED) && !defined (RDKB_EXTENDER_ENABLED)
 void SwitchToGlobalIpv6()
 {
     CcspTraceInfo(("%s started\n",__FUNCTION__));

@@ -746,5 +746,18 @@ remove_interface
 	(
 		char* 						Inf_name
 	);
+
+
+#if defined (RDKB_EXTENDER_ENABLED) || defined (WAN_FAILOVER_SUPPORTED)
+void AssignIpv6Addr(char* ifname , char* ipv6Addr);
+void DelIpv6Addr(char* ifname , char* ipv6Addr);
+void SetV6Route(char* ifname , char* route_addr,int metric_val);
+void UnSetV6Route(char* ifname , char* route_addr,int metric_val);
+void SetV6RouteTable(char* ifname , char* route_addr,int metric_val,int table_num);
+void UnSetV6RouteFromTable(char* ifname , char* route_addr,int metric_val, int table_num);
+int Get_Device_Mode();
+
+#endif
+
 #endif
 
