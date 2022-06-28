@@ -762,8 +762,8 @@ User_GetParamStringValue
          * Always read password from backend
          */
         CosaDmlUserGetCfg(NULL, pUser);
-        
-        if ( AnscSizeOfString(pUser->Password) < *pUlSize)
+
+        if (sizeof(pUser->HashedPassword) < *pUlSize)
         {
             ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
             if( AnscEqualString(pUser->Username, "admin",TRUE) )
@@ -813,7 +813,7 @@ User_GetParamStringValue
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pUser->Password)+1;
+            *pUlSize = sizeof(pUser->HashedPassword) + 1;
             return 1;
         }
      }
