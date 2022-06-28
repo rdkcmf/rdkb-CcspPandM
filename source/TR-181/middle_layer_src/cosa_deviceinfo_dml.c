@@ -942,6 +942,13 @@ DeviceInfo_GetParamStringValue
 	    CosaDmlDiGetFirmwareName(NULL, pValue,pulSize);
         return 0;
     }
+    
+    if (AnscEqualString(ParamName, "X_RDK_FirmwareName", TRUE))
+    {
+
+	    CosaDmlDiGetFirmwareName(NULL, pValue,pulSize);
+        return 0;
+    }
 
     if (strcmp(ParamName, "X_CISCO_COM_FirmwareBuildTime") == 0)
     {

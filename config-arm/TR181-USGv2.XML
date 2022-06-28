@@ -456,13 +456,23 @@
         </parameter>
 
         <parameter>
-            
+
           <name>X_CISCO_COM_FirmwareName</name>
-                           
+
           <type>string(64)</type>
-                                         
+
           <syntax>string</syntax>
-                                                         
+
+        </parameter>
+
+        <parameter>
+
+          <name>X_RDK_FirmwareName</name>
+
+          <type>string(64)</type>
+
+          <syntax>string</syntax>
+
         </parameter>
 
         <parameter>
