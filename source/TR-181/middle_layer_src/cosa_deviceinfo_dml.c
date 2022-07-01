@@ -116,13 +116,6 @@ extern void* g_pDslhDmlAgent;
 static BOOL g_clearDB = false;
 static char *g_AdvSecDefaultEndpointURL = "Advsecurity_DefaultEndpointURL";
 
-#ifdef _MACSEC_SUPPORT_
-    INT platform_hal_GetMACsecEnable(INT ethPort, BOOLEAN *pFlag);
-    INT platform_hal_SetMACsecEnable(INT ethPort, BOOLEAN Flag);
-    INT platform_hal_GetMACsecOperationalStatus(INT ethPort, BOOLEAN *pFlag);
-
-#endif
-
 void Send_Notification_Task(char* delay, char* startTime, char* download_status, char* status, char *system_ready_time, char * priority,  char *current_fw_ver, char *download_fw_ver);
 void set_firmware_download_start_time(char *start_time);
 char* get_firmware_download_start_time();
