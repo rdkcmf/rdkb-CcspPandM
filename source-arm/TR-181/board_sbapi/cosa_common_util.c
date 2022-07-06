@@ -65,7 +65,6 @@
 #include <utapi.h>
 #include "cosa_common_util.h"
 #include "cosa_apis_util.h"
-#include "secure_wrapper.h"
 
 #ifdef _HUB4_PRODUCT_REQ_
 #include "ccsp_psm_helper.h"
@@ -541,7 +540,7 @@ EvtDispterEventListen(void)
 #endif
         } else {
             CcspTraceWarning(("Received msg that is not a SE_MSG_NOTIFICATION (%d)\n", msg_type));
-	    if (  0 != v_secure_system("pidof syseventd")) {
+	    if (  0 != system("pidof syseventd")) {
 
            	CcspTraceWarning(("%s syseventd not running ,breaking the receive notification loop \n",__FUNCTION__));
 		ret = EVENT_HANDLE_EXIT;
@@ -695,7 +694,7 @@ EvtDispterHandleEventAsync(void)
 int executeCmd(char *cmd)
 {
 	int l_iSystem_Res;
-	l_iSystem_Res = v_secure_system("%s",cmd);
+	l_iSystem_Res = system(cmd);
     if (0 != l_iSystem_Res && ECHILD != errno)
     {
         CcspTraceError(("%s: %s command didnt execute successfully\n", __FUNCTION__,cmd));
@@ -768,7 +767,7 @@ void* RegenerateUla(void *arg)
     }
     else
     {
-        v_secure_system("killall zebra");
+        system("killall zebra");
     }
 
     if(pIpv6_enable != NULL)
