@@ -924,8 +924,19 @@ CosaBridgingRegGetInfo
             pDmlBridge->ulNextVLANPortInsNum = 1;
             pDmlBridge->Cfg.bAllowDelete = TRUE;
             pDmlBridge->Cfg.InstanceNumber = ulInstanceNumber;
-            rc = strcpy_s(pDmlBridge->Cfg.Alias, sizeof(pDmlBridge->Cfg.Alias), pAlias);
-            ERR_CHK(rc);
+
+            if (pAlias)
+            {
+                /*
+                   Note that AnscAllocateMemory() zero's memory, so there's no need
+                   to do anything to initialise Cfg.Alias if pAlias is NULL.
+                */
+                rc = strcpy_s(pDmlBridge->Cfg.Alias, sizeof(pDmlBridge->Cfg.Alias), pAlias);
+                ERR_CHK(rc);
+                AnscFreeMemory(pAlias);
+                pAlias = NULL;
+            }
+
             pCosaContext->InstanceNumber   = ulInstanceNumber;
             pCosaContext->bNew             = TRUE;
             pCosaContext->hContext         = (ANSC_HANDLE)pDmlBridge;
@@ -1052,8 +1063,19 @@ CosaBridgingRegGetInfo
                 }
 
                 pPort->Cfg.InstanceNumber = ulInstanceNumber;
-                rc = strcpy_s(pPort->Cfg.Alias, sizeof(pPort->Cfg.Alias), pAlias);
-                ERR_CHK(rc);
+
+                if (pAlias)
+                {
+                    /*
+                       Note that AnscAllocateMemory() zero's memory, so there's no need
+                       to do anything to initialise Cfg.Alias if pAlias is NULL.
+                    */
+                    rc = strcpy_s(pPort->Cfg.Alias, sizeof(pPort->Cfg.Alias), pAlias);
+                    ERR_CHK(rc);
+                    AnscFreeMemory(pAlias);
+                    pAlias = NULL;
+                }
+
                 pPort->Cfg.bAllowDelete = TRUE;
                 pCosaContext2->InstanceNumber  = ulInstanceNumber;
                 pCosaContext2->hContext        = (ANSC_HANDLE)pPort;

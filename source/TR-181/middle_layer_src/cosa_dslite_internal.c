@@ -569,7 +569,7 @@ CosaDsliteRegGetDsliteInfo
 
         /* save alias and instanceNumber */
         pCosaDslite->InstanceNumber = uInstanceNumber;
-        rc = strcpy_s( pCosaDslite->alias, sizeof(pCosaDslite->alias), pAliasDslite );
+        rc = strcpy_s( pCosaDslite->alias, sizeof(pCosaDslite->alias), pAliasDslite ? pAliasDslite : "");
         ERR_CHK(rc);
 
         /* Create one link point */

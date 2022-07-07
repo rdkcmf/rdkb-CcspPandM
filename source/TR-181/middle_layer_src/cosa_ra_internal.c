@@ -775,7 +775,7 @@ CosaRaRegGetInfo
             pRAInterface->ulNextOptionInsNum    = 1;
             
             pRAInterface->Cfg.InstanceNumber = ulInstanceNumber;
-            rc = strcpy_s(pRAInterface->Cfg.Alias, sizeof(pRAInterface->Cfg.Alias), pAlias);
+            rc = strcpy_s(pRAInterface->Cfg.Alias, sizeof(pRAInterface->Cfg.Alias), pAlias ? pAlias : "");
             ERR_CHK(rc);
 
             pCosaContext->InstanceNumber   = ulInstanceNumber;
@@ -887,7 +887,7 @@ CosaRaRegGetInfo
                 }
 
                 pRAOption->InstanceNumber = ulInstanceNumber;
-                rc = strcpy_s(pRAOption->Alias, sizeof(pRAOption->Alias), pAlias);
+                rc = strcpy_s(pRAOption->Alias, sizeof(pRAOption->Alias), pAlias ? pAlias : "");
                 ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber  = ulInstanceNumber;

@@ -587,7 +587,7 @@ CosaDevCtrlReg_GetLanMngmInfo(
             return ANSC_STATUS_RESOURCES;
         }
 
-        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias);
+        rc = STRCPY_S_NOCLOBBER(pEntry->Alias, sizeof(pEntry->Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
 
         pEntry->InstanceNumber = ulInstanceNumber;

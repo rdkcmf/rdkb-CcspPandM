@@ -617,7 +617,7 @@ CosaEthLinkRegGetInfo
 
             return ANSC_STATUS_RESOURCES;
         }
-        rc = strcpy_s(pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias), pAlias);
+        rc = strcpy_s(pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
 
         pEntry->Cfg.InstanceNumber = ulInstanceNumber;
@@ -1034,7 +1034,7 @@ CosaEthVlanTerminationRegGetInfo
 
             return ANSC_STATUS_RESOURCES;
         }
-        rc = strcpy_s(pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias), pAlias);
+        rc = strcpy_s(pEntry->Cfg.Alias,sizeof(pEntry->Cfg.Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
 
         pEntry->Cfg.InstanceNumber = ulInstanceNumber;

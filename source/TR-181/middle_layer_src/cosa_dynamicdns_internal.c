@@ -613,7 +613,7 @@ CosaDynamicDns_ClientGetInfo
         }
 
         pClientEntry->InstanceNumber = ulInstanceNumber;
-        rc = strcpy_s(pClientEntry->Alias,sizeof(pClientEntry->Alias),pAlias);
+        rc = strcpy_s(pClientEntry->Alias,sizeof(pClientEntry->Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
 
         /*Copy the current entry into COSA_CONTEXT_LINK_OBJECT */
@@ -886,7 +886,7 @@ CosaDynamicDns_HostGetInfo
         }
 
         pHostEntry->InstanceNumber = ulInstanceNumber;
-        rc = strcpy_s(pHostEntry->Alias,sizeof(pHostEntry->Alias),pAlias);
+        rc = strcpy_s(pHostEntry->Alias,sizeof(pHostEntry->Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
 
         /*Copy the current entry into COSA_CONTEXT_LINK_OBJECT */
@@ -1159,7 +1159,7 @@ CosaDynamicDns_ServerGetInfo
         }
 
         pServerEntry->InstanceNumber = ulInstanceNumber;
-        rc = strcpy_s(pServerEntry->Alias,sizeof(pServerEntry->Alias),pAlias);
+        rc = strcpy_s(pServerEntry->Alias,sizeof(pServerEntry->Alias), pAlias ? pAlias : "");
         ERR_CHK(rc);
         /*Copy the current entry into COSA_CONTEXT_LINK_OBJECT */
         pCosaContext->InstanceNumber        = ulInstanceNumber;

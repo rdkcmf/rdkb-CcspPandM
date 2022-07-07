@@ -1044,7 +1044,7 @@ CosaRoutingRegGetInfo
             pRouter->ulNextIPv6ForwardInsNum = 1;
             
             pRouter->Cfg.InstanceNumber = ulInstanceNumber;
-            rc = strcpy_s(pRouter->Cfg.Alias,sizeof(pRouter->Cfg.Alias), pAlias);
+            rc = strcpy_s(pRouter->Cfg.Alias,sizeof(pRouter->Cfg.Alias), pAlias ? pAlias : "");
             ERR_CHK(rc);
 
             pCosaContext->InstanceNumber   = ulInstanceNumber;
@@ -1164,7 +1164,7 @@ CosaRoutingRegGetInfo
                 }
 
                 pRouterForward->InstanceNumber = ulInstanceNumber;
-                rc = strcpy_s(pRouterForward->Alias,sizeof(pRouterForward->Alias),pAlias);
+                rc = strcpy_s(pRouterForward->Alias,sizeof(pRouterForward->Alias), pAlias ? pAlias : "");
                 ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber   = ulInstanceNumber;
@@ -1248,7 +1248,7 @@ CosaRoutingRegGetInfo
                 }
 
                 pRouterIPv6Forward->InstanceNumber = ulInstanceNumber;
-                rc = strcpy_s(pRouterIPv6Forward->Alias,sizeof(pRouterIPv6Forward->Alias), pAlias);
+                rc = strcpy_s(pRouterIPv6Forward->Alias,sizeof(pRouterIPv6Forward->Alias), pAlias ? pAlias : "");
                 ERR_CHK(rc);
 
                 pSubCosaContext->InstanceNumber   = ulInstanceNumber;
@@ -1284,7 +1284,7 @@ CosaRoutingRegGetInfo
                 }
 
                 pRipIF->InstanceNumber = ulInstanceNumber;
-                rc = strcpy_s(pRipIF->Alias,sizeof(pRipIF->Alias), pAlias);
+                rc = strcpy_s(pRipIF->Alias,sizeof(pRipIF->Alias), pAlias ? pAlias : "");
                 ERR_CHK(rc);
 
                 pCosaContext2->InstanceNumber   = ulInstanceNumber;
