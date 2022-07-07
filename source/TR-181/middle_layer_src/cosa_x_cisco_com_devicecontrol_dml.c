@@ -2259,7 +2259,7 @@ LanMngm_Validate
     }else if(pLanMngm->LanIPAddress.Dot[0] == 172 && pLanMngm->LanIPAddress.Dot[1] >= 16 && pLanMngm->LanIPAddress.Dot[1] <= 31){
         return TRUE;
     }
-    else if((htonl(pLanMngm->LanIPAddress.Value) & 0xFFFF0000) == 0xC0A80000)
+    else if(pLanMngm->LanIPAddress.Dot[0] == 192 && pLanMngm->LanIPAddress.Dot[1] == 168)
     {
         return TRUE;
     }
