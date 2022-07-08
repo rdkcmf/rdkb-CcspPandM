@@ -966,7 +966,15 @@ CosaUtilGetLowerLayerName
     }
 
 #if defined (FEATURE_RDKB_WAN_MANAGER)
-    returnStatus = EthAgent_getParams( ETH_AGENT_COMPONENT_NAME, ETH_AGENT_DBUS_PATH, pParamPath, pParamValueBuf);
+    // Use Cosa API for queries related to Bridge as ethagent does not support "Bridge"
+    if(strstr(pParamPath, "Device.Bridging.Bridge."))
+    {
+        returnStatus = CosaGetParamValueString(pParamPath, pParamValueBuf, pBufLen);
+    }
+    else
+    {
+        returnStatus = EthAgent_getParams( ETH_AGENT_COMPONENT_NAME, ETH_AGENT_DBUS_PATH, pParamPath, pParamValueBuf);
+    }
 #else
     returnStatus = CosaGetParamValueString(pParamPath, pParamValueBuf, pBufLen);
 #endif
