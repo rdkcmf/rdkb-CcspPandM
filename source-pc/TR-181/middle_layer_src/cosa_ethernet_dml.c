@@ -2222,7 +2222,7 @@ Link_SetParamStringValue
             varStruct.parameterValue = ucEntryNameValue;
 
             if ( ANSC_STATUS_SUCCESS == 
-                    COSAGetParamValueByPathName(&varStruct, &size) )
+                    COSAGetParamValueByPathName(g_MessageBusHandle, &varStruct, &size) )
             {
                 AnscCopyString(pEntry->Cfg.LinkName, ucEntryNameValue);
             }

@@ -81,12 +81,7 @@
 #endif
 #include "safec_lib_common.h"
 
-ANSC_STATUS
-COSAGetParamValueByPathName
-    (
-        parameterValStruct_t       *val,
-        ULONG                      *parameterValueLength
-    );
+ANSC_STATUS COSAGetParamValueByPathName(void* bus_handle, parameterValStruct_t *val, ULONG *parameterValueLength);
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -2661,7 +2656,7 @@ Link_SetParamStringValue
             varStruct.parameterValue = ucEntryNameValue;
 
             if ( ANSC_STATUS_SUCCESS == 
-                    COSAGetParamValueByPathName(&varStruct, &size) )
+                    COSAGetParamValueByPathName(g_MessageBusHandle, &varStruct, &size) )
 #endif
             {
                rc = STRCPY_S_NOCLOBBER(pEntry->Cfg.LinkName, sizeof(pEntry->Cfg.LinkName),ucEntryNameValue);
