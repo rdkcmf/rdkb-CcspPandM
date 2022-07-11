@@ -1284,22 +1284,14 @@
                         	<objectType>object</objectType>
                         	<functions>
                                 	<func_GetParamBoolValue>RBUS_GetParamBoolValue</func_GetParamBoolValue>
-                                	<func_SetParamBoolValue>RBUS_SetParamBoolValue</func_SetParamBoolValue>
-                                	<func_GetParamStringValue>RBUS_GetParamStringValue</func_GetParamStringValue>
                         	</functions>
                         	<parameters>
-                               		<parameter>
-                                        	<name>Enable</name>
-                                        	<type>boolean</type>
-                                        	<syntax>bool</syntax>
-                                        	<writable>true</writable>
-                               		</parameter>
-                               		<parameter>
-                                        	<name>Status</name>
-                                        	<type>string(64)</type>
-                                        	<syntax>string</syntax>
-                                        	<writable>false</writable>
-                               		</parameter>
+                               	  <parameter>
+                                    <name>Enable</name>
+                                    <type>boolean</type>
+                                    <syntax>bool</syntax>
+                                    <writable>false</writable>
+                                 </parameter>
                         	</parameters>
                 	</object>
 

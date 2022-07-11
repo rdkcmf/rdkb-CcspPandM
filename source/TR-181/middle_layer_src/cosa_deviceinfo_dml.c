@@ -106,6 +106,7 @@
 #include <stdbool.h>
 #include "cosa_deviceinfo_apis.h"
 #include "ccsp_psm_helper.h"
+#include <rbus.h>
 
 extern ULONG g_currentBsUpdate;
 extern char g_currentParamFullName[512];
@@ -11657,217 +11658,14 @@ BOOL*                       pBool
     UNREFERENCED_PARAMETER(hInsContext);
     if (strcmp(ParamName, "Enable") == 0)
     {
-        FILE *file = NULL;  
-        if((file = fopen("/nvram/rbus_support","r"))!=NULL)
-        {
-            fclose(file);
+        if(RBUS_ENABLED == rbus_checkStatus())
             *pBool = TRUE;
-        }
         else
             *pBool = FALSE;
 
         return TRUE;
     }
     return FALSE;
-}
-
-/**********************************************************************
-
-    caller:     owner of this object
-
-    prototype:
-
-        BOOL
-        RBUS_SetParamBoolValue
-        (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                BOOL                        bValue
-        );
-
-    description:
-
-        This function is called to set BOOL parameter value;
-
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                BOOL                        bValue
-                The updated BOOL value;
-
-    return:     TRUE if succeeded.
-
-**********************************************************************/
-
-#if !defined(DISABLE_RBUS)
-BOOL
-RBUS_SetParamBoolValue
-(
-ANSC_HANDLE                 hInsContext,
-char*                       ParamName,
-BOOL                        bValue
-)
-{
-    if (IsBoolSame(hInsContext, ParamName, bValue, RBUS_GetParamBoolValue))
-        return TRUE;
-    if (strcmp(ParamName, "Enable") == 0)
-    {
-        if (bValue == 0)
-        {
-            v_secure_system("sh /usr/ccsp/rbusFlagSync.sh 0");
-            CcspTraceInfo(("Successfully set DBUS \n"));
-            return TRUE;
-        }
-        else if (bValue == 1)
-        {
-            v_secure_system("sh /usr/ccsp/rbusFlagSync.sh 1");
-            CcspTraceInfo(("Successfully set RBUS \n"));
-            return TRUE;
-        }
-    }
-    return FALSE;
-}
-#endif
-
-
-/**********************************************************************
-
-    caller:     owner of this object
-
-    prototype:
-
-        ULONG
-        RBUS_GetParamStringValue
-            (
-                ANSC_HANDLE                 hInsContext,
-                char*                       ParamName,
-                char*                       pValue,
-                ULONG*                      pUlSize
-            );
-
-    description:
-
-        This function is called to retrieve string parameter value of rbus status;
-    argument:   ANSC_HANDLE                 hInsContext,
-                The instance handle;
-
-                char*                       ParamName,
-                The parameter name;
-
-                char*                       pValue,
-                The string value buffer;
-
-                ULONG*                      pUlSize
-                The buffer of length of string value;
-                Usually size of 1023 will be used.
-                If it's not big enough, put required size here and return 1;
-
-    return:     0 if succeeded;
-                -1 if not supported.
-
-**********************************************************************/
-
-ULONG
-RBUS_GetParamStringValue
-(
-ANSC_HANDLE                 hInsContext,
-char*                       ParamName,
-char*                       pValue,
-ULONG*                      pUlSize
-)
-{
-        UNREFERENCED_PARAMETER(hInsContext);
-        errno_t   rc = -1;
-        int ret;
-        if (strcmp(ParamName, "Status") == 0)
-        {
-            FILE *file1 = fopen("/nvram/rbus_support","r");
-            FILE *file2 = fopen("/nvram/rbus_support_on_pending","r");
-            FILE *file3 = fopen("/nvram/rbus_support_off_pending","r");
-            CcspTraceError((" Entered GET Block \n" ));
-            if(((file1)!=NULL) && ((file2)!=NULL))
-            {
-                rc = strcpy_s(pValue, *pUlSize, "Current - rbus ; after next boot - rbus");
-                if(rc != EOK)
-                {
-                    ERR_CHK(rc);
-                    ret = -1;
-                    goto EXIT;
-                }
-                CcspTraceError((" Succeeded to GET\n" ));
-            }
-            else if(((file1)!=NULL) && ((file3)!=NULL))
-            {
-                rc = strcpy_s(pValue, *pUlSize, "Current - rbus ; after next boot - dbus");
-                if(rc != EOK)
-                {
-                    ERR_CHK(rc);
-                    ret = -1;
-                    goto EXIT;
-                }
-                CcspTraceError((" succeeded to GET\n" ));
-            }
-            else if(((file1)==NULL) && ((file2)!=NULL))
-            {
-                rc = strcpy_s(pValue, *pUlSize, "Current - dbus ; after next boot - rbus");
-                if(rc != EOK)
-                {
-                    ERR_CHK(rc);
-                    ret = -1;
-                    goto EXIT;
-                }
-                CcspTraceError((" succeeded to GET\n" ));
-            }
-            else if(((file1)==NULL) && ((file3)!=NULL))
-            {
-                rc = strcpy_s(pValue, *pUlSize, "Current - dbus ; after next boot - dbus");
-                if(rc != EOK)
-                {
-                    ERR_CHK(rc);
-                    ret = -1;
-                    goto EXIT;
-                }
-                CcspTraceError((" succeeded to GET\n" ));
-            }
-            else if(((file1)==NULL) && ((file2)==NULL) && ((file3)==NULL))
-            {
-                rc = strcpy_s(pValue, *pUlSize, "Current - dbus ; after next boot - dbus");
-                if(rc != EOK)
-                {
-                    ERR_CHK(rc);
-                    ret = -1;
-                    goto EXIT;
-                }
-                CcspTraceError((" succeeded to GET\n" ));
-            }
-            else if(((file1)!=NULL) && ((file2)==NULL) && ((file3)==NULL))
-            {
-                rc = strcpy_s(pValue, *pUlSize, "Current - rbus ; after next boot - rbus");
-                if(rc != EOK)
-                {
-                    ERR_CHK(rc);
-                    ret = -1;
-                    goto EXIT;
-                }
-                CcspTraceError((" succeeded to GET\n" ));
-            }
-            ret = 0;
-
-EXIT:
-            if((file1)!=NULL)
-                fclose(file1);
-            if((file2)!=NULL)
-                fclose(file2);
-            if((file3)!=NULL)
-                fclose(file3);
-            return ret;
-        }
-        CcspTraceError((" failed to GET\n" ));
-        return -1;
-
 }
 
 /**********************************************************************
