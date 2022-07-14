@@ -22910,7 +22910,12 @@ NonRootSupport_GetParamStringValue
          fclose(fp);
          closedir(dir);
          Replace_AllOccurrence( pValue, AnscSizeOfString(pValue), '\n', ',');
-         CcspTraceWarning(("Apparmor profile configuration:%s\n", pValue));
+         if (strlen(pValue)) {
+              CcspTraceWarning(("Apparmor profile configuration:%s\n", pValue));
+         }
+         else {
+              strncpy(pValue,"All Apparmor profile disabled",SIZE_LEN);
+         }
          return 0;
       }
       else {
