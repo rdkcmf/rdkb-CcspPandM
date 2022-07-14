@@ -11618,6 +11618,131 @@ BOOL
     return FALSE;
 }
 
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        PeriodicFWCheck_GetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL*                       pBool
+            );
+
+    description:
+
+        This function is called to retrieve Boolean parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL*                       pBool
+                The buffer of returned boolean value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+PeriodicFWCheck_GetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    /* check the parameter name and return the corresponding value */
+
+	if( AnscEqualString(ParamName, "Enable", TRUE))
+		{
+			/* collect value */
+			char buf[8];
+                        /* CID: 54518 Array compared against 0*/
+			if(!syscfg_get( NULL, "PeriodicFWCheck_Enable", buf, sizeof(buf)))
+			{
+				if (strcmp(buf, "true") == 0)
+					*pBool = TRUE;
+				else
+					*pBool = FALSE;
+			}
+			return TRUE;
+		}
+
+    return FALSE;
+}
+
+
+/**********************************************************************  
+
+    caller:     owner of this object 
+
+    prototype: 
+
+        BOOL
+        PeriodicFWCheck_SetParamBoolValue
+            (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+            );
+
+    description:
+
+        This function is called to set BOOL parameter value; 
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+BOOL
+PeriodicFWCheck_SetParamBoolValue
+
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+	    if (IsBoolSame(hInsContext, ParamName, bValue, PeriodicFWCheck_GetParamBoolValue))
+	        return TRUE;
+
+ 	    if( AnscEqualString(ParamName, "Enable", TRUE))
+		{
+			/* collect value */
+			if( bValue == TRUE)
+			{
+					syscfg_set(NULL, "PeriodicFWCheck_Enable", "true");
+					syscfg_commit();
+					v_secure_system("/etc/firmwareSched.sh &");
+			}
+			else
+			{
+					syscfg_set(NULL, "PeriodicFWCheck_Enable", "false");
+					syscfg_commit();
+	
+					v_secure_system("sh /etc/firmwareSched.sh RemoveCronJob");
+					v_secure_system("killall -9 firmwareSched.sh");
+			}
+			return TRUE;
+		}	
+    return FALSE;
+}
 
 /**********************************************************************  
 
