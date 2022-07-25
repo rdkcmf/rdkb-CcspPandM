@@ -96,7 +96,7 @@ extern void* g_pDslhDmlAgent;
 #define MAX_IPIF_NUM  5
 #endif
 /*this is the real backend buffers, the PCOSA_DATAMODEL_IP structure only stores stuff from WebGui or ACS, we use this buffer to track param changes..*/
-COSA_PRI_IP_IF_FULL  g_ipif_be_bufs[MAX_IPIF_NUM];
+static COSA_PRI_IP_IF_FULL g_ipif_be_bufs[MAX_IPIF_NUM];
 
 #define SYSCFG_FORMAT_NORMAL_V6ADDR "tr_%s_v6addr"
 #define SYSCFG_FORMAT_NORMAL_V6PREFIX "tr_%s_v6pref_%s"
@@ -107,16 +107,16 @@ COSA_PRI_IP_IF_FULL  g_ipif_be_bufs[MAX_IPIF_NUM];
 #define SYSCFG_FORMAT_STATIC_V6PREF "tr_%s_ipv6_static_prefixes"
 #define PVAL_MAX_SIZE   128
 
-char   g_ipif_names[MAX_IPIF_NUM][64];
-int    g_ipif_num;
+static char g_ipif_names[MAX_IPIF_NUM][64];
+static int g_ipif_num;
 /*
  *  DH  Temp workaround for the 0.0.0.0 address issue on erouter0
  *      The root source is because _get_addressing_type() uses hardcoded "wan"/"lan" keywords
  *      to differentiate LAN/WAN interfaces.
  *      Anyway, IP.Interface SBAPI is an akward implementation, as hardcoded values are seen everywhere. 
  */
-BOOLEAN                 gDmsbIpIfUpstream[MAX_IPIF_NUM] = {0};
-ULONG                   gDmsbIpIfLoopbackInstNum        = 0;
+static BOOLEAN gDmsbIpIfUpstream[MAX_IPIF_NUM] = { 0 };
+static ULONG gDmsbIpIfLoopbackInstNum = 0;
 
 static int _invoke_ip_cmd(char * cmd, PCOSA_DML_IP_V6ADDR p_old, PCOSA_DML_IP_V6ADDR p_new, char * ifname, void * extra_args);
 static int 
@@ -327,7 +327,7 @@ typedef struct USG_IF_CFG
     BOOLEAN                         bUpstream;
 }USG_IF_CFG_T;
 
-USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
+static USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
 {
 #ifndef _WNXL11BWL_PRODUCT_REQ_
 #if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE ) && defined( _HUB4_PRODUCT_REQ_ ) 
