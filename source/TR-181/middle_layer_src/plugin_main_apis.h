@@ -166,9 +166,6 @@ extern COSARegisterCallBackAfterInitDmlProc  g_RegisterCallBackAfterInitDml;
 #if defined(DDNS_BROADBANDFORUM)
 #define COSA_DATAMODEL_DYNDNS_OID                               43
 #endif
-#ifdef INTEL_GRE_HOTSPOT
-#define COSA_DATAMODEL_IGRE_OID                                 44
-#endif
 
 
 /*

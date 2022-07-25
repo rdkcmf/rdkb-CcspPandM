@@ -86,9 +86,6 @@
 #include "cosa_ra_dml.h"
 #include "cosa_neighdisc_dml.h"
 #include "cosa_x_cisco_com_mld_dml.h"
-#ifdef INTEL_GRE_HOTSPOT
-#include "cosa_gre_dml.h"
-#endif
 #include "plugin_main_apis.h"
 //#include "cosa_moca_internal.h"
 #include "safec_lib_common.h"

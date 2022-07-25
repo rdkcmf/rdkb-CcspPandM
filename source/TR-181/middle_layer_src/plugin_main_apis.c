@@ -130,9 +130,6 @@
 #if CONFIG_CISCO_FILE_TRANSFER
     #include "cosa_x_cisco_com_filetransfer_internal.h"
 #endif
-#ifdef INTEL_GRE_HOTSPOT
-#include "cosa_gre_apis.h"
-#endif
 #if  CFG_USE_Common_Util
 #include "cosa_common_util.h"
 #endif
@@ -358,10 +355,6 @@ CosaBackEndManagerInitialize
     pMyObject->hMld           = (ANSC_HANDLE)CosaMldCreate();
     AnscTraceWarning(("  CosaMldCreate done!\n"));
 
-#ifdef INTEL_GRE_HOTSPOT
-    pMyObject->hIGRE           = (ANSC_HANDLE)CosaGRECreate();
-    AnscTraceWarning(("  CosaIGRECreate done!\n"));
-#endif
     /*
 #ifdef CONFIG_TI_PACM
     pMyObject->hMTA           = (ANSC_HANDLE)CosaMTACreate();
@@ -675,12 +668,6 @@ CosaBackEndManagerRemove
     {
         CosaMldRemove((ANSC_HANDLE)pMyObject->hMld);
     }
-#ifdef INTEL_GRE_HOTSPOT
-    if ( pMyObject->hIGRE )
-    {
-        CosaGRERemove((ANSC_HANDLE)pMyObject->hIGRE);
-    }
-#endif
     /*
 #ifdef CONFIG_TI_PACM
     if ( pMyObject->hMTA )
