@@ -407,10 +407,13 @@ CosaDmlIpInit
     {
         rc = strcpy_s((char *)g_ipif_names[i],sizeof(g_ipif_names[i]), G_USG_IF_NAME(i));
         ERR_CHK(rc);
+        if ((gDmsbIpIfLoopbackInstNum == 0) && (strcmp(G_USG_IF_NAME(i), "lo") == 0))
+        {
+            gDmsbIpIfLoopbackInstNum = i + 1;
+        }
         gDmsbIpIfUpstream[i] = g_usg_if_cfg[i].bUpstream;
     }
     g_ipif_num               = COSA_USG_IF_NUM;
-    gDmsbIpIfLoopbackInstNum = 2+1;
 
     returnStatus = CosaDmlIpMlanInit(hDml, phContext);
     if ( ANSC_STATUS_SUCCESS != returnStatus )
