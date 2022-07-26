@@ -221,6 +221,16 @@ CosaDmlDiGetRouterMacAddress
        CcspTraceInfo(("%s %d - WanPhyName=%s \n", __FUNCTION__,__LINE__, wanPhyName));
     }
     s_get_interface_mac(wanPhyName, pValue, 18);
+
+    //"wan_physical_ifname" is "erouter0" for all platforms irrespective of connection types(vdsl/adsl/wanoe)
+    // for the ppp enabled platforms, if erouter0 has no mac, do an additional check on atm0
+    if(strncmp(pValue, "00:00:00:00:00:00", strlen("00:00:00:00:00:00")) == 0)
+    {
+        // this will call ioctl to get mac if interface is present
+        s_get_interface_mac("atm0", pValue, 18);
+        CcspTraceInfo(("%s %d - WAN mac on atm0=%s \n", __FUNCTION__,__LINE__, pValue));
+
+    }
 #else	
     s_get_interface_mac("erouter0", pValue, 18);
 #endif    
