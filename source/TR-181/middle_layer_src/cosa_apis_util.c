@@ -142,12 +142,36 @@ ULONG CosaUtilGetIfAddr (char *netdev)
     int fd;
 
 #if defined (FEATURE_SUPPORT_MAPT_NAT46)
-    char  maptConfig[8] = {0};
 
-    if (!commonSyseventGet ("mapt_config_flag", maptConfig, sizeof(maptConfig)))
+    #define BUFLEN_8 8
+    char maptEnable[BUFLEN_8] = {0};
+    char  maptConfig[BUFLEN_8] = {0};
+    int strcmp_ret = -1;
+
+    if (0 == syscfg_get(NULL, "MAPT_Enable", maptEnable, sizeof(maptEnable)))
     {
-       if (strncmp(maptConfig, "set", 3) || strncmp(netdev, "erouter0", 8))
-       {
+        rc = strcmp_s(maptEnable, 4, "true", &strcmp_ret);
+        ERR_CHK(rc);
+        if (0 == strcmp_ret)
+        {
+            if (0 == commonSyseventGet("mapt_config_flag", maptConfig, sizeof(maptConfig)))
+            {
+                strcmp_ret = -1;
+                rc = strcmp_s(maptConfig, 3, "set", &strcmp_ret);
+                ERR_CHK(rc);
+                if (0 == strcmp_ret)
+                {
+                    strcmp_ret = -1;
+                    rc = strcmp_s(netdev, 8, "erouter0", &strcmp_ret);
+                    ERR_CHK(rc);
+                    if (0 == strcmp_ret)
+                    {
+                        return value;
+                    }
+                }
+            }
+        }
+    }
 #endif
     rc = strcpy_s(ifr.ifr_name, sizeof(ifr.ifr_name), netdev);
     if (rc != EOK)
@@ -180,15 +204,6 @@ ULONG CosaUtilGetIfAddr (char *netdev)
     {
         perror("CosaUtilGetIfAddr failed to open socket.");
     }
-#if defined (FEATURE_SUPPORT_MAPT_NAT46)
-       }
-    }
-    else
-    {
-        CcspTraceError(("%s: Failed - sysevent get mapt_config_flag", __FUNCTION__));
-    }
-#endif
-
     return value;
 }
 
