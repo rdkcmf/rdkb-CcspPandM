@@ -203,6 +203,10 @@ void callbackWCConfirmVap(tunnelSet_t *tunnelSet){
    pGreMyObject->GreTu[0].ChangeFlag |= GRETU_CF_SECEP;
    pGreMyObject->GreTu[0].Enable = tunnelSet->set_gre_enable;
    pGreMyObject->GreTu[0].ChangeFlag |= GRETU_CF_ENABLE;
+   pGreMyObject->GreTu[0].GreTunnelIf[0].VLANID = tunnelSet->vlan_id_list[0];
+   pGreMyObject->GreTu[0].GreTunnelIf[0].ChangeFlag |= GRETUIF_CF_VLANID;
+   pGreMyObject->GreTu[0].GreTunnelIf[1].VLANID = tunnelSet->vlan_id_list[1];
+   pGreMyObject->GreTu[0].GreTunnelIf[1].ChangeFlag |= GRETUIF_CF_VLANID;
    pMyObject->bxfinitywifiEnable = tunnelSet->set_gre_enable;
    
    if(NULL != tunnelSet){
