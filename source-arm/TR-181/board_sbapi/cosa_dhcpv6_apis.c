@@ -8436,7 +8436,10 @@ dhcpv6c_dbg_thrd(void * in)
                     {
 #if defined (FEATURE_SUPPORT_MAPT_NAT46)
                     rc = sprintf_s(pdV6pref, BUFLEN_64, "%s/%d", v6pref, pref_len);
-                    ERR_CHK(rc);
+                    if(rc < EOK)
+		     {
+			 ERR_CHK(rc);
+		     }
 #endif
 			memset(v6Tpref,0,sizeof(v6Tpref));
 			strncpy(v6Tpref,v6pref,sizeof(v6Tpref));
