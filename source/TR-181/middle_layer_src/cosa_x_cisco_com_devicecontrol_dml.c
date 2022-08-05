@@ -1272,7 +1272,7 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
             CcspTraceWarning(("Port already in use\n"));
             return FALSE;
         }
-        if((uValue < pMyObject->HTTPSPort) && (uValue >= START_HTTPPORT) && (uValue <= END_HTTPPORT))
+        if((uValue >= START_HTTPPORT) && (uValue <= END_HTTPPORT))
         {
             pMyObject->HTTPPort = uValue;
             pMyObject->WebServerChanged = TRUE;
@@ -1287,7 +1287,7 @@ X_CISCO_COM_DeviceControl_SetParamUlongValue
             CcspTraceWarning(("Port already in use\n"));
             return FALSE;
         }
-        if((uValue > pMyObject->HTTPPort) && (uValue <= END_HTTPPORT))
+        if((uValue >= START_HTTPPORT) && (uValue <= END_HTTPPORT))
         {
             pMyObject->HTTPSPort = uValue;
             pMyObject->WebServerChanged = TRUE;
