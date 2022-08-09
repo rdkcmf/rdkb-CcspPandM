@@ -258,7 +258,9 @@ CosaDmlDynamicDns_GetEnable()
 
    if (!syscfg_get(NULL, "dynamic_dns_enable", buf, sizeof(buf)))
    {
-       return (strcmp(buf, "1") == 0);
+        //return (strcmp(buf, "1") == 0);
+        //Returning true by default as dynamic_dns_enable syscfg dependency has been removed as part of removing the DDNS depenedency from Device.DynamicDNS.X_RDK-COM_Enable DM
+        return 1;
    }
    return 0;
 }
