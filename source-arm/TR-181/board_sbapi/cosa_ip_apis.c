@@ -1730,13 +1730,22 @@ IPIF_getEntry_for_Ipv6Pre
             snprintf(namespace, sizeof(namespace)-1, SYSCFG_FORMAT_NAMESPACE_STATIC_V6PREFIX, (char *)g_ipif_names[ulIndex], (ULONG)p_dml_v6pre->InstanceNumber);
             Utopia_RawGet(&utctx,namespace,"Alias",val,sizeof(val));
             if(strlen(val))
-               safec_rc = strcpy_s(p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias), val);
-            else
-               safec_rc = sprintf_s(p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias), "IPv6Prefix%lu", p_dml_v6pre->InstanceNumber );
-
-            if(safec_rc != EOK)
             {
-               ERR_CHK(safec_rc);
+               safec_rc = strcpy_s(p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias), val);
+               // for successful case, strcpy_s returns EOK
+                if(safec_rc != EOK)
+                {
+                    ERR_CHK(safec_rc);
+                }
+            }
+            else
+            {
+               safec_rc = sprintf_s(p_dml_v6pre->Alias, sizeof(p_dml_v6pre->Alias), "IPv6Prefix%lu", p_dml_v6pre->InstanceNumber );
+                // For error cases, sprintf_s returns -ve values which is less than EOK
+                if(safec_rc < EOK)
+                {
+                    ERR_CHK(safec_rc);
+                }
             }
 
             if (!p_dml_v6pre->InstanceNumber)
