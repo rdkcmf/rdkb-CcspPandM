@@ -11972,6 +11972,126 @@ AllowOpenPorts_SetParamBoolValue
         }
     return FALSE;
 }
+
+/*********************************************************************************************
+
+//BLUEZ RFC :: Box will run with RCP firmware, if this is enabled. Else run with NCP firmware
+
+**********************************************************************************************
+
+   caller: owner of this object
+
+   prototype:
+
+       BOOL
+       BLUEZ_GetParamBoolValue
+           (
+               ANSC_HANDLE                 hInsContext,
+               char*                       ParamName,
+               BOOL*                       pBool
+           );
+
+   description:
+
+       This function is called to retrieve Boolean parameter value;
+
+   argument:   ANSC_HANDLE                 hInsContext,
+               The instance handle;
+
+               char*                       ParamName,
+               The parameter name;
+
+               BOOL*                       pBool
+               The buffer of returned boolean value;
+
+   return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+BLUEZ_GetParamBoolValue
+(
+ANSC_HANDLE                 hInsContext,
+char*                       ParamName,
+BOOL*                       pBool
+)
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if (strcmp(ParamName, "Enable") == 0)
+    {
+        if(access("/nvram/bluez_enable", F_OK) != -1)
+        {
+            *pBool = TRUE;
+        }
+        else
+        {
+            *pBool = FALSE;
+        }
+
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        BOOL
+        BLUEZ_SetParamBoolValue
+        (
+                ANSC_HANDLE                 hInsContext,
+                char*                       ParamName,
+                BOOL                        bValue
+        );
+
+    description:
+
+        This function is called to set BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                BOOL                        bValue
+                The updated BOOL value;
+
+    return:     TRUE if succeeded.
+
+**********************************************************************/
+
+BOOL
+BLUEZ_SetParamBoolValue
+(
+ANSC_HANDLE                 hInsContext,
+char*                       ParamName,
+BOOL                        bValue
+)
+{
+    if (IsBoolSame(hInsContext, ParamName, bValue, BLUEZ_GetParamBoolValue))
+        return TRUE;
+    if (strcmp(ParamName, "Enable") == 0)
+    {
+        if (bValue == 1)
+        {
+            v_secure_system("touch /nvram/bluez_enable");
+            CcspTraceInfo(("Successfully enabled Bluez \n"));
+            return TRUE;
+        }
+        else if (bValue == 0)
+        {
+            v_secure_system("rm /nvram/bluez_enable");
+            CcspTraceInfo(("Successfully disabled Bluez \n"));
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 /**********************************************************************  
 
 //RBUS RFC :: Box will run in DBUS mode if this if disabled, RBUS mode if enabled
