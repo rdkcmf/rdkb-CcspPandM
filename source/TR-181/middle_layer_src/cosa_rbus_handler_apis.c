@@ -119,9 +119,10 @@ rbusError_t setUlongHandler(rbusHandle_t handle, rbusProperty_t prop, rbusSetHan
     char const* name = rbusProperty_GetName(prop);
     rbusValue_t value = rbusProperty_GetValue(prop);
     rbusValueType_t type = rbusValue_GetType(value);
-
+	rbusError_t ret = RBUS_ERROR_SUCCESS;
 	char strValue[3] = {0};
 	errno_t  rc = -1;
+	uint32_t rVal = 0;
    
     //Here deviceControl_Net_Mode is global
 
@@ -135,15 +136,14 @@ rbusError_t setUlongHandler(rbusHandle_t handle, rbusProperty_t prop, rbusSetHan
         }
 
 	//Getting value from rbus set
-        uint32_t rVal = rbusValue_GetUInt32(value);
+        rVal = rbusValue_GetUInt32(value);
         if (rVal > 1) {
           CcspTraceError(("Invalid set value for the parameter '%s'\n", DEVCTRL_NET_MODE_TR181));
           return RBUS_ERROR_INVALID_INPUT;
         }
-        deviceControl_Net_Mode.DevCtrlNetMode = rVal;
 
         /* Updating the Device Networking Mode in PSM database over sysevent */
-        rc = sprintf_s(strValue, sizeof(strValue),"%lu",deviceControl_Net_Mode.DevCtrlNetMode);
+        rc = sprintf_s(strValue, sizeof(strValue),"%lu", rVal);
         if(rc < EOK)
         {
           ERR_CHK(rc);
@@ -162,10 +162,18 @@ rbusError_t setUlongHandler(rbusHandle_t handle, rbusProperty_t prop, rbusSetHan
 		CcspTraceInfo(("sysevent_set execution success.\n"));
     }
 
-    // Publish the new value
-    publishDevCtrlNetMode(deviceControl_Net_Mode.DevCtrlNetMode);
+    // Fetch old value
+	uint32_t oldDevCtrlNetMode = deviceControl_Net_Mode.DevCtrlNetMode;
+	//update DevCtrlNetMode with new value and publish
+	if (oldDevCtrlNetMode != rVal) {
+		deviceControl_Net_Mode.DevCtrlNetMode = rVal;
+		ret = publishDevCtrlNetMode(rVal, oldDevCtrlNetMode);
+		if (ret != RBUS_ERROR_SUCCESS) {
+			CcspTraceError(("%s-%d: Failed to update and publish device mode value\n", __FUNCTION__, __LINE__));
+			return ret;
+		}
+	}
     pthread_mutex_unlock(&mutex);
-
     return RBUS_ERROR_SUCCESS;
 #else
 	(void)handle;
@@ -338,21 +346,18 @@ rbusError_t sendUlongUpdateEvent(char* event_name , uint32_t eventNewData, uint3
 
  ********************************************************************************/
  
-void publishDevCtrlNetMode(uint32_t net_mode)
+rbusError_t publishDevCtrlNetMode(uint32_t new_val, uint32_t old_val)
 {
 	rbusError_t ret = RBUS_ERROR_SUCCESS;
-	uint32_t oldDevCtrlNetMode = deviceControl_Net_Mode.DevCtrlNetMode;
-	//update DevCtrlNetMode with new value
-	deviceControl_Net_Mode.DevCtrlNetMode = net_mode;
-	CcspTraceInfo(("Publishing Device Networking Mode with updated value=%lu\n", deviceControl_Net_Mode.DevCtrlNetMode));
+	CcspTraceInfo(("Publishing Device Networking Mode with updated value=%d\n", new_val));
 	if (gSubscribersCount > 0)
 	{
-		ret = sendUlongUpdateEvent(DEVCTRL_NET_MODE_TR181, deviceControl_Net_Mode.DevCtrlNetMode, oldDevCtrlNetMode);
+		ret = sendUlongUpdateEvent(DEVCTRL_NET_MODE_TR181, new_val, old_val);
 		if(ret == RBUS_ERROR_SUCCESS) {
 			CcspTraceInfo(("Published Device Networking Mode with updated value.\n"));
 		}
-		
 	}
+	return ret;
 }
 
 bool PAM_Rbus_SyseventInit()

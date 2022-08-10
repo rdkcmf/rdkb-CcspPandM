@@ -50,7 +50,7 @@ bool initNetMode();
 
 rbusError_t sendUlongUpdateEvent(char* event_name , uint32_t eventNewData, uint32_t eventOldData);
 
-void publishDevCtrlNetMode(uint32_t net_mode);
+rbusError_t publishDevCtrlNetMode(uint32_t new_val, uint32_t old_val);
 
 bool PAM_Rbus_SyseventInit();
 
