@@ -75,6 +75,7 @@
 
 #include "cosa_upnp_apis.h"
 #include <stdlib.h>
+#include "cosa_drg_common.h"
 
 #ifdef _COSA_SIM_
 
@@ -431,6 +432,8 @@ CosaDmlUpnpDevEnableIgd
         igd.enable = 0;
     }
     UTOPIA_SETBOOL(&pCtx, UtopiaValue_Mgmt_IGDEnabled, igd.enable);
+    CcspTraceWarning(("Device.UPnP is Transitoning from false to true or viceversa \n" ));
+    commonSyseventSet("firewall-restart", "");
     //system("sysevent set igd-restart");
 
     Utopia_Free(&pCtx, 1); 
