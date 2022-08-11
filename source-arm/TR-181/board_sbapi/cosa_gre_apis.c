@@ -139,6 +139,13 @@ static snooper_statistics_s *g_snstat = NULL;
 int sysevent_fd;
 token_t sysevent_token;
 
+ANSC_STATUS
+COSAGetParamValueByPathName
+    (
+        void*                      bus_handle,
+        parameterValStruct_t       *val,
+        ULONG                      *parameterValueLength
+    );
 /**********************************************************************
 
     caller:     COSA DML
@@ -338,6 +345,7 @@ CosaDmlGREInit
         PANSC_HANDLE                phContext
     )
 {
+    UNREFERENCED_PARAMETER(hDml);
     PDMSB_TR181_GRE_CONTEXT    pGREContext = NULL;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -391,9 +399,7 @@ int GRE_hotspot_update_circuit_ids(int tunnelInst, int queuestart) {
     char outdata[MAX_REC_LEN]         = {0};
     char* save                        = NULL;
     char* curInt                      = NULL;
-    int nameSave                      = 0;
     int circuitSave                   = 0;
-    int ssidInst                      = 0;
     int size                          = 0;
     int inst                          = 0;
     parameterValStruct_t varStruct;
@@ -443,7 +449,7 @@ int GRE_hotspot_update_circuit_ids(int tunnelInst, int queuestart) {
 
         /*Fetch the value of Device.WiFi.x.SSID */
         snprintf(paramname, sizeof(paramname),"%s.%s", curInt, "SSID");
-        retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
+        retval = COSAGetParamValueByPathName(bus_handle, &varStruct, (ULONG *)&size);
 
         if ( retval != ANSC_STATUS_SUCCESS)
             return RET_FAIL;
@@ -463,7 +469,7 @@ int GRE_hotspot_update_circuit_ids(int tunnelInst, int queuestart) {
 
         /*Check if the WiFi security mode is secure or open */
         snprintf(paramname, sizeof(paramname), "Device.WiFi.AccessPoint.%d.Security.ModeEnabled", inst);
-        retval = COSAGetParamValueByPathName(bus_handle, &varStruct, &size);
+        retval = COSAGetParamValueByPathName(bus_handle, &varStruct, (ULONG *)&size);
 
         if ( retval != ANSC_STATUS_SUCCESS)
             return RET_FAIL;
@@ -515,6 +521,7 @@ int GRE_hotspot_update_circuit_ids(int tunnelInst, int queuestart) {
 
 **********************************************************************/
 static void* GRE_HS_circuit_id_init_thread(void* arg) {
+    UNREFERENCED_PARAMETER(arg);
     int ret = RET_FAIL;
 
     sleep(INITIAL_CIRCUIT_ID_SLEEP);
@@ -668,7 +675,7 @@ static int getInterfaceStatus(const char *ifname, int *up)
     if (!ifname || !up)
         return INTF_STATUS_FAIL;
 
-    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+    if ((int)(sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
     {
         perror("socket");
         return INTF_STATUS_FAIL;
@@ -715,27 +722,27 @@ static int getInterfaceStatus(const char *ifname, int *up)
 static COSA_DML_GRE_TUNNEL_IF_STATUS CosaDmlGRETunnelIfGetStatus(const char *ifname, const char* lowerlayers)
 {
     UCHAR buf[MAX_VAL_LEN] = {0};
-    UCHAR *lowerIntf = NULL;
+    const char *lowerIntf = NULL;
     CHAR *sp = NULL;
     UINT  up;
 
-    if (getInterfaceStatus(ifname, &up) != INTF_STATUS_SUCCESS)
+    if (getInterfaceStatus(ifname, (int *)&up) != INTF_STATUS_SUCCESS)
         return COSA_DML_TUNNEL_IF_ERROR;
     if (!up)
         return COSA_DML_TUNNEL_IF_DOWN;
 
-    snprintf(buf, sizeof(buf), "%s", lowerlayers);
+    snprintf((char *)buf, sizeof(buf), "%s", lowerlayers);
 
-    if ((lowerIntf = strtok_r(buf, ",", &sp)) == NULL) /* no lower if */
+    if ((lowerIntf = strtok_r((char *)buf, ",", &sp)) == NULL) /* no lower if */
         return COSA_DML_TUNNEL_IF_ERROR;
-    if (getInterfaceStatus(lowerIntf, &up) != INTF_STATUS_SUCCESS)
+    if (getInterfaceStatus(lowerIntf, (int *)&up) != INTF_STATUS_SUCCESS)
         return COSA_DML_TUNNEL_IF_ERROR;
     if (!up)
         return COSA_DML_TUNNEL_IF_LOWERLAYERDOWN;
 
     while ((lowerIntf = strtok_r(NULL, ",", &sp)) != NULL)
     {
-        if (getInterfaceStatus(lowerIntf, &up) != INTF_STATUS_SUCCESS)
+        if (getInterfaceStatus(lowerIntf, (int *)&up) != INTF_STATUS_SUCCESS)
             return COSA_DML_TUNNEL_IF_ERROR;
         if (!up)
             return COSA_DML_TUNNEL_IF_LOWERLAYERDOWN;
@@ -885,7 +892,7 @@ CosaDmlGRETunnelLoadConf
                 g_MessageBusHandle,
                 g_SubsystemPrefix,
                 DMSB_GRE_TUNNEL,
-                &iNumInst,
+                (unsigned int *)&iNumInst,
                 &pInstArray
             );
 
@@ -897,7 +904,7 @@ CosaDmlGRETunnelLoadConf
     //Sort the array from PSMGetNextLevelInstances to give the correct order of GRE Instances created
     qsort (pInstArray , iNumInst, sizeof(int), _PSM_Num_Cmp);
 
-    for ( ulIndex = 0; ulIndex < iNumInst; ulIndex++ )
+    for ( ulIndex = 0; (int)ulIndex < iNumInst; ulIndex++ )
     {
         pGRETunnel = (PDMSB_TR181_GRE_TUNNEL)AnscAllocateMemory(sizeof(DMSB_TR181_GRE_TUNNEL));
 
@@ -1002,7 +1009,7 @@ CosaDmlGRETunnelLoadConf
                     g_MessageBusHandle,
                     g_SubsystemPrefix,
                     pParamPath,
-                    &iNumIfInst,
+                    (unsigned int *)&iNumIfInst,
                     &pInstIfArray
                 );
 
@@ -1014,7 +1021,7 @@ CosaDmlGRETunnelLoadConf
         {
             AnscSListInitializeHeader(&pGRETunnel->InterfaceTR181List);
 
-            for ( ulIfIndex = 0; ulIfIndex < iNumIfInst; ulIfIndex++ )
+            for ( ulIfIndex = 0; (int)ulIfIndex < iNumIfInst; ulIfIndex++ )
             {
                 pGRETunnelIf = (PDMSB_TR181_GRE_TUNNEL_IF)AnscAllocateMemory(sizeof(DMSB_TR181_GRE_TUNNEL_IF));
                 if ( !pGRETunnelIf )
@@ -1126,6 +1133,7 @@ CosaDmlGRETunnelSaveConf
             COSA_DML_GRE_TUNNEL_CFG     *cfg
     )
 {
+    UNREFERENCED_PARAMETER(pGREContext);
     char rec[MAX_REC_LEN] = {0};
     char val[MAX_VAL_LEN] = {0};
     int tunnelInst        = 0;
@@ -1152,12 +1160,12 @@ CosaDmlGRETunnelSaveConf
         return PSM_FAIL;
 
     snprintf(rec, sizeof(rec), GRE_TUNNEL_KEEPALIVETIMEOUT, tunnelInst);
-    snprintf(val, sizeof(val), "%d", cfg->KeepAliveTimeout);
+    snprintf(val, sizeof(val), "%lu", cfg->KeepAliveTimeout);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
     snprintf(rec, sizeof(rec), GRE_TUNNEL_KEEPALIVETHRESHOLD, tunnelInst);
-    snprintf(val, sizeof(val), "%d", cfg->KeepAliveThreshold);
+    snprintf(val, sizeof(val), "%lu", cfg->KeepAliveThreshold);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
@@ -1167,32 +1175,32 @@ CosaDmlGRETunnelSaveConf
         return PSM_FAIL;
 
     snprintf(rec, sizeof(rec), GRE_TUNNEL_DEFAULTDSCPMARK, tunnelInst);
-    snprintf(val, sizeof(val), "%d", cfg->DefaultDSCPMark);
+    snprintf(val, sizeof(val), "%lu", cfg->DefaultDSCPMark);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
     snprintf(rec, sizeof(rec), GRE_TUNNEL_KEEPALIVECOUNT, tunnelInst);
-    snprintf(val, sizeof(val), "%d", cfg->KeepAliveCount);
+    snprintf(val, sizeof(val), "%lu", cfg->KeepAliveCount);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
     snprintf(rec, sizeof(rec), GRE_TUNNEL_KEEPALIVEINTERVAL, tunnelInst);
-    snprintf(val, sizeof(val), "%d", cfg->KeepAliveInterval);
+    snprintf(val, sizeof(val), "%lu", cfg->KeepAliveInterval);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
     snprintf(rec, sizeof(rec), GRE_TUNNEL_KEEPALIVEFAILUREINTERVAL, tunnelInst);
-    snprintf(val, sizeof(val), "%d", cfg->KeepAliveFailureInterval);
+    snprintf(val, sizeof(val), "%lu", cfg->KeepAliveFailureInterval);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
     snprintf(rec, sizeof(rec), GRE_TUNNEL_KEEPALIVERECOVERINTERVAL, tunnelInst);
-    snprintf(val, sizeof(val), "%d", cfg->KeepAliveRecoverInterval);
+    snprintf(val, sizeof(val), "%lu", cfg->KeepAliveRecoverInterval);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
     snprintf(rec, sizeof(rec), GRE_TUNNEL_MSSCLAMPINGVALUE, tunnelInst);
-    snprintf(val, sizeof(val), "%d", cfg->MSSClampingValue);
+    snprintf(val, sizeof(val), "%lu", cfg->MSSClampingValue);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
@@ -1207,7 +1215,7 @@ CosaDmlGRETunnelSaveConf
         return PSM_FAIL;
 
     snprintf(rec, sizeof(rec),GRE_TUNNEL_MAX_CLIENTS, tunnelInst);
-    snprintf(val, sizeof(val), "%d", cfg->MaxClients);
+    snprintf(val, sizeof(val), "%lu", cfg->MaxClients);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
@@ -1254,45 +1262,45 @@ CosaDmlGRETunnelIfSaveConf
 
     ifInstNum = pGRETunnelIf->Cfg.IfInstanceNumber;
 
-    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_ENABLE, TunnelInstanceNum, ifInstNum);
+    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_ENABLE, (int)TunnelInstanceNum, ifInstNum);
     snprintf(val, sizeof(val), "%d", pGRETunnelIf->Cfg.Enable);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
-    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_ALIAS , TunnelInstanceNum, ifInstNum);
+    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_ALIAS , (int)TunnelInstanceNum, ifInstNum);
     if (_PSM_GRE_Set(rec, pGRETunnelIf->Cfg.Alias) != PSM_SUCCESS)
         return PSM_FAIL;
 
-    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_LOWERLAYERS, TunnelInstanceNum, ifInstNum);
+    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_LOWERLAYERS, (int)TunnelInstanceNum, ifInstNum);
     if (_PSM_GRE_Set(rec, pGRETunnelIf->Cfg.LowerLayers) != PSM_SUCCESS)
         return PSM_FAIL;
 
-    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_PROTOCOLIDOVERRIDE, TunnelInstanceNum, ifInstNum);
-    snprintf(val, sizeof(val), "%d", pGRETunnelIf->Cfg.ProtocolIdOverride);
+    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_PROTOCOLIDOVERRIDE, (int)TunnelInstanceNum, ifInstNum);
+    snprintf(val, sizeof(val), "%lu", pGRETunnelIf->Cfg.ProtocolIdOverride);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
-    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_USECHECKSUM , TunnelInstanceNum, ifInstNum);
+    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_USECHECKSUM , (int)TunnelInstanceNum, ifInstNum);
     snprintf(val, sizeof(val), "%d", pGRETunnelIf->Cfg.UseChecksum);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
-    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_KEYIDENTIFIERGENERATIONPOLICY , TunnelInstanceNum, ifInstNum);
+    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_KEYIDENTIFIERGENERATIONPOLICY , (int)TunnelInstanceNum, ifInstNum);
     snprintf(val, sizeof(val), "%d", pGRETunnelIf->Cfg.KeyIdentifierGenerationPolicy);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
-    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_KEYIDENTIFIER, TunnelInstanceNum, ifInstNum);
-    snprintf(val, sizeof(val), "%d", pGRETunnelIf->Cfg.KeyIdentifier);
+    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_KEYIDENTIFIER, (int)TunnelInstanceNum, ifInstNum);
+    snprintf(val, sizeof(val), "%lu", pGRETunnelIf->Cfg.KeyIdentifier);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
-    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_USESEQUENCENUMBER, TunnelInstanceNum, ifInstNum);
+    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_USESEQUENCENUMBER, (int)TunnelInstanceNum, ifInstNum);
     snprintf(val, sizeof(val), "%d", pGRETunnelIf->Cfg.UseSequenceNumber);
     if (_PSM_GRE_Set(rec, val) != PSM_SUCCESS)
         return PSM_FAIL;
 
-    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_NAME , TunnelInstanceNum, ifInstNum);
+    snprintf(rec, sizeof(rec), GRE_TUNNEL_IF_NAME , (int)TunnelInstanceNum, ifInstNum);
     if (_PSM_GRE_Set(rec, pGRETunnelIf->Info.Name) != PSM_SUCCESS)
         return PSM_FAIL;
 
@@ -1685,9 +1693,7 @@ CosaDmlGRETunnelAddEntry
         PCOSA_DML_GRE_TUNNEL_FULL     pEntry
     )
 {
-    int                       iReturnValue = CCSP_SUCCESS;
     PDMSB_TR181_GRE_CONTEXT   pGREContext  = (PDMSB_TR181_GRE_CONTEXT)hContext;
-    PSINGLE_LINK_ENTRY        pSLinkEntry  = NULL;
     PDMSB_TR181_GRE_TUNNEL    pGRETunnel   = NULL;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -1762,7 +1768,6 @@ CosaDmlGRETunnelIfAddEntry
     PDMSB_TR181_GRE_TUNNEL              pGRETunnel   = NULL;
     PDMSB_TR181_GRE_TUNNEL_IF           pGRETunnelIf = NULL;
     PSINGLE_LINK_ENTRY                  pSLinkEntry  = NULL;
-    UCHAR                               param_name[MAX_REC_LEN] = {0};
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
     pSLinkEntry = AnscSListGetEntryByIndex(&pGREContext->GRETunnelTR181List, (ulGRETunnelInstanceNumber-1));
@@ -1963,7 +1968,6 @@ CosaDmlGRETunnelIfSetCfg
     PDMSB_TR181_GRE_CONTEXT             pGREContext               = (PDMSB_TR181_GRE_CONTEXT)hContext;
     PDMSB_TR181_GRE_TUNNEL              pGRETunnel                = NULL;
     PDMSB_TR181_GRE_TUNNEL_IF           pGRETunnelIf              = NULL;
-    PSINGLE_LINK_ENTRY                  pSLinkEntry               = NULL;
     char                                param_name[MAX_REC_LEN]   = {0};
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
@@ -1990,12 +1994,12 @@ CosaDmlGRETunnelIfSetCfg
     if (pEntry->Cfg.Enable == true)
     {
         //Calling the service_gre.sh script to create a GRE tunnel
-        _ansc_sprintf(param_name, "sysevent set igre-start %d", ulGRETunnelInstanceNumber);
+        _ansc_sprintf(param_name, "sysevent set igre-start %lu", ulGRETunnelInstanceNumber);
         system(param_name);
     }
     else
     {
-        _ansc_sprintf(param_name, "sysevent set igre-stop %d", ulGRETunnelInstanceNumber);
+        _ansc_sprintf(param_name, "sysevent set igre-stop %lu", ulGRETunnelInstanceNumber);
         system(param_name);
     }
 
@@ -2043,7 +2047,6 @@ CosaDmlGRETunnelIfGetCfg
     PDMSB_TR181_GRE_CONTEXT             pGREContext  = (PDMSB_TR181_GRE_CONTEXT)hContext;
     PDMSB_TR181_GRE_TUNNEL              pGRETunnel   = NULL;
     PDMSB_TR181_GRE_TUNNEL_IF           pGRETunnelIf = NULL;
-    PSINGLE_LINK_ENTRY                  pSLinkEntry  = NULL;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -2173,7 +2176,7 @@ CosaDmlGRETunnelGetStats
     PDMSB_TR181_GRE_TUNNEL           pGRETunnel              = NULL;
     PDMSB_TR181_GRE_TUNNEL_IF        pIfCurObj               = NULL;
     PDMSB_TR181_GRE_TUNNEL_IF        pIfNextObj              = NULL;
-    UCHAR                            intfName[MAX_REC_LEN]   = {0};
+    CHAR                             intfName[MAX_REC_LEN]   = {0};
     PCOSA_DML_IF_STATS               stats                   = NULL;
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -2268,14 +2271,10 @@ CosaDmlGRETunnelIfGetInfo
     PDMSB_TR181_GRE_CONTEXT             pGREContext  = (PDMSB_TR181_GRE_CONTEXT)hContext;
     PDMSB_TR181_GRE_TUNNEL              pGRETunnel   = NULL;
     PDMSB_TR181_GRE_TUNNEL_IF           pGRETunnelIf = NULL;
-    PSINGLE_LINK_ENTRY                  pSLinkEntry  = NULL;
-    ULONG                               ulIndex;
-    UCHAR                               ucEntryParamName[MAX_REC_LEN]       = {0};
-    UCHAR                               ucEntryNameValue[MAX_REC_LEN]       = {0};
+    CHAR                                ucEntryParamName[MAX_REC_LEN]       = {0};
+    CHAR                                ucEntryNameValue[MAX_REC_LEN]       = {0};
     ULONG                               ulEntryNameLen = MAX_REC_LEN;
     UCHAR                               lowerLayers[MAX_REC_LEN];
-    COSA_DML_LINK_TYPE                  linkType;
-    UINT                                linkInstNum;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
 
@@ -2300,9 +2299,9 @@ CosaDmlGRETunnelIfGetInfo
 
             if ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen))
             {
-                AnscCopyString(lowerLayers, ucEntryNameValue);
+                AnscCopyString((char *)lowerLayers, ucEntryNameValue);
             }
-            pEntry->Status = CosaDmlGRETunnelIfGetStatus(pEntry->Name, lowerLayers);
+            pEntry->Status = CosaDmlGRETunnelIfGetStatus(pEntry->Name, (const char *)lowerLayers);
         }
     }
     return ANSC_STATUS_SUCCESS;
@@ -2348,6 +2347,7 @@ CosaDmlGRETunnelIfGetStats
         PCOSA_DML_GRE_TUNNEL_IF_STATS        pStats
     )
 {
+    UNREFERENCED_PARAMETER(hContext);
     FILE *fp                                   = NULL;
     int DiscardChecksumReceived                = 0;
     int DiscardSequenceNumberReceived          = 0;
@@ -2357,17 +2357,18 @@ CosaDmlGRETunnelIfGetStats
 
     _ansc_memset(pStats, 0, sizeof(COSA_DML_GRE_TUNNEL_IF_STATS));
 
-    snprintf(stats_file_crc_errors,MAX_VAL_LEN,"/sys/class/net/%s/statistics/rx_crc_errors",intfName);
-    snprintf(stats_file_fifo_errors,MAX_VAL_LEN,"/sys/class/net/%s/statistics/rx_fifo_errors",intfName);
+    snprintf((char *)stats_file_crc_errors,MAX_VAL_LEN,"/sys/class/net/%s/statistics/rx_crc_errors",intfName);
+    snprintf((char *)stats_file_fifo_errors,MAX_VAL_LEN,"/sys/class/net/%s/statistics/rx_fifo_errors",intfName);
 
-    fp = fopen(stats_file_crc_errors,"r");
+    fp = fopen((const char *)stats_file_crc_errors,"r");
+
     if(fp)
     {
         fscanf(fp,"%d",&DiscardChecksumReceived);
         fclose(fp);
     }
 
-    fp = fopen(stats_file_fifo_errors,"r");
+    fp = fopen((const char *)stats_file_fifo_errors,"r");
     if(fp)
     {
         fscanf(fp,"%d",&DiscardSequenceNumberReceived);
@@ -2377,7 +2378,7 @@ CosaDmlGRETunnelIfGetStats
     pStats->DiscardChecksumReceived =  DiscardChecksumReceived;
     pStats->DiscardSequenceNumberReceived = DiscardSequenceNumberReceived;
 
-    if (CosaUtilGetIfStats(intfName,  stats))
+    if (CosaUtilGetIfStats((char *)intfName,  stats))
     {
         pStats->BytesSent = stats->BytesSent;
         pStats->BytesReceived = stats->BytesReceived;
@@ -2500,7 +2501,7 @@ CosaDmlGRETunnelDelPsm
         _ansc_sprintf
             (
                 pParamPath,
-                DMSB_GRE_TUNNEL "%d.",
+                DMSB_GRE_TUNNEL "%lu.",
                 pCfg->TunnelInstanceNumber
             );
 
@@ -2560,7 +2561,6 @@ CosaDmlGRETunnelIfDelEntry
     PDMSB_TR181_GRE_CONTEXT             pGREContext = (PDMSB_TR181_GRE_CONTEXT)hContext;
     PDMSB_TR181_GRE_TUNNEL              pGRETunnel  = NULL;
     PDMSB_TR181_GRE_TUNNEL_IF           pIfLinkObj  = NULL;
-    PSINGLE_LINK_ENTRY                  pSLinkEntry = NULL;
 
     AnscTraceFlow(("%s...\n", __FUNCTION__));
     pGRETunnel = CosaDmlGRETunnelFindByInstNum(pGREContext, ulGRETunnelInstanceNumber);
@@ -2627,7 +2627,7 @@ CosaDmlGRETunnelIfDelPsm
         _ansc_sprintf
             (
                 pParamPath,
-                DMSB_GRE_TUNNEL "%d." GRE_INTERFACE "%d.",
+                DMSB_GRE_TUNNEL "%lu." GRE_INTERFACE "%lu.",
                 TunnelInstanceNumber,IfInstanceNumber
             );
 

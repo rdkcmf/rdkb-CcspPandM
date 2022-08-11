@@ -70,7 +70,9 @@
 #include "plugin_main_apis.h"
 
 #define  COSA_DML_IPV6_ADDR_LENGTH                    128
-
+#if defined (INTEL_PUMA7)
+#define  COSA_DML_IP_IF_DEFAULT_MTU                   1500
+#endif
 
 /***********************************
     Actual definition declaration

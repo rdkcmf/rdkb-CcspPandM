@@ -93,6 +93,9 @@ GRE_GetParamUlongValue
         ULONG*                      puLong
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(puLong);
     return FALSE;
 }
 
@@ -124,6 +127,7 @@ GRETunnel_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_GRE         pMyObject   = (PCOSA_DATAMODEL_GRE )g_pCosaBEManager->hIGRE;
 
     return AnscSListQueryDepth(&pMyObject->GRETunnelList);
@@ -167,11 +171,10 @@ GRETunnel_GetEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_GRE             pMyObject               = (PCOSA_DATAMODEL_GRE )g_pCosaBEManager->hIGRE;
-    PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->GRETunnelList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry             = (PSINGLE_LINK_ENTRY       )NULL;
-    PCOSA_DML_GRE_TUNNEL_FULL       pEntry                  = (PCOSA_DML_GRE_TUNNEL_FULL  )NULL;
 
     pSLinkEntry = AnscSListGetEntryByIndex(&pMyObject->GRETunnelList, nIndex);
 
@@ -217,6 +220,7 @@ GRETunnel_AddEntry
         ULONG*                      pInsNumber
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_GRE             pMyObject               = (PCOSA_DATAMODEL_GRE)g_pCosaBEManager->hIGRE;
     PSLIST_HEADER                   pListHead               = (PSLIST_HEADER            )&pMyObject->GRETunnelList;
     PCOSA_DML_GRE_TUNNEL_FULL_ALL   pEntry                  = (PCOSA_DML_GRE_TUNNEL_FULL_ALL  )NULL;
@@ -228,7 +232,7 @@ GRETunnel_AddEntry
         return NULL;
     }
 
-    _ansc_sprintf(pEntry->Cfg.Alias, "cpe-GRETunnel%d", pMyObject->ulNextGRETunnelInstance);
+    _ansc_sprintf(pEntry->Cfg.Alias, "cpe-GRETunnel%lu", pMyObject->ulNextGRETunnelInstance);
 
     pEntry->Cfg.DeliveryHeaderProtocol = COSA_DML_IPV4;
     pEntry->Cfg.KeepAlivePolicy = COSA_DML_KEEPALIVE_POLICY_NONE;
@@ -299,6 +303,7 @@ GRETunnel_DelEntry
         ANSC_HANDLE                 hInstance
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_GRE             pMyObject     = (PCOSA_DATAMODEL_GRE)g_pCosaBEManager->hIGRE;
     PSLIST_HEADER                   pListHead     = (PSLIST_HEADER)&pMyObject->GRETunnelList;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)hInstance;
@@ -422,6 +427,8 @@ GRETunnel_GetParamStringValue
     )
 
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DATAMODEL_GRE             pMyObject         = (PCOSA_DATAMODEL_GRE)g_pCosaBEManager->hIGRE;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_GRE_TUNNEL_FULL_ALL   pDmlGRETunnel     = (PCOSA_DML_GRE_TUNNEL_FULL_ALL)pCosaContext->hContext;
@@ -596,6 +603,9 @@ GRETunnel_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -727,12 +737,12 @@ GRETunnel_SetParamUlongValue
     char                            param_name[MAX_CMD_LENGTH]  = {0};
     char                            str_value[STR_VAL_LENGTH]   = {0};
 
-    snprintf(str_value, sizeof(str_value), "%d", uValue);
+    snprintf(str_value, sizeof(str_value), "%lu", uValue);
 
     if (strcmp(ParamName, "KeepAlivePolicy") == 0)
     {
         pDmlGRETunnel->Cfg.KeepAlivePolicy = uValue;
-        snprintf(str_value, sizeof(str_value), "%d", uValue);
+        snprintf(str_value, sizeof(str_value), "%lu", uValue);
 
         if(sysevent_set(sysevent_fd, sysevent_token,khotspotfd_keep_alive_policy, str_value, 0))
         {
@@ -758,7 +768,7 @@ GRETunnel_SetParamUlongValue
     if (strcmp(ParamName, "KeepAliveThreshold") == 0)
     {
         pDmlGRETunnel->Cfg.KeepAliveThreshold = uValue;
-        snprintf(str_value, sizeof(str_value), "%d", uValue);
+        snprintf(str_value, sizeof(str_value), "%lu", uValue);
 
         if(sysevent_set(sysevent_fd, sysevent_token,khotspotfd_keep_alive_threshold, str_value, 0))
         {
@@ -839,7 +849,7 @@ GRETunnel_SetParamUlongValue
     if (strcmp(ParamName, "X_CABLELABS_COM_MSSClampingValue") == 0)
     {
         pDmlGRETunnel->Cfg.MSSClampingValue = uValue;
-        _ansc_sprintf(param_name, "sysevent set mssclamping %d", uValue);
+        _ansc_sprintf(param_name, "sysevent set mssclamping %lu", uValue);
         system(param_name);
         return TRUE;
     }
@@ -954,6 +964,9 @@ GRETunnel_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     return FALSE;
 }
 
@@ -995,6 +1008,9 @@ GRETunnel_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -1308,7 +1324,6 @@ GRETunnelIf_AddEntry
         ULONG*                      pInsNumber
     )
 {
-    PCOSA_DATAMODEL_GRE             pMyObject      = (PCOSA_DATAMODEL_GRE )g_pCosaBEManager->hIGRE;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext    = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_GRE_TUNNEL_FULL_ALL   pDmlGRETunnel   = (PCOSA_DML_GRE_TUNNEL_FULL_ALL)pCosaContext->hContext;
     PCOSA_CONTEXT_LINK_OBJECT       pSubCosaContext  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
@@ -1320,8 +1335,8 @@ GRETunnelIf_AddEntry
     {
         return NULL;
     }
-    _ansc_sprintf(pInterface->Cfg.Alias, "cpe-GREInterface%d", pDmlGRETunnel->ulNextIfInsNum);
-    _ansc_sprintf(pInterface->Info.Name, "gretap%d", pDmlGRETunnel->Cfg.TunnelInstanceNumber);
+    _ansc_sprintf(pInterface->Cfg.Alias, "cpe-GREInterface%lu", pDmlGRETunnel->ulNextIfInsNum);
+    _ansc_sprintf(pInterface->Info.Name, "gretap%lu", pDmlGRETunnel->Cfg.TunnelInstanceNumber);
     pInterface->Cfg.ProtocolIdOverride = 0;
     pInterface->Cfg.UseChecksum = FALSE;
     pInterface->Cfg.KeyIdentifierGenerationPolicy = COSA_DML_KEY_ID_GEN_POLICY_DISABLED;
@@ -1514,6 +1529,7 @@ GRETunnelIf_GetParamStringValue
     )
 
 {
+    UNREFERENCED_PARAMETER(pUlSize);
     PCOSA_DATAMODEL_GRE             pMyObject         = (PCOSA_DATAMODEL_GRE)g_pCosaBEManager->hIGRE;
     PCOSA_CONTEXT_LINK_OBJECT       pCosaContext      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_GRE_TUNNEL_FULL_ALL   pDmlGRETunnel     = (PCOSA_DML_GRE_TUNNEL_FULL_ALL)pCosaContext->hParentTable;
@@ -1650,6 +1666,9 @@ GRETunnelIf_GetParamIntValue
         int*                        pInt
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pInt);
     return FALSE;
 }
 
@@ -1863,6 +1882,9 @@ GRETunnelIf_SetParamIntValue
         int                         iValue
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(iValue);
     return FALSE;
 }
 
@@ -1904,6 +1926,9 @@ GRETunnelIf_Validate
         ULONG*                      puLength
     )
 {
+    UNREFERENCED_PARAMETER(hInsContext);
+    UNREFERENCED_PARAMETER(pReturnParamName);
+    UNREFERENCED_PARAMETER(puLength);
     return TRUE;
 }
 
@@ -2037,7 +2062,7 @@ GRETunnelIfStats_GetParamUlongValue
 
     CosaDmlGRETunnelIfGetInfo(pMyObject->hSbContext, pDmlGRETunnel->Cfg.TunnelInstanceNumber, pDmlGRETunnelIf->Cfg.IfInstanceNumber, &pDmlGRETunnelIf->Info);
 
-    CosaDmlGRETunnelIfGetStats(pMyObject->hSbContext, pDmlGRETunnelIf->Info.Name, &stats);
+    CosaDmlGRETunnelIfGetStats(pMyObject->hSbContext, (UCHAR *)pDmlGRETunnelIf->Info.Name, &stats);
 
     if (strcmp(ParamName, "BytesSent") == 0)
     {

@@ -55,6 +55,9 @@
 
 #define  MAX_REC_LEN  256
 
+ANSC_STATUS CosaDmlGREInit(ANSC_HANDLE hDml,PANSC_HANDLE phContext);
+ANSC_STATUS CosaDmlGREInit_HotspotParams(ANSC_HANDLE hContext);
+
 /**********************************************************************
 
     caller:     owner of the object
@@ -82,7 +85,6 @@ CosaGRECreate
         VOID
     )
 {
-    ANSC_STATUS                 returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_GRE         pMyObject    = (PCOSA_DATAMODEL_GRE)NULL;
 
     pMyObject = (PCOSA_DATAMODEL_GRE)AnscAllocateMemory(sizeof(COSA_DATAMODEL_GRE));
@@ -136,7 +138,6 @@ CosaGREInitialize
     PCOSA_DML_GRE_TUNNEL_IF_FULL   pTunnelIf               = (PCOSA_DML_GRE_TUNNEL_IF_FULL)NULL;
     PCOSA_CONTEXT_LINK_OBJECT      pCosaContext            = (PCOSA_CONTEXT_LINK_OBJECT  )NULL;
     PCOSA_CONTEXT_LINK_OBJECT      pCosaContext2           = (PCOSA_CONTEXT_LINK_OBJECT  )NULL;
-    ULONG                          ulSubCount              = 0;
     ULONG                          ulIndex                 = 0;
     ULONG                          ulSubIndex              = 0;
     UCHAR                          param_name[MAX_REC_LEN] = {0};
@@ -199,7 +200,7 @@ CosaGREInitialize
                 {
                     pMyObject->ulNextGRETunnelInstance = 1;
                 }
-                _ansc_sprintf(pDmlGRETunnel->Cfg.Alias, "cpe-GRETunnel%d", pCosaContext->InstanceNumber);
+                _ansc_sprintf(pDmlGRETunnel->Cfg.Alias, "cpe-GRETunnel%lu", pCosaContext->InstanceNumber);
 
                 CosaDmlGRETunnelSetValues(pMyObject->hSbContext, ulIndex, pDmlGRETunnel->Cfg.Alias);
             }
@@ -228,8 +229,8 @@ CosaGREInitialize
             {
                 if (pTunnelIf->Cfg.Enable == true)
                 {
-                    _ansc_sprintf(param_name, "sysevent set igre-start %d", ulIndex + 1);
-                    system(param_name);
+                    _ansc_sprintf((char *)param_name, "sysevent set igre-start %lu", ulIndex + 1);
+                    system((const char *)param_name);
                 }
             }
             if (TRUE)
@@ -262,7 +263,7 @@ CosaGREInitialize
                     {
                         pDmlGRETunnel->ulNextIfInsNum = 1;
                     }
-                    _ansc_sprintf(pTunnelIf->Cfg.Alias, "cpe-GRETunnel%dInterface%d", ulIndex, pCosaContext2->InstanceNumber);
+                    _ansc_sprintf(pTunnelIf->Cfg.Alias, "cpe-GRETunnel%luInterface%lu", ulIndex, pCosaContext2->InstanceNumber);
 
                     CosaDmlGRETunnelIfSetValues
                         (

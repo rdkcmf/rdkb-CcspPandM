@@ -2271,6 +2271,12 @@ Port_GetParamStringValue
                 break;
             case COSA_DML_BRG_LINK_TYPE_Gre: //$HL 07/15/2013
                 pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)"Device.X_CISCO_COM_GRE.Interface.", (PUCHAR)pPort->Cfg.LinkName);
+#if defined (INTEL_PUMA7)
+                //TODO : Once we move to new GRE implementation completely we should remove the call to Cisco-Comcast GRE
+                if (pLowerLayer==NULL) {
+                    pLowerLayer = CosaUtilGetLowerLayers((PUCHAR)"Device.GRE.Tunnel.", (PUCHAR)pPort->Cfg.LinkName);
+                }
+#endif
                 if (pLowerLayer)
                 {
                     int result = 0;

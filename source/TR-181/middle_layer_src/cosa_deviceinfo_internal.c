@@ -161,6 +161,7 @@ CosaDeviceInfoInitialize
 
     /* Initiation all functions */
     _ansc_memset(pMyObject->ProvisioningCode, 0, 64);
+    CosaDmlDiGetEnableMoCAforXi5Flag( pMyObject , &pMyObject->bEnableMoCAforXi5 );
     CosaDmlDiInit(NULL, NULL);
     CosaDmlDiGetXfinityWiFiEnable(&pMyObject->bxfinitywifiEnable);
 	CosaDmlDiGetCloudCapable(&pMyObject->bCloudCapable);

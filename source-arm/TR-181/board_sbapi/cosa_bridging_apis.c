@@ -216,6 +216,9 @@ dmsb.l2net.1.Port.2.link2eRouter = FALSE
 #define DMSB_VLAN_HIGHBOUND              400
 
 #define DMSB_BRID_LOWBOUND              64
+#if defined (INTEL_PUMA7)
+#define GRE_HOTSPOT_BRIDGE_ALIAS        "hotspot_gre_br"
+#endif
 
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
@@ -1715,8 +1718,26 @@ CosaDmlBrgPortSetCfg
     if (pBPort == NULL) {
         AnscTraceFlow(("<HL> %s cannot find port inst=%lu\n",__FUNCTION__,pCfg->InstanceNumber));
         return ANSC_STATUS_CANT_FIND;
-    } 
-    
+    }
+
+#if defined (INTEL_PUMA7)
+    if(pBPort->bMgt)
+    {
+        if(pCfg->bEnabled)
+        {
+            v_secure_system("sysevent set multinet-start %lu", ulBrgInstanceNumber);
+        }
+        else
+        {
+            v_secure_system("sysevent set multinet-down %lu", ulBrgInstanceNumber);
+            if( 0 == strncmp(pBridge->alias, GRE_HOTSPOT_BRIDGE_ALIAS, sizeof(GRE_HOTSPOT_BRIDGE_ALIAS)))
+            {
+                v_secure_system("sysevent set igre-hotspot-stop %lu", ulBrgInstanceNumber);
+            }
+        }
+    }
+#endif
+
     if (!AnscEqualString(pCfg->LinkName, pBPort->linkName, TRUE) || pCfg->LinkType != pBPort->linkType
         || pCfg->bEnabled != pBPort->bEnabled || pCfg->mode != pBPort->mode)
     {

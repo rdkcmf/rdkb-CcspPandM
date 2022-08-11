@@ -147,6 +147,11 @@ static void CheckAndSetRebootReason();
 extern int sock;
 #endif
 
+#if defined (INTEL_PUMA7)
+ANSC_HANDLE CosaGRECreate(VOID);
+ANSC_STATUS CosaGRERemove(ANSC_HANDLE hThisObject);
+#endif
+
 /*PCOSA_DIAG_PLUGIN_INFO             g_pCosaDiagPluginInfo;*/
 COSAGetParamValueByPathNameProc    g_GetParamValueByPathNameProc;
 COSASetParamValueByPathNameProc    g_SetParamValueByPathNameProc;

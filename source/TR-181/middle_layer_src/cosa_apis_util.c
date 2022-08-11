@@ -298,6 +298,9 @@ CosaUtilGetLowerLayers
     CHAR                            ucLowerEntryName[256]       = {0};
     ULONG                           ulEntryInstanceNum          = 0;
     ULONG                           ulEntryPortNum              = 0;
+#if defined (INTEL_PUMA7)
+    ULONG                           ulEntryIntfNum              = 0;
+#endif
     PUCHAR                          pMatchedLowerLayer          = NULL;
     PANSC_TOKEN_CHAIN               pTableListTokenChain        = (PANSC_TOKEN_CHAIN)NULL;
     PANSC_STRING_TOKEN              pTableStringToken           = (PANSC_STRING_TOKEN)NULL;
@@ -533,6 +536,42 @@ CosaUtilGetLowerLayers
                     }
                 }
             }
+#if defined (INTEL_PUMA7)
+            else if ( AnscEqualString(pTableStringToken->Name, "Device.GRE.Tunnel.", TRUE ) )
+            {
+                ulNumOfEntries =  CosaGetParamValueUlong("Device.GRE.TunnelNumberOfEntries");
+                CcspTraceInfo(("----------CosaUtilGetLowerLayers, tunnelnum:%lu\n", ulNumOfEntries));
+                for ( i = 0 ; i < ulNumOfEntries; i++ )
+                {
+                    ulEntryInstanceNum = CosaGetInstanceNumberByIndex("Device.GRE.Tunnel.", i);
+                    CcspTraceInfo(("----------CosaUtilGetLowerLayers, instance num:%lu\n", ulEntryInstanceNum));
+                    if ( ulEntryInstanceNum )
+                    {
+                        _ansc_sprintf(ucEntryFullPath, "%s%lu", "Device.GRE.Tunnel.", ulEntryInstanceNum);
+                        rc = sprintf_s(ucLowerEntryPath, sizeof(ucLowerEntryPath), "%s%s", ucEntryFullPath, ".InterfaceNumberOfEntries");
+                        if(rc < EOK)  ERR_CHK(rc);
+
+                        ulEntryIntfNum = CosaGetParamValueUlong(ucLowerEntryPath);
+                        CcspTraceInfo(("----------CosaUtilGetLowerLayers, Param:%s,intf num:%lu\n",ucLowerEntryPath, ulEntryIntfNum));
+                        for ( j = 1; j<= ulEntryIntfNum; j++) {
+                            rc = sprintf_s(ucLowerEntryName, sizeof(ucLowerEntryName), "%s%s%lu", ucEntryFullPath, ".Interface.", j);
+                            if(rc < EOK)  ERR_CHK(rc);
+                            rc = sprintf_s(ucEntryParamName, sizeof(ucEntryParamName), "%s%s%lu%s", ucEntryFullPath, ".Interface.", j, ".Name");
+                            if(rc < EOK)  ERR_CHK(rc);
+                            CcspTraceInfo(("----------CosaUtilGetLowerLayers, Param:%s,Param2:%s\n", ucLowerEntryName, ucEntryParamName));
+                            ulEntryNameLen = sizeof(ucEntryNameValue);
+                            if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
+                                 AnscEqualString(ucEntryNameValue, (char *)pKeyword , TRUE ) )
+                            {
+                                pMatchedLowerLayer =  (PUCHAR)AnscCloneString(ucLowerEntryName);
+                                CcspTraceInfo(("----------CosaUtilGetLowerLayers, J:%lu, LowerLayer:%s\n", j, pMatchedLowerLayer));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+#endif
             else if (strcmp(pTableStringToken->Name, "Device.UPA.Interface.") == 0)
             {
             }
@@ -1487,7 +1526,114 @@ _EXIT:
     return ret;
 }
 
+#if defined( _HUB4_PRODUCT_REQ_ ) || defined( _SR300_PRODUCT_REQ_ )
 
+#define NET_EXT_STATS_FILE "/proc/net/dev_extstats"
+#define NET_STATS_FILE "/proc/net/dev"
+int CosaUtilGetIfStats(char * ifname, PCOSA_DML_IF_STATS pStats)
+{
+    FILE * fp = NULL;
+    char buf[1024] = {0} ;
+    char *tok, *delim = ": \t\r\n", *sp = NULL, *ptr = NULL;
+    int idx = 0, ret = 0;;
+
+    if(ifname == NULL  || pStats == NULL )
+        return -1;
+
+    // check if dev_extstats exists in platform
+    fp = fopen(NET_EXT_STATS_FILE, "r");
+
+    if(fp == NULL)
+    {
+        fp = fopen(NET_STATS_FILE, "r");
+        // both files are not present . Return error
+        if(fp == NULL)
+            return -1;
+    }
+
+    // skip first row
+    if (fgets(buf, sizeof(buf), fp) == NULL)
+    {
+        fclose(fp);
+        return -1;
+    }
+
+    while (fgets(buf, sizeof(buf), fp) != NULL)
+    {
+        if(ifname[0] == '\0')
+            break;
+
+        if ((strstr(buf, (char *)ifname) == NULL))
+            continue;
+        // found an interface entry in /proc/net/dev_extstats or /proc/net/dev
+        // fetch all statistics by iterating each column using delim
+
+        for (idx = 1, ptr = buf; (tok = strtok_r(ptr, delim, &sp)) != NULL; idx++)
+        {
+            ptr = NULL;
+            switch (idx)
+            {
+                case 2:
+                    pStats->BytesReceived = (ULONG)atol(tok);
+                    break;
+                case 3:
+                    pStats->PacketsReceived = (ULONG)atol(tok);
+                    break;
+                case 4:
+                    pStats->ErrorsReceived = (ULONG)atol(tok);
+                    break;
+                case 5:
+                    pStats->DiscardPacketsReceived = (ULONG)atol(tok);
+                    break;
+                case 10:
+                    pStats->BytesSent = (ULONG)atol(tok);
+                    break;
+                case 11:
+                    pStats->PacketsSent = (ULONG)atol(tok);
+                    break;
+                case 12:
+                    pStats->ErrorsSent = (ULONG)atol(tok);
+                    break;
+                case 13:
+                    pStats->DiscardPacketsSent = (ULONG)atol(tok);
+                    break;
+                case 9:
+                    pStats->MulticastPacketsReceived = (ULONG)atol(tok);
+                    break;
+                case 18:
+                    pStats->MulticastPacketsSent = (ULONG)atol(tok);
+                    break;
+                case 21:
+                    // required for cloud integration
+                    pStats->UnicastPacketsReceived = (ULONG)atol(tok);
+                    break;
+                case 22:
+                    // required for cloud integration
+                    pStats->UnicastPacketsSent = (ULONG)atol(tok);
+                    break;
+                case 23:
+                    pStats->BroadcastPacketsReceived = (ULONG)atol(tok);
+                    break;
+                case 24:
+                    pStats->BroadcastPacketsSent = (ULONG)atol(tok);
+                    break;
+                case 25:
+                    pStats->UnknownProtoPacketsReceived = (ULONG)atol(tok);
+                    break;
+                default:
+                    break;
+            }
+        } // for
+        // fetched all stats values for the interface
+        ret = TRUE;
+        break;
+    }// while
+    fclose(fp);
+
+    return ret;
+}
+
+#else // other platforms
 
 #define NET_STATS_FILE "/proc/net/dev"
 int CosaUtilGetIfStats(char * ifname, PCOSA_DML_IF_STATS pStats)
@@ -1512,10 +1658,10 @@ int CosaUtilGetIfStats(char * ifname, PCOSA_DML_IF_STATS pStats)
                 if (strstr(buf, ifname))
                 {
                     memset(pStats, 0, sizeof(*pStats));
-                    if (sscanf(p+1, "%lu %lu %lu %lu %*d %*d %*d %*d %lu %lu %lu %lu %*d %*d %*d %*d", 
-                               &pStats->BytesReceived, &pStats->PacketsReceived, &pStats->ErrorsReceived, &pStats->DiscardPacketsReceived,
+                    if (sscanf(p+1, "%lu %lu %lu %lu %*d %*d %*d %lu %lu %lu %lu %lu %*d %*d %*d %*d",
+                               &pStats->BytesReceived, &pStats->PacketsReceived, &pStats->ErrorsReceived, &pStats->DiscardPacketsReceived, &pStats->MulticastPacketsReceived,
                                &pStats->BytesSent, &pStats->PacketsSent, &pStats->ErrorsSent, &pStats->DiscardPacketsSent
-                            ) == 8)
+                            ) == 9)
                     {
                         /*found*/
                         ret = TRUE;
@@ -1533,6 +1679,7 @@ _EXIT:
     fclose(fp);
     return ret;
 }
+#endif
 
 ULONG NetmaskToNumber(char *netmask)
 {

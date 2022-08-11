@@ -1034,6 +1034,12 @@
             <writable>true</writable>
          </parameter>
 	<!-- placeholder for Xi5 parameter start -->
+        <parameter>
+            <name>X_RDKCENTRAL-COM_EnableMoCAforXi5</name>
+            <type>boolean</type>
+            <syntax>bool</syntax>
+            <writable>true</writable>
+        </parameter>
 	<!-- placeholder for Xi5 parameter end -->
 <?else?>
         <parameter>
@@ -8908,6 +8914,7 @@
 
     </object>
 
+<?ifndef FEATURE_RDKB_DHCP_MANAGER?>
     <object>
 
       <name>DNS</name>
@@ -9121,6 +9128,7 @@
 
     </object>
 
+<?endif?>
     <object>
 
       <name>Firewall</name>
@@ -10058,6 +10066,7 @@
 
     </object>
 
+<?ifndef FEATURE_RDKB_DHCP_MANAGER?>
     <object>
 
       <name>DHCPv4</name>
@@ -10088,7 +10097,7 @@
 
         </parameter>
 <?endif?>
-<!--        
+<!--
         <parameter>
 
           <name>X_CISCO_COM_StaticAddressNumberOfEntries</name>
@@ -10104,7 +10113,7 @@
 <?endif?>
 
       <objects>
-<!--        
+<!--
         <object>
           
           <name>X_CISCO_COM_StaticAddress</name>
@@ -12109,7 +12118,8 @@
         </object>
       </objects>
     </object>
-    
+
+<?endif?>
     <object>
 
       <name>Users</name>

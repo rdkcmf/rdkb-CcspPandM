@@ -859,6 +859,13 @@ Interface2_AddEntry
     pIPInterface->Cfg.IfType   = COSA_DML_IP_IF_TYPE_Normal;
 #endif
 
+#if defined (INTEL_PUMA7)
+    /*
+     * Adding default MTU
+     */
+    pIPInterface->Cfg.MaxMTUSize = COSA_DML_IP_IF_DEFAULT_MTU;
+#endif
+
     rc = sprintf_s(pIPInterface->Cfg.Alias, sizeof(pIPInterface->Cfg.Alias),"Interface%lu", pMyObject->ulNextInterfaceInsNum);
     if(rc < EOK)
     {

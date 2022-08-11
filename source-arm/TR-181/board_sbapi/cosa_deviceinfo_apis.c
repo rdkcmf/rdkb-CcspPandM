@@ -176,6 +176,138 @@ extern  ANSC_HANDLE             bus_handle;
 #define MAX_PORT_RANGE 3020
 
 extern void* g_pDslhDmlAgent;
+extern ANSC_HANDLE bus_handle;
+ANSC_STATUS
+CosaDmlDiGetEnableMoCAforXi5Flag
+  (
+         ANSC_HANDLE                             hContext,
+         BOOLEAN*                                        pValue
+  )
+{
+       UNREFERENCED_PARAMETER(hContext);
+       char buf[ 8 ] = { 0 };
+       if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_EnableMoCAforXi5", buf, sizeof( buf ) ) )
+       {
+               if( 0 == strcmp( buf, "true" ) )
+               {
+                       *pValue = 1;
+               }
+               if( 0 == strcmp( buf, "false" ) )
+               {
+                       *pValue = 0;
+               }
+       }
+       else
+       {
+        CcspTraceWarning(("syscfg_get failed\n"));
+               return ANSC_STATUS_FAILURE;
+       }
+    return ANSC_STATUS_SUCCESS;
+}
+ANSC_STATUS
+CosaDmlDiSetEnableMoCAforXi5Flag
+   (
+          ANSC_HANDLE                             hContext,
+          BOOLEAN*                                        pValue,
+          BOOLEAN*                                        pEnableMoCAforXi5Flag
+   )
+{
+       UNREFERENCED_PARAMETER(hContext);
+       if ( syscfg_set( NULL,
+                                         "X_RDKCENTRAL-COM_EnableMoCAforXi5",
+                                         ((*pValue == 1 ) ? "true" : "false") )!= 0 )
+       {
+               CcspTraceWarning(("syscfg_set failed\n"));
+               return ANSC_STATUS_FAILURE;
+       }
+       else
+       {
+               if ( syscfg_commit( ) != 0 )
+               {
+                       CcspTraceWarning(("syscfg_commit failed\n"));
+                       return ANSC_STATUS_FAILURE;
+               }
+               *pEnableMoCAforXi5Flag = *pValue;
+
+               /*
+                * We have to enable MoCA based on already xi5 device connected case
+                * during enable this feature
+                */
+               if( TRUE == *pEnableMoCAforXi5Flag )
+               {
+                       CosaDmlDiCheckAndEnableMoCA( );
+               }
+       }
+    return ANSC_STATUS_SUCCESS;
+}
+
+/* CosaDmlDiCheckAndEnableMoCA() */
+void CosaDmlDiCheckAndEnableMoCA( void )
+{
+       FILE *fp                                                                = NULL;
+       BOOL  bMoCAforXi5DeviceConnFileAvail    = FALSE;
+
+       if( ( fp = fopen( "/tmp/MoCAforXi5DeviceConnected", "r" ) ) != NULL )
+       {
+               fclose( fp );
+               bMoCAforXi5DeviceConnFileAvail = TRUE;
+       }
+
+       if( bMoCAforXi5DeviceConnFileAvail )
+       {
+               parameterValStruct_t    value            = { "Device.MoCA.Interface.1.Enable", "true", ccsp_boolean};
+               char                                    *paramNames[]= { "Device.MoCA.Interface.1.Enable" };
+               parameterValStruct_t    **valStrMoCAEnable;
+               char  compo[ 256 ]                        = "eRT.com.cisco.spvtg.ccsp.moca";
+               char  bus[ 256 ]                          = "/com/cisco/spvtg/ccsp/moca";
+               char* faultParam                          = NULL;
+               int   ret                                         = 0,
+                         nval                                    = 0;
+               BOOL  bNeedtoEnablMoCA            = FALSE;
+
+               ret = CcspBaseIf_getParameterValues ( bus_handle,
+                                                                                         compo,
+                                                                                         bus,
+                                                                                         paramNames,
+                                                                                         1,
+                                                                                         &nval,
+                                                                                         &valStrMoCAEnable
+                                                                                        );
+               if( ret != CCSP_Message_Bus_OK )
+               {
+                       CcspTraceError(("%s MoCA-Get Failed ret %d\n", __FUNCTION__, ret));
+                       return;
+               }
+
+               if( strcmp( "false", valStrMoCAEnable[0]->parameterValue ) == 0 )
+               {
+                       bNeedtoEnablMoCA = TRUE;
+               }
+
+               free_parameterValStruct_t ( bus_handle, nval, valStrMoCAEnable );
+               CcspTraceWarning(("isControlMoCAforXi5 override\n"));
+               /* If MoCA disabled then we have to enable when this case */
+               if( bNeedtoEnablMoCA )
+               {
+                       ret = CcspBaseIf_setParameterValues(  bus_handle,
+                                                                                                 compo,
+                                                                                                 bus,
+                                                                                                 0,
+                                                                                                 0,
+                                                                                                 &value,
+                                                                                                 1,
+                                                                                                 TRUE,
+                                                                                                 &faultParam );
+
+                       CcspTraceWarning(("xi5 detected enabling moca \n"));
+
+                       if( ret != CCSP_Message_Bus_OK )
+                       {
+                               CcspTraceWarning(("RDK_LOG_WARN, MoCA-Set %s : Failed ret %d\n",__FUNCTION__,ret));
+                       }
+               }
+       }
+}
 
 static const int OK = 1 ;
 static const int NOK = 0 ;
@@ -3051,6 +3183,9 @@ CosaDmlDiUiBrandingInit
 	char PartnerID[PARTNER_ID_LEN] = {0};
 	ULONG size = PARTNER_ID_LEN - 1;
 	int len;
+#if defined (HUB4_PRODUCT_REQ)
+        char serial_num[255] = {'\0'};
+#endif
 	errno_t rc = -1;
 	if (!PUiBrand)
 	{
@@ -3067,6 +3202,31 @@ CosaDmlDiUiBrandingInit
 		system(cmd);*/
                 return ANSC_STATUS_FAILURE;
 	}
+
+#if defined (HUB4_PRODUCT_REQ)
+        if(ANSC_STATUS_SUCCESS == fillCurrentPartnerId(PartnerID, &size))
+        {
+                platform_hal_GetSerialNumber(serial_num);
+                if ((strcmp(PartnerID, "sky-italia") != 0) && (strncmp(serial_num, "D7", 2) == 0))
+                {
+                        memset(PartnerID, 0 ,PARTNER_ID_LEN);
+                        strcpy(PartnerID, "sky-italia");
+
+                        if ((syscfg_set(NULL, "PartnerID", PartnerID) != 0))
+                        {
+                                 CcspTraceWarning(("%s: syscfg_set failed\n", __FUNCTION__));
+                        }
+                        else
+                        {
+                                if (syscfg_commit() != 0)
+                                {
+                                        CcspTraceWarning(("%s: syscfg_commit failed\n", __FUNCTION__));
+                                }
+                        }
+                        CcspTraceWarning(("%s : Partner is changed to  = %s\n", __FUNCTION__, PartnerID));
+                }
+        }
+#endif
 
 	 fileRead = fopen( BOOTSTRAP_INFO_FILE, "r" );
 	 if( fileRead == NULL ) 
@@ -3855,6 +4015,12 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 			else
 			{
 				CcspTraceWarning(("%s - PARTNER ID OBJECT Value is NULL\n", __FUNCTION__ ));
+#if defined (HUB4_PRODUCT_REQ)
+                                if(strcmp(partnerID, "sky-italia") == 0)
+                                {
+                                        unlink(BOOTSTRAP_INFO_FILE);
+                                }
+#endif
 			}
 
 }
@@ -4969,36 +5135,51 @@ ApplyNTPPartnerDefaults()
                   partnerObj = cJSON_GetObjectItem( json, PartnerID );
                   if ( NULL != partnerObj)
                   {
-                       cJSON *objItem = NULL;
-                       int i;
-                       char *key[]={"Device.Time.NTPServer1","Device.Time.NTPServer2","Device.Time.NTPServer3","Device.Time.NTPServer4","Device.Time.NTPServer5"};
-                       char *name[]={"ntp_server1","ntp_server2","ntp_server3","ntp_server4","ntp_server5"};
-
-                       for (i=0;i<MAX_NTP_SERVER;i++)
+#if defined (_SR300_PRODUCT_REQ_)
+                       char *partnerobjVal = partnerObj->valuestring;
+                       if ((partnerobjVal) &&(strcmp(partnerobjVal,"sky-uk")==0))
                        {
-                            objItem = cJSON_GetObjectItem(cJSON_GetObjectItem( partnerObj, key[i]), "ActiveValue");
-                            if ( objItem != NULL )
-                            {
-                                 objVal = objItem->valuestring;
-                                 objItem = NULL;
-                                 if ( objVal != NULL )
-                                 {
-                                      if ( syscfg_set_commit(NULL,name[i],objVal) != 0)
-                                      {
-                                           CcspTraceWarning(("syscfg_set failed for %s\n",name[i]));
-                                      }
-                                      objVal = NULL;
-                                 }
-                                 else
-                                 {
-                                      CcspTraceWarning(("%s - obj Value is NULL\n", __FUNCTION__ ));
-                                 }
-                            }
-                            else
-                            {
-                                 CcspTraceWarning(("%s - %s Object is NULL\n", __FUNCTION__, key[i] ));
-                            }
+                           syscfg_set_commit(NULL,"ntp_server1","time1.google.com");
+                           syscfg_set_commit(NULL,"ntp_server2","time2.google.com");
+                           syscfg_set_commit(NULL,"ntp_server3","");
+                           syscfg_set_commit(NULL,"ntp_server4","");
+                           syscfg_set_commit(NULL,"ntp_server5","");
+                       }
+                       else
+                       {
+#endif
+                           cJSON *objItem = NULL;
+                           int i;
+                           char *key[]={"Device.Time.NTPServer1","Device.Time.NTPServer2","Device.Time.NTPServer3","Device.Time.NTPServer4","Device.Time.NTPServer5"};
+                           char *name[]={"ntp_server1","ntp_server2","ntp_server3","ntp_server4","ntp_server5"};
+                           for (i=0;i<MAX_NTP_SERVER;i++)
+                           {
+                                objItem = cJSON_GetObjectItem(cJSON_GetObjectItem( partnerObj, key[i]), "ActiveValue");
+                                if ( objItem != NULL )
+                                {
+                                     objVal = objItem->valuestring;
+                                     objItem = NULL;
+                                     if ( objVal != NULL )
+                                     {
+                                          if ( syscfg_set_commit(NULL,name[i],objVal) != 0)
+                                          {
+                                               CcspTraceWarning(("syscfg_set failed for %s\n",name[i]));
+                                          }
+                                          objVal = NULL;
+                                     }
+                                     else
+                                     {
+                                          CcspTraceWarning(("%s - obj Value is NULL\n", __FUNCTION__ ));
+                                     }
+                                }
+                                else
+                                {
+                                     CcspTraceWarning(("%s - %s Object is NULL\n", __FUNCTION__, key[i] ));
+                                }
+                          }
+#if defined (_SR300_PRODUCT_REQ_)
                       }
+#endif
                       cJSON_Delete(json);
                       return ANSC_STATUS_SUCCESS;
                  }
