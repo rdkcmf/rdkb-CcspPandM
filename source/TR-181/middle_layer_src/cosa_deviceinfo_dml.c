@@ -22927,7 +22927,7 @@ NonRootSupport_GetParamStringValue
   /* check the parameter name and return the corresponding value */
   if (strcmp(ParamName, "ApparmorBlocklist") == 0)
   {
-      fp = fopen(APPARMOR_BLOCKLIST_FILE,"r");
+      fp=fopen(APPARMOR_BLOCKLIST_FILE,"r");
       if(fp != NULL) {
          while((read = getline(&buf, &len, fp)) != -1) {
              dir = opendir(APPARMOR_PROFILE_DIR);
@@ -22953,7 +22953,7 @@ NonRootSupport_GetParamStringValue
               CcspTraceWarning(("Apparmor profile configuration:%s\n", pValue));
          }
          else {
-              strncpy(pValue,"All Apparmor profile disabled",SIZE_LEN);
+              CcspTraceWarning(("Apparmor profile configuration:%s\n", pValue));
          }
          return 0;
       }
@@ -23012,6 +23012,7 @@ static BOOL ValidateInput_Arguments(char *input, FILE *tmp_fptr)
   }
   if (closedir(dir) != 0) {
       CcspTraceError(("Failed to close %s directory\n", APPARMOR_PROFILE_DIR));
+      fclose(tmp_fptr);
       return FALSE;
   }
   /* Read the input arguments and ensure the corresponding profiles exist or not by searching in
@@ -23056,11 +23057,6 @@ NonRootSupport_SetParamStringValue
   #define MAX_SIZE 1024
   FILE *fptr = NULL;
   FILE *tmp_fptr = NULL;
-  char buf[SIZE] = {0};
-  char *token = NULL;
-  char *sub_string = NULL;
-  char *sp = NULL;
-  char tmp[SIZE] = {0};
   char *boxType = NULL, *atomIp = NULL;
   if (strcmp(ParamName, "ApparmorBlocklist") == 0)
   {
@@ -23069,21 +23065,6 @@ NonRootSupport_SetParamStringValue
      if( (!pValue) || (strstr(pValue,":") == NULL) || (tmp_fptr == NULL) ) {
          CcspTraceError(("Failed to open the file or invalid argument\n"));
          return FALSE;
-     }
-     /* Traversing the Blocklist file and write the contents into tmp file expect the entry in Blocklist if it matches with input arguments */
-     if(fptr != NULL ) {
-        while(fgets( buf, sizeof(buf), fptr) != NULL)  {
-              buf[strcspn(buf,"\n")] = 0;
-              strncpy( tmp, buf, sizeof(tmp));
-              token=strtok_r(tmp,":",&sp);
-              if(token != NULL) {
-                 sub_string=strstr( pValue, token);
-                 if(sub_string != NULL)
-                    continue;
-                 else
-                    fprintf(tmp_fptr,"%s\n",buf);
-              }
-        }
      }
      /* To ensure input arguments are valid or not */
      if (ValidateInput_Arguments(pValue, tmp_fptr) != TRUE) {
