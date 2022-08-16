@@ -3904,6 +3904,10 @@ Server_SetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
+#if defined (FEATURE_RDKB_DHCP_MANAGER)
+    UNREFERENCED_PARAMETER(ParamName);
+    UNREFERENCED_PARAMETER(pString);
+#else
     /* check the parameter name and set the corresponding value */
     if (strcmp(ParamName, "StaticClientsData") == 0)
     {
@@ -4084,7 +4088,7 @@ Server_SetParamStringValue
 
 
     }
-
+#endif
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }

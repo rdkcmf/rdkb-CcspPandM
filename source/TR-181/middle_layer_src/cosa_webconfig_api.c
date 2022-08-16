@@ -204,8 +204,11 @@ int setBlobVersion(char* subdoc,uint32_t version)
 
 void webConfigFrameworkInit()
 {
+#if defined (FEATURE_RDKB_DHCP_MANAGER)
+	char *sub_docs[SUBDOC_COUNT+1]= {"portforwarding","wan","hotspot",(char *) 0 };
+#else
 	char *sub_docs[SUBDOC_COUNT+1]= {"portforwarding","wan","macbinding","lan","hotspot",(char *) 0 };
-    
+#endif
     	blobRegInfo *blobData;
 
     	blobData = (blobRegInfo*) malloc(SUBDOC_COUNT * sizeof(blobRegInfo));

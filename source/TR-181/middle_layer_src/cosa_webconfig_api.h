@@ -36,7 +36,11 @@
 #include "webconfig_framework.h"
 
 #include "cosa_GRE_webconfig_apis.h"
+#if defined (FEATURE_RDKB_DHCP_MANAGER)
+#define SUBDOC_COUNT 3
+#else
 #define SUBDOC_COUNT 5
+#endif
 
 #define PORTMAP_CACHE_SIZE 1024
 #define DMZ_CACHE_SIZE 2
