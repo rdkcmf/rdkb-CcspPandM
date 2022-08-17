@@ -8295,6 +8295,9 @@ dhcpv6c_dbg_thrd(void * in)
             char iapd_vldtm[32] = {0};
 
             char action[64] = {0};
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+            char IfaceName[64] = {0};
+#endif
             char * pString = NULL;
             char objName[128] = {0};
             errno_t rc = -1;
@@ -8346,6 +8349,18 @@ dhcpv6c_dbg_thrd(void * in)
             fprintf(stderr, "%s -- %d !!! get event from v6 client: %s \n", __FUNCTION__, __LINE__,p);
 
 #if defined(FEATURE_MAPT) && defined(FEATURE_RDKB_WAN_MANAGER)
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+            dataLen = sscanf(p, "%63s %63s %63s %s %s %s %s %s %63s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
+                       action, IfaceName, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
+                       v6pref, preflen, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm,
+                       mapAssigned, ruleIPv6Prefix, ruleIPv4Prefix, brIPv6Prefix, v6Len, isFMR, eaLen, v4Len,
+                       psidOffset, psidLen, psid );
+
+            /* dataLen = 25 : MAPT 16:1
+             * dataLen = 22 : MAPT 1:1
+             * dataLen = 14 : NON-MAPT */
+            if((dataLen == 26) || (dataLen == 23) || (dataLen == 15))
+#else
             dataLen = sscanf(p, "%63s %63s %s %s %s %s %s %63s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
                        action, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
                        v6pref, preflen, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm,
@@ -8356,15 +8371,29 @@ dhcpv6c_dbg_thrd(void * in)
              * dataLen = 22 : MAPT 1:1
              * dataLen = 14 : NON-MAPT */
             if((dataLen == 25) || (dataLen == 22) || (dataLen == 14))
+#endif
 #elif defined (FEATURE_SUPPORT_MAPT_NAT46)
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+            if (sscanf(p, "%63s %63s %63s %s %s %s %s %s %63s %d %s %s %s %s %s %s",
+                       action, IfaceName, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
+                       v6pref, &pref_len, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm,
+                       opt95_dBuf ) == 16)
+#else
             if (sscanf(p, "%63s %63s %s %s %s %s %s %63s %d %s %s %s %s %s %s",
                        action, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
                        v6pref, &pref_len, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm,
                        opt95_dBuf ) == 15)
+#endif
+#else // FEATURE_MAPT
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+            if (sscanf(p, "%63s %63s %63s %s %s %s %s %s %63s %d %s %s %s %s %s", 
+                       action, IfaceName, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
+                       v6pref, &pref_len, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm ) == 15)
 #else
             if (sscanf(p, "%63s %63s %s %s %s %s %s %63s %d %s %s %s %s %s", 
                        action, v6addr,    iana_iaid, iana_t1, iana_t2, iana_pretm, iana_vldtm,
                        v6pref, &pref_len, iapd_iaid, iapd_t1, iapd_t2, iapd_pretm, iapd_vldtm ) == 14)
+#endif
 #endif
             {
                 pString = (char*)CosaUtilGetFullPathNameByKeyword
@@ -8681,7 +8710,11 @@ dhcpv6c_dbg_thrd(void * in)
                             ipc_dhcpv6_data_t dhcpv6_data;
                             memset(&dhcpv6_data, 0, sizeof(ipc_dhcpv6_data_t));
 
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+                            strncpy(dhcpv6_data.ifname, IfaceName, sizeof(dhcpv6_data.ifname));
+#else
                             strncpy(dhcpv6_data.ifname, CFG_TR181_DHCPv6_CLIENT_IfName, sizeof(dhcpv6_data.ifname));
+#endif
                             if(strlen(v6pref) == 0) {
                                 dhcpv6_data.isExpired = TRUE;
                             } else {
@@ -8779,7 +8812,11 @@ dhcpv6c_dbg_thrd(void * in)
                         ipc_dhcpv6_data_t dhcpv6_data;
                         memset(&dhcpv6_data, 0, sizeof(ipc_dhcpv6_data_t));
 
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+                        strncpy(dhcpv6_data.ifname, IfaceName, sizeof(dhcpv6_data.ifname));
+#else
                         strncpy(dhcpv6_data.ifname, CFG_TR181_DHCPv6_CLIENT_IfName, sizeof(dhcpv6_data.ifname));
+#endif
                         if(strlen(v6pref) == 0) {
                             dhcpv6_data.isExpired = TRUE;
                         } else {
