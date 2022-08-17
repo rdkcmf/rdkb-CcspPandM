@@ -102,7 +102,7 @@ void* ResetFailedAttepmts(void* arg)
         }
 		
 #if defined(_COSA_FOR_BCI_)
-	if( AnscEqualString(pEntry->Username, "cusadmin", TRUE) )
+	if (strcmp(pEntry->Username, "cusadmin") == 0)
 	{
 
 		if (syscfg_set_commit(NULL, "NumOfFailedAttempts_2", "0") != 0)
@@ -766,7 +766,7 @@ User_GetParamStringValue
         if (sizeof(pUser->HashedPassword) < *pUlSize)
         {
             ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
-            if( AnscEqualString(pUser->Username, "admin",TRUE) )
+            if (strcmp(pUser->Username, "admin") == 0)
             {
                rc = strcpy_s(pValue,*pUlSize, pUser->HashedPassword);
                if(rc != EOK)
@@ -777,7 +777,7 @@ User_GetParamStringValue
                return 0;
             }
 #if defined(_COSA_FOR_BCI_)
-            if( AnscEqualString(pUser->Username, "cusadmin",TRUE) )
+            if (strcmp(pUser->Username, "cusadmin") == 0)
             {
                rc = strcpy_s(pValue,*pUlSize, pUser->HashedPassword);
                if(rc != EOK)
@@ -794,7 +794,7 @@ User_GetParamStringValue
                 ERR_CHK(rc);
                 return -1;
             }
-            if( AnscEqualString(pUser->Username, "mso", TRUE) )
+            if (strcmp(pUser->Username, "mso") == 0)
             {
                 rc = strcpy_s(pUser->Password,sizeof(pUser->Password), "Invalid_PWD");
                 if(rc != EOK)
@@ -954,7 +954,7 @@ User_SetParamIntValue
 
 	if (strcmp(ParamName, "X_RDKCENTRAL-COM_LoginCounts") == 0)
 	{
-		if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
+		if (strcmp(pUser->Username, "cusadmin") == 0)
 		{
 			char buf[16]={0};
 			errno_t  rc = -1;
@@ -1041,7 +1041,7 @@ User_SetParamUlongValue
  	int MaxFailureAttempts = 0;
 	pUser->NumOfFailedAttempts = uValue;
 	#if defined(_COSA_FOR_BCI_)
-		if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
+		if (strcmp(pUser->Username, "cusadmin") == 0)
 		{
 			errno_t rc = -1;
 			rc = sprintf_s(buf, sizeof(buf),"%lu", uValue);
@@ -1201,7 +1201,7 @@ User_SetParamStringValue
     if( AnscEqualString(ParamName, "Password", TRUE)
         || AnscEqualString(ParamName, "X_CISCO_COM_Password", TRUE) )
     {
-	if( AnscEqualString(pUser->Username, "mso", TRUE) )
+	if (strcmp(pUser->Username, "mso") == 0)
 	{
 		unsigned int ret=0;
 
@@ -1233,7 +1233,7 @@ User_SetParamStringValue
 		}
 
 	}
-        else if( AnscEqualString(pUser->Username, "admin", TRUE) )
+        else if (strcmp(pUser->Username, "admin") == 0)
 	{
                 if(isvalid_pwd(pString)){
 		    user_hashandsavepwd(NULL,pString,pUser);
@@ -1247,7 +1247,7 @@ User_SetParamStringValue
                 }
 	}
 #if defined(_COSA_FOR_BCI_)
-        else if( AnscEqualString(pUser->Username, "cusadmin", TRUE) )
+        else if (strcmp(pUser->Username, "cusadmin") == 0)
         {
 		if(isvalid_pwd(pString)){
                     user_hashandsavepwd(NULL,pString,pUser);
@@ -1271,7 +1271,7 @@ User_SetParamStringValue
 	}
     #if CFG_USE_CCSP_SYSLOG
         /* Bad practice to use platform dependent and will be rectified -- CCSP_TRACE should be used */
-        if( AnscEqualString(pUser->Username, "admin", TRUE) )
+        if (strcmp(pUser->Username, "admin") == 0)
         {    syslog_systemlog("Password change", LOG_NOTICE, "Account %s's password changed", pUser->Username);
              return TRUE;
         }  

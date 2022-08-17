@@ -188,7 +188,7 @@ X_CISCO_COM_DeviceControl_GetParamBoolValue
         if (retStatus != ANSC_STATUS_SUCCESS) {
             return FALSE;
         }
-        if( AnscEqualString(buf, "0", FALSE)) {
+        if (strcmp(buf, "0") == 0) {
             *pBool = FALSE;
         }
         else {
@@ -437,10 +437,10 @@ X_CISCO_COM_DeviceControl_GetParamUlongValue
             return FALSE;
         }
         CcspTraceWarning(("-----DeviceControl_GetParamUlongValue, buf:%s\n", buf));
-        if( AnscEqualString(buf, "primary", FALSE)) {
+        if (strcasecmp(buf, "primary") == 0) {
             *puLong = PRIMARY_MODE;
         }
-        else if( AnscEqualString(buf, "byoi", FALSE)) {
+        else if (strcasecmp(buf, "byoi") == 0) {
             *puLong = BYOI_MODE;
         }
         else {
@@ -457,10 +457,10 @@ X_CISCO_COM_DeviceControl_GetParamUlongValue
         if (retStatus != ANSC_STATUS_SUCCESS) {
             return FALSE;
         }
-        if( AnscEqualString(buf, "DOCSIS", FALSE)) {
+        if (strcasecmp(buf, "DOCSIS") == 0) {
             *puLong = PRIMARY_MODE;
         }
-        else if( AnscEqualString(buf, "Non-DOCSIS", FALSE)) {
+        else if (strcasecmp(buf, "Non-DOCSIS") == 0) {
             *puLong = BYOI_MODE;
         }
         else {

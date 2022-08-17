@@ -256,7 +256,7 @@ CosaDmlUpnpDevGetState
     }
     
     Utopia_RawGet(&pCtx, NULL, "tr_device_upnp_enable", buf, sizeof(buf));
-    if ( AnscEqualString(buf, "true", TRUE) )
+    if (strcmp(buf, "true") == 0)
     {
         g_UpnpDevEnable = TRUE;
     }

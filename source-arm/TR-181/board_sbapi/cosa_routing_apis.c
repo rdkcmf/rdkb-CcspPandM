@@ -2860,31 +2860,31 @@ Route4_Proto2Origin(char *proto)
 		return COSA_DML_ROUTING_IPV4_ORIGIN_Static;
 	}
 
-    if (AnscEqualString(proto, "kernel", TRUE))
+    if (strcmp(proto, "kernel") == 0)
     {
         return COSA_DML_ROUTING_IPV4_ORIGIN_Static;
     }
-    else if (AnscEqualString(proto, "boot", TRUE))
+    else if (strcmp(proto, "boot") == 0)
     {
         return COSA_DML_ROUTING_IPV4_ORIGIN_Static;
     }
-    else if (AnscEqualString(proto, "static", TRUE))
+    else if (strcmp(proto, "static") == 0)
     {
         return COSA_DML_ROUTING_IPV4_ORIGIN_Static;
     }
-    else if (AnscEqualString(proto, "dhcp", TRUE))
+    else if (strcmp(proto, "dhcp") == 0)
     {
         return COSA_DML_ROUTING_IPV4_ORIGIN_DHCPv4;
     }
-    else if (AnscEqualString(proto, "ipcp", TRUE))
+    else if (strcmp(proto, "ipcp") == 0)
     {
         return COSA_DML_ROUTING_IPV4_ORIGIN_IPCP;
     }
-    else if (AnscEqualString(proto, "gated/ospf", TRUE))
+    else if (strcmp(proto, "gated/ospf") == 0)
     {
         return COSA_DML_ROUTING_IPV4_ORIGIN_OSPF;
     }
-    else if (AnscEqualString(proto, "gated/rip", TRUE))
+    else if (strcmp(proto, "gated/rip") == 0)
     {
         return COSA_DML_ROUTING_IPV4_ORIGIN_RIP;
     }

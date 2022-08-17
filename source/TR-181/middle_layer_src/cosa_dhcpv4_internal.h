@@ -170,34 +170,34 @@ COSA_DATAMODEL_DHCPV4,  *PCOSA_DATAMODEL_DHCPV4;
 
 
 #define   DHCPV4_CLIENT_ENTRY_MATCH(src,dst)                       \
-    (AnscEqualString((src)->Alias, (dst)->Alias, TRUE))            \
+    (strcmp((src)->Alias, (dst)->Alias) == 0)
 
 #define   DHCPV4_CLIENT_ENTRY_MATCH2(src,dst)                      \
-    (AnscEqualString((src), (dst), TRUE))                          \
+    (strcmp((src), (dst)) == 0)
 
 #define   DHCPV4_SENDOPTION_ENTRY_MATCH(src,dst)                   \
-    (AnscEqualString((src)->Alias, (dst)->Alias, TRUE))            \
+    (strcmp((src)->Alias, (dst)->Alias) == 0)
         
 #define   DHCPV4_SENDOPTION_ENTRY_MATCH2(src,dst)                  \
-    (AnscEqualString((src), (dst), TRUE))                          \
+    (strcmp((src), (dst)) == 0)
 
 #define   DHCPV4_REQOPTION_ENTRY_MATCH(src,dst)                    \
-    (AnscEqualString((src)->Alias, (dst)->Alias, TRUE))            \
+    (strcmp((src)->Alias, (dst)->Alias) == 0)
 
 #define   DHCPV4_REQOPTION_ENTRY_MATCH2(src,dst)                   \
-    (AnscEqualString((src), (dst), TRUE))                          \
+    (strcmp((src), (dst)) == 0)
 
 #define   DHCPV4_POOL_ENTRY_MATCH(src,dst)                         \
-        (AnscEqualString((src)->Alias, (dst)->Alias, TRUE))        \
+    (strcmp((src)->Alias, (dst)->Alias) == 0)
 
 #define   DHCPV4_POOL_ENTRY_MATCH2(src,dst)                        \
-        (AnscEqualString((src), (dst), TRUE))                      \
+    (strcmp((src), (dst)) == 0)
 
 #define   DHCPV4_STATICADDRESS_ENTRY_MATCH(src,dst)                \
-        (AnscEqualString((src)->Alias, (dst)->Alias, TRUE))        \
+    (strcmp((src)->Alias, (dst)->Alias) == 0)
     
 #define   DHCPV4_STATICADDRESS_ENTRY_MATCH2(src,dst)               \
-        (AnscEqualString((src), (dst), TRUE))                      \
+    (strcmp((src), (dst)) == 0)
 
 #define   DHCPV4_CLIENT_INITIATION_CONTEXT(pDhcpc)                 \
     COSA_CONTEXT_LINK_INITIATION_CONTENT(((PCOSA_CONTEXT_LINK_OBJECT)(pDhcpc)))  \
@@ -272,7 +272,7 @@ COSA_DATAMODEL_DHCPV4,  *PCOSA_DATAMODEL_DHCPV4;
     AnscZeroMemory( (pPool)->Value, sizeof( (pPool)->Value ) );                        \
 
 #define   DHCPV4_POOLOPTION_ENTRY_MATCH(src,dst)                                       \
-        (AnscEqualString((src), (dst), TRUE))                                          \
+    (strcmp((src), (dst)) == 0)
 
 /*
     Function declaration 

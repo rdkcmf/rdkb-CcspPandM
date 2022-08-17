@@ -167,36 +167,36 @@ COSA_DATAMODEL_DHCPV6,  *PCOSA_DATAMODEL_DHCPV6;
 #ifndef FEATURE_RDKB_WAN_MANAGER
 
 #define   DHCPV6_CLIENT_ENTRY_MATCH(src,dst)                       \
-    (AnscEqualString((src)->Alias, (dst)->Alias, TRUE))            \
+    (strcmp((src)->Alias, (dst)->Alias) == 0)
 
 #define   DHCPV6_CLIENT_ENTRY_MATCH2(src,dst)                      \
-    (AnscEqualString((src), (dst), TRUE))                          \
+    (strcmp((src), (dst)) == 0)
 
 #define   DHCPV6_SENDOPTION_ENTRY_MATCH(src,dst)                   \
-    (AnscEqualString((src)->Alias, (dst)->Alias, TRUE))            \
+    (strcmp((src)->Alias, (dst)->Alias) == 0)
         
 #define   DHCPV6_SENDOPTION_ENTRY_MATCH2(src,dst)                  \
-    (AnscEqualString((src), (dst), TRUE))                          \
+    (strcmp((src), (dst)) == 0)
 
 #define   DHCPV6_REQOPTION_ENTRY_MATCH(src,dst)                    \
-    (AnscEqualString((src)->Alias, (dst)->Alias, TRUE))            \
+    (strcmp((src)->Alias, (dst)->Alias) == 0)
 
 #define   DHCPV6_REQOPTION_ENTRY_MATCH2(src,dst)                   \
-    (AnscEqualString((src), (dst), TRUE))                          \
+    (strcmp((src), (dst)) == 0)
 
 #define   DHCPV6_POOL_ENTRY_MATCH(src,dst)                         \
-        (AnscEqualString((src)->Alias, (dst)->Alias, TRUE))        \
+    (strcmp((src)->Alias, (dst)->Alias) == 0)
 
 #endif
 
 #define   DHCPV6_POOL_ENTRY_MATCH2(src,dst)                        \
-        (AnscEqualString((src), (dst), TRUE))                      \
+    (strcmp((src), (dst)) == 0)
 
 #define   DHCPV6_POOLOPTION_ENTRY_MATCH(src,dst)                \
-        (AnscEqualString((src)->Alias, (dst)->Alias, TRUE))        \
+    (strcmp((src)->Alias, (dst)->Alias) == 0)
     
 #define   DHCPV6_POOLOPTION_ENTRY_MATCH2(src,dst)               \
-        (AnscEqualString((src), (dst), TRUE))                      \
+    (strcmp((src), (dst)) == 0)
 
 #ifndef FEATURE_RDKB_WAN_MANAGER
 
