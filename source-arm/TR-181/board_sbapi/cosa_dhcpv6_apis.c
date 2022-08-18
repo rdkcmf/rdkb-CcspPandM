@@ -2439,6 +2439,9 @@ static int _dibbler_client_operation(char * arg)
                    had to be removed */
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX)
         commonSyseventSet("dhcpv6_client-stop", "");
+#elif defined(CORE_NET_LIB)
+        v_secure_system("/usr/bin/service_dhcpv6_client dhcpv6_client_service_disable");
+        CcspTraceInfo(("%s  Calling service_dhcpv6_client.c with dhcpv6_client_service_disable from cosa_dhcpv6_apis.c\n", __func__));
 #else
         v_secure_system("/etc/utopia/service.d/service_dhcpv6_client.sh disable");
 #endif
@@ -2493,11 +2496,13 @@ static int _dibbler_client_operation(char * arg)
          had to be removed */
         CcspTraceInfo(("%s  Callin service_dhcpv6_client.sh enable \n", __func__));
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && ! defined(DHCPV6_PREFIX_FIX)
-      commonSyseventSet("dhcpv6_client-start", "");
+        commonSyseventSet("dhcpv6_client-start", "");
+#elif defined(CORE_NET_LIB)
+    v_secure_system("/usr/bin/service_dhcpv6_client dhcpv6_client_service_enable");
+    CcspTraceInfo(("%s  Calling service_dhcpv6_client.c with dhcpv6_client_service_enable from cosa_dhcpv6_apis.c\n", __func__));
 #else
-        v_secure_system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
+    v_secure_system("/etc/utopia/service.d/service_dhcpv6_client.sh enable");
 #endif
-      
 #ifdef _COSA_BCM_ARM_
         /* Dibbler-init is called to set the pre-configuration for dibbler */            
         CcspTraceInfo(("%s dibbler-init.sh Called \n", __func__));
