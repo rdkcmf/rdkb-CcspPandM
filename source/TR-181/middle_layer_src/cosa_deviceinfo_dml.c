@@ -22923,38 +22923,35 @@ NonRootSupport_GetParamStringValue
   DIR *dir=NULL;
   struct dirent *entry=NULL;
   char tmp[64]={0};
+  char files_name[MAX_SIZE]={0};
   char *sptr=NULL;
   /* check the parameter name and return the corresponding value */
   if (strcmp(ParamName, "ApparmorBlocklist") == 0)
   {
+      dir = opendir(APPARMOR_PROFILE_DIR);
+      if( (dir == NULL) ) {
+            CcspTraceError(("Failed to open the %s directory: profiles does not exist\n", APPARMOR_PROFILE_DIR));
+            return FALSE;
+      }
+      memset(files_name,'\0',sizeof(files_name));
+      while((entry = readdir(dir)) != NULL) {
+             strncat(files_name,entry->d_name,strlen(entry->d_name));
+      }
+      closedir(dir);
       fp=fopen(APPARMOR_BLOCKLIST_FILE,"r");
       if(fp != NULL) {
          while((read = getline(&buf, &len, fp)) != -1) {
-             dir = opendir(APPARMOR_PROFILE_DIR);
-             if( (dir == NULL) ) {
-                   CcspTraceError(("Failed to open the %s directory: profiles does not exist\n", APPARMOR_PROFILE_DIR));
-                   fclose(fp);
-                   return FALSE;
-             }
              strncpy(tmp,buf,sizeof(tmp));
              strtok_r(buf,":",&sptr);
-             entry = readdir(dir);
-             while(entry != NULL && buf != NULL) {
-                   if(strstr(entry->d_name, buf) != NULL )  {
-                      strncat(pValue,tmp,strlen(tmp));
-                   }
-             entry = readdir(dir);
+             if(buf != NULL) {
+                if(strstr(files_name, buf) != NULL )  {
+                   strncat(pValue,tmp,strlen(tmp));
+                }
              }
          }
          fclose(fp);
-         closedir(dir);
          Replace_AllOccurrence( pValue, AnscSizeOfString(pValue), '\n', ',');
-         if (strlen(pValue)) {
-              CcspTraceWarning(("Apparmor profile configuration:%s\n", pValue));
-         }
-         else {
-              CcspTraceWarning(("Apparmor profile configuration:%s\n", pValue));
-         }
+         CcspTraceWarning(("Apparmor profile configuration:%s\n", pValue));
          return 0;
       }
       else {
@@ -23003,12 +23000,10 @@ static BOOL ValidateInput_Arguments(char *input, FILE *tmp_fptr)
      CcspTraceError(("Failed to open the %s directory\n", APPARMOR_PROFILE_DIR));
      return FALSE;
   }
-  entry = readdir(dir);
   memset(files_name,'\0',sizeof(files_name));
   /* storing Apparmor profile (file) names into files_name which can be used to check with input arguments using strstr() */
-  while(entry != NULL) {
+  while((entry = readdir(dir)) != NULL) {
         strncat(files_name,entry->d_name,strlen(entry->d_name));
-        entry = readdir(dir);
   }
   if (closedir(dir) != 0) {
       CcspTraceError(("Failed to close %s directory\n", APPARMOR_PROFILE_DIR));
