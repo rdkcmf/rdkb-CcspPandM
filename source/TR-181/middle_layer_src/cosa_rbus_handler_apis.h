@@ -20,7 +20,7 @@
 #ifndef  RBUS_HANDLER_APIS_H
 #define  RBUS_HANDLER_APIS_H
 
-#if defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED)
+
 
 #include <stdbool.h>
 #include <rbus.h>
@@ -31,7 +31,8 @@
 #define RBUS_COMPONENT_NAME	"CcspPandMSsp"
 
 #define DEVCTRL_NET_MODE_TR181	"Device.X_RDKCENTRAL-COM_DeviceControl.DeviceNetworkingMode"
-
+#define  ARRAY_SZ(x) (sizeof(x) / sizeof((x)[0]))
+#if defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED)
 typedef struct 
 _DeviceControl_Net_Mode_
 {
@@ -44,8 +45,6 @@ rbusError_t setUlongHandler(rbusHandle_t handle, rbusProperty_t prop, rbusSetHan
 
 rbusError_t eventDevctrlSubHandler(rbusHandle_t handle, rbusEventSubAction_t action, const char* eventName, rbusFilter_t filter, int32_t interval, bool* autoPublish);
 
-rbusError_t devCtrlRbusInit();
-
 bool initNetMode();
 
 rbusError_t sendUlongUpdateEvent(char* event_name , uint32_t eventNewData, uint32_t eventOldData);
@@ -54,5 +53,8 @@ rbusError_t publishDevCtrlNetMode(uint32_t new_val, uint32_t old_val);
 
 bool PAM_Rbus_SyseventInit();
 
+#endif
+#if defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED) ||  defined(RBUS_BUILD_FLAG_ENABLE) || defined (_HUB4_PRODUCT_REQ_) 
+rbusError_t devCtrlRbusInit();
 #endif
 #endif

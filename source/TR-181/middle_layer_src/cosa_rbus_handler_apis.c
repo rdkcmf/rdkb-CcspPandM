@@ -16,7 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,12 +26,13 @@
 #include "cosa_rbus_handler_apis.h"
 #include "ccsp_psm_helper.h"
 #include "safec_lib_common.h"
-
 #include "cosa_dhcpv6_apis.h"
 
+rbusHandle_t handle;
+
+#if  defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED)
 DeviceControl_Net_Mode deviceControl_Net_Mode;
 
-rbusHandle_t handle;
 
 //PSM
 extern ANSC_HANDLE g_MessageBusHandle;
@@ -43,7 +43,6 @@ unsigned int gSubscribersCount = 0;
 
 static int sysevent_fd 	  = -1;
 static token_t sysevent_token = 0;
-
 /***********************************************************************
 
   Data Elements declaration:
@@ -224,44 +223,6 @@ rbusError_t eventDevctrlSubHandler(rbusHandle_t handle, rbusEventSubAction_t act
 	return RBUS_ERROR_SUCCESS;
 }
 
-/***********************************************************************
-
-  devCtrlRbusInit(): Initialize Rbus and data elements
-
- ***********************************************************************/
-rbusError_t devCtrlRbusInit()
-{
-	int rc = RBUS_ERROR_SUCCESS;
-
-	if(RBUS_ENABLED != rbus_checkStatus())
-    {
-		CcspTraceWarning(("%s: RBUS not available. Events is not supported\n", __FUNCTION__));
-		return RBUS_ERROR_BUS_ERROR;
-    }
-
-	rc = rbus_open(&handle, RBUS_COMPONENT_NAME);
-	if (rc != RBUS_ERROR_SUCCESS)
-	{
-		CcspTraceWarning(("DevCtrl rbus initialization failed\n"));
-		rc = RBUS_ERROR_NOT_INITIALIZED;
-		return rc;
-	}
-
-	// Register data elements
-	rc = rbus_regDataElements(handle, NUM_OF_RBUS_PARAMS, devCtrlRbusDataElements);
-
-	if (rc != RBUS_ERROR_SUCCESS)
-	{
-		CcspTraceWarning(("rbus register data elements failed\n"));
-		rc = rbus_close(handle);
-		return rc;
-	}
-	
-	//initialize sysevent
-	PAM_Rbus_SyseventInit();
-
-	return rc;
-}
 
 /*******************************************************************************
 
@@ -378,5 +339,144 @@ bool PAM_Rbus_SyseventInit()
 	CcspTraceError(("Failed to open sysevent. sysevent_fd already have a value '%d'\n", sysevent_fd));
 	return false;
 }
+#endif
+#if defined (_HUB4_PRODUCT_REQ_)
+typedef struct
+{
+    char binaryLocation[64];
+    char rbusName[64];
+}Rbus_Module;
 
+int IsFileExists(char *file_name)
+{
+    struct stat file;
+
+    return (stat(file_name, &file));
+}
+
+BOOL Pam_Rbus_discover_components(char const *pModuleList)
+{
+    rbusError_t rc = RBUS_ERROR_SUCCESS;
+    int componentCnt = 0;
+    char **pComponentNames;
+    BOOL ret = FALSE;
+    char ModuleList[1024] = {0};
+    char const *rbusModuleList[7];
+    int count = 0;
+    const char delimit[2] = " ";
+    char *token;
+
+    strcpy(ModuleList,pModuleList);
+
+    /* get the first token */
+    token = strtok(ModuleList, delimit);
+
+    /* walk through other tokens */
+    while( token != NULL ) {
+        printf( " %s\n", token );
+        rbusModuleList[count]=token;
+        count++;
+        token = strtok(NULL, delimit);
+    }
+
+    for(int i=0; i<count;i++)
+    {
+        CcspTraceInfo(("Pam_Rbus_discover_components rbusModuleList[%s]\n", rbusModuleList[i]));
+    }
+
+    rc = rbus_discoverComponentName (handle, count, rbusModuleList, &componentCnt, &pComponentNames);
+
+    if(RBUS_ERROR_SUCCESS != rc)
+    {
+        CcspTraceInfo(("Failed to discover components. Error Code = %d\n", rc));
+        return ret;
+    }
+
+    for (int i = 0; i < componentCnt; i++)
+    {
+        free(pComponentNames[i]);
+    }
+
+    free(pComponentNames);
+
+    if(componentCnt == count)
+    {
+        ret = TRUE;
+    }
+
+    CcspTraceInfo( ("Pam_Rbus_discover_components (%d-%d)ret[%s]\n",componentCnt,count,(ret)?"TRUE":"FALSE"));
+
+    return ret;
+}
+
+static void waitUntilSystemReady()
+{
+    int wait_time = 0;
+    char pModule[1024] = {0};
+    Rbus_Module pModuleNames[] = {{"/usr/bin/PsmSsp",    "rbusPsmSsp"}};
+
+    int elementCnt = ARRAY_SZ(pModuleNames);
+    for(int i=0; i<elementCnt;i++)
+    {
+        if (IsFileExists(pModuleNames[i].binaryLocation) == 0)
+        {
+            strcat(pModule,pModuleNames[i].rbusName);
+            strcat(pModule," ");
+        }
+    }
+
+    /* Check RBUS is ready. This needs to be continued upto 3 mins (180s) */
+    while(wait_time <= 90)
+    {
+        if(Pam_Rbus_discover_components(pModule)){
+            break;
+        }
+
+        wait_time++;
+        sleep(2);
+    }
+}
+#endif
+#if  defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED) ||  defined(RBUS_BUILD_FLAG_ENABLE) ||  defined(_HUB4_PRODUCT_REQ_)
+/***********************************************************************
+
+  devCtrlRbusInit(): Initialize Rbus and data elements
+
+ ***********************************************************************/
+rbusError_t devCtrlRbusInit()
+{
+	int rc = RBUS_ERROR_SUCCESS;
+
+	if(RBUS_ENABLED != rbus_checkStatus())
+    {
+		CcspTraceWarning(("%s: RBUS not available. Events is not supported\n", __FUNCTION__));
+		return RBUS_ERROR_BUS_ERROR;
+    }
+
+	rc = rbus_open(&handle, RBUS_COMPONENT_NAME);
+	if (rc != RBUS_ERROR_SUCCESS)
+	{
+		CcspTraceWarning(("DevCtrl rbus initialization failed\n"));
+		rc = RBUS_ERROR_NOT_INITIALIZED;
+		return rc;
+	}
+#if  defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED)
+	// Register data elements
+	rc = rbus_regDataElements(handle, NUM_OF_RBUS_PARAMS, devCtrlRbusDataElements);
+#endif
+	if (rc != RBUS_ERROR_SUCCESS)
+	{
+		CcspTraceWarning(("rbus register data elements failed\n"));
+		rc = rbus_close(handle);
+		return rc;
+	}
+#if  defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED)	
+	//initialize sysevent
+	PAM_Rbus_SyseventInit();
+#endif
+#if defined (_HUB4_PRODUCT_REQ_)
+    waitUntilSystemReady();
+#endif
+	return rc;
+}
 #endif
