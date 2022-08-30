@@ -867,12 +867,14 @@ Capabilities_GetParamUlongValue
     if (strcmp(ParamName, "UPnPArchitecture") == 0)
     {
         /* collect value */
+        *puLong = pMyObject->uMajorVer;
         return TRUE;
     }
 
     if (strcmp(ParamName, "UPnPArchitectureMinorVer") == 0)
     {
         /* collect value */
+        *puLong = pMyObject->uMinorVer;
         return TRUE;
     }
 
