@@ -8849,8 +8849,8 @@ dhcpv6c_dbg_thrd(void * in)
                             if(ret != 0) {
                                 CcspTraceInfo(("Assign global ip error \n"));
                             }
-                            else {
 #ifdef _HUB4_PRODUCT_REQ_
+                            else {
                                 CcspTraceInfo(("%s Going to set [%s] address on brlan0 interface \n", __FUNCTION__, globalIP));
                                 v_secure_system("ip -6 addr add %s/64 dev %s valid_lft %d preferred_lft %d",
                                                 globalIP, COSA_DML_DHCPV6_SERVER_IFNAME, hub4_valid_lft, hub4_preferred_lft);
@@ -8859,6 +8859,7 @@ dhcpv6c_dbg_thrd(void * in)
                                 commonSyseventSet("lan_prefix_set", globalIP);
                             }
 #else
+                            else {
                                 commonSyseventSet("lan_ipaddr_v6", globalIP);
 
                                 /*v_secure_system("ip -6 addr add %s/64 dev %s valid_lft %d preferred_lft %d", globalIP, 
