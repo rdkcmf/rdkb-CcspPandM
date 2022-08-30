@@ -1704,7 +1704,7 @@ Interface2_SetParamStringValue
                 varStruct.parameterValue = ucEntryNameValue;
 
                 if ( ANSC_STATUS_SUCCESS == 
-                        COSAGetParamValueByPathName(&varStruct, &size) )
+                        COSAGetParamValueByPathName(g_MessageBusHandle, &varStruct, &size) )
                 {
                     AnscCopyString(pIPInterface->Cfg.LinkName, ucEntryNameValue);
                 }
