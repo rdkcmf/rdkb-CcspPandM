@@ -233,7 +233,13 @@ CosaDmlDiGetRouterMacAddress
 
     }
 #else	
+#ifdef _WNXL11BWL_PRODUCT_REQ_
+        s_get_interface_mac("eth0", pValue, 18);
+        *pulSize = AnscSizeOfString(pValue);
+        return ANSC_STATUS_SUCCESS;
+#else
     s_get_interface_mac("erouter0", pValue, 18);
+#endif /* _WNXL11BWL_PRODUCT_REQ_ */
 #endif    
     *pulSize = AnscSizeOfString(pValue);
 
