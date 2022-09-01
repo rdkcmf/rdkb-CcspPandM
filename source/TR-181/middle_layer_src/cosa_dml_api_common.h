@@ -83,11 +83,6 @@
 
 #define  ANSC_TRACE_MODULE_ID                       ANSC_TRACE_ID_DM_API
 
-
-#ifdef   _ANSC_ENABLE_PRAGMA_
-#pragma  pack(1)
-#endif
-
 #ifdef  __GNUC__
 
     #ifndef  _struct_pack_
