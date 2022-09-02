@@ -219,7 +219,8 @@
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.XconfURL" : "https://xconf.xcal.tv",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.LogUploadURL" : "https://ssr.ccp.xcal.tv/cgi-bin/rdkb.cgi",
       "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.CrashPortal" : "https://ssr.ccp.xcal.tv/cgi-bin/upload_dump.cgi",
-      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv"
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.Telemetry" : "https://stbrtl.stb.r53.xcal.tv",
+      "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CDLDM.CDLModuleUrl" : "http://ssr.ccp.xcal.tv/cgi-bin/sky-sign-redirect.pl?partnerid=sky-italia&F=stb_cdl"
    },
 
 

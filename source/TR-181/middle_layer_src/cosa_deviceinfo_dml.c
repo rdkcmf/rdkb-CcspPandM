@@ -16353,28 +16353,13 @@ CDLDM_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-    errno_t   rc = -1;
-    /* check the parameter name and return the corresponding value */
+    PCOSA_DATAMODEL_DEVICEINFO              pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_CDLDM pBindObj =      & pMyObject->CdlDM;
+
     if (strcmp(ParamName, "CDLModuleUrl") == 0)
     {
-        /* collect value */
-           char buff[255];
-
-           /* CID: 72067 Array compared against 0*/
-           /*CID: 65305 Logically dead code*/
-           if(!syscfg_get( NULL, "CDLModuleUrl", buff, sizeof(buff)))
-           {
-                rc = strcpy_s(pValue, *pulSize, buff);
-                if(rc != EOK)
-                {
-                   ERR_CHK(rc);
-                   return -1;
-                }
-                return 0;
-           }
-           return -1;
+        return  update_pValue(pValue,pulSize, pBindObj->CDLModuleUrl.ActiveValue);
     }
-
     return -1;
 }
 
@@ -16416,36 +16401,66 @@ CDLDM_SetParamStringValue
         char*                       pString
     )
 {
-    BOOL bReturnValue = FALSE;
+    UNREFERENCED_PARAMETER(hInsContext);
+    PCOSA_DATAMODEL_DEVICEINFO      pMyObject = (PCOSA_DATAMODEL_DEVICEINFO)g_pCosaBEManager->hDeviceInfo;
+    PCOSA_DATAMODEL_RDKB_CDLDM      pBindObj =      & pMyObject->CdlDM;
 
-    if (IsStringSame(hInsContext, ParamName, pString, CDLDM_GetParamStringValue))
-        return TRUE;
+    char PartnerID[PARTNER_ID_LEN] = {0};
+    char * requestorStr = getRequestorString();
+    char * currentTime = getTime();
+    errno_t rc = -1;
+    int ind = -1;
 
-    /* check the parameter name and set the corresponding value */
-    if (strcmp(ParamName, "CDLModuleUrl") == 0)
+    if((ParamName == NULL) || (pString == NULL))
+        return FALSE;
+
+    CcspTraceWarning(("%s: writeID=%lu, bsUpdate=%lu\n", __FUNCTION__, g_currentWriteEntity, g_currentBsUpdate));
+    IS_UPDATE_ALLOWED_IN_DM(ParamName, requestorStr);
+    if(AnscValidateInputString(pString) != TRUE)
+        return FALSE;
+
+    if((CCSP_SUCCESS == getPartnerId(PartnerID) ) && (PartnerID[ 0 ] != '\0') )
     {
-           if (syscfg_set(NULL, "CDLModuleUrl", pString) != 0)
-           {
-                  CcspTraceError(("%s:syscfg_set failed for CDLModuleUrl \n", __FUNCTION__));
-                  bReturnValue = FALSE;
-           }
-           else
-           {
-                  if (syscfg_commit() != 0)
-                  {
-                        CcspTraceError(("%s:syscfg_commit failed for CDLModuleUrl \n", __FUNCTION__));
-                        bReturnValue = FALSE;
-                  }
-                  bReturnValue = TRUE;
-           }         
-    }
-    else
-    {
-           CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName));
-           bReturnValue = FALSE;
-    }
+         /* check the parameter name and set the corresponding value */
+            rc = strcmp_s("CDLModuleUrl", strlen("CDLModuleUrl"), ParamName, &ind);
+            ERR_CHK(rc);
+            if((rc == EOK) && (!ind))
+            {
+                IS_UPDATE_ALLOWED_IN_JSON(ParamName, requestorStr, pBindObj->CDLModuleUrl.UpdateSource);
 
-    return bReturnValue;
+                /* Below condition is added to restrict the maximum pString length less than acceptable value for buffer overflow issues
+                 * UpdateJsonParam function doesn't have the maximum permissible string length validation check.
+                 */
+                if(strlen(pString) < sizeof(pBindObj->CDLModuleUrl.ActiveValue))
+                {
+                        if ( ANSC_STATUS_SUCCESS == UpdateJsonParam("Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CDLDM.CDLModuleUrl",PartnerID,pString, requestorStr, currentTime))
+                        {
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->CDLModuleUrl.ActiveValue, sizeof(pBindObj->CDLModuleUrl.ActiveValue), pString);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
+
+                                rc = STRCPY_S_NOCLOBBER(pBindObj->CDLModuleUrl.UpdateSource, sizeof(pBindObj->CDLModuleUrl.UpdateSource), requestorStr);
+                                if(rc != EOK)
+                                {
+                                    ERR_CHK(rc);
+                                    return FALSE;
+                                }
+
+                                return TRUE;
+                        }
+                 }
+                 else
+                 {
+                      CcspTraceError(("pString length more than permissible value - %s:%d\n", __FUNCTION__, __LINE__));
+                      return FALSE;
+                 }
+            }
+   }
+
+    return FALSE;
 }
 
 /***********************************************************************

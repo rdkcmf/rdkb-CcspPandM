@@ -3024,7 +3024,8 @@ ANSC_STATUS
 CosaDmlDiUiBrandingInit
   (
 	ANSC_HANDLE                 hContext,
-	PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand
+	PCOSA_DATAMODEL_RDKB_UIBRANDING	PUiBrand,
+        PCOSA_DATAMODEL_RDKB_CDLDM PCdlDM
   )
  {
         
@@ -3104,7 +3105,7 @@ CosaDmlDiUiBrandingInit
 			 	if ( PartnerID[0] != '\0' )
 			 	{
 					CcspTraceWarning(("%s : Partner = %s \n", __FUNCTION__, PartnerID));
-					FillPartnerIDValues(json, PartnerID, PUiBrand, hContext);
+					FillPartnerIDValues(json, PartnerID, PUiBrand, PCdlDM, hContext);
 			 	}
 				else
 				{
@@ -3117,7 +3118,7 @@ CosaDmlDiUiBrandingInit
 						free(data);
 						return ANSC_STATUS_FAILURE;
 					}
-					FillPartnerIDValues(json, PartnerID, PUiBrand, hContext);
+					FillPartnerIDValues(json, PartnerID, PUiBrand, PCdlDM, hContext);
 				}
 			}
 	 		else{
@@ -3237,7 +3238,7 @@ void FillParamString(cJSON *partnerObj, char *key, COSA_BOOTSTRAP_STR *paramData
     }
 }
 
-void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING PUiBrand, ANSC_HANDLE hContext)
+void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UIBRANDING PUiBrand, PCOSA_DATAMODEL_RDKB_CDLDM PCdlDM, ANSC_HANDLE hContext)
 {
 		cJSON *partnerObj = NULL;
 		char buf[64] = {0};
@@ -3248,7 +3249,8 @@ void FillPartnerIDValues(cJSON *json , char *partnerID , PCOSA_DATAMODEL_RDKB_UI
 		partnerObj = cJSON_GetObjectItem( json, partnerID );
 		if( partnerObj != NULL) 
 		{
-				FillParamString(partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink", &PUiBrand->Footer.PartnerLink);
+				FillParamString(partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.CDLDM.CDLModuleUrl", &PCdlDM->CDLModuleUrl);
+			        FillParamString(partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerLink", &PUiBrand->Footer.PartnerLink);
 				FillParamString(partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.UserGuideLink", &PUiBrand->Footer.UserGuideLink);
 				FillParamString(partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.CustomerCentralLink", &PUiBrand->Footer.CustomerCentralLink);
 				FillParamString(partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.Footer.PartnerText", &PUiBrand->Footer.PartnerText);
