@@ -7432,6 +7432,21 @@ int append_interface(char* Inf_name)
 	syscfg_set_commit(NULL, "IPv6_Interface", OutBuff);
 	return 0;
 }
+
+int Get_Device_Mode()
+{
+    int deviceMode = 0;
+    char buf[8]= {0};
+    memset(buf,0,sizeof(buf));
+    if ( 0 == syscfg_get(NULL, "Device_Mode", buf, sizeof(buf)))
+    {
+        if (buf[0] != '\0' && strlen(buf) != 0 )
+            deviceMode = atoi(buf);
+    }
+    return deviceMode;
+
+}
+
 /* This thread is added to handle the LnF interface IPv6 rule, because LnF is coming up late in XB6 devices. 
 This thread can be generic to handle the operations depending on the interfaces. Other interface and their events can be register here later based on requirement */
 #if defined(CISCO_CONFIG_DHCPV6_PREFIX_DELEGATION) && defined(_CBR_PRODUCT_REQ_)
@@ -7941,20 +7956,6 @@ void UnSetV6RouteFromTable(char* ifname , char* route_addr,int metric_val, int t
 #define MESH_WAN_IFNAME "dmsb.Mesh.WAN.Interface.Name"
 #define MESH_WAN_WAN_IPV6ADDR "MeshWANInterface_UlaAddr"
 #define MESH_REMWAN_WAN_IPV6ADDR "MeshRemoteWANInterface_UlaAddr"
-
-int Get_Device_Mode()
-{
-    int deviceMode = 0;
-    char buf[8]= {0};
-    memset(buf,0,sizeof(buf));
-    if ( 0 == syscfg_get(NULL, "Device_Mode", buf, sizeof(buf)))
-    {   
-        if (buf[0] != '\0' && strlen(buf) != 0 )
-            deviceMode = atoi(buf);
-    }
-    return deviceMode;
-
-}
 
 void getMeshWanIfName(char *mesh_wan_ifname,int size)
 {
