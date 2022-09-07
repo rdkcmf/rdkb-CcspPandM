@@ -543,11 +543,13 @@ void *XfinityWifiThread
     } else {
         AnscTraceWarning(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Interface.1.Enable OK\n", __FUNCTION__));
     }
-	if (g_SetParamValueBool("Device.X_COMCAST-COM_GRE.Tunnel.1.Interface.2.Enable", value) != ANSC_STATUS_SUCCESS) {
+/* RDKB-44262 leads to redundant gre-forceRestart
+        if (g_SetParamValueBool("Device.X_COMCAST-COM_GRE.Tunnel.1.Interface.2.Enable", value) != ANSC_STATUS_SUCCESS) {
         AnscTraceError(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Interface.2.Enable error\n", __FUNCTION__));
     } else {
         AnscTraceWarning(("%s: set X_COMCAST-COM_GRE.Tunnel.1.Interface.2.Enable OK\n", __FUNCTION__));
     }
+*/
 	//zqiu<<
     if (value) {
          //Update circuit ID here
