@@ -17613,6 +17613,12 @@
                         <writable>true</writable>
                     </parameter>
                     <parameter>
+                        <name>TunnelStatus</name>
+                        <type>string(256)</type>
+                        <syntax>string</syntax>
+                        <writable>true</writable>
+                    </parameter>
+                    <parameter>
                         <name>Status</name>
                         <type>string: Up(1), Down(2), Error(3)</type>
                         <syntax>uint32/mapped</syntax>

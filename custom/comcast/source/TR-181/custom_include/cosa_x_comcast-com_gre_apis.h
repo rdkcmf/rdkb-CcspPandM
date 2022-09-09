@@ -173,6 +173,7 @@ _COSA_DML_GRE_TUNNEL
 	ULONG                       InterfaceNumberOfEntries;
 	COSA_DML_GRE_TUNNEL_IF 		GreTunnelIf[MAX_GRE_TUIF];
 	BOOL                        HotSpotReset;
+    char                        TunnelStatus[32];
 } 
 COSA_DML_GRE_TUNNEL;
 

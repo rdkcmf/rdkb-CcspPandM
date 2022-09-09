@@ -286,6 +286,11 @@ ULONG GreTunnel_GetParamStringValue ( ANSC_HANDLE  hInsContext, char* ParamName,
         snprintf(pValue, *pUlSize, "%s", pGreTu->GRENetworkTunnel);
         return 0;
     }
+    if (strcmp(ParamName, "TunnelStatus") == 0)
+    {
+        snprintf(pValue, *pUlSize, "%s", pGreTu->TunnelStatus);
+        return 0;
+    }
 
     return -1;
 }
@@ -462,7 +467,6 @@ BOOL GreTunnelIf_SetParamUlongValue ( ANSC_HANDLE  hInsContext, char* ParamName,
 
 BOOL GreTunnel_SetParamStringValue ( ANSC_HANDLE hInsContext, char*  ParamName, char*  strValue ) {
 	COSA_DML_GRE_TUNNEL                 *pGreTu      = (COSA_DML_GRE_TUNNEL *)hInsContext;
-    
     if (strcmp(ParamName, "PrimaryRemoteEndpoint") == 0)
     {
         snprintf(pGreTu->PrimaryRemoteEndpoint, sizeof(pGreTu->PrimaryRemoteEndpoint), "%s", strValue);
@@ -487,7 +491,11 @@ BOOL GreTunnel_SetParamStringValue ( ANSC_HANDLE hInsContext, char*  ParamName, 
         pGreTu->ChangeFlag |= GRETU_CF_GRETU;
         return TRUE;
     }
-
+    if (strcmp(ParamName, "TunnelStatus") == 0)
+    {
+        snprintf(pGreTu->TunnelStatus, sizeof(pGreTu->TunnelStatus), "%s", strValue);
+        return TRUE;
+    }
     return FALSE;
 }
 
