@@ -1879,6 +1879,22 @@
                         </object>
 <?endif?>
                       <object>
+                          <name>ImageHealthChecker</name>
+                          <objectType>object</objectType>
+                          <functions>
+                               <func_GetParamStringValue>IHC_GetParamStringValue</func_GetParamStringValue>
+                               <func_SetParamStringValue>IHC_SetParamStringValue</func_SetParamStringValue>
+                          </functions>
+                          <parameters>
+                              <parameter>
+                                 <name>OperatingMode</name>
+                                 <type>string(40)</type>
+                                 <syntax>string</syntax>
+                                 <writable>true</writable>
+                                 </parameter>
+                          </parameters>
+                      </object>
+                      <object>
                             <name>WebUIRemoteMgtOption</name>
                             <objectType>object</objectType>
                             <functions>

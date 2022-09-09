@@ -2820,6 +2820,114 @@ WiFi_Telemetry_GetParamStringValue
 
  APIs for Object:
 
+   .X_RDKCENTRAL-COM_RFC.Feature.ImageHealthChecker
+
+    * IHC_GetParamStringValue
+    * IHC_SetParamStringValue
+***********************************************************************/
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype
+
+        BOOL
+        IHC_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+    description:
+
+        This function is called to retrieve BOOL parameter value;
+
+    argument:   ANSC_HANDLE                 hInsContext,
+                The instance handle;
+
+                char*                       ParamName,
+                The parameter name;
+
+                char*                        pValue
+                The buffer of returned BOOL value;
+
+    return:     pValue if succeeded.
+
+**********************************************************************/
+
+ BOOL 
+ IHC_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+ {
+    UNREFERENCED_PARAMETER(hInsContext);
+    errno_t rc = -1;
+    int ind    = -1;
+    rc = strcmp_s("OperatingMode", strlen("OperatingMode"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
+    {
+        char buf[64]={0};
+        syscfg_get( NULL, "IHC_Mode", buf, sizeof(buf));
+        if( buf[0] != '\0' )
+        {
+             rc = strcpy_s(pValue, *pUlSize, buf);
+             ERR_CHK(rc);
+             return TRUE;
+        }
+    }
+    return FALSE;
+ }
+
+
+BOOL
+IHC_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       strValue
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    errno_t rc = -1;
+    int ind    = -1;
+    rc = strcmp_s("OperatingMode", strlen("OperatingMode"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
+    {
+        if(strcmp_s("Self Heal", strlen("Self Heal"), strValue , &ind) == EOK && !ind)
+        {
+            CcspTraceWarning(("%s: %s Mode will be implemented in next phase. So please use Monitor or Disabled \n", __FUNCTION__, strValue));
+            return FALSE;
+        }
+        else if( (strcmp_s("Disabled", strlen("Disabled"), strValue , &ind) == EOK && !ind) || (strcmp_s("Monitor", strlen("Monitor"), strValue , &ind) == EOK && !ind ) )
+        {
+            if (syscfg_set_commit(NULL, "IHC_Mode", strValue) != 0)
+            {
+                    CcspTraceWarning(("%s: syscfg_set failed for %s\n", __FUNCTION__, ParamName));
+                    return FALSE;
+            }
+            return TRUE;
+        }
+        CcspTraceWarning(("%s: invalid Parameter value for IHC: %s \n", __FUNCTION__, strValue));
+    }
+    else
+    {
+        CcspTraceWarning(("%s: invalid Parameter for IHC: %s \n", __FUNCTION__, ParamName));
+    }
+    return FALSE;
+}
+
+/***********************************************************************
+
+ APIs for Object:
+
     DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.UniqueTelemetryId.
 
     *  UniqueTelemetryId_GetParamBoolValue
