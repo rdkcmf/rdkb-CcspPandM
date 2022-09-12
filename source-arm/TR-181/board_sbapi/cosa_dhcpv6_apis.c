@@ -8062,6 +8062,47 @@ void delIpv6toRemoteWan()
 
 #if defined (RDKB_EXTENDER_ENABLED)
 
+void  deleteIpv6Route(char* ifname)
+{
+    char addr[128]={0};
+    memset(addr,0,sizeof(addr));
+    commonSyseventGet(SYSEVENT_CM_WAN_V6_GWADDR_PREV, addr, sizeof(addr));
+    UnSetV6RouteFromTable(ifname,strtok(addr,"/"),0,EXT_MODE_ROUTE_TABLE_NUM);  
+    UnSetV6Route(ifname,strtok(addr,"/"),0);  
+}
+
+void  addIpv6Route(char* ifname,uint32_t DeviceMode)
+{
+    char addr[128]={0};
+    char buf[16] = {0};
+    memset(addr,0,sizeof(addr));
+    commonSyseventGet(SYSEVENT_CM_WAN_V6_GWADDR, addr, sizeof(addr));
+    commonSyseventSet(SYSEVENT_CM_WAN_V6_GWADDR_PREV, addr);
+    if ( DEVICE_MODE_EXTENDER == DeviceMode )
+        SetV6RouteTable(ifname,strtok(addr,"/"),0,EXT_MODE_ROUTE_TABLE_NUM);
+    else
+    {
+        SetV6Route(ifname,strtok(addr,"/"),0);
+        memset(buf,0,sizeof(buf));
+        commonSyseventGet("ula_ipv6_enabled", buf, sizeof(buf));  
+        if ((access(ULA_ROUTE_SET, R_OK)) != 0 && 1 == atoi(buf) )
+        {
+            CcspTraceInfo(("%s: ula enabled,creating ula ipv6 configuration in router mode of EXT device\n", __FUNCTION__));
+            commonSyseventSet("routeset-ula","");
+            creat(ULA_ROUTE_SET,S_IRUSR |S_IWUSR | S_IRGRP | S_IROTH);
+        }
+    }
+}
+void configureIpv6Route(uint32_t DeviceMode)
+{
+    CcspTraceInfo(("%s: Configuring Ipv6 route:\n", __FUNCTION__));
+    char cellular_ifname[32]={0};
+    memset(cellular_ifname,0,sizeof(cellular_ifname));
+    commonSyseventGet(CELLULAR_IFNAME, cellular_ifname, sizeof(cellular_ifname));
+
+    deleteIpv6Route(cellular_ifname);
+    addIpv6Route(cellular_ifname,DeviceMode);
+}
 
 void configureLTEIpv6(char* v6addr)
 {
@@ -8069,7 +8110,6 @@ void configureLTEIpv6(char* v6addr)
 
     char cellular_ifname_val[32]={0};
     char addr[128]={0};
-    char buf[16] = {0};
 
     CcspTraceInfo(("%s : v6addr: %s\n", __FUNCTION__, v6addr));
     memset(cellular_ifname_val,0,sizeof(cellular_ifname_val));
@@ -8081,34 +8121,13 @@ void configureLTEIpv6(char* v6addr)
     DelIpv6Addr(cellular_ifname_val , addr);
     int deviceMode = -1 ;
     deviceMode = Get_Device_Mode();
-    memset(addr,0,sizeof(addr));
-    commonSyseventGet(SYSEVENT_CM_WAN_V6_GWADDR_PREV, addr, sizeof(addr));
-    if ( DEVICE_MODE_EXTENDER == deviceMode )
-        UnSetV6RouteFromTable(cellular_ifname_val,strtok(addr,"/"),0,EXT_MODE_ROUTE_TABLE_NUM);  
-    else
-        UnSetV6Route(cellular_ifname_val,strtok(addr,"/"),0);  
-
+    // Delete ipv6 route
+    deleteIpv6Route(cellular_ifname_val);
     memset(addr,0,sizeof(addr));
     AssignIpv6Addr(cellular_ifname_val,v6addr);
     commonSyseventSet(SYSEVENT_CM_WAN_V6_IPADDR_PREV, v6addr);
-    
-    memset(addr,0,sizeof(addr));
-    commonSyseventGet(SYSEVENT_CM_WAN_V6_GWADDR, addr, sizeof(addr));
-    commonSyseventSet(SYSEVENT_CM_WAN_V6_GWADDR_PREV, addr);
-    if ( DEVICE_MODE_EXTENDER == deviceMode )
-        SetV6RouteTable(cellular_ifname_val,strtok(addr,"/"),0,EXT_MODE_ROUTE_TABLE_NUM);
-    else
-    {
-        SetV6Route(cellular_ifname_val,strtok(addr,"/"),0);
-        memset(buf,0,sizeof(buf));
-        commonSyseventGet("ula_ipv6_enabled", buf, sizeof(buf));  
-        if ((access(ULA_ROUTE_SET, R_OK)) != 0 && 1 == atoi(buf) )
-        {
-            CcspTraceInfo(("%s: ula enabled,creating ula ipv6 configuration in router mode of EXT device\n", __FUNCTION__));
-            commonSyseventSet("routeset-ula","");
-            creat(ULA_ROUTE_SET,S_IRUSR |S_IWUSR | S_IRGRP | S_IROTH);
-        }
-    }
+    // setIpv6 route
+    addIpv6Route(cellular_ifname_val,(uint32_t)deviceMode);
     CcspTraceInfo(("%s -- EXIT:\n", __FUNCTION__));
 }
 #endif

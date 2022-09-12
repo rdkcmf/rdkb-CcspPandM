@@ -28,6 +28,8 @@
 #include "ccsp_psm_helper.h"
 #include "safec_lib_common.h"
 
+#include "cosa_dhcpv6_apis.h"
+
 DeviceControl_Net_Mode deviceControl_Net_Mode;
 
 rbusHandle_t handle;
@@ -172,6 +174,7 @@ rbusError_t setUlongHandler(rbusHandle_t handle, rbusProperty_t prop, rbusSetHan
 			CcspTraceError(("%s-%d: Failed to update and publish device mode value\n", __FUNCTION__, __LINE__));
 			return ret;
 		}
+		configureIpv6Route(rVal);
 	}
     pthread_mutex_unlock(&mutex);
     return RBUS_ERROR_SUCCESS;

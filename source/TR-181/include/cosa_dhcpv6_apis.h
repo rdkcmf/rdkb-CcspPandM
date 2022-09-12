@@ -759,5 +759,10 @@ int Get_Device_Mode();
 
 #endif
 
+#if defined (RDKB_EXTENDER_ENABLED)
+void configureIpv6Route(uint32_t DeviceMode);
+#endif
+
+
 #endif
 
