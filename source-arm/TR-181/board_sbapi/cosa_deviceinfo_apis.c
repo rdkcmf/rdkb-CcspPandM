@@ -1394,6 +1394,7 @@ CosaDmlDiGetFirmwareUpgradeEndTime
     {
         while(fgets(value, sizeof(value), fp) != NULL)
         {
+            value[strcspn(value, "\r\n")] = '\0';
             rc = strcpy_s(pValue, *pulSize, value);
             if ( rc != EOK) {
                 ERR_CHK(rc);
@@ -1439,6 +1440,7 @@ CosaDmlDiGetFirmwareUpgradeEndTime
     }
     while(fgets(value, sizeof(value), fp) != NULL)
     {
+        value[strcspn(value, "\r\n")] = '\0';
         rc = strcpy_s(pValue, *pulSize, value);
         if ( rc != EOK) {
             ERR_CHK(rc);
