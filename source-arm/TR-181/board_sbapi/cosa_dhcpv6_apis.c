@@ -8948,8 +8948,6 @@ dhcpv6c_dbg_thrd(void * in)
 #endif
                         g_dhcpv6_server_prefix_ready = TRUE;
 
-                        CosaDmlDHCPv6sTriggerRestart(FALSE);
-                        
                         /*We need get a global ip addres */
 #if defined(_COSA_BCM_ARM_) || defined(INTEL_PUMA7)
 #ifndef _HUB4_PRODUCT_REQ_
@@ -9007,6 +9005,11 @@ dhcpv6c_dbg_thrd(void * in)
  
                             CcspTraceWarning(("%s: setting lan-restart\n", __FUNCTION__));
                             commonSyseventSet("lan-restart", "1");
+                        }
+                        if(bRestartLan)
+                        {
+                            CcspTraceWarning(("Restart lan%s:%d\n", __func__,__LINE__));
+                            CosaDmlDHCPv6sTriggerRestart(FALSE);
                         }
 #endif
 
