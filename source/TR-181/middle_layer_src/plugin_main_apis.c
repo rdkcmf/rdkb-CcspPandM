@@ -319,12 +319,8 @@ CosaBackEndManagerInitialize
 #endif
     pMyObject->hHosts         = (ANSC_HANDLE)CosaHostsCreate();
     AnscTraceWarning(("  CosaHostsCreate done!\n"));
-#ifdef FEATURE_RDKB_DHCP_MANAGER
-    AnscTraceWarning(("  CosaDNSCreate not done will be created from dhcp manager!\n"));
-#else
     pMyObject->hDNS           = (ANSC_HANDLE)CosaDNSCreate();
     AnscTraceWarning(("  CosaDNSCreate done!\n"));
-#endif
     pMyObject->hRouting       = (ANSC_HANDLE)CosaRoutingCreate();
     AnscTraceWarning(("  CosaRoutingCreate done!\n"));
     pMyObject->hBridging      = (ANSC_HANDLE)CosaBridgingCreate();
