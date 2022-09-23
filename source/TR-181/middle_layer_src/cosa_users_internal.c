@@ -164,7 +164,12 @@ CosaUsersInitialize
     PCOSA_DATAMODEL_USERS           pMyObject         = (PCOSA_DATAMODEL_USERS)hThisObject;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoCOSA   = NULL;
     PPOAM_IREP_FOLDER_OBJECT        pPoamIrepFoUser   = NULL;
-    
+
+    char hashpassword[32]={'\0'};
+    char fromDB[128]={'\0'};
+    char getHash[128]= {'\0'};
+    errno_t safec_rc = -1;
+    int res;
     
     #if defined(_HUB4_PRODUCT_REQ_) || defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_TURRIS_)
         //No need to remove any hardcoded passwords
@@ -258,6 +263,44 @@ CosaUsersInitialize
 
     /* Firstly we create the whole system from backend */
     CosaUsersBackendGetUserInfo((ANSC_HANDLE)pMyObject);
+
+   /* Check webui password type */
+   #if defined(_COSA_FOR_BCI_)
+       syscfg_get( NULL, "hash_password_2",fromDB, sizeof(fromDB));
+   #else
+       syscfg_get( NULL, "hash_password_3",fromDB, sizeof(fromDB));
+   #endif
+       if(fromDB[0] == '\0')
+       {
+           safec_rc = strcpy_s(hashpassword, sizeof(hashpassword), "PWD_Empty");
+           if(safec_rc != EOK)
+           {
+              ERR_CHK(safec_rc);
+           }
+           CcspTraceWarning(("webui_login_password: %s!\n",hashpassword));
+
+           return ANSC_STATUS_SUCCESS;
+       }
+    #if defined(_COSA_FOR_BCI_)
+        hash_userPassword("highspeed",getHash);
+    #else
+        hash_userPassword("password",getHash);
+    #endif
+    res = strcmp(getHash, fromDB);
+    if (!res) {
+       safec_rc = strcpy_s(hashpassword, sizeof(hashpassword), "PWD_Default");
+       if(safec_rc != EOK)
+       {
+          ERR_CHK(safec_rc);
+       }
+    } else {
+       safec_rc = strcpy_s(hashpassword, sizeof(hashpassword), "PWD_Updated");
+       if(safec_rc != EOK)
+       {
+          ERR_CHK(safec_rc);
+       }
+    }
+    CcspTraceWarning(("webui_login_password: %s!\n",hashpassword));
 
 EXIT:
     
