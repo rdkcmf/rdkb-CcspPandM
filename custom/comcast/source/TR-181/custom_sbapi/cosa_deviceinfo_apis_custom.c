@@ -83,6 +83,7 @@
 #include <utapi_util.h>
 #include <pthread.h>
 #include <syscfg/syscfg.h>
+#include "cosa_drg_common.h"
 
 #define _ERROR_ "NOT SUPPORTED"
 
@@ -268,7 +269,13 @@ CosaDmlDiGetRouterIPAddress
     )
 {
     UNREFERENCED_PARAMETER(hContext);
+#ifdef _WNXL11BWL_PRODUCT_REQ_
+    char wan_interface[32] = {0};
+    commonSyseventGet("current_wan_ifname", wan_interface, sizeof(wan_interface));
+    unsigned int UIntIP = (unsigned int)CosaUtilGetIfAddr(wan_interface);
+#else
     unsigned int UIntIP = (unsigned int)CosaUtilGetIfAddr("erouter0");
+#endif
     errno_t rc = -1;
 #if defined (_XB6_PRODUCT_REQ_) ||  defined (_COSA_BCM_ARM_)
 	rc = sprintf_s(pValue, *pulSize, "%d.%d.%d.%d",(UIntIP & 0xff),((UIntIP >> 8) & 0xff),((UIntIP >> 16) & 0xff),(UIntIP >> 24));
@@ -306,6 +313,10 @@ CosaDmlDiGetRouterIPv6Address
 
 #if defined(_HUB4_PRODUCT_REQ_)
 	CosaUtilGetIpv6AddrInfo("brlan0", &p_v6addr, &v6addr_num);
+#elif defined(_WNXL11BWL_PRODUCT_REQ_)
+        char wan_interface[32] = {0};
+        commonSyseventGet("current_wan_ifname", wan_interface, sizeof(wan_interface));
+        CosaUtilGetIpv6AddrInfo(wan_interface, &p_v6addr, &v6addr_num);
 #else
 	CosaUtilGetIpv6AddrInfo("erouter0", &p_v6addr, &v6addr_num);
 #endif
