@@ -1955,7 +1955,18 @@ CosaDmlDiGetProcessorSpeed
     memset(line, 0, sizeof(line));
 
 #ifdef _COSA_BCM_ARM_
-
+#if defined (_SR300_PRODUCT_REQ_)
+    if(pValue && pulSize)
+    {
+        if( ANSC_STATUS_SUCCESS == platform_hal_GetCPUSpeed(pValue) )
+        {
+            *pulSize = AnscSizeOfString(pValue);
+            return ANSC_STATUS_SUCCESS;
+        }
+    }
+    CcspTraceWarning(("Read cpu value ERROR '\n"));
+    return ANSC_STATUS_FAILURE;
+#endif
     fp = popen("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "r");
     if (fp == NULL)
     {
