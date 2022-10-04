@@ -880,6 +880,31 @@ struct tm *pLcltime, temp;
     return ANSC_STATUS_SUCCESS;
 }
 
+ANSC_STATUS
+CosaDmlTimeGetUTCTime
+    (
+       ANSC_HANDLE                 hContext,
+       char                       *pCurrUTCTime
+    )
+{
+    UNREFERENCED_PARAMETER(hContext);
+    time_t t;
+    struct tm *pUTCtime;
+    t = time(NULL);
+    pUTCtime = gmtime(&t);
+
+    if(NULL != pUTCtime){
+       _ansc_sprintf(pCurrUTCTime, "%.4u-%.2u-%.2u %.2u:%.2u:%.2u",
+            (pUTCtime->tm_year)+1900,
+            (pUTCtime->tm_mon)+1,
+            pUTCtime->tm_mday,
+            pUTCtime->tm_hour,
+            pUTCtime->tm_min,
+            pUTCtime->tm_sec);
+    }
+    return ANSC_STATUS_SUCCESS;
+}
+
 #define VALUE_ALREADY_IN_DECIMAL       -1
 #define INVALID_TIME_OFFSET_VAL         0
 

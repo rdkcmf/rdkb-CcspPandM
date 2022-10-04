@@ -462,6 +462,11 @@ Time_GetParamStringValue
         return 0;
     }
 
+    if (strcmp(ParamName, "X_RDK_CurrentUTCTime") == 0)
+    {
+        CosaDmlTimeGetUTCTime(NULL,pValue);
+        return 0;
+    }
     if (strcmp(ParamName, "LocalTimeZone") == 0)
     {
         /* collect value */

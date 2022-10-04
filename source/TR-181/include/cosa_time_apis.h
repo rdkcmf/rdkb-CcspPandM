@@ -156,6 +156,13 @@ CosaDmlTimeGetLocalTime
     );
 
 ANSC_STATUS
+CosaDmlTimeGetUTCTime
+    (
+       ANSC_HANDLE                 hContext,
+       char                       *pCurrUTCTime
+    );
+
+ANSC_STATUS
 CosaDmlTimeGetTimeOffset
     (
        ANSC_HANDLE                 hContext,

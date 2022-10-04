@@ -4766,6 +4766,18 @@
 
        </parameter>
 
+       <parameter>
+
+          <name>X_RDK_CurrentUTCTime</name>
+
+          <type>string(256)</type>
+
+          <syntax>string</syntax>
+
+          <writable>false</writable>
+
+        </parameter>
+
       </parameters>
 
     </object>
