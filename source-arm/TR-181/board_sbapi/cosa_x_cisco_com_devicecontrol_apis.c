@@ -2115,7 +2115,17 @@ CosaDmlDcSetFactoryReset
 			}
 		}
 #endif
-		
+
+#if defined(_SR213_PRODUCT_REQ_)
+               if( (factory_reset_mask & FR_ROUTER) ||
+                   (factory_reset_mask & FR_WIFI) ||
+                   (factory_reset_mask & FR_FW) ||
+                   (factory_reset_mask & FR_OTHER) ) {
+                    CcspTraceInfo(("LED Transition: GREEN LED will blink, Reason: Factory Reset\n"));
+                    v_secure_system("sysevent set led_event rdkb_factory_reset");
+               }
+#endif
+
 #if defined (_XB6_PRODUCT_REQ_)
 		//XB6 Needs Time for SNMP packet to get out of device from Atom 
 		if (strstr(pValue, "delay") != NULL) {
