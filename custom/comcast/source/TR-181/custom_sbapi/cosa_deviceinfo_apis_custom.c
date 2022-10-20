@@ -275,7 +275,7 @@ CosaDmlDiGetRouterIPAddress
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-#ifdef _WNXL11BWL_PRODUCT_REQ_
+#if defined(_WNXL11BWL_PRODUCT_REQ_) || defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
     char wan_interface[32] = {0};
     commonSyseventGet("current_wan_ifname", wan_interface, sizeof(wan_interface));
     unsigned int UIntIP = (unsigned int)CosaUtilGetIfAddr(wan_interface);

@@ -742,6 +742,8 @@ CosaDmlIpIfGetEntry2
         ANSC_HANDLE                 hContext,
         ULONG                       InstanceNumber
     );
-    
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+ANSC_STATUS CosaUpdateIfname(int Index, char *Ifname);
+#endif    
 #endif
 

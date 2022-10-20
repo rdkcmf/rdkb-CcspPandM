@@ -80,6 +80,11 @@
 
 #define PAM_FIRST_IP_INTERFACE      "PAM_FIRST_IP_INTERFACE"
 #define PAM_MAX_IP_INTERFACE_NUM    (256)
+
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE )
+char gFirstUpstreamIpInterface[128]    = {0};
+char gFirstDownstreamIpInterface[128]    = {0};
+#endif
 /***********************************************************************
  IMPORTANT NOTE:
 
@@ -269,6 +274,12 @@ Pam_GetFirstIpInterfaceObjectName
                 {
                     break;
                 }
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+                else if(strncmp(LowerLayers,pObjName,strlen(LowerLayers)) == 0)
+                {
+                    break;
+                }
+#endif
             }
             while (TRUE);
             
@@ -559,7 +570,15 @@ Pam_GetParamStringValue
         *pulSize = _ansc_strlen("Device.IP.Interface.1.");
         return  0;
         */
-
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE )
+        if(_ansc_strlen(gFirstUpstreamIpInterface) > 0)
+        {
+            /* Find FirstUpstreamIpInterface only if WanIface changed */
+            AnscCopyString(pValue, gFirstUpstreamIpInterface);
+            *pulSize = _ansc_strlen(gFirstUpstreamIpInterface);
+            return  0;
+        }
+#endif
         if ( ANSC_STATUS_SUCCESS == Pam_GetFirstIpInterfaceObjectName(TRUE, IpIfObjName, &IpIfObjNameSize) )
         {
             if ( IpIfObjNameSize < *pulSize )
@@ -570,6 +589,10 @@ Pam_GetParamStringValue
                    ERR_CHK(rc);
                    return -1;
                 }
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE )
+                /* Update Global variable */
+                strcpy_s(gFirstUpstreamIpInterface,sizeof(gFirstUpstreamIpInterface), IpIfObjName);
+#endif
                 return  0;
             }
             else
@@ -592,6 +615,15 @@ Pam_GetParamStringValue
         return  0;
         */
 
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE )
+        if(_ansc_strlen(gFirstDownstreamIpInterface) > 0)
+        {
+            /* Find FirstDownstreamIpInterface only if WanIface changed */
+            AnscCopyString(pValue, gFirstDownstreamIpInterface);
+            *pulSize = _ansc_strlen(gFirstDownstreamIpInterface);
+            return  0;
+        }
+#endif
       //      CcspTraceInfo(("Pam_GetParamStringValue -- FirstDownstreamIpInterface case\n"));
 
         if ( ANSC_STATUS_SUCCESS == Pam_GetFirstIpInterfaceObjectName(FALSE, IpIfObjName, &IpIfObjNameSize) )
@@ -609,6 +641,10 @@ Pam_GetParamStringValue
                    return -1;
                 }
 		CcspTraceInfo(("[%s] -- pValue: %s\n", __FUNCTION__, pValue));
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE )
+                /* Update Global variable */
+                strcpy_s(gFirstDownstreamIpInterface,sizeof(gFirstDownstreamIpInterface), IpIfObjName);
+#endif
                 return  0;
             }
             else

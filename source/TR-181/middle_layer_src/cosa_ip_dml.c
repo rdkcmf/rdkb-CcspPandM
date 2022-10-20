@@ -1763,7 +1763,7 @@ Interface2_SetParamStringValue
             ULONG                           ulIndex;
             CHAR                           ucEntryParamName[256]       = {0};
             CHAR                           ucEntryNameValue[256]       = {0};
-#if defined (MULTILAN_FEATURE)
+#if defined (MULTILAN_FEATURE) || defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
             ULONG                           ulEntryNameLen = 256;
 #else
       	    ULONG                           size;
@@ -1827,7 +1827,7 @@ Interface2_SetParamStringValue
                   ERR_CHK(rc);
                   return FALSE;
                 }
-#if defined (MULTILAN_FEATURE)
+#if defined (MULTILAN_FEATURE) || defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
                 ulEntryNameLen = sizeof(ucEntryNameValue);
                 rc = CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen);
                 if ( 0 == rc )
@@ -1841,7 +1841,7 @@ Interface2_SetParamStringValue
                 {
                     if(rc1 == ANSC_STATUS_DISCARD)
                     {
-#ifndef MULTILAN_FEATURE
+#if !defined (MULTILAN_FEATURE) && !defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
                        rc = CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &size);
 #endif
                     }
@@ -1853,6 +1853,40 @@ Interface2_SetParamStringValue
                           ERR_CHK(rc);
                           return FALSE;
                        }
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+                       /* LowerLayers Updated from WanManger. Allow only 1st interface.*/
+                       if(pIPInterface->Cfg.InstanceNumber == 1)
+                       {
+                           rc = STRCPY_S_NOCLOBBER(pIPInterface->Cfg.LowerLayers, sizeof(pIPInterface->Cfg.LowerLayers), pString);
+                           if(rc != EOK)
+                           {
+                               ERR_CHK(rc);
+                               return FALSE;
+                           }
+                           CcspTraceInfo(("%s %d Updating LowerLayers : %s ,InstanceNumber : %lu\n", __FUNCTION__, __LINE__, pIPInterface->Cfg.LowerLayers, pIPInterface->Cfg.InstanceNumber));
+                           /* save update to backup */
+                           CosaUpdateIfname((pIPInterface->Cfg.InstanceNumber - 1),ucEntryNameValue);
+
+                           rc = strcpy_s(pIPInterface->Info.Name, sizeof(pIPInterface->Info.Name), ucEntryNameValue);
+                           if(rc != EOK)
+                           {
+                               ERR_CHK(rc);
+                               return FALSE;
+                           }
+                           char out[256]= {0};
+                           rc = sprintf_s(out, sizeof(out), "Interface_%s", pIPInterface->Info.Name);
+                           if(rc < EOK)
+                           {
+                               ERR_CHK(rc);
+                           }
+                           rc = STRCPY_S_NOCLOBBER(pIPInterface->Cfg.Alias, sizeof(pIPInterface->Cfg.Alias), out);
+                           if(rc != EOK)
+                           {
+                               ERR_CHK(rc);
+                               return FALSE;
+                           }
+                       }
+#endif
                     }
                 }
                 else

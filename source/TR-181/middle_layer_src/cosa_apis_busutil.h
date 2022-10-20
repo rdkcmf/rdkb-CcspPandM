@@ -105,5 +105,8 @@ CosaGetInstanceNumberByIndex
         ULONG                      ulIndex
     );
 
-
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+ANSC_STATUS PAM_GetInterfaceInstanceFromVlanmanager(char *pIfName, PUCHAR *pMatchedLowerLayer);
+ANSC_STATUS RdkBus_GetParamValueFromAnyComp( char * pQuery, char *pValue);
+#endif
 #endif

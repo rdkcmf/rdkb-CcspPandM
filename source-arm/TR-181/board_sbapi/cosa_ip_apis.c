@@ -330,7 +330,12 @@ typedef struct USG_IF_CFG
 USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
 {
 #ifndef _WNXL11BWL_PRODUCT_REQ_
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE ) && defined( _HUB4_PRODUCT_REQ_ ) 
+    /* added _HUB4_PRODUCT_REQ_ to restrict only VlanManger supported products */
+    {"erouter0",    COSA_DML_LINK_TYPE_VlanLink, TRUE},
+#else
     {"erouter0",    COSA_DML_LINK_TYPE_EthLink, TRUE},
+#endif
 #endif
 #if defined(_COSA_INTEL_USG_ARM_) && !defined(_ENABLE_DSL_SUPPORT_)
 #ifndef _PLATFORM_RASPBERRYPI_
@@ -368,6 +373,24 @@ USG_IF_CFG_T g_usg_if_cfg[COSA_USG_IF_NUM] =
 int CosaGetUsgIfNum() {
     return COSA_USG_IF_NUM;
 }
+
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+extern char gFirstUpstreamIpInterface[128];
+extern char gFirstDownstreamIpInterface[128];
+
+ANSC_STATUS CosaUpdateIfname(int Index, char *Ifname)
+{
+    errno_t rc = -1;
+    rc = strcpy_s((char *)g_ipif_names[Index],sizeof(g_ipif_names[Index]), Ifname);
+    ERR_CHK(rc);
+
+    /* Wan Iface changed. Reset First Up/Down stream interfaces details to update again */
+    memset(gFirstUpstreamIpInterface, 0 , sizeof(gFirstUpstreamIpInterface));
+    memset(gFirstDownstreamIpInterface, 0 , sizeof(gFirstDownstreamIpInterface));
+
+    return ANSC_STATUS_SUCCESS;
+}
+#endif
 
 ANSC_STATUS
 CosaDmlIpInit

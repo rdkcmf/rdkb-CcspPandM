@@ -581,6 +581,12 @@ CosaUtilGetLowerLayers
             else if (strcmp(pTableStringToken->Name, "Device.PTM.Link.") == 0)
             {
             }
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+            else if (strcmp(pTableStringToken->Name, "Device.X_RDK_Ethernet.Link.") == 0)
+            {
+                PAM_GetInterfaceInstanceFromVlanmanager((char*)pKeyword, &pMatchedLowerLayer);
+            }
+#endif
             else if (strcmp(pTableStringToken->Name, "Device.Ethernet.Link.") == 0)
             {
                 ulNumOfEntries =       CosaGetParamValueUlong("Device.Ethernet.LinkNumberOfEntries");
@@ -816,7 +822,13 @@ LINKTYPE_MAP_T g_linktype_map[COSA_DML_LINK_TYPE_TOTAL] = {
     {   "Device.PPP.Interface.", 
         "PPP", 
         COSA_DML_LINK_TYPE_PPP
-    }
+    },
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+    {   "Device.X_RDK_Ethernet.Link.",
+        "VlanLink",
+        COSA_DML_LINK_TYPE_VlanLink
+    },
+#endif
 };
 
 

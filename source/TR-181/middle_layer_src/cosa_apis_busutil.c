@@ -102,8 +102,21 @@ extern ANSC_HANDLE bus_handle;
 #define ETH_COMPONENT_NAME "eRT.com.cisco.spvtg.ccsp.ethagent"
 #define ETH_DBUS_PATH "/com/cisco/spvtg/ccsp/ethagent"
 static ANSC_STATUS RdkBus_GetParamValues( char *pComponent, char *pBus, char *pParamName, char *pReturnVal );
+
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+#define X_RDK_ETHERNET_INTERFACE_OBJECT    "Device.Ethernet.X_RDK_Interface."
+#define PPP_INTERFACE_OBJECT               "Device.PPP."
+#define PTM_INTERFACE_OBJECT               "Device.PTM."
+#define DSL_INTERFACE_OBJECT               "Device.DSL."
+#define VLAN_INTERFACE_OBJECT              "Device.X_RDK_Ethernet."
+#define VLAN_DBUS_PATH                     "/com/cisco/spvtg/ccsp/vlanmanager"
+#define VLAN_COMPONENT_NAME                "eRT.com.cisco.spvtg.ccsp.vlanmanager"
+#define VLAN_ETHLINK_NOE_PARAM_NAME        "Device.X_RDK_Ethernet.LinkNumberOfEntries"
+#define VLAN_ETHLINK_TABLE_NAME            "Device.X_RDK_Ethernet.Link."
+#define VLAN_ETHLINK_TABLE_FORMAT          "Device.X_RDK_Ethernet.Link.%d."
 #endif
 
+#endif
 /**********************************************************************
 
     prototype:
@@ -144,6 +157,19 @@ CosaGetParamValueUlong
         result = strtoul(acTmpReturnValue, NULL, 10);
         return result;
     }
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+    /* Query VlanManager */
+    if (strstr(pParamName, VLAN_INTERFACE_OBJECT))
+    {
+        if (ANSC_STATUS_FAILURE == RdkBus_GetParamValues(VLAN_COMPONENT_NAME, VLAN_DBUS_PATH, pParamName, acTmpReturnValue))
+        {
+            CcspTraceError(("[%s][%d]Failed to get param value\n", __FUNCTION__, __LINE__));
+            return 0;
+        }
+        result = strtoul(acTmpReturnValue, NULL, 10);
+        return result;
+    }
+#endif
 #endif
     /* we should look up CR to find right component.
             if it's P&M component, we just call the global variable 
@@ -202,6 +228,22 @@ CosaGetParamValueString
         *pulSize = strlen(acTmpReturnValue) + 1;
         return 1;
     }
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+    /* Added possible LowerLayer Interafces */
+    if(strstr(pParamName, PPP_INTERFACE_OBJECT) || strstr(pParamName, VLAN_INTERFACE_OBJECT) ||
+        strstr(pParamName, PTM_INTERFACE_OBJECT) || strstr(pParamName, DSL_INTERFACE_OBJECT) ||
+        strstr(pParamName,X_RDK_ETHERNET_INTERFACE_OBJECT))
+    {
+        if (ANSC_STATUS_FAILURE == RdkBus_GetParamValueFromAnyComp(pParamName, acTmpReturnValue))
+        {
+            CcspTraceError(("[%s][%d]Failed to get param value\n", __FUNCTION__, __LINE__));
+            return -1;
+        }
+        strncpy(pBuffer, acTmpReturnValue, strlen(acTmpReturnValue)+1);
+        *pulSize = strlen(acTmpReturnValue) + 1;
+        return 0;
+    }
+#endif
 #endif
     /* we should look up CR to find right component.
             if it's P&M component, we just call the global variable 
@@ -253,6 +295,23 @@ CosaGetParamValueBool
         else
             return FALSE;
     }
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+    /* Added possible LowerLayer Interafces */
+    if(strstr(pParamName, PPP_INTERFACE_OBJECT) || strstr(pParamName, VLAN_INTERFACE_OBJECT) || 
+        strstr(pParamName, PTM_INTERFACE_OBJECT) || strstr(pParamName, DSL_INTERFACE_OBJECT) || 
+        strstr(pParamName,X_RDK_ETHERNET_INTERFACE_OBJECT))
+    {
+        if (ANSC_STATUS_FAILURE == RdkBus_GetParamValueFromAnyComp(pParamName, acTmpReturnValue))
+        {
+            CcspTraceError(("[%s][%d]Failed to get param value\n", __FUNCTION__, __LINE__));
+            return FALSE;
+        }
+        if (!(strcmp(acTmpReturnValue, "true")))
+            return TRUE;
+        else
+            return FALSE;
+    }
+#endif
 #endif
     /* we should look up CR to find right component.
             if it's P&M component, we just call the global variable 
@@ -389,7 +448,7 @@ CosaCOSARepopulateTable
     return g_COSARepopulateTable(g_pDslhDmlAgent, objName);
 }
 
-#ifdef ENABLE_ETHERNET_TR181_REMOTE_CALL
+#if  defined(ENABLE_ETHERNET_TR181_REMOTE_CALL)
 static ANSC_STATUS RdkBus_GetParamValues( char *pComponent, char *pBus, char *pParamName, char *pReturnVal )
 {
     parameterValStruct_t   **retVal = NULL ;
@@ -432,4 +491,174 @@ static ANSC_STATUS RdkBus_GetParamValues( char *pComponent, char *pBus, char *pP
 
     return ANSC_STATUS_FAILURE;
 }
+
+#if defined(FEATURE_RDKB_CONFIGURABLE_WAN_INTERFACE)
+ANSC_STATUS RdkBus_GetParamNames( char *pComponent, char *pBus, char *pParamName, char a2cReturnVal[][256], int *pReturnSize )
+{
+    //CCSP_MESSAGE_BUS_INFO  *bus_info         = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+    parameterInfoStruct_t  **retInfo;
+    int                    ret               = 0,
+                           nval;
+
+    ret = CcspBaseIf_getParameterNames(
+            bus_handle,
+            pComponent,
+            pBus,
+            pParamName,
+            1,
+            &nval,
+            &retInfo);
+
+    //Copy the value
+    if( CCSP_SUCCESS == ret )
+    {
+        int iLoopCount;
+
+        *pReturnSize = nval;
+
+        for( iLoopCount = 0; iLoopCount < nval; iLoopCount++ )
+        {
+            if( NULL != retInfo[iLoopCount]->parameterName )
+            {
+                //CcspTraceInfo(("%s parameterName[%d,%s]\n",__FUNCTION__,iLoopCount,retInfo[iLoopCount]->parameterName));
+                snprintf( a2cReturnVal[iLoopCount], strlen( retInfo[iLoopCount]->parameterName ) + 1, "%s", retInfo[iLoopCount]->parameterName );
+            }
+        }
+
+        if( retInfo )
+        {
+            free_parameterInfoStruct_t(bus_handle, nval, retInfo);
+        }
+
+        return ANSC_STATUS_SUCCESS;
+    }
+
+    if( retInfo )
+    {
+        free_parameterInfoStruct_t(bus_handle, nval, retInfo);
+    }
+
+    return ANSC_STATUS_FAILURE;
+
+}
+
+ANSC_STATUS PAM_GetInterfaceInstanceFromVlanmanager(char *pIfName, PUCHAR *pMatchedLowerLayer)
+{
+
+    if( ( NULL == pIfName ))
+    {
+        CcspTraceError(("%s Invalid Buffer\n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+
+    char acTmpReturnValue[256] = { 0 },
+         a2cTmpTableParams[10][256] = { 0 };
+    INT  iLoopCount,
+         iTotalNoofEntries;
+
+    if ( ANSC_STATUS_FAILURE == RdkBus_GetParamValues( VLAN_COMPONENT_NAME, VLAN_DBUS_PATH, VLAN_ETHLINK_NOE_PARAM_NAME, acTmpReturnValue ) )
+    {
+        CcspTraceError(("%s %d Failed to get param value\n", __FUNCTION__, __LINE__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    //Total count
+    iTotalNoofEntries = atoi( acTmpReturnValue );
+    CcspTraceInfo(("%s %d - TotalNoofEntries:%d\n", __FUNCTION__, __LINE__, iTotalNoofEntries));
+
+    if( 0 >= iTotalNoofEntries )
+    {
+        return ANSC_STATUS_SUCCESS;
+    }
+
+
+    //Get table names
+    iTotalNoofEntries = 0;
+    if ( ANSC_STATUS_FAILURE == RdkBus_GetParamNames( VLAN_COMPONENT_NAME, VLAN_DBUS_PATH, VLAN_ETHLINK_TABLE_NAME, a2cTmpTableParams , &iTotalNoofEntries ))
+    {
+        CcspTraceError(("%s %d Failed to get param value\n", __FUNCTION__, __LINE__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    //Traverse from loop
+    for ( iLoopCount = 0; iLoopCount < iTotalNoofEntries; iLoopCount++ )
+    {
+        char acTmpQueryParam[256] = { 0 };
+
+        //Query
+        snprintf( acTmpQueryParam, sizeof(acTmpQueryParam ), "%sName", a2cTmpTableParams[ iLoopCount ] );
+
+        memset( acTmpReturnValue, 0, sizeof( acTmpReturnValue ) );
+        if ( ANSC_STATUS_FAILURE == RdkBus_GetParamValues( VLAN_COMPONENT_NAME, VLAN_DBUS_PATH, acTmpQueryParam, acTmpReturnValue ) )
+        {
+            CcspTraceError(("%s %d Failed to get param value\n", __FUNCTION__, __LINE__));
+            continue;
+        }
+
+        //Compare ifname
+        if( 0 == strncmp(acTmpReturnValue, pIfName, 256) )
+        {
+            char  tmpTableParam[256] = { 0 };
+
+            //Copy table param
+            snprintf( tmpTableParam, sizeof(tmpTableParam), "%s", a2cTmpTableParams[ iLoopCount ] );
+            *pMatchedLowerLayer =  (PUCHAR)AnscCloneString(tmpTableParam);
+            CcspTraceInfo(("%s %d pMatchedLowerLayer %s\n", __FUNCTION__, __LINE__,*pMatchedLowerLayer));
+            break;
+        }
+    }
+    return ANSC_STATUS_SUCCESS;
+
+}
+
+ANSC_STATUS RdkBus_GetParamValueFromAnyComp( char * pQuery, char *pValue)
+{
+    if ((pQuery == NULL) || (pValue == NULL))
+    {
+        CcspTraceError (("%s %d: invalid args..\n", __FUNCTION__, __LINE__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+
+    int ret ;
+    int size = 0;
+    char dst_pathname_cr[256] = {0};
+    componentStruct_t ** ppComponents = NULL;
+
+    snprintf(dst_pathname_cr, sizeof(dst_pathname_cr) - 1, "eRT.%s", CCSP_DBUS_INTERFACE_CR);
+
+    // Get the component name and dbus path which has the data model
+    ret = CcspBaseIf_discComponentSupportingNamespace
+        (
+         bus_handle,
+         dst_pathname_cr,
+         pQuery,
+         "",
+         &ppComponents,
+         &size
+        );
+
+    if ((ret != CCSP_SUCCESS) || (size <= 0))
+    {
+        CcspTraceError (("%s %d: CcspBaseIf_discComponentSupportingNamespace() call failed\n", __FUNCTION__, __LINE__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    // query the data model from the component
+    CcspTraceInfo (("%s %d: quering dm:%s from component:%s of dbuspath:%s\n",
+                __FUNCTION__, __LINE__, pQuery, ppComponents[0]->componentName, ppComponents[0]->dbusPath));
+    if (RdkBus_GetParamValues (ppComponents[0]->componentName, ppComponents[0]->dbusPath, pQuery, pValue) != ANSC_STATUS_SUCCESS)
+    {
+        CcspTraceError (("%s %d: CcspBaseIf_discComponentSupportingNamespace() call failed\n", __FUNCTION__, __LINE__));
+        free_componentStruct_t(bus_handle, size, ppComponents);
+        return ANSC_STATUS_FAILURE;
+    }
+
+    free_componentStruct_t(bus_handle, size, ppComponents);
+    CcspTraceInfo (("%s %d: dm:%s got value %s\n", __FUNCTION__, __LINE__, pQuery, pValue));
+
+    return ANSC_STATUS_SUCCESS;
+}
+#endif
 #endif
