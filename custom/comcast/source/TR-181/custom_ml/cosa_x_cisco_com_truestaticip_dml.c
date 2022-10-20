@@ -223,7 +223,7 @@ TrueStaticIP_SetParamStringValue
     unsigned int mask = 0;
 
     /* check if pString doesn't hold null or whitespaces */
-    if(AnscValidStringCheck((unsigned char*)pString) != TRUE)
+    if(AnscValidStringCheck(pString) != TRUE)
         return FALSE;
 
     /* check the parameter name and set the corresponding value */
@@ -597,7 +597,7 @@ Subnet_SetParamStringValue
     errno_t rc = -1;
 
     /* check if pString doesn't hold null or whitespaces */
-    if(AnscValidStringCheck((unsigned char*)pString) != TRUE)
+    if(AnscValidStringCheck(pString) != TRUE)
         return FALSE;
 
     /* check the parameter name and set the corresponding value */

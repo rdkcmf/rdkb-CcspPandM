@@ -770,7 +770,7 @@ PcBlkURL_SetParamStringValue
     char *arr[7];
     
     /* check if strValue doesn't hold null or whitespaces */
-    if(AnscValidStringCheck((PUCHAR)strValue) != TRUE)
+    if(AnscValidStringCheck(strValue) != TRUE)
         return FALSE;
         
     AnscTraceWarning(("%s -- param name = %s...\n", __FUNCTION__, ParamName));
@@ -1151,7 +1151,7 @@ PcTrustedUser_SetParamStringValue
     BOOL                            pBridgeMode     = FALSE;
 
     /* check if strValue doesn't hold null or  whitespaces */
-    if(AnscValidStringCheck((PUCHAR)strValue) != TRUE)
+    if(AnscValidStringCheck(strValue) != TRUE)
         return FALSE;
         
     if((ANSC_STATUS_SUCCESS == is_usg_in_bridge_mode(&pBridgeMode)) && (pBridgeMode == TRUE))
@@ -1574,7 +1574,7 @@ MSServ_SetParamStringValue
     }
 
     /* check if strValue doesn't hold null or whitespaces */
-    if(AnscValidStringCheck((PUCHAR)strValue) != TRUE)
+    if(AnscValidStringCheck(strValue) != TRUE)
         return FALSE;
 
     if (strcmp(ParamName, "StartTime") == 0)
@@ -1976,7 +1976,7 @@ MSTrustedUser_SetParamStringValue
         return FALSE;
     
     /* check if strValue doesn't hold null or whitespaces */
-    if(AnscValidStringCheck((PUCHAR)strValue) != TRUE)
+    if(AnscValidStringCheck(strValue) != TRUE)
         return FALSE;
 
     if (strcmp(ParamName, "HostDescription") == 0)
@@ -2381,7 +2381,7 @@ MDDev_SetParamStringValue
     }
 
      /* check if strValue doesn't hold null or whitespaces */
-    if(AnscValidStringCheck((PUCHAR)strValue) != TRUE)
+    if(AnscValidStringCheck(strValue) != TRUE)
         return FALSE;
 
     if (strcmp(ParamName, "MACAddress") == 0)

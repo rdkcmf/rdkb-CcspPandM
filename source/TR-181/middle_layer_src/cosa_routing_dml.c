@@ -5720,7 +5720,7 @@ InterfaceSetting_SetParamStringValue
     BRIDGE_MODE_JUDGEMENT_IFTRUE_RETURNFALSE
 
     /* check if pString doesn't hold null or whitespaces */
-    if(AnscValidStringCheck((PUCHAR)pString) != TRUE)
+    if(AnscValidStringCheck(pString) != TRUE)
         return FALSE;
 
     if(ParamName == NULL)
