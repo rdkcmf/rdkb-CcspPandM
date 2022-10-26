@@ -8914,7 +8914,7 @@
 
     </object>
 
-<?ifndef FEATURE_RDKB_DHCP_MANAGER?>
+
     <object>
 
       <name>DNS</name>
@@ -9128,7 +9128,7 @@
 
     </object>
 
-<?endif?>
+
     <object>
 
       <name>Firewall</name>
