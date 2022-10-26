@@ -13485,8 +13485,13 @@ off_channel_scan_SetParamBoolValue
             CcspTraceError(("Set failed for 5G off channel scan RFC  \n"));
             return FALSE;
         }
-
         CcspTraceInfo(("Successfully set 5g off channel scan RFC \n"));
+        if (strcmp(str,"1") == 0) {
+            v_secure_system("sysevent set wifi_OffChannelScanEnable true");
+        }
+        else if (strcmp(str,"0") == 0){
+            v_secure_system("sysevent set wifi_OffChannelScanEnable false");
+        }
         return TRUE;
     }
     return FALSE;
