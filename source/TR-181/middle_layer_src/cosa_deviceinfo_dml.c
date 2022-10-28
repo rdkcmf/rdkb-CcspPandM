@@ -13590,7 +13590,6 @@ WiFiPasspoint_SetParamBoolValue
     if (strcmp(ParamName, "Enable") == 0)
     {
 	int retPsmGet = CCSP_SUCCESS;
-	errno_t rc = -1;
 
 	retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WiFi-Passpoint.Enable", ccsp_string, bValue ? "1" : "0");
 	if (retPsmGet != CCSP_SUCCESS) {
@@ -13598,13 +13597,14 @@ WiFiPasspoint_SetParamBoolValue
 	    return FALSE;
     }
     CcspTraceInfo(("Successfully set WiFiPasspointSupport \n"));
-
+#ifndef RDK_ONEWIFI
     if(bValue == FALSE){
         int ret = -1;
         int size = 0;
         componentStruct_t ** ppComponents = NULL;
         char* faultParam = NULL;
         char dst_pathname_cr[64]  =  {0};
+        errno_t rc = -1;
 
         CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
 
@@ -13646,7 +13646,37 @@ WiFiPasspoint_SetParamBoolValue
             free_componentStruct_t(bus_handle, size, ppComponents);
         }
     }
-
+#else
+        parameterValStruct_t pVal[1];
+        char                 paramName[256] = "Device.WiFi.WiFi-Passpoint";
+        char                 compName[256]  = "eRT.com.cisco.spvtg.ccsp.wifi";
+        char                 dbusPath[256]  = "/com/cisco/spvtg/ccsp/wifi";
+        char*                faultParam     = NULL;
+        int                  ret            = 0;
+        CCSP_MESSAGE_BUS_INFO *bus_info               = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+           pVal[0].parameterName  = paramName;
+           pVal[0].parameterValue = bValue ? "true" : "false";
+           pVal[0].type           = ccsp_boolean;
+    
+           ret = CcspBaseIf_setParameterValues(
+                     bus_handle,
+                     compName,
+                     dbusPath,
+                     0,
+                     0,
+                     pVal,
+                     1,
+                     TRUE,
+                     &faultParam
+                 );
+    
+           if (ret != CCSP_SUCCESS)
+           {
+               CcspTraceError(("%s - %d - Failed to notify WiFi component - Error [%s]\n", __FUNCTION__, __LINE__, faultParam));
+               bus_info->freefunc(faultParam);
+               return FALSE;
+           }
+#endif
     return TRUE;
     }
     return FALSE;
