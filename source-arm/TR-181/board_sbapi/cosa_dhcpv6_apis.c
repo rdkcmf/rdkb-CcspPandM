@@ -7973,25 +7973,6 @@ void getMeshWanIfName(char *mesh_wan_ifname,int size)
     return;      
 }
 
-void delRemoteWanIpv6Route()
-{
-    if (DEVICE_MODE_ROUTER == Get_Device_Mode())
-    {
-        char mesh_wan_ifname[32] = {0};
-        char ipv6_address[128] = {0};
-        getMeshWanIfName(mesh_wan_ifname,sizeof(mesh_wan_ifname));
-        if (mesh_wan_ifname[0] != '\0') 
-        {
-            memset(ipv6_address,0,sizeof(ipv6_address));
-                commonSyseventGet(MESH_WAN_WAN_IPV6ADDR, ipv6_address, sizeof(ipv6_address));
-                if( '\0' != ipv6_address[0] ) 
-                {
-                    UnSetV6Route(mesh_wan_ifname,strtok(ipv6_address,"/"),1025);
-                    commonSyseventSet("remotewan_routeset", "false");
-                }
-        }
-    }
-}
 void addRemoteWanIpv6Route()
 {
     if (DEVICE_MODE_ROUTER == Get_Device_Mode())
@@ -9233,8 +9214,6 @@ void *Ipv6ModeHandler_thrd(void *data)
     sysevent_setnotification(sysevent_fd, sysevent_token, "current_wan_ifname",  &async_id_wanfailover[0]);
     sysevent_set_options(sysevent_fd, sysevent_token, "mesh_wan_linkstatus", TUPLE_FLAG_EVENT);
     sysevent_setnotification(sysevent_fd, sysevent_token, "mesh_wan_linkstatus",  &async_id_wanfailover[1]);
-    sysevent_set_options(sysevent_fd, sysevent_token, "phylink_wan_state", TUPLE_FLAG_EVENT);
-    sysevent_setnotification(sysevent_fd, sysevent_token, "phylink_wan_state",  &async_id_wanfailover[2]);
     while(1)
     {
         async_id_t getnotification_asyncid;
@@ -9264,15 +9243,6 @@ void *Ipv6ModeHandler_thrd(void *data)
                 else if (!strncmp(val, "down", 4))
                 {
                     delIpv6toRemoteWan();
-                }
-            }
-            else if(!strcmp(name, "phylink_wan_state"))
-            {
-                if (!strncmp(val, "up", 2))
-                {
-                    sysevent_get(sysevent_fd, sysevent_token, "remotewan_routeset", tmpBuf, sizeof(tmpBuf));
-                    if (strcmp(tmpBuf,"true") == 0 )
-                        delRemoteWanIpv6Route();
                 }
             }
             else if(!strcmp(name, "current_wan_ifname"))
