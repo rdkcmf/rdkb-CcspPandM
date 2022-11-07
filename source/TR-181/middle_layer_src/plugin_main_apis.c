@@ -393,7 +393,9 @@ if(id != 0)
     AnscTraceWarning(("  CosaDiagnosticsCreate done!\n"));
     pMyObject->hTime          = (ANSC_HANDLE)CosaTimeCreate();
     AnscTraceWarning(("  CosaTimeCreate done!\n"));
+#if defined(_HUB4_PRODUCT_REQ_)     
     pMyObject->hLanMngm          = (ANSC_HANDLE)CosaLanManagementCreate();
+#endif
     AnscTraceWarning(("  CosaLanManagementCreate done!\n"));
 #if !defined(_PLATFORM_IPQ_)
     //pMyObject->hMoCA          = (ANSC_HANDLE)CosaMoCACreate();

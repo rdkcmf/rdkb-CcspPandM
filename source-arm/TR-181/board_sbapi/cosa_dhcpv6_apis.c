@@ -8414,10 +8414,11 @@ dhcpv6c_dbg_thrd(void * in)
                         else
                         {
                             CcspTraceInfo(("%s: v6addr is %s ,pref_len is %d\n", __func__,v6addr,pref_len));
-                            commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME,v6addr);
+
+                            remove_single_quote(v6addr);
+			    commonSyseventSet(COSA_DML_DHCPV6C_ADDR_SYSEVENT_NAME,v6addr);
 
                              #ifdef RDKB_EXTENDER_ENABLED
-                                remove_single_quote(v6addr);
 
                                 if(pref_len >= 64)
                                     commonSyseventSet("ula_ipv6_enabled","1");
