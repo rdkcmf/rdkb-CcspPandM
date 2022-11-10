@@ -96,7 +96,8 @@
 #define EVENT_FIREWALL_RESTART          "firewall-restart"
 
 #define MAPT_INTERFACE                  "map0"
-#define MAPT_MTU_SIZE                   "1520"
+#define MAPT_MTU_SIZE                   "1500"
+#define MAPT_V4_MTU_SIZE		"1472"
 
 #define BUFLEN_4                        4
 #define BUFLEN_8                        8

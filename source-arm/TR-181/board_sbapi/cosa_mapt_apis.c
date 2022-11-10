@@ -283,7 +283,7 @@ CosaDmlMaptApplyConfig
   }
 #endif
 
-  if ( v_secure_system("insmod /lib/modules/`uname -r`/extra/nat46.ko") )
+  if ( v_secure_system("insmod /lib/modules/`uname -r`/extra/nat46.ko zero_csum_pass=1") )
   {
        MAPT_LOG_ERROR("Failed to load nat46 module!");
        return STATUS_FAILURE;
@@ -295,7 +295,6 @@ CosaDmlMaptApplyConfig
        return STATUS_FAILURE;
   }
 
-#if defined (_COSA_BCM_ARM_) && defined (_XB6_PRODUCT_REQ_)
   if ( v_secure_system("echo config %s local.v4 %s/%d local.v6 %s/%d "
                        "local.style MAP local.ea-len %d local.psid-offset %d "
                        "remote.v4 0.0.0.0/0 remote.v6 %s/%d remote.style RFC6052 "
@@ -307,17 +306,6 @@ CosaDmlMaptApplyConfig
                        g_stMaptData.EaLen,          g_stMaptData.PsidOffset,
                        g_stMaptData.BrIPv6Prefix,   g_stMaptData.BrIPv6PrefixLen,
                        g_stMaptData.PdIPv6Prefix,   g_stMaptData.PdIPv6PrefixLen) )
-#else
-  if ( v_secure_system("echo config %s local.v4 %s/%d local.v6 %s/%d "
-                       "local.style MAP local.ea-len %d local.psid-offset %d "
-                       "remote.v4 0.0.0.0/0 remote.v6 %s/%d remote.style RFC6052 "
-                       "remote.ea-len 0 remote.psid-offset 0 debug 0 > /proc/net/nat46/control",
-                       MAPT_INTERFACE,
-                       g_stMaptData.RuleIPv4Prefix, g_stMaptData.RuleIPv4PrefixLen,
-                       g_stMaptData.RuleIPv6Prefix, g_stMaptData.RuleIPv6PrefixLen,
-                       g_stMaptData.EaLen,          g_stMaptData.PsidOffset,
-                       g_stMaptData.BrIPv6Prefix,   g_stMaptData.BrIPv6PrefixLen) )
-#endif
   {
        MAPT_LOG_ERROR("Failed to configure map0 iface!");
        return STATUS_FAILURE;
@@ -335,7 +323,7 @@ CosaDmlMaptApplyConfig
        MAPT_LOG_WARNING("Failed to delete default route!");
   }
 
-  if ( v_secure_system("ip ro rep default dev %s", MAPT_INTERFACE) )
+  if ( v_secure_system("ip ro rep default dev %s mtu %s", MAPT_INTERFACE , MAPT_V4_MTU_SIZE) )
   {
        MAPT_LOG_ERROR("Failed to set %s as default route!", MAPT_INTERFACE);
        return STATUS_FAILURE;
