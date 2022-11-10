@@ -340,7 +340,7 @@ bool PAM_Rbus_SyseventInit()
 	return false;
 }
 #endif
-#if defined (_HUB4_PRODUCT_REQ_)
+#if defined (_HUB4_PRODUCT_REQ_) || defined (_PLATFORM_RASPBERRYPI_)
 typedef struct
 {
     char binaryLocation[64];
@@ -437,7 +437,7 @@ static void waitUntilSystemReady()
     }
 }
 #endif
-#if  defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED) ||  defined(RBUS_BUILD_FLAG_ENABLE) ||  defined(_HUB4_PRODUCT_REQ_)
+#if  defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED) ||  defined(RBUS_BUILD_FLAG_ENABLE) ||  defined(_HUB4_PRODUCT_REQ_) || defined (_PLATFORM_RASPBERRYPI_)
 /***********************************************************************
 
   devCtrlRbusInit(): Initialize Rbus and data elements

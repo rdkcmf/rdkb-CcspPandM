@@ -54,7 +54,7 @@ rbusError_t publishDevCtrlNetMode(uint32_t new_val, uint32_t old_val);
 bool PAM_Rbus_SyseventInit();
 
 #endif
-#if defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED) ||  defined(RBUS_BUILD_FLAG_ENABLE) || defined (_HUB4_PRODUCT_REQ_) 
+#if defined  (WAN_FAILOVER_SUPPORTED) || defined(RDKB_EXTENDER_ENABLED) ||  defined(RBUS_BUILD_FLAG_ENABLE) || defined (_HUB4_PRODUCT_REQ_) || defined (_PLATFORM_RASPBERRYPI_)
 rbusError_t devCtrlRbusInit();
 #endif
 #endif
