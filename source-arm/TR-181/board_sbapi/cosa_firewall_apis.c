@@ -451,10 +451,7 @@ CosaDmlGatewayV4SetBlockFragIPPkts
     BOOL                        bValue
 )
 {
-    if( syscfg_set(NULL, V4_BLOCKFRAGIPPKT, bValue ? "1" : "0") == 0)
-    {
-        syscfg_commit();
-    }
+    syscfg_set_commit(NULL, V4_BLOCKFRAGIPPKT, bValue ? "1" : "0");
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -486,10 +483,7 @@ CosaDmlGatewayV4SetPortScanProtect
     BOOL                        bValue
 )
 {
-    if( syscfg_set(NULL, V4_PORTSCANPROTECT, bValue ? "1" : "0") == 0)
-    {
-        syscfg_commit();
-    }
+    syscfg_set_commit(NULL, V4_PORTSCANPROTECT, bValue ? "1" : "0");
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -521,10 +515,7 @@ CosaDmlGatewayV4SetIPFloodDetect
     BOOL                        bValue
 )
 {
-    if( syscfg_set(NULL, V4_IPFLOODDETECT, bValue ? "1" : "0") == 0)
-    {
-        syscfg_commit();
-    }
+    syscfg_set_commit(NULL, V4_IPFLOODDETECT, bValue ? "1" : "0");
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -661,10 +652,7 @@ CosaDmlGatewayV6SetBlockFragIPPkts
     BOOL                        bValue
 )
 {
-    if( syscfg_set(NULL, V6_BLOCKFRAGIPPKT, bValue ? "1" : "0") == 0)
-    {
-        syscfg_commit();
-    }
+    syscfg_set_commit(NULL, V6_BLOCKFRAGIPPKT, bValue ? "1" : "0");
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -696,10 +684,7 @@ CosaDmlGatewayV6SetPortScanProtect
     BOOL                        bValue
 )
 {
-    if( syscfg_set(NULL, V6_PORTSCANPROTECT, bValue ? "1" : "0") == 0)
-    {
-        syscfg_commit();
-    }
+    syscfg_set_commit(NULL, V6_PORTSCANPROTECT, bValue ? "1" : "0");
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -731,10 +716,7 @@ CosaDmlGatewayV6SetIPFloodDetect
     BOOL                        bValue
 )
 {
-    if( syscfg_set(NULL, V6_IPFLOODDETECT, bValue ? "1" : "0") == 0)
-    {
-        syscfg_commit();
-    }
+    syscfg_set_commit(NULL, V6_IPFLOODDETECT, bValue ? "1" : "0");
 
     return ANSC_STATUS_SUCCESS;
 }
