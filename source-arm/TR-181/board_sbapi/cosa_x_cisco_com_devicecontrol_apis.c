@@ -156,6 +156,9 @@ PCHAR g_avahi_daemon_conf[] =
 #define FR_ROUTER (1<<2)
 #define FR_FW (1<<3)
 #define FR_OTHER (1<<4)
+#if defined(FEATURE_RDKB_CELLULAR_MANAGER)
+#define FR_CELL (1<<5)
+#endif //FEATURE_RDKB_CELLULAR_MANAGER
 
 extern ANSC_HANDLE bus_handle;
 char   dst_pathname_cr[64]  =  {0};
@@ -2050,6 +2053,51 @@ void* resetWiFi(void* arg)
     return NULL;
 }
 
+#if defined(FEATURE_RDKB_CELLULAR_MANAGER)
+void resetCellular(void)
+{
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+
+    int ret;
+    int size =0;
+    char* faultParam = NULL;
+
+    CcspTraceInfo(("FactoryReset:%s Restoring Cellular to factory defaults...\n",__FUNCTION__));
+
+    snprintf(dst_pathname_cr, sizeof(dst_pathname_cr), "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+    ret = CcspBaseIf_discComponentSupportingNamespace(bus_handle,
+            dst_pathname_cr,
+            "Device.Cellular.X_RDK_DeviceManagement.FactoryReset",
+            g_Subsystem,        /* prefix */
+            &ppComponents,
+            &size);
+
+    parameterValStruct_t val = { "Device.Cellular.X_RDK_DeviceManagement.FactoryReset", "true", ccsp_boolean};
+
+    if ( ret == CCSP_SUCCESS && size == 1)
+    {
+        ret = CcspBaseIf_setParameterValues
+            (
+                bus_handle,
+                ppComponents[0]->componentName,
+                ppComponents[0]->dbusPath,
+                0, 0x0,   /* session id and write id */
+                &val,
+                1,
+                TRUE,   /* no commit */
+                &faultParam
+            );
+
+        if (ret != CCSP_SUCCESS && faultParam)
+        {
+                CcspTraceError(("FactoryReset:%s Setting Device.Cellular.X_RDK_DeviceManagement.FactoryReset returned error '%s'...\n",__FUNCTION__,faultParam));
+                bus_info->freefunc(faultParam);
+        }
+    }
+    CcspTraceInfo(("%s %d - Exit\n",__FUNCTION__,__LINE__));
+}
+#endif //FEATURE_RDKB_CELLULAR_MANAGER
+
 /*****************************************
 *
 *  pValue - Comma delimited string indicating which RG modules
@@ -2098,7 +2146,11 @@ CosaDmlDcSetFactoryReset
 				factory_reset_mask |= FR_FW;
 			} else if(strcmp("VoIP", tok) == 0 || strcmp("Docsis", tok) == 0) {
 				factory_reset_mask |= FR_OTHER;
-			}
+#if defined(FEATURE_RDKB_CELLULAR_MANAGER)
+                        } else if(strcmp("Cellular", tok) == 0) {
+                                factory_reset_mask |= FR_CELL;
+#endif //FEATURE_RDKB_CELLULAR_MANAGER
+                        }
 			tok = strtok_r(NULL, ",", &sv);
 		}
 		
@@ -2199,6 +2251,15 @@ CosaDmlDcSetFactoryReset
                         }
                 }
 #endif
+
+#if defined(FEATURE_RDKB_CELLULAR_MANAGER)
+    if ((factory_reset_mask & FR_CELL) && !(factory_reset_mask & FR_ROUTER))
+    {
+        CcspTraceWarning(("FactoryReset:%s Resetting Cellular to factory defaults.\n",__FUNCTION__));
+        resetCellular();
+    }
+#endif //FEATURE_RDKB_CELLULAR_MANAGER
+
     if (factory_reset_mask & FR_FW) {
         int rc = -1;
         UtopiaContext ctx;
