@@ -470,11 +470,7 @@ static int _get_log(PCOSA_DML_DIAGNOSTICS_ENTRY *ppEntry, char *path, char *user
         v_secure_system("cat %s/%s >> " MERGED_LOG_FILE, path, result->d_name);
     }
 
-#if 1
     gethostname(HOSTNAME, sizeof(HOSTNAME));
-#else
-    syscfg_get(NULL, "hostname",HOSTNAME, sizeof(HOSTNAME));
-#endif
 
     /* Sort the logs in descending order of timestamp*/
     v_secure_system("grep %s " MERGED_LOG_FILE " | sort -r -n -k4 > " SORT_MERGE_LOG_FILE, HOSTNAME);
