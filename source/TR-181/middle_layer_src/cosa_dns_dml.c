@@ -976,7 +976,7 @@ Server1_IsUpdated
         bIsUpdated  = TRUE;
     }
 
-    CcspTraceInfo(("Server1_IsUpdated -- %s...\n", bIsUpdated ? "Yes" : "No"));
+    //CcspTraceInfo(("Server1_IsUpdated -- %s...\n", bIsUpdated ? "Yes" : "No"));
 
     return bIsUpdated;
 }
