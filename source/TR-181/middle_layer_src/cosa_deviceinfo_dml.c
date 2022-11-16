@@ -23197,6 +23197,10 @@ NonRootSupport_SetParamStringValue
      tmp_fptr = fopen(TMP_FILE,"w+");
      if( (!pValue) || (strstr(pValue,":") == NULL) || (tmp_fptr == NULL) ) {
          CcspTraceError(("Failed to open the file or invalid argument\n"));
+         if(fptr)
+            fclose(fptr);
+         if(tmp_fptr)
+            fclose(tmp_fptr);
          return FALSE;
      }
      /* To ensure input arguments are valid or not */
