@@ -192,7 +192,8 @@ UserInterface_GetParamBoolValue
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
-void* ResetPassword(void* arg)
+
+static void *ResetPassword (void *arg)
 {
     UNREFERENCED_PARAMETER(arg);
     pthread_detach(pthread_self());
@@ -211,13 +212,13 @@ UserInterface_SetParamBoolValue
     UNREFERENCED_PARAMETER(hInsContext);
     PCOSA_DATAMODEL_USERINTERFACE   pMyObject = (PCOSA_DATAMODEL_USERINTERFACE)g_pCosaBEManager->hUserinterface;
 
-	if (strcmp(ParamName, "PasswordReset") == 0)
+    if (strcmp(ParamName, "PasswordReset") == 0)
     {
-        if(bValue == TRUE)
-		{
-			pthread_t PwdRst;
-			pthread_create(&PwdRst, NULL, &ResetPassword, NULL);
-		}
+        if (bValue == TRUE)
+        {
+            pthread_t PwdRst;
+            pthread_create(&PwdRst, NULL, &ResetPassword, NULL);
+        }
         return TRUE;
     }
 
