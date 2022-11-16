@@ -22884,7 +22884,7 @@ mTlsCrashdumpUpload_SetParamBoolValue
  )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-    if( AnscEqualString(ParamName, "Enable", TRUE))
+    if (strcmp(ParamName, "Enable") == 0)
     {
         /* collect value */
         if (syscfg_set(NULL, "mTlsCrashdumpUpload_Enable", (bValue==FALSE)?"false":"true") != 0) {

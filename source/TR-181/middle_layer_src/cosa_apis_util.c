@@ -1757,7 +1757,7 @@ ANSC_STATUS is_usg_in_bridge_mode(BOOL *pBridgeMode)
                 "Device.X_CISCO_COM_DeviceControl.LanManagementEntry.1.LanMode",
                 retVal,
                 &retLen)){
-        if (AnscEqualString(retVal, "router", TRUE))
+        if (strcmp(retVal, "router") == 0)
             *pBridgeMode = FALSE;
         else
             *pBridgeMode = TRUE;

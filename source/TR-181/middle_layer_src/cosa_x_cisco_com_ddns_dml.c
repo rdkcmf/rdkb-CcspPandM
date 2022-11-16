@@ -1214,19 +1214,19 @@ Service_GetParamUlongValue
     if (strcmp(ParamName, "ServiceName") == 0)
     {
         /* collect value */
-        if ( AnscEqualString(pDdnsService->ServiceName, "dyndns", FALSE) )
+        if (strcasecmp(pDdnsService->ServiceName, "dyndns") == 0)
         {
             *puLong = 1;
         }
-        else if ( AnscEqualString(pDdnsService->ServiceName, "tzo", FALSE) )
+        else if (strcasecmp(pDdnsService->ServiceName, "tzo") == 0)
         {
             *puLong = 2;
         }
-		else if ( AnscEqualString(pDdnsService->ServiceName, "changeip", FALSE) )
+		else if (strcasecmp(pDdnsService->ServiceName, "changeip") == 0)
         {
             *puLong = 3;
         }
-		else if ( AnscEqualString(pDdnsService->ServiceName, "afraid", FALSE) )
+		else if (strcasecmp(pDdnsService->ServiceName, "afraid") == 0)
         {
             *puLong = 4;
         }

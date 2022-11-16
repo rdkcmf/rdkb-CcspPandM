@@ -1065,7 +1065,7 @@ CosaDmlDdnsInit
 
         /*fprintf(stderr, "%s: %s,%d,%s,%s,%s\n", __FUNCTION__, service_name, enabled, username, password, hostname);*/
 
-        if (AnscEqualString(service_name, "dyndns", FALSE))
+        if (strcasecmp(service_name, "dyndns") == 0)
         {
             g_DdnsService[0].bEnabled = enabled;
             safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[0].Username,sizeof(g_DdnsService[0].Username), username);
@@ -1075,7 +1075,7 @@ CosaDmlDdnsInit
             safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[0].Domain,sizeof(g_DdnsService[0].Domain), hostname);
             ERR_CHK(safec_rc);
         }
-        else if (AnscEqualString(service_name, "tzo", FALSE))
+        else if (strcasecmp(service_name, "tzo") == 0)
         {
             g_DdnsService[1].bEnabled = enabled;
             safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[1].Username,sizeof(g_DdnsService[1].Username), username);
@@ -1085,7 +1085,7 @@ CosaDmlDdnsInit
             safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[1].Domain,sizeof(g_DdnsService[1].Domain), hostname);
             ERR_CHK(safec_rc);
         }
-        else if (AnscEqualString(service_name, "changeip", FALSE))
+        else if (strcasecmp(service_name, "changeip") == 0)
         {
             g_DdnsService[2].bEnabled = enabled;
             safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[2].Username,sizeof(g_DdnsService[2].Username), username);
@@ -1095,7 +1095,7 @@ CosaDmlDdnsInit
             safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[2].Domain,sizeof(g_DdnsService[2].Domain), hostname);
             ERR_CHK(safec_rc);
         }
-        else if (AnscEqualString(service_name, "afraid", FALSE))
+        else if (strcasecmp(service_name, "afraid") == 0)
         {
             g_DdnsService[3].bEnabled = enabled;
             safec_rc =STRCPY_S_NOCLOBBER(g_DdnsService[3].Username,sizeof(g_DdnsService[3].Username), username);
@@ -1797,7 +1797,7 @@ CosaDmlDdnsSetService
     return ANSC_STATUS_SUCCESS;
 #endif
     errno_t rc = -1;
-    if (AnscEqualString(pService->ServiceName, "dyndns", TRUE))
+    if (strcmp(pService->ServiceName, "dyndns") == 0)
     {
         g_DdnsService[0].bEnabled = pService->bEnabled;
         rc = STRCPY_S_NOCLOBBER(g_DdnsService[0].Domain,sizeof(g_DdnsService[0].Domain), pService->Domain);
@@ -1813,7 +1813,7 @@ CosaDmlDdnsSetService
         UtSetString("ddns_username1", g_DdnsService[0].Username);
         UtSetString("ddns_service1", "dyndns");
     }
-    else if (AnscEqualString(pService->ServiceName, "tzo", TRUE))
+    else if (strcmp(pService->ServiceName, "tzo") == 0)
     {
         g_DdnsService[1].bEnabled = pService->bEnabled;
         rc = STRCPY_S_NOCLOBBER(g_DdnsService[1].Domain,sizeof(g_DdnsService[1].Domain), pService->Domain);
@@ -1829,7 +1829,7 @@ CosaDmlDdnsSetService
         UtSetString("ddns_username2", g_DdnsService[1].Username);
         UtSetString("ddns_service2", "tzo");
     }
-    else if (AnscEqualString(pService->ServiceName, "changeip", TRUE))
+    else if (strcmp(pService->ServiceName, "changeip") == 0)
     {
         g_DdnsService[2].bEnabled = pService->bEnabled;
         rc = STRCPY_S_NOCLOBBER(g_DdnsService[2].Domain,sizeof(g_DdnsService[2].Domain), pService->Domain);
@@ -1845,7 +1845,7 @@ CosaDmlDdnsSetService
         UtSetString("ddns_username3", g_DdnsService[2].Username);
         UtSetString("ddns_service3", "changeip");
     }
-    else if (AnscEqualString(pService->ServiceName, "afraid", TRUE))
+    else if (strcmp(pService->ServiceName, "afraid") == 0)
     {
         g_DdnsService[3].bEnabled = pService->bEnabled;
         rc = STRCPY_S_NOCLOBBER(g_DdnsService[3].Domain,sizeof(g_DdnsService[3].Domain), pService->Domain);

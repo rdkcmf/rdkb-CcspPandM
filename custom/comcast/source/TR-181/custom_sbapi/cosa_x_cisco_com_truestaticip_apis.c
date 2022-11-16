@@ -807,7 +807,7 @@ Start:
         {
             /* Simple mapping goes here */
             pVal[0].parameterName  = AnscCloneString(pMapping[0].FullPath);
-            if ( AnscEqualString(pStringToken->Name, "wan_ip_method", FALSE) )
+            if (strcasecmp(pStringToken->Name, "wan_ip_method") == 0)
             {
                 pVal[0].parameterValue = AnscEqualString(pValue, "true_static", FALSE) ? AnscCloneString("true") : AnscCloneString("false");
                 AnscTraceWarning(("!!! Mode: true_static, value:%s !!!\n", pVal[0].parameterValue));
@@ -864,9 +864,9 @@ Start:
                     ERR_CHK(rc);
                 }
                 printf("!!! pVal[0].parameterName: %s !!!\n", pVal[0].parameterName);
-                if ( AnscEqualString(pStringToken->Name, "website_block_schedule_day", FALSE) )
+                if (strcasecmp(pStringToken->Name, "website_block_schedule_day") == 0)
                 {
-                    if (AnscEqualString(pValue, "all", FALSE))
+                    if (strcasecmp(pValue, "all") == 0)
                     {
                         pVal[0].parameterValue = AnscCloneString("Mon,Tue,Wed,Thu,Fri,Sat,Sun");
                     }
@@ -932,7 +932,7 @@ Start:
             /* Special cases for remote_management_acl and website_block_schedule_time */
             char* pTmp = NULL;
             
-            if ( AnscEqualString(pStringToken->Name, "remote_management_acl", FALSE) )
+            if (strcasecmp(pStringToken->Name, "remote_management_acl") == 0)
             {
                 ret = 
                     CcspCcMbi_AddTblRow
@@ -999,7 +999,7 @@ Start:
                     pVal[i].type = pMapping[i].Type;
                 }
             }
-            else if( AnscEqualString(pStringToken->Name, "website_block_schedule_time", FALSE) )
+            else if (strcasecmp(pStringToken->Name, "website_block_schedule_time") == 0)
             {
                 char AlwaysBlock[8] = {0};
                 ULONG StartHour, StartMin, EndHour, EndMin = 0;
@@ -1055,12 +1055,12 @@ Start:
                             End
                         );
                         
-                    if (AnscEqualString(Start, "pm", FALSE))
+                    if (strcasecmp(Start, "pm") == 0)
                     {
                         StartHour += 12;
                     }
                     
-                    if (AnscEqualString(End,   "pm", FALSE))
+                    if (strcasecmp(End, "pm") == 0)
                     {
                         EndHour += 12;
                     }
