@@ -1676,16 +1676,11 @@ IPIF_getEntry_for_Ipv6Pre
         p_dml_v6pre->ChildPrefixBits[0] = 0;
 
         /*normally these 2 fields will be TRUE, I don't believe it's practical to set these fields to FALSE*/
-#ifdef SKY_IPV6
         if (ra_index > -1)
         {
             p_dml_v6pre->bOnlink = p_ra[ra_index].onlink;
             p_dml_v6pre->bAutonomous  = p_ra[ra_index].autoconf;
         }
-#else
-        p_dml_v6pre->bOnlink = p_ra[ra_index].onlink;
-        p_dml_v6pre->bAutonomous  = p_ra[ra_index].autoconf;
-#endif
 
         g_ipif_be_bufs[ulIndex].ulNumOfV6Pre++;        
     }
