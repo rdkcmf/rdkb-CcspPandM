@@ -226,7 +226,8 @@ typedef enum
 _RB_STATE
 {
    RB_NONE        = 0x00,
-   RB_ALL         = 0x1F,
+   RB_ALL         = 0x3F,
+   RB_HOTSPOT     = 0x20,
    RB_UPNPIGD     = 0x10,
    RB_EVENTS      = 0x08,
    RB_FIREWALL    = 0x04,

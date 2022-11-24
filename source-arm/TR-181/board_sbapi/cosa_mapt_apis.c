@@ -117,6 +117,7 @@ static RETURN_STATUS CosaDmlMaptSetEvents    (VOID);
 static RETURN_STATUS CosaDmlMaptPrintConfig  (VOID);
 static RETURN_STATUS CosaDmlMaptResetConfig  (VOID);
 static RETURN_STATUS CosaDmlMaptResetClient  (VOID);
+static RETURN_STATUS CosaDmlMaptResetHotspot (BOOL flag);
 static RETURN_STATUS CosaDmlMaptResetEvents  (VOID);
 static RETURN_STATUS CosaDmlMaptStopServices (VOID);
 static RETURN_STATUS CosaDmlMaptDisplayFeatureStatus (VOID);
@@ -140,6 +141,7 @@ static PVOID CosaDmlMaptSetUPnPIGDService (PVOID arg);
  */
 static COSA_DML_MAPT_DATA   g_stMaptData;
 static volatile UINT8 g_bEnableUPnPIGD;
+static volatile UINT8 g_bEnableHotspot;
 static UINT8 g_bRollBackInProgress;
 
 extern ANSC_HANDLE bus_handle;
@@ -573,6 +575,12 @@ CosaDmlMaptStopServices
                  MAPT_LOG_ERROR("pthread create Failed, to stop UPnP_IGD Service!");
             }
        }
+  }
+
+  /* Stop Hotspot process */
+  if ( CosaDmlMaptResetHotspot(false) != STATUS_SUCCESS)
+  {
+      MAPT_LOG_ERROR("Hotspot stop failed!");
   }
 
   return STATUS_SUCCESS;
@@ -1020,6 +1028,66 @@ CosaDmlMaptResetClient
 
 
 static RETURN_STATUS
+CosaDmlMaptResetHotspot
+(
+    BOOL flag
+)
+{
+  MAPT_LOG_INFO("Entry ResetHotspot");
+  FILE* fd = NULL;
+  CHAR  outBuf[BUFLEN_64] = {0};
+  if ( flag )
+  {
+      if ( (fd = v_secure_popen("r", "ps | grep CcspHotspot | grep -v grep")) )
+      {
+          if ( fgets(outBuf, BUFLEN_64, fd) && strstr(outBuf, "CcspHotspot") )
+          {
+              g_bEnableHotspot = 0;
+              MAPT_LOG_INFO("Hotspot is already running")
+          }
+          v_secure_pclose(fd);
+      }
+      if ( g_bEnableHotspot )
+      {
+          if (commonSyseventSet ("hotspot-start","") != 0)
+          {
+              MAPT_LOG_ERROR("Failed to start Hotspot!");
+              return STATUS_FAILURE;
+          }
+          else
+          {
+              g_bEnableHotspot = 0;
+              MAPT_LOG_INFO("### Mapt hotspot start");
+          }
+      }
+  }
+  else
+  {
+    if ( (fd = v_secure_popen("r", "ps | grep CcspHotspot | grep -v grep")) )
+    {
+        if ( fgets(outBuf, BUFLEN_64, fd) && strstr(outBuf, "CcspHotspot") )
+        {
+            MAPT_LOG_INFO("Stopping Hotspot process");
+            if (commonSyseventSet ("hotspot-stop","") != 0)
+            {
+                MAPT_LOG_ERROR("Hotspot stop Failed !!");
+                v_secure_pclose(fd);
+                return STATUS_FAILURE;
+            }
+            else
+            {
+                g_bEnableHotspot = 1;
+                MAPT_LOG_INFO("### Mapt hotspot stop");
+            }
+        }
+        v_secure_pclose(fd);
+    }
+  }
+  return STATUS_SUCCESS;
+}
+
+
+static RETURN_STATUS
 CosaDmlMaptResetEvents
 (
     VOID
@@ -1176,6 +1244,10 @@ CosaDmlMaptRollback
                  MAPT_LOG_ERROR("pthread create Failed, to reset UPnP_IGD Service!");
             }
        }
+  }
+  if ( eState & RB_HOTSPOT )
+  {
+       ret |= CosaDmlMaptResetHotspot(true);
   }
 
   if ( eState )
@@ -1444,7 +1516,7 @@ MAPT_LOG_INFO("<<<Trace>>> Received PdIPv6Prefix : %s/%u", g_stMaptData.PdIPv6Pr
        if ( g_bRollBackInProgress )
        {
             g_bRollBackInProgress = 0;
-            CosaDmlMaptRollback (RB_DHCPCLIENT|RB_UPNPIGD);
+            CosaDmlMaptRollback (RB_DHCPCLIENT|RB_UPNPIGD|RB_HOTSPOT);
        }
        return ANSC_STATUS_FAILURE;
   }
@@ -1456,7 +1528,7 @@ MAPT_LOG_INFO("<<<Trace>>> Received PdIPv6Prefix : %s/%u", g_stMaptData.PdIPv6Pr
   if ( CosaDmlMaptSetEvents() )
   {
        MAPT_LOG_ERROR("MAPT set events Failed !!");
-       CosaDmlMaptRollback (RB_EVENTS|RB_DHCPCLIENT|RB_UPNPIGD);
+       CosaDmlMaptRollback (RB_EVENTS|RB_DHCPCLIENT|RB_UPNPIGD|RB_HOTSPOT);
        return ANSC_STATUS_FAILURE;
   }
 
@@ -1464,7 +1536,7 @@ MAPT_LOG_INFO("<<<Trace>>> Received PdIPv6Prefix : %s/%u", g_stMaptData.PdIPv6Pr
   if ( CosaDmlMaptApplyConfig() )
   {
        MAPT_LOG_ERROR("MAPT Apply Configurations Failed !!");
-       CosaDmlMaptRollback (RB_CONFIG|RB_EVENTS|RB_DHCPCLIENT|RB_UPNPIGD);
+       CosaDmlMaptRollback (RB_CONFIG|RB_EVENTS|RB_DHCPCLIENT|RB_UPNPIGD|RB_HOTSPOT);
        return ANSC_STATUS_FAILURE;
   }
 

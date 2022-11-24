@@ -594,6 +594,21 @@ CosaDmlDiSetXfinityWiFiEnable
     {
         AnscTraceWarning(("%s: webconfig disabled using legacy \n", __FUNCTION__));
         /*CID: 61742 Wrong sizeof argument*/
+#ifdef FEATURE_SUPPORT_MAPT_NAT46
+    #define BUFLEN_8 8
+    char temp[BUFLEN_8] = {0};
+    int strcmp_ret      = -1;
+    errno_t rc;
+    if (!commonSyseventGet("map_transport_mode", temp, sizeof(temp)))
+    {
+        rc = strcmp_s(temp, strlen(temp), "MAPT", &strcmp_ret);
+        if ( (rc == EOK) && (strcmp_ret == 0) && (value != false) )
+        {
+            AnscTraceWarning(("%s: Disable Hotspot in MapT Mode\n",__FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+        }
+    }
+#endif
         pValue =  AnscAllocateMemory(sizeof(BOOL));
         if (pValue != NULL)
         {

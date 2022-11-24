@@ -23,6 +23,7 @@
 #include "cosa_GRE_webconfig_apis.h"
 #include "ccsp_psm_helper.h"
 #include "safec_lib_common.h"
+#include "cosa_drg_common.h"
 #include <rbus.h>
 
 #define RDKB_WIFI_COMPONENT_NAME                  "com.cisco.spvtg.ccsp.wifi"
@@ -37,13 +38,28 @@ BOOL unpackAndProcessHotspotData(char* pString)
 {
 
     CcspTraceWarning(("Entering %s\n",__FUNCTION__));
+    errno_t rc;
+#ifdef FEATURE_SUPPORT_MAPT_NAT46
+    #define BUFLEN_8 8
+    char temp[BUFLEN_8] = {0};
+    int strcmp_ret      = -1;
+    if (!commonSyseventGet("map_transport_mode", temp, sizeof(temp)))
+    {
+        rc = strcmp_s(temp, strlen(temp), "MAPT", &strcmp_ret);
+        if ( (rc == EOK) && (strcmp_ret == 0) )
+        {
+            CcspTraceWarning(("%s: Disable Hotspot in MapT Mode\n",__FUNCTION__));
+            return TRUE;
+        }
+    }
+#endif
     char * decodeMsg =NULL;
     char * wifi_encoded_data = NULL;
     int size =0;
     int retval = 0;
-    errno_t rc = -1;
     msgpack_unpack_return unpack_ret = MSGPACK_UNPACK_SUCCESS;
 
+    rc = -1;
     retval = get_base64_decodedbuffer(pString, &decodeMsg, &size);
     if (retval == 0)
     {
