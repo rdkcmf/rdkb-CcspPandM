@@ -153,6 +153,9 @@
 
     </object>
 <?ifndef BCI?>
+
+
+<?ifdef CUSTOM_ULA?>
     <object>
 
      <name>X_RDKCENTRAL-COM_DeviceControl</name>
@@ -242,6 +245,9 @@
      </objects>
  
     </object>	
+<?endif?>
+
+
 <?ifdef FEATURE_SUPPORT_ONBOARD_LOGGING?>
     <object>
         <name>X_RDKCENTRAL-COM_XPC</name>

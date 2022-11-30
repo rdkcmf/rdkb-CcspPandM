@@ -54,6 +54,7 @@
         05/9/2019    initial revision.
 
 **************************************************************************/
+#if defined(CUSTOM_ULA)
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <ifaddrs.h>
@@ -592,3 +593,4 @@ CosaDmlLanManagementGetCfg
 
     return ANSC_STATUS_SUCCESS;
 }
+#endif

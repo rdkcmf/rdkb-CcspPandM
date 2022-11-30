@@ -50,7 +50,7 @@
         05/09/2019    initial revision.
 
 **************************************************************************/
-
+#if defined(CUSTOM_ULA)
 #include "cosa_lanmanagement_internal.h"
 #include "cosa_lanmanagement_apis.h"
 
@@ -119,3 +119,4 @@ CosaLanManagementRemove
 
     return returnStatus;
 }
+#endif

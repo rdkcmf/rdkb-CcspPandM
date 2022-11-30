@@ -101,7 +101,7 @@
     *  LanManagement_Rollback
 
 ***********************************************************************/
-
+#if defined(CUSTOM_ULA)
 #include "cosa_lanmanagement_dml.h"
 #include "cosa_drg_common.h"
 #include "safec_lib_common.h"
@@ -452,3 +452,4 @@ LanManagement_Rollback
 #endif
     return TRUE;
 }
+#endif

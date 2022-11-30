@@ -393,7 +393,7 @@ if(id != 0)
     AnscTraceWarning(("  CosaDiagnosticsCreate done!\n"));
     pMyObject->hTime          = (ANSC_HANDLE)CosaTimeCreate();
     AnscTraceWarning(("  CosaTimeCreate done!\n"));
-#if defined(_HUB4_PRODUCT_REQ_)     
+#if defined(CUSTOM_ULA)     
     pMyObject->hLanMngm          = (ANSC_HANDLE)CosaLanManagementCreate();
 #endif
     AnscTraceWarning(("  CosaLanManagementCreate done!\n"));
@@ -539,10 +539,12 @@ CosaBackEndManagerRemove
         CosaTimeRemove((ANSC_HANDLE)pMyObject->hTime);
     }
 
+#if defined(CUSTOM_ULA)
     if ( pMyObject->hLanMngm )
     {
         CosaLanManagementRemove((ANSC_HANDLE)pMyObject->hLanMngm);
     }
+#endif
 
     if ( pMyObject->hUserinterface )
     {
