@@ -518,6 +518,10 @@ CosaDmlMaptStopServices
     VOID
 )
 {
+  char eth_wan_enable_flag[BUFLEN_8] = {0};
+  int strcmp_ret = -1;
+  errno_t rc = -1;
+
   /* Bring down DHCPv4 client */
   if ( v_secure_system("service_wan dhcp-release") )
   {
@@ -531,15 +535,28 @@ CosaDmlMaptStopServices
   /* Try validating the service stop. status may be? */
   MAPT_LOG_INFO("DHCPv4 client is made down.");
 
-  /* Better to have this done in service_wan generically.
-   * For now we will live with this, as this is required
-   * for MAPT devices.
-   */
-  if ( CosaDmlMaptFlushDNSv4Entries() != STATUS_SUCCESS)
+  /* FIXME: Issue in DNS ipv6 resolution when ethwan enabled */
+  /* Workaround: We keep the ipv4 entries for name resolution */
+  if (0 == syscfg_get(NULL, "eth_wan_enabled", eth_wan_enable_flag, sizeof(eth_wan_enable_flag)))
   {
-       MAPT_LOG_ERROR("Failed to flush DNS v4 nameservers!");
+      rc = strcmp_s(eth_wan_enable_flag, 5, "false", &strcmp_ret);
+      ERR_CHK(rc);
+      if (0 == strcmp_ret)
+      {
+          /* Better to have this done in service_wan generically.
+	   * For now we will live with this, as this is required
+	   * for MAPT devices.
+	   */
+	  if ( CosaDmlMaptFlushDNSv4Entries() != STATUS_SUCCESS)
+	  {
+	      MAPT_LOG_ERROR("Failed to flush DNS v4 nameservers!");
+	  }
+      }
+      else
+      {
+      	MAPT_LOG_INFO("Ethwan mode , bypassing CosaDmlMaptFlushDNSv4Entries()");
+      }
   }
-
   /* Stopping UPnP, if mapt ratio is not 1:1 */
   if ( g_stMaptData.Ratio > 1 )
   {
@@ -1454,6 +1471,9 @@ MAPT_LOG_INFO("<<<Trace>>> Received PdIPv6Prefix : %s/%u", g_stMaptData.PdIPv6Pr
   /* Restarting firewall to apply mapt rules */
   MAPT_LOG_INFO("MAPT events are set. Triggering firewall-restart");
   commonSyseventSet (EVENT_FIREWALL_RESTART, NULL);
+  
+  MAPT_LOG_INFO("Triggering ntpd-restart");
+  commonSyseventSet (EVENT_NTPD_RESTART, NULL);
 
   /* Display port based features' status */
   if ( CosaDmlMaptDisplayFeatureStatus() )

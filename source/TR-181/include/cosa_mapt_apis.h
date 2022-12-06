@@ -94,6 +94,7 @@
 #define EVENT_MAPT_RULE_IPV6_ADDRESS    "map_rule_ipv6_address"
 #define EVENT_MAPT_BR_IPV6_PREFIX       "map_br_ipv6_prefix"
 #define EVENT_FIREWALL_RESTART          "firewall-restart"
+#define EVENT_NTPD_RESTART          	"ntpd-restart"
 
 #define MAPT_INTERFACE                  "map0"
 #define MAPT_MTU_SIZE                   "1500"
