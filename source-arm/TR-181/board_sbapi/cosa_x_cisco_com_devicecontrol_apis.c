@@ -2277,6 +2277,7 @@ CosaDmlDcSetFactoryReset
         fw.filter_p2p_from_wan = 0;
         fw.filter_http_from_wan = 0;
         Utopia_Set(&ctx, UtopiaValue_Firewall_Level, "Low");
+        Utopia_Set(&ctx, UtopiaValue_Firewall_LevelV6, "High");
         fw.spi_protection = 1;
         rc = Utopia_SetFirewallSettings(&ctx, fw);
         Utopia_Free(&ctx, !rc);
