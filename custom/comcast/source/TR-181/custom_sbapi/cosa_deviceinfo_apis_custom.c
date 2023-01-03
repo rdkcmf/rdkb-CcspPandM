@@ -580,6 +580,8 @@ CosaDmlDiSetXfinityWiFiEnable
     snprintf(rec, sizeof(rec), "%s",  WEB_CONF_ENABLE);
     if((PsmGet(rec, val, sizeof(val)) != 0)){
         AnscTraceError(("%s Failed to get psm value for Webconfig \n", __FUNCTION__));
+        if(fptr != NULL)
+            fclose(fptr);
         return ANSC_STATUS_FAILURE;
     }
     if((strcmp(val, "true") == 0) && (NULL != fptr))
