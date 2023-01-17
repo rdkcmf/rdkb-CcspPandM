@@ -1807,7 +1807,11 @@ CosaDmlDcSetRebootDevice
         fprintf(stderr, "MoCA is going to reboot\n");
         // TODO: 
     }
-    
+
+#if defined(_SR213_PRODUCT_REQ_)
+    v_secure_system("/etc/sky/power_off_led.sh");
+#endif
+   
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -2169,6 +2173,9 @@ CosaDmlDcSetFactoryReset
                    (factory_reset_mask & FR_OTHER) ) {
                     CcspTraceInfo(("LED Transition: GREEN LED will blink, Reason: Factory Reset\n"));
                     v_secure_system("sysevent set led_event rdkb_factory_reset");
+                    sleep(5);
+                    // power off the led controller after showing Green LED for 5 seconds
+                    v_secure_system("/etc/sky/power_off_led.sh");
                }
 #endif
 
